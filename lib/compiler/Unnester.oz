@@ -2129,7 +2129,7 @@ define
                                 {@BA bind(PrintName C _)}
                                 PrintName
                              end}
-               Unnester, TranslatePattern(FPattern PatternPNs ?GPattern)
+               Unnester, TranslatePattern(FPattern PatternPNs true ?GPattern)
                {@BA openScope()}
                Unnester, UnnestStatement(FS ?GS0)
                GS = {MakeDeclaration {@BA closeScope($)} GS0
@@ -2150,28 +2150,35 @@ define
             GCs = nil
          end
       end
-      meth TranslatePattern(FPattern PatternPNs $)
+      meth TranslatePattern(FPattern PatternPNs PVAllowed $)
          % Precondition: {IsPattern FPattern} == true.
          case FPattern of fEq(FE1 FE2 C) then
             case FE1 of fVar(PrintName C) then GVO GPattern in
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence(?GVO)}
-               Unnester, TranslatePattern(FE2 PatternPNs ?GPattern)
+               Unnester, TranslatePattern(FE2 PatternPNs true ?GPattern)
                {New Core.equationPattern init(GVO GPattern C)}
             [] fWildcard(_) then
-               Unnester, TranslatePattern(FE2 PatternPNs $)
+               Unnester, TranslatePattern(FE2 PatternPNs true $)
             elsecase FE2 of fVar(PrintName C) then GVO GPattern in
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence(?GVO)}
-               Unnester, TranslatePattern(FE1 PatternPNs ?GPattern)
+               Unnester, TranslatePattern(FE1 PatternPNs true ?GPattern)
                {New Core.equationPattern init(GVO GPattern C)}
             [] fWildcard(_) then
-               Unnester, TranslatePattern(FE1 PatternPNs $)
+               Unnester, TranslatePattern(FE1 PatternPNs true $)
             end
          [] fAtom(X C) then
             {New Core.atomNode init(X C)}
          [] fVar(PrintName C) then
             if {Member PrintName PatternPNs} then
+               if PVAllowed then skip
+               else
+                  {@reporter
+                   error(coord: C kind: SyntaxError
+                         msg: ('nonsensical use of pattern variable '#
+                               'as label or feature'))}
+               end
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence($)}
             else
@@ -2200,14 +2207,14 @@ define
       meth TranslateRecord(L Args IsOpen PatternPNs $)
          GL GArgs NewGArgs X
       in
-         Unnester, TranslatePattern(L PatternPNs ?GL)
+         Unnester, TranslatePattern(L PatternPNs false ?GL)
          GArgs = {Map Args
                   fun {$ Arg}
                      case Arg of fColon(F E) then
-                        Unnester, TranslatePattern(F PatternPNs $)#
-                        Unnester, TranslatePattern(E PatternPNs $)
+                        Unnester, TranslatePattern(F PatternPNs false $)#
+                        Unnester, TranslatePattern(E PatternPNs true $)
                      else
-                        Unnester, TranslatePattern(Arg PatternPNs $)
+                        Unnester, TranslatePattern(Arg PatternPNs true $)
                      end
                   end}
          {SortNoColonsToFront GArgs ?NewGArgs X X nil}

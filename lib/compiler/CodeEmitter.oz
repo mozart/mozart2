@@ -456,7 +456,7 @@ in
                Emitter, DebugEntry(Coord 'call' NLiveRegs)
                Emitter, Emit(callBI(Builtinname XsIn#XsOut NLiveRegs))
                Emitter, EmitUnifies(Unifies)
-               Emitter, DebugExit(Coord 'call' @HighestUsedX + 1)
+               Emitter, DebugExit(Coord 'call')
             end
          [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
@@ -1498,7 +1498,7 @@ in
          Emitter, PushContLabel(Cont ?OldContLabels)
          Emitter, Emit(Instr)
          Emitter, KillAllTemporaries()
-         Emitter, DebugEntry(Coord 'conditional' 0)
+         Emitter, DebugEntry(Coord 'cond' 0)
          {FoldLTail VClauses
           proc {$ GuardLabel InitsRS0#Addr1#Addr2|Rest ?NextLabel} RegMap in
              Emitter, Emit(lbl(GuardLabel))
@@ -1516,6 +1516,7 @@ in
              Emitter, RestoreRegisterMapping(RegMap)
           end Emitter, newLabel($) _}
          Emitter, PopContLabel(OldContLabels)
+         Emitter, DebugExit(Coord 'cond' 0)
       end
       meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
                             Coord Cont InitsRS ThisAddr)
@@ -1540,7 +1541,7 @@ in
          Emitter, PushContLabel(Cont ?OldContLabels)
          Emitter, Dereference(Addr1 ?Label1 ?Dest1)
          Emitter, Dereference(Addr2 ?Label2 ?Dest2)
-         Emitter, DebugEntry(Coord 'cond' @HighestUsedX + 1)
+         Emitter, DebugEntry(Coord 'cond')
          Emitter, Emit(InstrLabel(R Constant Dest1 Dest2 @HighestUsedX + 1))
          Emitter, Emit(lbl(Label1))
          Emitter, SaveAllRegisterMappings(?RegMap1)
@@ -1551,7 +1552,7 @@ in
          Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
          Emitter, RestoreRegisterMapping(RegMap2)
          Emitter, PopContLabel(OldContLabels)
-         Emitter, DebugExit(Coord 'cond' @HighestUsedX + 1)
+         Emitter, DebugExit(Coord 'cond')
       end
 
       meth DoInits(InitsRS Cont) Regs in

@@ -104,6 +104,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Pickle':        Pickle
              'Property':      Property
              'System':        System
+             'Module':        Module
 
              %% Constructed modules
              'RunTimeLibrary': !RunTimeLibrary

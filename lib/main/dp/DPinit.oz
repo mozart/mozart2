@@ -29,7 +29,9 @@ import
    DPMisc
 %   Pickle
 %   Module
-%   System
+\ifdef DBG
+   System
+\endif
 export
    Init
 define
@@ -47,7 +49,13 @@ define
       _={DPMisc.initIPConnection r(acceptProc:AccFunc
                                    connectProc:ConnFunc)}
 \endif
+\ifdef DBG
+      try
+         {AccMod.accept}
+      catch X then {System.show accept_ex(X)}end
+\else
       {AccMod.accept}
+\endif
       thread
          {ConnectAcceptModule.initConnection {DPMisc.getConnectWstream}}
       end

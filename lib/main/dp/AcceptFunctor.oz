@@ -42,6 +42,7 @@ define
          q<-nil
       end
       meth getResource
+         skip/*
          lock W in
             if @r>0 then
                r<-@r-1
@@ -50,9 +51,10 @@ define
                q<-{Append @q [W]}
             end
             {Wait W}
-         end
+         end*/
       end
       meth returnResource
+         skip/*
          lock
             if @q==nil then
                r<-@r+1
@@ -63,7 +65,7 @@ define
                q<-QR
                Q1=unit
             end
-         end
+         end*/
       end
    end
 
@@ -83,19 +85,19 @@ define
       NewFD in
       try
 \ifdef DBG
-         {System.showInfo 'AcceptedSelect on '#FD}
+         {System.showInfo 'AcceptedSelect on '#FD#' '#{OS.getPID}}
 \endif
          {FDHandler getResource}
 \ifdef DBG
-         {System.showInfo 'Got resource'}
+         {System.showInfo 'Got resource'#' '#{OS.getPID}}
 \endif
          {OS.acceptSelect FD}
 \ifdef DBG
-         {System.showInfo 'After acceptSelect '#FD}
+         {System.showInfo 'After acceptSelect '#FD#' '#{OS.getPID}}
 \endif
          {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
 \ifdef DBG
-         {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'}
+         {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'#' '#{OS.getPID}}
 \endif
          thread
             {AcceptProc NewFD}
@@ -106,7 +108,7 @@ define
       % resources and close the socket. The most likely exception is
       % a EPIPE on the new FD.
       catch X then
-         {System.show exception_AcceptSelect(X)}
+         {System.show exception_AcceptSelect(X {OS.getPID})}
 \else
       catch _ then
          skip
@@ -128,9 +130,16 @@ define
       {OS.listen FD 5}
       {DPMisc.setListenPort PortNum {OS.uName}.nodename}
 \ifdef DBG
-      {System.showInfo 'Listening on port '#PortNum#' using fd '#FD}
+      {System.showInfo 'Listening on port '#PortNum#' using fd '#FD#' '#{OS.getPID}}
 \endif
-      thread {AcceptSelect FD} end
+      thread
+         {AcceptSelect FD}
+\ifdef DBG
+         % This should never be reached
+         {System.show accept_loop_finished}
+         raise accept_loop_finished end
+\endif
+      end
    end
 
    proc{AcceptProc FD}
@@ -146,16 +155,16 @@ define
             in
                case Grant of grant(...) then
 \ifdef DBG
-                  {System.showInfo accepted}
+                  {System.showInfo accepted#' '#{OS.getPID}}
 \endif
                   _={OS.write FD "ok"}
                   {DPMisc.handover accept Grant settings(fd:FD)}
                else % could be busy or no tcp, wait for anoter try
 \ifdef DBG
-                  {System.showInfo busy}
+                  {System.showInfo busy#' '#{OS.getPID}}
 \endif
                   _={OS.write FD "no"}
-                  {AcceptProc FD}
+%                 {AcceptProc FD} What?
                end
             [] "give_up" then
                {OS.close FD}
@@ -167,6 +176,9 @@ define
             {OS.close FD}
          end
       catch X then
+\ifdef DBG
+         {System.showInfo acceptProc_caught(X {OS.getPID})}
+\endif
          case X of system(os(_ _ _ "Try again") ...) then % EAGAIN => try again
             {AcceptProc FD}
          else % Other fault conditions AN! should some others be treated?

@@ -68,6 +68,8 @@ define
                   [] system(os(_ _ _ "In progress") ...) then
                      % only tells that the socket is in progress
                      skip
+                  [] system(kernel(terminate) ...) then
+                     raise terminated end
                   else
                      if FD\=~1 then {ConnectionWrapper.close FD} end
 \ifdef DBG
@@ -120,6 +122,10 @@ define
                         {ConnectionWrapper.freeConnGrant Grant}
                         {ConnectionWrapper.connFailed perm}
                         raise perm end
+                     [] system(kernel(terminate) ...) then
+                        raise terminated end
+                     else
+                        raise X end
                      end
                   end
 \ifdef DBG
@@ -129,9 +135,15 @@ define
                   {ConnectionWrapper.readSelect FD}
                   _ = {ConnectionWrapper.read FD 2 ReadS nil}
                   case ReadS of "ok" then
+\ifdef DBG
+                  {System.show read_ok}
+\endif
                      {ConnectionWrapper.handover Grant settings(fd:FD)}
                      Done=connected
                   else
+\ifdef DBG
+                  {System.show read_else(ReadS)}
+\endif
                      {ConnectionWrapper.freeConnGrant Grant}
                   end
                % If we catch an exception here (other than perm, se above)
@@ -143,7 +155,12 @@ define
                   {System.show connect_caught(X)}
 \endif
                   case X of perm then skip
+                  [] system(kernel(terminate) ...) then
+                     raise terminated end
                   else
+\ifdef DBG
+                     {System.show reporting_temp}
+\endif
                      Done=failed
                      {ConnectionWrapper.freeConnGrant Grant}
                      {ConnectionWrapper.connFailed temp}
@@ -167,7 +184,11 @@ define
             try
                _={ConnectionWrapper.write FD "give_up"}
                {ConnectionWrapper.close FD}
-            catch _ then skip end
+            catch X then
+               case X of system(kernel(terminate) ...) then
+                  raise terminated end
+               else skip end
+            end
 
             {ConnectionWrapper.connFailed 'No transport or not accepted'}
 \ifdef DBG

@@ -179,8 +179,8 @@ define
             {ConnectModule.connect DistOzState.parameter}
 \ifdef DBG
          catch X then
-%           {System.show warning(X)}
-            thread raise X end end
+            {System.show warning(X)}
+%           thread raise X end end % Use only in OPI
 \else
          catch _ then
             skip
@@ -222,48 +222,55 @@ define
    OngoingRequests
 in
    proc{InitConnection Stream}
-      OngoingRequests = {NewDictionary}
-%      thread {Browser.browse Stream} end
-      {ForAll Stream
-       proc{$ Request}
 \ifdef DBG
+      PID={OS.getPID}
+   in
+\endif
+      OngoingRequests = {NewDictionary}
+%      {Browser.browse Stream}
+      {List.forAllInd Stream
+       proc{$ Ind Request}
+\ifdef DBG
+          {System.show waiting(pid:PID ind:Ind)}
           {Wait Request}
-          {System.show got(Request)}
+          {System.show got(Request PID Ind)}
 \endif
           case Request of
              connect(Requestor LocalOzState DistOzState) then
              Id = {GetIdFromRequestor Requestor}
           in
              if {Dictionary.member OngoingRequests Id} then
-                raise already_connecting(Id) end
-             end
-             OngoingRequests.Id:=r(thr:{Thread.this} fd:_)
-             thread
-                try
-                   _ = {New ConnectionController init(Id Requestor
-                                                      LocalOzState
-                                                      DistOzState)}
+                thread raise already_connecting(Id) end end
+             else
+                OngoingRequests.Id:=r(thr:_)
+                thread
+                   try
+                      case OngoingRequests.Id of r(thr:T ...) then
+                         T={Thread.this}
+                      end
+                      _ = {New ConnectionController init(Id Requestor
+                                                         LocalOzState
+                                                         DistOzState)}
+                      {Dictionary.remove OngoingRequests Id}
 \ifdef DBG
-                catch X then
-                   raise X end
+                   catch X then
+            {System.show warning(X)}
+%           thread raise X end end % Use only in OPI
 \else
-                catch _ then
-                   skip
+                   catch _ then
+                      skip
 \endif
+                   end
                 end
-                {Dictionary.remove OngoingRequests Id}
              end
           elseof abort(Requestor) then
              Id = {GetIdFromRequestor Requestor}
           in
              try
                 case {CondSelect OngoingRequests Id notfound}
-                of r(thr:T fd:FD) then
-                   {Dictionary.remove OngoingRequests Id}
+                of r(thr:T) then
                    {Thread.terminate T}
-                   if {IsDet FD} then
-                      {OS.close FD}
-                   end
+                   {Dictionary.remove OngoingRequests Id}
                 else
                    skip
                 end

@@ -109,7 +109,6 @@ define
          Verbose <- B
       end
       meth clear()
-         Verbose <- false
          History <- nil
          HasErrors <- false
          IsActive <- false

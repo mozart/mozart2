@@ -698,7 +698,7 @@ local
                              {@switches getSwitch(gumpscannerperfreport $)}
                           statistics:
                              {@switches getSwitch(gumpscannerstatistics $)})
-            {MyWait Gump}
+            {MyWait Gump.transformScanner}
             FS = {Gump.transformScanner
                   T From Prop Attr Feat Ms Rules C Flags @reporter}
             Unnester, UnnestStatement(FS $)
@@ -712,7 +712,7 @@ local
                               getSwitch(gumpparseroutputsimplified $)}
                           verbose:
                              {@switches getSwitch(gumpparserverbose $)})
-            {MyWait Gump}
+            {MyWait Gump.transformParser}
             FS = {Gump.transformParser
                   T From Prop Attr Feat Ms Tokens Rules C Flags
                   {@switches getProductionTemplates($)}

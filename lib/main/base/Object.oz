@@ -22,7 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-
 declare
    Object
    IsObject
@@ -106,6 +105,7 @@ local
       `ooId`             = {NewUniqueName 'ooId'}
    end
 
+
    %%
    %% Fallback routines that are supplied with classes
    %%
@@ -144,10 +144,8 @@ local
    %%
    %% Builtins needed for class creation
    %%
-
    MakeClass = {`Builtin` makeClass 6}
    MarkSafe  = {`Builtin` 'Dictionary.markSafe' 1}
-
 
    local
       %% Initialize mapping from ids to classes and return classes
@@ -171,7 +169,8 @@ local
          [] C2|C2r then
             I2=C2.`ooId` Is={Dictionary.get IG I2}
          in
-            {Dictionary.put IG I2 case {Member I1 Is} then Is else I1|Is end}
+            {Dictionary.put IG I2
+             case {Member I1 Is} then Is else I1|Is end}
             {AddIG I2 C2r IG}
          end
       end
@@ -251,7 +250,6 @@ local
          {Iterate [C] ITCM IG}
       end
    end
-
 
 
    %%
@@ -451,9 +449,12 @@ local
       end
    end
 
-in
 
-   proc {`class` Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
+   %%
+   %% The real class creation
+   %%
+
+   proc {!`class` Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
       {CheckParents Parents PrintName}
       %% To be computed for methods
       Meth FastMeth Defaults
@@ -555,7 +556,7 @@ in
            Feat Defaults IsLocking}
    end
 \ifndef NEWCOMPILER
-   fun {`class.old` FromList NewAttr NewFeat NewProp NewMeth PrintName Send}
+   fun {!`class.old` FromList NewAttr NewFeat NewProp NewMeth PrintName Send}
       {`class`
        FromList
        {List.toTuple m
@@ -577,7 +578,7 @@ in
        PrintName}
    end
 \endif
-   fun {`extend` From NewFeat NewFreeFeat}
+   fun {!`extend` From NewFeat NewFreeFeat}
       %% Methods
       Defaults  = From.`ooDefaults`
       Locking   = From.`ooLocking`
@@ -600,28 +601,20 @@ in
                             `ooPrintName`:  PrintName
                             `ooLocking`:    Locking
                             `ooFallback`:   Fallback)
-                 Feat Defaults Locking}
+       Feat Defaults Locking}
    end
 
-end
+   %% %%%%%%%%%%%%%%%%%%%%
+   %% The Class BaseObject
+   %% %%%%%%%%%%%%%%%%%%%%
 
-%% %%%%%%%%%%%%%%%%%%%%
-%% The Class BaseObject
-%% %%%%%%%%%%%%%%%%%%%%
+   class !BaseObject
 
-class BaseObject
+      meth noop
+         skip
+      end
 
-   meth noop
-      skip
    end
-
-end
-
-%% %%%%%%%%%%%%%%%%%%%%
-%% The module Object
-%% %%%%%%%%%%%%%%%%%%%%
-
-local
 
 
    %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -674,21 +667,85 @@ local
          end
       end
    end
+
+   local
+      PRIVATE = {NewName}
+   in
+      class MetaObject
+
+         meth clone($)
+            C = {Class.get self}
+         in
+            MetaObject,Create(C
+                              MetaObject,GetAttr({Arity C.`ooAllAttr`} $)
+                              MetaObject,GetFeat({Arity C.`ooFreeFeatR`} $) $)
+         end
+
+         meth Create(C A F $)
+            O = {New C SetAttr(A)}
+         in
+            {O SetFeat(F)} O
+         end
+
+         meth toChunk($)
+            C = {Class.get self}
+         in
+            {Chunk.new
+             c(PRIVATE:
+                  o('class': {Class.get self}
+                    'attr':  MetaObject,GetAttr({Arity C.`ooAllAttr`} $)
+                    'feat':  MetaObject,GetFeat({Arity C.`ooFreeFeatR`} $)))}
+         end
+
+         meth frmChunk(Ch $)
+            o('class': C 'attr':A 'feat':F) = Ch.PRIVATE
+         in
+            MetaObject,Create(C A F $)
+         end
+
+         meth GetAttr(As $)
+            case As of nil then nil
+            [] A|Ar then (A|@A)|MetaObject,GetAttr(Ar $)
+            end
+         end
+
+         meth GetFeat(Fs $)
+            case Fs of nil then nil
+            [] F|Fr then (F|self.F)|MetaObject,GetFeat(Fr $)
+            end
+         end
+
+         meth SetAttr(AXs)
+            case AXs of nil then skip
+            [] AX|AXr then A|X=AX in A<-X MetaObject,SetAttr(AXr)
+            end
+         end
+
+         meth SetFeat(FXs)
+            case FXs of nil then skip
+            [] FX|FXr then F|X=FX in self.F=X MetaObject,SetFeat(FXr)
+            end
+         end
+      end
+   end
+
 in
+
    Object=object(
                   %% Globally available
-                  is:             IsObject
-                  new:             New
-                  base:            BaseObject
-                  ',':             `,`
-                  '@':             `@`
-                  '<-':             `<-`
-                  'send':          `send`
-                  'class':         `class`
+                 is:             IsObject
+                 new:             New
+                 base:            BaseObject
+                 meta:            MetaObject
+                 ',':             `,`
+                 '@':             `@`
+                 '<-':             `<-`
+                 'send':          `send`
+                 'class':         `class`
 
-                  %% only in module
+                 %% only in module
 
-                  master :     MasterObject
-                  slave  :     SlaveObject
+                 master :     MasterObject
+                 slave  :     SlaveObject
                 )
 end

@@ -2173,142 +2173,148 @@ in
       end
    end
 
-   class CodeGenBuiltinToken
-      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
-         Builtinname = {System.printName @value}
-         BIInfo = {Builtins.getInfo Builtinname}
-      in
-         case BIInfo == noInformation
-            orelse {CondSelect BIInfo sited false}
-         then
-            VHd = vCall(_ {Designator reg($)}
-                        {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
-                        Coord VTl)
-         elsecase Builtinname of 'New' then
-            [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
+   local
+      fun {IsFeature X}
+         {IsLiteral X} orelse {IsInt X}
+      end
+   in
+      class CodeGenBuiltinToken
+         meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
+            Builtinname = {System.printName @value}
+            BIInfo = {Builtins.getInfo Builtinname}
          in
+            case BIInfo == noInformation
+               orelse {CondSelect BIInfo sited false}
+            then
+               VHd = vCall(_ {Designator reg($)}
+                           {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
+                           Coord VTl)
+            elsecase Builtinname of 'New' then
+               [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
+            in
             % this ensures that the created object is always a fresh
             % register and that the message is sent before the new
             % object is unified with the output variable.  This is
             % needed for the correctness of the sendMsg-optimization
             % performed in the CodeEmitter:
-            {CS newReg(?ObjReg)}
-            VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
-                               Coord Cont)
-            Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
-         [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
-            {Arg1 getCodeGenValue(?Value)}
-            case {IsDet Value} then
-               case Value of 1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                     Coord VTl)
-               [] ~1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                     Coord VTl)
-               else skip
-               end
-            else skip
-            end
-            case {IsDet VHd} then skip
-            else Value in
-               {Arg2 getCodeGenValue(?Value)}
+               {CS newReg(?ObjReg)}
+               VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
+                                  Coord Cont)
+               Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
+            [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+               {Arg1 getCodeGenValue(?Value)}
                case {IsDet Value} then
                   case Value of 1 then
-                     VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                     VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
                                         Coord VTl)
                   [] ~1 then
-                     VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                     VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
                                         Coord VTl)
                   else skip
                   end
                else skip
                end
-            end
-         [] '-' then [Arg1 Arg2 Arg3] = ActualArgs Value in
-            {Arg2 getCodeGenValue(?Value)}
-            case {IsDet Value} then
-               case Value of 1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                     Coord VTl)
-               [] ~1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                     Coord VTl)
+               case {IsDet VHd} then skip
+               else Value in
+                  {Arg2 getCodeGenValue(?Value)}
+                  case {IsDet Value} then
+                     case Value of 1 then
+                        VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                           Coord VTl)
+                     [] ~1 then
+                        VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                           Coord VTl)
+                     else skip
+                     end
+                  else skip
+                  end
+               end
+            [] '-' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+               {Arg2 getCodeGenValue(?Value)}
+               case {IsDet Value} then
+                  case Value of 1 then
+                     VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                        Coord VTl)
+                  [] ~1 then
+                     VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                        Coord VTl)
+                  else skip
+                  end
                else skip
                end
-            else skip
-            end
-         elsecase CS.debugInfoControlSwitch then skip
-         elsecase Builtinname of '.' then
-            [Arg1 Arg2 Arg3] = ActualArgs Feature in
-            {Arg2 getCodeGenValue(?Feature)}
-            case {IsDet Feature} andthen {IsFeature Feature} then
-               Value1 AlwaysSucceeds in
-               {Arg1 getCodeGenValue(?Value1)}
-               AlwaysSucceeds = ({IsDet Value1}
-                                 andthen {IsRecord Value1}
-                                 andthen {HasFeature Value1 Feature})
-               case AlwaysSucceeds
-                  andthen {IsObject Value1.Feature}
-                  andthen {HasFeature Value1.Feature ImAVariableOccurrence}
-                  andthen {IsDet {Value1.Feature reg($)}}
-               then
+            elsecase CS.debugInfoControlSwitch then skip
+            elsecase Builtinname of '.' then
+               [Arg1 Arg2 Arg3] = ActualArgs Feature in
+               {Arg2 getCodeGenValue(?Feature)}
+               case {IsDet Feature} andthen {IsFeature Feature} then
+                  Value1 AlwaysSucceeds in
+                  {Arg1 getCodeGenValue(?Value1)}
+                  AlwaysSucceeds = ({IsDet Value1}
+                                    andthen {IsRecord Value1}
+                                    andthen {HasFeature Value1 Feature})
+                  case AlwaysSucceeds
+                     andthen {IsObject Value1.Feature}
+                     andthen {HasFeature Value1.Feature ImAVariableOccurrence}
+                     andthen {IsDet {Value1.Feature reg($)}}
+                  then
                   % Evaluate by issuing an equation.
                   % Note: {Value1.Feature reg($)} may be undetermined for
                   % nested records annotated by valToSubst.
-                  {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
-               else
+                     {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
+                  else
                   % Because the static analyzer may annotate some
                   % variable equality at Arg3, we cannot use the
                   % (dereferencing) {Arg3 reg($)} call but have to
                   % use the variable's original register:
-                  VHd = vInlineDot(_ {Arg1 reg($)} Feature
-                                   {{Arg3 getVariable($)} reg($)}
-                                   AlwaysSucceeds Coord VTl)
+                     VHd = vInlineDot(_ {Arg1 reg($)} Feature
+                                      {{Arg3 getVariable($)} reg($)}
+                                      AlwaysSucceeds Coord VTl)
+                  end
+               else skip
+               end
+            [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
+               {Arg1 getCodeGenValue(?Atomname)}
+               case {IsDet Atomname} andthen {IsLiteral Atomname} then
+                  VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
+               else skip
+               end
+            [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
+               {Arg1 getCodeGenValue(?Atomname)}
+               case {IsDet Atomname} andthen {IsLiteral Atomname} then
+                  VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
+               else skip
+               end
+            [] ',' then [Arg1 Arg2] = ActualArgs Value in
+               {Arg2 getCodeGenValue(?Value)}
+               case {IsDet Value} andthen {IsRecord Value} then
+                  RecordArity ActualArgs Regs Cont1 in
+                  case {IsTuple Value} then
+                     RecordArity = {Width Value}
+                     ActualArgs = {ForThread RecordArity 1 ~1
+                                   fun {$ In I} Value.I|In end nil}
+                  else
+                     RecordArity = {Arity Value}
+                     ActualArgs = {Map RecordArity fun {$ I} Value.I end}
+                  end
+                  {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+                  case {{Arg1 getVariable($)} isToplevel($)} then
+                     Cont1 = vGenCall(_ {Arg1 reg($)} true
+                                      {Label Value} RecordArity Regs
+                                      Coord VTl)
+                  else
+                     Cont1 = vApplMeth(_ {Arg1 reg($)}
+                                       {Label Value} RecordArity Regs
+                                       Coord VTl)
+                  end
+               else skip
                end
             else skip
             end
-         [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
-            {Arg1 getCodeGenValue(?Atomname)}
-            case {IsDet Atomname} andthen {IsLiteral Atomname} then
-               VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
-            else skip
+            case {IsDet VHd} then skip
+            else Regs in
+               Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
+               VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
             end
-         [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
-            {Arg1 getCodeGenValue(?Atomname)}
-            case {IsDet Atomname} andthen {IsLiteral Atomname} then
-               VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
-            else skip
-            end
-         [] ',' then [Arg1 Arg2] = ActualArgs Value in
-            {Arg2 getCodeGenValue(?Value)}
-            case {IsDet Value} andthen {IsRecord Value} then
-               RecordArity ActualArgs Regs Cont1 in
-               case {IsTuple Value} then
-                  RecordArity = {Width Value}
-                  ActualArgs = {ForThread RecordArity 1 ~1
-                                fun {$ In I} Value.I|In end nil}
-               else
-                  RecordArity = {Arity Value}
-                  ActualArgs = {Map RecordArity fun {$ I} Value.I end}
-               end
-               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-               case {{Arg1 getVariable($)} isToplevel($)} then
-                  Cont1 = vGenCall(_ {Arg1 reg($)} true
-                                   {Label Value} RecordArity Regs
-                                   Coord VTl)
-               else
-                  Cont1 = vApplMeth(_ {Arg1 reg($)}
-                                    {Label Value} RecordArity Regs
-                                    Coord VTl)
-               end
-            else skip
-            end
-         else skip
-         end
-         case {IsDet VHd} then skip
-         else Regs in
-            Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
-            VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
          end
       end
    end

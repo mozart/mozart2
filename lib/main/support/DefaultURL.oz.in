@@ -51,6 +51,7 @@ prepare
                    'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize' 'Service'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL' 'DPMisc'
+                   'Discovery'
                    'Open'
                    'Tk' 'TkTools'
                    'Compiler' 'Macro'

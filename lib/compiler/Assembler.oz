@@ -853,8 +853,8 @@ local
                case Builtinname of
                   '<Rel'  then {Assembler append(testLess(X1 X2 L1 NLiveRegs))}
                [] '=<Rel' then {Assembler append(testLessEq(X1 X2 L1 NLiveRegs))}
-               [] '>=Rel' then {Assembler append(testLess(X2 X1 L1 NLiveRegs))}
-               [] '>Rel'  then {Assembler append(testLessEq(X2 X1 L1 NLiveRegs))}
+               [] '>=Rel' then {Assembler append(testLessEq(X2 X1 L1 NLiveRegs))}
+               [] '>Rel'  then {Assembler append(testLess(X2 X1 L1 NLiveRegs))}
                else {Assembler append(I1)}
                end
                {Peephole Rest Assembler}

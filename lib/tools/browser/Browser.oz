@@ -23,7 +23,6 @@
 %%% WARRANTIES.
 %%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
@@ -38,15 +37,11 @@
 %\define    DEBUG_OPEN
 \undef     DEBUG_OPEN
 
-declare
-   NewBrowser
-in
-
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewBrowser IMPORT}
+   {$ IMPORT}
    \insert 'SP.env'
       = IMPORT.'SP'
    \insert 'CP.env'

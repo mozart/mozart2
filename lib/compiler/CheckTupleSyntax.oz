@@ -84,8 +84,6 @@ local
          {Phrase P1} {Phrase P2} {OptElse E} {Coord C}
       [] fCase(P Cs E C) then
          {Phrase P} {ForAll Cs CaseClause} {Coord C}
-      [] fCaseNew(P Cs E C) then
-         {Phrase P} {ForAll Cs CaseClause} {Coord C}
       [] fLockThen(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fLock(P C) then {Phrase P} {Coord C}
       [] fThread(P C) then {Phrase P} {Coord C}

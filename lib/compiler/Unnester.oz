@@ -982,8 +982,6 @@ define
             Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
             GFrontEq|
             Unnester, UnnestCase({GVO getVariable($)} FClauses FS C $)
-         [] fCaseNew(FE FClauses FS C) then
-            Unnester, UnnestStatement(fCase(FE FClauses FS C) $)
          [] fLockThen(FE FS C) then GFrontEq GVO GS in
             Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
             Unnester, UnnestStatement(FS ?GS)
@@ -1385,8 +1383,6 @@ define
                FS = FCase
             end
             GFrontEq|Unnester, UnnestStatement(FS $)
-         [] fCaseNew(FE1 FClauses FS2 C) then
-            Unnester, UnnestExpression(fCase(FE1 FClauses FS2 C) FV $)
          [] fLockThen(FE1 FE2 C) then
             Unnester, UnnestStatement(fLockThen(FE1 fEq(FV FE2 C) C) $)
          [] fLock(FE C) then
@@ -2417,8 +2413,6 @@ define
          [] fNoElse(C) then fNoElse({FS C})
          [] fCase(P1 Cs P2 C) then
             fCase({NP P1} {Map Cs NP} {NP P2} {FS C})
-         [] fCaseNew(P1 Cs P2 C) then
-            fCase({NP P1} {Map Cs NP} {NP P2} {FS C})
          [] fCaseClause(P1 P2) then fCaseClause(P1 {NP P2})
          [] fLockThen(P1 P2 C) then fLockThen({NP P1} {NP P2} {FS C})
          [] fLock(P C) then fLock({NP P} {FS C})
@@ -2485,8 +2479,6 @@ define
             fBoolCase({NP P1} {SP P2} {SP P3} {CS C})
          [] fNoElse(C) then fNoElse({CS C})
          [] fCase(P1 Cs P2 C) then
-            fCase({NP P1} {Map Cs SP} {SP P2} {CS C})
-         [] fCaseNew(P1 Cs P2 C) then
             fCase({NP P1} {Map Cs SP} {SP P2} {CS C})
          [] fCaseClause(P1 P2) then fCaseClause(P1 {SP P2})
          [] fLockThen(P1 P2 C) then fLockThen({NP P1} {SP P2} {CS C})

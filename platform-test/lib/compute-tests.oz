@@ -1,14 +1,13 @@
 fun {ComputeTests Argv}
-   Keys =  case Argv.keys=="all" then AllKeys else
+   Keys =  case Argv.keys of nil then AllKeys else
               {Filter
-               {Map {String.tokens Argv.keys &,} String.toAtom}
+               {Map Argv.keys String.toAtom}
                fun {$ K}
                   {Member K AllKeys}
                end}
            end
-   Tests = case Argv.tests=="all" then AllTests else
-              TestTests = {String.tokens Argv.tests &,}
-           in
+   Tests = case Argv.tests of nil then AllTests
+           elseof TestTests then
               {Filter AllTests
                fun {$ T}
                   S1={Atom.toString {Label T}}
@@ -19,9 +18,8 @@ fun {ComputeTests Argv}
                    end}
                end}
            end
-   Tests1 = case Argv.ignores=="none" then Tests else
-               TestTests = {String.tokens Argv.ignores &,}
-            in
+   Tests1 = case Argv.ignores of nil then Tests
+            elseof TestTests then
                {Filter Tests
                 fun {$ T}
                    S1={Atom.toString {Label T}}

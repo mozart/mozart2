@@ -148,7 +148,7 @@ local
                }
                0
             else
-               Repeat = if Argv.repeat > 1 then Argv.repeat else 2 end
+               Repeat = Argv.repeat
                ToRun={ComputeTests Argv}
                proc {PI V}
                   {System.printInfo V}
@@ -245,17 +245,18 @@ local
    end
 
    TestOptions =
-   single(
-      help(type:bool default:false)
-      usage(type:bool default:false)
-      gc(type:int optional:false default:0)
-      ignores(type:string optional:true default:"none")
-      keys(type:string optional:true default:"all")
-      tests(type:string optional:true default:"all")
-      repeat(type:int optional:false default:5)
-      mintime(type:int optional:false default:2000)
-      verbose(type:bool optional:false default:false)
-      variance(type:bool optional:false default:false)
+   record(
+      help(rightmost char: [&h &?] type: bool default: false)
+      usage(alias: help)
+      gc(rightmost type: int(min: 0) default: 0)
+      ignores(multiple type: list(string) default: nil)
+      keys(multiple type: list(string) default: nil)
+      tests(multiple type: list(string) default: nil)
+      repeat(rightmost type: int(min: 2) default: 5)
+      mintime(rightmost type: int default: 2000)
+      verbose(rightmost char: &v type: bool default: false)
+      quiet(char: &q alias: verbose#false)
+      variance(rightmost type: bool default: false)
       )
 
 in
@@ -296,7 +297,7 @@ in
       ModMan = {New Module.manager init}
 
       Tests = {AppendAll
-               {Map Argv.2 fun {$ C}
+               {Map Argv.1 fun {$ C}
                               S = {ModMan link(url:C $)}.return
                            in
                               {Map {GetAll S nil nil}

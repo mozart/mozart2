@@ -17,9 +17,9 @@ A star (*) after the timings indicates that the variation is more than
 ten percent.
 
 The following options are supported:
---[no]verbose           [default=no]
+--[no]verbose, -v       [default=no]
         Print verbose output
---usage, --help
+--usage, --help, -h, -?
         Print this text
 --gc=<int>              [default=0]
         If non zero, run garbage collection each <int> milliseconds
@@ -32,7 +32,7 @@ The following options are supported:
 --tests=<s1>,...,<sn>   [default=all]
         Run only those tests in which names at least one <si> occurs
 --keys=<s1>,...,<sn>    [default=all]
-        Run only those tests that feature at least one <si> as key.
---ignores=<s1>,...,<sn> [default="none"]
-        Ignore tests specified by <si>.
+        Run only those tests that feature at least one <si> as key
+--ignores=<s1>,...,<sn> [default=none]
+        Ignore tests specified by <si>
 '

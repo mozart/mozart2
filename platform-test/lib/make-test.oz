@@ -63,7 +63,7 @@ local
          \insert 'compute-tests.oz'
 
          fun {Run Argv}
-            case Argv.usage orelse Argv.help then
+            case Argv.help then
                {System.printInfo \insert 'help-string.oz'
                }
                0
@@ -220,16 +220,17 @@ local
    end
 
    TestOptions =
-   single(do(type:bool default:true)
-          help(type:bool default:false)
-          usage(type:bool default:false)
-          verbose(type:bool default:false)
-          gc(type:int optional:false default:0)
-          ignores(type:string optional:true default:"none")
-          keys(type:string optional:true default:"all")
-          time(type:string optional:true default:"")
-          tests(type:string optional:true default:"all")
-          threads(type:int optional:false default:1))
+   record(do(rightmost type: bool default: true)
+          help(rightmost char: [&h &?] type: bool default: false)
+          usage(alias: help)
+          verbose(rightmost char: &v type: bool default: false)
+          quiet(char: &q alias: verbose#false)
+          gc(rightmost type: int(min: 0) default: 0)
+          ignores(multiple type: list(string) default: nil)
+          keys(multiple type: list(string) default: nil)
+          tests(multiple type: list(string) default: nil)
+          time(single type: string default: "")
+          threads(rightmost type: int(min: 1) default: 1))
 
 in
    functor
@@ -242,10 +243,11 @@ in
 
    define
 
-      Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
+      Argv = {Application.getCmdArgs
+              record(verbose(rightmost type: bool default: false))}
 
       fun {X2V X}
-         {System.valueToVirtualString X 100 100}
+         {Value.toVirtualString X 100 100}
       end
 
       fun {GetAll S Ids Ls}
@@ -265,7 +267,7 @@ in
       ModMan = {New Module.manager init}
 
       Tests = {AppendAll
-               {Map Argv.2 fun {$ C}
+               {Map Argv.1 fun {$ C}
                               S = {ModMan link(url:C $)}.return
                            in
                               {Map {GetAll S nil nil}

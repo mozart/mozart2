@@ -79,21 +79,23 @@ import
    System(printError showError)
    FD(record distinct distribute sumC)
    Search(base)
-   OS(system getCWD)
+   OS(system)
+   Resolve(expand)
 
 define
 
-   fun {UrlExpand U}
-      Au={Arity U}
-   in
-      if Au==[path] orelse Au==[info path] then
-         if {Label U.path}==rel then
-            {UrlResolve {UrlMake {OS.getCWD}#'/'} U}
-         else U
-         end
-      else U
-      end
-   end
+   UrlExpand = Resolve.expand
+   %%   fun {UrlExpand U}
+   %%      Au={Arity U}
+   %%   in
+   %%      if Au==[path] orelse Au==[info path] then
+   %%    if {Label U.path}==rel then
+   %%       {UrlResolve {UrlMake {OS.getCWD}#'/'} U}
+   %%    else U
+   %%    end
+   %%      else U
+   %%      end
+   %%   end
 
    {Application.exit
     try

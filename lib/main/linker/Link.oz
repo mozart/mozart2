@@ -45,7 +45,7 @@ local
          else
             Urls = {Map RawUrls
                     fun {$ Url}
-                       {UrlToString {UrlMake Url}}
+                       {UrlToString {UrlExpand {UrlMake Url}}}
                     end}
          in
             fun {$ Url}
@@ -59,7 +59,7 @@ local
    in
 
       fun {NewUrlFilter Spec RootUrl}
-         BaseUrl = {UrlToString {UrlResolve RootUrl {UrlMake ''}}}
+         BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
          ToExcl  = {NewPrefixFilter {CondSelect Spec exclude nil}}
          ToIncl  = {NewPrefixFilter
                     BaseUrl|{CondSelect Spec include nil}}
@@ -298,10 +298,30 @@ local
          {StringToAtom &V|{IntToString I}}
       end
 
+      %% remove relative prefix
+
+      NoRootPrefix =
+      if Args.relative then
+         fun {$ RootPrefix Key}
+            Str = {Atom.toString Key}
+         in
+            if {List.isPrefix RootPrefix Str}
+            then
+               {String.toAtom {Append RootPrefix $ Str}}
+            else
+               Key
+            end
+         end
+      else
+         fun {$ _ Key} Key end
+      end
+
    in
 
       fun {Assemble RootUrl BodiesSeq Info Types UrlToIntSpec}
          RootUrlKey = {UrlToAtom RootUrl}
+         RootPrefix = {VirtualString.toString
+                       {UrlToVs {UrlResolve RootUrl nil}}}
          UrlToInt   = UrlToIntSpec.1
          IsSeq      = BodiesSeq andthen {Label UrlToIntSpec}==acyclic
       in
@@ -313,7 +333,8 @@ local
               fun {$ UrlKey}
                  NewModName = {IntToVarName UrlToInt.UrlKey}
               in
-                 NewModName # {AdjoinAt Types.UrlKey 'from' UrlKey}
+                 NewModName # {AdjoinAt Types.UrlKey 'from'
+                               {NoRootPrefix RootPrefix UrlKey}}
               end}}
 
             EXPORT =

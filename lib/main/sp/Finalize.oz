@@ -79,9 +79,9 @@ define
    proc {EveryGC P}
       proc {DO _}
          {P}
-         {Register DO DO}
+         {Register {NewName} DO}
       end
    in
-      {Register DO DO}
+      {Register {NewName} DO}
    end
 end

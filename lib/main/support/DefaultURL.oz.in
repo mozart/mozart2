@@ -64,9 +64,6 @@ prepare
                    'Discovery'
                    'Open'
                    'Tk' 'TkTools' 'Tix'
-\ifdef QTK_ENABLED
-                   'QTk'
-\endif
                    'Compiler' 'Macro'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'

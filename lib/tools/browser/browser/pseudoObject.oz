@@ -133,14 +133,22 @@ class PseudoTermGenericObject
 
    %%
    %%
+   meth getPTObject($)
+      self
+   end
+
+   %%
+   %%
    meth destroy
       local TermObj in
          TermObj = @termObj
          %%
          case TermObj \= InitValue then
-            {@termObj destroy}
+            %%  must go first;
+            <<UrObject close>>
+
             %%
-            <<MetaGenericTermObject destroy>>
+            {@termObj destroy}
          else true
          end
       end

@@ -1748,6 +1748,27 @@ class BasicBrowser from UrObject
    end
 
    %%
+   %%  'Proper' destroy;
+   %%
+   meth !Bdestroy(TermRec)
+\ifdef DEBUG_BO
+      {Show 'BasicBrowser::Destroy is applied'#TermRec.term}
+\endif
+      local TermObject in
+         TermObject = {Value.matchDefault TermRec termObject InitValue}
+
+         %%
+         case TermObject
+         of !InitValue then true
+         else {TermObject destroy}
+         end
+
+         %%
+         <<UrObject nil>>
+      end
+   end
+
+   %%
 end
 
 %%
@@ -1839,6 +1860,10 @@ class BrowserClass
 \ifdef DEBUG_BO
       {Show 'BrowserClass::close is applied'}
 \endif
+      %%
+      %%  must undraw everything before;
+      <<undrawAndDestroy>>
+
       %%
       <<closeWindows>>
 
@@ -2442,7 +2467,7 @@ class BrowserClass
          case @forward == nil then
             %%
 
-            %% relational!
+            %%
             case @current == InitValue then true
             else backward <- @current|@backward
             end
@@ -2526,11 +2551,13 @@ class BrowserClass
          %%
          case HistoryLength < ALength then
             %%
+            RestList = {Tail @backward (HistoryLength + 1)}
             case @showAll andthen @zoomStack == nil then
-               RestList = {Tail @backward (HistoryLength + 1)}
                <<UndrawAll(RestList)>>
             else true
             end
+            %%
+            <<DestroyAll(RestList)>>
 
             %%
             backward <- {Head @backward HistoryLength}
@@ -2611,6 +2638,27 @@ class BrowserClass
 
          %%
          <<UndrawAll(Rest)>>
+      end
+   end
+
+   %%
+   %%  ... simply undraw all terms from the 'List';
+   %%
+   meth DestroyAll(List)
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::DestroyAll is applied'}
+\endif
+      case List == nil then true
+      else
+         TermRec Rest
+      in
+         List = TermRec|Rest
+
+         %%
+         <<Bdestroy(TermRec)>>
+
+         %%
+         <<DestroyAll(Rest)>>
       end
    end
 
@@ -2710,6 +2758,41 @@ class BrowserClass
             %%
             current <- TermRec
          end
+      end
+   end
+
+   %%
+   %%  undraw&close everything;
+   %%
+   meth undrawAndDestroy
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::undrawAndDestry is applied'}
+\endif
+      %%
+      case @current == InitValue then true
+      else
+         case @showAll then
+            ListOf
+         in
+            ListOf = {Reverse @current|@backward}
+
+            %%
+            <<UndrawAll(ListOf)>>
+            <<DestroyAll(ListOf)>>
+         else
+            <<Bundraw(@current)>>
+            <<Bdestroy(@current)>>
+
+            %%
+            <<DestroyAll(@backward)>>
+            <<DestroyAll(@forward)>>
+         end
+
+         %%
+         current <- InitValue
+         forward <- nil
+         backward <- nil
+         zoomStack <- nil
       end
    end
 

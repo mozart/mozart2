@@ -256,6 +256,7 @@ local
    %%
    Bbrowse = {NewName}
    Bundraw = {NewName}
+   Bdestroy = {NewName}
 
    %%
    UpdateSizes = {NewName}

@@ -313,8 +313,14 @@ in
       meth deref
          true
       end
-      %%
 
+      %%
+      %%
+      meth getPTObject($)
+         {self.parentObj getPTObject($)}
+      end
+
+      %%
       meth processOtherwise(Type Message)
          local PM in
             PM = case {Value.type Message}
@@ -1686,8 +1692,26 @@ in
       %%
       %%  STATELESS METHOD !!!
       meth watchMaster(MasterObj)
+\ifdef DEBUG_TO
+         {Show 'ReferenceGenericTermObject::watchMaster for ref term '#self.term}
+\endif
          case {Object.closed MasterObj} then
-            {self checkRef}
+            PTO IsAlivePTO Tmp
+         in
+            PTO = {self getPTObject($)}
+            job
+               Tmp = {Object.closed PTO}
+            end
+
+            %%
+            IsAlivePTO = if Tmp = True then False
+                         [] true then True
+                         end
+
+            %%
+            case IsAlivePTO then {self checkRef}
+            else true
+            end
          end
       end
 

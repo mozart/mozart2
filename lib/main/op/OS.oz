@@ -23,6 +23,7 @@
 
 OS = os(%% Os IO common to both files and sockets
         getCWD:        {`Builtin` 'OS.getCWD'        1}
+        chDir:         {`Builtin` 'OS.chDir'         1}
         uName:         {`Builtin` 'OS.uName'         1}
         stat:          {`Builtin` 'OS.stat'          2}
         getDir:        {`Builtin` 'OS.getDir'        2}

@@ -22,11 +22,6 @@
 
 local
    %%
-   %% Right now we load just everything, but that can be easily
-   %% changed;
-   \insert 'dp/VSServer.oz'
-
-   %%
    %% exit codes;
    OKDone = 0
    ErrorInit = 1
@@ -42,11 +37,17 @@ in
        Syslet.{args exit}
        Connection.{take}
        Module.{link}
-       System.{set showInfo}
+       System.{get set showInfo show gcDo}
 
        %%
     body
+       %%
        CloseProc = proc {$} {Syslet.exit OKDone} end
+
+       %%
+       %% Right now we load just everything, but that can be easily
+       %% changed;
+       \insert 'dp/VSServer.oz'
     in
        %%
        {System.set messages(idle:false)}
@@ -87,7 +88,7 @@ in
           end
 
           %%
-          {VSServer.engine Module.link CloseProc TaskPort CtrlPort}
+          {VSServer.engine CloseProc TaskPort CtrlPort}
        catch _ then
           {System.showInfo "VS: engine failed"}
           {Syslet.exit ErrorTicket}

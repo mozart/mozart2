@@ -21,6 +21,56 @@
 %%%
 
 local
+   %%
+   class ResourceLimitObject
+      attr
+         limit
+         checkInterval
+         getFun
+         cmpFun
+         actionProc
+         terminate
+         %%
+
+         %%
+         %% 'ActionProc' is a procedure of arity 2: it takes
+         %% actual value of the resource, and the control port of
+         %% the virtual site server.
+      meth init(limit:          Value
+                checkInterval:  Interval
+                getFun:         GetFun
+                cmpFun:         CmpFun
+                actionProc:     ActionProc)
+         limit <- Value
+         checkInterval <- Interval
+         getFun <- GetFun
+         cmpFun <- CmpFun
+         actionProc <- ActionProc
+         %% terminate is a variable
+      end
+
+      %%
+      %% 'CP' is the control port of the virtual site server (for
+      %% 'action proc');
+      meth start(CP)
+         case {IsDet @terminate} then skip
+         else C in
+            {Delay @checkInterval}
+            C = {@getFun}
+            case {@cmpFun C @limit} then {@actionProc C CP}
+            else skip
+            end
+            %%
+            {self start(CP)}
+         end
+      end
+
+      %%
+      meth terminate
+         @terminate = unit
+      end
+   end
+   %%
 
    %%
    proc {Init ShmId}
@@ -32,7 +82,7 @@ local
    %%
    %% Right now, there is no limitation/overloading of sub-modules
    %% an imported functor can use. But this will change;
-   proc {Engine Linker CloseProc ?TaskPort ?CtrlPort}
+   proc {Engine CloseProc ?TaskPort ?CtrlPort}
       RunStr CtrlStr
    in
       %%
@@ -50,7 +100,7 @@ local
              thread
                 case {Procedure.is T} then {T}
                 elsecase {Chunk.is T} andthen {HasFeature T apply} then
-                   {Linker '' T _}
+                   {Module.link '' T _}
                 end
              end
           end}
@@ -66,14 +116,43 @@ local
              case CRq
              of spec(Action) then
                 case Action
-                of ping(Ack) then Ack = unit
-                [] close     then {CloseProc}
+                of ping(Ack)        then Ack = unit
+                [] close            then {CloseProc}
+                [] mem(Lim Int AP)  then RLO in
+                   RLO = {New ResourceLimitObject
+                          init(limit:          Lim
+                               checkInterval:  Int
+                               getFun:         fun {$}
+                                                  {System.gcDo}
+                                                  {System.get 'gc.size'}
+                                               end
+                               cmpFun:         fun {$ C L} C >= L end
+                               actionProc:     AP)}
+                   thread
+                      {RLO start(CtrlPort)}
+                   end
+                [] time(Lim Int AP) then RLO in
+                   RLO = {New ResourceLimitObject
+                          init(limit:          Lim
+                               checkInterval:  Int
+                               getFun:         fun {$}
+                                                  {System.get 'time.user'} +
+                                                  {System.get 'time.system'}
+                                               end
+                               cmpFun:         fun {$ C L} C >= L end
+                               actionProc:     AP)}
+                   thread
+                      {RLO start(CtrlPort)}
+                   end
                 end
              [] gen(Func) then
-                {Linker '' Func _}
+                {Module.link '' Func _}
              end
           end}
       end
+
+      %%
+      %% Watching for resources;
 
       %%
    end

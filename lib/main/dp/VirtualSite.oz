@@ -118,6 +118,30 @@ body
       end
 
       %%
+      %% Size in bytes, and interval in ms;
+      meth setMemoryLimit(size: Size
+                          interval: Interval <= 1000)
+         {Port.send self.CtrlPort
+          spec(mem(Size Interval
+                   proc {$ _ CP}
+                      {System.showInfo "VS: memory limit exceeded"}
+                      {Port.send CP spec(close)}
+                   end))}
+      end
+
+      %%
+      %% Time and interval in ms;
+      meth setTimeLimit(time: MS
+                        interval: Interval <= 1000)
+         {Port.send self.CtrlPort
+          spec(time(MS Interval
+                    proc {$ _ CP}
+                       {System.showInfo "VS: time limit exceeded"}
+                       {Port.send CP spec(close)}
+                    end))}
+      end
+
+      %%
       %% Closing a virtual site means it will stop its operatioin in
       %% some future. It does NOT mean 'close' is the last processed
       %% message;

@@ -69,3 +69,8 @@ end
 NameVariable = CompilerSupport.nameVariable
 
 IsBuiltin    = CompilerSupport.isBuiltin
+
+ImAConstruction       = {NewName}
+ImAValueNode          = {NewName}
+ImAVariableOccurrence = {NewName}
+ImAToken              = {NewName}

@@ -1,19 +1,19 @@
 functor prop once
 import
-   FD.is
-   Misc.downcasePrintName
+   FD(is)
+   Misc(downcasePrintName)
    Core
    CompilerSupport
 \ifndef OZM
-   Gump.{transformParser transformScanner}
+   Gump(transformParser transformScanner)
    Debug
 \endif
-   RunTime.procs
+   RunTime(procs)
 export
    JoinQueries
    MakeExpressionQuery
    UnnestQuery
-body
+define
    local
       \insert TupleSyntax
       \insert BindingAnalysis

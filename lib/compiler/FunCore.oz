@@ -3,10 +3,10 @@ import
    System.valueToVirtualString
    SA
    CodeGen
-   ImAConstruction
-   ImAValueNode
-   ImAVariableOccurrence
-   ImAToken
+   Misc(imAConstruction: ImAConstruction
+        imAValueNode: ImAValueNode
+        imAVariableOccurrence: ImAVariableOccurrence
+        imAToken: ImAToken)
 export
    FlattenSequence
 
@@ -74,7 +74,7 @@ export
    ThreadToken
    SpaceToken
    BitArrayToken
-body
+define
    local
       \insert Annotate
    in

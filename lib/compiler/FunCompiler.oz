@@ -3,20 +3,20 @@ local
 in
    functor prop once
    import
-      Property.{get condGet}
-      System   %--**.{gcDo printError}
-      Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}
-      ErrorRegistry.put
+      Property(get condGet)
+      System   %--**(gcDo printError)
+      Error   %--**(formatPos msg formatLine formatExc dispatch format formatGeneric)
+      ErrorRegistry(put)
       Debug
       Parser
-      Misc.{nameVariable isPrintName}
+      Misc(nameVariable isPrintName)
       Core
-      Unnest.{joinQueries makeExpressionQuery unnestQuery}
+      Unnest(joinQueries makeExpressionQuery unnestQuery)
 \ifndef OZM
-      Gump.makeProductionTemplates
-      ProductionTemplates.default
+      Gump(makeProductionTemplates)
+      ProductionTemplates(default)
 \endif
-      Assembler.assemble
+      Assembler(internalAssemble assemble: Assemble)
    export
       CompilerEngine
       ParseOzFile
@@ -25,7 +25,8 @@ in
       QuietInterface
       EvalExpression
       VirtualStringToValue
-   body
+      Assemble
+   define
       local
          \insert FormatStrings
          \insert Reporter

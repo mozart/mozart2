@@ -1,12 +1,12 @@
 functor prop once
 import
-   System.{printName valueToVirtualString}
+   System(printName valueToVirtualString)
    CompilerSupport
-   Builtins.getInfo
+   Builtins(getInfo)
    RunTimeLibrary
 export
+   InternalAssemble
    Assemble
-   DoAssemble
-body
+define
    \insert Assembler
 end

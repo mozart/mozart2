@@ -573,7 +573,7 @@ local
                                   CompilerStateClass, getVars($) DeclaredGVs
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
-               MyAssembler = {Assembler.assemble Code
+               MyAssembler = {Assembler.internalAssemble Code
                               switches(profile:
                                           (CompilerStateClass,
                                            getSwitch(profile $))

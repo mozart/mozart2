@@ -11,7 +11,7 @@ in
       Literals
       Tokens
       Procs
-   body
+   define
       fun {ApplyFunctor FileName F}
          ModMan = {New Module.manager init()}
       in

@@ -25,13 +25,8 @@ export
    EvalExpression
    VirtualStringToValue
    Assemble
-body
+define
    local
-      ImAConstruction       = {NewName}
-      ImAValueNode          = {NewName}
-      ImAVariableOccurrence = {NewName}
-      ImAToken              = {NewName}
-
       Misc      = {FunMisc.apply
                    c('CompilerSupport':       CompilerSupport)}
       Builtins  = {FunBuiltins.apply c}
@@ -41,31 +36,22 @@ body
                      'System':                System
                      'Type':                  Type
                      'Misc':                  Misc
-                     'ImAConstruction':       ImAConstruction
-                     'ImAValueNode':          ImAValueNode
-                     'ImAVariableOccurrence': ImAVariableOccurrence
-                     'ImAToken':              ImAToken
                      'Core':                  Core
                      'CompilerSupport':       CompilerSupport
                      'Builtins':              Builtins
-                     'RunTime':               RT)}
-      Code      = {FunCode.apply
+                     'RunTime':               RunTime)}
+      CodeGen   = {FunCodeGen.apply
                    c('System':                System
                      'Misc':                  Misc
                      'Builtins':              Builtins
-                     'ImAVariableOccurrence': ImAVariableOccurrence
                      'Core':                  Core
-                     'RunTime':               RT)}
+                     'RunTime':               RunTime)}
       Core      = {FunCore.apply
                    c('System':                System
                      'Misc':                  Misc
                      'SA':                    SA
-                     'CodeGen':               Code
-                     'ImAConstruction':       ImAConstruction
-                     'ImAValueNode':          ImAValueNode
-                     'ImAVariableOccurrence': ImAVariableOccurrence
-                     'ImAToken':              ImAToken)}
-      RT        = {FunRT.apply
+                     'CodeGen':               CodeGen)}
+      RunTime   = {FunRunTime.apply
                    c('System':                System
                      'Core':                  Core
                      'RunTimeLibrary':        RunTimeLibrary
@@ -79,13 +65,13 @@ body
 \ifndef OZM
                      'Gump':                  Gump
 \endif
-                     'RunTime':               RT)}
+                     'RunTime':               RunTime)}
       Assembler = {FunAssembler.apply
                    c('System':                System
                      'CompilerSupport':       CompilerSupport
                      'Builtins':              Builtins
                      'RunTimeLibrary':        RunTimeLibrary)}
-      CompilerF = {FunCompiler.apply
+      Compiler  = {FunCompiler.apply
                    c('System':                System
                      'Property':              Property
                      'Error':                 Error
@@ -101,13 +87,13 @@ body
 \endif
                      'Assembler':             Assembler)}
    in
-      Engine = CompilerF.compilerEngine
-      ParseOzFile = CompilerF.parseOzFile
-      ParseOzVirtualString = CompilerF.parseOzVirtualString
-      GenericInterface = CompilerF.genericInterface
-      QuietInterface = CompilerF.quietInterface
-      EvalExpression = CompilerF.evalExpression
-      VirtualStringToValue = CompilerF.virtualStringToValue
-      Assemble = Assembler.doAssemble
+      Engine = Compiler.compilerEngine
+      ParseOzFile = Compiler.parseOzFile
+      ParseOzVirtualString = Compiler.parseOzVirtualString
+      GenericInterface = Compiler.genericInterface
+      QuietInterface = Compiler.quietInterface
+      EvalExpression = Compiler.evalExpression
+      VirtualStringToValue = Compiler.virtualStringToValue
+      Assemble = Compiler.assemble
    end
 end

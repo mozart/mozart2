@@ -990,7 +990,7 @@ local
       end
    end
 in
-   proc {Assemble Code Switches ?Assembler}
+   proc {InternalAssemble Code Switches ?Assembler}
       ProfileSwitch = {CondSelect Switches profile false}
       DebugInfoControlSwitch = {CondSelect Switches debuginfocontrol false}
       Verify = {CondSelect Switches verify true}
@@ -1015,8 +1015,8 @@ in
       end
    end
 
-   proc {DoAssemble Code Globals Switches ?P}
-      Assembler = {Assemble Code Switches}
+   proc {Assemble Code Globals Switches ?P}
+      Assembler = {InternalAssemble Code Switches}
    in
       {Assembler load(Globals ?P)}
    end

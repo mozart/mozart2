@@ -6,6 +6,10 @@ export
    DowncasePrintName
    NameVariable
    IsBuiltin
-body
+   ImAConstruction
+   ImAValueNode
+   ImAVariableOccurrence
+   ImAToken
+define
    \insert 'Misc.oz'
 end

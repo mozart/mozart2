@@ -1,18 +1,18 @@
 functor prop once
 import
    CompilerSupport
-   FD.{int is less distinct distribute}
-   FS.{include var subset value reflect isIn}
-   System.{eq valueToVirtualString printName}
+   FD(int is less distinct distribute)
+   FS(include var subset value reflect isIn)
+   System(eq valueToVirtualString printName)
    Type
-   Misc.{isBuiltin nameVariable}
-   ImAConstruction
-   ImAValueNode
-   ImAVariableOccurrence
-   ImAToken
+   Misc(isBuiltin nameVariable
+        imAConstruction: ImAConstruction
+        imAValueNode: ImAValueNode
+        imAVariableOccurrence: ImAVariableOccurrence
+        imAToken: ImAToken)
    Core
-   Builtins.getInfo
-   RunTime.tokens
+   Builtins(getInfo)
+   RunTime(tokens)
 export
    statement: SAStatement
    typeOf: SATypeOf
@@ -60,7 +60,7 @@ export
    variableOccurrence: SAVariableOccurrence
    token: SAToken
    nameToken: SANameToken
-body
+define
    local
       \insert POTypes
    in

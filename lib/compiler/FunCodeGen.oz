@@ -1,11 +1,11 @@
 functor prop once
 import
-   System.printName
-   Misc.isBuiltin
-   Builtins.getInfo
-   ImAVariableOccurrence
+   System(printName)
+   Misc(isBuiltin
+        imAVariableOccurrence: ImAVariableOccurrence)
+   Builtins(getInfo)
    Core
-   RunTime.{procs literals}
+   RunTime(procs literals)
 export
    % mixin classes for the abstract syntax:
    statement: CodeGenStatement
@@ -59,7 +59,7 @@ export
    nameToken: CodeGenNameToken
    builtinToken: CodeGenBuiltinToken
    procedureToken: CodeGenProcedureToken
-body
+define
    local
       \insert CodeEmitter
       \insert CodeStore

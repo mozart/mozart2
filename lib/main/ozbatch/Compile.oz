@@ -251,9 +251,11 @@ in
           fun {$ Y}
              case Y of Opt#X then
                 case Opt of 'define' then
-                   {BatchCompiler enqueue(macroDefine(X))}
+                   {ForAll X
+                    proc {$ D} {BatchCompiler enqueue(macroDefine(D))} end}
                 [] undefine then
-                   {BatchCompiler enqueue(macroUndef(X))}
+                   {ForAll X
+                    proc {$ D} {BatchCompiler enqueue(macroUndef(D))} end}
                 [] environment then
                    {ForAll X proc {$ S} {IncludeFunctor S BatchCompiler} end}
                 [] incdir then

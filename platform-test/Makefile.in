@@ -79,11 +79,12 @@ clean:
         $(RM) $(COMPONENTS)
         $(RM) make-test
 
+realclean: veryclean
+
 veryclean: clean
         $(RM) oztest
 
 distclean: veryclean
-        $(RM) config.cache config.log config.status
         $(RM) Makefile
 
 .SUFFIXES: $SUFFIXES .ozc .oz

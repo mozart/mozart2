@@ -384,7 +384,6 @@ local
          ExecutingThread <- {Thread.this}
          {@reporter clearErrors()}
          try DoParse Queries0 in
-            {@reporter logPhase('parsing ...')}
             proc {DoParse}
                Queries0 = {ParseProc Data @reporter
                            fun {$ S} CompilerStateClass, getSwitch(S $) end
@@ -393,10 +392,14 @@ local
             if ParseProc == ParseOzFile
                orelse ParseProc == ParseOzVirtualString
             then
+               {@reporter logPhase('parsing ...')}
                {DoParse}
             else
+               {@reporter logPhase('acquiring syntax tree ...')}
                CompilerInternal, ExecProtected(DoParse false)
-               %--** do a consistency check on the resulting structure
+               {@reporter logSubPhase('checking syntax tree for validity ...')}
+               CompilerInternal,
+               ExecProtected(proc {$} {CheckTupleSyntax Queries0} end true)
             end
             if {@reporter hasSeenError($)} then
                raise rejected end

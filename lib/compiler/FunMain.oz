@@ -76,6 +76,7 @@ define
                      'Property':              Property
                      'Error':                 Error
                      'ErrorRegistry':         ErrorRegistry
+                     'Type':                  Type
                      'Debug':                 Debug
                      'Parser':                Parser
                      'Misc':                  Misc

@@ -7,6 +7,7 @@ in
       System   %--**(gcDo printError)
       Error   %--**(formatPos msg formatLine formatExc dispatch format formatGeneric)
       ErrorRegistry(put)
+      Type(ask)
       Debug
       Parser
       Misc(nameVariable isPrintName)
@@ -30,6 +31,7 @@ in
       local
          \insert FormatStrings
          \insert Reporter
+         \insert CheckTupleSyntax
       in
          \insert CompilerClass
          \insert ParseOz

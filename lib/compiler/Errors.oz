@@ -61,6 +61,16 @@
             end
          end}
         Exc}
+    elseof compiler(malformedSyntaxTree) then
+       {Error.format T
+        'Malformed syntax tree'
+        nil
+        Exc}
+    elseof compiler(malformedSyntaxTree X) then
+       {Error.format T
+        'Malformed syntax tree'
+        [hint(l: 'Matching' m: oz(X))]
+        Exc}
     else
        {Error.formatGeneric T Exc}
     end

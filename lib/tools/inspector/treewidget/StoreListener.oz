@@ -89,29 +89,6 @@ define
          end
       end
 
-      %% Hack Alert
-      local
-         fun {IsPrefix P S}
-            case P
-            of P|Pr then
-               case S
-               of S|Sr then S == P andthen {IsPrefix Pr Sr}
-               [] _    then false
-               end
-            [] nil  then true
-            end
-         end
-         fun {IsFailedFut V}
-            VS = {Value.toVirtualString V 0 0}
-         in
-            {IsPrefix "future byNeed: \'fail\'" {String.token VS &< _}}
-         end
-      in
-         fun {IsFailedFuture V}
-            {IsFuture V} andthen {IsFailedFut V}
-         end
-      end
-
       class StoreListener from ListNode
          meth create
             @Prev = self
@@ -144,15 +121,12 @@ define
             else {Wait {GetsBoundB CurValue}}
             end
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
-            if {IsDet CurValue} orelse {IsFailedFuture CurValue}
+            if {IsDet CurValue} orelse {IsFailed CurValue}
             then skip
             else StoreListener, listen(FutMode WidPort CurValue EntryObj)
             end
          end
          meth notifyNodes(EntryObj)
-%           A B
-%        in
-%           A = {Property.get time}.total
             case {EntryObj getNodes($)}
             of nil   then skip
             [] Nodes then
@@ -163,8 +137,6 @@ define
                {self enableStop}
                StoreListener, performNotifyNodes(nil Nodes)
             end
-%           B = {Property.get time}.total
-%           {System.show 'Update time: '# (B - A)}
          end
          meth performNotifyNodes(RIs Nodes)
             case Nodes

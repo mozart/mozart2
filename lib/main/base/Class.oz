@@ -60,7 +60,7 @@ local
 
    fun {FeatNames C}
       {AssertClass C 'Class.featNames'}
-      {Arity C.`ooFreeFeatR`}
+      {Append {Arity C.`ooFreeFeatR`} {Arity C.`ooUnFreeFeat`}}
    end
 
    fun {PropNames C}

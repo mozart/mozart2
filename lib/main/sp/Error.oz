@@ -141,6 +141,7 @@ in
       msgDebug:      ErrorMsgDebug
 
    body
+
       %% current output: strings into emulator window
 
       Output = System.printError

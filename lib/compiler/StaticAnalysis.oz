@@ -360,8 +360,10 @@ prepare
             'Object.\'@\''      : doAssignAccess
             'Value.catAssignOO' : doCatAssignAccessOO
             'Value.catAccessOO' : doCatAssignAccessOO
+            'Value.catExchangeOO':doCatAssignAccessOO
             'Value.catAssign'   : doCatAssignAccess
             'Value.catAccess'   : doCatAssignAccess
+            'Value.catExchange' : doCatAssignAccess
             'Bool.and'          : doAnd
             'Bool.or'           : doOr
             'Bool.not'          : doNot
@@ -2001,11 +2003,14 @@ define
             PrintName = {System.printName {GetData @designator}}
             FeaOz = {GetPrintData FeaV}
             ValOz = {GetPrintData ValV}
+            VarOz = {GetPrintData {List.last @actualArgs}}
             Expr = case PrintName
                    of 'Value.catAccess'   then '@'#FeaOz# ' = '#ValOz
                    [] 'Value.catAccessOO' then '@'#FeaOz# ' = '#ValOz
                    [] 'Value.catAssign'   then     FeaOz#' := '#ValOz
                    [] 'Value.catAssignOO' then     FeaOz#' := '#ValOz
+                   [] 'Value.catExchange'   then VarOz#' = ('#FeaOz#' := '#ValOz#')'
+                   [] 'Value.catExchangeOO' then VarOz#' = ('#FeaOz#' := '#ValOz#')'
                    end
          in
             if {IsLiteral Fea} then
@@ -2029,6 +2034,7 @@ define
                               msg  : case PrintName
                                      of 'Value.catAccessOO' then 'access of'
                                      [] 'Value.catAssignOO' then 'assignment to'
+                                     [] 'Value.catExchangeOO' then 'exchange on'
                                      end#' undefined attribute'
                               items:[hint(l:'Statement' m:Expr)
                                      hint(l:if Final
@@ -2048,6 +2054,7 @@ define
                          msg  : case PrintName
                                 of 'Value.catAccess' then 'access of'
                                 [] 'Value.catAssign' then 'assignment to'
+                                [] 'Value.catExchange' then 'exchange on'
                                 end#' attribute outside of a class definition'
                          items:[hint(l:'Statement' m:Expr)])}
                end

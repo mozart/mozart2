@@ -43,7 +43,6 @@ import
    System.{Show = 'Show'
            valueToVirtualString
            printName
-           get
            eq}
 
    Tk

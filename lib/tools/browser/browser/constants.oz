@@ -187,9 +187,6 @@ TrueArity            = {NewName}
 DInfinite       = 1000000
 
 %%
-OzHome = {System.get home}
-
-%%
 %% window(graphic) parameters;
 %%
 %%
@@ -207,9 +204,13 @@ ILOTitle    = ITitle#': Layout Options'
 IITitle     = ITitle
 
 %%
-IIBitmap    = !OzHome # '/tools/images/browserIcon.xbm'
-%%
-IStopBitmap = '@' # !OzHome # '/tools/images/stop.xbm'
+local
+   UrlDefaults = \insert '../../url-defaults.oz'
+   Images = UrlDefaults.home # 'tools/images/'
+in
+   IIBitmap    = {Tk.localize Images#'browserIcon.xbm'}
+   IStopBitmap = '@' # {Tk.localize Images#'stop.xbm'}
+end
 IStopWidth  = 20
 IStopFG     = firebrick3
 IStopAFG    = firebrick2

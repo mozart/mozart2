@@ -23,7 +23,6 @@
 %%%
 
 functor
-
 require
    BootException(raiseDebugCheck: RaiseDebugCheck
                  taskStackError:  ThreadTaskStack
@@ -39,8 +38,9 @@ require
    BootName(newUnique)
    at 'x-oz://boot/Name'
 
+   BootThread(create)
+   at 'x-oz://boot/Thread'
 prepare
-
    proc {RaiseDebugExtend T1 T2}
       L = {Label T1.debug}
    in
@@ -84,7 +84,6 @@ prepare
          {Match Xs 1 T}
       end
    end
-
 
    ProcValues = env(%% Value
                     '.': Value.'.'
@@ -131,6 +130,9 @@ prepare
                     'class': Object.'class'
                     'aritySublist': AritySublist
 
+                    %% Thread
+                    'Thread.create': BootThread.create
+
                     %% Exception
                     'Raise': Raise
                     'RaiseError': Exception.raiseError
@@ -148,19 +150,15 @@ prepare
 
    TokenValues = env('true':  true
                      'false': false)
-
 import
    Module(manager)
    Core(nameToken variable)
-
 export
    Literals
    Tokens
    Procs
    ProcValues
-
 define
-
    fun {ApplyFunctor FileName F}
       ModMan = {New Module.manager init()}
    in

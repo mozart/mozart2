@@ -61,7 +61,6 @@ export
    abstractElse: CodeGenAbstractElse
    elseNode: CodeGenElseNode
    noElse: CodeGenNoElse
-   threadNode: CodeGenThreadNode
    tryNode: CodeGenTryNode
    lockNode: CodeGenLockNode
    classNode: CodeGenClassNode
@@ -1485,13 +1484,6 @@ define
       end
       meth codeGenWithArbiterNoShared(CS VO VHd VTl)
          {MakeException noElse @coord [VO] CS VHd VTl}
-      end
-   end
-
-   class CodeGenThreadNode
-      meth codeGen(CS VHd VTl) BodyVInstr in
-         {CodeGenList @statements CS BodyVInstr nil}
-         VHd = vThread(_ BodyVInstr @coord VTl _)
       end
    end
 

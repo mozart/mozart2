@@ -1005,11 +1005,13 @@ define
             end
             Unnester, UnnestStatement(FS ?GS)
             {New Core.objectLockNode init(GS C)}
-         [] fThread(FS C) then GBody GS in
-            {@BA openScope()}
-            Unnester, UnnestStatement(FS ?GBody)
-            GS = {MakeDeclaration {@BA closeScope($)} GBody C}
-            {New Core.threadNode init(GS C)}
+         [] fThread(FS C) then CND NewFS in
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Thread.create'
+                                                 [fProc(fDollar(CND) nil FS
+                                                        nil CND)]
+                                                 CND) 'thread' C)
+            Unnester, UnnestStatement(NewFS $)
          [] fTry(_ FCatch _ _) then
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then

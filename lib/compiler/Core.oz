@@ -72,7 +72,6 @@ export
    AbstractElse
    ElseNode
    NoElse
-   ThreadNode
    TryNode
    LockNode
    ClassNode
@@ -711,21 +710,6 @@ define
       end
       meth output(_ $)
          ""
-      end
-   end
-
-   class ThreadNode
-      from Statement Annotate.threadNode StaticAnalysis.threadNode
-         CodeGen.threadNode
-      prop final
-      attr statements: unit
-      meth init(Statements Coord)
-         statements <- {FlattenSequence Statements}
-         coord <- Coord
-      end
-      meth output(R $)
-         'thread'#IN#NL#
-         {LI @statements NL R}#EX#NL#'end'
       end
    end
 

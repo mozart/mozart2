@@ -73,7 +73,6 @@ export
    equationPattern:        SAEquationPattern
    elseNode:               SAElseNode
    noElse:                 SANoElse
-   threadNode:             SAThreadNode
    tryNode:                SATryNode
    lockNode:               SALockNode
    classNode:              SAClassNode
@@ -2873,20 +2872,6 @@ define
       end
       meth saDescendAndCommit(Ctrl)
          skip
-      end
-   end
-
-   class SAThreadNode
-      meth saDescend(Ctrl)
-         Env = {GetGlobalEnv @globalVars}
-         T N
-      in
-         {Ctrl getTopNeeded(T N)}
-         {Ctrl notTopButNeeded}
-         SAStatement, saBody(Ctrl @statements)
-         {Ctrl setTopNeeded(T N)}
-
-         {InstallGlobalEnv Env}
       end
    end
 

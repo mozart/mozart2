@@ -418,24 +418,6 @@ local
       end
    end
 
-   class AnnotateThreadNode
-      attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) Vs in
-         {AnnotateGlobalVarsList @statements nil ?Vs nil}
-         globalVars <- {VariableUnion Vs nil}
-         {FoldL Vs
-          proc {$ VsHd V VsTl}
-             if {Member V Ls} then VsHd = VsTl
-             else VsHd = V|VsTl
-             end
-          end VsHd VsTl}
-      end
-      meth markFirst(WarnFormals Rep)
-         {SetUninitVars @globalVars}
-         {MarkFirstList @statements WarnFormals Rep}
-      end
-   end
-
    class AnnotateTryNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter Vs in
@@ -807,7 +789,6 @@ in
                        abstractElse: AnnotateAbstractElse
                        elseNode: AnnotateElseNode
                        noElse: AnnotateNoElse
-                       threadNode: AnnotateThreadNode
                        tryNode: AnnotateTryNode
                        lockNode: AnnotateLockNode
                        classNode: AnnotateClassNode

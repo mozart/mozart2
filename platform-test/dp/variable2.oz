@@ -25,7 +25,6 @@ functor
 
 import
    Remote(manager)
-   Fault
    TestMisc(localHost)
    System
 export
@@ -71,7 +70,9 @@ in
 end
           keys:[var])
        var_deregister_and_gc(
-% Test the isdetProtocol and garbage collection.
+% Test the deregistration of proxies at a variable manager.
+% The aim is to have the variable bound and then receive a
+% deregister from the client.
 proc {$}
    S={New Remote.manager init(host:TestMisc.localHost)}
    PP

@@ -33,7 +33,10 @@ fun
    \insert 'System.oz'
    \insert 'Debug.oz'
    \insert 'Error.oz'
-
+\ifndef NOFINALIZATION
+   \insert 'Finalize.oz'
+   Finalize= {NewFinalize}
+\endif
    Foreign = {NewForeign}
    Error   = {NewError}
 in

@@ -24,8 +24,18 @@
 %%% This file creates the Open Programming Functor
 %%%
 
-\insert 'OS.oz'
+\ifdef HELPSTART
+\s +catchall
+\endif
 
+\insert 'OS.oz'
+\ifndef HELPSTART
+\s +catchall
+\endif
+
+\ifdef HELPSTART
+declare NewOP =
+\endif
 fun
 \ifdef NEWCOMPILER
    instantiate
@@ -36,7 +46,7 @@ fun
 
    \insert 'Open.oz'
    \insert 'Component.oz'
-   \insert 'Application.oz'
+   \insert 'NewApplication.oz'
 
 in
    \insert 'OP.env'

@@ -489,7 +489,7 @@ in
                Which = case @continuations == nil then non_y   % tailApplMeth
                        else any
                        end
-               Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
+               Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
             else Instr R Arity Which in
                Instr = call(R Arity)
                Which = case @continuations == nil then non_y   % tailCall
@@ -516,7 +516,7 @@ in
             Which = case @continuations == nil then non_y   % tailApplMeth
                     else any
                     end
-            Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
+            Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
          [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord Cont) then
             case AlwaysSucceeds then skip
             elsecase Emitter, IsFirst(Reg1 $) then

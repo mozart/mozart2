@@ -14,7 +14,6 @@ Directive         = dirSwitch([Switch])
                   | dirPopSwitches.
 Switch            = on(SwitchName Coordinates)
                   | off(SwitchName Coordinates).
-Filename          = atom.
 SwitchName        = atom.
 
 Phrase            = fStepPoint(Phrase Coordinates)
@@ -69,9 +68,7 @@ Variable          = NakedVariable
 Wildcard          = fWildcard(Coordinates).
 RecordArgument    = Phrase
                   | fColon(Feature Phrase).
-ProcFlag          = instantiate
-                  | copy
-                  | lazy.
+ProcFlag          = atom.   % for the moment: instantiate, copy, lazy
 FunctorDescriptor = fImport([ImportDecl] Coordinates)
                   | fExport([ExportDecl] Coordinates)
                   | fProp([Phrase] Coordinates).
@@ -105,7 +102,7 @@ MethHeadTerm      = NakedVariable
                   | Wildcard
                   | fDollar(Coordinates).
 Default           = fNoDefault
-                  | fDefault(P C).
+                  | fDefault(Phrase Coordinates).
 Feature           = FeatureNoVar
                   | NakedVariable.
 FeatureNoVar      = Atom
@@ -126,6 +123,10 @@ OptElse           = Phrase
                   | fNoElse(Coordinates).
 Coordinates       = pos(atom int int)   % atom is 'nofile' for parsing VSs
                   | pos(atom int int atom int int)
+                  | fineStep(atom int int)
+                  | fineStep(atom int int atom int int)
+                  | coarseStep(atom int int)
+                  | coarseStep(atom int int atom int int)
                   | unit.
 
 

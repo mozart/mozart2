@@ -254,12 +254,15 @@ define
                        in
                           thread {Control G {Space.askVerbose G} J I} end
                        end}
-            {Space.waitStable}
-            if {IsDet I} then skip else
-               T={List.toTuple '#' {GetDomList I}}
-            in
-               I=T.{Space.choose {Width T}}
+            thread
+               {Space.waitStable}
+               if {IsDet I} then skip else
+                  T={List.toTuple '#' {GetDomList I}}
+               in
+                  I=T.{Space.choose {Width T}}
+               end
             end
+            {Wait I}
          end
       end
    end

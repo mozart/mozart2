@@ -98,7 +98,7 @@ local
       [] fCond(Cs E C) then {ForAll Cs Clause} {OptElse E} {Coord C}
       [] fOr(Cs X C) then
          case X of for then {ForAll Cs ClauseOptThen}
-         [] fdis then {ForAll Cs Clause}
+         [] fdis then {ForAll Cs ClauseOptThen}
          [] fchoice then {ForAll Cs Clause}
          end
          {Coord C}
@@ -290,9 +290,7 @@ local
    end
 
    proc {ClauseOptThen X}
-      case X of fClause(P1 P2 P3) then
-         {Phrase P1} {Phrase P2} {OptThen P3}
-      end
+      case X of fClause(P1 P2 P3) then {Phrase P1} {Phrase P2} {OptThen P3} end
    end
 
    proc {OptThen X}

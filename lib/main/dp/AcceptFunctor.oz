@@ -81,8 +81,17 @@ define
 
    proc{AcceptSelect FD}
       NewFD in
+\ifdef DBG
+      {System.showInfo 'AcceptedSelect on '#FD}
+\endif
       {FDHandler getResource}
+\ifdef DBG
+      {System.showInfo 'Got resource'}
+\endif
       {OS.acceptSelect FD}
+\ifdef DBG
+      {System.showInfo 'After acceptSelect '#FD}
+\endif
       {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
 \ifdef DBG
       {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'}
@@ -122,9 +131,15 @@ define
                Grant = {DPMisc.getConnGrant accept tcp false}
             in
                case Grant of grant(...) then
+\ifdef DBG
+                  {System.showInfo accepted}
+\endif
                   _={OS.write FD "ok"}
                   {DPMisc.handover accept Grant settings(fd:FD)}
                else % could be busy or no tcp, wait for anoter try
+\ifdef DBG
+                  {System.showInfo busy}
+\endif
                   _={OS.write FD "no"}
                   {AcceptProc FD}
                end

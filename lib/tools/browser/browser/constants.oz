@@ -326,12 +326,12 @@ RArrayRRatio       = 10
 %%
 %\define    DEBUG_BO
 \undef     DEBUG_BO
-%\define    DEBUG_TO
-\undef     DEBUG_TO
-%\define    DEBUG_TT
-\undef     DEBUG_TT
-%\define    DEBUG_TW
-\undef     DEBUG_TW
+\define    DEBUG_TO
+%\undef     DEBUG_TO
+\define    DEBUG_TT
+%\undef     DEBUG_TT
+\define    DEBUG_TW
+%\undef     DEBUG_TW
 %\define    DEBUG_TI
 \undef     DEBUG_TI
 %\define    DEBUG_TI_DET

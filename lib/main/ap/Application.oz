@@ -101,6 +101,7 @@ export
    GetGuiArgs
    GetArgs
    PostProcess
+   ProcessCgiString
    ProcessArgv
 prepare
    %%
@@ -139,12 +140,12 @@ prepare
          end
       end
    in
-      fun {CgiPreProcessArgs SSs}
-         %% Takes a list of pairs of strings
-         case SSs of nil then nil
-         [] SS|SSr then S1#S2=SS in
-            {Unquote S1}#{Unquote S2}|{CgiPreProcessArgs SSr}
-         end
+      fun {CgiPreProcessArgs S}
+         %% Takes a string, tokenizes it, and decodes characters
+         {Map {String.tokens S &&}
+          fun {$ S} S1 S2 in
+             {String.token S &= ?S1 ?S2} {Unquote S1}#{Unquote S2}
+          end}
       end
    end
 
@@ -680,57 +681,52 @@ define
    %%
 
    local
-      local
-         fun {CgiRawGet}
-            class StdIn from Open.file
-               prop final
-               meth init
-                  StdIn,dOpen(0 1)
-               end
-               meth get(N ?Is)
-                  Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
-               in
-                  Ir = if M<N then StdIn,get(N-M $) else nil end
-               end
+      fun {GetRawCgiArgs}
+         class StdIn from Open.file
+            prop final
+            meth init
+               StdIn,dOpen(0 1)
             end
-         in
-            case {OS.getEnv 'REQUEST_METHOD'} of false then
-               {Exception.raiseError ap(spec env 'REQUEST_METHOD')} unit
-            [] S then
-               case {String.toAtom S}
-               of 'GET'  then
-                  case {OS.getEnv 'QUERY_STRING'} of false then
-                     {Exception.raiseError ap(spec env 'QUERY_STRING')} unit
-                  [] S then S
-                  end
-               [] 'POST' then
-                  case {OS.getEnv 'CONTENT_LENGTH'} of false then
-                     {Exception.raiseError ap(spec env 'CONTENT_LENGTH')} unit
-                  [] S then F in
-                     F = {New StdIn init()}
-                     {F get({String.toInt S} $)}
-                     %% NEVER ATTEMPT TO CLOSE!
-                  end
-               end
+            meth get(N ?Is)
+               Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+            in
+               Ir = if M<N then StdIn,get(N-M $) else nil end
             end
          end
       in
-         fun {GetRawCgiArgs}
-            {Map {String.tokens {CgiRawGet} &&}
-             fun {$ S} S1 S2 in
-                {String.token S &= ?S1 ?S2} S1#S2
-             end}
+         case {OS.getEnv 'REQUEST_METHOD'} of false then
+            {Exception.raiseError ap(spec env 'REQUEST_METHOD')} unit
+         [] S then
+            case {String.toAtom S}
+            of 'GET'  then
+               case {OS.getEnv 'QUERY_STRING'} of false then
+                  {Exception.raiseError ap(spec env 'QUERY_STRING')} unit
+               [] S then S
+               end
+            [] 'POST' then
+               case {OS.getEnv 'CONTENT_LENGTH'} of false then
+                  {Exception.raiseError ap(spec env 'CONTENT_LENGTH')} unit
+               [] S then F in
+                  F = {New StdIn init()}
+                  {F get({String.toInt S} $)}
+                  %% NEVER ATTEMPT TO CLOSE!
+               end
+            end
          end
       end
    in
-      fun {GetCgiArgs Spec}
-         Args = {CgiPreProcessArgs {GetRawCgiArgs}}
+      fun {ProcessCgiString Spec S}
+         Args = {CgiPreProcessArgs S}
       in
          case {Label Spec}
          of plain  then Args
          [] list   then {CgiParse Args Spec}
          [] record then {PostProcess {CgiParse Args Spec} Spec}
          end
+      end
+
+      fun {GetCgiArgs Spec}
+         {ProcessCgiString Spec {GetRawCgiArgs}}
       end
    end
 

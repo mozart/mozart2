@@ -2052,8 +2052,11 @@ define
       end
 
       meth UnnestCaseClauses(FCs ?GCs)
-         case FCs of FC|FCr then fCaseClause(FPattern FS) = FC GCr in
-            if {IsPattern FPattern} then PatternPNs GPattern GS0 GS GVs in
+         case FCs of fCaseClause(FPattern0 FS)|FCr then FPattern GCr in
+            FPattern = case FPattern0 of fSideCondition(FP _ _ _) then FP
+                       else FPattern0
+                       end
+            if {IsPattern FPattern} then PatternPNs GPattern in
                {@BA openScope()}
                PatternPNs = {Map {GetPatternVariablesExpression FPattern $ nil}
                              fun {$ fVar(PrintName C)}
@@ -2061,12 +2064,34 @@ define
                                 PrintName
                              end}
                Unnester, TranslatePattern(FPattern PatternPNs true ?GPattern)
-               {@BA openScope()}
-               Unnester, UnnestStatement(FS ?GS0)
-               GS = {MakeDeclaration {@BA closeScope($)} GS0
-                     {CoordinatesOf FPattern}}
-               {@BA closeScope(?GVs)}
-               GCs = {New Core.patternClause init(GVs GPattern GS)}|GCr
+               case FPattern0 of fSideCondition(_ FLocals FE C) then
+                  NewFS FVs GArbiter GCondition GS0 GS GLocals GPattern2 GVs
+               in
+                  {@BA openScope()}
+                  NewFS = {MakeTrivialLocalPrefix FLocals ?FVs nil}
+                  {ForAll FVs
+                   proc {$ fVar(PrintName C)} {@BA bind(PrintName C _)} end}
+                  {@BA generate('SideCondition' C ?GArbiter)}
+                  GCondition = (Unnester, UnnestStatement(NewFS $)|
+                                Unnester, UnnestExpression(FE GArbiter $))
+                  {@BA openScope()}
+                  Unnester, UnnestStatement(FS ?GS0)
+                  GS = {MakeDeclaration {@BA closeScope($)} GS0
+                        {CoordinatesOf FPattern}}
+                  {@BA closeScope(?GLocals)}
+                  GPattern2 = {New Core.sideCondition
+                               init(GPattern GLocals GCondition
+                                    {GArbiter occ(C $)} C)}
+                  {@BA closeScope(?GVs)}
+                  GCs = {New Core.patternClause init(GVs GPattern2 GS)}|GCr
+               else GS0 GS GVs in
+                  {@BA openScope()}
+                  Unnester, UnnestStatement(FS ?GS0)
+                  GS = {MakeDeclaration {@BA closeScope($)} GS0
+                        {CoordinatesOf FPattern}}
+                  {@BA closeScope(?GVs)}
+                  GCs = {New Core.patternClause init(GVs GPattern GS)}|GCr
+               end
             else
                {@reporter
                 error(coord: {CoordinatesOf FPattern} kind: SyntaxError
@@ -2210,10 +2235,9 @@ define
       end
 
       meth UnnestClauses(FClauses Kind ?GClauses)
-         case FClauses of FClause|FClauser then
-            FLocals FGuard FBody NewFS FVs GGuard K GBody GCr
+         case FClauses of fClause(FLocals FGuard FBody)|FClauser then
+            NewFS FVs GGuard K GBody GCr
          in
-            fClause(FLocals FGuard FBody) = FClause
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FLocals ?FVs nil}
             {ForAll FVs

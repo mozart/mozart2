@@ -251,7 +251,14 @@ local
    end
 
    proc {CaseClause X}
-      case X of fCaseClause(P1 P2) then {Phrase P1} {Phrase P2} end
+      case X of fCaseClause(P1 P2) then {Pattern P1} {Phrase P2} end
+   end
+
+   proc {Pattern X}
+      case X of fSideCondition(P1 P2 P3 C) then
+         {Phrase P1} {Phrase P2} {Phrase P3} {Coord C}
+      else {Phrase X}
+      end
    end
 
    proc {Catch X}

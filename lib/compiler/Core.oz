@@ -71,6 +71,7 @@ export
    PatternCase
    PatternClause
    RecordPattern
+   SideCondition
    EquationPattern
    AbstractElse
    ElseNode
@@ -577,8 +578,8 @@ define
          coord <- Coord
       end
       meth output(R $) FS in
-         'case '#{@arbiter output2(R $ ?FS)}#' of '#
-         {LI @clauses NL#'[] ' R}#NL#
+         'case '#{@arbiter output2(R $ ?FS)}#' of '#IN#
+         {LI @clauses NL#'[] ' R}#EX#NL#
          {@alternative output(R $)}#'end'#FS
       end
    end
@@ -594,8 +595,36 @@ define
          statements <- {FlattenSequence Statements}
       end
       meth output(R $) FS in
-         PU#{@pattern outputPattern2(R @localVars $ ?FS)}#PO#GL#'then'#IN#
+         {@pattern outputPattern2(R @localVars $ ?FS)}#GL#'then'#IN#
          FS#NL#{LI @statements NL R}#EX
+      end
+   end
+
+   class SideCondition
+      from Annotate.sideCondition StaticAnalysis.sideCondition
+         CodeGen.sideCondition
+      prop final
+      attr
+         pattern: unit localVars: unit statements: unit arbiter: unit
+         coord: unit
+      meth init(Pattern LocalVars Statements Arbiter Coord)
+         pattern <- Pattern
+         localVars <- LocalVars
+         statements <- {FlattenSequence Statements}
+         arbiter <- Arbiter
+         coord <- Coord
+      end
+      meth getCoord($)
+         {@statements.1 getCoord($)}
+      end
+      meth outputPattern2(R Vs $ ?FS) FS1#FS2 = FS in
+         {@pattern outputPattern2(R Vs $ ?FS1)}#NL#'andthen'#GL#
+         case @localVars of nil then ""
+         elseof Vs then {LI Vs GL R}#GL#'in'#NL
+         end#{LI @statements NL R}#GL#{@arbiter output2(R $ ?FS2)}
+      end
+      meth isConstruction($)
+         {@pattern isConstruction($)}
       end
    end
 

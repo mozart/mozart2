@@ -65,6 +65,7 @@ fun {CoordinatesOf P}
    [] fLocal(_ _ C) then C
    [] fBoolCase(_ _ _ C) then C
    [] fCase(_ _ _ C) then C
+   [] fSideCondition(_ _ _ C) then C
    [] fLockThen(_ _ C) then C
    [] fLock(_ C) then C
    [] fThread(_ C) then C

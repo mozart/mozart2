@@ -56,6 +56,7 @@ export
    ifClause: CodeGenIfClause
    patternCase: CodeGenPatternCase
    patternClause: CodeGenPatternClause
+   sideCondition: CodeGenSideCondition
    recordPattern: CodeGenRecordPattern
    equationPattern: CodeGenEquationPattern
    abstractElse: CodeGenAbstractElse
@@ -997,6 +998,29 @@ define
                               kind: 'code generation warning'
                               msg: 'statement unreachable')}
          end
+      end
+   end
+
+   class CodeGenSideCondition
+      meth makePattern(Arbiter Pos Hd Tl Seen CS) Inter in
+         {@pattern makePattern(Arbiter Pos Hd Inter Seen CS)}
+         Inter = Pos#expr(self)|Tl
+      end
+      meth assignRegs(Pos Mapping)
+         {@pattern assignRegs(Pos Mapping)}
+      end
+      meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS) VInter ErrVInstr in
+         {ForAll @localVars proc {$ V} {V setReg(CS)} end}
+         if CS.debugInfoVarnamesSwitch then Regs VInter1 VInter2 in
+            {MakePermanent @localVars ?Regs VHd VInter1}
+            {CodeGenList @statements CS VInter1 VInter2}
+            {Clear Regs VInter2 VInter}
+         else
+            {CodeGenList @statements CS VHd VInter}
+         end
+         {MakeException boolCaseType @coord [@arbiter] CS ErrVInstr nil}
+         VInter = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr ErrVInstr
+                            @coord VTl _)
       end
    end
 

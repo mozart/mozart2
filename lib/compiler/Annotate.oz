@@ -44,8 +44,8 @@ local
    BindingAnalysisWarning = 'binding analysis warning'
 
    fun {VariableUnion Vs Ws}
-      % Adjoins all variables of Vs to Ws.  Specifically, if Ws is nil,
-      % then this function returns Vs with all duplicates removed.
+      %% Adjoins all variables of Vs to Ws.  Specifically, if Ws is nil,
+      %% then this function returns Vs with all duplicates removed.
       case Vs of V|Vr then
          if {Member V Ws} then {VariableUnion Vr Ws}
          else {VariableUnion Vr V|Ws}
@@ -113,7 +113,7 @@ local
                         M: use(U: M W: M L: M M: M))
    in
       fun {UsesMax Uses1 Uses2}
-         % returns the pairwise maximum of Uses1 and Uses2
+         %% Returns the pairwise maximum of Uses1 and Uses2.
          {List.zip Uses1 Uses2 fun {$ Use1 Use2} UseMaxTable.Use1.Use2 end}
       end
    end
@@ -337,6 +337,21 @@ local
          {CheckUses @localVars 'local variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
+      end
+   end
+
+   class AnnotateSideCondition
+      meth annotateGlobalVars(Ls VsHd VsTl) Ls1 VsInter in
+         Ls1 = {Append Ls @localVars}
+         {@pattern annotateGlobalVars(Ls1 VsHd VsInter)}
+         {AnnotateGlobalVarsList @statements Ls1 VsInter VsTl}
+      end
+      meth markFirst(WarnFormals Rep)
+         {@pattern markFirst(WarnFormals Rep)}
+         {ForAll @localVars proc {$ V} {V setUse(wildcard)} end}
+         {MarkFirstList @statements WarnFormals Rep}
+         {@arbiter markFirst(WarnFormals Rep)}
+         {CheckUses @localVars 'local variable' Rep}
       end
    end
 
@@ -776,6 +791,7 @@ in
                        ifClause: AnnotateIfClause
                        patternCase: AnnotatePatternCase
                        patternClause: AnnotatePatternClause
+                       sideCondition: AnnotateSideCondition
                        recordPattern: AnnotateRecordPattern
                        equationPattern: AnnotateEquationPattern
                        abstractElse: AnnotateAbstractElse

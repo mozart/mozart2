@@ -31,6 +31,7 @@
 %%      | feature(FeatureV)
 %%      | equal(Pos)
 %%      | constant(VariableOccurrence)
+%%      | expr(SideCondition)
 %%
 %% Scalar = number
 %%        | literal
@@ -321,6 +322,10 @@ local
          {CodeGenPattern ThenTree
           {FoldR Regs0 fun {$ F#Reg In} {Append Pos [F]}#Reg|In end Mapping}
           VHd VTl Coord CS}
+      [] expr(SideCondition) then ThenVInstr ElseVInstr in
+         {SideCondition codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)}
+         {CodeGenPattern ThenTree Mapping ThenVInstr nil unit CS}
+         {CodeGenPattern ElseTree Mapping ElseVInstr nil unit CS}
       else
          TestReg TestVInstr TestProc TestArgs TestVOs
          TestVInter1 TestVInter2 TestVInter3 VInstr1 VInstr2 Regs ElseVInstr

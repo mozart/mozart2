@@ -67,7 +67,11 @@ in
             [] message(_ _) then
                OutputMessage = M
             [] displaySource(_ _ VS) then
-               SourceVS <- VS
+               case @SourceVS of "" then
+                  SourceVS <- VS
+               elseof SVS then
+                  SourceVS <- SVS#'\n\n'#VS
+               end
                OutputMessage = unit
             [] errorFound() then
                HasErrors <- true

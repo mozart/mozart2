@@ -211,35 +211,31 @@ in
                 Exc}
             end
 
-         elseof kernel(noElse Pos) then
-
-         % expected Pos: int
+         elseof kernel(noElse File Line) then
 
             {Error.format
              'Error: conditional failed'
              'Missing else clause'
-             [hint(l:'At line' m:Pos)]
+             [pos(File Line unit)]
              Exc}
 
-         elseof kernel(noElse Pos A) then
+         elseof kernel(noElse File Line A) then
 
-         % expected Pos: int, A: Oz term
+         % expected A: Oz term
 
             {Error.format
              'Error: conditional failed'
              'Missing else clause'
-             [hint(l:'At line' m:Pos)
-              hint(l:'Matching' m:oz(A))]
+             [hint(l:'Matching' m:oz(A))
+              pos(File Line unit)]
              Exc}
 
-         elseof kernel(boolCaseType Pos) then
-
-         % expected Pos: int
+         elseof kernel(boolCaseType File Line) then
 
             {Error.format
              'Error: boolean conditional failed'
              'Non-boolean value found'
-             [hint(l:'At line' m:Pos)]
+             [pos(File Line unit)]
              Exc}
 
             %%

@@ -60,7 +60,6 @@ local
                      include(type: string)
 
                      %% compiler switches
-                     maxerrors(type: int)
                      compilerpasses(type: bool)
                      showinsert(type: bool)
                      echoqueries(type: bool)
@@ -84,7 +83,11 @@ local
                      debuginfovarnames(type: bool)
                      debuginfo(char: &g
                                alias: [debuginfocontrol#true
-                                       debuginfovarnames#true]))
+                                       debuginfovarnames#true])
+
+                     %% compiler options
+                     maxerrors(type: int)
+                     baseurl(char: &b type: string))
 
    Usage =
    'You have to choose one of the following modes of operation:\n'#
@@ -123,7 +126,6 @@ local
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
    %% Note that the remaining options are not documented here on purpose.
-   '--maxerrors=N                 Limit the number of errors reported to N.\n'#
    '--(no)compilerpasses          Show compiler passes.\n'#
    '--(no)warnredecl              Warn about top-level redeclarations.\n'#
    '--(no)warnunused              Warn about unused variables.\n'#
@@ -140,7 +142,12 @@ local
    '-p, --(no)profile             Include profiling information.\n'#
    '--(no)debuginfocontrol        Include control flow information.\n'#
    '--(no)debuginfovarnames       Include variable information.\n'#
-   '-g, --(no)debuginfo           Both of the above.\n'
+   '-g, --(no)debuginfo           Both of the above.\n'#
+   '\n'#
+   'The following compiler options can be set:\n'#
+   '--maxerrors=N                 Limit the number of errors reported to N.\n'#
+   '--baseurl=STRING              Set the base URL to resolve imports of\n'#
+   '                              computed functors to STRING.\n'
 in
    functor
    import
@@ -271,6 +278,8 @@ in
                    end
                 [] maxerrors then
                    {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
+                [] baseurl then
+                   {BatchCompiler enqueue(setBaseURL(X))}
                 elseof SwitchName then
                    {BatchCompiler enqueue(setSwitch(SwitchName X))}
                 end

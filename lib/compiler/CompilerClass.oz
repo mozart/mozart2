@@ -294,13 +294,19 @@ local
 \endif
    end
 
+   StandardEnv = {Adjoin
+                  \insert Base.env
+                  \insert Standard.env
+                 }
+
    class CompilerEngine from CompilerStateClass
       prop final
       attr wrapper reporter ExecutingThread InterruptLock
       meth init(WrapperObject)
          wrapper <- WrapperObject
-         CompilerStateClass, init(env('`Builtin`': {`Builtin` 'builtin' 3}
-                                      '`Compiler`': WrapperObject))
+         CompilerStateClass, init({Adjoin StandardEnv
+                                   env('`Builtin`': {`Builtin` 'builtin' 3}
+                                       '`Compiler`': WrapperObject)})
          reporter <- {New Reporter init(self WrapperObject)}
          ExecutingThread <- unit
          InterruptLock <- {NewLock}

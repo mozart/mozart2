@@ -146,13 +146,14 @@ in
             %%
             %%
             case {IsRecordCVar TermIn} then
-               RArity KnownRArity KnownRefRArity RLabel L
+               RArity KillP KnownRArity KnownRefRArity RLabel L
             in
                %%
                %%  convert an OFS to the proper record non-monotonically;
                %%
                %%  'RLabel' will be determined later!
-               RArity = {Record.monitorArity TermIn true}
+               RArity = {Record.monitorArity TermIn KillP}
+               {KillP}
                KnownRArity = {GetWFList RArity}
                KnownRefRArity = {Map KnownRArity
                                  fun {$ FN} {ReflectTerm FN nil $ _} end}

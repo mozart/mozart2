@@ -537,7 +537,7 @@ in
             %% (sub)term in order to get the new size: we have to
             %% start at that value;
          elsecase {IsVar Term} then
-            case {IsRecordCVar Term} then RArity RLabel in
+            case {IsRecordCVar Term} then RArity KillP RLabel in
                %% we can see some structure in there;
                %%
                %% we don't care about non-monotonic changes that could
@@ -547,7 +547,8 @@ in
                %% representation: the later can be bigger because it's
                %% performed later. Anyway, 'LimitedTermSize' can only
                %% *approximate* a size of a term's representation;
-               RArity = {Record.monitorArity Term unit}
+               RArity = {Record.monitorArity Term KillP}
+               {KillP}
                case {HasLabel Term}
                then RLabel = {Label Term}
                else skip
@@ -2228,7 +2229,11 @@ in
             %%
             %% 'MonitorArity' yields a closed list if the record is
             %% closed;
-            Elements <- {Record.monitorArity Term self.closed}
+            local KillP
+            in
+               Elements <- {Record.monitorArity Term KillP}
+               thread {Wait self.closed} {KillP} end
+            end
             NotShownElements <- @Elements
             ShownWidth <- 0
 

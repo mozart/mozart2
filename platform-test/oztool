@@ -1,0 +1,2 @@
+#! /bin/sh
+exec /bin/sh $BUILDTOP/platform/emulator/oztool.sh "$@"

@@ -82,7 +82,9 @@ local
       end
    in
       fun {HoistRecord Atomname RecordArity VArgs}
-         {HoistVArg record(Atomname RecordArity VArgs)}
+         %--** disabled optimization causing bad behaviour of TkTools.ozf:
+         record(Atomname RecordArity VArgs)
+         %% {HoistVArg record(Atomname RecordArity VArgs)}
       end
    end
 

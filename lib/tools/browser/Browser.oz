@@ -71,6 +71,8 @@ local
    DeepFeed       %  'feed', but also from local computation spaces;
    GenericSet     %  destructive {tuple,record} modification;
    ChunkArity     %
+   AddrOf         %
+   OnToplevel     %
 
    %%
    %%  from 'atoms&strings.oz';

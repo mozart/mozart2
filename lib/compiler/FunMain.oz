@@ -9,7 +9,6 @@ import
    ErrorRegistry   %.put
    FS   %.{include var subset value reflect isIn}
    FD   %.{int is less distinct distribute}
-   Search   %.{SearchOne='SearchOne'}
 \ifndef OZM
    Gump
    ProductionTemplates
@@ -37,7 +36,6 @@ body
       SA        = {FunSA.apply
                    c('FD':                    FD
                      'FS':                    FS
-                     'Search':                Search
                      'System':                System
                      'Misc':                  Misc
                      'ImAConstruction':       ImAConstruction
@@ -73,6 +71,7 @@ body
                      'Misc':                  Misc
                      'CompilerSupport':       CompilerSupport
                      'Core':                  Core
+                     'Debug':                 Debug
 \ifndef OZM
                      'Gump':                  Gump
 \endif

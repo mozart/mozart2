@@ -285,12 +285,12 @@ local
       meth InitProductionTemplates()
          case @productionTemplates of unit then
             T = {Thread.this}
-            RaiseOnBlock = {Thread.getRaiseOnBlock T}
+            RaiseOnBlock = {Debug.getRaiseOnBlock T}
          in
-            {Thread.setRaiseOnBlock T false}
+            {Debug.setRaiseOnBlock T false}
             productionTemplates <- {Gump.makeProductionTemplates}
             {@productionTemplates add(ProductionTemplates.default @reporter)}
-            {Thread.setRaiseOnBlock T RaiseOnBlock}
+            {Debug.setRaiseOnBlock T RaiseOnBlock}
          else skip
          end
       end
@@ -644,7 +644,7 @@ local
                            andthen {OPI getCompiler($)} == @wrapper
                         then
                            % this helps Ozcar detect queries from the OPI:
-                           {Thread.setId {Thread.this} 1}
+                           {Debug.setId {Thread.this} 1}
                         end
                         thread {P} end
                      else
@@ -694,12 +694,12 @@ local
                %--** when blocking on lazy variables or futures:
                {Wait System}
                {Wait Error}
-               {Thread.setRaiseOnBlock {Thread.this} true}
+               {Debug.setRaiseOnBlock {Thread.this} true}
             end
             OPI = {Property.condGet 'opi.compiler' false}
             if OPI \= false andthen {OPI getCompiler($)} == @wrapper then
                % this helps Ozcar detect queries from the OPI:
-               {Thread.setId {Thread.this} 1}
+               {Debug.setId {Thread.this} 1}
             end
             try
                {P}
@@ -711,10 +711,10 @@ local
                Completed = true
             end
          end
-         RaiseOnBlock = {Thread.getRaiseOnBlock T}
-         {Thread.setRaiseOnBlock T false}
+         RaiseOnBlock = {Debug.getRaiseOnBlock T}
+         {Debug.setRaiseOnBlock T false}
          {Wait Completed}
-         {Thread.setRaiseOnBlock T RaiseOnBlock}
+         {Debug.setRaiseOnBlock T RaiseOnBlock}
          if {IsFree Exceptionless} then
             raise if IsCompilerThread then crashed else aborted end end
          end

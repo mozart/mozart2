@@ -93,15 +93,15 @@ local
 \ifndef OZM
    proc {MyWaitGump X}
       T = {Thread.this}
-      RaiseOnBlock = {Thread.getRaiseOnBlock T}
+      RaiseOnBlock = {Debug.getRaiseOnBlock T}
    in
-      {Thread.setRaiseOnBlock T false}
+      {Debug.setRaiseOnBlock T false}
       case X of transformScanner then
          {Wait Gump.transformScanner}
       [] transformParser then
          {Wait Gump.transformParser}
       end
-      {Thread.setRaiseOnBlock T RaiseOnBlock}
+      {Debug.setRaiseOnBlock T RaiseOnBlock}
    end
 \endif
 

@@ -2,7 +2,6 @@ functor prop once
 import
    FD.{int is less distinct distribute}
    FS.{include var subset value reflect isIn}
-   Search.{SearchOne='SearchOne'}
    System.{eq valueToVirtualString printName}
    Misc.{isBuiltin nameVariable}
    ImAConstruction

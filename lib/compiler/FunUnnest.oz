@@ -8,6 +8,7 @@ import
    Gump.{transformParser transformScanner}
 \endif
    RunTime.procs
+   Debug
 export
    JoinQueries
    MakeExpressionQuery

@@ -118,7 +118,7 @@ local
       end
 
       % compute mapping names <-> indexes
-      Name2Index = {SearchOne IdxMapping}.1
+      Name2Index = {Search.base.one IdxMapping}.1
       Index2Name = {Tuple.make i2n {Width Name2Index}}
 
       {ForAll Names
@@ -127,7 +127,7 @@ local
        end}
 
       % compute mapping names -> bit arrays
-      Name2Bits = {SearchOne BitMapping}.1
+      Name2Bits = {Search.base.one BitMapping}.1
 
       % encodes type: V Pos and not & Neg
       proc {Constrain Pos Neg S}

@@ -9,6 +9,8 @@ OZPLATFORM=     @PLATFORM@
 PLATFORM=       @PLATFORM@
 
 INSTALL_DIR     = @INSTALL_DIR@
+CPPFLAGS        = @CPPFLAGS@
+LDFLAGS         = @LDFLAGS@
 
 export OZPATH = .:$(SRCDIR)
 
@@ -178,7 +180,8 @@ gump-examples:
         ln -s $(SRCDIR)/../tools/gump/examples $@
 
 %.so-$(OZPLATFORM): %.o
-        $(OZTOOL) ld $< -o $@
+        $(OZTOOL) ld $(LDFLAGS) $< -o $@
+
 %.o: %.cc
         $(OZTOOL) c++ -I$(SRCTOP)/platform/emulator \
-        -I$(BUILDTOP)/platform/emulator -c $< -o $@
+        -I$(BUILDTOP)/platform/emulator $(CPPFLAGS) -c $< -o $@

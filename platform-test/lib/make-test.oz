@@ -136,7 +136,7 @@ local
             in
                fun {GetTest TD}
                   TL = {Label TD}
-                  T  = {Module.load unit TD.url nil}.return
+                  T  = {Module.load unit TD.url}.return
                in
                   case {Dictionary.member TestDict TL} then skip
                   else {Dictionary.put TestDict TL {FindTest TD.id T}}
@@ -352,7 +352,7 @@ in
 
        Tests = {AppendAll
                 {Map Argv.2 fun {$ C}
-                               S = {Module.load unit C nil}.return
+                               S = {Module.load unit C}.return
                             in
                                {Map {GetAll S nil nil}
                                 fun {$ T#Id#K}

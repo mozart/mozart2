@@ -40,7 +40,6 @@
 %%%
 
 local
-   AtomConcat
    AtomConcatAll
    %%
    IsSeen
@@ -53,11 +52,6 @@ local
 
    %%
 in
-
-   %%
-   fun {AtomConcat A1 A2}
-      {String.toAtom {Append {Atom.toString A1} {Atom.toString A2}}}
-   end
 
    %%
    local

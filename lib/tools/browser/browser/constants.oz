@@ -188,14 +188,6 @@ OzHome = {System.get home}
 %%
 %%
 
-%% initial size of a 'browse' text widget (in cols/lines);
-ITWWidth    = 60
-ITWHeight   = 20
-
-%% initial size of a messages' text widget;
-IMWidth     = 45
-IMHeight    = 5
-
 %%
 ITitle      = 'Oz Browser'
 IMTitle     = ITitle#': Messages'
@@ -207,11 +199,9 @@ ILOTitle    = ITitle#': Layout Options'
 
 %%
 IITitle     = ITitle
-IMITitle    = 'Messages'
 
 %%
 IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
-IMIBitmap   = !OzHome # '/lib/bitmaps/browserMIcon.xbm'
 %%
 IStopBitmap = '@' # !OzHome # '/lib/bitmaps/stop.xbm'
 IStopWidth  = 20
@@ -241,10 +231,6 @@ IYMinSize   = 150
 IXSize      = 500
 IYSize      = 350
 
-%%  ... for messages' window (but it is gridded, so - in chars);
-IMXMinSize  = 40
-IMYMinSize  = 5
-
 %% colours on text widget;
 IBackGround   = 'white'
 IForeGround   = 'black'
@@ -257,7 +243,6 @@ ISmallBorder  = 1
 %% while menus, buttons and scrollbars frames are sunken;
 ITextRelief   = raised
 IFrameRelief  = sunken
-IButtonRelief = raised
 
 %% width (or height) of scrollbars (pixels);
 ISWidth       = 13
@@ -317,31 +302,14 @@ IKnownCourFonts = [font(size:24 wght:medium
 %%
 %% (external) pads (pixels);
 IPad          = 1
-IButtonPad    = 1
 ITWPad        = 3
 IBigPad       = 4
 ISEntryWidth  = 8
-
-%% width of a button (in cm);
-IButtonWidth  = 10
-
-%%
-IBFont1       = '-*-lucida-bold-r-*-sans-12-*-*-*-*-*-*-*'
-IBFont2       = '-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1'
-IBFont3       = '-*-*-*-r-*-*-12-*-*-*-*-*-*-1'
 
 %%
 IAFont1       = '-*-times-bold-r-*-*-24-*-*-*-*-*-*-*'
 IAFont2       = '-*-*-bold-r-*-*-24-*-*-*-*-*-*-1'
 IAFont3       = '-*-*-*-r-*-*-24-*-*-*-*-*-*-1'
-
-%%  "any" font: if the specified one is not found;
-IReservedFont = '-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
-
-%%
-%% offset (<x,y> from the upper left conner) for a message window;
-IMWXOffset    = 50
-IMWYOffset    = 50
 
 %%%
 %%%
@@ -362,8 +330,6 @@ ISeparators       = true
 IRepMode          = !TreeRep
 %% ... only one of the previous two should be toggled one;
 IBufferSize       = 15
-%% would the menus frame come at start?
-IWithMenus        = true
 
 %%
 %% template sizes;
@@ -425,9 +391,6 @@ TermsStoreGCRatio  = 5
 %% else skip
 %% end
 TermsStoreGCBase    = 100
-%% How much a real size of a 'ResizableArray' can be bigger
-%% han 'visible';
-RArrayRRatio       = 10
 
 %%%
 %%%
@@ -497,13 +460,6 @@ DDSpace         = 2
 DTSpace         = 3
 DQSpace         = 4
 
-%% spacing to subterms of a {record, tuple};
-DOffset         = 3
-
-%% max approx;
-DReference      = 2
-%% 'R?'
-
 %%
 %% Note that glues, etc. below *must be atoms*. Otherwise, the
 %% CoreTerms.delimiterLEQ must be updated;
@@ -530,13 +486,11 @@ DNameUnshown    = ',,,'         % DTSpace;
 DOpenFS         = '...'         % DTSpace;
 DDblPeriod      = '..'          % DDSpace;
 DDBar           = '||'          % DDSpace;
-DUnderscore     = '_'           % DSpace;
 DUnshownPFs     = '?'           % DSpace
 
 %% char values;
 CNameDelimiter  = &:
 BQuote          = &`
-CharDot         = &.
 CharSpace       = &
 /* ` oz emacs modus problems; */
 %%

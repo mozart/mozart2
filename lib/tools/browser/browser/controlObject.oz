@@ -57,28 +57,18 @@ in
    %% Goes bottom-up from an 'Obj' till a "root" object;
    %%
    fun {CheckCycleFun Term Obj}
-      local IsEQ in
-         %%
-         %% We could use also the logical equality between terms
-         %% (in order to find "shortest" cycles), but it would not
-         %% reflect the constraint store contents;
+      %%
+      %% We could use also the logical equality between terms
+      %% (in order to find "shortest" cycles), but it would not
+      %% reflect the constraint store contents;
 
+      %%
+      case {EQ Obj.term Term} then
          %%
-         case {EQ Obj.term Term} then
-            %%
-            case Obj.type == T_RootTerm then InitValue
-            elsecase {IsFree Obj.closed} then Obj
-            else PO in
-               %% i.e., this is garbage (or lack of synchronization);
-               PO = Obj.ParentObj
-
-               %%
-               case PO
-               of !InitValue then InitValue
-               else {CheckCycleFun Term PO}
-               end
-            end
+         case Obj.type == T_RootTerm then InitValue
+         elsecase {IsFree Obj.closed} then Obj
          else PO in
+            %% i.e., this is garbage (or lack of synchronization);
             PO = Obj.ParentObj
 
             %%
@@ -86,6 +76,14 @@ in
             of !InitValue then InitValue
             else {CheckCycleFun Term PO}
             end
+         end
+      else PO in
+         PO = Obj.ParentObj
+
+         %%
+         case PO
+         of !InitValue then InitValue
+         else {CheckCycleFun Term PO}
          end
       end
    end
@@ -672,7 +670,7 @@ in
 \endif
          %%
          case Depth == 0 then {self  Shrink}
-         else MaxWidth ActWidth ObjsList NewDepth in
+         else MaxWidth ActWidth NewDepth in
             %%
             TDepth <- Depth
 

@@ -56,7 +56,6 @@ local
    UsedIndentOut    = {NewName}
    RefName          = {NewName}
    RefNameSize      = {NewName}
-   Subterms         = {NewName}
 
    %%
    %% ... methods;
@@ -70,9 +69,7 @@ local
    LayoutWrong      = {NewName}
    %%
    AnchorLB         = {NewName}
-   AnchorGroup      = {NewName}
    %%
-   NeedsLineBreak   = {NewName}
    %% 'SetCursorAt' has global extent - it has to be used by
    %% 'RootTermObject';
    SetCursorAfter   = {NewName}
@@ -478,18 +475,14 @@ in
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::BeginUpdate is applied'}
 \endif
-         local WO in
-            WO = self.WidgetObj
+         %%
+         SavedSize <- @Size
 
-            %%
-            SavedSize <- @Size
+         %%
+         {self.ParentObj BeginUpdateSubterm(self.numberOf)}
 
-            %%
-            {self.ParentObj BeginUpdateSubterm(self.numberOf)}
-
-            %%
-            MetaRepManagerObject , OpenRep
-         end
+         %%
+         MetaRepManagerObject , OpenRep
 
          %%
 \ifdef DEBUG_RM
@@ -505,8 +498,7 @@ in
          {Show 'MetaRepManagerObject::EndUpdate is applied'}
 \endif
          %%
-         local WO OldSize NewSize in
-            WO = self.WidgetObj
+         local OldSize NewSize in
             OldSize = @SavedSize
             NewSize = @Size
 

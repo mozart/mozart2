@@ -598,7 +598,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case {self.BrowserBuffer getSize($)} > 0 then RootTermObj in
+         case {self.BrowserBuffer getSize($)} > 0 then
             %%
             %% state is free already;
             {self Undraw(1)}

@@ -1576,7 +1576,7 @@ in
          %%
          %% Obviously, no further subterms are expected iff the
          %% 'Elements' list is determined:
-         case {IsVar @TailElements} then TL TS in
+         case {IsVar @TailElements} then TL in
             TL = @TailList
 
             %%

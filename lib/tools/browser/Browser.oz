@@ -257,7 +257,6 @@ in
       UpdateSize = {NewName}
       ButtonsHandler = {NewName}
       DButtonsHandler = {NewName}
-      ShowInOPI = {NewName}
       Rebrowse = {NewName}
       Shrink = {NewName}
       Expand = {NewName}
@@ -403,7 +402,7 @@ in
          %% this way: a browser object has an internal
          %% asynchronous worker which does the actual job ...
          case {IsVar HasCrashed} then skip
-         else Pl Hl in
+         else
             %%
             try
                %%

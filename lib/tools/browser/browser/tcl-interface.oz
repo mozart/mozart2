@@ -69,8 +69,6 @@ local
    %%
    Oz2Tcl
    Tcl2Oz
-   NumberS2I
-   NumberI2VS
 
    %%
    MakeDistFrame
@@ -230,20 +228,6 @@ in
       else
          {BrowserError 'Tcl2Oz: unknown value!'}
          false
-      end
-   end
-
-   %%
-   fun {NumberS2I S}
-      case {Map {Filter S Char.isGraph} Char.toLower}
-      of "infinity" then ~1
-      elseof S then {Tk.string.toInt S}
-      end
-   end
-   %%
-   fun {NumberI2VS I}
-      case I<1 then infinity
-      else I
       end
    end
 
@@ -2717,7 +2701,7 @@ in
       %%
       meth init(windowObj: WO)
          %%
-         proc {Okay} IFN Size Wght StoredFN in
+         proc {Okay} Size Wght StoredFN in
             Size = {PointVar tkReturnInt($)}
             Wght = {WghtVar tkReturnAtom($)}
             StoredFN = {WO.store read(StoreTWFont $)}

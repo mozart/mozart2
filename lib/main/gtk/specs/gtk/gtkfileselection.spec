@@ -7,7 +7,7 @@
 #   Andreas Simon (2000)
 #
 # Last change:
-#   $Date$
+#   $Date$ by $Author$
 #   $Revision$
 #
 # This file is part of Mozart, an implementation
@@ -38,8 +38,9 @@ $class =
                    'fileop_ren_file'                        => 'GtkWidget*' },
 
        inits => { 'gtk_file_selection_new'                  => { in  => ['const gchar*'],
-                                                                 out => 'GtkWidget*' },
-                  'gtk_file_selection_set_filename'         => { in  => ['GtkFileSelection*',
+                                                                 out => 'GtkWidget*' } },
+
+       meths => { 'gtk_file_selection_set_filename'         => { in  => ['GtkFileSelection*',
                                                                          'const gchar*'] },
                   'gtk_file_selection_get_filename'         => { in  => ['GtkFileSelection*'],
                                                                  out => 'gchar*' },

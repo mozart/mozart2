@@ -7,7 +7,7 @@
 #   Andreas Simon (2000)
 #
 # Last change:
-#   $Date$
+#   $Date$ by $Author$
 #   $Revision$
 #
 # This file is part of Mozart, an implementation
@@ -29,8 +29,9 @@ $class =
 
        fields => { 'children'                     => 'GList*' },
 
-       inits => { 'gtk_fixed_new'                 => { out => 'GtkWidget*' },
-                  'gtk_fixed_put'                 => { in  => ['GtkFixed*',
+       inits => { 'gtk_fixed_new'                 => { out => 'GtkWidget*' } },
+
+       mehts => { 'gtk_fixed_put'                 => { in  => ['GtkFixed*',
                                                                '!GtkWidget*',
                                                                'gint16',
                                                                'gint16'] },

@@ -51,10 +51,7 @@ local
    BURL_open            = BURL.open
    BURL_load            = BURL.load
    Native_load          = fun {$ FN}
-                             {ObtainNative false
-                              if {UrlIsRelative FN} then
-                                 {URL_expand {UrlResolve DotUrl FN}}
-                              else FN end}
+                             {ObtainNative false FN}
                           end
    \insert UrlExpand.oz
 
@@ -65,7 +62,10 @@ local
    %% found(V) is raised.
 
    proc {Do_Method M U} V OK in
-      try {M {UrlToString U} V} OK=true
+      try {M {UrlToString
+              if {UrlIsRelative U} then
+                 {URL_expand {UrlResolve DotUrl U}}
+              else U end} V} OK=true
       catch system(...) then     OK=false
       [] error(dp(generic 'URLhandler' _ _) ...)
       then                       OK=false
@@ -424,10 +424,9 @@ local
 in
    Resolve = {Adjoin LoadResolver
               resolve(
-                 trace(set      : SetTrace
-                       get      : GetTrace)
-                 getTrace       : GetTrace
-                 setTrace       : SetTrace
+                 trace          :
+                    trace(set   : SetTrace
+                          get   : GetTrace)
                  handler        :
                  handler(
                     default     : Default_Handler

@@ -23,7 +23,7 @@
 functor
 
 import
-   Search.base
+   Search(base)
    System(show apply)
    Browser(getsBoundB) at 'x-oz://boot/Browser'
    FD

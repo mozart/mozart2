@@ -1330,11 +1330,27 @@ local
       end
 
       meth UnnestApplyArgs(FEs ?GFrontEqs1 ?GFrontEqs2 ?GTs)
-         case FEs of FE|FEr then GFrontEq GFrontEqr GT GTr in
-            GFrontEqs1 = GFrontEq|GFrontEqr
-            GTs = GT|GTr
-            Unnester, UnnestToVar(FE 'UnnestApply' ?GFrontEq ?GT)
-            Unnester, UnnestApplyArgs(FEr ?GFrontEqr ?GFrontEqs2 ?GTr)
+         case FEs of FE|FEr then
+            case FE of fRecord(Label Args) then
+               % Records as arguments are treated in a special way here
+               % so as to make the sendMsg optimization apply in more
+               % cases, e.g.:
+               C GV GRecord GBack GEquation GFrontEqr1 GFrontEqr2 GTr
+            in
+               C = {CoordinatesOf Label}
+               {@BA generate('UnnestApply' C ?GV)}
+               Unnester, UnnestRecord('' Label Args false ?GRecord ?GBack)
+               GFrontEqs1 = GBack|GFrontEqr1
+               GEquation = {New Core.equation init({GV occ(C $)} GRecord C)}
+               GFrontEqs2 = GEquation|GFrontEqr2
+               GTs = {GV occ(C $)}|GTr
+               Unnester, UnnestApplyArgs(FEr ?GFrontEqr1 ?GFrontEqr2 ?GTr)
+            else GFrontEq GFrontEqr GT GTr in
+               GFrontEqs1 = GFrontEq|GFrontEqr
+               GTs = GT|GTr
+               Unnester, UnnestToVar(FE 'UnnestApply' ?GFrontEq ?GT)
+               Unnester, UnnestApplyArgs(FEr ?GFrontEqr ?GFrontEqs2 ?GTr)
+            end
          [] nil then
             GFrontEqs1 = nil
             GFrontEqs2 = nil

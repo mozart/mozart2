@@ -388,7 +388,7 @@ in
             end
          end
       in
-         FdSup = {FDB.getLimits}
+         FdSup = {FDB.getLimits _}
 
          proc {FdInt Dom X}
             {FdPutList X Dom}

@@ -647,12 +647,45 @@ test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
-for ac_prog in rm
+for ac_prog in mkdir
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:656: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_MKDIR'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test -n "$MKDIR"; then
+  ac_cv_prog_MKDIR="$MKDIR" # Let the user override the test.
+else
+  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in $PATH; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_prog_MKDIR="$ac_prog"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+fi
+fi
+MKDIR="$ac_cv_prog_MKDIR"
+if test -n "$MKDIR"; then
+  echo "$ac_t""$MKDIR" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+test -n "$MKDIR" && break
+done
+
+for ac_prog in rm
+do
+# Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:689: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -685,7 +718,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:689: checking for $ac_word" >&5
+echo "configure:722: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_SH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -718,7 +751,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:722: checking for $ac_word" >&5
+echo "configure:755: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_SED'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -751,7 +784,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:755: checking for $ac_word" >&5
+echo "configure:788: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_TOUCH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -784,7 +817,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:788: checking for $ac_word" >&5
+echo "configure:821: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_EGREP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -817,7 +850,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:821: checking for $ac_word" >&5
+echo "configure:854: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_ECHO'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -850,7 +883,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:854: checking for $ac_word" >&5
+echo "configure:887: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_M4'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -879,11 +912,43 @@ test -n "$M4" && break
 done
 
 
+# Extract the first word of "env2type", so it can be a program name with args.
+set dummy env2type; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:919: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_ENV2TYPE'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$ENV2TYPE" in
+  /*)
+  ac_cv_path_ENV2TYPE="$ENV2TYPE" # Let the user override the test with a path.
+  ;;
+  *)
+  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in .:$srcdir$ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_ENV2TYPE="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+ENV2TYPE="$ac_cv_path_ENV2TYPE"
+if test -n "$ENV2TYPE"; then
+  echo "$ac_t""$ENV2TYPE" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+
 OZPATH=$PATH:../bin:../../bin:$prefix/bin
 # Extract the first word of "ozinstallsrc", so it can be a program name with args.
 set dummy ozinstallsrc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:887: checking for $ac_word" >&5
+echo "configure:952: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_INSTALLSRC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -914,7 +979,7 @@ fi
 # Extract the first word of "ozbatch", so it can be a program name with args.
 set dummy ozbatch; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:918: checking for $ac_word" >&5
+echo "configure:983: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_OZBATCH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1100,6 +1165,7 @@ s%@host_vendor@%$host_vendor%g
 s%@host_os@%$host_os%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
+s%@MKDIR@%$MKDIR%g
 s%@RM@%$RM%g
 s%@SH@%$SH%g
 s%@SED@%$SED%g
@@ -1107,6 +1173,7 @@ s%@TOUCH@%$TOUCH%g
 s%@EGREP@%$EGREP%g
 s%@ECHO@%$ECHO%g
 s%@M4@%$M4%g
+s%@ENV2TYPE@%$ENV2TYPE%g
 s%@INSTALLSRC@%$INSTALLSRC%g
 s%@OZBATCH@%$OZBATCH%g
 s%@OZVERSION@%$OZVERSION%g

@@ -17,7 +17,7 @@
 local FindChar1 in
    %%
    fun {AtomConcat A1 A2}
-      {String.toAtom {Append {String.toAtom A1} {String.toAtom A2}}}
+      {String.toAtom {Append {Atom.toString A1} {Atom.toString A2}}}
    end
 
    VSLength = VirtualString.length

@@ -575,39 +575,6 @@ define
       meth getCoord($)
          {@label getCoord($)}
       end
-      meth output2(R $ ?FS) FS1 FS2 Args in
-         FS = FS1#FS2
-         case @args of X1|Xr then Start FSs in
-            case X1 of F#P then FS01 FS02 FS11 FS12 in
-               {F output2(R ?FS01 ?FS02)}
-               {P output2(R ?FS11 ?FS12)}
-               Start = [FS01#': '#FS11]#(FS02#FS12)
-            else FS01 FS02 in
-               {X1 output2(R ?FS01 ?FS02)}
-               Start = [FS01]#FS02
-            end
-            FSs#FS2 = {FoldL Xr
-                       fun {$ FSs#FS X}
-                          case X of F#P then FS01 FS02 FS11 FS12 in
-                             {F output2(R ?FS01 ?FS02)}
-                             {P output2(R ?FS11 ?FS12)}
-                             (FS01#': '#FS11|FSs)#(FS#FS02#FS12)
-                          else FS01 FS02 in
-                             {X output2(R ?FS01 ?FS02)}
-                             (FS01|FSs)#(FS#FS02)
-                          end
-                       end Start}
-            Args = list({Reverse FSs} GL)
-         else
-            FS2 = ""
-            Args = ""
-         end
-         {@label output2(R $ ?FS1)}#'('#PU#Args#
-         if @isOpen then
-            case Args of nil then '...' else GL#'...' end
-         else ""
-         end#')'#PO
-      end
       meth outputPattern2(R Vs $ ?FS) FS1 FS2 Args in
          FS = FS1#FS2
          case @args of X1|Xr then Start FSs in
@@ -658,10 +625,6 @@ define
       end
       meth getCoord($)
          @coord
-      end
-      meth output2(R $ ?FS) FS1 FS2 in
-         FS = FS1#FS2
-         {@left output2(R $ ?FS1)}#'='#{@right output2(R $ ?FS2)}
       end
       meth outputPattern2(R Vs $ ?FS) FS1 FS2 in
          FS = FS1#FS2

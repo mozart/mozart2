@@ -315,12 +315,11 @@ local
    end
 
    class AnnotatePatternClause
-      attr globalVars: unit patternGlobalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) PatternVs Vs in
-         {@pattern annotateGlobalVars(@localVars PatternVs nil)}
-         patternGlobalVars <- {VariableUnion PatternVs nil}
-         {AnnotateGlobalVarsList @statements @localVars Vs nil}
-         globalVars <- {VariableUnion Vs PatternVs}
+      attr globalVars: unit
+      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter in
+         {@pattern annotateGlobalVars(@localVars Vs VsInter)}
+         {AnnotateGlobalVarsList @statements @localVars VsInter nil}
+         globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
              if {Member V Ls} then VsHd = VsTl
@@ -330,9 +329,6 @@ local
       end
       meth getGlobalVars($)
          @globalVars
-      end
-      meth getPatternGlobalVars($)
-         @patternGlobalVars
       end
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(wildcard)} end}

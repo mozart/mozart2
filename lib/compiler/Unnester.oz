@@ -2137,12 +2137,12 @@ define
          [] fFloat(X C) then
             {New Core.floatNode init(X C)}
          [] fRecord(L As) then
-            Unnester, TranslateRecord(L As false PatternPNs $)
+            Unnester, TranslateRecordPattern(L As false PatternPNs $)
          [] fOpenRecord(L As) then
-            Unnester, TranslateRecord(L As true PatternPNs $)
+            Unnester, TranslateRecordPattern(L As true PatternPNs $)
          end
       end
-      meth TranslateRecord(L Args IsOpen PatternPNs $)
+      meth TranslateRecordPattern(L Args IsOpen PatternPNs $)
          GL GArgs NewGArgs X
       in
          Unnester, TranslatePattern(L PatternPNs false ?GL)

@@ -530,7 +530,8 @@ local
             {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fFun(FE1 FEs FE2 ProcFlags C) then
-            GFrontEq GVO OldStateUsed NewFEs GS GFormals IsStateUsing GD
+            GFrontEq GVO OldStateUsed NewFEs ProcFlagAtoms NewFE2
+            GS GFormals IsStateUsing GD
          in
             Unnester, UnnestToVar(FE1 'Fun' ?GFrontEq ?GVO)
             OldStateUsed = (StateUsed <- false)
@@ -542,13 +543,19 @@ local
                                 msg: 'no $ in function head allowed')}
                NewFEs = FEs
             end
-            Unnester, UnnestProc(NewFEs FE2 C ?GS)
+            ProcFlagAtoms = {Map ProcFlags fun {$ fAtom(A _)} A end}
+            NewFE2 = case {Member 'lazy' ProcFlagAtoms} then
+                        fApply(fApply(fVar('`.`' C)
+                                      [fVar('Lazy' C) fAtom('apply' C)] C)
+                               [fFun(fDollar(C) nil FE2 nil C)] C)
+                     else FE2
+                     end
+            Unnester, UnnestProc(NewFEs NewFE2 C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
-                  init(GVO GFormals GS IsStateUsing
-                       {Map ProcFlags fun {$ fAtom(A _)} A end} C)}
+                  init(GVO GFormals GS IsStateUsing ProcFlagAtoms C)}
             {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fClass(FE FDescriptors FMeths C) then

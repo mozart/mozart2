@@ -333,14 +333,16 @@ define
                   PN = {System.printName Data}
                in
                   if {IsObject Data} then
-                     if PN == '' then
+                     case PN of '' then
                         'object application'
                      else
                         'object application of class \''#PN#'\''
                      end
                   else
-                     if PN == '' then
+                     case PN of '' then
                         'procedure'
+                     [] 'Toplevel abstraction' then
+                        'toplevel abstraction'
                      else
                         'procedure \''#PN#'\''
                      end

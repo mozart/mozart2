@@ -28,12 +28,12 @@
 %%
 local
    proc {ChunkSelectFeature C F ?X}
-      case {IsChunk C} then X=C.F
+      if {IsChunk C} then X=C.F
       else {`RaiseError` kernel(type 'ChunkSelectFeature' [C F] 1 chunk '')}
       end
    end
    proc {ChunkHasFeature C F ?X}
-      case {IsChunk C} then X={HasFeature C F}
+      if {IsChunk C} then X={HasFeature C F}
       else {`RaiseError` kernel(type 'ChunkHasFeature' [C F] 1 chunk '')}
       end
    end

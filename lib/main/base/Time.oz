@@ -27,7 +27,7 @@ local
    fun {AddWaiter W T P}
       case W
       of (T1#P1)|R then
-         case T1>T then (T#P)|(T1-T#P1)|R
+         if T1>T then (T#P)|(T1-T#P1)|R
          else (T1#P1)|{AddWaiter R T P}
          end
       else [T#P]
@@ -82,7 +82,7 @@ local
          Repeat, setRepFinal(F)
          Repeat, setRepNum(N)
 
-         case DF == DefaultFun
+         if DF == DefaultFun
          then Repeat, setRepDelay(D)
          else Repeat, setRepDelayFun(DF)
          end
@@ -131,14 +131,14 @@ local
       %%%
 
       meth go
-         case
+         if
             lock
-               case {IsDet @Stop}
+               if {IsDet @Stop}
                then Stop <- _ true
                else false end
             end
          then Repeat, Run
-         else skip end
+         end
       end
 
       meth stop
@@ -159,9 +159,9 @@ local
             N = @NumberA
          end
 
-         case {IsDet K}
+         if {IsDet K}
          then skip
-         elsecase N==0
+         elseif N==0
          then
             {self stop}
             {self Do(F)}
@@ -170,20 +170,19 @@ local
          in
             {self Do(A)}
 
-            case N>0
+            if N>0
             then NumberA <- N-1
-            else skip end
+            end
 
             {WaitOr S K}
-            case {IsDet S}
+            if {IsDet S}
             then Repeat, Run
-            else skip end
+            end
          end
       end
 
       meth Do(A)
-         case {IsProcedure A}
-         then {A} else {self A} end
+         if {IsProcedure A} then {A} else {self A} end
       end
 
       %%%

@@ -44,12 +44,14 @@ local
    local
       proc {EscapeVariableChar Hd C|Cr Tl}
          case Cr of nil then Hd = C|Tl   % terminating quote
-         elsecase C == &` orelse C == &\\ then Hd = &\\|C|Tl
-         elsecase C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
-         elsecase C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
-         elsecase C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
-         elsecase C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
-         else Hd = C|Tl
+         else
+            if C == &` orelse C == &\\ then Hd = &\\|C|Tl
+            elseif C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
+            elseif C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
+            elseif C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
+            elseif C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
+            else Hd = C|Tl
+            end
          end
       end
    in
@@ -77,10 +79,10 @@ local
    fun {PosToVS F L C PC}
       Elems =
       {Filter
-       [case F == '' then "" else 'file "'#F#'"' end
-        case L == unit then "" else 'line '#L end
+       [if F == '' then "" else 'file "'#F#'"' end
+        if L == unit then "" else 'line '#L end
         case C of unit then "" [] ~1 then "" else 'column '#C end
-        case PC == unit then "" else 'PC = '#PC end]
+        if PC == unit then "" else 'PC = '#PC end]
        fun {$ X} X \= "" end}
    in
       case Elems of E1|Er then
@@ -176,7 +178,7 @@ in
       fun {FormatPartialAppl A Xs N}
          '{' # oz(A) #
          case Xs of nil then '' else ' ' # list(Xs ' ') end #
-         case N==0 then "}"
+         if N==0 then "}"
          else {Loop.forThread 1 N 1
                fun {$ In I} & |&_|In end nil} # '}'
          end
@@ -196,7 +198,7 @@ in
          end
       in
          fun {FormatHint S}
-            case {Property.get errors}.hints
+            if {Property.get errors}.hints
                andthen S \= nil
             then unit|{DoFormatHint &\n|{VS2S S}}
             else nil end
@@ -208,19 +210,19 @@ in
       fun {InfoField Exc}
          D = {DebugField Exc}
       in
-         case {IsRecord D}
+         if {IsRecord D}
             andthen {HasFeature D info}
          then D.info else unit end
       end
 
       fun {DebugField Exc}
-         case {IsRecord Exc}
+         if {IsRecord Exc}
             andthen {HasFeature Exc debug}
          then Exc.debug else unit end
       end
 
       fun {DispatchField Exc}
-         case {IsRecord Exc}
+         if {IsRecord Exc}
             andthen {HasFeature Exc 1}
          then Exc.1 else unit end
       end
@@ -261,7 +263,7 @@ in
          E = {Property.get errors}
          D = {DebugField Exc}
       in
-         case {HasFeature D stack}
+         if {HasFeature D stack}
             andthen E.'thread'>0
          then D.stack else unit end
       end
@@ -283,7 +285,7 @@ in
       end
 
       fun {AlmostVSToVS X}
-         case {IsDet X}
+         if {IsDet X}
             andthen {IsRecord X}
          then
             case X of oz(M) then
@@ -294,12 +296,14 @@ in
                {PosToVS F L C unit}
             [] list(Xs Sep) then
                {AlmostVSToVS {ListToVS Xs Sep}}
-            elsecase
-               {IsTuple X}
-               andthen {Label X}=='#'
-            then
-               {Record.map X AlmostVSToVS}
-            else X end
+            else
+               if
+                  {IsTuple X}
+                  andthen {Label X}=='#'
+               then
+                  {Record.map X AlmostVSToVS}
+               else X end
+            end
          else {OzValueToVS X} end
       end
 
@@ -371,7 +375,7 @@ in
       %%
 
       fun {Location Spaces}
-         case Spaces ==  nil
+         if Spaces ==  nil
             orelse Spaces == unit
          then nil else
             [ ''
@@ -387,7 +391,7 @@ in
          fun {DoStack Xs N}
             case Xs of nil then ""
             [] X|Xr then
-               case N > 0 then
+               if N > 0 then
                   Pos = {PosToVS
                          {CondSelect X file ''}
                          {CondSelect X line unit}
@@ -415,17 +419,17 @@ in
                   case Kind of call then
                      Data = X.data
                   in
-                     case {IsDet Data} then
+                     if {IsDet Data} then
                         PN = {System.printName Data}
                      in
-                        case {IsObject Data} then
-                           case PN == '' then
+                        if {IsObject Data} then
+                           if PN == '' then
                               'object application'
                            else
                               'object application of class \''#PN#'\''
                            end
                         else
-                           case PN == '' then
+                           if PN == '' then
                               'procedure'
                            else
                               'procedure \''#PN#'\''
@@ -436,7 +440,7 @@ in
                      end
                   else Kind
                   end#
-                  case Pos == "" then ""
+                  if Pos == "" then ""
                   else ' in '#Pos
                   end|{DoStack Xr N - 1}
                else ['...']
@@ -445,10 +449,10 @@ in
          end
       in
          fun {GetStack Xs N}
-            case Xs==unit
+            if Xs==unit
             then nil
-            elsecase N>0 then
-               case {All Xs fun {$ X} X==toplevel end}
+            elseif N>0 then
+               if {All Xs fun {$ X} X==toplevel end}
                then ['' 'On toplevel']
                else '' | 'CallStack: ' | {DoStack Xs N}
                end
@@ -547,9 +551,9 @@ in
          end
 
          proc {ErrorFooter Out Format}
-            case {CondSelect Format footer false}
+            if {CondSelect Format footer false}
             then {Out Dashes}
-            else skip end
+            end
          end
 
          proc {ErrorInfo Out Format}
@@ -597,22 +601,22 @@ in
          Fs = [items loc stack footer info]
       in
          E = {Record.make error
-              case Kind==unit then
-                 case Msg==unit
+              if Kind==unit then
+                 if Msg==unit
                  then Fs
                  else msg|Fs end
-              elsecase Msg==unit
+              elseif Msg==unit
               then kind|Fs
               else kind|msg|Fs
               end}
 
-         case Kind \= unit
+         if Kind \= unit
          then E.kind = Kind
-         else skip end
+         end
 
-         case Msg \= unit
+         if Msg \= unit
          then E.msg = Msg
-         else skip end
+         end
 
          E.items  = Bs
          E.loc    = {DebugLoc Exc}
@@ -648,16 +652,16 @@ in
       fun {FormatOzError Exc}
          T = 'Error: unhandled exception'
       in
-         case {IsRecord Exc} then
+         if {IsRecord Exc} then
             LL={Label Exc}
          in
-            case LL==failure then
+            if LL==failure then
                {{ErrorRegistry.get failure} Exc}
-            elsecase LL==error orelse LL==system then
-               case {HasDispatchField Exc} then
+            elseif LL==error orelse LL==system then
+               if {HasDispatchField Exc} then
                   Key = {Label {DispatchField Exc}}
                in
-                  case {ErrorRegistry.exists Key}
+                  if {ErrorRegistry.exists Key}
                   then {{ErrorRegistry.get Key} Exc}
                   else {GenericFormatter T Exc}
                   end
@@ -667,7 +671,7 @@ in
             else
                Key = {Label Exc}
             in
-               case {ErrorRegistry.exists Key}
+               if {ErrorRegistry.exists Key}
                then {{ErrorRegistry.get Key} Exc}
                else {GenericFormatter T Exc}
                end

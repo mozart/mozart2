@@ -338,15 +338,17 @@ in
                    else
                       OFN = stdout
                    end
-                elseif OptRec.mode == feedtoemulator
-                   andthen {Not OptRec.makedepend}
-                then
-                   {Report
-                    error(kind: UsageError
-                          msg: ('no output file name must be '#
-                                'specified for --feedtoemulator'))}
                 else
-                   OFN = OptRec.outputfile
+                   if OptRec.mode == feedtoemulator
+                      andthen {Not OptRec.makedepend}
+                   then
+                      {Report
+                       error(kind: UsageError
+                             msg: ('no output file name must be '#
+                                   'specified for --feedtoemulator'))}
+                   else
+                      OFN = OptRec.outputfile
+                   end
                 end
                 {BatchCompiler enqueue(pushSwitches())}
                 if OptRec.makedepend then

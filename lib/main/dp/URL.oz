@@ -230,7 +230,7 @@ local
                   {PUT device [{Char.toLower C}]}
                   %% -- does the path begin with a slash?
                   case Suffix of H|T then
-                     case H==&/ orelse H==&\\ then
+                     if H==&/ orelse H==&\\ then
                         Absolute=true
                         {PATH T}
                      else
@@ -243,9 +243,9 @@ local
                   {PUT scheme {Map Prefix CharToLower}}
                   %% -- check for //authority
                   case Suffix of H1|T1 then
-                     case H1==&/ then
+                     if H1==&/ then
                         case T1 of H2|T2 then
-                           case H2==&/ then
+                           if H2==&/ then
                               %% -- found //, expect authority
                               {AUTHORITY T2}
                            else
@@ -269,7 +269,7 @@ local
                case Prefix of nil then
                   %% -- slash at start: check for //authority
                   case Suffix of H|T then
-                     case H==&/ then
+                     if H==&/ then
                         {AUTHORITY T}
                      else
                         Absolute=true
@@ -406,7 +406,7 @@ local
          URLValue = {Dictionary.toRecord url Data}
 
       in
-         case URLValue==url then url(unit) else URLValue end
+         if URLValue==url then url(unit) else URLValue end
       end
    end
 
@@ -421,7 +421,7 @@ local
       fun {Decode L}
          case L of nil then nil
          [] H|T then
-            case H==&% then
+            if H==&% then
                case T of X1|X2|T then
                   (D.X1*16)+D.X2 | {Decode T}
                else H | {Decode T} end
@@ -547,7 +547,7 @@ local
          {List.foldR Path.1 CompToVS nil}
       end                                                        #
       case Query     of unit then nil else '?'#Query      end    #
-      case Full then
+      if Full then
          case Fragment of unit then nil else "#"#Fragment end    #
          case Info     of unit then nil else
             '{'#{FoldR {Record.toListInd Info} InfoPropToVS nil}#'}'

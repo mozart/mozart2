@@ -24,11 +24,11 @@
 
 
 fun {MakeList N}
-   case N>0 then _|{MakeList N-1} else nil end
+   if N>0 then _|{MakeList N-1} else nil end
 end
 
 fun {IsList Xs}
-   case Xs of _|Xr then {IsList Xr} else Xs==nil end
+   case Xs of _|Xr then {IsList Xr} [] nil then true else false end
 end
 
 fun {Append Xs Ys}
@@ -58,7 +58,9 @@ local
       X|Xr = Xs in case N of 1 then X else {DoNth Xr N-1} end
    end
 in
-   fun {Nth Xs N} case N>0 then {DoNth Xs N} end end
+   fun {Nth Xs N}
+      case N>0 of true then {DoNth Xs N} end
+   end
 end
 
 local
@@ -133,7 +135,7 @@ end
 
 fun {Filter Xs F}
    case Xs of nil then nil
-   [] X|Xr then case {F X} then X|{Filter Xr F} else {Filter Xr F} end
+   [] X|Xr then if {F X} then X|{Filter Xr F} else {Filter Xr F} end
    end
 end
 
@@ -141,7 +143,7 @@ local
    fun {DoFlatten Xs Start End}
       case Xs of
          X|Xr then S S1 in
-         case {DoFlatten X S S1}
+         if {DoFlatten X S S1}
          then S=Start {DoFlatten Xr S1 End}
          else S2 in Start=X|S2 {DoFlatten Xr S2 End}
          end
@@ -151,7 +153,7 @@ local
    end
 in
    fun {Flatten X}
-      Start in case {DoFlatten X Start nil} then Start else X end
+      Start in if {DoFlatten X Start nil} then Start else X end
    end
 end
 
@@ -160,7 +162,7 @@ local
    fun {DoMerge X Xr Ys F}
       case Ys of nil then X|Xr
       [] Y|Yr then
-         case {F X Y} then X|{DoMerge Y Yr Xr F}
+         if {F X Y} then X|{DoMerge Y Yr Xr F}
          else Y|{DoMerge X Xr Yr F}
          end
       end
@@ -170,16 +172,16 @@ local
       of 0 then Ys=nil Ys
       [] 1 then X|!Ys=Xs in [X]
       [] 2 then X1|X2|!Ys=Xs in
-         case {P X1 X2} then [X1 X2] else [X2 X1] end
+         if {P X1 X2} then [X1 X2] else [X2 X1] end
       [] 3 then X1|X2|X3|!Ys=Xs in
-         case {P X1 X2} then
-            case {P X2 X3} then [X1 X2 X3]
-            elsecase {P X1 X3} then [X1 X3 X2]
+         if {P X1 X2} then
+            if {P X2 X3} then [X1 X2 X3]
+            elseif {P X1 X3} then [X1 X3 X2]
             else [X3 X1 X2]
             end
          else
-            case {P X1 X3} then [X2 X1 X3]
-            elsecase {P X2 X3} then [X2 X3 X1]
+            if {P X1 X3} then [X2 X1 X3]
+            elseif {P X2 X3} then [X2 X3 X1]
             else [X3 X2 X1]
             end
          end
@@ -206,12 +208,12 @@ local
    %% Conventional Wisdom :-)
    %%
    fun {ListTail N T}
-      case N>0 then _|{ListTail N-1 T} elsecase N==0 then T end
+      case N>0 of true then _|{ListTail N-1 T} elsecase N==0 of true then T end
    end
 
    fun {Subtract Xs Y}
       case Xs of nil then nil
-      [] X|Xr then case X\=Y then X|{Subtract Xr Y} else Xr end
+      [] X|Xr then if X\=Y then X|{Subtract Xr Y} else Xr end
       end
    end
 
@@ -225,7 +227,7 @@ local
       fun {Find X Xr Ys}
          case Ys of nil then false
          [] Y|Yr then
-            case X==Y then {Sub Xr Yr} else {Find X Xr Yr} end
+            if X==Y then {Sub Xr Yr} else {Find X Xr Yr} end
          end
       end
    in
@@ -239,20 +241,20 @@ local
 
    fun {Take Xs N}
       case Xs of nil then nil
-      [] X|Xr then case N>0 then X|{Take Xr N-1} else N=0 nil end
+      [] X|Xr then if N>0 then X|{Take Xr N-1} else N=0 nil end
       end
    end
 
    fun {Drop Xs N}
       case Xs of nil then nil
-      [] _|Xr then case N>0 then {Drop Xr N-1} else N=0 Xs end
+      [] _|Xr then if N>0 then {Drop Xr N-1} else N=0 Xs end
       end
    end
 
    proc {TakeDrop Xs N ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         case N>0 then Ys=X|{TakeDrop Xr N-1 $ Zs}
+         if N>0 then Ys=X|{TakeDrop Xr N-1 $ Zs}
          else N=0 Ys=nil Zs=Xs
          end
       end
@@ -264,7 +266,7 @@ local
    proc {Partition Xs F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         case {F X} then Ys=X|{Partition Xr F $ Zs}
+         if {F X} then Ys=X|{Partition Xr F $ Zs}
          else Zs=X|{Partition Xr F Ys $}
          end
       end
@@ -272,20 +274,20 @@ local
 
    fun {TakeWhile Xs F}
       case Xs of nil then nil
-      [] X|Xr then case {F X} then X|{TakeWhile Xr F} else nil end
+      [] X|Xr then if {F X} then X|{TakeWhile Xr F} else nil end
       end
    end
 
    fun {DropWhile Xs F}
       case Xs of nil then nil
-      [] X|Xr then case {F X} then {DropWhile Xr F} else Xs end
+      [] X|Xr then if {F X} then {DropWhile Xr F} else Xs end
       end
    end
 
    proc {TakeDropWhile Xs F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         case {F X} then  Ys=X|{TakeDropWhile Xr F $ Zs}
+         if {F X} then  Ys=X|{TakeDropWhile Xr F $ Zs}
          else Ys=nil Zs=Xs
          end
       end
@@ -357,7 +359,7 @@ local
    fun {FilterInd Xs I F}
       case Xs of nil then nil
       [] X|Xr then
-         case {F I X} then X|{FilterInd Xr I+1 F}
+         if {F I X} then X|{FilterInd Xr I+1 F}
          else {FilterInd Xr I+1 F}
          end
       end
@@ -366,7 +368,7 @@ local
    proc {PartitionInd Xs I F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         case {F I X} then Ys=X|{PartitionInd Xr I+1 F $ Zs}
+         if {F I X} then Ys=X|{PartitionInd Xr I+1 F $ Zs}
          else Zs=X|{PartitionInd Xr I+1 F Ys $}
          end
       end
@@ -374,20 +376,20 @@ local
 
    fun {TakeWhileInd Xs I F}
       case Xs of nil then nil
-      [] X|Xr then case {F I X} then X|{TakeWhileInd Xr I+1 F} else nil end
+      [] X|Xr then if {F I X} then X|{TakeWhileInd Xr I+1 F} else nil end
       end
    end
 
    fun {DropWhileInd Xs I F}
       case Xs of nil then nil
-      [] X|Xr then case {F I X} then {DropWhileInd Xr I+1 F} else Xs end
+      [] X|Xr then if {F I X} then {DropWhileInd Xr I+1 F} else Xs end
       end
    end
 
    proc {TakeDropWhileInd Xs I F ?Ys ?Zs}
       case Xs of nil then Ys=nil Zs=nil
       [] X|Xr then
-         case {F I X} then Ys=X|{TakeDropWhileInd Xr I+1 F $ Zs}
+         if {F I X} then Ys=X|{TakeDropWhileInd Xr I+1 F $ Zs}
          else Ys=nil Zs=Xs
          end
       end
@@ -401,11 +403,11 @@ local
    end
 
    fun {NumberInc F T S}
-      case F>T then nil else F|{NumberInc F+S T S} end
+      if F>T then nil else F|{NumberInc F+S T S} end
    end
 
    fun {NumberDec F T S}
-      case F<T then nil else F|{NumberDec F+S T S} end
+      if F<T then nil else F|{NumberDec F+S T S} end
    end
 
    local
@@ -452,7 +454,7 @@ in
                zip:           Zip
                number:
                   fun {$ F T S}
-                     case S>0 then {NumberInc F T S} else {NumberDec F T S} end
+                     if S>0 then {NumberInc F T S} else {NumberDec F T S} end
                   end
                take:          Take
                drop:          Drop

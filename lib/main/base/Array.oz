@@ -23,16 +23,16 @@
 
 local
    proc {ArrayToRecord I A T}
-      T.I={Get A I} case I>1 then {ArrayToRecord I-1 A T} else skip end
+      T.I={Get A I} if I>1 then {ArrayToRecord I-1 A T} end
    end
    proc {ArrayToArray L H A1 A2}
-      case L>H then skip else
+      if L=<H then
          {Put A2 L {Get A1 L}}
          {ArrayToArray L+1 H A1 A2}
       end
    end
    fun {MakePairs L H A}
-      case L>H then nil
+      if L>H then nil
       else L#{Get A L}|{MakePairs L+1 H A}
       end
    end
@@ -57,7 +57,7 @@ in
                               Lo={GetLow A} Hi={GetHigh A}
                               R
                            in
-                              case Lo==1 then
+                              if Lo==1 then
                                  R={MakeTuple L Hi}
                                  {ArrayToRecord Hi A R}
                               else

@@ -29,34 +29,27 @@
 local
    %% some speedup if +1 is statically known
    proc {HelpPlusOne C To P}
-      case C=<To then {P C} {HelpPlusOne C+1 To P}
-      else skip
+      if C=<To then {P C} {HelpPlusOne C+1 To P}
       end
    end
    %% some speedup if -1 is statically known
    proc {HelpMinusOne C To P}
-      case C>=To then {P C} {HelpMinusOne C-1 To P}
-      else skip
+      if C>=To then {P C} {HelpMinusOne C-1 To P}
       end
    end
    proc {HelpPlus C To Step P}
-      case C=<To then {P C} {HelpPlus C+Step To Step P}
-      else skip
+      if C=<To then {P C} {HelpPlus C+Step To Step P}
       end
    end
    proc {HelpMinus C To Step P}
-      case C>=To then {P C} {HelpMinus C+Step To Step P}
-      else skip
+      if C>=To then {P C} {HelpMinus C+Step To Step P}
       end
    end
 in
    proc {For From To Step P}
-      case
-         Step==1 then {HelpPlusOne From To P}
-      elsecase
-         Step==~1 then {HelpMinusOne From To P}
-      elsecase
-         Step>0 then {HelpPlus From To Step P}
+      if Step==1 then {HelpPlusOne From To P}
+      elseif Step==~1 then {HelpMinusOne From To P}
+      elseif Step>0 then {HelpPlus From To Step P}
       else {HelpMinus From To Step P}
       end
    end
@@ -64,30 +57,30 @@ end
 
 local
    fun {HelpPlusOne C To P In}
-      case C=<To then {HelpPlusOne C+1 To P {P In C}}
+      if C=<To then {HelpPlusOne C+1 To P {P In C}}
       else In
       end
    end
    fun {HelpMinusOne C To P In}
-      case C>=To then {HelpMinusOne C-1 To P {P In C}}
+      if C>=To then {HelpMinusOne C-1 To P {P In C}}
       else In
       end
    end
    fun {HelpPlus C To Step P In}
-      case C=<To then {HelpPlus C+Step To Step P {P In C}}
+      if C=<To then {HelpPlus C+Step To Step P {P In C}}
       else In
       end
    end
    fun {HelpMinus C To Step P In}
-      case C>=To then {HelpMinus C+Step To Step P {P In C}}
+      if C>=To then {HelpMinus C+Step To Step P {P In C}}
       else In
       end
    end
 in
    fun {ForThread From To Step P In}
-      case Step==1 then {HelpPlusOne From To P In}
-      elsecase Step==~1 then {HelpMinusOne From To P In}
-      elsecase Step>0 then {HelpPlus From To Step P In}
+      if Step==1 then {HelpPlusOne From To P In}
+      elseif Step==~1 then {HelpMinusOne From To P In}
+      elseif Step>0 then {HelpPlus From To Step P In}
       else {HelpMinus From To Step P In}
       end
    end

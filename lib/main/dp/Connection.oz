@@ -31,7 +31,7 @@ local
       %% int -> char
       IntMap  = {List.toTuple '#'
                  {ForThread 1 127 1 fun {$ S I}
-                                       case {Char.isAlNum I} then I|S
+                                       if {Char.isAlNum I} then I|S
                                        else S
                                        end
                                     end nil}}
@@ -51,11 +51,11 @@ local
       {For 1 255 1  proc {$ I}
                        C=CharMap.I
                     in
-                       case {IsDet C} then skip else C=0 end
+                       if {IsDet C} then skip else C=0 end
                     end}
 
       fun {IntToKey I}
-         case I<Base then [IntMap.(I+1)]
+         if I<Base then [IntMap.(I+1)]
          else IntMap.((I mod Base) + 1)|{IntToKey I div Base}
          end
       end
@@ -89,7 +89,7 @@ local
                    &:|{IntToKey Stamp}
                    &:|{IntToKey Pid}
                    &/|{IntToKey T.key}
-                   [&: case T.single then &s else &m end]] nil}
+                   [&: if T.single then &s else &m end]] nil}
       in
          {Append S &:|{IntToKey {CheckSum S 0}}}
       end
@@ -166,13 +166,11 @@ in
       thread
          {ForAll ReqStream
           proc {$ T#A}
-             case
+             if
                 T.time == ThisPid.time andthen
                 {Dictionary.member KeyDict T.key}
              then Y={Dictionary.get KeyDict T.key} in
-                case T.single then {Dictionary.remove KeyDict T.key}
-                else skip
-                end
+                if T.single then {Dictionary.remove KeyDict T.key} end
                 thread A=yes(Y) end
              else
                 thread A=no end

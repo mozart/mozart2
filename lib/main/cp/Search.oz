@@ -72,7 +72,7 @@ local
    %%
 
    fun {OneDepthNR KF S}
-      case {IsFree KF} then
+      if {IsFree KF} then
          case {Space.ask S}
          of failed then nil
          [] succeeded then S
@@ -89,7 +89,7 @@ local
 
    local
       fun {AltCopy KF I M S MRD}
-         case I==M then
+         if I==M then
             {Space.commit S I}
             {OneDepthR KF S S nil MRD MRD}
          else C={Space.clone S} in
@@ -103,21 +103,23 @@ local
 
       fun {Alt KF I M S C As RD MRD}
          {Space.commit S I}
-         case I==M then {OneDepthR KF S C I|As RD MRD}
-         elsecase {OneDepthR KF S C I|As RD MRD}
-         of nil then S={Recompute C As} in
-            {Alt KF I+1 M S C As RD MRD}
-         elseof O then O
+         if I==M then {OneDepthR KF S C I|As RD MRD}
+         else
+            case {OneDepthR KF S C I|As RD MRD}
+            of nil then S={Recompute C As} in
+               {Alt KF I+1 M S C As RD MRD}
+            elseof O then O
+            end
          end
       end
    in
       fun {OneDepthR KF S C As RD MRD}
-         case {IsFree KF} then
+         if {IsFree KF} then
             case {Space.ask S}
             of failed    then nil
             [] succeeded then S
             [] alternatives(M) then
-               case RD==MRD then {AltCopy KF 1 M S MRD}
+               if RD==MRD then {AltCopy KF 1 M S MRD}
                else {Alt KF 1 M S C As RD+1 MRD}
                end
             end
@@ -130,14 +132,14 @@ local
       fun {OneDepth P MRD ?KP}
          KF={NewKiller ?KP} S={Space.new P}
       in
-         case MRD==1 then {OneDepthNR KF S}
+         if MRD==1 then {OneDepthNR KF S}
          else {OneDepthR KF S S nil MRD MRD}
          end
       end
 
       local
          fun {AltCopy KF I M S CD MRD CO}
-            case I==M then
+            if I==M then
                {Space.commit S I}
                {OneBoundR KF S S nil CD MRD MRD CO}
             else
@@ -145,7 +147,7 @@ local
                {Space.commit C I}
                O={OneBoundR KF C S [I] CD 1 MRD CO}
             in
-               case {Space.is O} then O
+               if {Space.is O} then O
                else {AltCopy KF I+1 M S CD MRD O}
                end
             end
@@ -153,9 +155,9 @@ local
 
          fun {Alt KF I M S C As CD RD MRD CO}
             {Space.commit S I}
-            case I==M then {OneBoundR KF S C I|As CD RD MRD CO}
+            if I==M then {OneBoundR KF S C I|As CD RD MRD CO}
             else O={OneBoundR KF S C I|As CD RD MRD CO} in
-               case {Space.is O} then O
+               if {Space.is O} then O
                else S={Recompute C As} in
                   {Alt KF I+1 M S C As CD RD MRD O}
                end
@@ -163,13 +165,13 @@ local
          end
 
          fun {OneBoundR KF S C As CD RD MRD CO}
-            case {IsFree KF} then
+            if {IsFree KF} then
                case {Space.ask S}
                of failed    then CO
                [] succeeded then S
                [] alternatives(M) then
-                  case CD=<0 then cut
-                  elsecase RD==MRD then {AltCopy KF 1 M S CD-1 MRD CO}
+                  if CD=<0 then cut
+                  elseif RD==MRD then {AltCopy KF 1 M S CD-1 MRD CO}
                   else {Alt KF 1 M S C As CD-1 RD+1 MRD CO}
                   end
                end
@@ -178,7 +180,7 @@ local
          end
 
          fun {OneIterR KF S CD MRD}
-            case {IsFree KF} then C={Space.clone S} in
+            if {IsFree KF} then C={Space.clone S} in
                case {OneBoundR KF C C nil CD MRD MRD nil}
                of cut then {OneIterR KF S CD+1 MRD}
                elseof O then O
@@ -201,24 +203,26 @@ local
 
       local
          proc {Probe S D KF}
-            case {IsDet KF} then
+            if {IsDet KF} then
                raise killed end
-            elsecase {Space.ask S}
-            of failed then skip
-            [] succeeded then
-               raise succeeded(S) end
-            [] alternatives(N) then
-               case D==0 then
-                  {Space.commit S 1} {Probe S 0 KF}
-               else C={Space.clone S} in
-                  {Space.commit S 2#N} {Probe S D-1 KF}
-                  {Space.commit C 1}   {Probe C D KF}
+            else
+               case {Space.ask S}
+               of failed then skip
+               [] succeeded then
+                  raise succeeded(S) end
+               [] alternatives(N) then
+                  if D==0 then
+                     {Space.commit S 1} {Probe S 0 KF}
+                  else C={Space.clone S} in
+                     {Space.commit S 2#N} {Probe S D-1 KF}
+                     {Space.commit C 1}   {Probe C D KF}
+                  end
                end
             end
          end
 
          proc {Iterate S D M KF}
-            case M==D then {Probe S D KF} else
+            if M==D then {Probe S D KF} else
                {Probe {Space.clone S} D KF} {Iterate S D+1 M KF}
             end
          end
@@ -318,7 +322,7 @@ local
    local
 
       proc {AllNR KF S W Or Os}
-         case {IsFree KF} then
+         if {IsFree KF} then
             case {Space.ask S}
             of failed then Os=Or
             [] succeeded then Os={W S}|Or
@@ -333,7 +337,7 @@ local
 
       local
          proc {AltCopy KF I M S MRD W Or Os}
-            case I==M then
+            if I==M then
                {Space.commit S I}
                {AllR KF S S nil MRD MRD W Or Os}
             else C={Space.clone S} Ot in
@@ -345,7 +349,7 @@ local
 
          proc {Alt KF I M S C As RD MRD W Or Os}
             {Space.commit S I}
-            case I==M then
+            if I==M then
                {AllR KF S C I|As RD MRD W Or Os}
             else Ot NewS={Recompute C As} in
                Os={AllR KF S C I|As RD MRD W Ot}
@@ -354,12 +358,12 @@ local
          end
       in
          fun {AllR KF S C As RD MRD W Or}
-            case {IsFree KF} then
+            if {IsFree KF} then
                case {Space.ask S}
                of failed    then Or
                [] succeeded then {W S}|Or
                [] alternatives(M) then
-                  case RD==MRD then {AltCopy KF 1 M S MRD W Or}
+                  if RD==MRD then {AltCopy KF 1 M S MRD W Or}
                   else {Alt KF 1 M S C As RD+1 MRD W Or}
                   end
                end
@@ -371,7 +375,7 @@ local
       fun {All P MRD ?KP}
          KF={NewKiller ?KP} S={Space.new P}
       in
-         case MRD==1 then {AllNR KF S Space.merge nil}
+         if MRD==1 then {AllNR KF S Space.merge nil}
          else {AllR KF S S nil MRD MRD Space.merge nil}
          end
       end
@@ -379,7 +383,7 @@ local
       fun {AllS P MRD ?KP}
          KF={NewKiller ?KP} S={Space.new P}
       in
-         case MRD==1 then {AllNR KF S WrapS nil}
+         if MRD==1 then {AllNR KF S WrapS nil}
          else {AllR KF S S nil MRD MRD WrapS nil}
          end
       end
@@ -387,7 +391,7 @@ local
       fun {AllP P MRD ?KP}
          KF={NewKiller ?KP} S={Space.new P}
       in
-         case MRD==1 then {AllNR KF S WrapP nil}
+         if MRD==1 then {AllNR KF S WrapP nil}
          else {AllR KF S S nil MRD MRD WrapP nil}
          end
       end
@@ -402,15 +406,15 @@ local
 
       local
          fun {BABNR KF S O SS}
-            case {IsFree KF} then
+            if {IsFree KF} then
                case {Space.ask S}
                of failed then SS
                [] succeeded then S
                [] alternatives(N) then C={Space.clone S} NewSS in
                   {Space.commit S 1} {Space.commit C 2#N}
                   NewSS={BABNR KF S O SS}
-                  case SS==NewSS then {BABNR KF C O SS}
-                  elsecase NewSS==nil then nil
+                  if SS==NewSS then {BABNR KF C O SS}
+                  elseif NewSS==nil then nil
                   else {Better C O NewSS} {BABNR KF C O NewSS}
                   end
                end
@@ -420,15 +424,15 @@ local
 
          local
             fun {AltCopy KF I M S MRD O SS}
-               case I==M then
+               if I==M then
                   {Space.commit S I}
                   {BABR KF S S nil MRD MRD O SS}
                else C={Space.clone S} NewSS in
                   {Space.commit C I}
                   NewSS = {BABR KF C S [I] 1 MRD O SS}
-                  case NewSS==SS then
+                  if NewSS==SS then
                      {AltCopy KF I+1 M S MRD O SS}
-                  elsecase NewSS==nil then nil
+                  elseif NewSS==nil then nil
                   else
                      {Space.commit S I+1#M}
                      {Better S O NewSS}
@@ -439,14 +443,14 @@ local
 
             fun {Alt KF I M S C As RD MRD O SS}
                {Space.commit S I}
-               case I==M then
+               if I==M then
                   {BABR KF S C I|As RD MRD O SS}
                else
                   NewSS = {BABR KF S C I|As RD MRD O SS}
                in
-                  case NewSS==SS then
+                  if NewSS==SS then
                      {Alt KF I+1 M {Recompute C As} C As RD MRD O SS}
-                  elsecase NewSS==nil then nil
+                  elseif NewSS==nil then nil
                   else NewS={Recompute C As} in
                      {Space.commit NewS I+1#M}
                      {Better NewS O NewSS}
@@ -456,12 +460,12 @@ local
             end
          in
             fun {BABR KF S C As RD MRD O SS}
-               case {IsFree KF} then
+               if {IsFree KF} then
                   case {Space.ask S}
                   of failed    then SS
                   [] succeeded then S
                   [] alternatives(M) then
-                     case RD==MRD then {AltCopy KF 1 M S MRD O SS}
+                     if RD==MRD then {AltCopy KF 1 M S MRD O SS}
                      else {Alt KF 1 M S C As RD+1 MRD O SS}
                      end
                   end
@@ -474,7 +478,7 @@ local
          fun {BestBAB P O MRD ?KP}
             KF={NewKiller ?KP} S={Space.new P}
          in
-            case MRD==1 then {BABNR KF S O nil}
+            if MRD==1 then {BABNR KF S O nil}
             else {BABR KF S S nil MRD MRD O nil}
             end
          end
@@ -482,7 +486,7 @@ local
 
       local
          fun {RestartNR KF S O PS}
-            case {IsFree KF} then C={Space.clone S} in
+            if {IsFree KF} then C={Space.clone S} in
                case {OneDepthNR KF S}
                of nil then PS
                elseof S then {Better C O S} {RestartNR KF C O S}
@@ -492,7 +496,7 @@ local
          end
 
          fun {RestartR KF S O PS MRD}
-            case {IsFree KF} then C={Space.clone S} in
+            if {IsFree KF} then C={Space.clone S} in
                case {OneDepthR KF S S nil MRD MRD}
                of nil then PS
                elseof S then {Better C O S} {RestartR KF C O S MRD}
@@ -504,7 +508,7 @@ local
          fun {BestRestart P O MRD ?KP}
             KF={NewKiller ?KP} S={Space.new P}
          in
-            case MRD==1 then {RestartNR KF S O nil}
+            if MRD==1 then {RestartNR KF S O nil}
             else {RestartR KF S O nil MRD}
             end
          end
@@ -557,7 +561,7 @@ local
 
       local
          proc {Recompute S|Sr C}
-            case {Space.is S} then C={Space.clone S}
+            if {Space.is S} then C={Space.clone S}
             else {Recompute Sr C} {Space.commit C S.1}
             end
          end
@@ -595,16 +599,15 @@ local
             end
 
             meth next($)
-               case @backtrack then
+               if @backtrack then
                   ReClass, backtrack
                   backtrack <- false
-               else skip
                end
                {self explore($)}
             end
 
             meth push(M)
-               case self.mrd==@rd then
+               if self.mrd==@rd then
                   rd    <- 1
                   stack <- 1#M#@sol|{Space.clone @cur}|@stack
                else
@@ -618,19 +621,19 @@ local
                [] S1|Sr then
                   case S1
                   of I#M#Sol then
-                     case I==M then
+                     if I==M then
                         stack <- Sr rd <- @rd - 1
                         ReClass,backtrack
                      else NextI=I+1 S2|Srr=Sr in
-                        case M==NextI andthen {Space.is S2} then
+                        if M==NextI andthen {Space.is S2} then
                            {Space.commit S2 M}
                            stack <- Srr
                            rd    <- self.mrd
                            cur   <- S2
-                           case @sol==Sol then skip else
+                           if @sol\=Sol then
                               {Better S2 self.order @sol}
                            end
-                        elsecase @sol==Sol then
+                        elseif @sol==Sol then
                            stack <- NextI#M#Sol|Sr
                            cur   <- {Recompute @stack}
                         else
@@ -653,15 +656,17 @@ local
             meth explore(S)
                C = @cur
             in
-               case @isStopped then S=stopped
-               elsecase C==false then S=nil
-               elsecase {Space.ask C}
-               of failed then
-                  All,backtrack All,explore(S)
-               [] succeeded then
-                  S=C backtrack <- true
-               [] alternatives(M) then
-                  All,push(M) {Space.commit C 1} All,explore(S)
+               if @isStopped then S=stopped
+               elseif C==false then S=nil
+               else
+                  case {Space.ask C}
+                  of failed then
+                     All,backtrack All,explore(S)
+                  [] succeeded then
+                     S=C backtrack <- true
+                  [] alternatives(M) then
+                     All,push(M) {Space.commit C 1} All,explore(S)
+                  end
                end
             end
          end
@@ -670,15 +675,17 @@ local
             meth explore(S)
                C = @cur
             in
-               case @isStopped then S=stopped
-               elsecase C==false then S=nil
-               elsecase {Space.ask C}
-               of failed then
-                  Best,backtrack Best,explore(S)
-               [] succeeded then
-                  S=C sol<-C backtrack<-true
-               [] alternatives(M) then
-                  ReClass,push(M) {Space.commit C 1} Best,explore(S)
+               if @isStopped then S=stopped
+               elseif C==false then S=nil
+               else
+                  case {Space.ask C}
+                  of failed then
+                     Best,backtrack Best,explore(S)
+                  [] succeeded then
+                     S=C sol<-C backtrack<-true
+                  [] alternatives(M) then
+                     ReClass,push(M) {Space.commit C 1} Best,explore(S)
+                  end
                end
             end
          end
@@ -701,7 +708,7 @@ local
             lock
                D = {CondSelect M rcd @RCD}
             in
-               MyAgent <- case {HasFeature M 2} then {New Best init(P M.2 D)}
+               MyAgent <- if {HasFeature M 2} then {New Best init(P M.2 D)}
                           else {New All init(P false D)}
                           end
                RCD     <- D
@@ -715,7 +722,7 @@ local
          meth next($)
             S=SearchObject,Next($)
          in
-            case {Space.is S} then [{Space.merge {Space.clone S}}]
+            if {Space.is S} then [{Space.merge {Space.clone S}}]
             else S
             end
          end
@@ -723,7 +730,7 @@ local
          meth nextS($)
             S=SearchObject,Next($)
          in
-            case {Space.is S} then [{Space.clone S}]
+            if {Space.is S} then [{Space.clone S}]
             else S
             end
          end
@@ -731,7 +738,7 @@ local
          meth nextP($)
             S=SearchObject,Next($)
          in
-            case {Space.is S} then [{WrapP S}]
+            if {Space.is S} then [{WrapP S}]
             else S
             end
          end
@@ -743,7 +750,7 @@ local
          meth last($)
             S=SearchObject,Last($)
          in
-            case {Space.is S} then [{Space.merge {Space.clone S}}]
+            if {Space.is S} then [{Space.merge {Space.clone S}}]
             else S
             end
          end
@@ -751,7 +758,7 @@ local
          meth lastS($)
             S=SearchObject,Last($)
          in
-            case {Space.is S} then [{Space.clone S}]
+            if {Space.is S} then [{Space.clone S}]
             else S
             end
          end
@@ -759,7 +766,7 @@ local
          meth lastP($)
             S=SearchObject,Last($)
          in
-            case {Space.is S} then [{WrapP S}]
+            if {Space.is S} then [{WrapP S}]
             else S
             end
          end

@@ -30,7 +30,7 @@ local
    proc {Token Is J ?T ?R}
       case Is of nil then T=nil R=nil
       [] I|Ir then
-         case I==J then T=nil R=Ir
+         if I==J then T=nil R=Ir
          else Tr in T=I|Tr {Token Ir J Tr R}
          end
       end
@@ -40,7 +40,7 @@ local
       case Is of nil then Jr=nil
          case Js of nil then nil else [Js] end
       [] I|Ir then
-         case I==C then NewJs in
+         if I==C then NewJs in
             Jr=nil Js|{Tokens Ir C NewJs NewJs}
          else NewJr in
             Jr=I|NewJr {Tokens Ir C Js NewJr}

@@ -70,11 +70,11 @@ define
    in
       fun {GetFontHeight F}
          lock FontLock then
-            AF = case {IsAtom F} then F else
+            AF = if {IsAtom F} then F else
                     {String.toAtom {VirtualString.toString F}}
                  end
          in
-            case {Dictionary.member FontDict AF} then skip else
+            if {Dictionary.member FontDict AF} then skip else
                {Dictionary.put FontDict AF
                 {Tk.returnInt font(metrics AF linespace:unit)}}
             end
@@ -88,7 +88,7 @@ define
    Pad        = 2
    BigPad     = 4
    NoArg      = {NewName}
-   EntryColor = case Tk.isColor then wheat else white end
+   EntryColor = if Tk.isColor then wheat else white end
 
    class Dialog
       from Tk.frame
@@ -107,7 +107,7 @@ define
                   delete:  Delete     <= NoArg)
          lock
             GeoX GeoY GeoXOffset GeoYOffset
-            case Master==NoArg then skip else
+            if Master\=NoArg then
                case Root
                of master then
                   GeoX = {Tk.returnInt winfo(rootx Master)}
@@ -132,14 +132,14 @@ define
                end
             end
             Toplevel  = {New Tk.toplevel
-                         case Master==NoArg then
-                            case Delete==NoArg then
+                         if Master==NoArg then
+                            if Delete==NoArg then
                                tkInit(title:Title withdraw:true)
                             else
                                tkInit(title:Title withdraw:true delete:Delete)
                             end
                          else
-                            case Delete==NoArg then
+                            if Delete==NoArg then
                                tkInit(parent:   Master
                                       title:    Title
                                       withdraw: true)
@@ -151,14 +151,14 @@ define
                             end
                          end}
             {Toplevel tkWM(transient
-                           case Master==NoArg then v('')
+                           if Master==NoArg then v('')
                            else Master
                            end)}
             Top    = {New Tk.frame tkInit(parent:             Toplevel
                                           bd:                 Border
                                           relief:             raised
                                           highlightthickness: 0)}
-            case Background == NoArg then
+            if Background == NoArg then
                Tk.frame,tkInit(parent:             Top
                                bd:                 BigBorder
                                highlightthickness: 0)
@@ -191,7 +191,7 @@ define
                             Button = {New Tk.button
                                       tkInit(parent:  Bottom
                                              relief:  raised
-                                             default: case Ind==Return then
+                                             default: if Ind==Return then
                                                          active
                                                       else
                                                          normal
@@ -199,24 +199,21 @@ define
                                              text:    Text
                                              action:  ButtonAction)}
                          in
-                            case Ind==Focus then
+                            if Ind==Focus then
                                FocusButton = Button
-                            else skip
                             end
-                            case Ind==Return then
+                            if Ind==Return then
                                ReturnAction = ButtonAction
                                ReturnButton = Button
-                            else skip
                             end
                             Button
                          end}
          in
-            case Focus>0 then
+            if Focus>0 then
                PackList <- [focus(FocusButton)]
-            else skip
             end
             PackList <- (wm(resizable Toplevel 0 0) |
-                         case Master\=NoArg andthen
+                         if Master\=NoArg andthen
                             {IsInt GeoX} andthen {IsInt GeoY}
                          then
                             wm(geometry Toplevel
@@ -232,14 +229,13 @@ define
                          pack(Bottom side:bottom fill:both) |
                          pack(Top side:top fill:both) |
                          pack(self side:top fill:both) | @PackList)
-            case Return>0 then
+            if Return>0 then
                {Toplevel tkBind(event:  '<Return>'
                                 action: ReturnAction)}
                PackList <- pack(ReturnButton) | @PackList
-            else skip
             end
             self.toplevel = Toplevel
-            case Pack then Dialog,tkPack else skip end
+            if Pack then Dialog,tkPack end
          end
       end
 
@@ -304,7 +300,7 @@ define
       fun {GetFeatures Ms}
          case Ms of nil then nil
          [] M|Mr then
-            case {HasFeature M feature} then M.feature|{GetFeatures Mr}
+            if {HasFeature M feature} then M.feature|{GetFeatures Mr}
             else {GetFeatures Mr}
             end
          end
@@ -327,17 +323,15 @@ define
          end
       in
          proc {MakeKey M Menu Item KeyBinder}
-            case {HasFeature M key} then
+            if {HasFeature M key} then
                B={HasFeature M event}
                E={MakeEvent M.key}
             in
                {Tk.send bind(KeyBinder
-                             case B
-                             then M.event
+                             if B then M.event
                              else E
                              end
                              v('{') Menu invoke Item v('}'))}
-            else skip
             end
          end
       end
@@ -379,7 +373,7 @@ define
          [] M|Mr then
             HasMenu = {HasFeature M menu}
             BaseCl  = Tk.menuentry.{Label M}
-            UseCl   = case HasMenu then
+            UseCl   = if HasMenu then
                          FS={GetFeatures M.menu}
                       in
                          {MakeClass BaseCl menu|FS}
@@ -389,15 +383,15 @@ define
             NewItem = {New UseCl M1}
          in
             {MakeKey M Menu NewItem KeyBinder}
-            case HasMenu then
+            if HasMenu then
                NewMenu = {New Tk.menu tkInit(parent:Menu)}
             in
                NewItem.menu = NewMenu
                {MakeItems M.menu NewItem NewMenu KeyBinder}
                {NewItem tk(entryconf menu:NewMenu)}
-            else skip end
-            case {HasFeature M feature} then Item.(M.feature)=NewItem
-            else skip
+            end
+            if {HasFeature M feature} then
+               Item.(M.feature)=NewItem
             end
             {MakeItems Mr Item Menu KeyBinder}
          end
@@ -413,8 +407,8 @@ define
          in
             {MakeItems M.menu MenuButton Menu KeyBinder}
             {MenuButton tk(conf menu:Menu)}
-            case {HasFeature M feature} then Bar.(M.feature)=MenuButton
-            else skip
+            if {HasFeature M feature} then
+               Bar.(M.feature)=MenuButton
             end
             MenuButton.menu = Menu
             MenuButton | {MakeButtons Mr Bar KeyBinder}
@@ -452,13 +446,13 @@ define
    BrighterColorBy = 140
    SameColorBy     = 100
 
-   TclDarkenBg = case Tk.isColor then
+   TclDarkenBg = if Tk.isColor then
                     fun {$ T P}
                        l(tkDarken l(lindex l(T conf '-bg') 4) P)
                     end
                  else
                     fun {$ _ P}
-                       case P>=100 then white else black end
+                       if P>=100 then white else black end
                     end
                  end
 
@@ -474,7 +468,7 @@ define
                      'class': ThisClass <= unit
                      text:    Text
                      font:    Font   <= DefaultFont)
-            case ThisClass == unit then
+            if ThisClass == unit then
                Tk.frame,tkInit(parent:             Parent
                                highlightthickness: 0)
             else
@@ -639,14 +633,14 @@ define
             Y3 = 0
             Y4 = 0
             Y5 = NotebookFrameWidth - 1
-            AO = case NotActive then Home else 0 end
+            AO = if NotActive then Home else 0 end
             BrightColor = {TclDarkenBg self BrighterColorBy}
             DarkColor   = {TclDarkenBg self DarkerColorBy}
             SameColor   = {TclDarkenBg self SameColorBy}
          in
             {ThisNoteBorderTag tk(delete)}
             %% Draw note frame
-            case X==0 then skip else
+            if X\=0 then
                Notebook,tk(crea polygon
                            AO+X0 AO+Y4 AO+X2 AO+Y4 AO+X2 AO+Y5
                            AO+X0 AO+Y5 AO+X0 AO+Y4
@@ -662,7 +656,7 @@ define
                         AO+X7 AO+Y4 AO+X6 AO+Y5
                         fill: BrightColor
                         tags: ThisNoteBorderTag)
-            case DoMark then
+            if DoMark then
                %% Make text visible
                {ThisTextTag tk(coords
                                X+MarkDelta+NotebookFrameWidth
@@ -684,7 +678,7 @@ define
                            X6 - MarkOuterOffset
                            Y1 + MarkOuterOffset
                            fill:    SameColor
-                           outline: case NotActive then SameColor
+                           outline: if NotActive then SameColor
                                     else black
                                     end
                            width:   MarkFrameWidth
@@ -692,7 +686,6 @@ define
                Notebook,tk('raise' ThisTextTag ThisHighlightTag)
                {ThisEventTag tkBind(event:  '<1>'
                                     action: self # toTop(Note))}
-            else skip
             end
             %% The next X coordinate
             X7 + 1
@@ -705,7 +698,7 @@ define
                NewX = Notebook,DrawNote(true NotFirstNote Note OldX @Width $)
             in
                NextX <- NewX
-               case NotFirstNote then skip else
+               if NotFirstNote then skip else
                   {Note.NoteTag tk(move ~Home ~Home)}
                   TopNote <- Note
                end
@@ -718,13 +711,12 @@ define
             lock W in
                Notes <- {List.subtract @Notes Note}
                {Note.Store remove(_ ?W)}
-               case @TopNote==Note then
+               if @TopNote==Note then
                   case @Notes of nil then TopNote <- unit
                   elseof N|_ then
                      TopNote <- N
                      Notebook,UnhideNote(N)
                   end
-               else skip
                end
                {Note.HighlightTag  tk(dtag Note.EventTag)}
                {Note.NoteBorderTag tk(delete)}
@@ -755,7 +747,7 @@ define
             lock
                Top = @TopNote
             in
-               case Note==Top then skip else
+               if Note\=Top then
                   Notebook,HideNote(Top)
                   Notebook,UnhideNote(Note)
                   TopNote <- Note
@@ -779,7 +771,7 @@ define
                MW MH
             in
                {GetBoundingBox CurNotes 0 0 ?MW ?MH}
-               case MW==@Width then skip else
+               if MW\=@Width then
                   Notebook,ReconfigureWidth(CurNotes MW)
                end
                {ForAll CurNotes
@@ -822,9 +814,9 @@ define
             @MarkX
          end
          meth configure(W H)
-            case W==@Width andthen H==@Height then skip else
+            if W\=@Width orelse H\=@Height then
                Width <- W Height <- H
-               case @IsAdded then {self.Book Reconfigure} else skip end
+               if @IsAdded then {self.Book Reconfigure} end
             end
          end
       end
@@ -915,7 +907,7 @@ define
          Ext Base
       in
          {Select Url Base Ext}
-         Base # case Ext==xbm then
+         Base # if Ext==xbm then
                    {New Tk.image tkInit(type:bitmap url:Url)}
                 else
                    {New Tk.image tkInit(type:photo format:Ext url:Url)}
@@ -939,8 +931,8 @@ define
       fun {CoerceAdd X Y}
          FX={IsFloat X} FY={IsFloat Y}
       in
-         case FX==FY then X+Y
-         elsecase FX then X + {IntToFloat Y}
+         if FX==FY then X+Y
+         elseif FX then X + {IntToFloat Y}
          else Y + {IntToFloat X}
          end
       end
@@ -967,7 +959,7 @@ define
             Tk.frame, tkInit(parent:P highlightthickness:Border
                              'class':'NumberEntry'
                              bd:Border relief:sunken)
-            Entry     = {New Tk.entry  tkInit(case Font==DefaultFont then unit
+            Entry     = {New Tk.entry  tkInit(if Font==DefaultFont then unit
                                               else o(font:Font)
                                               end
                                               parent:             self
@@ -1024,12 +1016,12 @@ define
             self.Parent       = P
             self.ReturnAction = RetA
             Action           <- A
-            NumberEntry, tkSet(case N==unit then 1 else N end)
+            NumberEntry, tkSet(if N==unit then 1 else N end)
          end
 
          meth tkAction(A <= unit)
             lock
-               Action <- case A==unit then DummyAction else A end
+               Action <- if A==unit then DummyAction else A end
             end
          end
 
@@ -1062,17 +1054,18 @@ define
             lock
                S = {self.entry tkReturn(get $)}
             in
-               case {String.isInt S} then
+               if {String.isInt S} then
                   I      = {String.toInt S}
-                  NewVal = case self.MinVal \= unit
+                  NewVal = if self.MinVal \= unit
                               andthen I < self.MinVal then self.MinVal
-                           elsecase self.MaxVal \= unit
+                           elseif self.MaxVal \= unit
                               andthen I > self.MaxVal then self.MaxVal
-                           else I end
+                           else I
+                           end
                in
                   NumberEntry,Update(NewVal)
-                  case NoReturnAction then skip else
-                     case self.ReturnAction == unit then
+                  if NoReturnAction then skip else
+                     if self.ReturnAction == unit then
                         {Tk.send focus(self.Parent)}
                      else
                         {self.ReturnAction}
@@ -1097,8 +1090,8 @@ define
          meth DoInc(TS S W)
             case
                lock
-                  case @TimeStamp==TS then
-                     NewS   = case S==0 then
+                  if @TimeStamp==TS then
+                     NewS   = if S==0 then
                                  Increment <- @Increment * IncStep IncStep
                               else S-1
                               end
@@ -1195,7 +1188,7 @@ define
          end
 
          meth GetCoords(I N $)
-            case I>N then nil else
+            if I>N then nil else
                {Tk.returnInt lindex(l(self coords I) 0)} |
                TickScale,GetCoords(I+1 N $)
             end
@@ -1271,7 +1264,7 @@ define
       local
          fun {DoWhere Xs Y N}
             X|Xr = Xs in
-            case Y == X then N else
+            if Y == X then N else
                {DoWhere Xr Y N+1}
             end
          end
@@ -1299,7 +1292,7 @@ define
             T#C = {Nth E X}
          in
             Tk.menubutton,
-            {Record.adjoin {Subtract M case F == unit then
+            {Record.adjoin {Subtract M if F == unit then
                                           [entries selected font action]
                                        else
                                           [entries selected action]
@@ -1308,7 +1301,7 @@ define
             self.Entries = E
             self.Action  = A
             self.Menu    =
-            case F == unit then
+            if F == unit then
                {New Tk.menu tkInit(parent:  P
                                    tearoff: false)}
             else
@@ -1375,7 +1368,7 @@ define
                   Smoother,Enqueue(T)
                   Smoother,Enqueue(Tr)
                else NewTl in
-                  case {IsDet @MsgListTl} then
+                  if {IsDet @MsgListTl} then
                      MsgList <- Ticklet|NewTl
                   else
                      @MsgListTl = Ticklet|NewTl
@@ -1390,7 +1383,7 @@ define
             QueueSync <- New = unit
             thread
                {WaitOr New {Alarm Timeout}}
-               case {IsDet New} then skip else
+               if {IsDet New} then skip else
                   Smoother,DoClearQueue
                end
             end

@@ -25,7 +25,7 @@ local
 
    local
       fun {AllToString I V S}
-         case I>0 then {AllToString I-1 V {Append {ToString V.I} S}}
+         if I>0 then {AllToString I-1 V {Append {ToString V.I} S}}
          else S
          end
       end
@@ -39,7 +39,7 @@ local
       fun {ToString V}
          case {Value.type V}
          of int then
-            case V<0 then &-|{Int.toString {Abs V}}
+            if V<0 then &-|{Int.toString {Abs V}}
             else {Int.toString V}
             end
          [] float then {SignOzToOS {Float.toString V}}
@@ -61,10 +61,9 @@ local
 
    local
       proc {ChangeSignAll I V S NewV}
-         case I>0 then
+         if I>0 then
             NewV.I={ChangeSign V.I S}
             {ChangeSignAll I-1 V S NewV}
-         else skip
          end
       end
 
@@ -85,7 +84,7 @@ local
    in
       fun {ChangeSign V S}
          case {Value.type V}
-         of int then case V<0 then S#~V else V end
+         of int then if V<0 then S#~V else V end
          [] float then {ChangeSignFloat {Float.toString V} S}
          [] atom then V
          [] byteString then V

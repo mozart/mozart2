@@ -233,7 +233,7 @@ define
    local
       fun {NewAsk TypeTest TypeName}
          proc {$ X}
-            case {TypeTest X} then skip else
+            if {TypeTest X} then skip else
                {Exception.raiseError kernel(type {System.printName TypeTest}
                                             [X]
                                             TypeName

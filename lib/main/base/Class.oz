@@ -30,7 +30,7 @@ local
    GetClass = Boot_Class.get
 
    proc {AssertClass C Op}
-      case {IsClass C} then skip else
+      if {IsClass C} then skip else
          {`RaiseError` kernel(type Op [C] 'class' 1
                               'Module Class')}
       end
@@ -38,7 +38,7 @@ local
 
    proc {AssertNonFinal C Op}
       {AssertClass C Op}
-      case {HasFeature C `ooParents`} then skip else
+      if {HasFeature C `ooParents`} then skip else
          {`RaiseError` object(fromFinalClass C.`ooPrintName` Op)}
       end
    end
@@ -65,11 +65,11 @@ local
 
    fun {PropNames C}
       {AssertClass C 'Class.propNames'}
-      case {Not {HasFeature C `ooParents`}}
+      if {Not {HasFeature C `ooParents`}}
       then
-         final | case C.`ooLocking` then [locking] else nil end
+         final | if C.`ooLocking` then [locking] else nil end
       else
-         case C.`ooLocking` then [locking] else nil end
+         if C.`ooLocking` then [locking] else nil end
       end
    end
 
@@ -93,7 +93,7 @@ in
 
       fun {SubClass C1 C2}
          {AssertClass C2 'IsInstanceOf'}
-         case C1==C2 then true else
+         if C1==C2 then true else
             {AssertNonFinal C1 'IsInstanceOf'}
             {SubClassOfParent {GetParents C1} C2}
          end
@@ -116,7 +116,7 @@ in
                    getFeature:   fun {$ C F}
                                     X=C.`ooUnFreeFeat`.F
                                  in
-                                    case {IsDet X} andthen X==`ooFreeFlag` then
+                                    if {IsDet X} andthen X==`ooFreeFlag` then
                                        {`RaiseError` kernel('.' C F)} _
                                     else X
                                     end
@@ -125,7 +125,7 @@ in
                                     X={CondSelect C.`ooUnFreeFeat`
                                        F `ooFreeFlag`}
                                  in
-                                    case {IsDet X} andthen X==`ooFreeFlag` then
+                                    if {IsDet X} andthen X==`ooFreeFlag` then
                                        false
                                     else
                                        true

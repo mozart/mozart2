@@ -201,9 +201,9 @@ local
       of nil then S3=S2 true
       [] H1|T1 then
          case S2 of H2|T2 then
-            case H1==H2 then {IsPrefix T1 T2 S3}
-            else false end
-         else false end
+            H1==H2 andthen {IsPrefix T1 T2 S3}
+         else false
+         end
       end
    end
 
@@ -212,14 +212,17 @@ local
    %% to what is left after
 
    proc {SplitAtString Str Input Prefix Suffix}
-      case {IsPrefix Str Input Suffix} then
+      if {IsPrefix Str Input Suffix} then
          Prefix=nil
-      elsecase Input of H|T then
-         PrefixTail
-      in
-         Prefix=H|PrefixTail
-         {SplitAtString Str T PrefixTail Suffix}
-      else raise no end end
+      else
+         case Input of H|T then
+            PrefixTail
+         in
+            Prefix=H|PrefixTail
+            {SplitAtString Str T PrefixTail Suffix}
+         else raise no end
+         end
+      end
    end
 
    %% returns a list of element of the form str(S) or var(V S) where S

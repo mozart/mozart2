@@ -28,22 +28,20 @@
 %%
 local
    proc {Copy N O T1 T2}
-      case N==0 then skip else T2.(N+O)=T1.N {Copy N-1 O T1 T2} end
+      if N>0 then T2.(N+O)=T1.N {Copy N-1 O T1 T2} end
    end
    proc {Append T1 T2 ?T3}
       W1={Width T1} W2={Width T2}
    in
-      case W1==0 then T3=T2
-      elsecase W2==0 then T3={Adjoin T1 T2}
+      if W1==0 then T3=T2
+      elseif W2==0 then T3={Adjoin T1 T2}
       else
          T3={MakeTuple {Label T2} W1+W2}
          {Copy W1 0 T1 T3} {Copy W2 W1 T2 T3}
       end
    end
    proc {TupleToArray I T A}
-      case I>0 then {Array.put A I T.I} {TupleToArray I-1 T A}
-      else skip
-      end
+      if I>0 then {Array.put A I T.I} {TupleToArray I-1 T A} end
    end
 in
    Tuple = tuple(make:    MakeTuple

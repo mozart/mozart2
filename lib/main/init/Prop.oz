@@ -47,7 +47,7 @@ OZ_HOME_        = case {Getenv 'OZ_HOME'} of false then
                      elseof V then V end
                   elseof V then V end
 OZ_HOME         = case {Reverse {VirtualString.toString OZ_HOME_}}
-                  of H|T then case H==&/ orelse H==&\\ then
+                  of H|T then if H==&/ orelse H==&\\ then
                                  {Reverse T}
                               else OZ_HOME_ end
                   else OZ_HOME_ end

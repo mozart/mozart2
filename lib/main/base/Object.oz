@@ -72,7 +72,7 @@ local
          case Cs of nil then FCs
          [] C|Cr then I=C.`ooId` in
             {InitMap Cr ITCM IG
-             case {Dictionary.member ITCM I} then FCs
+             if {Dictionary.member ITCM I} then FCs
              else
                 {Dictionary.put ITCM I C}
                 {Dictionary.put IG   I nil}
@@ -89,7 +89,7 @@ local
             I2=C2.`ooId` Is={Dictionary.get IG I2}
          in
             {Dictionary.put IG I2
-             case {Member I1 Is} then Is else I1|Is end}
+             if {Member I1 Is} then Is else I1|Is end}
             {AddIG I2 C2r IG}
          end
       end
@@ -104,14 +104,14 @@ local
          %% Compute precedence
          fun {Remove Xs Y}
             case Xs of nil then nil
-            [] X|Xr then case X==Y then Xr else X|{Remove Xr Y} end
+            [] X|Xr then if X==Y then Xr else X|{Remove Xr Y} end
             end
          end
 
          fun {RemoveBefore Is L ITCM IG NLs}
             case Is of nil then NLs
             [] I|Ir then
-               case {Dictionary.member IG I} then
+               if {Dictionary.member IG I} then
                   case {Remove {Dictionary.get IG I} L}
                   of nil then
                      {Dictionary.remove IG I}
@@ -151,7 +151,7 @@ local
       in
          fun {Iterate Ls ITCM IG}
             case {RemoveLeader Ls {Dictionary.keys IG} ITCM IG nil} of nil then
-               case {Dictionary.keys IG}==nil then nil
+               if {Dictionary.keys IG}==nil then nil
                else {`RaiseError` object(order {GetPairs ITCM IG})} _
                end
             elseof NLs then NLs|{Iterate NLs ITCM IG}
@@ -185,10 +185,10 @@ local
          D = {CondSelect One default NoArg}
       in
          {Dictionary.put Meth L M}
-         case F==NoArg then {Dictionary.remove FastMeth L}
+         if F==NoArg then {Dictionary.remove FastMeth L}
          else {Dictionary.put FastMeth L F}
          end
-         case D==NoArg then {Dictionary.remove Defaults L}
+         if D==NoArg then {Dictionary.remove Defaults L}
          else {Dictionary.put Defaults L D}
          end
       end
@@ -198,7 +198,7 @@ local
          %% Meth:     dictionary of methods
          %% FastMeth: dictionary of fast-methods
          %% Defaults: dictionary of defaults
-         case N==0 then skip else One=NewMeth.N in
+         if N\=0 then One=NewMeth.N in
             {SetOne One Meth FastMeth Defaults}
             {SetMethods N-1 NewMeth Meth FastMeth Defaults}
          end
@@ -208,8 +208,8 @@ local
          %% Adding of non conflicting methods
          proc {AddMethods N NewMeth Meth FastMeth Defaults}
             %% Spec of args as with EnterMethods
-            case N==0 then skip else One=NewMeth.N in
-               case {Dictionary.member Meth One.1} then skip else
+            if N\=0 then One=NewMeth.N in
+               if {Dictionary.member Meth One.1} then skip else
                   {SetOne One Meth FastMeth Defaults}
                end
                {AddMethods N-1 NewMeth Meth FastMeth Defaults}
@@ -217,17 +217,17 @@ local
          end
 
          proc {SafeAdd N NewMeth C SoFar Meth FastMeth Defaults}
-            case N==0 then skip else
+            if N\=0 then
                One=NewMeth.N L=One.1
             in
-               case {Dictionary.member SoFar L} then
+               if {Dictionary.member SoFar L} then
                   ConflictC = {Dictionary.get SoFar L}
                in
                   {`RaiseError` object(sharing
                                        C.`ooPrintName`
                                        ConflictC.`ooPrintName`
                                        'method' L)}
-               elsecase {Dictionary.member Meth L} then skip else
+               elseif {Dictionary.member Meth L} then skip else
                   {Dictionary.put SoFar L C} % Store conflict class
                   {SetOne One Meth FastMeth Defaults}
                end
@@ -246,7 +246,7 @@ local
          proc {InheritMethods OCs Meth FastMeth Defaults}
             case OCs of nil then skip
             [] Cs|OCr then C|Cr=Cs in
-               case Cr==nil then NewMeth=C.`ooNewMeth` in
+               if Cr==nil then NewMeth=C.`ooNewMeth` in
                   {AddMethods {Width NewMeth} NewMeth Meth FastMeth Defaults}
                else
                   {SafeAddMethods Cs {Dictionary.new} Meth FastMeth Defaults}
@@ -265,7 +265,7 @@ local
       proc {AddOther As R D}
          case As of nil then skip
          [] A|Ar then
-            case {Dictionary.member D A} then skip else
+            if {Dictionary.member D A} then skip else
                {Dictionary.put D A R.A}
             end
             {AddOther Ar R D}
@@ -275,14 +275,14 @@ local
       proc {SafeAdd As R C SoFar D}
          case As of nil then skip
          [] A|Ar then
-            case {Dictionary.member SoFar A} then
+            if {Dictionary.member SoFar A} then
                ConflictC = {Dictionary.get SoFar A}
             in
                {`RaiseError` object(sharing
                                     C.`ooPrintName`
                                     ConflictC.`ooPrintName`
                                     'feature or attribute' A)}
-            elsecase {Dictionary.member D A} then skip
+            elseif {Dictionary.member D A} then skip
             else
                {Dictionary.put D A R.A}
                {Dictionary.put SoFar A C} % Store class from which inherited
@@ -302,7 +302,7 @@ local
       proc {InheritOther OCs D T}
          case OCs of nil then skip
          [] Cs|OCr then C|Cr=Cs in
-            case Cr==nil then R=C.T in {AddOther {Arity R} R D}
+            if Cr==nil then R=C.T in {AddOther {Arity R} R D}
             else {SafeAddOther Cs {Dictionary.new} D T}
             end
             {InheritOther OCr D T}
@@ -318,7 +318,7 @@ local
       fun {Free As R}
          case As of nil then nil
          [] A|Ar then X=R.A in
-            case {IsDet X} andthen X==`ooFreeFlag` then
+            if {IsDet X} andthen X==`ooFreeFlag` then
                A#`ooFreeFlag`|{Free Ar R}
             else {Free Ar R}
             end
@@ -348,8 +348,8 @@ local
    proc {CheckParents Cs PrintName}
       case Cs of nil then skip
       [] C|Cr then
-         case {HasFeature C `ooPrintName`} then
-            case {HasFeature C `ooParents`} then skip else
+         if {HasFeature C `ooPrintName`} then
+            if {HasFeature C `ooParents`} then skip else
                {`RaiseError` object(final C.`ooPrintName` PrintName)}
             end
          else {`RaiseError` object(inheritanceFromNonClass
@@ -419,7 +419,7 @@ local
          Feat     = NewFeat
          FreeFeat = {MakeFree Feat}
       [] P1|P1r then
-         case P1r==nil then
+         if P1r==nil then
             %% Methods
             Meth     = {Dictionary.clone P1.`ooMeth`}
             FastMeth = {Dictionary.clone P1.`ooFastMeth`}
@@ -462,7 +462,7 @@ local
 
       %% Create the real class
       C = {MakeClass FastMeth
-           case IsFinal then
+           if IsFinal then
               'class'(`ooAttr`:       Attr
                       `ooFreeFeatR`:  FreeFeat
                       `ooUnFreeFeat`: Feat
@@ -543,7 +543,7 @@ local
          meth DoDel(Ss DS $)
             S|Sr=Ss
          in
-            case S==DS then Sr else S|MasterObject,DoDel(Sr DS $) end
+            if S==DS then Sr else S|MasterObject,DoDel(Sr DS $) end
          end
          meth !DelSlave(S)
             OldSlaves NewSlaves
@@ -560,7 +560,7 @@ local
             OldMaster NewMaster
          in
             OldMaster = (Master <- NewMaster)
-            case OldMaster==unit then
+            if OldMaster==unit then
                {M AddSlave(self)}
                NewMaster = M
             else
@@ -575,7 +575,7 @@ local
             OldMaster NewMaster
          in
             OldMaster = (Master <- NewMaster)
-            case OldMaster==unit then
+            if OldMaster==unit then
                {`RaiseError` object(slaveAlreadyFree)}
             else
                {OldMaster DelSlave(self)}

@@ -154,13 +154,13 @@ define
 
       GetFeaturePath =
       fun {$ Rec Spec Path}
-         case Path
-         of [F#D] then
-            case {HasFeature Spec F} then Rec.(Spec.F)
-            else Rec.D end
-         [] F#D|T then
-            case {HasFeature Spec F} then {GetFeaturePath Rec.(Spec.F) Spec T}
-            else {GetFeaturePath Rec.D Spec T} end
+         case Path of FD|T then
+            F#D = FD
+            PP  = if {HasFeature Spec F} then Rec.(Spec.F)
+                  else Rec.D
+                  end
+         in
+            if T==nil then PP else {GetFeaturePath PP Spec T} end
          else found_nil_in_path
          end
       end
@@ -168,7 +168,7 @@ define
       Find =
       fun {$ L C}
          {FoldL {Tail L}
-          fun {$ I E} case {C I E} then I else E end end
+          fun {$ I E} if {C I E} then I else E end end
           {Head L}}
       end
 
@@ -214,7 +214,7 @@ define
       WeightMin =
       fun {$ DF}
          fun {$ CL WT}
-            case CL == nil then DF
+            if CL == nil then DF
             else {Find {ExpandList CL} fun {$ X Y} {WT X} < {WT Y} end}
             end
          end
@@ -223,7 +223,7 @@ define
       WeightMax =
       fun {$ DF}
          fun {$ CL WT}
-            case CL == nil then DF
+            if CL == nil then DF
             else {Find {ExpandList CL} fun {$ X Y} {WT X} > {WT Y} end}
             end
          end
@@ -263,9 +263,9 @@ define
          OrderFunTableRel = s(min: LESS max: GREATER)
 
       in
-         case {IsProcedure Spec} then Spec
+         if {IsProcedure Spec} then Spec
          else
-            case Spec == naive then fun {$ L} L end
+            if Spec == naive then fun {$ L} L end
             else
                OrderFunRel =
                {GetFeaturePath OrderFunTableRel Spec [sel#min]}
@@ -301,7 +301,7 @@ define
                  )
           )
       in
-         case {IsProcedure Spec} then Spec
+         if {IsProcedure Spec} then Spec
          else {GetFeaturePath ElementFunTable Spec [sel#min wrt#unknown]}
          end
       end % fun
@@ -328,15 +328,14 @@ define
 
       RRobinFun =
       fun {$ Spec}
-         case Spec then fun {$ H|T} {Append T [H]} end
+         if Spec then fun {$ H|T} {Append T [H]} end
          else fun {$ L} L end
          end
       end
 
       FSDistNaive =
       proc {$ SL}
-         case SL == nil then skip
-         else
+         if SL \= nil then
             choice
                case {FSReflect.unknown {Head SL}}
                of nil then {FSDistNaive {Tail SL}}
@@ -367,8 +366,7 @@ define
             choice
                SortedSL = {Order {Filter SL FCond}}
             in
-               case SortedSL == nil then skip
-               else
+               if SortedSL \= nil then
                   UnknownVal = {Elem {Head SortedSL}}
                   DistVar    = {Sel {Head SortedSL}}
                in
@@ -422,25 +420,21 @@ define
    %% P is invoked each time the max of I's domain changes.  It is
    %% invoked with this new max as argument.
    proc {FDWatchMax I P}
-      case {IsDet I} then {P I}
-      else
+      if {IsDet I} then {P I} else
          Max={FD.reflect.max I}
       in
          {P Max}
-         case {FD.watch.max I Max}
-         then {FDWatchMax I P} else skip end
+         if {FD.watch.max I Max} then {FDWatchMax I P} end
       end
    end
 
    %% similarly with the min.
    proc {FDWatchMin I P}
-      case {IsDet I} then {P I}
-      else
+      if {IsDet I} then {P I} else
          Min={FD.reflect.min I}
       in
          {P Min}
-         case {FD.watch.min I Min}
-         then {FDWatchMin I P} else skip end
+         if {FD.watch.min I Min} then {FDWatchMin I P} end
       end
    end
 
@@ -517,7 +511,7 @@ define
          elseof ((E1#E2)#W)|T then
             {Dictionary.put WeightTable E1 W}
             {ScanWeightDescr
-             case E1 < E2 then (((E1+1)#E2)#W)|T
+             if E1 < E2 then (((E1+1)#E2)#W)|T
              else T end}
          elseof (E#W)|T then
             {Dictionary.put WeightTable E W}

@@ -27,7 +27,7 @@ local
    fun {GetOptions As N ?M}
       case As of nil then M=N nil
       [] A|Ar then
-         case {IsInt A} then {GetOptions Ar N+1 M}
+         if {IsInt A} then {GetOptions Ar N+1 M}
          else M=N As
          end
       end
@@ -79,8 +79,8 @@ local
           fun {$ Cat In What}
              {FoldL What
               fun {$ In Access}
-                 case In==false then false
-                 elsecase
+                 if In==false then false
+                 elseif
                     {HasFeature ModeMap Cat} andthen
                     {HasFeature ModeMap.Cat Access}
                  then {Append ModeMap.Cat.Access In}
@@ -100,15 +100,15 @@ local
       fun {FlagsToOS FlagS}
          {FoldL FlagS
           fun {$ In Flag}
-             case In==false then false
-             elsecase Flag==read orelse Flag==write then In
-             elsecase {HasFeature FlagMap Flag} then FlagMap.Flag|In
+             if In==false then false
+             elseif Flag==read orelse Flag==write then In
+             elseif {HasFeature FlagMap Flag} then FlagMap.Flag|In
              else false
              end
           end
-          [case {Member read FlagS} andthen {Member write FlagS} then
+          [if {Member read FlagS} andthen {Member write FlagS} then
               'O_RDWR'
-           elsecase {Member write FlagS} then 'O_WRONLY'
+           elseif {Member write FlagS} then 'O_WRONLY'
            else 'O_RDONLY'
            end]}
       end
@@ -218,14 +218,13 @@ in
          meth !CloseDescs
             RD=@ReadDesc WD=@WriteDesc
          in
-            case {IsInt RD} then
+            if {IsInt RD} then
                {OS.deSelect RD} {OS.close RD}
-               case RD==WD then skip else
+               if RD\=WD then
                   {OS.deSelect WD} {OS.close WD}
                end
                ReadDesc  <- true
                WriteDesc <- true
-            else skip
             end
          end
 
@@ -281,7 +280,7 @@ in
                                         open(illegalModes self M)}}
                   elseof OSModeS then
                      %% Handle special filenames
-                     case
+                     if
                         (Name==NoArg andthen Url==NoArg) orelse
                         (Name\=NoArg andthen Url\=NoArg)
                      then
@@ -293,7 +292,7 @@ in
                             [] 'stdout' then {OS.fileDesc 'STDOUT_FILENO'}
                             [] 'stderr' then {OS.fileDesc 'STDERR_FILENO'}
                             [] !NoArg then
-                               case
+                               if
                                   {Member 'O_RDWR'   OSFlagS} orelse
                                   {Member 'O_WRONLY' OSFlagS}
                                then
@@ -317,7 +316,7 @@ in
                       list:?Is  tail:It<=nil len:?N<=_)
                lock self.ReadLock then
                   lock self.WriteLock then D=@ReadDesc in
-                     case {IsInt D} then
+                     if {IsInt D} then
                         N = case Size of all then {DoReadAll D ?Is It 0}
                             else {OS.read D Size ?Is It}
                             end
@@ -332,7 +331,7 @@ in
             meth write(vs:V len:I<=_)
                lock self.ReadLock then
                   lock self.WriteLock then D=@WriteDesc in
-                     case {IsInt D} then I={DoWrite D V 0}
+                     if {IsInt D} then I={DoWrite D V 0}
                      else {RaiseClosed self write(vs:V len:I)}
                      end
                   end
@@ -342,7 +341,7 @@ in
             meth seek(whence:W<='set' offset:O<=0)
                lock self.ReadLock then
                   lock self.WriteLock then D=@WriteDesc in
-                     case {IsInt D} then
+                     if {IsInt D} then
                         {OS.lSeek D O case W
                                       of 'set'     then 'SEEK_SET'
                                       [] 'current' then 'SEEK_CUR'
@@ -357,7 +356,7 @@ in
             meth tell(offset:?O)
                lock self.ReadLock then
                   lock self.WriteLock then D=@WriteDesc in
-                     case {IsInt D} then O={OS.lSeek D 0 'SEEK_CUR'}
+                     if {IsInt D} then O={OS.lSeek D 0 'SEEK_CUR'}
                      else {RaiseClosed self tell(offset:O)}
                      end
                   end
@@ -380,7 +379,7 @@ in
                    list: List
                    tail: Tail <= nil)
             lock self.ReadLock then D=@ReadDesc in
-               case {IsInt D} then
+               if {IsInt D} then
                   Len={OS.read D Size List Tail}
                else {RaiseClosed self
                      read(size:Size len:Len list:List tail:Tail)}
@@ -390,7 +389,7 @@ in
 
          meth write(vs:V len:I<=_)
             lock self.WriteLock then D=@WriteDesc in
-               case {IsInt D} then I={DoWrite D V 0}
+               if {IsInt D} then I={DoWrite D V 0}
                else {RaiseClosed self write(vs:V len:I)}
                end
             end
@@ -400,15 +399,14 @@ in
             R = {Member receive How}
             S = {Member send    How}
          in
-            case R andthen S then
+            if R andthen S then
                lock self.ReadLock then
                   lock self.WriteLock then skip end
                end
-            elsecase R then
+            elseif R then
                lock self.ReadLock then skip end
-            elsecase S then
+            elseif S then
                lock self.WriteLock then skip end
-            else skip
             end
          end
       end
@@ -449,7 +447,7 @@ in
 
             meth server(port:P<=_ host:H<=_ ...) = M
                Socket, init
-               case {HasFeature M takePort} then
+               if {HasFeature M takePort} then
                   Socket, bind(port:P takePort:M.takePort)
                else
                   Socket, bind(port:P)
@@ -466,7 +464,7 @@ in
             meth listen(backLog:Log<=5)
                lock self.ReadLock then
                   lock self.WriteLock then D=@ReadDesc in
-                     case {IsInt D} then {OS.listen D Log}
+                     if {IsInt D} then {OS.listen D Log}
                      else {RaiseClosed self listen(backLog:Log)}
                      end
                   end
@@ -476,8 +474,8 @@ in
             meth bind(port:P <= _ ...) = M
                lock self.ReadLock then
                   lock self.WriteLock then D=@ReadDesc in
-                     case {IsInt D} then
-                        P = case {HasFeature M takePort} then
+                     if {IsInt D} then
+                        P = if {HasFeature M takePort} then
                                {OS.bind D M.takePort}
                                M.takePort
                             else %% Generate port
@@ -493,7 +491,7 @@ in
             meth accept(host:H <=_ port:P <=_ ...) = M
                lock self.ReadLock then
                   lock self.WriteLock then D=@ReadDesc in
-                     case {IsInt D} then
+                     if {IsInt D} then
                         TimeAcc = case self.TimeOut of ~1 then _
                                   elseof TO then {Alarm TO}
                                   end
@@ -503,10 +501,10 @@ in
                                   end
                      in
                         {WaitOr TimeAcc WaitAcc}
-                        case {IsDet WaitAcc} then
+                        if {IsDet WaitAcc} then
                            AD={OS.accept D H P}
                         in
-                           case {HasFeature M accepted} then
+                           if {HasFeature M accepted} then
                               %% Create new Socket Object
                               M.accepted = {New M.acceptClass dOpen(AD AD)}
                            else
@@ -525,7 +523,7 @@ in
             meth connect(host:H<='localhost' port:P)
                lock self.ReadLock then
                   lock self.WriteLock then D=@ReadDesc in
-                     case {IsInt D} then {OS.connect D H P}
+                     if {IsInt D} then {OS.connect D H P}
                      else {RaiseClosed self connect(host:H port:P)}
                      end
                   end
@@ -534,8 +532,8 @@ in
 
             meth send(vs:V len:I<=_ port:P<=Missing host:H<='localhost')
                lock self.WriteLock then D=@WriteDesc in
-                  case {IsInt D} then
-                     I = case P\=Missing then {DoSendTo D V H P 0}
+                  if {IsInt D} then
+                     I = if P\=Missing then {DoSendTo D V H P 0}
                          else {DoSend D V 0}
                          end
                   else {RaiseClosed self send(vs:V len:I port:P host:H)}
@@ -547,7 +545,7 @@ in
                          size:Size<=ReadSize
                          host:Host<=_ port:Port<=_ )
                lock self.ReadLock then D=@ReadDesc in
-                  case {IsInt D} then
+                  if {IsInt D} then
                      Len={OS.receiveFrom D Size nil List Tail Host Port}
                   else {RaiseClosed self
                         receive(list:List tail:Tail len:Len
@@ -561,13 +559,13 @@ in
                R = {Member receive How}
                S = {Member send    How}
             in
-               case R andthen S then
+               if R andthen S then
                   lock self.ReadLock then
                      lock self.WriteLock then
                         RD=@ReadDesc WD=@WriteDesc
                      in
-                        case {IsInt RD} andthen {IsInt WD} then
-                           case RD==WD then {OS.shutDown WD 2}
+                        if {IsInt RD} andthen {IsInt WD} then
+                           if RD==WD then {OS.shutDown WD 2}
                            else
                               {OS.shutDown RD 0}
                               {OS.shutDown WD 1}
@@ -576,19 +574,18 @@ in
                         end
                      end
                   end
-               elsecase R then
+               elseif R then
                   lock self.ReadLock then D=@ReadDesc in
-                     case {IsInt D} then {OS.shutDown D 0}
+                     if {IsInt D} then {OS.shutDown D 0}
                      else {RaiseClosed self shutDown(how:How)}
                      end
                   end
-               elsecase S then
+               elseif S then
                   lock self.WriteLock then D=@WriteDesc in
-                     case {IsInt D} then {OS.shutDown D 1}
+                     if {IsInt D} then {OS.shutDown D 1}
                      else {RaiseClosed self shutDown(how:How)}
                      end
                   end
-               else skip
                end
             end
          end
@@ -639,7 +636,7 @@ in
                   AtEnd <- NextEnd
                   Buff  <- NextBuff
                   Last  <- NextLast
-                  case YetEnd then
+                  if YetEnd then
                      I=false
                      NextEnd=true NextBuff=nil NextLast=YetLast
                   else
@@ -661,13 +658,13 @@ in
                in
                   AtEnd <- NextEnd
                   Buff  <- NextBuff
-                  case YetEnd then
+                  if YetEnd then
                      NextEnd=true NextBuff=nil
                      false
                   else
                      It={DoReadLine YetBuff GetDesc NextBuff NextEnd}
                   in
-                     case NextEnd then
+                     if NextEnd then
                         case It of nil then false else It end
                      else It
                      end
@@ -734,19 +731,19 @@ in
          end
 
          meth WriteTagBody(I N Tag)
-            case I>N then skip else
+            if I=<N then
                Html,tag(Tag.I) Html,WriteTagBody(I+1 N Tag)
             end
          end
 
          meth tag(Tag)
-            case {IsRecord Tag} then
+            if {IsRecord Tag} then
                L={Label Tag}
             in
-               case {HtmlTable.isTag L} then N in
+               if {HtmlTable.isTag L} then N in
                   {self write(vs:
                                  ('<'#L#
-                                  case {IsTuple Tag} then
+                                  if {IsTuple Tag} then
                                      N={Width Tag} ''
                                   else
                                      As={GetOptions {Arity Tag} 0 ?N}
@@ -755,19 +752,19 @@ in
                                   end#
                                '>'))}
                   Html,WriteTagBody(1 N Tag)
-                  case {HtmlTable.isNonFinalTag L} then skip else
+                  if {HtmlTable.isNonFinalTag L} then skip else
                      {self write(vs:'</'#L#'>')}
                   end
-                  case {HtmlTable.isNlTag L} then
+                  if {HtmlTable.isNlTag L} then
                      {self write(vs:'\n')}
                   else skip
                   end
-               elsecase L=='#' then
+               elseif L=='#' then
                   Html,WriteTagBody(1 {Width Tag} Tag)
                else
                   {self write(vs:Tag)}
                end
-            elsecase {IsProcedure Tag} then Html,tag({Tag})
+            elseif {IsProcedure Tag} then Html,tag({Tag})
             else {self write(vs:Tag)}
             end
          end

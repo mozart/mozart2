@@ -31,7 +31,7 @@ local
    BugReport = 'Please send bug report to oz@ps.uni-sb.de'
 
    fun {LayoutDot R F X Op}
-      case {IsDet R}
+      if {IsDet R}
          andthen {IsRecord R}
          andthen {Length {Arity R}}>5
       then
@@ -114,21 +114,23 @@ in
                      in
                         {Append Ls {Error.formatHint S}}
 
-                     elsecase
-                        {Member A ['+' '-' '*' '/' '<' '>' '=<' '>=' '\\=']}
-                     then
-                        Ls = case Xs of [X Y Z] then
-                                {LayoutBin X Y Z A}
-                             else
-                                [hint(l:'In statement' m:{Error.formatAppl A Xs})]
-                             end
-                     in
-                        {Append Ls {Error.formatHint S}}
-
                      else
-                        Ls = [hint(l:'In statement' m:{Error.formatAppl A Xs})]
-                     in
-                        {Append Ls {Error.formatHint S}}
+                        if
+                           {Member A ['+' '-' '*' '/' '<' '>' '=<' '>=' '\\=']}
+                        then
+                           Ls = case Xs of [X Y Z] then
+                                   {LayoutBin X Y Z A}
+                                else
+                                   [hint(l:'In statement' m:{Error.formatAppl A Xs})]
+                                end
+                        in
+                           {Append Ls {Error.formatHint S}}
+
+                        else
+                           Ls = [hint(l:'In statement' m:{Error.formatAppl A Xs})]
+                        in
+                           {Append Ls {Error.formatHint S}}
+                        end
                      end
 
          in
@@ -138,7 +140,7 @@ in
              unit
              {Append
               {Error.formatTypes T}
-              case P\=0 then
+              if P\=0 then
                  hint(l:'At argument' m:P) | LayOut
               else LayOut end}
              Exc}
@@ -156,7 +158,7 @@ in
              unit
              {Append
               {Error.formatTypes T}
-              case P\=0 then
+              if P\=0 then
                  hint(l:'At argument' m:P) | LayOut
               else LayOut end}
              Exc}
@@ -197,7 +199,7 @@ in
          % expected P: procedure or object, Xs: list
 
             local
-               N = case {IsProcedure P} then {Procedure.arity P} else 1 end
+               N = if {IsProcedure P} then {Procedure.arity P} else 1 end
                M = {Length Xs}
             in
                {Error.format
@@ -205,9 +207,9 @@ in
                 unit
                 [hint(l:'In statement' m:{Error.formatAppl P Xs})
                  hint(l:'Expected'
-                      m: N # ' argument' # case N == 1 then '' else 's' end)
+                      m: N # ' argument' # if N == 1 then '' else 's' end)
                  hint(l:'Found'
-                      m: M # ' argument' # case M == 1 then '' else 's' end)]
+                      m: M # ' argument' # if M == 1 then '' else 's' end)]
                 Exc}
             end
 

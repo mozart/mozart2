@@ -599,7 +599,6 @@ in
          end
 
          proc {ErrorMsgDebug Out Format}
-            {Show Format}
             case Format
             of none then skip
             else

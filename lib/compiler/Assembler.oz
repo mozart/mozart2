@@ -38,7 +38,6 @@
 functor prop once
 import
    System(printName valueToVirtualString)
-   Boot         @ 'x-oz://boot/Boot'
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
    RunTime(procValues)
@@ -64,14 +63,7 @@ define
       StoreGRegRef       = CompilerSupport.storeGRegRef
       StoreLocation      = CompilerSupport.storeLocation
       StoreCache         = CompilerSupport.storeCache
-
-      local
-         BIStoreBuiltinname = CompilerSupport.storeBuiltinname
-      in
-         proc {StoreBuiltinname CodeBlock Builtin}
-            {BIStoreBuiltinname CodeBlock {Boot.builtin Builtin ~1}}
-         end
-      end
+      StoreBuiltinname   = CompilerSupport.storeBuiltinname
 
       proc {StoreRegister CodeBlock Register}
          {StoreRegisterIndex CodeBlock Register.1}

@@ -39,7 +39,6 @@ Phrase            = fAnd(Phrase Phrase).
                   | fFloat(float Coordinates)
                   | fRecord(Label [RecordArgument])
                   | fOpenRecord(Label [RecordArgument])
-                  | fObjPattern(Label [RecordArgument])
                   | fApply(Phrase [Phrase] Coordinates)
                   | fProc(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
                   | fFun(Phrase [Phrase] Phrase [ProcFlag] Coordinates)

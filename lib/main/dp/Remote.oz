@@ -59,7 +59,7 @@ define
 
    HOME = {Property.get 'oz.home'}
 
-   proc {ForkProcess Fork Home Host Ports Detach}
+   fun {ForkProcess Fork Home Host Ports Detach}
       Cmd       = Home#'/bin/ozengine'
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
@@ -81,7 +81,7 @@ define
                               '--shmkey='#{VirtualSite.newMailbox}]
                     end
       in
-         {OS.exec CMD ARGS {Not Detach} _}
+         {OS.exec CMD ARGS {Not Detach}}
       catch E then
          {OS.wait _ _}
          raise E end
@@ -104,7 +104,8 @@ define
       meth init(host:   HostIn <= localhost
                 fork:   ForkIn <= automatic
                 detach: Detach <= false
-                home:   Home   <= HOME)
+                home:   Home   <= HOME
+                pid:    PID    <= _)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
@@ -112,17 +113,17 @@ define
          Fork = {VirtualString.toAtom ForkIn}
 
       in
-         {ForkProcess
-          if Host==localhost then
-             if Fork==automatic then
-                if HasVirtualSite then virtual
-                else sh
-                end
-             else Fork
-             end
-          else rsh
-          end
-          Home Host RunPort#CtrlPort Detach}
+         PID={ForkProcess
+              if Host==localhost then
+                 if Fork==automatic then
+                    if HasVirtualSite then virtual
+                    else sh
+                    end
+                 else Fork
+                 end
+              else rsh
+              end
+              Home Host RunPort#CtrlPort Detach}
 
          Run        <- RunRet.2
          Ctrl       <- CtrlRet.2

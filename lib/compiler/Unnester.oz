@@ -1421,7 +1421,7 @@ local
              in
                 Unnester, UnnestRecord(NewPrintName Label Args false
                                        ?GArg ?GBack0)
-                NewGArgs#(GBack0|GBack)
+                NewGArgs#(GBack|GBack0)
              [] fOpenRecord(Label Args) then
                 NewPrintName = case PrintName == '' then ''
                                else PrintName#'.'#FeatPrintName

@@ -177,8 +177,8 @@ in
                end
                {@CurComp enqueue(setSwitch(expression true))}
                {@CurComp enqueue(setSwitch(threadedqueries false))}
-               {Wait {@CurComp enqueue(ping($))}}
-               {@CurCompUI reset()}
+               {@CurCompUI sync()}
+               {@CurCompUI clear()}
                case @Self of unit then
                   {@CurComp
                    enqueue(feedVirtualString(VS2 return(result: ?R)))}
@@ -190,7 +190,7 @@ in
                                              VS2#'\nend end `self`}'
                                              return(result: ?R)))}
                end
-               {Wait {@CurComp enqueue(ping($))}}
+               {@CurCompUI sync()}
                Sync = unit
                lock @SpinnerLock then skip end   %% wait for spinner to finish
                if {@CurCompUI hasErrors($)} then ResultText in

@@ -40,7 +40,6 @@ local
    GenCellPrintName
 
    %%
-   TupleToList
    SelSubTerms
    IsListDepth
    LArity
@@ -78,9 +77,9 @@ in
    in
       %%
       local
-         SetTab       = {Tuple tab 255}
-         ScanTab      = {Tuple tab 255}
-         SubstTab     = {Tuple tab 255}
+         SetTab       = {MakeTuple tab 255}
+         ScanTab      = {MakeTuple tab 255}
+         SubstTab     = {MakeTuple tab 255}
 
          %%
          {Tuple.forAllInd SetTab
@@ -160,9 +159,9 @@ in
       %%
       %%
       local
-         SetTab       = {Tuple tab 256}
-         SubstTab     = {Tuple tab 256}
-         ScanTab      = {Tuple tab 256}
+         SetTab       = {MakeTuple tab 256}
+         SubstTab     = {MakeTuple tab 256}
+         ScanTab      = {MakeTuple tab 256}
 
          %%
          {Tuple.forAllInd SetTab
@@ -227,7 +226,7 @@ in
             [] tuple then
                case {Label V}
                of '|' then {QuoteString V}
-               [] '#' then W={Width V} V2={Tuple '#' W} in
+               [] '#' then W={Width V} V2={MakeTuple '#' W} in
                   {HashVS W V V2} V2
                end
             end
@@ -313,7 +312,7 @@ in
    proc {GenObjPrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Class.printName {Class Term}}
+         PN = {Class.printName {Class.get Term}}
 
          %%
          case AreSmallNames then
@@ -504,21 +503,6 @@ in
       %%
       case AF then {RealArity R}
       else {Arity R}
-      end
-   end
-
-   %%
-   %%
-   %%  Rudimentary, but still useful here...
-   %%
-   fun {TupleToList Tuple}
-      local WidthOf ListOf in
-         WidthOf = {Width Tuple}
-         ListOf = {List WidthOf}
-
-         %%
-         {FoldL ListOf fun {$ Num E} E = Tuple.Num Num + 1 end 1 _}
-         ListOf
       end
    end
 
@@ -1193,7 +1177,7 @@ in
 
             %%
             self.name = <<genLitPrintName({Label Term} $)>>
-            Subterms = {TupleToList Term}
+            Subterms = {Tuple.toList Term}
             self.subterms = Subterms
 
             %%
@@ -1300,7 +1284,7 @@ in
             Term = self.term
 
             %%
-            Subterms = {TupleToList Term}
+            Subterms = {Tuple.toList Term}
             self.subterms = Subterms
 
             %%
@@ -1578,7 +1562,7 @@ in
 
             %%
             TWidth = {Length RecArity}
-            RecFeatures = {Tuple recFeatures TWidth}
+            RecFeatures = {MakeTuple recFeatures TWidth}
             {FoldL RecArity fun {$ I E} RecFeatures.I = E (I + 1) end 1 _}
 
             %%
@@ -1846,7 +1830,7 @@ in
             subterms <- Subterms
 
             %%
-            RecFeatures = {Tuple recFeatures {Length KnownArity}}
+            RecFeatures = {MakeTuple recFeatures {Length KnownArity}}
             {FoldL KnownArity fun {$ I E} RecFeatures.I = E (I + 1) end 1 _}
             recFeatures <- RecFeatures
          end
@@ -2276,7 +2260,7 @@ in
 
             %%
             Le = {Length SubIntsL}
-            SubInts = {Tuple '#' Le}
+            SubInts = {MakeTuple '#' Le}
             {Loop.for 1 Le 1 proc {$ I} SubInts.I = {Nth SubIntsL I} end}
 
             %%

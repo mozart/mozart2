@@ -106,7 +106,7 @@ local MessageWindowObject in
             %%
             %%
             L = {Length Desc}
-            HT = {Tuple '#' L+1}
+            HT = {MakeTuple '#' L+1}
             {Loop.for 2 L+1 1 proc {$ I} HT.I = {Nth Desc I-1} end}
             HT.1 = 'ERROR: '
             {Show {String.toAtom {VirtualString.toString HT}}}
@@ -124,7 +124,7 @@ local MessageWindowObject in
             %%
             %%
             L = {Length Desc}
-            HT = {Tuple '#' L+1}
+            HT = {MakeTuple '#' L+1}
             {Loop.for 2 L+1 1 proc {$ I} HT.I = {Nth Desc I-1} end}
             HT.1 = 'WARNING: '
             {MW showIn(HT)}

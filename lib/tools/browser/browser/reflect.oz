@@ -85,7 +85,7 @@ in
    %%
    fun {TupleSubterms T}
       local ListOf in
-         ListOf = {List {Width T}}
+         ListOf = {MakeList {Width T}}
          {FoldL ListOf
           fun {$ Num E}
              E = T.Num
@@ -175,7 +175,7 @@ in
                   end
 
                   %%
-                  TermOut = {Record RLabel KnownArity}
+                  TermOut = {MakeRecord RLabel KnownArity}
                   {RecordReflectLoop KnownArity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm
@@ -253,7 +253,7 @@ in
                      case {IsObject TermIn} then
                         LabelOf = {AtomConcatAll
                                    ['<Object: '
-                                    {Class.printName {Class TermIn}} ' @ '
+                                    {Class.printName {Class.get TermIn}} ' @ '
                                     {IntToAtom {System.getValue TermIn addr}} '>']}
                      else
                         LabelOf = {AtomConcatAll
@@ -282,7 +282,7 @@ in
                   end
 
                   %%
-                  TermOut = {Record LabelOf Arity}
+                  TermOut = {MakeRecord LabelOf Arity}
                   {RecordReflectLoop Arity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
@@ -294,7 +294,7 @@ in
                   Subterms = {TupleSubterms TermIn}
 
                   %%
-                  TermOut = {Tuple {Label TermIn} {Length Subterms}}
+                  TermOut = {MakeTuple {Label TermIn} {Length Subterms}}
                   {TupleReflectLoop Subterms 1 TmpList
                    fun {$ Num ST ListIn ListOut}
                       TermOut.Num = {ReflectTerm ST ListIn $ ListOut}

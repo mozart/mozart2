@@ -88,7 +88,7 @@ in
          High <- Width + {`div` (Width * RArrayRRatio) 100}
 
          %%
-         Array <- {Tuple array @High}
+         Array <- {MakeTuple array @High}
       end
 
       %%
@@ -99,7 +99,7 @@ in
          High <- Width
 
          %%
-         Array <- {Tuple array Width}
+         Array <- {MakeTuple array Width}
       end
 
       %%
@@ -178,7 +178,7 @@ in
                High <- NewRWidth
 
                %%
-               NewArray = {Tuple array NewRWidth}
+               NewArray = {MakeTuple array NewRWidth}
 
                %%
                {Loop.for 1 Width 1
@@ -207,7 +207,7 @@ in
             High <- NewRWidth
 
             %%
-            NewArray = {Tuple array NewRWidth}
+            NewArray = {MakeTuple array NewRWidth}
 
             %%
             {Loop.for 1 Width 1 proc {$ N} NewArray.(N+1) = OldArray.N end}

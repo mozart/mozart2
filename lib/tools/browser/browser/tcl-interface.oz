@@ -175,7 +175,7 @@ in
                                           end)}
 
             %%
-            {Tk update(idletasks)}
+            {Tk.send update(idletasks)}
             {Tk.returnInt winfo(screenheight Window) RootYSize}
             {Tk.returnInt winfo(screenwidth Window) RootXSize}
 
@@ -191,9 +191,9 @@ in
 
             %%
             case self.browserObj.IsView then
-               {Tk wm(title Window IVTitle)}
+               {Tk.send wm(title Window IVTitle)}
             else
-               {Tk wm(title Window ITitle)}
+               {Tk.send wm(title Window ITitle)}
             end
 
             %%
@@ -577,7 +577,7 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: iconify'}
 \endif
-         case self.standAlone then {Tk wm(iconify self.window)}
+         case self.standAlone then {Tk.send wm(iconify self.window)}
          else true
          end
       end
@@ -591,7 +591,7 @@ in
          true
          %%
          %%  Tk 4.0 does not require any special action;
-         %% {Tk focus(self.browseWidget)}
+         %% {Tk.send focus(self.browseWidget)}
          %%
       end
 
@@ -654,7 +654,7 @@ in
             {self.store read(StoreTWFont Font)}
 
             %%
-            {Tk update(idletasks)}
+            {Tk.send update(idletasks)}
 
             %%
             {Tk.return winfo(width self.browseWidget) TWWidthS}
@@ -694,10 +694,10 @@ in
             %%
             case MinXSize =< X andthen MinYSize =< Y then
                %%
-               {Tk wm(geometry self.window X#'x'#Y)}
+               {Tk.send wm(geometry self.window X#'x'#Y)}
 
                %% synchronization;
-               {Tk update(idletasks)}
+               {Tk.send update(idletasks)}
 
                %%
                {Tk.return winfo(exists self.browseWidget) Sync}
@@ -735,13 +735,13 @@ in
             %%  The packing order ('-before' option for packer)
             %% is essential;
             case @FrameButtons == InitValue then
-               {Tk pack(MFT o(side: top
+               {Tk.send pack(MFT o(side: top
                               fill: x
                               padx: IPad
                               pady: IPad
                               before: @FrameHS))}
             else
-               {Tk pack(MFT o(side: top
+               {Tk.send pack(MFT o(side: top
                               fill: x
                               padx: IPad
                               pady: IPad
@@ -768,7 +768,7 @@ in
             %%
             case MenusFrame == InitValue then true
             else
-               {Tk pack(MenusFrame o(side: left))}
+               {Tk.send pack(MenusFrame o(side: left))}
             end
          end
       end
@@ -792,7 +792,7 @@ in
 
             %%
             %%  always before horizontal scrollbar;
-            {Tk pack(BFT o(side: left
+            {Tk.send pack(BFT o(side: left
                            fill: y
                            padx: IPad
                            pady: IPad
@@ -817,7 +817,7 @@ in
             %%
             case ButtonsFrame == InitValue then true
             else
-               {Tk pack(ButtonsFrame o(side: top))}
+               {Tk.send pack(ButtonsFrame o(side: top))}
             end
          end
       end
@@ -874,7 +874,7 @@ in
                @FrameMenus == InitValue
             then
                %%
-               {Tk update(idletasks)}
+               {Tk.send update(idletasks)}
 
                %%
                XMinSize = {self.store read(StoreXMinSize $)}
@@ -884,7 +884,7 @@ in
                MFWidthS
             in
                %%
-               {Tk update(idletasks)}
+               {Tk.send update(idletasks)}
 
                %%
                {Tk.return winfo(reqwidth @menusFrame) MFWidthS}
@@ -896,7 +896,7 @@ in
                BFHeightS
             in
                %%
-               {Tk update(idletasks)}
+               {Tk.send update(idletasks)}
 
                %%
                {Tk.return winfo(reqheight @buttonsFrame) BFHeightS}
@@ -908,7 +908,7 @@ in
                MFHeightS MFWidthS BFHeightS MFHeight MFWidth BFHeight
             in
                %%
-               {Tk update(idletasks)}
+               {Tk.send update(idletasks)}
 
                %%
                {Tk.return winfo(reqheight @menusFrame) MFHeightS}
@@ -933,7 +933,7 @@ in
             local XSizeS YSizeS XSize YSize in
                {Tk.return winfo(height self.window) YSizeS}
                {Tk.return winfo(width self.window) XSizeS}
-               {Tk wm(minsize self.window XMinSize YMinSize)}
+               {Tk.send wm(minsize self.window XMinSize YMinSize)}
 
                %%
                XSize = {String.toInt XSizeS}
@@ -944,17 +944,17 @@ in
                case XMinSize =< XSize andthen YMinSize =< YSize
                then true
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
-                  {Tk wm(geometry self.window XMinSize#'x'#YSizeS)}
+                  {Tk.send wm(geometry self.window XMinSize#'x'#YSizeS)}
 
                   %%
                   <<resetTW>>
                elsecase YSize < YMinSize andthen XMinSize =< XSize then
-                  {Tk wm(geometry self.window XSizeS#'x'#YMinSize)}
+                  {Tk.send wm(geometry self.window XSizeS#'x'#YMinSize)}
 
                   %%
                   <<resetTW>>
                else
-                  {Tk wm(geometry self.window XMinSize#'x'#YMinSize)}
+                  {Tk.send wm(geometry self.window XMinSize#'x'#YMinSize)}
 
                   %%
                   <<resetTW>>
@@ -1007,17 +1007,9 @@ in
 \ifdef DEBUG_TI
          {Show  'tcl/tk: insertBeforeTag:'#Tag#VS}
 \endif
-         local StrT in
-            %%
-            StrT = {Tuple s {Length Tags}}
-            {List.forAllInd Tags proc {$ I T} StrT.I = T end}
+         {self.browseWidget tk(insert p(Tag first) VS s(b(Tags)))}
 
-            %%
-            {self.browseWidget tk(insert(p(Tag first) VS StrT))}
-
-            %%
-            <<nil>>
-         end
+         <<nil>>
       end
 
       %%
@@ -1041,17 +1033,10 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: insertJustAfterTag:'#Tag#VS}
 \endif
-         local StrT in
-            %%
-            StrT = {Tuple s {Length Tags}}
-            {List.forAllInd Tags proc {$ I T} StrT.I = T end}
+         {self.browseWidget tk(insert p(Tag last) VS s(b(Tags)))}
 
-            %%
-            {self.browseWidget tk(insert(p(Tag last) VS StrT))}
-
-            %%
-            <<nil>>
-         end
+         %%
+         <<nil>>
       end
 
       %%
@@ -1087,28 +1072,17 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: insertWithTag:'#Mark#VS}
 \endif
-         local NumOf StrT in
-            NumOf = {Length PTag}
-
+         case PTag of [Tag] then
             %%
-            case NumOf == 1 then
-               %%
-               {self.browseWidget
-                [tk(insert(Mark VS))
-                 tk(tag(add PTag.1 q(Mark '-' {VSLength VS}
-                                     'chars') Mark))]}
-            else
-               %%
-               StrT = {Tuple s NumOf}
-               {List.forAllInd PTag proc {$ I T} StrT.I = T end}
-
-               %%
-               {self.browseWidget tk(insert(Mark VS StrT))}
-            end
-
-            %%
-            <<nil>>
+            {self.browseWidget
+             [tk(insert(Mark VS))
+              tk(tag add Tag q(Mark '-' {VSLength VS}
+                               'chars') Mark)]}
+         else
+            {self.browseWidget tk(insert(Mark VS s(b(PTag))))}
          end
+            %%
+         <<nil>>
       end
 
       %%
@@ -1133,7 +1107,7 @@ in
                  tk(tag(add PTag.1 StrT Mark))]}
             else
                %%
-               StrT = {Tuple s NumOf}
+               StrT = {MakeTuple s NumOf}
                {List.forAllInd PTag proc {$ I T} StrT.I = T end}
 
                %%
@@ -1409,7 +1383,7 @@ in
              True _}
 
             %%
-            {Tk pack(Button o(side: top fill: x padx: IPad pady: IPad))}
+            {Tk.send pack(Button o(side: top fill: x padx: IPad pady: IPad))}
 
             %%
             ButtonProc = proc {$ Action Arg}
@@ -1458,7 +1432,7 @@ in
              True _}
 
             %%
-            {Tk pack(MenuButton o(side: left
+            {Tk.send pack(MenuButton o(side: left
                                   fill: none
                                   padx: IPad
                                   pady: IPad))}
@@ -1682,7 +1656,7 @@ in
                                               end)}
 
             %%
-            {Tk trace(variable TkVar w A)}
+            {Tk.send trace(variable TkVar w A)}
          end
       end
 
@@ -2022,7 +1996,7 @@ in
              True _}
 
             %%
-            {Tk pack(Button o(side: top fill: x padx: IPad pady: IPad))}
+            {Tk.send pack(Button o(side: top fill: x padx: IPad pady: IPad))}
          end
       end
       %%
@@ -2094,7 +2068,7 @@ in
       meth iconify
          case @window == InitValue then true
          else
-            {Tk wm(iconify @window)}
+            {Tk.send wm(iconify @window)}
          end
       end
 

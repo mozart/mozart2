@@ -310,19 +310,6 @@ local
       if I>W then nil else I#T.I|{ToListIndT I+1 W T} end
    end
 
-   proc {TupleToDictionary N T D}
-      if N>0 then
-         {Dictionary.put D N T.N} {TupleToDictionary N-1 T D}
-      end
-   end
-
-   proc {RecordToDictionary As R D}
-      case As of nil then skip
-      [] A|Ar then
-         {Dictionary.put D A R.A} {RecordToDictionary Ar R D}
-      end
-   end
-
    CloneRecord = Boot_Record.clone
 
 in
@@ -522,15 +509,7 @@ in
                              {Zip {Arity R1} R1 R2 P} ?R3}
                          end
                       end
-                   toDictionary:
-                      proc {$ R ?D}
-                         D={Dictionary.new}
-                         if {IsTuple R} then
-                            {TupleToDictionary {Width R} R D}
-                         else
-                            {RecordToDictionary {Arity R} R D}
-                         end
-                      end
+                   toDictionary: Boot_Record.toDictionary
 
                    waitOr: Boot_Record.waitOr
                   )

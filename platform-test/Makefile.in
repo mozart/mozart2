@@ -55,7 +55,8 @@ BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
         mini url equality port cell cellAndLock variable object objectAndLock
-DP = $(DP1:%=./dp/%.ozf)
+#DP = $(DP1:%=./dp/%.ozf)
+DP=
 
 FTOOLS = \
         gump

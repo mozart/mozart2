@@ -28,7 +28,20 @@
 %%
 
 local
-   fun {GetUsedHeap} {System.property.get 'heap.used'} end
+   fun {GetUsedHeap}
+      {System.property.get 'heap.used'}
+   end
+
+   fun {NormalizeCoord Coord}
+      case Coord of pos(_ _ _) then Coord
+      [] pos(F L C _ _ _) then pos(F L C)
+      [] fineStep(F L C) then pos(F L C)
+      [] fineStep(F L C _ _ ) then pos(F L C)
+      [] coarseStep(F L C) then pos(F L C)
+      [] coarseStep(F L C _ _ _) then pos(F L C)
+      [] unit then unit
+      end
+   end
 in
    class Reporter
       prop final
@@ -97,11 +110,12 @@ in
       end
 
       meth logDeclare(Coord)
-         case {self.Compiler getSwitch(compilerpasses $)} then VS in
-            case Coord of pos(F L C) then
+         case {self.Compiler getSwitch(compilerpasses $)} then NewCoord VS in
+            NewCoord = {NormalizeCoord Coord}
+            case NewCoord of pos(F L C) then
                VS = {Error.formatPos F L C unit}
                {self.Wrapper notify(info('%%% processing query in '#VS#'\n'
-                                         Coord))}
+                                         NewCoord))}
             else
                {self.Wrapper notify(info('%%% processing query'))}
             end
@@ -169,13 +183,14 @@ in
                  kind: Kind <= unit
                  msg: Msg <= unit
                  items: Items <= nil
-                 abort: Abort <= true) MaxNumberOfErrors in
+                 abort: Abort <= true) NewCoord MaxNumberOfErrors in
+         NewCoord = {NormalizeCoord Coord}
          Reporter, ToTop(true)
          {self.Wrapper
           notify(message(error(kind: Kind msg: Msg
-                               items: case Coord == unit then Items
-                                      else {Append Items [Coord]}
-                                      end) Coord))}
+                               items: case NewCoord == unit then Items
+                                      else {Append Items [NewCoord]}
+                                      end) NewCoord))}
          ErrorCount <- @ErrorCount + 1
          {self.Compiler getMaxNumberOfErrors(?MaxNumberOfErrors)}
          case MaxNumberOfErrors < 0 orelse {Not Abort} then skip
@@ -187,13 +202,14 @@ in
       meth warn(coord: Coord <= unit
                 kind: Kind <= unit
                 msg: Msg <= unit
-                items: Items <= nil)
+                items: Items <= nil) NewCoord in
+         NewCoord = {NormalizeCoord Coord}
          Reporter, ToTop(false)
          {self.Wrapper
           notify(message(warn(kind: Kind msg: Msg
-                              items: case Coord == unit then Items
-                                     else {Append Items [Coord]}
-                                     end) Coord))}
+                              items: case NewCoord == unit then Items
+                                     else {Append Items [NewCoord]}
+                                     end) NewCoord))}
       end
       meth addErrors(N)
          Reporter, ToTop(true)

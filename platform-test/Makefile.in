@@ -35,8 +35,7 @@ FSOZC = $(FSLOCAL:%=./fs/%.ozc)
 SCHEDLOCAL = \
         abz6 \
         basf \
-        product \
-        mt10schedule
+        product
 
 SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 

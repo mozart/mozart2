@@ -42,10 +42,10 @@ define
       {Fault.deInstallWatcher Entity Proc true}
    end
    proc{InjectorInstall Entity Proc}
-      {Fault.install 'thread'(this) Entity [permFail] Proc true}
+      {Fault.install Entity 'thread'(this) [permFail] Proc true}
    end
    proc{InjectorDeInstall Entity Proc}
-      {Fault.deInstall 'thread'(this) Entity true}
+      {Fault.deInstall Entity 'thread'(this) true}
    end
 
    proc{WatchWat S E}

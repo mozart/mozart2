@@ -34,10 +34,10 @@ export
 
 define
    proc{InjectorInstall Entity Proc}
-      {Fault.install 'thread'(this) Entity [permFail] Proc true}
+      {Fault.install Entity 'thread'(this) [permFail] Proc true}
    end
    proc{InjectorDeInstall Entity Proc}
-      {Fault.deInstall 'thread'(this) Entity true}
+      {Fault.deInstall Entity 'thread'(this) true}
    end
    proc{SiteWatcherInstall Entity Proc}
       {Fault.installWatcher Entity [permFail] Proc true}

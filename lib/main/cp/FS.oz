@@ -132,6 +132,7 @@ body
                  unionN:            fsp_unionN            #2
                  partition:         fsp_partition         #2
                  partitionReified:  fsp_partitionReified  #3
+                 equalR:            fsp_equalR            #3
              ) % fsp
             }
    end
@@ -701,33 +702,34 @@ body
                            )
 
    FSValue =          c(empty:     {FSSetValue nil}
-                            universal: {FSSetValue FSUniversalRefl}
-                            singl:     fun {$ N}
-                                          {FSSetValue [N]}
-                                       end
-                            new:       FSSetValue
-                            is:        FSisValue
-                            toString:  FSvalueToString
-                           )
+                        universal: {FSSetValue FSUniversalRefl}
+                        singl:     fun {$ N}
+                                      {FSSetValue [N]}
+                                   end
+                        new:       FSSetValue
+                        is:        FSisValue
+                        toString:  FSvalueToString
+                       )
 
    FSReified =     r(isIn:     proc {$ E S B}
                                   {FD.bool B}
                                   {FSIsInReif E S B}
                                end
-                            areIn:    proc {$ WList S BList}
-                                         BList
-                                         = {FD.list {Length WList} 0#1}
-                                         = {Map WList
-                                            fun {$ E} {FSIsInReif E S} end}
-                                      end
-                            include:  proc {$ E S B}
-                                         {FD.bool B}
-                                         {FSP.includeR E S B}
-                                      end
-                            bounds:   FSP.bounds
-                            boundsN:  FSP.boundsN
-                            partition: FSP.partitionReified
-                           )
+                     areIn:    proc {$ WList S BList}
+                                  BList
+                                  = {FD.list {Length WList} 0#1}
+                                  = {Map WList
+                                     fun {$ E} {FSIsInReif E S} end}
+                               end
+                     include:  proc {$ E S B}
+                                  {FD.bool B}
+                                  {FSP.includeR E S B}
+                               end
+                     bounds:   FSP.bounds
+                     boundsN:  FSP.boundsN
+                     partition: FSP.partitionReified
+                     equal:     FSP.equalR
+                    )
 
 
    FSMonitorIn =    FSP.monitorIn

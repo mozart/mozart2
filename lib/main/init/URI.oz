@@ -69,7 +69,7 @@
 %%%     parses LOC according to the proposed URI syntax modulo
 %%% Windows-motivated derogation (see above).  Local filename syntax
 %%% is a special case of schemeless uri.  The parsed representation of
-%%% a uri is an opaque chunk.
+%%% a uri is a chunk whose features hold the various parts of the uri.
 %%%
 %%% {URI.is X}
 %%%
@@ -86,13 +86,14 @@
 %%% {URI.toString X}
 %%%
 %%%     X may be a string or a uri.  The corresponding normalized string
-%%% representation is returned. This operation is optimized: the value
-%%% is computed on demand and saved in the parsed representation.
+%%% representation is returned.  This simply looks up the string feature
+%%% of the uri which is computed ByNeed.
 %%%
 %%% {URI.toAtom X}
 %%%
 %%%     Same as above, but an atom is returned instead.  This not
-%%% further optimized.
+%%% further optimized: the atom is computed each time from the string
+%%% feature.
 %%%
 %%% {URI.expand U}
 %%%
@@ -100,12 +101,6 @@
 %%% into an absolute uri as follows: if it begins with "~" then the
 %%% appropriate user home directory is pluged instead, else the current
 %%% directory is prepended.
-%%%
-%%% {URI.toRecord U}
-%%%
-%%%     U is a parsed uri.  A corresponding record is returned.  This
-%%% makes it easy to access e.g. the scheme or the info experimental
-%%% extension.
 %%%
 %%% BUGS AND LIMITATIONS
 %%%
@@ -383,23 +378,27 @@ local
       end
    end
 
-   fun {URI_fromDict D}
+   fun {LazyString U}
+      {ByNeed fun {$} {VSToString {URI_toVS U}} end}
+   end
+
+   proc {URI_fromDict D U}
       REC
       %% -- add the normalized string (to be computed on demand)
-      {Dictionary.put D string _}
+      {Dictionary.put D string {LazyString U}}
       %% -- add the record representation itself then compute it
       {Dictionary.put D URI_ REC}
       {Dictionary.toRecord uri D REC}
    in
-      {NewChunk REC}
+      {NewChunk REC U}
    end
 
-   fun {URI_fromRec R}
+   proc {URI_fromRec R U}
       %% -- add the normalized string (to be computed on demand)
       %% -- and the record representation
-      REC = {Adjoin REC uri(string:_ URI_:REC)}
+      REC = {Adjoin REC uri(string:{LazyString U} URI_:REC)}
    in
-      {NewChunk REC}
+      {NewChunk REC U}
    end
 
    %% -- unoptimized parser for experimental info in uri.
@@ -516,7 +515,8 @@ local
       S1 = case Info==unit then nil else
               '{'#{RecordFoldRInd Info
                    fun {$ F V L}
-                      F#'='#V#case L==unit then '}' else ' ' end#L
+                      case V=='' then F else F#'='#V end
+                      #case L==unit then '}' else ' '#L end
                    end unit}
            end
       S2 = case Fragment ==unit then S1 else "#"#Fragment #S1 end
@@ -599,17 +599,8 @@ local
       end
    end
 
-   fun {URI_toString U}
-      STR = U.string
-   in
-      case {IsDet STR} then STR else
-         STR={VSToString {URI_toVS U}}
-      end
-   end
-
-   fun {URI_toAtom U}
-      {VSToAtom {URI_toVS U}}
-   end
+   fun {URI_toString U} U.string end
+   fun {URI_toAtom   U} {VSToAtom U.string} end
 
    %% -- TILDE and DOT NORMALIZATION -- when "~" or "." appear at the
    %% -- front of a local relative filename, they can be expanded with
@@ -653,16 +644,11 @@ local
       {URI_fromRec {AdjoinAt Rel path abs(Abs)}}
    end
 
-   %% -- return the underlying record
-
-   fun {URI_toRecord U} U.URI_ end
-
 in
    URI = uri(is         : URI_is
              make       : URI_make
              resolve    : URI_resolve
              toString   : URI_toString
              toAtom     : URI_toAtom
-             expand     : URI_expand
-             toRecord   : URI_toRecord)
+             expand     : URI_expand)
 end

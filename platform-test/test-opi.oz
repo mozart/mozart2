@@ -21,9 +21,9 @@
 %%%
 
 
-declare
-{OS.chDir {OS.getEnv 'HOME'}#'/Oz/test'}
+{OS.chDir {OS.getEnv 'HOME'}#'/mozart/share/test'}
 
+declare
 T={{Load './te.ozc'}
    c('SP': \insert SP.env
      'CP': \insert CP.env

@@ -1,7 +1,13 @@
 ####################################################
 @SET_MAKE@
-BUILDTOP= @BUILDTOP@
-TOPDIR  = @TOPDIR@
+VPATH=          @srcdir@
+SRCDIR=         @srcdir@
+BUILDTOP=       @BUILDTOP@
+SRCTOP=         @SRCTOP@
+
+INSTALL_DIR     = @INSTALL_DIR@
+
+export OZPATH = .:$(SRCDIR)
 
 # Test for spaces
 SPACELOCAL = \
@@ -48,6 +54,7 @@ FCORE = \
 
 CORE = $(FCORE:%=./core/%.ozc)
 
+DIRS = core space fd fs scheduling
 
 # All tests
 COMPONENTS = \
@@ -56,44 +63,58 @@ COMPONENTS = \
 
 ####################################################
 
-RM      = @RM@ -f
 OZBATCH = @OZBATCH@
 OZFLAGS = --nowarnunused
 
 OZE = $(OZBATCH) $(OZFLAGS)
 OZC = $(OZE) -c
-export OZENGINE
 
 all: oztest
 
-check: oztest
-        $(OZENGINE) $< --verbose
+bootstrap:
 
-oztest: ./lib/make-test.oz ./lib/engine.oz \
-        ./lib/passed.oz ./lib/failed.oz ./lib/help-string.oz \
+install:
+
+check: oztest
+        ./oztest --verbose
+
+.PHONY: dirs
+
+dirs:
+        ds="$(DIRS)"; for d in $$ds; do if test ! -d $$d; then $(INSTALL_DIR) $$d; fi; done
+
+oztest: lib/make-test.oz lib/engine.oz \
+        lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
-        $(OZE) -l AP,SP ./lib/make-test.oz
-        $(OZENGINE) ./make-test -verbose $(COMPONENTS)
-        $(RM) ./make-test
+        $(MAKE) dirs
+        $(OZE) -l AP,SP lib/make-test.oz
+        ./make-test -verbose $(COMPONENTS)
+        -rm -f ./make-test
 
 
 clean:
-        $(RM) *~ ./*/*~ ./*/*/*~
-        $(RM) $(COMPONENTS)
-        $(RM) make-test
-        $(RM) te.ozc
-
-realclean: veryclean
+        -rm -f *~ ./*/*~ ./*/*/*~
+        -rm -f $(COMPONENTS)
+        -rm -f make-test
+        -rm -f te.ozc
 
 veryclean: clean
-        $(RM) oztest
+        -rm -f oztest
 
 distclean: veryclean
-        $(RM) Makefile
+        -rm -f Makefile
 
 .SUFFIXES: $SUFFIXES .ozc .oz
 
 .oz.ozc:
         $(OZC) $< -o $@
 
-include ../Makefile.boot
+include $(SRCTOP)/share/Makefile.boot
+
+bootstrap:
+
+Makefile: Makefile.in ../config.status
+        cd .. && ./config.status
+
+../config.status: ../configure
+        cd .. && ./config.status --recheck

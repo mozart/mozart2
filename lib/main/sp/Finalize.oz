@@ -25,28 +25,55 @@
 
 functor
 
-import
-   Finalize at 'x-oz://boot/Finalize'
-
 export
    register:   Register
-   setHandler: SetHandler
    everyGC:    EveryGC
+   guardian:   Guardian
 
 define
 
-   Register   = Finalize.register
-   SetHandler = Finalize.setHandler
-
-   local
-      proc {FinalizeEntry Value|Handler}
-         {Handler Value}
-      end
-      proc {FinalizeHandler L}
-         {ForAll L FinalizeEntry}
+   proc {Guardian Finalizer ?Register}
+      Table
+      proc {FinalizeEntry _#Value}
+         {Finalizer Value}
       end
    in
-      {SetHandler FinalizeHandler}
+      thread {ForAll {NewWeakDictionary $ Table} FinalizeEntry} end
+      proc {Register Value}
+         {WeakDictionary.put Table {NewName} Value}
+      end
+   end
+
+   local
+      HandlerTable = {NewDictionary}
+      ValueTable
+   in
+      proc {Register Value Handler}
+         Key = {NewName}
+      in
+         {Wait Handler}
+         {Dictionary.put HandlerTable Key Handler}
+         %% we must do this 2nd so that the value doesn't
+         %% become garbage before the handler has been registered
+         {WeakDictionary.put ValueTable Key Value}
+      end
+      thread
+         {ForAll {NewWeakDictionary $ ValueTable}
+          proc {$ Key#Value}
+             try
+                Handler = {Dictionary.get HandlerTable Key}
+             in
+                {Dictionary.remove HandlerTable Key}
+                {Handler Value}
+             catch E then
+                %% if we catch an exception, we raise it again
+                %% in a brand new thread so that the user may see
+                %% the corresponding error message, but the
+                %% finalization thread is not affected
+                thread raise E end end
+             end
+          end}
+      end
    end
 
    proc {EveryGC P}
@@ -54,5 +81,7 @@ define
          {P}
          {Register DO DO}
       end
-   in {Register DO DO} end
+   in
+      {Register DO DO}
+   end
 end

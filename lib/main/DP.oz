@@ -27,6 +27,8 @@ fun
    {$ IMPORT}
    \insert 'OP.env'
    = IMPORT.'OP'
+   \insert 'SP.env'
+   = IMPORT.'SP'
    \insert 'AP.env'
    = IMPORT.'AP'
 

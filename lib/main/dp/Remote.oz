@@ -23,7 +23,7 @@
 local
 
    proc {SuckUp P}
-      {P read(list:$)}=_ {SuckUp P}
+      {System.showInfo {P read(list:$)}} {SuckUp P}
    end
 
    proc {StartRemote Host Cmd}

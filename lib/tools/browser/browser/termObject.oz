@@ -1906,7 +1906,9 @@ in
       end
 
       %%
-      meth !GetLastElements(TL $) TL|nil end
+      meth !GetLastElements(TL $)
+         case TL == nil then ['nil'] else nil end
+      end
 
       %%
       %% Make a "|{Var,Non-Var}" tail;

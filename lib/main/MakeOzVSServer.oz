@@ -37,7 +37,7 @@ in
        Syslet.{args exit}
        Connection.{take}
        Module.{link}
-       System.{get set showInfo show gcDo}
+       System.{get set showInfo gcDo}
 
        %%
     body

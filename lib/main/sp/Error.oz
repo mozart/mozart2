@@ -125,8 +125,7 @@ in
       System.{get
               printName
               printError
-              valueToVirtualString
-              Show = show}
+              valueToVirtualString}
 
       ErrorRegistry.{get
                      exists}

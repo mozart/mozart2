@@ -491,9 +491,7 @@ in
    Browser = {New BrowserClass init}
    Browse = proc {$ X} {Browser browse(X)} end
 \ifdef SAVE
-   browser('BrowserClass': BrowserClass
-           'Browser':      Browser
-           'Browse':       Browse)
+   \insert 'Browser.env'
 \endif
    %%
    %%
@@ -505,10 +503,3 @@ end
 \endif
 
 \insert 'browser/undefs.oz'
-
-\ifdef SAVE
-browser('BrowserClass': BrowserClass
-        'Browser':      Browser
-        'Browse':       Browse)
-= {NewBrowser Search FD Tk TkTools}
-\endif

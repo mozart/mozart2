@@ -557,7 +557,8 @@ local
                            {V getPrintName($)} < {W getPrintName($)}
                         end}
                 proc {$ V}
-                   {@reporter tell(info('  '#{V getPrintName($)}#': '#
+                   {@reporter tell(info('  '#{FormatStringToVirtualString
+                                              pn({V getPrintName($)})}#': '#
                                         {V outputDebugType($)}#'\n'))}
                 end}
             end

@@ -307,7 +307,7 @@ local
          ExecutingThread InterruptLock
       meth init(WrapperObject)
          wrapper <- WrapperObject
-         CompilerStateClass, init({Adjoin StandardEnv
+         CompilerStateClass, init({Adjoin Base
                                    env('`Compiler`': WrapperObject)})
          reporter <- {New Reporter init(self WrapperObject)}
          ParseFile <- ParseOzFile

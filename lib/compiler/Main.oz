@@ -19,51 +19,47 @@
 %%% WARRANTIES.
 %%%
 
-local
-   StandardEnv = \insert compiler-Env
-in
-   functor prop once
-   import
-      Debug                         at 'x-oz://boot/Debug'
-      Parser                        at 'x-oz://boot/Parser'
-      CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
-      Property(get condGet)
-      System(gcDo printError valueToVirtualString)
-      Error   %--**(formatPos msg formatLine formatExc dispatch format formatGeneric)
-      ErrorRegistry(put)
-      Type   %--**(ask)
-      PrintName(is)
-      Builtins   %--**
-      Unnester   %--**(makeExpressionQuery unnestQuery)
-      Core.variable
-      Assembler   %--**(internalAssemble assemble)
-      RunTime   %--**
+functor prop once
+import
+   Debug                         at 'x-oz://boot/Debug'
+   Parser                        at 'x-oz://boot/Parser'
+   CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
+   Property(get condGet)
+   System(gcDo printError valueToVirtualString)
+   Error   %--**(formatPos msg formatLine formatExc dispatch format formatGeneric)
+   ErrorRegistry(put)
+   Type   %--**(ask)
+   PrintName(is)
+   Builtins   %--**
+   Unnester   %--**(makeExpressionQuery unnestQuery)
+   Core.variable
+   Assembler   %--**(internalAssemble assemble)
+   RunTime   %--**
 \ifndef NO_GUMP
-      Gump(makeProductionTemplates)
-      ProductionTemplates(default)
+   Gump(makeProductionTemplates)
+   ProductionTemplates(default)
 \endif
-   export
-      Engine
-      ParseOzFile
-      ParseOzVirtualString
-      GenericInterface
-      QuietInterface
-      EvalExpression
-      VirtualStringToValue
-      Assemble
-   define
-      local
-         \insert FormatStrings
-         \insert Reporter
-         \insert CheckTupleSyntax
-      in
-         \insert CompilerClass
-         \insert ParseOz
-         \insert GenericInterface
-         \insert QuietInterface
-         \insert Abstractions
-         \insert Errors
-      end
-      Assemble = Assembler.assemble
+export
+   Engine
+   ParseOzFile
+   ParseOzVirtualString
+   GenericInterface
+   QuietInterface
+   EvalExpression
+   VirtualStringToValue
+   Assemble
+define
+   local
+      \insert FormatStrings
+      \insert Reporter
+      \insert CheckTupleSyntax
+   in
+      \insert CompilerClass
+      \insert ParseOz
+      \insert GenericInterface
+      \insert QuietInterface
+      \insert Abstractions
+      \insert Errors
    end
+   Assemble = Assembler.assemble
 end

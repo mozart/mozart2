@@ -39,9 +39,6 @@ in
              listThreads
              breakpointAt
              breakpoint
-             displayDef
-             displayCode
-             procedureCode
              procedureCoord
             }
          from 'x-oz://boot/Debug'
@@ -51,9 +48,6 @@ in
       listThreads:    ListThreads
       breakpointAt:   BreakpointAt
       breakpoint:     Breakpoint
-      displayDef:     DisplayDef
-      displayCode:    DisplayCode
-      procedureCode:  ProcedureCode
       procedureCoord: ProcedureCoord
 
    body
@@ -74,11 +68,6 @@ in
 
       BreakpointAt =   Debug.breakpointAt
       Breakpoint =     Debug.breakpoint
-      DisplayDef =     Debug.displayDef
-      DisplayCode =    Debug.displayCode
-      Print =          Debug.print
-      PrintLong =      Debug.printLong
-      ProcedureCode =  Debug.procedureCode
       ProcedureCoord = Debug.procedureCoord
 
    end

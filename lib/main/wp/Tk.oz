@@ -281,32 +281,49 @@ in
 
    fun {NewTk}
       SGI = {System.get internal}
-      Stream # Applet = case SGI.browser then
-                           %% Connect to already running plugin
-                           {CreateSocket} #
-                           thread
-                              App  = {New BrowserAppletToplevel tkInit}
-                           in
-                              App.rawArgs = {BrowserAppletGetArgs}
-                              App
-                           end
-                        else
-                           S={New class $ from Open.pipe Open.text
-                                     prop final
-                                  end
-                              init(cmd:case {System.get platform}.1==win32
-                                       then 'ozwish'
-                                       else 'oz.wish'
-                                       end)}
-                        in
-                           S # case SGI.applet then
-                                  thread
-                                     {New AppletToplevel
-                                      tkInit(title:'Oz Applet')}
-                                  end
-                               else unit
-                               end
-                        end
+      Stream Applet
+      case SGI.browser then
+         %% Connect to already running plugin
+         Stream = {CreateSocket}
+         thread
+            Applet         = {New BrowserAppletToplevel tkInit}
+            Applet.rawArgs = {BrowserAppletGetArgs}
+         end
+      else
+         Stream = {New class $ from Open.pipe Open.text
+                          prop final
+                       end
+                   init(cmd:case {System.get platform}.1==win32
+                            then 'ozwish'
+                            else 'oz.wish'
+                            end)}
+
+         case SGI.applet then
+            thread
+               Applet={New AppletToplevel tkInit(title:'Oz Applet'
+                                                 withdraw:true)}
+
+               local
+                  Args = Applet.args
+               in
+                  case
+                     {HasFeature Args width} andthen
+                     {HasFeature Args height}
+                  then
+                     {Applet tk(configure
+                                width:  Args.width
+                                height: Args.height)}
+                  else skip
+                  end
+                  {Tk.batch [update(idletasks)
+                             wm(resizable Applet 0 0)
+                             wm(deiconify Applet)]}
+               end
+            end
+         else
+            Applet = unit
+         end
+      end
 
       ActionIdServer = {New Counter get(_)}
       TkDict         = {Dictionary.new}
@@ -781,13 +798,13 @@ in
 
       class AppletToplevel from TkToplevel
          prop final
-         feat rawArgs
+         feat args
       end
 
       class BrowserAppletToplevel from Widget
          prop final
          attr Action
-         feat rawArgs
+         feat rawArgs args
          meth tkInit
             ThisTclName = self.TclName
             case {IsDet ThisTclName} then
@@ -1285,8 +1302,10 @@ in
            o(S configure command:        s(T xview))]}
       end
 
-      IsColor = thread
-                   {TkReturnInt winfo(depth '.')}>1
+      IsColor = case SGI.browser then true else
+                   thread
+                      {TkReturnInt winfo(depth '.')}>1
+                   end
                 end
 
       fun {DefineUserCmd TclCmd Action Args}

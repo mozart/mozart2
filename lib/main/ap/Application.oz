@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
+%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
 %%%   Denys Duchier, 1997
+%%%   Christian Schulte, 1997, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -120,7 +122,7 @@
 %%% defined by Christian Schulte, with the addition of ARGSPEC=unit to
 %%% mean that we are not interested in the arguments.
 %%% ------------------------------------------------------------------
-%%% {Application.registry.cgi R FILE SPEC FUNCTOR CGISPEC}
+%%% {Application.registry.servlet R FILE SPEC FUNCTOR ARGSPEC}
 %%%
 %%% creates an executable component that serves as a CGI script.  The
 %%% only difference with the above is that there are no command-line
@@ -133,7 +135,7 @@
 %%% {Application.register NAME x(src:SRC args:ARGS type:TYPE<=unit)}
 %%% {Application.plan SPEC ?PLAN}
 %%% {Application.exec FILE SPEC FUNCTOR ARGSPEC}
-%%% {Application.cgi  FILE SPEC FUNCTOR CGISPEC}
+%%% {Application.servlet  FILE SPEC FUNCTOR CGISPEC}
 %%% ==================================================================
 \ifdef FOOBAR
 declare
@@ -603,7 +605,7 @@ local
    %%
    fun {RegistryMakeExecProc R CompSpec ArgSpec Functor}
       Loader  = {RegistryGetLoader R CompSpec}
-      ArgProc = {MakeArgParser ArgSpec}
+      ArgProc = {Parser.cmd ArgSpec}
    in
       proc {$}
          try {Exit {{Functor {Loader}} {ArgProc}}}
@@ -614,9 +616,9 @@ local
       end
    end
    %%
-   fun  {RegistryMakeCgiProc R CompSpec InterSpec Functor}
+   fun {RegistryMakeServletProc R CompSpec ArgSpec Functor}
       Loader  = {RegistryGetLoader R CompSpec}
-      ArgProc = {MakeCgiParser InterSpec}
+      ArgProc = {Parser.servlet ArgSpec}
    in
       proc {$}
          try {Exit {{Functor {Loader}} {ArgProc}}}
@@ -627,18 +629,32 @@ local
       end
    end
    %%
-   fun  {RegistryMakeAppletProc R CompSpec Functor}
-      Loader = {RegistryGetLoader R
-                {Adjoin CompSpec c('WP': eager)}}
+   fun {RegistryMakeAppletProc R CompSpec ArgSpec Functor}
+      Loader    = {RegistryGetLoader R
+                   {Adjoin CompSpec c('WP': eager)}}
+      ArgProc   = {Parser.applet ArgSpec}
+      SystemGet = System.get
+      SystemSet = System.set
    in
       proc {$}
          try
-            {{`Builtin` 'SystemSetInternal' 1} internal(applet:true)}
-            {Exit {{Functor {Loader}}}}
-               % provide some error message
+            {SystemSet internal(applet:true)}
+            Loaded    = {Loader}
+            Applet    = Loaded.'WP'.'Tk'.applet
+            Args      = case {SystemGet internal}.browser then
+                           thread {ArgProc Applet.rawArgs} end
+                        else
+                           {ArgProc unit}
+                        end
+         in
+            Applet.args = Args
+            {{Functor Loaded} Applet Args}
+            {Wait _} % Never terminate!
+            % provide some error message
          catch E then
             {{{`Builtin` getDefaultExceptionHandler 1}} E}
-         finally {Exit 1} end
+         finally {Exit 1}
+         end
       end
    end
    %%
@@ -647,14 +663,14 @@ local
        {RegistryMakeExecProc R CompSpec ArgSpec Functor}}
    end
    %%
-   proc {RegistryMakeCgi R File CompSpec Functor InterSpec}
+   proc {RegistryMakeServlet R File CompSpec Functor ArgSpec}
       {MakeExec File
-       {RegistryMakeCgiProc R CompSpec InterSpec Functor}}
+       {RegistryMakeServletProc R CompSpec ArgSpec Functor}}
    end
    %%
-   proc {RegistryMakeApplet R File CompSpec Functor}
+   proc {RegistryMakeApplet R File CompSpec Functor ArgSpec}
       {MakeExec File
-       {RegistryMakeAppletProc R CompSpec Functor}}
+       {RegistryMakeAppletProc R CompSpec ArgSpec Functor}}
    end
    %%
    %% Return the value that can be obtained by following the
@@ -730,8 +746,7 @@ local
       'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
                          'FD' 'FS']
       'WP':             ['Tk' 'NewTk' 'TkTools' 'NewTkTools']
-      'DP':             ['Site' 'Server' 'NewServer' 'NewAgenda'
-                         'LinkToNetscape' 'RunApplets' 'Gate']
+      'DP':             ['Site' 'Server' 'NewServer' 'NewAgenda' 'Gate']
       'Panel':          nil
       'Browser':        ['Browse']
       'Explorer':       ['ExploreOne' 'ExploreAll' 'ExploreBest']
@@ -786,11 +801,11 @@ local
    proc {DefaultMakeExec File C F A}
       {RegistryMakeExec DefaultRegistry File C F A}
    end
-   proc {DefaultMakeCgi File C F I}
-      {RegistryMakeCgi DefaultRegistry File C F I}
+   proc {DefaultMakeServlet File C F A}
+      {RegistryMakeServlet DefaultRegistry File C F A}
    end
-   proc {DefaultMakeApplet File C F}
-      {RegistryMakeApplet DefaultRegistry File C F}
+   proc {DefaultMakeApplet File C F A}
+      {RegistryMakeApplet DefaultRegistry File C F A}
    end
    %%
    %% Since the Error module needs to be loaded before it can
@@ -823,10 +838,6 @@ local
    %%
    \insert ArgParser.oz
    %%
-   %% CgiParser
-   %%
-   \insert CgiParser.oz
-   %%
    proc {MakeExec File ExecProc}
       TmpFile = {OS.tmpnam}
       Script  = {New Open.file
@@ -853,14 +864,14 @@ in
                              loader     :DefaultGetLoader
                              plan       :DefaultGetPlan
                              exec       :DefaultMakeExec
-                             cgi        :DefaultMakeCgi
+                             servlet:   DefaultMakeServlet
                              applet:    DefaultMakeApplet
                              registry   :registry(new     :MakeDefaultRegistry
                                                   register:RegistryRegister
                                                   loader  :RegistryGetLoader
                                                   plan    :RegistryGetPlan
                                                   exec    :RegistryMakeExec
-                                                  cgi     :RegistryMakeCgi
+                                                  servlet: RegistryMakeServlet
                                                   applet:  RegistryMakeApplet)
                             )
 end

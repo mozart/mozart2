@@ -1,18 +1,177 @@
-%%
-%% ArgParser (Christian Schulte)
-%%
+%%%
+%%% Authors:
+%%%   Christian Schulte (schulte@dfki.de)
+%%%
+%%% Copyright:
+%%%   Christian Schulte, 1997, 1998
+%%%
+%%% Last change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+%%% This file is part of Mozart, an implementation
+%%% of Oz 3
+%%%    $MOZARTURL$
+%%%
+%%% See the file "LICENSE" or
+%%%    $LICENSEURL$
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
 
 local
-   CharToLower  = Char.toLower
-   AtomToString = Atom.toString
 
-   fun {NormalizeSpec ArgSpec}
-      {List.toRecord m
-       {Record.foldL ArgSpec
-        fun {$ Ar AS}
-           S={Map {AtomToString {Label AS}} CharToLower}
-           A={String.toAtom S}
-           N=case {IsAtom AS} then
+   %%
+   %% Some closure avoidance accesses, to keep Denys happy
+   %%
+   CharToLower   = Char.toLower
+   CharIsUpper   = Char.isUpper
+   CharIsLower   = Char.isLower
+
+   AtomToString  = Atom.toString
+
+   StringIsInt   = String.isInt
+   StringToAtom  = String.toAtom
+   StringToInt   = String.toInt
+   StringToFloat = String.toFloat
+   StringToken   = String.token
+   StringTokens  = String.tokens
+
+   SystemGet     = System.get
+   GetEnv        = OS.getEnv
+
+   %%
+   %% Access to Serlvet parameters following CGI spec
+   %%
+   local
+      class StdIn from Open.file
+         prop final
+         meth init
+            StdIn,dOpen(0 1)
+         end
+         meth get(N ?Is)
+            Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+         in
+            Ir = case M<N then StdIn,get(N-M $) else nil end
+         end
+      end
+
+      fun {CgiRawGet}
+         case {StringToAtom {GetEnv 'REQUEST_METHOD'}}
+         of 'GET'  then {GetEnv 'QUERY_STRING'}
+         [] 'POST' then F in
+            try
+               F={New StdIn init}
+               {F get({StringToInt {GetEnv 'CONTENT_LENGTH'}} $)}
+            finally
+               {F close}
+            end
+         end
+      end
+   in
+      fun {GetServletArgs}
+         {Map {StringTokens {CgiRawGet} &&}
+          fun {$ S}
+             S1 S2 in {StringToken S &= ?S1 ?S2} S1#S2
+          end}
+      end
+   end
+
+
+   %%
+   %% Access to commandline arguments
+   %%
+   fun {GetCmdArgs}
+      {Map {SystemGet argv} AtomToString}
+   end
+
+
+   %%
+   %% Preprocessing of CGI or Applet arguments
+   %%
+   local
+      fun {HexToInt D}
+         case {CharIsUpper D} then D-&A+10
+         elsecase {CharIsLower D} then D-&a+10
+         else D-&0
+         end
+      end
+
+      fun {Unquote Is}
+         case Is of nil then nil
+         [] I|Ir then
+            case I
+            of &% then
+               case Ir of D1|I1r then
+                  case I1r of D2|I2r then
+                     {HexToInt D1}*16+{HexToInt D2}|{Unquote I2r}
+                  else Ir
+                  end
+               else Ir
+               end
+            [] &+ then & |{Unquote Ir}
+            else I|{Unquote Ir}
+            end
+         end
+      end
+
+   in
+      fun {WebPreProc SSs}
+         %% Takes a list of pairs of strings
+         case SSs of nil then nil
+         [] SS|SSr then S1#S2=SS in
+            ({StringToAtom {Unquote S1}}#{Unquote S2})|{WebPreProc SSr}
+         end
+      end
+   end
+
+   %%
+   %% Preprocessing of commandlines
+   %%
+
+   local
+      fun {IsOption Is ?Ir}
+         case Is of I1|I1r then
+            case I1==&- then
+               case I1r of I2|I2r then
+                  case I2==&- then
+                     case I2r==nil then false else Ir=I2r true end
+                  else Ir=I1r true
+                  end
+               else false
+               end
+            else false
+            end
+         else false
+         end
+      end
+   in
+      fun {CmdPreProc Ss ?RSs}
+         %% RSs is a list of string that are unprocessed
+         case Ss of nil then
+            RSs=nil nil
+         [] S|Sr then SO in
+            case {IsOption S ?SO} then S1 S2 in
+               {StringToken SO &= S1 S2}
+               {StringToAtom S1}#S2|{CmdPreProc Sr RSs}
+            else
+               RSs=Ss nil
+            end
+         end
+      end
+   end
+
+
+   %%
+   %% Normalization of argument specifications
+   %%
+
+   local
+      proc {Normalize AS D}
+         S = {Map {AtomToString {Label AS}} CharToLower}
+         A = {StringToAtom S}
+         N = case {IsAtom AS} then
                 A(type:bool optional:false default:false)
              else
                 TA={Adjoin
@@ -24,197 +183,170 @@ local
                                   [] string then ""
                                   [] atom   then ''
                                   [] bool   then false
+                                  else
+                                     {`RaiseError` argParser(type(TA.type))} _
                                   end) TA}
              end
-        in
-           case N.type==bool then
-              NoA={String.toAtom &n|&o|S}
-           in
-              A#{Adjoin N A(real:A value:true)}|
-              NoA#{Adjoin N NoA(real:A value:false)}|Ar
-           else
-              A#N|Ar
-           end
-        end nil}}
+      in
+         case N.type of bool then
+            NoA={StringToAtom &n|&o|S}
+         in
+            {Dictionary.put D A   {Adjoin N A(real:A   value:true)}}
+            {Dictionary.put D NoA {Adjoin N NoA(real:A value:false)}}
+         else
+            {Dictionary.put D A
+             {Adjoin case N.optional then o(real:A value:N.default)
+                     else o(real:A)
+                     end N}}
+         end
+      end
+   in
+      fun {NormArgSpec ArgSpec}
+         D={Dictionary.new}
+      in
+         {Record.forAll ArgSpec proc {$ AS}
+                                   {Normalize AS D}
+                                end}
+         {Dictionary.toRecord m D}
+      end
+   end
+
+
+   local
+      fun {TidyMinus Is}
+         case Is of nil then nil
+         [] I|Ir then case I of &- then &~ else I end|{TidyMinus Ir}
+         end
+      end
+
+      fun {ExtractInt S}
+         {StringToInt {TidyMinus S}}
+      end
+
+      fun {ExtractFloat S}
+         TS={TidyMinus S}
+      in
+         case {StringIsInt TS} then {IntToFloat {StringToInt TS}}
+         else {StringToFloat TS}
+         end
+      end
+
+      fun {ExtractValue S O}
+         try
+            case S of nil then O.value
+            elsecase O.type
+            of float  then TS={TidyMinus S} in
+               case {StringIsInt TS} then {IntToFloat {StringToInt TS}}
+               else {StringToFloat TS}
+               end
+            [] int    then {StringToInt {TidyMinus S}}
+            [] atom   then {StringToAtom S}
+            [] string then S
+            end
+         catch _ then
+            {`RaiseError` argParser(value(O.real S))} _
+         end
+      end
+
+   in
+      fun {EnterValues ASs OS D}
+         case ASs of nil then nil
+         [] AS|ASr then A#S=AS in
+            case {HasFeature OS A} then OSA=OS.A in
+               {Dictionary.put D OSA.real
+                {ExtractValue S OSA}|{Dictionary.get D OSA.real}}
+               {EnterValues ASr OS D}
+            else AS|{EnterValues ASr OS D}
+            end
+         end
+      end
    end
 
    local
-      fun {ParseOption Is ArgSpec ?O ?V}
-         case Is of &-|Is then
-            case Is of nil then false
-            [] I|Ir then
-               FirstIsMinus = (I==&-)
-            in
-               case FirstIsMinus andthen Ir==nil then false else
-                  OS VS
-               in
-                  {String.token case FirstIsMinus then Ir else Is end &=
-                   ?OS ?VS}
-                  O={String.toAtom {Map OS CharToLower}}
-                  V=VS
-                  {HasFeature ArgSpec O}
-               end
-            end
-         else false
-         end
+      fun {LowerLabel R}
+         {StringToAtom {Map {AtomToString {Label R}} CharToLower}}
       end
 
-      local
-         fun {TidyMinus Is}
-            case Is of nil then nil
-            [] I|Ir then
-               case I of &- then &~ else I end|{TidyMinus Ir}
-            end
-         end
+      proc {MakeDefaultDict Args FAS ?D}
+         D = {Dictionary.new}
+         {ForAll Args proc {$ A}
+                         {Dictionary.put D A [FAS.A.default]}
+                      end}
+      end
+   in
+      fun {GetPostProc ArgSpec}
+         FAS  = {NormArgSpec ArgSpec}
+         Args = {Record.foldL ArgSpec fun {$ As S}
+                                         {LowerLabel S}|As
+                                      end nil}
       in
-         fun {CheckInt S}
-            {String.isInt {TidyMinus S}}
-         end
-         fun {CheckFloat S}
-            TS={TidyMinus S}
-         in
-            {String.isInt TS} orelse {String.isFloat TS}
-         end
-         fun {ParseInt S}
-            {String.toInt {TidyMinus S}}
-         end
-         fun {ParseFloat S}
-            TS={TidyMinus S}
-         in
-            case {String.isInt TS} then {Int.toFloat {String.toInt TS}}
-            else {String.toFloat TS}
+         case {Label ArgSpec}
+         of list then
+            fun {$ OVs Rs}
+               args(OVs Rs)
             end
-         end
-      end
-   in
-      fun {ParseArgs As ArgSpec ?RAs}
-         case As of nil then RAs=nil nil
-         [] A|Ar then O V in
-            case {ParseOption A ArgSpec ?O ?V} then
-               %% O is a option!
-               S = ArgSpec.O
-               Cont # Value # NextAs =
-               %% Check whether it has the right kind of value
-               %% and determine
-               case S.type==bool then
-                  case V==nil then
-                     true  # S.value # Ar
-                  else
-                     false # _ # As
-                  end
-               else
-                  Arg#ArgR = case V==nil then
-                                case Ar of A|Ar then A#Ar else nil#nil end
-                             else V#Ar
-                             end
-               in
-                  case {Not S.optional} andthen Arg==nil then
-                     false#_#As
-                  elsecase S.type
-                  of int    then
-                     case {CheckInt Arg} then
-                        true  # {ParseInt Arg} # ArgR
-                     elsecase S.optional then
-                        true  # S.default # Ar
-                     else
-                        false # _ # As
-                     end
-                  [] float  then
-                     case {CheckFloat Arg} then
-                        true  # {ParseFloat Arg} # ArgR
-                     elsecase S.optional then
-                        true  # S.default # Ar
-                     else
-                        false # _ # As
-                     end
-                  elsecase S.optional andthen
-                     V==nil andthen {ParseOption Arg ArgSpec _ _} then
-                     true # S.default # Ar
-                  else
-                     true # case S.type
-                            of atom   then {String.toAtom Arg}
-                            [] string then Arg
-                            end # ArgR
-                  end
-               end
+         [] single then
+            fun {$ OVs Rs}
+               D    = {MakeDefaultDict Args FAS}
+               ROVs = {EnterValues OVs FAS D}
             in
-               case Cont then
-                  {CondSelect S real O}#Value|{ParseArgs NextAs ArgSpec RAs}
-               else RAs=NextAs nil
-               end
-            else
-               RAs=As nil
+               {ForAll {Dictionary.keys D}
+                proc {$ K}
+                   {Dictionary.put D K {Dictionary.get D K}.1}
+                end}
+               {Dictionary.put D 1 ROVs}
+               {Dictionary.put D 2 Rs}
+               {Dictionary.toRecord args D}
+            end
+         [] multiple then
+            fun {$ OVs Rs}
+               D    = {MakeDefaultDict Args FAS}
+               ROVs = {EnterValues OVs FAS D}
+            in
+               {Dictionary.put D 1 ROVs}
+               {Dictionary.put D 2 Rs}
+               {Dictionary.toRecord args D}
             end
          end
       end
-   end
-
-   fun {ToSingle AVs Rest Args ArgSpec}
-      D={Dictionary.new}
-   in
-      {ForAll Args proc {$ A}
-                      {Dictionary.put D A ArgSpec.A.default}
-                   end}
-      {ForAll AVs proc {$ A#V}
-                     {Dictionary.put D {CondSelect ArgSpec.A real A} V}
-                  end}
-      {Dictionary.put D 1 Rest}
-      {Dictionary.toRecord argv D}
-   end
-
-   fun {ToMultiple AVs Rest Args ArgSpec}
-      D={Dictionary.new}
-   in
-      {ForAll Args proc {$ A}
-                      {Dictionary.put D A [ArgSpec.A.default]}
-                   end}
-      {ForAll AVs proc {$ A#V}
-                     RA={CondSelect ArgSpec.A real A}
-                  in
-                     {Dictionary.put D RA V|{Dictionary.get D RA}}
-                  end}
-      {Dictionary.put D 1 Rest}
-      {Dictionary.toRecord argv D}
-   end
-
-   SystemGet = System.get
-   fun {GetArgs}
-      {Map {SystemGet argv} AtomToString}
    end
 
 in
 
-   fun {MakeArgParser ArgSpec}
-      Kind={Label ArgSpec}
-   in
-      case Kind
-      of plain then
-         GetArgs
-      else
-         Args = {Record.foldL ArgSpec fun {$ As R}
-                                         {Label R}|As
-                                      end nil}
-         Spec = {NormalizeSpec ArgSpec}
-      in
-         case Kind
-         of single   then
-            fun {$}
-               Ar
-            in
-               {ToSingle {ParseArgs {GetArgs} Spec ?Ar} Ar Args Spec}
-            end
-         [] multiple then
-            fun {$}
-               Ar
-            in
-               {ToMultiple {ParseArgs {GetArgs} Spec ?Ar} Ar Args Spec}
-            end
-         [] list     then
-            fun {$}
-               Ar in {Append {ParseArgs {GetArgs} Spec ?Ar} Ar}
-            end
-         end
-      end
-   end
+   Parser = parser(cmd:     fun {$ ArgSpec}
+                               case ArgSpec==plain then
+                                  GetCmdArgs
+                               else
+                                  PostProc = {GetPostProc ArgSpec}
+                               in
+                                  fun {$}
+                                     OVs Rs
+                                  in
+                                     {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
+                                     {PostProc OVs Rs}
+                                  end
+                               end
+                            end
+                   applet:  fun {$ ArgSpec}
+                               PostProc = {GetPostProc ArgSpec}
+                            in
+                               fun {$ S}
+                                  OVs Rs
+                               in
+                                  case {SystemGet internal}.browser then
+                                     OVs={WebPreProc S} Rs=nil
+                                  else
+                                     {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
+                                  end
+                                  {PostProc OVs Rs}
+                               end
+                            end
+                   servlet: fun {$ ArgSpec}
+                               PostProc = {GetPostProc ArgSpec}
+                            in
+                               fun {$}
+                                  {PostProc {WebPreProc {GetServletArgs}} nil}
+                               end
+                            end)
 
 end

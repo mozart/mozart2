@@ -411,7 +411,7 @@ in
             BIInfo = {Builtins.getInfo Builtinname}
             NewCont2 =
             if {CondSelect BIInfo test false} then
-               Reg = {List.last Regs}
+               Reg = {Nth Regs {Length BIInfo.imods} + 1}
             in
                case Cont
                of vTestBool(_ !Reg Addr1 Addr2 _ Coord NewCont InitsRS) then
@@ -484,7 +484,7 @@ in
                   end
                else XsIn XsOut Unifies in
                   Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
-                                               false ?XsOut ?Unifies)
+                                               ?XsOut ?Unifies)
                   Emitter, DebugEntry(Coord 'call')
                   Emitter, Emit(callBI(Builtinname XsIn#XsOut))
                   Emitter, EmitUnifies(Unifies)
@@ -806,8 +806,7 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
             BIInfo = {Builtins.getInfo Builtinname}
-            Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
-                                         true ?XsOut nil)
+            Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn ?XsOut nil)
             Emitter, Emit(testBI(Builtinname XsIn#XsOut Dest2))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
@@ -1481,7 +1480,7 @@ in
             SHd = STl
          end
       end
-      meth AllocateBuiltinArgs(Regs IMods ?XsIn IsTestBuiltin ?XsOut ?Unifies)
+      meth AllocateBuiltinArgs(Regs IMods ?XsIn ?XsOut ?Unifies)
          case IMods of IMod|IModr then
             Reg|Regr = Regs
             X|Xr = XsIn
@@ -1498,29 +1497,23 @@ in
             else
                Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             end
-            Emitter, AllocateBuiltinArgs(Regr IModr ?Xr
-                                         IsTestBuiltin ?XsOut ?Unifies)
+            Emitter, AllocateBuiltinArgs(Regr IModr ?Xr ?XsOut ?Unifies)
          else
             XsIn = nil
-            Emitter, AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
+            Emitter, AllocateBuiltinOutputs(Regs ?XsOut ?Unifies)
          end
       end
-      meth AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
+      meth AllocateBuiltinOutputs(Regs ?XsOut ?Unifies)
          case Regs of Reg|Regr then X|Xr = XsOut Ur in
-            if IsTestBuiltin then
-               Emitter, AllocateShortLivedTemp(?X)
-               Unifies = Ur
-            else
-               case Emitter, GetReg(Reg $) of none then
+            case Emitter, GetReg(Reg $) of none then
                   %--** here it would be nicer to PredictBuiltinOutput
-                  Emitter, PredictTemp(Reg ?X)
-                  Unifies = Ur
-               elseof R then
-                  Emitter, AllocateShortLivedTemp(?X)
-                  Unifies = X#R|Ur
-               end
+               Emitter, PredictTemp(Reg ?X)
+               Unifies = Ur
+            elseof R then
+               Emitter, AllocateShortLivedTemp(?X)
+               Unifies = X#R|Ur
             end
-            Emitter, AllocateBuiltinOutputs(Regr IsTestBuiltin ?Xr ?Ur)
+            Emitter, AllocateBuiltinOutputs(Regr ?Xr ?Ur)
          [] nil then
             XsOut = nil
             Unifies = nil

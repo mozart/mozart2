@@ -535,7 +535,8 @@ local
                               det: [det any(det)])
 
          'Space.askVerbose': builtin(types: [space tuple]
-                                     det: [det any(det)])
+                                     det: [det any(det)]
+                                     destroysArguments: true)
 
          'Space.clone': builtin(types: [space space]
                                 det: [det any(det)])

@@ -185,13 +185,24 @@ in
 
          elseof kernel(recordConstruction L As) then
 
-         % expected L: literal, As: property-list
+         % expected L: literal, As: property list
 
             {Error.format
              'Error: duplicate fields'
              'Duplicate fields in record construction'
              [hint(l:'Label' m:oz(L))
               hint(l:'Feature-field Pairs' m:list(As ' '))]
+             Exc}
+
+         elseof kernel(recordPattern L As) then
+
+         % expected L: literal, As: feature list
+
+            {Error.format
+             'Error: duplicate fields'
+             'Duplicate fields in record pattern'
+             [hint(l:'Label' m:oz(L))
+              hint(l:'Features' m:list(As ' '))]
              Exc}
 
          elseof kernel(arity P Xs) then

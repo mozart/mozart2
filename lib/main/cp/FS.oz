@@ -434,7 +434,11 @@ define
    end
 
    proc {FSPartition Vs U}
-      {FSP.partition Vs U}
+      % the C++ implementation is buggy , that is why we use this
+      % implementation for the time being
+      % {FSP.partition Vs U}
+      {FSDisjointN Vs}
+      {FSUnionN Vs U}
       {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end} '=:' {FSCard U}}
    end
 

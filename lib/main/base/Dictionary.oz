@@ -23,32 +23,23 @@
 %%%
 
 
-declare
-   Dictionary
-   IsDictionary
-   NewDictionary
-in
-
-NewDictionary = {`Builtin` 'Dictionary.new' 1}
-IsDictionary  = {`Builtin` 'Dictionary.is'  2}
-
 local
-   Entries = {`Builtin` 'Dictionary.entries'   2}
+   Entries = Boot_Dictionary.entries
 in
    Dictionary =
    dictionary(new:          NewDictionary
               is:           IsDictionary
-              put:          {`Builtin` 'Dictionary.put'          3}
-              get:          {`Builtin` 'Dictionary.get'          3}
-              condGet:      {`Builtin` 'Dictionary.condGet'      4}
-              keys:         {`Builtin` 'Dictionary.keys'         2}
+              put:          Boot_Dictionary.put
+              get:          Boot_Dictionary.get
+              condGet:      Boot_Dictionary.condGet
+              keys:         Boot_Dictionary.keys
               entries:      Entries
-              items:        {`Builtin` 'Dictionary.items'        2}
-              remove:       {`Builtin` 'Dictionary.remove'       2}
-              removeAll:    {`Builtin` 'Dictionary.removeAll'    1}
-              clone:        {`Builtin` 'Dictionary.clone'        2}
-              member:       {`Builtin` 'Dictionary.member'       3}
+              items:        Boot_Dictionary.items
+              remove:       Boot_Dictionary.remove
+              removeAll:    Boot_Dictionary.removeAll
+              clone:        Boot_Dictionary.clone
+              member:       Boot_Dictionary.member
               toRecord:     fun {$ L D}
-                               {`record` L {Entries D}}
+                               {Boot_Record.record L {Entries D}}
                             end)
 end

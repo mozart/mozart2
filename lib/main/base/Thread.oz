@@ -25,24 +25,13 @@
 %%%
 
 
-declare
-   Thread IsThread
-in
-
-
-%%
-%% Global
-%%
-IsThread = {`Builtin` 'Thread.is' 2}
-
-
 %%
 %% Module
 %%
 local
-   GetThreadPriority = {`Builtin` 'Thread.getPriority' 2}
-   SetThreadPriority = {`Builtin` 'Thread.setPriority' 2}
-   ThisThread        = {`Builtin` 'Thread.this' 1}
+   GetThreadPriority = Boot_Thread.getPriority
+   SetThreadPriority = Boot_Thread.setPriority
+   ThisThread        = Boot_Thread.this
    fun {GetThisPriority}
       {GetThreadPriority {ThisThread}}
    end
@@ -57,16 +46,16 @@ in
                     getThisPriority:    GetThisPriority
                     this:               ThisThread
                     is:                 IsThread
-                    suspend:            {`Builtin` 'Thread.suspend'         1}
-                    resume:             {`Builtin` 'Thread.resume'          1}
-                    preempt:            {`Builtin` 'Thread.preempt'         1}
+                    suspend:            Boot_Thread.suspend
+                    resume:             Boot_Thread.resume
+                    preempt:            Boot_Thread.preempt
                     terminate:          proc {$ T}
                                            {Thread.injectException T
                                             {Exception.system
                                              kernel(terminate)}}
                                         end
-                    injectException:    {`Builtin` 'Thread.injectException' 2}
-                    state:              {`Builtin` 'Thread.state'           2}
-                    isSuspended:        {`Builtin` 'Thread.isSuspended'     2})
+                    injectException:    Boot_Thread.injectException
+                    state:              Boot_Thread.state
+                    isSuspended:        Boot_Thread.isSuspended)
 
 end

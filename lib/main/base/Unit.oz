@@ -21,29 +21,8 @@
 %%%
 
 
-declare
-   Unit IsUnit
-   `unit`
-in
-
-
-%%
-%% Compiler Expansion
-%%
-local
-   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
-in
-   `unit` = {NewUniqueName 'unit'}
-end
-
-%%
-%% Global
-%%
-IsUnit = {`Builtin` 'Unit.is'  2}
-
-
 %%
 %% Module
 %%
 Unit = 'unit'(is:     IsUnit
-              'unit': unit)
+              'unit': `unit`)

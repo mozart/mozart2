@@ -23,15 +23,6 @@
 %%%
 
 
-declare
-   Literal IsLiteral
-in
-
-%%
-%% Global
-%%
-IsLiteral = {`Builtin` 'Literal.is' 2}
-
 %%
 %% Module
 %%

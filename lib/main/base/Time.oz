@@ -22,17 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-declare
-
-   Time
-   Alarm
-   Delay
-
-in
-
-Alarm = {`Builtin` 'Time.alarm' 2}
-Delay = {`Builtin` 'Time.delay' 1}
-
 local
 
    fun {AddWaiter W T P}
@@ -212,7 +201,7 @@ local
 
 in
 
-   Time = time(time:   {`Builtin` 'Time.time' 1}
+   Time = time(time:   Boot_Time.time
                delay:  Delay
                alarm:  Alarm
                repeat: Repeat)

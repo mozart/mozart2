@@ -21,17 +21,8 @@
 %%%
 
 
-declare
-   ForeignPointer IsForeignPointer
-in
-
-%%
-%% Global
-%%
-IsForeignPointer = {`Builtin` 'ForeignPointer.is' 2}
-
 %%
 %% Module
 %%
 ForeignPointer = foreignPointer(is:    IsForeignPointer
-                                toInt: {`Builtin` 'ForeignPointer.toInt' 2})
+                                toInt: Boot_ForeignPointer.toInt)

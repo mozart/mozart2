@@ -22,20 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-declare
-   String IsString StringToAtom StringToInt StringToFloat
-in
-
-
-%%
-%% Global
-%%
-IsString      = {`Builtin` 'String.is'      2}
-StringToAtom  = {`Builtin` 'String.toAtom'  2}
-StringToInt   = {`Builtin` 'String.toInt'   2}
-StringToFloat = {`Builtin` 'String.toFloat' 2}
-
-
 %%
 %% Module
 %%

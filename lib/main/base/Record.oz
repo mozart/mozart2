@@ -23,24 +23,10 @@
 %%%
 
 
-declare
-   Record IsRecord MakeRecord Label Width Adjoin Arity AdjoinList AdjoinAt
-   IsRecordC WidthC TellRecord
-in
-
 %%
 %% Global
 %%
-Arity      = {`Builtin` 'Record.arity'      2}
-IsRecord   = {`Builtin` 'Record.is'   2}
-Label      = {`Builtin` 'Record.label'      2}
-Width      = {`Builtin` 'Record.width'      2}
-Adjoin     = {`Builtin` 'Record.adjoin'     3}
-AdjoinList = {`Builtin` 'Record.adjoinList' 3}
-AdjoinAt   = {`Builtin` 'Record.adjoinAt'   4}
-IsRecordC  = {`Builtin` 'Record.isC'  2}
-WidthC     = {`Builtin` 'Record.widthC'     2}
-TellRecord = {`Builtin` 'Record.tellRecord' 2}
+
 local
    fun {MakeEmpty As}
       case As of nil then nil
@@ -49,35 +35,8 @@ local
    end
 in
    fun {MakeRecord L As}
-      {`record` L {MakeEmpty As}}
+      {List.toRecord L {MakeEmpty As}}
    end
-end
-
-
-%%
-%% Run time library
-%%
-local
-   proc {DescendArity Ls1 Ls2}
-      case Ls1 of nil then skip
-      [] L1|Lr1 then
-         case Ls2 of L2|Lr2 then
-            case L1==L2 then {DescendArity Lr1 Lr2}
-            else {DescendArity Ls1 Lr2}
-            end
-         else {Exception.raiseError object(arityMismatchDefaultMethod L1)}
-         end
-      end
-   end
-
-   proc {AritySublist R1 R2}
-      {DescendArity {Arity R1} {Arity R2}}
-   end
-in
-   {`runTimePut` 'width' Width}
-   {`runTimePut` '^' {`Builtin` 'Record.\'^\'' 3}}
-   {`runTimePut` 'tellRecordSize' {`Builtin` 'Record.tellRecordSize' 3}}
-   {`runTimePut` 'aritySublist' AritySublist}
 end
 
 
@@ -86,7 +45,7 @@ end
 %%
 local
    local
-      BIMonitorArity = {`Builtin` 'Record.monitorArity' 3}
+      BIMonitorArity = Boot_Record.monitorArity
    in
       proc {MonitorArity R P S}
          U in
@@ -106,7 +65,7 @@ local
    end
 
    fun {Subtract R F}
-      {`record` {Label R} {MakePairs {List.subtract {Arity R} F} R}}
+      {List.toRecord {Label R} {MakePairs {List.subtract {Arity R} F} R}}
    end
 
    %%
@@ -394,11 +353,11 @@ in
 
                    isC:          IsRecordC
                    tell:         TellRecord
-                   '^':          {`Builtin` 'Record.\'^\'' 3}
+                   '^':          Boot_Record.'^'
                    widthC:       WidthC
                    monitorArity: MonitorArity
                    reflectArity: ReflectArity
-                   hasLabel:     {`Builtin` 'Record.hasLabel' 2}
+                   hasLabel:     Boot_Record.hasLabel
 
                    arity:        Arity
                    adjoin:       Adjoin
@@ -427,7 +386,8 @@ in
                          in
                             {MakeTuple {Label R1} W R2}
                             {MapT 1 W R1 P R2}
-                         else {`record` {Label R1} {Map {Arity R1} R1 P} R2}
+                         else
+                            {List.toRecord {Label R1} {Map {Arity R1} R1 P} R2}
                          end
                       end
                    foldL:
@@ -468,31 +428,31 @@ in
                       end
                    filter:
                       fun {$ R P}
-                         {`record` {Label R} {Filter {Arity R} R P}}
+                         {List.toRecord {Label R} {Filter {Arity R} R P}}
                       end
                    partition:
                       proc {$ R1 P ?R2 ?R3}
                          AXs BXs L={Label R1}
                       in
                          {Part {Arity R1} R1 P ?AXs ?BXs}
-                         R2={`record` L AXs}
-                         R3={`record` L BXs}
+                         R2={List.toRecord L AXs}
+                         R3={List.toRecord L BXs}
                       end
                    takeWhile:
                       fun {$ R P}
-                         {`record` {Label R} {Take {Arity R} R P}}
+                         {List.toRecord {Label R} {Take {Arity R} R P}}
                       end
                    dropWhile:
                       fun {$ R P}
-                         {`record` {Label R} {Drop {Arity R} R P}}
+                         {List.toRecord {Label R} {Drop {Arity R} R P}}
                       end
                    takeDropWhile:
                       proc {$ R1 P ?R2 ?R3}
                          AXs BXs L={Label R1}
                       in
                          {TakeDrop {Arity R1} R1 P ?AXs ?BXs}
-                         R2={`record` L AXs}
-                         R3={`record` L BXs}
+                         R2={List.toRecord L AXs}
+                         R3={List.toRecord L BXs}
                       end
 
                    mapInd:
@@ -503,7 +463,8 @@ in
                             {MakeTuple {Label R1} W ?R2}
                             {MapIndT 1 W R1 P R2}
                          else
-                            {`record` {Label R1} {MapInd {Arity R1} R1 P} ?R2}
+                            {List.toRecord {Label R1}
+                             {MapInd {Arity R1} R1 P} ?R2}
                          end
                       end
                    foldLInd:
@@ -544,31 +505,31 @@ in
                       end
                    filterInd:
                       fun {$ R P}
-                         {`record` {Label R} {FilterInd {Arity R} R P}}
+                         {List.toRecord {Label R} {FilterInd {Arity R} R P}}
                       end
                    partitionInd:
                       proc {$ R1 P ?R2 ?R3}
                          AXs BXs L={Label R1}
                       in
                          {PartInd {Arity R1} R1 P ?AXs ?BXs}
-                         R2={`record` L AXs}
-                         R3={`record` L BXs}
+                         R2={List.toRecord L AXs}
+                         R3={List.toRecord L BXs}
                       end
                    takeWhileInd:
                       fun {$ R P}
-                         {`record` {Label R} {TakeInd {Arity R} R P}}
+                         {List.toRecord {Label R} {TakeInd {Arity R} R P}}
                       end
                    dropWhileInd:
                       fun {$ R P}
-                         {`record` {Label R} {DropInd {Arity R} R P}}
+                         {List.toRecord {Label R} {DropInd {Arity R} R P}}
                       end
                    takeDropWhileInd:
                       proc {$ R1 P ?R2 ?R3}
                          AXs BXs L={Label R1}
                       in
                          {TakeDropInd {Arity R1} R1 P ?AXs ?BXs}
-                         R2={`record` L AXs}
-                         R3={`record` L BXs}
+                         R2={List.toRecord L AXs}
+                         R3={List.toRecord L BXs}
                       end
 
                    zip:
@@ -579,7 +540,8 @@ in
                             {MakeTuple {Label R1} W ?R3}
                             {ZipT 1 W R1 R2 P R3}
                          else
-                            {`record` {Label R1} {Zip {Arity R1} R1 R2 P} ?R3}
+                            {List.toRecord {Label R1}
+                             {Zip {Arity R1} R1 R2 P} ?R3}
                          end
                       end
                    toDictionary:

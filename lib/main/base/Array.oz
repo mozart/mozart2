@@ -21,15 +21,6 @@
 %%%
 
 
-declare
-   Array NewArray IsArray Put Get
-in
-
-NewArray = {`Builtin` 'Array.new' 4}
-IsArray  = {`Builtin` 'Array.is'  2}
-Put      = {`Builtin` 'Array.put'      3}
-Get      = {`Builtin` 'Array.get'      3}
-
 local
    proc {ArrayToRecord I A T}
       T.I={Get A I} case I>1 then {ArrayToRecord I-1 A T} else skip end
@@ -45,8 +36,8 @@ local
       else L#{Get A L}|{MakePairs L+1 H A}
       end
    end
-   GetLow  = {`Builtin` 'Array.low'  2}
-   GetHigh = {`Builtin` 'Array.high' 2}
+   GetLow  = Boot_Array.low
+   GetHigh = Boot_Array.high
 in
 
    Array = array(new:      NewArray
@@ -70,7 +61,7 @@ in
                                  R={MakeTuple L Hi}
                                  {ArrayToRecord Hi A R}
                               else
-                                 R={`record` L {MakePairs Lo Hi A}}
+                                 R={List.toRecord L {MakePairs Lo Hi A}}
                               end
                               R
                            end)

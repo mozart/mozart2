@@ -23,28 +23,13 @@
 %%%
 
 
-declare
-   Int IsInt IsNat IsOdd IsEven IntToFloat IntToString
-in
-
-
-%%
-%% Run time library
-%%
-{`runTimePut` 'div' {`Builtin` 'Int.div' 3}}
-{`runTimePut` 'mod' {`Builtin` 'Int.mod' 3}}
-
-
 %%
 %% Global
 %%
-IsInt       = {`Builtin` 'Int.is'       2}
-IntToFloat  = {`Builtin` 'Int.toFloat'  2}
-IntToString = {`Builtin` 'Int.toString' 2}
+
 fun {IsNat X}  0=<X         end
 fun {IsOdd X}  X mod 2 == 1 end
 fun {IsEven X} X mod 2 == 0 end
-
 
 %%
 %% Module
@@ -53,7 +38,7 @@ Int = int(is:       IsInt
           isNat:    IsNat
           isOdd:    IsOdd
           isEven:   IsEven
-          'div':    {`Builtin` 'Int.div' 3}
-          'mod':    {`Builtin` 'Int.mod' 3}
+          'div':    Boot_Int.'div'
+          'mod':    Boot_Int.'mod'
           toFloat:  IntToFloat
           toString: IntToString)

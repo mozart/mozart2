@@ -23,17 +23,6 @@
 %%%
 
 
-declare
-   Port IsPort NewPort Send
-in
-
-%%
-%% Global
-%%
-IsPort  = {`Builtin` 'Port.is'  2}
-NewPort = {`Builtin` 'Port.new' 2}
-Send    = {`Builtin` 'Port.send'    2}
-
 %%
 %% Module
 %%

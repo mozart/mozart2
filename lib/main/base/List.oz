@@ -23,15 +23,6 @@
 %%%
 
 
-declare
-   List
-   MakeList IsList Append Member Length Nth Reverse
-   Map FoldL FoldR FoldLTail FoldRTail ForAll All ForAllTail AllTail
-   Some Filter
-   Sort Merge Flatten
-in
-
-
 fun {MakeList N}
    case N>0 then _|{MakeList N-1} else nil end
 end
@@ -468,7 +459,7 @@ in
                takeDrop:      TakeDrop
 
                toTuple:       ToTuple
-               toRecord:      `record`
+               toRecord:      Boot_Record.record
 
                map:           Map
                foldL:         FoldL

@@ -23,18 +23,6 @@
 %%%
 
 
-declare
-   Name IsName NewName
-in
-
-
-%%
-%% Global
-%%
-IsName  = {`Builtin` 'Name.is'  2}
-NewName = {`Builtin` 'Name.new' 1}
-
-
 %%
 %% Module
 %%

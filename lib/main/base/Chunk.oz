@@ -23,18 +23,6 @@
 %%%
 
 
-declare
-   Chunk NewChunk IsChunk
-in
-
-
-%%
-%% Global
-%%
-NewChunk = {`Builtin` 'Chunk.new' 2}
-IsChunk  = {`Builtin` 'Chunk.is'  2}
-
-
 %%
 %% Module
 %%

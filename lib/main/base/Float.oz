@@ -23,43 +23,11 @@
 %%%
 
 
-declare
-   Float IsFloat Exp Log Sqrt Ceil Floor Round Sin Cos Tan Asin Acos Atan Atan2
-   FloatToInt FloatToString
-in
-
-
-%%
-%% Run time library
-%%
-{`runTimePut` '/' {`Builtin` 'Number.\'/\'' 3}}
-
-
-%%
-%% Global
-%%
-IsFloat       = {`Builtin` 'Float.is'       2}
-Exp           = {`Builtin` 'Float.exp'           2}
-Log           = {`Builtin` 'Float.log'           2}
-Sqrt          = {`Builtin` 'Float.sqrt'          2}
-Ceil          = {`Builtin` 'Float.ceil'          2}
-Floor         = {`Builtin` 'Float.floor'         2}
-Sin           = {`Builtin` 'Float.sin'           2}
-Cos           = {`Builtin` 'Float.cos'           2}
-Tan           = {`Builtin` 'Float.tan'           2}
-Asin          = {`Builtin` 'Float.asin'          2}
-Acos          = {`Builtin` 'Float.acos'          2}
-Atan          = {`Builtin` 'Float.atan'          2}
-Atan2         = {`Builtin` 'Float.atan2'         3}
-Round         = {`Builtin` 'Float.round'         2}
-FloatToInt    = {`Builtin` 'Float.toInt'    2}
-FloatToString = {`Builtin` 'Float.toString' 2}
-
 %%
 %% Module
 %%
 Float = float(is:       IsFloat
-              '/':      {`Builtin` 'Number.\'/\'' 3}
+              '/':      Boot_Number.'/'
               exp:      Exp
               log:      Log
               sqrt:     Sqrt

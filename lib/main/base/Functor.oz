@@ -19,13 +19,8 @@
 %%% WARRANTIES.
 %%%
 
-declare Functor in
 local
-   local
-      NewUniqueName = {`Builtin` 'Name.newUnique' 2}
-   in
-      FunctorID = {NewUniqueName functorID}
-   end
+   FunctorID = {Boot_Name.newUnique functorID}
 
    fun {IsFunctor X}
       {IsChunk X} andthen {HasFeature X FunctorID}
@@ -38,8 +33,6 @@ local
                   'export': Export
                   'apply': Apply)}
    end
-
-   {`runTimePut` 'NewFunctor' NewFunctor}
 
    fun {GetFeatures Info}
       case Info.type of Fs=_|_ then Fs

@@ -23,18 +23,6 @@
 %%%
 
 
-declare
-   Tuple MakeTuple IsTuple
-in
-
-
-%%
-%% Global
-%%
-IsTuple   = {`Builtin` 'Tuple.is'   2}
-MakeTuple = {`Builtin` 'Tuple.make' 3}
-
-
 %%
 %% Module
 %%
@@ -68,22 +56,4 @@ in
                              {TupleToArray W T A}
                              A
                           end)
-end
-
-
-%%
-%% Run time library
-%%
-local
-   proc {Match Xs I T}
-      case Xs of nil then skip
-      [] X|Xr then T.I=X {Match Xr I+1 T}
-      end
-   end
-
-   proc {DoTuple L Xs I T}
-      T={MakeTuple L I} {Match Xs 1 T}
-   end
-in
-   {`runTimePut` 'tuple' DoTuple}
 end

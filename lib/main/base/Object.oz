@@ -22,60 +22,13 @@
 %%% WARRANTIES.
 %%%
 
-declare
-   Object
-   IsObject
-   BaseObject
-   New
-   %% Needed by other modules
-   `extend`              % Module Class
-   `ooFreeFlag`          % Module Class
-   `ooParents`           % Module Class
-   `ooPrintName`         % Module Class
-   `ooMeth`              % Module Class
-   `ooAttr`              % Module Class
-   `ooLocking`           % Module Class
-   `ooNative`            % Module Class
-   `ooUnFreeFeat`        % Module Class
-   `ooFreeFeatR`         % Module Class
-in
-
-IsObject      = {`Builtin` 'Object.is'    2}
-New           = {`Builtin` 'Object.new'         3}
-
-
-local
-   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
-in
-   `ooMeth`           = {NewUniqueName 'ooMeth'}
-   `ooAttr`           = {NewUniqueName 'ooAttr'}
-   `ooLocking`        = {NewUniqueName 'ooLocking'}
-   `ooNative`         = {NewUniqueName 'ooNative'}
-   `ooParents`        = {NewUniqueName 'ooParents'}
-   `ooFreeFlag`       = {NewUniqueName 'ooFreeFlag'}
-   `ooPrintName`      = {NewUniqueName 'ooPrintName'}
-   `ooUnFreeFeat`     = {NewUniqueName 'ooUnFreeFeat'}
-   `ooFreeFeatR`      = {NewUniqueName 'ooFreeFeatR'}
-end
 
 %%
 %% Object and Class Creation
 %%
 
+`extend` BaseObject
 local
-
-   local
-      NewUniqueName = {`Builtin` 'Name.newUnique' 2}
-   in
-      `ooNewAttr`        = {NewUniqueName 'ooNewAttr'}
-      `ooNewFeat`        = {NewUniqueName 'ooNewFeat'}
-      `ooFastMeth`       = {NewUniqueName 'ooFastMeth'}
-      `ooNewMeth`        = {NewUniqueName 'ooNewMeth'}
-      `ooDefaults`       = {NewUniqueName 'ooDefaults'}
-      `ooFallback`       = {NewUniqueName 'ooFallback'}
-      `ooId`             = {NewUniqueName 'ooId'}
-   end
-
 
    %%
    %% Fallback routines that are supplied with classes
@@ -95,7 +48,7 @@ local
       end
 
       local
-         NewObject = {`Builtin` 'Object.newObject' 2}
+         NewObject = Boot_Object.newObject
       in
          fun {FbNew C Message}
             O={NewObject C} in {O Message} O
@@ -110,8 +63,8 @@ local
    %%
    %% Builtins needed for class creation
    %%
-   MakeClass = {`Builtin` 'Object.makeClass' 7}
-   MarkSafe  = {`Builtin` 'Dictionary.markSafe' 1}
+   MakeClass = Boot_Object.makeClass
+   MarkSafe  = Boot_Dictionary.markSafe
 
    local
       %% Initialize mapping from ids to classes and return classes
@@ -552,17 +505,6 @@ local
        Feat Defaults Locking Native}
    end
 
-   %%
-   %% Run time library
-   %%
-   {`runTimePut` 'ooPrivate' {`Builtin` 'Name.new' 1}}
-   {`runTimePut` '@' {`Builtin` 'Object.\'@\'' 2}}
-   {`runTimePut` '<-' {`Builtin` 'Object.\'<-\'' 2}}
-   {`runTimePut` 'ooExch' {`Builtin` 'Object.ooExch' 3}}
-   {`runTimePut` ',' {`Builtin` 'Object.\',\'' 2}}
-   {`runTimePut` 'ooGetLock' {`Builtin` 'Object.ooGetLock' 1}}
-   {`runTimePut` 'class' `class`}
-
    %% %%%%%%%%%%%%%%%%%%%%
    %% The Class BaseObject
    %% %%%%%%%%%%%%%%%%%%%%
@@ -708,13 +650,13 @@ in
                  new:             New
                  base:            BaseObject
                  meta:            MetaObject
-                 ',':             {`Builtin` 'Object.\',\''           2}
-                 '@':             {`Builtin` 'Object.\'@\''           2}
-                 '<-':            {`Builtin` 'Object.\'<-\''          2}
+                 ',':             Boot_Object.','
+                 '@':             Boot_Object.'@'
+                 '<-':            Boot_Object.'<-'
                  'class':         `class`
 
                  %% only in module
-                 send:            {`Builtin` 'Object.send' 3}
+                 send:            Boot_Object.send
                  master:          MasterObject
                  slave:           SlaveObject
                 )

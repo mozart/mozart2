@@ -23,19 +23,6 @@
 %%%
 
 
-declare
-   Cell IsCell NewCell Exchange Assign Access
-in
-
-%%
-%% Global
-%%
-IsCell   = {`Builtin` 'Cell.is'   2}
-NewCell  = {`Builtin` 'Cell.new'  2}
-Exchange = {`Builtin` 'Cell.exchange' 3}
-Assign   = {`Builtin` 'Cell.assign'   2}
-Access   = {`Builtin` 'Cell.access'   2}
-
 %%
 %% Module
 %%

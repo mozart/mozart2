@@ -22,16 +22,12 @@
 %%% WARRANTIES.
 %%%
 
-declare
-   Class IsClass IsInstanceOf
-in
-
 fun {IsClass X}
    {IsChunk X} andthen {HasFeature X `ooPrintName`}
 end
 
 local
-   GetClass = {`Builtin` 'Class.get' 2}
+   GetClass = Boot_Class.get
 
    proc {AssertClass C Op}
       case {IsClass C} then skip else

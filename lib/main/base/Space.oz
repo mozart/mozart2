@@ -21,18 +21,11 @@
 %%%
 
 
-declare
-   Space
-   IsSpace
-in
-
-IsSpace = {`Builtin` 'Space.is' 2}
-
 Space = space(is:         IsSpace
-              new:        {`Builtin` 'Space.new'        2}
-              ask:        {`Builtin` 'Space.ask'        2}
-              askVerbose: {`Builtin` 'Space.askVerbose' 2}
-              clone:      {`Builtin` 'Space.clone'      2}
-              merge:      {`Builtin` 'Space.merge'      2}
-              inject:     {`Builtin` 'Space.inject'     2}
-              commit:     {`Builtin` 'Space.commit'     2})
+              new:        Boot_Space.new
+              ask:        Boot_Space.ask
+              askVerbose: Boot_Space.askVerbose
+              clone:      Boot_Space.clone
+              merge:      Boot_Space.merge
+              inject:     Boot_Space.inject
+              commit:     Boot_Space.commit)

@@ -23,16 +23,6 @@
 %%%
 
 
-declare
-   Lock IsLock NewLock
-in
-
-%%
-%% Global
-%%
-IsLock  = {`Builtin` 'Lock.is'  2}
-NewLock = {`Builtin` 'Lock.new' 1}
-
 %%
 %% Module
 %%

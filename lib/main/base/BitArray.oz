@@ -19,25 +19,19 @@
 %%% WARRANTIES.
 %%%
 
-declare
-BitArray IsBitArray
-in
-
-IsBitArray = {`Builtin` 'BitArray.is' 2}
-
 BitArray =
-bitArray(new:              {`Builtin` 'BitArray.new'              3}
+bitArray(new:              Boot_BitArray.new
          is:               IsBitArray
-         set:              {`Builtin` 'BitArray.set'              2}
-         clear:            {`Builtin` 'BitArray.clear'            2}
-         test:             {`Builtin` 'BitArray.test'             3}
-         low:              {`Builtin` 'BitArray.low'              2}
-         high:             {`Builtin` 'BitArray.high'             2}
-         clone:            {`Builtin` 'BitArray.clone'            2}
-         'or':             {`Builtin` 'BitArray.or'               2}
-         and:              {`Builtin` 'BitArray.and'              2}
-         nimpl:            {`Builtin` 'BitArray.nimpl'            2}
-         disjoint:         {`Builtin` 'BitArray.disjoint'         3}
-         card:             {`Builtin` 'BitArray.card'             2}
-         toList:           {`Builtin` 'BitArray.toList'           2}
-         complementToList: {`Builtin` 'BitArray.complementToList' 2})
+         set:              Boot_BitArray.set
+         clear:            Boot_BitArray.clear
+         test:             Boot_BitArray.test
+         low:              Boot_BitArray.low
+         high:             Boot_BitArray.high
+         clone:            Boot_BitArray.clone
+         'or':             Boot_BitArray.'or'
+         and:              Boot_BitArray.'and'
+         nimpl:            Boot_BitArray.nimpl
+         disjoint:         Boot_BitArray.disjoint
+         card:             Boot_BitArray.card
+         toList:           Boot_BitArray.toList
+         complementToList: Boot_BitArray.complementToList)

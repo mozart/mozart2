@@ -23,27 +23,12 @@
 %%%
 
 
-declare
-   Number IsNumber Pow Abs
-in
-
-
-%%
-%% Run time library
-%%
-{`runTimePut` '+' {`Builtin` 'Number.\'+\'' 3}}
-{`runTimePut` '-' {`Builtin` 'Number.\'-\'' 3}}
-{`runTimePut` '*' {`Builtin` 'Number.\'*\'' 3}}
-{`runTimePut` '~' {`Builtin` 'Number.\'~\'' 2}}
-
-
 %%
 %% Global
 %%
-IsNumber = {`Builtin` 'Number.is' 2}
-Abs      = {`Builtin` 'Number.abs'      2}
+
 local
-   FloatPow = {`Builtin` 'Float.fPow' 3}
+   FloatPow = Boot_Float.fPow
    fun {IntPow X N A}
       case N==0 then A
       elsecase N mod 2==0 then {IntPow X*X (N div 2) A}
@@ -64,9 +49,9 @@ end
 %% Module
 %%
 Number = number(is:  IsNumber
-                '+': {`Builtin` 'Number.\'+\'' 3}
-                '-': {`Builtin` 'Number.\'-\'' 3}
-                '*': {`Builtin` 'Number.\'*\'' 3}
-                '~': {`Builtin` 'Number.\'~\'' 2}
+                '+': Boot_Number.'+'
+                '-': Boot_Number.'-'
+                '*': Boot_Number.'*'
+                '~': Boot_Number.'~'
                 pow: Pow
                 abs: Abs)

@@ -23,31 +23,6 @@
 %%%
 
 
-declare
-   Bool IsBool And Or Not
-   `true` `false`
-in
-
-
-%%
-%% Compiler Expansion
-%%
-local
-   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
-in
-   `true`  = {NewUniqueName 'true'}
-   `false` = {NewUniqueName 'false'}
-end
-
-%%
-%% Global
-%%
-IsBool = {`Builtin` 'Bool.is' 2}
-Not    = {`Builtin` 'Bool.not'    2}
-And    = {`Builtin` 'Bool.and'    3}
-Or     = {`Builtin` 'Bool.or'     3}
-
-
 %%
 %% Module
 %%
@@ -55,5 +30,5 @@ Bool = bool(is:      IsBool
             and:     And
             'or':    Or
             'not':   Not
-            'true':  true
-            'false': false)
+            'true':  `true`
+            'false': `false`)

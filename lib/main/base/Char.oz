@@ -21,33 +21,22 @@
 %%%
 
 
-declare
-   Char IsChar
-in
-
-
-%%
-%% Global
-%%
-IsChar = {`Builtin` 'Char.is' 2}
-
-
 %%
 %% Modules
 %%
 Char = char(is:       IsChar
-            isAlpha:  {`Builtin` 'Char.isAlpha'  2}
-            isUpper:  {`Builtin` 'Char.isUpper'  2}
-            isLower:  {`Builtin` 'Char.isLower'  2}
-            isDigit:  {`Builtin` 'Char.isDigit'  2}
-            isXDigit: {`Builtin` 'Char.isXDigit' 2}
-            isAlNum:  {`Builtin` 'Char.isAlNum'  2}
-            isSpace:  {`Builtin` 'Char.isSpace'  2}
-            isGraph:  {`Builtin` 'Char.isGraph'  2}
-            isPrint:  {`Builtin` 'Char.isPrint'  2}
-            isPunct:  {`Builtin` 'Char.isPunct'  2}
-            isCntrl:  {`Builtin` 'Char.isCntrl'  2}
-            toUpper:  {`Builtin` 'Char.toUpper'  2}
-            toLower:  {`Builtin` 'Char.toLower'  2}
-            toAtom:   {`Builtin` 'Char.toAtom'   2}
-            type:     {`Builtin` 'Char.type'     2})
+            isAlpha:  Boot_Char.isAlpha
+            isUpper:  Boot_Char.isUpper
+            isLower:  Boot_Char.isLower
+            isDigit:  Boot_Char.isDigit
+            isXDigit: Boot_Char.isXDigit
+            isAlNum:  Boot_Char.isAlNum
+            isSpace:  Boot_Char.isSpace
+            isGraph:  Boot_Char.isGraph
+            isPrint:  Boot_Char.isPrint
+            isPunct:  Boot_Char.isPunct
+            isCntrl:  Boot_Char.isCntrl
+            toUpper:  Boot_Char.toUpper
+            toLower:  Boot_Char.toLower
+            toAtom:   Boot_Char.toAtom
+            type:     Boot_Char.type)

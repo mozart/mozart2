@@ -22,11 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-declare
-   Loop
-   For
-   ForThread
-in
 
 %%
 %% For

@@ -23,18 +23,6 @@
 %%%
 
 
-declare
-   Atom IsAtom AtomToString
-in
-
-
-%%
-%% Global
-%%
-IsAtom       = {`Builtin` 'Atom.is'       2}
-AtomToString = {`Builtin` 'Atom.toString' 2}
-
-
 %%
 %% Module
 %%

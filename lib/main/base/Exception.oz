@@ -20,38 +20,9 @@
 %%% WARRANTIES.
 %%%
 
-declare
-   Exception Raise
-in
-
-%%
-%% Run time library
-%%
-local
-   RaiseDebugCheck = {`Builtin` 'Exception.raiseDebugCheck' 2}
-   ThreadTaskStack = {`Builtin` 'Exception.taskStackError'  1}
-   ThreadLocation  = {`Builtin` 'Exception.location'        1}
-
-   proc {RaiseDebugExtend T1 T2}
-      L = {Label T1.debug}
-   in
-      {Raise {AdjoinAt T1 debug
-              {Adjoin T1.debug
-               L(stack: {ThreadTaskStack}
-                 loc:   {ThreadLocation}
-                 info:  T2)}}}
-   end
-
-in
-   {`runTimePut` 'RaiseDebugCheck' RaiseDebugCheck}
-   {`runTimePut` 'RaiseDebugExtend' RaiseDebugExtend}
-end
-
-
 %%
 %% Global
 %%
-Raise = `Raise`
 
 local
    fun {FailureX D}

@@ -21,14 +21,6 @@
 %%%
 
 
-declare
-   VirtualString
-
-   IsVirtualString
-in
-
-IsVirtualString = {`Builtin` 'VirtualString.is' 2}
-
 local
 
    local
@@ -106,7 +98,7 @@ local
       end
    end
 
-   BiLength = {`Builtin` 'VirtualString.length' 3}
+   BiLength = Boot_VirtualString.length
 
 in
 

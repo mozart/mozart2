@@ -23,18 +23,6 @@
 %%%
 
 
-declare
-   Procedure IsProcedure ProcedureArity
-in
-
-
-%%
-%% Global
-%%
-IsProcedure    = {`Builtin` 'Procedure.is'    2}
-ProcedureArity = {`Builtin` 'Procedure.arity' 2}
-
-
 %%
 %% Module
 %%

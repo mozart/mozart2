@@ -51,23 +51,6 @@ prepare
 
    ExecPrefix = '#!/bin/sh\nexec ozengine $0 "$@"\n'
 
-   ArgSpec = record(include(multiple type: list(string) default: nil)
-                    exclude(multiple type: list(string) default: nil)
-                    relative(rightmost type: bool default: true)
-
-                    out(single char: &o type: string optional:true)
-
-                    verbose(rightmost char: &v type: bool default: false)
-                    quiet(char: &q alias: verbose#false)
-                    sequential(rightmost type: bool default: false)
-                    executable(rightmost char: &x type: bool default: false)
-                    execheader(single type: string default: ExecPrefix)
-                    compress(rightmost char: &z
-                             type: int(min: 0 max: 9) default: 0)
-
-                    usage(alias: help)
-                    help(rightmost char: [&h &?] default: false))
-
    proc {Swallow _}
       skip
    end
@@ -84,18 +67,40 @@ import
 
 define
 
+   IncludeSpecs = {NewCell nil}
+   local
+      fun {MakeInclude Key} include(Key) end
+      fun {MakeExclude Key} exclude(Key) end
+   in
+      proc {AddInclude _ L} Old New in
+         {Exchange IncludeSpecs Old New}
+         {Append Old {Map L MakeInclude} New}
+      end
+      proc {AddExclude _ L} Old New in
+         {Exchange IncludeSpecs Old New}
+         {Append Old {Map L MakeExclude} New}
+      end
+   end
+   ArgSpec = record(include(accumulate(AddInclude)
+                            type: list(string) default: nil)
+                    exclude(accumulate(AddExclude)
+                            type: list(string) default: nil)
+                    relative(rightmost type: bool default: true)
+
+                    out(single char: &o type: string optional:true)
+
+                    verbose(rightmost char: &v type: bool default: false)
+                    quiet(char: &q alias: verbose#false)
+                    sequential(rightmost type: bool default: false)
+                    executable(rightmost char: &x type: bool default: false)
+                    execheader(single type: string default: ExecPrefix)
+                    compress(rightmost char: &z
+                             type: int(min: 0 max: 9) default: 0)
+
+                    usage(alias: help)
+                    help(rightmost char: [&h &?] default: false))
+
    UrlExpand = Resolve.expand
-   %%   fun {UrlExpand U}
-   %%      Au={Arity U}
-   %%   in
-   %%      if Au==[path] orelse Au==[info path] then
-   %%    if {Label U.path}==rel then
-   %%       {UrlResolve {UrlMake {OS.getCWD}#'/'} U}
-   %%    else U
-   %%    end
-   %%      else U
-   %%      end
-   %%   end
 
    {Application.exit
     try

@@ -27,9 +27,6 @@ local
    %%
 
    local
-      fun {AlwaysFalse Url}
-         false
-      end
 
       fun {IsNativeUrl Url}
          {HasFeature {CondSelect Url info no} native}
@@ -39,36 +36,34 @@ local
          {VirtualString.toString {UrlToVs Url}}
       end
 
-      fun {NewPrefixFilter RawUrls}
-         if RawUrls==nil then
-            AlwaysFalse
-         else
-            Urls = {Map RawUrls
-                    fun {$ Url}
-                       {UrlToString {UrlExpand {UrlMake Url}}}
-                    end}
-         in
-            fun {$ Url}
-               {Some Urls fun {$ UrlPre}
-                             {List.isPrefix UrlPre {UrlToString Url}}
-                          end}
-            end
-         end
-      end
-
    in
 
       fun {NewUrlFilter Spec RootUrl}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
-         ToExcl  = {NewPrefixFilter "x-oz://"|{CondSelect Spec exclude nil}}
-         ToIncl  = {NewPrefixFilter
-                    BaseUrl|{CondSelect Spec include nil}}
+         AllSpecs= {Map {Append {Access IncludeSpecs}
+                         [exclude("x-oz://") include(BaseUrl)]}
+                    fun {$ Spec}
+                       Lab = {Label Spec}
+                       Str = Spec.1
+                    in
+                       Lab({UrlToString {UrlExpand {UrlMake Str}}})
+                    end}
       in
          fun {$ Url}
             if {IsNativeUrl Url} then false
-            elseif {ToExcl Url} then false
-            elseif {ToIncl Url} then true
-            else false
+            else
+               try Str={UrlToString Url} in
+                  {ForAll AllSpecs
+                   proc {$ S}
+                      if {List.isPrefix S.1 Str}
+                      then
+                         raise {Label S} end
+                      end
+                   end}
+                  false
+               catch include then true
+               []    exclude then false
+               end
             end
          end
       end

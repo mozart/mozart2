@@ -1622,19 +1622,19 @@ define
          %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         FS1 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS}
-         FS2 = {FoldR FMatches
+         FS1 = if IsLazy then CND in
+                  CND = {CoordNoDebug C}
+                  fOpApply('Value.byNeed'
+                           [fFun(fDollar(C) nil FS nil CND)] CND)
+               else FS
+               end
+         FS2 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS1}
+         FS3 = {FoldR FMatches
                 fun {$ FV#FE#C In}
                    fCase(FV [fCaseClause(FE In)]
                          fNoElse(C)   %--** raise a better exception here
                          C)
-                end FS1}
-         FS3 = if IsLazy then CND in
-                  CND = {CoordNoDebug C}
-                  fOpApply('Value.byNeed'
-                           [fFun(fDollar(C) nil FS2 nil CND)] CND)
-               else FS2
-               end
+                end FS2}
          {@BA openScope()}
          Unnester, UnnestStatement(FS3 ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}

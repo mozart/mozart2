@@ -1,8 +1,10 @@
 functor prop once
 import
+   CompilerSupport
    FD.{int is less distinct distribute}
    FS.{include var subset value reflect isIn}
    System.{eq valueToVirtualString printName}
+   Type
    Misc.{isBuiltin nameVariable}
    ImAConstruction
    ImAValueNode
@@ -11,7 +13,6 @@ import
    Core
    Builtins.getInfo
    RunTime.tokens
-   CompilerSupport
 export
    statement: SAStatement
    typeOf: SATypeOf

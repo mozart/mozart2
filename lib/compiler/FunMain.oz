@@ -9,12 +9,13 @@ import
    ErrorRegistry   %(put)
    FS   %(include var subset value reflect isIn)
    FD   %(int is less distinct distribute)
+   Module   %(manager)
+   Type
 \ifndef OZM
    Gump
    ProductionTemplates
 \endif
    RunTimeLibrary
-   Module   %(manager)
 export
    Engine
    ParseOzFile
@@ -38,6 +39,7 @@ body
                    c('FD':                    FD
                      'FS':                    FS
                      'System':                System
+                     'Type':                  Type
                      'Misc':                  Misc
                      'ImAConstruction':       ImAConstruction
                      'ImAValueNode':          ImAValueNode

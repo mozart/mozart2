@@ -192,117 +192,26 @@ local
 %-----------------------------------------------------------------------
 % Type predicates
 
-   fun {IsAny _}
-      true
+   fun {IsToken X}
+      {IsObject X} andthen {HasFeature X ImAToken}
    end
 
-   TypeTests
-   = tt(value:             IsAny
-        any:               IsAny
-        number:            IsNumber
-        int:               IsInt
-        char:              IsChar
-        float:             IsFloat
-        literal:           IsLiteral
-        atom:              IsAtom
-        name:              IsName
-        bool:              IsBool
-        'true':            fun {$ X}
-                              X == true
-                           end
-        'false':           fun {$ X}
-                              X == false
-                           end
-        'unit':            IsUnit
-        feature:           fun {$ X}
-                              {TypeTests.int X} orelse {TypeTests.literal X}
-                           end
-        comparable:        fun {$ X}
-                              {TypeTests.number X} orelse {TypeTests.atom X}
-                           end
-        record:            IsRecord
-        recordC:           IsRecordC
-        tuple:             IsTuple
-        recordOrChunk:     fun {$ X}
-                              {TypeTests.record X} orelse {TypeTests.chunk X}
-                           end
-        recordCOrChunk:    fun {$ X}
-                              {TypeTests.recordC X} orelse {TypeTests.chunk X}
-                           end
-        token:             fun {$ X}
-                              {IsObject X} andthen {HasFeature X ImAToken}
-                           end
-        builtin:           Misc.isBuiltin
-        procedure:         IsProcedure
-        procedureOrObject: fun {$ X}
-                              {TypeTests.procedure X}
-                              orelse {TypeTests.object X}
-                           end
-        'procedure/0':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 0
-                           end
-        'procedure/1':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 1
-                           end
-        'procedure/2':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 2
-                           end
-        'procedure/3':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 3
-                           end
-        'procedure/4':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 4
-                           end
-        'procedure/5':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 5
-                           end
-        'procedure/6':     fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} == 6
-                           end
-        'procedure/>6':    fun {$ X}
-                              {TypeTests.procedure X}
-                              andthen {Procedure.arity X} > 6
-                           end
-        cell:              IsCell
-        chunk:             IsChunk
-        array:             IsArray
-        dictionary:        IsDictionary
-        bitArray:          BitArray.is
-        'class':           IsClass
-        object:            fun {$ X}
-                              {IsObject X} andthen
-                              {Not {HasFeature X ImAConstruction}
-                               orelse {HasFeature X ImAValueNode}
-                               orelse {HasFeature X ImAToken}}
-                           end
-        'lock':            IsLock
-        port:              IsPort
-        space:             IsSpace
-        'thread':          IsThread
-        foreignPointer:    ForeignPointer.is
-        fset:              fun {$ X}
-                              {FS.value.is X} orelse {FS.var.is X}
-                           end
-        virtualString:     IsVirtualString
-        string:            IsString
-        list:              IsList
-        pair:              fun {$ X}
-                              case X of _#_ then true else false end
-                           end
-       )
+   TypeTests = {AdjoinAt Type.is object
+                fun {$ X}
+                   {IsObject X} andthen
+                   {Not {HasFeature X ImAConstruction}
+                    orelse {HasFeature X ImAValueNode}
+                    orelse {HasFeature X ImAToken}}
+                end}
 
 %-----------------------------------------------------------------------
 % Determination predicates
 
    DetTests
-   = dt(det:    fun {$ X} XD = {GetData X} in
+   = dt(any:    fun {$ X}
+                   true
+                end
+        det:    fun {$ X} XD = {GetData X} in
                    {IsDet XD} andthen
                    case {IsObject XD} then
                       {Not {HasFeature XD ImAVariableOccurrence}}
@@ -316,7 +225,6 @@ local
                       else true end
                    else {IsKinded XD} end
                 end
-        any:    IsAny
         atomic: fun {$ X} XD = {GetData X} in
                    {IsDet XD} andthen
                    case {IsObject XD} then
@@ -1652,7 +1560,7 @@ in
             end
 
          elsecase
-            {TypeTests.token RHS}
+            {IsToken RHS}
             orelse
             {IsAtom {RHS getValue($)}}
          then
@@ -2793,7 +2701,7 @@ in
 
       meth checkDesignatorBuiltin($)
          {DetTests.det @designator}
-         andthen {TypeTests.builtin {GetData @designator}}
+         andthen {Misc.isBuiltin {GetData @designator}}
       end
       meth checkDesignatorProcedure($)
          {DetTests.det @designator}
@@ -3961,7 +3869,7 @@ in
             {UnifyTypesOf self RHS Ctrl @coord}
          then
             case
-               {TypeTests.token RHS}
+               {IsToken RHS}
             then
                {IssueUnificationFailure Ctrl @coord
                 [line('atom = token')
@@ -4011,7 +3919,7 @@ in
             {UnifyTypesOf self RHS Ctrl @coord}
          then
             case
-               {TypeTests.token RHS}
+               {IsToken RHS}
             then
                {IssueUnificationFailure Ctrl @coord
                 [line('integer = token')
@@ -4063,7 +3971,7 @@ in
             {UnifyTypesOf self RHS Ctrl @coord}
          then
             case
-               {TypeTests.token RHS}
+               {IsToken RHS}
             then
                {IssueUnificationFailure Ctrl @coord
                 [line('float = token')
@@ -4679,10 +4587,10 @@ in
          then
             {LHS unify(Ctrl RHS)}
          elsecase
-            {TypeTests.token LHS}
+            {IsToken LHS}
          then
             case
-               {TypeTests.token RHS}
+               {IsToken RHS}
             then
                % token = token
 
@@ -4797,10 +4705,10 @@ in
             then
                {RHS unify(Ctrl LHS)}
             elsecase
-               {TypeTests.token LHS}
+               {IsToken LHS}
             then
                case
-                  {TypeTests.token RHS}
+                  {IsToken RHS}
                then
                   % both are tokens
 

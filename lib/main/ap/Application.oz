@@ -438,7 +438,7 @@ prepare
           fun {$ LongOpt#Arg}
              Spec = {GetOptSpec LongOpt}
           in
-             {Label Spec}#{StringToArgPrimType Arg LongOpt Spec.type}
+             {Label Spec}#{StringToArgType Arg LongOpt Spec.type}
           end}
       end
 

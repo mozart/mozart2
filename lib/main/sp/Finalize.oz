@@ -50,21 +50,16 @@ define
    in
       proc {Register Value Handler}
          Key = {NewName}
-         WDKey = {NewName}
       in
          {Wait Handler}
          {Dictionary.put HandlerTable Key Handler}
          %% we must do this 2nd so that the value doesn't
          %% become garbage before the handler has been registered
-         %% The key used in the ValueTable must be different from the
-         %% one used for the HandlerTable, since the handler table
-         %% is a regular dictionary and will keep the weakdictionary-entry
-         %% alive otherwise.
-         {WeakDictionary.put ValueTable WDKey Key#Value}
+         {WeakDictionary.put ValueTable Key Value}
       end
       thread
          {ForAll {NewWeakDictionary $ ValueTable}
-          proc {$ _#(Key#Value)}
+          proc {$ Key#Value}
              try
                 Handler = {Dictionary.get HandlerTable Key}
              in

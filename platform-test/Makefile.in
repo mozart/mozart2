@@ -40,12 +40,18 @@ SCHEDLOCAL = \
         abz6 company product
 
 SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
+SCHEDBENCH = ./scheduling/abz6.ozf
 
 FCORE = \
         conversion float record type exception guards future misc \
         link instruction compiler except dictionary ofs
 
 CORE = $(FCORE:%=./core/%.ozf)
+
+FBENCH = \
+        nrev tak
+
+BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
         mini
@@ -56,11 +62,12 @@ FTOOLS = \
 
 TOOLS = $(FTOOLS:%=./tools/%.ozf)
 
-DIRS = core space fd fs scheduling dp tools
+DIRS = core space fd fs scheduling dp tools bench
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS)
+        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS) \
+        $(BENCH)
 
 
 ####################################################
@@ -75,7 +82,7 @@ OZCC = $(OZEE) -c
 .PHONY: all bootstrap install check dirs clean veryclean distclean depend
 .PHONY: boot-check boot-all
 
-all: dirs oztest
+all: dirs oztest ozbench
 
 boot-all:
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
@@ -115,12 +122,17 @@ dirs:
 # what is this bullshit
 # $(COMPONENTS): dirs
 
-oztest: lib/make-test.oz lib/engine.oz \
-        lib/passed.oz lib/failed.oz lib/help-string.oz \
-        $(COMPONENTS)
+TESTSRCS=make-test engine passed failed help-string compute-tests
+oztest: $(TESTSRCS:%=./lib/%.oz) $(COMPONENTS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
         $(OZE) ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
         -rm -f ./make-test
+
+BENCHSRCS=make-bench engine compute-tests help-bench
+ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS)
+        $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
+        $(OZE) ./make-bench -verbose $(COMPONENTS:%=`pwd`/%)
+        -rm -f ./make-bench
 
 
 clean:

@@ -24,7 +24,7 @@ functor
 import
    OS(uName)
    Remote(manager)
-   System(gcDo)
+   System(gcDo show)
    Fault(deinstall)
 export
    getHostNames:GetHostNames
@@ -37,7 +37,7 @@ export
    deinstallWatchers:DeinstallWatchers
 define
    fun {GetHostNames}
-      [localhost {OS.uName}.nodename]
+      [{OS.uName}.nodename]
    end
 
    proc {GetRemoteManagers Number Hosts Managers}
@@ -46,7 +46,12 @@ define
             Ms = nil
          else Mr H Hr1 Hr2 in
             Hs = H|Hr1
-            Ms = {New Remote.manager init(host:H)}|Mr
+            try
+               Ms = {New Remote.manager init(host:H)}|Mr
+            catch X then
+               {System.show remote(X)}
+               raise X end
+            end
             if Hr1 == nil then
                Hr2 = Hosts
             else
@@ -116,7 +121,7 @@ define
    proc {DeinstallWatchers Ws}
       case Ws
       of W|Wr then
-         {Fault.deinstall W watcher('cond':permHome) Watcher}
+%        {Fault.deinstall W watcher('cond':permHome) Watcher}
          {DeinstallWatchers Wr}
       [] nil then skip
       end

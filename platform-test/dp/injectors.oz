@@ -33,16 +33,22 @@ export
    Return
 
 define
+   proc{InjectorInstall Entity Proc}
+      {Fault.install 'thread'(this) Entity [permFail] Proc true}
+   end
+   proc{InjectorDeInstall Entity Proc}
+      {Fault.deInstall 'thread'(this) Entity true}
+   end
 
 
    proc{InjectInj S}
-      Inj = proc{$ A B} raise injector end end
+      Inj = proc{$ A B C} raise injector end end
    in
-      {Fault.injector S.port Inj}
-      {Fault.injector S.cell Inj}
-      {Fault.injector S.lokk Inj}
-      {Fault.injector S.var Inj}
-      {Fault.injector S.object Inj}
+      {InjectorInstall S.port Inj}
+      {InjectorInstall S.cell Inj}
+      {InjectorInstall S.lokk Inj}
+      {InjectorInstall S.var Inj}
+      {InjectorInstall S.object Inj}
    end
 
    proc{TryCell C}

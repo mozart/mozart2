@@ -4,6 +4,7 @@
 %%%
 %%%
 %%% Copyright:
+%%%  Erik Klintskog, 1998
 %%%
 %%%
 %%% Last change:
@@ -34,15 +35,27 @@ export
 
 define
 
+   proc{SiteWatcherInstall Entity Proc}
+      {Fault.installWatcher Entity [permFail] Proc true}
+   end
+   proc{SiteWatcherDeInstall Entity Proc}
+      {Fault.deInstallWatcher Entity Proc true}
+   end
+   proc{InjectorInstall Entity Proc}
+      {Fault.install 'thread'(this) Entity [permFail] Proc true}
+   end
+   proc{InjectorDeInstall Entity Proc}
+      {Fault.deInstall 'thread'(this) Entity true}
+   end
 
    proc{WatchWat S E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
    in
       E = o(port:_ cell:_ lokk:_ var:_)
-      {Fault.siteWatcher S.port {Inj E.port}}
-      {Fault.siteWatcher S.cell {Inj E.cell}}
-      {Fault.siteWatcher S.lokk {Inj E.lokk}}
-      {Fault.siteWatcher S.var  {Inj E.var}}
+      {SiteWatcherInstall S.port {Inj E.port}}
+      {SiteWatcherInstall S.cell {Inj E.cell}}
+      {SiteWatcherInstall S.lokk {Inj E.lokk}}
+      {SiteWatcherInstall S.var  {Inj E.var}}
    end
 
 
@@ -102,15 +115,15 @@ define
       CC = {NewCell true}
    in
       try
-         {Fault.removeInjector Po Pro}
+         {InjectorDeInstall Po Pro}
          {Assign CC false}
       catch _ then skip end
 
-      {Fault.injector Po Pro}
-      {Fault.removeInjector Po Pro}
+      {InjectorInstall Po Pro}
+      {InjectorDeInstall Po Pro}
 
       try
-         {Fault.removeInjector Po Pro}
+         {InjectorDeInstall Po Pro}
          {Assign CC false}
       catch _ then skip end
       {Access CC} = true
@@ -121,15 +134,15 @@ define
       CC = {NewCell true}
    in
       try
-         {Fault.removeSiteWatcher Po Pro}
+         {SiteWatcherDeInstall Po Pro}
          {Assign CC false}
       catch _ then skip end
 
-      {Fault.siteWatcher Po Pro}
-      {Fault.removeSiteWatcher Po Pro}
+      {SiteWatcherInstall Po Pro}
+      {SiteWatcherDeInstall Po Pro}
 
       try
-         {Fault.removeSiteWatcher Po Pro}
+         {SiteWatcherDeInstall Po Pro}
          {Assign CC false}
       catch _ then skip end
       {Access CC} = true
@@ -162,29 +175,25 @@ define
              Po = {NewPort _}
              Ce = {NewCell apa}
              Lo = {NewLock}
-             Pro = proc{$ A B} raise hell end end
+             Pro = proc{$ A B C} raise hell end end
           in
-             {Fault.injector Po Pro}
-             {Fault.removeInjector Po Pro}
-
-             {Fault.injector Va Pro}
-             {Fault.removeInjector Va Pro}
-
-             {Fault.injector Ce Pro}
-             {Fault.removeInjector Ce Pro}
-
-             {Fault.injector Lo Pro}
-             {Fault.removeInjector Lo Pro}
-
-             {Fault.injector Po Pro}
-             {Fault.injector Va Pro}
-             {Fault.injector Ce Pro}
-             {Fault.injector Lo Pro}
+             {InjectorInstall Po Pro}
+             {InjectorDeInstall Po Pro}
+             {InjectorInstall Va Pro}
+             {InjectorDeInstall Va Pro}
+             {InjectorInstall Ce Pro}
+             {InjectorDeInstall Ce Pro}
+             {InjectorInstall Lo Pro}
+             {InjectorDeInstall Lo Pro}
+             {InjectorInstall Po Pro}
+             {InjectorInstall Va Pro}
+             {InjectorInstall Ce Pro}
+             {InjectorInstall Lo Pro}
              {System.gcDo}
-             {Fault.removeInjector Lo Pro}
-             {Fault.removeInjector Po Pro}
-             {Fault.removeInjector Va Pro}
-             {Fault.removeInjector Ce Pro}
+             {InjectorDeInstall Lo Pro}
+             {InjectorDeInstall Po Pro}
+             {InjectorDeInstall Va Pro}
+             {InjectorDeInstall Ce Pro}
           end
           keys:[fault])
 
@@ -197,27 +206,27 @@ define
              Lo = {NewLock}
              Pro = proc{$ A B} raise hell end end
           in
-             {Fault.siteWatcher Po Pro}
-             {Fault.removeSiteWatcher Po Pro}
+             {SiteWatcherInstall Po Pro}
+             {SiteWatcherDeInstall Po Pro}
 
-             {Fault.siteWatcher Va Pro}
-             {Fault.removeSiteWatcher Va Pro}
+             {SiteWatcherInstall Va Pro}
+             {SiteWatcherDeInstall Va Pro}
 
-             {Fault.siteWatcher Ce Pro}
-             {Fault.removeSiteWatcher Ce Pro}
+             {SiteWatcherInstall Ce Pro}
+             {SiteWatcherDeInstall Ce Pro}
 
-             {Fault.siteWatcher Lo Pro}
-             {Fault.removeSiteWatcher Lo Pro}
+             {SiteWatcherInstall Lo Pro}
+             {SiteWatcherDeInstall Lo Pro}
 
-             {Fault.siteWatcher Po Pro}
-             {Fault.siteWatcher Va Pro}
-             {Fault.siteWatcher Ce Pro}
-             {Fault.siteWatcher Lo Pro}
+             {SiteWatcherInstall Po Pro}
+             {SiteWatcherInstall Va Pro}
+             {SiteWatcherInstall Ce Pro}
+             {SiteWatcherInstall Lo Pro}
              {System.gcDo}
-             {Fault.removeSiteWatcher Lo Pro}
-             {Fault.removeSiteWatcher Po Pro}
-             {Fault.removeSiteWatcher Va Pro}
-             {Fault.removeSiteWatcher Ce Pro}
+             {SiteWatcherDeInstall Lo Pro}
+             {SiteWatcherDeInstall Po Pro}
+             {SiteWatcherDeInstall Va Pro}
+             {SiteWatcherDeInstall Ce Pro}
           end
           keys:[fault])
        fault_global_install_deinstall_injector(
@@ -226,32 +235,32 @@ define
              Po
              Ce
              Lo
-             Pro = proc{$ A B} raise hell end end
+             Pro = proc{$ A B C} raise hell end end
              S
           in
              {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
 
-             {Fault.injector Po Pro}
-             {Fault.removeInjector Po Pro}
+             {InjectorInstall Po Pro}
+             {InjectorDeInstall Po Pro}
 
-             {Fault.injector Va Pro}
-             {Fault.removeInjector Va Pro}
+             {InjectorInstall Va Pro}
+             {InjectorDeInstall Va Pro}
 
-             {Fault.injector Ce Pro}
-             {Fault.removeInjector Ce Pro}
+             {InjectorInstall Ce Pro}
+             {InjectorDeInstall Ce Pro}
 
-             {Fault.injector Lo Pro}
-             {Fault.removeInjector Lo Pro}
+             {InjectorInstall Lo Pro}
+             {InjectorDeInstall Lo Pro}
 
-             {Fault.injector Po Pro}
-             {Fault.injector Va Pro}
-             {Fault.injector Ce Pro}
-             {Fault.injector Lo Pro}
+             {InjectorInstall Po Pro}
+             {InjectorInstall Va Pro}
+             {InjectorInstall Ce Pro}
+             {InjectorInstall Lo Pro}
              {System.gcDo}
-             {Fault.removeInjector Lo Pro}
-             {Fault.removeInjector Po Pro}
-             {Fault.removeInjector Va Pro}
-             {Fault.removeInjector Ce Pro}
+             {InjectorDeInstall Lo Pro}
+             {InjectorDeInstall Po Pro}
+             {InjectorDeInstall Va Pro}
+             {InjectorDeInstall Ce Pro}
 
              {S close}
 
@@ -277,27 +286,27 @@ define
           in
              {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
 
-             {Fault.siteWatcher Po Pro}
-             {Fault.removeSiteWatcher Po Pro}
+             {SiteWatcherInstall Po Pro}
+             {SiteWatcherDeInstall Po Pro}
 
-             {Fault.siteWatcher Va Pro}
-             {Fault.removeSiteWatcher Va Pro}
+             {SiteWatcherInstall Va Pro}
+             {SiteWatcherDeInstall Va Pro}
 
-             {Fault.siteWatcher Ce Pro}
-             {Fault.removeSiteWatcher Ce Pro}
+             {SiteWatcherInstall Ce Pro}
+             {SiteWatcherDeInstall Ce Pro}
 
-             {Fault.siteWatcher Lo Pro}
-             {Fault.removeSiteWatcher Lo Pro}
+             {SiteWatcherInstall Lo Pro}
+             {SiteWatcherDeInstall Lo Pro}
 
-             {Fault.siteWatcher Po Pro}
-             {Fault.siteWatcher Va Pro}
-             {Fault.siteWatcher Ce Pro}
-             {Fault.siteWatcher Lo Pro}
+             {SiteWatcherInstall Po Pro}
+             {SiteWatcherInstall Va Pro}
+             {SiteWatcherInstall Ce Pro}
+             {SiteWatcherInstall Lo Pro}
              {System.gcDo}
-             {Fault.removeSiteWatcher Lo Pro}
-             {Fault.removeSiteWatcher Po Pro}
-             {Fault.removeSiteWatcher Va Pro}
-             {Fault.removeSiteWatcher Ce Pro}
+             {SiteWatcherDeInstall Lo Pro}
+             {SiteWatcherDeInstall Po Pro}
+             {SiteWatcherDeInstall Va Pro}
+             {SiteWatcherDeInstall Ce Pro}
              {S close}
 
              {TryVar  Va}
@@ -319,37 +328,27 @@ define
 
        fault_handover_watcher_injector(
           proc {$}
-             Va
              Po
              Ce
              Lo
-             Pro1 = proc{$ A B} raise hell end end
+             Pro1 = proc{$ A B C} raise hell end end
              Sync
              Pro2 = proc{$ A B} Sync = false end
              S
              CC = {NewCell false}
           in
 
-             {Fault.injector Po Pro1}
-             {Fault.injector Va Pro1}
-             {Fault.injector Ce Pro1}
-             {Fault.injector Lo Pro1}
+             {InjectorInstall Po Pro1}
+             {InjectorInstall Ce Pro1}
+             {InjectorInstall Lo Pro1}
 
-             {Fault.siteWatcher Po Pro2}
-             {Fault.siteWatcher Va Pro2}
-             {Fault.siteWatcher Ce Pro2}
-             {Fault.siteWatcher Lo Pro2}
+             {SiteWatcherInstall Po Pro2}
+             {SiteWatcherInstall Ce Pro2}
+             {SiteWatcherInstall Lo Pro2}
 
-
-
-             {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
+             {StartServer S o(port:Po cell:Ce lokk:Lo var:_)}
              {S close}
              {Delay 1000}
-             try
-                {TryVar  Va}
-                {Assign CC true}
-             catch hell then skip end
-
              try
                 {TryCell Ce}
                 {Assign CC true}
@@ -390,7 +389,8 @@ define
              Va
 
              Sync
-             Pro = proc{$ A B}  Sync = false end
+             Pro = proc{$ A B C}  Sync = false end
+             ProW = proc{$ A B}  Sync = false end
              S
           in
              {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
@@ -401,20 +401,20 @@ define
              {DeinstallInj Ce Pro}
              {DeinstallInj Lo Pro}
 
-             {DeinstallWat Po Pro}
-             {DeinstallWat Va Pro}
-             {DeinstallWat Ce Pro}
-             {DeinstallWat Lo Pro}
+             {DeinstallWat Po ProW}
+             {DeinstallWat Va ProW}
+             {DeinstallWat Ce ProW}
+             {DeinstallWat Lo ProW}
 
              {DeinstallInj Pol Pro}
              {DeinstallInj Val Pro}
              {DeinstallInj Cel Pro}
              {DeinstallInj Lol Pro}
 
-             {DeinstallWat Pol Pro}
-             {DeinstallWat Val Pro}
-             {DeinstallWat Cel Pro}
-             {DeinstallWat Lol Pro}
+             {DeinstallWat Pol ProW}
+             {DeinstallWat Val ProW}
+             {DeinstallWat Cel ProW}
+             {DeinstallWat Lol ProW}
 
              {S close}
 

@@ -34,18 +34,24 @@ export
 
 define
 
+   proc{SiteWatcherInstall Entity Proc}
+      {Fault.installWatcher Entity [permFail] Proc true}
+   end
+   proc{SiteWatcherDeInstall Entity Proc}
+      {Fault.deInstallWatcher Entity Proc true}
+   end
+
 
    proc{WatchWat S E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
    in
       E = o(port:_ cell:_ lokk:_ var:_ object:_)
-      {Fault.siteWatcher S.port {Inj E.port}}
-      {Fault.siteWatcher S.cell {Inj E.cell}}
-      {Fault.siteWatcher S.lokk {Inj E.lokk}}
-      {Fault.siteWatcher S.var  {Inj E.var}}
-      {Fault.siteWatcher S.object {Inj E.object}}
+      {SiteWatcherInstall S.port {Inj E.port}}
+      {SiteWatcherInstall S.cell {Inj E.cell}}
+      {SiteWatcherInstall S.lokk {Inj E.lokk}}
+      {SiteWatcherInstall S.var  {Inj E.var}}
+      {SiteWatcherInstall S.object {Inj E.object}}
    end
-
 
    proc{CheckWat E}
       CC = {NewCell false}

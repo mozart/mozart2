@@ -33,19 +33,48 @@ export
    Return
 
 define
+   proc{InjectorInstall Entity Proc}
+      {Fault.install 'thread'(this) Entity [permFail] Proc true}
+   end
+   proc{InjectorDeInstall Entity Proc}
+      {Fault.deInstall 'thread'(this) Entity true}
+   end
+   proc{SiteWatcherInstall Entity Proc}
+      {Fault.installWatcher Entity [permFail] Proc true}
+   end
+   proc{SiteWatcherDeInstall Entity Proc}
+      {Fault.deInstallWatcher Entity Proc true}
+   end
+   proc{NetWatcherInstall Entity Proc}
+      {Fault.installWatcher Entity
+       [remoteProblem(permSome) remoteProblem(permAll)] Proc true}
+   end
+   proc{NetWatcherDeInstall Entity Proc}
+      {Fault.deInstallWatcher Entity Proc true}
+   end
+
    proc{InjectInj Ce Lo}
-      Inj = proc{$ A B} raise injector end end
+      Inj = proc{$ A B C} raise injector end end
    in
-      {Fault.injector Ce Inj}
-      {Fault.injector Lo Inj}
+      {InjectorInstall Ce Inj}
+      {InjectorInstall  Lo Inj}
    end
 
 proc{WatchWat Ce Lo E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
 in
    E = o(cell:_ lokk:_)
-   {Fault.siteWatcher Ce {Inj E.cell}}
-   {Fault.siteWatcher Lo {Inj E.lokk}}
+   {SiteWatcherInstall Ce {Inj E.cell}}
+   {SiteWatcherInstall Lo {Inj E.lokk}}
+
+end
+
+proc{InjectInj2 Ce Lo E}
+      Inj = proc{$ A B} B = proc{$ _ _ _} A = unit end end
+in
+   E = o(cell:_ lokk:_)
+   {InjectorInstall Ce {Inj E.cell}}
+   {InjectorInstall Lo {Inj E.lokk}}
 
 end
 
@@ -137,9 +166,7 @@ proc{TryCell C}
              {S close}
              {Delay 100}
              {TryCell DistCell}
-             lock DistLock then
-                skip
-             end
+             {TryLock DistLock}
           end
           keys:[fault])
 
@@ -168,9 +195,7 @@ proc{TryCell C}
              {Delay 100}
              {InjectInj DistCell DistLock}
              {TryCell DistCell}
-             lock DistLock then
-                skip
-             end
+             {TryLock DistLock}
           end
           keys:[fault])
 
@@ -232,10 +257,17 @@ proc{TryCell C}
              {S close}
              {Delay 100}
 
-             {InjectInj DistCell DistLock}
-             {WatchWat DistCell DistLock AA}
-             {TryCell DistCell}
-             AA.lokk = unit
+             {InjectInj2 DistCell DistLock AA}
+             try
+                {Access DistCell _}
+             catch X then
+                skip
+             end
+             try
+                lock DistLock then skip end
+             catch X then
+                skip
+             end
              {CheckWat AA}
           end
           keys:[fault])
@@ -247,7 +279,7 @@ proc{TryCell C}
              S2={New Remote.manager init(host:{OS.uName}.nodename)}
              Sync
              DistCell
-             Inj = proc{$ A B} raise injector end end
+             Inj = proc{$ A B C} raise injector end end
           in
              {S1 ping}
              {S1 apply(url:'' functor
@@ -265,7 +297,7 @@ proc{TryCell C}
                               end)}
 
              {Wait Sync}
-             {Fault.injector DistCell Inj}
+             {InjectorInstall DistCell Inj}
              {S2 close}
              {Delay 1000}
              {TryCell DistCell}
@@ -280,7 +312,7 @@ proc{TryCell C}
              CC = {NewCell false}
              Sync
              DistCell
-             Inj = proc{$ A B} raise injector end end
+             Inj = proc{$ A B C} raise injector end end
           in
              {S1 ping}
              {S1 apply(url:'' functor
@@ -299,7 +331,7 @@ proc{TryCell C}
                               end)}
 
              {Wait Sync}
-             {Fault.injector DistCell Inj}
+             {InjectorInstall DistCell Inj}
              {S2 close}
              {Delay 1000}
              {TryCell DistCell}
@@ -336,7 +368,7 @@ proc{TryCell C}
                               end)}
 
              {Wait Sync}
-             {Fault.siteWatcher DistCell proc{$ A B}
+             {SiteWatcherInstall DistCell proc{$ A B}
                                             {Assign CC true}
                                          end}
              {S2 close}
@@ -375,7 +407,7 @@ proc{TryCell C}
              {Wait Sync}
              {S2 close}
              {Delay 1000}
-             {Fault.siteWatcher DistCell proc{$ A B}
+             {SiteWatcherInstall DistCell proc{$ B C}
                                             {Assign CC true}
                                          end}
              {Delay 1000}
@@ -419,11 +451,10 @@ proc{TryCell C}
              {Wait Sync2}
              {Delay 100}
              {S2 close}
-             {Fault.install netWatcher('cond':[permSome] entity:DistLock)
+             {NetWatcherInstall DistLock
               proc{$ A B}
                  {Assign CC true}
               end}
-
              {S3 apply(url:'' functor
                               define
                                  thread
@@ -435,7 +466,6 @@ proc{TryCell C}
 
              {S3 ping}
              {Delay 1000}
-
 
              thread
                 {Delay 3000}
@@ -496,7 +526,7 @@ proc{TryCell C}
 
 
              {Wait Sync2}
-             {Fault.install netWatcher('cond':[permSome permAll] entity:DistLock)
+             {NetWatcherInstall DistLock
               proc{$ A B}
                  {Assign CC true}
               end}

@@ -22,6 +22,10 @@
 %%% WARRANTIES.
 %%%
 
+% make sure
+'
+fconfigure stdout -translation {auto lf}
+'#
 % send event to Oz
 %  id : index into table
 %  args: a list of args

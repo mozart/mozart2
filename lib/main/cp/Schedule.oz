@@ -47,7 +47,7 @@ import
 
    FD(bool
       is
-      neg
+      nega
       sum
       reflect
       distribute
@@ -290,7 +290,7 @@ define
          in
             B0={FD.reified.sum Start.LeftTask#Dur.LeftTask '=<:'
                 Start.RightTask}
-            B1={FD.neg B0}
+            B1={FD.nega B0}
             B1={FD.reified.sum Start.RightTask#Dur.RightTask '=<:'
                 Start.LeftTask}
             {FD.distribute naive a(B0)}

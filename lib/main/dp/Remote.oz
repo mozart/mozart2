@@ -66,15 +66,15 @@ define
    in
       try
          CMD#ARGS = case Fork
-                    of rsh then
-                       'rsh' #
-                       [Host ('exec '#Cmd#' '#Func#' '#
-                              DetachArg#' '#TicketArg#' '#ModelArg)]
-                    [] sh then
+                    of sh then
                        Cmd # [Func DetachArg TicketArg ModelArg]
                     [] virtual then
                        Cmd # [Func TicketArg DetachArg ModelArg
                               '--shmkey='#{VirtualSite.newMailbox}]
+                    else
+                       Fork #
+                       [Host ('exec '#Cmd#' '#Func#' '#
+                              DetachArg#' '#TicketArg#' '#ModelArg)]
                     end
       in
          {OS.exec CMD ARGS {Not Detach}}
@@ -117,7 +117,8 @@ define
                     end
                  else Fork
                  end
-              else rsh
+              elseif Fork==automatic then rsh
+              else Fork
               end
               Host RunPort#CtrlPort Detach}
 

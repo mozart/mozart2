@@ -54,9 +54,17 @@ prepare
                    'Tk' 'TkTools'
                    'Compiler'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
-                   'DefaultURL' 'ObjectSupport']
+                   'DefaultURL' 'ObjectSupport'
+\ifdef DENYS_EVENTS
+                   'Timer'
+\endif
+                  ]
       Volatiles = ['Module'
-                   'Resolve' 'OS' 'Property' 'Pickle' 'System']
+                   'Resolve' 'OS' 'Property' 'Pickle' 'System'
+\ifdef DENYS_EVENTS
+                   'Event'
+\endif
+                  ]
       Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
                    'EvalDialog'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'

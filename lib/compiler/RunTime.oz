@@ -126,9 +126,9 @@ local
 
    NewUniqueName = Boot_Name.newUnique
 
-   LiteralValues = env('true': `true`
-                       'false': `false`
-                       'unit': `unit`
+   LiteralValues = env('true': true
+                       'false': false
+                       'unit': unit
                        'ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
                        'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
                        'ooRequiredArg': {NewUniqueName 'ooRequiredArg'})

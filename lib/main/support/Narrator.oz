@@ -82,7 +82,8 @@ define
             {@Narrator tell(info('% -------------------- accepted\n'))}
          [] rejected then VS in
             VS = ('%** ------------------ rejected'#
-                  case @ErrorCount of 0 then ""
+                  case @ErrorCount of unit then ""
+                  [] 0 then ""
                   elseof N then
                      ' ('#N#' error'#if N == 1 then "" else 's' end#')'
                   end#'\n')

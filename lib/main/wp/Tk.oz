@@ -490,7 +490,11 @@ define
       {Stream flush(how:[send])}
    end
 
-   RetStream = {TkInit {Stream getDesc(_ $)} TkDict}
+   local
+      RealRetStream = {TkInit {Stream getDesc(_ $)} TkDict}
+   in
+      RetStream = {Cell.new RealRetStream}
+   end
 
    local
       fun {GetArgs N Ps}
@@ -532,14 +536,17 @@ define
       %%   <data>
       %%   .
 
-      proc {TkReadLoop Rs}
+      proc {TkReadLoop RS}
          Is={Stream getS($)}
       in
          case Is
          of I|Ir then Irr=Ir.2 in
             case I
-            of &r then (R|Cast)|Rr = Rs in
-               R={Cast {Expand Irr}} {TkReadLoop Rr}
+            of &r then Rs Car Cdr in
+               {Cell.exchange RS Rs Cdr}
+               Car = Rs.1
+               Cdr = Rs.2
+               Car.1 = {Car.2 {Expand Irr}} {TkReadLoop RS}
             [] &p then
                Irr1
                Id     = {S2I {Stok Irr  & $ ?Irr1}}
@@ -553,15 +560,15 @@ define
                else
                   _={GetArgs NoArgs nil}
                end
-               {TkReadLoop Rs}
+               {TkReadLoop RS}
             [] &s then
                {TkSend
                 v('puts stdout {s end}; flush stdout; destroy .')}
                {Stream close}
             [] &w then
                {TkError Irr#'\n'#{ReadUntilDot} unit}
-               {TkReadLoop Rs}
-            else {TkReadLoop Rs}
+               {TkReadLoop RS}
+            else {TkReadLoop RS}
             end
          [] false then
             {Stream close}

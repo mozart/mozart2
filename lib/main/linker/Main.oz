@@ -49,7 +49,11 @@ prepare
 
    \insert 'Print.oz'
 
-   ExecPrefix = '#!/bin/sh\nexec ozengine $0 "$@"\n'
+   fun {MakeExecHeader Path}
+      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
+   end
+   DefaultExecPath = 'ozengine'
+   DefaultExecHeader = {MakeExecHeader DefaultExecPath}
 
    proc {Swallow _}
       skip
@@ -93,7 +97,10 @@ define
                     quiet(char: &q alias: [verbose#false debug#false])
                     sequential(rightmost type: bool default: false)
                     executable(rightmost char: &x type: bool default: false)
-                    execheader(single type: string default: ExecPrefix)
+                    execheader(single type: string
+                               validate: alt(when(execpath false)))
+                    execpath(single type: string
+                             validate: alt(when(execheader false)))
                     compress(rightmost char: &z
                              type: int(min: 0 max: 9) default: 0)
 
@@ -139,7 +146,16 @@ define
        if {HasFeature Args out} then
           try
              {Pickle.saveWithHeader OutFunctor Args.out
-              if Args.executable then Args.execheader else '' end
+              if Args.executable then
+                 case {CondSelect Args execheader unit} of unit then
+                    case {CondSelect Args execpath unit} of unit then
+                       DefaultExecHeader
+                    elseof S then {MakeExecHeader S}
+                    end
+                 elseof S then S
+                 end
+              else ''
+              end
               Args.compress}
              if Args.executable then
                 if {OS.system 'chmod +x '#Args.out}\=0 then

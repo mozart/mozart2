@@ -541,6 +541,15 @@ in
                         {Assembler load(Globals ?P)}
                      end
                      CompilerClass, ExecuteUninterruptible(Proc)
+                     local
+                        OPICompiler = {{`Builtin` getOPICompiler 1}}
+                     in
+                        case OPICompiler == self.interface then
+                           %% terrible hack due to Benni
+                           {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
+                        else skip
+                        end
+                     end
                      case {@switches get(threadedqueries $)} then
                         {@reporter
                          logSubPhase('executing in an independent thread ...')}

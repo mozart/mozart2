@@ -1043,7 +1043,7 @@ define
             CND = {CoordNoDebug C}
             FS = fBoolCase(fOpApply('RaiseDebugCheck' [FV] CND)
                            fOpApplyStatement('RaiseDebugExtend' [FV FE2] C)
-                           fOpApplyStatement('Raise' [FV] CND) CND)
+                           fOpApplyStatement('Raise' [FV] C) CND)
             GFrontEqs|Unnester, UnnestStatement(FS $)
          [] fSkip(C) then
             {New Core.skipNode init(C)}

@@ -123,15 +123,6 @@ define
          end
       end
 
-      local
-         %--** can be discarded
-         BIStoreApplMethInfo = CompilerSupport.storeApplMethInfo
-      in
-         proc {StoreApplMethInfo CodeBlock ami(Name RecordArity)}
-            {BIStoreApplMethInfo CodeBlock Name RecordArity}
-         end
-      end
-
       \insert compiler-Opcodes
 
       local

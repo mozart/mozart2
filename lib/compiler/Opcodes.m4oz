@@ -113,6 +113,7 @@ define(Arity,Int)
 define(Count,Int)
 define(ArityAndIsTail,Int)
 define(Dummy,Int)
+define(ApplMethInfo,Int)
 
 changequote([,])
 define(arglist, [ifelse($1,1,'$2',

@@ -42,6 +42,7 @@
 functor
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
+   System(printName)
    StaticAnalysis
    CodeGen
 export
@@ -441,7 +442,9 @@ define
       meth output(R $)
          if R.realcore then
             Application, OutputApplication(R $)
-         else P = {{@designator getVariable($)} getPrintName($)} in
+         else PN P in
+            {{@designator getVariable($)} getPrintName(?PN)}
+            P = if {IsFree PN} then unit else PN end
             case P of '`Object.exchange`' then Attr New Old FS1 FS2 FS3 in
                @actualArgs = [Attr New Old]
                {Old output2(R $ ?FS1)}#' = '#
@@ -1022,8 +1025,17 @@ define
             @printName
          end
          meth output(R $) PN = @printName in
-            {Dictionary.put R.printNames PN true}
-            pn(PN)
+            if {IsFree PN} then pn(PN)
+            elseif {IsAtom PN} then
+               {Dictionary.put R.printNames PN true}
+               pn(PN)
+            else PN2 D X in
+               PN2 = {System.printName PN}
+               D = R.toGenerate
+               {Dictionary.put D PN2 X|{Dictionary.condGet D PN2 nil}}
+               printName <- X
+               pn(X)
+            end
          end
       end
    in

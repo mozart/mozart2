@@ -35,7 +35,7 @@
 functor
 import
    CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
-   System(printName)
+   System(printName eq)
    Property(get)
    Builtins(getInfo)
    Core

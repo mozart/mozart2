@@ -28,21 +28,6 @@ local
       end
    end
 
-   fun {NextFreeIndexWithoutPrintName Used Varnames I}
-      if {Dictionary.member Used I} orelse {Dictionary.member Varnames I}
-      then {NextFreeIndexWithoutPrintName Used Varnames I + 1}
-      else I
-      end
-   end
-
-   fun {NextFreeIndexWithEmptyPrintName Used Varnames I}
-      if {Dictionary.member Used I}
-         orelse {Dictionary.condGet Varnames I ''} \= ''
-      then {NextFreeIndexWithEmptyPrintName Used Varnames I + 1}
-      else I
-      end
-   end
-
    fun {LastUsedIndex Used I}
       if {Dictionary.member Used I} then I
       elseif I =< 0 then ~1
@@ -70,9 +55,15 @@ in
 
    %%
    %% The Emitter class maintains information about which registers are
-   %% currently in use.  The dictionaries UsedX and UsedY map X and Y
-   %% register indices respectively to the number of Regs that reference
-   %% the corresponding indices.
+   %% currently in use.  The dictionary UsedX maps each X register index
+   %% to the number of Regs that reference it.
+   %%
+   %% UsedYs is a list of all Y registers having been allocated; FreeYs
+   %% is a list of those that had been allocated, but have been freed
+   %% again (and have not yet been reallocated).  Each Y register is
+   %% represented as y(_); the indices are only bound at the end of
+   %% compilation of a procedure.  NamedYs is a list of pairs that map
+   %% some Y registers to their print names (for debug information).
    %%
 
    class Emitter
@@ -80,9 +71,9 @@ in
          Temporaries Permanents
          LastAliveRS ShortLivedRegs
          UsedX LowestFreeX HighestEverX
-         UsedY LowestFreeY HighestEverY
+         UsedYs FreeYs NamedYs
          GRegRef HighestUsedG
-         LocalEnvSize LocalVarnames
+         LocalEnvSize
          CodeHd CodeTl
          LocalEnvsInhibited
          continuations contLabels
@@ -91,13 +82,12 @@ in
          AdjDict DelayedInitsDict DoneDict CurrentID Stack Arity
       meth init()
          GRegRef <- {NewDictionary}
-         LocalVarnames <- {NewDictionary}
          DelayedInitsDict <- {NewDictionary}
          AdjDict <- {NewDictionary}
          DoneDict <- {NewDictionary}
       end
       meth doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs ?NLiveRegs)
-         RS NewCodeTl
+         RS NewCodeTl NumberOfYs
       in
          Temporaries <- {NewDictionary}
          Permanents <- {NewDictionary}
@@ -108,9 +98,9 @@ in
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
          HighestEverX <- ~1
-         UsedY <- {NewDictionary}
-         LowestFreeY <- 0
-         HighestEverY <- ~1
+         UsedYs <- nil
+         FreeYs <- nil
+         NamedYs <- nil
          HighestUsedG <- ~1
          LocalEnvSize <- _
          CodeHd <- allocateL(@LocalEnvSize)|NewCodeTl
@@ -125,26 +115,31 @@ in
          Emitter, EmitAddr(StartAddr)
          GRegs = {ForThread @HighestUsedG 0 ~1
                   fun {$ In I} {Dictionary.get @GRegRef I}|In end nil}
-         @LocalEnvSize = @HighestEverY + 1
+         NumberOfYs = {Length @UsedYs}
+         if {IsFree @LocalEnvSize} then
+            @LocalEnvSize = NumberOfYs
+            {List.forAllInd @UsedYs proc {$ I y(J)} J = NumberOfYs - I end}
+         end
          @CodeTl = nil
          if {self.state getSwitch(staticvarnames $)} then
-            if @HighestEverY == ~1 andthen GRegs == nil then
+            if NumberOfYs == 0 andthen GRegs == nil then
                %% Emitting at least one `...Varname' instruction
                %% flags this procedure as having been compiled with
                %% the switch +staticvarnames:
                Code = @CodeHd#[localVarname('')]
-            else
+            else D in
+               D = {NewDictionary}
+               {ForAll @NamedYs
+                proc {$ y(I)#PrintName} {Dictionary.put D I PrintName} end}
                Code =
                @CodeHd#
-               {ForThread @HighestEverY 0 ~1
-                fun {$ In I} PrintName in
-                   PrintName = {Dictionary.get @LocalVarnames I}
-                   localVarname(PrintName)|In
+               {ForThread NumberOfYs - 1 0 ~1
+                fun {$ In I}
+                   localVarname({Dictionary.condGet D I ''})|In
                 end
                 {Map AllRegs
-                 fun {$ GReg} PrintName in
-                    PrintName = {Dictionary.condGet @regNames GReg ''}
-                    globalVarname(PrintName)
+                 fun {$ GReg}
+                    globalVarname({Dictionary.condGet @regNames GReg ''})
                  end}}
             end
          else
@@ -160,10 +155,9 @@ in
          CodeHd <- nil
          {Dictionary.removeAll @UsedX}
          UsedX <- unit
-         {Dictionary.removeAll @UsedY}
-         UsedY <- unit
+         UsedYs <- unit
+         NamedYs <- unit
          {Dictionary.removeAll @GRegRef}
-         {Dictionary.removeAll @LocalVarnames}
       end
       meth newLabel(?Label)
          Label = @nextLabel
@@ -240,8 +234,8 @@ in
          case @ShortLivedRegs of R|Rr then
             case R of x(I) then
                Emitter, FreeX(I)
-            [] y(I) then
-               Emitter, FreeY(I)
+            [] y(_) then
+               Emitter, FreeY(R)
             end
             ShortLivedRegs <- Rr
             Emitter, FlushShortLivedRegs()
@@ -258,16 +252,7 @@ in
       end
       meth LetDieSub(Regs)
          case Regs of Reg|Regr then
-            case {Dictionary.condGet @Temporaries Reg none} of x(I) then
-               Emitter, FreeX(I)
-               {Dictionary.remove @Temporaries Reg}
-            else skip
-            end
-            case {Dictionary.condGet @Permanents Reg none} of y(I) then
-               Emitter, FreeY(I)
-               {Dictionary.remove @Permanents Reg}
-            else skip
-            end
+            Emitter, FreeReg(Reg)
             Emitter, LetDieSub(Regr)
          [] nil then skip
          end
@@ -291,6 +276,7 @@ in
                 if S then
                    case Emitter, GetPerm(Reg $) of none then Y in
                       Emitter, AllocatePerm(Reg ?Y)
+                      NamedYs <- Y#{Dictionary.get @regNames Reg}|@NamedYs
                       case Emitter, GetTemp(Reg $) of none then
                          Emitter, Emit(createVariable(Y))
                       elseof X then
@@ -321,22 +307,19 @@ in
             if @continuations \= nil then
                {ForAll Regs
                 proc {$ Reg}
-                   case Emitter, GetPerm(Reg $) of Y=y(I) then Regs in
+                   case Emitter, GetPerm(Reg $) of Y=y(_) then Regs in
                       Regs = {Filter {Dictionary.entries @Permanents}
-                              fun {$ _#YG} YG == Y end}
+                              fun {$ _#YG} {System.eq YG Y} end}
                       if {All Regs fun {$ Reg#_} Emitter, IsLast(Reg $) end}
                       then skip
                       else Y2 in
                          {Dictionary.remove @Permanents Reg}
-                         Emitter, FreeY(I)
-                         Emitter, AllocateUnnamedPerm(Reg ?Y2)
+                         Emitter, AllocatePerm(Reg ?Y2)
+                         Emitter, Emit(move(Y Y2))
                          {ForAll Regs
                           proc {$ Reg#_}
                              {Dictionary.put @Permanents Reg Y2}
                           end}
-                         Emitter, Emit(move(Y Y2))
-                         {Dictionary.put @UsedY I 0}
-                         {Dictionary.put @UsedY Y2.1 {Length Regs}}
                       end
                       Emitter, Emit(clear(Y))
                    end
@@ -1689,10 +1672,11 @@ in
          if @LocalEnvsInhibited then false
          elseif self.controlFlowInfoSwitch then false
          elseif B andthen Cont == nil andthen @contLabels == nil
-            andthen @HighestEverY == ~1
+            andthen @UsedYs == nil
          then
             %% This means that in a conditional, local environments may be
             %% allocated per branch instead of for the procedure as a whole.
+            @LocalEnvSize = 0   % cancel preceding allocateL instruction
             true
          else false
          end
@@ -1700,19 +1684,18 @@ in
       meth EmitAddrInLocalEnv(Addr HasLocalEnv)
          %% A call to this method must always be followed by a call to
          %% either RestoreRegisterMapping or RestoreAllRegisterMappings;
-         %% else the attributes Permanents, UsedY and LowestFreeY do not
+         %% else the attributes Permanents, UsedY and FreeYs do not
          %% contain correct values.
          if HasLocalEnv then
             case Addr of vShared(_ _ _ _) then
                Emitter, EmitAddrInLocalEnvShared(Addr)
-            else OldLocalEnvSize in
-               OldLocalEnvSize = @LocalEnvSize
-               LocalEnvSize <- _
-               Emitter, Emit(allocateL(@LocalEnvSize))
+            else NumberOfYs in
+               LocalEnvSize <- NumberOfYs
+               Emitter, Emit(allocateL(NumberOfYs))
                Emitter, EmitAddr(Addr)
-               @LocalEnvSize = @HighestEverY + 1
-               HighestEverY <- ~1
-               LocalEnvSize <- OldLocalEnvSize
+               NumberOfYs = {Length @UsedYs}
+               {List.forAllInd @UsedYs proc {$ I y(J)} J = NumberOfYs - I end}
+               UsedYs <- nil
             end
          else OldLocalEnvsInhibited in
             OldLocalEnvsInhibited = @LocalEnvsInhibited
@@ -1723,11 +1706,11 @@ in
       end
       meth EmitAddrInLocalEnvShared(Addr)
          case Addr of vShared(_ _ _ nil) then
-               case @contLabels of nil then
-                  Emitter, DeallocateAndReturn()
-               [] ContLabel|_ then
-                  Emitter, Emit(branch(ContLabel))
-               end
+            case @contLabels of nil then
+               Emitter, DeallocateAndReturn()
+            [] ContLabel|_ then
+               Emitter, Emit(branch(ContLabel))
+            end
          [] vShared(_ Label _ Addr2) then
             if {Dictionary.member @sharedDone Label} then
                Emitter, Emit(branch(Label))
@@ -1905,14 +1888,14 @@ in
          X = x(I)
          ShortLivedRegs <- X|@ShortLivedRegs
       end
-      meth AllocateShortLivedPerm(?Y) I in
-         I = @LowestFreeY
-         LowestFreeY <- {NextFreeIndex @UsedY I + 1}
-         if I > @HighestEverY then
-            HighestEverY <- I
+      meth AllocateShortLivedPerm(?Y)
+         case @FreeYs of Y1|Yr then
+            FreeYs <- Yr
+            Y = Y1
+         else
+            Y = y(_)
+            UsedYs <- Y|@UsedYs
          end
-         {Dictionary.put @UsedY I 1}
-         Y = y(I)
          ShortLivedRegs <- Y|@ShortLivedRegs
       end
       meth AllocateAndInitializeAnyTemp(Reg ?X)
@@ -1926,43 +1909,16 @@ in
          elseof X0 then X = X0
          end
       end
-      meth AllocateUnnamedPerm(Reg ?Y)
-         case Emitter, GetPerm(Reg $) of none then I in
-            I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
-                 @LowestFreeY}
-            {Dictionary.put @LocalVarnames I ''}
-            if I > @HighestEverY then
-               HighestEverY <- I
-            end
-            {Dictionary.put @Permanents Reg Y=y(I)}
-            {Dictionary.put @UsedY I 1}
-         elseof Y0 then Y = Y0
-         end
-      end
       meth AllocatePerm(Reg ?Y)
-         case Emitter, GetPerm(Reg $) of none then I in
-            if {self.state getSwitch(staticvarnames $)} then
-               case {Dictionary.condGet @regNames Reg ''} of '' then
-                  I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
-                       @LowestFreeY}
-                  {Dictionary.put @LocalVarnames I ''}
-               elseof PrintName then
-                  I = {NextFreeIndexWithoutPrintName @UsedY @LocalVarnames
-                       @LowestFreeY}
-                  {Dictionary.put @LocalVarnames I PrintName}
-               end
-               if I == @LowestFreeY then
-                  LowestFreeY <- {NextFreeIndex @UsedY I + 1}
-               end
+         case Emitter, GetPerm(Reg $) of none then
+            case @FreeYs of Y1|Yr then
+               FreeYs <- Yr
+               Y = Y1
             else
-               I = @LowestFreeY
-               LowestFreeY <- {NextFreeIndex @UsedY I + 1}
+               Y = y(_)
+               UsedYs <- Y|@UsedYs
             end
-            if I > @HighestEverY then
-               HighestEverY <- I
-            end
-            {Dictionary.put @Permanents Reg Y=y(I)}
-            {Dictionary.put @UsedY I 1}
+            {Dictionary.put @Permanents Reg Y}
          elseof Y0 then Y = Y0
          end
       end
@@ -1971,21 +1927,21 @@ in
          {Dictionary.put @Temporaries Reg X}
       end
       meth CopyPerm(YG Reg)
-         case YG of y(I) then
-            {Dictionary.put @UsedY I {Dictionary.get @UsedY I} + 1}
-         [] g(_) then skip
-         end
          {Dictionary.put @Permanents Reg YG}
       end
       meth FreeReg(Reg)
          case {Dictionary.condGet @Temporaries Reg none} of x(I) then
-            Emitter, FreeX(I)
             {Dictionary.remove @Temporaries Reg}
+            Emitter, FreeX(I)
          else skip
          end
-         case {Dictionary.condGet @Permanents Reg none} of y(I) then
-            Emitter, FreeY(I)
+         case {Dictionary.condGet @Permanents Reg none} of Y=y(_) then
             {Dictionary.remove @Permanents Reg}
+            if {self.state getSwitch(staticvarnames $)}
+               andthen {Dictionary.member @regNames Reg}
+            then skip
+            else Emitter, FreeY(Y)
+            end
          else skip
          end
       end
@@ -2000,15 +1956,12 @@ in
             {Dictionary.put @UsedX I N - 1}
          end
       end
-      meth FreeY(I)
-         case {Dictionary.condGet @UsedY I 0} of 0 then skip
-         [] 1 then
-            {Dictionary.remove @UsedY I}
-            if I < @LowestFreeY then
-               LowestFreeY <- I
-            end
-         elseof N then
-            {Dictionary.put @UsedY I N - 1}
+      meth FreeY(Y)
+         if {Some {Dictionary.items @Permanents}
+             fun {$ YG} {System.eq YG Y} end}
+         then skip
+         else
+            FreeYs <- Y|@FreeYs
          end
       end
 
@@ -2065,7 +2018,8 @@ in
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
-            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3) then
+            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3)
+            then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)
@@ -2076,7 +2030,8 @@ in
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
-            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3) then
+            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3)
+            then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)
@@ -2126,14 +2081,13 @@ in
          [] vTestConstant(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
-         [] vMatch(_ _ Addr VHashTableEntries _ Cont InitsRS) then
+         [] vMatch(_ _ Addr VHashTableEntries _ Cont InitsRS) then Addrs in
             Addrs = {FoldR VHashTableEntries
                      fun {$ VHashTableEntry In}
                         case VHashTableEntry of onScalar(_ Addr) then Addr|In
                         [] onRecord(_ _ Addr) then Addr|In
                         end
                      end [Addr Cont]}
-         in
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
          [] vThread(_ _ _ Cont InitsRS) then
             Emitter, PredictRegForInits(Reg InitsRS [Cont] ?R)
@@ -2210,50 +2164,50 @@ in
 
       meth SaveRegisterMapping($)
          Emitter, FlushShortLivedRegs()
-         {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#@LowestFreeY#
+         {Dictionary.clone @Permanents}#@FreeYs#
          {BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreRegisterMapping(RegisterMapping)
-         OldPermanents#OldUsedY#OldLowestFreeY#
-         OldLastAliveRS#OldHighestUsedG = RegisterMapping
-      in
-         LastAliveRS <- OldLastAliveRS
-         Permanents <- OldPermanents
-         {For OldHighestUsedG + 1 @HighestUsedG 1
-          proc {$ I}
-             {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
-          end}
-         UsedY <- OldUsedY
-         LowestFreeY <- OldLowestFreeY
-         Emitter, KillAllTemporaries()
+         case RegisterMapping of
+            OldPermanents#OldFreeYs#
+            OldLastAliveRS#OldHighestUsedG
+         then
+            LastAliveRS <- OldLastAliveRS
+            Permanents <- OldPermanents
+            {For OldHighestUsedG + 1 @HighestUsedG 1
+             proc {$ I}
+                {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
+             end}
+            FreeYs <- OldFreeYs
+            Emitter, KillAllTemporaries()
+         end
       end
       meth SaveAllRegisterMappings($)
          Emitter, FlushShortLivedRegs()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
-         {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#
-         @LowestFreeX#@LowestFreeY#{BitArray.clone @LastAliveRS}#@HighestUsedG
+         {Dictionary.clone @Permanents}#
+         @LowestFreeX#@FreeYs#{BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreAllRegisterMappings(RegisterMapping)
-         OldTemporaries#OldUsedX#OldPermanents#OldUsedY#
-         OldLowestFreeX#OldLowestFreeY#OldLastAliveRS#OldHighestUsedG
-         = RegisterMapping
-      in
-         LastAliveRS <- OldLastAliveRS
-         {Dictionary.removeAll @Temporaries}
-         Temporaries <- OldTemporaries
-         {Dictionary.removeAll @UsedX}
-         UsedX <- OldUsedX
-         {Dictionary.removeAll @Permanents}
-         Permanents <- OldPermanents
-         {For OldHighestUsedG + 1 @HighestUsedG 1
-          proc {$ I}
-             {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
-          end}
-         {Dictionary.removeAll @UsedY}
-         UsedY <- OldUsedY
-         LowestFreeX <- OldLowestFreeX
-         LowestFreeY <- OldLowestFreeY
-         ShortLivedRegs <- nil
+         case RegisterMapping of
+            OldTemporaries#OldUsedX#OldPermanents#
+            OldLowestFreeX#OldFreeYs#OldLastAliveRS#OldHighestUsedG
+         then
+            LastAliveRS <- OldLastAliveRS
+            {Dictionary.removeAll @Temporaries}
+            Temporaries <- OldTemporaries
+            {Dictionary.removeAll @UsedX}
+            UsedX <- OldUsedX
+            {Dictionary.removeAll @Permanents}
+            Permanents <- OldPermanents
+            {For OldHighestUsedG + 1 @HighestUsedG 1
+             proc {$ I}
+                {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
+             end}
+            LowestFreeX <- OldLowestFreeX
+            FreeYs <- OldFreeYs
+            ShortLivedRegs <- nil
+         end
       end
       meth KillAllTemporaries() D = @Temporaries in
          {ForAll {Dictionary.keys D}

@@ -113,6 +113,8 @@ local
          {ForAll Cs ClassDescriptor} {ForAll Ms Meth}
          {TokenClause T} {ForAll Ps ParserDescriptor}
          {Type.ask.int I} {Coord C}
+      [] fLoop(E C) then {Phrase E} {Coord C}
+      [] fMacro(Es C) then {ForAll Es Phrase} {Coord C}
       else {FDExpression X}
       end
    end

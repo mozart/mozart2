@@ -686,6 +686,9 @@ local
                Exceptionless = true
             catch !InterruptException then
                {Thread.injectException T InterruptException}
+            [] E then
+               {Error.printException E}
+               raise E end
             finally
                ExecutingThread <- T
                Completed = true

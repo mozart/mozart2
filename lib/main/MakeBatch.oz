@@ -32,6 +32,11 @@ in
    OP = {NewOP m('SP': SP)}
    \insert 'OP.env'
    = OP
+
+   NewAP = {Load 'AP.ozc'}
+   AP = {NewAP m('SP':SP 'OP':OP)}
+   \insert 'AP.env'
+   = AP
 end
 
 \ifdef NEWCOMPILER
@@ -42,6 +47,7 @@ end
  'ozbatch'
  c('SP':       lazy
    'OP':       lazy
+   'AP':       lazy
    'Compiler': eager)
 
  proc instantiate {$ IMPORT ?BatchCompile}
@@ -49,6 +55,8 @@ end
     = IMPORT.'SP'
     \insert 'OP.env'
     = IMPORT.'OP'
+    \insert 'AP.env'
+    = IMPORT.'AP'
     \insert 'Compiler.env'
     = IMPORT.'Compiler'
  in

@@ -36,7 +36,7 @@ fun
 
    \insert OP/Open
    \insert OP/Component.oz
-   \insert OP/Application.oz
+   %\insert OP/Application.oz
 in
    \insert 'OP.env'
 end

@@ -616,9 +616,10 @@ local
    StandardModules =
    oz('SP':             nil
       'OP':             ['SP']
+      'AP':             ['SP' 'OP']
       'CP':             ['SP']
       'WP':             ['SP' 'OP']
-      'DP':             ['SP' 'OP' 'WP']
+      'DP':             ['SP' 'OP' 'AP' 'WP']
       'Panel':          ['SP' 'OP' 'WP']
       'Browser':        ['SP' 'WP' 'CP']
       'Explorer':       ['SP' 'WP' 'Browser']
@@ -633,7 +634,8 @@ local
    StandardSubModules =
    oz('SP':             ['System' 'Exit' 'Print' 'Show' 'Foreign'
                          'Debug' 'Error' 'Finalize']
-      'OP':             ['OS' 'Open' 'Application' 'Component' 'Load' 'Save']
+      'OP':             ['OS' 'Open' 'Component' 'Load' 'Save']
+      'AP':             ['Application']
       'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
                          'FD' 'FS']
       'WP':             ['Tk' 'NewTk' 'TkTools' 'NewTkTools']

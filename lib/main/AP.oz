@@ -1,9 +1,9 @@
 %%%
 %%% Authors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Christian Schulte, 1997
+%%%   Denys Duchier, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -20,23 +20,21 @@
 %%% WARRANTIES.
 %%%
 
+%%%
+%%% This file creates the Open Programming Functor
+%%%
+
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
    {$ IMPORT}
    \insert 'SP.env'
-       = IMPORT.'SP'
+   = IMPORT.'SP'
    \insert 'OP.env'
-       = IMPORT.'OP'
-   \insert 'AP.env'
-   = IMPORT.'AP'
-   \insert 'WP.env'
-       = IMPORT.'WP'
+   = IMPORT.'OP'
+
+   \insert AP/Application.oz
 in
-   local
-      \insert DP/Site
-   in
-      \insert 'DP.env'
-   end
+   ap('Application':Application)
 end

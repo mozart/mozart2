@@ -2178,7 +2178,9 @@ local
          Builtinname = {GetBuiltinName @value}
          BIInfo = {GetBuiltinInfo Builtinname}
       in
-         case BIInfo == noInformation then
+         case BIInfo == noInformation
+            orelse {CondSelect BIInfo sited false}
+         then
             VHd = vCall(_ {Designator reg($)}
                         {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
                         Coord VTl)

@@ -1817,7 +1817,7 @@ in
             %% these three components constitute the width
             %% 'overhead');
             TWWidthS = {Tk.return winfo(width BW)}
-            case {String.is TWWidthS} then
+            case {String.isInt TWWidthS} then
                TWWidth = {String.toInt TWWidthS} - 2*ITWPad - 2*IBigBorder
             else
                case MyClosableObject , isClosed($) then

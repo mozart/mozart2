@@ -160,6 +160,7 @@ local
       GetLimits     = {`Builtin` 'SystemGetLimits'     1}
       GetArgv       = {`Builtin` 'SystemGetArgv'       1}
       GetStandalone = {`Builtin` 'SystemGetStandalone' 1}
+      GetInternal   = {`Builtin` 'SystemGetInternal'   1}
       GetHome       = {`Builtin` 'SystemGetHome'       1}
       GetPlatform   = {`Builtin` 'SystemGetPlatform'   1}
    in
@@ -211,6 +212,10 @@ local
             R = limits(int:_)
          in
             {GetLimits R} R
+         [] internal    then
+            R = internal(browser:_ applet:_)
+         in
+            {GetInternal R} R
          [] argv       then {GetArgv}
          [] standalone then {GetStandalone}
          [] home       then {GetHome}

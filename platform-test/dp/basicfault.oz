@@ -105,7 +105,8 @@ define
       try V = apa
       catch hell  then
          raise hell end
-      [] X then {System.show tv(X)}
+      [] X then
+         skip
       end
    end
 

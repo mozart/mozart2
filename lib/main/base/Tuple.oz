@@ -53,10 +53,22 @@ local
          {Copy W1 0 T1 T3} {Copy W2 W1 T2 T3}
       end
    end
+   proc {TupleToArray I T A}
+      case I>0 then {Array.put A I T.I} {TupleToArray I-1 T A}
+      else skip
+      end
+   end
 in
-   Tuple = tuple(make:   MakeTuple
-                 append: Append
-                 is:     IsTuple)
+   Tuple = tuple(make:    MakeTuple
+                 append:  Append
+                 is:      IsTuple
+                 toArray: fun {$ T}
+                             W={Width T}
+                             A={Array.new 1 W unit}
+                          in
+                             {TupleToArray W T A}
+                             A
+                          end)
 end
 
 %%

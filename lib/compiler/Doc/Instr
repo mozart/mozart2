@@ -60,7 +60,14 @@
 %%
 
 definition
-   XRegisterIndex   register in which to store the created abstraction
+   XRegister        register in which to store the created abstraction
+   Label            address to jump to after abstraction creation
+   PredId           print name, arity, source coordinates of the abstraction
+   PredicateRef     address of an AbstractionEntry or 0
+   GRegRef          contents of abstraction's local G registers
+
+definitionCopy
+   XRegister        both source and destination register
    Label            address to jump to after abstraction creation
    PredId           print name, arity, source coordinates of the abstraction
    PredicateRef     address of an AbstractionEntry or 0
@@ -88,28 +95,28 @@ move
    Register         destination, may not be a G register
 
 moveMoveXYXY        == move(x(Arg1) y(Arg2)) move(x(Arg3) y(Arg4))
-   XRegisterIndex
-   YRegisterIndex
-   XRegisterIndex
-   YRegisterIndex
+   XRegister
+   YRegister
+   XRegister
+   YRegister
 
 moveMoveYXYX        == move(y(Arg1) x(Arg2)) move(y(Arg3) x(Arg4))
-   YRegisterIndex
-   XRegisterIndex
-   YRegisterIndex
-   XRegisterIndex
+   YRegister
+   XRegister
+   YRegister
+   XRegister
 
 moveMoveXYYX        == move(x(Arg1) y(Arg2)) move(y(Arg3) x(Arg4))
-   XRegisterIndex
-   YRegisterIndex
-   YRegisterIndex
-   XRegisterIndex
+   XRegister
+   YRegister
+   YRegister
+   XRegister
 
 moveMoveYXXY        == move(y(Arg1) x(Arg2)) move(x(Arg3) y(Arg4))
-   YRegisterIndex
-   XRegisterIndex
-   XRegisterIndex
-   YRegisterIndex
+   YRegister
+   XRegister
+   XRegister
+   YRegister
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,7 +129,7 @@ createVariable
 
 createVariableMove  == createVariable(Arg1) move(Arg1 x(Arg2))
    Register         destination, may not be a G register
-   XRegisterIndex   co-destination
+   XRegister        co-destination
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -161,6 +168,8 @@ setVariable         == createVariable(Arg1) setValue(Arg1)
 setVoid
    Count            number of arguments to set to `_'
 
+setPredicateRef     used for definitionCopy
+   PredicateRef
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -187,9 +196,9 @@ getList             ^= getRecord('|' 2 Arg1)
    Register
 
 getListValVar       == getList(x(Arg1)) unifyValue(Arg2) unifyVariable(x(Arg3))
-   XRegisterIndex
+   XRegister
    Register
-   XRegisterIndex
+   XRegister
 
 getRecord
    Literal          record label, may not be '|' if Arg2 == 2
@@ -304,43 +313,43 @@ callBI
    Location
 
 inlineDot
-   XRegisterIndex   argument #1 register
+   XRegister        argument #1 register
    Feature          argument #2 value
-   XRegisterIndex   argument #3 register
+   XRegister        argument #3 register
    Cache            ignored
 
 inlineUparrow
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   argument #3 register
+   XRegister        argument #1 register
+   XRegister        argument #2 register
+   XRegister        argument #3 register
 
 inlineAt
    Literal          attribute
-   XRegisterIndex   destination register
+   XRegister        destination register
    Cache            ignored
 
 inlineAssign
    Literal          attribute
-   XRegisterIndex   source register
+   XRegister        source register
    Cache            ignored
 
 inlinePlus1
-   XRegisterIndex   argument register
-   XRegisterIndex   result register
+   XRegister        argument register
+   XRegister        result register
 
 inlineMinus1
-   XRegisterIndex   argument register
-   XRegisterIndex   result register
+   XRegister       argument register
+   XRegister       result register
 
 inlinePlus
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   result register
+   XRegister      argument #1 register
+   XRegister      argument #2 register
+   XRegister      result register
 
 inlineMinus
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   result register
+   XRegister      argument #1 register
+   XRegister      argument #2 register
+   XRegister      result register
 
 %%
 %%  Applying Procedures
@@ -381,13 +390,13 @@ genCall
 sendMsg
    Literal          method label
    Register         object
-   RecordArity      method arity
+   RecordArity      method arity % may be 0
    Cache            ignored
 
 tailSendMsg         == sendMsg(Arg1 Arg2 Arg3 Arg4) return
    Literal          method label
    Register         object
-   RecordArity      method arity
+   RecordArity      method arity % may be 0
    Cache            ignored
 
 applMeth
@@ -489,15 +498,15 @@ testBI
    Label
 
 testLT              % Arg3 = (Arg1 < Arg2); if Arg3 then goto Arg4
-   XRegisterIndex
-   XRegisterIndex
-   XRegisterIndex
+   XRegister
+   XRegister
+   XRegister
    Label
 
 testLE              % Arg3 = (Arg1 <= Arg2); if Arg3 then goto Arg4
-   XRegisterIndex
-   XRegisterIndex
-   XRegisterIndex
+   XRegister
+   XRegister
+   XRegister
    Label
 
 testLiteral         % if Arg1 \= Arg2 then goto Arg3
@@ -531,6 +540,7 @@ testBool
 %%  In the beginning at each destination in the HashTableRef,
 %%  up to n (width of the corresponding pattern) record arguments
 %%  may be matched by the getVariable/getVarVar/getVoid instructions.
+%%  Also testList and testRecord may be matched by these instructions.
 %%  These instructions may not appear at any other location in the
 %%  code.
 %%
@@ -568,13 +578,13 @@ failure
 
 lockThread
    Label            where to continue after the critical section
-   XRegisterIndex   index of register pointing to lock
+   XRegister        register pointing to lock
 
 getSelf
-   XRegisterIndex   destination register
+   XRegister        destination register
 
 setSelf
-   XRegisterIndex   source register
+   XRegister        source register
 
 debugEntry
    Literal          file name
@@ -589,7 +599,7 @@ debugExit
    Literal          comment
 
 clearY
-   YRegisterIndex
+   YRegister
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -600,12 +610,15 @@ clearY
 Register = x(RegisterIndex)
          | y(RegisterIndex)
          | g(RegisterIndex).
-XRegisterIndex = int.
-YRegisterIndex = int.
-GRegisterIndex = int.
+XRegister = x(RegisterIndex).
+YRegister = y(RegisterIndex).
+RegisterIndex = int.
 Label = int.
-PredId = pid(PrintName Arity FileName Line Flags NLiveRegs).
-Flags = int.   % copyOnce, native
+PredId = pid(PrintName Arity Coord Flags NLiveRegs).
+Coord = pos(FileName Line Column)
+      | pos(FileName Line Column FileName Line Column)
+      | unit.
+Flags = [atom].   % sited, copyOnce, native ???
 NLiveRegs = int.
 PredicateRef = int.
 GRegRef = [Register].
@@ -623,14 +636,14 @@ Dummy = int.   % ignored
 Location = [x(RegisterIndex)]#[x(RegisterIndex)].
 RecordArity = int   % must be > 0 and a smallInt
             | [Feature].
-GenCallInfo = gci(GRegisterIndex  % register index of class/predicate
+GenCallInfo = gci(g(RegisterIndex) % register index of class/predicate
                   IsMethod        % whether it corresponds to call or applMeth
                   Name            % '' for a call, else message name
                   IsTail          % whether this is a tailCall/tailApplMeth
                   RecordArity).   % 0 for a call, else message's arity
 Builtinname = builtin.
 Cache = value.   % ignored
-ApplMethInfo = ami(Literal RecordArity).
+ApplMethInfo = ami(Literal RecordArity). % RecordArity may be 0
 HashTableRef = ht(Label [HashTableEntry]).
 
 %%

@@ -759,7 +759,7 @@ local
    %% Create a new registry and record in it all the standard modules
    %% and submodules
    %%
-   proc {StandardRegistry R}
+   proc {StandardRegistry Result} R in
       {NewEmptyRegistry R}
       {Record.forAllInd StandardModules
        proc {$ Name Args}
@@ -781,6 +781,7 @@ local
                submodule(src:path([1 SubMod]) args:x(Mod))}
            end}
        end}
+      Result = R
    end
    fun {MakeDefaultRegistry}
       {StandardRegistry}

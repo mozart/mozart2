@@ -92,7 +92,7 @@ local
              choice
                 S = N2S.Nam
              in
-                S = {FS.value.new {FS.reflect.lowerBound S}}
+                S = {FS.value.make {FS.reflect.lowerBound S}}
              end
           end}
       end

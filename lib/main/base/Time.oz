@@ -24,16 +24,6 @@
 
 local
 
-   fun {AddWaiter W T P}
-      case W
-      of (T1#P1)|R then
-         if T1>T then (T#P)|(T1-T#P1)|R
-         else (T1#P1)|{AddWaiter R T P}
-         end
-      else [T#P]
-      end
-   end
-
    %%%
    %%% default initialization
    %%%

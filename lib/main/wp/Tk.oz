@@ -28,7 +28,7 @@ import
    Foreign.{staticLoad}
 
    System.{apply
-           get
+           property
            showError
            valueToVirtualString}
 
@@ -37,8 +37,7 @@ import
 
    OS.{getEnv
        putEnv
-       stat
-       unlink}
+       stat}
 
    URL.{makeResolver}
 
@@ -97,6 +96,7 @@ export
    addXScrollbar: AddXScrollbar
 
    defineUserCmd: DefineUserCmd
+   localize:      TkLocalize
 
 body
 
@@ -156,7 +156,7 @@ body
    %% Printing error messages
    %%
    proc {Error S Tcl}
-      P={System.get errors}
+      P={System.property.get errors}
    in
       {System.showError 'Tk Module: '#S#
        case Tcl==unit then '' else '\n'#
@@ -355,8 +355,8 @@ body
    end
 
    Stream = local
-               HOME    = {OS.getEnv 'OZHOME'}
-               OSS#CPU = {System.get platform}
+               HOME    = {System.property.get 'oz.home'}
+               OSS#CPU = {System.property.get platform}
                WISH    = case OSS=='win32' then 'ozwish.exe'
                          else 'oz.wish.bin'
                          end
@@ -1214,25 +1214,39 @@ body
 
    local
       ImRes = {URL.makeResolver image
-               vs('all=.:cache='#{OS.getEnv 'OZHOME'}#'/cache')}
+               vs('all=.:cache='#{System.property.get 'oz.home'}#'/cache')}
+
+      PathStore = {New class $
+                          prop final locking
+                          attr ps:nil
+                          meth init
+                             ps <- nil
+                          end
+                          meth add(P)
+                             lock
+                                ps <- P|@ps
+                             end
+                          end
+                          meth get($)
+                             lock
+                                @ps
+                             end
+                          end
+                       end init}
+
+
    in
+
+      fun {TkLocalize Url}
+         case {ImRes.localize Url}
+         of old(F) then F
+         [] new(F) then {PathStore add(F)} F
+         end
+      end
+
       class TkImage
          from ReturnClass
          feat !TclName
-         attr ToUnlink: nil
-
-         meth Resolve(Url $)
-            case {ImRes.localize Url}
-            of old(F) then F
-            [] new(F) then ToUnlink <- F|@ToUnlink F
-            end
-         end
-
-         meth Unlink(Fs)
-            case Fs of nil then skip
-            [] F|Fr then {OS.unlink F} TkImage,Unlink(Fr)
-            end
-         end
 
          meth tkInit(type:Type ...) = Message
             ThisTclName = self.TclName
@@ -1241,25 +1255,18 @@ body
             else skip end
             NewTkName   = {GenImageName}
             MessUrl = case {HasFeature Message url} then
-                         {AdjoinAt Message file
-                          TkImage,Resolve(Message.url $)}
+                         {AdjoinAt Message file {TkLocalize Message.url}}
                       else Message
                       end
             MessAll = case {HasFeature MessUrl maskurl} then
                          {AdjoinAt MessUrl maskfile
-                          TkImage,Resolve(MessUrl.maskurl $)}
+                          {TkLocalize MessUrl.maskurl}}
                       else MessUrl
                       end
          in
             {TkSendFilter v('image create '#Type) NewTkName
              MessAll [maskurl type url] unit}
             ThisTclName = NewTkName
-            /*
-            Currently disbaled, because of synchronisation problems
-            {Wait {TkReturnString update(idletasks)}}
-            TkImage,Unlink(@ToUnlink)
-            */
-            ToUnlink <- nil
          end
          meth tk(...) = M
             {TkSendTuple self M}
@@ -1301,7 +1308,7 @@ body
             {TkReturnMess image M self TkStringToListFloat}
          end
          meth tkClose
-            {ForAll @ToUnlink OS.unlink}
+            skip
          end
       end
    end

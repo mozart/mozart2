@@ -603,7 +603,7 @@ in
 
          %%
          %% suspends until either ...
-         {Wait {Select ChMetaVar GotTouched}}
+         {WaitOr ChMetaVar GotTouched}
          True
       end
    end
@@ -2352,7 +2352,8 @@ in
             %%
             %% Note that this conditional may not block the state;
             thread
-               case {Select ChVar ObjClosed} then {self checkTermReq}
+               {WaitOr ChVar ObjClosed}
+               case {IsDet ChVar} then {self checkTermReq}
                else skip
                end
             end
@@ -2365,7 +2366,8 @@ in
 
                %%
                thread
-                  case {Select GotLabel ObjClosed} then {self checkTermReq}
+                  {WaitOr GotLabel ObjClosed}
+                  case {IsDet GotLabel} then {self checkTermReq}
                   else skip
                   end
                end
@@ -2601,7 +2603,8 @@ in
             %%
             %% Note that this conditional may not block the state;
             thread
-               case {Select ChVar ObjClosed} then {self checkTermReq}
+               {WaitOr ChVar ObjClosed}
+               case {IsDet ChVar} then {self checkTermReq}
                else skip
                end
             end

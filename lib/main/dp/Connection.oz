@@ -265,7 +265,8 @@ define
             Entity=A
          end
       [] 2 then
-         {Fault.removeSiteWatcher P Watch}
+         % erik enables it when it works again
+         % {Fault.removeSiteWatcher P Watch}
          case Y of no then
             {Exception.raiseError connection(ticketToDeadSite V)}
          end

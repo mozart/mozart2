@@ -3,7 +3,6 @@ local
 in
    functor prop once
    import
-      System(printName)
       Core(nameToken variable)
       RunTimeLibrary
       Module(manager)
@@ -21,8 +20,7 @@ in
       Literals = LiteralValues
       Tokens = {Record.mapInd TokenValues
                 fun {$ X Value}
-                   {New Core.nameToken
-                    init({System.printName Value} Value true)}
+                   {New Core.nameToken init(Value true)}
                 end}
       Procs = {Record.mapInd
                {AdjoinAt RunTimeLibrary 'ApplyFunctor' ApplyFunctor}

@@ -202,7 +202,7 @@ in
    end
 
    class SkipNode
-      from Statement Annotate.skipNode SA.skipNode CodeGen.skipNode
+      from Statement Annotate.skipNode CodeGen.skipNode
       prop final
       meth init(Coord)
          coord <- Coord
@@ -232,7 +232,7 @@ in
    class Construction
       from Annotate.construction SA.construction CodeGen.construction
       prop final
-      attr label: unit args: unit isOpen: unit value
+      attr label: unit args: unit isOpen: unit
       feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
          label <- Label
@@ -289,8 +289,7 @@ in
       attr
          designator: unit formalArgs: unit statements: unit
          isStateUsing: unit procFlags: unit printName: '' toCopy: unit
-         allVariables: nil
-      feat predicateRef
+         allVariables: nil predicateRef: unit
       meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
                 Coord)
          designator <- Designator
@@ -323,12 +322,11 @@ in
       end
    end
    class FunctionDefinition
-      from Definition Annotate.functionDefinition SA.functionDefinition
-         CodeGen.functionDefinition
+      from Definition Annotate.functionDefinition CodeGen.functionDefinition
       prop final
    end
    class ClauseBody
-      from Definition Annotate.clauseBody SA.clauseBody CodeGen.clauseBody
+      from Definition Annotate.clauseBody CodeGen.clauseBody
       prop final
       meth isClauseBody($)
          true
@@ -478,7 +476,7 @@ in
    class RecordPattern
       from Annotate.recordPattern SA.recordPattern CodeGen.recordPattern
       prop final
-      attr label: unit args: unit isOpen: unit value
+      attr label: unit args: unit isOpen: unit
       feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
          label <- Label
@@ -594,7 +592,7 @@ in
    end
 
    class AbstractElse
-      from Annotate.abstractElse SA.abstractElse CodeGen.abstractElse
+      from Annotate.abstractElse CodeGen.abstractElse
    end
    class ElseNode
       from AbstractElse Annotate.elseNode SA.elseNode CodeGen.elseNode
@@ -870,7 +868,7 @@ in
    end
 
    class FailNode
-      from Statement Annotate.failNode SA.failNode CodeGen.failNode
+      from Statement Annotate.failNode CodeGen.failNode
       prop final
       meth init(Coord)
          coord <- Coord
@@ -905,23 +903,21 @@ in
       end
    end
    class OrNode
-      from ChoicesAndDisjunctions Annotate.orNode SA.orNode CodeGen.orNode
+      from ChoicesAndDisjunctions Annotate.orNode CodeGen.orNode
       prop final
       meth output(R $)
          'or '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
       end
    end
    class DisNode
-      from ChoicesAndDisjunctions Annotate.disNode SA.disNode
-         CodeGen.disNode
+      from ChoicesAndDisjunctions Annotate.disNode CodeGen.disNode
       prop final
       meth output(R $)
          'dis '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
       end
    end
    class ChoiceNode
-      from ChoicesAndDisjunctions Annotate.choiceNode SA.choiceNode
-         CodeGen.choiceNode
+      from ChoicesAndDisjunctions Annotate.choiceNode CodeGen.choiceNode
       prop final
       meth output(R $)
          'choice '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
@@ -976,7 +972,7 @@ in
    end
 
    class AtomNode
-      from ValueNode Annotate.atomNode SA.atomNode CodeGen.atomNode
+      from ValueNode Annotate.atomNode CodeGen.atomNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -989,7 +985,7 @@ in
    end
 
    class IntNode
-      from ValueNode Annotate.intNode SA.intNode CodeGen.intNode
+      from ValueNode Annotate.intNode CodeGen.intNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -1002,7 +998,7 @@ in
    end
 
    class FloatNode
-      from ValueNode Annotate.floatNode SA.floatNode CodeGen.floatNode
+      from ValueNode Annotate.floatNode CodeGen.floatNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -1200,8 +1196,12 @@ in
    end
 
    class Token from SA.token CodeGen.token
-      feat !ImAToken: unit kind: 'token'
       attr value: unit
+      feat !ImAToken: unit
+      meth init(Value)
+         value <- Value
+         SA.token, init()
+      end
       meth getValue($)
          @value
       end
@@ -1214,113 +1214,61 @@ in
       meth isChunk($)
          false
       end
-      meth output2(_ $ ?FS)
-         FS = ""
-         '<'#self.kind#'>'
-      end
    end
 
    class NameToken from Token SA.nameToken CodeGen.nameToken
       prop final
-      attr printName: unit isToplevel: unit
+      attr isToplevel: unit
       feat kind: 'name'
-      meth init(PrintName Value IsToplevel)
-         printName <- PrintName
-         value <- Value
+      meth init(Value IsToplevel)
          isToplevel <- IsToplevel
-         SA.token, init()
-      end
-      meth getPrintName($)
-         @printName
-      end
-   end
-
-   class BuiltinToken from Token CodeGen.builtinToken
-      prop final
-      feat kind: 'builtin'
-      meth init(Builtin)
-         value <- Builtin
-         SA.token, init()
-      end
-      meth output2(_ $ ?FS)
-         FS = ""
-         '<'#self.kind#'/'#{Procedure.arity @value}#'>'
+         Token, init(Value)
       end
    end
 
    class ProcedureToken from Token CodeGen.procedureToken
       prop final
-      feat kind: procedure predicateRef clauseBodyStatements
-      meth init(TheProcedure)
-         value <- TheProcedure
-         SA.token, init()
-      end
-      meth output2(_ $ ?FS)
-         FS = ""
-         '<'#self.kind#'/'#{Procedure.arity @value}#'>'
-      end
+      feat kind: 'procedure' predicateRef
+   end
+
+   class ClauseBodyToken from Token CodeGen.clauseBodyToken
+      prop final
+      feat clauseBodyStatements
+   end
+
+   class BuiltinToken from Token CodeGen.builtinToken
+      prop final
+      feat kind: 'builtin'
    end
 
    class CellToken from Token
       prop final
       feat kind: 'cell'
-      meth init(TheCell)
-         value <- TheCell
-         SA.token, init()
-      end
    end
 
    class ChunkToken from Token
-      prop final
       feat kind: 'chunk'
-      meth init(TheChunk)
-         value <- TheChunk
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 
-   class ArrayToken from Token
+   class ArrayToken from ChunkToken
       prop final
       feat kind: 'array'
-      meth init(TheArray)
-         value <- TheArray
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 
-   class DictionaryToken from Token
+   class DictionaryToken from ChunkToken
       prop final
       feat kind: 'dictionary'
-      meth init(TheDictionary)
-         value <- TheDictionary
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 
-   class ClassToken from Token
+   class BitArrayToken from ChunkToken
+      prop final
+      feat kind: 'bitArray'
+   end
+
+   class ClassToken from ChunkToken
       prop final
       attr props: unit attrs: unit feats: unit meths: unit
       feat kind: 'class'
-      meth init(TheClass)
-         value <- TheClass
-         SA.token, init()
-         props <- unit
-         attrs <- unit
-         feats <- unit
-         meths <- unit
-      end
-      meth isChunk($)
-         true
-      end
       meth setProperties(Props)
          props <- Props
       end
@@ -1347,7 +1295,7 @@ in
       end
    end
 
-   class ObjectToken from Token
+   class ObjectToken from ChunkToken
       prop final
       attr classNode: unit
       feat kind: 'object'
@@ -1356,65 +1304,28 @@ in
          SA.token, init()
          classNode <- ClassNode
       end
-      meth isChunk($)
-         true
-      end
       meth getClassNode($)
          @classNode
       end
    end
 
-   class LockToken from Token
+   class LockToken from ChunkToken
       prop final
       feat kind: 'lock'
-      meth init(TheLock)
-         value <- TheLock
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 
-   class PortToken from Token
+   class PortToken from ChunkToken
       prop final
       feat kind: 'port'
-      meth init(ThePort)
-         value <- ThePort
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 
    class ThreadToken from Token
       prop final
       feat kind: 'thread'
-      meth init(TheThread)
-         value <- TheThread
-         SA.token, init()
-      end
    end
 
    class SpaceToken from Token
       prop final
       feat kind: 'space'
-      meth init(TheSpace)
-         value <- TheSpace
-         SA.token, init()
-      end
-   end
-
-   class BitArrayToken from Token
-      prop final
-      feat kind: 'bitArray'
-      meth init(TheBitArray)
-         value <- TheBitArray
-         SA.token, init()
-      end
-      meth isChunk($)
-         true
-      end
    end
 end

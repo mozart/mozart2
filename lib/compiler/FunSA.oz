@@ -1,10 +1,11 @@
 functor prop once
 import
-   CompilerSupport
+   CompilerSupport(newNamedName newCopyableName isCopyableName
+                   newPredicateRef newCopyablePredicateRef)
    FD(int is less distinct distribute)
    FS(include var subset value reflect isIn)
    System(eq valueToVirtualString printName)
-   Type
+   Type(is)
    Misc(isBuiltin nameVariable
         imAConstruction: ImAConstruction
         imAValueNode: ImAValueNode
@@ -18,12 +19,9 @@ export
    typeOf: SATypeOf
    stepPoint: SAStepPoint
    declaration: SADeclaration
-   skipNode: SASkipNode
    equation: SAEquation
    construction: SAConstruction
    definition: SADefinition
-   functionDefinition: SAFunctionDefinition
-   clauseBody: SAClauseBody
    application: SAApplication
    boolCase: SABoolCase
    boolClause: SABoolClause
@@ -31,7 +29,6 @@ export
    patternClause: SAPatternClause
    recordPattern: SARecordPattern
    equationPattern: SAEquationPattern
-   abstractElse: SAAbstractElse
    elseNode: SAElseNode
    noElse: SANoElse
    threadNode: SAThreadNode
@@ -45,17 +42,10 @@ export
    methFormalWithDefault: SAMethFormalWithDefault
    objectLockNode: SAObjectLockNode
    getSelf: SAGetSelf
-   failNode: SAFailNode
    ifNode: SAIfNode
    choicesAndDisjunctions: SAChoicesAndDisjunctions
-   orNode: SAOrNode
-   disNode: SADisNode
-   choiceNode: SAChoiceNode
    clause: SAClause
    valueNode: SAValueNode
-   atomNode: SAAtomNode
-   intNode: SAIntNode
-   floatNode: SAFloatNode
    variable: SAVariable
    variableOccurrence: SAVariableOccurrence
    token: SAToken

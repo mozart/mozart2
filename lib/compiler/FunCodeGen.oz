@@ -57,8 +57,9 @@ export
    % mixin classes for token representations:
    token: CodeGenToken
    nameToken: CodeGenNameToken
-   builtinToken: CodeGenBuiltinToken
    procedureToken: CodeGenProcedureToken
+   clauseBodyToken: CodeGenClauseBodyToken
+   builtinToken: CodeGenBuiltinToken
 define
    local
       \insert CodeEmitter

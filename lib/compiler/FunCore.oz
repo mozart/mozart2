@@ -1,6 +1,6 @@
 functor prop once
 import
-   System.valueToVirtualString
+   System(valueToVirtualString)
    SA
    CodeGen
    Misc(imAConstruction: ImAConstruction
@@ -61,8 +61,9 @@ export
    % token representations:
    Token
    NameToken
-   BuiltinToken
    ProcedureToken
+   ClauseBodyToken
+   BuiltinToken
    CellToken
    ChunkToken
    ArrayToken

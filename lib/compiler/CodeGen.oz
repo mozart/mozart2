@@ -959,8 +959,7 @@ in
 
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
-         VHd0 VTl0 V FileName Line Col PrintName PredId OuterNLiveRegs
-         PredicateRef StateReg
+         VHd0 VTl0 V FileName Line Col PrintName PredId OuterNLiveRegs StateReg
       in
          {@designator getVariable(?V)}
          case @coord of unit then FileName = '' Line = 1 Col = 0
@@ -977,9 +976,6 @@ in
 \ifdef DEBUG_DEFS
          {Show PredId}
 \endif
-         PredicateRef = if {IsDet self.predicateRef} then self.predicateRef
-                        else unit
-                        end
          if @isStateUsing then
             if CS.debugInfoVarnamesSwitch then
                {CS newSelfReg(?StateReg)}
@@ -1017,7 +1013,7 @@ in
             end
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
                               ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId PredicateRef
+            VInter = vDefinition(_ {V reg($)} PredId @predicateRef
                                  GRegs Code VTl0)
          else
             VInter FormalRegs AllRegs
@@ -1092,7 +1088,7 @@ in
             OuterBodyVInter2 = vCall(_ InnerDefinitionReg nil unit nil)
             {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
                               ?OuterGRegs ?OuterCode ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId PredicateRef
+            VInter = vDefinition(_ {V reg($)} PredId @predicateRef
                                  OuterGRegs OuterCode VTl0)
          end
          {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
@@ -2148,6 +2144,35 @@ in
       end
    end
 
+   class CodeGenProcedureToken
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl) ID in
+         ID = self.predicateRef
+         if {IsDet ID} andthen ID \= unit then
+            % ID may also be a real procedure
+            VHd = vFastCall(_ ID {Map ActualArgs fun {$ A} {A reg($)} end}
+                            Coord VTl)
+         else
+            VHd = vCall(_ {Designator reg($)}
+                        {Map ActualArgs fun {$ A} {A reg($)} end} Coord VTl)
+         end
+      end
+   end
+
+   class CodeGenClauseBodyToken
+      feat ClauseBodyShared
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
+         ActualArgs = nil    % by construction
+         VHd = self.ClauseBodyShared
+         VTl = nil
+         if {IsFree VHd} then Label Count Addr in
+            VHd = vShared(_ Label Count Addr)
+            {CS newLabel(?Label)}
+            Count = {NewCell 0}
+            {CodeGenList self.clauseBodyStatements CS Addr nil}
+         end
+      end
+   end
+
    class CodeGenBuiltinToken
       meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
          Builtinname = {System.printName @value}
@@ -2277,32 +2302,6 @@ in
          else Regs in
             Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
             VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
-         end
-      end
-   end
-
-   class CodeGenProcedureToken
-      feat ClauseBodyShared
-      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl) ID in
-         ID = self.predicateRef
-         if {IsDet ID} andthen ID \= unit then
-            % ID may also be a real procedure
-            VHd = vFastCall(_ ID {Map ActualArgs fun {$ A} {A reg($)} end}
-                            Coord VTl)
-         elseif {IsDet self.clauseBodyStatements} then
-            % this is the value produced by a ClauseBody node
-            % (by construction, ActualArgs is nil)
-            VHd = self.ClauseBodyShared
-            VTl = nil
-            if {IsFree VHd} then Label Count Addr in
-               VHd = vShared(_ Label Count Addr)
-               {CS newLabel(?Label)}
-               Count = {NewCell 0}
-               {CodeGenList self.clauseBodyStatements CS Addr nil}
-            end
-         else
-            VHd = vCall(_ {Designator reg($)}
-                        {Map ActualArgs fun {$ A} {A reg($)} end} Coord VTl)
          end
       end
    end

@@ -29,37 +29,37 @@ local
       #include <stdio.h>
       #include "oz.h"
 
-      OZ_C_proc_begin(goodies_getenv,2)
+      OZ_BI_define(BIgetenv,1,1)
       {
         char *envVar;
         char *envValue;
         OZ_Term envVarName;
-        envVarName = OZ_getCArg(0);
+        envVarName = OZ_in(0);
 
         /* For the second version uncomment the next line */
-        #ifdef XX
         if (OZ_isVariable(envVarName)) {
-                                         OZ_Suspension susp = OZ_makeSelfSuspension();
-                                         OZ_addSuspension(envVarName,susp);
-                                         return PROCEED;
-                                       }
-           #endif
+           OZ_suspendOn(envVarName);
+        }
 
-           if (! OZ_isAtom(envVarName) ) {
-                                           fprintf(stderr,"Error: getenv: arg 1 must be an atom");
-                                           return FAILED;
-                                         };
+        if (! OZ_isAtom(envVarName) ) {
+          return OZ_typeError(0,"Atom");
+        }
 
-              envVar = OZ_atomToC(envVarName);
+        envVar = OZ_atomToC(envVarName);
 
-              envValue = getenv(envVar);
-              if (envValue == 0) /* not defined in environment --> fail */
-                                       return FAILED;
+        envValue = getenv(envVar);
+        if (envValue == 0) { /* not defined in environment */
+           return OZ_raise(OZ_mkTupleC("getenv",1,envVarName));
+        }
+        OZ_result(OZ_atom(envValue));
+        return PROCEED;
+      } OZ_BI_end
 
-                                       return OZ_unify(OZ_getCArg(1),OZ_atom(envValue));
-      }
-      OZ_C_proc_end
-      '
+     OZ_C_proc_interface oz_interface[] = {
+       {"getenv",1,1,BIgetenv},
+       {0,0,0,0}
+     };
+'
 
 in
 
@@ -85,29 +85,26 @@ in
                  in
                     fun {$}
                        lock L then
-                          try
-                             File='/tmp/link_test_'#{OS.time}
-                             Goodies
-                             F={New Open.file init(name:File#'.c'
-                                                   flags:['create' write])}
-                          in
-                             {F write(vs:Code)}
-                             {F close}
-                             0={OS.system ('gcc -Wno-conversion -c -I '#
-                                           {Property.get 'oz.home'}#'/include '#
-                                           File#'.c -o '#File#'.o'#
-                                           ' 2>/dev/null')}
-                             0={OS.system ('ozdynld -o '#File#'.so '#
-                                           File#'.o -lc')}
-                             Goodies = {Foreign.'require'
-                                        File#'.so'
-                                        goodies(getenv: 2)}
-                             _={Goodies.getenv 'SHELL'}
-
-                             _={OS.system 'rm -f '#File#'.c '#File#'.o '#File#'.so'}
-                             true
-                          catch _ then false
-                          end
+                          File='/tmp/link_test_'#{OS.time}
+                          Goodies
+                          F={New Open.file init(name:File#'.c'
+                                                flags:['create' write])}
+                       in
+                          {F write(vs:Code)}
+                          {F close}
+                          0={OS.system ('gcc -Wno-conversion -c -I '
+                                        #{Property.get 'oz.home'}
+                                        #'/include '#
+                                        File#'.c -o '#File#'.o'
+                                        #' 2>/dev/null'
+                                       )}
+                          0={OS.system ('ozdynld -o '#File#'.so '#
+                                        File#'.o -lc')}
+                          Goodies = {Foreign.load 'file:'#File#'.so'}
+                          _={Goodies.getenv 'SHELL'}
+                          _={OS.system
+                             'rm -f '#File#'.c '#File#'.o '#File#'.so'}
+                          true
                        end
                     end
                  end

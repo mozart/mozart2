@@ -62,7 +62,8 @@ local
       fun {HoistVArg VArg}
          case VArg of record(Atomname RecordArity VArgs) then NewVArgs in
             NewVArgs = {Map VArgs HoistVArg}
-            if {All NewVArgs IsConstant} andthen
+            if {Not {CompilerSupport.isCopyableName Atomname}} andthen
+               {All NewVArgs IsConstant} andthen
                ({IsInt RecordArity} orelse
                 {Not {Some RecordArity CompilerSupport.isCopyableName}})
             then Args X in

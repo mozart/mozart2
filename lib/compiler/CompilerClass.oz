@@ -304,9 +304,15 @@ local
          end
       end
       meth removeFromEnv(PrintName)
-         {Dictionary.remove self.variables PrintName}
-         {Dictionary.remove self.values PrintName}
-         {@narrator tell(env({Dictionary.toRecord env self.values}))}
+         if {Dictionary.member PrintName self.variables} then
+            {Dictionary.remove self.variables PrintName}
+            {Dictionary.remove self.values PrintName}
+            {@narrator tell(env({Dictionary.toRecord env self.values}))}
+         else
+            {@narrator warn(kind: 'compiler engine warning'
+                            msg: 'undeclared variable '#oz(PrintName)
+                            items: [hint(l: 'Print Name' m: pn(PrintName))])}
+         end
       end
       meth getVars($)
          {Dictionary.items self.variables}

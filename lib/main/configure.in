@@ -37,7 +37,7 @@ AC_INIT(Standard.oz)
 
 AC_CANONICAL_HOST
 
-if test "x$oz_default_prefix" != x && test -d $oz_default_prefix
+if test -n "$oz_default_prefix" && test -d $oz_default_prefix
 then
   ac_default_prefix=$oz_default_prefix
 fi
@@ -46,16 +46,14 @@ dnl *****************************************************************
 dnl set TOPDIR
 dnl *****************************************************************
 
-case $srcdir in
-    .*)
-        srcdir=`(cd $srcdir; pwd)`
-        ;;
-esac
+srcdira=`(cd $srcdir; pwd)`
+AC_SUBST(srcdira)
 
-if test "x$TOPDIR" = x
-then
-    TOPDIR=`(cd $srcdir; cd ..; pwd)`
-fi
+TOPDIR=$srcdir/..
+AC_SUBST(TOPDIR)
+
+TOPDIRA=`(cd $srcdir; cd ..; pwd)`
+AC_SUBST(TOPDIRA)
 
 dnl *****************************************************************
 dnl Checks for programs.
@@ -63,9 +61,8 @@ dnl *****************************************************************
 
 AC_PROG_INSTALL
 
-AC_CHECK_PROGS(MKDIR, mkdir)
+AC_CHECK_PROGS(SH, sh bash ksh)
 AC_CHECK_PROGS(RM, rm)
-AC_CHECK_PROGS(SH, sh bash)
 AC_CHECK_PROGS(SED, gnused sed)
 AC_CHECK_PROGS(TOUCH, touch)
 AC_CHECK_PROGS(EGREP, egrep)
@@ -74,21 +71,15 @@ AC_CHECK_PROGS(M4, gm4 m4)
 
 AC_PATH_PROG(ENV2TYPE, env2type, , .:$srcdir)
 
-OZPATH=$PATH:../bin:../../bin:$prefix/bin
+OZPATH=$PATH:$TOPDIRA/bin:$TOPDIR:$prefix/bin
 AC_PATH_PROG(INSTALLSRC, ozinstallsrc, , $OZPATH)
-AC_PATH_PROG(OZBATCH, ozbatch, , $OZPATH)
-
-dnl *****************************************************************
-dnl configurable variables
-dnl *****************************************************************
-
-dnl substitutions variable
 AC_SUBST(INSTALLSRC)
+
+AC_PATH_PROG(OZBATCH, ozbatch, , $OZPATH)
 AC_SUBST(OZBATCH)
-AC_SUBST(TOPDIR)
 
 dnl *****************************************************************
 dnl FINALIZE
 dnl *****************************************************************
 
-AC_OUTPUT(Makefile Makefile.vars)
+AC_OUTPUT(Makefile)

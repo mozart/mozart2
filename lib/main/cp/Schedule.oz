@@ -47,8 +47,11 @@ import
 
    FD(bool
       is
+      neg
       sum
-      reflect)
+      reflect
+      distribute
+      reified)
 
    Error(registerFormatter)
 
@@ -282,14 +285,19 @@ define
             Tasks          = ETTuple.(Res+1)
             LeftTask       = Tasks.(Left+1)
             RightTask      = Tasks.(Right+1)
+            B0             = {FD.bool}
+            B1             = {FD.bool}
          in
-            dis
-               {FD.sum Start.LeftTask#Dur.LeftTask '=<:' Start.RightTask}
-            then
+            B0={FD.reified.sum Start.LeftTask#Dur.LeftTask '=<:'
+                Start.RightTask}
+            B1={FD.neg B0}
+            B1={FD.reified.sum Start.RightTask#Dur.RightTask '=<:'
+                Start.LeftTask}
+            {FD.distribute naive a(B0)}
+            case B0
+            of 1 then
                {EnumTI ETTuple Start Dur Res#Left#Right NewStream}
-            []
-               {FD.sum Start.RightTask#Dur.RightTask '=<:' Start.LeftTask}
-            then
+            [] 0 then
                {EnumTI ETTuple Start Dur Res#Right#Left NewStream}
             end
          end
@@ -362,14 +370,15 @@ define
                   end
                   {EnumFL ETTuple Start Dur '#'(H) Stream}
                else
-                  choice
+                  case {Space.register 2}
+                  of 1 then
                      case Mode of firsts then
                         {Before H RestTasks Tasks Start Dur}
                      else
                         {After H RestTasks Tasks Start Dur}
                      end
                      {EnumFL ETTuple Start Dur '#'(H) Stream}
-                  []
+                  [] 2 then
                      {Try T RestTasks Mode Tasks ETTuple Start Dur Stream}
                   end
                end

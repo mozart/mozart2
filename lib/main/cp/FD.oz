@@ -638,7 +638,7 @@ define
                   V={SelVar VecTuple}
                   D={SelVal V}
                in
-                  choice {FdInt D V} [] {FdInt compl(D) V} end
+                  {FdInt {Space.register D#compl(D)} V}
                   {Space.waitStable}
                   {Do}
                end
@@ -659,7 +659,7 @@ define
                   in
                      {Proc}
                      {Space.waitStable}
-                     choice {FdInt D V} [] {FdInt compl(D) V} end
+                     {FdInt {Space.register D#compl(D)} V}
                      {Space.waitStable}
                      {Do Xs}
                   end

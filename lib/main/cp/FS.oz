@@ -318,8 +318,9 @@ define
             else
                UnknownVal = {MinElement Unknown}
             in
-               choice {FSIsIncl UnknownVal X}
-               []     {FSIsExcl UnknownVal X}
+               case {Space.register 2}
+               of 1 then {FSIsIncl UnknownVal X}
+               [] 2 then {FSIsExcl UnknownVal X}
                end
                {FSDistNaive Xs}
             end
@@ -341,8 +342,9 @@ define
                UnknownVal={Elem HSL}
                DistVar   ={Sel  HSL}
             in
-               choice {FSIsIncl UnknownVal DistVar}
-               []     {FSIsExcl UnknownVal DistVar}
+               case {Space.register 2}
+               of 1 then {FSIsIncl UnknownVal DistVar}
+               [] 2 then {FSIsExcl UnknownVal DistVar}
                end
                {FSDistGeneric {RRobin SortedSL}
                 Order FCond Elem RRobin Sel Proc}

@@ -116,7 +116,7 @@ boot-check: boot-all
         PATH=$(SRCTOP)/share/bin:$(SRCDIR):$(PATH) \
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
         make check \
-        OZ_LOAD=prefix=$(HOMEURL)/share/GumpScanner.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/GumpScanner.so:prefix=$(HOMEURL)/share/Bison.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/ozbison/Bison.so:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/tools/:prefix=./=./:prefix=/=/:.:= \
+        OZ_LOAD=prefix=$(HOMEURL)/share/GumpScanner.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/GumpScanner.so:prefix=$(HOMEURL)/share/Bison.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/ozbison/Bison.so:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/tools/:prefix=$(HOMEURL)/contrib/=$(BUILDTOP)/contrib/:prefix=./=./:prefix=/=/:.:= \
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh \

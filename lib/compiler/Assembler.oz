@@ -730,6 +730,6 @@ define
       Assembler = {InternalAssemble Code Switches}
    in
       {Assembler load(Globals ?P)}
-      VS = {ByNeed fun {$} {Assembler output($)} end}
+      VS = {ByNeedFuture fun {$} {Assembler output($)} end}
    end
 end

@@ -81,8 +81,9 @@ prepare
                      '~': Number.'~'
 
                      %% Value
-                     'Value.byNeedDot': Value.byNeedDot
                      'Value.byNeed': Value.byNeed
+                     'Value.byNeedDot': Value.byNeedDot
+                     'Value.byNeedFuture': Value.byNeedFuture
 
                      %% Name
                      'Name.new': Name.new

@@ -489,6 +489,8 @@ define
                {OTE value nil}
             [] future then
                {OTE value nil}
+            [] failed then
+               {OTE value nil}
             end
          else
             {OTE value nil}

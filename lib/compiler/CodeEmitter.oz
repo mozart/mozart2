@@ -280,16 +280,14 @@ in
          [] vMakePermanent(_ Regs _) then
             {ForAll Regs
              proc {$ Reg}
-                if {Dictionary.member @regNames Reg} then
-                   case Emitter, GetPerm(Reg $) of none then Y in
-                      Emitter, AllocatePerm(Reg ?Y)
-                      case Emitter, GetTemp(Reg $) of none then
-                         Emitter, Emit(createVariable(Y))
-                      elseof X then
-                         Emitter, Emit(move(X Y))
-                      end
-                   else skip
+                case Emitter, GetPerm(Reg $) of none then Y in
+                   Emitter, AllocatePerm(Reg ?Y)
+                   case Emitter, GetTemp(Reg $) of none then
+                      Emitter, Emit(createVariable(Y))
+                   elseof X then
+                      Emitter, Emit(move(X Y))
                    end
+                else skip
                 end
              end}
          [] vClear(_ Regs _) then

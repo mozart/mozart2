@@ -121,25 +121,25 @@ define
       end
    end
 
-   proc {MakePermanent Vs ?Regs VHd VTl}
-      Regs = {FoldR Vs
-              fun {$ V In}
-                 if {V getPrintName($)} \= unit then {V reg($)}|In
-                 else In
-                 end
-              end nil}
-      case Regs of nil then
-         VHd = VTl
+   proc {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
+      if CS.debugInfoVarnamesSwitch then Regs in
+         Regs = {FoldR Vs
+                 fun {$ V In} Reg in
+                    {V reg(?Reg)}
+                    case {CS getRegName(Reg $)} of unit then In
+                    else Reg|In
+                    end
+                 end nil}
+         case Regs of nil then
+            VHd = Cont1
+            Cont2 = VTl
+         else
+            VHd = vMakePermanent(_ Regs Cont1)
+            Cont2 = vClear(_ Regs VTl)
+         end
       else
-         VHd = vMakePermanent(_ Regs VTl)
-      end
-   end
-
-   proc {Clear Regs VHd VTl}
-      case Regs of nil then
-         VHd = VTl
-      else
-         VHd = vClear(_ Regs VTl)
+         VHd = Cont1
+         Cont2 = VTl
       end
    end
 
@@ -749,15 +749,10 @@ define
    end
 
    class CodeGenDeclaration from CodeGenStatement
-      meth codeGen(CS VHd VTl)
+      meth codeGen(CS VHd VTl) Cont1 Cont2 in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
-         if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
-            {MakePermanent @localVars ?Regs VHd Cont1}
-            {CodeGenList @statements CS Cont1 Cont2}
-            {Clear Regs Cont2 VTl}
-         else
-            {CodeGenList @statements CS VHd VTl}
-         end
+         {MakePermanent @localVars VHd Cont1 Cont2 VTl CS}
+         {CodeGenList @statements CS Cont1 Cont2}
       end
    end
 
@@ -853,6 +848,7 @@ define
          end
          case @toCopy of unit then
             FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code VInter
+            Cont1 Cont2
          in
             {CS startDefinition()}
             FormalRegs = {Map @formalArgs
@@ -860,13 +856,8 @@ define
                              {V setReg(CS)}
                              {V reg($)}
                           end}
-            if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
-               {MakePermanent @formalArgs ?Regs BodyVInter Cont1}
-               {CodeGenList @statements CS Cont1 Cont2}
-               {Clear Regs Cont2 nil}
-            else
-               {CodeGenList @statements CS BodyVInter nil}
-            end
+            {MakePermanent @formalArgs BodyVInter Cont1 Cont2 nil CS}
+            {CodeGenList @statements CS Cont1 Cont2}
             AllRegs = case @allVariables of nil then nil
                       else {Map @allVariables fun {$ V} {V reg($)} end}
                       end
@@ -1044,20 +1035,15 @@ define
       meth makePattern(Arbiter CS $)
          {@pattern makePattern(Arbiter nil $ nil {NewDictionary} CS)}#self
       end
-      meth codeGenPattern(Mapping VHd VTl CS)
+      meth codeGenPattern(Mapping VHd VTl CS) VInter1 VInter2 in
          if {IsDet @reached} then
             {Exception.raiseError
              compiler(internal {@statements.1 getCoord($)})}
          end
          @reached = true
          {@pattern assignRegs(nil Mapping)}
-         if CS.debugInfoVarnamesSwitch then Regs VInter1 VInter2 in
-            {MakePermanent @localVars ?Regs VHd VInter1}
-            {CodeGenList @statements CS VInter1 VInter2}
-            {Clear Regs VInter2 VTl}
-         else
-            {CodeGenList @statements CS VHd VTl}
-         end
+         {MakePermanent @localVars VHd VInter1 VInter2 VTl CS}
+         {CodeGenList @statements CS VInter1 VInter2}
       end
       meth warnUnreachable(CS)
          if {IsFree @reached} then
@@ -1076,15 +1062,12 @@ define
       meth assignRegs(Pos Mapping)
          {@pattern assignRegs(Pos Mapping)}
       end
-      meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS) VInter ErrVInstr in
+      meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)
+         VInter ErrVInstr VInter1 VInter2
+      in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
-         if CS.debugInfoVarnamesSwitch then Regs VInter1 VInter2 in
-            {MakePermanent @localVars ?Regs VHd VInter1}
-            {CodeGenList @statements CS VInter1 VInter2}
-            {Clear Regs VInter2 VInter}
-         else
-            {CodeGenList @statements CS VHd VInter}
-         end
+         {MakePermanent @localVars VHd VInter1 VInter2 VInter CS}
+         {CodeGenList @statements CS VInter1 VInter2}
          {MakeException kernel boolCaseType @coord [@arbiter] CS ErrVInstr nil}
          VInter = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr ErrVInstr
                             @coord VTl _)
@@ -1232,16 +1215,11 @@ define
    end
 
    class CodeGenTryNode from CodeGenStatement
-      meth codeGen(CS VHd VTl) TryBodyVInstr CatchBodyVInstr in
+      meth codeGen(CS VHd VTl) TryBodyVInstr CatchBodyVInstr Cont1 Cont2 in
          {CodeGenList @tryStatements CS TryBodyVInstr vPopEx(_ @coord nil)}
          {@exception setReg(CS)}
-         if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
-            {MakePermanent [@exception] ?Regs CatchBodyVInstr Cont1}
-            {CodeGenList @catchStatements CS Cont1 Cont2}
-            {Clear Regs Cont2 nil}
-         else
-            {CodeGenList @catchStatements CS CatchBodyVInstr nil}
-         end
+         {MakePermanent [@exception] CatchBodyVInstr Cont1 Cont2 nil CS}
+         {CodeGenList @catchStatements CS Cont1 Cont2}
          VHd = vExHandler(_ TryBodyVInstr {@exception reg($)}
                           CatchBodyVInstr @coord VTl _)
       end
@@ -1522,26 +1500,23 @@ define
             RecordArity = {Length @formalArgs}
          end
       end
-      meth MakeBody(?AllRegs CS VHd VTl)
+      meth MakeBody(?AllRegs CS VHd VTl) Vs in
          AllRegs = case @allVariables of nil then nil
                    else {GetRegs @allVariables}
                    end
-         if CS.debugInfoVarnamesSwitch then
-            StateReg Vs Regs Cont1 Cont2 Cont3 Cont4 Cont5
-         in
+         Vs = {FoldR @formalArgs fun {$ F In} {F getVariable($)}|In end
+               case @messageDesignator of unit then nil
+               elseof V then [V]
+               end}
+         if CS.debugInfoVarnamesSwitch then StateReg Cont1 Cont2 Cont3 in
             {CS newSelfReg(?StateReg)}
-            VHd = vMakePermanent(_ [StateReg] Cont1)
+            {MakePermanent {New PseudoVariableOccurrence init(StateReg)}|Vs
+             VHd Cont1 Cont3 VTl CS}
             Cont1 = vGetSelf(_ StateReg Cont2)
-            Vs = {FoldR @formalArgs fun {$ F In} {F getVariable($)}|In end
-                  case @messageDesignator of unit then nil
-                  elseof V then [V]
-                  end}
-            {MakePermanent Vs ?Regs Cont2 Cont3}
-            {CodeGenList @statements CS Cont3 Cont4}
-            {Clear Regs Cont4 Cont5}
-            {Clear [StateReg] Cont5 VTl}
-         else
-            {CodeGenList @statements CS VHd VTl}
+            {CodeGenList @statements CS Cont2 Cont3}
+         else Cont1 Cont2 in
+            {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
+            {CodeGenList @statements CS Cont1 Cont2}
          end
          statements <- unit   % hand them to the garbage collector
       end
@@ -1571,7 +1546,7 @@ define
          optArgs <- OptArgs
          vInter <- VInter
       end
-      meth codeGenPattern(Mapping VHd VTl CS) VInter in
+      meth codeGenPattern(Mapping VHd VTl CS) VInter FormalVars in
          {ForAll @reqArgs
           proc {$ F#V}
              {V reg({PosToReg [F] Mapping})}   % set it
@@ -1580,13 +1555,9 @@ define
           proc {$ VHd Arg VTl}
              {Arg bindMethFormal(@messageVO CS VHd VTl)}
           end VHd VInter}
-         if CS.debugInfoVarnamesSwitch then FormalVars in
-            FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
-                          {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
-            {MakePermanent FormalVars _ VInter @vInter}
-         else
-            VInter = @vInter
-         end
+         FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
+                       {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
+         {MakePermanent FormalVars VInter @vInter _ _ CS}
          VTl = nil
       end
    end
@@ -1712,7 +1683,9 @@ define
    end
 
    class CodeGenClause
-      meth codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr) GuardVHd Coord in
+      meth codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)
+         GuardVHd Coord Cont3 Cont4
+      in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
          {CodeGenList @guard CS GuardVHd nil}
          {@guard.1 getCoord(?Coord)}
@@ -1721,13 +1694,8 @@ define
                 [] wait then vWait(_ nil)
                 [] waitTop then vWaitTop(_ nil)
                 end
-         if CS.debugInfoVarnamesSwitch then Regs Cont3 Cont4 in
-            {MakePermanent @localVars ?Regs BodyVInstr Cont3}
-            {CodeGenList @statements CS Cont3 Cont4}
-            {Clear Regs Cont4 nil}
-         else
-            {CodeGenList @statements CS BodyVInstr nil}
-         end
+         {MakePermanent @localVars BodyVInstr Cont3 Cont4 nil CS}
+         {CodeGenList @statements CS Cont3 Cont4}
       end
    end
 

@@ -144,6 +144,9 @@ class CodeStore from Emitter
    meth getRegNames(GRegs ?GPNs)
       GPNs = {Map GRegs fun {$ Reg} {Dictionary.get @regNames Reg} end}
    end
+   meth getRegName(Reg $)
+      {Dictionary.condGet @regNames Reg unit}
+   end
 
    meth GetOccs(Addr ?RS)
       RS = case Addr of nil then @EmptyRS else Addr.1 end

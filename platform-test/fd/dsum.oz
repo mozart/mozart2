@@ -22,9 +22,9 @@ Return=
 
              {MiscTest 1
               fun {$} A B C in [A B C]:::0#10
-                 {FD.sumCD [1 2] [A B] '<:' 10}
+                 {FD.sumC [1 2] [A B] '<:' 10}
                  {FD.sumCD [~1 1] [A C] '=:' 0}
-                 {FD.sumCD [1 1] [C B] '>=:' 9}
+                 {FD.sumC [1 1] [C B] '>=:' 9}
                  thread cond A#C:::9 B::0 then 1 else 0 end end
               end
              }
@@ -57,7 +57,7 @@ Return=
              {MiscTest 4
               fun {$} A B C in [A B C] ::: 0#FD.sup
                  A\=:1000 B\=:1000 C\=:1000
-                 {FD.sumCD [1 2 3] [A B C] '<:' 10}
+                 {FD.sumC [1 2 3] [A B C] '<:' 10}
                  thread cond A::0#9 B::0#4 C::0#3 then 1 else 0 end end
               end
              }

@@ -23,7 +23,11 @@ local
    UsageError = 'command line option error'
    BatchCompilationError = 'batch compilation error'
 
-   DefaultExecHeader = '#!/bin/sh\nexec ozengine $0 "$@"\n'
+   fun {MakeExecHeader Path}
+      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
+   end
+   DefaultExecPath = 'ozengine'
+   DefaultExecHeader = {MakeExecHeader DefaultExecPath}
 
    OptSpecs = record(%% mode in which to run
                      mode(single
@@ -44,7 +48,10 @@ local
 
                      %% options for individual modes
                      outputfile(single char: &o type: string default: unit)
-                     execheader(single type: string default: DefaultExecHeader)
+                     execheader(single type: string
+                                validate: alt(when(execpath false)))
+                     execpath(single type: string
+                              validate: alt(when(execheader false)))
                      compress(rightmost char: &z
                               type: int(min: 0 max: 9) default: 0)
 
@@ -114,6 +121,7 @@ local
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
    '--execheader=STR              Use header STR for executables (default:\n'#
    '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
+   '--execpath=STR                Use path STR to ozengine in the above.\n'#
    '-z N, --compress=N            Use compression level N for pickles.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
@@ -396,7 +404,13 @@ in
                       {Pickle.saveWithHeader
                        R % Value
                        OFN % Filename
-                       OptRec.execheader % Header
+                       case {CondSelect OptRec execheader unit} of unit then
+                          case {CondSelect OptRec execpath unit} of unit then
+                             DefaultExecHeader
+                          elseof S then {MakeExecHeader S}
+                          end
+                       elseof S then S
+                       end % Header
                        OptRec.compress % Compression level
                       }
                       case {OS.system 'chmod +x '#OFN}

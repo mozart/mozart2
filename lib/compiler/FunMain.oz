@@ -1,5 +1,6 @@
 functor prop once
 import
+   Debug            from 'x-oz://boot/Debug'
    Parser           from 'x-oz://boot/Parser'
    CompilerSupport  from 'x-oz://boot/CompilerSupport'
    Property
@@ -12,7 +13,6 @@ import
 \ifndef OZM
    Gump
 \endif
-   Debug
    RunTimeLibrary
 export
    Engine

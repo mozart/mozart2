@@ -362,6 +362,9 @@ in
             end
 
             %%
+            %% Fairly to say, there are few things that can be caught
+            %% this way: a browser object has an internal
+            %% asynchronous worker which does the actual job ...
             case {IsVar HasCrashed} then true
             else Pl Hl in
                %%
@@ -376,7 +379,8 @@ in
 
                %%
                %% .. and just throw it away;
-               DefaultBrowserClass , removeBrowser
+               %% Note that the state must be freed already;
+               {self removeBrowser}
             end
          end
       end

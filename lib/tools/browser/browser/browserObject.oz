@@ -205,7 +205,7 @@ class BrowserClass from Object.base
       BrowserClass , break
 
       %%
-      {Wait {self.BrowserStream [enq(close) enq(sync($))]}}
+      {Wait {self.BrowserStream [enq(sync($)) enq(close)]}}
 
       %%
       {self.BrowserBuffer purgeSusps}
@@ -385,6 +385,15 @@ class BrowserClass from Object.base
          {self.BrowserBuffer enq(RootTermObj ProceedProc DiscardProc)}
 
          %%
+         %% it might be a little bit too early, but it *must* be
+         %% inside the "touched" region (since e.g. 'BrowserBuffer'
+         %% can be closed already when it's applied);
+         case {self.BrowserBuffer getSize($)} > 1 then
+            {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
+         else true
+         end
+
+         %%
          touch
 \ifdef DEBUG_BO
       {Show 'BrowserClass::browse is finished'}
@@ -393,12 +402,6 @@ class BrowserClass from Object.base
          %%
          %% the object state is free;
          {Wait Sync}
-
-         %%
-         case {self.BrowserBuffer getSize($)} > 1 then
-            {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
-         else true
-         end
       end
    end
 

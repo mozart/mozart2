@@ -304,12 +304,12 @@ class WindowManagerClass from UrObject
                             separator
 
                             %%
-                            command(label:   'Toggle menus'
-                                    % key:     ctrl(alt(m))
-                                    acc:     '   C-A-m'
-                                    action:  BO#toggleMenus
-                                    feature: toggleMenus)
-                            separator
+%                           command(label:   'Toggle menus'
+%                                   % key:     ctrl(alt(m))
+%                                   acc:     '   C-A-m'
+%                                   action:  BO#toggleMenus
+%                                   feature: toggleMenus)
+%                           separator
 
                             %%
                             command(label:   'Help'
@@ -320,7 +320,7 @@ class WindowManagerClass from UrObject
                             separator
 
                             %%
-                            command(label:   'Check layout'
+                            command(label:   'Refine layout'
                                     % key:     ctrl(l)
                                     acc:     '     C-l'
                                     action:  BO#checkLayout

@@ -291,6 +291,8 @@ in
          then
             case X of oz(M) then
                {OzValueToVS M}
+            [] pn(unit) then
+               '_'
             [] pn(M) then
                {PrintNameToVS M}
             [] pos(F L C) then

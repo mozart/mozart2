@@ -284,8 +284,13 @@ local
          @reporter
       end
       meth notifyOne(P)
+\ifdef OZM
+         {Send P info('Mozart Compiler '#OZVERSION#
+                      ' playing Oz 3\n\n')}
+\else
          {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
                       ' playing Oz 3\n\n')}
+\endif
          {Send P switches(@switches)}
          {Send P maxNumberOfErrors(@maxNumberOfErrors)}
          {Send P env(self.values)}

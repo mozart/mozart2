@@ -31,7 +31,7 @@ import
    Distribution('export')          at 'x-oz://boot/Distribution'
 
    Error(registerFormatter)
-   Fault(install installWatcher)
+   Fault(install installWatcher deInstall deInstallWatcher)
    Property(get)
 
 export
@@ -266,16 +266,23 @@ define
 
       case {Record.waitOr X#Alarm}
       of 1 then
-         case X
-         of no then
+         case X of no then
+            {Fault.deInstall P 'thread'(this) true}
+            {Fault.deInstallWatcher P Watch true}
             {Exception.raiseError connection(refusedTicket V)}
          [] yes(A) then
+            {Fault.deInstall P 'thread'(this) true}
+            {Fault.deInstallWatcher P Watch true}
             Entity=A
          end
       [] 2 then
          case{Record.waitOr Alarm} of 1 then
+            {Fault.deInstall P 'thread'(this) true}
+            {Fault.deInstallWatcher P Watch true}
             {Exception.raiseError connection(ticketToDeadSite V)}
          [] 2 then
+            {Fault.deInstall P 'thread'(this) true}
+            {Fault.deInstallWatcher P Watch true}
             {Exception.raiseError connection(ticketTakeTimeOut V)}
          end
       end

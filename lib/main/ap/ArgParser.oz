@@ -39,34 +39,23 @@ local
    end
 
    local
-      local
-         proc {SplitString Is ?I1s ?I2s}
-            case Is of nil then I1s=nil I2s=nil
+      fun {ParseOption Is ArgSpec ?O ?V}
+         case Is of &-|Is then
+            case Is of nil then false
             [] I|Ir then
-               case I==&= then I1s=nil I2s=Ir
-               else I1s=I|{SplitString Ir $ I2s}
-               end
-            end
-         end
-      in
-         fun {ParseOption Is ArgSpec ?O ?V}
-            case Is of &-|Is then
-               case Is of nil then false
-               [] I|Ir then
-                  FirstIsMinus = (I==&-)
+               FirstIsMinus = (I==&-)
+            in
+               case FirstIsMinus andthen Ir==nil then false else
+                  OS VS
                in
-                  case FirstIsMinus andthen Ir==nil then false else
-                     OS VS
-                  in
-                     {SplitString case FirstIsMinus then Ir else Is end
-                      ?OS ?VS}
-                     O={String.toAtom {Map OS CharToLower}}
-                     V=VS
-                     {HasFeature ArgSpec O}
-                  end
+                  {String.token case FirstIsMinus then Ir else Is end &=
+                   ?OS ?VS}
+                  O={String.toAtom {Map OS CharToLower}}
+                  V=VS
+                  {HasFeature ArgSpec O}
                end
-            else false
             end
+         else false
          end
       end
 

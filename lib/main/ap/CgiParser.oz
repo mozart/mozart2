@@ -35,41 +35,6 @@ local
    end
 
    local
-      local
-         fun {Do Is C Js Jr F}
-            case Is of nil then Jr=nil
-               case Js of nil then nil else [{F Js}] end
-            [] I|Ir then
-               case I==C then NewJs in
-                  Jr=nil {F Js}|{Do Ir C NewJs NewJs F}
-               else NewJr in
-                  Jr=I|NewJr {Do Ir C Js NewJr F}
-               end
-            end
-         end
-      in
-         fun {Split S C F}
-            Ss in {Do S C Ss Ss F}
-         end
-      end
-
-      local
-         fun {Do Is C Js Jr}
-            case Is of nil then Jr=nil
-               case Js of nil then nil else [Js] end
-            [] I|Ir then
-               case I==C then Jr=nil [Js Ir]
-               else NewJr in
-                  Jr=I|NewJr {Do Ir C Js NewJr}
-               end
-            end
-         end
-      in
-         fun {SplitFirst S C}
-            Ss in {Do S C Ss Ss}
-         end
-      end
-
       fun {Replace Is C1 C2}
          case Is of nil then nil
          [] I|Ir then
@@ -103,14 +68,12 @@ local
       end
    in
       fun {CgiParse Is}
-         {Split Is &&
+         {Map {String.tokens Is &&}
           fun {$ S}
-             case {SplitFirst {HexReplace {Replace S &+ & }} &=}
-             of L|S then
-                {String.toAtom L}#case S of R|_ then R else unit end
-             else
-                raise cgi(parseError) end
-             end
+             S1 S2
+          in
+             {String.token {HexReplace {Replace S &+ & }} &= ?S1 ?S2}
+             {String.toAtom S1}#S2
           end}
       end
    end

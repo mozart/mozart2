@@ -2004,17 +2004,66 @@ in
    end
 
    %%
-   %%
-   %%
    %%  Generic chunks (not only, though) objects;
    %%
    class MetaChunkTermTermObject
-      from RecordTermTermObject
+      from AtomTermTermObject RecordTermTermObject
+      %%
+      feat
+         isCompound             % 'True' if there are any subterms;
       %%
 
+      %%
+      %%
+      meth initTerm
+\ifdef DEBUG_TT
+         {Show 'MetaChunkTermTermObject::initTerm is applied'#self.term}
+\endif
+         case {Length {`ChunkArity` self.term}} == 0 then
+            self.isCompound = False
+            <<AtomTermTermObject initTerm>>
+         else
+            self.isCompound = True
+            <<RecordTermTermObject initTerm>>
+         end
+      end
+
+      %%
+      %%
+      meth getSubterms(?Subterms)
+         case self.isCompound then
+            <<RecordTermTermObject getSubterms(Subterms)>>
+         else
+            %% should produce an error message;
+            <<AtomTermTermObject getSubterms(Subterms)>>
+         end
+      end
+
+      %%
+      %%
+      meth reGetSubterms(?Subterms)
+         case self.isCompound then
+            <<RecordTermTermObject reGetSubterms(Subterms)>>
+         else
+            %% should produce an error message;
+            <<AtomTermTermObject reGetSubterms(Subterms)>>
+         end
+      end
+
+      %%
+      %%
+      meth areCommas(?Are)
+         case self.isCompound then
+            <<RecordTermTermObject areCommas(Are)>>
+         else
+            <<AtomTermTermObject areCommas(Are)>>
+         end
+      end
+      %%
       %%
    end
 
+   %%
    %%
    %%
    %%  Generic Chunks;

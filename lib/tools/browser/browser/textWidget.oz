@@ -3946,35 +3946,81 @@ in
 
    %%
    %%
-   %%
    %%  Meta-chunks (not only, though) in text widet;
    %%
    %%
    class MetaChunkTWTermObject
-      from RecordTWTermObject
+      from NameTWTermObject RecordTWTermObject
       %%
 
       %%
       %%  'getSize' ...
-      %%  'checkLayout' ...
+      %%
+      meth checkLayout
+         case self.isCompound then
+            <<RecordTWTermObject checkLayout>>
+         else
+            <<NameTWTermObject checkLayout>>
+         end
+      end
+
       %%
       %%  'pickPlace' ...
-      %%  'isActive' ...
-      %%
       %%  'initBindings' ... (and all the 'TW' handlers;)
       %%  'getTags' ...
       %%  'getTagInfo' ...
       %%  'closeOut' ...
-      %%  'undraw' ...
+
       %%
-      %%  'setUndrawn' ...
+      meth undraw
+         case self.isCompound then
+            <<RecordTWTermObject undraw>>
+         else
+            <<NameTWTermObject undraw>>
+         end
+      end
+
       %%
-      %%  'initOut' ...
+      %%
+      meth setUndrawn
+         case self.isCompound then
+            <<RecordTWTermObject setUndrawn>>
+         else
+            <<NameTWTermObject setUndrawn>>
+         end
+      end
+
+      %%
       %%  'GetRightMostMarks' from from records;
       %%
-      %%  'draw' ...
+      meth initOut
+         case self.isCompound then
+            <<RecordTWTermObject initOut>>
+         else
+            <<NameTWTermObject initOut>>
+         end
+      end
+
       %%
-      %%  'insertRefVar' ...
+      %%
+      meth draw(Mark ?Sync)
+         case self.isCompound then
+            <<RecordTWTermObject draw(Mark Sync)>>
+         else
+            <<NameTWTermObject draw(Mark Sync)>>
+         end
+      end
+
+      %%
+      %%
+      meth insertRefVar
+         case self.isCompound then
+            <<RecordTWTermObject insertRefVar>>
+         else
+            <<NameTWTermObject insertRefVar>>
+         end
+      end
+
       %%
       %%  'NewOutInfo' from MetaRecordTWTermObject;
       %%  'AdjustGlue' ...

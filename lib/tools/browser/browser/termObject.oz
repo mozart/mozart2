@@ -1352,33 +1352,70 @@ in
 
    %%
    %%
+   %%
    %%  Meta-objects for chunks (not only, though) in various flavors;
    %%
    %%
    class MetaChunkGenericTermObject
-      from RecordGenericTermObject
-      %%
+      from NameGenericTermObject RecordGenericTermObject
 
       %%
       %%  'getObjClass' from MetaGenericTermObject;
       %%  'init' ...
       %%  'isShown' ...
+
       %%
-      %%  'destroy' ...
+      meth destroy
+         case self.isCompound then
+            <<RecordGenericTermObject destroy>>
+         else
+            <<NameGenericTermObject destroy>>
+         end
+      end
+
       %%
-      %%  'retract' ...
+      meth retract
+         case self.isCompound then
+            <<RecordGenericTermObject retract>>
+         else
+            <<NameGenericTermObject retract>>
+         end
+      end
+
       %%
-      %%  'updateSizes' ...
+      %%
+      meth updateSizes(Depth)
+         case self.isCompound then
+            <<RecordGenericTermObject updateSizes(Depth)>>
+         else
+            <<NameGenericTermObject updateSizes(Depth)>>
+         end
+      end
+
       %%
       %%  event handlers from 'MetaGenericTermObject';
       %%  'show' ...
+
       %%
-      %%  'expand' ...
+      meth expand
+         case self.isCompound then
+            <<RecordGenericTermObject expand>>
+         else
+            <<NameGenericTermObject expand>>
+         end
+      end
       %%
       %%  'shrink' from 'MetaGenericTermObject';
       %%  'deref' ...
+
       %%
-      %%  'getRefVar' ...
+      meth getRefVar(Obj)
+         case self.isCompound then
+            <<RecordGenericTermObject getRefVar(Obj)>>
+         else
+            <<NameGenericTermObject getRefVar(Obj)>>
+         end
+      end
       %%
    end
 

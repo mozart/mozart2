@@ -139,7 +139,7 @@ define
          end
       end
    in
-      {Loop.for 1 60 1 proc{$ Ind}
+      {For 1 60 1 proc{$ Ind}
                           Bs Ps in
                           {SumUp Ind AllSteps Bs Ps}
                           {FD.sumC Ps Bs '=<:' Workers}

@@ -11,11 +11,11 @@ export
 define
 
    Line =
-   proc {$ X S N Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (N-1)*S+I} end}
+   proc {$ X S N Sq} {For 1 S 1 proc {$ I} X.I = {Nth Sq (N-1)*S+I} end}
    end
 
    Row =
-   proc {$ X S N Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+N} end}
+   proc {$ X S N Sq} {For 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+N} end}
    end
 
    SumUp =
@@ -27,11 +27,11 @@ define
    end
 
    Desc =
-   proc {$ X S Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+I} end}
+   proc {$ X S Sq} {For 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+I} end}
    end
 
    Asc =
-   proc {$ X S Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+S+1-I} end}
+   proc {$ X S Sq} {For 1 S 1 proc {$ I} X.I = {Nth Sq (I-1)*S+S+1-I} end}
    end
 
    SumUpDiag =
@@ -48,8 +48,8 @@ define
       Sum = S*(S*S+1) div 2 = {SumUpDiag Square S Asc}
       = {SumUpDiag Square S Desc}
 
-      {Loop.for 1 S 1 proc {$ I} Sum = {SumUp Square S I Line} end}
-      {Loop.for 1 S 1 proc {$ I} Sum = {SumUp Square S I Row} end}
+      {For 1 S 1 proc {$ I} Sum = {SumUp Square S I Line} end}
+      {For 1 S 1 proc {$ I} Sum = {SumUp Square S I Row} end}
       Square = {FD.distinct} = {FD.distribute split}
    end
 

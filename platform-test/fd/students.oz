@@ -98,7 +98,7 @@ define
 
 
          proc {Legal Ls O}
-            {Loop.for 1 NumberOfPossibleGroups 1
+            {For 1 NumberOfPossibleGroups 1
              proc{$ C} {FD.atMost PeoplePerGroup Ls C}
              end}
 
@@ -113,7 +113,7 @@ define
                                  end
                        end}
          % redundant constraint:
-            {Loop.for 1 NumberOfPossibleGroups 1
+            {For 1 NumberOfPossibleGroups 1
              proc{$ G}
                 thread
                    cond O.G=:0

@@ -22,19 +22,19 @@ define
       in
          M={MakeTuple f N*3}
       % M_i^j : integer i has color j
-         {Loop.for 1 N*3 1 proc{$ I} M.I :: 0#1 end}
+         {For 1 N*3 1 proc{$ I} M.I :: 0#1 end}
 
       % Each integer has  exact one color
-         {Loop.for 1 N 1 proc{$ I}
+         {For 1 N 1 proc{$ I}
                          % M.I + M.I2 + M.I3 = 1
                             M.I + M.(I+N) + M.(I+N+N) =: 1
                          end}
 
       % if x+y=z then not the same color
       % ~(Mxj /\ Myj /\ Mzj)   for j in 1,2,3
-         {Loop.for 1 (N+1) div 2 1
+         {For 1 (N+1) div 2 1
           proc {$ I1}
-             {Loop.for I1 N-I1 1
+             {For I1 N-I1 1
               proc {$ I2}
                  local I3=!I1+!I2 in
                     cond  I1=I2

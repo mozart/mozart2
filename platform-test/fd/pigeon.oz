@@ -21,7 +21,7 @@ define
 
    proc {StateConstraints Pigeons Holes A}
       % At most one pigeon in a hole
-      {Loop.for 1 Holes 1
+      {For 1 Holes 1
        proc{$ I}
           {Loop.forThread 1 Pigeons 1
            proc{$ In Index Out}
@@ -29,7 +29,7 @@ define
               Out=:In+ A.((Index-1)*Holes+I) end 0}=<: 1
        end}
       % Each pigeon in exactly one hole
-      {Loop.for 1 Pigeons 1
+      {For 1 Pigeons 1
        proc{$ I}
           {Loop.forThread 1 Holes 1
            proc{$ In Index Out}

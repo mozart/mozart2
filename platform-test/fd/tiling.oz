@@ -42,7 +42,7 @@ define
    end
 
    proc {Capacity XCoord Sizes SX SY}
-      {Loop.for 0 SX-1 1 proc{$ Pos} {Sum Pos XCoord Sizes SY}  end}
+      {For 0 SX-1 1 proc{$ Pos} {Sum Pos XCoord Sizes SY}  end}
    end
 
    proc {Sum Pos XCoord Sizes SY}

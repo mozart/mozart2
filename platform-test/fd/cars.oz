@@ -37,7 +37,7 @@ define
          local From To in
             From = (Option-1)*NbSlots + 1
             To = (Option-1)*NbSlots + NbSlots - (S-1)
-            {Loop.for From To 1 proc{$ C} {SumUp Ops C C+S-1} =<: R end}
+            {For From To 1 proc{$ C} {SumUp Ops C C+S-1} =<: R end}
          end
       end
 
@@ -73,7 +73,7 @@ define
             then local P in
            % P = number of cars requiring option coded by H2
                     P= {GetNumber CarInfo H2}
-                    {Loop.for 1 NbSlots div S 1
+                    {For 1 NbSlots div S 1
                      proc{$ K} local From To in
                                   From = (O-1)*NbSlots+1
                                   To = (O-1)*NbSlots+NbSlots-K*S

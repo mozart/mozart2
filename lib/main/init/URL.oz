@@ -109,7 +109,7 @@ local
 URL_localize    = {`Builtin` 'URL.localize'      2}
 URL_open        = {`Builtin` 'URL.open'          2}
 URL_load        = {`Builtin` 'URL.load'          2}
-PrintInfo       = {`Builtin` 'System.printInfo'  1}
+PrintError      = {`Builtin` 'System.printError' 1}
 GetEnv          = {`Builtin` 'OS.getEnv'         2}
 GetHome         = {`Builtin` 'SystemGetHome'     1}
 GetPlatform     = {`Builtin` 'SystemGetPlatform' 1}
@@ -175,7 +175,7 @@ end
 fun {MakeResolver Title Init}
    proc {MSG S}
       case {Access Trace}
-      then {PrintInfo '['#Title#'] '#S#'\n'}
+      then {PrintError '['#Title#'] '#S#'\n'}
       else skip end
    end
    Handlers = {NewCell [ DefaultHandler ]}

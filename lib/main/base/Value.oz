@@ -22,6 +22,11 @@
 %%% WARRANTIES.
 %%%
 
+%% The following ensures that this file works with the `-g' command
+%% line option:  With debug information, an application of the unbound
+%% variable `=` would be generated; the thread would block.
+\pushSwitches
+\switch -debuginfocontrol
 
 declare
    Value Wait WaitOr IsFree IsKinded IsDet Min Max CondSelect HasFeature
@@ -85,3 +90,5 @@ Value = value(wait:       Wait
               isKinded:   IsKinded
               isDet:      IsDet
               status:     {`Builtin` 'Value.status' 2})
+
+\popSwitches

@@ -75,6 +75,15 @@ OZ_SEARCH_DLOAD = case {Getenv 'OZ_SEARCH_DLOAD'} of false then
                            '.'#[PATH_SEPARATOR]#
                            '~/.oz/platform/'#OS_NAME#'-'#OS_CPU#'/cache'#[PATH_SEPARATOR]
                            #OZ_HOME#'/platform/'#OS_NAME#'-'#OS_CPU#'/cache'
+                           #[PATH_SEPARATOR]
+                           #'cache=~/.oz/cache'
+                           #[PATH_SEPARATOR]
+                           #'cache='#OZ_HOME#'/cache'
+%                          #[PATH_SEPARATOR]
+%                          #'pattern=http://?{x}='#OZ_HOME#'/cache/http/?{x}-'
+%                          #OS_NAME#'-'#OS_CPU
+%                          #[PATH_SEPARATOR]
+%                          #'pattern=?{x}=?{x}-'#OS_NAME#'-'#OS_CPU
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end

@@ -36,6 +36,7 @@ local
    in
       FunExt     = UrlDefaults.'functor'
       MozartHome = UrlDefaults.'home'
+      ContribHome= UrlDefaults.'contrib'
    end
 
    proc {Swallow _}
@@ -70,6 +71,10 @@ local
       end
    end
 
+   fun {IsNative Url}
+      {HasFeature {CondSelect Url info info} 'native'}
+   end
+
    NONE = {NewName}
 
    fun {NameOrUrlToUrl ModName UrlV}
@@ -96,14 +101,13 @@ local
             case {Dictionary.member ModMap Key} then
                {Dictionary.get ModMap Key Module}
             else
-               TryModule = {ByNeed
-                            fun {$}
-                               if {CondSelect Url scheme unit}==OzScheme then
-                                  {self system(Url $)}
-                               else
-                                  {self load(Url $)}
-                               end
-                            end}
+               TryModule
+               = {ByNeed
+                  fun {$}
+                     if {CondSelect Url scheme unit}==OzScheme
+                     then {self system(Url $)}
+                     else {self load(  Url $)} end
+                  end}
             in
                {Dictionary.put ModMap Key TryModule}
                Module = TryModule
@@ -178,7 +182,7 @@ in
    functor NewModule prop once
 
    import
-      Pickle System OS Boot
+      Pickle System OS Boot Foreign Property
 
    export
       root:    RM
@@ -191,6 +195,9 @@ in
                  System.show
               end
 
+      PLATFORM = case {Property.get 'platform'} of Name#Cpu
+                 then Name#'-'#Cpu else 'unknown' end
+
       class RootManager from BaseManager
 
          meth trace(What)
@@ -199,7 +206,16 @@ in
 
          meth load(Url $)
             %% Takes a URL and returns a module
-            {self Apply(Url {Pickle.load {URL.toVs Url}} $)}
+            %% check if URL is annotated as denoting a `native functor'
+            if {IsNative Url}
+               %% if yes, use the Foreign loader
+            then {self native(Url $)}
+            else {self Apply(Url {Pickle.load {URL.toVs Url}} $)} end
+         end
+
+         meth native(Url $)
+            {self trace(native({URL.toAtom Url}))}
+            {Foreign.load {URL.toVs Url}#'-'#PLATFORM}
          end
 
          meth system(Url $)
@@ -216,9 +232,23 @@ in
                      {self trace(boot({URL.toAtom Url}))}
                      {Boot.manager ModName}
                   [] system then
-                     {self trace(system(ModName {URL.toAtom Url}))}
-                     {self Apply(Url {Pickle.load
-                                      MozartHome#ModName#FunExt} $)}
+                     {self trace(system({URL.toAtom Url}))}
+                     if {IsNative Url}
+                     then {self native(MozartHome#Name $)}
+                     else
+                        {self Apply(Url
+                                    {Pickle.load
+                                     MozartHome#ModName#FunExt} $)}
+                     end
+                  [] contrib then
+                     {self trace(contrib({URL.toAtom Url}))}
+                     if {IsNative Url}
+                     then {self native(ContribHome#Name $)}
+                     else
+                        {self Apply(Url
+                                    {Pickle.load
+                                     ContribHome#ModName#FunExt} $)}
+                     end
                   else
                      raise module(urlSyntax {URL.toAtom Url}) end
                   end

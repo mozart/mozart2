@@ -368,7 +368,9 @@ local
             {ForAll {Access Handlers}
               proc {$ H} {H Url Meth Msg} end}
             {Msg '...all handlers failed' nil nil nil nil}
-            raise error(url(MethodName {VirtualString.toString Loc})
+            raise error(url(MethodName
+                            {VirtualString.toAtom
+                             {URL.toVsExtended Url o(full:true)}})
                         debug:debug) with debug end
          catch found(V) then
             {Msg '...' MethodName ' succeeded' nil nil}

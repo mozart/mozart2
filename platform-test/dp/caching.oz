@@ -5,17 +5,16 @@
 functor
 import
    Remote(manager)
-   Property(put)
+   Property
    System
    Fault
 export
    Return
 define
-   {Property.put 'perdio.maxTCPCache' 2}
    {Fault.defaultDisable _}
    {Fault.defaultEnable [permFail] _}
 
-   Sites=10
+   Sites=5
    SeenList={MakeList Sites}
 
 \ifdef DBG
@@ -42,10 +41,11 @@ define
          Site.man={New Remote.manager init(host:localhost)}
          thread
             {Wait StartNext}
-            Started=unit
+            {Show starting(Left)}
             {Site.man apply(url:'' functor
                                    import
                                       Fault
+%                                     System
                                    define
                                       proc{Run}
                                          {Send CentralPort hi(Left)}
@@ -55,14 +55,20 @@ define
                                    in
                                       {Fault.defaultDisable _}
                                       {Fault.defaultEnable [permFail] _}
-                                      {Run}
+%                                     {System.show starting_client}
+                                      thread {Run} end
                                    end)}
+            {Show started(Left)}
+            Started=unit
          end
          Site|thread{StartSites Left-1 StartNext}end
       end
    end
 
    proc {Start}
+      C={Property.get 'perdio.maxTCPCache'}
+   in
+      {Property.put 'perdio.maxTCPCache' 2}
       local
          All Started
       in
@@ -84,6 +90,7 @@ define
       {System.gcDo}
       {System.gcDo}
       {System.gcDo}
+      {Property.put 'perdio.maxTCPCache' C} % Reset
    end
 
    Return=dp([caching(Start keys:[cache])])

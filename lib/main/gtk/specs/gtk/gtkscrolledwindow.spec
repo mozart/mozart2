@@ -33,8 +33,8 @@ $class =
                   'vscrollbar_policy'                       => '%GtkPolicyType',
                   'window_placement'                        => '%GtkCornerType' },
 
-       inits => { 'gtk_scrolled_window_new'                 => { in  => ['!GtkAdjustment*',
-                                                                         '!GtkAdjustment*'],
+       inits => { 'gtk_scrolled_window_new'                 => { in  => ['^GtkAdjustment*',
+                                                                         '^GtkAdjustment*'],
                                                                  out => 'GtkWidget*' } },
 
        meths => { 'gtk_scrolled_window_get_hadjustment'     => { in  => ['GtkScrolledWindow*'],

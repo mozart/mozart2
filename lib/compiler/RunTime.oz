@@ -129,6 +129,11 @@ prepare
       NONE={NewName}
       fun {MkOptimize} {NewCell NONE} end
       fun {MkCount} {NewCell 0} end
+
+      %% Note that this new impl. for list accumulators has
+      %% a pleasant effect on both memory and speed.  See cvs log
+      %% msg. for details
+      %%
       %% First cell contains the head of list, Second
       %% cell contains current unbound var at tail of list.
       fun {MkList} L in {NewCell L} | {NewCell L} end

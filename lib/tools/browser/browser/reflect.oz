@@ -189,6 +189,10 @@ in
                   %%
                   TermOut =
                   {String.toAtom {System.valueToVirtualString TermIn 1 1}}
+               elsecase {IsFSetVar TermIn} then
+                  %%
+                  TermOut =
+                  {String.toAtom {System.valueToVirtualString TermIn 1 1}}
                elsecase {IsMetaVar TermIn} then
                   %%
                   TermOut = {AtomConcatAll [{System.printName TermIn}

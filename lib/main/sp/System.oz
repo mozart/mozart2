@@ -249,9 +249,9 @@ in
                    valueToVirtualString:
                       {`Builtin` 'System.valueToVirtualString' 4}
                    exit: Exit
-                   %% interface to system registry
-                   registry:
-                      registry(get:GetProperty
+                   %% interface to system properties
+                   property:
+                      property(get:GetProperty
                                put:PutProperty
                                condGet:CondGetProperty)
                   )

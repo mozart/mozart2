@@ -11,12 +11,14 @@ if $#argv == 0 then
   echo 'options:'
   echo '   --help'
   echo '   --repeat=<int>              [default=1]'
+  echo '   --delay=<int>               [default=0, i.e. no delays between runs]'
   echo '   --tests=<test name>,...     [default: "" (see oztest)]'
   echo '   --ignores=<test name>,...   [default: "" (see oztest)]'
   echo '   --keys=<test name>,...      [default: "" (see oztes)]'
   echo '   --memory=<oztest letters>   [default: 'vh' (virtual mem + active heap)]'
   echo '   --sort=<oztest memory key>  [default: do not sort at all]'
   echo '   --resort=<oztest memory key>'
+  echo '   --append'                   [default: truncate the output file first]'
   exit
 endif
 
@@ -34,6 +36,8 @@ set keys=""
 set memopts="vh"
 set sortfield=""
 set run=true
+set truncate=true
+set delay=0
 
 while ($#argv > 1)
     switch ($1)
@@ -42,6 +46,11 @@ while ($#argv > 1)
 
     case --repeat=*:
         set repeat=`echo $1 | sed '1,$s/--repeat=//'`
+        shift
+        breaksw
+
+    case --delay=*:
+        set delay=`echo $1 | sed '1,$s/--delay=//'`
         shift
         breaksw
 
@@ -78,6 +87,11 @@ while ($#argv > 1)
         shift
         breaksw
 
+    case --append:
+        set truncate=false
+        shift
+        breaksw
+
     default:
         goto prusage;
     endsw
@@ -89,14 +103,19 @@ set bout=$baseout.bulk
 
 # do tests, if needed:
 if $run == true then
-    cat /dev/null > $fout
-    cat /dev/null > $bout
+    if $truncate == true then
+        cat /dev/null > $fout
+        cat /dev/null > $bout
+    endif
     #
-    set opts="--verbose --repeat=$repeat --memory=$memopts \
+    set opts="--verbose --repeat=$repeat --delay=$delay --memory=$memopts \
        --ignores=$ignores --keys=$keys"
     #
     if "$tests" == "" then
         set tests=`oztest --nodo | sed 's/,/ /g;s/TESTS//;s/FOUND://'`
+        set noglobbing=true     # all tests are choosen anyway;
+    else
+        set noglobbing=false
     endif
 
     #
@@ -104,8 +123,13 @@ if $run == true then
         echo doing test $i
         rm -f $tmpfile
         set res=false
+        if $noglobbing == true then
+            set ignopt="--ignores=${i}_"
+        else
+            set ignopt=""
+        endif
         while ($res == false)
-            oztest $opts --tests=$i > $tmpfile && set res=true
+            oztest $opts --tests=$i $ignopt > $tmpfile && set res=true
         end
         egrep "^>" $tmpfile | sed 's/^>//' >> $fout
         egrep "^:" $tmpfile | sed 's/^://' >> $bout

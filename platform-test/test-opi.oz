@@ -41,7 +41,8 @@ T={{New Module.manager init}
         memory:   "" % "vhacfn"
         gc:       0
         threads:  1
-        repeat:   1) _}
+        repeat:   1
+        delay:    0) _}
 
 
 {Property.put 'messages.idle' true}

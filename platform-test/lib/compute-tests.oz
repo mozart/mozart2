@@ -68,9 +68,7 @@ in
        S={GetTest T}.1
     in
        {Adjoin
-        {Adjoin o(script: S
-                  repeat: Argv.repeat
-                 )
+        {Adjoin o(script: S)
          {Debug.procedureCoord
           if {IsProcedure S} then S else S.1 end}}
         T}

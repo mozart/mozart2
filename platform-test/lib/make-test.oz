@@ -239,12 +239,15 @@ local
                                 {Map {MakeList Argv.threads}
                                  fun {$ _}
                                     thread
-                                       {ForThread 1 T.repeat 1
+                                       {ForThread 1 Argv.repeat 1
                                         fun {$ B _}
-                                           B1={DoTest T.script}
-                                        in
-                                           {PV if B1 then '+' else '-' end}
-                                           B1 andthen B
+                                           if B then  B1 in
+                                              B1 = {DoTest T.script}
+                                              {PV if B1 then '+' else '-' end}
+                                              {Time.delay Argv.delay}
+                                              B1
+                                           else false
+                                           end
                                         end true}
                                     end
                                  end}
@@ -420,7 +423,8 @@ local
           time(single type: string default: "")
           memory(single type: string default: "")
           threads(rightmost type: int(min: 1) default: 1)
-          repeat(rightmost type: int(min: 1) default: 1))
+          repeat(rightmost type: int(min: 1) default: 1)
+          delay(rightmost type: int(min: 0) default: 0))
 
 in
    functor

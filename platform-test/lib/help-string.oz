@@ -13,6 +13,8 @@ The following options are supported:
         Run <int> threads concurrently (for each test)
 --repeat=<int>          [default=1]
         Each thread repeats the test <int> times
+--delay=<int>           [default=0]
+        Wait <int> ms before a next run (kludge for (linux) inetd)
 --tests=<s1>,...,<sn>   [default=all]
         Run only those tests in which names at least one <si> occurs
 --keys=<s1>,...,<sn>    [default=all]

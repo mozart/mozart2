@@ -39,7 +39,88 @@
 %%    to insert after the current statement.
 %%
 
-local
+functor prop once
+import
+   System(valueToVirtualString)
+   StaticAnalysis
+   CodeGen
+export
+   FlattenSequence
+
+   % names:
+   ImAConstruction
+   ImAValueNode
+   ImAVariableOccurrence
+   ImAToken
+
+   % abstract syntax:
+   Statement
+   TypeOf
+   StepPoint
+   Declaration
+   SkipNode
+   Equation
+   Construction
+   Definition
+   FunctionDefinition
+   ClauseBody
+   Application
+   BoolCase
+   BoolClause
+   PatternCase
+   PatternClause
+   RecordPattern
+   EquationPattern
+   AbstractElse
+   ElseNode
+   NoElse
+   ThreadNode
+   TryNode
+   LockNode
+   ClassNode
+   Method
+   MethodWithDesignator
+   MethFormal
+   MethFormalOptional
+   MethFormalWithDefault
+   ObjectLockNode
+   GetSelf
+   FailNode
+   IfNode
+   ChoicesAndDisjunctions
+   OrNode
+   DisNode
+   ChoiceNode
+   Clause
+   ValueNode
+   AtomNode
+   IntNode
+   FloatNode
+   Variable
+   RestrictedVariable
+   VariableOccurrence
+   PatternVariableOccurrence
+
+   % token representations:
+   Token
+   NameToken
+   ProcedureToken
+   ClauseBodyToken
+   BuiltinToken
+   CellToken
+   ChunkToken
+   ArrayToken
+   DictionaryToken
+   ClassToken
+   ObjectToken
+   LockToken
+   PortToken
+   ThreadToken
+   SpaceToken
+   BitArrayToken
+define
+   \insert Annotate
+
    %% some format strings auxiliaries for output
    IN = format(indent)
    EX = format(exdent)
@@ -86,7 +167,7 @@ local
       [] nil then ""
       end
    end
-in
+
    local
       proc {FlattenSequenceSub X Hd Tl}
          % This procedure converts a statement sequence represented
@@ -140,8 +221,13 @@ in
       end
    end
 
+   ImAConstruction       = StaticAnalysis.imAConstruction
+   ImAValueNode          = StaticAnalysis.imAValueNode
+   ImAVariableOccurrence = StaticAnalysis.imAVariableOccurrence
+   ImAToken              = StaticAnalysis.imAToken
+
    class Statement
-      from Annotate.statement SA.statement CodeGen.statement
+      from Annotate.statement StaticAnalysis.statement CodeGen.statement
       attr next: unit coord: unit
       meth setPrintName(_)
          skip
@@ -158,7 +244,7 @@ in
    end
 
    class TypeOf
-      from Statement Annotate.typeOf SA.typeOf CodeGen.typeOf
+      from Statement Annotate.typeOf StaticAnalysis.typeOf CodeGen.typeOf
       attr arg: unit res: unit value: unit
       meth init(Arg Res)
          arg <- Arg
@@ -173,7 +259,8 @@ in
    end
 
    class StepPoint
-      from Statement Annotate.stepPoint SA.stepPoint CodeGen.stepPoint
+      from Statement Annotate.stepPoint StaticAnalysis.stepPoint
+         CodeGen.stepPoint
       prop final
       attr statements: unit kind: unit
       meth init(Statements Kind Coord)
@@ -187,7 +274,8 @@ in
    end
 
    class Declaration
-      from Statement Annotate.declaration SA.declaration CodeGen.declaration
+      from Statement Annotate.declaration StaticAnalysis.declaration
+         CodeGen.declaration
       prop final
       attr localVars: unit statements: unit
       meth init(LocalVars Statements Coord)
@@ -216,7 +304,7 @@ in
    end
 
    class Equation
-      from Statement Annotate.equation SA.equation CodeGen.equation
+      from Statement Annotate.equation StaticAnalysis.equation CodeGen.equation
       prop final
       attr left: unit right: unit
       meth init(Left Right Coord)
@@ -230,7 +318,8 @@ in
    end
 
    class Construction
-      from Annotate.construction SA.construction CodeGen.construction
+      from Annotate.construction StaticAnalysis.construction
+         CodeGen.construction
       prop final
       attr label: unit args: unit isOpen: unit
       feat !ImAConstruction: unit
@@ -238,7 +327,7 @@ in
          label <- Label
          args <- Args
          isOpen <- IsOpen
-         SA.construction, init()
+         StaticAnalysis.construction, init()
       end
       meth getCoord($)
          {@label getCoord($)}
@@ -285,7 +374,8 @@ in
    end
 
    class Definition
-      from Statement Annotate.definition SA.definition CodeGen.definition
+      from Statement Annotate.definition StaticAnalysis.definition
+         CodeGen.definition
       attr
          designator: unit formalArgs: unit statements: unit
          isStateUsing: unit procFlags: unit printName: '' toCopy: unit
@@ -334,7 +424,8 @@ in
    end
 
    class Application
-      from Statement Annotate.application SA.application CodeGen.application
+      from Statement Annotate.application StaticAnalysis.application
+         CodeGen.application
       prop final
       attr designator: unit actualArgs: unit
       feat codeGenMakeEquateLiteral
@@ -413,7 +504,7 @@ in
    end
 
    class BoolCase
-      from Statement Annotate.boolCase SA.boolCase CodeGen.boolCase
+      from Statement Annotate.boolCase StaticAnalysis.boolCase CodeGen.boolCase
       prop final
       attr arbiter: unit consequent: unit alternative: unit
       feat noBoolShared
@@ -430,7 +521,7 @@ in
    end
 
    class BoolClause
-      from Annotate.boolClause SA.boolClause CodeGen.boolClause
+      from Annotate.boolClause StaticAnalysis.boolClause CodeGen.boolClause
       prop final
       attr statements: unit
       meth init(Statements)
@@ -442,7 +533,8 @@ in
    end
 
    class PatternCase
-      from Statement Annotate.patternCase SA.patternCase CodeGen.patternCase
+      from Statement Annotate.patternCase StaticAnalysis.patternCase
+         CodeGen.patternCase
       prop final
       attr arbiter: unit clauses: unit alternative: unit
       meth init(Arbiter Clauses Alternative Coord)
@@ -459,7 +551,8 @@ in
    end
 
    class PatternClause
-      from Annotate.patternClause SA.patternClause CodeGen.patternClause
+      from Annotate.patternClause StaticAnalysis.patternClause
+         CodeGen.patternClause
       prop final
       attr localVars: unit pattern: unit statements: unit
       meth init(LocalVars Pattern Statements)
@@ -474,7 +567,8 @@ in
    end
 
    class RecordPattern
-      from Annotate.recordPattern SA.recordPattern CodeGen.recordPattern
+      from Annotate.recordPattern StaticAnalysis.recordPattern
+         CodeGen.recordPattern
       prop final
       attr label: unit args: unit isOpen: unit
       feat !ImAConstruction: unit
@@ -482,7 +576,7 @@ in
          label <- Label
          args <- Args
          isOpen <- IsOpen
-         SA.recordPattern, init()
+         StaticAnalysis.recordPattern, init()
       end
       meth getCoord($)
          {@label getCoord($)}
@@ -562,7 +656,7 @@ in
    end
 
    class EquationPattern
-      from Annotate.equationPattern SA.equationPattern
+      from Annotate.equationPattern StaticAnalysis.equationPattern
          CodeGen.equationPattern
       prop final
       attr left: unit right: unit coord: unit
@@ -595,7 +689,8 @@ in
       from Annotate.abstractElse CodeGen.abstractElse
    end
    class ElseNode
-      from AbstractElse Annotate.elseNode SA.elseNode CodeGen.elseNode
+      from AbstractElse Annotate.elseNode StaticAnalysis.elseNode
+         CodeGen.elseNode
       prop final
       attr statements: unit
       meth init(Statements)
@@ -607,7 +702,7 @@ in
       end
    end
    class NoElse
-      from AbstractElse Annotate.noElse SA.noElse CodeGen.noElse
+      from AbstractElse Annotate.noElse StaticAnalysis.noElse CodeGen.noElse
       prop final
       attr coord: unit
       meth init(Coord)
@@ -622,7 +717,8 @@ in
    end
 
    class ThreadNode
-      from Statement Annotate.threadNode SA.threadNode CodeGen.threadNode
+      from Statement Annotate.threadNode StaticAnalysis.threadNode
+         CodeGen.threadNode
       prop final
       attr statements: unit
       meth init(Statements Coord)
@@ -636,7 +732,7 @@ in
    end
 
    class TryNode
-      from Statement Annotate.tryNode SA.tryNode CodeGen.tryNode
+      from Statement Annotate.tryNode StaticAnalysis.tryNode CodeGen.tryNode
       prop final
       attr tryStatements: unit exception: unit catchStatements: unit
       meth init(TryStatements Exception CatchStatements Coord)
@@ -654,7 +750,7 @@ in
    end
 
    class LockNode
-      from Statement Annotate.lockNode SA.lockNode CodeGen.lockNode
+      from Statement Annotate.lockNode StaticAnalysis.lockNode CodeGen.lockNode
       prop final
       attr lockVar: unit statements: unit
       meth init(LockVar Statements Coord)
@@ -669,7 +765,8 @@ in
    end
 
    class ClassNode
-      from Statement Annotate.classNode SA.classNode CodeGen.classNode
+      from Statement Annotate.classNode StaticAnalysis.classNode
+         CodeGen.classNode
       prop final
       attr
          designator: unit parents: unit properties: unit
@@ -742,7 +839,7 @@ in
    end
 
    class Method
-      from Annotate.method SA.method CodeGen.method
+      from Annotate.method StaticAnalysis.method CodeGen.method
       attr
          label: unit formalArgs: unit statements: unit coord: unit
          allVariables: nil predicateRef: unit
@@ -765,8 +862,8 @@ in
       end
    end
    class MethodWithDesignator
-      from Method Annotate.methodWithDesignator SA.methodWithDesignator
-         CodeGen.methodWithDesignator
+      from Method Annotate.methodWithDesignator
+         StaticAnalysis.methodWithDesignator CodeGen.methodWithDesignator
       prop final
       attr messageDesignator: unit isOpen: unit
       meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
@@ -786,7 +883,7 @@ in
    end
 
    class MethFormal
-      from Annotate.methFormal SA.methFormal CodeGen.methFormal
+      from Annotate.methFormal StaticAnalysis.methFormal CodeGen.methFormal
       attr feature: unit arg: unit
       meth init(Feature Arg)
          feature <- Feature
@@ -806,8 +903,8 @@ in
       end
    end
    class MethFormalOptional
-      from MethFormal Annotate.methFormalOptional SA.methFormalOptional
-         CodeGen.methFormalOptional
+      from MethFormal Annotate.methFormalOptional
+         StaticAnalysis.methFormalOptional CodeGen.methFormalOptional
       prop final
       attr isInitialized: unit
       meth init(Feature Arg IsInitialized)
@@ -824,7 +921,7 @@ in
    end
    class MethFormalWithDefault
       from MethFormal Annotate.methFormalWithDefault
-         SA.methFormalWithDefault CodeGen.methFormalWithDefault
+         StaticAnalysis.methFormalWithDefault CodeGen.methFormalWithDefault
       prop final
       attr default: unit
       meth init(Feature Arg Default)
@@ -841,7 +938,7 @@ in
    end
 
    class ObjectLockNode
-      from Statement Annotate.objectLockNode SA.objectLockNode
+      from Statement Annotate.objectLockNode StaticAnalysis.objectLockNode
          CodeGen.objectLockNode
       prop final
       attr statements: unit
@@ -855,7 +952,7 @@ in
    end
 
    class GetSelf
-      from Statement Annotate.getSelf SA.getSelf CodeGen.getSelf
+      from Statement Annotate.getSelf StaticAnalysis.getSelf CodeGen.getSelf
       prop final
       attr destination: unit
       meth init(Destination Coord)
@@ -879,7 +976,7 @@ in
    end
 
    class IfNode
-      from Statement Annotate.ifNode SA.ifNode CodeGen.ifNode
+      from Statement Annotate.ifNode StaticAnalysis.ifNode CodeGen.ifNode
       prop final
       attr clauses: unit alternative: unit
       meth init(Clauses Alternative Coord)
@@ -895,7 +992,7 @@ in
 
    class ChoicesAndDisjunctions
       from Statement Annotate.choicesAndDisjunctions
-         SA.choicesAndDisjunctions CodeGen.choicesAndDisjunctions
+         StaticAnalysis.choicesAndDisjunctions CodeGen.choicesAndDisjunctions
       attr clauses: unit
       meth init(Clauses Coord)
          clauses <- Clauses
@@ -925,7 +1022,7 @@ in
    end
 
    class Clause
-      from Annotate.clause SA.clause CodeGen.clause
+      from Annotate.clause StaticAnalysis.clause CodeGen.clause
       prop final
       attr localVars: unit guard: unit kind: unit statements: unit
       meth init(LocalVars Guard Kind Statements)
@@ -946,13 +1043,13 @@ in
    end
 
    class ValueNode
-      from Annotate.valueNode SA.valueNode CodeGen.valueNode
+      from Annotate.valueNode StaticAnalysis.valueNode CodeGen.valueNode
       attr value: unit coord: unit
       feat !ImAValueNode: unit
       meth init(Value Coord)
          value <- Value
          coord <- Coord
-         SA.valueNode, init()
+         StaticAnalysis.valueNode, init()
       end
       meth isVariableOccurrence($)
          false
@@ -1011,13 +1108,13 @@ in
    end
 
    class Variable
-      from Annotate.variable SA.variable CodeGen.variable
+      from Annotate.variable StaticAnalysis.variable CodeGen.variable
       attr printName: unit origin: unit coord: unit isToplevel: false
       meth init(PrintName Origin Coord)
          printName <- PrintName
          origin <- Origin
          coord <- Coord
-         SA.variable, init()
+         StaticAnalysis.variable, init()
       end
       meth isRestricted($)
          false
@@ -1111,7 +1208,7 @@ in
    end
 
    class VariableOccurrence
-      from Annotate.variableOccurrence SA.variableOccurrence
+      from Annotate.variableOccurrence StaticAnalysis.variableOccurrence
          CodeGen.variableOccurrence
       attr variable: unit coord: unit value: unit
       feat !ImAVariableOccurrence: unit
@@ -1157,7 +1254,8 @@ in
          DebugOutputs =
          {FilterUnitsToVS
           if {CheckOutput R debugValue} then
-             NL#'%    value: '#SA.variableOccurrence, outputDebugValue($)
+             NL#'%    value: '#
+             StaticAnalysis.variableOccurrence, outputDebugValue($)
           else unit
           end|
           if {CheckOutput R debugType} then
@@ -1195,12 +1293,12 @@ in
       prop final
    end
 
-   class Token from SA.token CodeGen.token
+   class Token from StaticAnalysis.token CodeGen.token
       attr value: unit
       feat !ImAToken: unit
       meth init(Value)
          value <- Value
-         SA.token, init()
+         StaticAnalysis.token, init()
       end
       meth getValue($)
          @value
@@ -1216,7 +1314,7 @@ in
       end
    end
 
-   class NameToken from Token SA.nameToken CodeGen.nameToken
+   class NameToken from Token StaticAnalysis.nameToken CodeGen.nameToken
       prop final
       attr isToplevel: unit
       feat kind: 'name'
@@ -1301,7 +1399,7 @@ in
       feat kind: 'object'
       meth init(TheObject ClassNode)
          value <- TheObject
-         SA.token, init()
+         StaticAnalysis.token, init()
          classNode <- ClassNode
       end
       meth getClassNode($)

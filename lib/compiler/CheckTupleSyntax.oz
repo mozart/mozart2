@@ -20,7 +20,7 @@
 %%%
 
 local
-   AskPrintName = {Type.ask.generic Misc.isPrintName printName}
+   AskPrintName = {Type.ask.generic PrintName.is printName}
 
    proc {File X}
       case X of parseError then skip

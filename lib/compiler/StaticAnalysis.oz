@@ -34,7 +34,61 @@
 \define DEBUG_SAVESUBST
 */
 
-local
+functor prop once
+import
+   CompilerSupport(newNamedName newCopyableName isCopyableName
+                   newPredicateRef newCopyablePredicateRef
+                   nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
+   FD(int is less distinct distribute)
+   FS(include var subset value reflect isIn)
+   System(eq valueToVirtualString printName)
+   Type(is)
+   Core
+   Builtins(getInfo)
+   RunTime(tokens)
+export
+   ImAConstruction
+   ImAValueNode
+   ImAVariableOccurrence
+   ImAToken
+
+   statement: SAStatement
+   typeOf: SATypeOf
+   stepPoint: SAStepPoint
+   declaration: SADeclaration
+   equation: SAEquation
+   construction: SAConstruction
+   definition: SADefinition
+   application: SAApplication
+   boolCase: SABoolCase
+   boolClause: SABoolClause
+   patternCase: SAPatternCase
+   patternClause: SAPatternClause
+   recordPattern: SARecordPattern
+   equationPattern: SAEquationPattern
+   elseNode: SAElseNode
+   noElse: SANoElse
+   threadNode: SAThreadNode
+   tryNode: SATryNode
+   lockNode: SALockNode
+   classNode: SAClassNode
+   method: SAMethod
+   methodWithDesignator: SAMethodWithDesignator
+   methFormal: SAMethFormal
+   methFormalOptional: SAMethFormalOptional
+   methFormalWithDefault: SAMethFormalWithDefault
+   objectLockNode: SAObjectLockNode
+   getSelf: SAGetSelf
+   ifNode: SAIfNode
+   choicesAndDisjunctions: SAChoicesAndDisjunctions
+   clause: SAClause
+   valueNode: SAValueNode
+   variable: SAVariable
+   variableOccurrence: SAVariableOccurrence
+   token: SAToken
+   nameToken: SANameToken
+define
+   \insert POTypes
 
 %-----------------------------------------------------------------------
 % Some constants and shorthands
@@ -75,13 +129,12 @@ local
       case B then RunTime.tokens.'true' else RunTime.tokens.'false' end
    end
 
-% assumes privacy of the following feature names
-% introduced in CoreLanguage:
-%
-% ImAVariableOccurrence
-% ImAValueNode
-% ImAConstruction
-% ImAToken
+% assumes privacy of the following feature names used in Core:
+
+   ImAVariableOccurrence = {NewName}
+   ImAValueNode          = {NewName}
+   ImAConstruction       = {NewName}
+   ImAToken              = {NewName}
 
 %-----------------------------------------------------------------------
 % kinded records
@@ -1038,8 +1091,6 @@ local
          R = @unifierRight
       end
    end
-
-in
 
 %-----------------------------------------------------------------------
 %  static analysis mix-ins
@@ -2654,7 +2705,7 @@ in
 
       meth checkDesignatorBuiltin($)
          {DetTests.det @designator}
-         andthen {Misc.isBuiltin {GetData @designator}}
+         andthen {CompilerSupport.isBuiltin {GetData @designator}}
       end
       meth checkDesignatorProcedure($)
          {DetTests.det @designator}
@@ -3819,7 +3870,7 @@ in
                SAVariable, setLastValue(Constr)
 
             elsecase
-               {Misc.isBuiltin Value}
+               {CompilerSupport.isBuiltin Value}
             then
                BI      = {New Core.builtinToken init(Value)}
             in
@@ -4172,7 +4223,7 @@ in
          then
             case IsData then _
             else   % dummy variable with right print name
-               {Misc.nameVariable $ {@variable getPrintName($)}}
+               {CompilerSupport.nameVariable $ {@variable getPrintName($)}}
             end
          else
             {@value getFullData(D IsData $)}

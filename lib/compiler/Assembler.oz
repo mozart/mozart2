@@ -35,7 +35,16 @@
 %%    less garbage is produced during code generation.
 %%
 
-local
+functor prop once
+import
+   System(printName valueToVirtualString)
+   CompilerSupport from 'x-oz://boot/CompilerSupport'
+   Builtins(getInfo)
+   RunTimeLibrary
+export
+   InternalAssemble
+   Assemble
+define
    local
 \ifndef NO_ASSEMBLER
       GetInstructionSize = CompilerSupport.getInstructionSize
@@ -989,7 +998,7 @@ local
       [] nil then skip
       end
    end
-in
+
    proc {InternalAssemble Code Switches ?Assembler}
       ProfileSwitch = {CondSelect Switches profile false}
       DebugInfoControlSwitch = {CondSelect Switches debuginfocontrol false}

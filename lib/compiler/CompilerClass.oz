@@ -219,7 +219,7 @@ local
          {Dictionary.put self.variables PrintName V}
          {Dictionary.put self.values PrintName X}
          if {Not {IsDet X}} andthen NameIt then
-            {Misc.nameVariable X PrintName}
+            {CompilerSupport.nameVariable X PrintName}
          end
          {V setUse(multiple)}
          {V setToplevel(true)}
@@ -409,7 +409,7 @@ local
                             V = {New Core.variable
                                  init('`runTimeDict`' putEnv unit)}
                             CompilerStateClass, enter(V {NewDictionary} false)
-                            {Unnest.joinQueries Queries0 @reporter}
+                            {Unnester.joinQueries Queries0 @reporter}
                          elseif CompilerStateClass, getSwitch(expression $)
                          then
                             case Queries0 of nil then Queries0
@@ -418,7 +418,7 @@ local
                                     init('`result`' putEnv unit)}
                                CompilerStateClass,
                                enter(V {CondSelect Return result _} false)
-                               {Unnest.makeExpressionQuery Queries0}
+                               {Unnester.makeExpressionQuery Queries0}
                             end
                          else
                             Queries0
@@ -477,7 +477,7 @@ local
             else skip
             end
             {@reporter logPhase('transforming into graph representation ...')}
-            {Unnest.unnestQuery self @reporter self Query
+            {Unnester.unnestQuery self @reporter self Query
              ?DeclaredGVs ?GS ?FreeGVs}
             local Done in
                proc {AnnotateGlobalVars}
@@ -696,8 +696,12 @@ local
                %--** the following lines are needed because sadly
                %--** the raiseOnBlock feature also raises exceptions
                %--** when blocking on lazy variables or futures:
-               {Wait System}
                {Wait Error}
+               {Wait Type}
+               {Wait Builtins}
+               {Wait Unnester}
+               {Wait Assembler}
+               {Wait RunTime}
                {Debug.setRaiseOnBlock {Thread.this} true}
             end
             OPI = {Property.condGet 'opi.compiler' false}
@@ -732,14 +736,14 @@ local
    end
 
    fun {IsEnv E}
-      {IsRecord E} andthen {All {Arity E} Misc.isPrintName}
+      {IsRecord E} andthen {All {Arity E} PrintName.is}
    end
 
    fun {IsProcedure5 P}
       {IsProcedure P} andthen {Procedure.arity P} == 5
    end
 in
-   class CompilerEngine
+   class Engine
       prop final
       attr Registered: nil CurrentQuery: unit QueriesHd QueriesTl NextId: 1
       feat RegistrationLock QueueLock Compiler
@@ -750,7 +754,7 @@ in
          QueriesTl <- X
          self.Compiler = {New CompilerInternal init(self)}
          thread
-            CompilerEngine, RunQueue()
+            Engine, RunQueue()
          end
       end
 
@@ -772,14 +776,14 @@ in
                   {Send P busy()}
                   {Send P runQuery(Id M)}
                end
-               CompilerEngine, NotifyQueue(@QueriesHd P)
+               Engine, NotifyQueue(@QueriesHd P)
             end
          end
       end
       meth NotifyQueue(Qs P)
          if {IsDet Qs} then Id#M|Qr = Qs in
             {Send P newQuery(Id M)}
-            CompilerEngine, NotifyQueue(Qr P)
+            Engine, NotifyQueue(Qr P)
          end
       end
       meth unregister(P)
@@ -803,12 +807,12 @@ in
             else {Exception.raiseError compiler(invalidQuery Ms)}
             end
             lock self.QueueLock then
-               Ids = {Map Ms fun {$ M} CompilerEngine, Enqueue(M $) end}
+               Ids = {Map Ms fun {$ M} Engine, Enqueue(M $) end}
             end
          [] nil then
             Ids = nil
          else
-            CompilerEngine, Enqueue(Ms ?Ids)
+            Engine, Enqueue(Ms ?Ids)
          end
       end
       meth Enqueue(M ?Id)
@@ -829,11 +833,11 @@ in
             [] setMaxNumberOfErrors(_) then
                {TypeCheck IsInt M 1 'int'}
             [] addToEnv(_ _) then
-               {TypeCheck Misc.isPrintName M 1 'print name'}
+               {TypeCheck PrintName.is M 1 'print name'}
             [] lookupInEnv(_ _) then
-               {TypeCheck Misc.isPrintName M 1 'print name'}
+               {TypeCheck PrintName.is M 1 'print name'}
             [] removeFromEnv(_) then
-               {TypeCheck Misc.isPrintName M 1 'print name'}
+               {TypeCheck PrintName.is M 1 'print name'}
             [] putEnv(_) then
                {TypeCheck IsEnv M 1 'environment'}
             [] mergeEnv(_) then
@@ -860,7 +864,7 @@ in
             NextId <- Id + 1
             @QueriesTl = Id#M|NewTl
             QueriesTl <- NewTl
-            CompilerEngine, notify(newQuery(Id M))
+            Engine, notify(newQuery(Id M))
          end
       end
       meth interrupt()
@@ -868,18 +872,18 @@ in
       end
       meth dequeue(Id)
          lock self.QueueLock then
-            QueriesHd <- CompilerEngine, Dequeue(@QueriesHd Id $)
+            QueriesHd <- Engine, Dequeue(@QueriesHd Id $)
          end
       end
       meth clearQueue()
          lock self.QueueLock then
-            CompilerEngine, ClearQueue(@QueriesHd)
+            Engine, ClearQueue(@QueriesHd)
          end
       end
       meth ClearQueue(Qs)
          if {IsDet Qs} then Id#_|Qr = Qs in
-            CompilerEngine, notify(removeQuery(Id))
-            CompilerEngine, ClearQueue(Qr)
+            Engine, notify(removeQuery(Id))
+            Engine, ClearQueue(Qr)
          else
             QueriesHd <- Qs
          end
@@ -888,10 +892,10 @@ in
          if {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
             if Id == Id0 then
                NewQs = Qr
-               CompilerEngine, notify(removeQuery(Id))
+               Engine, notify(removeQuery(Id))
             else NewQr in
                NewQs = Q|NewQr
-               CompilerEngine, Dequeue(Qr Id ?NewQr)
+               Engine, Dequeue(Qr Id ?NewQr)
             end
          else
             % make sure that no race conditions occur, since the
@@ -902,9 +906,9 @@ in
 
       meth RunQueue()
          if {IsFree @QueriesHd} then
-            CompilerEngine, notify(idle())
+            Engine, notify(idle())
             {Wait @QueriesHd}
-            CompilerEngine, notify(busy())
+            Engine, notify(busy())
          end
          try
             lock self.QueueLock then Qs in
@@ -916,7 +920,7 @@ in
             end
          catch query(Id M) then
             lock self.QueueLock then
-               CompilerEngine, notify(runQuery(Id M))
+               Engine, notify(runQuery(Id M))
                CurrentQuery <- Id#M
             end
             try
@@ -928,16 +932,16 @@ in
                                      '-- description follows')
                                items: [hint(l: 'Query' m: oz(M))]
                                abort: false)}
-               CompilerEngine, notify(message({AdjoinAt {Error.formatExc E}
+               Engine, notify(message({AdjoinAt {Error.formatExc E}
                                                footer false} unit))
                {Reporter logReject()}
             end
             lock self.QueueLock then
                CurrentQuery <- unit
-               CompilerEngine, notify(removeQuery(Id))
+               Engine, notify(removeQuery(Id))
             end
          end
-         CompilerEngine, RunQueue()
+         Engine, RunQueue()
       end
    end
 end

@@ -32,7 +32,71 @@
 
 %\define DEBUG_DEFS
 
-local
+functor prop once
+import
+   CompilerSupport(isBuiltin) at 'x-oz://boot/CompilerSupport'
+   System(printName)
+   Builtins(getInfo)
+   Core
+   RunTime(procs literals)
+export
+   % mixin classes for the abstract syntax:
+   statement: CodeGenStatement
+   typeOf: CodeGenTypeOf
+   stepPoint: CodeGenStepPoint
+   declaration: CodeGenDeclaration
+   skipNode: CodeGenSkipNode
+   equation: CodeGenEquation
+   construction: CodeGenConstruction
+   definition: CodeGenDefinition
+   functionDefinition: CodeGenFunctionDefinition
+   clauseBody: CodeGenClauseBody
+   application: CodeGenApplication
+   boolCase: CodeGenBoolCase
+   boolClause: CodeGenBoolClause
+   patternCase: CodeGenPatternCase
+   patternClause: CodeGenPatternClause
+   recordPattern: CodeGenRecordPattern
+   equationPattern: CodeGenEquationPattern
+   abstractElse: CodeGenAbstractElse
+   elseNode: CodeGenElseNode
+   noElse: CodeGenNoElse
+   threadNode: CodeGenThreadNode
+   tryNode: CodeGenTryNode
+   lockNode: CodeGenLockNode
+   classNode: CodeGenClassNode
+   method: CodeGenMethod
+   methodWithDesignator: CodeGenMethodWithDesignator
+   methFormal: CodeGenMethFormal
+   methFormalOptional: CodeGenMethFormalOptional
+   methFormalWithDefault: CodeGenMethFormalWithDefault
+   objectLockNode: CodeGenObjectLockNode
+   getSelf: CodeGenGetSelf
+   failNode: CodeGenFailNode
+   ifNode: CodeGenIfNode
+   choicesAndDisjunctions: CodeGenChoicesAndDisjunctions
+   orNode: CodeGenOrNode
+   disNode: CodeGenDisNode
+   choiceNode: CodeGenChoiceNode
+   clause: CodeGenClause
+   valueNode: CodeGenValueNode
+   atomNode: CodeGenAtomNode
+   intNode: CodeGenIntNode
+   floatNode: CodeGenFloatNode
+   variable: CodeGenVariable
+   variableOccurrence: CodeGenVariableOccurrence
+   patternVariableOccurrence: CodeGenPatternVariableOccurrence
+
+   % mixin classes for token representations:
+   token: CodeGenToken
+   nameToken: CodeGenNameToken
+   procedureToken: CodeGenProcedureToken
+   clauseBodyToken: CodeGenClauseBodyToken
+   builtinToken: CodeGenBuiltinToken
+define
+   \insert CodeEmitter
+   \insert CodeStore
+
    proc {CodeGenList Nodes CS VHd VTl}
       case Nodes of Node|Noder then VInter in
          {Node codeGen(CS VHd VInter)}
@@ -220,7 +284,7 @@ local
       in
          {{RunTime.procs.Name getLastValue($)} getCodeGenValue(?Value)}
          {LoadActualArgs ActualArgs CS VHd VInter ?NewActualArgs}
-         if {Misc.isBuiltin Value} then
+         if {CompilerSupport.isBuiltin Value} then
             {{New Core.builtinToken init(Value)}
              codeGenApplication(unit Coord NewActualArgs CS VInter VTl)}
          else
@@ -829,7 +893,7 @@ local
          end
       end
    end
-in
+
    class CodeGenStatement
       meth startCodeGen(Nodes Switches Reporter OldVs NewVs ?GPNs ?Code)
          CS StartAddr GRegs BodyCode0 NLiveRegs
@@ -2023,7 +2087,7 @@ in
       meth reg($) Value = @value in
          if {IsDet Value}
             andthen {IsObject Value}
-            andthen {HasFeature Value ImAVariableOccurrence}
+            andthen {HasFeature Value Core.imAVariableOccurrence}
          then Reg in
             {{Value getVariable($)} reg(?Reg)}
             % This variable occurrence may have been equated to a variable
@@ -2244,7 +2308,7 @@ in
                      if AlwaysSucceeds
                         andthen {IsObject Value1.Feature}
                         andthen {HasFeature Value1.Feature
-                                 ImAVariableOccurrence}
+                                 Core.imAVariableOccurrence}
                         andthen {IsDet {Value1.Feature reg($)}}
                      then
                         % Evaluate by issuing an equation.

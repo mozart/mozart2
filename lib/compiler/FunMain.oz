@@ -4,12 +4,12 @@ import
    Parser          at 'x-oz://boot/Parser'
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Property
-   System   %(gcDo printName valueToVirtualString get property printError eq)
-   Error   %(formatExc formatPos formatLine formatGeneric format dispatch msg)
-   ErrorRegistry   %(put)
-   FS   %(include var subset value reflect isIn)
-   FD   %(int is less distinct distribute)
-   Module   %(manager)
+   System
+   Error
+   ErrorRegistry
+   FS
+   FD
+   Module
    Type
 \ifndef OZM
    Gump
@@ -27,74 +27,74 @@ export
    Assemble
 define
    local
-      Misc      = {FunMisc.apply
-                   c('CompilerSupport':       CompilerSupport)}
-      Builtins  = {FunBuiltins.apply c}
-      SA        = {FunSA.apply
-                   c('FD':                    FD
-                     'FS':                    FS
-                     'System':                System
-                     'Type':                  Type
-                     'Misc':                  Misc
-                     'Core':                  Core
-                     'CompilerSupport':       CompilerSupport
-                     'Builtins':              Builtins
-                     'RunTime':               RunTime)}
-      CodeGen   = {FunCodeGen.apply
-                   c('System':                System
-                     'Misc':                  Misc
-                     'Builtins':              Builtins
-                     'Core':                  Core
-                     'RunTime':               RunTime)}
-      Core      = {FunCore.apply
-                   c('System':                System
-                     'Misc':                  Misc
-                     'SA':                    SA
-                     'CodeGen':               CodeGen)}
-      RunTime   = {FunRunTime.apply
-                   c('System':                System
-                     'Core':                  Core
-                     'RunTimeLibrary':        RunTimeLibrary
-                     'Module':                Module)}
-      Unnest    = {FunUnnest.apply
-                   c('FD':                    FD
-                     'Misc':                  Misc
-                     'CompilerSupport':       CompilerSupport
-                     'Core':                  Core
-                     'Debug':                 Debug
+      PrintName      = {FunPrintName.apply c}
+      Builtins       = {FunBuiltins.apply c}
+      StaticAnalysis = {FunStaticAnalysis.apply
+                        c('CompilerSupport':       CompilerSupport
+                          'FD':                    FD
+                          'FS':                    FS
+                          'System':                System
+                          'Type':                  Type
+                          'Core':                  Core
+                          'Builtins':              Builtins
+                          'RunTime':               RunTime)}
+      CodeGen        = {FunCodeGen.apply
+                        c('CompilerSupport':       CompilerSupport
+                          'System':                System
+                          'Builtins':              Builtins
+                          'Core':                  Core
+                          'RunTime':               RunTime)}
+      Core           = {FunCore.apply
+                        c('System':                System
+                          'StaticAnalysis':        StaticAnalysis
+                          'CodeGen':               CodeGen)}
+      RunTime        = {FunRunTime.apply
+                        c('Module':                Module
+                          'RunTimeLibrary':        RunTimeLibrary
+                          'Core':                  Core)}
+      Unnester       = {FunUnnester.apply
+                        c('CompilerSupport':       CompilerSupport
+                          'FD':                    FD
 \ifndef OZM
-                     'Gump':                  Gump
+                          'Debug':                 Debug
+                          'Gump':                  Gump
 \endif
-                     'RunTime':               RunTime)}
-      Assembler = {FunAssembler.apply
-                   c('System':                System
-                     'CompilerSupport':       CompilerSupport
-                     'Builtins':              Builtins
-                     'RunTimeLibrary':        RunTimeLibrary)}
-      Compiler  = {FunCompiler.apply
-                   c('System':                System
-                     'Property':              Property
-                     'Error':                 Error
-                     'ErrorRegistry':         ErrorRegistry
-                     'Type':                  Type
-                     'Debug':                 Debug
-                     'Parser':                Parser
-                     'Misc':                  Misc
-                     'Core':                  Core
-                     'Unnest':                Unnest
+                          'PrintName':             PrintName
+                          'Core':                  Core
+                          'RunTime':               RunTime)}
+      Assembler      = {FunAssembler.apply
+                        c('System':                System
+                          'CompilerSupport':       CompilerSupport
+                          'Builtins':              Builtins
+                          'RunTimeLibrary':        RunTimeLibrary)}
+      Main           = {FunMain.apply
+                        c('Debug':                 Debug
+                          'Parser':                Parser
+                          'CompilerSupport':       CompilerSupport
+                          'Property':              Property
+                          'System':                System
+                          'Error':                 Error
+                          'ErrorRegistry':         ErrorRegistry
+                          'Type':                  Type
+                          'PrintName':             PrintName
+                          'Builtins':              Builtins
+                          'Unnester':              Unnester
+                          'Core':                  Core
+                          'Assembler':             Assembler
+                          'RunTime':               RunTime
 \ifndef OZM
-                     'Gump':                  Gump
-                     'ProductionTemplates':   ProductionTemplates
+                          'Gump':                  Gump
+                          'ProductionTemplates':   ProductionTemplates
 \endif
-                     'Assembler':             Assembler)}
+                         )}
    in
-      Engine = Compiler.compilerEngine
-      ParseOzFile = Compiler.parseOzFile
-      ParseOzVirtualString = Compiler.parseOzVirtualString
-      GenericInterface = Compiler.genericInterface
-      QuietInterface = Compiler.quietInterface
-      EvalExpression = Compiler.evalExpression
-      VirtualStringToValue = Compiler.virtualStringToValue
-      Assemble = Compiler.assemble
+      Engine = Main.engine
+      ParseOzFile = Main.parseOzFile
+      ParseOzVirtualString = Main.parseOzVirtualString
+      GenericInterface = Main.genericInterface
+      QuietInterface = Main.quietInterface
+      EvalExpression = Main.evalExpression
+      VirtualStringToValue = Main.virtualStringToValue
+      Assemble = Main.assemble
    end
 end

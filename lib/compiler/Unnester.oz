@@ -44,7 +44,26 @@
 %%    G   graph representation (see Doc/CoreLanguage)
 %%
 
-local
+functor prop once
+import
+   CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
+   FD(is)
+\ifndef OZM
+   Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
+   Gump(transformParser transformScanner)
+\endif
+   PrintName(downcase)
+   Core
+   RunTime(procs)
+export
+   JoinQueries
+   MakeExpressionQuery
+   UnnestQuery
+define
+   \insert TupleSyntax
+   \insert BindingAnalysis
+   \insert UnnestFD
+
    SyntaxError = 'syntax error'
    ExpansionError = 'expansion error'
    ExpansionWarning = 'expansion warning'
@@ -1733,8 +1752,8 @@ local
             case FEI of fColon(X Y) then
                FeatureName = X
                FV = Y
-            [] fVar(PrintName C) then
-               FeatureName = fAtom({Misc.downcasePrintName PrintName} C)
+            [] fVar(PrintName2 C) then
+               FeatureName = fAtom({PrintName.downcase PrintName2} C)
                FV = FEI
             end
             FExportArgs = fColon(FeatureName fTypeOf(GV))|FExportArgr
@@ -2282,7 +2301,7 @@ local
       else false
       end
    end
-in
+
    local
       fun {VariableMember PrintName Vs}
          case Vs of fVar(PrintName0 _)|Vr then

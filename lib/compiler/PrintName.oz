@@ -19,11 +19,11 @@
 %%% WARRANTIES.
 %%%
 
-%%
-%% Auxiliary procedures used throughout the compiler.
-%%
-
-local
+functor prop once
+export
+   is: IsPrintName
+   downcase: DowncasePrintName
+define
    fun {IsIDChar C}
       {Char.isAlNum C} orelse C == &_
    end
@@ -37,7 +37,7 @@ local
       [] nil then false
       end
    end
-in
+
    fun {IsPrintName X}
       {IsAtom X} andthen
       local
@@ -53,24 +53,15 @@ in
          end
       end
    end
-end
 
-fun {DowncasePrintName X} S in
-   S = {Atom.toString X}
-   case S of C|Cr then
-      if {Char.isUpper C} then {String.toAtom {Char.toLower C}|Cr}
-      else
-         case C of &` then X end
+   fun {DowncasePrintName X} S in
+      S = {Atom.toString X}
+      case S of C|Cr then
+         if {Char.isUpper C} then {String.toAtom {Char.toLower C}|Cr}
+         else
+            case C of &` then X end
+         end
+      [] nil then X
       end
-   [] nil then X
    end
 end
-
-NameVariable = CompilerSupport.nameVariable
-
-IsBuiltin    = CompilerSupport.isBuiltin
-
-ImAConstruction       = {NewName}
-ImAValueNode          = {NewName}
-ImAVariableOccurrence = {NewName}
-ImAToken              = {NewName}

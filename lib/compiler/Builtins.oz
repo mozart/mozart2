@@ -58,7 +58,7 @@ local
    proc {E Name T}
       {Exception.raiseError compiler(badBuiltinTableEntry Name T)}
    end
-in
+
    %%
    %% Do some consistency checks on the builtin table
    %%
@@ -103,12 +103,13 @@ in
        else {E Name doesNotReturn}
        end
     end}
-
-   %%
-   %% Accessing the Builtin Table
-   %%
-
-   fun {GetBuiltinInfo Name}
-      {CondSelect BuiltinTable Name noInformation}
+in
+   functor prop once
+   export
+      getInfo: GetBuiltinInfo
+   define
+      fun {GetBuiltinInfo Name}
+         {CondSelect BuiltinTable Name noInformation}
+      end
    end
 end

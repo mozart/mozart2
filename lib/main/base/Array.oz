@@ -46,6 +46,9 @@ in
                  get:      Get
                  low:      GetLow
                  high:     GetHigh
+                 exchange: proc {$ A I Old New}
+                              {Boot_Array.exchangeFun A I New Old}
+                           end
                  clone:    fun {$ A1}
                               L={GetLow A1} H={GetHigh A1}
                               A2={NewArray L H unit}

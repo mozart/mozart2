@@ -22,19 +22,26 @@
 %%% WARRANTIES.
 %%%
 
-Dictionary = dictionary(new:          NewDictionary
-                        is:           IsDictionary
-                        isEmpty:      Boot_Dictionary.isEmpty
-                        put:          Boot_Dictionary.put
-                        get:          Boot_Dictionary.get
-                        condGet:      Boot_Dictionary.condGet
-                        keys:         Boot_Dictionary.keys
-                        entries:      Boot_Dictionary.entries
-                        items:        Boot_Dictionary.items
-                        remove:       Boot_Dictionary.remove
-                        removeAll:    Boot_Dictionary.removeAll
-                        clone:        Boot_Dictionary.clone
-                        member:       Boot_Dictionary.member
-                        toRecord:     Boot_Dictionary.toRecord
-                        weak:         WeakDictionary
+Dictionary = dictionary(new:              NewDictionary
+                        is:               IsDictionary
+                        isEmpty:          Boot_Dictionary.isEmpty
+                        put:              Boot_Dictionary.put
+                        exchange:         proc {$ D LI OldVal NewVal}
+                                             {Boot_Dictionary.exchangeFun D LI NewVal OldVal}
+                                          end
+                        condExchange:     proc {$ D LI DefVal OldVal NewVal}
+                                             {Boot_Dictionary.condExchangeFun D LI DefVal
+                                              NewVal OldVal}
+                                          end
+                        get:              Boot_Dictionary.get
+                        condGet:          Boot_Dictionary.condGet
+                        keys:             Boot_Dictionary.keys
+                        entries:          Boot_Dictionary.entries
+                        items:            Boot_Dictionary.items
+                        remove:           Boot_Dictionary.remove
+                        removeAll:        Boot_Dictionary.removeAll
+                        clone:            Boot_Dictionary.clone
+                        member:           Boot_Dictionary.member
+                        toRecord:         Boot_Dictionary.toRecord
+                        weak:             WeakDictionary
                        )

@@ -871,9 +871,6 @@ define
          meth getVariable($)
             @arg
          end
-         meth hasDefault($)
-            false
-         end
          meth output2(R $ ?FS)
             {@feature output2(R $ ?FS)}#': '#{@arg output(R $)}
          end
@@ -884,6 +881,9 @@ define
          from
             MethFormalBase Annotate.methFormal
             StaticAnalysis.methFormal CodeGen.methFormal
+         meth hasDefault($)
+            false
+         end
       end
       class MethFormalOptional
          from

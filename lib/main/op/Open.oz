@@ -138,9 +138,9 @@ in
          getSockName
          acceptSelect
          deSelect
-         system
          pipe
          wait
+         kill
         )
 
       Error(registerFormatter)
@@ -699,7 +699,7 @@ in
          meth close
             lock self.ReadLock then
                lock self.WriteLock then
-                  {OS.system 'kill '#self.PID#' 2> /dev/null' _}
+                  {OS.kill self.PID 'SIGTERM' _}
                   %% Ignore errors, since process may be killed anyway
                   {Delay KillTime}
                   {OS.wait _ _}

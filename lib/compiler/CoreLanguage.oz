@@ -77,6 +77,15 @@ local
          {I outputEscaped2(R $ ?FS)}
       end
    end
+
+   fun {FilterUnitsToVS Xs}
+      case Xs of X|Xr then
+         case X of unit then {FilterUnitsToVS Xr}
+         else X#{FilterUnitsToVS Xr}
+         end
+      [] nil then ""
+      end
+   end
 in
    local
       proc {FlattenSequenceSub X Hd Tl}
@@ -1152,38 +1161,38 @@ in
             {@variable outputPattern(R Vs $)}
          end
          meth OutputValue(R $)
-            case {CheckOutput R debugValue} then
-               NL#'% '#{@variable output(debug(realcore: true) $)}#' = '#
-               SA.variableOccurrence, outputDebugValue($)
-            else ""
-            end#
-            case {CheckOutput R debugType} then
-               NL#'% '#{@variable output(debug(realcore: true) $)}#': '#
-               {@variable outputDebugType($)}
-            else ""
-            end#
-%           case {CheckOutput R debugClass} then
-            local
-               Ms = {@variable outputDebugMeths($)}
-               As = {@variable outputDebugAttrs($)}
-               Fs = {@variable outputDebugFeats($)}
-               Ps = {@variable outputDebugProps($)}
-    in
-               case Ms\=unit then
-                  NL#'%   methods: '#{System.valueToVirtualString Ms 10 10}
-               else "" end#
-               case As\=unit then
-                  NL#'%   attributes: '#{System.valueToVirtualString As 10 10}
-               else "" end#
-               case Fs\=unit then
-                  NL#'%   features: '#{System.valueToVirtualString Fs 10 10}
-               else "" end#
-               case Ps\=unit then
-                  NL#'%   properties: '#{System.valueToVirtualString Ps 10 10}
-               else "" end
+            DebugOutputs =
+            {FilterUnitsToVS
+             case {CheckOutput R debugValue} then
+                NL#'%    value: '#SA.variableOccurrence, outputDebugValue($)
+             else unit
+             end|
+             case {CheckOutput R debugType} then
+                [NL#'%    type: '#{@variable outputDebugType($)}
+                 case {@variable outputDebugProps($)} of unit then unit
+                 elseof Ps then
+                    NL#'%    prop: '#{System.valueToVirtualString Ps 10 10}
+                 end
+                 case {@variable outputDebugAttrs($)} of unit then unit
+                 elseof As then
+                    NL#'%    attr: '#{System.valueToVirtualString As 10 10}
+                 end
+                 case {@variable outputDebugFeats($)} of unit then unit
+                 elseof Fs then
+                    NL#'%    feat: '#{System.valueToVirtualString Fs 10 10}
+                 end
+                 case {@variable outputDebugMeths($)} of unit then unit
+                 elseof Ms then
+                    NL#'%    meth: '#{System.valueToVirtualString Ms 10 10}
+                 end]
+             else unit
+             end}
+         in
+            case DebugOutputs of nil then ""
+            else
+               NL#'% '#{@variable output(debug(realcore: true) $)}#':'#
+               DebugOutputs
             end
-%           else ""
-%           end
          end
       end
 
@@ -1399,9 +1408,7 @@ in
             SA.token, init()
          end
       end
-
    in
-
       Core = core(statement: Statement
                   declaration: Declaration
                   skipNode: SkipNode
@@ -1463,6 +1470,5 @@ in
 
       TrueToken = {New NameToken init('`true`' `true` true)}
       FalseToken = {New NameToken init('`false`' `false` true)}
-
    end
 end

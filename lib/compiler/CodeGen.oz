@@ -352,8 +352,8 @@ define
                andthen {IsDet Value} andthen {IsRecord Value}
                andthen {Record.all Value
                         fun {$ Arg}
-                           {HasFeature Arg Core.imAVariableOccurrence}
-                           andthen {IsDet {Arg reg($)}}
+                           {Not {HasFeature Arg Core.imAVariableOccurrence}}
+                           orelse {IsDet {Arg reg($)}}
                         end}
             then RecordArity ActualArgs Regs Cont1 in
                RecordArity = if {IsTuple Value} then {Width Value}

@@ -26,9 +26,9 @@ export
    Accept
 import
    OS
-\ifdef DBG
+%\ifdef DBG
    System
-\endif
+%\endif
    DPMisc
 define
    class ResourceHandler
@@ -114,7 +114,7 @@ define
          skip
 \endif
          {FDHandler returnResource}
-         {OS.close NewFD}
+         try {OS.close NewFD} catch _ then skip end
       end
       {AcceptSelect FD}
    end
@@ -182,7 +182,11 @@ define
          case X of system(os(_ _ _ "Try again") ...) then % EAGAIN => try again
             {AcceptProc FD}
          else % Other fault conditions AN! should some others be treated?
-            {OS.close FD}
+\ifdef DBG
+            {System.show acceptProc_caught}
+            {System.printError X}
+\endif
+            try {OS.close FD} catch _ then skip end
          end
       end
    end

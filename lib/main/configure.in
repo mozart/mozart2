@@ -37,9 +37,9 @@ AC_INIT(Standard.oz)
 
 AC_CANONICAL_HOST
 
-if test -d $OZHOME
+if test "x$oz_default_prefix" !=x && test -d $oz_default_prefix
 then
-  ac_default_prefix=$OZHOME
+  ac_default_prefix=$oz_default_prefix
 fi
 
 dnl *****************************************************************
@@ -73,7 +73,6 @@ AC_CHECK_PROGS(TOUCH, touch)
 AC_CHECK_PROGS(EGREP, egrep)
 AC_CHECK_PROGS(ECHO, echo true)
 AC_CHECK_PROGS(M4, gm4 m4)
-AC_CHECK_PROGS(GZIP, gzip)
 
 AC_PATH_PROG(ENV2TYPE, env2type, , .:$srcdir)
 

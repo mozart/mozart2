@@ -13,7 +13,6 @@ export
    Return
 define
 
-
    Houses =
    proc {$ Vars}
       local N1 N2 N3 N4 N5
@@ -41,10 +40,9 @@ define
       % observe that eqpc is domain version!
          C1 =: C5 + 1
 
-         thread dis N5 =: C4-1 [] N5 =: C4+1 end end
-         thread dis A3 =: P4-1 [] A3 =: P4+1 end end
-         thread dis A4 =: P2-1 [] A4 =: P2+1 end end
-
+         thread or N5 =: C4-1 [] N5 =: C4+1 end end
+         thread or A3 =: P4-1 [] A3 =: P4+1 end end
+         thread or A4 =: P2-1 [] A4 =: P2+1 end end
 
          {FD.distribute ff Vars}
       end

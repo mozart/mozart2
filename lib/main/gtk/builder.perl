@@ -69,7 +69,7 @@ sub gtk2oz_meth_name {
     # we delete this prefix because it's superfluous.
 
     my $class_name = gtk2oz_class_name($$class{name});
-    $name =~ s/^[a-z]+//s if $name =~ m/^$class_name/is ;
+    $name =~ s/^$class_name//is if $name =~ m/^$class_name/is ;
     return lcfirst($name);
 }
 

@@ -1,4 +1,6 @@
 functor prop once
+import
+   CompilerSupport
 export
    IsPrintName
    DowncasePrintName

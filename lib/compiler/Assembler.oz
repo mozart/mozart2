@@ -38,26 +38,26 @@
 local
    local
 \ifndef NO_ASSEMBLER
-      GetInstructionSize = {`Builtin` 'Assembler.getInstructionSize' 2}
-      GetOpcode          = {`Builtin` 'Assembler.getOpcode'          2}
-      NewCodeBlock       = {`Builtin` 'Assembler.newCodeBlock'       2}
-      MakeProc           = {`Builtin` 'Assembler.makeProc'           3}
-      AddDebugInfo       = {`Builtin` 'Assembler.addDebugInfo'       3}
-      StoreOpcode        = {`Builtin` 'Assembler.storeOpcode'        2}
-      StoreNumber        = {`Builtin` 'Assembler.storeNumber'        2}
-      StoreLiteral       = {`Builtin` 'Assembler.storeLiteral'       2}
-      StoreFeature       = {`Builtin` 'Assembler.storeFeature'       2}
-      StoreConstant      = {`Builtin` 'Assembler.storeConstant'      2}
-      StoreInt           = {`Builtin` 'Assembler.storeInt'           2}
-      StoreRegisterIndex = {`Builtin` 'Assembler.storeRegisterIndex' 2}
-      StorePredicateRef  = {`Builtin` 'Assembler.storePredicateRef'  2}
-      StoreRecordArity   = {`Builtin` 'Assembler.storeRecordArity'   2}
-      StoreGRegRef       = {`Builtin` 'Assembler.storeGRegRef'       2}
-      StoreLocation      = {`Builtin` 'Assembler.storeLocation'      2}
-      StoreCache         = {`Builtin` 'Assembler.storeCache'         2}
+      GetInstructionSize = AssemblerSupport.getInstructionSize
+      GetOpcode          = AssemblerSupport.getOpcode
+      NewCodeBlock       = AssemblerSupport.newCodeBlock
+      MakeProc           = AssemblerSupport.makeProc
+      AddDebugInfo       = AssemblerSupport.addDebugInfo
+      StoreOpcode        = AssemblerSupport.storeOpcode
+      StoreNumber        = AssemblerSupport.storeNumber
+      StoreLiteral       = AssemblerSupport.storeLiteral
+      StoreFeature       = AssemblerSupport.storeFeature
+      StoreConstant      = AssemblerSupport.storeConstant
+      StoreInt           = AssemblerSupport.storeInt
+      StoreRegisterIndex = AssemblerSupport.storeRegisterIndex
+      StorePredicateRef  = AssemblerSupport.storePredicateRef
+      StoreRecordArity   = AssemblerSupport.storeRecordArity
+      StoreGRegRef       = AssemblerSupport.storeGRegRef
+      StoreLocation      = AssemblerSupport.storeLocation
+      StoreCache         = AssemblerSupport.storeCache
 
       local
-         BIStoreBuiltinname = {`Builtin` 'Assembler.storeBuiltinname' 2}
+         BIStoreBuiltinname = AssemblerSupport.storeBuiltinname
       in
          proc {StoreBuiltinname CodeBlock Builtin}
             {BIStoreBuiltinname CodeBlock {`Builtin` Builtin ~1}}
@@ -77,7 +77,7 @@ local
       end
 
       local
-         BIStoreLabel = {`Builtin` 'Assembler.storeLabel' 2}
+         BIStoreLabel = AssemblerSupport.storeLabel
       in
          proc {StoreLabel CodeBlock Lbl LabelDict}
             {BIStoreLabel CodeBlock {Dictionary.get LabelDict Lbl}}
@@ -85,7 +85,7 @@ local
       end
 
       local
-         BIStorePredId = {`Builtin` 'Assembler.storePredId' 6}
+         BIStorePredId = AssemblerSupport.storePredId
       in
          proc {StorePredId CodeBlock pid(Name Arity Pos Flags NLiveRegs)}
             {BIStorePredId CodeBlock Name Arity Pos Flags NLiveRegs}
@@ -93,9 +93,9 @@ local
       end
 
       local
-         BINewHashTable  = {`Builtin` 'Assembler.newHashTable'  4}
-         BIStoreHTScalar = {`Builtin` 'Assembler.storeHTScalar' 4}
-         BIStoreHTRecord = {`Builtin` 'Assembler.storeHTRecord' 5}
+         BINewHashTable  = AssemblerSupport.newHashTable
+         BIStoreHTScalar = AssemblerSupport.storeHTScalar
+         BIStoreHTRecord = AssemblerSupport.storeHTRecord
       in
          proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
             Addr = {Dictionary.get LabelDict ElseLabel}
@@ -115,7 +115,7 @@ local
       end
 
       local
-         BIStoreGenCallInfo  = {`Builtin` 'Assembler.storeGenCallInfo' 6}
+         BIStoreGenCallInfo  = AssemblerSupport.storeGenCallInfo
       in
          proc {StoreGenCallInfo CodeBlock
                gci(g(Index) IsMethod Name IsTail RecordArity)}
@@ -125,7 +125,7 @@ local
       end
 
       local
-         BIStoreApplMethInfo = {`Builtin` 'Assembler.storeApplMethInfo' 3}
+         BIStoreApplMethInfo = AssemblerSupport.storeApplMethInfo
       in
          proc {StoreApplMethInfo CodeBlock ami(Name RecordArity)}
             {BIStoreApplMethInfo CodeBlock Name RecordArity}
@@ -136,9 +136,9 @@ local
       \insert compiler-Opcodes
 
       local
-         IsUniqueName           = {`Builtin` 'Compiler.isUniqueName'           2}
-         IsCopyableName         = {`Builtin` 'Compiler.isCopyableName'         2}
-         IsCopyablePredicateRef = {`Builtin` 'Compiler.isCopyablePredicateRef' 2}
+         IsUniqueName           = CompilerSupport.isUniqueName
+         IsCopyableName         = CompilerSupport.isCopyableName
+         IsCopyablePredicateRef = CompilerSupport.isCopyablePredicateRef
          ForeignPointerToInt    = {`Builtin` 'ForeignPointerToInt'             2}
 
          fun {ListToVirtualString Vs In FPToIntMap}

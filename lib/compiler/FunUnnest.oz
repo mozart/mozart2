@@ -4,6 +4,7 @@ import
    \insert Misc-new.env
    FlattenSequence
    Core
+   CompilerSupport
    Gump.{transformParser transformScanner}
 export
    JoinQueries

@@ -65,6 +65,6 @@ fun {DowncasePrintName X} S in
    end
 end
 
-NameVariable = {`Builtin` 'Compiler.nameVariable' 2}
+NameVariable = CompilerSupport.nameVariable
 
-IsBuiltin = {`Builtin` 'Compiler.isBuiltin' 2}
+IsBuiltin    = CompilerSupport.isBuiltin

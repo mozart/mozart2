@@ -978,10 +978,10 @@ local
 %-----------------------------------------------------------------------
 %  global control information
 
-   NewNamedName            = {`Builtin` 'Compiler.newNamedName'            2}
-   NewCopyableName         = {`Builtin` 'Compiler.newCopyableName'         2}
-   NewPredicateRef         = {`Builtin` 'Compiler.newPredicateRef'         1}
-   NewCopyablePredicateRef = {`Builtin` 'Compiler.newCopyablePredicateRef' 1}
+   NewNamedName            = CompilerSupport.newNamedName
+   NewCopyableName         = CompilerSupport.newCopyableName
+   NewPredicateRef         = CompilerSupport.newPredicateRef
+   NewCopyablePredicateRef = CompilerSupport.newCopyablePredicateRef
    NewUniqueName           = {`Builtin` 'NewUniqueName'                    2}
 
    class Control

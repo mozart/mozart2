@@ -14,6 +14,7 @@ import
    TrueToken
    FalseToken
    GetBuiltinInfo
+   CompilerSupport
 export
    SA
 body

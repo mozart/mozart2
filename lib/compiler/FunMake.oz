@@ -10,7 +10,10 @@ local
 in
    functor prop once
    import
-      Parser from 'x-oz-boot:Parser'
+      Parser           from 'x-oz-boot:Parser'
+      AssemblerSupport from 'x-oz-boot:AssemblerSupport'
+      CompilerSupport  from 'x-oz-boot:CompilerSupport'
+
       Property
       System   %.{gcDo printName valueToVirtualString get property
                %  printError eq}
@@ -48,7 +51,8 @@ in
          Core^trueToken = _
          Core^falseToken = _
 
-         Misc      = {FunMisc.apply c}
+         Misc      = {FunMisc.apply
+                      c('CompilerSupport':       CompilerSupport)}
          Builtins  = {FunBuiltins.apply c}
          SA        = {FunSA.apply
                       c('FD':                    FD
@@ -64,6 +68,7 @@ in
                         'Core':                  Core.core
                         'TrueToken':             Core.trueToken
                         'FalseToken':            Core.falseToken
+                        'CompilerSupport':       CompilerSupport
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          Code      = {FunCode.apply
                       c('Foreign':               Foreign
@@ -85,11 +90,14 @@ in
                       c('FD':                    FD
                         'Misc':                  Misc
                         'FlattenSequence':       Core.flattenSequence
+                        'CompilerSupport':       CompilerSupport
                         'Core':                  Core.core
                         'Gump':                  Gump)}
          Assembler = {FunAssembler.apply
                       c('System':                System
                         'Foreign':               Foreign
+                        'AssemblerSupport':      AssemblerSupport
+                        'CompilerSupport':       CompilerSupport
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          CompilerF = {FunCompiler.apply
                       c('System':                System

@@ -29,7 +29,7 @@ local
       end
    end
 
-   ConcatenateAtomAndInt = {`Builtin` 'Compiler.concatenateAtomAndInt' 3}
+   ConcatenateAtomAndInt = CompilerSupport.concatenateAtomAndInt
 
    fun {Generate Env TopLevel Origin N} PrintName in
       PrintName = {ConcatenateAtomAndInt Origin N}

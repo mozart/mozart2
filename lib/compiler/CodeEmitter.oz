@@ -188,7 +188,7 @@ in
                    else X
                    end = NewVInstr.I
                 end}
-               {{`Builtin` 'Show' 1} NewVInstr}
+               {System.show NewVInstr}
             end
          in
             {ShowVInstr Addr}
@@ -2237,7 +2237,7 @@ in
 
       meth Emit(Instr) NewCodeTl in
 \ifdef DEBUG_EMIT
-         {{`Builtin` 'Show' 1} Instr}
+         {System.show Instr}
 \endif
          @CodeTl = Instr|NewCodeTl
          CodeTl <- NewCodeTl
@@ -2246,7 +2246,7 @@ in
 \ifdef DEBUG_EMIT
          proc {ShowAll Instrs}
             case {IsDet Instrs} then I|Ir = Instrs in
-               {{`Builtin` 'Show' 1} I}
+               {System.show I}
                {ShowAll Ir}
             else skip
             end

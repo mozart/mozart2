@@ -22,8 +22,8 @@ define
          if {All Algs2 fun{$ M} {Member M A} end} then
             {ForAll
              {Filter A fun{$ M} {Not {Member M Algs2}} end}
-             proc{$ E}
-                {C_DPMisc.setDGC  E _}
+             proc{$ Al}
+                {C_DPMisc.setDGC  E Al _}
              end}
             true
          else
@@ -32,8 +32,10 @@ define
       end
    end
    fun{GetDGC E}
-      case {C_DPMisc.getDGCE} of
+      case {C_DPMisc.getDGC E} of
          nil then persistent
+      elseof local_entity then
+         local_entity
       elseof A then
          {Map A fun{$ V} V.1 end}
       end

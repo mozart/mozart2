@@ -34,7 +34,7 @@ import
 
    Application(exit getCmdArgs)
    Module(manager)
-   System(showError)
+   System(showError gcDo)
    Fault
    Property(put)
    OS(signal)
@@ -101,14 +101,15 @@ define
       end
 
    end
-
-   RunRet CtrlRet
-   RunStr CtrlStr
+   RunRet = {NewCell _}
+   CtrlRet = {NewCell _}
+   RunStr
+   CtrlStr
 
    try
-      RunRet # CtrlRet = {Connection.take Args.ticket}
-      {Port.send RunRet  {Port.new RunStr}}
-      {Port.send CtrlRet {Port.new CtrlStr}}
+      {Access RunRet} # {Access CtrlRet} = {Connection.take Args.ticket}
+      {Port.send {Access RunRet}  {Port.new RunStr}}
+      {Port.send {Access CtrlRet} {Port.new CtrlStr}}
    catch Ex then
       {System.showError 'Remote Server: failed to take a ticket'}
       {Error.printException Ex}
@@ -139,12 +140,12 @@ define
              try
                 {ModMan What}
              in
-                {Port.send RunRet okay}
+                {Port.send {Access RunRet} okay}
              catch E then
-                {Port.send RunRet exception({Record.subtract E debug})}
+                {Port.send {Access RunRet} exception({Record.subtract E debug})}
              end
           catch _ then
-             {Port.send RunRet failed}
+             {Port.send {Access RunRet} failed}
           end
        end}
    end
@@ -154,8 +155,15 @@ define
       {ForAll CtrlStr
        proc {$ C}
           case C
-          of ping  then {Port.send CtrlRet okay}
-          [] close then {Application.exit ExitDone}
+          of ping  then {Port.send {Access CtrlRet} okay}
+          [] close then
+             %% No more applies
+             %% Can be used concurently by the
+             %% module manager server
+             {Assign RunRet {NewPort _}}
+             {Assign CtrlRet unit}
+             {System.gcDo}
+             {Application.exit ExitDone}
           end
        end}
    end

@@ -31,7 +31,7 @@ in
     import
        Syslet
        Connection.{take}
-       Module.{link}
+       Module
        Property.{get}
        System.{showInfo gcDo}
        Fault.install

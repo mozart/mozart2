@@ -21,7 +21,7 @@
 
 functor prop once
 import
-   Module.load
+   Module
    Property.{get}
    System.{printInfo printError}
    Error.{msg formatLine}

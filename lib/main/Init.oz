@@ -22,6 +22,96 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef NEWMODULE
+
+local
+
+   \insert 'init/Module.oz'
+
+   local
+      UrlDefaults = \insert '../url-defaults.oz'
+   in
+      FunExt      = UrlDefaults.'functor'
+      MozartUrl   = UrlDefaults.'home'
+   end
+
+in
+
+   functor prop once
+   import
+      Boot
+   body
+
+      BootManager = Boot.manager
+
+      BURL     = {BootManager 'URL'}
+
+      OS       = {BootManager 'OS'}
+      Pickle   = {BootManager 'Pickle'}
+      Property = {BootManager 'Property'}
+      System   = {BootManager 'System'}
+
+
+      Getenv = OS.getEnv
+      SET    = Property.put
+      GET    = Property.get
+
+      %% usual system initialization
+      \insert 'init/Prop.oz'
+      \insert 'init/Resolve.oz'
+
+      {SET load Resolve.load}
+
+      %% execute application
+
+      local
+
+         %% create module manager
+         Module = {NewModule.apply 'import'('System': System
+                                            'Pickle': Pickle
+                                            'OS':     OS
+                                            'Boot':   Boot)}
+         %% Register some volatile modules
+
+         {Module.root enter(url:'x-oz://boot/URL' BURL)}
+
+         {Module.root enter(name:'OS'       OS)}
+         {Module.root enter(name:'Property' Property)}
+         {Module.root enter(name:'Pickle'   Pickle)}
+         {Module.root enter(name:'System'   System)}
+         {Module.root enter(name:'Resolve'  Resolve)}
+
+         {Module.root enter(name:'Module'
+                            'export'(manager: Module.manager))}
+
+         %% create and install ErrorHandler module
+         functor ErrorHandler prop once
+         import
+            Error
+         body
+            {Property.put 'errors.handler'
+             proc {$ E}
+                %% cause Error to be instantiated, which installs
+                %% a new error handler as a side effect
+                {Wait Error}
+                %% invoke this new error handler
+                {{Property.get 'errors.handler'} E}
+                %% this whole procedure is invoked at most once
+                %% since instantiatingError causes the handler
+                %% to be replaced with a better one.
+             end}
+         end
+
+         {Module.root apply(url:'x-oz://system/ErrorHandler' ErrorHandler)}
+      in
+         %% load and install (i.e. execute) root functor (i.e. application)
+         {Module.root link(url:{GET 'root.url'})}
+      end
+   end
+end
+
+\else
+
 local
 
    \insert 'init/Module.oz'
@@ -106,3 +196,5 @@ in
       end
    end
 end
+
+\end

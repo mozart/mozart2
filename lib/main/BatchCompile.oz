@@ -340,13 +340,24 @@ local
             end
          end
       end
+
+\ifdef NEWMODULE
+      ModMan = {New Module.manager init}
+\endif
+
    in
       proc {IncludeFunctors S Compiler}
          case S of _|_ then Var VarAtom URL Rest Export in
             {String.token {String.token S &, $ ?Rest} &= ?Var ?URL}
             VarAtom = {String.toAtom Var}
+\ifdef NEWMODULE
+            Export = if URL==nil then {ModMan link(name:Var $)}
+                     else {ModMan link(url:URL $)}
+                     end
+\else
             Export = {Module.load VarAtom
                       case URL of nil then unit else URL end}
+\end
             if {IsPrintName VarAtom} then
                {Compiler enqueue(mergeEnv(env(VarAtom: Export)))}
             else

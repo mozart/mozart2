@@ -6,7 +6,7 @@
 %%%
 %%% Copyright:
 %%%   Joerg Wuertz, 1997
-%%%   Tobias Mueller, 1997
+%%%   Tobias Mueller, 1997, 1998
 %%%   Christian Schulte, 1997, 1998
 %%%
 %%% Last change:
@@ -210,41 +210,25 @@ define
 
       proc {ListDom Xs Dom}
          case Xs of nil then skip
-         [] X|Xr then {FdPutList X Dom} {ListDom Xr Dom}
+         [] X|Xr then {FdPutList Dom X} {ListDom Xr Dom}
          end
       end
 
       proc {TupleDom N T Dom}
-         if N>0 then {FdPutList T.N Dom} {TupleDom N-1 T Dom} end
+         if N>0 then {FdPutList Dom T.N} {TupleDom N-1 T Dom} end
       end
 
       proc {RecordDom As R Dom}
          case As of nil then skip
-         [] A|Ar then {FdPutList R.A Dom} {RecordDom Ar R Dom}
+         [] A|Ar then {FdPutList Dom R.A} {RecordDom Ar R Dom}
          end
       end
    in
       FdSup = {FDB.getLimits _}
 
-      proc {FdInt Dom X}
-         {FdPutList X Dom}
-      end
-
-      local
-         BoolDom = [0#1]
-      in
-         proc {FdBool X}
-            {FdPutList X BoolDom}
-         end
-      end
-
-      local
-         MaxDom = [0#FdSup]
-      in
-         proc {FdDecl X}
-            {FdPutList X MaxDom}
-         end
-      end
+      FdInt  = FdPutList
+      FdBool = FDB.tellBoolConstraint
+      FdDecl = FDB.tellDeclConstraint
 
       proc {FdDom Dom Vec}
          case {VectorToType Vec}
@@ -255,7 +239,7 @@ define
       end
 
       fun {FdList N Dom}
-         if N>0 then {FdPutList $ Dom}|{FdList N-1 Dom}
+         if N>0 then {FdPutList Dom}|{FdList N-1 Dom}
          else nil
          end
       end
@@ -377,21 +361,11 @@ define
    %%
 
    local
-      proc {FdIntR Dom D B}
-         {FdBool B} {FdDecl D} {FdpIntR D Dom B}
-      end
+      FdIntR = FdpIntR
 
-      proc {GenSumR X O D R}
-         {FdBool R} {FdpSumR X O D R}
-      end
-
-      proc {GenSumCR A X O D R}
-         {FdBool R} {FdpSumCR A X O D R}
-      end
-
-      proc {GenSumCNR A X O D R}
-         {FdBool R} {FdpSumCNR A X O D R}
-      end
+      GenSumR   = FdpSumR
+      GenSumCR  = FdpSumCR
+      GenSumCNR = FdpSumCNR
 
       local
          proc {MapIntR N T TR Dom}
@@ -413,10 +387,10 @@ define
       end
 
       proc {Card Low Ds Up B}
-         {FdBool B}
          thread
             if {FdIs Low} andthen {FdIs Up} then
                if {IsLiteral Ds} then
+                  {FdBool B}
                   or B=1 Low=0
                   [] B=0 {FdInt 1#FdSup Low}
                   end
@@ -750,10 +724,8 @@ define
    proc {FdGreatereq X Y}
       {FdpLessEqOff Y X 0}
    end
-   proc {FdDisjointC X XD Y YD C}
-      {FdBool C}
-      {FdpDisjointC X XD Y YD C}
-   end
+
+   FdDisjointC = FdpDisjointC
 
    %%
    %% Register error formatter

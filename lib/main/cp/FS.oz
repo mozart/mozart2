@@ -46,10 +46,7 @@ import
    FSB at 'x-oz://boot/FSB'
    FSP at 'x-oz://boot/FSP'
 
-   FD(bool
-      decl
-      list
-      sum)
+   FD(decl list sum)
 
 export
    include:      FSIsIncl
@@ -93,50 +90,33 @@ export
 
    int:          FSInt
 
-   distribute:  FSDistribute
+   distribute:   FSDistribute
 
 
 define
-   FSIsIncl     = FSP.include
-   FSIsExcl     = FSP.exclude
-   FSMatch      = FSP.match
-   FSMinN       = FSP.minN
-   FSMaxN       = FSP.maxN
-   FSSeq        = FSP.seq
-   FSIsIn       = FSP.isIn
+   FSIsIncl        = FSP.include
+   FSIsExcl        = FSP.exclude
+   FSMatch         = FSP.match
+   FSMinN          = FSP.minN
+   FSMaxN          = FSP.maxN
+   FSSeq           = FSP.seq
+   FSIsIn          = FSP.isIn
 
-   local
-      FSIsInR = FSP.isInR
-   in
-      proc {FSIsInReif E S B}
-         {FD.bool B}
-         {FSIsInR E S B}
-      end
-   end
+   FSIsInReif      = FSP.isInR
+   FSEqualReif     = FSP.equalR
 
-   local
-      FSEqualR = FSP.equalR
-   in
-      proc {FSEqualReif S1 S2 B}
-         {FD.bool B}
-         {FSEqualR S1 S2 B}
-      end
-   end
-
-   FSSetValue   = FSB.setValue
-   FSSet        = FSB.set
-   FSDisjoint   = FSP.disjoint
-   FSDistinct   = FSP.distinct
-   fun {FSDistinctWith S1}
-      proc {$ S2} {FSDistinct S1 S2} end
-   end
-   FSUnion      = FSP.union
-   FSIntersect  = FSP.intersection
-   FSSubset     = FSP.subsume
-   FSDiff       = FSP.diff
-   FSMin        = FSP.min
-   FSMax        = FSP.max
-   FSConvex     = FSP.convex
+   FSSetValue      = FSB.setValue
+   FSSet           = FSB.set
+   FSDisjoint      = FSP.disjoint
+   FSDistinct      = FSP.distinct
+   FSDistinctWith  = fun {$ S1} proc {$ S2} {FSDistinct S1 S2} end end
+   FSUnion         = FSP.union
+   FSIntersect     = FSP.intersection
+   FSSubset        = FSP.subsume
+   FSDiff          = FSP.diff
+   FSMin           = FSP.min
+   FSMax           = FSP.max
+   FSConvex        = FSP.convex
 
    FSisVar         = FSB.isVarB
    FSisValue       = FSB.isValueB
@@ -410,15 +390,7 @@ define
    %% Shorthands
    %%
 
-   local
-      FSCardBI = FSP.card
-   in
-      proc {FSCard S C}
-         {FD.decl C}
-         {FSCardBI S C}
-      end
-   end
-
+   FSCard = FSP.card
    FSCardRange     = FSB.cardRange
 
    FSGetUnknown    = FSB.getUnknown
@@ -522,10 +494,7 @@ define
                list:  list(decl:
                               proc {$ Len Ss}
                                  Ss = {MakeList Len}
-                                 {ForAll Ss
-                                  proc {$ X}
-                                     {FSVar.decl X}
-                                  end}
+                                 {ForAll Ss FSVar.decl}
                               end
                            upperBound:
                               proc {$ Len A Ss}
@@ -555,10 +524,7 @@ define
                tuple: tuple(decl:
                                proc {$ L Size Ss}
                                   Ss = {MakeTuple L Size}
-                                  {Record.forAll Ss
-                                   proc {$ X}
-                                      {FSVar.decl X}
-                                   end}
+                                  {Record.forAll Ss FSVar.decl}
                                end
                             upperBound:
                                proc {$ L Size A Ss}
@@ -588,10 +554,7 @@ define
                record: record(decl:
                                  proc {$ L Ls Ss}
                                     Ss = {MakeRecord L Ls}
-                                    {Record.forAll Ss
-                                     proc {$ X}
-                                        {FSVar.decl X}
-                                     end}
+                                    {Record.forAll Ss FSVar.decl}
                                  end
                               upperBound:
                                  proc {$ L Ls A Ss}
@@ -633,22 +596,15 @@ define
                       FSvalueToString)
 
    FSReified = reified(isIn:
-                          proc {$ E S B}
-                             {FD.bool B}
-                             {FSIsInReif E S B}
-                          end
+                          FSIsInReif
                        areIn:
                           proc {$ WList S BList}
                              BList
                              = {FD.list {Length WList} 0#1}
-                             = {Map WList
-                                fun {$ E} {FSIsInReif E S} end}
+                             = {Map WList fun {$ E} {FSIsInReif E S} end}
                           end
                        include:
-                          proc {$ E S B}
-                             {FD.bool B}
-                             {FSP.includeR E S B}
-                          end
+                          FSP.includeR
                        bounds:
                           FSP.bounds
                        boundsN:

@@ -128,9 +128,10 @@ define
                selNode           %% Selection Node (exported from TreeWidget)
             prop
                final
-            meth create(Options)
-               Width  = {Dictionary.get Options inspectorWidth}
-               Height = {Dictionary.get Options inspectorHeight}
+            meth create
+               Options = InspectorOptions.options
+               Width   = {Dictionary.get Options inspectorWidth}
+               Height  = {Dictionary.get Options inspectorHeight}
                Frame ManagerFrame
             in
                Tk.toplevel, tkInit(title: {Dictionary.get Options inspectorLanguage}#' Inspector'
@@ -544,7 +545,7 @@ define
       end
 
       local
-         RealInspectorObj = {New InspectorClass create(InspectorOptions.'options')}
+         RealInspectorObj = {New InspectorClass create}
       in
          InspPort     = {NewServer RealInspectorObj}
          InspectorObj = proc {$ M} {Port.send InspPort M} end

@@ -47,6 +47,14 @@ define
                      retry:       no
                      basis:       perSite
                      )
+         elseof
+            seifHandler then
+            Rec = handler(
+                     'cond':      [permBlocked permTerm]
+                     once_only:   no
+                     retry:       no
+                     basis:       perSite
+                     )
          elseof permHandler then
             Rec = handler(
                      'cond':      [permBlocked]
@@ -83,7 +91,9 @@ define
                       in
                          if {IsLock Entity} orelse
                             {IsCell Entity} orelse
-                            {IsPort Entity} then
+                            {IsPort Entity} orelse
+                            Entity == seif
+                         then
                             {Fault.installHW Entity Rec Proc}
                          else skip end
                       end

@@ -29,6 +29,7 @@ functor
 
 require
    CpSupport(vectorToType:   VectorToType
+             vectorToList:   VectorToList
              vectorToTuple:  VectorToTuple
              vectorMap:      VectorMap
 
@@ -459,9 +460,10 @@ define
                                  {FdReflect.size X} > 1
                               end)
 
-      GenSelPro = map(noProc: proc {$}
-                                 skip
-                              end)
+      %% use unit as default value to recognize the case when
+      %% we can void the overhead of a procedure call and a synchronization
+      %% on stability
+      GenSelPro = map(noProc: unit)
 
       GenSelSel = map(id:     fun {$ X}
                                  X
@@ -503,38 +505,40 @@ define
          end
       end
 
-      fun {Choose V Order Filter}
-         FAll=if {VectorToType V}==list then List.forAll else Record.forAll end
-         NewOrder=fun{$ E1 E2}
-                     if E2==unit then true else {Order E1 E2} end
-                  end
-         Max={NewCell unit}
+      %% 1st argument must be a list, records are too slow
+      fun {Choose Vars Order Filter}
+         fun {Loop Vars Accu}
+            case Vars of nil then Accu
+            [] H|T then
+               {Loop T
+                if {Filter H} andthen (Accu==unit orelse {Order H Accu})
+                then H else Accu end}
+            end
+         end
       in
-         {FAll V proc {$ E}
-                    if {Filter E} andthen {NewOrder E {Access Max}} then {Assign Max E} end
-                 end}
-         {Access Max}
+         {Loop Vars unit}
       end
 
       %% Same as Choose,  but returns the filtered list of vars
       %% as well as the chosen variable.
-      fun {ChooseAndRetFiltVars V Order Filter}
-         FAll=if {VectorToType V}==list then List.forAll else Record.forAll end
-         NewOrder=fun{$ E1 E2}
-                     if E2==unit then true else {Order E1 E2} end
-                  end
-         Max={NewCell unit}
-         Fs={NewCell nil}
+      fun {ChooseAndRetFiltVars Vars Order Filter}
+         NewVars
+         fun {Loop Vars Accu NewTail}
+            case Vars of nil then
+               NewTail=nil
+               Accu|NewVars
+            [] H|T then
+               if {Filter H} then LL in NewTail=(H|LL)
+                  {Loop T
+                   if Accu==unit orelse {Order H Accu}
+                   then H else Accu end
+                   LL}
+               else {Loop T Accu NewTail} end
+            end
+         end
       in
-         {FAll V proc {$ E}
-                    if {Filter E} then Old in
-                       {Exchange Fs Old E|Old}
-                       if {NewOrder E {Access Max}} then {Assign Max E} end
-                    end
-                 end}
-         {Access Max}#{Access Fs}
+         {Loop Vars unit NewVars}
       end
-
 
    in
 
@@ -550,14 +554,16 @@ define
             if {Width Vec}>0 then
                proc {Do Xs}
                   {Space.waitStable}
-                  E#Fs={ChooseAndRetFiltVars Vec Order Fil}
+                  E|Fs={ChooseAndRetFiltVars Xs Order Fil}
                in
                   if E\=unit then
                      V={Select E}
                      D={SelVal V}
                   in
-                     {Proc}
-                     {Space.waitStable}
+                     if Proc\=unit then
+                        {Proc}
+                        {Space.waitStable}
+                     end
                      choice {FdInt D        V}
                      []     {FdInt compl(D) V}
                      end
@@ -565,7 +571,7 @@ define
                   end
                end
             in
-               {Do Vec}
+               {Do {VectorToList Vec}}
             end
          end
       end
@@ -575,14 +581,14 @@ define
          try
             case {PreProcessSpec RawSpec}
             of opt(value:Value order:Order) then
-               V={Choose Vec GenSelVar.Order GenSelFil.undet}
+               V={Choose {VectorToList Vec} GenSelVar.Order GenSelFil.undet}
                if V==unit then raise ~1 end else D={SelVal.Value V} end
             [] gen(value:     SelVal
                    order:     Order
                    select:    Select
                    filter:    Fil
                    procedure: _) then
-               E={Choose Vec Order Fil} in
+               E={Choose {VectorToList Vec} Order Fil} in
                if E==unit then raise ~1 end else V={Select E}end
                D={SelVal V}
             end

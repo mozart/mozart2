@@ -34,4 +34,5 @@ bitArray(new:              Boot_BitArray.new
          disjoint:         Boot_BitArray.disjoint
          card:             Boot_BitArray.card
          toList:           Boot_BitArray.toList
+         fromList:         Boot_BitArray.fromList
          complementToList: Boot_BitArray.complementToList)

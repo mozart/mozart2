@@ -27,6 +27,8 @@ import
 
    FD
 
+   Schedule
+
    Search.{SearchOne  = 'SearchOne'
            SearchAll  = 'SearchAll'
            SearchBest = 'SearchBest'

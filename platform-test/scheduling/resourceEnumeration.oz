@@ -216,23 +216,23 @@ in
 
 
    proc {TaskIntervalsProofNew Start Dur Tasks}
-      {FD.schedule.taskIntervalsDistP Tasks Start Dur}
+      {Schedule.taskIntervalsDistP Tasks Start Dur}
    end
 
    proc {TaskIntervalsOptNew Start Dur Tasks}
-      {FD.schedule.taskIntervalsDistO Tasks Start Dur}
+      {Schedule.taskIntervalsDistO Tasks Start Dur}
    end
 
    proc {MinimalSlackFirstsLasts Start Dur Tasks}
-      {FD.schedule.firstsLastsDist Tasks Start Dur}
+      {Schedule.firstsLastsDist Tasks Start Dur}
    end
 
    proc {MinimalSlackFirsts Start Dur Tasks}
-      {FD.schedule.firstsDist Tasks Start Dur}
+      {Schedule.firstsDist Tasks Start Dur}
    end
 
    proc {MinimalSlackLasts Start Dur Tasks}
-      {FD.schedule.lastsDist Tasks Start Dur}
+      {Schedule.lastsDist Tasks Start Dur}
    end
 
 end

@@ -21,7 +21,7 @@
 %%%
 
 local
-   CardDisjunction = FD.schedule.disjoint
+   CardDisjunction = Schedule.disjoint
    CDDisjunction   = FD.disjoint
 
    proc {Help Disjunction ExclusiveTasks Start Dur}
@@ -47,15 +47,15 @@ in
    end
 
    proc {ResourceConstraintEF Start Dur ExclusiveTasks}
-      {FD.schedule.serialized ExclusiveTasks Start Dur}
+      {Schedule.serialized ExclusiveTasks Start Dur}
    end
 
    proc {ResourceConstraintTI Start Dur ExclusiveTasks}
-      {FD.schedule.taskIntervals ExclusiveTasks Start Dur}
+      {Schedule.taskIntervals ExclusiveTasks Start Dur}
    end
 
    proc {ResourceConstraintDisj Start Dur ExclusiveTasks}
-      {FD.schedule.serializedDisj ExclusiveTasks Start Dur}
+      {Schedule.serializedDisj ExclusiveTasks Start Dur}
    end
 
    proc {ResourceConstraintCumDisj Start Dur ExclusiveTasks}
@@ -63,11 +63,11 @@ in
       Capacity = {Map {MakeList {Length ExclusiveTasks}} fun{$ _} 1 end}
    in
       {Record.forAll Use proc{$ U} U=1 end}
-      {FD.schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
+      {Schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
    end
 
    proc {ResourceConstraintCumMulti Start Dur Use Capacity ExclusiveTasks}
-      {FD.schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
+      {Schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
    end
 
 end

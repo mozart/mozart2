@@ -4,6 +4,8 @@ import
 
    FD
 
+   Schedule
+
    Search.{SearchOne  = 'SearchOne'
            SearchAll  = 'SearchAll'
            SearchBest = 'SearchBest'}
@@ -177,8 +179,8 @@ body
       % enumerate exclusion choices
 
          case Global then
-            {FD.schedule.serializedDisj SortedExclusiveTasks Start Dur}
-            {FD.schedule.firstsLastsDist SortedExclusiveTasks Start Dur}
+            {Schedule.serializedDisj SortedExclusiveTasks Start Dur}
+            {Schedule.firstsLastsDist SortedExclusiveTasks Start Dur}
          else {FD.distribute naive Choices}
          end
 

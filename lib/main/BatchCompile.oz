@@ -82,7 +82,7 @@ local
    end
 
    Usage =
-   'Usage: ozbatch [options] [file] ...\n'#
+   'Usage: ozc [options] [file] ...\n'#
    'You have to choose one of the following modes of operation:\n'#
    '-E, --core                    Transform a statement into core language\n'#
    '                              (file extension: .ozi).\n'#

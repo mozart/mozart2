@@ -9,7 +9,7 @@ INSTALL_DIR     = @INSTALL_DIR@
 OZC             = @OZC@
 OZL             = @OZL@
 
-TARGETS         = copy speed
+TARGETS         = copy speed Manager Client
 
 all: $(TARGETS)
 

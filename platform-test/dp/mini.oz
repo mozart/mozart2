@@ -25,6 +25,7 @@ functor
 import
    Remote(manager)
    OS(uName)
+   Property(get)
 export
    Return
 
@@ -35,7 +36,11 @@ define
           proc {$}
              {ForAll [true false]
               proc {$ Detach}
-                 {ForAll [sh rsh virtual automatic]
+                 {ForAll
+                  if {Property.get 'distribution.virtualsites'}
+                  then [sh rsh virtual automatic]
+                  else [sh rsh automatic]
+                  end
                   proc {$ Fork}
                      {ForAll [localhost {OS.uName}.nodename]
                       proc {$ Host}

@@ -1083,6 +1083,7 @@ define
                           else {Arity Rec}
                           end
             if {IsDet Arbiter}
+               andthen {IsRecord Arbiter}
                andthen {Label Arbiter} == TheLabel
                andthen {Arity Arbiter} == {Arity Rec}
                andthen {Record.all Arbiter
@@ -1100,7 +1101,8 @@ define
          end
          {FoldL PairList
           proc {$ Hd F#S Tl}
-             {S makePattern(if {IsDet Arbiter} andthen {HasFeature Arbiter F}
+             {S makePattern(if {IsDet Arbiter} andthen {IsRecord Arbiter}
+                               andthen {HasFeature Arbiter F}
                             then {Arbiter.F getCodeGenValue($)}
                             else _
                             end {Append Pos [F]} Hd Tl Seen CS)}

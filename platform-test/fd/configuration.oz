@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 
    RackSpecs = [r(power:150 slots:8  price:150)
@@ -105,8 +116,8 @@ fun {$ IMPORT}
                   cards:type(1 0 2 1)
                   price:200
                   type:2)])]
-in
 
+   Return=
    fd([configuration([
                       best(equal(fun {$}
                                     {SearchBest Configuration Order}

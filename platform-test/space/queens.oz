@@ -20,9 +20,16 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
-in
+functor $ prop once
+
+import
+   Search.{SearchOne = 'SearchOne'}
+
+export
+   Return
+
+body
+   Return=
    space([queens(equal(fun {$}
                           fun {Iterate Board N X Y DX DY}
                              case 1=<X andthen X=<N andthen 1=<Y andthen Y=<N then

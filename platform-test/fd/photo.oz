@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    proc {Photo Solution}
 
@@ -73,7 +84,7 @@ fun {$ IMPORT}
               mary:6
               paul:7)]
 
-in
+   Return=
    fd([photo([
               primer(equal(fun {$}
                               {SearchOne PhotoPrimer}

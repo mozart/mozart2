@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 Zebra =
          proc {$ Nb}
@@ -66,7 +77,7 @@ ZebraSol =
     yellow:3
     zebra:1)]
 
-in
+Return=
 
    fd([
        zebra([

@@ -1,5 +1,21 @@
-fun {$ IMPORT}
-   \insert '../lib/import'
+functor $ prop once
+
+import
+
+   FS
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+   System.{Show = show}
+
+export
+   Return
+body
+
 
    MakeEnumeration =
    proc {$ Ps}
@@ -99,8 +115,7 @@ fun {$ IMPORT}
                {FS.value.new [8#10 13#14 18]}#flight(9 6 2 2 1 1 1)
                {FS.value.new [1#3 11 15 17 19]}#flight(10 7 3 3 1 1 1)
               ]]
-in
-
+   Return=
    fs([crew([
              one(equal(fun {$} {SearchOne {Crew Flights}} end CrewSol)
                  keys: [fs])

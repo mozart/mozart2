@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    BinPacking =
    {fun {$ Order}
@@ -91,7 +102,8 @@ fun {$ IMPORT}
      b(copper:0 glass:0 plastic:1 steel:0 type:2 wood:2)
      b(copper:0 glass:0 plastic:1 steel:0 type:2 wood:2)
      b(copper:0 glass:0 plastic:2 steel:0 type:2 wood:2)]]
-in
+
+   Return=
    fd([binpacking([
                    one(equal(fun {$} {SearchOne BinPacking} end
                              BinPackingSol)

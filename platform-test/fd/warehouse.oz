@@ -1,8 +1,20 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 % Locating Warehouses
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+
 
 % Capacity: Supplier --> Nat
    Capacity   = supplier(       1   4  2  1  3)
@@ -60,8 +72,8 @@ fun {$ IMPORT}
          cost:store(30 27 70 2 4 22 5 13 35 55)
          supplier:store(5 2 5 1 5 2 2 3 2 3)
          totalCost:383)]
-in
 
+   Return =
    fd([
        warehouse([
                   best(equal(fun {$} {SearchBest WareHouse

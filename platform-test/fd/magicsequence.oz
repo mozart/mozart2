@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    MagicSequencePrimer =
 
@@ -45,7 +56,7 @@ fun {$ IMPORT}
 
    MagicSequenceSol = [[4 2 1 0 1 0 0 0]]
 
-in
+Return=
 
    fd([magicsequence([
                       primer(equal(fun {$}

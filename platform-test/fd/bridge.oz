@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    BridgeProb =
    bridge(tasks:
@@ -195,7 +207,8 @@ fun {$ IMPORT}
           s2:6 s3:39 s4:22 s5:10 s6:43 t1:44 t2:68 t3:92 t4:56 t5:80
           ua:78 ue:0 v1:56 v2:92)]
 
-in
+
+   Return=
 
    fd([bridge([
                nonglobal(equal(fun {$}

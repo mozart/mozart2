@@ -1,9 +1,22 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    EqSol1 = [3]
    EqSol2 = [7#5#2]
-in
+
+Return=
    fd([equations([
                   test1(equal(fun {$}
                                  {SearchOne proc{$ X} X :: 1#10 27 =: X*X*X

@@ -1,3 +1,17 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
 % From Constraint Satisfaction using CLP, AI 58(1992), 113-159
 % Assembly line with 10 slots. 10 cars out of 6 classes.
@@ -5,9 +19,6 @@
 % Each unit has a capacity, eg. 2 of 3: of 3 consecutive slots at
 %   most 2 may afford this unit (option).
 
-
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
 
 
    local StateDomains OutOf SumUp StateCapacityConstraints
@@ -115,8 +126,8 @@ fun {$ IMPORT}
    OutOfInfo = [1#2#1 2#3#2 1#3#3 2#5#4 1#5#5]  % R out of S for option
    OptionInfo = [[1 0 0 0 1 1][0 0 1 1 0 1][1 0 0 0 1 0][1 1 0 1 0 0][0 0 1 0 0 0]]  % class requires option?
    CarInfo = [1#1 2#1 3#2 4#2 5#2 6#2]    % number of cars of class
-in
 
+   Return=
    fd([cars([
              one(equal(fun {$}
                           {SearchOne proc{$ Slots}

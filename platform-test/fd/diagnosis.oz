@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
 % see Sidebottom page 63
 % diagnosis of a n-bit adder
@@ -107,8 +119,9 @@ fun {$ IMPORT}
    DiagSol4 =
    [[0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
      0 0 0 0 1 0 0 0 0 1]]
-in
 
+
+   Return=
 
    fd([diagnosis([
                   test1(equal(fun {$}

@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    proc {StateConstraints ?Campaigns ?Steps ?CampaignsDur ?StepsDur
          Maximal ?AllSteps}
@@ -182,7 +193,8 @@ fun {$ IMPORT}
          {ForAll Steps proc{$ E} {FD.distribute ff E} end}
       end
    end
-in
+
+   Return=
    schedule([
              company([one(equal(fun {$} {SearchOne proc{$ X}
                                                    local C#S = !X

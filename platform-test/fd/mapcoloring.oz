@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Data = [ belgium     # [france netherlands germany luxemburg]
             germany     # [austria france luxemburg netherlands]
@@ -50,8 +61,7 @@ fun {$ IMPORT}
           spain:2
           switzerland:3)]
 
-in
-
+   Return=
    fd([mapcoloring([
                     one(equal(fun {$}
                                  {SearchOne MapColoring}

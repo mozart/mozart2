@@ -20,10 +20,15 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
-in
+functor $ prop once
 
+import
+   Search.{SearchOne = 'SearchOne'}
+
+export
+   Return
+body
+   Return=
    space([nomosim(equal(fun {$}
                            proc {SolveLine Ls Ps}
                               thread

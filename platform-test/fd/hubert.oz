@@ -9,8 +9,21 @@
 % Solution: 9/12 + 5/34 + 7/68 = 1
 % i.e. sol( a: 9 b: 1 c: 2 d: 5 e: 3 f: 4 g: 7 h: 6 i: 8 )
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
+
 
 Hubert =
 proc {$ X}
@@ -37,7 +50,7 @@ end
 
 HubertSol = [sol(a:9 b:1 c:2 d:5 e:3 f:4 g:7 h:6 i:8)]
 
-in
+Return=
 
    fd([hubert([
                one(equal(fun {$} {SearchOne Hubert} end

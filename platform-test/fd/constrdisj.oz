@@ -1,6 +1,18 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'
+           allS}
+
+export
+   Return
+body
+
 
    MiscTest =
    fun {$ N T}
@@ -26,7 +38,8 @@ fun {$ IMPORT}
               end}
    end
 
-in
+   Return=
+
    fd([constrdisj([
                    {MiscTest 1
                     fun {$} Xs [X Y] = Xs C

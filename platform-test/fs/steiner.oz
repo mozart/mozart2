@@ -1,6 +1,18 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FS
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    CartProd =
    proc {$ L P}
@@ -58,7 +70,7 @@ fun {$ IMPORT}
      {FS.value.new [4 7#8]}
      {FS.value.new [5#6 9]}
     ]]
-in
+Return=
    fs([steiner([
                 one(equal(fun {$} {SearchOne {Steiner 9}} end SteinerSol)
                     keys: [fs])

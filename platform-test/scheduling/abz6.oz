@@ -21,8 +21,24 @@
 %%%
 
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'
+           one
+           all
+           object}
+
+   OS
+
+export
+   Return
+body
 
    proc {Trace Msg}
       skip
@@ -127,8 +143,7 @@ fun {$ IMPORT}
       skip
    end
 
-in
-
+   Return=
    schedule(equal(fun {$}
                      Solution1
                      Solution2

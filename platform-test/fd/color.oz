@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    proc {Color ?EC}
       Germany
@@ -53,7 +65,8 @@ fun {$ IMPORT}
         netherlands:1
         portugal:1
         spain:0)]
-in
+
+   Return=
 
    fd([color([
               one(equal(fun {$}

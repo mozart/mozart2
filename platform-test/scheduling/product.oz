@@ -1,11 +1,22 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 % Data divided by 10. No consideration of Uebergangsmengen.
 % Version with realtimes, uebergaenge are included.
 % Predecessors are made explicit
 % SC is a redundant but very useful constraint
 
-fun {$ IMPORT}
-\insert '../lib/import.oz'
 
    Limit=50  %24*7*3 div 10
    NoPred=10
@@ -313,8 +324,8 @@ fun {$ IMPORT}
      jobb(dur:13 machine:1 name:l430 pred:8 start:29 ueb:4)
      jobb(dur:6 machine:2 name:n730 pred:1 start:8 ueb:0)
      jobb(dur:7 machine:2 name:n430 pred:10 start:1 ueb:0)]]
-in
 
+   Return=
    schedule([product([
                       best(equal(fun {$}
                                     {SearchBest

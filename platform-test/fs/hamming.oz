@@ -1,5 +1,18 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FS
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Bits = 7     % maximal domain (7 bit, ie, 128 codes)
    Dist = 2     % minimal hamming distance
@@ -53,7 +66,8 @@ fun {$ IMPORT}
      {FS.value.new [1#2 6]}
      {FS.value.new [1#2 7]}
     ]]
-in
+
+   Return=
    fs([hamming([
                 one(equal(fun {$} {SearchOne Hamming} end HammingSol)
                     keys: [fs])

@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    BillAndCoins = r(6#100  8#25  10#10  1#5  5#1)
 
@@ -22,8 +34,8 @@ fun {$ IMPORT}
 
    ChangeSol =
    [change(1 1 1 1 2)]
-in
 
+   Return=
    fd([change([
                one(equal(fun {$}
                             {SearchOne Change}

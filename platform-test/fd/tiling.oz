@@ -1,3 +1,16 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 %  Programming Systems Lab, DFKI Saarbruecken,
 %  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5315
 %  Author: Joerg Wuertz
@@ -8,8 +21,6 @@
 % Square tiling problem:
 % A list of squares of given sizes must fit exactly into a fixed square.
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
 
    Off=1
 
@@ -128,8 +139,7 @@ fun {$ IMPORT}
                  [18 15 14 10 9 8 7 4 1]]
    TilingSol2 = [[0 3 3 0 1 2]#[0 0 2 3 3 3]#[3 2 2 1 1 1]]
 
-in
-
+   Return=
    fd([tiling([
                test1(equal(fun {$} {SearchOne
                                     proc{$ X}

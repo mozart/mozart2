@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    proc {Money SOL}
       local
@@ -40,8 +51,7 @@ fun {$ IMPORT}
    end
 
    DonaldSol = [[5 2 6 4 8 1 9 7 3 0]]
-in
-
+Return=
    fd([money([
               one(equal(fun {$} {SearchOne Money} end MoneySol)
                   keys: [fd])

@@ -1,6 +1,16 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD FS
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    KnapSack =
    fun {$ Weights Capacity}
@@ -41,8 +51,8 @@ fun {$ IMPORT}
      {FS.value.new [4#5]}
      {FS.value.new [6#7]}
     ]]
-in
 
+   Return=
    fs([knapsack([
                  one(equal(fun {$} {SearchOne {KnapSack Weights Capacity}} end
                            KnapSackSol)

@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 Knights =
 fun {$ N}
@@ -75,7 +86,7 @@ KnightsSol =
     25 26 31 32 56 30 51 36 33 38 55 40 64 63 43 60
       57 58 59 37 61 62 42 41 49 45 46 52 53 54)]
 
-in
+Return =
 
    fd([knights([
                 one(equal(fun {$} {SearchOne {Knights 8}} end

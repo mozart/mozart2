@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    fun {DurationTasks Tasks Dur}
       {FoldL Tasks fun{$ I T} I+Dur.T end 0}
@@ -350,7 +362,7 @@ fun {$ IMPORT}
           s4:18 s5:6 s6:26 t1:56 t2:92 t3:68 t4:44 t5:80 ua:78 ue:0 v1:68
           v2:92)]
 
-in
+   Return=
 
 
    fd([bridge([

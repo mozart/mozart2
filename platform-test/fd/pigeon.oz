@@ -1,9 +1,20 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 % N pigeons have to fit into M pigeon holes.
 % In each hole is at most one pigeon allowed.
 % Each pigeon must be in a hole.
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
 
    proc {StateDomains Pigeons Holes A}
       A = {MakeTuple f Pigeons*Holes}
@@ -38,8 +49,8 @@ fun {$ IMPORT}
    PigeonSol =
    [f(0 0 1 0 1 0) f(0 0 1 1 0 0) f(0 1 0 0 0 1)
     f(0 1 0 1 0 0) f(1 0 0 0 0 1) f(1 0 0 0 1 0)]
-in
 
+   Return=
    fd([pigeon([
                all(equal(fun {$} {SearchAll proc{$ X} {Pigeon 2 3 X} end} end
                          PigeonSol)

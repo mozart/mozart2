@@ -1,6 +1,17 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    MiscTest =
    fun {$ N T}
@@ -9,7 +20,8 @@ fun {$ IMPORT}
       L(equal(T 1) keys: [fd])
    end
 
-in
+
+Return=
    fd([dsum([
 
              {MiscTest 1

@@ -19,9 +19,11 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor
+export
+   Return
+body
+   Return =
    compiler([unnestEquationInRecord(equal(proc {$ B}
                                              Y
                                              fun {P}

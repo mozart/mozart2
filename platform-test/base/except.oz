@@ -1,5 +1,13 @@
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
+functor $ prop once
+
+import
+   System
+   Open
+
+export
+   Return
+
+body
    % tests may be performed (1) either at top-level or in a space
    % and (2) either width debugging on or off.
    local
@@ -162,8 +170,7 @@ fun {$ IMPORT}
       end
    end
 
-in
-   except({Map
+   Return=except({Map
            [
             tell(     fun{$}{TEST TELL    `?debug ?toplevel`}end)
             dot1(     fun{$}{TEST DOT1    `?debug ?toplevel`}end)

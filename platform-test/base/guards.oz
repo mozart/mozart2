@@ -23,15 +23,19 @@
 
 %%% TODO: every test should be a new procedure
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
+
+functor $ prop once
+
+export
+   Return
+body
    Initial={NewName}
    C={NewCell Initial}
    proc {Start V} {Exchange C Initial V} end
    proc {Next V1 V2} {Exchange C V1 V2} end
    proc {Final V} {Exchange C V Initial} end
    fun {Id X} X end
-in
+   Return =
    guards(
          proc {$}
             if skip then {Start 1} else fail end

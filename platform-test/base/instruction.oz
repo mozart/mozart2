@@ -19,9 +19,13 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor $ prop once
+
+export Return
+
+body
+
+   Return =
    instruction([testList(suspended(proc {$}
                                       {proc {$ X}
                                           case X of '|'(_ _) then skip

@@ -20,9 +20,12 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor $ prop once
+
+export
+   Return
+body
+   Return =
 
    float(proc {$}
             D1 = [1.0 1.49 1.5 0.1 0.5

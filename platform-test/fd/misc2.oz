@@ -1,6 +1,16 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    MiscTest =
    fun {$ N T}
@@ -10,7 +20,7 @@ fun {$ IMPORT}
    end
 
 
-in
+   Return=
    fd([misc2([
               {MiscTest 1
                fun {$} X Y Z D in X = 3 Z = 1 {FD.decl D}

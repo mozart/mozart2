@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Kalotan =
    proc {$ Solution}
@@ -23,8 +34,8 @@ fun {$ IMPORT}
    end
 
    KalotanSol = [1#1#0]
-in
 
+   Return =
    fd([kalotan([
                 one(equal(fun {$} {SearchOne Kalotan} end
                           KalotanSol)

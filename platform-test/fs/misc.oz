@@ -1,6 +1,21 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD
+
+   FS
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+   System.{Show = show}
+
+export
+   Return
+body
+
 
    MkFSetVar =
    proc {$ L U IN NIN V}
@@ -15,7 +30,7 @@ fun {$ IMPORT}
       L(entailed(proc {$} {T} = 1 end) keys: [fs])
    end
 
-in
+   Return=
    fs([misc([{MiscTest 1
               fun {$}
                  if {FS.intersect

@@ -20,9 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor
+
+import
+   System
+export
+   Return
+body
+   Return=
    conversion([
 
                stringToFloat(
@@ -92,7 +97,7 @@ in
                        keys:[module conversion float])
 
                noFloatType(proc {$}
-                         D4 = [ ~1 a {NewName} f(a) f(a:b) !Show]
+                         D4 = [ ~1 a {NewName} f(a) f(a:b) System.show]
                       in
                          {ForAll D4 proc {$ X}
                                        try

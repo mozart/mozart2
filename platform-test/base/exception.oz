@@ -20,9 +20,15 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor $ prop once
+
+import
+   System.{Show = 'Show'}
+
+export Return
+
+body
+   Return =
    exception([
               object(proc {$}
                         local

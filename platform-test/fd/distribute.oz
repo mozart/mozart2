@@ -379,11 +379,20 @@ local
 
 in
 
-   fun {$ IMPORT}
-      \insert '../lib/import.oz'
-   in
+   functor $ prop once
 
-      local
+   import
+
+      FD
+
+      Search.{SearchOne  = 'SearchOne'
+              SearchAll  = 'SearchAll'
+              SearchBest = 'SearchBest'}
+
+   export
+      Return
+   body
+
          local
             fun {AllSpaces Ss Ps}
                case Ss of nil then Ps else
@@ -463,7 +472,8 @@ in
                end
             end
          end
-      in
+
+         Return=
          fd([distribute({Map Tests
                          fun {$ K#R}
                             L = case {IsAtom K} then K
@@ -478,5 +488,5 @@ in
                               keys: [fd distribute])
                          end})])
       end
-   end
+
 end

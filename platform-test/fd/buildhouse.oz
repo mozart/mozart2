@@ -3,8 +3,19 @@
 % we have tasks A, B, C etc. with start dates SA, SB etc., durations and precedence relations.
 % Eg. task A with duration has to be scheduled before task B, thus SB >=' SA+'7
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 
    proc {BuildHouse Sol}
@@ -41,7 +52,7 @@ fun {$ IMPORT}
 
    BuildHouseSol =
    [[0 7 10 7 15 15 15 16 0 19 21 22]]
-in
+   Return=
    fd([buildhouse([
                    one(equal(fun {$} {SearchOne BuildHouse} end
                              BuildHouseSol)

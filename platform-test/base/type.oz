@@ -20,9 +20,11 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+functor $ prop once
+
+export Return
+body
+   Return =
    type([basic(
                proc {$}
                   Cases = [ atom(a IsAtom) int(1 IsInt) float(1.0 IsFloat)

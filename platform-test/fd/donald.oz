@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Money =
    proc {$ Root}
@@ -33,7 +44,7 @@ fun {$ IMPORT}
 
    DonaldSol =
    [sol(a:4 b:3 d:5 e:9 g:1 l:8 n:6 o:2 r:7 t:0)]
-in
+Return=
    fd([
        donald([all_one_equation(equal(fun {$}
                                          {SearchAll Donald}

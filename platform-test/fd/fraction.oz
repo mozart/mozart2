@@ -1,5 +1,18 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
+
 
    Fraction =
    proc {$ Root}
@@ -25,7 +38,7 @@ fun {$ IMPORT}
    end
    FractionSol =
    [sol(a:9 b:1 c:2 d:5 e:3 f:4 g:7 h:6 i:8)]
-in
+Return=
    fd([fraction([
                  all(equal(fun {$} {SearchAll Fraction} end
                            FractionSol)

@@ -20,10 +20,17 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
-in
+functor $ prop once
 
+import
+   FD
+   Search.{SearchAll = 'SearchAll'}
+
+export
+   Return
+
+body
+   Return=
    space({Map
           [failure(equal(fun {$}
                             {Space.ask {Space.new proc {$ X} fail end}}

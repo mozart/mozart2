@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Pythagoras =
    proc {$ Root}
@@ -21,8 +32,7 @@ fun {$ IMPORT}
 
    PythagorasSol = [[3 4 5]]
 
-in
-
+   Return=
    fd([pythagoras([
                    one(equal(fun {$} {SearchOne Pythagoras} end
                              PythagorasSol)

@@ -1,8 +1,20 @@
 % From Hentenryck page 132
 % In 5 houses live people from different nations with different professions...
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    Houses =
    proc {$ Vars}
@@ -47,7 +59,8 @@ fun {$ IMPORT}
     [5 4 3 2 1 4 5 1 2 3 3 1 5 4 2 4 1 5 2 3 5 1 2 4 3]
     [5 4 3 2 1 4 5 1 2 3 3 1 5 4 2 4 3 5 2 1 5 1 2 4 3]
     [5 4 3 2 1 4 5 1 2 3 3 1 5 4 2 4 5 3 2 1 5 1 2 4 3]]
-in
+
+   Return=
 
    fd([houses([
                all(equal(fun {$} {SearchAll Houses} end

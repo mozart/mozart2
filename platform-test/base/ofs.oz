@@ -22,9 +22,16 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
-%declare
+functor $
+
+import
+   System
+   FD
+
+export
+   Return
+
+body
 
    fun {DA R}
       {Record.monitorArity R _}
@@ -96,7 +103,7 @@ fun {$ IMPORT}
       {WF thread if X={F} then true else false end end}
    end
 
-in
+   Return=
 
    ofs([t1(equal(fun {$}
                     X A T1 T2

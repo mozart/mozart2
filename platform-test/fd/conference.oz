@@ -1,5 +1,17 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
 
    Data = data(
                nbSessions: 11
@@ -49,8 +61,9 @@ fun {$ IMPORT}
 
    ConferenceSol =
    [plan(1 2 3 1 2 2 3 4 1 3 4)]
-in
 
+
+   Return=
    fd([conference([
                    one(equal(fun {$}
                                 {SearchOne Conference}

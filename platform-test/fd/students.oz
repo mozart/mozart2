@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    GetSize = FD.reflect.size
    GetMax = FD.reflect.max
@@ -159,8 +170,7 @@ fun {$ IMPORT}
    StudentsSol2 = [[3 3 1 1 3 0 3 1 3 3 1 3 1 3 3 1 0 3 3 0 0]]
    StudentsSol3 = [[3 1 1 1 3 0 3 1 3 3 1]]
 
-in
-
+   Return=
    fd([
        students([
                  best1(equal(fun {$}

@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Queens =
    proc {$ N Board}
@@ -168,8 +179,7 @@ fun {$ IMPORT}
            53 179 50 182 51 181 183 40 48 196 198 29 204
            202 188 186 42 45 43)]
 
-in
-
+   Return=
    fd([queens([
                std(equal(fun {$} {SearchOne proc {$ X} {Queens 14 X} end}
                          end

@@ -1,5 +1,18 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
+
 
    Family =
    proc {$ Root}
@@ -35,7 +48,7 @@ fun {$ IMPORT}
    [maria(boys:[9 5 4] girls:[8 7 3])#
     clara(boys:[8 3 1] girls:[7 5 0])]
 
-in
+   Return=
    fd([family([
                all(equal(fun {$} {SearchAll Family} end
                          FamilySol)

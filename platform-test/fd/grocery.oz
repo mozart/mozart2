@@ -1,5 +1,18 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
+
+
 
    Grocery =
 
@@ -23,7 +36,7 @@ fun {$ IMPORT}
    GrocerySol =
    [120#125#150#316]
 
-in
+Return=
 
    fd([grocery([
                 one(equal(fun {$} {SearchOne Grocery} end

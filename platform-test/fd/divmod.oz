@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 
    proc {ModDivProb S}
@@ -26,7 +37,8 @@ fun {$ IMPORT}
    S = {SearchOne ModDivProb}
    T = S.1
 
-in
+
+   Return=
    fd([divmod([
                one(equal(fun {$}
                             if {Map T fun {$ E} {FD.reflect.dom E} end}  =

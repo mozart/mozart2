@@ -12,7 +12,7 @@ export OZPATH = .:$(SRCDIR)
 # Test for spaces
 SPACELOCAL = \
         basic nomosim queens
-SPACEOZC = $(SPACELOCAL:%=./space/%.ozc)
+SPACEOZF = $(SPACELOCAL:%=./space/%.ozf)
 
 # Tests for finite domains
 FDLOCAL = \
@@ -27,7 +27,7 @@ FDLOCAL = \
         queens mapcoloring magicsquare magicsequence \
         photo
 
-FDOZC = $(FDLOCAL:%=./fd/%.ozc)
+FDOZF = $(FDLOCAL:%=./fd/%.ozf)
 
 # Tests for finite sets
 FSLOCAL = \
@@ -37,7 +37,7 @@ FSLOCAL = \
         knapsack \
         misc
 
-FSOZC = $(FSLOCAL:%=./fs/%.ozc)
+FSOZF = $(FSLOCAL:%=./fs/%.ozf)
 
 # Tests for scheduling
 SCHEDLOCAL = \
@@ -45,28 +45,28 @@ SCHEDLOCAL = \
         company \
         product
 
-SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
+SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 
 FCORE = \
         conversion float record type exception guards misc \
         link instruction compiler except dictionary ofs
 
 
-CORE = $(FCORE:%=./core/%.ozc)
+CORE = $(FCORE:%=./core/%.ozf)
 
 DIRS = core space fd fs scheduling
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(FSOZC)
+        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF)
 
 
 ####################################################
 
-OZBATCH = @OZBATCH@
+OZCC = @OZC@
 OZFLAGS = --nowarnunused
 
-OZE = $(OZBATCH) $(OZFLAGS)
+OZE = $(OZCC) $(OZFLAGS)
 OZC = $(OZE) -c
 
 all: oztest
@@ -86,7 +86,7 @@ $(COMPONENTS): dirs
 oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
-        $(OZE) -l AP,SP lib/make-test.oz
+        $(OZE) -l Application lib/make-test.oz
         ./make-test -verbose $(COMPONENTS)
         -rm -f ./make-test
 
@@ -95,7 +95,7 @@ clean:
         -rm -f *~ ./*/*~ ./*/*/*~
         -rm -f $(COMPONENTS)
         -rm -f make-test
-        -rm -f te.ozc
+        -rm -f te.ozf
 
 veryclean: clean
         -rm -f oztest
@@ -105,9 +105,9 @@ distclean: veryclean
         -rm -f Makefile dirs
 
 .SUFFIXES:
-.SUFFIXES: $SUFFIXES .ozc .oz
+.SUFFIXES: $SUFFIXES .ozf .oz
 
-.oz.ozc:
+.oz.ozf:
         $(OZC) $< -o $@
 
 include $(SRCTOP)/share/Makefile.boot

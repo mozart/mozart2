@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    SRAT =
    proc {$ Q}
@@ -58,8 +69,7 @@ fun {$ IMPORT}
 
    SRATSol = [q(3 4 5 2 5 5 4 3 2 1)]
 
-in
-
+   Return=
    fd([srat([
              all(equal(fun {$} {SearchAll SRAT} end
                        SRATSol)

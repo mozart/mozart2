@@ -63,9 +63,22 @@ local
 
 in
 
-   fun {$ IMPORT}
-      \insert 'lib/import.oz'
-   in
+   functor $ prop once
+
+   import
+      OS
+
+      Open
+
+      Foreign
+
+      System
+
+   export
+      Return
+
+   body
+      Return=
 
       link(equal(local
                     L={Lock.new}

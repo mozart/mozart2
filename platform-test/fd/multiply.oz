@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Multiply =
    proc {$ Sol}
@@ -64,8 +75,7 @@ fun {$ IMPORT}
 
    MultiplySol = [[1 7 9 2 2 4 7 1 6 3 5 8 3 5 8 4 0 0 9 6]]
 
-in
-
+   Return=
    fd([multiply([
                  all(equal(fun {$} {SearchAll Multiply} end
                            MultiplySol)

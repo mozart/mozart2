@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
 % See Sidebottom page 60; Schur lemma problem
 % Integers 1..n to be colored with three colors. If x+y=Z, the three integers
@@ -248,8 +259,7 @@ fun {$ IMPORT}
                f(1 1 0 1 0 0 0 1 0 1 0 0 0 0 0)
               ]
 
-in
-
+   Return=
    fd([schur([
               all(equal(fun {$} {SearchAll proc{$ X} {Schur X 5} end} end
                         SchurSol)

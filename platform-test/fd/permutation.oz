@@ -1,10 +1,21 @@
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 % See Hentenryck page 152
 % Vector = 458192637
 % VMon = 11010101     1 if f(i+1)>f(i)
 % Vadv= 11110110      1 if f(i)+1 is on the right of f(i)
 
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
 
    fun {SkipDet Xs}
       case Xs
@@ -156,8 +167,8 @@ fun {$ IMPORT}
     [5 6 7 1 4 2 8 3 9] [5 6 7 3 4 1 8 2 9]
     [6 7 8 3 9 1 4 2 5] [6 7 8 1 9 2 4 3 5]
     [6 7 8 1 9 3 4 2 5] [6 7 8 2 9 3 4 1 5]]
-in
 
+   Return=
    fd([permutation([
                     all(equal(fun {$}
                                  {SearchAll

@@ -1,6 +1,16 @@
-fun {$ IMPORT}
+functor $ prop once
 
-   \insert '../lib/import.oz'
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    MiscTest =
    fun {$ N T}
@@ -10,13 +20,12 @@ fun {$ IMPORT}
    end
 
 
-in
+Return=
    fd([misc1([
 
              {MiscTest 1
               fun {$}
                  if X Y in [X Y]:::1#1000
-                    thread if Y<:X then {Show ok} else {Show no} end end
                     Y<:X
                     X<:Y
                  then 0 else 1 end

@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Line =
    proc {$ X S N Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (N-1)*S+I} end}
@@ -85,7 +96,7 @@ fun {$ IMPORT}
     end 3}
    MagicSquarePrimerSol =  [square(2 7 6 9 5 1 4 3 8)]
 
-in
+Return=
 
    fd([magicsquare([
                     one(equal(fun {$}

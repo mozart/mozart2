@@ -94,10 +94,13 @@ local
 
 in
 
-   fun {$ IMPORT}
-      \insert '../lib/import.oz'
-   in
+   functor $ prop once
 
+   export
+      Return
+
+   body
+      Return=
       dictionary([dynamics(fun {$}
                               D = {Dictionary.new}
 

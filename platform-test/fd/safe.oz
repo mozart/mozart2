@@ -1,5 +1,16 @@
-fun {$ IMPORT}
-   \insert '../lib/import.oz'
+functor $ prop once
+
+import
+
+   FD
+
+   Search.{SearchOne  = 'SearchOne'
+           SearchAll  = 'SearchAll'
+           SearchBest = 'SearchBest'}
+
+export
+   Return
+body
 
    Safe =
    proc {$ C}
@@ -16,8 +27,7 @@ fun {$ IMPORT}
    SafeSol =
    [code(4 3 1 8 9 2 6 7 5)]
 
-in
-
+   Return=
    fd([safe([
              all(equal(fun {$} {SearchAll Safe} end
                        SafeSol)

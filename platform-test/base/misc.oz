@@ -20,10 +20,20 @@
 %%% WARRANTIES.
 %%%
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
+functor $
+
+import
+   Search.{SearchAll = 'SearchAll'}
+   System.{Show = 'Show'
+           apply}
+
+export
+   Return
+
+body
    fun {Id X} X end
-in
+
+   Return=
    misc([
               search1(
                      proc {$}

@@ -20,12 +20,15 @@
 %%% WARRANTIES.
 %%%
 
-%%% TODO: split in multiple tests
+functor $ prop once
 
-fun {$ IMPORT}
-   \insert 'lib/import.oz'
-in
+export
+   Return
+import
+   System.{Show = 'Show'}
 
+body
+   Return =
 
    records(proc {$}
               fun {Id X} X end

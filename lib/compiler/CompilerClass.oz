@@ -33,7 +33,7 @@ local
                             showinsert: false
                             showcompiletime: false
                             showcompilememory: false
-                            echoqueries: false
+                            echoqueries: true
                             showdeclares: true
                             watchdog: true
                             ozma: false
@@ -533,7 +533,7 @@ local
                            {V getPrintName($)} < {W getPrintName($)}
                         end}
                 proc {$ V}
-                   {@reporter userInfo('  '#{V getPrintName($)}#' = '#
+                   {@reporter userInfo('  '#{V getPrintName($)}#': '#
                                        {V outputDebugType($)}#'\n')}
                 end}
             else skip

@@ -506,7 +506,7 @@ local
                     end#
                     format(list({Map GS fun {$ GS} {GS output(R1 $)} end}
                                 format(break)))
-               {@reporter displaySource('Oz Compiler: Core Output' '.ozc'
+               {@reporter displaySource('Oz Compiler: Core Output' '.ozi'
                                         {FormatStringToVirtualString FS}#'\n')}
             else skip
             end

@@ -198,9 +198,8 @@ in
                                          else skip
                                          end
                                       end
-                                      X
                                    in
-                                      {P X}
+                                      {P _}
                                    end}
                    end
                    keys:[fixedBug getsBound])

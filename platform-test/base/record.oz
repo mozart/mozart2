@@ -29,7 +29,6 @@ in
 
    records(proc {$}
               fun {Id X} X end
-              proc {TT B} case B then skip else {Show B} fail end end
               proc {FF B} case B then {Show B} fail else skip end end
               proc {Eq X Y} case X==Y then skip else {Show eq(X Y)} fail end end
               proc {Neq X Y} case X==Y then {Show neq(X Y)} fail else skip end end
@@ -117,7 +116,6 @@ in
                  Y=X+1
                  YY=X+1
                  Z=Y+1
-                 ZZ=Y+1
               in
                  {Eq a(X:a) a(XX:a)}
                  {Eq a(X:a Y:b) a(XX:a YY:b)}

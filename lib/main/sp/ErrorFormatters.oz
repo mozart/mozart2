@@ -372,6 +372,20 @@ define
                msg: 'No distributor left'
                items: [hint(l:'Space' m:oz(S))])
 
+      elseof kernel(spaceAltOrder S) then
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Range of alternatives must be ordered'
+               items: [hint(l:'Space' m:oz(S))])
+
+      elseof kernel(spaceAltRange S R N) then
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Requested alternative(s) out of range'
+               items: [hint(l:'Space' m:oz(S))
+                       hint(l:'Requested alternative'  m:R)
+                       hint(l:'Number of alternatives' m:N)])
+
       elseof kernel(spaceSituatedness Cs) then
          %% expected S: space
          error(kind: 'Error: Space'

@@ -23,6 +23,7 @@
 
 declare
 NewSystem
+NewProperty
 NewForeign
 NewErrorRegistry
 NewError
@@ -38,6 +39,9 @@ UrlDefaults
 in
 \insert 'sp/System.oz'
 = NewSystem
+
+\insert 'sp/Property.oz'
+= NewProperty
 
 \insert 'sp/Foreign.oz'
 = NewForeign
@@ -79,6 +83,7 @@ UrlDefaults = \insert '../url-defaults.oz'
     IMPORT
 
     'import'('System':        System
+             'Property':      Property
              'Foreign':       Foreign
              'Error':         Error
              'ErrorRegistry': ErrorRegistry
@@ -94,6 +99,7 @@ UrlDefaults = \insert '../url-defaults.oz'
     Compiler
 
     {ForAll [System        # NewSystem
+             Property      # NewProperty
              Foreign       # NewForeign
              ErrorRegistry # NewErrorRegistry
              Error         # NewError
@@ -112,6 +118,7 @@ UrlDefaults = \insert '../url-defaults.oz'
 
     {ForAll ['System'#       System
              'Foreign'#      Foreign
+             'Property'#     Property
              'ErrorRegistry'#ErrorRegistry
              'Error'#        Error
              'FD'#           FD
@@ -128,7 +135,7 @@ UrlDefaults = \insert '../url-defaults.oz'
 
     \insert BatchCompile
  in
-    {System.exit {BatchCompile {Map {System.get argv} Atom.toString}}}
+    {System.exit {BatchCompile {Map {Property.get argv} Atom.toString}}}
  end 'ozc'#UrlDefaults.pickle}
 
 {{`Builtin` 'shutdown' 1} 0}

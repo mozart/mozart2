@@ -24,6 +24,7 @@ local
 in
    functor prop once
    import
+      Property
       System   %.{gcDo printName valueToVirtualString get property
                %  printError eq}
       Foreign   %.{pointer staticLoad}

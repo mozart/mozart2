@@ -22,7 +22,8 @@
 functor prop once
 import
    Module.load
-   System.{printInfo printError property}
+   Property.{get}
+   System.{printInfo printError}
    Error.{msg formatLine}
    OS.{putEnv getEnv system unlink tmpnam}
    Open.file

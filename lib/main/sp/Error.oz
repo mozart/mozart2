@@ -111,9 +111,9 @@ in
    functor $ prop once
 
    import
-      System.{get
-              property
-              printName
+      Property.{get}
+
+      System.{printName
               printError
               valueToVirtualString}
 
@@ -190,7 +190,7 @@ in
          end
       in
          fun {FormatHint S}
-            case {System.get errors}.hints
+            case {Property.get errors}.hints
                andthen S \= nil
             then unit|{DoFormatHint &\n|{VS2S S}}
             else nil end
@@ -252,7 +252,7 @@ in
       end
 
       fun {DebugStack Exc}
-         E = {System.get errors}
+         E = {Property.get errors}
          D = {DebugField Exc}
       in
          case {HasFeature D stack}
@@ -272,7 +272,7 @@ in
       %%
 
       fun {OzValueToVS X}
-         P={System.get errors} in
+         P={Property.get errors} in
          {System.valueToVirtualString X P.depth P.width}
       end
 
@@ -330,7 +330,7 @@ in
       end
 
       fun {Spaces N}
-         case {System.property.get 'internal.debug'}
+         case {Property.get 'internal.debug'}
          then [& ]
          else {Repeat N & }
          end
@@ -538,7 +538,7 @@ in
             of unit then
                skip
             elseof S then
-               E = {System.get errors}
+               E = {Property.get errors}
             in {ForAll
                 {Map {GetStack S E.'thread'} StarLine}
                 Out}

@@ -32,7 +32,8 @@ in
        Syslet
        Connection.{take}
        Module.{link}
-       System.{get set showInfo gcDo}
+       Property.{get}
+       System.{showInfo gcDo}
 
        %%
     body
@@ -46,8 +47,6 @@ in
        %% changed;
        \insert 'dp/VSServer.oz'
     in
-       %%
-       {System.set messages(idle:false)}
 
        %%
        try

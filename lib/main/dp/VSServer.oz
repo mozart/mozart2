@@ -124,7 +124,7 @@ local
                                checkInterval:  Int
                                getFun:         fun {$}
                                                   {System.gcDo}
-                                                  {System.get 'gc.size'}
+                                                  {Property.get 'gc.size'}
                                                end
                                cmpFun:         fun {$ C L} C >= L end
                                actionProc:     AP)}
@@ -136,8 +136,8 @@ local
                           init(limit:          Lim
                                checkInterval:  Int
                                getFun:         fun {$}
-                                                  {System.get 'time.user'} +
-                                                  {System.get 'time.system'}
+                                                  {Property.get 'time.user'} +
+                                                  {Property.get 'time.system'}
                                                end
                                cmpFun:         fun {$ C L} C >= L end
                                actionProc:     AP)}

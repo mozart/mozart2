@@ -414,7 +414,7 @@ in
          {ForAll Opts
           proc {$ Opt#X}
              case Opt of help then X in
-                X = {System.property.get 'root.url'}
+                X = {Property.get 'root.url'}
                 {System.printInfo 'Usage: '#X#' [options] [file] ...\n'#Usage}
                 raise success end
              [] define then

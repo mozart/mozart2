@@ -27,7 +27,7 @@
 functor $ prop once
 
 import
-   System.{property}
+   Property.{get condGet}
 
    Error.{formatGeneric
           format
@@ -66,13 +66,13 @@ body
    Resolver
    Localize
 
-   case {System.property.condGet url false}
+   case {Property.condGet url false}
    of false then
       !Resolver = unit
       fun{!Localize PATH} old(PATH) end
    elseof URL then
       !Resolver = {URL.makeResolver foreign
-                   vs({System.property.get 'oz.search.dload'})}
+                   vs({Property.get 'oz.search.dload'})}
       !Localize = Resolver.localize
    end
 

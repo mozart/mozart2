@@ -27,8 +27,9 @@ functor $ prop once
 import
    Foreign.{staticLoad}
 
+   Property.{get}
+
    System.{apply
-           property
            showError
            valueToVirtualString}
 
@@ -162,7 +163,7 @@ body
    %% Printing error messages
    %%
    proc {TkError S Tcl}
-      P={System.property.get errors}
+      P={Property.get errors}
    in
       {System.showError 'Tk Module: '#S#
        case Tcl==unit then '' else '\n'#
@@ -361,8 +362,8 @@ body
    end
 
    Stream = local
-               HOME    = {System.property.get 'oz.home'}
-               OSS#CPU = {System.property.get platform}
+               HOME    = {Property.get 'oz.home'}
+               OSS#CPU = {Property.get platform}
                WISH    = case OSS=='win32' then 'ozwish.exe'
                          else 'oz.wish.bin'
                          end
@@ -1220,8 +1221,8 @@ body
 
    local
       local
-         Sep   = {System.property.get 'path.separator'}
-         Home  = {System.property.get 'oz.home'}
+         Sep   = {Property.get 'path.separator'}
+         Home  = {Property.get 'oz.home'}
       in
          ImRes = {URL.makeResolver image
                   vs('all=.'#[Sep]#'cache='#Home#'/cache')}

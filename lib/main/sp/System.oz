@@ -31,8 +31,6 @@
 functor $ prop once
 
 export
-   get:                  SystemGet
-   set:                  SystemSet
    printError:           PrintError
    printInfo:            PrintInfo
    showError:            ShowError
@@ -47,7 +45,6 @@ export
    tellRecordSize:       TellRecordSize
    valueToVirtualString: ValueToVirtualString
    exit:                 Exit
-   property:             Property
 
    %%
    %% Only relevant for OPI, direct use is deprecated
@@ -56,19 +53,12 @@ export
    'Show':            Show
    'Print':           Print
    'Exit':            Exit
-   'GetProperty':     GetProperty
-   'PutProperty':     PutProperty
-   'CondGetProperty': CondGetProperty
-
 
 body
 
    Show            = {`Builtin` 'Show'            1}
    Print           = {`Builtin` 'Print'           1}
    Exit            = {`Builtin` shutdown          1}
-   GetProperty     = {`Builtin` 'GetProperty'     2}
-   PutProperty     = {`Builtin` 'PutProperty'     2}
-   CondGetProperty = {`Builtin` 'CondGetProperty' 3}
 
    %%
    %% Printing
@@ -81,24 +71,6 @@ body
    proc {ShowError V}
       {PrintError V # '\n'}
    end
-
-   proc {SystemSet W}
-      {PutProperty {Label W} W}
-   end
-
-   fun {SystemGet C}
-      case C
-      of     standalone then {GetProperty 'oz.standalone'}
-      elseof home       then {GetProperty 'oz.home'      }
-      else                   {GetProperty C              }
-      end
-   end
-
-   Property = property(get:     GetProperty
-                       put:     PutProperty
-                       condGet: CondGetProperty)
-
-
 
    SystemEq             = {`Builtin` 'System.eq' 3}
    SystemNbSusps        = {`Builtin` 'System.nbSusps' 2}

@@ -34,7 +34,7 @@ local
 
 in
 
-   functor $ prop once
+   functor $
 
    import
       OS.{tmpnam

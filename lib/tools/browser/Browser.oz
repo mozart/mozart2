@@ -48,10 +48,10 @@ import
 
    FDB(isVarB) at 'x-oz://boot/FDB'
 
-   FSB(getGlb
-       getLub
-       getCard
-       isVarB)
+   FSB('reflect.lowerBound'
+       'reflect.upperBound'
+       'reflect.card'
+       'var.is')
    at 'x-oz://boot/FSB'
 
    BrowserSupport(recordCIsVarB

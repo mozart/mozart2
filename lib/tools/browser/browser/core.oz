@@ -89,10 +89,10 @@ AddrOf = BrowserSupport.addr
 OnToplevel = System.onToplevel
 
 %%
-FSetGetGlb  = FSB.getGlb
-FSetGetLub  = FSB.getLub
-FSetGetCard = FSB.getCard
-IsFSetVar   = FSB.isVarB
+FSetGetGlb  = FSB.'reflect.lowerBound'
+FSetGetLub  = FSB.'reflect.upperBound'
+FSetGetCard = FSB.'reflect.card'
+IsFSetVar   = FSB.'var.is'
 
 %%
 GetCtVarNameAsAtom       = CTB.getNameAsAtom

@@ -203,6 +203,7 @@ fun {StringToHandlers L}
    fun {Parse L}
       case L of
          nil then [DefaultHandler]
+      [] "=" then nil
       [] &a|&l|&l|&=|T then
          URL#REST = {Gather T SEPARATOR ESCAPE}
       in

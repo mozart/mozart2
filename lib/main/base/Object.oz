@@ -180,6 +180,10 @@ local
       proc {SetOne One Meth FastMeth Defaults}
          %% Enters a single method
          L = One.1
+         if {IsLiteral L} then skip else
+            {Exception.raiseError
+             object(nonLiteralMethod L)}
+         end
          M = One.2
          F = {CondSelect One fast    NoArg}
          D = {CondSelect One default NoArg}

@@ -483,11 +483,11 @@ in
 
              {MiscTest 45
               fun {$}
-                 S = {FS.var.upperBound [1#5]}
-                 R = thread if {FS.int.convex S} then 1 else 0 end end
-              in
-                 S = {FS.value.new nil}
-                 R
+                 if
+                    S = {FS.var.upperBound [1#5]}
+                 in
+                    {FS.int.convex S} S = {FS.value.new nil}
+                 then 1 else 0 end
               end}
             ])
       ])

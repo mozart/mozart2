@@ -35,27 +35,30 @@ define
           proc {$}
              {ForAll [true false]
               proc {$ Detach}
-                 {ForAll [automatic sh rsh]
+                 {ForAll [sh rsh]% virtual automatic]
                   proc {$ Fork}
-% Redhat does not allow rsh localhost by default
-%                    {ForAll [localhost {OS.uName}.nodename]
-                     {ForAll [{OS.uName}.nodename]
+                     {ForAll [localhost {OS.uName}.nodename]
                       proc {$ Host}
-                         S={New Remote.manager
-                            init(host:Host fork:Fork detach:Detach)}
-                      in
-                         {S ping}
-                         {S apply(url:'' functor
-                                         import
-                                            Property(put)
-                                         export
-                                            Hallo
-                                         define
+% workaround: Redhat does not allow rsh localhost by default
+                         if Host == localhost andthen  Fork == rsh
+                         then skip
+                         else
+                            S={New Remote.manager
+                               init(host:Host fork:Fork detach:Detach)}
+                         in
+                            {S ping}
+                            {S apply(url:'' functor
+                                            import
+                                               Property(put)
+                                            export
+                                               Hallo
+                                            define
                                             {Property.put 'close.time' 1000}
-                                            Hallo=hallo
-                                         end $)}.hallo=hallo
-                         {S ping}
-                         {S close}
+                                               Hallo=hallo
+                                            end $)}.hallo=hallo
+                            {S ping}
+                            {S close}
+                         end
                       end}
                   end}
               end}

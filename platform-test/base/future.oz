@@ -66,16 +66,18 @@ define
                  end
                  keys:[future byNeed arity])
            space(proc {$}
-                    X Y S Go
+                    X Y S Go1 Go2
                  in
                     X=!!Y
                     S={Space.new proc {$ R} X=1 end}
                     thread
+                       Go1 = unit
                        _ = {Space.merge S}
-                       Go = unit
+                       Go2 = unit
                     end
-                    Y=1
-                    {Wait Go}
+                    {Wait Go1} % first start thread to merge space
+                    Y=1        % then bind future
+                    {Wait Go2} % then wait until merge is successful
                  end
                  keys: [future space])
           ])

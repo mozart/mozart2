@@ -220,18 +220,13 @@ class CodeStore from Emitter
             CodeStore, RegOcc(Reg1 RS)
             CodeStore, RegOcc(Reg2 RS)
             CodeStore, RegOccs(GRegs RS)
-         [] vExHandler(_ Addr1 Reg Addr2 _ _ InitsRS) then
-            RS1 RS2 TempRS
-         in
+         [] vExHandler(_ Addr1 Reg Addr2 _ _ InitsRS) then RS1 RS2 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, RegOcc(Reg RS2)
-            InitsRS = {BitArray.clone RS1}
-            {BitArray.'or' InitsRS RS2}
-            {BitArray.and InitsRS RS}
-            TempRS = {BitArray.clone RS1}
-            {BitArray.and TempRS RS2}
-            {BitArray.'or' InitsRS TempRS}
+            InitsRS = {BitArray.clone RS}
+            {BitArray.'or' InitsRS RS1}
+            {BitArray.and InitsRS RS2}
             {BitArray.'or' RS RS1}
             {BitArray.'or' RS RS2}
          [] vPopEx(_ _ _) then

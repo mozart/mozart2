@@ -26,15 +26,16 @@
 functor
 
 import
-   Open(pipe)
-   OS(getEnv)
-   System(showInfo)
+   OS(getEnv exec wait)
    Connection(offer)
    Property(get)
    Module(manager)
 
 export
    manager: ManagerProxy
+
+prepare
+   WaitDelay = 2000
 
 define
 
@@ -54,47 +55,32 @@ define
                     unit
                  end
 
-   local
-      proc {SuckUp Pipe}
-         S={Pipe read(list:$)}
-      in
-         if S\=nil then
-            {System.showInfo S} {SuckUp Pipe}
-         end
-      end
+   proc {ForkProcess Fork Host Ports Detach}
+      Cmd       = {OS.getEnv 'OZHOME'}#'/bin/ozengine'
+      Func      = 'x-oz://System/RemoteServer'
+      TicketArg = '--ticket='#{Connection.offer Ports}
+      DetachArg = '--'#if Detach then '' else 'no' end#'detached'
+      ModelArg  = '--'#if {Property.get 'perdio.minimal'} then ''
+                       else 'no'
+                       end#'minimal'
    in
-      fun {CreatePipe Fork Host Ports Detach}
-         HOME      = {OS.getEnv 'OZHOME'}
-         Cmd       = HOME#'/bin/ozengine'
-         Func      = HOME#'/share/RemoteServer.ozf'
-         TicketArg = '--ticket='#{Connection.offer Ports}
-         DetachArg = '--'#if Detach then '' else 'no' end#'detached'
-         ModelArg  = '--'#if {Property.get 'perdio.minimal'} then ''
-                          else 'no'
-                          end#'minimal'
-      in
-         try
-            Pipe = {New Open.pipe
-                    case Fork
+      try
+         CMD#ARGS = case Fork
                     of rsh then
-                       init(cmd:  'rsh'
-                            args: [Host
-                                   ('exec '#Cmd#' '#Func#' '#
-                                    DetachArg#' '#TicketArg#' '#ModelArg)])
+                       'rsh' #
+                       [Host ('exec '#Cmd#' '#Func#' '#
+                              DetachArg#' '#TicketArg#' '#ModelArg)]
+                    [] sh then
+                       Cmd # [Func DetachArg TicketArg ModelArg]
                     [] virtual then
-                       init(cmd:  Cmd
-                            args: [Func
-                                   TicketArg
-                                   DetachArg
-                                   ModelArg
-                                   '--shmkey='#{VirtualSite.newMailbox}])
-                    end}
-         in
-            thread {SuckUp Pipe} end
-            Pipe
-         catch E then
-            raise error(E) end
-         end
+                       Cmd # [Func TicketArg DetachArg ModelArg
+                              '--shmkey='#{VirtualSite.newMailbox}]
+                    end
+      in
+         {OS.exec CMD ARGS _}
+      catch E then
+         {OS.wait _ _}
+         raise error(E) end
       end
    end
 
@@ -105,7 +91,6 @@ define
       feat
          Run
          Ctrl
-         Pipe
 
       attr
          Run:  nil
@@ -121,15 +106,17 @@ define
          Host = {VirtualString.toAtom HostIn}
          Fork = {VirtualString.toAtom ForkIn}
       in
-         self.Pipe = {CreatePipe
-                      if
-                         Host==localhost andthen
-                         Fork==automatic andthen
-                         HasVirtualSite
-                      then virtual
-                      else rsh
-                      end
-                      Host RunPort#CtrlPort Detach}
+         {ForkProcess
+          if Host==localhost then
+             if Fork==automatic then
+                if HasVirtualSite then virtual
+                else sh
+                end
+             else rsh
+             end
+          else rsh
+          end
+          Host RunPort#CtrlPort Detach}
 
          Run      <- RunRet.2
          Ctrl     <- CtrlRet.2
@@ -176,8 +163,11 @@ define
       meth close
          lock
             {Port.send self.Ctrl close}
+            thread
+               {Delay WaitDelay}
+               {OS.wait _ _}
+            end
          end
-         {self.Pipe close}
       end
 
    end

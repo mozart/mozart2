@@ -64,3 +64,4 @@
 \insert 'standard/Lazy.oz'
 \insert 'standard/Promise.oz'
 \insert 'standard/Functor.oz'
+\insert 'standard/BitArray.oz'

@@ -12,15 +12,13 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
 %%%    $LICENSEURL$
 %%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
+%%% of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 %%%
 
 functor $ prop once
@@ -39,6 +37,7 @@ export
    scale:       DiscreteScale
    numberentry: NumberEntry
    images:      LoadImages
+   smoother:    Smoother
 
 body
 
@@ -916,7 +915,6 @@ body
    end
 
 
-
    local
       UrlDefaults = \insert '../../url-defaults.oz'
       ImageDir    = UrlDefaults.home # 'images/'
@@ -926,7 +924,6 @@ body
       Border      = 1
       Images      = {LoadImages [ImageDir#'mini-inc.xbm'
                                  ImageDir#'mini-dec.xbm']}
-
 
       fun {CoerceAdd X Y}
          FX={IsFloat X} FY={IsFloat Y}
@@ -1342,6 +1339,61 @@ body
          end
          meth getCurrent($)
             case @Current of T#_ then T end
+         end
+      end
+   end
+
+   local
+      Timeout = 15 % ms
+   in
+      class Smoother
+         prop
+            locking
+         attr
+            QueueSync : _
+            MsgList   : nil
+            MsgListTl : nil
+         meth tk(...)=M
+            Smoother,Enqueue(o(self d(M)))
+         end
+         meth Enqueue(Ticklet)
+            lock
+               case Ticklet
+               of nil  then skip
+               [] T|Tr then
+                  Smoother,Enqueue(T)
+                  Smoother,Enqueue(Tr)
+               else NewTl in
+                  case {IsDet @MsgListTl} then
+                     MsgList <- Ticklet|NewTl
+                  else
+                     @MsgListTl = Ticklet|NewTl
+                  end
+                  MsgListTl <- NewTl
+                  Smoother,ClearQueue
+               end
+            end
+         end
+         meth ClearQueue
+            New in
+            QueueSync <- New = unit
+            thread
+               {WaitOr New {Alarm Timeout}}
+               case {IsDet New} then skip else
+                  Smoother,DoClearQueue
+               end
+            end
+         end
+         meth DoClearQueue
+            lock
+               @MsgListTl = nil
+               try
+                  {Tk.batch @MsgList}
+               catch _ then  %% maybe the window has been closed already?
+                  skip
+               end
+               MsgList <- nil
+            end
          end
       end
    end

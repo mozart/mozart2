@@ -106,10 +106,7 @@ in
 end
 
 
-%% this removes some additional bindings which Motif doesn't
-%% have. Unfortunately, it also disables some of the more useful key
-%% bindings...
-
+%% change some class bindings
 {TkBatch [bind('Checkbutton' '<Return>' '')
           bind('Radiobutton' '<Return>' '')
           bind('Entry' '<Control-u>' '%W delete 0 end')]}

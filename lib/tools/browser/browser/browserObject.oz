@@ -22,11 +22,9 @@ class WindowPrimary from UrObject
    attr
       window: InitValue
       buttons: InitValue         % procedures;
-   %% menuButtons: InitValue     % procedures;
-   %% menus: InitValue           % procedures;
       entries: InitValue         % procedures;
       tclVars: InitValue         % tcl variables in check&radio entries;
-   %%
+
    %%
    %%
    meth createWindow(?Sync)
@@ -34,44 +32,44 @@ class WindowPrimary from UrObject
       {Show 'WindowPrimary::createWindow is applied'}
 \endif
       case @window == InitValue then
-         local Window AreMenus AreButtons in
-            %%
-            %%
-            Window = {New ProtoBrowserWindow
-                      init(window: {@store read(StoreOrigWindow $)}
-                           screen: {@store read(StoreScreen $)}
-                           browserObj: self
-                           store: @store
-                           standAlone: self.standAlone)}
-            %%
-            window <- Window
-            %%
-            %%
-            AreMenus = {@store read(StoreAreMenus $)}
-            case AreMenus then <<CreateMenus(_)>>
-            else true
-            end
-            %%
-            %%
-            AreButtons = {@store read(StoreAreButtons $)}
-            case AreButtons then <<CreateButtons(_)>>
-            else true
-            end
-            %%
-            %%
-            {@window setMinSize}
-            <<sync(Sync)>>
-            %%
-            %%
-            {BrowserMessagesInit Window}
+         Window AreMenus AreButtons
+      in
+
+         %%
+         Window = {New ProtoBrowserWindow
+                   init(window: {@store read(StoreOrigWindow $)}
+                        screen: {@store read(StoreScreen $)}
+                        browserObj: self
+                        store: @store
+                        standAlone: self.standAlone)}
+         %%
+         window <- Window
+
+         %%
+         AreMenus = {@store read(StoreAreMenus $)}
+         case AreMenus then <<CreateMenus>>
+         else true
          end
-      else Sync = ok
+
+         %%
+         AreButtons = {@store read(StoreAreButtons $)}
+         case AreButtons then <<CreateButtons>>
+         else true
+         end
+
+         %%
+         {@window setMinSize}
+         Sync = True
+
+         %%
+         {BrowserMessagesInit Window}
+      else Sync = True
       end
    end
 
    %%
    %%
-   meth !CreateButtons(Sync)
+   meth !CreateButtons()
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::CreateButtons is applied'}
 \endif
@@ -85,7 +83,7 @@ class WindowPrimary from UrObject
          NextButtonProcTmp AllButtonProc AllButtonProcTmp
       in
 
-         %
+         %%
          {@window
           [createButtonsFrame
            pushButton("rebrowse" proc {$} {self rebrowse} end RebrowseButtonProc)
@@ -103,9 +101,8 @@ class WindowPrimary from UrObject
            pushButton("previous" proc {$} {self previous} end PreviousButtonProcTmp)
            pushButton("next" proc {$} {self next} end NextButtonProcTmp)
            pushButton("all" proc {$} {self all} end AllButtonProcTmp)
-           exposeButtonsFrame
-           sync(Sync)]}
-         %%
+           exposeButtonsFrame]}
+
          %%
          case self.IsView then
             ClearButtonProc = proc {$ _ _} true end
@@ -113,7 +110,7 @@ class WindowPrimary from UrObject
          else
             ClearButtonProc = ClearButtonProcTmp
          end
-         %%
+
          %%
          case @current == InitValue then
             {RebrowseButtonProc state disabled}
@@ -125,30 +122,30 @@ class WindowPrimary from UrObject
             {ClearButtonProc state normal}
          end
 
-         % expand/shrink/show/zoom/deref disabled simply;
+         %% expand/shrink/show/zoom/deref disabled simply;
          {ExpandButtonProc state disabled}
          {ShrinkButtonProc state disabled}
          {ShowButtonProc state disabled}
          {ZoomButtonProc state disabled}
          {DerefButtonProc state disabled}
-         %%
+
          %%
          case self.IsView then
-            local DummyProc in
-               DummyProc = proc {$ _ _} true end
-               %%
-               FirstButtonProc = DummyProc
-               LastButtonProc = DummyProc
-               NextButtonProc = DummyProc
-               PreviousButtonProc = DummyProc
-               AllButtonProc = DummyProc
-               %%
-               {FirstButtonProcTmp state disabled}
-               {LastButtonProcTmp state disabled}
-               {NextButtonProcTmp state disabled}
-               {PreviousButtonProcTmp state disabled}
-               {AllButtonProcTmp state disabled}
-            end
+            DummyProc
+         in
+            DummyProc = proc {$ _ _} true end
+            %%
+            FirstButtonProc = DummyProc
+            LastButtonProc = DummyProc
+            NextButtonProc = DummyProc
+            PreviousButtonProc = DummyProc
+            AllButtonProc = DummyProc
+            %%
+            {FirstButtonProcTmp state disabled}
+            {LastButtonProcTmp state disabled}
+            {NextButtonProcTmp state disabled}
+            {PreviousButtonProcTmp state disabled}
+            {AllButtonProcTmp state disabled}
          else
             FirstButtonProc = FirstButtonProcTmp
             LastButtonProc = LastButtonProcTmp
@@ -156,6 +153,7 @@ class WindowPrimary from UrObject
             PreviousButtonProc = PreviousButtonProcTmp
             AllButtonProc = AllButtonProcTmp
          end
+
          %%
          case @current == InitValue then
             {FirstButtonProc state disabled}
@@ -166,7 +164,7 @@ class WindowPrimary from UrObject
             {UnzoomButtonProc state disabled}
             {TopButtonProc state disabled}
          else
-            %
+            %%
             case @zoomStack == nil then
                {UnzoomButtonProc state disabled}
                {TopButtonProc state disabled}
@@ -175,7 +173,7 @@ class WindowPrimary from UrObject
                {TopButtonProc state normal}
             end
 
-            %
+            %%
             case @showAll then
                {AllButtonProc state disabled}
                {FirstButtonProc state normal}
@@ -185,7 +183,7 @@ class WindowPrimary from UrObject
             else
                {AllButtonProc state normal}
 
-               %
+               %%
                case @forward == nil then
                   {NextButtonProc state disabled}
                   {LastButtonProc state disabled}
@@ -194,7 +192,7 @@ class WindowPrimary from UrObject
                   {LastButtonProc state normal}
                end
 
-               %
+               %%
                case @backward == nil then
                   {PreviousButtonProc state disabled}
                   {FirstButtonProc state disabled}
@@ -205,7 +203,7 @@ class WindowPrimary from UrObject
             end
          end
 
-         %
+         %%
          buttons <- buttons(rebrowse: RebrowseButtonProc
                             redraw: RedrawButtonProc
                             clear: ClearButtonProc
@@ -221,17 +219,12 @@ class WindowPrimary from UrObject
                             previous: PreviousButtonProc
                             next: NextButtonProc
                             all: AllButtonProc)
-
-         %
-         case {IsValue Sync} then
-            <<nil>>
-         end
       end
    end
 
    %%
    %%
-   meth !CreateMenus(Sync)
+   meth !CreateMenus()
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::CreateMenus is applied'}
 \endif
@@ -254,21 +247,21 @@ class WindowPrimary from UrObject
          PreviousEntryProc PreviousEntryProcTmp NextEntryProc
          NextEntryProcTmp AllEntryProc AllEntryProcTmp
 
-        \ifdef FEGRAMED
+\ifdef FEGRAMED
          FE_Menue FE_ShowSelectedProc
          FE_Var FE_SubMenuProc
          FE_MB FE_Menu
-        \endif
+\endif
 
       in
          %%
          Store = @store
          Window = @window
-         %%
+
          %%  menus;
          {Window
           [createMenusFrame
-           %%
+
            %% 'Browser' menu;
            pushMenuButton("Browser" BrowserMB _)
            defineMenu(BrowserMB True BrowserMenu)
@@ -302,7 +295,7 @@ class WindowPrimary from UrObject
            addCommandEntry(BrowserMenu " Close "#"ctl-x"
                            proc {$} {self close} end
                            CloseEntryProc)
-           %%
+
            %% 'Buffer' menu;
            pushMenuButton("Buffer" BufferMB _)
            defineMenu(BufferMB
@@ -310,7 +303,7 @@ class WindowPrimary from UrObject
                          local HistoryLength in
                             HistoryLength = {Store read(StoreHistoryLength $)}
 
-                            %
+                            %%
                             case HistoryLength == DInfinite then
                                {HLMProc label {List.flatten [" Size (infinite) "]}}
                             else
@@ -321,20 +314,6 @@ class WindowPrimary from UrObject
                          end
                       end
                       BufferMenu)
-           %% createTkVar(case @isActive then TclTrue else TclFalse end
-           %% proc {$ Val}
-           %%    local TrueValue in
-           %%    case {String.toAtom Val} == TclFalse then TrueValue = False
-           %%    else TrueValue = True
-           %%    end
-           %%
-           %%    %
-           %%    {self SetActiveState(TrueValue)}
-           %%    end
-           %%  end
-           %%          IsActiveVar)
-           %% addCheckEntry(BufferMenu " Follow " IsActiveVar TclTrue TclFalse _)
-           %% addSeparatorEntry(BufferMenu)
            addCommandEntry(BufferMenu " Clear history "
                            proc {$} {self ClearHistory} end
                            ClearHistoryEntryProcTmp)
@@ -428,7 +407,7 @@ class WindowPrimary from UrObject
                               end
                            end
                            _)
-           %%
+
            %% 'Navigate' menu;
            pushMenuButton("Navigate" NavigateMB _)
            defineMenu(NavigateMB True NavigateMenu)
@@ -467,7 +446,7 @@ class WindowPrimary from UrObject
            addCommandEntry(NavigateMenu " Shrink "#"   s"
                            proc {$} {self SelShrink} end
                            ShrinkEntryProc)
-           %%
+
            %%  'View' menu;
            pushMenuButton("View" ViewMB _)
            defineMenu(ViewMB
@@ -479,7 +458,7 @@ class WindowPrimary from UrObject
                                     read(StoreDepthInc DepthInc)
                                     read(StoreWidthInc WidthInc)]}
 
-                            %
+                            %%
                             {DepthMenuProc label
                              {List.flatten [" Depth ("
                                                      case Depth == DInfinite
@@ -487,7 +466,7 @@ class WindowPrimary from UrObject
                                                      else {Int.toString Depth}
                                                      end
                                                      ") "]}}
-                            %
+                            %%
                             {WidthMenuProc label
                              {List.flatten [" Width ("
                                                      case Width == DInfinite
@@ -495,7 +474,7 @@ class WindowPrimary from UrObject
                                                      else {Int.toString Width}
                                                      end
                                                      ") "]}}
-                            %
+                            %%
                             {NodeNumberMenuProc label
                              {List.flatten [" Nodes ("
                                                      case NodeNumber == DInfinite
@@ -503,11 +482,11 @@ class WindowPrimary from UrObject
                                                      else {Int.toString NodeNumber}
                                                      end
                                                      ") "]}}
-                            %
+                            %%
                             {IncDepthMenuProc label
                              {List.flatten
                               [" Depth inc (" {Int.toString DepthInc} ") "]}}
-                            %
+                            %%
                             {IncWidthMenuProc label
                              {List.flatten
                               [" Width inc (" {Int.toString WidthInc} ") "]}}
@@ -523,7 +502,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreScrolling TrueValue)}
               end
            end
@@ -539,7 +518,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreCheckStyle TrueValue)}
                  case TrueValue then
                     % {Store store(StoreOnlyCycles False)}
@@ -559,7 +538,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreOnlyCycles TrueValue)}
                  case TrueValue then
                     % {Store store(StoreCheckStyle False)}
@@ -582,7 +561,7 @@ class WindowPrimary from UrObject
                     TrueValue = AtomicArity
                  end
 
-                 %
+                 %%
                  {Store store(StoreArityType TrueValue)}
               end
            end
@@ -598,7 +577,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreAreVSs TrueValue)}
               end
            end
@@ -614,7 +593,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreHeavyVars TrueValue)}
               end
            end
@@ -632,7 +611,7 @@ class WindowPrimary from UrObject
                     TrueValue = Expanded
                  end
 
-                 %
+                 %%
                  {Store store(StoreFillStyle TrueValue)}
               end
            end
@@ -648,7 +627,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreFlatLists TrueValue)}
               end
            end
@@ -663,7 +642,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreSmallNames TrueValue)}
               end
            end
@@ -679,7 +658,7 @@ class WindowPrimary from UrObject
                  else TrueValue = True
                  end
 
-                 %
+                 %%
                  {Store store(StoreAreInactive TrueValue)}
               end
            end
@@ -1192,10 +1171,8 @@ class WindowPrimary from UrObject
                            _)
 \endif
 
-           %%
-           exposeMenusFrame
-           sync(Sync)]}
-         %%
+           exposeMenusFrame]}
+
          %%
          {ForAll IKnownMiscFonts
           proc {$ Font}
@@ -1205,7 +1182,7 @@ class WindowPrimary from UrObject
                                {List.flatten
                                 [" " {Atom.toString Font.name} " "]}
                                FontVar Font.font CProc)}
-                %%
+
                 %%
                 case {Window tryFont(Font.font $)}
                 then true       % font exists - ok;
@@ -1214,6 +1191,8 @@ class WindowPrimary from UrObject
                 %%
              end
           end}
+
+         %%
          {ForAll IKnownCourFonts
           proc {$ Font}
              local CProc in
@@ -1231,23 +1210,23 @@ class WindowPrimary from UrObject
                 %%
              end
           end}
-         %%
+
          %%
          case self.IsView then
-            local DummyProc in
-               DummyProc = proc {$ _ _} true end
-               %%
-               ClearEntryProc = DummyProc
-               ClearHistoryEntryProc = DummyProc
-               {ClearEntryProcTmp state disabled}
-               {ClearHistoryEntryProcTmp state disabled}
-               {HLMProc state disabled}
-            end
+            DummyProc
+         in
+            DummyProc = proc {$ _ _} true end
+            %%
+            ClearEntryProc = DummyProc
+            ClearHistoryEntryProc = DummyProc
+            {ClearEntryProcTmp state disabled}
+            {ClearHistoryEntryProcTmp state disabled}
+            {HLMProc state disabled}
          else
             ClearEntryProc = ClearEntryProcTmp
             ClearHistoryEntryProc = ClearHistoryEntryProcTmp
          end
-         %%
+
          %%
          case @current == InitValue then
             {RebrowseEntryProc state disabled}
@@ -1261,35 +1240,35 @@ class WindowPrimary from UrObject
             {ClearHistoryEntryProc state normal}
          end
 
-         % expand/shrink/show/zoom/deref disabled simply;
+         %% expand/shrink/show/zoom/deref disabled simply;
          {ExpandEntryProc state disabled}
          {ShrinkEntryProc state disabled}
          {ShowEntryProc state disabled}
          {ZoomEntryProc state disabled}
          {DerefEntryProc state disabled}
 
+         %%
 \ifdef FEGRAMED
          {FE_ShowSelectedProc state disabled}
 \endif
-         %%
-         %%
 
+         %%
          case self.IsView then
-            local DummyProc in
-               DummyProc = proc {$ _ _} true end
-               %%
-               FirstEntryProc = DummyProc
-               LastEntryProc = DummyProc
-               NextEntryProc = DummyProc
-               PreviousEntryProc = DummyProc
-               AllEntryProc = DummyProc
-               %%
-               {FirstEntryProcTmp state disabled}
-               {LastEntryProcTmp state disabled}
-               {NextEntryProcTmp state disabled}
-               {PreviousEntryProcTmp state disabled}
-               {AllEntryProcTmp state disabled}
-            end
+            DummyProc
+         in
+            DummyProc = proc {$ _ _} true end
+            %%
+            FirstEntryProc = DummyProc
+            LastEntryProc = DummyProc
+            NextEntryProc = DummyProc
+            PreviousEntryProc = DummyProc
+            AllEntryProc = DummyProc
+            %%
+            {FirstEntryProcTmp state disabled}
+            {LastEntryProcTmp state disabled}
+            {NextEntryProcTmp state disabled}
+            {PreviousEntryProcTmp state disabled}
+            {AllEntryProcTmp state disabled}
          else
             FirstEntryProc = FirstEntryProcTmp
             LastEntryProc = LastEntryProcTmp
@@ -1297,7 +1276,7 @@ class WindowPrimary from UrObject
             PreviousEntryProc = PreviousEntryProcTmp
             AllEntryProc = AllEntryProcTmp
          end
-         %%
+
          %%
          case @current == InitValue then
             {FirstEntryProc state disabled}
@@ -1309,7 +1288,7 @@ class WindowPrimary from UrObject
             {CreateNewViewEntryProc state disabled}
             {TopEntryProc state disabled}
          else
-            %
+            %%
             case @zoomStack == nil then
                {UnzoomEntryProc state disabled}
                {TopEntryProc state disabled}
@@ -1318,7 +1297,7 @@ class WindowPrimary from UrObject
                {TopEntryProc state normal}
             end
 
-            %
+            %%
             case @showAll then
                {AllEntryProc state disabled}
                {FirstEntryProc state normal}
@@ -1328,7 +1307,7 @@ class WindowPrimary from UrObject
             else
                {AllEntryProc state normal}
 
-               %
+               %%
                case @forward == nil then
                   {NextEntryProc state disabled}
                   {LastEntryProc state disabled}
@@ -1337,7 +1316,7 @@ class WindowPrimary from UrObject
                   {LastEntryProc state normal}
                end
 
-               %
+               %%
                case @backward == nil then
                   {PreviousEntryProc state disabled}
                   {FirstEntryProc state disabled}
@@ -1347,19 +1326,12 @@ class WindowPrimary from UrObject
                end
             end
          end
-         %%
-         %%
+
          %%
          case self.standAlone then true
          else {CloseEntryProc state disabled}
          end
-         %%
-         %%
-         %% menuEntrys <- menuEntrys()
-         %%
-         %%
-         %% menus <- menus()
-         %%
+
          %%
          entries <- entries(createNewView: CreateNewViewEntryProc
                             depthMenu: DepthMenuProc
@@ -1401,12 +1373,6 @@ class WindowPrimary from UrObject
                               smallNames: SmallNamesVar
                               areInactive: AreInactiveVar
                               font: FontVar)
-
-         %%
-         %%
-         case {IsValue Sync} then
-            <<nil>>
-         end
       end
    end
 
@@ -1416,23 +1382,19 @@ class WindowPrimary from UrObject
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::toggleButtons is applied'}
 \endif
+      %%
       case @window == InitValue then true
       else
-         local Sync in
-            case @buttons == InitValue then
-               <<CreateButtons(Sync)>>
-               {@store store(StoreAreButtons True)}
-            else
-               <<closeButtons>>
-               {@store store(StoreAreButtons False)}
-               Sync = ok
-            end
-
-            %
-            case {IsValue Sync} then
-               {@window setMinSize}
-            end
+         case @buttons == InitValue then
+            <<CreateButtons>>
+            {@store store(StoreAreButtons True)}
+         else
+            <<closeButtons>>
+            {@store store(StoreAreButtons False)}
          end
+
+         %%
+         {@window setMinSize}
       end
    end
 
@@ -1444,21 +1406,16 @@ class WindowPrimary from UrObject
 \endif
       case @window == InitValue then true
       else
-         local Sync in
-            case @entries == InitValue then
-               <<CreateMenus(Sync)>>
-               {@store store(StoreAreMenus True)}
-            else
-               <<closeMenus>>
-               {@store store(StoreAreMenus False)}
-               Sync = ok
-            end
-
-            %
-            case {IsValue Sync} then
-               {@window setMinSize}
-            end
+         case @entries == InitValue then
+            <<CreateMenus>>
+            {@store store(StoreAreMenus True)}
+         else
+            <<closeMenus>>
+            {@store store(StoreAreMenus False)}
          end
+
+         %%
+         {@window setMinSize}
       end
    end
 
@@ -1467,12 +1424,12 @@ class WindowPrimary from UrObject
    meth !ResetWindowSize()
       case @window == InitValue then true
       else
-         local X Y in
-            {@store [read(StoreXSize X) read(StoreYSize Y)]}
+         X Y
+      in
+         {@store [read(StoreXSize X) read(StoreYSize Y)]}
 
-            %
-            {@window [setXYSize(X Y) resetTW]}
-         end
+         %%
+         {@window [setXYSize(X Y) resetTW]}
       end
    end
 
@@ -1494,41 +1451,44 @@ class WindowPrimary from UrObject
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::UpdateSizes is applied'}
 \endif
-      case @window == InitValue orelse @current == InitValue then true
+      case @window == InitValue orelse @current == InitValue
+      then true
       else
-         local Depth Sync in
-            {@store read(StoreDepth Depth)}
-            case @showAll == False then
-               Current
-            in
-               Current = @current
-               %%
-               if TermObject in {Subtree Current termObject} = TermObject then
-                  {TermObject updateSizes(Depth Sync)}
-               else
-                  {BrowserError ['termObject is not found for @curent (UpdateSizes)']}
-               fi
+         Depth
+      in
+         %%
+         {@store read(StoreDepth Depth)}
+         case @showAll == False then
+            Current
+         in
+            Current = @current
 
-               %
-               case {IsValue Sync} then
-                  <<nil>>
-               end
+            %% relational!
+            if TermObject in {Subtree Current termObject} = TermObject then
+               {TermObject updateSizes(Depth _)}
             else
-               {Map @current|@backward    % reverse order;
-                proc {$ TermRec Sync}
-                   % relational!
-                   if TermObject in {Subtree TermRec termObject} = TermObject then
-                      {TermObject updateSizes(Depth Sync)}
-                   else {BrowserError
-                         ['termObject is not found for @curent (UpdateSizes)']}
-                   fi
-                end Sync}
+               {BrowserError ['termObject is not found for @curent (UpdateSizes)']}
+            fi
 
-               %
-               case {All Sync IsValue} then
-                  <<nil>>
-               end
-            end
+            %%
+            <<nil>>
+         else
+            %%
+            {ForAll @current|@backward    % reverse order;
+             proc {$ TermRec}
+                %% relational!
+                if TermObject in
+                   {Subtree TermRec termObject} = TermObject
+                then
+                   {TermObject updateSizes(Depth _)}
+                else
+                   {BrowserError
+                    ['termObject is not found for @curent (UpdateSizes)']}
+                fi
+             end}
+
+            %%
+            <<nil>>
          end
       end
    end
@@ -1539,71 +1499,69 @@ class WindowPrimary from UrObject
    meth !SetTWWidth(Width)
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::SetTWWidth is applied'}
-      case {IsValue Width} then {Show '... Width = '#Width} end
+      job {Wait Width} {Show '... Width = '#Width} end
 \endif
       case @current == InitValue then
-         case {IsValue Width} then
-            {@store store(StoreTWWidth Width)}
-         end
+         %% TODO?
+         {Wait Width}
+         {@store store(StoreTWWidth Width)}
       else
-         case {Det Width} then Sync in
-            {@store store(StoreTWWidth Width)}
+         %% TODO?
+         {Wait Width}
 
-            %
-            case @showAll == False then
+         %%
+         {@store store(StoreTWWidth Width)}
+
+         %%
+         case @showAll == False then
+            Current
+         in
+            Current = @current
+            %% relational!
+            if TermObject in
+               {Subtree Current termObject} = TermObject
+            then
+               {TermObject checkLayout(_)}
+            else
+               {BrowserError ['termObject is not found for @curent (SetTWWidth)']}
+            fi
+
+            %%
+            <<nil>>
+         else
+            ListOf
+         in
+            case @zoomStack == nil then
+               ListOf = @current|@backward   % in reverse order, but ...
+
+               %%
+               {ForAll ListOf
+                proc {$ TermRec}
+                   %% relational!
+                   if Obj in {Subtree TermRec termObject} = Obj then
+                      {Obj checkLayout(_)}
+                   else true    % can be if a new screen is open;
+                   fi
+                end}
+
+               %%
+               %% relational;
+               <<nil>>
+            else
                Current
             in
                Current = @current
-               % relational!
-               if TermObject in {Subtree Current termObject} = TermObject then
-                  {TermObject checkLayout(Sync)}
-               else
-                  {BrowserError ['termObject is not found for @curent (SetTWWidth)']}
+               %% relational!
+               if TermObject in
+                  {Subtree Current termObject} = TermObject
+               then
+                  {TermObject checkLayout(_)}
+               else {BrowserError
+                     ['termObject is not found for @curent (SetTWWidth)']}
                fi
 
-               %
-               case {IsValue Sync} then
-                  <<nil>>
-               end
-            else
-               local ListOf SyncList in
-                  case @zoomStack == nil then
-                     ListOf = @current|@backward   % in reverse order, but ...
-
-                     %
-                     {Map
-                      ListOf
-                      proc {$ TermRec Sync}
-                         % relational!
-                         if Obj in {Subtree TermRec termObject} = Obj then
-                            {Obj checkLayout(Sync)}
-                         else Sync = ok   % can be if a new screen is open;
-                         fi
-                      end
-                      SyncList}
-
-                     %
-                     % relational;
-                     case {All SyncList IsValue} then
-                        <<nil>>
-                     end
-                  else
-                     Sync Current
-                  in
-                     Current = @current
-                     %% relational!
-                     if TermObject in {Subtree Current termObject} = TermObject then
-                        {TermObject checkLayout(Sync)}
-                     else {BrowserError
-                           ['termObject is not found for @curent (SetTWWidth)']}
-                     fi
-
-                     %%
-                     case {IsValue Sync} then
-                        <<nil>>
-                     end
-                  end
-               end
+               %%
+               <<nil>>
             end
          end
       end
@@ -1626,7 +1584,7 @@ class WindowPrimary from UrObject
 \ifdef DEBUG_BO
       {Show 'WindowPrimary::closeWindows is applied'}
 \endif
-      %
+      %%
       local Window in
          Window = @window
          case Window == InitValue then true
@@ -1635,25 +1593,23 @@ class WindowPrimary from UrObject
             case self.standAlone then
                %%
                {Window close}
-               %%
+
                %%
                window <- InitValue
                buttons <- InitValue
-               % menuButtons <- InitValue
-               % menus <- InitValue
                entries <- InitValue
                tclVars <- InitValue
-               %%
+
                %%
                case @current == InitValue then true
                else current <- InitValue
                end
-               %%
+
                %%
                forward <- nil
                backward <- nil
                zoomStack <- nil
-               %%
+
                %%
                {BrowserMessagesExit self}
             else true
@@ -1669,8 +1625,6 @@ class WindowPrimary from UrObject
       {Show 'WindowPrimary::closeMenus is applied'}
 \endif
       {@window closeMenusFrame}
-      % menuButtons <- InitValue
-      % menus <- InitValue
       entries <- InitValue
       tclVars <- InitValue
    end
@@ -1702,56 +1656,53 @@ class BasicBrowser from UrObject
 \ifdef DEBUG_BO
       {Show 'BasicBrowser::Bbrowse is applied'#TermRec.term}
 \endif
-      local WSync CheckStyle OnlyCycles Depth TermsStore TermObject Sync Tag in
-         <<createWindow(WSync)>>
-         case {IsValue WSync} then
+      local CheckStyle OnlyCycles Depth TermsStore TermObject Tag in
+         <<createWindow(_)>>
+
+         %%
+         %% relational!
+         if TermObject in {Subtree TermRec termObject} = TermObject then
             %%
-            %% relational!
-            if TermObject in {Subtree TermRec termObject} = TermObject then
-               %%
-               %% simply draw;
-               {TermObject draw(Sync)}
-               case {Det Sync} then IsScrolling in
-                  %%
-                  NewTermRec = termRec(term: TermRec.term
-                                       termObject: TermRec.termObject
-                                       termsStore: TermRec.termsStore)
-                  <<nil>>
-               end
-            else
-               %%
-               {@store [read(StoreCheckStyle CheckStyle)
-                        read(StoreOnlyCycles OnlyCycles)
-                        read(StoreDepth Depth)]}
-               %%
-               %%
-               TermsStore = {New ProtoTermsStore
-                             init(isChecking: case CheckStyle then True
-                                              else OnlyCycles
-                                              end
-                                  onlyCycles: OnlyCycles
-                                  store:      @store)}
-               %%
-               %%
-               TermObject = {New PseudoTermObject
-                             init(repType: In_Text_Widget
-                                  widgetObj: @window
-                                  depth: Depth
-                                  term: TermRec.term
-                                  store: @store
-                                  termsStore: TermsStore
-                                  browserObj: self)}
-               %%
-               %%
-               {TermObject draw(Sync)}
-               %%
-               {Wait Sync}
-               %%
-               NewTermRec = termRec(term: TermRec.term
-                                    termObject: TermObject
-                                    termsStore: TermsStore)
-               <<nil>>
-            fi
+            %% simply draw;
+            {TermObject draw(_)}
+
+            %%
+            NewTermRec = termRec(term: TermRec.term
+                                 termObject: TermRec.termObject
+                                 termsStore: TermRec.termsStore)
+            <<nil>>
+         else
+            %%
+            {@store [read(StoreCheckStyle CheckStyle)
+                     read(StoreOnlyCycles OnlyCycles)
+                     read(StoreDepth Depth)]}
+
+            %%
+            TermsStore = {New ProtoTermsStore
+                          init(isChecking: case CheckStyle then True
+                                           else OnlyCycles
+                                           end
+                               onlyCycles: OnlyCycles
+                               store:      @store)}
+
+            %%
+            TermObject = {New PseudoTermObject
+                          init(repType: In_Text_Widget
+                               widgetObj: @window
+                               depth: Depth
+                               term: TermRec.term
+                               store: @store
+                               termsStore: TermsStore
+                               browserObj: self)}
+
+            %%
+            {TermObject draw(_)}
+
+            %%
+            NewTermRec = termRec(term: TermRec.term
+                                 termObject: TermObject
+                                 termsStore: TermsStore)
+            <<nil>>
          end
       end
    end
@@ -1763,18 +1714,17 @@ class BasicBrowser from UrObject
 \ifdef DEBUG_BO
       {Show 'BasicBrowser::Undraw is applied'#TermRec.term}
 \endif
-      local Sync in
-         % relational!
-         if TermObject in {Subtree TermRec termObject} = TermObject then
-            {TermObject undraw(Sync)}
-         else Sync = ok
-         fi
+      %% relational!
+      if TermObject in {Subtree TermRec termObject} = TermObject then
+         {TermObject undraw(_)}
+      else true
+      fi
 
-         %
-         case {IsValue Sync} then <<nil>> end
-      end
+      %%
+      <<nil>>
    end
 
+   %%
 end
 
 %%
@@ -1787,7 +1737,7 @@ class BrowserClass from BasicBrowser WindowPrimary
       standAlone
       !IsView
       !DefaultBrowser
-   %%
+
    %%
    attr
       store: InitValue
@@ -1797,7 +1747,7 @@ class BrowserClass from BasicBrowser WindowPrimary
       showAll: IShowAll
       selected: InitValue
       zoomStack: nil
-   %%
+
    %%
    meth init(areMenus: AreMenus <= False
              areButtons: AreButtons <= False
@@ -1809,11 +1759,11 @@ class BrowserClass from BasicBrowser WindowPrimary
 \ifdef DEBUG_BO
       {Show 'BrowserClass::init is applied'}
 \endif
-      %^
+      %%
       self.standAlone = StandAlone
       self.DefaultBrowser = IsDefaultBrowser
       self.IsView = IsIsView
-      %%
+
       %%
       local Store in
          Store = {New ProtoStore
@@ -1843,12 +1793,9 @@ class BrowserClass from BasicBrowser WindowPrimary
                    store(StoreAreMenus case AreMenus then True else False end)
                    store(StoreOrigWindow OrigWindow)
                    store(StoreScreen Screen)]}
+
          %%
-         %%
-         case {IsValue Store} then
-            store <- Store
-         end
-         %%
+         store <- Store
       end
    end
 
@@ -1859,13 +1806,12 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       %%
       <<closeWindows>>
-      %%
-      %%
+
       %%
       case self.DefaultBrowser then {BrowsersPool removeBrowser(self)}
       else true
       end
-      %%
+
       %%  simple throw termsStore and termObject if any;
       %%
       <<UrObject close>>
@@ -1884,49 +1830,58 @@ class BrowserClass from BasicBrowser WindowPrimary
             <<ResetWindowSize>>
          else {BrowserError ['Illegal value of parameter BrowserXSize']}
          end
+
       [] !BrowserYSize                  then
          case {IsInt ValueOf} andthen ValueOf > 1 then
             {@store store(StoreYSize ValueOf)}
             <<ResetWindowSize>>
          else {BrowserError ['Illegal value of parameter BrowserYSize']}
          end
+
       [] !BrowserXMinSize               then
          case {IsInt ValueOf} andthen ValueOf > 1 then
             {@store store(StoreXMinSize ValueOf)}
          else {BrowserError ['Illegal value of parameter BrowserXMinSize']}
          end
+
       [] !BrowserYMinSize               then
          case {IsInt ValueOf} andthen ValueOf > 1 then
             {@store store(StoreYMinSize ValueOf)}
          else {BrowserError ['Illegal value of parameter BrowserYMinSize']}
          end
+
       [] !BrowserDepth                  then
          case {IsInt ValueOf} andthen ValueOf > 0 then
             {@store store(StoreDepth ValueOf)}
             {self UpdateSizes}
          else {BrowserError ['Illegal value of parameter BrowserDepth']}
          end
+
       [] !BrowserWidth                  then
          case {IsInt ValueOf} andthen ValueOf > 1 then
             {@store store(StoreWidth ValueOf)}
             {self UpdateSizes}
          else {BrowserError ['Illegal value of parameter BrowserWidth']}
          end
+
       [] !BrowserNodes                  then
          case {IsInt ValueOf} then
             {@store store(StoreNodeNumber ValueOf)}
          else {BrowserError ['Illegal value of parameter BrowserNodes']}
          end
+
       [] !BrowserDepthInc               then
          case {IsInt ValueOf} andthen ValueOf > 0 then
             {@store store(StoreDepthInc ValueOf)}
          else {BrowserError ['Illegal value of parameter BrowserDepthInc']}
          end
+
       [] !BrowserWidthInc               then
          case {IsInt ValueOf} andthen ValueOf > 0 then
             {@store store(StoreWidthInc ValueOf)}
          else {BrowserError ['Illegal value of parameter BrowserWidthInc']}
          end
+
       [] !BrowserScrolling              then
          case ValueOf then
             TclVars
@@ -1934,7 +1889,8 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreScrolling True)}
-            % relational!
+
+            %% relational!
             if V in {Subtree TclVars scrolling} = V then
                {V tkSet(TclTrue)}
             else true
@@ -1946,6 +1902,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreScrolling False)}
+
                %% relational!
                if V in {Subtree TclVars scrolling} = V then
                   {V tkSet(TclFalse)}
@@ -1956,6 +1913,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserScrolling']}
             end
          end
+
       [] !BrowserCoreferences           then
          case ValueOf then
             TclVars
@@ -1963,6 +1921,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreCheckStyle True)}
+
             %% relational!
             if V in {Subtree TclVars cycleCheck} = V then
                {V tkSet(TclTrue)}
@@ -1975,6 +1934,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreCheckStyle False)}
+
                %% relational!
                if V in {Subtree TclVars cycleCheck} = V then
                   {V tkSet(TclFalse)}
@@ -1985,6 +1945,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserCoreferences']}
             end
          end
+
       [] !BrowserCycles                 then
          case ValueOf then
             TclVars
@@ -1992,6 +1953,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreOnlyCycles True)}
+
             %% relational!
             if V in {Subtree TclVars onlyCycles} = V then
                {V tkSet(TclTrue)}
@@ -2004,6 +1966,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreOnlyCycles False)}
+
                %% relational!
                if V in {Subtree TclVars onlyCycles} = V then
                   {V tkSet(TclFalse)}
@@ -2013,6 +1976,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                {BrowserError ['Illegal value of parameter BrowserCycles']}
             end
          end
+
       [] !BrowserPrivateFields          then
          case ValueOf then
             TclVars
@@ -2020,6 +1984,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreArityType TrueArity)}
+
             %% relational!
             if V in {Subtree TclVars arityType} = V then
                {V tkSet(TclTrueArity)}
@@ -2032,6 +1997,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreArityType AtomicArity)}
+
                %% relational!
                if V in {Subtree TclVars arityType} = V then
                   {V tkSet(TclAtomicArity)}
@@ -2042,6 +2008,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserPrivateFields']}
             end
          end
+
       [] !BrowserVirtualStrings         then
          case ValueOf then
             TclVars
@@ -2049,6 +2016,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreAreVSs True)}
+
             %% relational!
             if V in {Subtree TclVars vss} = V then
                {V tkSet(TclTrue)}
@@ -2061,6 +2029,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreAreVSs False)}
+
                %% relational!
                if V in {Subtree TclVars vss} = V then
                   {V tkSet(TclFalse)}
@@ -2071,6 +2040,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserVirtualStrings']}
             end
          end
+
       [] !BrowserVariablesAligned       then
          case ValueOf then
             TclVars
@@ -2078,6 +2048,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreHeavyVars True)}
+
             %% relational!
             if V in {Subtree TclVars heavyVars} = V then
                {V tkSet(TclTrue)}
@@ -2090,6 +2061,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreHeavyVars False)}
+
                %% relational!
                if V in {Subtree TclVars heavyVars} = V then
                   {V tkSet(TclFalse)}
@@ -2100,6 +2072,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserVariablesAligned']}
             end
          end
+
       [] !BrowserRecordFieldsAligned    then
          case ValueOf then
             TclVars
@@ -2107,6 +2080,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreFillStyle Expanded)}
+
             %% relational!
             if V in {Subtree TclVars fillStyle} = V then
                {V tkSet(TclExpanded)}
@@ -2119,6 +2093,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreFillStyle Filled)}
+
                %% relational!
                if V in {Subtree TclVars fillStyle} = V then
                   {V tkSet(TclFilled)}
@@ -2129,6 +2104,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserRecordFieldsAligned']}
             end
          end
+
       [] !BrowserListsFlat              then
          case ValueOf then
             TclVars
@@ -2136,6 +2112,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreFlatLists True)}
+
             %% relational!
             if V in {Subtree TclVars flatLists} = V then
                {V tkSet(TclTrue)}
@@ -2148,6 +2125,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreFlatLists False)}
+
                %% relational!
                if V in {Subtree TclVars flatLists} = V then
                   {V tkSet(TclFalse)}
@@ -2157,6 +2135,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                {BrowserError ['Illegal value of parameter BrowserListsFlat']}
             end
          end
+
       [] !BrowserNamesAndProcsShort     then
          case ValueOf then
             TclVars
@@ -2164,6 +2143,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreSmallNames True)}
+
             %% relational!
             if V in {Subtree TclVars smallNames} = V then
                {V tkSet(TclTrue)}
@@ -2176,6 +2156,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreSmallNames False)}
+
                %% relational!
                if V in {Subtree TclVars smallNames} = V then
                   {V tkSet(TclFalse)}
@@ -2186,6 +2167,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserNamesAndProcsShort']}
             end
          end
+
       [] !BrowserPrimitiveTermsActive   then
          case ValueOf then
             TclVars
@@ -2193,6 +2175,7 @@ class BrowserClass from BasicBrowser WindowPrimary
             TclVars = @tclVars
             %%
             {@store store(StoreAreInactive False)}
+
             %% relational!
             if V in {Subtree TclVars areInactive} = V then
                {V tkSet(TclFalse)}  % reverse!
@@ -2205,6 +2188,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                TclVars = @tclVars
                %%
                {@store store(StoreAreInactive True)}
+
                %% relational!
                if V in {Subtree TclVars areInactive} = V then
                   {V tkSet(TclTrue)}
@@ -2215,32 +2199,38 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserPrimitiveTermsActive']}
             end
          end
+
       [] !BrowserFont                   then
          case {IsAtom ValueOf} then
-            local Window Fonts in
-               Fonts = {Filter
-                        {Append IKnownMiscFonts IKnownCourFonts}
-                        fun {$ F} F.font == ValueOf end}
-               if Font TclVars in Fonts = [Font] then
-                  TclVars = @tclVars
-                  %%
-                  if V in {Subtree TclVars font} = V then
-                     {V tkSet(Font.font)}
-                  else
-                     {@store store(StoreTWFont Font)}
-                     %%
-                     Window = @window
-                     case Window == InitValue then true
-                     else {Window setTWFont}
-                     end
-                  fi
+            Window Fonts
+         in
+            Fonts = {Filter
+                     {Append IKnownMiscFonts IKnownCourFonts}
+                     fun {$ F} F.font == ValueOf end}
+
+            %%
+            if Font TclVars in Fonts = [Font] then
+               TclVars = @tclVars
+
+               %% relational!
+               if V in {Subtree TclVars font} = V then
+                  {V tkSet(Font.font)}
                else
-                  {BrowserError ['Illegal value of parameter BrowserFont']}
+                  {@store store(StoreTWFont Font)}
+
+                  %%
+                  Window = @window
+                  case Window == InitValue then true
+                  else {Window setTWFont}
+                  end
                fi
-            end
+            else
+               {BrowserError ['Illegal value of parameter BrowserFont']}
+            fi
          else
             {BrowserError ['Illegal value of parameter BrowserFont']}
          end
+
       [] !BrowserAreButtons             then
          case ValueOf then
             case {@store read(StoreAreButtons $)} == False then
@@ -2266,6 +2256,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserAreButtons']}
             end
          end
+
       [] !BrowserAreMenus               then
          case ValueOf then
             case {@store read(StoreAreMenus $)} == False then
@@ -2291,6 +2282,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                 ['Illegal value of parameter BrowserAreButtons']}
             end
          end
+
       [] !BrowserShowAll                then
          case ValueOf then
             case @showAll then true
@@ -2311,6 +2303,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                {BrowserError ['Illegal value of parameter BrowserShowAll']}
             end
          end
+
       [] !BrowserBufferSize             then
          case {IsInt ValueOf} andthen 0 =< ValueOf then
             {@store store(StoreHistoryLength ValueOf)}
@@ -2382,216 +2375,91 @@ class BrowserClass from BasicBrowser WindowPrimary
    end
 
    %%
-   %%
-      /*
-   %%  UNUSED & Out-Of-Date;
-   %%
-   meth !SetActiveState(State)
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::SetActiveState is applied'#State}
-\endif
-      isActive <- State
-   end
-      */
-
-   %%
    %%  'browse' method (history maintaining);
    %%
    meth browse(Term)
 \ifdef DEBUG_BO
       {Show 'BrowserClass::browse is applied'#Term}
 \endif
-      %%
+
       %%
       case @zoomStack == nil then
-         local TermRec HistoryLength in
-            case @forward == nil then
-               %%
-               %% relational!
-               case @current == InitValue then true
-               else backward <- @current|@backward
-               end
-               %%
-               %%
-               <<CheckHistory>>
-               %%
-               %%  ... iff don't show all terms;
-               case @showAll then true
-               else
-                  case @current == InitValue then true
-                  else <<Bundraw(@current)>>
-                  end
-               end
-               %%
-               %%
-               <<Bbrowse(termRec(term: Term) TermRec)>>
-               %%
-               %%
-               case @current == InitValue then
-                  case @buttons == InitValue then true
-                  else
-                     local Buttons = @buttons in
-                        {Buttons.rebrowse state normal}
-                        {Buttons.redraw state normal}
-                        {Buttons.clear state normal}
-                        case @showAll then {Buttons.all state disabled}
-                        else {Buttons.all state normal}
-                        end
-                     end
-                  end
-                  %%
-                  %%
-                  case @entries == InitValue then true
-                  else
-                     local Entries = @entries in
-                        {Entries.rebrowse state normal}
-                        {Entries.redraw state normal}
-                        {Entries.clear state normal}
-                        {Entries.clearHistory state normal}
-                        case @showAll then {Entries.all state disabled}
-                        else {Entries.all state normal}
-                        end
-                     end
-                  end
-               else true
-               end
-               %%
-               %%
-               current <- TermRec
-               %%
-               %%
-               <<HistoryButtonsUpdate>>
-            else
-               forward <- {Append @forward [termRec(term: Term)]}
-               <<HistoryButtonsUpdate>>
+         TermRec HistoryLength
+      in
+         case @forward == nil then
+            %%
+
+            %% relational!
+            case @current == InitValue then true
+            else backward <- @current|@backward
             end
+
+            %%
+            <<CheckHistory>>
+
+            %%  ... iff don't show all terms;
+            case @showAll then true
+            else
+               case @current == InitValue then true
+               else <<Bundraw(@current)>>
+               end
+            end
+
+            %%
+            <<Bbrowse(termRec(term: Term) TermRec)>>
+
+            %%
+            case @current == InitValue then
+               case @buttons == InitValue then true
+               else
+                  Buttons
+               in
+                  Buttons = @buttons
+                  %%
+                  {Buttons.rebrowse state normal}
+                  {Buttons.redraw state normal}
+                  {Buttons.clear state normal}
+                  case @showAll then {Buttons.all state disabled}
+                  else {Buttons.all state normal}
+                  end
+               end
+
+               %%
+               case @entries == InitValue then true
+               else
+                  Entries
+               in
+                  Entries = @entries
+                  %%
+                  {Entries.rebrowse state normal}
+                  {Entries.redraw state normal}
+                  {Entries.clear state normal}
+                  {Entries.clearHistory state normal}
+                  case @showAll then {Entries.all state disabled}
+                  else {Entries.all state normal}
+                  end
+               end
+            else true
+            end
+
+            %%
+            current <- TermRec
+
+            %%
+            <<HistoryButtonsUpdate>>
+         else
+            forward <- {Append @forward [termRec(term: Term)]}
+            <<HistoryButtonsUpdate>>
          end
       else
-         %%%
-         % in 'zoom' modus;
+         %%
+
+         %% in 'zoom' modus;
          forward <- {Append @forward [termRec(term: Term)]}
          <<HistoryButtonsUpdate>>
       end
-      %% else
-      %%  forward <- {Append @forward [termRec(term: Term)]}
-      %%  <<HistoryButtonsUpdate>>
-      %% end
    end
 
-   %%
-   %%
-      /*
-   %%  UNUSED and Out-Of-Date;
-   %%
-   %%  Make the copy of history for this browser;
-   %%
-   meth !GetHistory(?List)
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::GetHistory is applied'}
-\endif
-      %
-      case @current == InitValue then List = nil
-      else
-         local ListOf in
-            case @zoomStack == nil then
-               ListOf = {Append {Reverse @current|@backward} @forward}
-            else
-               local OEl BTermRec in
-                  case @showAll == False then
-                     %
-                     OEl = {Nth @zoomStack {Length @zoomStack}}
-                     % relational;
-                     if OEl = s(_) then OEl = s(BTermRec)
-                     else {BrowserError
-                           ['non-singleton is found in zoom stack by "getHistory"']}
-                     fi
-
-                     %
-                     ListOf = {Append {Reverse BTermRec|@backward} @forward}
-                  else
-                     local OEl in
-                        %
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        % relational;
-                        if OEl = a(_) then OEl = a(ListOf)
-                        else {BrowserError
-                              ['singleton is found in zoom stack by "getHistory"']}
-                        fi
-                     end
-                  end
-               end
-            end
-
-            %
-            {Map ListOf proc {$ El NewEl} NewEl = termRec(term: El.term) end List}
-         end
-      end
-   end
-      */
-
-   %%
-   %%
-      /*
-   %%  UNUSED and Out-Of-Date;
-   %%
-   %%  Impose a history for a child;
-   %%  Don't consider the actual forward, backward, etc.
-   %%
-   meth !SetHistory(List)
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::SetHistory is applied'}
-\endif
-      % relational;
-      if @forward = nil
-         @backward = nil
-         @current = InitValue
-      then
-         case List == nil then true
-         else
-            case @showAll then
-               <<[DrawAll(List) HistoryButtonsUpdate]>>
-
-               %
-               case @buttons == InitValue then true
-               else
-                  local Buttons = @buttons in
-                     {Buttons.rebrowse state normal}
-                     {Buttons.redraw state normal}
-                     {Buttons.clear state normal}
-                     case @showAll then {Buttons.all state disabled}
-                     else {Buttons.all state normal}
-                     end
-                  end
-               end
-
-               %
-               case @entries == InitValue then true
-               else
-                  local Entries = @entries in
-                     {Entries.rebrowse state normal}
-                     {Entries.redraw state normal}
-                     {Entries.clear state normal}
-                     {Entries.clearHistory state normal}
-                     case @showAll then {Entries.all state disabled}
-                     else {Entries.all state normal}
-                     end
-                  end
-               end
-            else
-               local RList in
-                  RList = {Reverse List}
-
-                  %
-                  backward <- RList.2
-                  <<browse(RList.1.term)>>
-               end
-            end
-         end
-      else {BrowserError ['SetHistory for an browser object with a history']}
-      fi
-   end
-      */
-   %%
    %%
    %%
    meth !CheckHistory()
@@ -2601,7 +2469,7 @@ class BrowserClass from BasicBrowser WindowPrimary
       local HistoryLength ALength RestList in
          HistoryLength = {@store read(StoreHistoryLength $)}
          ALength = {Length @backward}
-         %%
+
          %%
          case HistoryLength < ALength then
             %%
@@ -2610,7 +2478,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                <<UndrawAll(RestList)>>
             else true
             end
-            %%
+
             %%
             backward <- {Head @backward HistoryLength}
             <<HistoryButtonsUpdate>>
@@ -2621,65 +2489,29 @@ class BrowserClass from BasicBrowser WindowPrimary
 
    %%
    %%
-      /*
-   %%  UNUSED & Out-Of-Date;
-   %%  Replaced by the new 'createNewScreen' (beneath);
-   meth createNewScreen
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::createNewScreen is applied'}
-\endif
-      local NewBrowser History in
-         %
-         % relational!
-         if {Subtree self inPool} = True then {BrowsersPool addNewBrowser(NewBrowser)}
-         else true
-         fi
-
-         %
-         create NewBrowser
-            from BrowserClass
-            feat
-               standAlone: True   % even from embedded browser;
-               inPool: if {Subtree self inPool} = True then True else False fi
-            % ^^^ relational!
-            with init(areMenus:   {@store read(StoreAreMenus $)}
-                      areButtons: {@store read(StoreAreButtons $)})
-         end
-
-         %
-         <<GetHistory(History)>>
-         {NewBrowser SetHistory(History)}
-         case History == nil then {NewBrowser createWindow(_)}
-         else true
-         end
-      end
-   end
-      */
-
-   %%
-   %%
    meth createNewView
 \ifdef DEBUG_BO
       {Show 'BrowserClass::createNewView is applied'}
 \endif
       case @selected == InitValue then true
       else
-         local NewBrowser Selection in
-            %%
-            NewBrowser = create $ from  BrowserClass
+         NewBrowser Selection
+      in
+         %%
+         NewBrowser =
+         create $ from  BrowserClass
 \ifdef FEGRAMED
-                                     FE_BrowserClass
+                     FE_BrowserClass
 \endif
-                            with init(areMenus: {@store read(StoreAreMenus $)}
-                                      areButtons: {@store read(StoreAreButtons $)}
-                                      standAlone: True    % even from embedded browser;
-                                      IsView: True        % protected feature;
-                                     )
-                         end
-            %%
-            %%
-            {NewBrowser browse(@selected.term)}
+            with init(areMenus: {@store read(StoreAreMenus $)}
+                      areButtons: {@store read(StoreAreButtons $)}
+                      standAlone: True    % even from embedded browser;
+                      IsView: True        % protected feature;
+                     )
          end
+
+         %%
+         {NewBrowser browse(@selected.term)}
       end
    end
 
@@ -2692,22 +2524,22 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       case List == nil then forward <- nil
       else
-         local TermRec Rest NewTermRec in
-            List = TermRec|Rest
+         TermRec Rest NewTermRec
+      in
+         List = TermRec|Rest
 
-            %
-            % relational!
-            case @current == InitValue then true
-            else backward <- @current|@backward
-            end
-
-            %
-            <<Bbrowse(TermRec NewTermRec)>>
-            current <- NewTermRec
-
-            %
-            <<DrawAll(Rest)>>
+         %%
+         %%
+         case @current == InitValue then true
+         else backward <- @current|@backward
          end
+
+         %%
+         <<Bbrowse(TermRec NewTermRec)>>
+         current <- NewTermRec
+
+         %%
+         <<DrawAll(Rest)>>
       end
    end
 
@@ -2720,15 +2552,15 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       case List == nil then true
       else
-         local TermRec Rest in
-            List = TermRec|Rest
+         TermRec Rest
+      in
+         List = TermRec|Rest
 
-            %
-            <<Bundraw(TermRec)>>
+         %%
+         <<Bundraw(TermRec)>>
 
-            %
-            <<UndrawAll(Rest)>>
-         end
+         %%
+         <<UndrawAll(Rest)>>
       end
    end
 
@@ -2742,33 +2574,38 @@ class BrowserClass from BasicBrowser WindowPrimary
       case @current == InitValue then true
       else
          case @showAll then
-            local ListOf in
-               case @zoomStack == nil then
-                  ListOf = {Reverse @current|@backward}
+            ListOf
+         in
+            case @zoomStack == nil then
+               ListOf = {Reverse @current|@backward}
 
-                  %
-                  <<UndrawAll(ListOf)>>
-                  backward <- nil
-                  current <- InitValue
-                  case @forward == nil then true
-                  else {BrowserError ['not empty "forward" list by empty zoomStack']}
-                  end
-
-                  <<DrawAll(ListOf)>>
-               else
-                  local TermRec in
-                     <<Bundraw(@current)>>
-                     <<Bbrowse(termRec(term: @current.term) TermRec)>>
-                     current <- TermRec
-                  end
+               %%
+               <<UndrawAll(ListOf)>>
+               backward <- nil
+               current <- InitValue
+               case @forward == nil then true
+               else {BrowserError ['not empty "forward" list by empty zoomStack']}
                end
-            end
-         else
-            local TermRec in
+
+               %%
+               <<DrawAll(ListOf)>>
+            else
+               TermRec
+            in
                <<Bundraw(@current)>>
-               <<Bbrowse(@current TermRec)>>
+               <<Bbrowse(termRec(term: @current.term) TermRec)>>
+
+               %%
                current <- TermRec
             end
+         else
+            TermRec
+         in
+            <<Bundraw(@current)>>
+            <<Bbrowse(@current TermRec)>>
+
+            %%
+            current <- TermRec
          end
       end
    end
@@ -2783,42 +2620,45 @@ class BrowserClass from BasicBrowser WindowPrimary
       case @current == InitValue then true
       else
          case @showAll then
-            local ListOf NewList in
-               case @zoomStack == nil then
-                  ListOf = {Reverse @current|@backward}
+            ListOf NewList
+         in
+            case @zoomStack == nil then
+               ListOf = {Reverse @current|@backward}
 
-                  %
-                  <<UndrawAll(ListOf)>>
-                  backward <- nil
-                  current <- InitValue
-                  case @forward == nil then true
-                  else {BrowserError ['not empty "forward" list by empty zoomStack']}
-                  end
-
-                  %
-                  {Map
-                   ListOf
-                   proc{$ TermRec RTermRec}
-                      RTermRec = termRec(term: TermRec.term)
-                   end
-                   NewList}
-
-                  %
-                  <<DrawAll(NewList)>>
-               else
-                  local TermRec in
-                     <<Bundraw(@current)>>
-                     <<Bbrowse(termRec(term: @current.term) TermRec)>>
-                     current <- TermRec
-                  end
+               %%
+               <<UndrawAll(ListOf)>>
+               backward <- nil
+               current <- InitValue
+               case @forward == nil then true
+               else {BrowserError ['not empty "forward" list by empty zoomStack']}
                end
-            end
-         else
-            local TermRec in
+
+               %%
+               {Map ListOf
+                proc{$ TermRec RTermRec}
+                   RTermRec = termRec(term: TermRec.term)
+                end
+                NewList}
+
+               %%
+               <<DrawAll(NewList)>>
+            else
+               TermRec
+            in
                <<Bundraw(@current)>>
                <<Bbrowse(termRec(term: @current.term) TermRec)>>
+
+               %%
                current <- TermRec
             end
+         else
+            TermRec
+         in
+            <<Bundraw(@current)>>
+            <<Bbrowse(termRec(term: @current.term) TermRec)>>
+
+            %%
+            current <- TermRec
          end
       end
    end
@@ -2836,86 +2676,100 @@ class BrowserClass from BasicBrowser WindowPrimary
          case @current == InitValue then true
          else
             case @showAll then
-               local ListOf in
-                  ListOf = {Reverse @current|@backward}
-                  %%
-                  %%
-                  <<UndrawAll(ListOf)>>
-                  current <- InitValue
-                  forward <- nil
-                  backward <- nil
-               end
+               ListOf
+            in
+               ListOf = {Reverse @current|@backward}
+
+               %%
+               <<UndrawAll(ListOf)>>
+               current <- InitValue
+               forward <- nil
+               backward <- nil
             else
                <<Bundraw(@current)>>
             end
-            %%
+
             %%
             zoomStack <- nil
-            %%
+
             %%
             case @buttons == InitValue then true
             else
-               local Buttons = @buttons in
-                  {Buttons.unzoom state disabled}
-                  {Buttons.top state disabled}
-               end
+               Buttons
+            in
+               Buttons = @buttons
+               %%
+               {Buttons.unzoom state disabled}
+               {Buttons.top state disabled}
             end
-            %%
+
             %%
             case @entries == InitValue then true
             else
-               local Entries = @entries in
-                  {Entries.unzoom state disabled}
-                  {Entries.top state disabled}
-               end
+               Entries
+            in
+               Entries = @entries
+               %%
+               {Entries.unzoom state disabled}
+               {Entries.top state disabled}
             end
-            %%
+
             %%
             <<UnsetSelected>>
-            %%
+
             %%
             case @forward == nil then
                case @backward == nil then
                   current <- InitValue
-                  %%
+
                   %%
                   case @buttons == InitValue then true
                   else
-                     local Buttons = @buttons in
-                        {Buttons.rebrowse state disabled}
-                        {Buttons.redraw state disabled}
-                        {Buttons.clear state disabled}
-                        {Buttons.all state disabled}
-                     end
+                     Buttons
+                  in
+                     Buttons = @buttons
+                     %%
+                     {Buttons.rebrowse state disabled}
+                     {Buttons.redraw state disabled}
+                     {Buttons.clear state disabled}
+                     {Buttons.all state disabled}
                   end
-                  %%
+
                   %%
                   case @entries == InitValue then true
                   else
-                     local Entries = @entries in
-                        {Entries.rebrowse state disabled}
-                        {Entries.redraw state disabled}
-                        {Entries.clear state disabled}
-                        {Entries.clearHistory state disabled}
-                        {Entries.all state disabled}
-                     end
+                     Entries
+                  in
+                     Entries = @entries
+                     %%
+                     {Entries.rebrowse state disabled}
+                     {Entries.redraw state disabled}
+                     {Entries.clear state disabled}
+                     {Entries.clearHistory state disabled}
+                     {Entries.all state disabled}
                   end
                else
-                  local TermRec NewTermRec in
-                     TermRec = @backward.1
-                     backward <- @backward.2
-                     <<Bbrowse(TermRec NewTermRec)>>
-                     current <- NewTermRec
-                  end
-               end
-            else
-               local TermRec NewTermRec in
-                  TermRec = @forward.1
-                  forward <- @forward.2
+                  TermRec NewTermRec
+               in
+                  TermRec = @backward.1
+                  backward <- @backward.2
                   <<Bbrowse(TermRec NewTermRec)>>
+
+                  %%
                   current <- NewTermRec
                end
+            else
+               TermRec NewTermRec
+            in
+               TermRec = @forward.1
+               forward <- @forward.2
+               <<Bbrowse(TermRec NewTermRec)>>
+
+               %%
+               current <- NewTermRec
             end
+
+            %%
             <<HistoryButtonsUpdate>>
          end
       end
@@ -2930,68 +2784,73 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       selected <- Obj
 
-      %
+      %%
       case @buttons == InitValue then true
       else
-         local Buttons = @buttons in
-            {Buttons.show state normal}
-            {Buttons.zoom state normal}
+         Buttons
+      in
+         Buttons = @buttons
+         %%
+         {Buttons.show state normal}
+         {Buttons.zoom state normal}
 
-            %
-            case Obj.type == T_Shrunken then
+         %%
+         case Obj.type == T_Shrunken then
+            {Buttons.expand state normal}
+            {Buttons.shrink state disabled}
+            {Buttons.deref state disabled}
+         else
+            case AreCommas then
                {Buttons.expand state normal}
-               {Buttons.shrink state disabled}
+               {Buttons.shrink state normal}
                {Buttons.deref state disabled}
             else
-               case AreCommas then
-                  {Buttons.expand state normal}
+               case Obj.type == T_Reference then
+                  {Buttons.expand state disabled}
+                  {Buttons.shrink state disabled}
+                  {Buttons.deref state normal}
+               else
+                  {Buttons.expand state disabled}
                   {Buttons.shrink state normal}
                   {Buttons.deref state disabled}
-               else
-                  case Obj.type == T_Reference then
-                     {Buttons.expand state disabled}
-                     {Buttons.shrink state disabled}
-                     {Buttons.deref state normal}
-                  else
-                     {Buttons.expand state disabled}
-                     {Buttons.shrink state normal}
-                     {Buttons.deref state disabled}
-                  end
                end
             end
          end
       end
 
-      %
+      %%
       case @entries == InitValue then true
       else
-         local Entries = @entries in
-            {Entries.show state normal}
-            {Entries.zoom state normal}
-            {Entries.createNewView state normal}
+         Entries
+      in
+         Entries = @entries
+         %%
+         {Entries.show state normal}
+         {Entries.zoom state normal}
+         {Entries.createNewView state normal}
 \ifdef FEGRAMED
-            {Entries.fE_ShowSelected state normal}
+         {Entries.fE_ShowSelected state normal}
 \endif
-            %
-            case Obj.type == T_Shrunken then
+
+         %%
+         case Obj.type == T_Shrunken then
+            {Entries.expand state normal}
+            {Entries.shrink state disabled}
+            {Entries.deref state disabled}
+         else
+            case AreCommas then
                {Entries.expand state normal}
-               {Entries.shrink state disabled}
+               {Entries.shrink state normal}
                {Entries.deref state disabled}
             else
-               case AreCommas then
-                  {Entries.expand state normal}
+               case Obj.type == T_Reference then
+                  {Entries.expand state disabled}
+                  {Entries.shrink state disabled}
+                  {Entries.deref state normal}
+               else
+                  {Entries.expand state disabled}
                   {Entries.shrink state normal}
                   {Entries.deref state disabled}
-               else
-                  case Obj.type == T_Reference then
-                     {Entries.expand state disabled}
-                     {Entries.shrink state disabled}
-                     {Entries.deref state normal}
-                  else
-                     {Entries.expand state disabled}
-                     {Entries.shrink state normal}
-                     {Entries.deref state disabled}
-                  end
                end
             end
          end
@@ -3006,32 +2865,36 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       selected <- InitValue
 
-      %
+      %%
       case @buttons == InitValue then true
       else
-         local Buttons = @buttons in
-            {Buttons.expand state disabled}
-            {Buttons.shrink state disabled}
-            {Buttons.show state disabled}
-            {Buttons.zoom state disabled}
-            {Buttons.deref state disabled}
-         end
+         Buttons
+      in
+         Buttons = @buttons
+         %%
+         {Buttons.expand state disabled}
+         {Buttons.shrink state disabled}
+         {Buttons.show state disabled}
+         {Buttons.zoom state disabled}
+         {Buttons.deref state disabled}
       end
 
-      %
+      %%
       case @entries == InitValue then true
       else
-         local Entries = @entries in
-            {Entries.expand state disabled}
-            {Entries.shrink state disabled}
-            {Entries.show state disabled}
-            {Entries.zoom state disabled}
-            {Entries.deref state disabled}
-            {Entries.createNewView state disabled}
+         Entries
+      in
+         Entries = @entries
+         %%
+         {Entries.expand state disabled}
+         {Entries.shrink state disabled}
+         {Entries.show state disabled}
+         {Entries.zoom state disabled}
+         {Entries.deref state disabled}
+         {Entries.createNewView state disabled}
 \ifdef FEGRAMED
-            {Entries.fE_ShowSelected state disabled}
+         {Entries.fE_ShowSelected state disabled}
 \endif
-         end
       end
    end
 
@@ -3093,52 +2956,56 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       case @selected == InitValue then true
       else
-         local NewTermRec in
-            case @showAll then
-               local ListOf in
-                  ListOf = {Reverse @current|@backward}
+         NewTermRec
+      in
+         case @showAll then
+            ListOf
+         in
+            ListOf = {Reverse @current|@backward}
 
-                  %
-                  <<UndrawAll(ListOf)>>
-                  current <- InitValue
-                  forward <- nil
-                  backward <- nil
+            %%
+            <<UndrawAll(ListOf)>>
+            current <- InitValue
+            forward <- nil
+            backward <- nil
 
-                  % the tuple with label 'a' for 'all' modus;
-                  zoomStack <- a(ListOf)|@zoomStack
-               end
-            else
-               <<Bundraw(@current)>>
+            %% the tuple with label 'a' for 'all' modus;
+            zoomStack <- a(ListOf)|@zoomStack
+         else
+            <<Bundraw(@current)>>
 
-               %
-               zoomStack <- s(@current)|@zoomStack
-            end
-
-            %
-            case @buttons == InitValue then true
-            else
-               local Buttons = @buttons in
-                  {Buttons.unzoom state normal}
-                  {Buttons.top state normal}
-               end
-            end
-
-            %
-            case @entries == InitValue then true
-            else
-               local Entries = @entries in
-                  {Entries.unzoom state normal}
-                  {Entries.top state normal}
-               end
-            end
-
-            %
-            <<Bbrowse(termRec(term: @selected.term) NewTermRec)>>
-            current <- NewTermRec
-
-            %
-            <<UnsetSelected>>
+            %%
+            zoomStack <- s(@current)|@zoomStack
          end
+
+         %%
+         case @buttons == InitValue then true
+         else
+            Buttons
+         in
+            Buttons = @buttons
+            %%
+            {Buttons.unzoom state normal}
+            {Buttons.top state normal}
+         end
+
+         %%
+         case @entries == InitValue then true
+         else
+            Entries
+         in
+            Entries = @entries
+            %%
+            {Entries.unzoom state normal}
+            {Entries.top state normal}
+         end
+
+         %%
+         <<Bbrowse(termRec(term: @selected.term) NewTermRec)>>
+         current <- NewTermRec
+
+         %%
+         <<UnsetSelected>>
       end
    end
 
@@ -3163,63 +3030,68 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       case @zoomStack == nil then true
       else
-         local NewEl RestEls in
-            <<Bundraw(@current)>>
+         NewEl RestEls
+      in
+         <<Bundraw(@current)>>
 
-            %
-            @zoomStack = NewEl|RestEls
-            zoomStack <- RestEls
+         %%
+         @zoomStack = NewEl|RestEls
+         zoomStack <- RestEls
 
-            %
-            case RestEls == nil then
-               %
-               case @buttons == InitValue then true
-               else
-                  local Buttons = @buttons in
-                     {Buttons.unzoom state disabled}
-                     {Buttons.top state disabled}
-                  end
-               end
-
-               %
-               case @entries == InitValue then true
-               else
-                  local Entries = @entries in
-                     {Entries.unzoom state disabled}
-                     {Entries.top state disabled}
-                  end
-               end
+         %%
+         case RestEls == nil then
+            %%
+            case @buttons == InitValue then true
             else
-               true
+               Buttons
+            in
+               Buttons = @buttons
+               %%
+               {Buttons.unzoom state disabled}
+               {Buttons.top state disabled}
             end
 
-            %
-            <<UnsetSelected>>
-
-            %
-            % relational!
-            if List in NewEl = a(List) then
-               case @forward == nil then
-                  backward <- nil
-                  current <- InitValue
-                  <<DrawAll(List)>>
-               else
-                  local NewList in
-                     NewList = {Append List @forward}
-                     forward <- nil
-                     backward <- nil
-                     current <- InitValue
-
-                     %
-                     <<DrawAll(NewList)>>
-                  end
-               end
-            elseif TermRec NewTermRec in NewEl = s(TermRec) then
-               <<Bbrowse(TermRec NewTermRec)>>
-               current <- NewTermRec
-            else {BrowserError ['Unknown type of element in zoom stack']}
-            fi
+            %%
+            case @entries == InitValue then true
+            else
+               Entries
+            in
+               Entries = @entries
+               %%
+               {Entries.unzoom state disabled}
+               {Entries.top state disabled}
+            end
+         else true
          end
+
+         %%
+         <<UnsetSelected>>
+
+         %%
+         %% relational!
+         if List in NewEl = a(List) then
+            case @forward == nil then
+               backward <- nil
+               current <- InitValue
+
+               %%
+               <<DrawAll(List)>>
+            else
+               NewList
+            in
+               NewList = {Append List @forward}
+               forward <- nil
+               backward <- nil
+               current <- InitValue
+
+               %%
+               <<DrawAll(NewList)>>
+            end
+         elseif TermRec NewTermRec in NewEl = s(TermRec) then
+            <<Bbrowse(TermRec NewTermRec)>>
+            current <- NewTermRec
+         else {BrowserError ['Unknown type of element in zoom stack']}
+         fi
       end
    end
 
@@ -3231,58 +3103,62 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       case @zoomStack == nil then true
       else
-         local NewEl in
-            <<Bundraw(@current)>>
+         NewEl
+      in
+         <<Bundraw(@current)>>
 
-            %
-            NewEl = {Reverse @zoomStack}.1
-            zoomStack <- nil
+         %%
+         NewEl = {Reverse @zoomStack}.1
+         zoomStack <- nil
 
-            %
-            case @buttons == InitValue then true
-            else
-               local Buttons = @buttons in
-                  {Buttons.unzoom state disabled}
-                  {Buttons.top state disabled}
-               end
-            end
-
-            %
-            case @entries == InitValue then true
-            else
-               local Entries = @entries in
-                  {Entries.unzoom state disabled}
-                  {Entries.top state disabled}
-               end
-            end
-
-            %
-            <<UnsetSelected>>
-
-            %
-            % relational!
-            if List in NewEl = a(List) then
-               case @forward == nil then
-                  backward <- nil
-                  current <- InitValue
-                  <<DrawAll(List)>>
-               else
-                  local NewList in
-                     NewList = {Append List @forward}
-                     forward <- nil
-                     backward <- nil
-                     current <- InitValue
-
-                     %
-                     <<DrawAll(NewList)>>
-                  end
-               end
-            elseif TermRec NewTermRec in NewEl = s(TermRec) then
-               <<Bbrowse(TermRec NewTermRec)>>
-               current <- NewTermRec
-            else {BrowserError ['Unknown type of element in zoom stack']}
-            fi
+         %%
+         case @buttons == InitValue then true
+         else
+            Buttons
+         in
+            Buttons = @buttons
+            %%
+            {Buttons.unzoom state disabled}
+            {Buttons.top state disabled}
          end
+
+         %%
+         case @entries == InitValue then true
+         else
+            Entries
+         in
+            Entries = @entries
+            %%
+            {Entries.unzoom state disabled}
+            {Entries.top state disabled}
+         end
+
+         %%
+         <<UnsetSelected>>
+
+         %%
+         %% relational!
+         if List in NewEl = a(List) then
+            case @forward == nil then
+               backward <- nil
+               current <- InitValue
+               <<DrawAll(List)>>
+            else
+               NewList
+            in
+               NewList = {Append List @forward}
+               forward <- nil
+               backward <- nil
+               current <- InitValue
+
+               %%
+               <<DrawAll(NewList)>>
+            end
+         elseif TermRec NewTermRec in NewEl = s(TermRec) then
+            <<Bbrowse(TermRec NewTermRec)>>
+            current <- NewTermRec
+         else {BrowserError ['Unknown type of element in zoom stack']}
+         fi
       end
    end
 
@@ -3301,12 +3177,13 @@ class BrowserClass from BasicBrowser WindowPrimary
          in
             Buttons = @buttons
             Entries = @entries
+
             %%
             case @showAll then
                showAll <- False
                %%
-               %% relational!
 
+               %% relational!
                if AllButton in AllButton = {Subtree Buttons all} then
                   {AllButton state normal}
                else true
@@ -3315,32 +3192,88 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {AllEntry state normal}
                else true
                fi
-               %%
+
                %%
                <<UnsetSelected>>
-               %%
+
                %%
                case @zoomStack == nil then
-                  local ListOf TermRec in
-                     %%
-                     ListOf = {Append {Reverse @current|@backward} @forward}
-                     %%
-                     %%
-                     <<UndrawAll(@current|@backward)>>
-                     %%
-                     %%
-                     forward <- ListOf.2
-                     backward <- nil
-                     <<HistoryButtonsUpdate>>
-                     %%
-                     %%
-                     <<Bbrowse(ListOf.1 TermRec)>>
-                     current <- TermRec
-                  end
+                  ListOf TermRec
+               in
+                  %%
+                  ListOf = {Append {Reverse @current|@backward} @forward}
+
+                  %%
+                  <<UndrawAll(@current|@backward)>>
+
+                  %%
+                  forward <- ListOf.2
+                  backward <- nil
+                  <<HistoryButtonsUpdate>>
+
+                  %%
+                  <<Bbrowse(ListOf.1 TermRec)>>
+                  current <- TermRec
                else
-                  local OList OEl List TermRec in
+                  OList OEl List TermRec
+               in
+                  <<Bundraw(@current)>>
+
+                  %%
+                  case Buttons == InitValue then true
+                  else
+                     {Buttons.unzoom state disabled}
+                     {Buttons.top state disabled}
+                  end
+                  case Entries == InitValue then true
+                  else
+                     {Entries.unzoom state disabled}
+                     {Entries.top state disabled}
+                  end
+
+                  %%
+                  OEl = {Nth @zoomStack {Length @zoomStack}}
+
+                  %% relational;
+                  if OEl = a(_) then
+                     a(OList) = OEl
+                  else {BrowserError ['unknown type of element in zoom stack']}
+                  fi
+                  zoomStack <- nil
+
+                  %%
+                  List = {Append OList @forward}
+                  forward <- List.2
+                  backward <- nil
+                  <<HistoryButtonsUpdate>>
+
+                  %%
+                  <<Bbrowse(List.1 TermRec)>>
+                  current <- TermRec
+               end
+            else
+               case @backward == nil then true
+               else
+                  case @zoomStack == nil then
+                     TermRec RevBList
+                  in
                      <<Bundraw(@current)>>
                      %%
+                     RevBList = {Reverse @backward}
+                     forward <- {Append RevBList.2 @current|@forward}
+                     backward <- nil
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+
+                     %%
+                     <<Bbrowse(RevBList.1 TermRec)>>
+                     current <- TermRec
+                  else
+                     TermRec RevBList OEl BTermRec
+                  in
+                     <<Bundraw(@current)>>
+
                      %%
                      case Buttons == InitValue then true
                      else
@@ -3352,83 +3285,28 @@ class BrowserClass from BasicBrowser WindowPrimary
                         {Entries.unzoom state disabled}
                         {Entries.top state disabled}
                      end
-                     %%
+
                      %%
                      OEl = {Nth @zoomStack {Length @zoomStack}}
-                     %%
+
                      %% relational;
-                     if OEl = a(_) then
-                        a(OList) = OEl
-                     else {BrowserError ['unknown type of element in zoom stack']}
+                     if OEl = s(_) then OEl = s(BTermRec)
+                     else {BrowserError
+                           ['non-singleton is found in zoom stack by "previous" op']}
                      fi
                      zoomStack <- nil
+
                      %%
-                     %%
-                     List = {Append OList @forward}
-                     forward <- List.2
+                     RevBList = {Reverse @backward}
+                     forward <- {Append RevBList.2 BTermRec|@forward}
                      backward <- nil
+
+                     %%
                      <<HistoryButtonsUpdate>>
                      %%
                      %%
-                     <<Bbrowse(List.1 TermRec)>>
+                     <<Bbrowse(RevBList.1 TermRec)>>
                      current <- TermRec
-                  end
-               end
-            else
-               case @backward == nil then true
-               else
-                  case @zoomStack == nil then
-                     local TermRec RevBList in
-                        <<Bundraw(@current)>>
-                        %%
-                        RevBList = {Reverse @backward}
-                        forward <- {Append RevBList.2 @current|@forward}
-                        backward <- nil
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        %%
-                        %%
-                        <<Bbrowse(RevBList.1 TermRec)>>
-                        current <- TermRec
-                     end
-                  else
-                     local TermRec RevBList OEl BTermRec in
-                        <<Bundraw(@current)>>
-                        %%
-                        %%
-                        case Buttons == InitValue then true
-                        else
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
-                        case Entries == InitValue then true
-                        else
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
-                        %%
-                        %%
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        %%
-                        %% relational;
-                        if OEl = s(_) then OEl = s(BTermRec)
-                        else {BrowserError
-                              ['non-singleton is found in zoom stack by "previous" op']}
-                        fi
-                        zoomStack <- nil
-                        %%
-                        RevBList = {Reverse @backward}
-                        forward <- {Append RevBList.2 BTermRec|@forward}
-                        backward <- nil
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        %%
-                        %%
-                        <<Bbrowse(RevBList.1 TermRec)>>
-                        current <- TermRec
-                     end
                   end
                end
             end
@@ -3441,7 +3319,7 @@ class BrowserClass from BasicBrowser WindowPrimary
 \ifdef DEBUG_BO
       {Show 'BrowserClass::last is applied'}
 \endif
-      % relational!
+      %%
       case self.IsView then true
       else
          %%
@@ -3451,10 +3329,11 @@ class BrowserClass from BasicBrowser WindowPrimary
          in
             Buttons = @buttons
             Entries = @entries
+
             %%
             case @showAll then
                showAll <- False
-               %%
+
                %% relational!
                if AllButton in AllButton = {Subtree Buttons all} then
                   {AllButton state normal}
@@ -3464,32 +3343,88 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {AllEntry state normal}
                else true
                fi
-               %%
+
                %%
                <<UnsetSelected>>
-               %%
+
                %%
                case @zoomStack == nil then
-                  local NewListOf TermRec in
-                     %%
-                     NewListOf = {Append {Reverse @forward} @current|@backward}
-                     %%
-                     %%
-                     <<UndrawAll(@current|@backward)>>
-                     %%
-                     %%
-                     forward <- nil
-                     backward <- NewListOf.2
-                     <<HistoryButtonsUpdate>>
-                     %%
-                     %%
-                     <<Bbrowse(NewListOf.1 TermRec)>>
-                     current <- TermRec
-                  end
+                  NewListOf TermRec
+               in
+                  %%
+                  NewListOf = {Append {Reverse @forward} @current|@backward}
+
+                  %%
+                  <<UndrawAll(@current|@backward)>>
+
+                  %%
+                  forward <- nil
+                  backward <- NewListOf.2
+                  <<HistoryButtonsUpdate>>
+
+                  %%
+                  <<Bbrowse(NewListOf.1 TermRec)>>
+                  current <- TermRec
                else
-                  local OList OEl List TermRec in
+                  OList OEl List TermRec
+               in
+                  <<Bundraw(@current)>>
+
+                  %%
+                  case Buttons == InitValue then true
+                  else
+                     {Buttons.unzoom state disabled}
+                     {Buttons.top state disabled}
+                  end
+                  case Entries == InitValue then true
+                  else
+                     {Entries.unzoom state disabled}
+                     {Entries.top state disabled}
+                  end
+
+                  %%
+                  OEl = {Nth @zoomStack {Length @zoomStack}}
+
+                  %% relational;
+                  if OEl = a(_) then a(OList) = OEl
+                  else {BrowserError ['unknown type of element in zoom stack']}
+                  fi
+                  zoomStack <- nil
+
+                  %%
+                  List = {Append {Reverse @forward} {Reverse OList}}
+                  forward <- nil
+                  backward <- List.2
+                  <<HistoryButtonsUpdate>>
+
+                  %%
+                  <<Bbrowse(List.1 TermRec)>>
+                  current <- TermRec
+               end
+            else
+               case @forward == nil then true
+               else
+                  case @zoomStack == nil then
+                     TermRec RevFList
+                  in
                      <<Bundraw(@current)>>
+
                      %%
+                     RevFList = {Reverse @forward}
+                     backward <- {Append RevFList.2 @current|@backward}
+                     forward <- nil
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+
+                     %%
+                     <<Bbrowse(RevFList.1 TermRec)>>
+                     current <- TermRec
+                  else
+                     TermRec RevFList OEl BTermRec
+                  in
+                     <<Bundraw(@current)>>
+
                      %%
                      case Buttons == InitValue then true
                      else
@@ -3501,95 +3436,42 @@ class BrowserClass from BasicBrowser WindowPrimary
                         {Entries.unzoom state disabled}
                         {Entries.top state disabled}
                      end
-                     %%
+
                      %%
                      OEl = {Nth @zoomStack {Length @zoomStack}}
-                     %%
+
                      %% relational;
-                     if OEl = a(_) then a(OList) = OEl
-                     else {BrowserError ['unknown type of element in zoom stack']}
+                     if OEl = s(_) then OEl = s(BTermRec)
+                     else {BrowserError
+                           ['non-singleton is found in zoom stack by "previous" op']}
                      fi
                      zoomStack <- nil
+
                      %%
-                     %%
-                     List = {Append {Reverse @forward} {Reverse OList}}
+                     RevFList = {Reverse @forward}
+                     backward <- {Append RevFList.2 BTermRec|@backward}
                      forward <- nil
-                     backward <- List.2
+
+                     %%
                      <<HistoryButtonsUpdate>>
+
                      %%
-                     %%
-                     <<Bbrowse(List.1 TermRec)>>
+                     <<Bbrowse(RevFList.1 TermRec)>>
                      current <- TermRec
-                  end
-               end
-            else
-               case @forward == nil then true
-               else
-                  case @zoomStack == nil then
-                     local TermRec RevFList in
-                        <<Bundraw(@current)>>
-                        %%
-                        RevFList = {Reverse @forward}
-                        backward <- {Append RevFList.2 @current|@backward}
-                        forward <- nil
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        %%
-                        %%
-                        <<Bbrowse(RevFList.1 TermRec)>>
-                        current <- TermRec
-                     end
-                  else
-                     local TermRec RevFList OEl BTermRec in
-                        <<Bundraw(@current)>>
-                        %%
-                        %%
-                        case Buttons == InitValue then true
-                        else
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
-                        case Entries == InitValue then true
-                        else
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
-                        %%
-                        %%
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        %%
-                        %% relational;
-                        if OEl = s(_) then OEl = s(BTermRec)
-                        else {BrowserError
-                              ['non-singleton is found in zoom stack by "previous" op']}
-                        fi
-                        zoomStack <- nil
-                        %%
-                        RevFList = {Reverse @forward}
-                        backward <- {Append RevFList.2 BTermRec|@backward}
-                        forward <- nil
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        %%
-                        %%
-                        <<Bbrowse(RevFList.1 TermRec)>>
-                        current <- TermRec
-                     end
                   end
                end
             end
          end
       end
    end
+
    %%
    %%
    meth previous
 \ifdef DEBUG_BO
       {Show 'BrowserClass::previous is applied'}
 \endif
-      % relational!
+      %%
       case self.IsView then true
       else
          %%
@@ -3599,67 +3481,72 @@ class BrowserClass from BasicBrowser WindowPrimary
          in
             Buttons = @buttons
             Entries = @entries
+
             %%
             <<UnsetSelected>>
+
             %%
             case @showAll then true
             else
                case @backward == nil then true
                else
                   case @zoomStack == nil then
-                     local TermRec NewTermRec in
-                        <<Bundraw(@current)>>
-                        %%
-                        TermRec = @backward.1
-                        backward <- @backward.2
-                        forward <- @current|@forward
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        <<Bbrowse(TermRec NewTermRec)>>
-                        current <- NewTermRec
-                     end
+                     TermRec NewTermRec
+                  in
+                     <<Bundraw(@current)>>
+
+                     %%
+                     TermRec = @backward.1
+                     backward <- @backward.2
+                     forward <- @current|@forward
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+                     <<Bbrowse(TermRec NewTermRec)>>
+                     current <- NewTermRec
                   else
-                     local OEl BTermRec TermRec NewTermRec List in
-                        <<Bundraw(@current)>>
-                        %%
-                        %%
-                        case Buttons == InitValue then true
-                        else
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
-                        case Entries == InitValue then true
-                        else
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
-                        %%
-                        %%
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        %%
-                        %% relational;
-                        if OEl = s(_) then OEl = s(BTermRec)
-                        else {BrowserError
-                              ['non-singleton is found in zoom stack by "previous" op']}
-                        fi
-                        zoomStack <- nil
-                        %%
-                        TermRec = @backward.1
-                        backward <- @backward.2
-                        forward <- BTermRec|@forward
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        <<Bbrowse(TermRec NewTermRec)>>
-                        current <- NewTermRec
+                     OEl BTermRec TermRec NewTermRec List
+                  in
+                     <<Bundraw(@current)>>
+
+                     %%
+                     case Buttons == InitValue then true
+                     else
+                        {Buttons.unzoom state disabled}
+                        {Buttons.top state disabled}
                      end
+                     case Entries == InitValue then true
+                        else
+                        {Entries.unzoom state disabled}
+                        {Entries.top state disabled}
+                     end
+
+                     %%
+                     OEl = {Nth @zoomStack {Length @zoomStack}}
+
+                     %% relational;
+                     if OEl = s(_) then OEl = s(BTermRec)
+                     else {BrowserError
+                           ['non-singleton is found in zoom stack by "previous" op']}
+                     fi
+                     zoomStack <- nil
+
+                     %%
+                     TermRec = @backward.1
+                     backward <- @backward.2
+                     forward <- BTermRec|@forward
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+                     <<Bbrowse(TermRec NewTermRec)>>
+                     current <- NewTermRec
                   end
                end
             end
          end
       end
    end
+
    %%
    %%
    meth next
@@ -3676,67 +3563,72 @@ class BrowserClass from BasicBrowser WindowPrimary
          in
             Buttons = @buttons
             Entries = @entries
+
             %%
             <<UnsetSelected>>
+
             %%
             case @showAll then true
             else
                case @forward == nil then true
                else
                   case @zoomStack == nil then
-                     local TermRec NewTermRec in
-                        <<Bundraw(@current)>>
-                        %%
-                        TermRec = @forward.1
-                        forward <- @forward.2
-                        backward <- @current|@backward
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        <<Bbrowse(TermRec NewTermRec)>>
-                        current <- NewTermRec
-                     end
+                     TermRec NewTermRec
+                  in
+                     <<Bundraw(@current)>>
+
+                     %%
+                     TermRec = @forward.1
+                     forward <- @forward.2
+                     backward <- @current|@backward
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+                     <<Bbrowse(TermRec NewTermRec)>>
+                     current <- NewTermRec
                   else
-                     local OEl BTermRec TermRec NewTermRec List in
-                        <<Bundraw(@current)>>
-                        %%
-                        %%
-                        case Buttons == InitValue then true
-                        else
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
-                        case Entries == InitValue then true
-                        else
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
-                        %%
-                        %%
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        %%
-                        %% relational;
-                        if OEl = s(_) then OEl = s(BTermRec)
-                        else {BrowserError
-                              ['non-singleton is found in zoom stack by "previous" op']}
-                        fi
-                        zoomStack <- nil
-                        %%
-                        TermRec = @forward.1
-                        forward <- @forward.2
-                        backward <- BTermRec|@backward
-                        %%
-                        %%
-                        <<HistoryButtonsUpdate>>
-                        <<Bbrowse(TermRec NewTermRec)>>
-                        current <- NewTermRec
+                     OEl BTermRec TermRec NewTermRec List
+                  in
+                     <<Bundraw(@current)>>
+
+                     %%
+                     case Buttons == InitValue then true
+                     else
+                        {Buttons.unzoom state disabled}
+                        {Buttons.top state disabled}
                      end
+                     case Entries == InitValue then true
+                     else
+                        {Entries.unzoom state disabled}
+                        {Entries.top state disabled}
+                     end
+
+                     %%
+                     OEl = {Nth @zoomStack {Length @zoomStack}}
+
+                     %% relational;
+                     if OEl = s(_) then OEl = s(BTermRec)
+                     else {BrowserError
+                           ['non-singleton is found in zoom stack by "previous" op']}
+                     fi
+                     zoomStack <- nil
+
+                     %%
+                     TermRec = @forward.1
+                     forward <- @forward.2
+                     backward <- BTermRec|@backward
+
+                     %%
+                     <<HistoryButtonsUpdate>>
+                     <<Bbrowse(TermRec NewTermRec)>>
+                     current <- NewTermRec
                   end
                end
             end
          end
       end
    end
+
    %%
    %%
    meth all
@@ -3751,74 +3643,87 @@ class BrowserClass from BasicBrowser WindowPrimary
             case @showAll then
                {BrowserError ['trying to switch to "all" mode second time']}
             else
-               local ListOf in
+               ListOf
+            in
+               %%
+               <<UnsetSelected>>
+
+               %%
+               showAll <- True
+               case @buttons == InitValue then true
+               else
+                  Buttons
+               in
+                  Buttons = @buttons
                   %%
-                  <<UnsetSelected>>
+                  {Buttons.first state normal}
+                  {Buttons.last state normal}
+                  {Buttons.previous state disabled}
+                  {Buttons.next state disabled}
+                  {Buttons.all state disabled}
+               end
+
+               %%
+               case @entries == InitValue then true
+               else
+                  Entries
+               in
+                  Entries = @entries
                   %%
-                  showAll <- True
+                  {Entries.first state normal}
+                  {Entries.last state normal}
+                  {Entries.previous state disabled}
+                  {Entries.next state disabled}
+                  {Entries.all state disabled}
+               end
+
+               %%
+               <<Bundraw(@current)>>
+               case @zoomStack == nil then
+                  ListOf = {Append {Reverse @current|@backward} @forward}
+               else
+                  OEl BTermRec
+               in
+                  %%
                   case @buttons == InitValue then true
                   else
-                     local Buttons = @buttons in
-                        {Buttons.first state normal}
-                        {Buttons.last state normal}
-                        {Buttons.previous state disabled}
-                        {Buttons.next state disabled}
-                        {Buttons.all state disabled}
-                     end
+                     Buttons
+                  in
+                     Buttons = @buttons
+                     %%
+                     {Buttons.unzoom state disabled}
+                     {Buttons.top state disabled}
                   end
+
+                  %%
                   case @entries == InitValue then true
                   else
-                     local Entries = @entries in
-                        {Entries.first state normal}
-                        {Entries.last state normal}
-                        {Entries.previous state disabled}
-                        {Entries.next state disabled}
-                        {Entries.all state disabled}
-                     end
+                     Entries
+                  in
+                     Entries = @entries
+                     %%
+                     {Entries.unzoom state disabled}
+                     {Entries.top state disabled}
                   end
+
                   %%
+                  OEl = {Nth @zoomStack {Length @zoomStack}}
+
+                  %% relational;
+                  if OEl = s(_) then OEl = s(BTermRec)
+                  else {BrowserError
+                        ['non-singleton is found in zoom stack by "previous" op']}
+                  fi
+                  zoomStack <- nil
+
                   %%
-                  <<Bundraw(@current)>>
-                  case @zoomStack == nil then
-                     ListOf = {Append {Reverse @current|@backward} @forward}
-                  else
-                     local OEl BTermRec in
-                        %%
-                        case @buttons == InitValue then true
-                        else
-                           local Buttons = @buttons in
-                              {Buttons.unzoom state disabled}
-                              {Buttons.top state disabled}
-                           end
-                        end
-                        case @entries == InitValue then true
-                        else
-                           local Entries = @entries in
-                              {Entries.unzoom state disabled}
-                              {Entries.top state disabled}
-                           end
-                        end
-                        %%
-                        %%
-                        OEl = {Nth @zoomStack {Length @zoomStack}}
-                        %%
-                        %% relational;
-                        if OEl = s(_) then OEl = s(BTermRec)
-                        else {BrowserError
-                              ['non-singleton is found in zoom stack by "previous" op']}
-                        fi
-                        zoomStack <- nil
-                        %%
-                        %%
-                        ListOf = {Append {Reverse BTermRec|@backward} @forward}
-                     end
-                  end
-                  %%
-                  %%
-                  backward <- nil
-                  current <- InitValue
-                  <<DrawAll(ListOf)>>
+                  ListOf = {Append {Reverse BTermRec|@backward} @forward}
                end
+
+               %%
+               backward <- nil
+               current <- InitValue
+               <<DrawAll(ListOf)>>
             end
          end
       end
@@ -3833,7 +3738,7 @@ class BrowserClass from BasicBrowser WindowPrimary
       local ArityType in
          ArityType = {@store read(StoreArityType $)}
 
-         %
+         %%
          case ArityType == AtomicArity then
             case @selected == InitValue then true
             else @selected.term = Term
@@ -3851,16 +3756,16 @@ class BrowserClass from BasicBrowser WindowPrimary
 \endif
       local HF Desc HelpWindow in
          HF = {New Open.file init(name: IHelpFile flags: [read])}
+
          %%
          Desc = {HF [read(list: $ size: all) close]}
-         %%
+
          %%
          HelpWindow = {New ProtoHelpWindow
                        createHelpWindow(screen: {@store read(StoreScreen $)})}
-         %%
+
          %%
          case {VirtualString.is Desc} then
-            %%
             {HelpWindow showIn(Desc)}
          else
             {BrowserError ['Falsen-virtual-string is read from a help.txt file?']}
@@ -3880,7 +3785,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          else true
          end
 
-         %
+         %%
          backward <- nil
          <<HistoryButtonsUpdate>>
       end
@@ -3895,51 +3800,67 @@ class BrowserClass from BasicBrowser WindowPrimary
       case @current == InitValue then
          case @buttons == InitValue then true
          else
-            local Buttons = @buttons in
-               {Buttons.first state disabled}
-               {Buttons.last state disabled}
+            Buttons
+         in
+            Buttons = @buttons
+            %%
+            {Buttons.first state disabled}
+            {Buttons.last state disabled}
+            {Buttons.previous state disabled}
+            {Buttons.next state disabled}
+            {Buttons.all state disabled}
+         end
+
+         %%
+         case @entries == InitValue then true
+         else
+            Entries
+         in
+            Entries = @entries
+            %%
+            {Entries.first state disabled}
+            {Entries.last state disabled}
+            {Entries.previous state disabled}
+            {Entries.next state disabled}
+            {Entries.all state disabled}
+         end
+      else
+         %%
+
+         %%
+         case @showAll then
+            case @buttons == InitValue then true
+            else
+               Buttons
+            in
+               Buttons = @buttons
+               %%
+               {Buttons.first state normal}
+               {Buttons.last state normal}
                {Buttons.previous state disabled}
                {Buttons.next state disabled}
                {Buttons.all state disabled}
             end
-         end
-         case @entries == InitValue then true
-         else
-            local Entries = @entries in
-               {Entries.first state disabled}
-               {Entries.last state disabled}
+
+            %%
+            case @entries == InitValue then true
+            else
+               Entries
+            in
+               Entries = @entries
+               %%
+               {Entries.first state normal}
+               {Entries.last state normal}
                {Entries.previous state disabled}
                {Entries.next state disabled}
                {Entries.all state disabled}
-            end
-         end
-      else
-         case @showAll then
-            case @buttons == InitValue then true
-            else
-               local Buttons = @buttons in
-                  {Buttons.first state normal}
-                  {Buttons.last state normal}
-                  {Buttons.previous state disabled}
-                  {Buttons.next state disabled}
-                  {Buttons.all state disabled}
-               end
-            end
-            case @entries == InitValue then true
-            else
-               local Entries = @entries in
-                  {Entries.first state normal}
-                  {Entries.last state normal}
-                  {Entries.previous state disabled}
-                  {Entries.next state disabled}
-                  {Entries.all state disabled}
-               end
             end
          else
             Buttons Entries
          in
             Buttons = @buttons
             Entries = @entries
+
             %%
             case @forward == nil then
                %% relational;
@@ -3950,7 +3871,8 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {Last state disabled}
                else true
                fi
-               % relational;
+
+               %% relational;
                if Next Last in
                   Next = {Subtree Buttons next}
                   Last = {Subtree Buttons last} then
@@ -3959,7 +3881,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                else true
                fi
             else
-               % relational;
+               %% relational;
                if Next Last in
                   Next = {Subtree Entries next}
                   Last = {Subtree Entries last} then
@@ -3967,7 +3889,8 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {Last state normal}
                else true
                fi
-               % relational;
+
+               %% relational;
                if Next Last in
                   Next = {Subtree Buttons next}
                   Last = {Subtree Buttons last} then
@@ -3977,9 +3900,9 @@ class BrowserClass from BasicBrowser WindowPrimary
                fi
             end
 
-            %
+            %%
             case @backward == nil then
-               % relational;
+               %% relational;
                if Previous First in
                   Previous = {Subtree Entries previous}
                   First = {Subtree Entries first} then
@@ -3987,7 +3910,8 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {First state disabled}
                else true
                fi
-               % relational;
+
+               %% relational;
                if Previous First in
                   Previous = {Subtree Buttons previous}
                   First = {Subtree Buttons first} then
@@ -3996,7 +3920,7 @@ class BrowserClass from BasicBrowser WindowPrimary
                else true
                fi
             else
-               % relational;
+               %% relational;
                if Previous First in
                   Previous = {Subtree Entries previous}
                   First = {Subtree Entries first} then
@@ -4004,7 +3928,8 @@ class BrowserClass from BasicBrowser WindowPrimary
                   {First state normal}
                else true
                fi
-               % relational;
+
+               %% relational;
                if Previous First in
                   Previous = {Subtree Buttons previous}
                   First = {Subtree Buttons first} then
@@ -4017,4 +3942,5 @@ class BrowserClass from BasicBrowser WindowPrimary
       end
    end
 
+   %%
 end

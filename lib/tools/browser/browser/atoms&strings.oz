@@ -18,7 +18,7 @@ local FindChar1 in
    %%
    AtomConcat = Atom.concat
    VSLength = VirtualString.length
-   %%
+
    %%  only for reflect.oz!!!
    fun{AtomConcatAll L}
       case L
@@ -27,7 +27,7 @@ local FindChar1 in
       else L
       end
    end
-   %%
+
    %% 'S' is a string;
    %% 'C' is an ascii-code;
    fun {FindChar S C}
@@ -40,7 +40,7 @@ local FindChar1 in
       else ~1
       end
    end
-   %%
+
    %% 'S' is a string;
    %% 'P' is an integer;
    fun {Tail S P}
@@ -49,7 +49,7 @@ local FindChar1 in
          case S of H|R then {Tail R P-1} else nil end
       end
    end
-   %%
+
    %%
    fun {Head S P}
       case P<1 then nil
@@ -57,7 +57,7 @@ local FindChar1 in
          case S of H|R then H|{Head R P-1} else nil end
       end
    end
-   %%
+
    %%
    fun {GetStrs Str Delim ParRes}
       local Ind in
@@ -74,7 +74,7 @@ local FindChar1 in
          end
       end
    end
-   %%
+
    %%
    %%  Yields 'False' if 'L1' and 'L2' are equal;
    fun {DiffStrs L1 L2}
@@ -94,5 +94,6 @@ local FindChar1 in
          end
       end
    end
+
    %%
 end

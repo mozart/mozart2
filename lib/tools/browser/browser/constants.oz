@@ -1,9 +1,9 @@
 %  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
-%  Author: Konstantin Popov & Co.
-%  (i.e. all people who make proposals, advices and other rats at all:))
-%  Last modified: $Date$ by $Author$
-%  Version: $Revision$
+%%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%%  Author: Konstantin Popov & Co.
+%%  (i.e. all people who make proposals, advices and other rats at all:))
+%%  Last modified: $Date$ by $Author$
+%%  Version: $Revision$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,16 +54,16 @@ T_Object        = {NewName}
 T_Class         = {NewName}
 %%
 %%  group #3: proper "enclosed" structures;
-% well-formed;
+%% well-formed;
 T_WFList        = {NewName}
 T_Tuple         = {NewName}
 T_Record        = {NewName}
 T_ORecord       = {NewName}
 %%
 %%  group #4: "not-enclosed" structures;
-% incomplete or not well-formed;
+%% incomplete or not well-formed;
 T_List          = {NewName}
-% optimization: flat representation of the T_(B)List;
+%% optimization: flat representation of the T_(B)List;
 T_FList         = {NewName}
 T_HashTuple     = {NewName}
 %%
@@ -136,52 +136,54 @@ IHelpFile   = System.ozHome#'/lib/ozBrowser/help.txt'
 %%
 ITWWidth    = 60
 ITWHeight   = 20
-% ITitle      = "Modern Real Hacker\'s Browser"
+%% ITitle      = "Modern Real Hacker\'s Browser"
 ITitle      = "Oz Browser"
 IVTitle     = "Oz Browser: View"
 IMTitle     = "Oz Browser: Warnings"
 IHTitle     = "Oz Browser: Help"
-% IITitle     = "Modern Browser"
+%% IITitle     = "Modern Browser"
 IITitle     = "Oz Browser"
 IMITitle    = "Messages"
 IHITitle    = "Help"
 
-% IIBitmap    = '/opt/ps/soft/X/bitmaps/misc/face_angry.xbm'
+%% IIBitmap    = '/opt/ps/soft/X/bitmaps/misc/face_angry.xbm'
 IIBitmap    = System.ozHome#'/lib/bitmaps/browserIcon.xbm'
-% IMIBitmap   = '/opt/ps/soft/X/bitmaps/std/RIP.xbm'
+%% IMIBitmap   = '/opt/ps/soft/X/bitmaps/std/RIP.xbm'
 IMIBitmap   = System.ozHome#'/lib/bitmaps/browserMIcon.xbm'
-%          IIBMask     ?
-%          IIBitmap    '/home/ps-home/popow/prgs/Oz/modernBrowser/icon.xbm'
-%          IMIBitmap   '/home/ps-home/popow/prgs/Oz/modernBrowser/micon.xbm'
-%
-% curosr name (see include file X11/cursorfont.h);
+%%          IIBMask     ?
+%%          IIBitmap    '/home/ps-home/popow/prgs/Oz/modernBrowser/icon.xbm'
+%%          IMIBitmap   '/home/ps-home/popow/prgs/Oz/modernBrowser/micon.xbm'
+
+%% curosr name (see include file X11/cursorfont.h);
 ICursorName = 'hand2'
-%  the following two are in pixels (no subwindows are gridded);
-%  these sizes are used if there is(are) no buttons and/or menus frame(s);
+%%  the following two are in pixels (no subwindows are gridded);
+%%  these sizes are used if there is(are) no buttons and/or menus frame(s);
 IXMinSize   = 450
 IYMinSize   = 300
-%
+%%
 IXSize      = 500
 IYSize      = 350
-%  ... for messages' window (but it is gridded, so - in chars);
+%%  ... for messages' window (but it is gridded, so - in chars);
 IMXMinSize  = 40
 IMYMinSize  = 5
-%  ... for help window - the fixed size;
+%%  ... for help window - the fixed size;
 IHXSize     = 550
 IHYSize     = 400
-%  colours on text widget;
+%%  colours on text widget;
 IBackGround   = 'white'
 IForeGround   = 'black'
-%  borders and scrollbars' sizes are in pixels;
+%%  borders and scrollbars' sizes are in pixels;
 IBigBorder    = 3
 ISmallBorder  = 2
-%  text widgets are raised, while menus, buttons and scrollbars frames are sunken;
+%%  text widgets are raised, while menus, buttons and scrollbars frames are sunken;
 ITextRelief   = raised
 IFrameRelief  = sunken
 IButtonRelief = raised
-%  width (or height) of scrollbars (pixels);
+%%  width (or height) of scrollbars (pixels);
 ISWidth       = 15
-%  default font for text widgets, 'x' and 'y' resolutions for it;
+
+%%
+%%  default font for text widgets, 'x' and 'y' resolutions for it;
 ITWFontUnknown = font(name:'*startup*'
                       font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
                       xRes:0 yRes:0)   % these are just some values!
@@ -206,6 +208,7 @@ IKnownMiscFonts = [font(name:'10x20' font:'10x20' xRes:10 yRes:20)
                    font(name:'any'
                         font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
                         xRes:0 yRes:0)]
+
 %%
 %%  Note: actually, precise dimentions of the courier fonts are not
 %% known (and even more, they depend on many other factors!). So, we
@@ -241,42 +244,46 @@ IKnownCourFonts = [font(name:'24'
                    font(name:'10bold'
                         font:'-*-courier-bold-r-*-*-10-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)]
-%
-% for each font in IKnownFonts must be the feature in IFontMap;
-% IFontMap      = map('10x20': 'lucidasans-italic-18' ...)
-%
-% (external) pads (pixels);
+
+%%
+%% for each font in IKnownFonts must be the feature in IFontMap;
+%% IFontMap      = map('10x20': 'lucidasans-italic-18' ...)
+%%
+%% (external) pads (pixels);
 IPad          = 1
 IButtonPad    = 1
 ITWPad        = 3
-%  initial size of messages' text widget (in cols/lines);
+%%  initial size of messages' text widget (in cols/lines);
 IMWidth       = 45
 IMHeight      = 5
-%  width of a button (in cm);
+%%  width of a button (in cm);
 IButtonWidth  = 10
-%
+
+%%
 IBFont1       = '-*-lucida-bold-r-*-sans-12-*-*-*-*-*-*-*'
 IBFont2       = '-*-courier-bold-r-*-*-12-*-*-*-*-*-*-*'
 IBFont3       = '-*-*-*-r-*-*-*-*-*-*-*-*-*-1'
-% ... menu buttons;
+%% ... menu buttons;
 IMBWidth      = 10
 IMBFont1      = '-*-lucida-bold-i-*-sans-12-*-*-*-*-*-*-*'
 IMBFont2      = '-*-courier-bold-*-*-*-12-*-*-*-*-*-*-*'
 IMBFont3      = '-*-*-*-i-*-*-*-*-*-*-*-*-*-1'
-%
-% ... menus;
+%%
+%% ... menus;
 IMFont1       = '-*-lucida-bold-r-*-sans-12-*-*-*-*-*-*-*'
 IMFont2       = '-*-courier-bold-r-*-*-12-*-*-*-*-*-*-*'
 IMFont3       = '-*-*-*-r-*-*-*-*-*-*-*-*-*-1'
-%
+%%
 %%% default font: if the specified one is not found;
 IReservedFont = '-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
-% offsets for a message window;
+
+%%
+%% offsets for a message window;
 IMWXOffset    = 50
 IMWYOffset    = 50
 
 %%
-% would the buttons&menus frames come at start?
+%% would the buttons&menus frames come at start?
 IAreMenus       = !True
 IAreButtons     = !False
 IShowAll        = !True
@@ -300,7 +307,7 @@ IDepthInc       = 1
 %% ... In width;
 IWidthInc       = 1
 ICheckStyle     = !False
-% setting both 'ICheckStyle' and IOnlyCycles to 'True' means 'corereferences';
+%% setting both 'ICheckStyle' and IOnlyCycles to 'True' means 'corereferences';
 IOnlyCycles     = !False
 IHistoryLength  = 15
 
@@ -386,5 +393,5 @@ CharDot         = ".".1
 CharSpace       = " ".1
 %%
 
-% big enough:))
+%% big enough:))
 DInfinite       = 1000000

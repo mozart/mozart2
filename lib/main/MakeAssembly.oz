@@ -81,7 +81,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FDB':           FDB
              'FSP':           FSP
              'FSB':           FSB
-             'AssemblerSupport':       AssemblerSupport
              'CompilerSupport': CompilerSupport
 
              %% Volatile modules
@@ -110,7 +109,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'OS'#       OS
              'Pickle'#   Pickle
              'System'#   System
-             'AssemblerSupport'#     AssemblerSupport
              'CompilerSupport'#      CompilerSupport
              'Property'# Property]
      proc {$ A#M}
@@ -142,7 +140,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'OS'#       OS
              'Pickle'#   Pickle
              'System'#   System
-             'AssemblerSupport'# AssemblerSupport
              'CompilerSupport'#  CompilerSupport
              'Property'# Property]
      proc {$ A#M}

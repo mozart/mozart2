@@ -354,22 +354,22 @@ define
          error(kind: 'Error: Space'
                msg: 'Space already contains distributable thread')
 
-      elseof kernel(spaceSuper S) then
+      elseof kernel(spaceAdmissible S) then
          %% expected S: space
          error(kind: 'Error: Space'
-               msg: 'Merge of superordinated space'
+               msg: 'Space is not admissible for current space'
                items: [hint(l:'Space' m:oz(S))])
 
-      elseof kernel(spaceParent S) then
+      elseof kernel(spaceIllegalAlt S) then
          %% expected S: space
          error(kind: 'Error: Space'
-               msg: 'Current space must be parent space'
+               msg: 'Illegal alternative selection'
                items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(spaceNoChoice S) then
          %% expected S: space
          error(kind: 'Error: Space'
-               msg: 'No choices left'
+               msg: 'No distributor left'
                items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(spaceSituatedness Cs) then

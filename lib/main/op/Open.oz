@@ -128,7 +128,9 @@ local
       FlagMap = map(append:   'O_APPEND'
                     'create': 'O_CREAT'
                     truncate: 'O_TRUNC'
-                    exclude:  'O_EXCL'   )
+                    exclude:  'O_EXCL'
+                    text:     'O_TEXT'
+                    binary:   'O_BINARY')
    in
       fun {FlagsToOS FlagS}
          {FoldL FlagS

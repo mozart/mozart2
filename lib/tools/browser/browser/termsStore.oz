@@ -22,6 +22,191 @@ local
    CheckCycleProc
    GCProc
 in
+
+%%%
+%%%  Local auxiliary stuff;
+%%%
+   %%
+   %%  For efficiency reasons this is the procedure on top level;
+   %%  It is being used in 'Check' to perform check recursively;
+   fun {CheckProc Term List}
+      %%
+      case {IsVar List}
+      of !True then InitValue
+      else
+         Obj IsEQ R IsAway
+      in
+         %%
+         List = Obj|R
+
+         %%
+         job
+            IsEQ = Obj.term == Term
+         end
+
+         %%> alternative, but only 'proper' coreferences (incl. cycles);
+         %%> case {EQ Obj.term Term} then ...
+         case
+            case {IsVar IsEQ}
+            of !True then False
+            else IsEQ
+            end
+         of !True then
+            %%
+            job
+               IsAway = {Object.closed Obj}
+            end
+
+            %%
+            case {IsVar IsAway}
+            of !True then Obj
+            else {CheckProc Term R}
+            end
+         else {CheckProc Term R}  %  both - monotonic and non-monotonic;
+         end
+      end
+   end
+
+   %%
+   %%  Almost the same as above, but excluding 'self' (and it yields bool);
+   fun {SearchProc Self List}
+      %%
+      case {IsVar List}
+      of !True then False
+      else
+         Obj R IsAway
+      in
+         %%
+         List = Obj|R
+
+         %%
+         case Obj == Self then {SearchProc Self R}
+         else
+            IsEQ
+         in
+            job
+               IsEQ = Obj.term == Self.term
+            end
+
+            %%
+            case
+               case {IsVar IsEQ}
+               of !True then False
+               else IsEQ
+               end
+            of !True then
+               %%
+               job
+                  IsAway = {Object.closed}
+               end
+
+               %%
+               case {IsVar IsAway}
+               of !True then True
+               else {SearchProc Self R}
+               end
+            else
+               {SearchProc Self R}
+            end
+         end
+      end
+   end
+
+   %%
+   %%  Check for a cycle;
+   %%  Goes bottom-up from an Object till a "root" object;
+   fun {CheckCycleProc Term SelfObject}
+      local IsEQ in
+         %%
+         %% faster, but if you write 'declare T = a(a(T)) in {Browse T}'
+         %% the representation 'C1=a(a(C1))' will be shown
+         %% (instead 'C1=a(C1)')!
+         %%< case {EQ SelfObject.term Term} then FoundObj = SelfObject
+
+         %%
+         job
+            IsEQ = SelfObject.term == Term
+         end
+
+         %%
+         case
+            case {IsVar IsEQ}
+            of !True then False
+            else IsEQ
+            end
+         then
+            %%
+            case SelfObject.type
+            of !T_PSTerm then InitValue
+            else
+               IsAway
+            in
+               %%
+               job
+                  IsAway = {Object.closed SelfObject}
+               end
+
+               %%
+               case {IsVar IsAway}
+               of !True then SelfObject
+               else
+                  PO
+               in
+                  %% i.e., this is garbage (or lack of synchronization);
+                  PO = SelfObject.parentObj
+
+                  %%
+                  case PO
+                  of !InitValue then InitValue
+                  else {CheckCycleProc Term PO}
+                  end
+               end
+            end
+         else
+            PO
+         in
+            PO = SelfObject.parentObj
+
+            %%
+            case PO
+            of !InitValue then InitValue
+            else {CheckCycleProc Term PO}
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   proc {GCProc List Length ?NewList ?NewLength}
+      %%
+      case {IsVar List} then
+         List = NewList         % keep the tail unchanged;
+         NewLength = Length
+      else
+         Obj R IsAway
+      in
+         %%
+         List = Obj|R
+
+         %%
+         job
+            IsAway = {Object.closed Obj}
+         end
+
+         %%
+         case {IsVar IsAway}
+         of !True then
+            NewTail in
+            %%
+            NewList = Obj|NewTail
+            {GCProc R (Length + 1) NewTail NewLength}
+         else
+            {GCProc R Length NewList NewLength}
+         end
+      end
+   end
+
    %%
    %%  There are the two purposes of the terms store:
    %%
@@ -156,7 +341,8 @@ in
          else
             %%
             RefObj = {CheckProc Term @list}
-            case RefObj == InitValue then
+            case RefObj
+            of !InitValue then
                local NewTail in
                   @tail = Obj|NewTail   % transaction;
                   tail <- NewTail
@@ -197,7 +383,8 @@ in
 
                   %%
                   %%  never zero in divide;
-                  case {`div` @length @pruned} < TermsStoreGCRatio then
+                  case {`div` @length @pruned} < TermsStoreGCRatio
+                  of !True then
                      local NewList NewLength in
                         {GCProc @list 0 NewList NewLength}
 
@@ -244,10 +431,12 @@ in
             CurrentNumber = @currentNumber
 
             %%
-            case CurrentNumber < CurrentLimit then
+            case CurrentNumber < CurrentLimit
+            of !True then
                Permition = True
             else
-               case CurrentNumber == CurrentLimit then
+               case CurrentNumber
+               of !CurrentLimit then
                   {BrowserWarning
                    ['Cannot create more nodes, bound ('
                                                       CurrentLimit
@@ -272,142 +461,6 @@ in
       end
 
       %%
-   end
-
-   %%
-   %%  For efficiency reasons this is the procedure on top level;
-   %%  It is being used in 'Check' to perform check recursively;
-   fun {CheckProc Term List}
-      %%
-      case {IsVar List} then InitValue
-      else
-         Obj R IsAway
-      in
-         %%
-         List = Obj|R
-
-         %% relational;
-         if Obj.term = Term then
-            %%
-            job
-               IsAway = {Object.closed Obj}
-            end
-
-            %%
-            case {IsVar IsAway} then Obj
-            else {CheckProc Term R}
-            end
-            %%> alternative, but only 'proper' coreferences (incl. cycles);
-            %%> case {EQ Obj.term Term} then ...
-         [] true then {CheckProc Term R}  % non-monotonic!
-         fi
-      end
-   end
-
-   %%
-   %%  Almost the same as above, but excluding 'self' (and it yields bool);
-   fun {SearchProc Self List}
-      %%
-      case {IsVar List} then False
-      else
-         Obj R IsAway
-      in
-         %%
-         List = Obj|R
-
-         %%
-         case Obj == Self then {SearchProc Self R}
-         else
-            %% relational;
-            if Obj.term = Self.term then
-               %%
-               job
-                  IsAway = {Object.closed}
-               end
-
-               %%
-               case {IsVar IsAway} then True
-               else {SearchProc Self R}
-               end
-            [] true then {SearchProc Self R}  % non-monotonic!
-            fi
-         end
-      end
-   end
-
-   %%
-   %%  Check for a cycle;
-   %%  Goes bottom-up from an Object till a "root" object;
-   fun {CheckCycleProc Term SelfObject}
-      %% faster, but if you write 'declare T = a(a(T)) in {Browse T}'
-      %% the representation 'C1=a(a(C1))' will be shown (instead 'C1=a(C1)')!
-      %%< case {EQ SelfObject.term Term} then FoundObj = SelfObject
-
-      %%
-      %% relational;
-      if SelfObject.term = Term then
-         %%
-         case SelfObject.type == T_PSTerm then InitValue
-         else
-            IsAway
-         in
-            %%
-            job
-               IsAway = {Object.closed SelfObject}
-            end
-
-            %%
-            case {IsVar IsAway} then SelfObject
-            else
-               PO
-            in
-               %% i.e., this is garbage (or lack of synchronization);
-               PO = SelfObject.parentObj
-
-               %%
-               case PO == InitValue then InitValue
-               else {CheckCycleProc Term PO}
-               end
-            end
-         end
-      [] PO in true then
-         PO = SelfObject.parentObj
-
-         %%
-         case PO == InitValue then InitValue
-         else {CheckCycleProc Term PO}
-         end
-      fi
-   end
-
-   %%
-   %%
-   proc {GCProc List Length ?NewList ?NewLength}
-      %%
-      case {IsVar List} then
-         List = NewList         % keep the tail unchanged;
-         NewLength = Length
-      else
-         Obj R IsAway
-      in
-         %%
-         List = Obj|R
-
-         %%
-         job
-            IsAway = {Object.closed Obj}
-         end
-
-         %%
-         case {IsVar IsAway} then
-            NewTail
-         in
-            NewList = Obj|NewTail
-            {GCProc R (Length + 1) NewTail NewLength}
-         else
-            {GCProc R Length NewList NewLength}
-         end
-      end
    end
 
    %%

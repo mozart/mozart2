@@ -29,55 +29,42 @@ class ProtoStore from UrObject
    %%  Add (or replace) some value to store;
    %%
    meth store(What Value)
-      local Store in
-         Store = @store
-
-         %%
-         store <- {AdjoinAt Store What Value}
-      end
+      %%
+      store <- {AdjoinAt @store What Value}
    end
 
    %%
    %%  Extract some value from store;
    %%
    meth read(What Value)
-      Store
-   in
-      Store = @store
+      local DefValue in
+         DefValue = {NewName}
 
-      %% relational!
-      if V in V = Store.What then Value = V
-      else {BrowserError
-            ['Attempt to read undefined parameter in store: ' What]}
-      fi
+         %%
+         Value = {NoNumber.matchDefault @store What DefValue}
+
+         %%
+         case Value
+         of !DefValue then
+            {BrowserError
+             ['Attempt to read undefined parameter in store']}
+         else true
+         end
+      end
    end
 
    %%
    %%  Is there such parameter?
    %%
-   meth test(What Result)
-      Store
-   in
-      Store = @store
-
-      %% relational!
-      if _ = Store.What then Result = True
-      else Result = False
-      fi
+   meth test(What ?Result)
+      Result = {NoNumber.hasSubtreeAt @tore What}
    end
 
    %%
    %%  Some debug methods;
    %%
    meth dShow(What)
-      Store
-   in
-      Store = @store
-
-      %% replational!
-      if V in V = Store.What then {Show V}
-      else {Show '*** undefined parameter ***'}
-      fi
+      {Show <<read(What $)>>}
    end
 
    %%

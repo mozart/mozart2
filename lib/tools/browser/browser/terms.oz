@@ -25,6 +25,9 @@ local
    GetListType
 
    %%
+   IsVirtualString
+
+   %%
    StripName
    StripBQuotes
    GenVSPrintName
@@ -39,13 +42,13 @@ local
    %%
    TupleToList
    SelSubTerms
-   IsListDepth   % functional! ... since there is message sending in there;
+   IsListDepth
    LArity
 
    %%
-   TestVarProc
-   TestFDVarProc
-   TestMetaVarProc
+   TestVarFun
+   TestFDVarFun
+   TestMetaVarFun
 
    %%
    GetWFListVar
@@ -56,6 +59,717 @@ local
    %%
    IsThereAName
 in
+
+%%%
+%%%
+%%%  Various local auxiliary procedures;
+%%%
+   %%
+   local
+      %%
+      %%
+      [ZeroChar] = "0"
+      %%
+      fun {OctString I}
+         [(I div 64) mod 8 + ZeroChar
+          (I div 8)  mod 8 + ZeroChar
+          I mod 8 + ZeroChar]
+      end
+   in
+      %%
+      local
+         SetTab       = {Tuple tab 255}
+         ScanTab      = {Tuple tab 255}
+         SubstTab     = {Tuple tab 255}
+
+         %%
+         {Tuple.forAllInd SetTab
+          fun {$ I}
+             case {Char.isAlNum I} then legal
+             elsecase [I] of "_"   then legal
+             elsecase {Char.isCntrl I} then
+                subst(case [I]
+                      of "\a" then "\\a"
+                      [] "\b" then "\\b"
+                      [] "\f" then "\\f"
+                      [] "\n" then "\\n"
+                      [] "\r" then "\\r"
+                      [] "\t" then "\\t"
+                      [] "\v" then "\\v"
+                      else {Append "\\" {OctString I}}
+                      end)
+             elsecase I =< 255 andthen 127 =< I then
+                subst({Append "\\" {OctString I}})
+             elsecase [I] of "'" then
+                subst("\\\'")
+             elsecase [I] of "\\" then
+                subst("\\\\")
+             else illegal
+             end
+          end}
+
+         %%
+         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
+         SubstTab = {Tuple.map SetTab
+                     fun {$ T}
+                        case {IsAtom T} then nil else T.1 end
+                     end}
+
+         %%
+         %% Check whether atom needs to be quoted and expand quotes in string
+         fun {Check Is NeedsQuoteYet ?NeedsQuote}
+            case Is of nil then
+               NeedsQuote = NeedsQuoteYet
+               nil
+            [] I|Ir then
+               case ScanTab.I
+               of legal   then I|{Check Ir NeedsQuoteYet ?NeedsQuote}
+               [] illegal then I|{Check Ir True ?NeedsQuote}
+               [] subst   then
+                  {Append SubstTab.I {Check Ir True ?NeedsQuote}}
+               end
+            end
+         end
+         %%
+      in
+         %%
+         fun {GenAtomPrintName Atom}
+            case Atom of '' then "\'\'"
+            else
+               Is={AtomToString Atom}
+               NeedsQuote
+               Js={Check Is {Bool.'not' {Char.isLower Is.1}} ?NeedsQuote}
+            in
+               case NeedsQuote then "'"#Js#"'" else Js end
+            end
+         end
+
+         %%
+         fun {GenVarPrintName Atom}
+            case Atom
+            of '\`\`' then "\`\`"
+            [] nil then '_'     % ad'hoc;
+            else
+               Is = {AtomToString Atom}
+            in
+               {Check Is {Bool.'not' {Char.isUpper Is.1}} _}
+            end
+         end
+      end
+
+      %%
+      %%
+      local
+         SetTab       = {Tuple tab 256}
+         SubstTab     = {Tuple tab 256}
+         ScanTab      = {Tuple tab 256}
+
+         %%
+         {Tuple.forAllInd SetTab
+          fun {$ J} I=J-1 in
+             case {Char.isCntrl I} then
+                subst(case [I]
+                      of "\a" then "\\a"
+                      [] "\b" then "\\b"
+                      [] "\f" then "\\f"
+                      [] "\n" then "\\n"
+                      [] "\r" then "\\r"
+                      [] "\t" then "\\t"
+                      [] "\v" then "\\v"
+                      else {Append "\\" {OctString I}}
+                      end)
+             elsecase I =< 255 andthen 127 =< I then
+                subst({Append "\\" {OctString I}})
+             else
+                case [I] of "\"" then subst("\\\"")
+                elsecase [I] of "\\" then subst("\\\\")
+                else legal
+                end
+             end
+          end}
+
+         %%
+         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
+         SubstTab = {Tuple.map SetTab
+                     fun {$ T}
+                        case {IsAtom T} then "" else T.1 end
+                     end}
+
+         %%
+         fun {QuoteString Is}
+            case Is of nil then nil
+            [] I|Ir then J=I+1 in
+               case ScanTab.J
+               of legal   then I|{QuoteString Ir}
+               [] subst   then {Append SubstTab.J {QuoteString Ir}}
+               end
+            end
+         end
+
+         %%
+         proc {HashVS I V1 V2}
+            V2.I={GenVS V1.I}
+            case I>1 then {HashVS I-1 V1 V2} else true end
+         end
+
+         %%
+         fun {GenVS V}
+            case {Value.type V}
+            of int then V
+            [] float then V
+            [] atom then
+               case V
+               of nil then ''
+               [] '#' then ''
+               [] '' then ''
+               else {QuoteString {AtomToString V}}
+               end
+            [] tuple then
+               case {Label V}
+               of '|' then {QuoteString V}
+               [] '#' then W={Width V} V2={Tuple '#' W} in
+                  {HashVS W V V2} V2
+               end
+            end
+         end
+      in
+         %%
+         fun {GenVSPrintName V}
+            '"'#{GenVS V}#'"'
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Extract a 'meaningful' part of a temporary name;
+   local ParseFun in
+      fun {ParseFun I CI E}
+         case E of !CNameDelimiter then I else CI end
+      end
+
+      %%
+      fun {StripName IStr}
+         local Pos in
+            Pos = {List.foldLInd IStr ParseFun 0}
+
+            %%
+            case Pos of 0 then IStr else {Head IStr Pos-1} end
+         end
+      end
+   end
+
+   %%
+   %%
+   fun {StripBQuotes IStr}
+      case IStr of nil then nil
+      else
+         case IStr.1 of !BQuote then {StripBQuotes IStr.2}
+         else IStr.1|{StripBQuotes IStr.2}
+         end
+      end
+   end
+
+   %%
+   %%  Generate a printname for a name;
+   proc {GenNamePrintName Term Store ?Name}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.getPrintName Term}
+
+         %%
+         case AreSmallNames then
+            case PN of '' then Name = "<N>"
+            else
+               SPNS SSPNS
+            in
+               SPNS = {StripName {Atom.toString PN}}
+
+               %%
+               case SPNS.1 of !BQuote then
+                  SSPNS = {StripName {StripBQuotes SPNS}}
+
+                  %%
+                  case SSPNS of nil then Name = "<N>"
+                  else Name = '#'("<N: `" SSPNS "`>")
+                  end
+               else Name = '#'("<N: " SPNS ">")
+               end
+            end
+         else
+            %%
+            case PN of '' then
+               Name = '#'("<Name @ " {System.getValue Term addr} ">")
+            else
+               Name = '#'("<Name: " PN " @ " {System.getValue Term addr} ">")
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Generate an object's print name;
+   proc {GenObjPrintName Term Store ?Name}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {Class.printName {Class Term}}
+
+         %%
+         case AreSmallNames then
+            case PN of '_' then Name = "<O>"
+            else
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 of !BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
+                  %%
+                  case SN of nil then Name = "<O>"
+                  else Name = '#'("<O: `" SN "`>")
+                  end
+               else Name = '#'("<O: " PN ">")
+               end
+            end
+         else
+            %%
+            case PN of '_' then
+               Name = '#'("<Object @ " {System.getValue Term addr} ">")
+            else
+               Name = '#'("<Object: " PN " @ " {System.getValue Term addr} ">")
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Generate an class's print name;
+   proc {GenClassPrintName Term Store ?Name}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {Class.printName Term}
+         %%
+         case AreSmallNames then
+            case PN of '_' then Name = "<C>"
+            else
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 of !BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
+                  %%
+                  case SN of nil then Name = "<C>"
+                  else Name = '#'("<C: `" SN "`>")
+                  end
+               else Name = '#'("<C: " PN ">")
+               end
+            end
+         else
+            %%
+            case PN of '_' then
+               Name = '#'("<Class @ " {System.getValue Term addr} ">")
+            else
+               Name = '#'("<Class: " PN " @ " {System.getValue Term addr} ">")
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Generate a procedure's print name;
+   proc {GenProcPrintName Term Store ?Name}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.getPrintName Term}
+         %%
+         case AreSmallNames then
+            case PN of '_' then Name = '#'("<P/" {System.getValue Term arity} ">")
+            else
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 of !BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
+                  %%
+                  case SN of nil then
+                     Name = '#'("<P/" {System.getValue Term arity} ">")
+                  else
+                     Name = '#'("<P/" {System.getValue Term arity} " `" SN "`>")
+                  end
+               else
+                  Name = '#'("<P/" {System.getValue Term arity} " " PN ">")
+               end
+            end
+         else
+            %%
+            Name = '#'("<Procedure: " PN "/" {System.getValue Term arity} " @ "
+                       {System.getValue Term addr} ">")
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Generate a cell's print name;
+   proc {GenCellPrintName Term Store ?Name}
+      local AreSmallNames CN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         CN = {System.getPrintName Term}
+         %%
+         case AreSmallNames then
+            case CN of '_' then Name = "<Cell>"
+            else
+               PNS SN
+            in
+               PNS = {Atom.toString CN}
+
+               %%
+               case PNS.1 of !BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
+                  %%
+                  case SN of nil then Name = "<C>"
+                  else Name = '#'("<Cell: `" SN "`>")
+                  end
+               else Name = '#'("<Cell: " CN ">")
+               end
+            end
+         else
+            %%
+            Name = '#'("<Cell: " {System.getValue Term name} ">")
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  'Watch' procedures;
+   %%
+   fun {TestVarFun Var}
+      {GetsBound Var}
+   end
+
+   %%
+   %%
+   fun {TestFDVarFun FDVar Card}
+      local ChFDDom GotBound in
+         job
+            ChFDDom = {WatchDomain FDVar Card}
+         end
+         %%
+         job
+            GotBound = {GetsBound FDVar}
+         end
+
+         %%
+         if ChFDDom = True then True
+         [] GotBound = True then True
+         fi
+      end
+   end
+
+   %%
+   %%
+   fun {TestMetaVarFun MetaVar Strength}
+      local ChMetaVar GotBound in
+         job
+            ChMetaVar = {WatchMetaVar MetaVar Strength}
+         end
+         %%
+         job
+            GotBound = {GetsBound MetaVar}
+         end
+
+         %%
+         if ChMetaVar = True then True
+         [] GotBound = True then True
+         fi
+      end
+   end
+
+   %%
+   %%
+   fun {LArity R AF}
+      %%
+      case AF then {RealArity R}
+      else {Arity R}
+      end
+   end
+
+   %%
+   %%
+   %%  Rudimentary, but still useful here...
+   %%
+   fun {TupleToList Tuple}
+      local WidthOf ListOf in
+         WidthOf = {Width Tuple}
+         ListOf = {List WidthOf}
+
+         %%
+         {FoldL ListOf fun {$ Num E} E = Tuple.Num Num + 1 end 1 _}
+         ListOf
+      end
+   end
+
+   %%
+   %%
+   %%  GetListType;
+   %%  'Store' is the parameters store, 'AreBraces' says whether this list
+   %% should be exposed in braces or not, 'Attr' gets the 'InitValue' or the
+   %% tail variable if the type is T_FList or T_BFList;
+   fun {GetListType List Store}
+      local Depth IsLD in
+         Depth = {Store read(StoreNodeNumber $)}
+
+         %%
+         job
+            IsLD = {IsListDepth List Depth}
+         end
+
+         %%
+         case
+            case {IsVar IsLD} then False
+            else IsLD
+            end
+         of !True then T_WFList
+         else
+            AreFLists
+         in
+            AreFLists = {Store read(StoreFlatLists $)}
+
+            %%
+            case AreFLists then T_FList
+            else T_List
+            end
+         end
+      end
+   end
+
+   %%
+   %%  Note: that's not a function!
+   fun {IsListDepth L D}
+      case D > 0 then
+         %% 'List.is' exactly;
+
+         %%
+         case L
+         of _|Xr then {IsListDepth Xr (D-1)}
+         else L == nil
+         end
+      else L == nil
+      end
+   end
+
+   %%
+   %%
+   %%  Flat representation of incomplete lists;
+   %%  Extract subterms and a trailing variable from given list;
+   %%
+   local
+      DoInfList IsCyclicListDepth DoCyclicList
+      GetBaseList GetListAndVar
+   in
+      %%
+      %%  A 'new edition' of the 'IsCyclicList';
+      %%  We consider simply the limited number of list constructors;
+
+      %%
+      fun {DoInfList Xs Ys Depth}
+         case Depth > 0 then
+            %% more efficient in one flat guard;
+            if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
+               %%
+               case {EQ Xr Yr}
+               of !True then True
+               else {DoInfList Xr Yr (Depth-1)}
+               end
+            else False
+            fi
+         else False
+         end
+      end
+
+      %%
+      fun {IsCyclicListDepth Xs Depth}
+         case Xs of X|Xr then
+            {DoInfList Xs Xr (Depth + Depth + 1)}
+         end
+      end
+
+      %%
+      proc {SelSubTerms List Store ?Subterms ?Var}
+         local Depth Corefs Cycles in
+            {Store [read(StoreNodeNumber Depth)
+                    read(StoreCheckStyle Corefs)
+                    read(StoreOnlyCycles Cycles)]}
+
+            %%
+            case Corefs orelse Cycles then
+               IsCLD
+            in
+               job
+                  IsCLD = {IsCyclicListDepth List Depth}
+               end
+
+               %%
+               case
+                  case {IsVar IsCLD} then False
+                  else IsCLD
+                  end
+               of !True then
+                  {DoCyclicList List nil ?Subterms}
+                  Var = InitValue
+               else             % non-cyclic OR not yet instantiated;
+                  {GetListAndVar List Depth Subterms Var}
+               end
+            else {GetListAndVar List Depth Subterms Var}
+            end
+         end
+      end
+
+      %%
+      proc {DoCyclicList List Stack ?Subterms}
+         local LS in
+            %%
+            case {GetBaseList List Stack Stack LS}
+            of !True then Subterms = LS
+            else {DoCyclicList List.2 List|Stack ?Subterms}
+            end
+         end
+      end
+
+      %%
+      proc {GetListAndVar List Depth ?Subterms ?Var}
+         case Depth > 0 then
+            case {IsVar List} then
+               Subterms = [List]
+               Var = List
+            elsecase List
+            of H|R then
+               NS in
+               Subterms = H|NS
+               {GetListAndVar R (Depth - 1) NS Var}
+            else
+               Subterms = [List]
+               Var = InitValue
+            end
+         else
+            Subterms = [List]
+            Var = InitValue
+         end
+      end
+
+      %%
+      %% 'False' if no recursion was detected;
+      fun {GetBaseList List Stack SavedStack ?BaseList}
+         case Stack
+         of nil then False
+         else
+            %%
+            case {EQ List {Subtree Stack 1}}
+            of !True then
+               case Stack.2
+               of nil then
+                  %% i.e. the cycle begins from the first list constructor;
+                  BaseList = {Append {Map {Reverse SavedStack}
+                                      fun {$ E} E.1 end} [List]}
+                  True
+               else
+                  BaseList = {Append {Map {Reverse Stack.2}
+                                      fun {$ E} E.1 end} [List]}
+                  True
+               end
+            else
+               {GetBaseList List Stack.2 SavedStack ?BaseList}
+            end
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%  ... used for open feature constraints browsing;
+   proc {GetWFListVar LIn ?WFL ?Var}
+      %%
+      %%
+      case {IsVar LIn} then
+         WFL = nil
+         Var = LIn
+      elsecase LIn
+      of E|R then
+         WFL = E|{GetWFListVar R $ Var}
+      [] nil then
+         WFL = nil
+         Var = InitValue
+      else                      % ???
+         {BrowserWarning ['Error in "GetWFListVar"?']}
+         %%
+         WFL = nil
+         Var = LIn
+      end
+   end
+
+   %%
+   %%  Filter for 'RecordC.monitorArity';
+   fun {AtomicFilter In}
+      case In
+      of E|R then
+         case {IsAtom E} then E|{AtomicFilter R}
+         else {AtomicFilter R}
+         end
+      else nil
+      end
+   end
+
+   %%
+   %%  Yields 'True' if there is a name;
+   fun {IsThereAName In}
+      case In
+      of E|R then
+         case {IsName E} then True
+         else {IsThereAName R}
+         end
+      else False
+      end
+   end
+
+   %%
+   %%  cut&paste ;-[
+   local
+      fun {IsAllB I V}
+         I==0 orelse ({IsVirtualString V.I} andthen {IsAllB I-1 V})
+      end
+   in
+      fun {IsVirtualString X}
+         case {IsVar X}
+         of !True then False
+         elsecase {Value.type X}
+         of atom then True
+         [] int then True
+         [] float then True
+         [] tuple then
+            case {Label X}
+            of '#' then {IsAllB {Width X} X}
+            [] '|' then {IsString X}
+            else False
+            end
+         else False
+         end
+      end
+   end
 
    %%
    %%  'Meta' 'term' term object;
@@ -78,17 +792,22 @@ in
             @depth > 1 andthen {self.termsStore canCreateObject($)}
          then
             case {IsVar Term} then
+               IsCVar
+            in
                %% non-monotonic operation;
+               job
+                  IsCVar = {RecordC.is Term}
+               end
 
                %%
-               Type = if {IsRecordCVar Term} then T_ORecord
-                      else
-                         %% relational;
-                         if {IsFdVar Term} then T_FDVariable
-                         [] {IsMetaVar Term} then T_MetaVariable
-                         else T_Variable
-                         fi
-                      fi
+               Type = case {IsRecordCVar Term}
+                      of !True then T_ORecord
+                      elsecase {IsFdVar Term}
+                      of !True then T_FDVariable
+                      elsecase {IsMetaVar Term}
+                      of !True then T_MetaVariable
+                      else T_Variable
+                      end
             else
                case {Value.type Term}
                of atom    then Type = T_Atom
@@ -99,24 +818,30 @@ in
                   local AreVSs in
                      AreVSs = {self.store read(StoreAreVSs $)}
 
-                     %% I don't want to reprogram VirtualString.is;
-                     if AreVSs = True {VirtualString.is Term True} then
-                        Type = T_Atom
-                     [] true then   % non-monotonic!!
-                        if Term = _|_ then
+                     %%
+                     case AreVSs == True andthen {IsVirtualString Term}
+                     then Type = T_Atom
+                     else
+                        case Term
+                        of _|_ then
                            case self.type
                            of !T_List then
-                              Type = case NumberOf == 2 then T_List
+                              Type = case NumberOf
+                                     of 2 then T_List
                                         %%  i.e. this is not-well-formed list;
                                      else {GetListType Term self.store}
                                      end
                            else Type = {GetListType Term self.store}
                            end
                         else
-                           case {Label Term} == '#' andthen {Width Term} > 1
-                           then Type = T_HashTuple
-                           else Type = T_Tuple
-                           end
+                           Type = case
+                                     case {Label Term}
+                                     of '#' then {Width Term} > 1
+                                     else False
+                                     end
+                                  of !True then T_HashTuple
+                                  else T_Tuple
+                                  end
                         end
                      end
                   end
@@ -738,25 +1463,39 @@ in
       %%
       %%
       meth isWFList(?IsWF)
-         local Depth in
+\ifdef DEBUG_TT
+         {Show 'FListTermTermObject::isFWList is applied'#self.term}
+\endif
+         local Depth IsWFInt in
             Depth = {self.store read(StoreNodeNumber $)}
 
-            %% relational!
-            IsWF = if {IsListDepth self.term Depth} then True
-                   [] true then False
-                   fi
+            %%
+            job
+               IsWFInt = {IsListDepth self.term Depth}
+            end
+
+            %%
+            IsWF = case {IsVar IsWFInt} then False
+                   else IsWFInt
+                   end
          end
       end
 
       %%
       %%
       meth getSubterms(?Subterms)
+\ifdef DEBUG_TT
+         {Show 'FListTermTermObject::getSubterms is applied'#self.term}
+\endif
          Subterms = @subterms
       end
 
       %%
       %%  updates 'subterms' and 'tailVar' in place;
       meth reGetSubterms(?Subterms)
+\ifdef DEBUG_TT
+         {Show 'FListTermTermObject::reGetSubterms is applied'#self.term}
+\endif
          local TailVar in
             {SelSubTerms self.term self.store Subterms TailVar}
 
@@ -953,9 +1692,19 @@ in
             case {IsVar OFSLab} then
                %%
                thread
-               %% relational;
-                  if {Det OFSLab True} then {self replaceLabel}
-                  [] {Det SelfClosed True} then true
+                  GotLabel GotClosed
+               in
+                  job
+                     GotLabel = {IsValue OFSLab}
+                  end
+                  %%
+                  job
+                     GotClosed = {IsValue SelfClosed}
+                  end
+
+                  %%
+                  if GotLabel = True then {self replaceLabel}
+                  [] GotClosed = True then true
                      %% cancel watching;
                   fi
                end
@@ -997,8 +1746,19 @@ in
                %%
                %% relational;
                thread
-                  if {IsThereAName RecArity} = True then {self setHiddenPFs}
-                  [] {IsValue SelfClosed True} then true
+                  GotNameFt GotClosed
+               in
+                  job
+                     GotNameFt = {IsThereAName RecArity}
+                  end
+                  %%
+                  job
+                     GotClosed = {IsValue SelfClosed}
+                  end
+
+                  %%
+                  if GotNameFt = True then {self setHiddenPFs}
+                  [] GotClosed = True then true
                   fi
                end
             else true
@@ -1068,6 +1828,7 @@ in
             %%  cheers, Peter! ;-)
             {FoldL TmpArity
              fun {$ I E}
+                %% PIC;
                 if Vp in {SubtreeC Term E _} then
                    I = E|Vp Vp
                 [] true then I
@@ -1081,8 +1842,6 @@ in
 %               in
 %                  I = E|Vp Vp
 %               else I
-%               end
-%            end
              KnownArity nil}
 
             %%
@@ -1123,10 +1882,25 @@ in
             %% Note that this conditional may not block the state;
             %% relational;
             thread
-               if {Det TailVar True} then
+               GotValue ChVar Cancel
+            in
+               job
+                  GotValue = {IsValue TailVar}
+               end
+               %%
+               job
+                  ChVar = {TestVarFun Term}
+               end
+               %%
+               job
+                  Cancel = {IsValue CancelVar}
+               end
+
+               %%
+               if GotValue = True then
                   %%
                   {self extend}
-               [] {TestVarProc Term} then
+               [] ChVar = True then
                   %%
                   case {self.termsStore checkCorefs(self $)} then
                      %% gets bound somehow;
@@ -1135,7 +1909,7 @@ in
                      %%  wait for a 'TailVar';
                      {self initTypeWatching}
                   end
-               [] {Det CancelVar True} then true
+               [] Cancel = True then true
                fi
             end
          else true              % nothing to do - it's a proper record;
@@ -1195,7 +1969,8 @@ in
 \ifdef DEBUG_TT
          {Show 'MetaChunkTermTermObject::initTerm is applied'#self.term}
 \endif
-         case {Width self.term} == 0 then
+         case {Width self.term}
+         of 0 then
             self.isCompound = False
             <<AtomTermTermObject initTerm>>
          else
@@ -1339,16 +2114,18 @@ in
             %%  There could happen just everything: gets a value or
             %% some other (derived) type of variables;
 
-            %% relational;
-            Is = if {Det Term True} then False
-                 [] {IsRecordCVar Term} then False
-                 [] true then
-                    %% relational;
-                    if {IsFdVar Term} then False
-                    [] {IsMetaVar Term} then False
+            Is = case {IsVar Term}
+                 of !True then
+                    case {IsRecordCVar Term}
+                    of !True then False
+                    elsecase {IsFdVar Term}
+                    of !True then False
+                    elsecase {IsMetaVar Term}
+                    of !True then False
                     else True
-                    fi
-                 fi
+                    end
+                 else False
+                 end
          end
       end
 
@@ -1384,10 +2161,20 @@ in
 
             %% Note that this conditional may not block the state;
             thread
+               ChVar Cancel
+            in
+               job
+                  ChVar = {TestVarFun self.term}
+               end
+               %%
+               job
+                  Cancel = {IsValue CancelVar}
+               end
+
                %% relational;
-               if {TestVarProc self.term} then
+               if ChVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] {Det CancelVar True} then true
+               [] Cancel = True then true
                fi
             end
 
@@ -1495,7 +2282,8 @@ in
                          end
 
                    %%
-                   case Num == 1 then Tmp
+                   case Num
+                   of 1 then Tmp
                    else " "#Tmp
                    end
                 end
@@ -1534,10 +2322,20 @@ in
 
             %% Note that this conditional may not block the state;
             thread
-               %% relational;
-               if {TestFDVarProc self.term self.card} then
+               ChFDVar Cancel
+            in
+               job
+                  ChFDVar = {TestFDVarFun self.term self.card}
+               end
+               %%
+               job
+                  Cancel = {IsValue CancelVar}
+               end
+
+               %%
+               if ChFDVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] {Det CancelVar True} then true
+               [] Cancel = True then true
                fi
             end
 
@@ -1675,10 +2473,20 @@ in
 
             %% Note that this conditional may not block the state;
             thread
-               %% relational;
-               if {TestMetaVarProc self.term self.strength} then
+               ChMetaVar Cancel
+            in
+               job
+                  ChMetaVar = {TestMetaVarFun self.term self.strength}
+               end
+               %%
+               job
+                  Cancel = {IsValue CancelVar}
+               end
+
+               %%
+               if ChMetaVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] {Det CancelVar True} then true
+               [] Cancel = True then true
                fi
             end
 
@@ -1804,648 +2612,6 @@ in
       end
 
       %%
-   end
-
-%%%
-%%%
-%%%  Various local auxiliary procedures;
-%%%
-   %%
-   local
-      %%
-      %%
-      [ZeroChar] = "0"
-      %%
-      fun {OctString I}
-         [(I div 64) mod 8 + ZeroChar
-          (I div 8)  mod 8 + ZeroChar
-          I mod 8 + ZeroChar]
-      end
-   in
-      %%
-      local
-         SetTab       = {Tuple tab 255}
-         ScanTab      = {Tuple tab 255}
-         SubstTab     = {Tuple tab 255}
-
-         %%
-         {Tuple.forAllInd SetTab
-          fun {$ I}
-             case {Char.isAlNum I} then legal
-             elsecase [I]=="_"      then legal
-             elsecase {Char.isCntrl I} then
-                subst(case [I]
-                      of "\a" then "\\a"
-                      [] "\b" then "\\b"
-                      [] "\f" then "\\f"
-                      [] "\n" then "\\n"
-                      [] "\r" then "\\r"
-                      [] "\t" then "\\t"
-                      [] "\v" then "\\v"
-                      else {Append "\\" {OctString I}}
-                      end)
-             elsecase I =< 255 andthen 127 =< I then
-                subst({Append "\\" {OctString I}})
-             elsecase [I]=="'" then
-                subst("\\\'")
-             elsecase [I]=="\\" then
-                subst("\\\\")
-             else illegal
-             end
-          end}
-
-         %%
-         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
-         SubstTab = {Tuple.map SetTab
-                     fun {$ T}
-                        case {IsAtom T} then nil else T.1 end
-                     end}
-
-         %%
-         %% Check whether atom needs to be quoted and expand quotes in string
-         fun {Check Is NeedsQuoteYet ?NeedsQuote}
-            case Is of nil then
-               NeedsQuote = NeedsQuoteYet
-               nil
-            [] I|Ir then
-               case ScanTab.I
-               of legal   then I|{Check Ir NeedsQuoteYet ?NeedsQuote}
-               [] illegal then I|{Check Ir True ?NeedsQuote}
-               [] subst   then
-                  {Append SubstTab.I {Check Ir True ?NeedsQuote}}
-               end
-            end
-         end
-         %%
-      in
-         %%
-         fun {GenAtomPrintName Atom}
-            case Atom=='' then "\'\'"
-            else
-               Is={AtomToString Atom}
-               NeedsQuote
-               Js={Check Is {Bool.'not' {Char.isLower Is.1}} ?NeedsQuote}
-            in
-               case NeedsQuote then "'"#Js#"'" else Js end
-            end
-         end
-
-         %%
-         fun {GenVarPrintName Atom}
-            case Atom
-            of '\`\`' then "\`\`"
-            [] nil then '_'     % ad'hoc;
-            else
-               Is = {AtomToString Atom}
-            in
-               {Check Is {Bool.'not' {Char.isUpper Is.1}} _}
-            end
-         end
-      end
-
-      %%
-      %%
-      local
-         SetTab       = {Tuple tab 256}
-         SubstTab     = {Tuple tab 256}
-         ScanTab      = {Tuple tab 256}
-
-         %%
-         {Tuple.forAllInd SetTab
-          fun {$ J} I=J-1 in
-             case {Char.isCntrl I} then
-                subst(case [I]
-                      of "\a" then "\\a"
-                      [] "\b" then "\\b"
-                      [] "\f" then "\\f"
-                      [] "\n" then "\\n"
-                      [] "\r" then "\\r"
-                      [] "\t" then "\\t"
-                      [] "\v" then "\\v"
-                      else {Append "\\" {OctString I}}
-                      end)
-             elsecase I =< 255 andthen 127 =< I then
-                subst({Append "\\" {OctString I}})
-             else
-                case [I]=="\"" then subst("\\\"")
-                elsecase [I]=="\\" then subst("\\\\")
-                else legal
-                end
-             end
-          end}
-
-         %%
-         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
-         SubstTab = {Tuple.map SetTab
-                     fun {$ T}
-                        case {IsAtom T} then "" else T.1 end
-                     end}
-
-         %%
-         fun {QuoteString Is}
-            case Is of nil then nil
-            [] I|Ir then J=I+1 in
-               case ScanTab.J
-               of legal   then I|{QuoteString Ir}
-               [] subst   then {Append SubstTab.J {QuoteString Ir}}
-               end
-            end
-         end
-
-         %%
-         proc {HashVS I V1 V2}
-            V2.I={GenVS V1.I}
-            case I>1 then {HashVS I-1 V1 V2} else true end
-         end
-
-         %%
-         fun {GenVS V}
-            case {Value.type V}
-            of int then V
-            [] float then V
-            [] atom then
-               case V
-               of nil then ''
-               [] '#' then ''
-               [] '' then ''
-               else {QuoteString {AtomToString V}}
-               end
-            [] tuple then
-               case {Label V}
-               of '|' then {QuoteString V}
-               [] '#' then W={Width V} V2={Tuple '#' W} in
-                  {HashVS W V V2} V2
-               end
-            end
-         end
-      in
-         %%
-         fun {GenVSPrintName V}
-            '"'#{GenVS V}#'"'
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  Extract a 'meaningful' part of a temporary name;
-   local ParseFun in
-      fun {ParseFun I CI E}
-         case E == CNameDelimiter then I else CI end
-      end
-
-      %%
-      fun {StripName IStr}
-         local Pos in
-            Pos = {List.foldLInd IStr ParseFun 0}
-
-            %%
-            case Pos == 0 then IStr else {Head IStr Pos-1} end
-         end
-      end
-   end
-
-   %%
-   %%
-   fun {StripBQuotes IStr}
-      case IStr == nil then nil
-      else
-         case IStr.1 == BQuote then {StripBQuotes IStr.2}
-         else IStr.1|{StripBQuotes IStr.2}
-         end
-      end
-   end
-
-   %%
-   %%  Generate a printname for a name;
-   proc {GenNamePrintName Term Store ?Name}
-      local AreSmallNames PN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.getPrintName Term}
-
-         %%
-         case AreSmallNames then
-            case PN == '' then Name = "<N>"
-            else
-               SPNS SSPNS
-            in
-               SPNS = {StripName {Atom.toString PN}}
-
-               %%
-               case SPNS.1 == BQuote then
-                  SSPNS = {StripName {StripBQuotes SPNS}}
-
-                  %%
-                  case SSPNS == nil then Name = "<N>"
-                  else Name = '#'("<N: `" SSPNS "`>")
-                  end
-               else Name = '#'("<N: " SPNS ">")
-               end
-            end
-         else
-            %%
-            case PN == '' then
-               Name = '#'("<Name @ " {System.getValue Term addr} ">")
-            else
-               Name = '#'("<Name: " PN " @ " {System.getValue Term addr} ">")
-            end
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  Generate an object's print name;
-   proc {GenObjPrintName Term Store ?Name}
-      local AreSmallNames PN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Class.printName {Class Term}}
-
-         %%
-         case AreSmallNames then
-            case PN == '_' then Name = "<O>"
-            else
-               PNS SN
-            in
-               PNS = {Atom.toString PN}
-
-               %%
-               case PNS.1 == BQuote then
-                  SN = {StripName {StripBQuotes PNS}}
-
-                  %%
-                  case SN == nil then Name = "<O>"
-                  else Name = '#'("<O: `" SN "`>")
-                  end
-               else Name = '#'("<O: " PN ">")
-               end
-            end
-         else
-            %%
-            case PN == '_' then
-               Name = '#'("<Object @ " {System.getValue Term addr} ">")
-            else
-               Name = '#'("<Object: " PN " @ " {System.getValue Term addr} ">")
-            end
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  Generate an class's print name;
-   proc {GenClassPrintName Term Store ?Name}
-      local AreSmallNames PN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Class.printName Term}
-         %%
-         case AreSmallNames then
-            case PN == '_' then Name = "<C>"
-            else
-               PNS SN
-            in
-               PNS = {Atom.toString PN}
-
-               %%
-               case PNS.1 == BQuote then
-                  SN = {StripName {StripBQuotes PNS}}
-
-                  %%
-                  case SN == nil then Name = "<C>"
-                  else Name = '#'("<C: `" SN "`>")
-                  end
-               else Name = '#'("<C: " PN ">")
-               end
-            end
-         else
-            %%
-            case PN == '_' then
-               Name = '#'("<Class @ " {System.getValue Term addr} ">")
-            else
-               Name = '#'("<Class: " PN " @ " {System.getValue Term addr} ">")
-            end
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  Generate a procedure's print name;
-   proc {GenProcPrintName Term Store ?Name}
-      local AreSmallNames PN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.getPrintName Term}
-         %%
-         case AreSmallNames then
-            case PN == '_' then Name = '#'("<P/" {System.getValue Term arity} ">")
-            else
-               PNS SN
-            in
-               PNS = {Atom.toString PN}
-
-               %%
-               case PNS.1 == BQuote then
-                  SN = {StripName {StripBQuotes PNS}}
-
-                  %%
-                  case SN == nil then
-                     Name = '#'("<P/" {System.getValue Term arity} ">")
-                  else
-                     Name = '#'("<P/" {System.getValue Term arity} " `" SN "`>")
-                  end
-               else
-                  Name = '#'("<P/" {System.getValue Term arity} " " PN ">")
-               end
-            end
-         else
-            %%
-            Name = '#'("<Procedure: " PN "/" {System.getValue Term arity} " @ "
-                       {System.getValue Term addr} ">")
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  Generate a cell's print name;
-   proc {GenCellPrintName Term Store ?Name}
-      local AreSmallNames CN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         CN = {System.getPrintName Term}
-         %%
-         case AreSmallNames then
-            case CN == '_' then Name = "<Cell>"
-            else
-               PNS SN
-            in
-               PNS = {Atom.toString CN}
-
-               %%
-               case PNS.1 == BQuote then
-                  SN = {StripName {StripBQuotes PNS}}
-
-                  %%
-                  case SN == nil then Name = "<C>"
-                  else Name = '#'("<Cell: `" SN "`>")
-                  end
-               else Name = '#'("<Cell: " CN ">")
-               end
-            end
-         else
-            %%
-            Name = '#'("<Cell: " {System.getValue Term name} ">")
-         end
-      end
-   end
-
-   %%
-   %%
-   %%  'Watch' procedures;
-   %%
-   proc {TestVarProc Var}
-      {GetsBound Var}
-   end
-
-   %%
-   %%
-   proc {TestFDVarProc FDVar Card}
-      if {WatchDomain FDVar Card} then true
-      [] {GetsBound FDVar} then true
-         %% let us watch for both events;
-      fi
-   end
-
-   %%
-   %%
-   proc {TestMetaVarProc MetaVar Strength}
-      if {WatchMetaVar MetaVar Strength} then true
-      [] {GetsBound MetaVar} then true
-         %% let us watch for both events;
-      fi
-   end
-
-   %%
-   %%
-   fun {LArity R AF}
-      %%
-      case AF then {RealArity R}
-      else {Arity R}
-      end
-   end
-
-   %%
-   %%
-   %%  Rudimentary, but still useful here...
-   %%
-   fun {TupleToList Tuple}
-      local WidthOf ListOf in
-         WidthOf = {Width Tuple}
-         ListOf = {List WidthOf}
-
-         %%
-         {FoldL ListOf fun {$ Num E} E = Tuple.Num Num + 1 end 1 _}
-         ListOf
-      end
-   end
-
-   %%
-   %%
-   %%  GetListType;
-   %%  'Store' is the parameters store, 'AreBraces' says whether this list
-   %% should be exposed in braces or not, 'Attr' gets the 'InitValue' or the
-   %% tail variable if the type is T_FList or T_BFList;
-   fun {GetListType List Store}
-      local Depth in
-         Depth = {Store read(StoreNodeNumber $)}
-
-         %%
-         if {IsListDepth List Depth} then T_WFList
-         [] true then           % non-monotonic;
-            local AreFLists in
-               AreFLists = {Store read(StoreFlatLists $)}
-
-               %%
-               case AreFLists then T_FList
-               else T_List
-               end
-            end
-         end
-      end
-   end
-
-   %%
-   %%  Note: that's not a function!
-   proc {IsListDepth L D}
-      case D > 0 then
-         %% 'List.is' exactly;
-
-         %%
-         case L
-         of _|Xr then {IsListDepth Xr (D-1)}
-         else L = nil
-         end
-      else L = nil
-      end
-   end
-
-   %%
-   %%
-   %%  Flat representation of incomplete lists;
-   %%  Extract subterms and a trailing variable from given list;
-   %%
-   local
-      DoInfList IsCyclicListDepth DoCyclicList
-      GetBaseList GetListAndVar
-   in
-      %%
-      %%  A 'new edition' of the 'IsCyclicList';
-      %%  We consider simply the limited number of list constructors;
-
-      %%
-      proc {DoInfList Xs Ys Depth}
-         case Depth > 0 then
-            %% relational;
-            if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
-               %%
-               case {EQ Xr Yr} then true
-               else
-                  if {DoInfList Xr Yr (Depth-1)} then true
-                  else false
-                  fi
-               end
-            else false
-            fi
-         else false
-         end
-      end
-
-      %%
-      proc {IsCyclicListDepth Xs Depth}
-         case Xs of X|Xr then
-            {DoInfList Xs Xr (Depth + Depth + 1)}
-         end
-      end
-
-      %%
-      proc {SelSubTerms List Store ?Subterms ?Var}
-         local Depth Corefs Cycles in
-            {Store [read(StoreNodeNumber Depth)
-                    read(StoreCheckStyle Corefs)
-                    read(StoreOnlyCycles Cycles)]}
-
-            %%
-            case Corefs orelse Cycles then
-               %% relational;
-               if {IsCyclicListDepth List Depth} then
-                  {DoCyclicList List nil ?Subterms}
-                  Var = InitValue
-               [] true then     % not yet instantiated;
-                  {GetListAndVar List Depth Subterms Var}
-               fi
-            else {GetListAndVar List Depth Subterms Var}
-            end
-         end
-      end
-
-      %%
-      proc {DoCyclicList List Stack ?Subterms}
-         %% relational;
-         if LS in {GetBaseList List Stack Stack LS}
-         then Subterms = LS
-         else {DoCyclicList List.2 List|Stack ?Subterms}
-         fi
-      end
-
-      %%
-      proc {GetListAndVar List Depth ?Subterms ?Var}
-         case Depth > 0 then
-            case {IsVar List} then
-               Subterms = [List]
-               Var = List
-            elsecase List
-            of H|R then
-               NS in
-               Subterms = H|NS
-               {GetListAndVar R (Depth - 1) NS Var}
-            else
-               Subterms = [List]
-               Var = InitValue
-            end
-         else
-            Subterms = [List]
-            Var = InitValue
-         end
-      end
-
-      %%
-      %% fails if no recursion was detected;
-      proc {GetBaseList List Stack SavedStack ?BaseList}
-         case Stack == nil then false
-         else
-            %%
-            case {EQ List {Subtree Stack 1}} then
-               case Stack.2 == nil then
-                  %% i.e. the cycle begins from the first list constructor;
-                  BaseList = {Append {Map {Reverse SavedStack}
-                                      fun {$ E} E.1 end} [List]}
-               else
-                  BaseList = {Append {Map {Reverse Stack.2}
-                                      fun {$ E} E.1 end} [List]}
-               end
-            else
-               {GetBaseList List Stack.2 SavedStack ?BaseList}
-            end
-         end
-      end
-
-      %%
-   end
-
-   %%
-   %%
-   %%  ... used for open feature constraints browsing;
-   proc {GetWFListVar LIn ?WFL ?Var}
-      %%
-      %%
-      case {IsVar LIn} then
-         WFL = nil
-         Var = LIn
-      elsecase LIn
-      of E|R then
-         WFL = E|{GetWFListVar R $ Var}
-      [] nil then
-         WFL = nil
-         Var = InitValue
-      else                      % ???
-         {BrowserWarning ['Error in "GetWFListVar"?']}
-         %%
-         WFL = nil
-         Var = LIn
-      end
-   end
-
-   %%
-   %%  Filter for 'RecordC.monitorArity';
-   fun {AtomicFilter In}
-      case In
-      of E|R then
-         case {IsAtom E} then E|{AtomicFilter R}
-         else {AtomicFilter R}
-         end
-      else nil
-      end
-   end
-
-   %%
-   %%  Yields 'True' if there is a name;
-   fun {IsThereAName In}
-      case In
-      of E|R then
-         case {IsName E} then True
-         else {IsThereAName R}
-         end
-      else False
-      end
    end
 
    %%

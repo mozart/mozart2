@@ -97,6 +97,8 @@ local MessageWindowObject in
    proc {BrowserError Desc}
       %%
       {Show '************************************************************'}
+      {Show Desc}
+      {Show '************************************************************'}
       %%
       job
          local MW HT L in
@@ -115,8 +117,6 @@ local MessageWindowObject in
 
    %%
    proc {BrowserWarning Desc}
-      %%
-      %% {Show '********'#Desc}
       %%
       job
          local MW HT L in

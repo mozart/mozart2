@@ -34,9 +34,11 @@ local FindChar1 in
       {FindChar1 S C 1}
    end
    fun {FindChar1 S C N}
-      case S of H|R then if H = C then N
-                         else {FindChar1 R C N+1}
-                         fi
+      case S of H|R then
+         case H
+         of !C then N
+         else {FindChar1 R C N+1}
+         end
       else ~1
       end
    end

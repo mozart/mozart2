@@ -74,10 +74,16 @@ in
       end
       %
       meth ShowCurrentInFegramed
-         if PseudoObject in {Subtree @current termObject} = PseudoObject then
-            {self ShowTermObjectInFE( PseudoObject )}
-         else {Show 'FE_BrowserClass::no current'}
-      fi
+         local PseudoObject in
+            PseudoObject =
+            {NoNumber.matchDefault @current termObject InitValue}
+
+            %%
+            case PseudoObject
+            of !InitValue then {Show 'FE_BrowserClass::no current'}
+            else {self ShowTermObjectInFE( PseudoObject )}
+            end
+         end
       end
       %
       meth !FE_StartFE

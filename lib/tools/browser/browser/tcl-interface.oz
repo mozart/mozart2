@@ -31,6 +31,83 @@ local
    %%
    class MyToplevel from Tk.toplevel end
 in
+
+%%%
+%%%   Local auxiliary functions;
+%%%
+   %%
+   %%  optimized: create Tags and Marks
+   %%
+   local C = {Cell.new 1} in
+      fun {TkNewName}
+         Val NewVal
+      in
+         Val = {Cell.exchange C $ NewVal}
+         NewVal = Val + 1
+         browser#Val
+      end
+   end
+
+             /*
+   %%
+   %%
+   proc {TagsListLoop In OutList Tmp}
+      case In
+      of E|R then
+         NT in
+         case E == CharSpace then
+            OutList = Tmp|NT
+            {TagsListLoop R NT nil}
+         else
+            {TagsListLoop R OutList E|Tmp}
+         end
+      else OutList = [Tmp]
+      end
+   end
+
+   %%
+   %%
+   proc {RemovePosition Widget Pos STag Tags Sync}
+      %% relational;
+      case Tags
+      of T|R then
+         case STag == T then Sync = ok
+         else
+            {Widget tk(tag(remove T Pos))}
+            {RemovePosition Widget Pos STag R Sync}
+         end
+      else
+         {BrowserError [' RemovePosition: have not found itself']}
+         %%  since otherwise something has gone wrong;
+      end
+   end
+
+   %%
+   %%
+   fun {GetNums Str Delim ParRes}
+      local Ind in
+         Ind = {FindChar Str Delim}
+
+         %%
+         case Ind == ~1 then
+            {Append ParRes [{String.toInt Str}]}
+         else
+            HeadOf TailOf
+         in
+            HeadOf = {String.toInt {Head Str Ind-1}}
+            TailOf = {Tail Str Ind+1}
+
+            %%
+            {GetNums TailOf Delim {Append ParRes [HeadOf]}}
+         end
+      end
+   end
+             */
+
+%%%
+%%%
+%%%
+   %%
    %%
    class ProtoBrowserWindow from UrObject
       %%
@@ -2151,79 +2228,6 @@ in
    end
    %%
    %%
-
-%%%
-%%%
-%%%   Local auxiliary functions;
-%%%
-   %%
-   %%  optimized: create Tags and Marks
-   %%
-   local C = {Cell.new 1} in
-      fun {TkNewName}
-         Val NewVal
-      in
-         Val = {Cell.exchange C $ NewVal}
-         NewVal = Val + 1
-         browser#Val
-      end
-   end
-
-             /*
-   %%
-   %%
-   proc {TagsListLoop In OutList Tmp}
-      case In
-      of E|R then
-         NT in
-         case E == CharSpace then
-            OutList = Tmp|NT
-            {TagsListLoop R NT nil}
-         else
-            {TagsListLoop R OutList E|Tmp}
-         end
-      else OutList = [Tmp]
-      end
-   end
-
-   %%
-   %%
-   proc {RemovePosition Widget Pos STag Tags Sync}
-      %% relational;
-      case Tags
-      of T|R then
-         case STag == T then Sync = ok
-         else
-            {Widget tk(tag(remove T Pos))}
-            {RemovePosition Widget Pos STag R Sync}
-         end
-      else
-         {BrowserError [' RemovePosition: have not found itself']}
-         %%  since otherwise something has gone wrong;
-      end
-   end
-
-   %%
-   %%
-   fun {GetNums Str Delim ParRes}
-      local Ind in
-         Ind = {FindChar Str Delim}
-
-         %%
-         case Ind == ~1 then
-            {Append ParRes [{String.toInt Str}]}
-         else
-            HeadOf TailOf
-         in
-            HeadOf = {String.toInt {Head Str Ind-1}}
-            TailOf = {Tail Str Ind+1}
-
-            %%
-            {GetNums TailOf Delim {Append ParRes [HeadOf]}}
-         end
-      end
-   end
-             */
 
    %%
 end

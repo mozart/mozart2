@@ -103,12 +103,14 @@ in
    proc {TupleReflectLoop Subterms Num ListIn RProc ?ListOut}
       %%
       %% relational;
-      if T R TmpList NextNum in Subterms = T|R then
+      case Subterms
+      of T|R then
+         TmpList NextNum in
          NextNum = {RProc Num T ListIn TmpList}
          {TupleReflectLoop R NextNum TmpList RProc ListOut}
       else
          ListOut = ListIn
-      fi
+      end
    end
 
    %%
@@ -117,12 +119,14 @@ in
    proc {RecordReflectLoop Arity ListIn RProc ?ListOut}
       %%
       %% relational;
-      if F R TmpList in Arity = F|R then
+      case Arity
+      of F|R then
+         TmpList in
          {RProc F ListIn TmpList}
          {RecordReflectLoop R TmpList RProc ListOut}
       else
          ListOut = ListIn
-      fi
+      end
    end
 
    %%
@@ -148,21 +152,27 @@ in
             case {IsVar TermIn} then
                %%
                %%
-               if {IsRecordCVar TermIn} then
+               case {IsRecordCVar TermIn}
+               of !True then
                   %%
                   %%  convert an OFS to the proper record non-monotonically;
-                  local Arity KnownArity RLabel in
+                  local Arity KnownArity RLabel L in
                      %%
                      %%  'RLabel' will be determined later!
                      Arity = {RecordC.monitorArity TermIn True}
                      KnownArity = {GetWFList Arity}
 
-                     %% relational;
-                     if L in {LabelC TermIn L} then
-                        RLabel =
-                        {String.toAtom {VirtualString.toString L#'...'}}
-                     [] true then RLabel = '_...'
-                     fi
+                     %%
+                     job
+                        L = {LabelC TermIn}
+                     end
+
+                     %%
+                     RLabel =
+                     case {IsVar L}
+                     of !True then '_...'
+                     else {String.toAtom {VirtualString.toString L#'...'}}
+                     end
 
                      %%
                      TermOut = {Record RLabel KnownArity}
@@ -177,19 +187,21 @@ in
                   end
                else
                   %%  a variable;
-                  if {IsFdVar TermIn} then
+                  case {IsFdVar TermIn}
+                  of !True then
                      local SubInts in
                         {Map
                          {FD.reflect.dom TermIn}
                          proc {$ Interval Atom}
-                            if L H in Interval = L#H then
+                            case Interval
+                            of L#H then
                                Atom =
                                {AtomConcatAll
                                 [' ' {IntToAtom L} '..' {IntToAtom H}]}
                             else
                                Atom =
                                {AtomConcat ' ' {IntToAtom Interval}}
-                            fi
+                            end
                          end
                          SubInts}
 
@@ -198,7 +210,8 @@ in
                         {AtomConcatAll [{System.getPrintName TermIn}
                                         '{' SubInts ' }']}
                      end
-                  elseif {IsMetaVar TermIn} then
+                  elsecase {IsMetaVar TermIn}
+                  of !True then
                      ThPrio = {Thread.getPriority} in
 
                      %%  critical section!

@@ -28,17 +28,17 @@ RealArity = {`Builtin` trueArity noHandler}
 %%
 %%  (of course, non-monotonic operations;)
 IsVar = {`Builtin` 'isVarB' noHandler}
-IsFdVar = {`Builtin` 'fdIsVar' noHandler}           % logical;
-IsRecordCVar = {`Builtin` 'recordCIsVar' noHandler} % logical;
-IsMetaVar = {`Builtin` 'metaIsVar' noHandler}       % logical;
+IsFdVar = {`Builtin` 'fdIsVarB' noHandler}
+IsRecordCVar = {`Builtin` 'recordCIsVarB' noHandler}
+IsMetaVar = {`Builtin` 'metaIsVarB' noHandler}
 
 %%
 %%  first argument is a FD variable, and second - reference cardinality;
-WatchDomain = {`Builtin` fdWatchDom1 noHandler}
+WatchDomain = {`Builtin` fdWatchDomB noHandler}
 
 %%
 %%  first argument is a meta variable, and second - reference strength;
-WatchMetaVar = {`Builtin` metaWatchVar noHandler}
+WatchMetaVar = {`Builtin` metaWatchVarB noHandler}
 
 %%
 %%  first argument is a meta variable, and second - constraint data;
@@ -67,7 +67,7 @@ TestC = {`Builtin` 'testCB' noHandler}
 %%  a) subsumes the 'IsValue'
 %%  b) fires when the name of a variable is changed;
 %%  c) fires when a variable becomes fd-variable;
-GetsBound = {`Builtin` getsBound noHandler}
+GetsBound = {`Builtin` getsBoundB noHandler}
 
 %%
 DeepFeed = {`Builtin` deepFeed proc {$ C X}

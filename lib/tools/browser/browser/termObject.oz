@@ -944,7 +944,7 @@ in
          in
             OldSubs = <<getSubterms($)>>
             Depth = @depth
-            %%
+
             %% updates 'subterms' attribute in place;
             NewSubs = <<reGetSubterms($)>>
             %%
@@ -961,6 +961,7 @@ in
                ActWidth = @width
                %%
                {DiffRest OldSubs NewSubs OldRest NewRest}
+
                %%
                case {Length OldRest}
                of 1 then
@@ -1751,14 +1752,29 @@ in
    %% Compare two lists and yield their different tail lists;
    %%
    proc {DiffRest L1 L2 ?LOut1 ?LOut2}
-      %%
-      %% relational;
-      if {Subtree L1 1} = {Subtree L2 1} then
-         {DiffRest L1.2 L2.2 LOut1 LOut2}
-      [] true then
-         LOut1 = L1
-         LOut2 = L2
-      fi
+      local S1 S2 in
+         job S1 = {NoNumber.matchDefault L1 1 InitValue} end
+         job S2 = {NoNumber.matchDefault L2 1 InitValue} end
+
+         %%
+         case
+            case {IsVar S1}
+            of !True then {EQ S1 S2}
+            elsecase {IsVar S2}
+            of !True then {EQ S1 S2}
+            elsecase S1
+            of !InitValue then False
+            elsecase S2
+            of !InitValue then False
+            else S1 == S2
+            end
+         of !True then
+            {DiffRest L1.2 L2.2 LOut1 LOut2}
+         else
+            LOut1 = L1
+            LOut2 = L2
+         end
+      end
    end
    %%
    %%

@@ -1457,16 +1457,18 @@ class WindowPrimary from UrObject
          %%
          {@store read(StoreDepth Depth)}
          case @showAll == False then
-            Current
+            Current TermObject
          in
             Current = @current
+            TermObject = {NoNumber.matchDefault Current termObject InitValue}
 
-            %% relational!
-            if TermObject in {Subtree Current termObject} = TermObject then
-               {TermObject updateSizes(Depth)}
-            else
+            %%
+            case TermObject
+            of !InitValue then
                {BrowserError ['termObject is not found for @curent (UpdateSizes)']}
-            fi
+            else
+               {TermObject updateSizes(Depth)}
+            end
 
             %%
             <<nil>>
@@ -1474,15 +1476,20 @@ class WindowPrimary from UrObject
             %%
             {ForAll @current|@backward    % reverse order;
              proc {$ TermRec}
-                %% relational!
-                if TermObject in
-                   {Subtree TermRec termObject} = TermObject
-                then
-                   {TermObject updateSizes(Depth)}
-                else
-                   {BrowserError
-                    ['termObject is not found for @curent (UpdateSizes)']}
-                fi
+                local TermObject in
+                   %%
+                   TermObject =
+                   {NoNumber.matchDefault TermRec termObject InitValue}
+
+                   %%
+                   case TermObject
+                   of !InitValue then
+                      {BrowserError
+                       ['termObject is not found for @current (UpdateSizes)']}
+                   else
+                      {TermObject updateSizes(Depth)}
+                   end
+                end
              end}
 
             %%
@@ -1512,17 +1519,18 @@ class WindowPrimary from UrObject
 
          %%
          case @showAll == False then
-            Current
+            Current TermObject
          in
             Current = @current
-            %% relational!
-            if TermObject in
-               {Subtree Current termObject} = TermObject
-            then
-               {TermObject checkLayout}
-            else
+            TermObject = {NoNumber.matchDefault Current termObject InitValue}
+
+            %%
+            case TermObject
+            of !InitValue then
                {BrowserError ['termObject is not found for @curent (SetTWWidth)']}
-            fi
+            else
+               {TermObject checkLayout}
+            end
 
             %%
             <<nil>>
@@ -1535,28 +1543,37 @@ class WindowPrimary from UrObject
                %%
                {ForAll ListOf
                 proc {$ TermRec}
-                   %% relational!
-                   if Obj in {Subtree TermRec termObject} = Obj then
-                      {Obj checkLayout}
-                   else true    % can be if a new screen is open;
-                   fi
+                   local Obj in
+                      Obj =
+                      {NoNumber.matchDefault TermRec termObject InitValue}
+
+                      %%
+                      case Obj
+                      of !InitValue then true
+                         %% can be if a new screen is open;
+                      else {Obj checkLayout}
+                      end
+                   end
                 end}
 
                %%
                %% relational;
                <<nil>>
             else
-               Current
+               Current TermObject
             in
                Current = @current
-               %% relational!
-               if TermObject in
-                  {Subtree Current termObject} = TermObject
-               then
+               TermObject =
+               {NoNumber.matchDefault Current termObject InitValue}
+
+               %%
+               case TermObject
+               of !InitValue then
+                  {BrowserError
+                   ['termObject is not found for @curent (SetTWWidth)']}
+               else
                   {TermObject checkLayout}
-               else {BrowserError
-                     ['termObject is not found for @curent (SetTWWidth)']}
-               fi
+               end
 
                %%
                <<nil>>
@@ -1654,22 +1671,16 @@ class BasicBrowser from UrObject
 \ifdef DEBUG_BO
       {Show 'BasicBrowser::Bbrowse is applied'#TermRec.term}
 \endif
-      local CheckStyle OnlyCycles Depth TermsStore TermObject Tag in
+      local
+         CheckStyle OnlyCycles Depth TermsStore
+         TermObject NewTermObject Tag
+      in
          <<createWindow(_)>>
+         TermObject = {NoNumber.matchDefault TermRec termObject InitValue}
 
          %%
-         %% relational!
-         if TermObject in {Subtree TermRec termObject} = TermObject then
-            %%
-            %% simply draw;
-            {TermObject draw(_)}
-
-            %%
-            NewTermRec = termRec(term: TermRec.term
-                                 termObject: TermRec.termObject
-                                 termsStore: TermRec.termsStore)
-            <<nil>>
-         else
+         case TermObject
+         of !InitValue then
             %%
             {@store [read(StoreCheckStyle CheckStyle)
                      read(StoreOnlyCycles OnlyCycles)
@@ -1684,22 +1695,32 @@ class BasicBrowser from UrObject
                                store:      @store)}
 
             %%
-            TermObject = {New PseudoTermObject
-                          init(repType: In_Text_Widget
-                               widgetObj: @window
-                               depth: Depth
-                               term: TermRec.term
-                               store: @store
-                               termsStore: TermsStore
-                               browserObj: self)}
+            NewTermObject = {New PseudoTermObject
+                             init(repType: In_Text_Widget
+                                  widgetObj: @window
+                                  depth: Depth
+                                  term: TermRec.term
+                                  store: @store
+                                  termsStore: TermsStore
+                                  browserObj: self)}
 
             %%
+            {NewTermObject draw(_)}
+
+            %%
+            NewTermRec = termRec(term: TermRec.term
+                                 termObject: NewTermObject
+                                 termsStore: TermsStore)
+            <<nil>>
+         else
+            %%
+            %% simply draw;
             {TermObject draw(_)}
 
             %%
             NewTermRec = termRec(term: TermRec.term
-                                 termObject: TermObject
-                                 termsStore: TermsStore)
+                                 termObject: TermRec.termObject
+                                 termsStore: TermRec.termsStore)
             <<nil>>
          end
       end
@@ -1712,14 +1733,18 @@ class BasicBrowser from UrObject
 \ifdef DEBUG_BO
       {Show 'BasicBrowser::Undraw is applied'#TermRec.term}
 \endif
-      %% relational!
-      if TermObject in {Subtree TermRec termObject} = TermObject then
-         {TermObject undraw(_)}
-      else true
-      fi
+      local TermObject in
+         TermObject = {NoNumber.matchDefault TermRec termObject InitValue}
 
-      %%
-      <<nil>>
+         %%
+         case TermObject
+         of !InitValue then true
+         else {TermObject undraw(_)}
+         end
+
+         %%
+         <<nil>>
+      end
    end
 
    %%
@@ -1894,30 +1919,33 @@ class BrowserClass
 
       [] !BrowserScrolling              then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars scrolling InitValue}
+
             %%
             {@store store(StoreScrolling True)}
 
-            %% relational!
-            if V in {Subtree TclVars scrolling} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars scrolling InitValue}
                %%
                {@store store(StoreScrolling False)}
 
-               %% relational!
-               if V in {Subtree TclVars scrolling} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserScrolling']}
@@ -1926,30 +1954,32 @@ class BrowserClass
 
       [] !BrowserCoreferences           then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars cycleCheck InitValue}
             %%
             {@store store(StoreCheckStyle True)}
 
-            %% relational!
-            if V in {Subtree TclVars cycleCheck} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars cycleCheck InitValue}
                %%
                {@store store(StoreCheckStyle False)}
 
-               %% relational!
-               if V in {Subtree TclVars cycleCheck} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserCoreferences']}
@@ -1958,30 +1988,32 @@ class BrowserClass
 
       [] !BrowserCycles                 then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars onlyCycles InitValue}
             %%
             {@store store(StoreOnlyCycles True)}
 
-            %% relational!
-            if V in {Subtree TclVars onlyCycles} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars onlyCycles InitValue}
                %%
                {@store store(StoreOnlyCycles False)}
 
-               %% relational!
-               if V in {Subtree TclVars onlyCycles} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError ['Illegal value of parameter BrowserCycles']}
             end
@@ -1989,30 +2021,32 @@ class BrowserClass
 
       [] !BrowserPrivateFields          then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars arityType InitValue}
             %%
             {@store store(StoreArityType TrueArity)}
 
-            %% relational!
-            if V in {Subtree TclVars arityType} = V then
-               {V tkSet(TclTrueArity)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrueArity)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars arityType InitValue}
                %%
                {@store store(StoreArityType AtomicArity)}
 
-               %% relational!
-               if V in {Subtree TclVars arityType} = V then
-                  {V tkSet(TclAtomicArity)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclAtomicArity)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserPrivateFields']}
@@ -2021,30 +2055,32 @@ class BrowserClass
 
       [] !BrowserVirtualStrings         then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars vss InitValue}
             %%
             {@store store(StoreAreVSs True)}
 
-            %% relational!
-            if V in {Subtree TclVars vss} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars vss InitValue}
                %%
                {@store store(StoreAreVSs False)}
 
-               %% relational!
-               if V in {Subtree TclVars vss} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserVirtualStrings']}
@@ -2053,30 +2089,32 @@ class BrowserClass
 
       [] !BrowserVariablesAligned       then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars heavyVars InitValue}
             %%
             {@store store(StoreHeavyVars True)}
 
-            %% relational!
-            if V in {Subtree TclVars heavyVars} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars heavyVars InitValue}
                %%
                {@store store(StoreHeavyVars False)}
 
-               %% relational!
-               if V in {Subtree TclVars heavyVars} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserVariablesAligned']}
@@ -2085,30 +2123,32 @@ class BrowserClass
 
       [] !BrowserRecordFieldsAligned    then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars fillStyle InitValue}
             %%
             {@store store(StoreFillStyle Expanded)}
 
-            %% relational!
-            if V in {Subtree TclVars fillStyle} = V then
-               {V tkSet(TclExpanded)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclExpanded)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars fillStyle InitValue}
                %%
                {@store store(StoreFillStyle Filled)}
 
-               %% relational!
-               if V in {Subtree TclVars fillStyle} = V then
-                  {V tkSet(TclFilled)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFilled)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserRecordFieldsAligned']}
@@ -2117,30 +2157,32 @@ class BrowserClass
 
       [] !BrowserListsFlat              then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars flatLists InitValue}
             %%
             {@store store(StoreFlatLists True)}
 
-            %% relational!
-            if V in {Subtree TclVars flatLists} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars flatLists InitValue}
                %%
                {@store store(StoreFlatLists False)}
 
-               %% relational!
-               if V in {Subtree TclVars flatLists} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError ['Illegal value of parameter BrowserListsFlat']}
             end
@@ -2148,30 +2190,32 @@ class BrowserClass
 
       [] !BrowserNamesAndProcsShort     then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars smallNames InitValue}
             %%
             {@store store(StoreSmallNames True)}
 
-            %% relational!
-            if V in {Subtree TclVars smallNames} = V then
-               {V tkSet(TclTrue)}
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclTrue)}
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars smallNames InitValue}
                %%
                {@store store(StoreSmallNames False)}
 
-               %% relational!
-               if V in {Subtree TclVars smallNames} = V then
-                  {V tkSet(TclFalse)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclFalse)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserNamesAndProcsShort']}
@@ -2180,30 +2224,32 @@ class BrowserClass
 
       [] !BrowserPrimitiveTermsActive   then
          case ValueOf == True then
-            TclVars
+            TclVars V
          in
             TclVars = @tclVars
+            V = {NoNumber.matchDefault TclVars areInactive InitValue}
             %%
             {@store store(StoreAreInactive False)}
 
-            %% relational!
-            if V in {Subtree TclVars areInactive} = V then
-               {V tkSet(TclFalse)}  % reverse!
-            else true
-            fi
+            %%
+            case V
+            of !InitValue then true
+            else {V tkSet(TclFalse)}  % reverse!
+            end
          else
             case ValueOf == False then
-               TclVars
+               TclVars V
             in
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars areInactive InitValue}
                %%
                {@store store(StoreAreInactive True)}
 
-               %% relational!
-               if V in {Subtree TclVars areInactive} = V then
-                  {V tkSet(TclTrue)}
-               else true
-               fi
+               %%
+               case V
+               of !InitValue then true
+               else {V tkSet(TclTrue)}
+               end
             else
                {BrowserError
                 ['Illegal value of parameter BrowserPrimitiveTermsActive']}
@@ -2212,20 +2258,21 @@ class BrowserClass
 
       [] !BrowserFont                   then
          case {IsAtom ValueOf} then
-            Window Fonts
+            Window Fonts TclVars V
          in
             Fonts = {Filter
                      {Append IKnownMiscFonts IKnownCourFonts}
                      fun {$ F} F.font == ValueOf end}
 
             %%
-            if Font TclVars in Fonts = [Font] then
+            case Fonts
+            of [Font] then
                TclVars = @tclVars
+               V = {NoNumber.matchDefault TclVars font InitValue}
 
-               %% relational!
-               if V in {Subtree TclVars font} = V then
-                  {V tkSet(Font.font)}
-               else
+               %%
+               case V
+               of !InitValue then true
                   {@store store(StoreTWFont Font)}
 
                   %%
@@ -2233,10 +2280,11 @@ class BrowserClass
                   case Window == InitValue then true
                   else {Window setTWFont}
                   end
-               fi
+               else {V tkSet(Font.font)}
+               end
             else
                {BrowserError ['Illegal value of parameter BrowserFont']}
-            fi
+            end
          else
             {BrowserError ['Illegal value of parameter BrowserFont']}
          end
@@ -3070,8 +3118,8 @@ class BrowserClass
          <<UnsetSelected>>
 
          %%
-         %% relational!
-         if List in NewEl = a(List) then
+         case NewEl
+         of a(List) then
             case @forward == nil then
                backward <- nil
                current <- InitValue
@@ -3089,11 +3137,13 @@ class BrowserClass
                %%
                <<DrawAll(NewList)>>
             end
-         elseif TermRec NewTermRec in NewEl = s(TermRec) then
+         elsecase NewEl
+         of s(TermRec) then
+            NewTermRec in
             <<Bbrowse(TermRec NewTermRec)>>
             current <- NewTermRec
          else {BrowserError ['Unknown type of element in zoom stack']}
-         fi
+         end
       end
    end
 
@@ -3139,8 +3189,8 @@ class BrowserClass
          <<UnsetSelected>>
 
          %%
-         %% relational!
-         if List in NewEl = a(List) then
+         case NewEl
+         of a(List) then
             case @forward == nil then
                backward <- nil
                current <- InitValue
@@ -3156,11 +3206,13 @@ class BrowserClass
                %%
                <<DrawAll(NewList)>>
             end
-         elseif TermRec NewTermRec in NewEl = s(TermRec) then
+         elsecase NewEl
+         of s(TermRec) then
+            NewTermRec in
             <<Bbrowse(TermRec NewTermRec)>>
             current <- NewTermRec
          else {BrowserError ['Unknown type of element in zoom stack']}
-         fi
+         end
       end
    end
 
@@ -3182,18 +3234,22 @@ class BrowserClass
 
             %%
             case @showAll then
+               AllButton AllEntry
+            in
                showAll <- False
-               %%
+               AllButton = {NoNumber.matchDefault Buttons all InitValue}
+               AllEntry = {NoNumber.matchDefault Entries all InitValue}
 
-               %% relational!
-               if AllButton in AllButton = {Subtree Buttons all} then
-                  {AllButton state normal}
-               else true
-               fi
-               if AllEntry in AllEntry = {Subtree Entries all} then
-                  {AllEntry state normal}
-               else true
-               fi
+               %%
+               case AllButton
+               of !InitValue then true
+               else {AllButton state normal}
+               end
+               %%
+               case AllEntry
+               of !InitValue then true
+               else {AllEntry state normal}
+               end
 
                %%
                <<UnsetSelected>>
@@ -3236,11 +3292,13 @@ class BrowserClass
                   %%
                   OEl = {Nth @zoomStack {Length @zoomStack}}
 
-                  %% relational;
-                  if OEl = a(_) then
+                  %%
+                  case OEl
+                  of a(_) then
                      a(OList) = OEl
-                  else {BrowserError ['unknown type of element in zoom stack']}
-                  fi
+                  else
+                     {BrowserError ['unknown type of element in zoom stack']}
+                  end
                   zoomStack <- nil
 
                   %%
@@ -3291,11 +3349,12 @@ class BrowserClass
                      %%
                      OEl = {Nth @zoomStack {Length @zoomStack}}
 
-                     %% relational;
-                     if OEl = s(_) then OEl = s(BTermRec)
+                     %%
+                     case OEl
+                     of s(_) then OEl = s(BTermRec)
                      else {BrowserError
                            ['non-singleton is found in zoom stack by "previous" op']}
-                     fi
+                     end
                      zoomStack <- nil
 
                      %%
@@ -3334,17 +3393,22 @@ class BrowserClass
 
             %%
             case @showAll then
+               AllButton AllEntry
+            in
                showAll <- False
+               AllButton = {NoNumber.matchDefault Buttons all InitValue}
+               AllEntry = {NoNumber.matchDefault Entries all InitValue}
 
-               %% relational!
-               if AllButton in AllButton = {Subtree Buttons all} then
-                  {AllButton state normal}
-               else true
-               fi
-               if AllEntry in AllEntry = {Subtree Entries all} then
-                  {AllEntry state normal}
-               else true
-               fi
+               %%
+               case AllButton
+               of !InitValue then true
+               else {AllButton state normal}
+               end
+               %%
+               case AllEntry
+               of !InitValue then true
+               else {AllEntry state normal}
+               end
 
                %%
                <<UnsetSelected>>
@@ -3387,10 +3451,11 @@ class BrowserClass
                   %%
                   OEl = {Nth @zoomStack {Length @zoomStack}}
 
-                  %% relational;
-                  if OEl = a(_) then a(OList) = OEl
+                  %%
+                  case OEl
+                  of a(_) then a(OList) = OEl
                   else {BrowserError ['unknown type of element in zoom stack']}
-                  fi
+                  end
                   zoomStack <- nil
 
                   %%
@@ -3442,11 +3507,12 @@ class BrowserClass
                      %%
                      OEl = {Nth @zoomStack {Length @zoomStack}}
 
-                     %% relational;
-                     if OEl = s(_) then OEl = s(BTermRec)
+                     %%
+                     case OEl
+                     of s(_) then OEl = s(BTermRec)
                      else {BrowserError
                            ['non-singleton is found in zoom stack by "previous" op']}
-                     fi
+                     end
                      zoomStack <- nil
 
                      %%
@@ -3527,10 +3593,11 @@ class BrowserClass
                      OEl = {Nth @zoomStack {Length @zoomStack}}
 
                      %% relational;
-                     if OEl = s(_) then OEl = s(BTermRec)
+                     case OEl
+                     of s(_) then OEl = s(BTermRec)
                      else {BrowserError
                            ['non-singleton is found in zoom stack by "previous" op']}
-                     fi
+                     end
                      zoomStack <- nil
 
                      %%
@@ -3609,10 +3676,11 @@ class BrowserClass
                      OEl = {Nth @zoomStack {Length @zoomStack}}
 
                      %% relational;
-                     if OEl = s(_) then OEl = s(BTermRec)
+                     case OEl
+                     of s(_) then OEl = s(BTermRec)
                      else {BrowserError
                            ['non-singleton is found in zoom stack by "previous" op']}
-                     fi
+                     end
                      zoomStack <- nil
 
                      %%
@@ -3711,11 +3779,12 @@ class BrowserClass
                   %%
                   OEl = {Nth @zoomStack {Length @zoomStack}}
 
-                  %% relational;
-                  if OEl = s(_) then OEl = s(BTermRec)
+                  %%
+                  case OEl
+                  of s(_) then OEl = s(BTermRec)
                   else {BrowserError
                         ['non-singleton is found in zoom stack by "previous" op']}
-                  fi
+                  end
                   zoomStack <- nil
 
                   %%
@@ -3874,80 +3943,128 @@ class BrowserClass
 
             %%
             case @forward == nil then
-               %% relational;
-               if Next Last in
-                  Next = {Subtree Entries next}
-                  Last = {Subtree Entries last} then
-                  {Next state disabled}
-                  {Last state disabled}
-               else true
-               fi
+               NextE LastE NextB LastB
+            in
+               %%
+               NextE = {NoNumber.matchDefault Entries next InitValue}
+               LastE = {NoNumber.matchDefault Entries last InitValue}
+               NextB = {NoNumber.matchDefault Buttons next InitValue}
+               LastB = {NoNumber.matchDefault Buttons last InitValue}
 
-               %% relational;
-               if Next Last in
-                  Next = {Subtree Buttons next}
-                  Last = {Subtree Buttons last} then
-                  {Next state disabled}
-                  {Last state disabled}
-               else true
-               fi
+               %%
+               case NextE
+               of !InitValue then true
+               else {NextE state disabled}
+               end
+               %%
+               case LastE
+               of !InitValue then true
+               else {LastE state disabled}
+               end
+
+               %%
+               case NextB
+               of !InitValue then true
+               else {NextB state disabled}
+               end
+               %%
+               case LastB
+               of !InitValue then true
+               else {LastB state disabled}
+               end
             else
-               %% relational;
-               if Next Last in
-                  Next = {Subtree Entries next}
-                  Last = {Subtree Entries last} then
-                  {Next state normal}
-                  {Last state normal}
-               else true
-               fi
+               NextE LastE NextB LastB
+            in
+               %%
+               NextE = {NoNumber.matchDefault Entries next InitValue}
+               LastE = {NoNumber.matchDefault Entries last InitValue}
+               NextB = {NoNumber.matchDefault Buttons next InitValue}
+               LastB = {NoNumber.matchDefault Buttons last InitValue}
 
-               %% relational;
-               if Next Last in
-                  Next = {Subtree Buttons next}
-                  Last = {Subtree Buttons last} then
-                  {Next state normal}
-                  {Last state normal}
-               else true
-               fi
+               %%
+               case NextE
+               of !InitValue then true
+               else {NextE state normal}
+               end
+               %%
+               case LastE
+               of !InitValue then true
+               else {LastE state normal}
+               end
+
+               %%
+               case NextB
+               of !InitValue then true
+               else {NextB state normal}
+               end
+               %%
+               case LastB
+               of !InitValue then true
+               else {LastB state normal}
+               end
             end
 
             %%
             case @backward == nil then
-               %% relational;
-               if Previous First in
-                  Previous = {Subtree Entries previous}
-                  First = {Subtree Entries first} then
-                  {Previous state disabled}
-                  {First state disabled}
-               else true
-               fi
+               PreviousE FirstE PreviousB FirstB
+            in
+               %%
+               PreviousE = {NoNumber.matchDefault Entries previous InitValue}
+               FirstE = {NoNumber.matchDefault Entries first InitValue}
+               PreviousB = {NoNumber.matchDefault Buttons previous InitValue}
+               FirstB = {NoNumber.matchDefault Buttons first InitValue}
 
-               %% relational;
-               if Previous First in
-                  Previous = {Subtree Buttons previous}
-                  First = {Subtree Buttons first} then
-                  {Previous state disabled}
-                  {First state disabled}
-               else true
-               fi
+               %%
+               case PreviousE
+               of !InitValue then true
+               else {PreviousE state disabled}
+               end
+               %%
+               case FirstE
+               of !InitValue then true
+               else {FirstE state disabled}
+               end
+
+               %%
+               case PreviousB
+               of !InitValue then true
+               else {PreviousB state disabled}
+               end
+               %%
+               case FirstB
+               of !InitValue then true
+               else {FirstB state disabled}
+               end
             else
-               %% relational;
-               if Previous First in
-                  Previous = {Subtree Entries previous}
-                  First = {Subtree Entries first} then
-                  {Previous state normal}
-                  {First state normal}
-               else true
-               fi
+               PreviousE FirstE PreviousB FirstB
+            in
+               %%
+               PreviousE = {NoNumber.matchDefault Entries previous InitValue}
+               FirstE = {NoNumber.matchDefault Entries first InitValue}
+               PreviousB = {NoNumber.matchDefault Buttons previous InitValue}
+               FirstB = {NoNumber.matchDefault Buttons first InitValue}
 
-               %% relational;
-               if Previous First in
-                  Previous = {Subtree Buttons previous}
-                  First = {Subtree Buttons first} then
-                  {Previous state normal}
-                  {First state normal}
-               else true
-               fi
+               %%
+               case PreviousE
+               of !InitValue then true
+               else {PreviousE state normal}
+               end
+               %%
+               case FirstE
+               of !InitValue then true
+               else {FirstE state normal}
+               end
+
+               %%
+               case PreviousB
+               of !InitValue then true
+               else {PreviousB state normal}
+               end
+               %%
+               case FirstB
+               of !InitValue then true
+               else {FirstB state normal}
+               end
             end
          end
       end

@@ -673,18 +673,16 @@ local
    in
       class MetaObject
 
-         meth clone($)
-            C = {Class.get self}
-         in
-            MetaObject,Create(C
-                              MetaObject,GetAttr({Arity C.`ooAllAttr`} $)
-                              MetaObject,GetFeat({Arity C.`ooFreeFeatR`} $) $)
+         meth GetAttr(As $)
+            case As of nil then nil
+            [] A|Ar then (A|@A)|{self GetAttr(Ar $)}
+            end
          end
 
-         meth Create(C A F $)
-            O = {New C SetAttr(A)}
-         in
-            {O SetFeat(F)} O
+         meth GetFeat(Fs $)
+            case Fs of nil then nil
+            [] F|Fr then (F|self.F)|{self GetFeat(Fr $)}
+            end
          end
 
          meth toChunk($)
@@ -692,39 +690,37 @@ local
          in
             {Chunk.new
              c(PRIVATE:
-                  o('class': {Class.get self}
-                    'attr':  MetaObject,GetAttr({Arity C.`ooAllAttr`} $)
-                    'feat':  MetaObject,GetFeat({Arity C.`ooFreeFeatR`} $)))}
-         end
-
-         meth frmChunk(Ch $)
-            o('class': C 'attr':A 'feat':F) = Ch.PRIVATE
-         in
-            MetaObject,Create(C A F $)
-         end
-
-         meth GetAttr(As $)
-            case As of nil then nil
-            [] A|Ar then (A|@A)|MetaObject,GetAttr(Ar $)
-            end
-         end
-
-         meth GetFeat(Fs $)
-            case Fs of nil then nil
-            [] F|Fr then (F|self.F)|MetaObject,GetFeat(Fr $)
-            end
+                  o('class': C
+                    'attr':  {self GetAttr({Arity C.`ooAttr`} $)}
+                    'feat':  {self GetFeat({Arity C.`ooFreeFeatR`} $)}))}
          end
 
          meth SetAttr(AXs)
             case AXs of nil then skip
-            [] AX|AXr then A|X=AX in A<-X MetaObject,SetAttr(AXr)
+            [] AX|AXr then A|X=AX in A<-X {self SetAttr(AXr)}
             end
          end
 
          meth SetFeat(FXs)
             case FXs of nil then skip
-            [] FX|FXr then F|X=FX in self.F=X MetaObject,SetFeat(FXr)
+            [] FX|FXr then F|X=FX in self.F=X {self SetFeat(FXr)}
             end
+         end
+
+         meth frmChunk(Ch)
+            o('class':C 'attr':A 'feat':F) = Ch.PRIVATE
+         in
+            C={Class.get self}
+            {self SetAttr(A)}
+            {self SetFeat(F)}
+         end
+
+         meth clone($)
+            C = {Class.get self}
+            O = {New C SetAttr({self GetAttr({Arity C.`ooAttr`} $)})}
+         in
+            {O SetFeat({self GetFeat({Arity C.`ooFreeFeatR`} $)})}
+            O
          end
       end
    end

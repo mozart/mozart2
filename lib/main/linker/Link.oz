@@ -65,15 +65,11 @@ local
                     BaseUrl|{CondSelect Spec include nil}}
       in
          fun {$ Url}
-            B=
             if {IsNativeUrl Url} then false
             elseif {ToExcl Url} then false
             elseif {ToIncl Url} then true
             else false
             end
-         in
-            {System.show checkInc({VirtualString.toAtom {UrlToString Url}} B)}
-            B
          end
       end
 
@@ -89,7 +85,6 @@ local
    local
       proc {DoFind Url ToInclude InclMap ExclMap FuncMap}
          UrlKey = {UrlToAtom Url}
-         {System.show url(UrlKey)}
       in
          try
             if {Dictionary.member InclMap UrlKey}
@@ -136,7 +131,6 @@ local
          FuncMap = {Dictionary.new}
       in
          {DoFind RootUrl UrlFilter InclMap ExclMap FuncMap}
-         {System.show 'finding completed.'}
          o(include:  {Dictionary.toRecord incl InclMap}
            exclude:  {Dictionary.toRecord excl ExclMap}
            functors: {Dictionary.toRecord func FuncMap})
@@ -413,10 +407,8 @@ in
       ToInclude = {NewUrlFilter Spec RootUrl}
       Info      = {Find RootUrl ToInclude}
 
-      {System.show Info}
-
-      {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
-      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
+%      {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
+%      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
 
       Types     = {TypeCheck Info}
       UrlToInt  = {Schedule RootUrl Info}

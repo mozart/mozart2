@@ -49,12 +49,6 @@ prepare
 
    \insert 'Print.oz'
 
-   fun {MakeExecHeader Path}
-      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
-   end
-   DefaultExecPath = 'ozengine'
-   DefaultExecHeader = {MakeExecHeader DefaultExecPath}
-
    proc {Swallow _}
       skip
    end
@@ -68,8 +62,28 @@ import
    Search(base)
    OS(system)
    Resolve(expand)
+   Open(file)
+   Property(get)
 
 define
+
+   fun {MakeExecHeader Path}
+      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
+   end
+   fun {MakeExecFile File}
+      {Property.get 'oz.home'}#'/bin/'#File
+   end
+   DefaultExec = case {Property.get 'platform.os'} of win32 then
+                    file({MakeExecFile 'ozwrapper.bin'})
+                 else
+                    string({MakeExecHeader 'ozengine'})
+                 end
+
+   proc {ReadFile File ?VS} F in
+      F = {New Open.file init(name: File flags: [read])}
+      {F read(list: ?VS size: all)}
+      {F close()}
+   end
 
    IncludeSpecs = {NewCell nil}
    local
@@ -98,9 +112,21 @@ define
                     sequential(rightmost type: bool default: false)
                     executable(rightmost char: &x type: bool default: false)
                     execheader(single type: string
-                               validate: alt(when(execpath false)))
+                               validate:
+                                  alt(when(disj(execpath execfile execwrapper)
+                                           false)))
                     execpath(single type: string
-                             validate: alt(when(execheader false)))
+                             validate:
+                                alt(when(disj(execheader execfile execwrapper)
+                                         false)))
+                    execfile(single type: string
+                             validate:
+                                alt(when(disj(execheader execpath execwrapper)
+                                         false)))
+                    execwrapper(single type: string
+                                validate:
+                                   alt(when(disj(execheader execpath execfile)
+                                            false)))
                     compress(rightmost char: &z
                              type: int(min: 0 max: 9) default: 0)
 
@@ -147,12 +173,26 @@ define
           try
              {Pickle.saveWithHeader OutFunctor Args.out
               if Args.executable then
-                 case {CondSelect Args execheader unit} of unit then
-                    case {CondSelect Args execpath unit} of unit then
-                       DefaultExecHeader
-                    elseof S then {MakeExecHeader S}
-                    end
-                 elseof S then S
+                 Exec = case {CondSelect Args execheader unit}
+                        of unit then
+                           case {CondSelect Args execpath unit}
+                           of unit then
+                              case {CondSelect Args execfile unit}
+                              of unit then
+                                 case {CondSelect Args execwrapper unit}
+                                 of unit then
+                                    DefaultExec
+                                 elseof S then file({MakeExecFile S})
+                                 end
+                              elseof S then file(S)
+                              end
+                           elseof S then string({MakeExecHeader S})
+                           end
+                        elseof S then string(S)
+                        end
+              in
+                 case Exec of file(S) then {ReadFile S}
+                 [] string(S) then S
                  end
               else ''
               end

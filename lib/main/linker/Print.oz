@@ -39,9 +39,15 @@ fun {Usage}
    '--[no]executable, -x (default: false)\n' #
    '    Output the functor as executable.\n' #
    '--execheader=STR\n' #
-   '    Use header STR for executables.\n' #
+   '    Use header STR for executables\n' #
+   '    (Unix default: "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
    '--execpath=STR\n' #
-   '    Use path STR to ozengine in headers of executables.\n' #
+   '    Use above header, with ozengine replaced by STR.\n'#
+   '--execfile=FILE\n' #
+   '    Use contents of FILE as header\n' #
+   '    (Windows default: <ozhome>/bin/ozwrapper.bin).\n' #
+   '--execwrapper=FILE\n' #
+   '    Use above header, with ozwrapper.bin replaced by STR.\n' #
    '--compress=N, -z N (N: 0..9, default 0)\n' #
    '    Use compression level N for created pickle.\n'
 end

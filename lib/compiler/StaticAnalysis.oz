@@ -140,7 +140,7 @@ prepare
 
    fun {NormalizeCoord Coord}
       case Coord of unit then Coord
-      else pos(Coord.1 Coord.2 Coord.2)
+      else pos(Coord.1 Coord.2 Coord.3)
       end
    end
 

@@ -28,13 +28,34 @@ local
    DelimiterLEQ
 
    %%
+   LocalIsString
    IsVirtualString
    IsListDepth
 in
 
    %%
-   %% Specialized, a non-monotonic version - which is basically the
-   %% same as a standard, monotonic one except the case of a variable;
+   %%
+   %% Specialized, non-monotonic versions - which are basically the
+   %% same as a standard, monotonic one except the case of variables;
+   fun {LocalIsString X}
+      case {Value.status X}
+      of det(DT) then
+         case DT
+         of atom then X == nil
+         [] tuple then
+            case X
+            of E|T then
+               {IsInt E} andthen E >= 0 andthen E =< 255 andthen
+               {LocalIsString T}
+            else false
+            end
+         else false
+         end
+      else false
+      end
+   end
+
+   %%
    local
       fun {IsAll I V}
          I==0 orelse ({IsVirtualString V.I} andthen {IsAll I-1 V})
@@ -50,7 +71,7 @@ in
             [] tuple then
                case {Label X}
                of '#' then {IsAll {Width X} X}
-               [] '|' then {IsString X}
+               [] '|' then {LocalIsString X}
                else false
                end
             else false
@@ -107,7 +128,10 @@ in
 
          [] tuple      then
             %%
-            case {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
+            case
+               {Store read(StoreAreStrings $)} andthen {LocalIsString Term}
+               orelse
+               {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
             then T_Atom
             elsecase Term of _|_ then
                case {IsListDepth Term ({Store read(StoreWidth $)} * 2)}

@@ -20,8 +20,9 @@
 \undef     DEBUG_OPEN
 
 declare
+BrowserClass
+Browser
 Browse
-BrowserModule
 in
 
 %%
@@ -36,7 +37,6 @@ local
    %%
    %%  Local initial constants;
 \insert 'browser/constants.oz'
-\insert 'browser/setParameter.oz'
 
    %%
    %%
@@ -57,7 +57,7 @@ local
    HasLabel       % non-monotonic test;
    EQ             % pointers equality;
    TermSize       % size of a term's representation;
-   GetsTouched    % fires iff its argument is ever touched;
+   GetsTouched    % fires when its argument is ever touched;
    DeepFeed       % 'feed', but also from local computation spaces;
    ChunkArity     % yields chunk arity;
    ChunkWidth     % ... its width;
@@ -108,12 +108,8 @@ local
    BrowserBufferClass
 
    %%
-   %% local - for the default browser;
-   BrowserStream
-   BrowserCell
-   DefaultBrowserClass
-   DefaultBrowser
-   InternalBrowse
+   %% local - a "flat" browser that does not work in lcs"s;
+   FBrowserClass
 
    %%
    %% "Browser term" module;
@@ -168,10 +164,6 @@ local
    ReferenceTermObject
 
    %%
-   %%  non-public attributes and features of a browser object;
-   IsDefaultBrowser = {NewName}
-
-   %%
    %%  (local) sub-classes for BrowserClass - from 'browserObject.oz';
    WindowManagerClass
    BrowserManagerClass
@@ -181,26 +173,10 @@ local
    BEx = {NewName}
 
    %%
-   BrowserClass
-
-   %%
-   %% Local stuff - browser's pool;
-   DoEquate
-   DoSetParameter
-   DoGetParameter
-   DoAddProcessAction
-   DoSetProcessAction
-   DoRemoveProcessAction
-   DoCreateWindow
-
-   %%
-   %%  Undocumented;
-   DoThrowBrowser
-
-   %%
    %% local emulation of job...end;
    While
    JobEnd
+   ApplyBrowser
 
    %%
 in
@@ -325,7 +301,7 @@ in
 \insert 'browser/termObject.oz'
 
    %%
-   %%
+   %% Auxiliary - emulation of former job..end constructor;
    proc {While Cond Body}
       case {Cond} then {Body} {While Cond Body} else skip end
    end
@@ -348,139 +324,88 @@ in
    end
 
    %%
-   %% DefaultBrowser: provides the passing of terms to be browsed;
-   class DefaultBrowserClass from Object.base
-      attr
-         browserObj: InitValue
+   %% Applies the 'Browser' to the 'Cmd' in a (slightly) more robust
+   %% way;
+   proc {ApplyBrowser Browser Cmd}
+      local HasCrashed CrashProc in
+         %%
+         proc {CrashProc E T D}
+            {Show '*********************************************'}
+            {Show 'Exception occured in browser:'#E#T#D}
+            HasCrashed = unit
+         end
 
-      %%
-      %%
-      meth browse(Term)
-         local Browser HasCrashed CrashProc in
-            %%
-            DefaultBrowserClass , createBrowser
-            Browser = @browserObj
+         %%
+         try
+            %%  Actually, this might block the thread
+            %% (for instance, if the browser's buffer is full);
+            {Browser Cmd}
+         catch failure(debug:D) then {CrashProc failure unit D}
+         [] error(T debug:D) then {CrashProc error T D}
+         [] system(T debug:D) then {CrashProc system T D}
+         end
 
-            %%
-            proc {CrashProc E T D}
-               {Show '*********************************************'}
-               {Show 'Exception occured in browser:'#E}
-               HasCrashed = unit
-            end
-
+         %%
+         %% Fairly to say, there are few things that can be caught
+         %% this way: a browser object has an internal
+         %% asynchronous worker which does the actual job ...
+         case {IsVar HasCrashed} then skip
+         else Pl Hl in
             %%
             try
-               %%  Actually, this might block the thread
-               %% (for instance, if the browser's buffer is full);
-               {Browser browse(Term)}
-            catch failure(debug:D) then {CrashProc failure unit D}
-            [] error(T debug:D) then {CrashProc error T D}
-            [] system(T debug:D) then {CrashProc system T D}
+               %%
+               %% try to give up gracefully ...
+               %% Note that this can block forever;
+               {JobEnd proc {$} {Browser close} end}
+
+               %%
+               %% ignore faults in the current thread;
+            catch failure(debug:_) then skip
+            [] error(_ debug:_) then skip
+            [] system(_ debug:_) then skip
             end
+         end
+      end
+   end
+
+   %%
+   %%
+   %% Actual browser - it handles also browsing from local spaces;
+   class BrowserClass
+      from Object.base
+      feat
+         RealBrowser            %
+         BrowserStream          % used for "deep" browsing;
+         BrowserCell            % ...
+
+      %%
+      %%
+      meth init(...)=M
+         local InternalBrowserLoop in
+            self.RealBrowser = {New FBrowserClass M}
+            self.BrowserCell = {NewCell self.BrowserStream}
 
             %%
-            %% Fairly to say, there are few things that can be caught
-            %% this way: a browser object has an internal
-            %% asynchronous worker which does the actual job ...
-            case {IsVar HasCrashed} then skip
-            else Pl Hl in
-               %%
-               try
-                  %%
-                  %% this can block forever...
-                  {JobEnd proc {$}
-                             {Browser close} % try to give up gracefully;
-                          end}
-
-                  %%
-                  %% ignore faults in the current thread;
-               catch failure(debug:_) then skip
-               [] error(_ debug:_) then skip
-               [] system(_ debug:_) then skip
+            %% Spawn off the internal browsing loop picking up browser
+            %% commands issued in local computation spaces;
+            proc {InternalBrowserLoop S}
+               case S
+               of Cmd|Tail then
+                  {ApplyBrowser self.RealBrowser Cmd}
+                  {InternalBrowserLoop Tail}
+               else {BrowserError 'Browser channel is closed???'}
                end
-
-               %%
-               %% .. and just throw it away;
-               %% Note that the state must be freed already;
-               {self removeBrowser}
+            end
+            thread
+               {InternalBrowserLoop self.BrowserStream}
             end
          end
       end
 
       %%
-      %%
-      meth equate(Term)
-         case @browserObj == InitValue then skip
-         else {@browserObj equate(Term)}
-         end
-      end
-
-      %%
-      %%
-      meth setPar(Par Val)
-         case @browserObj == InitValue then skip
-         else {@browserObj setParameter(name:Par value:Val)}
-         end
-      end
-
-      %%
-      %%
-      meth getPar(Par ?Val)
-         case @browserObj == InitValue then skip
-         else {@browserObj getParameter(name:Par value:Val)}
-         end
-      end
-
-      %%
-      %%
-      meth addProcessAction(Action Label)
-         case @browserObj == InitValue then skip
-         else {@browserObj addProcessAction(action:Action label:Label)}
-         end
-      end
-
-      %%
-      %%
-      meth setProcessAction(Action)
-         case @browserObj == InitValue then skip
-         else {@browserObj setProcessAction(action:Action)}
-         end
-      end
-
-      %%
-      %%
-      meth setProcessAction(Action)
-         case @browserObj == InitValue then skip
-         else {@browserObj setProcessAction(action:Action)}
-         end
-      end
-
-      %%
-      %%
-      meth removeProcessAction(Action)
-         case @browserObj == InitValue then skip
-         else {@browserObj removeProcessAction(action:Action)}
-         end
-      end
-
-      %%
-      %%
-      meth removeBrowser
-         browserObj <- InitValue
-      end
-
-      %%
-      %%
-      meth createBrowser
-         case @browserObj == InitValue then Browser in
-            Browser = {New BrowserClass
-                       init(withMenus:        IWithMenus
-                            IsDefaultBrowser: true)}
-
-            %%
-            browserObj <- Browser
-            {Browser createWindow}
-         else skip
+      meth otherwise(M)
+         case {IsDeepGuard} then {DeepFeed self.BrowserCell {Reflect M}}
+         else {ApplyBrowser self.RealBrowser M}   % be transparent;
          end
       end
 
@@ -489,115 +414,8 @@ in
 
    %%
    %%
-   DefaultBrowser = {New DefaultBrowserClass noop}
-
-   %%
-   %% Browser's cell for deep browsing;
-   BrowserCell = {NewCell BrowserStream}
-
-   %%
-   %% Internal browser - used for deep browsing;
-   proc {InternalBrowse S}
-      case S
-      of Cmd|Tail then
-         {DefaultBrowser Cmd}
-         {InternalBrowse Tail}
-      else {BrowserError 'Browser channel is closed?'}
-      end
-   end
-
-   %%
-   %% always running;
-   thread
-      {InternalBrowse BrowserStream}
-   end
-
-   %%
-   %% Pre-defined 'Browse' procedure - either through 'DeepFeed'
-   %% (asynchronously, no flow control) or directly to
-   %% 'DefaultBrowser';
-   proc {Browse Term}
-      case {IsDeepGuard} then {DeepFeed BrowserCell browse({Reflect Term})}
-      else {DefaultBrowser browse(Term)}
-      end
-   end
-
-   %%
-   proc {DoEquate Term}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.equate from a deep guard?'}
-      else {DefaultBrowser equate(Term)}
-      end
-   end
-
-   %%
-   proc {DoSetParameter Par Val}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.setParameter from a deep guard?'}
-      else {DefaultBrowser setPar(Par Val)}
-      end
-   end
-
-   %%
-   proc {DoGetParameter Par ?Val}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.getParameter from a deep guard?'}
-      else {DefaultBrowser getPar(Par Val)}
-      end
-   end
-
-   %%
-   proc {DoAddProcessAction Action Label}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.addProcessAction from a deep guard?'}
-      else {DefaultBrowser addProcessAction(Action Label)}
-      end
-   end
-
-   %%
-   proc {DoSetProcessAction Action}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.setProcessAction from a deep guard?'}
-      else {DefaultBrowser setProcessAction(Action)}
-      end
-   end
-
-   %%
-   proc {DoRemoveProcessAction Action}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.removeProcessAction from a deep guard?'}
-      else {DefaultBrowser removeProcessAction(Action)}
-      end
-   end
-
-   %%
-   proc {DoCreateWindow}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.createWindow from a deep guard?'}
-      else {DefaultBrowser createBrowser}
-      end
-   end
-
-   %%
-   proc {DoThrowBrowser}
-      case {IsDeepGuard} then
-         {Show 'BrowserModule.createWindow from a deep guard?'}
-      else {DefaultBrowser removeBrowser}
-      end
-   end
-
-   %%
-   %% 'Browse' module;
-   BrowserModule = browse(equate:              DoEquate
-                          setParameter:        DoSetParameter
-                          getParameter:        DoGetParameter
-                          addProcessAction:    DoAddProcessAction
-                          setProcessAction:    DoSetProcessAction
-                          removeProcessAction: DoRemoveProcessAction
-                          createWindow:        DoCreateWindow
-                          browserClass:        BrowserClass
-                          throwBrowser:        DoThrowBrowser
-                          browse:              Browse)
+   Browser = {New BrowserClass init}
+   Browse = proc {$ X} {Browser browse(X)} end
 
    %%
    %%

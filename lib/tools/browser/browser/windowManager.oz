@@ -306,7 +306,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          end
 
          %%
-         case @window.standAlone then skip
+         case @window.standAlone then {@window setMinSize}
          else WindowManagerClass , entriesDisable([close])
          end
 
@@ -340,11 +340,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 \endif
       %%
       case @window == InitValue then skip
-      else X Y in
-         {@store [read(StoreXSize X) read(StoreYSize Y)]}
-
-         %%
-         {@window [setXYSize(X Y) resetTW]}
+      else {@window [setMinSize setXYSize resetTW]}
       end
 
       %%
@@ -375,7 +371,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          @window \= InitValue andthen
          {self.store read(StoreAreMenus $)}
       then
-         {@window closeMenuBar}
+         {@window [closeMenuBar setMinSize]}
          actions <- InitValue
          actionVar <- InitValue
          nextANumber <- InitValue

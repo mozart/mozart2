@@ -252,6 +252,7 @@ in
    fun {GenLitPrintName FN Store}
       case {IsAtom FN} then {GenAtomPrintName FN}
       elsecase {IsName FN} then {GenNamePrintName FN Store}
+      elsecase {IsInt FN} then {VirtualString.changeSign FN '~'}
       else FN
       end
    end
@@ -700,7 +701,10 @@ in
          {Show 'AtomTermObject::makeTerm is applied' # self.term}
 \endif
          local Name in
-            Name = case {self.store read(StoreAreVSs $)}
+            Name = case
+                      {self.store read(StoreAreVSs $)} orelse
+                      ({self.store read(StoreAreStrings $)} andthen
+                       {Value.status self.term} == det(tuple))
                    then {GenVSPrintName self.term}
                    else {GenAtomPrintName self.term}
                    end

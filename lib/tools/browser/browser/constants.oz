@@ -113,6 +113,7 @@ StoreDepthInc        = {NewName}
 StoreAreSeparators   = {NewName}
 StoreRepMode         = {NewName}
 StoreSmallNames      = {NewName}
+StoreAreStrings      = {NewName}
 StoreAreVSs          = {NewName}
 StoreTWFont          = {NewName}
 StoreBufferSize      = {NewName}
@@ -200,7 +201,7 @@ IXTransDist  = 10
 IYTransDist  = 5
 
 %% curosr name (see include file X11/cursorfont.h);
-ICursorName    = 'hand2'
+ICursorName    = 'left_ptr'
 ICursorClock   = 'watch'
 
 %%
@@ -208,10 +209,10 @@ IAboutColor = blue
 IEntryColor  = wheat
 
 %%
-%% he following two are in pixels (no subwindows are gridded);
+%% The following two are in pixels (no subwindows are gridded);
 %% hese sizes are used if there is(are) no buttons and/or menus frame(s);
-IXMinSize   = 450
-IYMinSize   = 300
+IXMinSize   = 200
+IYMinSize   = 150
 
 %%
 IXSize      = 500
@@ -330,6 +331,7 @@ IWidth            = 50
 IFillStyle        = !Expanded
 IArityType        = !AtomicArity
 ISmallNames       = true
+IAreStrings       = false
 IAreVSs           = false
 IDepthInc         = 1
 IWidthInc         = 1
@@ -357,6 +359,32 @@ IDIMedium         = 3
 IWIMedium         = 15
 IDILarge          = 10
 IWILarge          = 200
+
+%%
+%% options;
+SpecialON         = 'special'
+BrowserXSize      = 'xSize'
+BrowserYSize      = 'ySize'
+BrowserXMinSize   = 'xMinSize'
+BrowserYMinSize   = 'yMinSize'
+BufferON          = 'buffer'
+BrowserBufferSize = 'size'
+BrowserSeparators = 'separateBufferEntries'
+RepresentationON  = 'representation'
+BrowserRepMode    = 'mode'
+BrowserChunkFields        = 'privateChunkFields'
+BrowserNamesAndProcs      = 'detailedNamesAndProcedures'
+BrowserVirtualStrings     = 'virtualStrings'
+BrowserStrings    = 'strings'
+DisplayON         = 'display'
+BrowserDepth      = 'depth'
+BrowserWidth      = 'width'
+BrowserDepthInc   = 'depthInc'
+BrowserWidthInc   = 'widthInc'
+LayoutON          = 'layout'
+BrowserFontSize   = 'size'
+BrowserBold       = 'bold'
+BrowserRecordFieldsAligned = 'alignRecordFields'
 
 %%%
 %%%

@@ -540,10 +540,8 @@ in
                %% processes the 'genRefName' message - let's check
                %% that;
                thread
-                  case RefObj.closed then {Obj rebrowse}
-                  else {BrowserError
-                        'CompoundControlObject::putSubterm: error!'}
-                  end
+                  {Wait RefObj.closed}
+                  {Obj rebrowse}
                end
             else skip
             end

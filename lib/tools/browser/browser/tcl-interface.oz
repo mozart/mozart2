@@ -804,11 +804,12 @@ in
                %%
                %% Browser object will also send a request to select an
                %% appropriate radio button;
-               thread   % job
-                  {self.browserObj
-                   setParameter(name:BrowserFont
-                                value:font(size:IFont.size wght:IFont.wght))}
+               thread   %
+                  {self.browserObj option(layout
+                                          size: IFont.size
+                                          bold: (IFont.wght=='bold'))}
                end
+
                %%
                false
             else true
@@ -919,15 +920,22 @@ in
          end
 \endif
          %%
-         local Font TWWidthS TWWidth XRes in
+         local Font TWWidth WWidth WHeight XRes in
             {self.store read(StoreTWFont Font)}
 
             %%
             {Tk.send update(idletasks)}
 
             %%
-            {Tk.return winfo(width self.BrowseWidget) TWWidthS}
-            TWWidth = {String.toInt TWWidthS}   % implicit sync;
+            TWWidth = {Tk.returnInt winfo(width self.BrowseWidget)}
+            WWidth = {Tk.returnInt winfo(width self.Window)}
+            WHeight = {Tk.returnInt winfo(height self.Window)}
+
+            %%
+            {Wait TWWidth} {Wait WWidth} {Wait WHeight}
+            {self.store store(StoreXSize WWidth)}
+            {self.store store(StoreYSize WHeight)}
+            {Show '!'#WWidth#WHeight}
 
             %%
             XRes = case Font.xRes == 0 then
@@ -958,20 +966,23 @@ in
       %% not smaller than a minimal possible one
       %% (and, of course, this is a 'stand alone' browser);
       %%
-      meth setXYSize(X Y)
+      meth setXYSize
 \ifdef DEBUG_TI
-         {Show 'BrowserWindowClass::setXYSize' # X # Y}
+         {Show 'BrowserWindowClass::setXYSize'}
          case MyClosableObject , isClosed($) then
             {`RaiseError` browser('Closed window object is applied!')}
          else skip
          end
 \endif
          %%
-         case self.standAlone then MinXSize MinYSize in
+         case self.standAlone then X Y MinXSize MinYSize in
             {self.store [read(StoreXMinSize MinXSize)
-                         read(StoreYMinSize MinYSize)]}
+                         read(StoreYMinSize MinYSize)
+                         read(StoreXSize X)
+                         read(StoreYSize Y)]}
 
             %%
+            {Show '!'#'!'#'!'#X#MinXSize#Y#MinYSize}
             case MinXSize =< X andthen MinYSize =< Y then
                %%
                {Tk.send wm(geometry self.Window X#'x'#Y)}
@@ -1079,7 +1090,9 @@ in
                MFWidth = {Tk.returnInt winfo(reqwidth @menuBar)}
 
                %%
-               XMinSize = 2*IPad + 2*ISmallBorder + MFWidth
+               XMinSize = {Max
+                           (2*IPad + 2*ISmallBorder + MFWidth)
+                           {self.store read(StoreXMinSize $)}}
                YMinSize = {self.store read(StoreYMinSize $)}
             end
 
@@ -1087,11 +1100,13 @@ in
             local XSize YSize in
                YSize = {Tk.returnInt winfo(height self.Window)}
                XSize = {Tk.returnInt winfo(width self.Window)}
+               {Wait XSize} {Wait YSize}
 
                %%
                {Tk.send wm(minsize self.Window XMinSize YMinSize)}
 
                %%
+               {Show '!'#'!'#XSize#XMinSize#YSize#YMinSize}
                case XMinSize =< XSize andthen YMinSize =< YSize then skip
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
                   {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}
@@ -2452,6 +2467,8 @@ in
                             {Tcl2Oz {ChunkVar tkReturnAtom($)}})}
             {WO.store store(StoreSmallNames
                             {Tcl2Oz {NameVar tkReturnAtom($)}})}
+            {WO.store store(StoreAreStrings
+                            {Tcl2Oz {StringsVar tkReturnAtom($)}})}
             {WO.store store(StoreAreVSs
                             {Tcl2Oz {VSsVar tkReturnAtom($)}})}
             {self tkClose}
@@ -2465,20 +2482,22 @@ in
                                  pack:    false
                                  buttons: ['Okay'#Okay
                                            'Cancel'#tkClose(self#close)])
-         ModeFrame   = {New TkTools.textframe tkInit(parent: self
+         ModeFrame = {New TkTools.textframe tkInit(parent: self
                                                    text:   'Mode')}
-         ModeVar  = {New Tk.variable
-                     tkInit({Oz2Tcl {WO.store read(StoreRepMode $)}})}
+         ModeVar = {New Tk.variable
+                    tkInit({Oz2Tcl {WO.store read(StoreRepMode $)}})}
          DetailFrame = {New TkTools.textframe tkInit(parent: self
                                                      text:   'Detail')}
          ChunkVar = {New Tk.variable
                      tkInit({Oz2Tcl {WO.store read(StoreArityType $)}})}
-         NameVar  = {New Tk.variable
-                     tkInit({Oz2Tcl {WO.store read(StoreSmallNames $)}})}
-         VSsFrame    = {New TkTools.textframe tkInit(parent: self
-                                                     text:   'Type')}
-         VSsVar   = {New Tk.variable
-                     tkInit({Oz2Tcl {WO.store read(StoreAreVSs $)}})}
+         NameVar = {New Tk.variable
+                    tkInit({Oz2Tcl {WO.store read(StoreSmallNames $)}})}
+         VSsFrame = {New TkTools.textframe tkInit(parent: self
+                                                  text:   'Type')}
+         StringsVar = {New Tk.variable
+                       tkInit({Oz2Tcl {WO.store read(StoreAreStrings $)}})}
+         VSsVar = {New Tk.variable
+                   tkInit({Oz2Tcl {WO.store read(StoreAreVSs $)}})}
       in
 
          %%
@@ -2507,12 +2526,19 @@ in
                                  anchor:w)}
                          {New Tk.checkbutton
                           tkInit(parent:DetailFrame.inner var:NameVar
-                                 text: 'Detailed Names and Procedures'
+                                 text: 'Detailed Names And Procedures'
                                  onvalue:{Oz2Tcl false}
                                  offvalue:{Oz2Tcl true}
                                  anchor:w)}
                          fill:x)
                     pack(ModeFrame DetailFrame fill:x)
+                    pack({New Tk.checkbutton
+                          tkInit(parent:VSsFrame.inner var:StringsVar
+                                 text:'Strings'
+                                 onvalue:{Oz2Tcl true}
+                                 offvalue:{Oz2Tcl false}
+                                 anchor:w)}
+                         fill:x)
                     pack({New Tk.checkbutton
                           tkInit(parent:VSsFrame.inner var:VSsVar
                                  text:'Virtual Strings'

@@ -10,7 +10,7 @@ functor
 import
    TestMisc
    Compiler
-   System(show:Show)
+%   System(show:Show)
 export
    Return
 define

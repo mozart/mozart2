@@ -69,9 +69,7 @@ export
    objectLockNode:         SAObjectLockNode
    getSelf:                SAGetSelf
    failNode:               SAFailNode
-   condNode:               SACondNode
-   choicesAndDisjunctions: SAChoicesAndDisjunctions
-   clause:                 SAClause
+   exceptionNode:          SAExceptionNode
    valueNode:              SAValueNode
    variable:               SAVariable
    variableOccurrence:     SAVariableOccurrence
@@ -3272,52 +3270,7 @@ define
    class SAFailNode from SAStatement
    end
 
-   class SACondNode from SAStatement
-      meth saDescend(Ctrl)
-         %% descend with global environment
-         %% will be saved and restored in clauses
-         T N in
-         {Ctrl getTopNeeded(T N)}
-         {Ctrl notTopNotNeeded}
-
-         {ForAll @clauses
-          proc {$ C} {C saDescend(Ctrl)} end}
-         {@alternative saDescend(Ctrl)}
-
-         {Ctrl setTopNeeded(T N)}
-      end
-   end
-
-   class SAChoicesAndDisjunctions from SAStatement
-      meth saDescend(Ctrl)
-         %% descend with global environment
-         %% will be saved and restored in clauses
-         T N in
-         {Ctrl getTopNeeded(T N)}
-         {Ctrl notTopNotNeeded}
-
-         {ForAll @clauses
-          proc {$ C} {C saDescend(Ctrl)} end}
-
-         {Ctrl setTopNeeded(T N)}
-      end
-   end
-
-   class SAClause
-      meth saDescend(Ctrl)
-         %% shared local environment
-         %% for guard and body
-         Env = {GetGlobalEnv @globalVars}
-         T N
-      in
-         {Ctrl getTopNeeded(T N)}
-         {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @guard)
-         SAStatement, saBody(Ctrl @statements)
-         {Ctrl setTopNeeded(T N)}
-
-         {InstallGlobalEnv Env}
-      end
+   class SAExceptionNode from SAStatement
    end
 
    class SAValueNode

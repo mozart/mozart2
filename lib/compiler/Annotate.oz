@@ -69,9 +69,7 @@ export
    objectLockNode: AnnotateObjectLockNode
    getSelf: AnnotateGetSelf
    failNode: AnnotateDefaults
-   condNode: AnnotateCondNode
-   choicesAndDisjunctions: AnnotateChoicesAndDisjunctions
-   clause: AnnotateClause
+   exceptionNode: AnnotateDefaults
    valueNode: AnnotateValueNode
    userVariable: AnnotateUserVariable
    generatedVariable: AnnotateGeneratedVariable
@@ -637,83 +635,6 @@ prepare
       end
       meth markFirst(WarnFormals Rep)
          {@destination markFirst(WarnFormals Rep)}
-      end
-   end
-
-   class AnnotateCondNode
-      attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
-         {FoldL @clauses
-          proc {$ VsHd Clause VsTl}
-             {Clause annotateGlobalVars(Ls VsHd VsTl)}
-          end VsHd VsInter}
-         {@alternative annotateGlobalVars(Ls VsInter VsTl)}
-         globalVars <- {FoldL @clauses
-                        fun {$ Vs Clause}
-                           {VariableUnion {Clause getGlobalVars($)} Vs}
-                        end {@alternative getGlobalVars($)}}
-      end
-      meth markFirst(WarnFormals Rep) GlobalVars OldUses NewUses1 NewUses2 in
-         GlobalVars = @globalVars
-         {SetUninitVars GlobalVars}
-         OldUses = {GetUses GlobalVars}
-         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses1
-          WarnFormals Rep}
-         {@alternative markFirstClause(GlobalVars OldUses ?NewUses2
-                                       WarnFormals Rep)}
-         {SetUses GlobalVars {UsesMax NewUses1 NewUses2}}
-      end
-   end
-
-   class AnnotateChoicesAndDisjunctions
-      attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl)
-         {FoldL @clauses
-          proc {$ VsHd Clause VsTl}
-             {Clause annotateGlobalVars(Ls VsHd VsTl)}
-          end VsHd VsTl}
-         globalVars <- {FoldL @clauses
-                        fun {$ Vs Clause}
-                           {VariableUnion {Clause getGlobalVars($)} Vs}
-                        end nil}
-      end
-      meth markFirst(WarnFormals Rep) GlobalVars OldUses NewUses in
-         GlobalVars = @globalVars
-         {SetUninitVars GlobalVars}
-         OldUses = {GetUses GlobalVars}
-         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses
-          WarnFormals Rep}
-         {SetUses GlobalVars NewUses}
-      end
-   end
-
-   class AnnotateClause
-      attr globalVars: unit guardGlobalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) VsGuard Vs in
-         {AnnotateGlobalVarsList @guard @localVars VsGuard nil}
-         guardGlobalVars <- {VariableUnion VsGuard nil}
-         {AnnotateGlobalVarsList @statements @localVars Vs nil}
-         globalVars <- {VariableUnion Vs @guardGlobalVars}
-         {FoldL Vs
-          proc {$ VsHd V VsTl}
-             if {Member V Ls} then VsHd = VsTl
-             else VsHd = V|VsTl
-             end
-          end VsHd VsTl}
-      end
-      meth getGlobalVars($)
-         @globalVars
-      end
-      meth getGuardGlobalVars($)
-         @guardGlobalVars
-      end
-      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
-         {ForAll @localVars proc {$ V} {V setUse(unused)} end}
-         {MarkFirstList @guard WarnFormals Rep}
-         {MarkFirstList @statements WarnFormals Rep}
-         {CheckUses @localVars 'local clause variable' Rep}
-         NewUses = {GetUses GlobalVars}
-         {SetUses GlobalVars OldUses}
       end
    end
 

@@ -984,25 +984,62 @@ define
             NewFS = fThread(fCond([fClause(fSkip(C) FS fFail(C))]
                                   fSkip(C) C) C)
             Unnester, UnnestStatement(NewFS $)
-         [] fCond(FClauses FElse C) then GClauses GElse in
-            Unnester, UnnestClauses(FClauses fif ?GClauses)
-            case FElse of fNoElse(C) then
-               GElse = {New Core.noElse init(C)}
-            else GBody GS in
-               {@BA openScope()}
-               Unnester, UnnestStatement(FElse ?GBody)
-               GS = {MakeDeclaration {@BA closeScope($)} GBody C}
-               GElse = {New Core.elseNode init(GS)}
-            end
-            {New Core.condNode init(GClauses GElse C)}
-         [] fOr(FClauses Kind C) then GClauses in
-            Unnester, UnnestClauses(FClauses Kind ?GClauses)
-            case Kind of for then
-               {New Core.orNode init(GClauses C)}
-            [] fdis then
-               {New Core.disNode init(GClauses C)}
-            [] fchoice then
-               {New Core.choiceNode init(GClauses C)}
+         [] fException(C) then
+            {New Core.exceptionNode init(C)}
+         [] fCond(FClauses FElse C) then FClauseProcs FElseProc CND NewFS in
+            Unnester, UnnestClauses(FClauses ?FClauseProcs)
+            FElseProc = fProc(fDollar(C) nil
+                              case FElse of fNoElse(C) then
+                                 fException(C)
+                              else FElse
+                              end nil CND)
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'cond\''
+                                                 [fRecord(fAtom('#' C)
+                                                          FClauseProcs)
+                                                  FElseProc] CND)
+                               'combinator' C)
+            Unnester, UnnestStatement(NewFS $)
+         [] fOr(FClauses X C) then
+            case X of fchoice then FSs CND N NewFS in
+               %% choice S1 [] ... [] Sn end
+               %% =>
+               %% case {Space.choose n} of 1 then S1
+               %% [] ...
+               %% [] n then Sn
+               %% end
+               FSs = {Map FClauses
+                      fun {$ FClause}
+                         case FClause of fClause(fSkip(_) fSkip(_) FS) then FS
+                         elseof fClause(FS1 FS2 FS3) then
+                            {@reporter error(coord: C kind: ExpansionError
+                                             msg: ('choice clause may have '#
+                                                   'no `then\''))}
+                            fLocal(FS1 fAnd(FS2 FS3) C)
+                         end
+                      end}
+               CND = {CoordNoDebug C}
+               N = {Length FSs}
+               NewFS = fStepPoint(fCase(fOpApply('Space.choose'
+                                                 [fInt(N C)] CND)
+                                        {List.mapInd FSs
+                                         fun {$ I FS}
+                                            fCaseClause(fInt(I C) FS)
+                                         end}
+                                        fNoElse(C) CND)
+                                  'combinator' C)
+               Unnester, UnnestStatement(NewFS $)
+            else FClauseProcs CND Op NewFS in
+               Unnester, UnnestClauses(FClauses ?FClauseProcs)
+               CND = {CoordNoDebug C}
+               Op = case X of for then 'Combinators.\'or\''
+                    [] fdis then 'Combinators.\'dis\''
+                    end
+               NewFS = fStepPoint(fOpApplyStatement(Op
+                                                    [fRecord(fAtom('#' C)
+                                                             FClauseProcs)]
+                                                    CND) 'combinator' C)
+               Unnester, UnnestStatement(NewFS $)
             end
          [] fCondis(FClauses C) then GFrontEqCell NewFClauses GS in
             {@BA openScope()}
@@ -1400,31 +1437,17 @@ define
                NewFV = fOcc(ToGV)
                Unnester, UnnestStatement(FS $)
             end
-         [] fOr(FClauses Kind C) then PrintName FVs NewFV FS in
-            FS = fOr({Map FClauses
-                      fun {$ fClause(FLocals FGuard FBody)}
-                         case FBody of fNoThen(C) then
-                            {@reporter
-                             error(coord: C kind: SyntaxError
-                                   msg: ('`then\' part in nested `or\' '#
-                                         'not optional'))}
-                            fClause(FLocals FGuard FBody)
-                         else
-                            fClause(FLocals FGuard fEq(NewFV FBody C))
-                         end
-                      end} Kind C)
-            {FoldL FClauses
-             fun {$ FVs fClause(FE _ _)}
-                {GetPatternVariablesExpression FE FVs $}
-             end FVs nil}
-            {ToGV getPrintName(?PrintName)}
-            if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
-               %% use a temporary to avoid name clash
-               Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
-               NewFV = fOcc(NewGV)
-               Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
-            else
+         [] fOr(FClauses X C) then
+            case X of for then
+               Unnester, TransformExpressionOr(X FClauses C ToGV $)
+            [] fdis then
+               Unnester, TransformExpressionOr(X FClauses C ToGV $)
+            [] fchoice then NewFV FS in
                NewFV = fOcc(ToGV)
+               FS = fOr({Map FClauses
+                         fun {$ fClause(FS1 FS2 FE)}
+                            fClause(FS1 FS2 fEq(NewFV FE C))
+                         end} X C)
                Unnester, UnnestStatement(FS $)
             end
          else C = {CoordinatesOf FE} in
@@ -2243,37 +2266,60 @@ define
          end
       end
 
-      meth UnnestClauses(FClauses Kind ?GClauses)
+      meth UnnestClauses(FClauses ?FClauseProcs)
          case FClauses of fClause(FLocals FGuard FBody)|FClauser then
-            NewFS FVs GGuard K GBody GCr
+            FProc|FClauseProcr = FClauseProcs
          in
-            {@BA openScope()}
-            NewFS = {MakeTrivialLocalPrefix FLocals ?FVs nil}
-            {ForAll FVs
-             proc {$ fVar(PrintName C)} {@BA bind(PrintName C _)} end}
-            GGuard = (Unnester, UnnestStatement(NewFS $)|
-                      Unnester, UnnestStatement(FGuard $))
-            case FBody of fSkip(C) then
-               case Kind of fif then K = ask
-               [] for then K = waitTop
-               [] fdis then K = waitTop
-               [] fchoice then K = wait
-               end
-               GBody = {New Core.skipNode init(C)}
-            [] fNoThen(C) then
-               K = waitTop
-               GBody = {New Core.skipNode init(C)}
-            else GS C = {CoordinatesOf FBody} in
-               K = case Kind of fif then ask else wait end
-               {@BA openScope()}
-               Unnester, UnnestStatement(FBody ?GS)
-               GBody = {MakeDeclaration {@BA closeScope($)} GS C}
-            end
-            GClauses =
-            {New Core.clause init({@BA closeScope($)} GGuard K GBody)}|GCr
-            Unnester, UnnestClauses(FClauser Kind ?GCr)
+            FProc = case FBody of fNoThen(C) then CND in
+                       %% S1 in S2
+                       %% =>
+                       %% proc {$} S1 in S2 end
+                       CND = {CoordNoDebug C}
+                       fProc(fDollar(C) nil
+                             fLocal(FLocals FGuard C) nil CND)
+                    else C = {CoordinatesOf FBody} CND in
+                       %% S1 in S2 then S3
+                       %% =>
+                       %% fun {$} S1 in S2 proc {$} S3 end end
+                       CND = {CoordNoDebug C}
+                       fFun(fDollar(C) nil
+                            fLocal(FLocals fAnd(FGuard
+                                                fProc(fDollar(C) nil FBody
+                                                      nil CND)) C) nil CND)
+                    end
+            Unnester, UnnestClauses(FClauser ?FClauseProcr)
          [] nil then
-            GClauses = nil
+            FClauseProcs = nil
+         end
+      end
+      meth TransformExpressionOr(Label FClauses C ToGV $)
+         PrintName FVs NewFV FS
+      in
+         FS = fOr({Map FClauses
+                     fun {$ fClause(FLocals FGuard FBody)}
+                        case FBody of fNoThen(C) then
+                           {@reporter
+                            error(coord: C kind: SyntaxError
+                                  msg: ('`then\' part in nested `or\' '#
+                                        'not optional'))}
+                           fClause(FLocals FGuard FBody)
+                        else
+                           fClause(FLocals FGuard fEq(NewFV FBody C))
+                        end
+                     end} Label C)
+         {FoldL FClauses
+          fun {$ FVs fClause(FE _ _)}
+             {GetPatternVariablesExpression FE FVs $}
+          end FVs nil}
+         {ToGV getPrintName(?PrintName)}
+         if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
+            %% use a temporary to avoid name clash
+            Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
+            NewFV = fOcc(NewGV)
+            Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
+         else
+            NewFV = fOcc(ToGV)
+            Unnester, UnnestStatement(FS $)
          end
       end
 

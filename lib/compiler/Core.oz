@@ -84,11 +84,7 @@ export
    ObjectLockNode
    GetSelf
    FailNode
-   CondNode
-   OrNode
-   DisNode
-   ChoiceNode
-   Clause
+   ExceptionNode
    ValueNode
    Variable
    UserVariable
@@ -942,8 +938,7 @@ define
    end
 
    class FailNode
-      from Statement
-         StaticAnalysis.failNode Annotate.failNode CodeGen.failNode
+      from Statement Annotate.failNode StaticAnalysis.failNode CodeGen.failNode
       prop final
       meth init(Coord)
          coord <- Coord
@@ -953,73 +948,19 @@ define
       end
    end
 
-   class CondNode
-      from Statement Annotate.condNode StaticAnalysis.condNode CodeGen.condNode
+   class ExceptionNode
+      from Statement Annotate.exceptionNode StaticAnalysis.exceptionNode
+         CodeGen.exceptionNode
       prop final
-      attr clauses: unit alternative: unit
-      meth init(Clauses Alternative Coord)
-         clauses <- Clauses
-         alternative <- Alternative
+      meth init(Coord)
          coord <- Coord
       end
-      meth output(R $)
-         'cond '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#
-         {@alternative output(R $)}#'end'
-      end
-   end
-
-   local
-      class ChoicesAndDisjunctions
-         from Statement Annotate.choicesAndDisjunctions
-            StaticAnalysis.choicesAndDisjunctions
-         attr clauses: unit
-         meth init(Clauses Coord)
-            clauses <- Clauses
-            coord <- Coord
-         end
-      end
-   in
-      class OrNode
-         from ChoicesAndDisjunctions CodeGen.orNode
-         prop final
-         meth output(R $)
-            'or '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
-         end
-      end
-      class DisNode
-         from ChoicesAndDisjunctions CodeGen.disNode
-         prop final
-         meth output(R $)
-            'dis '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
-         end
-      end
-      class ChoiceNode
-         from ChoicesAndDisjunctions CodeGen.choiceNode
-         prop final
-         meth output(R $)
-            'choice '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
-         end
-      end
-   end
-
-   class Clause
-      from Annotate.clause StaticAnalysis.clause CodeGen.clause
-      prop final
-      attr localVars: unit guard: unit kind: unit statements: unit
-      meth init(LocalVars Guard Kind Statements)
-         localVars <- LocalVars
-         guard <- {FlattenSequence Guard}
-         kind <- Kind
-         statements <- {FlattenSequence Statements}
-      end
-      meth output(R $)
-         case @localVars of _|_ then
-            {LI @localVars GL R}#EX#GL#'in'#IN#NL
-         [] nil then ""
-         end#{LI @guard NL R}#EX#NL#'then'#IN#NL#
-         case @kind of waitTop then 'skip   % top commit'
-         else {LI @statements NL R}
-         end
+      meth output(_ $) F L in
+         F#L = case @coord of unit then ''#unit
+               elseof C then C.1#C.2
+               end
+         'raise'#IN#GL#'kernel('#PU#'noElse'#GL#{Value.toVirtualString F 0 0}#
+         GL#L#')'#PO#EX#GL#'end'
       end
    end
 

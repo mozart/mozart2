@@ -281,10 +281,7 @@ define
             [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] endDefinition(L) then AssemblerClass, declareLabel(L)
             [] branch(L) then AssemblerClass, declareLabel(L)
-            [] 'thread'(L) then AssemblerClass, declareLabel(L)
             [] exHandler(L) then AssemblerClass, declareLabel(L)
-            [] createCond(L) then AssemblerClass, declareLabel(L)
-            [] nextClause(L) then AssemblerClass, declareLabel(L)
             [] testBI(_ _ L) then AssemblerClass, declareLabel(L)
             [] testLT(_ _ _ L) then
                AssemblerClass, declareLabel(L)
@@ -377,18 +374,9 @@ define
             [] branch(L) then A in
                A = {Dictionary.get @LabelDict L}
                branch(A)
-            [] 'thread'(L) then A in
-               A = {Dictionary.get @LabelDict L}
-               'thread'(A)
             [] exHandler(L) then A in
                A = {Dictionary.get @LabelDict L}
                exHandler(A)
-            [] createCond(L) then A in
-               A = {Dictionary.get @LabelDict L}
-               createCond(A)
-            [] nextClause(L) then A in
-               A = {Dictionary.get @LabelDict L}
-               nextClause(A)
             [] testBI(X1 X2 L) then A in
                A = {Dictionary.get @LabelDict L}
                testBI(X1 X2 A)
@@ -720,9 +708,6 @@ define
          {MakeDeAllocate I Assembler}
          {Assembler append(tailApplMeth(AMI NewR))}
          {EliminateDeadCode Rest Assembler}
-      [] clause|wait|Rest then
-         {Assembler append(emptyClause)}
-         {Peephole Rest Assembler}
       [] (testBI(Builtinname Args L1)=I1)|Rest then NewInstrs in
          case Rest of branch(L2)|NewRest then BIInfo in
             BIInfo = {Builtins.getInfo Builtinname}

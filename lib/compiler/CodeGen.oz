@@ -72,11 +72,7 @@ export
    objectLockNode: CodeGenObjectLockNode
    getSelf: CodeGenGetSelf
    failNode: CodeGenFailNode
-   condNode: CodeGenCondNode
-   orNode: CodeGenOrNode
-   disNode: CodeGenDisNode
-   choiceNode: CodeGenChoiceNode
-   clause: CodeGenClause
+   exceptionNode: CodeGenExceptionNode
    valueNode: CodeGenValueNode
    variable: CodeGenVariable
    variableOccurrence: CodeGenVariableOccurrence
@@ -443,11 +439,6 @@ define
    end
 
    \insert PatternMatching
-
-   proc {MakeThread VHd VTl VInstr Coord}
-      %--** should use Thread.create builtin
-      VHd = vThread(_ VInstr Coord VTl _)
-   end
 
    local
       fun {MakeFromPropSub FromProp CS VHd VTl}
@@ -1644,71 +1635,9 @@ define
       end
    end
 
-   class CodeGenCondNode from CodeGenStatement
-      meth codeGen(CS VHd VTl) AllocatesRS VClauses AltVInstr in
-         {CS makeRegSet(?AllocatesRS)}
-         VClauses = {Map @clauses
-                     fun {$ Clause} GuardVInstr VTl Cont BodyVInstr in
-                        {CS enterVs({Clause getGuardGlobalVars($)}
-                                    AllocatesRS)}
-                        {Clause
-                         codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)}
-                        VTl = Cont
-                        _#GuardVInstr#BodyVInstr
-                     end}
-         {@alternative codeGen(CS AltVInstr nil)}
-         VHd = vCreateCond(_ VClauses AltVInstr VTl @coord AllocatesRS _)
-      end
-   end
-
-   local
-      class CodeGenChoicesAndDisjunctions from CodeGenStatement
-         meth codeGen(Label CS VHd VTl) AllocatesRS VClauses in
-            {CS makeRegSet(?AllocatesRS)}
-            VClauses = {Map @clauses
-                        fun {$ Clause} GuardVInstr VTl Cont BodyVInstr in
-                           {CS enterVs({Clause getGuardGlobalVars($)}
-                                       AllocatesRS)}
-                           {Clause
-                            codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)}
-                           VTl = Cont
-                           _#GuardVInstr#BodyVInstr
-                        end}
-            VHd = Label(_ VClauses VTl @coord AllocatesRS _)
-         end
-      end
-   in
-      class CodeGenOrNode from CodeGenChoicesAndDisjunctions
-         meth codeGen(CS VHd VTl)
-            CodeGenChoicesAndDisjunctions, codeGen(vCreateOr CS VHd VTl)
-         end
-      end
-      class CodeGenDisNode from CodeGenChoicesAndDisjunctions
-         meth codeGen(CS VHd VTl)
-            CodeGenChoicesAndDisjunctions, codeGen(vCreateEnumOr CS VHd VTl)
-         end
-      end
-      class CodeGenChoiceNode from CodeGenChoicesAndDisjunctions
-         meth codeGen(CS VHd VTl)
-            CodeGenChoicesAndDisjunctions, codeGen(vCreateChoice CS VHd VTl)
-         end
-      end
-   end
-
-   class CodeGenClause
-      meth codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)
-         GuardVHd Coord Cont3 Cont4
-      in
-         {ForAll @localVars proc {$ V} {V setReg(CS)} end}
-         {CodeGenList @guard CS GuardVHd nil}
-         {@guard.1 getCoord(?Coord)}
-         {MakeThread GuardVInstr VTl GuardVHd Coord}
-         Cont = case @kind of ask then vAsk(_ nil)
-                [] wait then vWait(_ nil)
-                [] waitTop then vWaitTop(_ nil)
-                end
-         {MakePermanent @localVars BodyVInstr Cont3 Cont4 nil CS}
-         {CodeGenList @statements CS Cont3 Cont4}
+   class CodeGenExceptionNode from CodeGenStatement
+      meth codeGen(CS VHd VTl)
+         {MakeException kernel noElse @coord nil CS VHd VTl}
       end
    end
 

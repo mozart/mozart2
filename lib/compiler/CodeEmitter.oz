@@ -907,53 +907,6 @@ in
          [] vPopEx(_ Coord _) then
             Emitter, DebugExit(Coord 'exception handler')
             Emitter, Emit(popEx)
-         [] vCreateCond(_ VClauses Addr _ Coord _ InitsRS) then Dest RegMap in
-            Emitter, DoInits(InitsRS ThisAddr)
-            Emitter, KillAllTemporaries()
-            Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(createCond(Dest))
-            Emitter, PushDebugExit(Coord 'conditional')
-            {FoldLTail VClauses
-             proc {$ GuardLabel InitsRS0#Addr1#Addr2|Rest ?NextLabel} RegMap in
-                Emitter, Emit(lbl(GuardLabel))
-                case Rest of _|_ then
-                   Emitter, newLabel(?NextLabel)
-                   Emitter, Emit(nextClause(NextLabel))
-                [] nil then
-                   Emitter, Emit(lastClause)
-                end
-                Emitter, Emit(clause)
-                Emitter, DoInits(InitsRS0 nil)
-                Emitter, EmitGuard(Addr1)
-                Emitter, SaveRegisterMapping(?RegMap)
-                Emitter, EmitAddr(Addr2)
-                Emitter, RestoreRegisterMapping(RegMap)
-             end Emitter, newLabel($) _}
-            Emitter, Dereference(Addr ?Dest)
-            Emitter, SaveRegisterMapping(?RegMap)
-            Emitter, EmitAddr(Addr)
-            Emitter, RestoreRegisterMapping(RegMap)
-         [] vCreateOr(_ VClauses Cont Coord _ InitsRS) then
-            Emitter, EmitDisjunction(createOr VClauses Cont Coord InitsRS
-                                     ThisAddr)
-         [] vCreateEnumOr(_ VClauses Cont Coord _ InitsRS) then
-            Emitter, EmitDisjunction(createEnumOr VClauses Cont Coord InitsRS
-                                     ThisAddr)
-         [] vCreateChoice(_ VClauses Cont Coord _ InitsRS) then
-            Emitter, EmitDisjunction(createChoice VClauses Cont Coord InitsRS
-                                     ThisAddr)
-         [] vAsk(_ Cont) then
-            Emitter, DoInits(nil Cont)
-            Emitter, KillAllTemporaries()
-            Emitter, Emit(ask)
-         [] vWait(_ Cont) then
-            Emitter, DoInits(nil Cont)
-            Emitter, KillAllTemporaries()
-            Emitter, Emit(wait)
-         [] vWaitTop(_ Cont) then
-            Emitter, DoInits(nil Cont)
-            Emitter, KillAllTemporaries()
-            Emitter, Emit(waitTop)
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord _) then
             HasLocalEnv R Dest2 Dest3 RegMap1 RegMap2 RegMap3
          in
@@ -1062,23 +1015,6 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap)
             Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap)
-         [] vThread(_ Addr Coord _ InitsRS) then
-            HasLocalEnv Label RegMap OldContinuations
-         in
-            Emitter, DoInits(InitsRS ThisAddr)
-            Emitter, MayAllocateEnvLocally(?HasLocalEnv)
-            Emitter, DebugEntry(Coord 'thread')
-            Emitter, newLabel(?Label)
-            Emitter, Emit('thread'(Label))
-            Emitter, SaveAllRegisterMappings(?RegMap)
-            Emitter, KillAllTemporaries()
-            OldContinuations = @continuations
-            continuations <- nil
-            Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
-            continuations <- OldContinuations
-            Emitter, RestoreAllRegisterMappings(RegMap)
-            Emitter, Emit(lbl(Label))
-            Emitter, DebugExit(Coord 'thread')
          [] vLockThread(_ Reg Coord _ Dest) then X in
             if Emitter, IsFirst(Reg $) then
                {self.reporter
@@ -1725,39 +1661,6 @@ in
          [] nil then skip
          end
       end
-      meth EmitGuard(Addr) OldContinuations Cont in
-         %% Ensure that no temporary dies in the guard:
-         OldContinuations = @continuations
-         Cont = vDummy(case Addr of nil then nil
-                       else {BitArray.clone Addr.1}
-                       end)
-         continuations <- Cont|OldContinuations
-         Emitter, EmitAddr(Addr)
-         continuations <- OldContinuations
-      end
-      meth EmitDisjunction(Instr VClauses Cont Coord InitsRS ThisAddr)
-         Emitter, DoInits(InitsRS ThisAddr)
-         Emitter, KillAllTemporaries()
-         Emitter, DebugEntry(Coord 'conditional')
-         Emitter, Emit(Instr)
-         Emitter, PushDebugExit(Coord 'conditional')
-         {FoldLTail VClauses
-          proc {$ GuardLabel InitsRS0#Addr1#Addr2|Rest ?NextLabel} RegMap in
-             Emitter, Emit(lbl(GuardLabel))
-             case Rest of _|_ then
-                Emitter, newLabel(?NextLabel)
-                Emitter, Emit(nextClause(NextLabel))
-             [] nil then
-                Emitter, Emit(lastClause)
-             end
-             Emitter, Emit(clause)
-             Emitter, DoInits(InitsRS0 nil)
-             Emitter, EmitGuard(Addr1)
-             Emitter, SaveRegisterMapping(?RegMap)
-             Emitter, EmitAddr(Addr2)
-             Emitter, RestoreRegisterMapping(RegMap)
-          end Emitter, newLabel($) _}
-      end
 
       meth DoInits(InitsRS Cont) Regs in
          %% make all already initialized Registers occurring
@@ -2215,8 +2118,6 @@ in
                         end
                      end [Addr Cont]}
             Emitter, PredictRegForBranches(Addrs Reg ?R)
-         [] vThread(_ _ _ Cont InitsRS) then
-            Emitter, PredictRegForInits(Reg InitsRS [Cont] ?R)
          [] vLockThread(_ Reg0 _ Cont _) then
             if Reg == Reg0 then
                Emitter, AllocateAnyTemp(Reg ?R)

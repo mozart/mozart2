@@ -43,18 +43,10 @@ Continuations = c(vDebugExit: 4
                   vShared: ~1
                   vExHandler: 6
                   vPopEx: 3
-                  vCreateCond: 4
-                  vCreateOr: 3
-                  vCreateEnumOr: 3
-                  vCreateChoice: 3
-                  vAsk: 2
-                  vWait: 2
-                  vWaitTop: 2
                   vTestBool: 7
                   vTestBuiltin: 6
                   vTestConstant: 7
                   vMatch: 6
-                  vThread: 4
                   vLockThread: 4
                   vLockEnd: 3)
 
@@ -179,19 +171,6 @@ class CodeStore from Emitter
          vExHandler(OccsRS CodeStore, Deref(Addr1 $) Reg
                     CodeStore, Deref(Addr2 $) Coord CodeStore, Share(Cont $)
                     InitsRS)
-      [] vCreateCond(OccsRS VClauses Addr Cont Coord AllocatesRS InitsRS) then
-         vCreateCond(OccsRS CodeStore, DerefVClauses(VClauses $)
-                     CodeStore, Deref(Addr $) CodeStore, Share(Cont $)
-                     Coord AllocatesRS InitsRS)
-      [] vCreateOr(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
-         vCreateOr(OccsRS CodeStore, DerefVClauses(VClauses $)
-                   CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
-      [] vCreateEnumOr(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
-         vCreateEnumOr(OccsRS CodeStore, DerefVClauses(VClauses $)
-                       CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
-      [] vCreateChoice(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
-         vCreateChoice(OccsRS CodeStore, DerefVClauses(VClauses $)
-                       CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
       [] vTestBool(OccsRS Reg Addr1 Addr2 Addr3 Coord Cont) then
          vTestBool(OccsRS Reg CodeStore, Deref(Addr1 $)
                    CodeStore, Deref(Addr2 $) CodeStore, Deref(Addr3 $)
@@ -206,9 +185,6 @@ class CodeStore from Emitter
                        onRecord(Atomname RecordArity CodeStore, Deref(Addr $))
                     end
                  end} Coord CodeStore, Share(Cont $))
-      [] vThread(OccsRS Addr Coord Cont InitsRS) then
-         vThread(OccsRS CodeStore, Deref(Addr $) Coord
-                 CodeStore, Deref(Cont $) InitsRS)
       else I in
          I = Continuations.{Label Addr}
          {AdjoinAt Addr I CodeStore, Deref(Addr.I $)}
@@ -315,47 +291,6 @@ class CodeStore from Emitter
             {BitArray.disj RS RS2}
          [] vPopEx(_ _ _) then
             skip
-         [] vCreateCond(_ VClauses Addr _ _ AllocatesRS InitsRS) then RS0 in
-            CodeStore, ComputeOccs(Addr ?RS0)
-            InitsRS = {BitArray.clone RS0}
-            {ForAll VClauses
-             proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
-                CodeStore, ComputeOccs(Addr1 ?RS1)
-                CodeStore, ComputeOccs(Addr2 ?RS2)
-                {BitArray.disj InitsRS RS1}
-                {BitArray.disj InitsRS RS2}
-                InitsRS0 = {BitArray.clone RS1}
-                {BitArray.conj InitsRS0 RS2}
-             end}
-            {BitArray.conj InitsRS RS}
-            case AllocatesRS of nil then skip
-            else
-               %% We can't use BitArray.disj here because the bounds of
-               %% AllocatesRS may be a strict subset of those of InitsRS:
-               {ForAll {BitArray.toList AllocatesRS}
-                proc {$ Reg} {BitArray.set InitsRS Reg} end}
-            end
-            {BitArray.disj RS RS0}
-            {ForAll VClauses
-             proc {$ _#Addr1#Addr2}
-                {BitArray.disj RS CodeStore, GetOccs(Addr1 $)}
-                {BitArray.disj RS CodeStore, GetOccs(Addr2 $)}
-             end}
-         [] vCreateOr(_ VClauses _ _ AllocatesRS InitsRS) then
-            CodeStore, ComputeDisjunctionOccs(VClauses AllocatesRS
-                                              ?InitsRS RS)
-         [] vCreateEnumOr(_ VClauses _ _ AllocatesRS InitsRS) then
-            CodeStore, ComputeDisjunctionOccs(VClauses AllocatesRS
-                                              ?InitsRS RS)
-         [] vCreateChoice(_ VClauses _ _ AllocatesRS InitsRS) then
-            CodeStore, ComputeDisjunctionOccs(VClauses AllocatesRS
-                                              ?InitsRS RS)
-         [] vAsk(_ _) then
-            skip
-         [] vWait(_ _) then
-            skip
-         [] vWaitTop(_ _) then
-            skip
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ Cont) then RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
@@ -393,40 +328,12 @@ class CodeStore from Emitter
                 end
                 {BitArray.disj RS CodeStore, GetOccs(Addr $)}
              end}
-         [] vThread(_ Addr _ _ InitsRS) then RS0 in
-            CodeStore, ComputeOccs(Addr ?RS0)
-            InitsRS = {BitArray.clone RS0}
-            {BitArray.conj InitsRS RS}
-            {BitArray.disj RS RS0}
          [] vLockThread(_ Reg _ _ _) then
             CodeStore, RegOcc(Reg RS)
          [] vLockEnd(_ _ _ _) then
             skip
          end
       end
-   end
-   meth ComputeDisjunctionOccs(VClauses AllocatesRS ?InitsRS RS)
-      InitsRS = {BitArray.clone @EmptyRS}
-      {ForAll VClauses
-       proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
-          CodeStore, ComputeOccs(Addr1 ?RS1)
-          CodeStore, ComputeOccs(Addr2 ?RS2)
-          {BitArray.disj InitsRS RS1}
-          {BitArray.disj InitsRS RS2}
-          InitsRS0 = {BitArray.clone RS1}
-          {BitArray.conj InitsRS0 RS2}
-       end}
-      {BitArray.conj InitsRS RS}
-      case AllocatesRS of nil then skip
-      else
-         {ForAll {BitArray.toList AllocatesRS}
-          proc {$ Reg} {BitArray.set InitsRS Reg} end}
-      end
-      {ForAll VClauses
-       proc {$ _#Addr1#Addr2}
-          {BitArray.disj RS CodeStore, GetOccs(Addr1 $)}
-          {BitArray.disj RS CodeStore, GetOccs(Addr2 $)}
-       end}
    end
    meth RegOcc(Reg RS)
       if Reg < @minReg then skip   % it's a global
@@ -501,19 +408,6 @@ class CodeStore from Emitter
             CodeStore, AddRegOccs(Addr1 AddRS3)
             CodeStore, AddRegOccs(Addr2 AddRS2)
          [] vPopEx(_ _ _) then skip
-         [] vCreateCond(_ VClauses Addr _ _ _ _) then
-            CodeStore, AddRegOccs(Addr AddRS2)
-            CodeStore, AddRegOccsClauses(VClauses
-                                         CodeStore, GetOccs(Addr $) AddRS2)
-         [] vCreateOr(_ VClauses _ _ _ _) then
-            CodeStore, AddRegOccsClauses(VClauses AddRS2 AddRS2)
-         [] vCreateEnumOr(_ VClauses _ _ _ _) then
-            CodeStore, AddRegOccsClauses(VClauses AddRS2 AddRS2)
-         [] vCreateChoice(_ VClauses _ _ _ _) then
-            CodeStore, AddRegOccsClauses(VClauses AddRS2 AddRS2)
-         [] vAsk(_ _) then skip
-         [] vWait(_ _) then skip
-         [] vWaitTop(_ _) then skip
          [] vTestBool(_ _ Addr1 Addr2 Addr3 _ Cont) then
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)
@@ -535,8 +429,6 @@ class CodeStore from Emitter
                {BitArray.conj InitsRS AddRS2}
             [] nil then skip
             end
-         [] vThread(_ Addr _ _ _) then
-            CodeStore, AddRegOccs(Addr AddRS2)
          [] vLockThread(_ _ _ _ _) then
             skip
          [] vLockEnd(_ _ _ _) then

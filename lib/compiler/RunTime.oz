@@ -44,6 +44,10 @@ require
 
    BootThread(create)
    at 'x-oz://boot/Thread'
+
+   BootSpace(choose)
+   at 'x-oz://boot/Space'
+
 prepare
    ProcValues = env(%% Operators
                     '.': Value.'.'
@@ -96,6 +100,14 @@ prepare
 
                     %% Functor
                     'Functor.new': Functor.new
+
+                    %% Combinators
+                    'Combinators.\'cond\'': Combinators.'cond'
+                    'Combinators.\'or\'': Combinators.'or'
+                    'Combinators.\'dis\'': Combinators.'dis'
+
+                    %% Space
+                    'Space.choose': BootSpace.choose
 
                     %% Internal
                     'tellRecordSize': BootRecord.tellRecordSize

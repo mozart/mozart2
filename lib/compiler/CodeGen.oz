@@ -939,8 +939,8 @@ local
 \ifdef DEBUG_DEFS
          {Show PredId}
 \endif
-         PredicateRef = case {IsDet self.abstractionTableID} then
-                           self.abstractionTableID
+         PredicateRef = case {IsDet self.predicateRef} then
+                           self.predicateRef
                         else unit
                         end
          case @isStateUsing then
@@ -1539,7 +1539,7 @@ local
             body <- unit   % hand it to the garbage collector
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?FastMeth)}
-            VHd = vDefinition(_ FastMeth PredId @abstractionTableID GRegs Code
+            VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code
                               VInter1)
          end
          local
@@ -1562,7 +1562,7 @@ local
                 {Formal bindMethFormal(MessageVO CS self VHd VTl)}
              end Cont2 Cont3}
             case IsToplevel then
-               Cont3 = vFastCall(_ @abstractionTableID
+               Cont3 = vFastCall(_ @predicateRef
                                  {Map @formalArgs
                                   fun {$ Formal}
                                      {{Formal getVariable($)} reg($)}
@@ -2271,7 +2271,7 @@ local
    class CodeGenProcedureToken
       feat ClauseBodyShared
       meth codeGenApplication(Designator ActualArgs CS VHd VTl) ID in
-         ID = self.abstractionTableID
+         ID = self.predicateRef
          case {IsDet ID} andthen ID \= unit then
             % ID may also be a real procedure
             VHd = vFastCall(_ ID {Map ActualArgs fun {$ A} {A reg($)} end}

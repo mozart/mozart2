@@ -24,7 +24,6 @@ local
    PrintNameToVirtualString
    IsPrintName
    NameVariable
-   NewNamedName
    IsBuiltin
    GetBuiltinName
    ConcatenateAtomAndInt

@@ -255,7 +255,7 @@ in
             designator: unit formalArgs: unit body: unit isStateUsing: unit
             procFlags: unit printName: '' toCopy: unit
             allVariables: nil
-         feat expansionOccs abstractionTableID
+         feat expansionOccs predicateRef
          meth init(Designator FormalArgs Body IsStateUsing ProcFlags Coord)
             self.expansionOccs = expansionOccs('`ooSetSelf`': _)
             designator <- Designator
@@ -732,7 +732,7 @@ in
          from Annotate.method SA.method CodeGen.method
          attr
             label: unit formalArgs: unit body: unit coord: unit
-            allVariables: nil abstractionTableID: unit
+            allVariables: nil predicateRef: unit
          feat expansionOccs
          meth init(Label FormalArgs Body Coord)
             self.expansionOccs = expansionOccs('`ooRequiredArg`': _
@@ -1181,7 +1181,7 @@ in
 
       class ProcedureToken from Token CodeGen.procedureToken
          prop final
-         feat kind: procedure abstractionTableID clauseBodyStatements
+         feat kind: procedure predicateRef clauseBodyStatements
          meth init(TheProcedure)
             value <- TheProcedure
             SA.token, init()

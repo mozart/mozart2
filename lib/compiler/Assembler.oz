@@ -135,8 +135,10 @@ local
       \insert compiler-Opcodes
 
       local
-         ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}
-         IsUniqueName        = {`Builtin` 'isUniqueName'        2}
+         IsUniqueName           = {`Builtin` 'isUniqueName'           2}
+         IsCopyableName         = {`Builtin` 'isCopyableName'         2}
+         IsCopyablePredicateRef = {`Builtin` 'isCopyablePredicateRef' 2}
+         ForeignPointerToInt    = {`Builtin` 'ForeignPointerToInt'    2}
 
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
@@ -167,10 +169,13 @@ local
                [] false then 'false'
                [] unit then 'unit'
                elsecase {IsUniqueName Value} then
-                  %--** this only works if the name's print name is friendly
+                  %--** these only work if the name's print name is friendly
+                  %--** and all names' print names are distinct
                   '<U: '#{System.printName Value}#'>'
+               elsecase {IsCopyableName Value} then
+                  '<M: '#{System.printName Value}#'>'
                else
-                  {System.valueToVirtualString Value 0 0}
+                  '<N: '#{System.printName Value}#'>'
                end
             elsecase {IsAtom Value} then
                % the atom must not be mistaken for a token
@@ -189,6 +194,9 @@ local
                % foreign pointers are assigned increasing integers
                % in order of appearance so that diffs are sensible
                I = {ForeignPointerToInt Value}
+               case {IsCopyablePredicateRef Value} then '<Q: '
+               else '<P: '
+               end#
                case {Dictionary.condGet FPToIntMap I unit} of unit then N in
                   N = {Dictionary.get FPToIntMap 0} + 1
                   {Dictionary.put FPToIntMap 0 N}
@@ -196,7 +204,7 @@ local
                   N
                elseof V then
                   V
-               end
+               end#'>'
             elsecase Value of V1|Vr then
                {ListToVirtualString Vr
                 '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'

@@ -965,7 +965,10 @@ local
 %-----------------------------------------------------------------------
 %  global control information
 
-   GenerateAbstractionTableID = {`Builtin` 'generateAbstractionTableID' 2}
+   NewNamedName            = {`Builtin` 'newNamedName'            2}
+   NewCopyableName         = {`Builtin` 'newCopyableName'         2}
+   NewPredicateRef         = {`Builtin` 'newPredicateRef'         1}
+   NewCopyablePredicateRef = {`Builtin` 'newCopyablePredicateRef' 1}
 
    class Control
       prop final
@@ -1061,15 +1064,20 @@ local
                    msg:   'nested procedures with virtual toplevels')}
          end
       end
-      meth declareToplevelName(N)
-         case @toCopy of unit then skip
-         elseof Xs then toCopy <- N|Xs
+      meth declareToplevelName(PrintName ?N)
+         case @toCopy of unit then
+            N = {NewNamedName PrintName}
+         elseof Xs then
+            N = {NewCopyableName PrintName}
+            toCopy <- N|Xs
          end
       end
-      meth declareAbstrEntry(?PredicateRef)
-         PredicateRef = {GenerateAbstractionTableID @toCopy \= unit}
-         case @toCopy of unit then skip
-         elseof Xs then toCopy <- PredicateRef|Xs
+      meth declareToplevelProcedure(?PredicateRef)
+         case @toCopy of unit then
+            PredicateRef = {NewPredicateRef}
+         elseof Xs then
+            PredicateRef = {NewCopyablePredicateRef}
+            toCopy <- PredicateRef|Xs
          end
       end
       meth endVirtualToplevel(?Xs)
@@ -1651,7 +1659,7 @@ local
       feat
          isComplex:false
       meth saSimple(Ctrl)
-         DummyProc ID
+         DummyProc PredicateRef
       in
          DummyProc = {MakeDummyProcedure {Length @formalArgs}}
          value     <- {New Core.procedureToken init(DummyProc)}
@@ -1659,14 +1667,14 @@ local
          % prepare some feature values for the code generator:
          case {self isClauseBody($)} then
             @value.clauseBodyStatements = @body
-            ID = unit
+            PredicateRef = unit
          elsecase {Ctrl getTop($)} then
-            {Ctrl declareAbstrEntry(?ID)}
+            {Ctrl declareToplevelProcedure(?PredicateRef)}
          else
-            ID = unit
+            PredicateRef = unit
          end
-         self.abstractionTableID = ID
-         @value.abstractionTableID = ID
+         self.predicateRef = PredicateRef
+         @value.predicateRef = PredicateRef
 
          {@designator unifyVal(Ctrl @value)}
 
@@ -1973,8 +1981,7 @@ local
          {BndVO getVariable(?BndV)}
          {BndV getPrintName(?PrintName)}
          case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
-            TheName = {NewNamedName PrintName}
-            {Ctrl declareToplevelName(TheName)}
+            {Ctrl declareToplevelName(PrintName ?TheName)}
          else
             TheName = {NewName}
          end
@@ -3443,7 +3450,7 @@ local
 
          {InstallGlobalEnv Env}
          case {Ctrl getTop($)} then
-            abstractionTableID <- {Ctrl declareAbstrEntry($)}
+            predicateRef <- {Ctrl declareToplevelProcedure($)}
          else skip
          end
       end
@@ -4021,7 +4028,7 @@ local
             then
                ProcToken = {New Core.procedureToken init(Value)}
             in
-               ProcToken.abstractionTableID = Value
+               ProcToken.predicateRef = Value
                SAVariable, setLastValue(ProcToken)
 
             elsecase

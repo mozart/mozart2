@@ -530,7 +530,10 @@ local
             case {Assembler isLabelUsed(I $)} then Instrs
             else {SkipDeadCode Rest Assembler}
             end
-         [] endDefinition(_) then Instrs
+         [] endDefinition(I) then
+            case {Assembler isLabelUsed(I $)} then Instrs
+            else {SkipDeadCode Rest Assembler}
+            end
          [] globalVarname(_) then Instrs
          [] localVarname(_) then Instrs
          else {SkipDeadCode Rest Assembler}

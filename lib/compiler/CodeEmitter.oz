@@ -71,7 +71,7 @@ in
    class Emitter
       attr
          Temporaries Permanents
-         LastAliveRS
+         LastAliveRS ShortLivedTemps
          UsedX LowestFreeX HighestUsedX
          UsedY LowestFreeY HighestEverY
          GRegRef HighestUsedG
@@ -96,6 +96,7 @@ in
          LastAliveRS <- RS
          {ForAll FormalRegs
           proc {$ Reg} {RegSet.adjoin RS Reg} end}
+         ShortLivedTemps <- nil
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
          HighestUsedX <- ~1
@@ -205,6 +206,7 @@ in
                Emitter, EmitAddr(Addr)
             end
          elseof VInstr then
+            Emitter, FlushShortLivedTemps()
             Emitter, LetDie(VInstr.1)
             case VInstr.(Continuations.{Label VInstr}) of nil then
                Emitter, EmitVInstr(VInstr)
@@ -218,6 +220,14 @@ in
                continuations <- OldContinuations
                Emitter, EmitAddr(NewCont)   % may be nil
             end
+         end
+      end
+      meth FlushShortLivedTemps()
+         case @ShortLivedTemps of I|Ir then
+            Emitter, FreeX(I)
+            ShortLivedTemps <- Ir
+            Emitter, FlushShortLivedTemps()
+         [] nil then skip
          end
       end
       meth LetDie(AliveRS) RS = @LastAliveRS in
@@ -494,8 +504,8 @@ in
             elsecase Emitter, IsFirst(Reg1 $) then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
-                     msg: 'dot access on undetermined variable suspends '#
-                          'forever')}
+                     msg: ('dot access on undetermined variable suspends '#
+                           'forever'))}
             else skip
             end
             case Emitter, GetReg(Reg2 $) of none then
@@ -512,7 +522,6 @@ in
                Emitter, AllocateShortLivedTemp(?X2)
                Emitter, Emit(inlineDot(X1 Feature X2 NLiveRegs cache))
                Emitter, Emit(unify(X2 R))
-               Emitter, FreeX(X2.1)
             end
          [] vInlineAt(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then NLiveRegs X in
@@ -524,7 +533,6 @@ in
                Emitter, AllocateShortLivedTemp(?X)
                Emitter, Emit(inlineAt(Literal X NLiveRegs cache))
                Emitter, Emit(unify(X R))
-               Emitter, FreeX(X.1)
             end
          [] vInlineAssign(_ Literal Reg Cont) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
@@ -540,7 +548,6 @@ in
                Emitter, AllocateShortLivedTemp(?X)
                Emitter, Emit(getSelf(X))
                Emitter, Emit(unify(X R))
-               Emitter, FreeX(X.1)
             end
          [] vDefinition(_ Reg PredId PredicateRef GRegs Code Cont) then
             case Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
@@ -573,7 +580,6 @@ in
                Emitter, Emit(lbl(ContLabel))
                case DoUnify then
                   Emitter, Emit(unify(X Emitter, GetReg(Reg $)))
-                  Emitter, FreeX(X.1)
                else skip
                end
             end
@@ -948,16 +954,14 @@ in
              [] value(Reg) then
                 (Reg|Regs)#ArgInits
              [] record(Literal RecordArity VArgs) then
-                case {Dictionary.condGet @UsedX I - 1 0} of 0 then X in
-                   Emitter, AllocateThisShortLivedTemp(I - 1 ?X)
-                   Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
-                   (~I|Regs)#((I - 1)#'skip'|ArgInits)
-                   %--** X is not freed
-                else X in
+                case {Dictionary.member @UsedX I - 1} then X in
                    Emitter, AllocateShortLivedTemp(?X)
                    Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
                    (~I|Regs)#((I - 1)#move(X x(I - 1))|ArgInits)
-                   %--** X is not freed
+                else X in
+                   Emitter, AllocateThisShortLivedTemp(I - 1 ?X)
+                   Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
+                   (~I|Regs)#((I - 1)#'skip'|ArgInits)
                 end
              end
           end nil#nil}
@@ -1364,7 +1368,6 @@ in
                Emitter, AllocateShortLivedTemp(?R)
                Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
                IHd = setValue(R)|IInter
-               %--** R is not freed
             end
             Emitter, EmitVArgsWrite(VArgr IInter ITl)
          [] nil then
@@ -1406,7 +1409,6 @@ in
                Emitter, AllocateShortLivedTemp(?R)
                Emitter, Emit(unifyVariable(R))
                SHd = R#VArg|SInter
-               %--** R is not freed
             end
             Emitter, EmitVArgsRead(VArgr SInter STl)
          [] nil then
@@ -1421,7 +1423,6 @@ in
          in
             case IMod then
                Emitter, AllocateShortLivedTemp(?X)
-               %--** X is not freed
                case Emitter, GetReg(Reg $) of none then R in
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(createVariable(R))
@@ -1445,7 +1446,6 @@ in
          case Regs of Reg|Regr then X|Xr = XsOut Ur in
             case IsTestBuiltin then
                Emitter, AllocateShortLivedTemp(?X)
-               %--** X is not freed
                Unifies = Ur
             elsecase Emitter, GetReg(Reg $) of none then
                %--** here it would be nicer to PredictBuiltinOutput
@@ -1475,7 +1475,6 @@ in
       meth EmitUnifies(Unifies)
          case Unifies of U|Ur then X#R = U in
             Emitter, Emit(unify(X R))
-            Emitter, FreeX(X.1)
             Emitter, EmitUnifies(Ur)
          [] nil then skip
          end
@@ -1831,6 +1830,7 @@ in
          end
          {Dictionary.put @UsedX I 1}
          X = x(I)
+         ShortLivedTemps <- I|@ShortLivedTemps
       end
       meth AllocateAndInitializeAnyTemp(Reg ?X)
          case Emitter, GetTemp(Reg $) of none then
@@ -1939,7 +1939,6 @@ in
          % registers as the result register, if possible.
          case @continuations of nil then
             Emitter, AllocateShortLivedTemp(?X)
-            %--** X is not freed
          [] Cont|_ then
             Emitter, LetDie(Cont.1)
             % This is needed so that LetDie works correctly:
@@ -2128,6 +2127,7 @@ in
       end
 
       meth SaveRegisterMapping($)
+         Emitter, FlushShortLivedTemps()
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#@LowestFreeY#
          {RegSet.copy @LastAliveRS}#@HighestUsedG
       end
@@ -2146,6 +2146,7 @@ in
          Emitter, KillAllTemporaries()
       end
       meth SaveAllRegisterMappings($)
+         Emitter, FlushShortLivedTemps()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#
          @LowestFreeX#@HighestUsedX#@LowestFreeY#
@@ -2172,6 +2173,7 @@ in
          LowestFreeX <- OldLowestFreeX
          HighestUsedX <- OldHighestUsedX
          LowestFreeY <- OldLowestFreeY
+         ShortLivedTemps <- nil
       end
       meth KillAllTemporaries() D = @Temporaries in
          {ForAll {Dictionary.keys D}
@@ -2183,6 +2185,7 @@ in
          {Dictionary.removeAll @UsedX}
          LowestFreeX <- 0
          HighestUsedX <- ~1
+         ShortLivedTemps <- nil
       end
 
       %%

@@ -1,3 +1,25 @@
+%%%
+%%% Authors:
+%%%   Andreas Sundstroem (andreas@sics.se)
+%%%
+%%% Copyright:
+%%%   Andreas Sundstroem (andreas@sics.se)
+%%%
+%%% Last change:
+%%%   $Date$Author:
+%%%   $Revision:
+%%%
+%%% This file is part of Mozart, an implementation
+%%% of Oz 3
+%%%    http://mozart.ps.uni-sb.de
+%%%
+%%% See the file "LICENSE" or
+%%%    http://mozart.ps.uni-sb.de/LICENSE.html
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
+
 functor
 import
    TestMisc
@@ -7,7 +29,6 @@ define
    Threads = 30
    Times = 50
    Sites = 3
-   Lock = {NewLock}
 
    class MsgHandler
       attr msg:initial
@@ -67,22 +88,23 @@ define
    proc {Start} Managers in
       try
          local
-            proc {Loop Ms I Ss Object Ps}
+            proc {Loop Ms I Ss Object Lock Ps}
                case Ms
                of M|Mr then S Sr Pr in
                   Ss = S|Sr
-                  Ps = proc {$} {StartSite M Object I S} end | Pr
-                  {Loop Mr I+1 Sr Object Pr}
+                  Ps = proc {$} {StartSite M Object I S Lock} end | Pr
+                  {Loop Mr I+1 Sr Object Lock Pr}
                [] nil then
                   Ss = Ps = nil
                end
             end
+            Lock = {NewLock}
             Object = {New MsgHandler init}
             Stats Hosts Procs
          in
             {TestMisc.getHostNames Hosts}
             {TestMisc.getRemoteManagers Sites Hosts Managers}
-            {Loop Managers 1 Stats Object Procs}
+            {Loop Managers 1 Stats Object Lock Procs}
             {TestMisc.barrierSync Procs}
             {CheckStatistics Stats}
          end
@@ -124,17 +146,19 @@ define
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
                          case Sum \= Times then
-                            raise dp_object_test_failed end
+                            raise dp_object_test_failed(Sum Times) end
                          else
                             skip
                          end
                       end}
    end
 
-   proc {StartSite RMan Object SiteNr Statistics} Error in
+   proc {StartSite RMan Object SiteNr Statistics Lock}
+      Error
+   in
       {RMan apply(url:'' functor
                          define
-                            proc {StartThreads Object SiteNr Statistics}
+                            proc {StartThreads Object Lock SiteNr Statistics}
                                List = {MakeList Threads}
                                Dict = {NewDictionary}
                             in
@@ -166,17 +190,17 @@ define
                                {List.forAll L proc {$ X} {Wait X} end}
                             end
 
-                            proc {Start Object SiteNr Statistics Error}
+                            proc {Start Object Lock SiteNr Statistics Error}
                                MemCell = {NewCell ok} in
                                try
-                                  {StartThreads Object SiteNr Statistics}
+                                  {StartThreads Object Lock SiteNr Statistics}
                                catch X then
                                   {Assign MemCell X}
                                end
                                Error = {Access MemCell}
                             end
 
-                            {Start Object SiteNr Statistics Error}
+                            {Start Object Lock SiteNr Statistics Error}
                          end)}
       {TestMisc.raiseError Error}
    end

@@ -493,9 +493,10 @@ prepare
          proc {ParseLongOpt LongOpt Args ?Opt ?Rest} Spec Value NewArgs in
             {GetLongOptSpec LongOpt ?Spec ?Value}
             case Value of unit then
-               if {HasFeature Spec arg} then
+               case Args of (&-|_)|_ andthen {HasFeature Spec type} then
                   {Exception.raiseError
                    ap(usage 'option `'#{Label Spec}#'\' expects an argument')}
+               else skip
                end
                NewArgs = Args
             else

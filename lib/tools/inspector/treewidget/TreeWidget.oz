@@ -73,6 +73,150 @@ define
       end
    end
 
+   %%
+   %% Abstract Context Menu
+   %%
+   local
+      Transform           = {NewName}
+      CreateEntries       = {NewName}
+      CreateFilterEntries = {NewName}
+      CreateActionEntries = {NewName}
+   in
+      class ContextMenu
+         attr
+            type       %% Type Definition
+            object     %% Msg Receiver
+            menu       %% TkMenu/GtkMenu Object
+            menuClass  %% Menu Class
+            mapEntries %% Entries in Mapstate
+            menuData   %% MenuData List
+            menuTitle  %% Menu Title
+         meth create(Visual MenuClass Type MenuData)
+            Menu = {New MenuClass create(Visual Visual)}
+         in
+            @type       = Type
+            @object     = Visual
+            @menu       = Menu
+            @menuClass  = MenuClass
+            @mapEntries = false|_|_
+            @menuData   = MenuData
+            @menuTitle  = {Visual get(widgetContextMenuTitle $)}
+            %% Create All Menu Items (build the item list first)
+            {List.forAll
+             ContextMenu, Transform(Type MenuData $)
+             proc {$ Item}
+                {Menu addEntry(Item _)}
+             end}
+         end
+         meth updateMenu(MenuData)
+            if {System.eq @menuData MenuData}
+            then skip
+            else
+               Visual = @object %% Object is Visual
+               Menu   = {New @menuClass create(Visual Visual)}
+            in
+               menu <- Menu
+               {List.forAll
+                ContextMenu, Transform(@type MenuData $)
+                proc {$ Item}
+                   {Menu addEntry(Item _)}
+                end}
+               case @mapEntries
+               of true|_|_ then
+                  Sep = {Menu addEntry(separator $)}
+                  Fun = {Menu addEntry('unmap'(unmap) $)}
+               in
+                  mapEntries <- true|Sep|Fun
+               else skip
+               end
+            end
+         end
+         meth !Transform(Type MenuData $)
+            case MenuData
+            of menu(Ws Ds Fs As) then
+               WSkel = ContextMenu, CreateEntries(Ws 'Width ' changeWidth $)
+               DSkel = ContextMenu, CreateEntries(Ds 'Depth ' changeDepth $)
+               FilterSkel = ContextMenu, CreateFilterEntries(Fs $)
+               ActionSkel = ContextMenu, CreateActionEntries(As $)
+            in
+               [title({@menuTitle Type})
+                cascade([title('Exlore Tree')
+                         cascade(title('Width')|WSkel)
+                         cascade(title('Depth')|DSkel)])
+                cascade(title('Filter')|FilterSkel)
+                cascade(title('Actions')|ActionSkel)]
+            else MenuData
+            end
+         end
+         meth !CreateEntries(Ws Prefix Fun ?Rs)
+            case Ws
+            of WVal|Wr then
+               Tail
+            in
+               case WVal
+               of 0 then Rs = separator|Tail
+               else
+                  TitleInd = if WVal < 0 then '-' else '+' end
+                  Title    = {VirtualString.toAtom Prefix#TitleInd#{Abs WVal}}
+               in
+                  Rs = (Title(Fun(WVal)))|Tail
+               end
+               ContextMenu, CreateEntries(Wr Prefix Fun Tail)
+            else Rs = nil
+            end
+         end
+         meth !CreateFilterEntries(Fs Rs)
+            case Fs
+            of Filter|Fr then
+               TF = case Filter of auto(TF) then TF else Filter end
+               TL = {Label TF}
+               Tail
+            in
+               Rs = (TL(map(TF.1)))|Tail
+               ContextMenu, CreateFilterEntries(Fr Tail)
+            else Rs = nil
+            end
+         end
+         meth !CreateActionEntries(As Rs)
+            case As
+            of Action|Ar then
+               AL = {Label Action} Tail
+            in
+               Rs = (AL(action(Action.1)))|Tail
+               ContextMenu, CreateActionEntries(Ar Tail)
+            else Rs = nil
+            end
+         end
+         meth tkMenu($)
+            {@menu getMenu($)}
+         end
+         meth map
+            case @mapEntries
+            of Value|_|_ then
+               if Value
+               then skip
+               else
+                  Sep = {@menu addEntry(separator $)}
+                  Fun = {@menu addEntry('unmap'(unmap) $)}
+               in
+                  mapEntries <- true|Sep|Fun
+               end
+            end
+         end
+         meth unmap
+            case @mapEntries
+            of Value|Sep|Fun then
+               if Value
+               then {Sep tkClose} {Fun tkClose} mapEntries <- false|_|_
+               end
+            end
+         end
+      end
+   end
+
+   %%
+   %% Main TreeWidget Class
+   %%
    class TreeWidget from StoreListener GraphicSupport
       attr
          widPort       %% TreeWidget Port
@@ -112,6 +256,8 @@ define
          @relManDict   = {Dictionary.new}
          @lines        = {Dictionary.new}
          @reflMan      = {Dictionary.get Options widgetReflectMan}
+         %% Tell Dictionary our Context Menu; Hack Alert
+         {Dictionary.put Options widgetContextMenuClass ContextMenu}
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
       end
@@ -133,7 +279,8 @@ define
          Colors     = {Filter StringKeys FilterColor}
          Menus      = {Filter StringKeys FilterMenu}
       in
-         case {Dictionary.get Options widgetNodeSets}.{Dictionary.get Options widgetUseNodeSet}
+         case {Dictionary.get Options widgetNodeSets}.
+            {Dictionary.get Options widgetUseNodeSet}
          of NSet|RSet then
             Nodes = case {Dictionary.get Options widgetNodesContainer}
                     of default   then TreeNodes

@@ -21,7 +21,8 @@
 
 functor $
 import
-   TreeWidgetComponent('class' : TreeWidget 'nodes' : TreeNodes) at 'TreeWidget.ozf'
+   TreeWidgetComponent('class' : TreeWidget
+                       'nodes' : TreeNodes) at 'TreeWidget.ozf'
    Reflection(reflect unreflect manager)
    InspectorOptions
    Tk
@@ -67,7 +68,10 @@ define
             InspPort = @inspPort %% Imported from InspectorObject
             T       = {New Tk.toplevel
                        tkInit(title:    'About Inspector'
-                              delete:   proc {$} {Port.send InspPort aboutClose(Menu T)} end
+                              delete:
+                                 proc {$}
+                                    {Port.send InspPort aboutClose(Menu T)}
+                                 end
                               withdraw: true)}
             UpFrame = {New Tk.frame
                        tkInit(parent:             T
@@ -84,13 +88,15 @@ define
                               text:        'Ok'
                               width:       6
                               borderwidth: 1
-                              action:      proc {$}
-                                              {Port.send InspPort aboutClose(Menu T)}
-                                           end)}
+                              action:
+                                 proc {$}
+                                    {Port.send InspPort aboutClose(Menu T)}
+                                 end)}
 
             L1      = {New Tk.label
                        tkInit(parent:     UpFrame
-                              text:       {Dictionary.get @options inspectorLanguage}#
+                              text:
+                                 {Dictionary.get @options inspectorLanguage}#
                               ' Inspector'
                               width:      25
                               font:       '-adobe-helvetica-bold-r-*-*-*-140-*'
@@ -98,7 +104,8 @@ define
                               justify:     center)}
             L2      = {New Tk.label
                        tkInit(parent:     UpFrame
-                              text:       'Thorsten Brunklaus\n(brunklaus@ps.uni-sb.de)'
+                              text:
+                                 'Thorsten Brunklaus\n(brunklaus@ps.uni-sb.de)'
                               foreground: 'black'
                               justify:    'center')}
          in
@@ -107,8 +114,10 @@ define
             {Tk.batch [grid(row: 0 column: 0 L1 padx: 0 pady: 4 sticky: nsew)
                        grid(row: 1 column: 0 L2 padx: 0 pady: 4 sticky: nsew)
                        grid(row: 0 column: 0 Button padx: 4 pady: 6 sticky: e)
-                       grid(row: 0 column: 0 UpFrame padx: 0 pady: 0 sticky: nsew)
-                       grid(row: 1 column: 0 DnFrame padx: 0 pady: 0 sticky: nsew)
+                       grid(row: 0 column: 0 UpFrame
+                            padx: 0 pady: 0 sticky: nsew)
+                       grid(row: 1 column: 0 DnFrame
+                            padx: 0 pady: 0 sticky: nsew)
                        wm(resizable T false false)
                        update(idletasks)
                        wm(deiconify T)]}
@@ -142,8 +151,10 @@ define
             Width     = {Dictionary.get Options inspectorWidth}
             Height    = {Dictionary.get Options inspectorHeight}
             @inspPort = InspPort
-            Tk.toplevel, tkInit(title: {Dictionary.get Options inspectorLanguage}#' Inspector'
-                                delete:   proc {$} {Port.send InspPort close} end
+            Tk.toplevel, tkInit(title:
+                                   {Dictionary.get Options inspectorLanguage}#
+                                ' Inspector'
+                                delete: proc {$} {Port.send InspPort close} end
                                 width:    Width
                                 height:   Height
                                 withdraw: true)
@@ -541,9 +552,12 @@ define
             [] reinspect then {@widget selectionCall(@selNode reinspect)}
             [] double(Node) then
                case {Node getType($)}
-               of widthbitmap then {@widget selectionCall(Node changeWidth(unlimited))}
-               [] depthbitmap then {@widget selectionCall(Node changeDepth(unlimited))}
-               [] _           then {@widget selectionCall(Node changeDepth(~1))}
+               of widthbitmap then
+                  {@widget selectionCall(Node changeWidth(unlimited))}
+               [] depthbitmap then
+                  {@widget selectionCall(Node changeDepth(unlimited))}
+               [] _ then
+                  {@widget selectionCall(Node changeDepth(~1))}
                end
             [] Node      then
                selNode <- Node

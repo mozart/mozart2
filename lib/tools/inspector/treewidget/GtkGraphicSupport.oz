@@ -29,195 +29,30 @@ import
 export
    'class' : GraphicSupport
 define
-   local
-      BuildEntries        = {NewName}
-      Transform           = {NewName}
-      CreateEntries       = {NewName}
-      CreateFilterEntries = {NewName}
-      CreateActionEntries = {NewName}
-   in
-      class MenuClass
-         attr
-            type       %% Type Definition
-            widPort    %% Widget Port
-            object     %% Msg Receiver
-            menu       %% TkMenu Object
-            font       %% Font
-            color      %% FG Color
-            mapEntries %% Entries in Mapstate
-            menuData   %% MenuData List
-            menuTitle  %% Menu Title
-         meth create(Visual Type MenuData)
-            @type       = Type
-            @widPort    = {Visual getServer($)}
-            @object     = Visual
-            @font       = {Visual get(widgetContextMenuFont $)}
-            @color      = {Visual get(widgetContextMenuABg $)}
-            @menu       = {New Tk.menu
-                           tkInit(parent:  Visual
-                                  tearoff: false)}
-            @mapEntries = false|_|_
-            @menuData   = MenuData
-            @menuTitle  = {Visual get(widgetContextMenuTitle $)}
-            MenuClass, BuildEntries(@menu MenuClass, Transform(Type MenuData $))
-         end
-         meth updateMenu(MenuData)
-            if {System.eq @menuData MenuData}
-            then skip
-            else
-               Visual = @object
-               Menu   = {New Tk.menu
-                         tkInit(parent:  Visual
-                                tearoff: false)}
-            in
-               menu <- Menu
-               MenuClass, BuildEntries(Menu MenuClass, Transform(@type MenuData $))
-               case @mapEntries
-               of true|_|_ then
-                  Sep = MenuClass, addEntry(@menu separator $)
-                  Fun = MenuClass, addEntry(@menu 'unmap'(unmap) $)
-               in
-                  mapEntries <- true|Sep|Fun
-               else skip
-               end
-            end
-         end
-         meth !BuildEntries(Menu MDs)
-            case MDs
-            of Entry|MDr then
-               _ = MenuClass, addEntry(Menu Entry $)
-               MenuClass, BuildEntries(Menu MDr)
-            else skip
-            end
-         end
-         meth addEntry(Menu Entry $)
-            Font = @font
-         in
-            case Entry
-            of title(Name) then
-               Title = {New Tk.menuentry.command
-                        tkInit(parent: Menu
-                               label:  Name
-                               font:   Font
-                               state:  disabled)}
-            in
-               _  = {New Tk.menuentry.separator tkInit(parent: Menu)}
-               Title
-            [] separator   then {New Tk.menuentry.separator tkInit(parent: Menu)}
-            [] cascade(Es) then
-               case Es
-               of title(Title)|Er then
-                  SubMenu = {New Tk.menu
-                             tkInit(parent:  Menu
-                                    tearoff: false)}
-                  Cascade = {New Tk.menuentry.cascade
-                             tkInit(parent: Menu
-                                    label:  Title
-                                    font:   Font
-                                    menu:   SubMenu)}
-               in
-                  case Er
-                  of nil then {Cascade tk(entryconf state: disabled)}
-                  else MenuClass, BuildEntries(SubMenu Er)
-                  end
-                  Cascade
-               end
-            else
-               Mesg = Entry.1
-            in
-               {New Tk.menuentry.command
-                tkInit(parent:           Menu
-                       label:            {Label Entry}
-                       font:             Font
-                       activebackground: @color
-                       action:           proc {$}
-                                            {Port.send @widPort call(@object Mesg)}
-                                         end)}
-            end
-         end
-         meth !Transform(Type MenuData $)
-            case MenuData
-            of menu(Ws Ds Fs As) then
-               WidthSkel  = MenuClass, CreateEntries(Ws 'Width ' changeWidth $)
-               DepthSkel  = MenuClass, CreateEntries(Ds 'Depth ' changeDepth $)
-               FilterSkel = MenuClass, CreateFilterEntries(Fs $)
-               ActionSkel = MenuClass, CreateActionEntries(As $)
-            in
-               [title({@menuTitle Type})
-                cascade([title('Exlore Tree')
-                         cascade(title('Width')|WidthSkel)
-                         cascade(title('Depth')|DepthSkel)])
-                cascade(title('Filter')|FilterSkel)
-                cascade(title('Actions')|ActionSkel)]
-            else MenuData
-            end
-         end
-         meth !CreateEntries(Ws Prefix Fun ?Rs)
-            case Ws
-            of WVal|Wr then
-               Tail
-            in
-               case WVal
-               of 0 then Rs = separator|Tail
-               else
-                  TitleInd = if WVal < 0 then '-' else '+' end
-                  Title    = {VirtualString.toAtom Prefix#TitleInd#{Abs WVal}}
-               in
-                  Rs = (Title(Fun(WVal)))|Tail
-               end
-               MenuClass, CreateEntries(Wr Prefix Fun Tail)
-            else Rs = nil
-            end
-         end
-         meth !CreateFilterEntries(Fs Rs)
-            case Fs
-            of Filter|Fr then
-               TF = case Filter of auto(TF) then TF else Filter end
-               TL = {Label TF}
-               Tail
-            in
-               Rs = (TL(map(TF.1)))|Tail
-               MenuClass, CreateFilterEntries(Fr Tail)
-            else Rs = nil
-            end
-         end
-         meth !CreateActionEntries(As Rs)
-            case As
-            of Action|Ar then
-               AL = {Label Action} Tail
-            in
-               Rs = (AL(action(Action.1)))|Tail
-               MenuClass, CreateActionEntries(Ar Tail)
-            else Rs = nil
-            end
-         end
-         meth tkMenu($)
-            @menu
-         end
-         meth map
-            case @mapEntries
-            of Value|_|_ then
-               if Value
-               then skip
-               else
-                  Sep = MenuClass, addEntry(@menu separator $)
-                  Fun = MenuClass, addEntry(@menu 'unmap'(unmap) $)
-               in
-                  mapEntries <- true|Sep|Fun
-               end
-            end
-         end
-         meth unmap
-            case @mapEntries
-            of Value|Sep|Fun then
-               if Value
-               then {Sep tkClose} {Fun tkClose} mapEntries <- false|_|_
-               end
-            end
-         end
+   %% Gtk Based Menu
+   class GtkMenu
+      attr
+         menu   %% System Menu Handle
+         visual %% Visual Object
+      meth create(Parent Visual)
+         @visual = Visual
+         @menu   = unit
+      end
+      meth getMenu($)
+         @menu
+      end
+      meth getFont($)
+         {@visual get(widgetContextMenuFont $)}
+      end
+      meth getColor($)
+         {@visual get(widgetContextMenuABg $)}
+      end
+      meth addEntry(Entry $)
+         unit
       end
    end
 
+   %% Gtk GraphicSupport
    local
       local
          N = {NewName}
@@ -270,6 +105,7 @@ define
          attr
             canvasId        %% Local Canvas Id
             tagVar          %% Canvas Tag Variable
+            tagTree         %% Canvas Tag Tree List
             font     : nil  %% Fontname
             fontO           %% Tk Font Object
             fontX           %% Font X Dimension
@@ -294,6 +130,7 @@ define
             whiteColor      %% GDK White Color
          meth create(Parent DspWidth DspHeight)
             CanvasId = {IdCounter inc($)}
+            Root     = {self root($)}
          in
             Canvas.canvas, new
             Canvas.canvas, setUsize(DspWidth DspHeight)
@@ -302,7 +139,8 @@ define
                                            {Int.toFloat DspHeight})
             Canvas.canvas, scrollTo(0 0)
             @canvasId   = CanvasId
-            @tagVar     = {self root($)}
+            @tagVar     = Root
+            @tagTree    = [Root]
             @miscObj    = {New GDK.misc noop}
             @menuDict   = {Dictionary.new}
             @groupType  = {@tagVar getType($)}
@@ -314,7 +152,7 @@ define
             @selTag     = {self newTag($)}
             @blackColor = {MakeColor "#000000"}
             @whiteColor = {MakeColor "#ffffff"}
-            {self newItem(@tagVar @rectType
+            {self newItem(Root @rectType
                           ["x1"#0.0
                            "y1"#0.0
                            "x2"#{Int.toFloat DspWidth - 100}
@@ -538,7 +376,8 @@ define
                case MenuData
                of nil then nil
                else
-                  Menu = {New MenuClass create(self Type MenuData)}
+                  ContextMenu = {self get(widgetContextMenuClass $)}
+                  Menu = {New ContextMenu create(self GtkMenu Type MenuData)}
                in
                   {Dictionary.put MenuDict Type Menu} Menu
                end
@@ -580,10 +419,11 @@ define
          meth printXY(X Y String Tag ColorKey)
             Color = case {Dictionary.condGet @colDict ColorKey nil}
                     of nil then @blackColor
-                    [] Str then {MakeColor str}
+                    [] Str then {MakeColor Str}
                     end
          in
-            {System.show 'printXY'#(X * @fontX)#" "#(Y * @fontY)}
+            %% Place item in tree
+            case @tagTree of RootTag|_ then {Tag reparent(RootTag)} end
             {self newItem(Tag @textType
                           ["text"#String
                            "x"#{Int.toFloat (@fontX * X)}
@@ -595,11 +435,13 @@ define
          meth paintXY(X Y Image Tag ColorKey)
             Color = case {Dictionary.condGet @colDict ColorKey nil}
                     of nil then @blackColor
-                    [] Str then {MakeColor str}
+                    [] Str then {MakeColor Str}
                     end
             ImageX = {Image imageGetFieldWidth($)}
             ImageY = {Image imageGetFieldHeight($)}
          in
+            %% Place item in tree
+            case @tagTree of RootTag|_ then {Tag reparent(RootTag)} end
             {self newItem(Tag @imageType
                           ["image"#Image
                            "x"#{Int.toFloat (@fontX * X)}
@@ -657,12 +499,13 @@ define
 %                      (FontX * (X + XD))#' '#YPos#' '#SecTag)}
          end
          meth tagTreeDown(Tag)
-            skip
-%           {Tk.send v(@canvasDn#Tag)}
+            TagTree = @tagTree
+         in
+            case TagTree of RootTag|_ then {Tag reparent(RootTag)} end
+            tagTree <- Tag|TagTree
          end
          meth tagTreeUp
-%           {Tk.send v(@canvasUp)}
-            skip
+            case @tagTree of _|Tr then tagTree <- Tr end
          end
          meth createLine(T Y)
 %           T = GraphicSupport, newTag($)
@@ -795,7 +638,7 @@ define
             HP = {Dictionary.get @opDict selectionHandler}
          in
             selObject <- nil
-            {Tk.send v(@canvasDelete#@selTag)}
+            {@selTag close}
             {HP nil}
          end
       end

@@ -126,7 +126,8 @@ in
                   DeltaYRem  = (DeltaY mod N)
                in
                   FrameManager, TellNewXY(1 DeltaX DeltaYPart)
-                  _ = {{Dictionary.get @Items @NumItems} tellNewXY(0 DeltaYRem $)}
+                  _ = {{Dictionary.get @Items @NumItems}
+                       tellNewXY(0 DeltaYRem $)}
                end
             end
          end

@@ -95,6 +95,7 @@ prepare
       Error(registerFormatter)
       EventSIGCHLD(handler) at 'x-oz://system/EventSIGCHLD'
       EventSIGUSR2(handler) at 'x-oz://system/EventSIGUSR2'
+      Timer(       handler) at 'x-oz://system/Timer'
    export
       put            : PutEventHandler
       get            : GetEventHandler
@@ -154,6 +155,7 @@ prepare
 
       {PutEventHandler 'SIGCHLD' EventSIGCHLD.handler}
       {PutEventHandler 'SIGUSR2' EventSIGUSR2.handler}
+      {PutEventHandler 'timer'   Timer       .handler}
 
       %% start a high priority thread to process the event stream
 

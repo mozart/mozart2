@@ -72,5 +72,11 @@ define
          GladeXML, registerHandler(Name Handler)
          {Native.xmlSignalConnectFull @nativeObject Name Id}
       end
+      meth getWidget(Name ?Widget)
+         NativeWidget Widget
+      in
+         {Native.xmlGetWidget @nativeObject Name NativeWidget}
+         Widget = {New GTK.widget newWrapper(NativeWidget)}
+      end
    end
 end % functor

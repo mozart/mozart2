@@ -32,7 +32,7 @@ import
                    isBuiltin
                    isLocalDet) at 'x-oz://boot/CompilerSupport'
    System(eq printName)
-   RecordC(hasLabel tell reflectArity)
+   RecordC(hasLabel tell reflectArity '^')
    Type(is)
    Core
    Builtins(getInfo)
@@ -1344,7 +1344,9 @@ define
                      Rec = {RecordC.tell LData}
                   end
                   if {All Args DetTests.det} then
-                     {ForAll FData proc {$ F#V} Rec^F=V end}
+                     {ForAll FData proc {$ F#V}
+                                      {RecordC.'^' Rec F V}
+                                   end}
                   end
                elseif {DetTests.det @label}
                   andthen {All Args DetTests.det}
@@ -1925,7 +1927,7 @@ define
                {Ctrl setErrorMsg('feature selection (.) on record failed')}
                {Ctrl setUnifier(BndVO RecOrCh.F)}
 
-               {BndVO unify(Ctrl RecOrCh^F)}
+               {BndVO unify(Ctrl {RecordC.'^' RecOrCh F})}
 
                {Ctrl resetUnifier}
                {Ctrl resetErrorMsg}
@@ -3511,7 +3513,9 @@ define
             RecVal = {List.toRecord Lab RecConstrValArgs}
          else
             RecVal = {RecordC.tell Lab}
-            {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
+            {ForAll RecConstrValArgs proc {$ F#A}
+                                        {RecordC.'^' RecVal F A}
+                                     end}
          end
          {New RecordConstr init(RecVal unit)}
       end
@@ -3686,7 +3690,9 @@ define
                   if {IsDet LData} then
                      Rec = {RecordC.tell LData}
                   else skip end
-                  {ForAll FData proc {$ F#V} Rec^F=V end}
+                  {ForAll FData proc {$ F#V}
+                                   {RecordC.'^' Rec F V}
+                                end}
                else
                   Rec = {List.toRecord LData FData}
                end
@@ -3972,7 +3978,7 @@ define
       end
       meth getArgs($)
          {Map {CurrentArity @value}
-          fun {$ F} F#@value^F end}
+          fun {$ F} F#{RecordC.'^' @value F} end}
       end
       meth isOpen($)
          {Not {IsDet @value}}
@@ -4021,7 +4027,7 @@ define
                 '(' | {Map {CurrentArity @value}
                        fun {$ F}
                           {Value.toVirtualString F 0 0} # ': ' #
-                          {@value^F getPrintType(D-1 $)}
+                          {{RecordC.'^' @value F} getPrintType(D-1 $)}
                        end}
                 {Value.toVirtualString Lab 0 0}  ' ' '...)'}
             end
@@ -4080,7 +4086,8 @@ define
                else skip end
                {ForAll {CurrentArity @value}
                 proc {$ F}
-                   Rec^F = {@value^F getFullData(D-1 IsData $)}
+                   {RecordC.'^' Rec F}=
+                   {{RecordC.'^' @value F} getFullData(D-1 IsData $)}
                 end}
                Rec
             end
@@ -4212,8 +4219,8 @@ define
                    if
                       {Member F LArity}
                    then
-                      VF = @value^F
-                      RF = RVal^F
+                      VF = {RecordC.'^' @value F}
+                      RF = {RecordC.'^' RVal F}
                    in
                       if
                          {HasFeature RF ImAVariableOccurrence}

@@ -43,12 +43,6 @@ S  ::=  <Statement>
      next: S   % singly linked list terminated by self reference
 
 
-% statements
-<StepPoint> from <Statement>
-     statements: S+
-     coord:      C
-
-
 % 'local' localVars 'in' statements 'end'
 <Declaration> from <Statement>
      localVars:  V+

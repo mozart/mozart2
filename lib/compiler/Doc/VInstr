@@ -25,7 +25,7 @@ Addr = VInstr
      | nil.
 Cont = Addr.
 Label = int.
-VInstr = vStepPoint(OccsRS Addr Coord Cont)
+VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vMakePermanent(OccsRS Regs Cont)
        | vClear(OccsRS Regs Cont)
        | vUnify(OccsRS Reg Reg Cont)

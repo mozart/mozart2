@@ -79,7 +79,7 @@ define
               {Obj putLocalState(State)}
            end
            Socket=OS.socket
-           Connect=OS.connect
+           Connect=OS.connectNonblocking
            Write=OS.write
            Read=OS.read
            WriteSelect=OS.writeSelect

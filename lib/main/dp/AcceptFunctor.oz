@@ -61,7 +61,7 @@ define
       NewFD in
       {FDHandler getResource}
       {OS.acceptSelect FD}
-      {OS.accept FD _ _ NewFD} %InAddress InIPPort NewFD}
+      {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
 \ifdef DBG
       {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'}
 \endif

@@ -62,19 +62,6 @@ local
             end
          end
       end
-
-      fun {PartitionString Is Js Jr F}
-         case Is of nil then Jr=nil
-            case Js of nil then nil else [{F Js}] end
-         [] I|Ir then
-            case I==&  then NewJs in
-               Jr=nil {F Js}|{PartitionString Ir NewJs NewJs F}
-            else NewJr in
-               Jr=I|NewJr {PartitionString Ir Js NewJr F}
-            end
-         end
-      end
-
    in
       fun {TkStringToString S}
          S
@@ -105,32 +92,19 @@ local
       end
 
       fun {TkStringToListString S}
-         Is in {PartitionString S Is Is TkStringToString}
+         {String.tokens S & }
       end
 
       fun {TkStringToListAtom S}
-         Is in {PartitionString S Is Is TkStringToAtom}
+         {Map {String.tokens S & } TkStringToAtom}
       end
 
       fun {TkStringToListInt S}
-         Is in {PartitionString S Is Is TkStringToInt}
+         {Map {String.tokens S & } TkStringToInt}
       end
 
       fun {TkStringToListFloat S}
-         Is in {PartitionString S Is Is TkStringToFloat}
-      end
-   end
-
-   local
-      fun {GetNextWord Is ?It}
-         case Is of nil then It=nil nil
-         [] I|Ir then
-            case I==&  then It=Ir nil else I|{GetNextWord Ir ?It} end
-         end
-      end
-   in
-      fun {GetNextInt Is ?It}
-         {String.toInt {GetNextWord Is ?It}}
+         {Map {String.tokens S & } TkStringToFloat}
       end
    end
 
@@ -401,8 +375,9 @@ in
                of &r then (R|Cast)|Rr = Rs in
                   R={Cast {Expand Irr}} {TkReadLoop Rr}
                [] &p then
-                  Id
-                  NoArgs = {GetNextInt {GetNextInt Irr $ Id} _}
+                  Irr1
+                  Id     = {String.toInt {String.token Irr  & $ ?Irr1}}
+                  NoArgs = {String.toInt {String.token Irr1 & $ _}}
                in
                   case {Dictionary.condGet TkDict Id VoidEntry}
                   of O # M # Ps then

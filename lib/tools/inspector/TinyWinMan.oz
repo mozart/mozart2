@@ -72,16 +72,14 @@ class WinToplevel
    end
 
    meth hide
-      case @visible
-      then
+      if  @visible then
          {Tk.send wm(withdraw @toplevel)}
          visible <- false
-      else skip
       end
    end
 
    meth unhide
-      case @visible
+      if @visible
       then skip
       else
          {Tk.send wm(deiconify @toplevel)}
@@ -143,7 +141,7 @@ class WinToplevel
       DeltaX = (W - @width)
       DeltaY = (H - @height)
    in
-      case DeltaX == 0 andthen DeltaY == 0
+      if DeltaX == 0 andthen DeltaY == 0
       then skip
       else
          DivCount = @divCount
@@ -160,7 +158,7 @@ class WinToplevel
    meth tellNewXY(I DeltaX DeltaY)
       MaxPtr = @maxPtr
    in
-      case I =< MaxPtr
+      if I =< MaxPtr
       then
          Node      = {Dictionary.get @items I}
          ConsumedY = {Node tellNewXY(DeltaX DeltaY $)}
@@ -175,13 +173,12 @@ class WinToplevel
    end
 
    meth moveY(I DeltaY)
-      case I =< @maxPtr
+      if I =< @maxPtr
       then
          Node = {Dictionary.get @items I}
       in
          {Node moveY(DeltaY)}
          WinToplevel, moveY((I + 1) DeltaY)
-      else skip
       end
    end
 
@@ -712,15 +709,14 @@ class SashGrip
                               DeltaY = (Y - {Tk.returnInt winfo(rooty @grip)})
                               AddDY  = (@addDY + DeltaY)
                            in
-                              case AddDY < 0 andthen {Abs AddDY} =< @minY
+                              if AddDY < 0 andthen {Abs AddDY} =< @minY
                               then
                                  addDY <- AddDY
                                  SashGrip, moveY(DeltaY)
-                              elsecase AddDY > 0 andthen AddDY =< @maxY
+                              elseif AddDY > 0 andthen AddDY =< @maxY
                               then
                                  addDY <- AddDY
                                  SashGrip, moveY(DeltaY)
-                              else skip
                               end
                            end)}
 

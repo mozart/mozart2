@@ -157,14 +157,14 @@ define
    local
       local
          fun {CreateList Low High AL}
-            case Low > High
+            if Low > High
             then AL
             else {CreateList (Low + 1) High Low|AL}
             end
          end
 
          fun {FillRecord Low High R V}
-            case Low > High
+            if Low > High
             then R
             else
                R.Low = {Get V Low}

@@ -145,9 +145,7 @@ define
       end
 
       meth performClose(I)
-         case I
-         of 0 then skip
-         else
+         if I\= 0 then
             Inspector, delPane
             Inspector, performClose((I - 1))
          end
@@ -206,21 +204,19 @@ define
          Key = {E1 tkReturnAtom(get $)}
          Value TkVal
       in
-         Value = case {OpMan isKey(Key $)}
+         Value = if {OpMan isKey(Key $)}
                  then {OpMan get(Key $)}
                  else 'ERROR: unkown key'
                  end
-         TkVal = case {IsAtom Value}
+         TkVal = if {IsAtom Value}
                  then {Atom.toString Value}
-                 elsecase {IsInt Value}
+                 elseif {IsInt Value}
                  then {Int.toString Value}
-                 elsecase {IsFloat Value}
+                 elseif {IsFloat Value}
                  then {Float.toString Value}
-                 elsecase Value
-                 of true then "true"
-                 elsecase Value
-                 of false then "false"
-                 else "Sorry: unable to display value"
+                 elseif Value==true  then 'true'
+                 elseif Value==false then 'false'
+                 else 'Sorry: unable to display value"'
                  end
 
          {E2 tk(delete '@0' 'end')}
@@ -232,15 +228,15 @@ define
          Value = {E2 tkReturnString(get $)}
          DBVal
       in
-         DBVal = case {String.isInt Value}
+         DBVal = if {String.isInt Value}
                  then {String.toInt Value}
-                 elsecase {String.isFloat Value}
+                 elseif {String.isFloat Value}
                  then {String.toFloat Value}
-                 elsecase Value == "true"
+                 elseif Value == "true"
                  then true
-                 elsecase Value == "false"
+                 elseif Value == "false"
                  then false
-                 elsecase {String.isAtom Value}
+                 elseif {String.isAtom Value}
                  then {String.toAtom Value}
                  else Value
                  end
@@ -263,11 +259,10 @@ define
          NIndex NNode NCanvas
          FreezeVar
       in
-         case Freeze
-         then {CNode freeze(FreezeVar)}
-         else skip
+         if Freeze then
+            {CNode freeze(FreezeVar)}
          end
-         NIndex  = case Index == @maxPtr then 3 else (Index + 2) end
+         NIndex  = if Index == @maxPtr then 3 else (Index + 2) end
          NNode   = {Dictionary.get @items NIndex}
          NCanvas = {NNode getCanvas($)}
          {Tk.batch [focus(NCanvas)]}
@@ -303,25 +298,21 @@ define
       end
 
       meth shrink(I DeltaY SCSpace)
-         case I =< @maxPtr
+         if I =< @maxPtr
          then
             Node = {Dictionary.get @items I}
             Type = {Node getType($)}
          in
-            case Type
-            of canvasNode then
+            if Type==canvasNode then
                YDim      = {Int.toFloat {Node getYDim($)}}
                DDim      = {Float.toInt ((YDim / SCSpace) * DeltaY)}
                ConsumedY = {Node tellNewXY(0 DDim $)}
             in
-               case ConsumedY
-               of 0 then skip
-               else WinToplevel, moveY((I + 1) ConsumedY)
+               if ConsumedY\= 0 then
+                  WinToplevel, moveY((I + 1) ConsumedY)
                end
-            else skip
             end
             Inspector, shrink((I + 1) DeltaY SCSpace)
-         else skip
          end
       end
 
@@ -362,7 +353,7 @@ define
       end
 
       meth stopUpdate(I)
-         case I =< @maxPtr
+         if I =< @maxPtr
          then
             Node = {Dictionary.get @items I}
             Type = {Node getType($)}
@@ -373,14 +364,13 @@ define
             else skip
             end
             Inspector, stopUpdate((I + 1))
-         else skip
          end
       end
 
       meth adjustIndex(I)
          MaxPtr = @maxPtr
       in
-         case I =< MaxPtr
+         if I =< MaxPtr
          then
             Items = @items
             Node  = {Dictionary.get Items I}

@@ -115,9 +115,9 @@ local
    '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
-   '--execheader=STRING           Use STRING as header for executables (default:\n'#
-   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").'#
-   '-z CLEV, --compress=CLEV      Use compression level CLEV for pickles.\n' #
+   '--execheader=STR              Use header STR for executables (default:\n'#
+   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
+   '-z N, --compress=N            Use compression level N for pickles.\n' #
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
    %% Note that the remaining options are not documented here on purpose.
@@ -438,7 +438,7 @@ in
                 {BatchCompiler enqueue(feedFile(X return))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                if {UI hasBeenTopped($)} then
+                if {UI isActive($)} then
                    {System.printError {UI getVS($)}}
                 end
                 if {UI hasErrors($)} then
@@ -562,7 +562,7 @@ in
                  enqueue(feedFile(Arg return(result: ?R)))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                if {UI hasBeenTopped($)} then
+                if {UI isActive($)} then
                    {System.printError {UI getVS($)}}
                 end
                 if {UI hasErrors($)} then

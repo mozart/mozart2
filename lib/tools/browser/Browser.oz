@@ -37,16 +37,16 @@ functor $ prop once
 
 import
    CTB.{isB getConstraintAsAtom getNameAsAtom}
-      from 'x-oz-boot:CTB'
+      from 'x-oz://boot/CTB'
 
    FDB.{isVarB}
-      from 'x-oz-boot:FDB'
+      from 'x-oz://boot/FDB'
 
    FSB.{getGlb
         getLub
         getCard
         isVarB}
-      from 'x-oz-boot:FSB'
+      from 'x-oz://boot/FSB'
 
    BrowserSupport.{recordCIsVarB
                    getTermSize
@@ -55,7 +55,7 @@ import
                    chunkArity
                    chunkWidth
                    addr}
-      from 'x-oz-boot:Browser'
+      from 'x-oz://boot/Browser'
 
    FD.{reflect}
 

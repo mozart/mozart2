@@ -253,7 +253,7 @@ local
 
    proc {SortNoColonsToFront Args IHd ITl FHd FTl}
       case Args of Arg|Argr then IInter FInter in
-         case Arg of fColon(_ _) then
+         case Arg of _#_ then
             IHd = IInter
             FHd = Arg|FInter
          else
@@ -1062,7 +1062,7 @@ local
             {@BA refer(PrintName VC ?GVO)}
             {New Core.equation init(GVO {New Core.floatNode init(X C)} C)}
          [] fRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GV RecordPrintName GFront GRecord GBack
+            fVar(PrintName C) = FV GVO GV RecordPrintName GRecord GBack
          in
             {@BA refer(PrintName C ?GVO)}
             {GVO getVariable(?GV)}
@@ -1070,10 +1070,10 @@ local
                               else PrintName
                               end
             Unnester, UnnestRecord(RecordPrintName Label Args false
-                                   ?GFront ?GRecord ?GBack)
-            GFront|{New Core.equation init(GVO GRecord C)}|GBack
+                                   ?GRecord ?GBack)
+            {New Core.equation init(GVO GRecord C)}|GBack
          [] fOpenRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GV RecordPrintName GFront GRecord GBack
+            fVar(PrintName C) = FV GVO GV RecordPrintName GRecord GBack
          in
             {@BA refer(PrintName C ?GVO)}
             {GVO getVariable(?GV)}
@@ -1081,8 +1081,8 @@ local
                               else PrintName
                               end
             Unnester, UnnestRecord(RecordPrintName Label Args true
-                                   ?GFront ?GRecord ?GBack)
-            GFront|{New Core.equation init(GVO GRecord C)}|GBack
+                                   ?GRecord ?GBack)
+            {New Core.equation init(GVO GRecord C)}|GBack
          [] fApply(FE1 FEs C) then N1 N2 in
             N1 = {DollarsInScope FE1 0}
             N2 = {DollarsInScope FEs 0}
@@ -1332,25 +1332,11 @@ local
       end
 
       meth UnnestApplyArgs(FEs ?GFrontEqs1 ?GFrontEqs2 ?GTs)
-         case FEs of FE|FEr then
-            case FE of fRecord(Label Args) then
-               C GV GFront GRecord GBack GEquation GFrontEqr1 GFrontEqr2 GTr
-            in
-               C = {CoordinatesOf Label}
-               {@BA generate('UnnestApply' C ?GV)}
-               Unnester, UnnestRecord('' Label Args false
-                                      ?GFront ?GRecord ?GBack)
-               GFrontEqs1 = GBack|GFrontEqr1
-               GEquation = {New Core.equation init({GV occ(C $)} GRecord C)}
-               GFrontEqs2 = GFront|GEquation|GFrontEqr2
-               GTs = {GV occ(C $)}|GTr
-               Unnester, UnnestApplyArgs(FEr ?GFrontEqr1 ?GFrontEqr2 ?GTr)
-            else GFrontEq GFrontEqr GT GTr in
-               GFrontEqs1 = GFrontEq|GFrontEqr
-               GTs = GT|GTr
-               Unnester, UnnestToVar(FE 'UnnestApply' ?GFrontEq ?GT)
-               Unnester, UnnestApplyArgs(FEr ?GFrontEqr ?GFrontEqs2 ?GTr)
-            end
+         case FEs of FE|FEr then GFrontEq GFrontEqr GT GTr in
+            GFrontEqs1 = GFrontEq|GFrontEqr
+            GTs = GT|GTr
+            Unnester, UnnestToVar(FE 'UnnestApply' ?GFrontEq ?GT)
+            Unnester, UnnestApplyArgs(FEr ?GFrontEqr ?GFrontEqs2 ?GTr)
          [] nil then
             GFrontEqs1 = nil
             GFrontEqs2 = nil
@@ -1370,19 +1356,17 @@ local
                GBack = GBack1|GBack2
             end
          [] fRecord(Label Args) then
-            fVar(PrintName C) = FV GFront0 GRecord GVO
+            fVar(PrintName C) = FV GRecord GVO
          in
-            Unnester, UnnestRecord(PrintName Label Args false
-                                   ?GFront0 ?GRecord ?GBack)
+            Unnester, UnnestRecord(PrintName Label Args false ?GRecord ?GBack)
             {@BA refer(PrintName C ?GVO)}
-            GFront = GFront0|{New Core.equation init(GVO GRecord C)}
+            GFront = {New Core.equation init(GVO GRecord C)}
          [] fOpenRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GFront0 GRecord GVO
+            fVar(PrintName C) = FV GVO GRecord GVO
          in
-            Unnester, UnnestRecord(PrintName Label Args true
-                                   ?GFront0 ?GRecord ?GBack)
+            Unnester, UnnestRecord(PrintName Label Args true ?GRecord ?GBack)
             {@BA refer(PrintName C ?GVO)}
-            GFront = GFront0|{New Core.equation init(GVO GRecord C)}
+            GFront = {New Core.equation init(GVO GRecord C)}
          [] fVar(PrintName C) then GVO fVar(PrintName2 C2) = FV GVO2 in
             {@BA refer(PrintName C ?GVO)}
             {@BA refer(PrintName2 C2 ?GVO2)}
@@ -1393,14 +1377,14 @@ local
             Unnester, UnnestExpression(FE FV ?GBack)
          end
       end
-      meth UnnestRecord(PrintName Label Args IsOpen ?GFront ?GRecord ?GBack)
-         GLabel NewArgs X GArgs
+      meth UnnestRecord(PrintName Label Args IsOpen ?GRecord ?GBack)
+         GLabel N GArgs NewGArgs X
       in
          Unnester, MakeLabelOrFeature(Label ?GLabel)
-         {SortNoColonsToFront Args ?NewArgs X X nil}
-         GArgs#GFront#GBack =
-         {List.foldRInd NewArgs
-          fun {$ I Arg GArgs#GFront#GBack} FE NewGArgs GArg FeatPrintName in
+         N = {NewCell 1}
+         GArgs#GBack =
+         {List.foldL Args
+          fun {$ GArgs#GBack Arg} FE NewGArgs GArg FeatPrintName in
              case Arg of fColon(FF FE0) then GF in
                 Unnester, MakeLabelOrFeature(FF ?GF)
                 FE = FE0
@@ -1412,26 +1396,27 @@ local
              else
                 FE = Arg
                 NewGArgs = GArg|GArgs
-                FeatPrintName = I
+                FeatPrintName = {Access N}
+                {Assign N {Access N} + 1}
              end
              case FE of fRecord(Label Args) then
                 NewPrintName = case PrintName == '' then ''
                                else PrintName#'.'#FeatPrintName
                                end
-                GFront0 GBack0
+                GBack0
              in
                 Unnester, UnnestRecord(NewPrintName Label Args false
-                                       ?GFront0 ?GArg ?GBack0)
-                NewGArgs#(GFront0|GFront)#(GBack0|GBack)
+                                       ?GArg ?GBack0)
+                NewGArgs#(GBack0|GBack)
              [] fOpenRecord(Label Args) then
                 NewPrintName = case PrintName == '' then ''
                                else PrintName#'.'#FeatPrintName
                                end
-                GFront0 GBack0
+                GBack0
              in
                 Unnester, UnnestRecord(NewPrintName Label Args true
-                                       ?GFront0 ?GArg ?GBack0)
-                NewGArgs#(GFront|GFront0)#(GBack|GBack0)
+                                       ?GArg ?GBack0)
+                NewGArgs#(GBack|GBack0)
              else GBack0 in
                 Unnester, UnnestToTerm(FE 'RecordArg' ?GBack0 ?GArg)
                 case PrintName == '' then skip
@@ -1440,10 +1425,11 @@ local
                    {GS setPrintName({VirtualString.toAtom
                                      PrintName#'.'#FeatPrintName})}
                 end
-                NewGArgs#GFront#(GBack|GBack0)
+                NewGArgs#(GBack|GBack0)
              end
-          end nil#nil#nil}
-         GRecord = {New Core.construction init(GLabel GArgs IsOpen)}
+          end nil#nil}
+         {SortNoColonsToFront {Reverse GArgs} ?NewGArgs X X nil}
+         GRecord = {New Core.construction init(GLabel NewGArgs IsOpen)}
          {SetExpansionOccs GRecord @BA}
       end
 
@@ -2007,11 +1993,10 @@ local
          end
       end
       meth TranslateRecord(L Args IsOpen PatternPNs ?GPattern)
-         GL NewArgs X GArgs
+         GL GArgs NewGArgs X
       in
          Unnester, TranslatePattern(L PatternPNs ?GL)
-         {SortNoColonsToFront Args ?NewArgs X X nil}
-         GArgs = {Map NewArgs
+         GArgs = {Map Args
                   fun {$ Arg}
                      case Arg of fColon(F E) then
                         Unnester, TranslatePattern(F PatternPNs $)#
@@ -2020,7 +2005,8 @@ local
                         Unnester, TranslatePattern(Arg PatternPNs $)
                      end
                   end}
-         GPattern = {New Core.recordPattern init(GL GArgs IsOpen)}
+         {SortNoColonsToFront GArgs ?NewGArgs X X nil}
+         GPattern = {New Core.recordPattern init(GL NewGArgs IsOpen)}
          {SetExpansionOccs GPattern @BA}
       end
 
@@ -2294,8 +2280,8 @@ in
          [] fAnd(P1 P2) then fAnd({NP P1} {NP P2})
          [] fEq(P1 P2 C) then fEq({NP P1} {NP P2} C)   %--** {FS C}?
          [] fAssign(P1 P2 C) then fAssign({NP P1} {NP P2} {FS C})
-         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)   %--** {FS C}?
-         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)   %--** {FS C}?
+         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)
+         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)
          [] fOpApply(X Ps C) then fOpApply(X {Map Ps NP} {FS C})
          [] fOpApplyStatement(X Ps C) then
             fOpApplyStatement(X {Map Ps NP} {FS C})
@@ -2366,8 +2352,8 @@ in
          [] fAnd(P1 P2) then fAnd({SP P1} {SP P2})
          [] fEq(P1 P2 C) then fEq({NP P1} {NP P2} {CS C})
          [] fAssign(P1 P2 C) then fAssign({NP P1} {NP P2} {CS C})
-         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)   %--** {CS C}?
-         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)   %--** {CS C}?
+         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)
+         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)
          [] fOpApply(X Ps C) then fOpApply(X {Map Ps NP} {CS C})
          [] fOpApplyStatement(X Ps C) then
             fOpApplyStatement(X {Map Ps NP} {CS C})

@@ -45,6 +45,7 @@ export
    'reflect'    : Reflect
    'unreflect'  : Unreflect
 define
+   %% This is a stupid comment done by moz.
    fun {NewServer O}
       S P
    in

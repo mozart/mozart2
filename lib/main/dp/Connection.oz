@@ -260,7 +260,7 @@ define
       end
 
       {Fault.installWatcher P [permFail] Watch true}
-      {Fault.install 'thread'(this) P [permFail] Handle true}
+      {Fault.install P 'thread'(this) [permFail] Handle true}
 
       {Send P T#X}
 

@@ -47,12 +47,12 @@ define
 
       proc{NotImplemented}
          {Exception.raiseError
-          type(dp('note implmeneted'))}
+          dp('not implemented')}
       end
 
       proc{Except Entity Cond Op}
          {Exception.raiseError
-          system(dp(entity:Entity condition:Cond op:Op))}
+          system(dp(entity:Entity conditions:Cond op:Op))}
       end
 
       fun{DConvertToInj Cond}
@@ -109,19 +109,19 @@ define
          {Fault.distHandlerDeInstall {DConvertToInj any} any}
       end
 
-      fun{EnableImpl Level Entity Cond}
+      fun{EnableImpl Entity Level Cond}
          {I_Impl Level Entity Cond Except}
       end
 
-      fun{InstallImpl Level Entity Cond Proc}
+      fun{InstallImpl Entity Level Cond Proc}
          {I_Impl Level Entity Cond Proc}
       end
 
-      fun{DisableImpl Level Entity}
+      fun{DisableImpl Entity Level}
          {D_Impl Level Entity any any}
       end
 
-      fun{DeInstallImpl Level Entity}
+      fun{DeInstallImpl Entity Level}
          {D_Impl Level Entity any any}
       end
 
@@ -140,17 +140,17 @@ define
 
       GetEntityCond  = Fault.getEntityCond
 
-      Enable        = fun{$ Level Entity Cond}
-                         {EnableImpl Level Entity Cond}
+      Enable        = fun{$ Entity Level Cond}
+                         {EnableImpl Entity Level Cond}
                       end
-      Disable       = fun{$ Level Entity}
-                         {DisableImpl Level Entity}
+      Disable       = fun{$ Entity Level}
+                         {DisableImpl Entity Level}
                       end
-      Install      = fun{$ Level Entity Cond Proc}
-                         {InstallImpl Level Entity Cond Proc}
+      Install      = fun{$ Entity Level Cond Proc}
+                         {InstallImpl Entity Level Cond Proc}
                       end
-      DeInstall    = fun{$ Level Entity}
-                         {DeInstallImpl Level Entity}
+      DeInstall    = fun{$ Entity Level}
+                         {DeInstallImpl Entity Level}
                       end
       DefaultEnable = fun{$ Cond}
                          {DefaultEnableImpl Cond}

@@ -485,6 +485,16 @@ define
                GV = X
                {GV occ({GV getCoord($)} ?GVO)}
             end
+         [] fOpApply('.' [fVar(X C) fAtom(Y _)] _)
+            andthen SubtreeGVO in {@BA referImport(X C Y $ ?SubtreeGVO)}
+         then
+            GEqs = nil
+            GVO = SubtreeGVO
+         elseof fOpApply('.' [fVar(X C) fInt(Y _)] _)
+            andthen SubtreeGVO in {@BA referImport(X C Y $ ?SubtreeGVO)}
+         then
+            GEqs = nil
+            GVO = SubtreeGVO
          else NewOrigin C = {CoordinatesOf FE} GV in
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
@@ -1128,10 +1138,16 @@ define
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: OpKind#' operator cannot take $ as argument')}
             end
-            case FE of fOpApply('.' [fVar(X C2) FA=fAtom(Y _)] C3) then
-               Unnester, OptimizeImportFeature(ToGV C X C2 Y FA C3 $)
-            elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] C3) then
-               Unnester, OptimizeImportFeature(ToGV C X C2 Y FI C3 $)
+            case FE of fOpApply('.' [fVar(X C2) fAtom(Y _)] C3)
+               andthen LeftGVO in {@BA referImport(X C2 Y $ ?LeftGVO)}
+            then RightGVO in
+               {ToGV occ(C3 ?RightGVO)}
+               {New Core.equation init(LeftGVO RightGVO C)}
+            elseof fOpApply('.' [fVar(X C2) fInt(Y _)] C3)
+               andthen LeftGVO in {@BA referImport(X C2 Y $ ?LeftGVO)}
+            then RightGVO in
+               {ToGV occ(C3 ?RightGVO)}
+               {New Core.equation init(LeftGVO RightGVO C)}
             else GVO GFrontEqs1 GFrontEqs2 GTs GS in
                if {IsAtom Op} then
                   {RunTime.procs.Op occ(C ?GVO)}
@@ -1143,7 +1159,7 @@ define
                GS = {New Core.application init(GVO GTs C)}
                GFrontEqs1|GFrontEqs2|GS
             end
-         [] fUnoptimizedDot(fVar(X C) FT) then
+         [] fByNeedDot(fVar(X C) FT) then
             LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
          in
             {@BA referUnchecked(X C ?LeftGVO)}
@@ -1731,10 +1747,10 @@ define
       end
 
       meth AnalyseImports(Ds ImportGV ?ImportFeatures ?FImportArgs ?ImportFS)
-         case Ds of (fImportItem(FV=fVar(PrintName C) Fs FImportAt)=D)|Dr then
-            FFsList FS ImportFeaturesr FInfo FImportArgr ImportFS2
+         case Ds of fImportItem(FV=fVar(PrintName C) Fs FImportAt)|Dr then
+            NewFs FFsList FS ImportFeaturesr FInfo FImportArgr ImportFS2
          in
-            Unnester, AnalyseImportFeatures(Fs FV ?FFsList ?FS)
+            Unnester, AnalyseImportFeatures(Fs FV ?NewFs ?FFsList ?FS)
             %--** check that all features are distinct
             %--** read corresponding type description from pickle
             ImportFeatures = PrintName|ImportFeaturesr
@@ -1745,7 +1761,8 @@ define
                             [] fNoImportAt then nil
                             end)
             FImportArgs = fColon(fAtom(PrintName C) FInfo)|FImportArgr
-            ImportFS = fAnd(fAnd(fDoImport(D _ ImportGV) FS) ImportFS2)
+            ImportFS = fAnd(fAnd(fDoImport(fImportItem(FV NewFs FImportAt) _
+                                           ImportGV) FS) ImportFS2)
             Unnester, AnalyseImports(Dr ImportGV
                                      ?ImportFeaturesr ?FImportArgr ?ImportFS2)
          [] nil then
@@ -1754,48 +1771,38 @@ define
             ImportFS = fSkip(unit)
          end
       end
-      meth AnalyseImportFeatures(Fs FV ?FFsList ?FS)
-         case Fs of X|Xr then F FFsListr FSr in
-            case X of (FFV=fVar(_ _))#F0 then
+      meth AnalyseImportFeatures(Fs FV ?NewFs ?FFsList ?FS)
+         case Fs of X|Xr then F FFV FSr NewFsr FFsListr in
+            case X of FFV0#F0 then
                F = F0
-               FS = fAnd(fEq(FFV fUnoptimizedDot(FV F0) unit) FSr)
-            else
+               FFV = FFV0
+               NewFs = X|NewFsr
+            else GV in
                F = X
-               FS = FSr
+               FFV = fOcc(GV)
+               NewFs = fAnonVar('ImportSubtree' {CoordinatesOf F} GV)#F|NewFsr
             end
+            FS = fAnd(fEq(FFV fByNeedDot(FV F) unit) FSr)
             FFsList = fRecord(fAtom('|' unit) [F FFsListr])
-            Unnester, AnalyseImportFeatures(Xr FV ?FFsListr ?FSr)
+            Unnester, AnalyseImportFeatures(Xr FV ?NewFsr ?FFsListr ?FSr)
          [] nil then
+            NewFs = nil
             FFsList = fAtom(nil unit)
             FS = fSkip(unit)
          end
       end
       meth UnnestImportFeatures(Fs $)
-         case Fs of X|Xr then
-            case X of fVar(PrintName C)#F then GV in
-               {@BA bind(PrintName C ?GV)}
-               case F of fAtom(X C) then X#C#_#GV
-               [] fInt(I C) then I#C#_#GV
-               end
-            elsecase X of fAtom(X C) then X#C#_
-            [] fInt(I C) then I#C#_
+         case Fs of V#F|Xr then GV in
+            GV = case V of fVar(PrintName C) then
+                    {@BA bind(PrintName C $)}
+                 [] fAnonVar(Origin C GV) then
+                    {@BA generate(Origin C ?GV)}
+                    GV
+                 end
+            case F of fAtom(X C) then X#C#_#GV
+            [] fInt(I C) then I#C#_#GV
             end|Unnester, UnnestImportFeatures(Xr $)
          [] nil then nil
-         end
-      end
-      meth OptimizeImportFeature(GV C X C2 Y FF C3 $) IsImport LeftGVO in
-         {@BA referImport(X C2 Y ?IsImport ?LeftGVO)}
-         if {Not IsImport}
-            orelse {{LeftGVO getVariable($)} isRestricted($)}
-         then DotGVO GFrontEqs1 GFrontEqs2 GTs in
-            {RunTime.procs.'.' occ(C ?DotGVO)}
-            Unnester, UnnestApplyArgs([FF fOcc(GV)]
-                                      ?GFrontEqs1 ?GFrontEqs2 ?GTs)
-            GFrontEqs1|GFrontEqs2|
-            {New Core.application init(DotGVO LeftGVO|GTs C)}
-         else RightGVO in
-            {GV occ(C3 ?RightGVO)}
-            {New Core.equation init(LeftGVO RightGVO C)}
          end
       end
       meth AnalyseExports(Ds ?FExportArgs ?FColons)

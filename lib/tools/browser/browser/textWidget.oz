@@ -4002,6 +4002,15 @@ in
       end
 
       %%
+      meth isActive($)
+         case self.isCompound then
+            RecordTWTermObject , isActive($)
+         else
+            NameTWTermObject , isActive($)
+         end
+      end
+
+      %%
       %%
       meth draw(Mark ?Sync)
          case self.isCompound then

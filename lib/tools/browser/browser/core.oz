@@ -78,8 +78,7 @@ TermSize = {`Builtin` 'getTermSize' 4}
 GetsTouched = {`Builtin` getsBoundB 2}
 
 %%
-DeepFeed =
-{`Builtin` deepFeed proc {$ C X} {Wait C} {DeepFeed C X} end}
+DeepFeed = {`Builtin` deepFeed 2}
 
 %%
 %% Yield arity/width of a chunk, suspend on variables,

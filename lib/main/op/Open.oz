@@ -1,5 +1,5 @@
 %%%
-%%% Authors:
+%%% Author:
 %%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:

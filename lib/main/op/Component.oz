@@ -3,7 +3,7 @@
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%   Christian Schulte (schulte@dfki.de)
 %%%
-%%% Contributors:
+%%% Contributor:
 %%%   Ralf Scheidhauer (scheidhr@ps.uni-sb.de)
 %%%
 %%% Copyright:

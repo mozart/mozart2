@@ -1274,7 +1274,7 @@ define
          PN = case @printName of '' then X in
                  {{@designator getVariable($)} getPrintName(X)}
                  case X of unit then '_' else X end
-              else @printName
+              elseof X then X
               end
          Meth = {NewPseudoVariableOccurrence CS}
          case @methods of _|_ then

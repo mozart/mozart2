@@ -2104,7 +2104,7 @@ define
                      msg:   case {System.printName {GetData @designator}}
                             of 'Object.\'<-\'' then 'access of'
                             [] 'Object.\'@\'' then 'assignment to'
-                            end#' unavailable attribute'
+                            end#' undefined attribute'
                      items: [hint(l:'Statement' m:Expr)
                              hint(l:Cls
                                   m:pn({System.printName {Self getValue($)}}))

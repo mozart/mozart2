@@ -16,7 +16,7 @@
 %%%
 
 %%
-class WindowManagerClass from MyClosableObject Object.batch
+class WindowManagerClass from MyClosableObject BatchObject
    %%
    feat
    %% There is a number of object-depended procedures:

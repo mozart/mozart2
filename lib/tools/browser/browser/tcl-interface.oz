@@ -153,7 +153,7 @@ in
 %%%
    %%
    %%
-   class BrowserWindowClass from Object.base Object.batch
+   class BrowserWindowClass from Object.base BatchObject
       %%
 
       %%

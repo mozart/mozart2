@@ -485,3 +485,12 @@ DLTGroup        = 2
 %%
 %% tail block can either absent, of contain a brace (round or square):
 DBraceGroup     = 1
+
+class BatchObject from BaseObject
+   meth '|'(M Mr)
+      {self M} BatchObject,Mr
+   end
+   meth nil
+      skip
+   end
+end

@@ -40,7 +40,7 @@ in
    %%
    %% Core buffer. No limits and no suspensions - "pure logical";
    class CoreBufferClass
-      from MyClosableObject Object.batch
+      from MyClosableObject BatchObject
       prop locking
       %%
       attr

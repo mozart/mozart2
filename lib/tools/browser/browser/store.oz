@@ -20,7 +20,7 @@
 %% parameters for the Browser (such as actual sizes of windows, user
 %% preferences and so on).
 
-class StoreClass from Object.base Object.batch
+class StoreClass from Object.base BatchObject
    %%
    feat
       SDict

@@ -40,6 +40,7 @@ import
    OS(getEnv
       putEnv
       close
+      exec
       pipe
       stat)
 
@@ -458,7 +459,7 @@ define
                % pipes, but on NT this made problems when certain background
                % tasks where running: Tk could get stuck here
                if Platform == 'win32-i486'
-               then Stream Port In Out in
+               then Stream Port in
                   thread
                      Stream = {New class $ from Open.socket Open.text
                                       prop final
@@ -466,9 +467,7 @@ define
                                server(port: ?Port)}
                   end
                   {Wait Port}
-                  In#Out = {OS.pipe PLTFRM#'tk.exe' [Port] _}
-                  {OS.close In}
-                  if In \= Out then {OS.close Out} end
+                  _ = {OS.exec PLTFRM#'tk.exe' [Port] true}
                   {Wait Stream}
                   Stream
                else

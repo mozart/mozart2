@@ -31,7 +31,11 @@ NewBrowser
 in
 
 \ifdef SAVE
-fun {NewBrowser
+fun
+\ifdef NEWCOMPILER
+   instantiate
+\endif
+   {NewBrowser
 \ifdef NEWSAVE
      Standard
 \endif

@@ -112,11 +112,14 @@ define
                              items: case NewCoord of unit then Items
                                     else {Append Items [NewCoord]}
                                     end) NewCoord))}
-         ErrorCount <- @ErrorCount + 1
-         if @MaxNumberOfErrors >= 0 andthen @ErrorCount > @MaxNumberOfErrors
-            andthen Abort
-         then
-            raise tooManyErrors end
+         case @ErrorCount of unit then skip
+         elseof N then
+            ErrorCount <- N + 1
+            if @MaxNumberOfErrors >= 0 andthen @ErrorCount > @MaxNumberOfErrors
+               andthen Abort
+            then
+               raise tooManyErrors end
+            end
          end
       end
       meth warn(coord: Coord <= unit

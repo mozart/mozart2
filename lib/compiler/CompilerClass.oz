@@ -463,16 +463,28 @@ local
             {@reporter error(kind: 'bootstrap compiler restriction'
                              msg: 'Gump definitions not supported')}
 \endif
-         else TopLevelGVs GS FreeGVs in
+         else DeclaredGVs GS FreeGVs AnnotateGlobalVars in
             case Query of fDeclare(_ _ C) then
                {@reporter logDeclare(C)}
             else skip
             end
             {@reporter logPhase('transforming into graph representation ...')}
             {Unnest.unnestQuery self @reporter self Query
-             ?TopLevelGVs ?GS ?FreeGVs}
+             ?DeclaredGVs ?GS ?FreeGVs}
+            local Done in
+               proc {AnnotateGlobalVars}
+                  case {IsFree Done} then
+                     {@reporter
+                      logSubPhase('determining nonlocal variables ...')}
+                     {ForAll GS
+                      proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
+                     Done = unit
+                  else skip
+                  end
+               end
+            end
             case CompilerStateClass, getSwitch(warnredecl $) then
-               {ForAll TopLevelGVs
+               {ForAll DeclaredGVs
                 proc {$ GV} PrintName = {GV getPrintName($)} in
                    case CompilerStateClass, lookupVariableInEnv(PrintName $)
                    of undeclared then skip
@@ -500,13 +512,7 @@ local
             case CompilerStateClass, getSwitch(staticanalysis $) then
                {@reporter logPhase('static analysis ...')}
                CompilerStateClass, annotateEnv(FreeGVs)
-               {@reporter logSubPhase('determining nonlocal variables ...')}
-               {ForAll TopLevelGVs
-                proc {$ V}
-                   {V setUse(multiple)}
-                   {V setToplevel(true)}
-                end}
-               {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
+               {AnnotateGlobalVars}
                {@reporter logSubPhase('value propagation ...')}
                case GS of GS|GSr then
                   {GS staticAnalysis(@reporter self GSr)}
@@ -517,27 +523,18 @@ local
                raise rejected end
             else skip
             end
-            case CompilerStateClass, getSwitch(warnunused $)
-               orelse CompilerStateClass, getSwitch(warnunusedformals $)
-            then W in
+            case CompilerStateClass, getSwitch(warnunused $) then W in
                {@reporter logPhase('classifying variable occurrences ...')}
-               case CompilerStateClass, getSwitch(staticanalysis $) then skip
-               else
-                  {ForAll CompilerStateClass, getVars($)
-                   proc {$ V} {V setUse(multiple)} end}
-                  {ForAll TopLevelGVs
-                   proc {$ V} {V setUse(multiple)} end}
-                  {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
-               end
+               {AnnotateGlobalVars}
                CompilerStateClass, getSwitch(warnunusedformals ?W)
                {ForAll GS proc {$ GS} {GS markFirst(W @reporter)} end}
             else skip
             end
             case CompilerStateClass, getSwitch(showdeclares $)
-               andthen TopLevelGVs \= nil
+               andthen DeclaredGVs \= nil
             then
                {@reporter userInfo('Declared variables:\n')}
-               {ForAll {Sort TopLevelGVs
+               {ForAll {Sort DeclaredGVs
                         fun {$ V W}
                            {V getPrintName($)} < {W getPrintName($)}
                         end}
@@ -556,9 +553,9 @@ local
                           debugType:
                              CompilerStateClass, getSwitch(debugtype $))
                R2 = {AdjoinAt R1 realcore true}
-               FS = case TopLevelGVs of nil then ""
+               FS = case DeclaredGVs of nil then ""
                     else FSs in
-                       FSs = {Map TopLevelGVs
+                       FSs = {Map DeclaredGVs
                               fun {$ GV} {GV output(R2 $)} end}
                        'declare'#format(glue(" "))#
                        list(FSs format(glue(" ")))#format(glue(" "))#
@@ -574,18 +571,9 @@ local
                GPNs Code MyAssembler
             in
                {@reporter logPhase('generating code ...')}
-               case CompilerStateClass, getSwitch(staticanalysis $) then skip
-               else
-                  {@reporter logSubPhase('determining nonlocal variables ...')}
-                  {ForAll TopLevelGVs
-                   proc {$ V}
-                      {V setUse(multiple)}
-                      {V setToplevel(true)}
-                   end}
-                  {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
-               end
+               {AnnotateGlobalVars}
                {GS.1 startCodeGen(GS self @reporter
-                                  CompilerStateClass, getVars($) TopLevelGVs
+                                  CompilerStateClass, getVars($) DeclaredGVs
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
                MyAssembler = {Assembler.assemble Code
@@ -635,9 +623,9 @@ local
                   in
                      {@reporter logSubPhase('loading ...')}
                      proc {Proc}
-                        case TopLevelGVs of nil then skip
+                        case DeclaredGVs of nil then skip
                         else
-                           CompilerStateClass, enterMultiple(TopLevelGVs)
+                           CompilerStateClass, enterMultiple(DeclaredGVs)
                         end
                         Globals = {Map GPNs
                                    fun {$ PrintName}

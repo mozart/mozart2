@@ -438,6 +438,11 @@ local
             {@BA closeScope(?GVs0)}
             GS = {Core.flattenSequence {MakeDeclaration GVs0 GS0 C}}
             {@BA closeScope(?GVs)}
+            {ForAll GVs
+             proc {$ V}
+                {V setUse(multiple)}
+                {V setToplevel(true)}
+             end}
          else GS0 C = {CoordinatesOf Query} in
             GVs = nil
             {@BA openScope()}

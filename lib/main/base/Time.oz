@@ -138,15 +138,19 @@ local
       end
 
       meth Run
-         K D A N F
+         K D DF A N F
       in
          lock
             K = @Stop
-            D = @ActDelay
+            %% D = @ActDelay
+            DF= @DelayFun
+            ActDelay<-D
             A = @Action
             F = @Final
             N = @NumberA
          end
+
+         D = {DF}
 
          if {IsDet K}
          then skip
@@ -155,6 +159,8 @@ local
             {self stop}
             {self Do(F)}
          else
+            %% initiate timer BEFORE action so that the time to
+            %% perform the action is included in the count down
             S = {Alarm D}
          in
             {self Do(A)}
@@ -164,9 +170,7 @@ local
             end
 
             {WaitOr S K}
-            if {IsDet S}
-            then Repeat, Run
-            end
+            if {IsDet K} then skip else Repeat,Run end
          end
       end
 

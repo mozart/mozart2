@@ -304,8 +304,9 @@ prepare
             orelse {IsInt S}
             orelse {IsFloat S}
             orelse {IsByteString S}
-            orelse {IsStringNow S}
          then true
+         elsecase {IsStringNow S} of true then true
+         [] unit then unit
          elseif {IsTuple S}
             andthen {Label S} == '#'
          then unit

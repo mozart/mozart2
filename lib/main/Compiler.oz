@@ -34,7 +34,6 @@ in
               get
               property
               printError
-              Show = show
               eq}
 
       Foreign.{pointer
@@ -50,10 +49,6 @@ in
           subset
           value
           reflect
-          union
-          diff
-          cardRange
-          disjoint
           isIn}
 
       FD.{int

@@ -3724,7 +3724,12 @@ define
                VO CVAr
             in
                if Assoc == unit then   % not seen
-                  PrintName = {String.toAtom {VS2S PrintNameBase#'.'#F}}
+                  PrintName = {String.toAtom
+                               {VS2S PrintNameBase#'.'#
+                                if {IsName F} then
+                                   {Value.toVirtualString F 0 0}
+                                else F
+                                end}}
                   V = {New Core.variable init(PrintName generated unit)}
                in
                   {V ValToSubst(PrintName Seen Depth-1 X)}

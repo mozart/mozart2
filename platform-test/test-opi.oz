@@ -34,5 +34,6 @@ T={{Load './te.ozc'} c('SP': \insert SP.env
         keys:     "all"
         tests:    "all"
         do:       true
+        time:     ""
         gc:       0
         threads:  1) _}

@@ -197,8 +197,16 @@ local
                   end
                   %% Go for it
 
+                  case Argv.time \= nil then
+                     {System.set time(detailed:true)}
+                  else skip
+                  end
+
                   Results = {Map ToRun
                              fun {$ T}
+                                T0=case Argv.time \= nil then
+                                      {System.get time}
+                                   else unit end
                                 {PV {Label T} # ': '}
                                 Bs={Map {MakeList Argv.threads}
                                     fun {$ _}
@@ -215,6 +223,23 @@ local
                                 B={FoldL Bs And true}
                              in
                                 {Wait B}
+                                case Argv.time \= nil then
+                                   T1={System.get time}
+                                   proc {PT C#F}
+                                      case {Member C Argv.time} then
+                                         {PV ' '#[C]#':'#T1.F-T0.F#' ms'}
+                                      else skip
+                                      end
+                                   end
+                                in
+                                   {PV ' ('}
+                                   {ForAll
+                                    [&r#run &g#gc &s#system &c#copy
+                                     &p#propagate &l#load &t#total]
+                                    PT}
+                                   {PV ' )'}
+                                else skip
+                                end
                                 {PV '\n'}
                                 {AdjoinAt T result B}
                              end}
@@ -264,6 +289,7 @@ local
           verbose(type:bool default:false)
           gc(type:int optional:false default:0)
           keys(type:string optional:true default:"all")
+          time(type:string optional:true default:"")
           tests(type:string optional:true default:"all")
           threads(type:int optional:false default:1))
 

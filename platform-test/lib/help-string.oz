@@ -15,4 +15,9 @@ The following options are supported:
         Run only those tests in which names at least one <si> occurs
 --keys=<s1>,...,<sn>    [default=all]
         Run only those tests that feature at least one <si> as key.
+--time=<string>         [default=""]
+        Print run times in verbose mode. If one of the following keys
+        is in <string> the corresponding information is printed:
+            r:run g:gc s:system c:copy p:propagate l:load t:total
+        Example: "time=rgs" prints the run, gc and system time.
 '

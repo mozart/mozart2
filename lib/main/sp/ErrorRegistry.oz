@@ -842,61 +842,11 @@ in
          T = 'Error: distributed programming'
       in
          case E
-         of dp(save resources Filename Resources) then
+         of dp(generic Msg Hints) then
             {Error.format
-             'Resources found during save'
+             Msg
              unit
-             [hint(l:'Filename'  m:Filename)
-              hint(l:'Resources' m:oz(Resources))]
-             Exc}
-         elseof dp(save nogoods Value NoGoods) then
-            {Error.format
-             'Non-distributables found during save'
-             unit
-             [hint(l:'Value saved'        m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp('export' nogoods Value NoGoods) then
-            {Error.format
-             'Non-distributables found during export'
-             unit
-             [hint(l:'Value exported'     m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp(load versionMismatch PickleName VerExpected VerGot) then
-            {Error.format
-             'Version mismatch when loading of pickle'
-             unit
-             [hint(l:'Pickle name'      m:PickleName)
-              hint(l:'Version expected' m:VerExpected)
-              hint(l:'Version got'      m:VerGot)]
-             Exc}
-         elseof dp(load notComponent CompName) then
-            {Error.format
-             'trying to load non-pickle'
-             unit
-             [hint(l:'File name'      m:CompName)]
-             Exc}
-         elseof dp(load open Err CompName) then
-            {Error.format
-             'Operating system error when opening pickle'
-             unit
-             [hint(l:'File name'   m:CompName)
-              hint(l:'Description' m:Err)]
-             Exc}
-         elseof dp(send nogoods Value NoGoods) then
-            {Error.format
-             'Trying to send non-distributables to port'
-             unit
-             [hint(l:'Value send'         m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp(unify nogoods Value NoGoods) then
-            {Error.format
-             'Trying to unify distributed variable with non-distributables'
-             unit
-             [hint(l:'RHS of equation'    m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
+             {Map Hints fun {$ L#M} hint(l:L  m:oz(M)) end}
              Exc}
          elseof dp(connection(illegalTicket V)) then
             {Error.format
@@ -915,12 +865,6 @@ in
              'Ticket refused: refers to dead site'
              unit
              [hint(l:'Ticket' m:V)]
-             Exc}
-         elseof dp('export' exceptionNogoods Server) then
-            {Error.format
-             'Non-distributables found in remote exception'
-             unit
-             [hint(l:'Remote server'     m:oz(Server))]
              Exc}
          else
             {Error.formatGeneric T Exc}

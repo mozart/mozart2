@@ -120,7 +120,7 @@ in
    functor $ prop once
 
    import
-      Fault.{install}
+      Fault.{install deinstall}
 
    export
       offer: Offer
@@ -173,13 +173,9 @@ in
                 case T.single then {Dictionary.remove KeyDict T.key}
                 else skip
                 end
-                thread
-                   A:=yes(Y)
-                end
+                thread A=yes(Y) end
              else
-                thread
-                   A:=no
-                end
+                thread A=no end
              end
           end}
       end
@@ -231,29 +227,27 @@ in
       proc {Take V Entity}
          T = {VsToTicket V}
          P = {ToPort T}
-         X = {Promise.new}
-      in
-         {Fault.install  P watcher(cond:permHome)
-          proc {$ E C}
-             try
-                X:=error
-             catch _ then skip
-             end
-          end}
-         {Fault.install  P handler(cond:perm)
-          proc{$ E C}
-             {`RaiseError` dp(connection(ticketToDeadSite V))}
-          end}
-         {Send P T#X}
-         case !!X of no then
-            {`RaiseError` dp(connection(refusedTicket V))}
-         elseof error then
-            {`RaiseError` dp(connection(ticketToDeadSite V))}
-         elseof yes(A) then
-            Entity=A
-         else
-            skip
+         X Y
+         proc {Watch _ _}
+            Y=no
          end
+         proc {Handle _ _}
+            {`RaiseError` dp(connection(ticketToDeadSite V))}
+         end
+      in
+         {Fault.install P watcher(cond:permHome) Watch}
+         {Fault.install P handler(cond:perm)     Handle}
+         {Send P T#X}
+         case X#Y
+         of no#_ then
+            {`RaiseError` dp(connection(refusedTicket V))}
+         [] _#no then
+            {`RaiseError` dp(connection(ticketToDeadSite V))}
+         [] yes(A)#_ then
+            Entity=A
+         end
+         {Fault.deinstall P watcher(cond:permHome) Watch}
+         {Fault.deinstall P handler(cond:perm)     Handle}
       end
 
    end

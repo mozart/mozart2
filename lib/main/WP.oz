@@ -20,6 +20,9 @@ fun
        = IMPORT.'SP'
    \insert 'Tk.oz'
    Tk      = {NewTk Open}
+
+   \insert 'TkOptions.oz'
+
    \insert 'TkTools.oz'
    TkTools = {NewTkTools Tk}
 in

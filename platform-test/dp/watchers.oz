@@ -35,15 +35,19 @@ define
    proc{SiteWatcherInstall Entity Proc}
       {Fault.installWatcher Entity [permFail] Proc true}
    end
+
    /*
    proc{SiteWatcherDeInstall Entity Proc}
       {Fault.deInstallWatcher Entity Proc true}
    end
    */
 
-
    proc{WatchWat S E}
-      Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
+      Inj = proc{$ A B}
+               B = proc{$ _ _}
+                      A = unit
+                   end
+            end
    in
       E = o(port:_ cell:_ lokk:_ var:_ object:_)
       {SiteWatcherInstall S.port {Inj E.port}}
@@ -156,201 +160,114 @@ define
                                              meth write(A) lock a<-A end end
                                           end
                                       c}
-                              var:_)
+                              var:_
+                              ctrl:_) % Try to bind this to detect perm
                       end $)}.my = E
       {S ping}
    end
 
-   proc {LiveTest Try Entity}
-      S Deads Ans in
-      {StartServer S Deads}
-      {WatchWat Deads Ans}
-      {S close}
-      {Delay 1000}
-      {Try Deads.Entity}
-      {Delay 1000}
-      {CheckWat Ans}
+   proc{MakePerm E}
+      try E.ctrl=unit catch _ then skip end
    end
 
-   /*
-   proc {DeadTest Try Entity}
-      S Deads Ans in
-      {StartServer S Deads}
-      {S close}
-      {WatchWat Deads Ans}
-      {Delay 1000}
-      {Try Deads.Entity}
-      {Delay 1000}
-      {CheckWat Ans}
+   fun {GetLiveTest Try Entity}
+      proc {$}
+         S Deads Ans in
+         {StartServer S Deads}
+         {WatchWat Deads Ans}
+         {S close}
+         {MakePerm Deads}
+         {Delay 1000}
+         {Try Deads.Entity}
+         {Delay 1000}
+         {CheckWat Ans}
+      end
    end
-   */
+
+
+   fun {GetDeadTest Try Entity}
+      proc{$}
+         S Deads Ans in
+         {StartServer S Deads}
+         {S close}
+         {MakePerm Deads}
+         {WatchWat Deads Ans}
+         {Delay 1000}
+         {Try Deads.Entity}
+         {Delay 1000}
+         {CheckWat Ans}
+      end
+   end
 
    Return=
    dp([
-       fault_watcher_live_cell(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryCell Deads.cell}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_live_cell({GetLiveTest TryCell cell}
+                               keys:[fault])
 
-       fault_watcher_live_var(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryVar Deads.var}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_live_var({GetLiveTest TryVar var}
+                              keys:[fault])
 
-       fault_watcher_live_lokk(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryLock Deads.lokk}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_live_lokk({GetLiveTest TryLock lokk}
+                               keys:[fault])
 
-       fault_watcher_live_port(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryPort Deads.port}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_live_port({GetLiveTest TryPort port}
+                               keys:[fault])
 
-       fault_watcher_object_code(
-          proc {$}
-             {LiveTest TryObjectCode object}
-          end
-          keys:[fault])
-       fault_watcher_object_feat(
-          proc {$}
-             {LiveTest TryObjectFeat object}
-          end
-          keys:[fault])
-       fault_watcher_object_state(
-          proc {$}
-             {LiveTest TryObjectState object}
-          end
-          keys:[fault])
-       fault_watcher_object_lokk(
-          proc {$}
-             {LiveTest TryObjectLock object}
-          end
-          keys:[fault])
-       fault_watcher_object_touchedState(
-          proc {$}
-             {LiveTest TryObjectTouchedState object}
-          end
-          keys:[fault])
-       fault_watcher_object_touchedLokk(
-          proc {$}
-             {LiveTest TryObjectTouchedLock object}
-          end
-          keys:[fault])
+       fault_watcher_object_code({GetLiveTest TryObjectCode object}
+                                 keys:[fault])
+       fault_watcher_object_feat({GetLiveTest TryObjectFeat object}
+                                 keys:[fault])
+       fault_watcher_object_state({GetLiveTest TryObjectState object}
+                                  keys:[fault])
+       fault_watcher_object_lokk({GetLiveTest TryObjectLock object}
+                                 keys:[fault])
+       fault_watcher_object_touchedState({GetLiveTest TryObjectTouchedState
+                                          object}
+                                         keys:[fault])
+       fault_watcher_object_touchedLokk({GetLiveTest TryObjectTouchedLock
+                                         object}
+                                        keys:[fault])
 
-       fault_watcher_live_all(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryPort Deads.port}
-             {TryVar Deads.var}
-             {TryCell Deads.cell}
-             {TryLock Deads.lokk}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_live_all(proc{$}
+                                 S Deads Ans in
+                                 {StartServer S Deads}
+                                 {WatchWat Deads Ans}
+                                 {S close}
+                                 {MakePerm Deads}
+                                 {Delay 1000}
+                                 {TryPort Deads.port}
+                                 {TryVar Deads.var}
+                                 {TryCell Deads.cell}
+                                 {TryLock Deads.lokk}
+                                 {Delay 1000}
+                                 {CheckWat Ans}
+                              end
+                              keys:[fault])
 
-       fault_watcher_dead_cell(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads Ans}
-             {Delay 1000}
-             {TryCell Deads.cell}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_dead_cell({GetDeadTest TryCell cell}
+                               keys:[fault])
 
-       fault_watcher_dead_var(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads Ans}
-             {Delay 1000}
-             {TryVar Deads.var}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_dead_var({GetDeadTest TryVar var}
+                              keys:[fault])
 
-       fault_watcher_dead_lokk(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {WatchWat Deads Ans}
-             {S close}
-             {Delay 1000}
-             {TryLock Deads.lokk}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
-       fault_watcher_dead_port(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads Ans}
-             {Delay 1000}
-             {TryPort Deads.port}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_dead_lokk({GetDeadTest TryLock lokk}
+                               keys:[fault])
+       fault_watcher_dead_port({GetDeadTest TryPort port}
+                               keys:[fault])
 
-       fault_watcher_dead_all(
-          proc {$}
-             S Deads Ans in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads Ans}
-             {Delay 1000}
-             {TryPort Deads.port}
-             {TryVar Deads.var}
-             {TryCell Deads.cell}
-             {TryLock Deads.lokk}
-             {Delay 1000}
-             {CheckWat Ans}
-          end
-          keys:[fault])
+       fault_watcher_dead_all(proc {$}
+                                 S Deads Ans in
+                                 {StartServer S Deads}
+                                 {S close} {MakePerm Deads}
+                                 {WatchWat Deads Ans}
+                                 {Delay 1000}
+                                 {TryPort Deads.port}
+                                 {TryVar Deads.var}
+                                 {TryCell Deads.cell}
+                                 {TryLock Deads.lokk}
+                                 {Delay 1000}
+                                 {CheckWat Ans}
+                              end
+                              keys:[fault])
       ])
 end

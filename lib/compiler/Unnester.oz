@@ -2226,7 +2226,7 @@ define
             else
                FElse = fOpApplyStatement('Raise' [FX] C2)
             end
-            %--** does this work with step points?
+            %--** make this work with step points!
             NewC = case C#C2 of pos(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
                       pos(F1 L1 C1 F2 L2 C2)
                    else C2

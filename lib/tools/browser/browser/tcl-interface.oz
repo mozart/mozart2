@@ -351,7 +351,7 @@ in
             %%
             %% Select a font from ITWFont?, and store it;
             {Wait
-             (self , FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont true $))}
+             {self FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont true $)}}
 
             %%
             %% scrollbars;
@@ -605,7 +605,7 @@ in
       %% Loop over list ('FoldL' fashion) with method applications;
       meth FoldL_Obj(Xs P Z $)
          case Xs
-         of X|Xr then self , FoldL_Obj(Xr P (self , P(Z X $)) $)
+         of X|Xr then {self  FoldL_Obj(Xr P {self P(Z X $)} $)}
          [] nil  then Z
          end
       end
@@ -900,7 +900,7 @@ in
                   {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}
 
                   %%
-                  BrowserWindowClass , BrowserWindowClass , resetTW
+                  BrowserWindowClass , resetTW
                elsecase YSize < YMinSize andthen XMinSize =< XSize then
                   {Tk.send wm(geometry self.Window XSize#'x'#YMinSize)}
 

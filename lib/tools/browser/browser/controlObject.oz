@@ -121,10 +121,10 @@ in
 
          %%
          %% either with parentheses or not;
-         self , MakeRep(isEnc:  case self.IsPrimitive then false
+         {self  MakeRep(isEnc:  case self.IsPrimitive then false
                                 else {BrowserTerm.delimiterLEQ
                                       self.delimiter ParentObjIn.delimiter}
-                                end)
+                                end)}
       end
 
       %%
@@ -138,10 +138,10 @@ in
 
          %%  overloaded depending on the "primitiveness" :-)
          %%
-         self , closeTerm
+         {self  closeTerm}
 
          %%
-         self , CloseRep
+         {self  CloseRep}
       end
 
       %%
@@ -154,10 +154,10 @@ in
          %%
          Object.closable , close
          %%
-         self , closeTerm
+         {self  closeTerm}
 
          %%
-         self , FastCloseRep
+         {self  FastCloseRep}
       end
 
       %%
@@ -223,7 +223,9 @@ in
       %% above);
       meth !CheckTerm
          %%
-         self , BeginUpdate , checkTerm , EndUpdate
+         {self BeginUpdate}
+         {self checkTerm}
+         {self EndUpdate}
       end
 
       %%
@@ -266,13 +268,12 @@ in
                {BrowserTerm.delimiterLEQ DEqualS self.ParentObj.delimiter}
 
                %%
-               self
-               , BeginUpdate
-               , case (self , IsEnc(are:$)) orelse NeedBraces == false
-                 then PutRefName(refName: RefName)
-                 else PutEncRefName(refName: RefName)
-                 end
-               , EndUpdate
+               {self BeginUpdate}
+               {self case {self IsEnc(are:$)} orelse NeedBraces == false
+                     then PutRefName(refName: RefName)
+                     else PutEncRefName(refName: RefName)
+                     end}
+               {self EndUpdate}
             else
                RefName = StoredRefName     % that's already here;
             end
@@ -295,7 +296,7 @@ in
       %%
       meth !SetSelected
          {{self.store read(StoreBrowserObj $)}
-          SetSelected(self (self , hasCommas($)))}
+          SetSelected(self ({self hasCommas($)}))}
       end
 
       %%
@@ -306,22 +307,22 @@ in
       %% Handler for button click events;
       meth !ButtonsHandler(Button)
          %%
-         self , case Button
+         {self  case Button
                 of '1' then SetSelected
                 [] '2' then noop
                 [] '3' then noop   % 'UnsetSelected';
-                end
+                end}
       end
 
       %%
       %% Handler for buttons double-click events;
       meth !DButtonsHandler(Button)
          %%
-         self , case Button
+         {self  case Button
                 of '1' then Expand
                 [] '2' then Deref
                 [] '3' then Shrink
-                end
+                end}
       end
 
       %%
@@ -552,10 +553,9 @@ in
                TDepth <- Depth + 1      % because it's "my" depth;
 
                %%
-               CompoundRepManagerObject
-               , BeginUpdate
-               , replaceTermG(fn:FN term:Obj.term)
-               , EndUpdate
+               CompoundRepManagerObject , BeginUpdate
+               CompoundRepManagerObject , replaceTermG(fn:FN term:Obj.term)
+               CompoundRepManagerObject , EndUpdate
 
                %%
                TDepth <- CurDepth
@@ -583,7 +583,9 @@ in
                Obj == CompoundRepManagerObject , GetObjG(b:B ln:N obj:$)
             then
                %%
-               self , BeginUpdate , subtermChanged(FN) , EndUpdate
+               {self BeginUpdate}
+               {self subtermChanged(FN)}
+               {self EndUpdate}
             else skip
             end
          end
@@ -600,7 +602,7 @@ in
 
             %%
             CompoundRepManagerObject , BeginUpdate
-            self , expand(WidthInc)
+            {self expand(WidthInc)}
             CompoundRepManagerObject , EndUpdate
          end
       end
@@ -613,7 +615,7 @@ in
 \endif
          %%
          CompoundRepManagerObject , BeginUpdate
-         self , expand(WidthInc)
+         {self  expand(WidthInc)}
          CompoundRepManagerObject , EndUpdate
       end
 
@@ -625,19 +627,21 @@ in
           # self.term # Depth}
 \endif
          %%
-         case Depth == 0 then self , Shrink
+         case Depth == 0 then {self  Shrink}
          else MaxWidth ActWidth ObjsList NewDepth in
             %%
             TDepth <- Depth
 
             %%  first phase: update width;
-            ActWidth = self , getShownWidth($)
+            ActWidth = {self  getShownWidth($)}
             MaxWidth = {self.store read(StoreWidth $)}
 
             %%
             %%  ... check whether we are allowed to show more subterms
             %% than actually shown;
-            case self , hasCommas($) andthen ActWidth < MaxWidth then
+            case
+               {self  hasCommas($)}
+               andthen ActWidth < MaxWidth then
                {{self.store read(StoreStreamObj $)}
                 enq(expandWidth(self (MaxWidth-ActWidth)))}
             else skip
@@ -969,10 +973,9 @@ in
          master <- Master
 
          %%
-         RepManagerObject
-         , BeginUpdate
-         , replace(str:Name)
-         , EndUpdate
+         RepManagerObject , BeginUpdate
+         RepManagerObject , replace(str:Name)
+         RepManagerObject , EndUpdate
 
          %%
 \ifdef DEBUG_CO

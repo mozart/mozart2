@@ -27,10 +27,12 @@ local MessageWindowObject BrowserMessage in
          %%
          meth get(?MW)
             case @window == InitValue then
-               MessageWindowClass
-               , createMessageWindow
-               , pushButton(clear proc {$} {self clear} end _)
-               , pushButton(close proc {$} {self closeWindow} end _)
+               MessageWindowClass , createMessageWindow
+               MessageWindowClass , pushButton(clear
+                                               proc {$} {self clear} end _)
+               MessageWindowClass , pushButton(close
+                                               proc {$} {self closeWindow}
+                                               end _)
             else skip
             end
 

@@ -1212,7 +1212,7 @@ in
             then NotShownElementsHereAgain in
                %%
                %% as a last resort we have to lookup for one;
-               self , GetElement
+               {self  GetElement}
                NotShownElementsHereAgain = @NotShownElements
 
                %%
@@ -1336,7 +1336,7 @@ in
             %% this is in some sense a "complementary" method for the
             %% 'GetElement'. Note it also updates the 'ShownWidth'
             %% counter;
-            self , DrawElement
+            {self  DrawElement}
 
             %%
             MetaCompoundTermObject , DrawElementsLoop(N - 1)
@@ -1543,7 +1543,7 @@ in
             else
                %% has got either a closed well-formed list, or a
                %% malformed one;
-               @TailElements = self , GetLastElements(TL $)
+               @TailElements = {self  GetLastElements(TL $)}
             end
          else skip
             %%
@@ -1578,7 +1578,9 @@ in
       %%
       meth PullElements(N)
          case N =< 0 then skip
-         else MetaListTermObject , PullElement , PullElements(N-1)
+         else
+            MetaListTermObject , PullElement
+            MetaListTermObject , PullElements(N-1)
          end
       end
 
@@ -1683,9 +1685,10 @@ in
                   %% in both cases (there is a ",,," group *or* the
                   %% list is a well-formed one) there can be no
                   %% 'ltg';
-                  case self , HasLTG($) then
+                  case {self  HasLTG($)}
+                  then
                      %% i.e. it was an incomplete list before;
-                     self , RemoveLTG
+                     {self  RemoveLTG}
                   else skip
                   end
                end
@@ -1694,7 +1697,8 @@ in
             else                % has no commas *and* is not well-formed;
                %%
                %% otherwise, we have to place an 'ltg';
-               case self , HasLTG($) then
+               case {self  HasLTG($)}
+               then
                   %%
                   %% if it is still an incomplete list, we replace the
                   %% "tail" term object *unconditionally*. This can be
@@ -1705,7 +1709,7 @@ in
                else
                   %% i.e. it was either shown partially (with a ",,,"
                   %% group), or it has to be shown the first time;
-                  self , CreateLTG(@TailList)
+                  {self  CreateLTG(@TailList)}
                end
                %%
                %% ***** 'LTG' is created/updated *****
@@ -1737,6 +1741,7 @@ in
          %%
          CompoundRepManagerObject
          , removeG(ln: DLTGroup)
+         CompoundRepManagerObject
          , removeG(ln: DDBarGroup)
       end
 
@@ -1815,18 +1820,16 @@ in
          MetaListTermObject , ListInit
 
          %%
-         CompoundRepManagerObject
-         , block(DLeadingBlock)
-         , putG_S(ln:DLSBraceGroup str:DLSBraceS)
+         CompoundRepManagerObject , block(DLeadingBlock)
+         CompoundRepManagerObject , putG_S(ln:DLSBraceGroup str:DLSBraceS)
 
          %%
          %% Expand the list "from scratch" :-)
          MetaListTermObject , expand({self.store read(StoreWidth $)})
 
          %%
-         CompoundRepManagerObject
-         , block(DTailBlock)
-         , putG_S(ln:DBraceGroup str:DRSBraceS)
+         CompoundRepManagerObject , block(DTailBlock)
+         CompoundRepManagerObject , putG_S(ln:DBraceGroup str:DRSBraceS)
 
          %%
       end
@@ -1857,6 +1860,7 @@ in
                        dp:   DBarDP
                        desc: DBarDesc
                        str2: DDBar)
+            CompoundRepManagerObject
             , putG_SGT(ln:   DLTGroup
                        str:  self.delimiter
                        dp:   DP
@@ -1922,6 +1926,7 @@ in
             %%
             CompoundRepManagerObject
             , putG_E(ln:     DDBarGroup)     % just empty;
+            CompoundRepManagerObject
             , putG_SGT(ln:   DLTGroup
                        str:  self.delimiter
                        dp:   DP
@@ -1966,8 +1971,10 @@ in
             %% put label and a leading '(', and go into the second block;
             CompoundRepManagerObject
             , block(DLeadingBlock)
+            CompoundRepManagerObject
             , putG_S(ln:  DLabelGroup
                      str: {GenLitPrintName {Label Term} self.store})
+            CompoundRepManagerObject
             , putG_S(ln:DLRBraceGroup str:DLRBraceS)
 
             %%
@@ -1976,6 +1983,7 @@ in
             %%
             CompoundRepManagerObject
             , block(DTailBlock)
+            CompoundRepManagerObject
             , putG_S(ln:DBraceGroup str:DRRBraceS)
 
             %%
@@ -2137,6 +2145,7 @@ in
                           desc:     Desc
                           str2:     PrFN#DColonS)
               end
+            CompoundRepManagerObject
             , putG_T(ln:       (CurrentLastGroup + 2)
                      term:     ST)
 
@@ -2216,7 +2225,9 @@ in
             %% a label;
             CompoundRepManagerObject
             , block(DLeadingBlock)
-            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            CompoundRepManagerObject
+            , putG_S(ln:DLabelGroup str:{self GetName($)})
+            CompoundRepManagerObject
             , putG_S(ln:DLRBraceGroup str: DLRBraceS)
 
             %%
@@ -2232,6 +2243,7 @@ in
             %%
             CompoundRepManagerObject
             , block(DTailBlock)
+            CompoundRepManagerObject
             , putG_S(ln:DBraceGroup str:DRRBraceS)
 
             %%
@@ -2395,9 +2407,13 @@ in
          else
             CompoundRepManagerObject
             , block(DLeadingBlock)
+            CompoundRepManagerObject
             , removeG(ln:DLRBraceGroup)
+            CompoundRepManagerObject
             , removeG(ln:DLabelGroup)
-            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            CompoundRepManagerObject
+            , putG_S(ln:DLabelGroup str:{self GetName($)})
+            CompoundRepManagerObject
             , putG_S(ln:DLRBraceGroup str: DLRBraceS)
          end
 
@@ -2409,7 +2425,8 @@ in
          else
             %%
             %% The term could get coreferenced by some other term;
-            case self , isCoreferenced($) then
+            case {self  isCoreferenced($)}
+            then
                %%
                %% This method enqueues a request for the 'checkTerm'
                %% method - which will be (eventually, if object is not
@@ -2485,7 +2502,9 @@ in
             %% a label;
             CompoundRepManagerObject
             , block(DLeadingBlock)
-            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            CompoundRepManagerObject
+            , putG_S(ln:DLabelGroup str:{self GetName($)})
+            CompoundRepManagerObject
             , putG_S(ln:DLRBraceGroup str: DLRBraceS)
 
             %% ... "from scratch";
@@ -2495,6 +2514,7 @@ in
             %% The presense of the '?' is decided once, and here:
             CompoundRepManagerObject
             , block(DTailBlock)
+            CompoundRepManagerObject
             , putG_S(ln:  DBraceGroup
                      str: case
                              AF andthen
@@ -2593,7 +2613,7 @@ in
 \endif
          local WatchFun ObjClosed ChVar in
             %%
-            WatchFun = self , GetWatchFun($)
+            WatchFun = {self  GetWatchFun($)}
 
             %%
             ObjClosed = self.closed
@@ -2618,18 +2638,18 @@ in
 %             case
 %                %%
 %                %% Check #1: is it still a variable at all??
-%                self , CheckIsVar($) orelse
+%                {self CheckIsVar($)} orelse
 %                %%
 %                %% Check #2: the printname (for the case when one
 %                %% variable is bound to another one);
 %                {VirtualString.toString self.name} ==
-%                {VirtualString.toString self , GetName($)} orelse
+%                {VirtualString.toString {self GetName($)}} orelse
 %                %%
 %                %% Check #3: have we got coreferences between shown
 %                %% variables? Note that this case is not covered in
 %                %% general by the check #2;
 %                %%
-%                self , isCoreferenced($)
+%                {self  isCoreferenced($)}
 %             then ControlObject , checkTermReq
 %             else skip
 %             end
@@ -2681,7 +2701,7 @@ in
          I_MetaVariableTermObject , SetWatchPoint
 
          %%
-         RepManagerObject , insert(str: (self , GetName($)))
+         RepManagerObject , insert(str: {self GetName($)})
       end
 
       %%
@@ -2741,7 +2761,7 @@ in
              end}
 
             %%
-            Name = (self , GetName($)) # DLCBraceS # SubInts # DRCBraceS
+            Name = {self GetName($)} # DLCBraceS # SubInts # DRCBraceS
 
             %%
             RepManagerObject , insert(str: Name)
@@ -2801,7 +2821,7 @@ in
 
             %%
             Name =
-            (self , GetName($)) #
+            {self GetName($)} #
             DLABraceS # MetaName # DColonS # Data # DRABraceS
 
             %%

@@ -363,7 +363,7 @@ in
             %%
             %% they can be implemented differently for
             %% primitive/compound term objects;
-            self , PutHeadMark
+            {self  PutHeadMark}
 
             %%
             %% 'Size'/'SavedSize' are initialized already;
@@ -374,7 +374,8 @@ in
             end
 
             %%
-            self , makeTerm , AnchorLB
+            {self makeTerm}
+            {self AnchorLB}
 
             %%
             case IsEncRep then MetaRepManagerObject , PutCP
@@ -382,13 +383,13 @@ in
             end
 
             %%
-            self , PutTailMark
+            {self  PutTailMark}
 
-            self , LayoutOK
+            {self  LayoutOK}
          end
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::MakeRep is finished'}
-         self , debugShow
+         {self  debugShow}
          {self.WidgetObj debugShowIndices(self.HeadMark self.TailMark)}
 \endif
       end
@@ -500,7 +501,7 @@ in
          end
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::EndUpdate is finished'}
-         self , debugShow
+         {self  debugShow}
          {self.WidgetObj debugShowIndices(self.HeadMark self.TailMark)}
 \endif
       end
@@ -529,7 +530,8 @@ in
          end
 \endif
          %%
-         self , SetCursorAt , SkipAuxBegin
+         {self SetCursorAt}
+         {self SkipAuxBegin}
 
          %%
          RefName <- RefNameIn
@@ -553,7 +555,8 @@ in
          end
 \endif
          %%
-         self , SetCursorAt , PutOP
+         {self SetCursorAt}
+         {self PutOP}
 
          %%
          RefName <- RefNameIn
@@ -561,7 +564,8 @@ in
          Size <- @Size + @RefNameSize
 
          %%
-         self , SetCursorAfter , PutCP
+         {self  SetCursorAfter}
+         {self  PutCP}
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::PutEncRefName is finished'}
 \endif
@@ -775,7 +779,8 @@ in
          %%
          %% ... and now, set the cursor at the begin: a kind of
          %% 'block(0)' emulation:
-         self , SetCursorAt , SkipAuxBegin
+         {self  SetCursorAt}
+         {self SkipAuxBegin}
          {self.WidgetObj advanceCursor(@Size)}
       end
 
@@ -930,6 +935,7 @@ in
       meth !CheckLayoutReq
          CompoundRepManagerObject
          , LayoutWrong
+         CompoundRepManagerObject
          , ApplySubtermObjs(message:CheckLayoutReq)
       end
 
@@ -1231,7 +1237,8 @@ in
                      %% i.e. not the last one - then it can happen
                      %% that there are no groups before. Anchor to
                      %% the begin;
-                     self , SetCursorAt , SkipAuxBegin
+                     {self  SetCursorAt}
+                     {self SkipAuxBegin}
                   end
                end
             end
@@ -1537,9 +1544,9 @@ in
 
             %%
             Cont =
-            case self , LM(group:Group b:B ln:N arg:Arg cont:$)
+            case {self  LM(group:Group b:B ln:N arg:Arg cont:$)}
             then NB NN in
-               case self , NextMeth(sb:B sln:N b:NB ln:NN found:$)
+               case {self  NextMeth(sb:B sln:N b:NB ln:NN found:$)}
                then
                   CompoundRepManagerObject
                   , ApplyGroups(b:NB ln:NN next:NextMeth
@@ -2611,54 +2618,48 @@ in
 
          [] '+'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             R1 + R2
 
          [] '-'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             R1 - R2
 
          [] 'min'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             {Min R1 R2}
 
          [] 'max'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             {Max R1 R2}
 
          [] '>'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             R1 > R2
 
          [] '<'(A1 A2) then R1 R2 in
             %%
-            CompoundRepManagerObject
-            , EvalDesc(A1 R1)
-            , EvalDesc(A2 R2)
+            CompoundRepManagerObject , EvalDesc(A1 R1)
+            CompoundRepManagerObject , EvalDesc(A2 R2)
 
             %%
             R1 < R2

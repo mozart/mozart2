@@ -1188,7 +1188,7 @@ class BrowserClass from Object.base
       {self.Store store(StoreTWWidth Width)}
 
       %%
-      self , checkLayout
+      {self  checkLayout}
 
       %%
 \ifdef DEBUG_BO

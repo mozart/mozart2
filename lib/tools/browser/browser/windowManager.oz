@@ -861,9 +861,8 @@ class WindowManagerClass from UrObject
          Bs = {Filter {Map Arg self.Button2Path} self.CleanUp}
 
          %%
-         WindowManagerClass
-         , WrapMenuBar(commandEntriesEnable(MEs))
-         , WrapMenuBar(buttonsEnable(Bs))
+         WindowManagerClass , WrapMenuBar(commandEntriesEnable(MEs))
+         WindowManagerClass , WrapMenuBar(buttonsEnable(Bs))
 
          %%
          case Arg of [break] then
@@ -886,9 +885,8 @@ class WindowManagerClass from UrObject
          Bs = {Filter {Map Arg self.Button2Path} self.CleanUp}
 
          %%
-         WindowManagerClass
-         , WrapMenuBar(commandEntriesDisable(MEs))
-         , WrapMenuBar(buttonsDisable(Bs))
+         WindowManagerClass , WrapMenuBar(commandEntriesDisable(MEs))
+         WindowManagerClass , WrapMenuBar(buttonsDisable(Bs))
 
          %%
          case Arg of [break] then

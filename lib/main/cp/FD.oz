@@ -46,7 +46,6 @@ local
            fdp_atLeast:        FdpAtLeast
            fdp_atMost:         FdpAtMost
            fdp_element:        FdpElement
-           % fdp_notEqOff:       FdpNotEqOff
            fdp_lessEqOff:      FdpLessEqOff
            fdp_minimum:        FdpMinimum
            fdp_maximum:        FdpMaximum
@@ -69,6 +68,12 @@ local
            fdp_sumCD:          FdpSumCD
            fdp_sumCCD:         FdpSumCCD
            fdp_sumCNCD:        FdpSumCNCD
+
+           fdd_selVarMin:      FddSelVarMin
+           fdd_selVarMax:      FddSelVarMax
+           fdd_selVarSize:     FddSelVarSize
+           fdd_selVarNaive:    FddSelVarNaive
+           fdd_selVarNbSusps:  FddSelVarNbSusps
            ...)
    = {Foreign.staticLoad 'libfd.so'}
 
@@ -821,11 +826,11 @@ local
                                 end)
 
          %% Optimized only
-         OptSelVar = map(min:     {`Builtin` fdd_select_min     2}
-                         max:     {`Builtin` fdd_select_max     2}
-                         size:    {`Builtin` fdd_select_size    2}
-                         naive:   {`Builtin` fdd_select_naive   2}
-                         nbSusps: {`Builtin` fdd_select_nbSusps 2})
+         OptSelVar = map(min:     FddSelVarMin
+                         max:     FddSelVarMax
+                         size:    FddSelVarSize
+                         naive:   FddSelVarNaive
+                         nbSusps: FddSelVarNbSusps)
 
          %% Generic only
          GenSelVar = map(naive:   fun {$ _ _}

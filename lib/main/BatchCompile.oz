@@ -47,6 +47,7 @@ local
                    &e#"feedtoemulator"#mode(value: feedtoemulator)
                    &c#"dump"#mode(value: dump)
                    &x#"syslet"#mode(value: syslet)
+                   &M#"makedepend"#makedepend(type: bool)
                    &h#"help"#help(value: unit) &?#unit#help(value: unit)
                    &D#"define"#define(type: atom)
                    &U#"undefine"#undef(type: atom)
@@ -82,6 +83,7 @@ local
 
    Usage =
    'You have to choose one of the following modes of operation:\n'#
+   '-h, -?, --help                Output usage information and exit.\n'#
    '-E, --core                    Transform a statement into core language\n'#
    '                              (file extension: .ozi).\n'#
    '-S, --outputcode              Compile a statement to assembly code\n'#
@@ -98,7 +100,8 @@ local
    '                              (file extension: none).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
-   '-h, -?, --help                Output usage information and exit.\n'#
+   '-M, --makedepend              Instead of executing, write a list\n'#
+   '                              of dependencies to stdout.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
    '-v, --verbose                 Display all compiler messages.\n'#
@@ -369,10 +372,10 @@ local
       end
    end
 
-   fun {ChangeExtension X OldExt NewExt}
-      case X == OldExt then NewExt
+   fun {ChangeExtension X NewExt}
+      case X of ".oz" then NewExt
       elsecase X of C|Cr then
-         C|{ChangeExtension Cr OldExt NewExt}
+         C|{ChangeExtension Cr NewExt}
       [] nil then NewExt
       end
    end
@@ -388,7 +391,7 @@ in
    proc {BatchCompile Argv ?Status}
       try
          Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
-         IncDir SysletPrefix
+         MakeDepend IncDir SysletPrefix
       in
          try
             {ParseArgs Argv ?Opts ?FileNames}
@@ -407,6 +410,7 @@ in
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}
          Mode = {NewCell feedtoemulator}
          OutputFile = {NewCell unit}
+         MakeDepend = {NewCell false}
          IncDir = {NewCell nil}
          SysletPrefix = {NewCell unit}
          {ForAll Opts
@@ -462,6 +466,8 @@ in
                    {Assign Mode X}
                    ModeGiven = true
                 end
+             [] makedepend then
+                {Assign MakeDepend X}
              [] outputfile then
                 {Assign OutputFile X}
              [] debuginfo then
@@ -493,19 +499,20 @@ in
          else
             {ForAll FileNames
              proc {$ Arg} OFN R in
+                {UI reset()}
                 case {Access OutputFile} == unit then
                    case {Access Mode} of core then
-                      OFN = {ChangeExtension Arg ".oz" ".ozi"}
+                      OFN = {ChangeExtension Arg ".ozi"}
                    [] outputcode then
-                      OFN = {ChangeExtension Arg ".oz" ".ozm"}
+                      OFN = {ChangeExtension Arg ".ozm"}
                    [] ozma then
-                      OFN = {ChangeExtension Arg ".oz" ".ozm"}
+                      OFN = {ChangeExtension Arg ".ozm"}
                    [] feedtoemulator then
                       OFN = unit
                    [] dump then
-                      OFN = {ChangeExtension Arg ".oz" ".ozf"}
+                      OFN = {ChangeExtension Arg ".ozf"}
                    [] syslet then
-                      OFN = {ChangeExtension Arg ".oz" ""}
+                      OFN = {ChangeExtension Arg ""}
                    end
                 elsecase {Access OutputFile} == "-" then
                    case {Access Mode} == dump
@@ -526,6 +533,10 @@ in
                    OFN = {Access OutputFile}
                 end
                 {BatchCompiler enqueue(pushSwitches())}
+                case {Access MakeDepend} then
+                   {BatchCompiler enqueue(setSwitch(unnest false))}
+                else skip
+                end
                 case {Access Mode} of core then
                    {BatchCompiler enqueue(setSwitch(core true))}
                    {BatchCompiler enqueue(setSwitch(codegen false))}
@@ -555,7 +566,17 @@ in
                    raise error end
                 else skip
                 end
-                case {Access Mode} of dump then Exceptionless Done in
+                case {Access MakeDepend} then File VS in
+                   File = {New Open.file init(name: stdout flags: [write])}
+                   VS = (OFN#':'#
+                         case {UI getInsertedFiles($)} of Ns=_|_ then
+                            {FoldL {UI getInsertedFiles($)}
+                             fun {$ In X} In#' \\\n\t'#X end ""}
+                         [] nil then ""
+                         end#'\n')
+                   {File write(vs: VS)}
+                   {File close()}
+                elsecase {Access Mode} of dump then Exceptionless Done in
                    thread
                       try
                          {Pickle.save R OFN}

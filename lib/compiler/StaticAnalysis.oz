@@ -1967,7 +1967,7 @@ local
       end
 
       meth doNewName(Ctrl)
-         BndVO BndV PrintName TheName Top Token
+         BndVO BndV PrintName TheName Token
       in
          BndVO = {Nth @actualArgs 1}
          {BndVO getVariable(?BndV)}
@@ -1978,9 +1978,7 @@ local
          else
             TheName = {NewName}
          end
-         Top = ({Ctrl getTop($)} andthen
-                {Not {Ctrl.switches getSwitch(debuginfovarnames $)}})
-         Token = {New Core.nameToken init(PrintName TheName Top)}
+         Token = {New Core.nameToken init(PrintName TheName {Ctrl getTop($)})}
          {BndVO unifyVal(Ctrl Token)}
          case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
          else skip end

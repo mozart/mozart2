@@ -503,7 +503,11 @@ define
        end}
    end
 
-   FSPartition = FSP.partition
+   proc {FSPartition Vs U}
+      {FSP.partition Vs U}
+      {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end}
+       '=:' {FSCard U}}
+   end
 
    fun {FSNewWeights WL}
       WeightTable = {NewDictionary}

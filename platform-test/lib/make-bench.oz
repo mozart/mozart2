@@ -272,7 +272,7 @@ in
       Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
 
       fun {X2V X}
-         {System.valueToVirtualString X 100 100}
+         {Value.toVirtualString X 100 100}
       end
 
       fun {GetAll S Ids Ls}

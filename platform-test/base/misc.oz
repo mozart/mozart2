@@ -24,7 +24,7 @@ functor
 
 import
    Search(base)
-   System(show apply)
+   System(show)
    Browser(getsBoundB) at 'x-oz://boot/Browser'
    FD
 export
@@ -87,12 +87,12 @@ define
                         end
                         Sync1 Sync2
                      in
-                        {System.apply P [a b c]}
+                        {Procedure.apply P [a b c]}
                         local X in
-                           thread {System.apply P X} Sync1=unit end
+                           thread {Procedure.apply P X} Sync1=unit end
                            X=[a b c] end
                         local Y in
-                           thread {System.apply Y [a b c]} Sync2=unit end
+                           thread {Procedure.apply Y [a b c]} Sync2=unit end
                            Y=P end
                         {Wait Sync1} {Wait Sync2}
                      end
@@ -100,13 +100,13 @@ define
 
                 bug2(
                      proc {$}
-                        {System.apply {New BaseObject noop} [noop]}
+                        {Procedure.apply {New BaseObject noop} [noop]}
                      end
                      keys:[fixedBug apply object])
 
                 bug3(
                      proc {$}
-                        {System.apply IsAtom [nil true]}
+                        {Procedure.apply IsAtom [nil true]}
                      end
                      keys:[fixedBug apply])
                 ])

@@ -25,7 +25,6 @@
 functor
 
 import
-   System
    FD
 
 export
@@ -61,7 +60,7 @@ define
    end
 
    fun {RFL X}
-      {VirtualString.toAtom {System.valueToVirtualString X 5 20}}
+      {VirtualString.toAtom {Value.toVirtualString X 5 20}}
    end
 
    proc {WF X}

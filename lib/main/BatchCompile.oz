@@ -442,10 +442,10 @@ in
                  enqueue(feedFile(Arg return(result: ?R)))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                case {UI hasErrors($)} then
+                case {UI successful($)} then skip
+                else
                    {System.printError {UI getVS($)}}
                    raise error end
-                else skip
                 end
                 case {Access Mode} of dump then
                    case {Component.smartSave R OFN} of nil then skip

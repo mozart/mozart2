@@ -57,7 +57,7 @@ local
          {Type.ask.atom A} {ForAll Ps Phrase} {Coord C}
       [] fObjApply(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fAt(P C) then {Phrase P} {Coord C}
-      [] fAtom(A C) then {Type.ask.atom A} {Coord C}
+      [] fAtom(A C) then {Type.ask.literal A} {Coord C}
       [] fVar(V C) then {AskPrintName V} {Coord C}
       [] fEscape(Y C1) then
          case Y of fVar(V C2) then {AskPrintName V} {Coord C2} end {Coord C1}

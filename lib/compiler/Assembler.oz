@@ -740,6 +740,7 @@ local
                {Peephole Rest Assembler}
             end
          [] genCall(GCI Arity) then
+            Arity = 0
             case Rest of deAllocateL(I)|return|Rest then
                {MakeDeAllocate I Assembler}
                {Assembler append(genCall({AdjoinAt GCI 4 true} Arity))}

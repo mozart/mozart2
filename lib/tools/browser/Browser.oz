@@ -48,6 +48,15 @@ import
         isVarB}
       from 'x-oz-boot:FSB'
 
+   BrowserSupport.{recordCIsVarB
+                   getTermSize
+                   getsBoundB
+                   deepFeed
+                   chunkArity
+                   chunkWidth
+                   addr}
+      from 'x-oz-boot:Browser'
+
    FD.{reflect}
 
    Search.{one}

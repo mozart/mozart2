@@ -50,7 +50,7 @@ end
 %% somewhere and somehow in Oz Kernel(?);
 IsVar =        fun {$ X} {Value.isDet X} == false end
 IsFdVar =      FDB.isVarB
-IsRecordCVar = {`Builtin` 'recordCIsVarB' 2}
+IsRecordCVar = BrowserSupport.recordCIsVarB
 
 %%
 %% Yields 'true' if a record given has a label already. Never
@@ -63,7 +63,7 @@ EQ = {fun {$ X} X end System.eq}
 %%
 %% it takes three arguments - a term, depth and width has to be
 %% walked through;
-TermSize = {`Builtin` 'getTermSize' 4}
+TermSize = BrowserSupport.getTermSize
 
 %%
 %% Its argument is a term. It bounds its second argument to 'true'
@@ -73,19 +73,19 @@ TermSize = {`Builtin` 'getTermSize' 4}
 %% b) fires when the name of a variable is changed;
 %% c) fires when a variable becomes an fd-variable or some other
 %%    'kindof' variable;
-GetsTouched = {`Builtin` getsBoundB 2}
+GetsTouched = BrowserSupport.getsBoundB
 
 %%
-DeepFeed = {`Builtin` deepFeed 2}
+DeepFeed = BrowserSupport.deepFeed
 
 %%
 %% Yield arity/width of a chunk, suspend on variables,
 %% or rise type errors;
-ChunkArity = {`Builtin` 'chunkArity' 2}
-ChunkWidth = {`Builtin` 'chunkWidth' 2}
+ChunkArity = BrowserSupport.chunkArity
+ChunkWidth = BrowserSupport.chunkWidth
 
 %%
-AddrOf = {`Builtin` 'addr' 2}
+AddrOf = BrowserSupport.addr
 
 %%
 OnToplevel = System.onToplevel

@@ -1665,8 +1665,8 @@ define
                GdHd = GdTl
                RtHd = RtTl
             end
-         [] fAnonVar(PrintName C GV) then
-            {@BA generate(PrintName C ?GV)}
+         [] fAnonVar(Origin C GV) then
+            {@BA generate(Origin C ?GV)}
             NewOccs = Occs
             GdHd = GdTl
             RtHd = RtTl

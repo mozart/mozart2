@@ -417,6 +417,13 @@ define
       end
    end
 
+   fun {GenerateImportFeature I Fs} A in
+      A = {CompilerSupport.concatenateAtomAndInt 'implicit' I}
+      if {Member A Fs} then {GenerateImportFeature I + 1 Fs}
+      else A
+      end
+   end
+
    proc {SortClassDescriptors FDescriptors Rep FFrom FProp FAttr FFeat}
       case FDescriptors of D|Dr then
          case D of fFrom(Fs C) then
@@ -459,15 +466,18 @@ define
 
    class Unnester
       attr
-         BA             % this holds an instance of `BindingAnalysis'
-         Stateful       % true iff state access allowed (i. e., in method)
-         StateUsed      % true iff state has been accessed
-         ArgCounter     % temporarily used while transforming method heads
+         BA                  % this holds an instance of `BindingAnalysis'
+         CurrentImportFV     % temporarily used while transforming functors
+         AdditionalImports   % temporarily used while transforming functors
+         Stateful            % true iff state access allowed (i. e., in method)
+         StateUsed           % true iff state has been accessed
+         ArgCounter          % temporarily used while transforming method heads
          reporter
          switches
 
       meth init(TopLevel Reporter State)
          BA <- {New BindingAnalysis init(TopLevel Reporter)}
+         CurrentImportFV <- nil
          reporter <- Reporter
          switches <- State
       end
@@ -725,15 +735,18 @@ define
              ?FRequire ?FPrepare ?FImport ?FExport ?FProp ?FDefine1 ?FDefine2}
             if FRequire == unit andthen FPrepare == unit then
                GFrontEq GVO FV
-               ImportGV ImportFV FImportArgs ImportFS FExportArgs FColons CND
-               NewFDefine FunGV FunFV FFun FImportDesc FExportDesc FS GS
+               ImportGV ImportFV ImportFeatures FImportArgs ImportFS
+               FExportArgs FColons CND NewFDefine
+               FunGV FunFV FFun OldImportFV OldAdditionalImports GFun
+               FImportDesc FExportDesc FS
+               GNewFunctor GS
             in
                Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
                FV = fVar({{GVO getVariable($)} getPrintName($)}
                          {CoordinatesOf FE})
                {@BA openScope()}
                Unnester, AnalyseImports(FImport ImportFV
-                                        ?FImportArgs ?ImportFS)
+                                        ?ImportFeatures ?FImportArgs ?ImportFS)
                Unnester, AnalyseExports(FExport ?FExportArgs ?FColons)
                {@BA generate('IMPORT' C ?ImportGV)}
                {@BA closeScope(_)}
@@ -747,13 +760,35 @@ define
                FunFV = fVar({FunGV getPrintName($)} C)
                FFun = fFun(FunFV [ImportFV] NewFDefine
                            fAtom('instantiate' C)|FProp CND)
-               FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
+               OldImportFV = @CurrentImportFV
+               OldAdditionalImports = @AdditionalImports
+               CurrentImportFV <- ImportFV
+               AdditionalImports <- nil
+               Unnester, UnnestStatement(FFun ?GFun)
+               FImportDesc = fRecord(fAtom('import' CND)
+                                     {FoldR @AdditionalImports
+                                      fun {$ X#F In} Type From in
+                                         X = {GenerateImportFeature 1
+                                              ImportFeatures}
+                                         Type = fColon(fAtom('type' unit)
+                                                       fAtom(nil unit))
+                                         From = fColon(fAtom('from' unit)
+                                                       fAtom(F unit))
+                                         fColon(X fRecord(fAtom(info unit)
+                                                          [Type From]))|In
+                                      end FImportArgs})
+               AdditionalImports <- OldAdditionalImports
+               CurrentImportFV <- OldImportFV
                FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
                FS = fOpApplyStatement('NewFunctor'
                                       [FImportDesc FExportDesc FunFV FV] CND)
-               Unnester,
-               UnnestStatement(fStepPoint(fAnd(FFun FS) 'definition' C) ?GS)
-               GFrontEq|GS
+               Unnester, UnnestStatement(FS ?GNewFunctor)
+               GS = GFun|GNewFunctor
+               GFrontEq|if {@switches getSwitch(debuginfocontrol $)}
+                           andthen {IsStep C}
+                        then {New Core.stepPoint init(GS 'definition' C)}
+                        else GS
+                        end
             else GV1 GV2 FV1 FV2 FS1 CND FS2 in
                {@BA openScope()}
                %--** enter all FRequire/FPrepare variables
@@ -834,7 +869,7 @@ define
             GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
 \ifndef NO_GUMP
          [] fScanner(T Ds Ms Rules Prefix C) then
-            From Prop Attr Feat Flags FS
+            From Prop Attr Feat Flags FS Is
          in
             {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
             Flags = flags(prefix: Prefix
@@ -851,8 +886,10 @@ define
                           statistics:
                              {@switches getSwitch(gumpscannerstatistics $)})
             {MyWaitGump transformScanner}
-            FS = {Gump.transformScanner
-                  T From Prop Attr Feat Ms Rules C Flags @reporter}
+            FS#Is = {Gump.transformScanner
+                     T From Prop Attr Feat Ms Rules C Flags
+                     @CurrentImportFV @reporter}
+            AdditionalImports <- {Append @AdditionalImports Is}
             Unnester, UnnestStatement(FS $)
          [] fParser(T Ds Ms Tokens Rules Expect C) then
             From Prop Attr Feat Flags FS
@@ -1677,16 +1714,16 @@ define
          end
       end
 
-      meth AnalyseImports(Ds ImportFV ?FImportArgs ?ImportFS)
+      meth AnalyseImports(Ds ImportFV ?ImportFeatures ?FImportArgs ?ImportFS)
          case Ds of D|Dr then
             fImportItem(FV=fVar(PrintName C) Fs FImportAt) = D
-            FFsList FS ImportFS2 FInfo FImportArgr
+            FFsList FS ImportFeaturesr FInfo FImportArgr ImportFS2
          in
             {@BA bind(PrintName C _)}
             Unnester, AnalyseImportFeatures(Fs FV ?FFsList ?FS)
             %--** check that all features are distinct
             %--** read corresponding type description from pickle
-            ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
+            ImportFeatures = PrintName|ImportFeaturesr
             FInfo = fRecord(fAtom('info' C)
                             fColon(fAtom('type' C) FFsList)|
                             case FImportAt of fImportAt(FE) then
@@ -1694,8 +1731,11 @@ define
                             [] fNoImportAt then nil
                             end)
             FImportArgs = fColon(fAtom(PrintName C) FInfo)|FImportArgr
-            Unnester, AnalyseImports(Dr ImportFV ?FImportArgr ?ImportFS2)
+            ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
+            Unnester, AnalyseImports(Dr ImportFV
+                                     ?ImportFeaturesr ?FImportArgr ?ImportFS2)
          [] nil then
+            ImportFeatures = nil
             FImportArgs = nil
             ImportFS = fSkip(unit)
          end

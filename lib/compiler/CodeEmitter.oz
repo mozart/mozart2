@@ -61,34 +61,32 @@ local
       end
    end
 
-   local
-      proc {GetRegs VArgs Hd Tl}
-         case VArgs of VArg|VArgr then Inter in
-            case VArg of value(Reg) then
-               Hd = Reg|Inter
-            [] record(_ _ VArgs) then
-               {GetRegs VArgs Hd Inter}
-            else
-               Hd = Inter
-            end
-            {GetRegs VArgr Inter Tl}
-         [] nil then
-            Hd = Tl
+   proc {GetRegs VArgs Hd Tl}
+      case VArgs of VArg|VArgr then Inter in
+         case VArg of value(Reg) then
+            Hd = Reg|Inter
+         [] record(_ _ VArgs) then
+            {GetRegs VArgs Hd Inter}
+         else
+            Hd = Inter
          end
+         {GetRegs VArgr Inter Tl}
+      [] nil then
+         Hd = Tl
       end
+   end
 
-      fun {FilterNonlinearRegs Regs}
-         case Regs of Reg|Regr then
-            if {Member Reg Regr} then Reg|{FilterNonlinearRegs Regr}
-            else {FilterNonlinearRegs Regr}
-            end
-         [] nil then nil
+   fun {FilterNonlinearRegs Regs}
+      case Regs of Reg|Regr then
+         if {Member Reg Regr} then Reg|{FilterNonlinearRegs Regr}
+         else {FilterNonlinearRegs Regr}
          end
+      [] nil then nil
       end
-   in
-      fun {GetNonlinearRegs VArgs}
-         {FilterNonlinearRegs {GetRegs VArgs $ nil}}
-      end
+   end
+
+   fun {GetNonlinearRegs VArgs}
+      {FilterNonlinearRegs {GetRegs VArgs $ nil}}
    end
 
    local
@@ -642,21 +640,28 @@ in
             if Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity
                                           VArgs Cont $)
             then skip
-            elsecase Emitter, GetReg(Reg $) of none then
-               if Emitter, IsLast(Reg $) then skip
-               else R in
+            else Regs in
+               {GetRegs VArgs ?Regs nil}
+               if {Member Reg Regs} then R in
                   Emitter, PredictReg(Reg ?R)
-                  Emitter, EmitRecordWrite(Literal RecordArity R
-                                           {GetNonlinearRegs VArgs} VArgs)
+                  Emitter, Emit(createVariable(R))
                end
-            elseof R then
-               if Emitter, IsLast(Reg $) then
-                  if {OccursInVArgs VArgs Reg} then skip
-                  else Emitter, FreeReg(Reg)
+               case Emitter, GetReg(Reg $) of none then
+                  if Emitter, IsLast(Reg $) then skip
+                  else R in
+                     Emitter, PredictReg(Reg ?R)
+                     Emitter, EmitRecordWrite(Literal RecordArity R
+                                              {FilterNonlinearRegs Regs} VArgs)
                   end
+               elseof R then
+                  if Emitter, IsLast(Reg $) then
+                     if {OccursInVArgs VArgs Reg} then skip
+                     else Emitter, FreeReg(Reg)
+                     end
+                  end
+                  Emitter, EmitRecordRead(Literal RecordArity R
+                                          {FilterNonlinearRegs Regs} VArgs)
                end
-               Emitter, EmitRecordRead(Literal RecordArity R
-                                       {GetNonlinearRegs VArgs} VArgs)
             end
          [] vGetVariable(_ Reg _) then
             case Emitter, GetReg(Reg $) of none then

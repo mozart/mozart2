@@ -72,7 +72,7 @@ in
 
       Foreign
 
-      System
+      Property
 
    export
       Return
@@ -94,7 +94,7 @@ in
                              {F write(vs:Code)}
                              {F close}
                              0={OS.system ('gcc -Wno-conversion -c -I '#
-                                           {System.get home}#'/include '#
+                                           {Property.get 'oz.home'}#'/include '#
                                            File#'.c -o '#File#'.o'#
                                            ' 2>/dev/null')}
                              0={OS.system ('ozdynld -o '#File#'.so '#
@@ -104,9 +104,7 @@ in
                                         goodies(getenv: 2)}
                              _={Goodies.getenv 'SHELL'}
 
-                             _={OS.system 'rm -f '#File#'.c'}
-                             _={OS.system 'rm -f '#File#'.o'}
-                             _={OS.system 'rm -f '#File#'.so'}
+                             _={OS.system 'rm -f '#File#'.c '#File#'.o '#File#'.so'}
                              true
                           catch _ then false
                           end

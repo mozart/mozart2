@@ -234,7 +234,7 @@ local
                       Var={Variance Av Result}
 %                     {System.show Var}
                    in
-                      {PI ' times in ms:'}
+                      {PI ' times (ms):'}
                       {ForAll TimeMap
                        proc {$ C#F}
                           {PI ' '#[C]#':'#{PF Av.F}}
@@ -242,7 +242,7 @@ local
                        end}
                       {PI '\n'}
                       if Argv.variance then
-                         {PI '    var in %:'}
+                         {PI '    var (%):'}
                          {ForAll TimeMap
                           proc {$ C#F}
                              {PI ' '#[C]#':'#{Truncate Var.F*100.0}}

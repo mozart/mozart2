@@ -75,14 +75,23 @@ define
            proc{GetConnGrant Type CanWait ?Grant}
               {DPMisc.getConnGrant Obj.requestor Type CanWait Grant}
               case Grant of grant(...) then
-                 {Obj registerResource(Grant)}
+                 {Obj registerResource(grant(Grant))}
               else
                  skip
               end
            end
 
            proc{Handover Grant SetUpParameter}
-              {Obj unregisterResource(Grant)}
+              {Obj unregisterResource(grant(Grant))}
+
+              % This is a fix and not a solution. If another
+              % ConnectionFunctor than the default one keeps a
+              % filedescriptor via handover, it must use the same
+              % syntax in SetUpParameter.
+              case SetUpParameter of settings(fd:FD) then
+                 {Obj unregisterResource(fd(FD))}
+              else skip end
+
               if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.handover Obj.requestor Grant SetUpParameter}
               end
@@ -96,7 +105,7 @@ define
            end
 
            proc{FreeConnGrant Grant}
-              {Obj unregisterResource(Grant)}
+              {Obj unregisterResource(grant(Grant))}
               if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.freeConnGrant Obj.requestor Grant}
               end
@@ -111,13 +120,23 @@ define
               {Obj putLocalState(State)}
            end
 
-           Socket=OS.socket
+           proc{Socket A B C ?FD}
+              FD={OS.socket A B C}
+              if FD\=~1 then
+                 {Obj registerResource(fd(FD))}
+              end
+           end
+
+           proc{Close FD}
+              {OS.close FD}
+              {Obj unregisterResource(fd(FD))}
+           end
+
            Connect=OS.connectNonblocking
            Write=OS.write
            Read=OS.read
            WriteSelect=OS.writeSelect
            ReadSelect=OS.readSelect
-           Close=OS.close
         end]}.1
    end
 
@@ -190,8 +209,13 @@ define
          lock
             {ForAll @allocatedResources
              proc{$ R}
-              {DPMisc.freeConnGrant self.requestor R}
+                case R of grant(Grant) then
+                   {DPMisc.freeConnGrant self.requestor Grant}
+                elseof fd(FD) then
+                   {OS.close FD}
+                end
              end}
+            allocatedResources<-nil
          end
       end
    end
@@ -208,21 +232,24 @@ in
 \endif
           case Request of
              connect(Requestor LocalOzState DistOzState) then
+             Id = {GetIdFromRequestor Requestor}
+          in
+             if {Dictionary.member OngoingRequests Id} then
+                raise already_connecting(Id) end
+             end
+             OngoingRequests.Id:=r(thr:{Thread.this} fd:_)
              thread
-                Id = {GetIdFromRequestor Requestor}
-             in
-                if {Dictionary.member OngoingRequests Id} then
-                   raise already_connecting(Id) end
-                end
-                OngoingRequests.Id:={Thread.this}
                 try
                    _ = {New ConnectionController init(Id Requestor
                                                       LocalOzState
                                                       DistOzState)}
+\ifdef DBG
                 catch X then
-                   raise X end % AN! this is not the release behaviour, it
-                               % should simply be discarded
-%                  {System.showError "Connection proc failed to execute"}
+                   raise X end
+\else
+                catch _ then
+                   skip
+\endif
                 end
                 {Dictionary.remove OngoingRequests Id}
              end
@@ -230,9 +257,15 @@ in
              Id = {GetIdFromRequestor Requestor}
           in
              try
-                if{Dictionary.member OngoingRequests Id} then
+                case {CondSelect OngoingRequests Id notfound}
+                of r(thr:T fd:FD) then
                    {Dictionary.remove OngoingRequests Id}
-                   {Thread.terminate OngoingRequests.Id}
+                   {Thread.terminate T}
+                   if {IsDet FD} then
+                      {OS.close FD}
+                   end
+                else
+                   skip
                 end
              catch _ then skip end
           else

@@ -69,6 +69,7 @@ define
                      % only tells that the socket is in progress
                      skip
                   else
+                     if FD\=~1 then {ConnectionWrapper.close FD} end
 \ifdef DBG
                      {System.show caught(X)}
                      {System.show retrying}

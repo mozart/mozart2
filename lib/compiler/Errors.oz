@@ -22,7 +22,7 @@
 %%% WARRANTIES.
 %%%
 
-{ErrorRegistry.put compiler
+{Error.registerFormatter compiler
  fun {$ E} T in
     T = 'compiler engine error'
     case E of compiler(internal X) then

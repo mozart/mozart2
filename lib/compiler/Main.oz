@@ -28,8 +28,7 @@ import
    Parser                        at 'x-oz://boot/Parser'
    CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
    Property(get condGet)
-   Error(extendedVSToVS exceptionToMessage)
-   ErrorRegistry(put)
+   Error(extendedVSToVS exceptionToMessage registerFormatter)
    Type(ask)
    Narrator('class')
    ErrorListener('class')

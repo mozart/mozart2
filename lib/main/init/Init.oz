@@ -142,7 +142,7 @@ define
 
       %% Execute error handler that will replace itself by real
       %% error handler on need
-      {RM apply(url:'' ErrorHandler)}
+      {RM apply(ErrorHandler)}
 
       %% Link root functor (i.e. application)
       {RM link(url:{GET 'application.url'})}

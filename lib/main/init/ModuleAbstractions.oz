@@ -37,8 +37,10 @@ fun {Apply UFs}
 in
    %% Compute pairlist of module name and module
    {Map UFs fun {$ UF}
-               U#F = if {Functor.is UF} then './'#UF else UF end
-            in
-               {ModMan apply(url:U F $)}
+               case UF of U#F then
+                  {ModMan apply(url:U F $)}
+               else
+                  {ModMan apply(UF $)}
+               end
             end}
 end

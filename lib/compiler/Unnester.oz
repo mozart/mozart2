@@ -844,15 +844,17 @@ define
             end
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
-            GFrontEqs FeatureGVO ResGVO
+            GFrontEqs FeatureGVO ResGVO CND
          in
             {RunTime.procs.'.' occ(C ?DotGVO)}
             {@BA refer(PrintName C ?ImportGVO)}
             Unnester, UnnestToVar(fAtom({GV getPrintName($)} C) 'Feature'
                                   ?GFrontEqs ?FeatureGVO)
             {GV occ(C ?ResGVO)}
+            CND = {CoordNoDebug C}
             GFrontEqs|
-            {New Core.application init(DotGVO [ImportGVO FeatureGVO ResGVO] C)}
+            {New Core.application
+             init(DotGVO [ImportGVO FeatureGVO ResGVO] CND)}
          [] fClass(FE FDescriptors FMeths C) then
             GFrontEq GVO FPrivates GPrivates
             FFrom FProp FAttr FFeat

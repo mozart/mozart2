@@ -37,24 +37,25 @@
 
 local
    local
-      GetOpcode          = {`Builtin` getOpcode          2}
-      GetInstructionSize = {`Builtin` getInstructionSize 2}
-      NewCodeBlock       = {`Builtin` newCodeBlock       2}
-      MakeProc           = {`Builtin` makeProc           3}
-      AddDebugInfo       = {`Builtin` addDebugInfo       3}
-      StoreOpcode        = {`Builtin` storeOpcode        2}
-      StoreNumber        = {`Builtin` storeNumber        2}
-      StoreLiteral       = {`Builtin` storeLiteral       2}
-      StoreFeature       = {`Builtin` storeFeature       2}
-      StoreConstant      = {`Builtin` storeConstant      2}
-      StoreInt           = {`Builtin` storeInt           2}
-      StoreVariablename  = {`Builtin` storeVariablename  2}
-      StoreRegisterIndex = {`Builtin` storeRegisterIndex 2}
-      StorePredicateRef  = {`Builtin` storePredicateRef  2}
-      StoreRecordArity   = {`Builtin` storeRecordArity   2}
-      StoreGRegRef       = {`Builtin` storeGRegRef       2}
-      StoreLocation      = {`Builtin` storeLocation      2}
-      StoreCache         = {`Builtin` storeCache         2}
+      GetOpcode               = {`Builtin` getOpcode               2}
+      GetInstructionSize      = {`Builtin` getInstructionSize      2}
+      NewCodeBlock            = {`Builtin` newCodeBlock            2}
+      MakeProc                = {`Builtin` makeProc                3}
+      AddDebugInfo            = {`Builtin` addDebugInfo            3}
+      StoreOpcode             = {`Builtin` storeOpcode             2}
+      StoreNumber             = {`Builtin` storeNumber             2}
+      StoreLiteral            = {`Builtin` storeLiteral            2}
+      StoreFeature            = {`Builtin` storeFeature            2}
+      StoreConstant           = {`Builtin` storeConstant           2}
+      StoreInt                = {`Builtin` storeInt                2}
+      StoreVariablename       = {`Builtin` storeVariablename       2}
+      StoreRegisterIndex      = {`Builtin` storeRegisterIndex      2}
+      StorePredicateRef       = {`Builtin` storePredicateRef       2}
+      StoreRecordArity        = {`Builtin` storeRecordArity        2}
+      StoreGRegRef            = {`Builtin` storeGRegRef            2}
+      StoreLocation           = {`Builtin` storeLocation           2}
+      StoreXRegisterIndexList = {`Builtin` storeXRegisterIndexList 2}
+      StoreCache              = {`Builtin` storeCache              2}
 
       local
          BIStoreBuiltinname = {`Builtin` storeBuiltinname 2}

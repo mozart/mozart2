@@ -27,5 +27,5 @@ $class =
 
        super => 'GtkPaned',
 
-       inits => { 'gtk_vpaned_new'                => { out => 'GtkPaned*' } }}
+       inits => { 'gtk_vpaned_new'                => { out => 'GtkWidget*' } }}
      );

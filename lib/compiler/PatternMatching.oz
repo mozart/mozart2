@@ -154,6 +154,21 @@ local
       in
          NewElseTree = {PropagateElses ElseTree DefaultTree}
          NewDefaultTree = {ClipTree Pos Test NewElseTree}
+         if NewDefaultTree \= NewElseTree then
+            %% if we clipped off some node then we need to increment its
+            %% accessibility count: beneath this node, shared code exists,
+            %% but register allocation has to recognize the sharing at
+            %% the higher level.  Example where this matters:
+            %% {proc {$ X}
+            %%     case X of a(_ ...) then skip
+            %%     [] b then skip
+            %%     elseif {IsRecord X} then {Show X}
+            %%     end
+            %%  end x}
+            case NewElseTree of node(_ _ _ _ Count _) then
+               {Assign Count {Access Count} + 1}
+            end
+         end
          NewThenTree = {PropagateElses ThenTree NewDefaultTree}
          node(Pos Test NewThenTree NewElseTree Count Shared)
       [] leaf(_ _) then
@@ -357,7 +372,9 @@ local
             VTl = nil
             if {IsFree Shared} then Label VInstr in
                {CS newLabel(?Label)}
-               Shared = vShared(_ Label {NewCell 0} VInstr)
+               %% we put a `1' here because the value computed by
+               %% the register allocator would be incorrect:
+               Shared = vShared(_ Label {NewCell 1} VInstr)
                {CodeGenSub Tree Mapping VInstr nil Coord CS}
             end
          end

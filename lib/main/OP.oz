@@ -26,7 +26,7 @@ fun instantiate {$ IMPORT}
 
    \insert 'OP/OS.oz'
 
-   URL = {System.property.get url}
+   URL = {System.property.condGet url unit}
 
    \insert 'OP/Open.oz'
 

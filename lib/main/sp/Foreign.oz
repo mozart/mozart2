@@ -29,6 +29,7 @@ local
    DlClose        = {`Builtin` dlClose       1}
    FindFunction   = {`Builtin` findFunction  3}
    DlLoad         = {`Builtin` dlLoad        2}
+   DlStaticLoad   = {`Builtin` dlStaticLoad  2}
    Unlink         = {`Builtin` 'OS.unlink'   1}
    %%
    %% If the URL service is available, then use it to create a
@@ -106,17 +107,33 @@ local
    end
    fun {ForeignLoad File}
       _#Module = {ForeignLoadBI File}
-   in Module end
+   in Module
+   end
+
+   fun {ForeignStaticLoad Base}
+      Static = {DlStaticLoad Base}
+   in
+      case Static==unit then
+         %% Not available in the emulator, go and load it
+         %% DENYS: this all needs improvement! CS
+         HOME    = {System.get home}
+         OS#ARCH = {System.get platform}
+      in
+         {ForeignLoad HOME#'/platform/'#OS#'-'#ARCH#'/'#Base}
+      else Static
+      end
+   end
 
    ForeignPointer = foreignPointer(is: {`Builtin` 'isForeignPointer' 2})
 in
 
    Foreign = foreign(
-                     pointer:  ForeignPointer
-                     dload:    DLoad
-                     require:  Require
-                     resolver: Resolver
-                     load:     ForeignLoad
-                     loadBI:   ForeignLoadBI
+                     pointer:    ForeignPointer
+                     dload:      DLoad
+                     require:    Require
+                     resolver:   Resolver
+                     load:       ForeignLoad
+                     staticLoad: ForeignStaticLoad
+                     loadBI:     ForeignLoadBI
                     )
 end

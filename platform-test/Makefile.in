@@ -55,7 +55,7 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        mini equality table url port cell cellAndLock variable object \
+        url mini maxi equality table port cell cellAndLock variable object \
         objectAndLock injectors watchers fault1
 
 DP2=

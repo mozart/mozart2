@@ -37,29 +37,15 @@
 
 local
 
+   BootScheme   = "x-oz-boot"
+   % SystemScheme = "x-oz-system"
+
    local
       UrlDefaults = \insert '../../url-defaults.oz'
    in
       FunExt    = UrlDefaults.'functor'
       MozartUrl = UrlDefaults.'home'
    end
-
-%%%\ifndef OZM
-%%%   local
-%%%      Load = {`Builtin` load 2}
-%%%   in
-%%%      Peanuts = {Map \insert '../module-Peanuts.oz'
-%%%              fun {$ M}
-%%%                 Fun = {Load M#FunExt}
-%%%              in
-%%%                 case {Width Fun.'import'}==0
-%%%                 then M # Fun.apply
-%%%                 else
-%%%                    raise error('No import for peanuts allowed') end
-%%%                 end
-%%%              end}
-%%%   end
-%%%\endif
 
    \insert 'RURL.oz'
 
@@ -123,7 +109,14 @@ in
 
 
       fun {ModNameToUrl ModName From BaseUrl}
-         case {SystemMap.member ModName} then
+         FromUrl = {ToUrl case From==unit then
+                             ModName#'.ozf'
+                          else From
+                          end}
+      in
+         case {CondSelect FromUrl scheme ""}==BootScheme then
+            FromUrl
+         elsecase {SystemMap.member ModName} then
             {SystemMap.get ModName}
          else
             RelUrl = {ToUrl case From==unit then ModName#'.ozf'
@@ -150,12 +143,16 @@ in
          {Func.'apply' IMPORT}
       end
 
+      StaticLoad = {`Builtin` 'BootManager'  2}
 
       proc {GetFunctor Url ?Mod}
          UrlKey = {RURL.urlToKey Url}
       in
          case {ModuleMap.ensure UrlKey ?Mod} then
-            {Trace '[Module] Get:  '#UrlKey#'\n'}
+            {Trace '[Module] Get:   '#UrlKey#'\n'}
+         elsecase {CondSelect Url scheme ""}==BootScheme then
+            {Trace '[Module] Boot:  '#UrlKey#'\n'}
+            Mod = {StaticLoad Url.path.1.1}
          else
             {Trace '[Module] Sync: '#UrlKey#'\n'}
             Mod={ByNeed fun {$}
@@ -231,14 +228,6 @@ in
       {Module.enter MozartUrl#'lib/Module'#FunExt Module}
       {Module.enter MozartUrl#'lib/URL'#FunExt
        {{`Builtin` 'CondGetProperty' 3} url unit}}
-
-      %% Register peanuts
-%%%\ifndef OZM
-%%%      {ForAll Peanuts
-%%%       proc {$ M#P}
-%%%       {Module.enter MozartUrl#'lib/'#M#FunExt {P 'import'}}
-%%%       end}
-%%%\endif
 
    in
 

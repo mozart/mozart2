@@ -41,7 +41,6 @@ export
    require:    Require
    resolver:   Resolver
    load:       ForeignLoad
-   staticLoad: DlStaticLoad
    loadBI:     ForeignLoadBI
 
 body
@@ -49,7 +48,6 @@ body
    DlClose        = {`Builtin` dlClose       1}
    FindFunction   = {`Builtin` findFunction  3}
    DlLoad         = {`Builtin` dlLoad        2}
-   DlStaticLoad   = {`Builtin` dlStaticLoad  2}
    Unlink         = {`Builtin` 'OS.unlink'   1}
    %%
    %% If the URL service is available, then use it to create a

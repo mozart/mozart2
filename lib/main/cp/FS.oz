@@ -28,7 +28,7 @@
 functor $ prop once
 
 import
-   Foreign.{staticLoad}
+   FSP from 'x-oz-boot:FSP'
 
    FD.{bool
        decl
@@ -93,49 +93,6 @@ body
        end nil}
    end
 
-
-   local
-      fun {LoadLibrary LibName Spec}
-         L = {Foreign.staticLoad LibName}
-      in
-         {Record.map Spec
-          fun {$ A#_}
-             L.A
-          end}
-      end
-   in
-      FSP = {LoadLibrary 'libFSP.so'
-             fsp(init:              fsp_init              #1
-                 isIn:              fsp_isIn              #3
-                 isInR:             fsp_isInR             #3
-                 include:           fsp_include           #2
-                 exclude:           fsp_exclude           #2
-                 card:              fsp_card              #2
-                 union:             fsp_union             #3
-                 intersection:      fsp_intersection      #3
-                 subsume:           fsp_subsume           #2
-                 disjoint:          fsp_disjoint          #2
-                 distinct:          fsp_distinct          #2
-                 monitorIn:         fsp_monitorIn         #2
-                 diff:              fsp_diff              #3
-                 includeR:          fsp_includeR          #3
-                 match:             fsp_match             #2
-                 minN:              fsp_minN              #2
-                 maxN:              fsp_maxN              #2
-                 seq:               fsp_seq               #1
-                 min:               fsp_min               #2
-                 max:               fsp_max               #2
-                 convex:            fsp_convex            #1
-                 bounds:            fsp_bounds            #5
-                 boundsN:           fsp_boundsN           #5
-                 disjointN:         fsp_disjointN         #1
-                 unionN:            fsp_unionN            #2
-                 partition:         fsp_partition         #2
-                 partitionReified:  fsp_partitionReified  #3
-                 equalR:            fsp_equalR            #3
-             ) % fsp
-            }
-   end
 
    FSIsIncl     = FSP.include
    FSIsExcl     = FSP.exclude

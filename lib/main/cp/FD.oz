@@ -119,50 +119,50 @@ local
       ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
 
       BuiltinNames
-      = bi(fdp_twice:         [fdp_twice           ['FD.plus' 'FD.minus']]
-           fdp_square:        [fdp_square          ['FD.times']]
-           fdp_plus:          ['FD.plus'           ['FD.distance']]
-           fdp_plus_rel:      ['FD.plus'           ['FD.distance' '+']]
-           fdp_minus:         ['FD.minus'          nil]
-           fdp_times:         ['FD.times'          nil]
-           fdp_times_rel:     ['FD.plus'           ['FD.distance' '*']]
-           fdp_divD:          ['FD.divD'           nil]
-           fdp_divI:          ['FD.divI'           nil]
-           fdp_modD:          ['FD.modD'           nil]
-           fdp_modI:          ['FD.modI'           nil]
-           fdp_conj:          ['FD.conj'           nil]
-           fdp_disj:          ['FD.disj'           nil]
-           fdp_exor:          ['FD.exor'           nil]
-           fdp_impl:          ['FD.impl'           nil]
-           fdp_equi:          ['FD.equi'           nil]
-           fdp_nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
-           fdp_sumCR:         ['FD.reified.sumC'   ArithOps]
-           fdp_intR:          ['FD.refied.int'     ['FD.reified.dom']]
-           fdp_card:          ['FD.reified.card'   nil]
-           fdp_exactly:       ['FD.exactly'        nil]
-           fdp_atLeast:       ['FD.atLeast'        nil]
-           fdp_atMost:        ['FD.atMost'         nil]
-           fdp_element:       ['FD.element'        nil]
-           fdp_disjoint:      ['FD.disjoint'       nil]
-           fdp_disjointC:     ['FD.disjointC'      nil]
-           fdp_distance:      ['FD.distance'       nil]
-           fdp_notEqOff:      [fdp_notEqOff        ['FD.sumC' '\\=:']]
-           fdp_lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
+      = bi(twice:         [twice           ['FD.plus' 'FD.minus']]
+           square:        [square          ['FD.times']]
+           plus:          ['FD.plus'           ['FD.distance']]
+           plus_rel:      ['FD.plus'           ['FD.distance' '+']]
+           minus:         ['FD.minus'          nil]
+           times:         ['FD.times'          nil]
+           times_rel:     ['FD.plus'           ['FD.distance' '*']]
+           divD:          ['FD.divD'           nil]
+           divI:          ['FD.divI'           nil]
+           modD:          ['FD.modD'           nil]
+           modI:          ['FD.modI'           nil]
+           conj:          ['FD.conj'           nil]
+           disj:          ['FD.disj'           nil]
+           exor:          ['FD.exor'           nil]
+           impl:          ['FD.impl'           nil]
+           equi:          ['FD.equi'           nil]
+           nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
+           sumCR:         ['FD.reified.sumC'   ArithOps]
+           intR:          ['FD.refied.int'     ['FD.reified.dom']]
+           card:          ['FD.reified.card'   nil]
+           exactly:       ['FD.exactly'        nil]
+           atLeast:       ['FD.atLeast'        nil]
+           atMost:        ['FD.atMost'         nil]
+           element:       ['FD.element'        nil]
+           disjoint:      ['FD.disjoint'       nil]
+           disjointC:     ['FD.disjointC'      nil]
+           distance:      ['FD.distance'       nil]
+           notEqOff:      [notEqOff        ['FD.sumC' '\\=:']]
+           lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
                                                     '>:' 'FD.min' 'FD.max'
                                                     'FD.modD'
                                                     'FD.modI' 'FD.disjoint'
                                                     'FD.disjointC' 'FD.distance'
                                                    ]]
-           fdp_minimum:        ['FD.min'                   nil]
-           fdp_maximum:        ['FD.max'                   nil]
-           fdp_inter:          ['FD.inter'                 nil]
-           fdp_union:          ['FD.union'                 nil]
-           fdp_distinct:       ['FD.distinct'              nil]
-           fdp_distinctOffset: ['FD.distinctOffset'        nil]
-           fdp_subset:         [fdp_subset         ['FD.union' 'FD.inter']]
-           fdp_sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
-           fdp_sumCN:          ['FD.sumCN'         ArithOps]
-           fdp_sumAC:          ['FD.sumAC'         nil]
+           minimum:        ['FD.min'                   nil]
+           maximum:        ['FD.max'                   nil]
+           inter:          ['FD.inter'                 nil]
+           union:          ['FD.union'                 nil]
+           distinct:       ['FD.distinct'              nil]
+           distinctOffset: ['FD.distinctOffset'        nil]
+           subset:         [subset         ['FD.union' 'FD.inter']]
+           sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
+           sumCN:          ['FD.sumCN'         ArithOps]
+           sumAC:          ['FD.sumAC'         nil]
 
            sched_disjoint_card:['FD.schedule.disjoint'             nil]
            sched_cpIterate:    ['FD.schedule.serialized'           nil]
@@ -182,9 +182,9 @@ local
 
            fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
            fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
-           fd_sumCD:           [fdp_sumCD          ['condis ... end']]
-           fd_sumCCD:          [fdp_sumCCD         ['condis ... end']]
-           fd_sumCNCD:         [fdp_sumCNCD        ['condis ... end']]
+           sumCD:              [sumCD          ['condis ... end']]
+           sumCCD:             [sumCCD         ['condis ... end']]
+           sumCNCD:            [sumCNCD        ['condis ... end']]
           )
 
       fun {BIPrintName X}
@@ -218,7 +218,7 @@ in
    functor $ prop once
 
    import
-      Foreign.{staticLoad}
+      FDP from 'x-oz-boot:FDP'
 
       ErrorRegistry.{put}
 
@@ -307,56 +307,57 @@ in
 
    body
 
-      foreign(fdp_plus:           FdpPlus
-              fdp_minus:          FdpMinus
-              fdp_times:          FdpTimes
-              fdp_power:          FdpPower
-              fdp_divD:           FdpDivD
-              fdp_divI:           FdpDivI
-              fdp_modD:           FdpModD
-              fdp_modI:           FdpModI
-              fdp_conj:           FdpConj
-              fdp_disj:           FdpDisj
-              fdp_exor:           FdpExor
-              fdp_impl:           FdpImpl
-              fdp_nega:           FdpNega
-              fdp_equi:           FdpEqui
-              fdp_intR:           FdpIntR
-              fdp_card:           FdpCard
-              fdp_exactly:        FdpExactly
-              fdp_atLeast:        FdpAtLeast
-              fdp_atMost:         FdpAtMost
-              fdp_element:        FdpElement
-              fdp_lessEqOff:      FdpLessEqOff
-              fdp_minimum:        FdpMinimum
-              fdp_maximum:        FdpMaximum
-              fdp_distinct:       FdpDistinct
-              fdp_distinct2:      FdpDistinct2
-              fdp_distinctD:      FdpDistinctD
-              fdp_distinctOffset: FdpDistinctOffset
-              fdp_disjoint:       FdpDisjoint
-              fdp_disjointC:      FdpDisjointC
-              fdp_distance:       FdpDistance
-              fdp_sum:            FdpSum
-              fdp_sumC:           FdpSumC
-              fdp_dsum:           FdpDSum
-              fdp_dsumC:          FdpDSumC
-              fdp_sumAC:          FdpSumAC
-              fdp_sumCN:          FdpSumCN
-              fdp_sumR:           FdpSumR
-              fdp_sumCR:          FdpSumCR
-              fdp_sumCNR:         FdpSumCNR
-              fdp_sumCD:          FdpSumCD
-              fdp_sumCCD:         FdpSumCCD
-              fdp_sumCNCD:        FdpSumCNCD
+      FdpPlus = FDP.plus
+      FdpMinus = FDP.minus
+      FdpTimes = FDP.times
+      FdpPower = FDP.power
+      FdpDivD = FDP.divD
+      FdpDivI = FDP.divI
+      FdpModD = FDP.modD
+      FdpModI = FDP.modI
+      FdpConj = FDP.conj
+      FdpDisj = FDP.disj
+      FdpExor = FDP.exor
+      FdpImpl = FDP.impl
+      FdpNega = FDP.nega
+      FdpEqui = FDP.equi
+      FdpIntR = FDP.intR
+      FdpCard = FDP.card
+      FdpExactly = FDP.exactly
+      FdpAtLeast = FDP.atLeast
+      FdpAtMost = FDP.atMost
+      FdpElement = FDP.element
+      FdpLessEqOff = FDP.lessEqOff
+      FdpMinimum = FDP.minimum
+      FdpMaximum = FDP.maximum
 
-              fdd_selVarMin:      FddSelVarMin
-              fdd_selVarMax:      FddSelVarMax
-              fdd_selVarSize:     FddSelVarSize
-              fdd_selVarNaive:    FddSelVarNaive
-              fdd_selVarNbSusps:  FddSelVarNbSusps
-              ...)
-      = {Foreign.staticLoad 'libFDP.so'}
+      FdpDistinct = FDP.distinct
+      FdpDistinct2 = FDP.distinct2
+      FdpDistinctD = FDP.distinctD
+      FdpDistinctOffset = FDP.distinctOffset
+
+      FdpDisjoint = FDP.disjoint
+      FdpDisjointC = FDP.disjointC
+      FdpDistance = FDP.distance
+
+      FdpSum = FDP.sum
+      FdpSumC = FDP.sumC
+      FdpDSum = FDP.dsum
+      FdpDSumC = FDP.dsumC
+      FdpSumAC = FDP.sumAC
+      FdpSumCN = FDP.sumCN
+      FdpSumR = FDP.sumR
+      FdpSumCR = FDP.sumCR
+      FdpSumCNR = FDP.sumCNR
+      FdpSumCD = FDP.sumCD
+      FdpSumCCD = FDP.sumCCD
+      FdpSumCNCD = FDP.sumCNCD
+
+      FddSelVarMin     = FDP.selVarMin
+      FddSelVarMax     = FDP.selVarMax
+      FddSelVarSize    = FDP.selVarSize
+      FddSelVarNaive   = FDP.selVarNaive
+      FddSelVarNbSusps = FDP.selVarNbSusps
 
       %%
       %% Telling Domains

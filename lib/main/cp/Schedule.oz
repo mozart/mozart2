@@ -103,7 +103,7 @@ in
    functor $ prop once
 
    import
-      Foreign.{staticLoad}
+      SCP from 'x-oz-boot:Schedule'
 
       FD.{bool
           is
@@ -132,18 +132,15 @@ in
 
       {Wait FD.bool}
 
-      %% Builtin propagators
-      foreign(sched_disjoint_card:      SchedDisjointCard
-              sched_cpIterate:          SchedCpIterate
-              sched_taskIntervals:      SchedTaskIntervals
-              sched_disjunctive:        SchedDisjunctive
-              sched_cpIterateCap:       SchedCpIterateCap
-              sched_cumulativeTI:       SchedCumulativeTI
-              sched_cpIterateCapUp:     SchedCpIterateCapUp
-              sched_taskIntervalsProof: SchedTaskIntervalsProof
-              sched_firstsLasts:        SchedFirstsLasts
-              ...)
-      = {Foreign.staticLoad 'libSchedule.so'}
+      SchedDisjointCard =       SCP.disjoint_card
+      SchedCpIterate =          SCP.cpIterate
+      SchedTaskIntervals =      SCP.taskIntervals
+      SchedDisjunctive =        SCP.disjunctive
+      SchedCpIterateCap =       SCP.cpIterateCap
+      SchedCumulativeTI =       SCP.cumulativeTI
+      SchedCpIterateCapUp =     SCP.cpIterateCapUp
+      SchedTaskIntervalsProof = SCP.taskIntervalsProof
+      SchedFirstsLasts =        SCP.firstsLasts
 
 
       %% Propagators

@@ -1,6 +1,8 @@
 functor
 import
-   GetArgs Tk
+   GetArgs
+   Tk
+   System.exit
 export
    exit     : Exit
    args     : Args
@@ -11,7 +13,7 @@ export
    toplevel : Toplevel
 body
    Spec Args Toplevel
-   Exit = {`Builtin` shutdown 1}
+   Exit = System.exit
    thread
       {Wait Spec}
       Args     = {GetArgs.applet Spec}

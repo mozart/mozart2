@@ -28,6 +28,8 @@
 functor $ prop once
 
 import
+   FSB from 'x-oz-boot:FSB'
+
    FSP from 'x-oz-boot:FSP'
 
    FD.{bool
@@ -120,8 +122,8 @@ body
       end
    end
 
-   FSSetValue   = {`Builtin` fsSetValue 2}
-   FSSet        = {`Builtin` fsSet 3}
+   FSSetValue   = FSB.setValue
+   FSSet        = FSB.set
    FSDisjoint   = FSP.disjoint
    FSDistinct   = FSP.distinct
 \ifdef CONSTRAINT_N_NAIVE
@@ -140,9 +142,9 @@ body
    FSMax        = FSP.max
    FSConvex     = FSP.convex
 
-   FSisVar         = {`Builtin` fsIsVarB 2}
-   FSisValue       = {`Builtin` fsIsValueB 2}
-   FSvalueToString = {`Builtin` fsValueToString 2}
+   FSisVar         = FSB.isVarB
+   FSisValue       = FSB.isValueB
+   FSvalueToString = FSB.valueToString
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %% DISTRIBUTION
@@ -453,22 +455,22 @@ body
       end
    end
 
-   FSCardRange     = {`Builtin` fsCardRange 3}
+   FSCardRange     = FSB.cardRange
 
-   FSGetUnknown    = {`Builtin` fsGetUnknown 2}
-   FSGetGlb        = {`Builtin` fsGetGlb 2}
-   FSGetLub        = {`Builtin` fsGetLub 2}
+   FSGetUnknown    = FSB.getUnknown
+   FSGetGlb        = FSB.getGlb
+   FSGetLub        = FSB.getLub
 
-   FSGetCard       = {`Builtin` fsGetCard 2}
+   FSGetCard       = FSB.getCard
 
-   FSGetNumOfGlb     = {`Builtin` fsGetNumOfKnownIn 2}
-   FSGetNumOfLub     = {`Builtin` fsGetNumOfKnownNotIn 2}
-   FSGetNumOfUnknown = {`Builtin` fsGetNumOfUnknown 2}
+   FSGetNumOfGlb     = FSB.getNumOfKnownIn
+   FSGetNumOfLub     = FSB.getNumOfKnownNotIn
+   FSGetNumOfUnknown = FSB.getNumOfUnknown
 
 \ifdef CONSTRAINT_N_NAIVE
    FSEmpty         = {FSSetValue nil}
 \endif
-   FSSup           = {{`Builtin` fsSup 1}}
+   FSSup           = {FSB.sup}
    FSInf           = 0
    FSUniversalRefl = [0#FSSup]
    FSUniversal     = {FSSetValue FSUniversalRefl}

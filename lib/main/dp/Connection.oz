@@ -121,6 +121,7 @@ in
 
    import
       Fault.{install deinstall}
+      PID from 'x-oz-boot:PID'
 
    export
       offer: Offer
@@ -131,16 +132,11 @@ in
       %%
       %% Base Process Identifier package
       %%
-      local
-         PID = pid(get:      {`Builtin` 'PID.get'      1}
-                   received: {`Builtin` 'PID.received' 1}
-                   toPort:   {`Builtin` 'PID.toPort' 5})
-      in
-         ReqStream = {PID.received}
-         ThisPid   = {PID.get}
-         fun {ToPort T}
-            {PID.toPort T.host T.port T.time.1 T.time.2}
-         end
+
+      ReqStream = {PID.received}
+      ThisPid   = {PID.get}
+      fun {ToPort T}
+         {PID.toPort T.host T.port T.time.1 T.time.2}
       end
 
       local

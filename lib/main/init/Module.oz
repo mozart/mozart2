@@ -90,11 +90,11 @@ in
       Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then
                  proc {$ _} skip end
               else
-                 {`Builtin` 'System.printInfo'  1}
+                 System.showInfo
               end
 
       fun {LoadFromUrl UrlV}
-         {Trace '[Module] Load: '#UrlV#'\n'}
+         {Trace '[Module] Load: '#UrlV}
          {Load UrlV}
       end
 
@@ -147,12 +147,12 @@ in
          UrlKey = {RURL.urlToKey Url}
       in
          case {ModuleMap.ensure UrlKey ?Mod} then
-            {Trace '[Module] Get:   '#UrlKey#'\n'}
+            {Trace '[Module] Get:   '#UrlKey}
          elsecase {CondSelect Url scheme ""}==BootScheme then
-            {Trace '[Module] Boot:  '#UrlKey#'\n'}
+            {Trace '[Module] Boot:  '#UrlKey}
             Mod = {BootManager Url.path.1.1}
          else
-            {Trace '[Module] Sync: '#UrlKey#'\n'}
+            {Trace '[Module] Sync: '#UrlKey}
             Mod={ByNeed fun {$}
                            {LinkFunctor Url {LoadFromUrl UrlKey}}
                         end}
@@ -177,14 +177,14 @@ in
                          end
                       enter:
                          proc {$ UrlV Mod}
-                            {Trace '[Module] Enter: '#UrlV#'\n'}
+                            {Trace '[Module] Enter: '#UrlV}
                             Url={RURL.vsToUrl UrlV}
                          in
                             {ModuleMap.put {RURL.urlToKey Url} Mod}
                          end
                       system:
                          proc {$ ModName UrlV}
-                            {Trace '[Module] System Map: '#ModName#':='#UrlV#'\n'}
+                            {Trace '[Module] System Map: '#ModName#':='#UrlV}
                             {SystemMap.put ModName {RURL.vsToUrl UrlV}}
                          end
                       resolve: ModNameToUrl

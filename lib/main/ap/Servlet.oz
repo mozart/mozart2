@@ -1,6 +1,6 @@
 functor
 import
-   GetArgs
+   GetArgs System.exit
 export
    exit : Exit
    args : Args
@@ -10,6 +10,6 @@ export
    spec : Spec
 body
    Spec
-   Exit = {`Builtin` shutdown 1}
+   Exit = System.exit
    Args = {ByNeed fun {$} {GetArgs.servlet Spec} end}
 end

@@ -82,7 +82,7 @@ local
    %% Access to commandline arguments
    %%
    fun {GetCmdArgs}
-      {Map {{`Builtin` 'GetProperty' 2} argv} AtomToString}
+      {Map XXXX AtomToString}
    end
 
 

@@ -33,6 +33,8 @@ in
       FS.{include var subset value reflect isIn}
       FD.{int is less distinct distribute}
       Search.{SearchOne = 'SearchOne'}
+      CompilerSupport
+      AssemblerSupport
 \ifndef OZM
       Gump
 \endif

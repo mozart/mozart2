@@ -22,7 +22,6 @@
 \insert Standard
 
 declare
-NewSystem
 NewForeign
 NewErrorRegistry
 NewError
@@ -34,9 +33,6 @@ NewCompiler
 UrlDefaults
 OuterBoot
 in
-\insert 'sp/System.oz'
-= NewSystem
-
 \insert 'sp/Foreign.oz'
 = NewForeign
 
@@ -78,14 +74,16 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FDB':           FDB
              'FSP':           FSP
              'FSB':           FSB
+             'AssemblerSupport':       AssemblerSupport
+             'CompilerSupport': CompilerSupport
 
              %% Volatile modules
              'OS':            OS
              'Pickle':        Pickle
              'Property':      Property
+             'System':        System
 
              %% Plain functors
-             'System':        System
              'Foreign':       Foreign
              'Error':         Error
              'ErrorRegistry': ErrorRegistry
@@ -105,6 +103,9 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FSP'#      FSP
              'OS'#       OS
              'Pickle'#   Pickle
+             'System'#   System
+             'AssemblerSupport'#     AssemblerSupport
+             'CompilerSupport'#      CompilerSupport
              'Property'# Property]
      proc {$ A#M}
         M={BootManager A}
@@ -112,8 +113,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
 
     Compiler
 
-    {ForAll [System        # NewSystem
-             Foreign       # NewForeign
+    {ForAll [Foreign       # NewForeign
              ErrorRegistry # NewErrorRegistry
              Error         # NewError
              FD            # NewFD
@@ -136,6 +136,9 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FSP'#      FSP
              'OS'#       OS
              'Pickle'#   Pickle
+             'System'#   System
+             'AssemblerSupport'# AssemblerSupport
+             'CompilerSupport'#  CompilerSupport
              'Property'# Property]
      proc {$ A#M}
         {Module.enter 'x-oz-boot://'#A M}
@@ -162,4 +165,4 @@ OuterBoot = {`Builtin` 'BootManager' 2}
     {System.exit {BatchCompile {Map {Property.get argv} Atom.toString}}}
  end 'ozc'#UrlDefaults.pickle}
 
-{{`Builtin` 'shutdown' 1} 0}
+{{OuterBoot 'System'}.exit 0}

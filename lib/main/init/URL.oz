@@ -110,7 +110,7 @@ local
 URL_localize    = BURL.localize
 URL_open        = BURL.open
 URL_load        = BURL.load
-PrintError      = {`Builtin` 'System.printError' 1}
+PrintError      = System.printError
 Getpwnam        = OS.getpwnam
 GetCWD          = OS.getCWD
 

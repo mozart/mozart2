@@ -25,14 +25,17 @@
 
 functor $ prop once
 
+import
+   Finalize from 'x-oz-boot:Finalize'
+
 export
    register:   Register
    setHandler: SetHandler
 
 body
 
-   Register   = {`Builtin` 'Finalize.register'   2}
-   SetHandler = {`Builtin` 'Finalize.setHandler' 1}
+   Register   = Finalize.register
+   SetHandler = Finalize.setHandler
 
    local
       proc {FinalizeEntry Value|Handler}

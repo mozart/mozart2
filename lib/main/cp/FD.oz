@@ -218,6 +218,8 @@ in
    functor $ prop once
 
    import
+      FDB from 'x-oz-boot:FDB'
+
       FDP from 'x-oz-boot:FDP'
 
       ErrorRegistry.{put}
@@ -228,6 +230,8 @@ in
              formatHint
              format
              dispatch}
+
+      System.nbSusps
 
    export
       %% Telling Domains
@@ -364,7 +368,7 @@ in
       %%
 
       local
-         FdPutList = {`Builtin` fdTellConstraint 2}
+         FdPutList = FDB.tellConstraint
 
          proc {ListDom Xs Dom}
             case Xs of nil then skip
@@ -384,7 +388,7 @@ in
             end
          end
       in
-         FdSup = {{`Builtin` fdGetLimits 2} 0}
+         FdSup = FDB.getLimits
 
          proc {FdInt Dom X}
             {FdPutList X Dom}
@@ -429,7 +433,7 @@ in
          end
       end
 
-      FdIs = {`Builtin` fdIs 2}
+      FdIs = FDB.is
 
 
       %%
@@ -437,15 +441,15 @@ in
       %%
 
       local
-         GetDomCompact = {`Builtin` fdGetDom  2}
+         GetDomCompact = FDB.getDom
       in
-         FdReflect = reflect(min:           {`Builtin` fdGetMin         2}
-                             mid:           {`Builtin` fdGetMid         2}
-                             max:           {`Builtin` fdGetMax         2}
-                             nextLarger:    {`Builtin` fdGetNextLarger  3}
-                             nextSmaller:   {`Builtin` fdGetNextSmaller 3}
-                             size:          {`Builtin` fdGetCard        2}
-                             nbSusps:       {`Builtin` 'System.nbSusps' 2}
+         FdReflect = reflect(min:           FDB.getMin
+                             mid:           FDB.getMid
+                             max:           FDB.getMax
+                             nextLarger:    FDB.getNextLarger
+                             nextSmaller:   FDB.getNextSmaller
+                             size:          FDB.getCard
+                             nbSusps:       System.nbSusps
                              domList:       fun {$ X}
                                                {Expand {GetDomCompact X}}
                                             end
@@ -459,7 +463,7 @@ in
       %%
 
       local
-         FdPutListCD = {`Builtin` fdTellConstraintCD 3}
+         FdPutListCD = FDB.tellConstraintCD
 
          proc {ListDomCD Xs Dom C}
             case Xs of nil then skip
@@ -493,8 +497,8 @@ in
 
       in
 
-         FdCD = cd(header: {`Builtin` fdConstrDisjSetUp 4}
-                   'body': {`Builtin` fdConstrDisj      3}
+         FdCD = cd(header: FDB.constrDisjSetUp
+                   'body': FDB.constrDisj
                    sum:    FdpSumCD
                    sumC:   FdpSumCCD
                    sumCN:  FdpSumCNCD
@@ -888,9 +892,9 @@ in
       %% Watching variables
       %%
 
-      FdWatch = watch(size: {`Builtin` fdWatchSize 3}
-                      min:  {`Builtin` fdWatchMin  3}
-                      max:  {`Builtin` fdWatchMax  3})
+      FdWatch = watch(size: FDB.watchSize
+                      min:  FDB.watchMin
+                      max:  FDB.watchMax)
 
 
       %%

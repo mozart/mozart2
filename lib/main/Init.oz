@@ -25,14 +25,18 @@ body
 
    BootManager = {`Builtin` 'BootManager' 2}
 
-   OS       = {BootManager 'OS'}
-   Property = {BootManager 'Property'}
-   Pickle   = {BootManager 'Pickle'}
    BURL     = {BootManager 'URL'}
+
+   OS       = {BootManager 'OS'}
+   Pickle   = {BootManager 'Pickle'}
+   Property = {BootManager 'Property'}
+   System   = {BootManager 'System'}
+
 
    Getenv = OS.getEnv
    SET    = Property.put
    GET    = Property.get
+
    %% usual system initialization
    URL = local
       \insert 'init/Prop.oz'
@@ -58,10 +62,12 @@ body
       {Module.enter 'x-oz-boot://Property' OS}
       {Module.enter 'x-oz-boot://URL'      BURL}
       {Module.enter 'x-oz-boot://Pickle'   Pickle}
+      {Module.enter 'x-oz-boot://System'   System}
 
       {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
       {Module.enter MozartUrl#'lib/Property'#FunExt Property}
       {Module.enter MozartUrl#'lib/Pickle'#FunExt   Pickle}
+      {Module.enter MozartUrl#'lib/System'#FunExt   System}
 
       {Module.enter MozartUrl#'lib/Module'#FunExt Module}
       {Module.enter MozartUrl#'lib/URL'#FunExt    URL}

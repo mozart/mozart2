@@ -55,7 +55,7 @@ prepare
 
 
 import
-   Pickle(load saveWithHeader)
+   Pickle(load saveWithCells)
    Application(exit getArgs)
    System(printError showError)
    FD(record distinctD distribute sumC)
@@ -171,7 +171,7 @@ define
 
        if {HasFeature Args out} then
           try
-             {Pickle.saveWithHeader OutFunctor Args.out
+             {Pickle.saveWithCells OutFunctor Args.out
               if Args.executable then
                  Exec = case {CondSelect Args execheader unit}
                         of unit then

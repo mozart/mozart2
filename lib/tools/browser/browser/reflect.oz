@@ -321,10 +321,10 @@ in
          %%
          case IsDeep then
             {ReflectTerm Term nil ReflectedTerm _}
-            S = {SolveCombinator proc {$ X} X = ReflectedTerm end}
+            S = {SearchOne proc {$ X} X = ReflectedTerm end}
 
             %% relational;
-            case S of solved(P) then {P}
+            case S of [T] then T
             else 'error by the reflection'
             end
          else Term

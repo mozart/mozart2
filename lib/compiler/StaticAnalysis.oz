@@ -3426,7 +3426,10 @@ define
          @value
       end
       meth getFullData(D IsData $)
-         @value
+         if IsData then @value
+         elseif {IsVirtualString @value} then @value
+         else {Value.toVirtualString @value 0 0}
+         end
       end
       meth getLastValue($)
          self

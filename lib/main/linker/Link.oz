@@ -65,12 +65,15 @@ local
                     BaseUrl|{CondSelect Spec include nil}}
       in
          fun {$ Url}
-            {System.show checkInc({VirtualString.toAtom {UrlToString Url}})}
+            B=
             if {IsNativeUrl Url} then false
             elseif {ToExcl Url} then false
             elseif {ToIncl Url} then true
             else false
             end
+         in
+            {System.show checkInc({VirtualString.toAtom {UrlToString Url}} B)}
+            B
          end
       end
 

@@ -337,7 +337,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                      bindKey(key: s            action: BO#SelShrink)]}
 
             %%
-            {ForAll {Sort {Dictionary.keys Actions} `<`}
+            {ForAll {Sort {Dictionary.keys Actions} Value.'<'}
              proc {$ K}
                 {Window addRadioEntry(selection(action(menu))
                                       {Dictionary.get Actions K}.label
@@ -589,10 +589,10 @@ class WindowManagerClass from MyClosableObject BatchObject
          %%
          %% Slide numbers - since menu entries could get new
          %% indexes (after executing the code above);
-         {ForAll {Sort {Dictionary.keys Actions} `<`} WClearProc}
+         {ForAll {Sort {Dictionary.keys Actions} Value.'<'} WClearProc}
          nextANumber <-
          {List.foldL
-          {Sort {Dictionary.keys Actions} `<`}
+          {Sort {Dictionary.keys Actions} Value.'<'}
           fun {$ I K}
              OldAction = {Dictionary.get Actions K}
           in

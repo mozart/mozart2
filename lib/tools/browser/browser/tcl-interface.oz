@@ -845,7 +845,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTWFont'#NewFont}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -875,7 +875,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::resetTW'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -906,9 +906,7 @@ in
             case XRes \= 0 then
                thread           % job
                   {self.browserObj
-                   SetTWWidth({`div`
-                               (TWWidth - 2*ITWPad - 2*IBigBorder)
-                               XRes})}
+                   SetTWWidth((TWWidth - 2*ITWPad - 2*IBigBorder) div XRes)}
                end
             else skip           % we cannot do anything anyway;
             end
@@ -929,7 +927,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setXYSize'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1024,7 +1022,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setMinSize'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1129,7 +1127,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMark' # Gravity}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1177,7 +1175,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMarkBefore' # Offset}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1220,7 +1218,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::unsetMark' # Mark}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1251,7 +1249,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::flushUnsetMarks'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1284,7 +1282,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::mapMark is applied' # Mark}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1364,7 +1362,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteRegion' # M1 # M2}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1400,7 +1398,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteForward' # N}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1419,7 +1417,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteBackward' # N}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1439,7 +1437,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setMarkGravity' # Mark # Gravity}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1453,7 +1451,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setCursor' # Mark}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1468,7 +1466,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setCursorOffset' # Mark # Offset}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1484,7 +1482,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::advanceCursor' # N}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1506,7 +1504,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::jumpEnd'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1535,7 +1533,7 @@ in
          {Show 'BrowserWindowClass::insert'
           # {String.toAtom {VirtualString.toString VS}}}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1557,7 +1555,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::insertNL'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1571,7 +1569,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeNL'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1583,7 +1581,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setScrolling' # X # Y}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1605,7 +1603,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::pickMark' # Mark # How}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1622,7 +1620,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::scrollToMark' # Mark}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1699,7 +1697,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::highlightRegion' # M1 # M2}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1726,7 +1724,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::unHighlightRegion'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1751,7 +1749,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::makeUnderline'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1781,10 +1779,11 @@ in
                TWWidth = {String.toInt TWWidthS} - 2*ITWPad - 2*IBigBorder
             else
                case MyClosableObject , isClosed($) then
-                  {`RaiseError` browser('Closed window object is applied!')}
+                  {Exception.raiseError
+                   browser('Closed window object is applied!')}
                else
-                  {`RaiseError` browser('Invalid "width" string:'
-                                        {String.toAtom TWWidthS})}
+                  {Exception.raiseError browser('Invalid "width" string:'
+                                                {String.toAtom TWWidthS})}
                end
             end
 
@@ -1796,7 +1795,7 @@ in
             %% simultaneously with the underline produced here (given
             %% a current window configuration).
             CWidth = {Float.toInt ({Int.toFloat TWWidth} / (F2 - F1))}
-            LineBase = {`div` YRes 2}
+            LineBase = YRes div 2
 
             %%
             Canvas = {New Tk.canvas tkInit(parent: BW
@@ -1831,7 +1830,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeUnderline'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1887,7 +1886,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::createTkVar'#FValue}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1924,7 +1923,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setPostCommand'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1965,7 +1964,7 @@ in
          {Show 'BrowserWindowClass::addRadioEntry'#
           {String.toAtom {VirtualString.toString Label}}}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -1996,7 +1995,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeRadioEntry'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2025,7 +2024,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesEnable'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2044,7 +2043,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesDisable'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2066,7 +2065,7 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: pushButton:' # BD}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2113,7 +2112,7 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: pushEmptyFrame:' # FD}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2146,7 +2145,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2165,7 +2164,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsDisable'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2184,7 +2183,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOn'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2203,7 +2202,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif
@@ -2222,7 +2221,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::noTearOff'}
          case MyClosableObject , isClosed($) then
-            {`RaiseError` browser('Closed window object is applied!')}
+            {Exception.raiseError browser('Closed window object is applied!')}
          else skip
          end
 \endif

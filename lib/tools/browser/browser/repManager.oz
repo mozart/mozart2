@@ -165,7 +165,7 @@ in
       else
          H V
       in
-         H = {`div` N 2}
+         H = N div 2
          case H + H == N then
             V = {CreateSpaces H}
             V # V

@@ -20,8 +20,9 @@
 %%%
 
 local
-   ParseFile          = {`Builtin` ozparser_parseFile          3}
-   ParseVirtualString = {`Builtin` ozparser_parseVirtualString 3}
+   ParserLib = {Foreign.staticLoad 'libparser.so'}
+   ParseFile          = ParserLib.parser_parseFile
+   ParseVirtualString = ParserLib.parser_parseVirtualString
 in
    fun {ParseOzFile FileName Reporter CompilerState}
       Res VS

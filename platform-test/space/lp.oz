@@ -29,6 +29,9 @@ functor
 export
    Return
 
+import
+   Search
+
 define
 
    proc {Skip} skip end
@@ -42,6 +45,12 @@ define
    proc {AppDis Xs Ys Zs}
       dis Xs=nil Zs=Ys               then {Skip}
       []  X Xr Zr in Xs=X|Xr Zs=X|Zr then {AppDis Xr Ys Zr}
+      end
+   end
+
+   proc {AppDisDeep Xs Ys Zs}
+      dis Xs=nil Zs=Ys
+      []  X Xr Zr in Xs=X|Xr Zs=X|Zr {AppDis Xr Ys Zr}
       end
    end
 
@@ -83,6 +92,18 @@ define
                                  {AppDis Xs nil Xs}
                               end)
                      keys: [lp space 'dis'])
+               'deepdis'(equal(fun {$}
+                                  {Search.base.all
+                                   proc {$ A}
+                                      X#Y=A
+                                   in
+                                      {AppDisDeep X Y [1 2 3 4]}
+                                   end}
+                               end
+                               [nil#[1 2 3 4] [1]#[2 3 4]
+                                [1 2]#[3 4] [1 2 3]#[4]
+                                [1 2 3 4]#nil])
+                         keys: ['dis' 'bug' 'append' 'merge'])
                'or'(entailed(proc {$}
                                 {AppOr Xs nil _}
                                 {AppOr _  nil Xs}

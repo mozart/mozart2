@@ -173,11 +173,11 @@ local
 
    class AnnotateDeclaration
       meth annotateGlobalVars(Ls VsHd VsTl)
-         {AnnotateGlobalVarsList @body {Append @localVars Ls} VsHd VsTl}
+         {AnnotateGlobalVarsList @statements {Append @localVars Ls} VsHd VsTl}
       end
       meth markFirst(WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(unused)} end}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
       end
    end
@@ -229,7 +229,7 @@ local
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter Vs in
          {@designator annotateGlobalVars(Ls VsHd VsInter)}
-         {AnnotateGlobalVarsList @body @formalArgs ?Vs nil}
+         {AnnotateGlobalVarsList @statements @formalArgs ?Vs nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -242,7 +242,7 @@ local
          {SetUninitVars @globalVars}
          {@designator markFirst(WarnFormals Rep)}
          {ForAll @formalArgs proc {$ V} {V setUse(wildcard)} end}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          case WarnFormals then
             {CheckUses @formalArgs 'formal parameter' Rep}
          else skip
@@ -292,7 +292,7 @@ local
    class AnnotateBoolClause
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) Vs in
-         {AnnotateGlobalVarsList @body nil ?Vs nil}
+         {AnnotateGlobalVarsList @statements nil ?Vs nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -305,7 +305,7 @@ local
          @globalVars
       end
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -343,7 +343,7 @@ local
       meth annotateGlobalVars(Ls VsHd VsTl) PatternVs Vs in
          {@pattern annotateGlobalVars(@localVars PatternVs nil)}
          patternGlobalVars <- {VariableUnion PatternVs nil}
-         {AnnotateGlobalVarsList @body @localVars Vs nil}
+         {AnnotateGlobalVarsList @statements @localVars Vs nil}
          globalVars <- {VariableUnion Vs PatternVs}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -361,7 +361,7 @@ local
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(wildcard)} end}
          {@pattern markFirst(WarnFormals Rep)}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
@@ -413,7 +413,7 @@ local
    class AnnotateElseNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) Vs in
-         {AnnotateGlobalVarsList @body nil ?Vs nil}
+         {AnnotateGlobalVarsList @statements nil ?Vs nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -426,7 +426,7 @@ local
          @globalVars
       end
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -448,7 +448,7 @@ local
    class AnnotateThreadNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) Vs in
-         {AnnotateGlobalVarsList @body nil ?Vs nil}
+         {AnnotateGlobalVarsList @statements nil ?Vs nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -459,15 +459,15 @@ local
       end
       meth markFirst(WarnFormals Rep)
          {SetUninitVars @globalVars}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
       end
    end
 
    class AnnotateTryNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter Vs in
-         {AnnotateGlobalVarsList @tryBody nil Vs VsInter}
-         {AnnotateGlobalVarsList @catchBody [@exception] VsInter nil}
+         {AnnotateGlobalVarsList @tryStatements nil Vs VsInter}
+         {AnnotateGlobalVarsList @catchStatements [@exception] VsInter nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -478,9 +478,9 @@ local
       end
       meth markFirst(WarnFormals Rep)
          {SetUninitVars @globalVars}
-         {MarkFirstList @tryBody WarnFormals Rep}
+         {MarkFirstList @tryStatements WarnFormals Rep}
          {@exception setUse(wildcard)}
-         {MarkFirstList @catchBody WarnFormals Rep}
+         {MarkFirstList @catchStatements WarnFormals Rep}
          {@exception checkUse('exception variable' Rep)}
       end
    end
@@ -488,11 +488,11 @@ local
    class AnnotateLockNode
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
          {@lockVar annotateGlobalVars(Ls VsHd VsInter)}
-         {AnnotateGlobalVarsList @body Ls VsInter VsTl}
+         {AnnotateGlobalVarsList @statements Ls VsInter VsTl}
       end
       meth markFirst(WarnFormals Rep)
          {@lockVar markFirst(WarnFormals Rep)}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
       end
    end
 
@@ -570,7 +570,7 @@ local
              {{Arg getFeature($)} annotateGlobalVars(Ls VsHd VsTl)}
           end VsInter2 VsInter3}
          NewLs = {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
-         {AnnotateGlobalVarsList @body NewLs VsInter3 nil}
+         {AnnotateGlobalVarsList @statements NewLs VsInter3 nil}
          Vs1 = {VariableUnion Vs nil}
          globalVars <- Vs1
          {FoldL Vs1
@@ -587,7 +587,7 @@ local
          {MarkFirstExpansionOccs self WarnFormals Rep}
          {@label markFirst(WarnFormals Rep)}
          {MarkFirstList @formalArgs WarnFormals Rep}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
       end
    end
    class AnnotateMethodWithDesignator
@@ -601,7 +601,7 @@ local
           end VsInter2 VsInter3}
          NewLs = @messageDesignator|
                  {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
-         {AnnotateGlobalVarsList @body NewLs VsInter3 nil}
+         {AnnotateGlobalVarsList @statements NewLs VsInter3 nil}
          Vs1 = {VariableUnion Vs nil}
          globalVars <- Vs1
          {FoldL Vs1
@@ -618,7 +618,7 @@ local
          {SetUninitVars @globalVars}
          {@label markFirst(WarnFormals Rep)}
          {MarkFirstList @formalArgs WarnFormals Rep}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          case WarnFormals then
             {@messageDesignator checkUse('message designator' Rep)}
          else skip
@@ -639,11 +639,11 @@ local
    class AnnotateObjectLockNode
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
          {GetExpansionVars self VsHd VsInter}
-         {AnnotateGlobalVarsList @body Ls VsInter VsTl}
+         {AnnotateGlobalVarsList @statements Ls VsInter VsTl}
       end
       meth markFirst(WarnFormals Rep)
          {MarkFirstExpansionOccs self WarnFormals Rep}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
       end
    end
 
@@ -717,7 +717,7 @@ local
       meth annotateGlobalVars(Ls VsHd VsTl) VsGuard Vs in
          {AnnotateGlobalVarsList @guard @localVars VsGuard nil}
          guardGlobalVars <- {VariableUnion VsGuard nil}
-         {AnnotateGlobalVarsList @body @localVars Vs nil}
+         {AnnotateGlobalVarsList @statements @localVars Vs nil}
          globalVars <- {VariableUnion Vs @guardGlobalVars}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -735,7 +735,7 @@ local
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(unused)} end}
          {MarkFirstList @guard WarnFormals Rep}
-         {MarkFirstList @body WarnFormals Rep}
+         {MarkFirstList @statements WarnFormals Rep}
          {CheckUses @localVars 'local clause variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}

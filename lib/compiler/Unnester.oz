@@ -483,9 +483,9 @@ local
                   {@reporter
                    error(coord: C kind: ExpansionError
                          msg: '"self, message" not allowed'
-                         body: [hint(l: 'Hint'
-                                     m: ('use a class in front of "," '#
-                                         'or use "{self message}"'))])}
+                         items: [hint(l: 'Hint'
+                                      m: ('use a class in front of "," '#
+                                          'or use "{self message}"'))])}
                else skip
                end
             else
@@ -853,9 +853,9 @@ local
                      {@reporter
                       error(coord: C kind: ExpansionError
                             msg: '"self, message" not allowed'
-                            body: [hint(l: 'Hint'
-                                        m: ('use a class in front of "," '#
-                                            'or use {self message}'))])}
+                            items: [hint(l: 'Hint'
+                                         m: ('use a class in front of "," '#
+                                             'or use {self message}'))])}
                   else skip
                   end
                else
@@ -1687,9 +1687,9 @@ local
                 error(coord: {CoordinatesOf FPattern} kind: SyntaxError
                       msg: ('only simple patterns in `case\' conditional '#
                             'allowed')
-                      body: [hint(l: 'Hint'
-                                  m: ('to create a deep guard, use the '#
-                                      '`if\' conditional)'))])}
+                      items: [hint(l: 'Hint'
+                                   m: ('to create a deep guard, use the '#
+                                       '`if\' conditional)'))])}
                GCs = GCr
             end
             Unnester, UnnestCaseClauses(FCr ?GCr)

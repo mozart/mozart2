@@ -150,15 +150,15 @@ in
       class Declaration
          from Statement Annotate.declaration SA.declaration CodeGen.declaration
          prop final
-         attr localVars: unit body: unit
-         meth init(LocalVars Body Coord)
+         attr localVars: unit statements: unit
+         meth init(LocalVars Statements Coord)
             localVars <- LocalVars
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
             coord <- Coord
          end
          meth output(R $)
             'local'#GL#IN#{LI @localVars GL true}#EX#GL#'in'#IN#NL#
-            {LI @body NL R}#EX#NL#'end'
+            {LI @statements NL R}#EX#NL#'end'
          end
       end
 
@@ -252,15 +252,16 @@ in
       class Definition
          from Statement Annotate.definition SA.definition CodeGen.definition
          attr
-            designator: unit formalArgs: unit body: unit isStateUsing: unit
-            procFlags: unit printName: '' toCopy: unit
+            designator: unit formalArgs: unit statements: unit
+            isStateUsing: unit procFlags: unit printName: '' toCopy: unit
             allVariables: nil
          feat expansionOccs predicateRef
-         meth init(Designator FormalArgs Body IsStateUsing ProcFlags Coord)
+         meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
+                   Coord)
             self.expansionOccs = expansionOccs('`ooSetSelf`': _)
             designator <- Designator
             formalArgs <- FormalArgs
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
             isStateUsing <- IsStateUsing
             procFlags <- ProcFlags
             coord <- Coord
@@ -282,7 +283,7 @@ in
             end#'}'#
             case {self isClauseBody($)} then '   % clause body' else "" end#
             PO#IN#FS1#NL#
-            {LI @body NL R}#EX#NL#'end'
+            {LI @statements NL R}#EX#NL#'end'
          end
          meth isClauseBody($)
             false
@@ -403,12 +404,12 @@ in
       class BoolClause
          from Annotate.boolClause SA.boolClause CodeGen.boolClause
          prop final
-         attr body: unit
-         meth init(Body)
-            body <- {FlattenSequence Body}
+         attr statements: unit
+         meth init(Statements)
+            statements <- {FlattenSequence Statements}
          end
          meth output(R $)
-            {LI @body NL R}
+            {LI @statements NL R}
          end
       end
 
@@ -432,15 +433,15 @@ in
       class PatternClause
          from Annotate.patternClause SA.patternClause CodeGen.patternClause
          prop final
-         attr localVars: unit pattern: unit body: unit
-         meth init(LocalVars Pattern Body)
+         attr localVars: unit pattern: unit statements: unit
+         meth init(LocalVars Pattern Statements)
             localVars <- LocalVars
             pattern <- Pattern
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
          end
          meth output(R $) FS in
             PU#{@pattern outputPattern2(R @localVars $ ?FS)}#PO#GL#'then'#IN#
-            FS#NL#{LI @body NL R}#EX
+            FS#NL#{LI @statements NL R}#EX
          end
       end
 
@@ -574,13 +575,13 @@ in
       class ElseNode
          from AbstractElse Annotate.elseNode SA.elseNode CodeGen.elseNode
          prop final
-         attr body: unit
-         meth init(Body)
-            body <- {FlattenSequence Body}
+         attr statements: unit
+         meth init(Statements)
+            statements <- {FlattenSequence Statements}
          end
          meth output(R $)
             'else'#IN#NL#
-            {LI @body NL R}#EX#NL
+            {LI @statements NL R}#EX#NL
          end
       end
       class NoElse
@@ -603,47 +604,47 @@ in
       class ThreadNode
          from Statement Annotate.threadNode SA.threadNode CodeGen.threadNode
          prop final
-         attr body: unit
-         meth init(Body Coord)
-            body <- {FlattenSequence Body}
+         attr statements: unit
+         meth init(Statements Coord)
+            statements <- {FlattenSequence Statements}
             coord <- Coord
          end
          meth output(R $)
             'thread'#IN#NL#
-            {LI @body NL R}#EX#NL#'end'
+            {LI @statements NL R}#EX#NL#'end'
          end
       end
 
       class TryNode
          from Statement Annotate.tryNode SA.tryNode CodeGen.tryNode
          prop final
-         attr tryBody: unit exception: unit catchBody: unit
-         meth init(TryBody Exception CatchBody Coord)
-            tryBody <- {FlattenSequence TryBody}
+         attr tryStatements: unit exception: unit catchStatements: unit
+         meth init(TryStatements Exception CatchStatements Coord)
+            tryStatements <- {FlattenSequence TryStatements}
             exception <- Exception
-            catchBody <- {FlattenSequence CatchBody}
+            catchStatements <- {FlattenSequence CatchStatements}
             coord <- Coord
          end
          meth output(R $)
             'try'#IN#NL#
-            {LI @tryBody NL R}#EX#NL#
+            {LI @tryStatements NL R}#EX#NL#
             'catch '#{@exception output(R $)}#' then'#
-            IN#NL#{LI @catchBody NL R}#EX#NL#'end'
+            IN#NL#{LI @catchStatements NL R}#EX#NL#'end'
          end
       end
 
       class LockNode
          from Statement Annotate.lockNode SA.lockNode CodeGen.lockNode
          prop final
-         attr lockVar: unit body: unit
-         meth init(LockVar Body Coord)
+         attr lockVar: unit statements: unit
+         meth init(LockVar Statements Coord)
             lockVar <- LockVar
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
             coord <- Coord
          end
          meth output(R $) FS in
             'lock '#{@lockVar output2(R $ ?FS)}#' then'#IN#NL#
-            {LI @body NL R}#EX#NL#'end'#FS
+            {LI @statements NL R}#EX#NL#'end'#FS
          end
       end
 
@@ -731,10 +732,10 @@ in
       class Method
          from Annotate.method SA.method CodeGen.method
          attr
-            label: unit formalArgs: unit body: unit coord: unit
+            label: unit formalArgs: unit statements: unit coord: unit
             allVariables: nil predicateRef: unit
          feat expansionOccs
-         meth init(Label FormalArgs Body Coord)
+         meth init(Label FormalArgs Statements Coord)
             self.expansionOccs = expansionOccs('`ooRequiredArg`': _
                                                '`ooDefaultVar`': _
                                                '`true`': _
@@ -749,7 +750,7 @@ in
                                                '`record`': _)
             label <- Label
             formalArgs <- FormalArgs
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
             coord <- Coord
          end
          meth setAllVariables(Vs)
@@ -761,7 +762,7 @@ in
          meth output(R $) FS1 FS2 in
             'meth '#{@label outputEscaped2(R $ ?FS1)}#'('#PU#
             {LI2 @formalArgs GL R ?FS2}#')'#PO#IN#FS1#FS2#NL#
-            {LI @body NL R}#EX#NL#'end'
+            {LI @statements NL R}#EX#NL#'end'
          end
       end
       class MethodWithDesignator
@@ -769,8 +770,8 @@ in
             CodeGen.methodWithDesignator
          prop final
          attr messageDesignator: unit isOpen: unit
-         meth init(Label FormalArgs IsOpen MessageDesignator Body Coord)
-            Method, init(Label FormalArgs Body Coord)
+         meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
+            Method, init(Label FormalArgs Statements Coord)
             isOpen <- IsOpen
             messageDesignator <- MessageDesignator
          end
@@ -781,7 +782,7 @@ in
                case @formalArgs of nil then '...' else GL#'...' end
             else ""
             end#') = '#{@messageDesignator output(R $)}#PO#IN#FS1#FS2#NL#
-            {LI @body NL R}#EX#NL#'end'
+            {LI @statements NL R}#EX#NL#'end'
          end
       end
 
@@ -844,15 +845,15 @@ in
          from Statement Annotate.objectLockNode SA.objectLockNode
             CodeGen.objectLockNode
          prop final
-         attr body: unit
+         attr statements: unit
          feat expansionOccs
-         meth init(Body Coord)
+         meth init(Statements Coord)
             self.expansionOccs = expansionOccs('`ooGetLock`': _)
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
             coord <- Coord
          end
          meth output(R $)
-            'lock'#IN#NL#{LI @body NL R}#EX#NL#'end'
+            'lock'#IN#NL#{LI @statements NL R}#EX#NL#'end'
          end
       end
 
@@ -931,12 +932,12 @@ in
       class Clause
          from Annotate.clause SA.clause CodeGen.clause
          prop final
-         attr localVars: unit guard: unit kind: unit body: unit
-         meth init(LocalVars Guard Kind Body)
+         attr localVars: unit guard: unit kind: unit statements: unit
+         meth init(LocalVars Guard Kind Statements)
             localVars <- LocalVars
             guard <- {FlattenSequence Guard}
             kind <- Kind
-            body <- {FlattenSequence Body}
+            statements <- {FlattenSequence Statements}
          end
          meth output(R $)
             case @localVars of _|_ then
@@ -944,7 +945,7 @@ in
             [] nil then ""
             end#{LI @guard NL R}#EX#NL#'then'#IN#NL#
             case @kind == waitTop then 'skip   % top commit'
-            else {LI @body NL R}
+            else {LI @statements NL R}
             end
          end
       end

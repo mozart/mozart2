@@ -693,7 +693,7 @@ local
       {Show issuetypeerror(TX TY X Y)}
 \endif
 
-      ErrMsg UnifLeft UnifRight Msgs Body
+      ErrMsg UnifLeft UnifRight Msgs Items
    in
 
       ErrMsg = {Ctrl getErrorMsg($)}
@@ -711,14 +711,14 @@ local
                           oz({GetFullData UnifRight}))]
                  else nil end
                ]
-      Body   = {FoldR Msgs Append nil}
+      Items  = {FoldR Msgs Append nil}
 
       case {Ctrl getNeeded($)} then
          {Ctrl.rep
-          error(coord:Coord kind:SATypeError msg:ErrMsg body:Body)}
+          error(coord:Coord kind:SATypeError msg:ErrMsg items:Items)}
       else
          {Ctrl.rep
-          warn(coord:Coord kind:SAGenWarn msg:ErrMsg body:Body)}
+          warn(coord:Coord kind:SAGenWarn msg:ErrMsg items:Items)}
       end
    end
 
@@ -764,12 +764,12 @@ local
          {Ctrl.rep error(coord: Origin
                          kind:  SAGenError
                          msg:   'unification error in needed statement'
-                         body:  Text2)}
+                         items: Text2)}
       else
          {Ctrl.rep warn(coord: Origin
                         kind:  SAGenWarn
                         msg:   'unification error in possibly unneeded statement'
-                        body:  Text2)}
+                        items: Text2)}
       end
    end
 
@@ -1223,7 +1223,7 @@ local
       end
       meth saDescend(Ctrl)
          % descend with same environment
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
       end
    end
 
@@ -1447,7 +1447,7 @@ local
                 error(coord: Coord
                       kind:  SAGenError
                       msg:   'duplicate features in record construction'
-                      body:  [hint(l:'Features found' m:{SetToVS Fields})])}
+                      items: [hint(l:'Features found' m:{SetToVS Fields})])}
             end
          else
             {Ctrl.rep error(coord: Coord
@@ -1666,7 +1666,7 @@ local
 
          % prepare some feature values for the code generator:
          case {self isClauseBody($)} then
-            @value.clauseBodyStatements = @body
+            @value.clauseBodyStatements = @statements
             PredicateRef = unit
          elsecase {Ctrl getTop($)} then
             {Ctrl declareToplevelProcedure(?PredicateRef)}
@@ -1695,14 +1695,14 @@ local
             {Ctrl beginVirtualToplevel(@coord)}
             {Ctrl getTop(?Top)}
             {Ctrl setTop(true)}
-            SAStatement, saBody(Ctrl @body)
+            SAStatement, saBody(Ctrl @statements)
             {Ctrl setTop(Top)}
             toCopy <- {Ctrl endVirtualToplevel($)}
          else
             T N in
             {Ctrl getTopNeeded(T N)}
             {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @body)
+            SAStatement, saBody(Ctrl @statements)
             {Ctrl setTopNeeded(T N)}
          end
          {InstallGlobalEnv Env}
@@ -1749,7 +1749,7 @@ local
                    error(coord: @coord
                          kind:  SATypeError
                          msg:   'ill-typed application'
-                         body:  [hint(l:'Procedure' m:PN)
+                         items: [hint(l:'Procedure' m:PN)
                                  hint(l:'At argument' m:N)
                                  hint(l:'Expected' m:oz(T))
                                  hint(l:'Found' m:{TypeToVS {A getType($)}})
@@ -1825,7 +1825,7 @@ local
                        error(coord: @coord
                              kind:  SAGenError
                              msg:   'missing message feature in ' # Where
-                             body:  [hint(l:What m:pn(PN))
+                             items: [hint(l:What m:pn(PN))
                                      hint(l:'Required feature' m:R)
                                      hint(l:'Message found'
                                           m:oz(MsgData))])}
@@ -1844,7 +1844,7 @@ local
                           error(coord: @coord
                                 kind:  SAGenError
                                 msg:   'illegal message feature in ' # Where
-                                body:  [hint(l:What m:pn(PN))
+                                items: [hint(l:What m:pn(PN))
                                         hint(l:'Required features'
                                              m:{SetToVS Req})
                                         hint(l:'Optional features'
@@ -1862,7 +1862,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal message label in ' # Where
-                      body:  [hint(l:What m:pn(PN))
+                      items: [hint(l:What m:pn(PN))
                               hint(l:'Expected' m:{SetToVS {FormatArity Meth}})
                               hint(l:'Message found' m:oz(MsgData))])}
             end
@@ -1908,7 +1908,7 @@ local
                {Ctrl.rep error(coord: @coord
                                kind:  SATypeError
                                msg:   'ill-typed application'
-                               body:  [hint(l:'Builtin' m:pn(N))
+                               items: [hint(l:'Builtin' m:pn(N))
                                        hint(l:'At argument' m:Pos)
                                        hint(l:'Expected types' m:{ProdToVS Ts})
                                        hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
@@ -1922,7 +1922,7 @@ local
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
                             msg:   'illegal arity in application'
-                            body:  [hint(l:'Builtin' m:N)
+                            items: [hint(l:'Builtin' m:N)
                                     hint(l:'Expected' m:ProcArity)
                                     hint(l:'Found' m:NumArgs)
                                     hint(l:'Argument names'
@@ -1961,14 +1961,14 @@ local
                 warn(coord: @coord
                      kind:  SAGenWarn
                      msg:   'builtin undefined'
-                     body:  [hint(l:'Name' m:pn(BIName))
+                     items: [hint(l:'Name' m:pn(BIName))
                              hint(l:'Arity' m:BIArity)])}
             [] builtinArity then
                {Ctrl.rep
                 warn(coord: @coord
                      kind:  SAGenWarn
                      msg:   'builtin has wrong arity'
-                     body:  [hint(l:'Name' m:pn(BIName))
+                     items: [hint(l:'Name' m:pn(BIName))
                              hint(l:'Arity' m:BIArity)])}
             end
          end
@@ -2111,7 +2111,7 @@ local
                    error(coord: @coord
                          kind:  SAGenError
                          msg:   'illegal feature selection from object'
-                         body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
+                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
                                  hint(l:'Found' m:oz(F))])}
                end
             end
@@ -2133,7 +2133,7 @@ local
                    error(coord: @coord
                          kind:  SAGenError
                          msg:   'illegal feature selection from class'
-                         body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
+                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
                                  hint(l:'Found' m:oz(F))])}
                end
             end
@@ -2158,7 +2158,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal feature selection from record'
-                      body:  [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
+                      items: [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
                               hint(l:'Found' m:oz(F))])}
             end
          elsecase
@@ -2208,7 +2208,7 @@ local
              error(coord: @coord
                    kind:  SAGenError
                    msg:   'illegal feature selection from record'
-                   body:  [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
+                   items: [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
                            hint(l:'Found' m:oz(Fea))])}
          else
             skip
@@ -2265,7 +2265,7 @@ local
                      msg:   'applying ' #
                      {GetBuiltinName {GetData @designator}} #
                      ' to unavailable attribute'
-                     body:  [hint(l:'Expression' m:Expr)
+                     items: [hint(l:'Expression' m:Expr)
                              hint(l:Cls
                                   m:pn({{Self getDesignator($)}
                                         getPrintName($)}))
@@ -2466,7 +2466,7 @@ local
              error(coord: @coord
                    kind:  SATypeError
                    msg:   'wrong arity in application of ' # pn(PN)
-                   body:  [hint(l:'Procedure type' m:{TypeToVS DesigType})
+                   items: [hint(l:'Procedure type' m:{TypeToVS DesigType})
                            hint(l:'Application arity' m:{Length @actualArgs})
                            hint(l:'Application (names)'
                                 m:{ApplToVS pn(PN)|PNs})
@@ -2540,7 +2540,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal number of arguments in application'
-                      body:  [hint(l:'Procedure' m:pn(PN))
+                      items: [hint(l:'Procedure' m:pn(PN))
                               hint(l:'Expected' m:ExpA)
                               hint(l:'Found' m:GotA)
                               hint(l:'Application (names)'
@@ -2563,7 +2563,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal number of arguments in object application'
-                      body:  [hint(l:'Object' m:pn(PN))
+                      items: [hint(l:'Object' m:pn(PN))
                               hint(l:'Expected' m:1)
                               hint(l:'Found' m:GotA)])}
             elsecase
@@ -2728,14 +2728,14 @@ local
             Val = {GetFullData Arbiter}
          in
             {Ctrl.rep
-             error(coord: {@body.1 getCoord($)}
+             error(coord: {@statements.1 getCoord($)}
                    msg:   'Non-boolean arbiter in boolean case statement'
                    kind:  SATypeError
-                   body:  [hint(l:'Name' m:pn(PN))
+                   items: [hint(l:'Name' m:pn(PN))
                            hint(l:'Value' m:oz(Val))])}
          end
 
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -2747,13 +2747,13 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
       end
       meth saDescendAndCommit(Ctrl)
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
       end
    end
 
@@ -2795,7 +2795,7 @@ local
    class SAPatternClause
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show patternClause(@body)}
+         {Show patternClause(@statements)}
 \endif
          T N in
          {Ctrl getTopNeeded(T N)}
@@ -2822,7 +2822,7 @@ local
          {Ctrl resetUnifier}
          {Ctrl resetErrorMsg}
 
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -2919,7 +2919,7 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -2933,7 +2933,7 @@ local
 
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -2946,13 +2946,13 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
       end
       meth saDescendAndCommit(Ctrl)
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
       end
    end
    class SANoElse
@@ -2994,7 +2994,7 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopButNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -3017,7 +3017,7 @@ local
 
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopButNeeded}
-         SAStatement, saBody(Ctrl @tryBody)
+         SAStatement, saBody(Ctrl @tryStatements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env1}
@@ -3033,7 +3033,7 @@ local
          Env2 = {GetGlobalEnv @globalVars}
 
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @catchBody)
+         SAStatement, saBody(Ctrl @catchStatements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env2}
@@ -3051,7 +3051,7 @@ local
          T N in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopButNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
       end
       meth applyEnvSubst(Ctrl)
@@ -3111,7 +3111,7 @@ local
                 warn(coord: @coord
                      kind:  SAGenWarn
                      msg:   'insufficient information in inheritance'
-                     body:  [hint(l:'Parent'
+                     items: [hint(l:'Parent'
                                   m:pn({{Nth @parents NoDet}
                                         getPrintName($)}))])}
             end
@@ -3231,7 +3231,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'duplicate attributes in class definition'
-                      body:  [hint(l:'Attributes found'
+                      items: [hint(l:'Attributes found'
                                    m:{SetToVS {Ozify AData}})])}
             end
          else
@@ -3286,7 +3286,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'duplicate features in class definition'
-                      body:  [hint(l:'Features found'
+                      items: [hint(l:'Features found'
                                    m:{SetToVS {Ozify FData}})])}
             end
          else
@@ -3355,7 +3355,7 @@ local
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'duplicate method names in class definition'
-                      body:  [hint(l:'Method names'
+                      items: [hint(l:'Method names'
                                    m:{SetToVS {Ozify MethNames}})])}
             end
          else
@@ -3445,7 +3445,7 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -3490,7 +3490,7 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
@@ -3552,7 +3552,7 @@ local
          T N in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopButNeeded}
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
       end
       meth applyEnvSubst(Ctrl)
@@ -3693,7 +3693,7 @@ local
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
          SAStatement, saBody(Ctrl @guard)
-         SAStatement, saBody(Ctrl @body)
+         SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}

@@ -838,10 +838,10 @@ local
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
          case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
             {MakePermanent @localVars ?Regs VHd Cont1}
-            {CodeGenList @body CS Cont1 Cont2}
+            {CodeGenList @statements CS Cont1 Cont2}
             {Clear Regs Cont2 VTl}
          else
-            {CodeGenList @body CS VHd VTl}
+            {CodeGenList @statements CS VHd VTl}
          end
       end
    end
@@ -960,12 +960,12 @@ local
                        end}
          case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
             {MakePermanent @formalArgs ?Regs BodyVInter Cont1}
-            {CodeGenList @body CS Cont1 Cont2}
+            {CodeGenList @statements CS Cont1 Cont2}
             {Clear Regs Cont2 nil}
          else
-            {CodeGenList @body CS BodyVInter nil}
+            {CodeGenList @statements CS BodyVInter nil}
          end
-         body <- unit   % hand it to the garbage collector
+         statements <- unit   % hand it to the garbage collector
          AllRegs = case @allVariables of nil then nil
                    else {Map @allVariables fun {$ V} {V reg($)} end}
                    end
@@ -1085,7 +1085,7 @@ local
 
    class CodeGenBoolClause
       meth codeGen(CS VHd VTl)
-         {CodeGenList @body CS VHd VTl}
+         {CodeGenList @statements CS VHd VTl}
       end
    end
 
@@ -1148,7 +1148,7 @@ local
       end
       meth makeSwitchable(Reg CS SHT) Msg in
          %--** CS.debugInfoVarnamesSwitch!
-         {@pattern makeSwitchable(Reg @localVars @body CS ?Msg)}
+         {@pattern makeSwitchable(Reg @localVars @statements CS ?Msg)}
          {ForAll @localVars
           proc {$ V} Reg = {V reg($)} in
              case {IsDet Reg} then skip
@@ -1162,10 +1162,10 @@ local
          {@pattern makeEquation(CS VO GuardVHd GuardVTl)}
          case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
             {MakePermanent @localVars ?Regs ThenVHd Cont1}
-            {CodeGenList @body CS Cont1 Cont2}
+            {CodeGenList @statements CS Cont1 Cont2}
             {Clear Regs Cont2 ThenVTl}
          else
-            {CodeGenList @body CS ThenVHd ThenVTl}
+            {CodeGenList @statements CS ThenVHd ThenVTl}
          end
       end
       meth makeCondClause(CS VO $)
@@ -1184,10 +1184,10 @@ local
          Cont = vAsk(_ nil)
          case CS.debugInfoVarnamesSwitch then Regs Cont3 Cont4 in
             {MakePermanent @localVars ?Regs BodyVInstr Cont3}
-            {CodeGenList @body CS Cont3 Cont4}
+            {CodeGenList @statements CS Cont3 Cont4}
             {Clear Regs Cont4 nil}
          else
-            {CodeGenList @body CS BodyVInstr nil}
+            {CodeGenList @statements CS BodyVInstr nil}
          end
          _#GuardVInstr#BodyVInstr
       end
@@ -1324,9 +1324,9 @@ local
    end
    class CodeGenElseNode
       attr localVars
-      meth codeGenInit(LocalVars Body)
+      meth codeGenInit(LocalVars Statements)
          localVars <- LocalVars
-         body <- Body
+         statements <- Statements
       end
       meth codeGenShared(CS VHd VTl)
          VHd = self.shared
@@ -1338,10 +1338,10 @@ local
             case CS.debugInfoVarnamesSwitch andthen {IsDet @localVars} then
                Regs Cont1 Cont2 in
                {MakePermanent @localVars ?Regs Addr Cont1}
-               {CodeGenList @body CS Cont1 Cont2}
+               {CodeGenList @statements CS Cont1 Cont2}
                {Clear Regs Cont2 nil}
             else
-               {CodeGenList @body CS Addr nil}
+               {CodeGenList @statements CS Addr nil}
             end
          else skip
          end
@@ -1353,10 +1353,10 @@ local
          case CS.debugInfoVarnamesSwitch andthen {IsDet @localVars} then
             Regs Cont1 Cont2 in
             {MakePermanent @localVars ?Regs VHd Cont1}
-            {CodeGenList @body CS Cont1 Cont2}
+            {CodeGenList @statements CS Cont1 Cont2}
             {Clear Regs Cont2 VTl}
          else
-            {CodeGenList @body CS VHd VTl}
+            {CodeGenList @statements CS VHd VTl}
          end
       end
       meth codeGenWithArbiterNoShared(CS VO VHd VTl)
@@ -1396,21 +1396,21 @@ local
 
    class CodeGenThreadNode
       meth codeGen(CS VHd VTl) BodyVInstr in
-         {CodeGenList @body CS BodyVInstr nil}
+         {CodeGenList @statements CS BodyVInstr nil}
          VHd = vThread(_ BodyVInstr @coord VTl _)
       end
    end
 
    class CodeGenTryNode
       meth codeGen(CS VHd VTl) TryBodyVInstr CatchBodyVInstr in
-         {CodeGenList @tryBody CS TryBodyVInstr vPopEx(_ @coord nil)}
+         {CodeGenList @tryStatements CS TryBodyVInstr vPopEx(_ @coord nil)}
          {@exception setReg(CS)}
          case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
             {MakePermanent [@exception] ?Regs CatchBodyVInstr Cont1}
-            {CodeGenList @catchBody CS Cont1 Cont2}
+            {CodeGenList @catchStatements CS Cont1 Cont2}
             {Clear Regs Cont2 nil}
          else
-            {CodeGenList @catchBody CS CatchBodyVInstr nil}
+            {CodeGenList @catchStatements CS CatchBodyVInstr nil}
          end
          VHd = vExHandler(_ TryBodyVInstr {@exception reg($)}
                           CatchBodyVInstr @coord VTl _)
@@ -1420,7 +1420,7 @@ local
    class CodeGenLockNode
       meth codeGen(CS VHd VTl) SharedData Cont1 in
          VHd = vLockThread(_ {@lockVar reg($)} @coord Cont1 SharedData)
-         {CodeGenList @body CS Cont1 vLockEnd(_ @coord VTl SharedData)}
+         {CodeGenList @statements CS Cont1 vLockEnd(_ @coord VTl SharedData)}
       end
    end
 
@@ -1528,13 +1528,13 @@ local
                Cont1 = vGetSelf(_ StateReg Cont2)
                Vs = {Map @formalArgs fun {$ F} {F getVariable($)} end}
                {MakePermanent Vs ?Regs Cont2 Cont3}
-               {CodeGenList @body CS Cont3 Cont4}
+               {CodeGenList @statements CS Cont3 Cont4}
                {Clear Regs Cont4 Cont5}
                {Clear [StateReg] Cont5 nil}
             else
-               {CodeGenList @body CS BodyVInstr nil}
+               {CodeGenList @statements CS BodyVInstr nil}
             end
-            body <- unit   % hand it to the garbage collector
+            statements <- unit   % hand it to the garbage collector
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?FastMeth)}
             VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code
@@ -1684,7 +1684,7 @@ local
              proc {$ VHd Formal VTl}
                 {Formal bindMethFormal(MessageVO CS self VHd VTl)}
              end Cont3 Cont4}
-            {CodeGenList @body CS Cont4 Cont5}
+            {CodeGenList @statements CS Cont4 Cont5}
             case CS.debugInfoVarnamesSwitch then
                StateReg Vs Regs Cont01 Cont02 Cont05
             in
@@ -1795,7 +1795,7 @@ local
          Arg = {New PseudoVariableOccurrence init(Reg)}
          {MakeApplication OOGetLock [Arg] CS VHd Cont1}
          Cont1 = vLockThread(_ Reg @coord Cont2 SharedData)
-         {CodeGenList @body CS Cont2 vLockEnd(_ @coord VTl SharedData)}
+         {CodeGenList @statements CS Cont2 vLockEnd(_ @coord VTl SharedData)}
       end
    end
 
@@ -1894,10 +1894,10 @@ local
                 end
          case CS.debugInfoVarnamesSwitch then Regs Cont3 Cont4 in
             {MakePermanent @localVars ?Regs BodyVInstr Cont3}
-            {CodeGenList @body CS Cont3 Cont4}
+            {CodeGenList @statements CS Cont3 Cont4}
             {Clear Regs Cont4 nil}
          else
-            {CodeGenList @body CS BodyVInstr nil}
+            {CodeGenList @statements CS BodyVInstr nil}
          end
       end
    end

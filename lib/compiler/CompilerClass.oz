@@ -474,13 +474,13 @@ local
                        warn(kind: 'warning'
                             msg: ('redeclaring top-level variable '#
                                   pn(PrintName))
-                            body: case C == unit then
-                                     [line('previously declared via putEnv')
-                                      {GV getCoord($)}]
-                                  else
-                                     [{GV getCoord($)} unit
-                                      line('previous declaration was') C]
-                                  end)}
+                            items: case C == unit then
+                                      [line('previously declared via putEnv')
+                                       {GV getCoord($)}]
+                                   else
+                                      [{GV getCoord($)} unit
+                                       line('previous declaration was') C]
+                                   end)}
                    end
                 end}
             else skip
@@ -893,7 +893,7 @@ in
                {self.Compiler getReporter(?Reporter)}
                {Reporter error(kind: 'error'
                                msg: 'execution of query raised failure'
-                               body: [hint(l: 'Query' m: oz(M))])}
+                               items: [hint(l: 'Query' m: oz(M))])}
                {Reporter logReject()}
             end
             lock self.QueueLock then

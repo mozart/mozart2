@@ -722,9 +722,9 @@ in
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'conditional suspends forever'
-                     body: [hint(l: 'Hint'
-                                 m: 'undetermined variable used '#
-                                    'as boolean guard')])}
+                     items: [hint(l: 'Hint'
+                                  m: ('undetermined variable used '#
+                                      'as boolean guard'))])}
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end
@@ -786,9 +786,9 @@ in
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'conditional suspends forever'
-                     body: [hint(l: 'Hint'
-                                 m: 'undetermined variable used '#
-                                    'as pattern case arbiter')])}
+                     items: [hint(l: 'Hint'
+                                  m: ('undetermined variable used '#
+                                      'as pattern case arbiter'))])}
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end
@@ -839,9 +839,8 @@ in
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'lock suspends forever'
-                     body: [hint(l: 'Hint'
-                                 m: 'undetermined variable used '#
-                                    'as lock')])}
+                     items: [hint(l: 'Hint'
+                                  m: 'undetermined variable used as lock')])}
             else skip
             end
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
@@ -1056,9 +1055,9 @@ in
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'application suspends forever'
-                     body: [hint(l: 'Hint'
-                                 m: 'undetermined variable called '#
-                                    'as procedure')])}
+                     items: [hint(l: 'Hint'
+                                  m: ('undetermined variable called '#
+                                      'as procedure'))])}
                case Emitter, IsLast(Reg $) orelse WhichReg == non_y then
                   Emitter, AllocateAnyTemp(Reg ?R0)
                else
@@ -1529,9 +1528,9 @@ in
             {self.reporter
              warn(coord: Coord kind: 'code generation warning'
                   msg: 'conditional suspends forever'
-                  body: [hint(l: 'Hint'
-                              m: ('undetermined variable used '#
-                                  'as boolean guard'))])}
+                  items: [hint(l: 'Hint'
+                               m: ('undetermined variable used '#
+                                   'as boolean guard'))])}
             Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
          elseof XYG then R = XYG
          end

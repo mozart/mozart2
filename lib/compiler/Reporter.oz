@@ -164,16 +164,16 @@ in
       meth error(coord: Coord <= unit
                  kind: Kind <= unit
                  msg: Msg <= unit
-                 body: Body <= nil) MaxNumberOfErrors in
+                 items: Items <= nil) MaxNumberOfErrors in
          Reporter, ToTop(true)
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
           end
           error(kind: Kind msg: Msg
-                body: case Coord == unit then Body
-                      else {Append Body [Coord]}
-                      end)}
+                items: case Coord == unit then Items
+                       else {Append Items [Coord]}
+                       end)}
          ErrorCount <- @ErrorCount + 1
          {self.Compiler getMaxNumberOfErrors(?MaxNumberOfErrors)}
          case MaxNumberOfErrors < 0 then skip
@@ -185,16 +185,16 @@ in
       meth warn(coord: Coord <= unit
                 kind: Kind <= unit
                 msg: Msg <= unit
-                body: Body <= nil)
+                items: Items <= nil)
          Reporter, ToTop(false)
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
           end
           warn(kind: Kind msg: Msg
-               body: case Coord == unit then Body
-                     else {Append Body [Coord]}
-                     end)}
+               items: case Coord == unit then Items
+                      else {Append Items [Coord]}
+                      end)}
       end
       meth addErrors(N)
          Reporter, ToTop(true)

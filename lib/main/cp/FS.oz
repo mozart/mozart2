@@ -169,7 +169,7 @@ define
          [] !MAXELEM#!MAXELEM then false
          [] !MAXELEM#_        then false
          []        _#!MAXELEM then true
-         else X < Y
+         else X =< Y
          end
       end
 
@@ -337,16 +337,18 @@ define
          end
       end
 
-      proc {FSDistGeneric Vs Order FCond Elem RRobin Sel Proc}
-         SL = {VectorToList Vs}
-      in
+      proc {FSDistGeneric SL Order FCond Elem RRobin Sel Proc}
          {Space.waitStable}
          if Proc\=unit then
             {Proc}
             {Space.waitStable}
          end
          local
-            SortedSL = {Order {Filter SL FCond}}
+            FilteredSL = {Filter SL FCond}
+            %% it is unnecessary to compute the sorted list
+            %% we just need to pick the right variable.
+            %% this needs to be fixed eventually.
+            SortedSL   = {Order FilteredSL}
          in
             case SortedSL
             of nil then skip
@@ -361,7 +363,7 @@ define
                []     {FSIsExcl UnknownVal DistVar}
                end
                */
-               {FSDistGeneric {RRobin SortedSL}
+               {FSDistGeneric {RRobin FilteredSL}
                 Order FCond Elem RRobin Sel Proc}
             end
          end

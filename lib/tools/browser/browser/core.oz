@@ -55,7 +55,7 @@ IsRecordCVar = {`Builtin` 'recordCIsVarB' 2}
 %%
 %% Yields 'true' if a record given has a label already. Never
 %% suspends;
-HasLabel = {`Builtin` hasLabel 2}
+HasLabel = Record.hasLabel
 
 
 EQ = {fun {$ X} X end System.eq}
@@ -88,7 +88,7 @@ ChunkWidth = {`Builtin` 'chunkWidth' 2}
 AddrOf = {`Builtin` 'addr' 2}
 
 %%
-OnToplevel = {`Builtin` 'onToplevel' 1}
+OnToplevel = System.onToplevel
 
 %%
 FSetGetGlb  = FSB.getGlb
@@ -100,7 +100,3 @@ IsFSetVar   = FSB.isVarB
 GetCtVarNameAsAtom       = CTB.getNameAsAtom
 GetCtVarConstraintAsAtom = CTB.getConstraintAsAtom
 IsCtVar                  = CTB.isB
-
-
-%%
-ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}

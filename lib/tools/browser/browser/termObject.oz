@@ -263,7 +263,7 @@ in
       case {Store read(StoreSmallNames $)} then
          '<Foreign Pointer>'
       else
-         '<Foreign Pointer: ' # {ForeignPointerToInt Term} # ' @ ' #
+         '<Foreign Pointer: ' # {ForeignPointer.toInt Term} # ' @ ' #
          {AddrOf Term} # '>'
       end
    end

@@ -55,7 +55,8 @@ import
    System.{show
            valueToVirtualString
            printName
-           eq}
+           eq
+           onToplevel}
 
    Tk
 
@@ -100,7 +101,6 @@ body
    ChunkWidth     % ... its width;
    AddrOf         %
    OnToplevel     %
-   ForeignPointerToInt %
 
    %% reflectives for finite sets
    FSetGetGlb

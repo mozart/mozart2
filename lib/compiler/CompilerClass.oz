@@ -203,11 +203,11 @@ local
 
       meth enter(V X <= _ NameIt <= true)
          CompilerStateClass, Enter(V X NameIt)
-         {@wrapper notify(env(self.values))}
+         {@wrapper notify(env({Dictionary.toRecord env self.values}))}
       end
       meth enterMultiple(Vs)
          {ForAll Vs proc {$ V} CompilerStateClass, Enter(V _ true) end}
-         {@wrapper notify(env(self.values))}
+         {@wrapper notify(env({Dictionary.toRecord env self.values}))}
       end
       meth Enter(V X NameIt) PrintName in
          {V getPrintName(?PrintName)}
@@ -223,11 +223,11 @@ local
          {Dictionary.removeAll self.variables}
          {Dictionary.removeAll self.values}
          CompilerStateClass, MergeEnv(Env)
-         {@wrapper notify(env(self.values))}
+         {@wrapper notify(env({Dictionary.toRecord env self.values}))}
       end
       meth mergeEnv(Env)
          CompilerStateClass, MergeEnv(Env)
-         {@wrapper notify(env(self.values))}
+         {@wrapper notify(env({Dictionary.toRecord env self.values}))}
       end
       meth MergeEnv(Env)
          {Record.forAllInd Env
@@ -265,7 +265,7 @@ local
       meth removeFromEnv(PrintName)
          {Dictionary.remove self.variables PrintName}
          {Dictionary.remove self.values PrintName}
-         {@wrapper notify(env(self.values))}
+         {@wrapper notify(env({Dictionary.toRecord env self.values}))}
       end
       meth getVars($)
          {Dictionary.items self.variables}
@@ -328,7 +328,7 @@ local
 \endif
          {Send P switches(@switches)}
          {Send P maxNumberOfErrors(@maxNumberOfErrors)}
-         {Send P env(self.values)}
+         {Send P env({Dictionary.toRecord env self.values})}
       end
 
       meth ping(X)
@@ -796,7 +796,7 @@ in
       %%    switch(SwitchName B)
       %%    switches(Rec)
       %%    maxNumberOfErrors(N)
-      %%    env(Env)   %--** is a dictionary, should be a record
+      %%    env(Env)
       %%
       %%    info(VS Coord <= unit)
       %%    message(Record Coord)

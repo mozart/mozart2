@@ -14,7 +14,7 @@ in
    local
 \insert 'Search.oz'
 \insert 'FD.oz'
-\insert 'FSET.oz'
+\insert 'FS.oz'
    in
       \insert 'CP.env'
    end
@@ -23,7 +23,7 @@ end
 
 \insert 'Search.oz'
 \insert 'FD.oz'
-\insert 'FSET.oz'
+\insert 'FS.oz'
 
 \ifdef SAVE
 declare

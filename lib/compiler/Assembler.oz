@@ -660,11 +660,11 @@ define
          else
             {Assembler append(I1)}
          end
-         if {CondSelect BIInfo doesNotReturn false} then
-            {EliminateDeadCode Rest Assembler}
-         else
+%--**    if {CondSelect BIInfo doesNotReturn false} then
+%--**       {EliminateDeadCode Rest Assembler}
+%--**    else
             {Peephole Rest Assembler}
-         end
+%--**    end
       [] genCall(GCI 0)|deAllocateL(I)|return|Rest then
          {MakeDeAllocate I Assembler}
          {Assembler append(genCall({AdjoinAt GCI 4 true} 0))}

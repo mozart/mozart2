@@ -947,6 +947,9 @@ define
                                         ?GSTrueProc ?ApplyTrueProc)
                case FS2 of fNoElse(C) then
                   GSFalseProc = {New Core.skipNode init(C)}
+                  fun {ApplyFalseProc} GSFalseProc end
+               [] fNoElseInternal(C) then
+                  GSFalseProc = {New Core.skipNode init(C)}
                   fun {ApplyFalseProc} noElse(C) end
                else GBody GS2 in
                   {@BA openScope()}
@@ -964,6 +967,8 @@ define
                Unnester, UnnestStatement(FS1 ?GBody)
                GT = {MakeDeclaration {@BA closeScope($)} GBody C}
                case FS2 of fNoElse(C) then
+                  GF = {New Core.skipNode init(C)}
+               [] fNoElseInternal(C) then
                   GF = noElse(C)
                else GBody in
                   {@BA openScope()}
@@ -1402,7 +1407,7 @@ define
          [] fBoolCase(FE1 FE2 FE3 C) then FV FS in
             FV = fOcc(ToGV)
             FS = fBoolCase(FE1 fEq(FV FE2 C)
-                           case FE3 of fNoElse(_) then FE3
+                           case FE3 of fNoElse(C) then fNoElseInternal(C)
                            else fEq(FV FE3 C)
                            end C)
             Unnester, UnnestStatement(FS $)

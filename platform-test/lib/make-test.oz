@@ -132,11 +132,16 @@ local
                   end
                end
 
-               ToRun = {Map RunTests fun {$ T}
-                                        {AdjoinAt
-                                         {Adjoin o(repeat:1)
-                                          T} script {GetTest T}.1}
-                                     end}
+               ToRun = {Map RunTests
+                        fun {$ T}
+                           S={GetTest T}.1
+                        in
+                           {Adjoin
+                            {Adjoin o(script: S
+                                      repeat: 1)
+                             {Debug.procedureCoord S.1}}
+                            T}
+                        end}
 
                proc {PV V}
                   case Argv.verbose then {System.printInfo V}
@@ -149,8 +154,9 @@ local
                      {ForAll Ts
                       proc {$ T}
                          {System.printInfo
-                          ({X2V {Label T}} # ':\n' #
-                           '   where: ' # {X2V T.where} # '\n')}
+                          ({X2V {Label T}} # ':\n     file: ' #
+                           {X2V T.file} # ':' #
+                           {X2V T.line} # ')\n')}
                       end}
                   else
                      fun {ChunkUp Xs}
@@ -298,8 +304,7 @@ in
                                    fun {$ T#Id#K}
                                       L={String.toAtom T}
                                    in
-                                      L(id:Id keys:K url:{String.toAtom C}
-                                        where: '???')
+                                      L(id:Id keys:K url:{String.toAtom C})
                                    end}
                                end}}
 

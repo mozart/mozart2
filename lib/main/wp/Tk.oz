@@ -366,6 +366,45 @@ prepare
 define
 
    %%
+   %% Error formatter
+   %%
+
+   {ErrorRegistry.put tk
+    fun {$ Exc}
+       E = {Error.dispatch Exc}
+       T = 'Error: Tk module'
+    in
+       case E
+       of tk(wrongParent O M) then
+          {Error.format T
+           'Wrong Parent'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+       [] tk(alreadyInitialized O M) then
+          {Error.format T
+           'Object already initialized'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+       [] tk(alreadyClosed O M) then
+          {Error.format T
+           'Window already closed'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+       [] tk(alreadyClosed O) then
+          {Error.format T
+           'Window already closed'
+           [hint(l:'Object' m:oz(O))]
+           Exc}
+       [] tk(engineCrashed) then
+          {Error.format T
+           'Graphics engine crashed or could not be started' nil
+           Exc}
+       else
+          {Error.formatGeneric T Exc}
+       end
+    end}
+
+   %%
    %% Sending tickles
    %%
    TkInit         = TkBoot.init
@@ -516,8 +555,12 @@ define
 
       %% Start reading wish's output
       thread
-         {Thread.setThisPriority high}
-         {TkReadLoop RetStream}
+         try
+            {Thread.setThisPriority high}
+            {TkReadLoop RetStream}
+         catch _ then
+            raise system(tk(engineCrashed)) end
+         end
       end
    end
 
@@ -1390,39 +1433,5 @@ define
 
    \insert 'TkOptions.oz'
 
-   %%
-   %% Error formatter
-   %%
-
-   {ErrorRegistry.put tk
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
-       T = 'error in Tk module'
-    in
-       case E
-       of tk(wrongParent O M) then
-          {Error.format T
-           'Wrong Parent'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
-       elseof tk(alreadyInitialized O M) then
-          {Error.format T
-           'Object already initialized'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
-       elseof tk(alreadyClosed O M) then
-          {Error.format T
-           'Window already closed'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
-       elseof tk(alreadyClosed O) then
-          {Error.format T
-           'Window already closed'
-           [hint(l:'Object' m:oz(O))]
-           Exc}
-       else
-          {Error.formatGeneric T Exc}
-       end
-    end}
 
 end

@@ -26,56 +26,17 @@ functor
 import
    Fault(installHW
          deInstallHW
-         getEntityCond
-         setNetBufferSize
-         getNetBufferSize
-         tempSimulate)
-
-      at 'x-oz://boot/Fault'
+         getEntityCond)
+   at 'x-oz://boot/Fault'
 
 export
    install:           Install
    deinstall:         Deinstall
-
-   getNetBufferSize:  GNBS
-   setNetBufferSize:  SNBS
-
-   getEntityCond:     GEC
-
-   startNetPartition: BNP
-   stopNetPartition:  ENP
+   getEntityCond:     GetEntityCond
 
 define
-
-   Install   = Fault.installHW
-   Deinstall = Fault.deInstallHW
-
-   GEC=Fault.getEntityCond
-
-   GNBS=Fault.getNetBufferSize
-   SNBS=Fault.setNetBufferSize
-
-   local
-      NP=Fault.tempSimulate
-   in
-      proc{BNP}
-         Cur in
-         {NP 0 Cur}
-         case Cur of 0 then
-            {NP 1 _}
-         else
-            skip
-         end
-      end
-      proc{ENP}
-         Cur in
-         {NP 0 Cur}
-         case Cur of 1 then
-            {NP 1 _}
-         else
-            skip
-         end
-      end
-   end
+   Install       = Fault.installHW
+   Deinstall     = Fault.deInstallHW
+   GetEntityCond = Fault.getEntityCond
 
 end

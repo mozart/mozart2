@@ -97,9 +97,6 @@ in
       JoinQueries
       MakeExpressionQuery
       UnnestQuery
-
-      % Interface
-      Interface
    in
       \insert FormatStrings
       \insert Reporter
@@ -127,7 +124,6 @@ in
          \insert UnnestFD
          \insert Unnester
       end
-      \insert Interface
       \insert Assembler
       \insert CompilerClass
       \insert GenericInterface

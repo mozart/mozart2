@@ -98,6 +98,7 @@ local
                             debuginfocontrol: false
                             debuginfovarnames: false)
          savedSwitches: nil
+         localSwitches: unit
          maxNumberOfErrors: 17
          productionTemplates: unit
 
@@ -166,13 +167,6 @@ local
       meth getSwitch(SwitchName $)
          @switches.SwitchName
       end
-      meth getMultipleSwitches(Rec) Switches = @switches in
-         {Record.forAllInd Rec fun {$ SwitchName} Switches.SwitchName end}
-      end
-      meth setMultipleSwitches(Rec)
-         switches <- {Adjoin @switches Rec}
-         {@wrapper notify(switches(@switches))}
-      end
       meth showSwitches($)
          '%\n% Current values of switches:\n%\n'#
          {Record.foldRInd @switches
@@ -180,6 +174,19 @@ local
              '\\switch '#case B then '+' else '-' end#SwitchName#'\n'#In
           end '%\n% Number of saved switch states: '#{Length @savedSwitches}#
           '\n%\n'}
+      end
+      meth localSwitches()
+         case @localSwitches of unit then
+            localSwitches <- @switches|@savedSwitches
+         else skip
+         end
+      end
+      meth unlocalSwitches()
+         case @localSwitches of unit then skip
+         [] X|Xr then
+            switches <- X
+            savedSwitches <- Xr
+         end
       end
       meth pushSwitches()
          savedSwitches <- @switches|@savedSwitches
@@ -236,15 +243,13 @@ local
              CompilerStateClass, Enter(V Value true)
           end}
       end
-      meth annotateEnv(Vs ?TheInterface)
-         TheInterface = {List.toRecord interface
-                         {Map Vs
-                          fun {$ V} PrintName Value in
-                             {V getPrintName(?PrintName)}
-                             Value = {Dictionary.get self.values PrintName}
-                             {V valToSubst(Value)}
-                             PrintName#{Interface.ofValue Value}
-                          end}}
+      meth annotateEnv(Vs)
+         {ForAll Vs
+          proc {$ V} PrintName Value in
+             {V getPrintName(?PrintName)}
+             Value = {Dictionary.get self.values PrintName}
+             {V valToSubst(Value)}
+          end}
       end
       meth getEnv(?Env)
          Env = {Dictionary.toRecord env self.values}
@@ -350,12 +355,9 @@ local
       meth feedFile(FileName Return <= return)
          CompilerInternal,
          CatchResult(proc {$}
-                        CompilerInternal, FeedFileSub(FileName Return)
+                        {@reporter userInfo('%%% feeding file '#FileName#'\n')}
+                        CompilerInternal, Feed(ParseOzFile FileName Return)
                      end)
-      end
-      meth FeedFileSub(FileName Return)
-         {@reporter userInfo('%%% feeding file '#FileName#'\n')}
-         CompilerInternal, Feed(ParseOzFile FileName Return)
       end
       meth feedVirtualString(VS Return <= return)
          CompilerInternal,
@@ -367,13 +369,6 @@ local
                         end
                         CompilerInternal, Feed(ParseOzVirtualString VS Return)
                      end)
-      end
-      meth FeedFileWithSwitches(FileName Switches) OldState in
-         OldState = {Record.map Switches fun {$ _} _ end}
-         CompilerStateClass, getMultipleSwitches(OldState)
-         CompilerStateClass, setMultipleSwitches(Switches)
-         CompilerInternal, Feed(ParseOzFile FileName return)
-         CompilerStateClass, setMultipleSwitches(OldState)
       end
       meth Feed(ParseOz Data Return)
          ExecutingThread <- {Thread.this}
@@ -392,11 +387,8 @@ local
                          else V in
                             V = {New Core.variable
                                  init('`result`' putEnv unit)}
-                            case {HasFeature Return result} then
-                               CompilerStateClass, enter(V Return.result false)
-                            else
-                               CompilerStateClass, enter(V _ false)
-                            end
+                            CompilerStateClass,
+                            enter(V {CondSelect Return result _} false)
                             {MakeExpressionQuery Queries0}
                          end
                       else
@@ -413,15 +405,10 @@ local
          CompilerInternal,
          ExecProtected(proc {$}
                           try
-                             Is = {Map Queries
-                                   fun {$ Query}
-                                      CompilerInternal, CompileQuery(Query $)
-                                   end}
-                          in
-                             case {HasFeature Return requiredInterfaces}
-                             then Return.requiredInterfaces = Is
-                             else skip
-                             end
+                             {ForAll Queries
+                              proc {$ Query}
+                                 CompilerInternal, CompileQuery(Query)
+                              end}
                           catch tooManyErrors then
                              {Thread.injectException T tooManyErrors}
                           [] rejected then
@@ -430,6 +417,8 @@ local
                              {Thread.injectException T aborted}
                           [] crashed then
                              {Thread.injectException T crashed}
+                          finally
+                             CompilerStateClass, unlocalSwitches()
                           end
                        end true)
          case {@reporter hasSeenError($)} then
@@ -437,48 +426,17 @@ local
          else skip
          end
       end
-      meth CompileQuery(Query ?RequiredInterface)
-         case Query of dirHelp then
-            {@reporter
-             userInfo('\n'#
-                      ' The following compiler directives are supported\n'#
-                      ' (you may use abbreviations):\n'#
-                      '\n'#
-                      '     \\help                display this message\n'#
-                      '     \\switch +<switch>    set <switch>\n'#
-                      '     \\switch -<switch>    reset <switch>\n'#
-                      '     \\showSwitches        show all switch values\n'#
-                      '     \\feed <file>         process a file\n'#
-                      '     \\core <file>         output in core syntax\n'#
-                      '     \\machine <file>      output emulator code\n'#
-                      '\n\n')}
-         [] dirSwitch(Ss) then
+      meth CompileQuery(Query)
+         case Query of dirSwitch(Ss) then
             {ForAll Ss self}
          [] dirShowSwitches then
             {@reporter userInfo(CompilerStateClass, showSwitches($))}
+         [] dirLocalSwitches then
+            CompilerStateClass, localSwitches()
          [] dirPushSwitches then
             CompilerStateClass, pushSwitches()
          [] dirPopSwitches then
             CompilerStateClass, popSwitches()
-         [] dirFeed(FileName) then
-            CompilerInternal, FeedFileSub(FileName return)
-         [] dirThreadedFeed(FileName) then
-            CompilerInternal,
-            FeedFileWithSwitches(FileName
-                                 state(threadedqueries: true))
-         [] dirCore(FileName) then
-            CompilerInternal,
-            FeedFileWithSwitches(FileName
-                                 state(core: true
-                                       codegen: false))
-         [] dirMachine(FileName) then
-            CompilerInternal,
-            FeedFileWithSwitches(FileName
-                                 state(staticanalysis: true
-                                       core: false
-                                       codegen: true
-                                       outputcode: true
-                                       feedtoemulator: false))
          [] fSynTopLevelProductionTemplates(Ps) then
 \ifndef OZM
             CompilerStateClass, addProductionTemplates(Ps)
@@ -522,7 +480,7 @@ local
             end
             case CompilerStateClass, getSwitch(staticanalysis $) then
                {@reporter logPhase('static analysis ...')}
-               CompilerStateClass, annotateEnv(FreeGVs ?RequiredInterface)
+               CompilerStateClass, annotateEnv(FreeGVs)
                {@reporter logSubPhase('determining nonlocal variables ...')}
                {ForAll TopLevelGVs
                 proc {$ V}
@@ -534,10 +492,7 @@ local
                case GS of GS|GSr then
                   {GS staticAnalysis(@reporter self GSr)}
                end
-            else
-               RequiredInterface = {List.toRecord interface
-                                    {Map FreeGVs
-                                     fun {$ GV} {GV getPrintName($)}#top end}}
+            else skip
             end
             case {@reporter hasSeenError($)} then
                raise rejected end

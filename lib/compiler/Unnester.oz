@@ -2208,16 +2208,11 @@ local
    end
 
    fun {IsDirective Query}
-      case Query of dirHalt then true
-      [] dirHelp then true
-      [] dirSwitch(_) then true
+      case Query of dirSwitch(_) then true
       [] dirShowSwitches then true
+      [] dirLocalSwitches then true
       [] dirPushSwitches then true
       [] dirPopSwitches then true
-      [] dirFeed(_) then true
-      [] dirThreadedFeed(_) then true
-      [] dirCore(_) then true
-      [] dirMachine(_) then true
       else false
       end
    end

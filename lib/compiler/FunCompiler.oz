@@ -23,7 +23,6 @@ body
       \insert FormatStrings
       \insert Reporter
       \insert ParseOz
-      \insert Interface
    in
       \insert CompilerClass
       \insert GenericInterface

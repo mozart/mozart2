@@ -109,9 +109,12 @@ local
 
                if Argv.'do' then
                   %% Start garbage collection thread, if requested
+                  StopGcThread
                   if Argv.gc > 0 then
                      proc {GcLoop}
-                        {System.gcDo} {Delay Argv.gc} {GcLoop}
+                        if {Value.isDet StopGcThread} then skip
+                        else {System.gcDo} {Delay Argv.gc} {GcLoop}
+                        end
                      end
                   in
                      thread {GcLoop} end
@@ -169,6 +172,7 @@ local
                                            end}
                in
                   {Wait Goofed}
+                  StopGcThread = unit
                   if Argv.time \= nil then
                      T1={Property.get time}
                      proc {PT C#F}

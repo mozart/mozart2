@@ -1304,7 +1304,7 @@ define
          {@right sa(Ctrl)}                            % analyse right hand side
 
          {Ctrl setErrorMsg('equality constraint failed')}
-         {Ctrl setUnifier(@left @right)}
+         {Ctrl setUnifier(@left {@right getValue($)})}
 
             % constructions forward the unification task
             % to their associated record value token
@@ -2236,7 +2236,7 @@ define
             if {IsDet Lab} then
 
                {Ctrl setErrorMsg('label assertion failed')}
-               {Ctrl setUnifier(BVO2 Lab)}
+               {Ctrl setUnifier(BVO2 Val)}
 
                if {IsAtom Lab} then
                   LabNode = {New Core.atomNode init(Lab unit)}
@@ -2783,14 +2783,18 @@ define
          {System.show equationPattern(@left @right)}
 \endif
          {Ctrl setErrorMsg('equational constraint in pattern failed')}
-         {Ctrl setUnifier(@left @right)}
 
-         {@right sa(Ctrl)}                            % analyse right hand side
-            % patterns forward the unification task
-            % to their associated record value token
+         {@right sa(Ctrl)}                          % analyse right hand side
+
+         % patterns forward the unification task
+         % to their associated record value token
          if {@right isConstruction($)}
-         then {@left unify(Ctrl {@right getValue($)})}
-         else {@left unify(Ctrl @right)}              % l -> r
+         then
+            {Ctrl setUnifier(@left {@right getValue($)})}
+            {@left unify(Ctrl {@right getValue($)})}
+         else
+            {Ctrl setUnifier(@left @right)}
+            {@left unify(Ctrl @right)}              % l -> r
          end
 
          {Ctrl resetUnifier}

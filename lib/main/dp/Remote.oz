@@ -55,10 +55,8 @@ define
                        [unit]
                     end
 
-   HOME = {Property.get 'oz.home'}
-
-   fun {ForkProcess Fork Home Host Ports Detach}
-      Cmd       = Home#'/bin/ozengine'
+   fun {ForkProcess Fork Host Ports Detach}
+      Cmd       = 'ozengine'
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'
@@ -102,7 +100,6 @@ define
       meth init(host:    HostIn  <= localhost
                 fork:    ForkIn  <= automatic
                 detach:  Detach  <= false
-                home:    Home    <= HOME
                 timeout: Timeout <= {Property.get 'perdio.timeout'}
                 pid:     PID     <= _)
          RunRet  RunPort  = {Port.new RunRet}
@@ -122,7 +119,7 @@ define
                  end
               else rsh
               end
-              Home Host RunPort#CtrlPort Detach}
+              Host RunPort#CtrlPort Detach}
 
          thread
             {Delay Timeout}

@@ -22,11 +22,14 @@
 
 
 declare
-T={{Load './te.ozc'} c('SP': \insert SP.env
-                       'CP': \insert CP.env
-                       'OP': \insert OP.env
-                       'AP': \insert AP.env
-                      )}
+T={{Load {OS.getEnv 'HOME'}#'/Oz/test/te.ozc'}
+   c('SP': \insert SP.env
+     'CP': \insert CP.env
+     'OP': \insert OP.env
+     'AP': \insert AP.env
+    )}
+
+{OS.chDir {OS.getEnv 'HOME'}#'/Oz/test'}
 
 {T argv(verbose:  true
         usage:    false

@@ -27,18 +27,7 @@
 %% Global
 %%
 
-local
-   fun {MakeEmpty As}
-      case As of nil then nil
-      [] A|Ar then A#_|{MakeEmpty Ar}
-      end
-   end
-in
-   fun {MakeRecord L As}
-      {List.toRecord L {MakeEmpty As}}
-   end
-end
-
+MakeRecord = Boot_Record.make
 
 %%
 %% Module
@@ -71,9 +60,9 @@ local
    %%
    %% Higher-order Stuff without Indices
    %%
-   fun {Map As X P}
-      case As of nil then nil
-      [] A|Ar then A#{P X.A}|{Map Ar X P}
+   proc {Map As X P Y}
+      case As of nil then skip
+      [] A|Ar then {P X.A Y.A} {Map Ar X P Y}
       end
    end
 
@@ -181,9 +170,9 @@ local
    %%
    %% Higher-order Stuff with Indices
    %%
-   fun {MapInd As X P}
-      case As of nil then nil
-      [] A|Ar then A#{P A X.A}|{MapInd Ar X P}
+   proc {MapInd As X P Y}
+      case As of nil then skip
+      [] A|Ar then {P A X.A Y.A} {MapInd Ar X P Y}
       end
    end
 
@@ -334,10 +323,13 @@ local
       end
    end
 
+   CloneRecord = Boot_Record.clone
+
 in
 
    Record = record(is:           IsRecord
                    make:         MakeRecord
+                   clone:        CloneRecord
 
                    label:        Label
                    width:        Width
@@ -372,13 +364,11 @@ in
 
                    map:
                       proc {$ R1 P R2}
+                         R2={CloneRecord R1}
                          if {IsTuple R1} then
-                            W={Width R1}
-                         in
-                            {MakeTuple {Label R1} W R2}
-                            {MapT 1 W R1 P R2}
+                            {MapT 1 {Width R1} R1 P R2}
                          else
-                            {List.toRecord {Label R1} {Map {Arity R1} R1 P} R2}
+                            {Map {Arity R1} R1 P R2}
                          end
                       end
                    foldL:
@@ -448,14 +438,11 @@ in
 
                    mapInd:
                       proc {$ R1 P ?R2}
+                         R2={CloneRecord R1}
                          if {IsTuple R1} then
-                            W={Width R1}
-                         in
-                            {MakeTuple {Label R1} W ?R2}
-                            {MapIndT 1 W R1 P R2}
+                            {MapIndT 1 {Width R1} R1 P R2}
                          else
-                            {List.toRecord {Label R1}
-                             {MapInd {Arity R1} R1 P} ?R2}
+                            {MapInd {Arity R1} R1 P R2}
                          end
                       end
                    foldLInd:

@@ -1291,7 +1291,7 @@ local
          FBody = case IsLazy then
                     case FResultVars of FV|_ then
                        fApply(fApply(fVar('`.`' C)
-                                     [fVar('Lazy' C) fAtom('apply' C)] C)
+                                     [fVar('Lazy' C) fAtom('new' C)] C)
                               [fFun(fDollar(C) nil FBody0 nil C) FV] C)
                     [] nil then FBody0   % can only happen with illegal input
                     end

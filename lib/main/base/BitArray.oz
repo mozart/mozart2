@@ -32,6 +32,7 @@ bitArray(new:              Boot_BitArray.new
          conj:             Boot_BitArray.conj
          nimpl:            Boot_BitArray.nimpl
          disjoint:         Boot_BitArray.disjoint
+         subsumes:         Boot_BitArray.subsumes
          card:             Boot_BitArray.card
          toList:           Boot_BitArray.toList
          fromList:         Boot_BitArray.fromList

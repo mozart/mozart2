@@ -353,8 +353,8 @@ local
          {Send P env({Dictionary.toRecord env self.values})}
       end
 
-      meth ping(X)
-         {@narrator tell(pong())}
+      meth ping(X Y <= unit)
+         {@narrator tell(pong(Y))}
          X = unit
       end
 
@@ -753,7 +753,7 @@ in
          end
       end
       meth TellQueue(Qs P)
-         if {IsDet Qs} then Id#M#_|Qr = Qs in
+         if {IsDet Qs} then Id#M|Qr = Qs in
             {Send P newQuery(Id M)}
             Engine, TellQueue(Qr P)
          end
@@ -818,13 +818,14 @@ in
             [] feedFile(_ _) then
                {TypeCheck IsVirtualString M 1 'virtual string'}
                {TypeCheck IsRecord M 2 'record'}
-            [] ping(?HereIAm) then skip
+            [] ping(_) then skip
+            [] ping(_ _) then skip
             else
                {Exception.raiseError compiler(invalidQuery M)}
             end
             Id = @NextId
             NextId <- Id + 1
-            @QueriesTl = Id#M#_|NewTl
+            @QueriesTl = Id#M|NewTl
             QueriesTl <- NewTl
             Narrator.'class', tell(newQuery(Id M))
          end
@@ -843,7 +844,7 @@ in
          end
       end
       meth ClearQueue(Qs)
-         if {IsDet Qs} then Id#_#_|Qr = Qs in
+         if {IsDet Qs} then Id#_|Qr = Qs in
             Narrator.'class', tell(removeQuery(Id))
             Engine, ClearQueue(Qr)
          else
@@ -851,9 +852,8 @@ in
          end
       end
       meth Dequeue(Qs Id ?NewQs)
-         if {IsDet Qs} then (Q=Id0#_#X)|Qr = Qs in
+         if {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
             if Id == Id0 then
-               X = dequeued
                NewQs = Qr
                Narrator.'class', tell(removeQuery(Id))
             else NewQr in
@@ -866,21 +866,6 @@ in
             NewQs = Qs
          end
       end
-      meth getQueryState(Id $)
-         lock self.QueueLock then
-            Engine, FindId(@QueriesHd Id $)
-         end
-      end
-      meth FindId(Qs Id $)
-         if {IsDet Qs} then Id0#_#X|Qr = Qs in
-            if Id == Id0 then X
-            else
-               Engine, FindId(Qr Id $)
-            end
-         else
-            unknown
-         end
-      end
 
       meth RunQueue()
          if {IsFree @QueriesHd} then
@@ -891,12 +876,12 @@ in
          try
             lock self.QueueLock then Qs in
                Qs = @QueriesHd
-               if {IsDet Qs} then Id#M#X|Qr = Qs in
+               if {IsDet Qs} then Id#M|Qr = Qs in
                   QueriesHd <- Qr
-                  raise query(Id M X) end   % unlock the QueueLock
+                  raise query(Id M) end   % unlock the QueueLock
                end
             end
-         catch query(Id M X) then
+         catch query(Id M) then
             lock self.QueueLock then
                Narrator.'class', tell(runQuery(Id M))
                CurrentQuery <- Id#M
@@ -916,7 +901,6 @@ in
             end
             lock self.QueueLock then
                CurrentQuery <- unit
-               X = finished
                Narrator.'class', tell(removeQuery(Id))
             end
          end

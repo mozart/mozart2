@@ -400,7 +400,9 @@ define
    FSGetCard       = FSB.getCard
 
    FSGetNumOfGlb     = FSB.getNumOfKnownIn
-   FSGetNumOfLub     = FSB.getNumOfKnownNotIn
+   FSGetNumOfLub     = fun {$ S}
+                          FSSup - FSInf + 1 - {FSB.getNumOfKnownNotIn S}
+                       end
    FSGetNumOfUnknown = FSB.getNumOfUnknown
 
    FSSup           = {FSB.sup}

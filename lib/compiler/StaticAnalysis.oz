@@ -1106,11 +1106,11 @@ define
       meth declareToplevelName(PrintName ?N)
          case @toCopy of unit then
             N = case PrintName of unit then {NewName}
-                else {CompilerSupport.newNamedName PrintName}
+                else {CompilerSupport.newNamedName {System.printName PrintName}}
                 end
          elseof Xs then
             N = {CompilerSupport.newCopyableName
-                 case PrintName of unit then '' else PrintName end}
+                 case PrintName of unit then '' else {System.printName PrintName} end}
             toCopy <- N|Xs
          end
       end
@@ -1731,7 +1731,7 @@ define
                     {New Core.valueNode init(TheName unit)}
                  else TheName in
                     TheName = case PrintName of unit then {NewName}
-                              else {CompilerSupport.newNamedName PrintName}
+                              else {CompilerSupport.newNamedName {System.printName PrintName}}
                               end
                     {New Core.token init(TheName)}
                  end
@@ -3754,7 +3754,7 @@ define
             if IsData then _
             else   % dummy variable with right print name
                case {@variable getPrintName($)} of unit then _
-               elseof PrintName then {CompilerSupport.nameVariable $ PrintName}
+               elseof PrintName then {CompilerSupport.nameVariable $ {System.printName PrintName}}
                end
             end
          else

@@ -76,9 +76,14 @@ prepare
                      %% Name
                      'Name.new': Name.new
 
+                     %% Cell
+                     'Cell.exchange': Exchange
+                     'Cell.new': NewCell
+
                      %% List
                      'List.toTuple': List.toTuple
                      'List.toRecord': List.toRecord
+                     'List.append': Append
 
                      %% Record
                      'Record.width': Record.width

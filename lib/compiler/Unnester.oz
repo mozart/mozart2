@@ -1091,7 +1091,7 @@ define
                                      fNoElse(C) CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fLoop(_ _ _) then
+         [] fLoop(_ _) then
             Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fMacro(_ _) then
             Unnester, UnnestStatement({MacroExpand FS unit} $)
@@ -1484,7 +1484,7 @@ define
             NewFV = fOcc(ToGV)
             FS = fChoice({Map FEs fun {$ FE} fEq(NewFV FE C) end} C)
             Unnester, UnnestStatement(FS $)
-         [] fLoop(_ _ _) then
+         [] fLoop(_ _) then
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fMacro(_ _) then
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)

@@ -84,7 +84,7 @@ fun {CoordinatesOf P}
    [] fParser(_ _ _ _ _ _ C) then C
    [] fOcc(_) then unit
    [] fTypeOf(_) then unit
-   [] fLoop(_ _ C) then C
+   [] fLoop(_ C) then C
    [] fMacro(_ C) then C
    [] fMacrolet(_ E) then {CoordinatesOf E}
    end

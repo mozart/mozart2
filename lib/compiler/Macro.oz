@@ -12,9 +12,7 @@ import
    CompilerSupport(
       newNamedName:NewNamedName
       ) at 'x-oz://boot/CompilerSupport'
-%%%   LoopMacro(loopExpander :LoopExpander
-%%%          leaveExpander:LeaveExpander
-%%%          nextExpander :NextExpander)
+   LoopMacro(loopExpander:LoopExpander)
    BackquoteMacro(backquoteExpander:BackquoteExpander)
 define
 
@@ -31,7 +29,7 @@ define
 
    fun {MacroExpand1 Form Env}
       case Form
-      of fLoop(_ _ _ _) then
+      of fLoop(_ _) then
          {MacroExpandInternal 'loop' Form Env}
       [] fMacro(L _) then
          case L of fAtom(Macro _)|_ then
@@ -59,9 +57,7 @@ define
       {Dictionary.put GlobalEnvironment Macro Expander}
    end
 
-%   {Defmacro 'loop' LoopExpander}
-%   {Defmacro 'leave' LeaveExpander}
-%   {Defmacro 'next' NextExpander}
+   {Defmacro 'loop' LoopExpander}
    {Defmacro '`' BackquoteExpander}
 
    fun {AugmentMacroEnv D R}
@@ -225,7 +221,7 @@ define
       [] fInheritedModes(L) then {Some L ContainsMacro}
       [] fLexicalAbbreviation(S _) then {ContainsMacro S}
       [] fLexicalRule(_ P) then {ContainsMacro P}
-      [] fLoop(_ _ _) then true
+      [] fLoop(_ _) then true
       [] fMacro(_ _) then true
       [] fMacrolet(_ _) then true
       end
@@ -427,7 +423,7 @@ define
       [] fLexicalRule(RE P) then
          fLexicalRule(
             RE {FullMacroExpand P Env})
-      [] fLoop(_ _ _) then
+      [] fLoop(_ _) then
          E2 = {MacroExpand1 E Env}
       in
          if {ContainsMacro E2}

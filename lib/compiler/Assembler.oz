@@ -91,7 +91,7 @@ define
          BIStorePredId = CompilerSupport.storePredId
       in
          proc {StorePredId CodeBlock pid(Name Arity Pos Flags NLiveRegs)}
-            {BIStorePredId CodeBlock Name Arity Pos Flags NLiveRegs}
+            {BIStorePredId CodeBlock {System.printName Name} Arity Pos Flags NLiveRegs}
          end
       end
 

@@ -23,6 +23,7 @@
 functor
 import
    TestMisc
+   System
 export
    Return
 define
@@ -60,9 +61,9 @@ define
          lock Lock then
             Old = @msg
             msg <- SiteNr#ThreadNr
+            MsgHandler, updateDict(Old Dict Lock)
          end
-         MsgHandler, updateDict(Old Dict Lock)
-         if Nr == Times then
+            if Nr == Times then
             skip
          else
             MsgHandler, updater(Nr+1 SiteNr ThreadNr Dict Lock)
@@ -146,6 +147,7 @@ define
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
                          if Sum \= Times then
+                            {System.show obj(Sum Times)}
                             raise dp_object_test_failed(Sum Times) end
                          else
                             skip

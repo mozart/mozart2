@@ -155,7 +155,6 @@ define
                fillerThread <- {Thread.this $}
                {FillStream}
             end
-            {System.show 'leaving SignalDispatcher init'}
          end
          meth GetUniqueID($)
             id_counter <- @id_counter + 1

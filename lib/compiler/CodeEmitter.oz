@@ -1496,9 +1496,9 @@ in
       in
          Emitter, DoInits(InitsRS ThisAddr)
          Emitter, PushContLabel(Cont ?OldContLabels)
+         Emitter, DebugEntry(Coord 'cond')
          Emitter, Emit(Instr)
          Emitter, KillAllTemporaries()
-         Emitter, DebugEntry(Coord 'cond' 0)
          {FoldLTail VClauses
           proc {$ GuardLabel InitsRS0#Addr1#Addr2|Rest ?NextLabel} RegMap in
              Emitter, Emit(lbl(GuardLabel))
@@ -1516,7 +1516,7 @@ in
              Emitter, RestoreRegisterMapping(RegMap)
           end Emitter, newLabel($) _}
          Emitter, PopContLabel(OldContLabels)
-         Emitter, DebugExit(Coord 'cond' 0)
+         Emitter, DebugExit(Coord 'cond')
       end
       meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
                             Coord Cont InitsRS ThisAddr)

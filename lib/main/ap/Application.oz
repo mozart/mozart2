@@ -713,14 +713,12 @@ define
       end
    in
       fun {GetCgiArgs Spec}
-         RawArgs = {GetRawCgiArgs}
+         Args = {CgiPreProcessArgs {GetRawCgiArgs}}
       in
          case {Label Spec}
-         of plain then RawArgs
-         [] list then RawArgs
-         [] record then
-            {PostProcess
-             {CgiParse {CgiPreProcessArgs RawArgs} Spec} Spec}
+         of plain  then Args
+         [] list   then {CgiParse Args Spec}
+         [] record then {PostProcess {CgiParse Args Spec} Spec}
          end
       end
    end

@@ -20,9 +20,9 @@
 %%% WARRANTIES.
 %%%
 
-\insert perdio/server
+\insert server
 
-\insert perdio/agenda
+\insert agenda
 
 local
    GateId={`Builtin` 'GateId' 1}
@@ -36,9 +36,9 @@ in
                send:SendGate)
 end
 
-%\insert perdio/remote
+%\insert remote
 
-\insert perdio/netscape
+\insert netscape
 
 local
    Wget = {`Builtin` 'Wget' 2}

@@ -45,12 +45,6 @@
 %%
 
 functor
-require
-   FD(sup: FdSup)
-prepare
-   fun {IsFd I}
-      I =< FdSup andthen I >= 0
-   end
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
 \ifndef NO_GUMP
@@ -64,6 +58,12 @@ import
 export
    MakeExpressionQuery
    UnnestQuery
+require
+   FD(sup: FdSup)
+prepare
+   fun {IsFd I}
+      I =< FdSup andthen I >= 0
+   end
 define
    \insert TupleSyntax
    \insert BindingAnalysis
@@ -1465,7 +1465,8 @@ define
                   FS = fTry(TryFS fCatch(NewFCatch C2) FFinally C)
                end
                NewFCatch = {Map FCaseClauses
-                            fun {$ fCaseClause(FE1 FE2)}
+                            fun {$ fCaseClause(FE1 FE2)} C in
+                               C = {CoordinatesOf FE2}
                                fCaseClause(FE1 fEq(NewFV FE2 C))
                             end}
                Unnester, UnnestStatement(FS $)
@@ -2226,10 +2227,15 @@ define
             else
                FElse = fOpApplyStatement('Raise' [FX] C2)
             end
-            %--** make this work with step points!
             NewC = case C#C2 of pos(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
                       pos(F1 L1 C1 F2 L2 C2)
-                   else C2
+                   [] fineStep(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
+                      fineStep(F1 L1 C1 F2 L2 C2)
+                   [] coarseStep(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
+                      coarseStep(F1 L1 C1 F2 L2 C2)
+                   elsecase C2 of unit then unit
+                   else
+                      {Adjoin C2 {Label C}}
                    end
             NewFS = fCase(FX [FCaseClauses] FElse NewC)
             Unnester, UnnestStatement(NewFS ?GCatchBody)
@@ -2441,7 +2447,7 @@ define
          [] fLock(P C) then fLock({NP P} {FS C})
          [] fThread(P C) then fThread({SP P} {FS C})
          [] fTry(P1 P2 P3 C) then fTry({NP P1} {NP P2} {SP P3} {FS C})
-         [] fCatch(Cs C) then fCatch({Map Cs NP} {FS C})
+         [] fCatch(Cs C) then fCatch({Map Cs NP} C)
          [] fNoCatch then P
          [] fRaise(P C) then fRaise({NP P} {FS C})
          [] fRaiseWith(P1 P2 C) then fRaiseWith({NP P1} {NP P2} {FS C})
@@ -2508,7 +2514,7 @@ define
          [] fLock(P C) then fLock({SP P} {CS C})
          [] fThread(P C) then fThread({SP P} {CS C})
          [] fTry(P1 P2 P3 C) then fTry({SP P1} {SP P2} {SP P3} {CS C})
-         [] fCatch(Cs C) then fCatch({Map Cs SP} {CS C})
+         [] fCatch(Cs C) then fCatch({Map Cs SP} C)
          [] fNoCatch then P
          [] fNoFinally then P
          [] fRaise(P C) then fRaise({NP P} {CS C})

@@ -246,7 +246,7 @@ local
             VHashTableEntry = onRecord(Label Arity VGet)
             NewMapping = {Append Regs Mapping}
          end
-         {CodeGen ThenTree NewMapping VThen nil CS}
+         {CodeGenPattern ThenTree NewMapping VThen nil unit CS}
       end
 
       proc {MakeMatchSub Tree Mapping Pos0 CS ?VHashTableEntries ?VElse}
@@ -259,21 +259,21 @@ local
                {MakeMatchSub ElseTree Mapping Pos0 CS ?Rest ?VElse}
             else
                VHashTableEntries = nil
-               {CodeGen Tree Mapping VElse nil CS}
+               {CodeGenPattern Tree Mapping VElse nil unit CS}
             end
          else
             VHashTableEntries = nil
-            {CodeGen Tree Mapping VElse nil CS}
+            {CodeGenPattern Tree Mapping VElse nil unit CS}
          end
       end
    in
-      proc {MakeMatch Reg Tree Mapping Pos0 VHd VTl CS}
+      proc {MakeMatch Reg Tree Mapping Pos0 VHd VTl Coord CS}
          node(Pos Test ThenTree ElseTree _ _) = Tree
          VHashTableEntries Rest VElse
       in
          VHashTableEntries = {MakeHTEntry Pos Test Mapping ThenTree CS}|Rest
          {MakeMatchSub ElseTree Mapping Pos0 CS ?Rest ?VElse}
-         VHd = vMatch(_ Reg VElse VHashTableEntries unit VTl _)
+         VHd = vMatch(_ Reg VElse VHashTableEntries Coord VTl _)
       end
    end
 
@@ -309,21 +309,21 @@ local
       end
    end
 
-   proc {CodeGenSub Tree Mapping VHd VTl CS}
+   proc {CodeGenSub Tree Mapping VHd VTl Coord CS}
       node(Pos Test ThenTree ElseTree _ _) = Tree Reg
    in
       Reg = {PosToReg Pos Mapping}
       case Test of scalar(_) then
-         {MakeMatch Reg Tree Mapping Pos VHd VTl CS}
+         {MakeMatch Reg Tree Mapping Pos VHd VTl Coord CS}
       [] record(_ _) then
-         {MakeMatch Reg Tree Mapping Pos VHd VTl CS}
+         {MakeMatch Reg Tree Mapping Pos VHd VTl Coord CS}
       [] get(Regs0) then
-         {CodeGen ThenTree
+         {CodeGenPattern ThenTree
           {FoldR Regs0 fun {$ F#Reg In} {Append Pos [F]}#Reg|In end Mapping}
-          VHd VTl CS}
+          VHd VTl Coord CS}
       else
-         TestReg TestVInstr TestProc TestArgs TestVInter
-         VInstr1 VInstr2 Regs ElseVInstr
+         TestReg TestVInstr TestProc TestArgs
+         TestVInter1 TestVInter2 TestVInter3 VInstr1 VInstr2 Regs ElseVInstr
       in
          {CS newReg(?TestReg)}
          case Test of nonbasic(LabelV ArityV) then
@@ -368,26 +368,27 @@ local
          {MakeRunTimeProcApplication TestProc unit
           {Map TestArgs
            fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
-          CS TestVInstr TestVInter}
+          CS TestVInter1 TestVInter2}
          {MakeException boolCaseType unit nil CS ElseVInstr nil}
-         TestVInter = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
-                                unit VTl _)
-         {CodeGen ThenTree {Append Regs Mapping} VInstr1 nil CS}
-         {CodeGen ElseTree Mapping VInstr2 nil CS}
+         TestVInter2 = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
+                                 unit TestVInter3 _)
+         {StepPoint Coord 'conditional' TestVInstr VTl TestVInter1 TestVInter3}
+         {CodeGenPattern ThenTree {Append Regs Mapping} VInstr1 nil unit CS}
+         {CodeGenPattern ElseTree Mapping VInstr2 nil unit CS}
       end
    end
 
-   proc {CodeGen Tree Mapping VHd VTl CS}
+   proc {CodeGenPattern Tree Mapping VHd VTl Coord CS}
       case Tree of node(Pos Test ThenTree ElseTree Count Shared) then
          case {Access Count} of 0 then
-            {CodeGenSub Tree Mapping VHd VTl CS}
+            {CodeGenSub Tree Mapping VHd VTl Coord CS}
          else
             VHd = Shared
             VTl = nil
             if {IsFree Shared} then Label VInstr in
                {CS newLabel(?Label)}
                Shared = vShared(_ Label {NewCell 0} VInstr)
-               {CodeGenSub Tree Mapping VInstr nil CS}
+               {CodeGenSub Tree Mapping VInstr nil Coord CS}
             end
          end
       [] leaf(Statement Shared) then
@@ -401,13 +402,14 @@ local
       end
    end
 in
-   proc {OptimizePatterns ArbiterReg Clauses Else VHd VTl CS} Tree Mapping in
+   proc {OptimizePatterns ArbiterReg Clauses Else VHd VTl Coord CS}
       Tree = {BuildTree Clauses Else}
       Mapping = [nil#ArbiterReg]
+   in
       case Tree of leaf(Statement _) then
          {Statement codeGenPattern(Mapping VHd VTl CS)}
       else
-         {CodeGen Tree Mapping VHd VTl CS}
+         {CodeGenPattern Tree Mapping VHd VTl Coord CS}
       end
    end
 end

@@ -993,7 +993,7 @@ define
            fun {$ Clause}
               {Clause makePattern({@arbiter getCodeGenValue($)} CS $)}
            end}
-          @alternative VHd VTl CS}
+          @alternative VHd VTl @coord CS}
          {ForAll @clauses proc {$ Clause} {Clause warnUnreachable(CS)} end}
       end
    end

@@ -116,9 +116,6 @@ Doc/FDCompare
    document summarizing expansion of finite domain compare
    operators and the corresponding propagators.
 
-Doc/FDCondis
-   document summarizing expansion of the `condis' construct.
-
 Doc/VInstr
    document defining the intermediate representation used
    by the code generator.

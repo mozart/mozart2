@@ -80,7 +80,6 @@ fun {CoordinatesOf P}
    [] fOr(_ C) then C
    [] fDis(_ C) then C
    [] fChoice(_ C) then C
-   [] fCondis(_ C) then C
    [] fScanner(_ _ _ _ _ C) then C
    [] fParser(_ _ _ _ _ _ C) then C
    [] fOcc(_) then unit

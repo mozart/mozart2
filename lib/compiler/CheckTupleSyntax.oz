@@ -103,8 +103,6 @@ local
          {ForAll Cs ClauseOptThen} {Coord C}
       [] fChoice(Ps C) then
          {ForAll Ps Phrase} {Coord C}
-      [] fCondis(FEss C) then
-         {ForAll FEss proc {$ FEs} {ForAll FEs FDExpression} end} {Coord C}
       [] fScanner(V Cs Ms Rs A C) then
          {NakedVariable V}
          {ForAll Cs ClassDescriptor} {ForAll Ms Meth}

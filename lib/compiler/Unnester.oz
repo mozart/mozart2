@@ -1046,40 +1046,6 @@ define
                                      fNoElse(C) CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fCondis(FClauses C) then GFrontEqCell NewFClauses GS in
-            {@BA openScope()}
-            GFrontEqCell = {NewCell nil}
-            {Map FClauses
-             fun {$ FClause}
-                {Map FClause
-                 fun {$ FS} GFrontEq NewFS GFrontEqs in
-                    case FS of fFdCompare(Op FE1 FE2 C) then
-                       GFrontEq1 NewFE1 GFrontEq2 NewFE2 in
-                       Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
-                       Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-                       GFrontEq = GFrontEq1|GFrontEq2
-                       NewFS = fFdCompare(Op NewFE1 NewFE2 C)
-                    [] fFdIn(Op FE1 FE2 C) then
-                       GFrontEq1 NewFE1 GFrontEq2 GO NewFE2
-                    in
-                       case Op of '::' then
-                          Unnester, UnnestToVar(FE1 'UnnestFDIn'
-                                                ?GFrontEq1 ?GO)
-                          NewFE1 = fOcc({GO getVariable($)})
-                       [] ':::' then
-                          Unnester, UnnestFDList(FE1 ?GFrontEq1 ?NewFE1)
-                       end
-                       Unnester, UnnestToVar(FE2 'UnnestDomain' ?GFrontEq2 ?GO)
-                       NewFE2 = fOcc({GO getVariable($)})
-                       GFrontEq = GFrontEq1|GFrontEq2
-                       NewFS = fFdIn(Op NewFE1 NewFE2 C)
-                    end
-                    {Exchange GFrontEqCell ?GFrontEqs GFrontEqs|GFrontEq}
-                    NewFS
-                 end}
-             end ?NewFClauses}
-            Unnester, UnnestStatement({MakeCondis NewFClauses @BA C} ?GS)
-            {MakeDeclaration {@BA closeScope($)} {Access GFrontEqCell}|GS C}
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
@@ -2351,25 +2317,6 @@ define
             Unnester, UnnestExpression(FE GV ?GFrontEqs)
          end
       end
-      meth UnnestFDList(FE ?GFrontEqs ?NewFE)
-         case FE of fRecord(L=fAtom('|' _) [FE1 FE2]) then
-            GFrontEq1 GO GFrontEq2 NewFE1 NewFE2
-         in
-            Unnester, UnnestToVar(FE1 'UnnestFDList' ?GFrontEq1 ?GO)
-            Unnester, UnnestFDList(FE2 ?GFrontEq2 ?NewFE2)
-            GFrontEqs = GFrontEq1|GFrontEq2
-            NewFE1 = fOcc({GO getVariable($)})
-            NewFE = fRecord(L [NewFE1 NewFE2])
-         [] fAtom('nil' _) then
-            GFrontEqs = nil
-            NewFE = FE
-         else
-            {@reporter
-             error(coord: {CoordinatesOf FE} kind: SyntaxError
-                   msg: ('explicitly given list of variables expected'#
-                         'as first argument to `:::\' in a condis clause'))}
-         end
-      end
    end
 
    fun {IsDirective Query}
@@ -2493,8 +2440,6 @@ define
          [] fOr(Cs C) then fOr({Map Cs SP} {CS C})
          [] fDis(Cs C) then fDis({Map Cs SP} {CS C})
          [] fChoice(Ps C) then fChoice({Map Ps SP} {CS C})
-         [] fCondis(Pss C) then
-            fCondis({Map Pss fun {$ Ps} {Map Ps SP} end} {CS C})
          [] fScanner(P1 Ds Ms Rs X C) then
             fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {CS C})
          [] fMode(V Ms) then fMode(V {Map Ms SP})
@@ -2580,8 +2525,6 @@ define
          [] fOr(Cs C) then fOr({Map Cs EP} {FS C})
          [] fDis(Cs C) then fDis({Map Cs EP} {FS C})
          [] fChoice(Ps C) then fChoice({Map Ps EP} {FS C})
-         [] fCondis(Pss C) then
-            fCondis({Map Pss fun {$ Ps} {Map Ps TP} end} {FS C})
          [] fScanner(P1 Ds Ms Rs X C) then
             fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {FS C})
          [] fParser(P1 Ds Ms T Ps X C) then

@@ -23,16 +23,17 @@ functor $
 import
    System(show printName)
 export
-   convert   : ConvertAtom
-   atom      : AtomNode
-   label     : LabelNode
-   feature   : FeatureNode
-   separator : SeparatorNode
-   bitmap    : BitmapNode
-   proxy     : ProxyNode
-   embraced  : EmbracedNode
-   box       : BoxedNode
-   empty     : EmptyNode
+   quoteString : QuoteStr
+   convert     : ConvertAtom
+   atom        : AtomNode
+   label       : LabelNode
+   feature     : FeatureNode
+   separator   : SeparatorNode
+   bitmap      : BitmapNode
+   proxy       : ProxyNode
+   embraced    : EmbracedNode
+   box         : BoxedNode
+   empty       : EmptyNode
 define
    QuoteStr
    local
@@ -78,12 +79,12 @@ define
                end
             [] punct then
                case I
-               of &"  then &\\|&"|{QuoteStr Ir} %% &\"
-               [] &\\ then &\\|&\\|{QuoteStr Ir}
-               [] 91  then &\\|91|{QuoteStr Ir}  %% '['
-               [] 93  then &\\|93|{QuoteStr Ir}  %% ']'
-               [] 123 then &\\|123|{QuoteStr Ir} %% '{'
-               [] 125 then &\\|125|{QuoteStr Ir} %% '}'
+               of 34  then 92|34|{QuoteStr Ir}  %% '"'
+               [] 92  then 92|92|{QuoteStr Ir}  %% '\'
+               [] 91  then 92|91|{QuoteStr Ir}  %% '['
+               [] 93  then 92|93|{QuoteStr Ir}  %% ']'
+               [] 123 then 92|123|{QuoteStr Ir} %% '{'
+               [] 125 then 92|125|{QuoteStr Ir} %% '}'
                else I|{QuoteStr Ir}
                end
             else I|{QuoteStr Ir}

@@ -521,8 +521,9 @@ define
          meth printXY(X Y String Tag ColorKey)
             DrCol = {Dictionary.condGet @colDict ColorKey black}
          in
+            {System.show {VirtualString.toAtom String}}
             {Tk.send v(@canvasPrint#(@fontX * X)#' '#((@fontY * Y) + @offY)#
-                       ' '#DrCol#' "'#String#'" '#Tag)} %% {}
+                       ' '#DrCol#' "'#String#'" '#Tag)}
          end
          meth paintXY(X Y Image Tag ColorKey)
             DrCol = {Dictionary.get @colDict ColorKey}

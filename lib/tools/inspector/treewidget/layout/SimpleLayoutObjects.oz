@@ -28,10 +28,10 @@ local
       in
          if {IsFree XDim}
          then
-            String = @string
+            LengthStr
          in
-            String = {self createRep($)}
-            XDim   = {VirtualString.length String}
+            {self createRep(@string LengthStr)}
+            XDim = {VirtualString.length LengthStr}
          end
       end
       meth layoutX($)
@@ -46,41 +46,46 @@ local
    end
 in
    class IntLayoutObject from SimpleLayoutObject
-      meth createRep($)
-         @value
+      meth createRep(PrintStr LengthStr)
+         PrintStr  = @value
+         LengthStr = PrintStr
       end
    end
 
    class FloatLayoutObject from SimpleLayoutObject
-      meth createRep($)
-         {Float.toString @value}
+      meth createRep(PrintStr LengthStr)
+         PrintStr  = {Float.toString @value}
+         LengthStr = PrintStr
       end
    end
 
    class AtomLayoutObject from SimpleLayoutObject
-      meth createRep($)
-         {Aux.convert @value}
+      meth createRep(PrintStr LengthStr)
+         PrintStr  = {Aux.convert @value}
+         LengthStr = PrintStr
       end
    end
 
    class NameLayoutObject from SimpleLayoutObject
-      meth createRep($)
+      meth createRep(PrintStr LengthStr)
          Value = @value
       in
-         case Value
-         of false then type <- bool   'false'
-         [] true  then type <- bool   'true'
-         [] unit  then type <- 'unit' 'unit'
-         else '<N: '#{System.printName Value}#'>'
-         end
+         PrintStr  = case Value
+                     of false then type <- bool   'false'
+                     [] true  then type <- bool   'true'
+                     [] unit  then type <- 'unit' 'unit'
+                     else '<N: '#{System.printName Value}#'>'
+                     end
+         LengthStr = PrintStr
       end
    end
 
    class ProcedureLayoutObject from SimpleLayoutObject
-      meth createRep($)
+      meth createRep(PrintStr LengthStr)
          Value = @value
       in
-         '<P/'#{Procedure.arity Value}#' '#{System.printName Value}#'>'
+         PrintStr  = '<P/'#{Procedure.arity Value}#' '#{System.printName Value}#'>'
+         LengthStr = PrintStr
       end
       meth isVert($)
          true
@@ -136,23 +141,26 @@ in
    end
 
    class ByteStringLayoutObject from SimpleLayoutObject
-      meth createRep($)
-         {ByteString.toString @value}
+      meth createRep(PrintStr LengthStr)
+         LengthStr = {ByteString.toString @value}
+         PrintStr  = {Aux.quoteString LengthStr}
       end
    end
 
    class GenericLayoutObject from SimpleLayoutObject
-      meth createRep($)
+      meth createRep(PrintStr LengthStr)
          Type = {Value.status @value}.1
       in
          type <- Type
-         '<'#Type#'>'
+         PrintStr  = '<'#Type#'>'
+         LengthStr = PrintStr
       end
    end
 
    class AtomRefLayoutObject from SimpleLayoutObject
-      meth createRep($)
-         {@value getStr($)}
+      meth createRep(PrintStr LengthStr)
+         PrintStr  = {@value getStr($)}
+         LengthStr = PrintStr
       end
    end
 end

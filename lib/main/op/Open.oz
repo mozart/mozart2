@@ -210,7 +210,10 @@ in
          Ys Xr
       in
          case {OS.read Desc ReadSizeAll Ys Xr}
-         of 0 then Xr=Xt N
+         of 0 then
+            Xs = Ys
+            Xr = Xt
+            N
          elseof M then
             Xs = Ys
             {DoReadAll Desc Xr Xt N+M}
@@ -330,17 +333,16 @@ in
 
          meth read(size:Size <=ReadSize
                    list:?Is  tail:It<=nil len:?N<=_)
-            lock self.ReadLock then IsL NL in
+            lock self.ReadLock then
                lock self.WriteLock then D=@ReadDesc in
                   if {IsInt D} then
-                     NL = case Size of all then
-                             Is = IsL
-                             {DoReadAll D ?IsL It 0}
-                          else
-                             {OS.read D Size ?IsL It}
-                             Is = IsL
-                          end
-                     N = NL
+                     case Size of all then
+                        N = {DoReadAll D ?Is It 0}
+                     else NL IsL in
+                        NL = {OS.read D Size ?IsL It}
+                        N = NL
+                        Is = IsL
+                     end
                   else
                      {RaiseClosed self
                       read(size:Size list:Is tail:It len:N)}
@@ -399,16 +401,15 @@ in
                    len:  Len  <= _
                    list: List
                    tail: Tail <= nil)
-            lock self.ReadLock then D=@ReadDesc ListL LenL in
+            lock self.ReadLock then D=@ReadDesc in
                if {IsInt D} then
-                  LenL = case Size of all then
-                            ListL = List
-                            {DoReadAll D ?ListL Tail 0}
-                         else
-                            {OS.read D Size ?ListL Tail}
-                            List = ListL
-                         end
-                  Len = LenL
+                  case Size of all then
+                     Len = {DoReadAll D ?List Tail 0}
+                  else ListL LenL in
+                     LenL = {OS.read D Size ?ListL Tail}
+                     Len = LenL
+                     List = ListL
+                  end
                else {RaiseClosed self
                      read(size:Size len:Len list:List tail:Tail)}
                end

@@ -131,8 +131,9 @@ in
                                         File#'.o -lc')}
                           Goodies={M link(url:File#'.so{native}' $)}
                           _={Goodies.getenv 'SHELL'}
-                          _={OS.system
-                             'rm -f '#File#'.c '#File#'.o '#FileSO}
+                          {OS.unlink File#'.c'}
+                          {OS.unlink File#'.c'}
+                          {OS.unlink FileSO}
                           true
                        end
                     end

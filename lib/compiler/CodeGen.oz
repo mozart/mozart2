@@ -1514,7 +1514,7 @@ local
    class CodeGenMethod
       feat hasDefaults MessagePatternVO
       meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
-         FileName Line Col SlowMeth FastMeth VInter1 VInter2
+         RecordArity FileName Line Col SlowMeth FastMeth VInter1 VInter2
          X = unit
       in
          local PairList Rec in
@@ -1526,11 +1526,15 @@ local
                         end}
             try
                Rec = {List.toRecord someLabel PairList}
+               RecordArity = case {IsTuple Rec} then {Width Rec}
+                             else {Arity Rec}
+                             end
                formalArgs <- {Record.toList Rec}
             catch failure(...) then C = {@label getCoord($)} in
                {CS.reporter
                 error(coord: C kind: 'code generation error'
                       msg: 'duplicate feature in record construction')}
+               RecordArity = {Length @formalArgs}
             end
          end
          self.hasDefaults = {Some @formalArgs
@@ -1542,8 +1546,7 @@ local
             PredId = pid({String.toAtom
                           {VirtualString.toString
                            PrintName#','#{@label methPrintName($)}#'/fast'}}
-                         {Length @formalArgs} pos(FileName Line Col) nil
-                         NLiveRegs)
+                         RecordArity pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
             {Show PredId}
 \endif

@@ -21,29 +21,38 @@
 
 class QuietInterface from ErrorListener.'class'
    prop final
-   attr InsertedFiles: nil SourceVS: ""
+   attr InsertedFiles: nil SourceVS: "" Waiting: unit
    meth init(CompilerObject DoVerbose <= false)
       ErrorListener.'class', init(CompilerObject ServeOne DoVerbose)
+      Waiting <- {NewDictionary}
    end
    meth reset()
       InsertedFiles <- nil
       SourceVS <- ""
    end
-   meth ServeOne(M) OutputMessage in
+   meth ServeOne(M)
       case M of insert(VS _) then
          InsertedFiles <- VS|@InsertedFiles
-         OutputMessage = unit
       [] displaySource(_ _ VS) then
          case @SourceVS of "" then
             SourceVS <- VS
          elseof SVS then
             SourceVS <- SVS#'\n\n'#VS
          end
-         OutputMessage = unit
+      [] removeQuery(Id) then
+         {Dictionary.condGet @Waiting Id unit} = unit
       else skip
       end
    end
 
+   meth wait(Id) X N in
+      {Dictionary.put @Waiting Id X}
+      ErrorListener.'class', getNarrator(?N)
+      if {IsFree {N getQueryState(Id $)}} then
+         {Wait X}
+      end
+      {Dictionary.remove @Waiting Id}
+   end
    meth getInsertedFiles($)
       {Reverse @InsertedFiles}
    end

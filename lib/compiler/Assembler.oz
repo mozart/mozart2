@@ -10,9 +10,8 @@
 %% feeding and loading of assembled machine code.
 %%
 %% Notes:
-%% -- Except for the endDefinition(_) instruction and the backward jump
-%%    to a switchOnTerm instruction, the code may contain no backward-only
-%%    references to labels.
+%% -- The code may contain no backward-only references to labels that
+%%    are not reached during a forward-scan through the code.
 %% -- The definition(...) instruction differs from the format expected
 %%    by the assembler proper:  An additional argument stores the code
 %%    for the definition's body.  This way, less garbage is produced
@@ -120,6 +119,53 @@ local
       end
 
       \insert Opcodes
+
+      local
+         fun {Sub In V}
+            In#' '#{ValueToVirtualString V}
+         end
+
+         fun {ValueToVirtualString Value}
+            case {IsName Value} then
+               case {IsUniqueName Value} then
+                  '<U: '#{System.printName Value}#'>'
+               else
+                  {System.valueToVirtualString Value 0 0}
+               end
+            elsecase {IsAtom Value} then
+               case {HasFeature InstructionSizes Value} then
+                  '\''#Value#'\''
+               elsecase Value of lbl then '\'lbl\''
+               [] pid then '\'pid\''
+               [] ht then '\'ht\''
+               [] onVar then '\'onVar\''
+               [] onScalar then '\'onScalar\''
+               [] onRecord then '\'onRecord\''
+               [] gci then '\'gci\''
+               [] ami then '\'ami\''
+               else
+                  {System.valueToVirtualString Value 0 0}
+               end
+            elsecase Value of V1|Vr then
+               {FoldL Vr Sub '['#{ValueToVirtualString V1}}#']'
+            elsecase {IsTuple Value} then
+               {ForThread 2 {Width Value} 1
+                fun {$ In I}
+                   In#' '#{ValueToVirtualString Value.I}
+                end {Label Value}#'('#{ValueToVirtualString Value.1}}#')'
+            else
+               {System.valueToVirtualString Value 1000 1000}
+            end
+         end
+      in
+         fun {InstrToVirtualString Instr}
+            case {IsAtom Instr} then
+               {Label Instr}
+            else
+               {ValueToVirtualString Instr}
+            end
+         end
+      end
    in
       class AssemblerClass
          prop final
@@ -197,7 +243,7 @@ local
             else skip
             end
          end
-         meth output(?VS) AddrToLabelMap VS0 in
+         meth output($) AddrToLabelMap in
             AssemblerClass, MarkEnd()
             AddrToLabelMap = {NewDictionary}
             {ForAll {Dictionary.entries @LabelDict}
@@ -207,49 +253,24 @@ local
                 else skip
                 end
              end}
-            _#VS0 = {FoldL @InstrsHd
-                     fun {$ Addr#VS Instr} LabelVS NewInstr InstrVS in
-                        LabelVS = case {Dictionary.member AddrToLabelMap Addr}
-                                  then
-                                     'lbl('#Addr#')'#
-                                     case Addr < 100 then '\t\t' else '\t' end
-                                  else '\t\t'
-                                  end
-                        AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
-                        InstrVS = {System.valueToVirtualString NewInstr
-                                   1000 1000}
-                        (Addr + InstructionSizes.{Label Instr})#
-                        (VS#LabelVS#InstrVS#'\n')
-                     end 0#""}
-            VS = VS0#'\nCode Size = '#@Size#' words\n'
+            '%% Code Size:\n'#@Size#' % words\n'#
+            AssemblerClass, OutputSub(@InstrsHd AddrToLabelMap 0 $)
          end
-         meth outputNoLabels(?VS) OldLabelDict AddrToLabelMap VS0 in
-            OldLabelDict = @LabelDict
-            AssemblerClass, MarkEnd()
-            AddrToLabelMap = {NewDictionary}
-            LabelDict <- {NewDictionary}
-            {ForAll {Dictionary.entries OldLabelDict}
-             proc {$ Label#Addr}
-                case {IsDet Addr} then
-                   {Dictionary.put @LabelDict Label _}
-                   {Dictionary.put AddrToLabelMap Addr Label}
-                else skip
-                end
-             end}
-            _#VS0 = {FoldL @InstrsHd
-                     fun {$ Addr#VS Instr} LabelVS NewInstr InstrVS in
-                        LabelVS = case {Dictionary.member AddrToLabelMap Addr}
-                                  then 'lbl(_)\t\t'
-                                  else '\t\t'
-                                  end
-                        AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
-                        InstrVS = {System.valueToVirtualString NewInstr
-                                   1000 1000}
-                        (Addr + InstructionSizes.{Label Instr})#
-                        (VS#LabelVS#InstrVS#'\n')
-                     end 0#""}
-            VS = VS0#'\nCode Size = '#@Size#' words\n'
-            LabelDict <- OldLabelDict
+         meth OutputSub(Instrs AddrToLabelMap Addr ?VS)
+            case Instrs of Instr|Ir then LabelVS NewInstr VSRest NewAddr in
+               LabelVS = case {Dictionary.member AddrToLabelMap Addr}
+                         then
+                            'lbl('#Addr#')'#
+                            case Addr < 100 then '\t\t' else '\t' end
+                         else '\t\t'
+                         end
+               AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
+               VS = LabelVS#{InstrToVirtualString NewInstr}#'\n'#VSRest
+               NewAddr = Addr + InstructionSizes.{Label Instr}
+               AssemblerClass, OutputSub(Ir AddrToLabelMap NewAddr ?VSRest)
+            [] nil then
+               VS = ""
+            end
          end
          meth load(Globals ?P) CodeBlock in
             AssemblerClass, MarkEnd()

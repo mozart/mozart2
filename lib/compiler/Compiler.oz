@@ -17,6 +17,7 @@ local
                         showcompilememory: false
                         echoqueries: false
                         watchdog: true
+                        ozma: false
 
                         %% warnings:
                         %%
@@ -29,7 +30,6 @@ local
                         system: true
                         catchall: false
                         selfallowedanywhere: false
-                        joinqueries: false
 
                         %% static analysis:
                         %%
@@ -46,8 +46,6 @@ local
                         %%
                         codegen: true
                         outputcode: false
-                        outputnolabels: false
-                        outputtofile: false
 
                         %% feeding to the emulator:
                         %%
@@ -175,7 +173,7 @@ local
       end
    end
 
-   BaseEnv = env('`Builtin`': `Builtin`)
+   BaseEnv = env('`Builtin`': {`Builtin` 'builtin' 3})
 in
    %%
    %% The CompilerClass does not do any locking.  This is due to the
@@ -273,7 +271,7 @@ in
                raise rejected end
             else skip
             end
-            case {@switches get(joinqueries $)} then
+            case {@switches get(ozma $)} then
                Unnester, joinQueries(Queries0 ?Queries)
             else
                Queries = Queries0
@@ -480,65 +478,63 @@ in
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
                Assembler = {Assemble {@switches get(profile $)} Code}
-               case {@switches get(outputcode $)} then VS in
-                  case {@switches get(outputtofile $)} then
+               case {@switches get(ozma $)} then
+                  case GPNs of nil then File VS in
                      {@reporter logSubPhase('saving assembler code ...')}
-                  else
-                     {@reporter logSubPhase('displaying assembler code ...')}
-                  end
-                  VS =
-                  case GPNs of nil then 'No Global Registers\n'
-                  else
-                     {List.foldLInd GPNs
-                      fun {$ I In PrintName}
-                         In#'\t\tg('#I - 1#') = '#
-                         {PrintNameToVirtualString PrintName}#'\n'
-                      end 'Assignment of Global Registers:\n'}
-                  end#
-                  '\nMachine Code:\n'#
-                  case {@switches get(outputnolabels $)} then
-                     {Assembler outputNoLabels($)}
-                  else
-                     {Assembler output($)}
-                  end
-                  case {@switches get(outputtofile $)} then File in
+                     {Assembler output(?VS)}
                      File = {New Open.file
-                             init(name: 'output.ozm'
-                                  flags: [write create append])}
+                             init(name: '/tmp/output.ozm'
+                                  flags: [write create truncate])}
                      {File write(vs: VS)}
                      {File close()}
                   else
+                     {@reporter error(kind: 'Ozma error'
+                                      msg: ('No free variables allowed '#
+                                            'when compiling for Ozma'))}
+                  end
+               else
+                  case {@switches get(outputcode $)} then VS in
+                     {@reporter logSubPhase('displaying assembler code ...')}
+                     VS = case GPNs of nil then '%% No Global Registers\n'
+                          else
+                             {List.foldLInd GPNs
+                              fun {$ I In PrintName}
+                                 In#'%%    g('#I - 1#') = '#
+                                 {PrintNameToVirtualString PrintName}#'\n'
+                              end '%% Assignment of Global Registers:\n'}
+                          end#{Assembler output($)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
+                  else skip
                   end
-               else skip
-               end
-               case {@switches get(feedtoemulator $)} then Globals Proc P in
-                  {@reporter logSubPhase('loading ...')}
-                  proc {Proc}
-                     case TopLevelGVs of nil then skip
-                     else
-                        {ForAll TopLevelGVs
-                         proc {$ GV} {@TopLevel enter(GV)} end}
-                        {self.interface DisplayEnv(@TopLevel.values)}
+                  case {@switches get(feedtoemulator $)} then Globals Proc P in
+                     {@reporter logSubPhase('loading ...')}
+                     proc {Proc}
+                        case TopLevelGVs of nil then skip
+                        else
+                           {ForAll TopLevelGVs
+                            proc {$ GV} {@TopLevel enter(GV)} end}
+                           {self.interface DisplayEnv(@TopLevel.values)}
+                        end
+                        Globals = {Map GPNs
+                                   fun {$ PrintName}
+                                      {@TopLevel getValueOf(PrintName $)}
+                                   end}
+                        {Assembler load(Globals ?P)}
                      end
-                     Globals = {Map GPNs
-                                fun {$ PrintName}
-                                   {@TopLevel getValueOf(PrintName $)}
-                                end}
-                     {Assembler load(Globals ?P)}
+                     CompilerClass, ExecuteUninterruptible(Proc)
+                     case {@switches get(threadedqueries $)} then
+                        {@reporter
+                         logSubPhase('executing in an independent thread ...')}
+                        thread {P} end
+                     else
+                        {@reporter
+                         logSubPhase('executing and waiting for '#
+                                     'completion ...')}
+                        CompilerClass, ExecProtected(P false)
+                     end
+                  else skip
                   end
-                  CompilerClass, ExecuteUninterruptible(Proc)
-                  case {@switches get(threadedqueries $)} then
-                     {@reporter
-                      logSubPhase('executing in an independent thread ...')}
-                     thread {P} end
-                  else
-                     {@reporter
-                      logSubPhase('executing and waiting for completion ...')}
-                     CompilerClass, ExecProtected(P false)
-                  end
-               else skip
                end
             else skip
             end

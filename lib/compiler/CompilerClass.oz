@@ -214,7 +214,7 @@ local
          {V getPrintName(?PrintName)}
          {Dictionary.put self.variables PrintName V}
          {Dictionary.put self.values PrintName X}
-         case {IsFree X} andthen NameIt then {NameVariable X PrintName}
+         case {IsFree X} andthen NameIt then {Misc.nameVariable X PrintName}
          else skip
          end
          {V setUse(multiple)}
@@ -398,7 +398,7 @@ local
             else skip
             end
             Queries = case CompilerStateClass, getSwitch(ozma $) then
-                         {JoinQueries Queries0 @reporter}
+                         {Unnest.joinQueries Queries0 @reporter}
                       elsecase CompilerStateClass, getSwitch(expression $) then
                          case Queries0 of nil then Queries0
                          else V in
@@ -406,7 +406,7 @@ local
                                  init('`result`' putEnv unit)}
                             CompilerStateClass,
                             enter(V {CondSelect Return result _} false)
-                            {MakeExpressionQuery Queries0}
+                            {Unnest.makeExpressionQuery Queries0}
                          end
                       else
                          Queries0
@@ -465,7 +465,7 @@ local
             else skip
             end
             {@reporter logPhase('transforming into graph representation ...')}
-            {UnnestQuery self @reporter self Query
+            {Unnest.unnestQuery self @reporter self Query
              ?TopLevelGVs ?GS ?FreeGVs}
             case CompilerStateClass, getSwitch(warnredecl $) then
                {ForAll TopLevelGVs
@@ -567,7 +567,7 @@ local
             else skip
             end
             case CompilerStateClass, getSwitch(codegen $) then
-               GPNs Code Assembler
+               GPNs Code MyAssembler
             in
                {@reporter logPhase('generating code ...')}
                case CompilerStateClass, getSwitch(staticanalysis $) then skip
@@ -584,19 +584,19 @@ local
                                   CompilerStateClass, getVars($) TopLevelGVs
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
-               Assembler = {Assemble Code
-                            switches(profile:
-                                        (CompilerStateClass,
-                                         getSwitch(profile $))
-                                     debuginfocontrol:
-                                        (CompilerStateClass,
-                                         getSwitch(debuginfocontrol $))
-                                     verify: false
-                                     peephole: true)}
+               MyAssembler = {Assembler.assemble Code
+                              switches(profile:
+                                          (CompilerStateClass,
+                                           getSwitch(profile $))
+                                       debuginfocontrol:
+                                          (CompilerStateClass,
+                                           getSwitch(debuginfocontrol $))
+                                       verify: false
+                                       peephole: true)}
                case CompilerStateClass, getSwitch(ozma $) then
                   case GPNs of nil then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
-                     {Assembler output(?VS)}
+                     {MyAssembler output(?VS)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
                   [] GPN|GPNr then
@@ -620,7 +620,7 @@ local
                                  {FormatStringToVirtualString pn(PrintName)}#
                                  '\n'
                               end '%% Assignment of Global Registers:\n'}
-                          end#{Assembler output($)}
+                          end#{MyAssembler output($)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
                   else skip
@@ -640,7 +640,7 @@ local
                                       CompilerStateClass,
                                       lookupInEnv(PrintName $)
                                    end}
-                        {Assembler load(Globals ?P)}
+                        {MyAssembler load(Globals ?P)}
                      end
                      CompilerInternal, ExecuteUninterruptible(Proc)
                      case CompilerStateClass, getSwitch(threadedqueries $) then
@@ -744,7 +744,7 @@ local
    end
 
    fun {IsEnv E}
-      {IsRecord E} andthen {All {Arity E} IsPrintName}
+      {IsRecord E} andthen {All {Arity E} Misc.isPrintName}
    end
 
    fun {IsProcedure5 P}
@@ -842,11 +842,11 @@ in
             [] setMaxNumberOfErrors(_) then
                {TypeCheck IsInt M 1 'int'}
             [] addToEnv(_ _) then
-               {TypeCheck IsPrintName M 1 'print name'}
+               {TypeCheck Misc.isPrintName M 1 'print name'}
             [] lookupInEnv(_ _) then
-               {TypeCheck IsPrintName M 1 'print name'}
+               {TypeCheck Misc.isPrintName M 1 'print name'}
             [] removeFromEnv(_) then
-               {TypeCheck IsPrintName M 1 'print name'}
+               {TypeCheck Misc.isPrintName M 1 'print name'}
             [] putEnv(_) then
                {TypeCheck IsEnv M 1 'environment'}
             [] mergeEnv(_) then

@@ -72,7 +72,7 @@ local
    end
 
    fun {Bool2Token B}
-      case B then TrueToken else FalseToken end
+      case B then Core.trueToken else Core.falseToken end
    end
 
 % assumes privacy of the following feature names
@@ -232,7 +232,7 @@ local
         token:             fun {$ X}
                               {IsObject X} andthen {HasFeature X ImAToken}
                            end
-        builtin:           IsBuiltin
+        builtin:           Misc.isBuiltin
         procedure:         IsProcedure
         procedureOrObject: fun {$ X}
                               {TypeTests.procedure X}
@@ -1140,7 +1140,7 @@ local
          skip
       end
    end
-
+in
    class SAStatement
       from SADefault
 
@@ -1870,7 +1870,7 @@ local
          {System.show assertTypes(BIName)}
 \endif
 
-         case {GetBuiltinInfo BIName}
+         case {Builtins.getInfo BIName}
          of noInformation then skip
          elseof I then
             Types = I.types
@@ -1979,7 +1979,7 @@ local
 
       meth checkArguments(Ctrl Det $)
          N         = {System.printName {GetData @designator}}
-         BIInfo    = {GetBuiltinInfo N}
+         BIInfo    = {Builtins.getInfo N}
          NumArgs   = {Length @actualArgs}
          BIData    = {GetData @designator}
          ProcArity = {Procedure.arity BIData}
@@ -2549,11 +2549,11 @@ local
             {Ctrl setErrorMsg('type test failed')}
 
             case {Test {GetData BVO1}} then
-               {Ctrl setUnifier(BVO2 TrueToken)}
-               {BVO2 unifyVal(Ctrl TrueToken)}
+               {Ctrl setUnifier(BVO2 Core.trueToken)}
+               {BVO2 unifyVal(Ctrl Core.trueToken)}
             else
-               {Ctrl setUnifier(BVO2 FalseToken)}
-               {BVO2 unifyVal(Ctrl FalseToken)}
+               {Ctrl setUnifier(BVO2 Core.falseToken)}
+               {BVO2 unifyVal(Ctrl Core.falseToken)}
             end
 
             {Ctrl resetUnifier}
@@ -2575,11 +2575,11 @@ local
 
          case {ThreeValuedTest {GetFullData BVO1}}
          of true then
-            {Ctrl setUnifier(BVO2 TrueToken)}
-            {BVO2 unifyVal(Ctrl TrueToken)}
+            {Ctrl setUnifier(BVO2 Core.trueToken)}
+            {BVO2 unifyVal(Ctrl Core.trueToken)}
          elseof false then
-            {Ctrl setUnifier(BVO2 FalseToken)}
-            {BVO2 unifyVal(Ctrl FalseToken)}
+            {Ctrl setUnifier(BVO2 Core.falseToken)}
+            {BVO2 unifyVal(Ctrl Core.falseToken)}
          elseof unit then
             skip
          end
@@ -2595,11 +2595,11 @@ local
 
          case {DetTests.detOrKinded BVO1} then
             case {Test {GetData BVO1}} then
-               {Ctrl setUnifier(BVO2 TrueToken)}
-               {BVO2 unifyVal(Ctrl TrueToken)}
+               {Ctrl setUnifier(BVO2 Core.trueToken)}
+               {BVO2 unifyVal(Ctrl Core.trueToken)}
             else
-               {Ctrl setUnifier(BVO2 FalseToken)}
-               {BVO2 unifyVal(Ctrl FalseToken)}
+               {Ctrl setUnifier(BVO2 Core.falseToken)}
+               {BVO2 unifyVal(Ctrl Core.falseToken)}
             end
          else skip end
          {Ctrl resetUnifier}
@@ -4268,7 +4268,7 @@ local
                SAVariable, setLastValue(Constr)
 
             elsecase
-               {IsBuiltin Value}
+               {Misc.isBuiltin Value}
             then
                BI      = {New Core.builtinToken init(Value)}
             in
@@ -4561,7 +4561,7 @@ local
          then
             case IsData then _
             else   % dummy variable with right print name
-               {NameVariable $ {self getPrintName($)}}
+               {Misc.nameVariable $ {self getPrintName($)}}
             end
          else
             {@value getFullData(D IsData $)}
@@ -4780,49 +4780,4 @@ local
          else {self getValue($)} end
       end
    end
-in
-   SA = sa(statement: SAStatement
-           stepPoint: SAStepPoint
-           declaration: SADeclaration
-           skipNode: SASkipNode
-           equation: SAEquation
-           construction: SAConstruction
-           definition: SADefinition
-           functionDefinition: SAFunctionDefinition
-           clauseBody: SAClauseBody
-           application: SAApplication
-           boolCase: SABoolCase
-           boolClause: SABoolClause
-           patternCase: SAPatternCase
-           patternClause: SAPatternClause
-           recordPattern: SARecordPattern
-           equationPattern: SAEquationPattern
-           abstractElse: SAAbstractElse
-           elseNode: SAElseNode
-           noElse: SANoElse
-           threadNode: SAThreadNode
-           tryNode: SATryNode
-           lockNode: SALockNode
-           classNode: SAClassNode
-           method: SAMethod
-           methodWithDesignator: SAMethodWithDesignator
-           methFormal: SAMethFormal
-           methFormalOptional: SAMethFormalOptional
-           methFormalWithDefault: SAMethFormalWithDefault
-           objectLockNode: SAObjectLockNode
-           getSelf: SAGetSelf
-           failNode: SAFailNode
-           ifNode: SAIfNode
-           choicesAndDisjunctions: SAChoicesAndDisjunctions
-           orNode: SAOrNode
-           disNode: SADisNode
-           choiceNode: SAChoiceNode
-           clause: SAClause
-           valueNode: SAValueNode
-           atomNode: SAAtomNode
-           intNode: SAIntNode
-           floatNode: SAFloatNode
-           variable: SAVariable
-           variableOccurrence: SAVariableOccurrence
-           token: SAToken)
 end

@@ -3,7 +3,7 @@ local
 in
    functor prop once
    export
-      GetBuiltinInfo
+      getInfo: GetBuiltinInfo
    body
       skip
    end

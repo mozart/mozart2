@@ -703,7 +703,7 @@ local
                   {Peephole funReturn(X1)|Rest Assembler}
                end
             else BIInfo in
-               BIInfo = {GetBuiltinInfo Builtinname}
+               BIInfo = {Builtins.getInfo Builtinname}
                case Builtinname of '+1' then [X1]#[X2] = Args in
                   {Assembler append(inlinePlus1(X1 X2))}
                [] '-1' then [X1]#[X2] = Args in
@@ -878,7 +878,7 @@ local
             end
          [] testBI(Builtinname Args L1) then NewInstrs in
             case Rest of branch(L2)|NewRest then BIInfo in
-               BIInfo = {GetBuiltinInfo Builtinname}
+               BIInfo = {Builtins.getInfo Builtinname}
                case {CondSelect BIInfo negated unit} of unit then skip
                elseof NegatedBuiltinname then
                   NewInstrs = (testBI(NegatedBuiltinname Args L2)|

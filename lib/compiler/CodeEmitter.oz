@@ -420,7 +420,7 @@ in
          [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
             BIInfo NewCont2
          in
-            BIInfo = {GetBuiltinInfo Builtinname}
+            BIInfo = {Builtins.getInfo Builtinname}
             NewCont2 =
             case {CondSelect BIInfo test false} then
                Reg = {List.last Regs}
@@ -800,7 +800,7 @@ in
                                            ?HasLocalEnv)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
-            BIInfo = {GetBuiltinInfo Builtinname}
+            BIInfo = {Builtins.getInfo Builtinname}
             Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
                                          true ?XsOut nil)
             Emitter, Emit(testBI(Builtinname XsIn#XsOut Dest2))

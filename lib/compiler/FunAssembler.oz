@@ -2,9 +2,9 @@ functor prop once
 import
    System.{printName valueToVirtualString}
    Foreign.pointer
-   GetBuiltinInfo
    AssemblerSupport
    CompilerSupport
+   Builtins.getInfo
 export
    Assemble
    DoAssemble

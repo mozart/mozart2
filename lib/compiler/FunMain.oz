@@ -1,0 +1,104 @@
+functor prop once
+import
+   Parser           from 'x-oz-boot:Parser'
+   AssemblerSupport from 'x-oz-boot:AssemblerSupport'
+   CompilerSupport  from 'x-oz-boot:CompilerSupport'
+   Property
+   System   %.{gcDo printName valueToVirtualString get property printError eq}
+   Foreign   %.{pointer staticLoad}
+   Error   %.{formatExc formatPos formatLine formatGeneric format dispatch msg}
+   ErrorRegistry   %.put
+   FS   %.{include var subset value reflect isIn}
+   FD   %.{int is less distinct distribute}
+   Search   %.{SearchOne='SearchOne'}
+\ifndef OZM
+   Gump
+\endif
+export
+   Engine
+   ParseOzFile
+   ParseOzVirtualString
+   GenericInterface
+   QuietInterface
+   EvalExpression
+   VirtualStringToValue
+   Assemble
+body
+   local
+      ImAConstruction       = {NewName}
+      ImAValueNode          = {NewName}
+      ImAVariableOccurrence = {NewName}
+      ImAToken              = {NewName}
+
+      Misc      = {FunMisc.apply
+                   c('CompilerSupport':       CompilerSupport)}
+      Builtins  = {FunBuiltins.apply c}
+      SA        = {FunSA.apply
+                   c('FD':                    FD
+                     'FS':                    FS
+                     'Search':                Search
+                     'Foreign':               Foreign
+                     'System':                System
+                     'Misc':                  Misc
+                     'ImAConstruction':       ImAConstruction
+                     'ImAValueNode':          ImAValueNode
+                     'ImAVariableOccurrence': ImAVariableOccurrence
+                     'ImAToken':              ImAToken
+                     'Core':                  Core
+                     'CompilerSupport':       CompilerSupport
+                     'Builtins':              Builtins)}
+      Code      = {FunCode.apply
+                   c('Foreign':               Foreign
+                     'System':                System
+                     'Misc':                  Misc
+                     'ImAVariableOccurrence': ImAVariableOccurrence
+                     'Core':                  Core
+                     'Builtins':              Builtins)}
+      Core      = {FunCore.apply
+                   c('System':                System
+                     'Misc':                  Misc
+                     'SA':                    SA
+                     'CodeGen':               Code
+                     'ImAConstruction':       ImAConstruction
+                     'ImAValueNode':          ImAValueNode
+                     'ImAVariableOccurrence': ImAVariableOccurrence
+                     'ImAToken':              ImAToken)}
+      Unnest    = {FunUnnest.apply
+                   c('FD':                    FD
+                     'Misc':                  Misc
+                     'CompilerSupport':       CompilerSupport
+                     'Core':                  Core
+\ifndef OZM
+                     'Gump':                  Gump
+\endif
+                    )}
+      Assembler = {FunAssembler.apply
+                   c('System':                System
+                     'Foreign':               Foreign
+                     'AssemblerSupport':      AssemblerSupport
+                     'CompilerSupport':       CompilerSupport
+                     'Builtins':              Builtins)}
+      CompilerF = {FunCompiler.apply
+                   c('System':                System
+                     'Property':              Property
+                     'Error':                 Error
+                     'ErrorRegistry':         ErrorRegistry
+                     'Parser':                Parser
+                     'Misc':                  Misc
+                     'Core':                  Core
+                     'Unnest':                Unnest
+\ifndef OZM
+                     'Gump':                  Gump
+\endif
+                     'Assembler':             Assembler)}
+   in
+      Engine = CompilerF.compilerEngine
+      ParseOzFile = CompilerF.parseOzFile
+      ParseOzVirtualString = CompilerF.parseOzVirtualString
+      GenericInterface = CompilerF.genericInterface
+      QuietInterface = CompilerF.quietInterface
+      EvalExpression = CompilerF.evalExpression
+      VirtualStringToValue = CompilerF.virtualStringToValue
+      Assemble = Assembler.doAssemble
+   end
+end

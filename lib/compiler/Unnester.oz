@@ -446,13 +446,14 @@ local
             GS0 = (Unnester, UnnestStatement(NewFS1 $)|
                    Unnester, UnnestStatement(FS2 $))
             {@BA closeScope(?GVs0)}
-            GS = {FlattenSequence {MakeDeclaration GVs0 GS0 C}}
+            GS = {Core.flattenSequence {MakeDeclaration GVs0 GS0 C}}
             {@BA closeScope(?GVs)}
          else GS0 C = {CoordinatesOf Query} in
             GVs = nil
             {@BA openScope()}
             Unnester, UnnestStatement(Query ?GS0)
-            GS = {FlattenSequence {MakeDeclaration {@BA closeScope($)} GS0 C}}
+            GS = {Core.flattenSequence
+                  {MakeDeclaration {@BA closeScope($)} GS0 C}}
          end
          {@BA getFreeVariablesOfQuery(?FreeGVs)}
       end
@@ -1663,7 +1664,7 @@ local
                FeatureName = X
                FV = Y
             [] fVar(PrintName _) then
-               FeatureName = fAtom({DowncasePrintName PrintName} C)
+               FeatureName = fAtom({Misc.downcasePrintName PrintName} C)
                FV = FEI
             end
             fVar(PrintName C) = FV

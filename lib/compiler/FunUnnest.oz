@@ -1,11 +1,12 @@
 functor prop once
 import
    FD.is
-   \insert Misc-new.env
-   FlattenSequence
+   Misc.downcasePrintName
    Core
    CompilerSupport
+\ifndef OZM
    Gump.{transformParser transformScanner}
+\endif
 export
    JoinQueries
    MakeExpressionQuery

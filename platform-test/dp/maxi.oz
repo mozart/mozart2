@@ -37,7 +37,7 @@ define
    dp([
        maxi(
           proc{$}
-             S My in
+             S My CC = {NewCell false} in
              S={New Remote.manager init(host:{OS.uName}.nodename)}
              {S ping}
              {S apply(url:'' functor
@@ -51,12 +51,9 @@ define
                                 My
                              define
                                 {Property.put 'close.time' 0}
-                                {System.show startinS1}
                                 local S A in
                                    S={New Remote.manager init(host:{OS.uName}.nodename)}
-                                   {System.show s1(1)}
                                    {S ping}
-                                   {System.show s1(2)}
                                    try
                                    {S apply(url:'' functor
                                                    import
@@ -67,51 +64,56 @@ define
                                                    export
                                                       My
                                                    define
-                                                      {System.show startinS2}
+                                                      {Property.put 'close.time' 0}
                                                       My = {Connection.offer _}
                                                    end $)}.my = A
 
                                    catch XX then
                                       {System.show s1(XX)}
                                    end
-                                   {System.show a(A)}
                                    {S close}
                                    My = A#{Connection.offer _}
                                 end
                              end $)}.my = My
              {S ping}
-             {System.show my(My)}
+
+             {Delay 1000}
              try
-                {Connection.take My.1 _}
-                raise hell end
-             catch C then
-                {System.show  C}
+                {Connection.take My.1 apa}
+                {Assign CC true}
+             catch _ then
+                skip
              end
 
              {S close}
 
              try
-                {Connection.take My.2 _}
-                raise hell end
-             catch C then
-                {System.show  C}
+
+                {Connection.take My.2 apa}
+                {Assign CC true}
+
+             catch _ then
+                skip
              end
 
              try
-                {Connection.take My.1 _}
-                raise hell end
-             catch C then
-                {System.show  C}
-             end
 
-             {S close}
+                {Connection.take My.1 apa}
+                {Assign CC true}
+
+             catch _ then
+                skip
+             end
 
              try
-                {Connection.take My.2 _}
-                raise hell end
-             catch C then
-                {System.show  C}
+
+                {Connection.take My.2 apa}
+                {Assign CC true}
+
+             catch _ then
+                skip
              end
+             {Access CC false}
           end
           keys:[fault])
       ])

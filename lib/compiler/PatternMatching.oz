@@ -312,13 +312,15 @@ local
          Regs EmitGets ElseVInstr
       in
          {CS newReg(?TestReg)}
-         case Test of nonbasic(LabelV ArityV) then
-            F|Fr = ArityV Arg1 Argr ArityReg VInter1 VInter2 LabelReg
-         in
-            Arg1 = {MakeRecordArgument F}
-            Argr = {MakeArityList Fr VHd VInter1 CS}
+         case Test of nonbasic(LabelV ArityV) then ArityReg VInter2 LabelReg in
             {CS newReg(?ArityReg)}
-            VInter1 = vEquateRecord(_ '|' 2 ArityReg [Arg1 Argr] VInter2)
+            case ArityV of F|Fr then VInter1 Arg1 Argr in
+               Arg1 = {MakeRecordArgument F}
+               Argr = {MakeArityList Fr VHd VInter1 CS}
+               VInter1 = vEquateRecord(_ '|' 2 ArityReg [Arg1 Argr] VInter2)
+            [] nil then
+               VHd = vEquateConstant(_ nil ArityReg VInter2)
+            end
             LabelReg = {MakeEquation LabelV VInter2 TestVInstr CS}
             TestProc = 'Record.test'
             TestArgs = [Reg LabelReg ArityReg TestReg]

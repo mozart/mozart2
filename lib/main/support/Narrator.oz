@@ -105,7 +105,7 @@ define
                  kind: Kind <= unit
                  msg: Msg <= unit
                  items: Items <= nil
-                 abort: Abort <= true) NewCoord MaxNumberOfErrors in
+                 abort: Abort <= true) NewCoord in
          NewCoord = {NormalizeCoord Coord}
          {@Narrator
           tell(message(error(kind: Kind msg: Msg

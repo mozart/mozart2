@@ -70,7 +70,6 @@ prepare
 \ifdef DENYS_EVENTS
                    'Timer' 'Perdio'
 \endif
-                   'GDK'#gtk 'GTK'#gtk 'GTKCANVAS'#gtk 'GBuilder'#gtk
                   ]
       NatLibs   = ['Space' 'OsTime']
       Volatiles = ['Module'

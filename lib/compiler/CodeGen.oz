@@ -817,7 +817,7 @@ define
             {MakePermanent @formalArgs BodyVInter Cont1 Cont2 nil CS}
             {CodeGenList @statements CS Cont1 Cont2}
             AllRegs = case @allVariables of nil then nil
-                      else {Map @allVariables fun {$ V} {V reg($)} end}
+                      elseof Vs then {GetRegs Vs}
                       end
             case StateReg of none then
                BodyVInstr = BodyVInter
@@ -847,7 +847,7 @@ define
             {CS startDefinition()}
             {CodeGenList @statements CS InnerBodyVInter nil}
             AllRegs = case @allVariables of nil then nil
-                      else {GetRegs @allVariables}
+                      elseof Vs then {GetRegs Vs}
                       end
             case StateReg of none then
                InnerBodyVInstr = InnerBodyVInter
@@ -1458,7 +1458,7 @@ define
       end
       meth MakeBody(?AllRegs CS VHd VTl) Vs in
          AllRegs = case @allVariables of nil then nil
-                   else {GetRegs @allVariables}
+                   elseof Vs then {GetRegs Vs}
                    end
          Vs = {FoldR @formalArgs fun {$ F In} {F getVariable($)}|In end
                case @messageDesignator of unit then nil

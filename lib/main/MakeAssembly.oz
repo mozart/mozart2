@@ -24,6 +24,7 @@
 declare
 NewSystem
 NewForeign
+NewErrorRegistry
 NewError
 NewFS
 NewFD
@@ -40,6 +41,9 @@ in
 
 \insert 'sp/Foreign.oz'
 = NewForeign
+
+\insert 'sp/ErrorRegistry.oz'
+= NewErrorRegistry
 
 \insert 'sp/Error.oz'
 = NewError
@@ -72,45 +76,57 @@ UrlDefaults = \insert '../url-defaults.oz'
 {{`Builtin` 'save' 2}
  proc instantiate {$}
 
-    System    = {NewSystem.'apply'
-                 'import'}
-    Foreign   = {NewForeign.'apply'
-                 'import'('System':System)}
-    Error     = {NewError.'apply'
-                 'import'('System':System)}
-    FD        = {NewFD.'apply'
-                 'import'('Foreign':Foreign)}
-    FS        = {NewFS.'apply'
-                 'import'('Foreign':Foreign
-                          'FD':     FD)}
-    Search    = {NewSearch.'apply'
-                 'import'}
-    OS        = {NewOS.'apply'
-                 'import'}
-    Open      = {NewOpen.'apply'
-                 'import'('OS':  OS
-                          'URL': 'export'(open:unit))}
-    Pickle    = {NewPickle.'apply'
-                 'import'}
-    Compiler  = {NewCompiler.'apply'
-                 'import'('System':  System
-                          'Foreign': Foreign
-                          'Error':   Error
-                          'FS':      FS
-                          'FD':      FD
-                          'Search':  Search
-                         )}
+    System        = {NewSystem.apply
+                     'import'()}
+    ErrorRegistry = {NewErrorRegistry.apply
+                     'import'('Error': Error)}
+    Error         = {NewError.apply
+                     'import'('System':        System
+                              'ErrorRegistry': ErrorRegistry)}
+    Foreign       = {NewForeign.apply
+                     'import'('System':        System
+                              'Error':         Error
+                              'ErrorRegistry': ErrorRegistry)}
+
+    FD            = {NewFD.apply
+                     'import'('Foreign': Foreign
+                              'Error':         Error
+                              'ErrorRegistry': ErrorRegistry)}
+    FS            = {NewFS.apply
+                     'import'('Foreign': Foreign
+                              'FD':      FD)}
+    Search        = {NewSearch.apply
+                     'import'('Error':         Error
+                              'ErrorRegistry': ErrorRegistry)}
+    OS            = {NewOS.apply
+                     'import'()}
+    Open          = {NewOpen.apply
+                     'import'('OS':            OS
+                              'Error':         Error
+                              'ErrorRegistry': ErrorRegistry
+                              'URL':           'export'(open: unit))}
+    Pickle        = {NewPickle.apply
+                     'import'()}
+    Compiler      = {NewCompiler.apply
+                     'import'('System':        System
+                              'Foreign':       Foreign
+                              'Error':         Error
+                              'ErrorRegistry': ErrorRegistry
+                              'FS':            FS
+                              'FD':            FD
+                              'Search':        Search)}
     Module = {NewModule}
-    {ForAll ['System'#   System
-             'Foreign'#  Foreign
-             'Error'#    Error
-             'FD'#       FD
-             'FS'#       FS
-             'Search'#   Search
-             'OS'#       OS
-             'Open'#     Open
-             'Pickle'  # Pickle
-             'Compiler'# Compiler]
+    {ForAll ['System'#       System
+             'Foreign'#      Foreign
+             'ErrorRegistry'#ErrorRegistry
+             'Error'#        Error
+             'FD'#           FD
+             'FS'#           FS
+             'Search'#       Search
+             'OS'#           OS
+             'Open'#         Open
+             'Pickle'#       Pickle
+             'Compiler'#     Compiler]
      proc {$ A#M}
         {Module.enter UrlDefaults.home#'lib/'#A#UrlDefaults.'functor' M}
      end}

@@ -110,7 +110,7 @@ local
    %%
 
    local
-      SPN = {`Builtin` 'System.printName' 2}
+      SPN = {`Builtin` 'UnSitedPrintName' 2}
    in
       fun {GenericAsk TypeTest TypeName}
          proc {$ X}

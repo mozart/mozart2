@@ -230,23 +230,9 @@ local
       end
    end
 
-
-   local
-      GetULT = {`Builtin` 'OS.localTime' 1}
-   in
-      fun {TimeTime}
-         ULT={GetULT}
-      in
-         ULT.yDay*86400 +
-         ULT.hour*3600  +
-         ULT.min*60     +
-         ULT.sec
-      end
-   end
-
 in
 
-   Time = time(time:   TimeTime
+   Time = time(time:   {`Builtin` 'Time.time' 1}
                delay:  Delay
                alarm:  Alarm
                repeat: Repeat)

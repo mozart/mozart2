@@ -308,7 +308,8 @@ local
          {CodeGenPattern ElseTree Mapping ElseVInstr nil unit CS}
       else
          TestReg TestVInstr TestProc TestArgs TestVOs
-         TestVInter1 TestVInter2 TestVInter3 VInstr1 VInstr2 Regs ElseVInstr
+         TestVInter1 TestVInter2 TestVInter3 VInstr1 VInstr11 VInstr2
+         Regs EmitGets ElseVInstr
       in
          {CS newReg(?TestReg)}
          case Test of nonbasic(LabelV ArityV) then
@@ -325,30 +326,35 @@ local
                     fun {$ FeatureV}
                        {Append Pos [FeatureV]}#{CS newReg($)}
                     end}
+            EmitGets = true
          [] label(LabelV) then LabelReg in
             %--** perhaps we could use indexing for the label
             LabelReg = {MakeEquation LabelV VHd TestVInstr CS}
             TestProc = 'Record.testLabel'
             TestArgs = [Reg LabelReg TestReg]
             Regs = nil
+            EmitGets = false
          [] feature(FeatureV) then FeatureReg ResultReg in
             {CS newReg(?ResultReg)}
             FeatureReg = {MakeEquation FeatureV VHd TestVInstr CS}
             TestProc = 'Record.testFeature'
             TestArgs = [Reg FeatureReg TestReg ResultReg]
             Regs = [{Append Pos [FeatureV]}#ResultReg]
+            EmitGets = false
          [] equal(Pos0) then Reg0 in
             Reg0 = {PosToReg Pos0 Mapping}
             VHd = TestVInstr
             TestProc = '=='
             TestArgs = [Reg Reg0 TestReg]
             Regs = nil
+            EmitGets = false
          [] constant(VO) then Reg0 in
             {VO reg(?Reg0)}
             VHd = TestVInstr
             TestProc = '=='
             TestArgs = [Reg Reg0 TestReg]
             Regs = nil
+            EmitGets = false
          end
          TestVOs = {Map TestArgs
                     fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
@@ -358,7 +364,21 @@ local
          TestVInter2 = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
                                  unit TestVInter3 _)
          {StepPoint Coord 'conditional' TestVInstr VTl TestVInter1 TestVInter3}
-         {CodeGenPattern ThenTree {Append Regs Mapping} VInstr1 nil unit CS}
+         if EmitGets then
+            {FoldL Regs
+             proc {$ VHd Pos#DestReg VTl} F in
+                F = {List.last Pos}
+                if {IsObject F} then
+                   VHd = vCallBuiltin(_ 'Value.\'.\'' [Reg {F reg($)} DestReg]
+                                      Coord VTl)
+                else
+                   VHd = vInlineDot(_ Reg F DestReg false Coord VTl)
+                end
+             end VInstr1 VInstr11}
+         else
+            VInstr1 = VInstr11
+         end
+         {CodeGenPattern ThenTree {Append Regs Mapping} VInstr11 nil unit CS}
          {CodeGenPattern ElseTree Mapping VInstr2 nil unit CS}
       end
    end

@@ -190,13 +190,6 @@ class CodeStore from Emitter
          {AdjoinAt Addr I CodeStore, Deref(Addr.I $)}
       end
    end
-   meth DerefVClauses(VClauses $)
-      case VClauses of InitsRS#Addr1#Addr2|VClauser then
-         InitsRS#CodeStore, Deref(Addr1 $)#CodeStore, Deref(Addr2 $)|
-         CodeStore, DerefVClauses(VClauser $)
-      [] nil then nil
-      end
-   end
    meth Share(Cont $)
       case Cont of vShared(_ _ _ _) then CodeStore, Deref(Cont $)
       [] nil then nil
@@ -435,18 +428,5 @@ class CodeStore from Emitter
             skip
          end
       end
-   end
-   meth AddRegOccsClauses(VClauses AddRS AddRS2) AddRS3 in
-      AddRS3 = {BitArray.clone AddRS}
-      {ForAll VClauses
-       proc {$ _#_#Addr2}
-          CodeStore, AddRegOccs(Addr2 AddRS2)
-          {BitArray.disj AddRS3 CodeStore, GetOccs(Addr2 $)}
-       end}
-      {FoldR VClauses
-       fun {$ _#Addr1#_ AddRS}
-          CodeStore, AddRegOccs(Addr1 AddRS)
-          CodeStore, GetOccs(Addr1 $)
-       end AddRS3 _}
    end
 end

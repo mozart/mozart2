@@ -64,7 +64,9 @@ define
       end
    in
       fun {CreatePipe Fork Host Ports Detach}
-         Cmd       = {OS.getEnv 'OZHOME'}#'/bin/ozremote'
+         HOME      = {OS.getEnv 'OZHOME'}
+         Cmd       = HOME#'/bin/ozengine'
+         Func      = HOME#'/share/RemoteServer.ozf'
          TicketArg = '--ticket='#{Connection.offer Ports}
          DetachArg = '--'#if Detach then '' else 'no' end#'detached'
       in
@@ -74,10 +76,12 @@ define
                     of rsh then
                        init(cmd:  'rsh'
                             args: [Host
-                                   'exec '#Cmd#' '#DetachArg#' '#TicketArg])
+                                   ('exec '#Cmd#' '#Func#' '#
+                                    DetachArg#' '#TicketArg)])
                     [] virtual then
                        init(cmd:  Cmd
-                            args: [TicketArg
+                            args: [Func
+                                   TicketArg
                                    DetachArg
                                    '--shmkey='#{VirtualSite.newMailbox}])
                     end}

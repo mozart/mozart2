@@ -37,12 +37,12 @@ fun {CoordinatesOf P}
    [] fOrElse(E _ _) then {CoordinatesOf E}
    [] fAndThen(E _ _) then {CoordinatesOf E}
    [] fOpApply(_ Es C) then
-      case Es of [_] then C   % prefix operator
-      else {CoordinatesOf Es.1}   % infix operator
+      case Es of E|_|_ then {CoordinatesOf E}   % infix operator
+      else C   % prefix or nullary operator
       end
    [] fOpApplyStatement(_ Es C) then
-      case Es of [_] then C   % prefix operator
-      else {CoordinatesOf Es.1}   % infix operator
+      case Es of E|_|_ then {CoordinatesOf E}   % infix operator
+      else C   % prefix or nullary operator
       end
    [] fUnoptimizedDot(_ _) then unit
    [] fObjApply(E _ _) then {CoordinatesOf E}

@@ -198,7 +198,7 @@ define
                         widgetStopBitmap       # {Root 'stop.xbm'}
                         widgetSepBitmap        # {Root 'sep.xbm'}
                         widgetTreeFont         #
-                        font(family:'courier' size:14 weight:normal)
+                        font(family:'courier' size:10 weight:normal)
                         widgetContextMenuFont  #
                         '-adobe-helvetica-bold-r-*-*-*-100-*'
                         widgetContextMenuABg   # '#d9d9d9'

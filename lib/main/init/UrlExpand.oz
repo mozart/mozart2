@@ -38,11 +38,14 @@ local
       if {CondSelect Base absolute false} andthen Path\=unit
       then
          N = {List.length Path}
-         D={CondSelect Base device unit}
+         D = {CondSelect Base device unit}
          RelB
       in
-         %% if a device is specified in Base it must be carried on to Rel
-         if D\=unit then
+         %% if Rel does not have a device and one is specified
+         %% in Base, then we use that.  This special treatment
+         %% is because when it is present the device is logically
+         %% part of the path.
+         if D\=unit andthen {CondSelect Rel device unit}==unit then
             RelB={AdjoinAt Rel device D}
          else
             RelB=Rel

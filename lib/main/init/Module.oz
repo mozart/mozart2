@@ -313,7 +313,7 @@ define
                end
             [] system then Name={self GetSystemName(Url false $)} in
                {self trace('system module' Url)}
-               if {IsNatSystemName Name} then
+               if Name \= unit andthen {IsNatSystemName Name} then
                   RootManager,SYSTEM({UrlMake OzScheme#'://boot/'#Name} $)
                else
                   {self Pickle(Url Url $)}

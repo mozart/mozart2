@@ -25,6 +25,7 @@
 %% Pos = [FeatureV]
 %% Test = scalar(Scalar)
 %%      | record(Label Arity)
+%%      | get([Feature#Reg])
 %%      | nonbasic(LabelV ArityV)
 %%      | label(LabelV)
 %%      | feature(FeatureV)
@@ -36,14 +37,13 @@
 %%
 %% Label = literal
 %% Arity = int
-%%       | [Feature]   % must be sorted and non-empty
+%%       | [Feature]   % must be sorted
 %% Feature = int
 %%         | literal
 %%
-%% LabelV = Label | Var
+%% LabelV = Label | VariableOccurrence
 %% ArityV = [FeatureV]   % variables to the back, sorted by printname
-%% FeatureV = Feature | Var
-%% Var = v(VariableOccurrence)
+%% FeatureV = Feature | VariableOccurrence
 %%
 %% Tree = node(Pos Test Tree Tree)
 %%      | leaf(Statement)
@@ -147,9 +147,7 @@ local
 
    proc {MergeSub Pattern Then Tree ?NewTree}
       case Pattern of nil then
-         if Tree \= default then
-            skip   %--** warning: patterns in Tree never match
-         end
+         %% Tree is unreachable
          NewTree = leaf(Then)
       [] Pos#Test|Rest then Hole1 RestTree1 Hole RestTree in
          if {FindPos Tree Pos ?NewTree ?Hole1 ?RestTree1}
@@ -166,29 +164,28 @@ local
       {MergeSub Pattern Then Tree}
    end
 
-   proc {ClipTree Pos0 Test0 Tree ?NewTree ?Hole ?RestTree}
+   fun {ClipTree Pos0 Test0 Tree ?NewTree ?Hole ?RestTree}
       case Tree of node(Pos Test ThenTree ElseTree) then
          if Pos == Pos0 andthen {MayMoveOver Test0 Test} then NewElseTree in
             NewTree = node(Pos Test ThenTree NewElseTree)
-            {ClipTree Pos0 Test0 ElseTree ?NewElseTree ?Hole ?RestTree}
+            _ = {ClipTree Pos0 Test0 ElseTree ?NewElseTree ?Hole ?RestTree}
+            true
          else
             NewTree = Hole
             RestTree = Tree
+            false
          end
       [] leaf(_) then
          NewTree = Hole
          RestTree = Tree
-      [] shared(Tree1 Shared) then NewTree1 in
-         NewTree = shared(NewTree1 Shared)
-         {ClipTree Pos0 Test0 Tree1 ?NewTree1 ?Hole ?RestTree}
-      end
-   end
-
-   fun {ReplaceElse Tree DefinitionTree}
-      case Tree of node(Pos Test ThenTree ElseTree) then
-         node(Pos Test ThenTree {ReplaceElse ElseTree DefinitionTree})
-      [] leaf(_) then Tree
-      [] shared(_ _) then Tree
+         false
+      [] shared(Tree1 Shared) then RestTree1 in
+         if {ClipTree Pos0 Test0 Tree1 ?NewTree ?Hole ?RestTree1} then
+            RestTree = RestTree1
+         else
+            RestTree = shared(RestTree1 Shared)
+         end
+         false
       end
    end
 
@@ -198,7 +195,7 @@ local
       in
          NewTree = node(Pos Test NewThenTree NewElseTree)
          {PropagateElses ElseTree DefaultTree ?NewElseTree1 ?NewDefaultTree}
-         {ClipTree Pos Test NewElseTree1 ?NewElseTree ?Hole ?DefaultTree1}
+         _ = {ClipTree Pos Test NewElseTree1 ?NewElseTree ?Hole ?DefaultTree1}
          {PropagateElses ThenTree DefaultTree1 ?NewThenTree ?Hole}
       [] leaf(_) then
          NewTree = Tree
@@ -214,10 +211,10 @@ local
       end
    end
 in
-   proc {BuildTree Clauses Else ?Tree} DefinesTree in
-      Tree = {ReplaceElse {PropagateElses
-                           {FoldR Clauses MergePatternIntoTree default}
-                           leaf(Else) $ ?DefinesTree} DefinesTree}
+   proc {BuildTree Clauses Else ?Tree}
+      Tree = {PropagateElses
+              {FoldR Clauses MergePatternIntoTree default}
+              leaf(Else) $ _}
    end
 end
 
@@ -259,8 +256,8 @@ local
                              end}
                   end
                   {FoldL Regs
-                   proc {$ Hd _#Reg Tl}
-                      Hd = vGetVariable(_ Reg Tl)
+                   proc {$ VHd _#Reg VTl}
+                      VHd = vGetVariable(_ Reg VTl)
                    end VGet VThen}
                   VHashTableEntries = onRecord(Label Arity VGet)|Rest
                   NewMapping = {Append Regs Mapping}
@@ -277,27 +274,23 @@ local
          end
       end
    in
-      proc {MakeMatch Reg Tree Mapping Pos0 Hd Tl CS}
+      proc {MakeMatch Reg Tree Mapping Pos0 VHd VTl CS}
          VHashTableEntries VElse
       in
          {MakeMatchSub Tree Mapping Pos0 CS ?VHashTableEntries ?VElse}
-         Hd = vMatch(_ Reg VElse VHashTableEntries unit Tl _)
+         VHd = vMatch(_ Reg VElse VHashTableEntries unit VTl _)
       end
    end
 
    fun {MakeRecordArgument Feature}
-      case Feature of v(VO) then value({VO reg($)})
-      else
-         if {IsInt Feature} then number(Feature)
-         else literal(Feature)
-         end
+      if {IsObject Feature} then value({Feature reg($)})
+      elseif {IsInt Feature} then number(Feature)
+      else literal(Feature)
       end
    end
 
    fun {MakeArityList Fs VHd VTl CS}
-      case Fs of F|Fr then
-         ArgIn VInter1 ConsReg NewArg
-      in
+      case Fs of F|Fr then ArgIn VInter1 ConsReg NewArg in
          ArgIn = {MakeArityList Fr VHd VInter1 CS}
          {CS newReg(?ConsReg)}
          NewArg = {MakeRecordArgument F}
@@ -310,88 +303,92 @@ local
    end
 
    proc {MakeEquation Feature VHd VTl CS ?Reg}
-      case Feature of v(VO) then
+      if {IsObject Feature} then
          VHd = VTl
-         {VO reg(?Reg)}
-      else VEquate in
+         {Feature reg(?Reg)}
+      else
          {CS newReg(?Reg)}
-         VEquate = if {IsInt Feature} then vEquateNumber
-                   else vEquateLiteral
-                   end
-         VHd = VEquate(_ Feature Reg VTl)
+         VHd = if {IsInt Feature} then vEquateNumber(_ Feature Reg VTl)
+               else vEquateLiteral(_ Feature Reg VTl)
+               end
       end
    end
 
-   proc {CodeGen Tree Mapping Hd Tl CS}
+   proc {CodeGen Tree Mapping VHd VTl CS}
       case Tree of node(Pos Test ThenTree ElseTree) then Reg in
          Reg = {PosToReg Pos Mapping}
          case Test of scalar(_) then
-            {MakeMatch Reg Tree Mapping Pos Hd Tl CS}
+            {MakeMatch Reg Tree Mapping Pos VHd VTl CS}
          [] record(_ _) then
-            {MakeMatch Reg Tree Mapping Pos Hd Tl CS}
-         else Regs VInstr1 VInstr2 in
+            {MakeMatch Reg Tree Mapping Pos VHd VTl CS}
+         [] get(Regs0) then
+            {CodeGen ThenTree
+             {FoldR Regs0 fun {$ F#Reg In} {Append Pos [F]}#Reg|In end Mapping}
+             VHd VTl CS}
+         else
+            TestReg TestVInstr TestProc TestArgs TestVInter
+            VInstr1 VInstr2 Regs ElseVInstr
+         in
+            {CS newReg(?TestReg)}
             case Test of nonbasic(LabelV ArityV) then
-               F|Fr = ArityV Arg1 Argr ArityReg
-               VInter1 VInter2 LabelReg DummyReg VInter3
+               F|Fr = ArityV Arg1 Argr ArityReg VInter1 VInter2 LabelReg
             in
                Arg1 = {MakeRecordArgument F}
-               Argr = {MakeArityList Fr Hd VInter1 CS}
+               Argr = {MakeArityList Fr VHd VInter1 CS}
                {CS newReg(?ArityReg)}
                VInter1 = vEquateRecord(_ '|' 2 ArityReg [Arg1 Argr] VInter2)
-               LabelReg = {MakeEquation LabelV VInter2 VInter3 CS}
-               {CS newReg(?DummyReg)}
-               VInter3 = vTestBuiltin(_ 'Record.test'
-                                      [Reg LabelReg ArityReg DummyReg]
-                                      VInstr1 VInstr2 Tl _)
+               LabelReg = {MakeEquation LabelV VInter2 TestVInstr CS}
+               TestProc = 'Record.test'
+               TestArgs = [Reg LabelReg ArityReg TestReg]
                Regs = {Map ArityV
                        fun {$ FeatureV}
                           {Append Pos [FeatureV]}#{CS newReg($)}
                        end}
-            [] label(LabelV) then VInter LabelReg DummyReg in
+            [] label(LabelV) then LabelReg in
                %--** perhaps we could use indexing for the label
+               LabelReg = {MakeEquation LabelV VHd TestVInstr CS}
+               TestProc = 'Record.testLabel'
+               TestArgs = [Reg LabelReg TestReg]
                Regs = nil
-               LabelReg = {MakeEquation LabelV Hd VInter CS}
-               {CS newReg(?DummyReg)}
-               VInter = vTestBuiltin(_ 'Record.testLabel'
-                                     [Reg LabelReg DummyReg]
-                                     VInstr1 VInstr2 Tl _)
-            [] feature(FeatureV) then VInter FeatureReg DummyReg ResultReg in
+            [] feature(FeatureV) then FeatureReg ResultReg in
                {CS newReg(?ResultReg)}
+               FeatureReg = {MakeEquation FeatureV VHd TestVInstr CS}
+               TestProc = 'Record.testFeature'
+               TestArgs = [Reg FeatureReg TestReg ResultReg]
                Regs = [{Append Pos [FeatureV]}#ResultReg]
-               FeatureReg = {MakeEquation FeatureV Hd VInter CS}
-               {CS newReg(?DummyReg)}
-               VInter = vTestBuiltin(_ 'Record.testFeature'
-                                     [Reg FeatureReg DummyReg ResultReg]
-                                     VInstr1 VInstr2 Tl _)
-            [] equal(Pos0) then Reg0 Reg1 in
-               Regs = nil
+            [] equal(Pos0) then Reg0 in
                Reg0 = {PosToReg Pos0 Mapping}
-               {CS newReg(?Reg1)}
-               Hd = vTestBuiltin(_ 'Value.\'==\'' [Reg Reg0 Reg1]
-                                 VInstr1 VInstr2 Tl _)
-            [] constant(VO) then Reg0 Reg1 in
+               VHd = TestVInstr
+               TestProc = '=='
+               TestArgs = [Reg Reg0 TestReg]
                Regs = nil
-               Reg0 = {VO reg($)}
-               {CS newReg(?Reg1)}
-               Hd = vTestBuiltin(_ 'Value.\'==\'' [Reg Reg0 Reg1]
-                                 VInstr1 VInstr2 Tl _)
+            [] constant(VO) then Reg0 in
+               {VO reg(?Reg0)}
+               VHd = TestVInstr
+               TestProc = '=='
+               TestArgs = [Reg Reg0 TestReg]
+               Regs = nil
             end
+            {MakeRunTimeProcApplication TestProc unit
+             {Map TestArgs
+              fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
+             CS TestVInstr TestVInter}
+            {MakeException boolCaseType unit nil CS ElseVInstr nil}
+            TestVInter = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
+                                   unit VTl _)
             {CodeGen ThenTree {Append Regs Mapping} VInstr1 nil CS}
             {CodeGen ElseTree Mapping VInstr2 nil CS}
          end
       [] leaf(Statement) then
-         {Statement codeGenPattern(Mapping Hd CS)}
-         Tl = nil
+         {Statement codeGenPattern(Mapping VHd CS)}
+         VTl = nil
       [] shared(Tree Shared) then
+         VHd = Shared
+         VTl = nil
          if {IsFree Shared} then Label VInstr in
             {CS newLabel(?Label)}
             Shared = vShared(_ Label {NewCell 0} VInstr)
-            Hd = Shared
-            Tl = nil
             {CodeGen Tree Mapping VInstr nil CS}
-         else
-            Hd = Shared
-            Tl = nil
          end
       end
    end

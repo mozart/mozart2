@@ -442,7 +442,7 @@ define
                GetVariablesTl = vShallowGuard(_ GuardVHd BodyVInstr AltVInstr
                                               unit nil AllocatesRS _)
             else AltVInstr in
-               if {CS.switches getSwitch(warnopt $)} then
+               if {CS.state getSwitch(warnopt $)} then
                   {CS.reporter
                    warn(coord: Coord kind: 'optimization warning'
                         msg: ('translating deep pattern as '#
@@ -494,7 +494,7 @@ define
                 _#GuardVInstr#BodyVInstr|In
              end nil}
             {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
-            if {CS.switches getSwitch(warnopt $)} then
+            if {CS.state getSwitch(warnopt $)} then
                {CS.reporter
                 warn(coord: Clauses.1.3 kind: 'optimization warning'
                      msg: 'translating deep pattern as general conditional')}
@@ -895,11 +895,11 @@ define
    end
 
    class CodeGenStatement
-      meth startCodeGen(Nodes Switches Reporter OldVs NewVs ?GPNs ?Code)
+      meth startCodeGen(Nodes State Reporter OldVs NewVs ?GPNs ?Code)
          CS StartAddr GRegs BodyCode0 NLiveRegs
          BodyCode1 BodyCode2 BodyCode StartLabel EndLabel
       in
-         CS = {New CodeStore init(Switches Reporter)}
+         CS = {New CodeStore init(State Reporter)}
          {ForAll OldVs proc {$ V} {V setFreshReg(CS)} end}
          {ForAll NewVs proc {$ V} {V setFreshReg(CS)} end}
          {CS startDefinition()}
@@ -1030,7 +1030,7 @@ define
                       end
                       OuterNLiveRegs)
 \ifdef DEBUG_DEFS
-         {Show PredId}
+         {System.show PredId}
 \endif
          if @isStateUsing then
             if CS.debugInfoVarnamesSwitch then
@@ -1207,10 +1207,14 @@ define
 
    class CodeGenPatternCase
       meth codeGen(CS VHd VTl)
-         if {CS.switches getSwitch(functionalpatterns $)} then
+         if {CS.state getSwitch(functionalpatterns $)} then
             {OptimizePatterns {@arbiter reg($)}
-             {Map @clauses fun {$ Clause} {Clause makePattern(CS $)} end}
+             {Map @clauses
+              fun {$ Clause}
+                 {Clause makePattern({@arbiter getCodeGenValue($)} CS $)}
+              end}
              @alternative VHd VTl CS}
+            {ForAll @clauses proc {$ Clause} {Clause warnUnreachable(CS)} end}
          elseif {All @clauses fun {$ Clause} {Clause isSwitchable($)} end} then
             TestReg SHT
          in
@@ -1221,7 +1225,7 @@ define
              proc {$ Clause} {Clause makeSwitchable(TestReg CS SHT)} end}
             {SHT codeGen(VHd VTl)}
          else AllocatesRS VClauses AltVInstr in
-            if {CS.switches getSwitch(warnopt $)} then
+            if {CS.state getSwitch(warnopt $)} then
                {CS.reporter
                 warn(coord: @coord kind: 'optimization warning'
                      msg: 'translating `case\' as general conditional')}
@@ -1241,10 +1245,12 @@ define
    end
 
    class CodeGenPatternClause
-      meth makePattern(CS $)
-         {@pattern makePattern(nil $ nil {NewDictionary} CS)}#self
+      attr reached
+      meth makePattern(Arbiter CS $)
+         {@pattern makePattern(Arbiter nil $ nil {NewDictionary} CS)}#self
       end
       meth codeGenPattern(Mapping ?VInstr CS)
+         @reached = true
          {@pattern assignRegs(nil Mapping)}
          if CS.debugInfoVarnamesSwitch then Regs VInter1 VInter2 in
             {MakePermanent @localVars ?Regs VInstr VInter1}
@@ -1252,6 +1258,13 @@ define
             {Clear Regs VInter2 nil}
          else
             {CodeGenList @statements CS VInstr nil}
+         end
+      end
+      meth warnUnreachable(CS)
+         if {IsFree @reached} then
+            {CS.reporter warn(coord: {@statements.1 getCoord($)}
+                              kind: 'code generation warning'
+                              msg: 'statement unreachable')}
          end
       end
       meth isSwitchable($)
@@ -1298,14 +1311,14 @@ define
       meth reg($)
          self.reg
       end
-      meth makePattern(Pos Hd Tl Seen CS)
-         Label IsNonBasic LabelV PairList Inter
+      meth makePattern(Arbiter Pos Hd Tl Seen CS)
+         TheLabel IsNonBasic LabelV PairList Inter
       in
-         {@label getCodeGenValue(?Label)}
-         LabelV = if {IsDet Label} then Label
+         {@label getCodeGenValue(?TheLabel)}
+         LabelV = if {IsDet TheLabel} then TheLabel
                   else
                      IsNonBasic = true
-                     v(@label)
+                     @label
                   end
          PairList = {List.mapInd @args
                      fun {$ I Arg}
@@ -1314,7 +1327,7 @@ define
                            if {IsDet Feature} then Feature#P
                            else
                               IsNonBasic = true
-                              v(F)#P
+                              F#P
                            end
                         else I#Arg
                         end
@@ -1330,12 +1343,13 @@ define
             %% sorted to the back and by printname.
             ArityV = {Sort {Map PairList fun {$ F#_} F end}
                       fun {$ F1 F2}
-                         case F1 of v(P1) then
-                            case F2 of v(P2) then P1 < P2
+                         if {IsObject F1} then
+                            if {IsObject F2} then
+                               {F1 getPrintName($)} < {F2 getPrintName($)}
                             else false
                             end
                          else
-                            case F2 of v(P2) then true
+                            if {IsObject F2} then true
                             else F1 < F2
                             end
                          end
@@ -1343,26 +1357,37 @@ define
             Hd = Pos#nonbasic(LabelV ArityV)|Inter
          else Rec RecordArity in
             try
-               Rec = {List.toRecord Label PairList}
+               Rec = {List.toRecord TheLabel PairList}
             catch failure(...) then Coord in
                {@label getCoord(?Coord)}
                {CS.reporter
                 error(coord: Coord kind: 'code generation error'
                       msg: 'duplicate feature in record construction')}
-               Rec = {AdjoinList Label() PairList}
+               Rec = {AdjoinList TheLabel() PairList}
             end
             RecordArity = if {IsTuple Rec} then {Width Rec}
                           else {Arity Rec}
                           end
-            if RecordArity == 0 then
-               Hd = Pos#scalar(Label)|Inter
+            if {IsDet Arbiter}
+               andthen {Label Arbiter} == TheLabel
+               andthen {Arity Arbiter} == {Arity Rec}
+               andthen {Record.all Arbiter
+                        fun {$ X} {X isVariableOccurrence($)} end}
+            then
+               Hd = Pos#get({Record.foldRInd Arbiter
+                             fun {$ F X In} F#{X reg($)}|In end nil})|Inter
+            elseif RecordArity == 0 then
+               Hd = Pos#scalar(TheLabel)|Inter
             else
-               Hd = Pos#record(Label RecordArity)|Inter
+               Hd = Pos#record(TheLabel RecordArity)|Inter
             end
          end
          {FoldL PairList
           proc {$ Hd F#S Tl}
-             {S makePattern({Append Pos [F]} Hd Tl Seen CS)}
+             {S makePattern(if {IsDet Arbiter} andthen {HasFeature Arbiter F}
+                            then {Arbiter.F getCodeGenValue($)}
+                            else _
+                            end {Append Pos [F]} Hd Tl Seen CS)}
           end Inter Tl}
       end
       meth assignRegs(Pos Mapping)
@@ -1371,7 +1396,7 @@ define
              case Arg of F#P then Value FV in
                 {F getCodeGenValue(?Value)}
                 FV = if {IsDet Value} then Value
-                     else v(F)
+                     else F
                      end
                 {P assignRegs({Append Pos [FV]} Mapping)}
              else {Arg assignRegs({Append Pos [I]} Mapping)}
@@ -1458,9 +1483,9 @@ define
       meth reg($)
          {@right reg($)}
       end
-      meth makePattern(Pos Hd Tl Seen CS) Inter in
-         {@right makePattern(Pos Hd Inter Seen CS)}
-         {@left makePattern(Pos Inter Tl Seen CS)}
+      meth makePattern(Arbiter Pos Hd Tl Seen CS) Inter in
+         {@right makePattern(Arbiter Pos Hd Inter Seen CS)}
+         {@left makePattern(Arbiter Pos Inter Tl Seen CS)}
       end
       meth assignRegs(Pos Mapping)
          {@left assignRegs(Pos Mapping)}
@@ -1693,7 +1718,7 @@ define
                            PrintName#','#{@label methPrintName($)}#'/fast'}}
                          RecordArity pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
-            {Show PredId}
+            {System.show PredId}
 \endif
             {CS startDefinition()}
             FormalRegs = {Map @formalArgs
@@ -1734,7 +1759,7 @@ define
                            PrintName#','#{@label methPrintName($)}#'/slow'}}
                          1 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
-            {Show PredId}
+            {System.show PredId}
 \endif
             CodeGenMethod, makeArityCheckInit(CS VInter1 Cont1)
             {CS startDefinition()}
@@ -1841,7 +1866,7 @@ define
                            PrintName#','#{@label methPrintName($)}}}
                          1 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
-            {Show PredId}
+            {System.show PredId}
 \endif
             if @isOpen then
                VHd = Cont1
@@ -2055,7 +2080,7 @@ define
          {CodeGenList @guard CS GuardVHd GuardVTl}
          if {GuardNeedsThread GuardVHd} then Coord in
             {@guard.1 getCoord(?Coord)}
-            if {CS.switches getSwitch(warnopt $)} then
+            if {CS.state getSwitch(warnopt $)} then
                {CS.reporter
                 warn(coord: Coord kind: 'optimization warning'
                      msg: ('translating `cond\', `or\', `dis\' or `choice\' '#
@@ -2085,7 +2110,7 @@ define
       meth getCodeGenValue($)
          @value
       end
-      meth makePattern(Pos Hd Tl Seen CS)
+      meth makePattern(Arbiter Pos Hd Tl Seen CS)
          Hd = Pos#scalar(@value)|Tl
       end
       meth assignRegs(Pos Mapping)
@@ -2250,7 +2275,7 @@ define
          VHd = VTl
          VO = self
       end
-      meth makePattern(Pos Hd Tl Seen CS)
+      meth makePattern(Arbiter Pos Hd Tl Seen CS)
          Hd = Pos#constant(self)|Tl
       end
       meth assignRegs(Pos Mapping)
@@ -2282,7 +2307,7 @@ define
    end
 
    class CodeGenPatternVariableOccurrence
-      meth makePattern(Pos Hd Tl Seen CS) PrintName in
+      meth makePattern(Arbiter Pos Hd Tl Seen CS) PrintName in
          {@variable getPrintName(?PrintName)}
          case {Dictionary.condGet Seen PrintName unit} of unit then
             {Dictionary.put Seen PrintName Pos}

@@ -56,6 +56,10 @@ CodeGen.oz
    From the graph representation an intermediate code called
    VInstrs is generated as documented in Doc/VInstr.
 
+PatternMatching.oz
+   auxiliary procedures for optimized pattern matching code
+   generation.
+
 CodeStore.oz
    the code store and annotation functions for the VInstrs.
 

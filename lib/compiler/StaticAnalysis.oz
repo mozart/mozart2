@@ -1043,7 +1043,7 @@ define
       prop final
       feat
          rep                 % the reporter object
-         switches            % interface switch control
+         state               % interface switch control
       attr
          'self': nil         % currently active class context
          coord: unit         % current coordinates
@@ -1059,9 +1059,9 @@ define
          unifierLeft: unit   % last unification requested
          unifierRight: unit  %
 
-      meth init(Rep Switches)
+      meth init(Rep State)
          self.rep = Rep
-         self.switches = Switches
+         self.state = State
          'self'        <- nil
          coord         <- unit
          top           <- true
@@ -1201,8 +1201,8 @@ define
          %% static analysis iteration
          %%
 
-      meth staticAnalysis(Rep Switches Ss)
-         Ctrl = {New Control init(Rep Switches)}
+      meth staticAnalysis(Rep State Ss)
+         Ctrl = {New Control init(Rep State)}
       in
          {self SaDo(Ctrl true)}          % initiate first lookahead
       end
@@ -2144,7 +2144,7 @@ define
          in
             if
                Final orelse
-               {Ctrl.switches getSwitch(warnforward $)}
+               {Ctrl.state getSwitch(warnforward $)}
             then
                {Ctrl.rep
                 warn(coord: @coord

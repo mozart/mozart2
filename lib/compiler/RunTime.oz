@@ -29,7 +29,7 @@ require
                  location:        ThreadLocation)
    at 'x-oz://boot/Exception'
 
-   BootRecord(tellRecordSize)
+   BootRecord(tellRecordSize test testLabel testFeature)
    at 'x-oz://boot/Record'
 
    BootObject(ooExch ooGetLock)
@@ -120,6 +120,9 @@ prepare
                     'width': Width
                     '^': Record.'^'
                     'tellRecordSize': BootRecord.tellRecordSize
+                    'Record.test': BootRecord.test
+                    'Record.testLabel': BootRecord.testLabel
+                    'Record.testFeature': BootRecord.testFeature
 
                     %% Object
                     'ooPrivate': NewName

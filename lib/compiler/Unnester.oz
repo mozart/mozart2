@@ -142,8 +142,8 @@ define
    %% corresponding to the definition of GetPatternVariablesExpression.
 
    fun {DollarsInScope FE I}
-      % Returns the number of dollars in pattern position in a given
-      % expression.  (FE may also be a list of expressions.)
+      %% Returns the number of dollars in pattern position in a given
+      %% expression.  (FE may also be a list of expressions.)
       case FE of fEq(E1 E2 _) then
          {DollarsInScope E2 {DollarsInScope E1 I}}
       [] fDollar(_) then
@@ -165,9 +165,9 @@ define
    end
 
    fun {DollarCoord FE}
-      % Returns the coordinates of the leftmost dollar in pattern
-      % position in a given expression, if there is one, else unit.
-      % (FE may also be a list of expressions.)
+      %% Returns the coordinates of the leftmost dollar in pattern
+      %% position in a given expression, if there is one, else unit.
+      %% (FE may also be a list of expressions.)
       case FE of fEq(E1 E2 _) then
          case {DollarCoord E1} of unit then {DollarCoord E2}
          elseof C then C
@@ -203,9 +203,9 @@ define
    end
 
    fun {ReplaceDollar FE FV}
-      % Returns an expression in which all dollars (0 or more) in pattern
-      % position in an expression are replaced by a given variable.
-      % (FE may also be a list of expressions.)
+      %% Returns an expression in which all dollars (0 or more) in pattern
+      %% position in an expression are replaced by a given variable.
+      %% (FE may also be a list of expressions.)
       case FE of fEq(E1 E2 C) then
          fEq({ReplaceDollar E1 FV} {ReplaceDollar E2 FV} C)
       [] fDollar(_) then
@@ -228,10 +228,10 @@ define
    end
 
    fun {MakeTrivialLocalPrefix FS FVsHd FVsTl}
-      % Given a `local' prefix FS (i. e., S in `local S in P end'),
-      % compute its pattern variables and place them in the difference
-      % list FVsHd-FVsTl.  Return the statement, from which single
-      % variables occurring as statements have been removed.
+      %% Given a `local' prefix FS (i. e., S in `local S in P end'),
+      %% compute its pattern variables and place them in the difference
+      %% list FVsHd-FVsTl.  Return the statement, from which single
+      %% variables occurring as statements have been removed.
       case FS of fAnd(S1 S2) then FVsInter in
          fAnd({MakeTrivialLocalPrefix S1 FVsHd FVsInter}
               {MakeTrivialLocalPrefix S2 FVsInter FVsTl})
@@ -251,8 +251,8 @@ define
    end
 
    fun {MakeDeclaration GVs GS C}
-      % If GVs (a list of variables local to statement GS) is empty,
-      % return GS, else instantiate a Declaration node.
+      %% If GVs (a list of variables local to statement GS) is empty,
+      %% return GS, else instantiate a Declaration node.
       case GVs of _|_ then {New Core.declaration init(GVs GS C)}
       else GS
       end
@@ -287,7 +287,7 @@ define
    end
 
    fun {IsGround FE}
-      % Return `true' if FE is a ground term, else `false'.
+      %% Return `true' if FE is a ground term, else `false'.
       case FE of fAtom(_ _) then true
       [] fInt(_ _) then true
       [] fFloat(_ _) then true
@@ -330,9 +330,9 @@ define
    end
 
    fun {IsPattern FE}
-      % Returns `true' if FE is a pattern as allowed in case and
-      % catch patterns and in proc/fun heads, else `false'.
-      % (Variables are allowed in label and feature position.)
+      %% Returns `true' if FE is a pattern as allowed in case and
+      %% catch patterns and in proc/fun heads, else `false'.
+      %% (Variables are allowed in label and feature position.)
       case FE of fEq(E1 E2 _) then
          case E1 of fVar(_ _) then {IsPattern E2}
          [] fWildcard(_) then {IsPattern E2}
@@ -353,6 +353,27 @@ define
       [] fColon(_ E) then   % feature is always legal due to syntax rules
          {IsPattern E}
       else false
+      end
+   end
+
+   fun {EscapePattern FE PrintNames}
+      case FE of fEq(E1 E2 C) then
+         fEq({EscapePattern E1 PrintNames} {EscapePattern E2 PrintNames} C)
+      [] fAtom(_ _) then FE
+      [] fVar(PrintName C) then
+         if {Member PrintName PrintNames} then fEscape(FE C)
+         else FE
+         end
+      [] fWildcard(_) then FE
+      [] fEscape(_ _) then FE
+      [] fInt(_ _) then FE
+      [] fFloat(_ _) then FE
+      [] fRecord(L As) then
+         fRecord(L {Map As fun {$ A} {EscapePattern A PrintNames} end})
+      [] fOpenRecord(L As) then
+         fOpenRecord(L {Map As fun {$ A} {EscapePattern A PrintNames} end})
+      [] fColon(F E) then   % feature is always legal due to syntax rules
+         fColon(F {EscapePattern E PrintNames})
       end
    end
 
@@ -650,7 +671,7 @@ define
             FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
-            % note: reverse arguments!
+            %% note: reverse arguments!
             Feature = case Op of '::' then 'int'
                       [] ':::' then 'dom'
                       end
@@ -830,7 +851,7 @@ define
                                                          C))
                                            {CondSelect FPrepare 2 fSkip(unit)}
                                            unit)] C)
-               % FE = {`ApplyFunctor` N FV1}.inner
+               %% FE = {`ApplyFunctor` N FV1}.inner
                CND = {CoordNoDebug C}
                BaseURL = case {@state getBaseURL($)} of unit then
                             {CondSelect C 1 ''}
@@ -863,7 +884,7 @@ define
          in
             Unnester, UnnestToVar(FE 'Class' ?GFrontEq ?GVO)
             {@BA openScope()}
-            % declare private members:
+            %% declare private members:
             {SortClassDescriptors FDescriptors @reporter
              ?FFrom ?FProp ?FAttr ?FFeat}
             FPrivates = {FoldR FAttr PrivateAttrFeat
@@ -875,12 +896,12 @@ define
                 FS = fOpApplyStatement('ooPrivate' [FV] C)
                 Unnester, UnnestStatement(FS $)
              end ?GPrivates}
-            % unnest the descriptors:
+            %% unnest the descriptors:
             Unnester, UnnestFromProp(FFrom 'Parent' ?GS1 nil ?GParents nil)
             Unnester, UnnestFromProp(FProp 'Property' ?GS2 nil ?GProps nil)
             Unnester, UnnestAttrFeat(FAttr 'Attribute' ?GS3 nil ?GAttrs nil)
             Unnester, UnnestAttrFeat(FFeat 'Feature' ?GS4 nil ?GFeats nil)
-            % transform methods:
+            %% transform methods:
             OldStateful = (Stateful <- true)
             OldStateUsed = (StateUsed <- false)
             GMeths = {Map FMeths
@@ -966,11 +987,11 @@ define
                andthen {Not {@state getSwitch(debuginfocontrol $)}}
                andthen ({@state getSwitch(staticanalysis $)}
                         orelse {Not {@state getSwitch(codegen $)}})
-               % Note:
-               % a) debugging information breaks dead code elimination when
-               %    sharing code segments with andthen/orelse optimization;
-               % b) when not doing value propagation, applications of
-               %    ClauseBodies are not recognized
+               %% Note:
+               %% a) debugging information breaks dead code elimination when
+               %%    sharing code segments with andthen/orelse optimization;
+               %% b) when not doing value propagation, applications of
+               %%    ClauseBodies are not recognized
                andthen (Lbl == fOrElse orelse Lbl == fAndThen)
             then
                GBody GS1 GSTrueProc ApplyTrueProc GSFalseProc ApplyFalseProc
@@ -1008,10 +1029,15 @@ define
                end
                GFrontEq|{MakeBoolCase GVO GT GF C _ @BA}
             end
-         [] fCase(FE FClausess FS C) then GFrontEq GVO in
+         [] fCase(FE FClausess FS C) then GFrontEq GVO NewFClausess in
             Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
+            NewFClausess = if {@state getSwitch(functionalpatterns $)} then
+                              %% `elseof' is equivalent to `[]'
+                              [{FoldR FClausess Append nil}]
+                           else FClausess
+                           end
             GFrontEq|
-            Unnester, UnnestCase({GVO getVariable($)} FClausess FS C $)
+            Unnester, UnnestCase({GVO getVariable($)} NewFClausess FS C $)
          [] fLockThen(FE FS C) then GFrontEq GVO GS in
             Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
             Unnester, UnnestStatement(FS ?GS)
@@ -1179,7 +1205,7 @@ define
             FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C FV}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
-            % note: reverse arguments!
+            %% note: reverse arguments!
             Feature = case Op of '::' then 'int'
                       [] ':::' then 'dom'
                       end
@@ -1397,7 +1423,7 @@ define
                       end FVs nil}
                      if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                         NewGV NewFV in
-                        % use a temporary to avoid name clash
+                        %% use a temporary to avoid name clash
                         Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
                         NewFV = fVar({NewGV getPrintName($)} C)
                         fAnd(fEq(NewFV FV C)
@@ -1481,7 +1507,7 @@ define
                        end C)
             if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                NewGV NewFV in
-               % use a temporary to avoid name clash
+               %% use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
                NewFV = fVar({NewGV getPrintName($)} C)
                Unnester, UnnestStatement(fAnd(fEq(NewFV FV C) FS C) $)
@@ -1508,7 +1534,7 @@ define
                       end} Kind C)
             if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                NewGV NewFV in
-               % use a temporary to avoid name clash
+               %% use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
                NewFV = fVar({NewGV getPrintName($)} C)
                Unnester, UnnestStatement(fAnd(fEq(NewFV FV C) FS C) $)
@@ -1526,9 +1552,9 @@ define
       meth UnnestApplyArgs(FEs ?GFrontEqs1 ?GFrontEqs2 ?GTs)
          case FEs of FE|FEr then
             case FE of fRecord(Label Args) then
-               % Records as arguments are treated in a special way here
-               % so as to make the sendMsg optimization apply in more
-               % cases, e.g.:
+               %% Records as arguments are treated in a special way here
+               %% so as to make the sendMsg optimization apply in more
+               %% cases, e.g.:
                C GV GRecord GBack GEquation GFrontEqr1 GFrontEqr2 GTr
             in
                C = {CoordinatesOf Label}
@@ -1656,26 +1682,35 @@ define
       meth UnnestProc(FEs FS IsLazy C ?GS)
          FGuards FResultVars C2 NewFS FBody0 FBody GBody
       in
-         % each formal argument in FEs must be a basic constraint;
-         % all unnested formal arguments must be pairwise distinct variables
+         %% each formal argument in FEs must be a basic constraint;
+         %% all unnested formal arguments must be pairwise distinct variables
          Unnester, UnnestProcFormals(FEs nil ?FGuards nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         case FGuards of FG1|FGr then FGuard FVs in
-            FGuard = {FoldL FGr fun {$ FGuard FS} fAnd(FGuard FS) end FG1}
-            % the local variables of the guard are all pattern variables
-            % of the head minus the remaining formals:
-            {VarListSub
-             {Map {@BA getVars($)}   % the coordinates do not matter:
-              fun {$ GV} fVar({GV getPrintName($)} unit) end}
-             {FoldL FEs proc {$ FVsHd FE FVsTl}
-                           {GetPatternVariablesExpression FE FVsHd FVsTl}
-                        end $ nil}
-             ?FVs nil}
-            case FVs of FV1|FVr then FLocals in
-               FLocals = {FoldL FVr fun {$ X Y} fAnd(X Y) end FV1}
-               NewFS = fCond([fClause(FLocals FGuard FS)] fNoElse(C) C)
-            [] nil then
-               NewFS = fCond([fClause(fSkip(C) FGuard FS)] fNoElse(C) C)
+         case FGuards of FV1#FE1#C1|FGr then FGuard FVs in
+            if {@state getSwitch(functionalpatterns $)} then
+               NewFS = {FoldR FGuards
+                        fun {$ FV#FE#C In}
+                           fCase(FV [[fCaseClause(FE In)]] fNoElse(C) C)
+                        end FS}
+            else
+               FGuard = {FoldL FGr
+                         fun {$ FS FV#FP#C} fAnd(FS fEq(FV FP C)) end
+                         fEq(FV1 FE1 C1)}
+               %% the local variables of the guard are all pattern variables
+               %% of the head minus the formals:
+               {VarListSub
+                {Map {@BA getVars($)}   % the coordinates do not matter:
+                 fun {$ GV} fVar({GV getPrintName($)} unit) end}
+                {FoldL FEs proc {$ FVsHd FE FVsTl}
+                              {GetPatternVariablesExpression FE FVsHd FVsTl}
+                           end $ nil}
+                ?FVs nil}
+               case FVs of FV1|FVr then FLocals in
+                  FLocals = {FoldL FVr fun {$ X Y} fAnd(X Y) end FV1}
+                  NewFS = fCond([fClause(FLocals FGuard FS)] fNoElse(C) C)
+               [] nil then
+                  NewFS = fCond([fClause(fSkip(C) FGuard FS)] fNoElse(C) C)
+               end
             end
          else
             NewFS = FS
@@ -1705,7 +1740,7 @@ define
             if {Member PrintName Occs} then GV in
                NewOccs = Occs
                {@BA generate('Formal' C ?GV)}
-               GdHd = fEq(fVar({GV getPrintName($)} C) FE C)|GdTl
+               GdHd = fVar({GV getPrintName($)} C)#fEscape(FE C)#C|GdTl
                RtHd = RtTl
             else
                {@BA bind(PrintName C _)}
@@ -1733,7 +1768,8 @@ define
             end
             {@BA generate('Formal' C ?GV)}
             NewOccs = Occs
-            GdHd = fEq(fVar({GV getPrintName($)} C) FE C)|GdTl
+            GdHd = (fVar({GV getPrintName($)} C)#{EscapePattern FE Occs}#C|
+                    GdTl)
             RtHd = RtTl
          end
       end
@@ -1937,8 +1973,8 @@ define
          end
       end
       meth UnnestMethFormals1(FFormals GVMsg)
-         % This simply declares all arguments so that their variables
-         % may be used inside features or defaults.
+         %% This simply declares all arguments so that their variables
+         %% may be used inside features or defaults.
          {ForAll FFormals
           proc {$ FFormal}
              case FFormal of fMethArg(FV _) then
@@ -2043,8 +2079,8 @@ define
 
       meth UnnestBoolGuard(FE ApplyTrueProc ApplyFalseProc NoBoolShared
                            ?GClauseBodies ?GS)
-         % optimization of `case E1 orelse E2 then S1 else S2 end'
-         % and the like
+         %% optimization of `case E1 orelse E2 then S1 else S2 end'
+         %% and the like
          case FE of fOrElse(FE1 FE2 C) then
             GClauseBodies1 GElse GClauseBody ApplyElseProc GClauseBodies2
          in
@@ -2086,9 +2122,9 @@ define
       meth UnnestCase(GV FClausess FElse C ?GS) FCs FCsr GCs GElse in
          FClausess = FCs|FCsr
          case FCs of [fCaseClause(FX=fVar(_ C) FS)] then FV NewFS in
-            %    case Arbiter of X then S1 {elseof ... then Si} [else Sn] end
-            % =>
-            %    local X in X = Arbiter S1 end
+            %%    case Arbiter of X then S1 {elseof ... then Si} [else Sn] end
+            %% =>
+            %%    local X in X = Arbiter S1 end
             if FCsr \= nil then
                {@reporter
                 warn(coord: C kind: ExpansionWarning
@@ -2151,7 +2187,7 @@ define
          end
       end
       meth TranslatePattern(FPattern PatternPNs PVAllowed $)
-         % Precondition: {IsPattern FPattern} == true.
+         %% Precondition: {IsPattern FPattern} == true.
          case FPattern of fEq(FE1 FE2 C) then
             case FE1 of fVar(PrintName C) then GVO GPattern in
                {{@BA refer(PrintName C $)}
@@ -2310,8 +2346,8 @@ define
       end
 
       meth UnnestFDExpression(FE ?GFrontEqs ?NewFE)
-         % only '+', '-', '*' and '~' may remain as operators;
-         % only variables and integers may remain as operands.
+         %% only '+', '-', '*' and '~' may remain as operators;
+         %% only variables and integers may remain as operands.
          case FE of fOpApply(Op FEs C) then
             if Op == '+' orelse Op == '-' orelse Op == '*' then
                GFrontEqs1 NewFE1 GFrontEqs2 NewFE2

@@ -151,7 +151,7 @@ local
       end
    in
       fun {IsEnvCoord Coord}
-         Coord \= unit andthen {IsEnvCoordSub {Atom.toString Coord.1}}
+         Coord == unit orelse {IsEnvCoordSub {Atom.toString Coord.1}}
       end
    end
 
@@ -759,16 +759,13 @@ local
          @use
       end
       meth checkUse(Kind Rep)
-         case @origin == user then
-            case {IsEnvCoord @coord} then skip
-            elsecase @use of unused then
-               {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                         msg: 'unused '#Kind#' '#pn(@printName))}
-            [] wildcard then
-               {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                         msg: Kind#' '#pn(@printName)#' used only once')}
-            else skip
-            end
+         case @origin \= user orelse {IsEnvCoord @coord} then skip
+         elsecase @use of unused then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: 'unused '#Kind#' '#pn(@printName))}
+         [] wildcard then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: Kind#' '#pn(@printName)#' used only once')}
          else skip
          end
       end

@@ -227,19 +227,19 @@ define
    end
 
    local
-      proc {CommitOrDiscard G J I}
-         if I==J then {CommitGuard G} else {Space.discard G} end
+      proc {CommitOrDiscard G J I ?B}
+         if I==J then B={Space.merge G} else {Space.discard G} end
       end
-      proc {Control G A J I}
+      proc {Control G A J I ?B}
          {WaitOr A I}
          if {IsDet I} then
-            {CommitOrDiscard G J I}
+            {CommitOrDiscard G J I ?B}
          else
             case A
             of failed     then {FdInt compl(J) I}
             [] merged     then skip
-            [] blocked(A) then {Control G A J I}
-            else {CommitOrDiscard G J I}
+            [] blocked(A) then {Control G A J I ?B}
+            else {CommitOrDiscard G J I ?B}
             end
          end
       end
@@ -248,21 +248,27 @@ define
          case {Width C}
          of 0 then fail
          [] 1 then {{{Guardify C.1}}}
-         [] N then I={FdInt 1#N} in
+         [] N then I={FdInt 1#N} B A in
             {For 1 N 1 proc {$ J}
                           G={NewGuard C.J}
                        in
-                          thread {Control G {Space.askVerbose G} J I} end
+                          thread
+                             {Control G {Space.askVerbose G} J I ?B}
+                          end
                        end}
-            thread
-               {Space.waitStable}
-               if {IsDet I} then skip else
-                  T={List.toTuple '#' {GetDomList I}}
-               in
-                  I=T.{Space.choose {Width T}}
+            if {IsDet I} then skip else A in
+               thread
+                  {Space.waitStable}
+                  A=unit
+                  if {IsDet I} then skip else
+                     T={List.toTuple '#' {GetDomList I}}
+                  in
+                     I=T.{Space.choose {Width T}}
+                  end
                end
+               {Wait A}
             end
-            {Wait I}
+            {B}
          end
       end
    end

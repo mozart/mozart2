@@ -574,7 +574,7 @@ local
              {Dictionary.put Dict LongOpt X.default}
           elseif X.required then
              {Exception.raiseError
-              usage('required option `'#LongOpt#'\' not given')}
+              ap(usage 'required option `'#LongOpt#'\' not given')}
           end
        end}
       {Dictionary.toRecord optRec Dict}

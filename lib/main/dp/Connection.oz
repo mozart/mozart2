@@ -40,6 +40,7 @@ local
       ThisPid   = {PID.get}
 
       proc {SendToPid T X}
+         X = {Promise.new}
          {PID.send T.host T.port T.time T#X}
       end
    end
@@ -157,17 +158,17 @@ local
    thread
       {ForAll ReqStream
        proc {$ T#A}
-          A = case
-                 T.time == ThisPid.time andthen
-                 {Dictionary.member KeyDict T.key}
-              then Y={Dictionary.get KeyDict T.key} in
-                 case T.single then {Dictionary.remove KeyDict T.key}
-                 else skip
-                 end
-                 yes(Y)
-              else
-                 no
-              end
+          A := case
+                  T.time == ThisPid.time andthen
+                  {Dictionary.member KeyDict T.key}
+               then Y={Dictionary.get KeyDict T.key} in
+                  case T.single then {Dictionary.remove KeyDict T.key}
+                  else skip
+                  end
+                  yes(Y)
+               else
+                  no
+               end
        end}
    end
 
@@ -217,7 +218,7 @@ local
    end
 
    proc {Take V X}
-      case {SendToPid {VsToTicket V}}
+      case !!{SendToPid {VsToTicket V}}
       of no     then {`RaiseError` dp(connection(refusedTicket V))}
       [] yes(Y) then X=Y
       end

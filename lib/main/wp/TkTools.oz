@@ -32,7 +32,7 @@ prepare
                            {URL.make 'images/'}}}
 
 import
-   Tk Property
+   Tk
 
 export
    error:         Error
@@ -1311,8 +1311,6 @@ define
                      font:     F <= unit
                      action:   A <= proc {$ S} skip end ...)=M
             T#C = {Nth E X}
-            UseColors = {And Tk.isColor
-                         {Property.get 'platform.name'} \= 'win32-i486'}
          in
             Tk.menubutton,
             {Record.adjoin {Subtract M if F == unit then
@@ -1320,7 +1318,7 @@ define
                                        else
                                           [entries selected action]
                                        end}
-             if UseColors then
+             if Tk.isColor then
                 tkInit(text:T foreground:C activeforeground:C)
              else
                 tkInit(text:T)

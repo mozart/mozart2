@@ -20,6 +20,14 @@
 %%% WARRANTIES.
 %%%
 
+functor
+define skip
+end
+
+/*
+
+
+
 local
 
    %%
@@ -364,6 +372,9 @@ in
                             end)
 
 end
+
+
+*/
 
 
 */

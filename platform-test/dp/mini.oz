@@ -39,8 +39,8 @@ define
               proc {$ Detach}
                  {ForAll
                   if {Property.get 'distribution.virtualsites'}
-                  then [sh rsh virtual automatic]
-                  else [sh rsh automatic]
+                  then [sh ssh virtual automatic]
+                  else [sh ssh automatic]
                   end
                   proc {$ Fork}
                      {ForAll {TestMisc.getHostNames}

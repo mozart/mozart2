@@ -50,7 +50,7 @@ define
    proc {DisInts N Xs}
       dis N = 0 Xs = nil
       [] Xr in
-         N > 0 = true Xs = N|Xr
+         N > 0 = true Xs = N|Xr then
          {DisInts N-1 Xr}
       end
    end

@@ -195,13 +195,9 @@ ILOTitle    = ITitle#': Layout Options'
 IITitle     = ITitle
 
 %%
-local
-   UrlDefaults = \insert '../../url-defaults.oz'
-   Images = UrlDefaults.home # 'images/'
-in
-   IIBitmap    = {Tk.localize Images#'browserIcon.xbm'}
-   IStopBitmap = '@' # {Tk.localize Images#'stop.xbm'}
-end
+IIBitmap    = {Tk.localize BitmapUrl#'browserIcon.xbm'}
+IStopBitmap = '@' # {Tk.localize BitmapUrl#'stop.xbm'}
+
 IStopWidth  = 20
 IStopFG     = firebrick3
 IStopAFG    = firebrick2

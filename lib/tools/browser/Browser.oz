@@ -35,6 +35,14 @@
 
 functor
 
+require
+   DefaultURL(homeUrl)
+   URL(make resolve toAtom)
+
+prepare
+   BitmapUrl = {URL.toAtom {URL.resolve DefaultURL.homeUrl
+                            {URL.make 'images/'}}}
+
 import
    CTB(isB getConstraintAsAtom getNameAsAtom) at 'x-oz://boot/CTB'
 

@@ -1003,10 +1003,10 @@ local
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FS FVs nil}
             case   % is a new temporary needed to avoid name clashes?
-               {Some FVs fun {$ fVar(X C)}
-                            {@BA bind(X C _)}
-                            X == PrintName
-                         end}
+               {FoldL FVs fun {$ In fVar(X C)}
+                             {@BA bind(X C _)}
+                             {Or In X == PrintName}
+                          end false}
             then NewGV NewFV GS in
                {@BA generateForOuterScope('AntiNameClash' C ?NewGV)}
                NewFV = fVar({NewGV getPrintName($)} C)

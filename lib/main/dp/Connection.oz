@@ -108,7 +108,7 @@ define
                     end get(_)}
    in
       fun {NewTicket IsSingle}
-         Major#Minor = {Property.get 'perdio.version'}
+         Major#Minor = {Property.get 'dp.version'}
       in
          {Adjoin ThisPid ticket(single:  IsSingle
                                 key:     {KeyCtr get($)}
@@ -275,7 +275,7 @@ define
    end
 
    proc {Take V Entity}
-      {TakeWithTimer V {Property.get 'perdio.timeout'} Entity}
+      {TakeWithTimer V {Property.get 'dp.probeTimeout'} Entity}
    end
 
 

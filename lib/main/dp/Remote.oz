@@ -126,7 +126,7 @@ define
       meth init(host:    HostIn  <= localhost
                 fork:    ForkIn  <= automatic
                 detach:  Detach  <= false
-                timeout: Timeout <= {Property.get 'perdio.timeout'}
+                timeout: Timeout <= {Property.get 'dp.probeTimeout'}
                 pid:     PID     <= _
                 port:    PORT    <= unit)
          RunRet  RunPort  = {Port.new RunRet}

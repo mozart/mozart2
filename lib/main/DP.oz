@@ -30,12 +30,14 @@ import
    SP.{System      = 'System'}
 
 export
-   'Connection': Connection
-   'Remote':     Remote
+   'Connection':  Connection
+   'Remote':      Remote
+   'VirtualSite': VirtualSite
 
 body
    \insert 'dp/Connection.oz'
    \insert 'dp/Remote.oz'
+   \insert 'dp/VirtualSite.oz'
 
 end
 
@@ -51,6 +53,7 @@ fun instantiate {$ IMPORT}
 
    \insert 'dp/Connection.oz'
    \insert 'dp/Remote.oz'
+   \insert 'dp/VirtualSite.oz'
 in
    \insert 'DP.env'
 end

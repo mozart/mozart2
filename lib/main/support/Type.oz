@@ -60,7 +60,7 @@ local
       end
    end
 
-   fun {IsPropList Xs}
+   fun {IsPropertyList Xs}
       {IsListOf Xs fun {$ X} {IsPair X} andthen {IsLiteral X.1} end}
    end
 
@@ -78,6 +78,62 @@ local
          of compl(Ys) then {IsComplexDomSpec Ys}
          else {IsComplexDomSpec Xs} end
       end
+   end
+
+   fun {IsTrue X}
+      X == true
+   end
+
+   fun {IsFalse X}
+      X == false
+   end
+
+   fun {IsComparable X}
+      {IsNumber X} orelse {IsAtom X}
+   end
+
+   fun {IsRecordOrChunk X}
+      {IsRecord X} orelse {IsChunk X}
+   end
+
+   fun {IsRecordCOrChunk X}
+      {IsRecordC X} orelse {IsChunk X}
+   end
+
+   fun {IsProcedureOrObject X}
+      {IsProcedure X} orelse {IsObject X}
+   end
+
+   fun {IsProcedure0 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 0
+   end
+
+   fun {IsProcedure1 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 1
+   end
+
+   fun {IsProcedure2 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 2
+   end
+
+   fun {IsProcedure3 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 3
+   end
+
+   fun {IsProcedure4 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 4
+   end
+
+   fun {IsProcedure5 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 5
+   end
+
+   fun {IsProcedure6 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 6
+   end
+
+   fun {IsProcedure7Plus X}
+      {IsProcedure X} andthen {Procedure.arity X} > 6
    end
 
 in
@@ -116,11 +172,15 @@ in
               atom:                IsAtom
               bitArray:            IsBitArray
               bool:                IsBool
+              cell:                IsCell
               char:                IsChar
               chunk:               IsChunk
+              'class':             IsClass
+              comparable:          IsComparable
               dictionary:          IsDictionary
               domainSpec:          IsDomainSpec
               int:                 IsInt
+              'false':             IsFalse
               fdIntC:              IsFDIntC
               fdVector:            IsFDVector
               feature:             IsFeature
@@ -138,16 +198,29 @@ in
               pair:                IsPair
               port:                IsPort
               procedure:           IsProcedure
-              propertyList:        IsPropList
+              'procedure/0':       IsProcedure0
+              'procedure/1':       IsProcedure1
+              'procedure/2':       IsProcedure2
+              'procedure/3':       IsProcedure3
+              'procedure/4':       IsProcedure4
+              'procedure/5':       IsProcedure5
+              'procedure/6':       IsProcedure6
+              'procedure/>6':      IsProcedure7Plus
+              procedureOrObject:   IsProcedureOrObject
+              propertyList:        IsPropertyList
               record:              IsRecord
               recordC:             IsRecordC
+              recordOrChunk:       IsRecordOrChunk
+              recordCOrChunk:      IsRecordCOrChunk
               space:               IsSpace
               string:              IsString
+              'thread':            IsThread
+              tuple:               IsTuple
+              'true':              IsTrue
               unary:               IsUnary
               'unit':              IsUnit
+              value:               fun {$ _} true end
               virtualString:       IsVirtualString
-              'class':             IsClass
-              'thread':            IsThread
              )
 
       local
@@ -168,15 +241,21 @@ in
                    atom:              {GenericAsk IsAtom atom}
                    bitArray:          {GenericAsk IsBitArray bitArray}
                    bool:              {GenericAsk IsBool bool}
+                   cell:              {GenericAsk IsCell cell}
                    char:              {GenericAsk IsChar char}
                    chunk:             {GenericAsk IsChunk chunk}
+                   'class':           {GenericAsk IsClass 'class'}
+                   comparable:        {GenericAsk IsComparable comparable}
                    dictionary:        {GenericAsk IsDictionary dictionary}
                    domainSpec:        {GenericAsk IsDomainSpec domainSpec}
                    int:               {GenericAsk IsInt int}
                    fdIntC:            {GenericAsk IsFDIntC fd}
                    fdVector:          {GenericAsk IsFDVector fdVector}
+                   'false':           {GenericAsk IsTrue 'false'}
                    feature:           {GenericAsk IsFeature feature}
                    float:             {GenericAsk IsFloat float}
+                   fset:              {GenericAsk IsFSet fset}
+                   fsetC:             {GenericAsk IsFSetC fsetC}
                    foreignPointer:    {GenericAsk IsForeignPointer
                                        foreignPointer}
                    list:              {GenericAsk IsList list}
@@ -189,17 +268,34 @@ in
                    pair:              {GenericAsk IsPair pair}
                    port:              {GenericAsk IsPort port}
                    procedure:         {GenericAsk IsProcedure procedure}
-                   propertyList:      {GenericAsk IsPropList propertyList}
+                   'procedure/0':     {GenericAsk IsProcedure0 'procedure/0'}
+                   'procedure/1':     {GenericAsk IsProcedure1 'procedure/1'}
+                   'procedure/2':     {GenericAsk IsProcedure2 'procedure/2'}
+                   'procedure/3':     {GenericAsk IsProcedure3 'procedure/3'}
+                   'procedure/4':     {GenericAsk IsProcedure4 'procedure/4'}
+                   'procedure/5':     {GenericAsk IsProcedure5 'procedure/5'}
+                   'procedure/6':     {GenericAsk IsProcedure6 'procedure/6'}
+                   'procedure/>6':    {GenericAsk IsProcedure7Plus
+                                       'procedure/>6'}
+                   procedureOrObject: {GenericAsk IsProcedureOrObject
+                                       procedureOrObject}
+                   propertyList:      {GenericAsk IsPropertyList propertyList}
                    record:            {GenericAsk IsRecord record}
                    recordC:           {GenericAsk IsRecordC recordC}
+                   recordOrChunk:     {GenericAsk IsRecordOrChunk
+                                       recordOrChunk}
+                   recordCOrChunk:    {GenericAsk IsRecordCOrChunk
+                                       recordCOrChunk}
                    space:             {GenericAsk IsSpace space}
                    string:            {GenericAsk IsString string}
+                   'thread':          {GenericAsk IsThread 'thread'}
+                   'true':            {GenericAsk IsTrue 'true'}
+                   tuple:             {GenericAsk IsTuple tuple}
                    unary:             {GenericAsk IsUnary unary}
                    'unit':            {GenericAsk IsUnit 'unit'}
+                   value:             proc {$ _} skip end
                    virtualString:     {GenericAsk IsVirtualString
                                        virtualString}
-                   'class':           {GenericAsk IsClass 'class'}
-                   'thread':          {GenericAsk IsThread 'thread'}
                   )
       end
 

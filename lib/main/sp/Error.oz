@@ -33,7 +33,6 @@
 %%          <message label>([kind: <extended virtual string>]
 %%                          [msg: <extended virtual string>]
 %%                          [items: [<line>]]
-%%                          [loc: <location>]   % copied from exception
 %%                          [info: <info>]      % copied from exception
 %%                          [stack: <stack>]    % copied from exception
 %%                          [footer: bool])
@@ -58,9 +57,6 @@
 %%            |  <coordinates>
 %%            |  line(<extended virtual string>)     % full line
 %%            |  unit                                % empty line
-%%
-%%    <location> ::= [<location item>]
-%%    <location item> ::= 'space' | 'cond' | 'dis'
 %%
 %%    <info> ::= [<info item>]
 %%    <info item> ::= apply(<procedure or print name> [value])
@@ -89,7 +85,6 @@
 %%    %** line
 %%    %** ...
 %%    %**
-%%    %** loc
 %%    %** info
 %%    %** stack
 %%    %**
@@ -259,10 +254,6 @@ define
          end
       end
    in
-      fun {GetExceptionLocation Exc}
-         {CondSelect {DebugField Exc} loc unit}
-      end
-
       fun {GetExceptionInfo Exc}
          case {InfoField Exc} of unit then nil
          elseof Is then
@@ -443,15 +434,6 @@ define
          end
       end
 
-      fun {ErrorLoc Message}
-         case {CondSelect Message loc unit} of unit then ""
-         [] nil then ""
-         elseof Ls then
-            EmptyLine#
-            {StarLine 'Level: '#{FoldR Ls fun {$ I W} I#' '#W end ''}}
-         end
-      end
-
       fun {ErrorInfo Message}
          case {CondSelect Message info unit} of unit then ""
          elseof Ts then
@@ -484,7 +466,6 @@ define
          {ErrorKind Message}#
          {ErrorMsg Message}#
          {ErrorItems Message}#
-         {ErrorLoc Message}#
          {ErrorInfo Message}#
          {ErrorStack Message}#
          {ErrorFooter Message}
@@ -498,8 +479,7 @@ define
    local
       fun {Extend Message Exc}
          {Adjoin Message
-          error(loc: {GetExceptionLocation Exc}
-                info: {GetExceptionInfo Exc}
+          error(info: {GetExceptionInfo Exc}
                 stack: {GetExceptionStack Exc})}
       end
 
@@ -538,7 +518,6 @@ define
                             m:oz({GetExceptionDispatch ExcExc}))
                        unit
                        line(BugReport)]
-               loc: {GetExceptionLocation Exc}
                stack: {GetExceptionStack Exc}
                footer: true)
       end

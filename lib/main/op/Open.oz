@@ -22,22 +22,59 @@
 
 local
 
-   \insert 'HtmlTable.oz'
+   local
+      \insert 'HtmlTable.oz'
 
-   fun {GetOptions As N ?M}
-      case As of nil then M=N nil
-      [] A|Ar then
-         if {IsInt A} then {GetOptions Ar N+1 M}
-         else M=N As
+      fun {GetOptions As N ?M}
+         case As of nil then M=N nil
+         [] A|Ar then
+            if {IsInt A} then {GetOptions Ar N+1 M}
+            else M=N As
+            end
+         end
+      end
+
+      fun {BuildOptions As Tag}
+         case As of nil then ''
+         [] A|Ar then ' '#A#'="'#Tag.A#'"'#{BuildOptions Ar Tag}
+         end
+      end
+
+      fun {TagBody I N Tag}
+         %% N must be greater than zero
+         if I<N then {Tag2Vs Tag.I}#{TagBody I+1 N Tag}
+         else {Tag2Vs Tag.N}
+         end
+      end
+   in
+      fun {Tag2Vs Tag}
+         if {IsAtom Tag} then Tag
+         elseif {IsTuple Tag} then L={Label Tag} in
+            if {HtmlTable.isTag L} then
+               '<'#L#'>'#{TagBody 1 {Width Tag} Tag}#
+               if {HtmlTable.isNonFinalTag L} then '' else
+                  '</'#L#'>'
+               end
+            elseif L=='#' then {TagBody 1 {Width Tag} Tag}
+            else Tag
+            end
+         elseif {IsRecord Tag} then L={Label Tag} in
+            if {HtmlTable.isTag L} then
+               N As={GetOptions {Arity Tag} 0 ?N}
+            in
+               '<'#L#{BuildOptions As Tag}#'>' #
+               {TagBody 1 N Tag} #
+               if {HtmlTable.isNonFinalTag L} then '' else
+                  '</'#L#'>'
+               end
+            else Tag
+            end
+         elseif {IsProcedure Tag} then {Tag2Vs {Tag}}
+         else Tag
          end
       end
    end
 
-   fun {BuildOptions As Tag}
-      case As of nil then ''
-      [] A|Ar then ' '#A#'="'#Tag.A#'"'#{BuildOptions Ar Tag}
-      end
-   end
 
    ReadSize    = 1024
    ReadSizeAll = 4096
@@ -712,50 +749,13 @@ in
 
 
       class Html
-
          meth header
             {self write(vs:'Content-type: text/html\n\n')}
          end
 
-         meth WriteTagBody(I N Tag)
-            if I=<N then
-               Html,tag(Tag.I) Html,WriteTagBody(I+1 N Tag)
-            end
-         end
-
          meth tag(Tag)
-            if {IsRecord Tag} then
-               L={Label Tag}
-            in
-               if {HtmlTable.isTag L} then N in
-                  {self write(vs:
-                                 ('<'#L#
-                                  if {IsTuple Tag} then
-                                     N={Width Tag} ''
-                                  else
-                                     As={GetOptions {Arity Tag} 0 ?N}
-                                  in
-                                     {BuildOptions As Tag}
-                                  end#
-                               '>'))}
-                  Html,WriteTagBody(1 N Tag)
-                  if {HtmlTable.isNonFinalTag L} then skip else
-                     {self write(vs:'</'#L#'>')}
-                  end
-                  if {HtmlTable.isNlTag L} then
-                     {self write(vs:'\n')}
-                  else skip
-                  end
-               elseif L=='#' then
-                  Html,WriteTagBody(1 {Width Tag} Tag)
-               else
-                  {self write(vs:Tag)}
-               end
-            elseif {IsProcedure Tag} then Html,tag({Tag})
-            else {self write(vs:Tag)}
-            end
+            {self write(vs:{Tag2Vs Tag})}%
          end
-
       end
 
       %%

@@ -64,18 +64,9 @@ local
                     meta
                     param)}
 
-   IsNlTag =
-   {NewTagTest tags(blockquote 'body'
-                    center
-                    h1 h2 h3 h4 h5 h6 head html
-                    map menu
-                    p pre
-                    table td th title)}
-
 in
 
    HtmlTable = html(isTag:         IsTag
-                    isNonFinalTag: IsNonFinalTag
-                    isNlTag:       IsNlTag)
+                    isNonFinalTag: IsNonFinalTag)
 
 end

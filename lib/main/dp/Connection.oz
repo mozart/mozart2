@@ -266,9 +266,9 @@ define
          end
       [] 2 then
          {Fault.removeSiteWatcher P Watch}
-         if Y==no then
+         case Y of no then
             {Exception.raiseError connection(ticketToDeadSite V)}
-         else error end
+         end
       end
    end
 

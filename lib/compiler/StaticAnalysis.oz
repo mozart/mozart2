@@ -1760,14 +1760,14 @@ in
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
                Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
             in
-               {Ctrl.rep error(coord: @coord
-                               kind:  SAGenError
-                               msg:   'application of unknown builtin'
-                               items: [hint(l:'Builtin' m:N)
-                                       hint(l:'Argument names'
-                                            m:{ApplToVS pn(N)|PNs})
-                                       hint(l:'Argument values'
-                                            m:{ApplToVS pn(N)|Vals})])}
+               {Ctrl.rep warn(coord: @coord
+                              kind:  SAGenError
+                              msg:   'application of unknown builtin'
+                              items: [hint(l:'Builtin' m:N)
+                                      hint(l:'Argument names'
+                                           m:{ApplToVS pn(N)|PNs})
+                                      hint(l:'Argument values'
+                                           m:{ApplToVS pn(N)|Vals})])}
                false
             elseif
                NumArgs==ProcArity

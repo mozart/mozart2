@@ -161,7 +161,7 @@ local
    fun {Drop As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         if {P XA} then nil else A#XA|{Drop Ar X P} end
+         if {P XA} then {Drop Ar X P} else {MakePairs As X} end
       end
    end
 
@@ -271,7 +271,7 @@ local
    fun {DropInd As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         if {P A XA} then nil else A#XA|{DropInd Ar X P} end
+         if {P A XA} then {DropInd Ar X P} else {MakePairs As X} end
       end
    end
 

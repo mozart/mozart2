@@ -181,7 +181,7 @@ in
    functor NewModule prop once
 
    import
-      Pickle System OS Boot Foreign Property
+      Pickle System OS Boot Native Property
 
    export
       root:    RM
@@ -223,7 +223,7 @@ in
 
          meth native(Url $)
             {self trace('native module' Url)}
-            {Foreign.load {URL.toVs Url}#'-'#PLATFORM}
+            {Native.load {URL.toVs Url}#'-'#PLATFORM}
          end
 
          meth systemResolve(Auth Url $)

@@ -62,6 +62,7 @@ in
       Pickle   = {BootManager 'Pickle'}
       Property = {BootManager 'Property'}
       System   = {BootManager 'System'}
+      Native   = {BootManager 'Native'}
 
       %% Shortcuts
       Getenv = OS.getEnv
@@ -79,21 +80,15 @@ in
       local
 
          %% create module manager
-         Module = {NewModule.apply 'import'('System': System
-                                            'Pickle': Pickle
-                                            'OS':     OS
-                                            'Boot':   Boot
+         Module = {NewModule.apply 'import'('System':   System
+                                            'Pickle':   Pickle
+                                            'OS':       OS
+                                            'Boot':     Boot
                                             'Property': Property
-                                            %% see below for explanation
-                                            'Foreign': Foreign)}
+                                            'Native':   Native)}
 
          %% The root module manager
          RM = Module.root
-
-         %% -- CIRCULARITY ALERT!
-         %% The root manager itself links one of its module's own imports
-         %% he he! logic variables are wonderful!
-         Foreign = {RM link(url:'x-oz://system/Foreign' $)}
 
          %% The real Module module
          RealModule = 'export'(manager: Module.manager

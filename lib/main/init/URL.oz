@@ -137,9 +137,10 @@ end
 local
    fun {Gather L TO}
       fun {Loop L Accu}
-         case L of nil then {Reverse Accu}#nil
-         elseof  !TO|T then {Reverse Accu}#T
-         elseof    H|T then {Loop T H|Accu} end
+         case L of nil  then {Reverse Accu}#nil
+         elseof &\\|C|T then {Loop T C|Accu}
+         elseof  !TO|T  then {Reverse Accu}#T
+         elseof    H|T  then {Loop T H|Accu} end
       end
    in {Loop L nil} end
 in

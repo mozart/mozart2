@@ -84,10 +84,10 @@ local
       end
 
       local
-         BIStorePredId = {`Builtin` storePredId 5}
+         BIStorePredId = {`Builtin` storePredId 6}
       in
-         proc {StorePredId CodeBlock pid(Name Arity File Line)}
-            {BIStorePredId CodeBlock Name Arity File Line}
+         proc {StorePredId CodeBlock pid(Name Arity File Line CopyOnce)}
+            {BIStorePredId CodeBlock Name Arity File Line CopyOnce}
          end
       end
 

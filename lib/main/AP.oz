@@ -20,9 +20,27 @@
 %%% WARRANTIES.
 %%%
 
-%%%
-%%% This file creates the Open Programming Functor
-%%%
+\ifdef LILO
+
+functor $
+
+import
+   SP.{System = 'System'
+       Error  = 'Error'}
+
+   OP.{Open = 'Open'
+       OS   = 'OS'
+       Load = 'Load'
+       Save = 'Save'}
+
+export
+   'Application': Application
+
+body
+   \insert ap/AppLILO.oz
+end
+
+\else
 
 fun {$ IMPORT}
    \insert 'SP.env'
@@ -34,3 +52,5 @@ fun {$ IMPORT}
 in
    ap('Application':Application)
 end
+
+\endif

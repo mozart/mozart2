@@ -19,6 +19,40 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+functor $
+
+import
+   SP.{System  = 'System'
+       Show    = 'Show'
+       Foreign = 'Foreign'
+       Error   = 'Error'}
+
+   CP.{FS        = 'FS'
+       FD        = 'FD'
+       SearchOne = 'SearchOne'
+       `GenSumC` = '`GenSumC`'}
+
+   Gump
+
+export
+   'Compiler': Compiler
+
+body
+   \insert 'compiler/InsertAll.oz'
+in
+   Compiler = compiler(engine: CompilerEngine
+                          %--** deprecated:
+                       compilerClass: CompilerEngine
+                       genericInterface: GenericInterface
+                       quietInterface: QuietInterface
+                       evalExpression: EvalExpression
+                       virtualStringToValue: VirtualStringToValue)
+end
+
+\else
+
 fun instantiate {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
@@ -43,3 +77,5 @@ in
       \insert 'Compiler.env'
    end
 end
+
+\endif

@@ -63,7 +63,7 @@ prepare
    fun {Deref S}
       case S
       of blocked(S)      then {Deref S}
-      [] alternatives(_) then suspended
+      [] alternatives(_) then stuck
       [] succeeded(S)    then S
       else S
       end
@@ -113,9 +113,9 @@ define
          G={NewGuard C}
       in
          case {Deref {Space.askVerbose G}}
-         of failed    then {E}
-         [] entailed  then {CommitGuard G}
-         [] suspended then {WUHFI}
+         of failed   then {E}
+         [] entailed then {CommitGuard G}
+         [] stuck    then {WUHFI}
          end
       end
 
@@ -127,7 +127,7 @@ define
             of failed    then
                {Dictionary.remove A I}
                {Resolve G A N-1 B E}
-            [] succeeded(suspended) then
+            [] succeeded(stuck) then
                {Dictionary.remove A I}
                {Space.discard G.I}
                {Resolve G A N-1 true E}
@@ -278,9 +278,9 @@ define
    in
       thread
          case {Deref {Space.askVerbose S}}
-         of failed    then skip
-         [] entailed  then fail
-         [] suspended then {WUHFI}
+         of failed   then skip
+         [] entailed then fail
+         [] stuck    then {WUHFI}
          end
       end
    end
@@ -291,9 +291,9 @@ define
       {FdBool B}
       thread
          case {Deref {Space.askVerbose S}}
-         of failed    then B=0
-         [] entailed  then B=1
-         [] suspended then {WUHFI}
+         of failed   then B=0
+         [] entailed then B=1
+         [] stuck    then {WUHFI}
          end
       end
       thread

@@ -74,7 +74,7 @@ in
 UrlDefaults = \insert '../url-defaults.oz'
 
 {{`Builtin` 'save' 2}
- proc instantiate {$}
+ functor prop once body
 
     IMPORT
 

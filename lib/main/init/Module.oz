@@ -44,22 +44,22 @@ local
       MozartUrl = UrlDefaults.'home'
    end
 
-\ifndef OZM
-   local
-      Load = {`Builtin` load 2}
-   in
-      Peanuts = {Map \insert '../module-Peanuts.oz'
-                 fun {$ M}
-                    Fun = {Load M#FunExt}
-                 in
-                    case {Width Fun.'import'}==0
-                    then M # Fun.apply
-                    else
-                       raise error('No import for peanuts allowed') end
-                    end
-                 end}
-   end
-\endif
+%%%\ifndef OZM
+%%%   local
+%%%      Load = {`Builtin` load 2}
+%%%   in
+%%%      Peanuts = {Map \insert '../module-Peanuts.oz'
+%%%              fun {$ M}
+%%%                 Fun = {Load M#FunExt}
+%%%              in
+%%%                 case {Width Fun.'import'}==0
+%%%                 then M # Fun.apply
+%%%                 else
+%%%                    raise error('No import for peanuts allowed') end
+%%%                 end
+%%%              end}
+%%%   end
+%%%\endif
 
    \insert 'RURL.oz'
 
@@ -233,12 +233,12 @@ in
        {{`Builtin` 'CondGetProperty' 3} url unit}}
 
       %% Register peanuts
-\ifndef OZM
-      {ForAll Peanuts
-       proc {$ M#P}
-          {Module.enter MozartUrl#'lib/'#M#FunExt {P 'import'}}
-       end}
-\endif
+%%%\ifndef OZM
+%%%      {ForAll Peanuts
+%%%       proc {$ M#P}
+%%%       {Module.enter MozartUrl#'lib/'#M#FunExt {P 'import'}}
+%%%       end}
+%%%\endif
 
    in
 

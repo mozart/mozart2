@@ -67,14 +67,6 @@ local
    end
 
    local
-      fun {IsPrefix Is Js}
-         case Is of nil then true
-         [] I|Ir then
-            case Js of nil then false
-            [] J|Jr then I==J andthen {IsPrefix Ir Jr}
-            end
-         end
-      end
 
       local
          fun {Split Is Js}
@@ -108,16 +100,18 @@ local
                %% 2. Scheme
                R2
                Scheme    = case R1\=nil andthen {Member &: R1.2} then
-                              o(scheme:{String.token R1 &: $ ?R2})
+                              o(scheme:{Map {String.token R1 &: $ ?R2}
+                                        Char.toLower})
                            else R2=R1 o
                            end
                %% 3. Net location
                R3
-               Netloc    = case {IsPrefix "//" R2} then S=R2.2.2 in
+               Netloc    = case {String.isPrefix "//" R2} then S=R2.2.2 in
                               case {Member &/ S} then R in
                                  R3=&/|R
-                                 o(netloc: {String.token S &/ $ ?R})
-                              else R3=nil o(netloc:S)
+                                 o(netloc:{Map {String.token S &/ $ ?R}
+                                           Char.toLower})
+                              else R3=nil o(netloc:{Map S Char.toLower})
                               end
                            else R3=R2 o
                            end

@@ -37,16 +37,16 @@ local
 
 in
 
-   {Application.syslet
-    'functor2env'
     functor $
 
     import
        Open.{file}
-       Syslet.{exit args}
        Module.{load}
+       Syslet
 
     body
+       Syslet.spec = single(out(type:atom  default:stdout)
+                            'in'(type:atom))
 
        Out = {New Open.file init(name:  Syslet.args.out
                                  flags: [write create truncate])}
@@ -76,8 +76,5 @@ in
        {Syslet.exit 0}
 
     end
-
-    single(out(type:atom  default:stdout)
-           'in'(type:atom))}
 
 end

@@ -19,7 +19,6 @@
 %%% WARRANTIES.
 %%%
 
-{Application.syslet 'ozc'
  functor
  import
     Module.load
@@ -29,9 +28,9 @@
     Open.file
     Pickle.save
     Compiler.{engine quietInterface}
-    Syslet.{exit args}
+    Syslet
  body
+    Syslet.spec = plain
     \insert BatchCompile
     {Syslet.exit {BatchCompile Syslet.args}}
  end
- plain}

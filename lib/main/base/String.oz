@@ -62,6 +62,14 @@ local
       end
    end
 
+   fun {IsPrefix L1 L2}
+      case L1 of H1|T1 then
+         case L2 of H2|T2 then
+            H1==H2 andthen {IsPrefix T1 T2}
+         else false end
+      else true end
+   end
+
 in
    String = string(is:      IsString
                    isAtom:  {`Builtin` 'String.isAtom'  2}
@@ -73,5 +81,6 @@ in
                    token:   Token
                    tokens:  fun {$ S C}
                                Ss in {Tokens S C Ss Ss}
-                            end)
+                            end
+                   isPrefix:IsPrefix)
 end

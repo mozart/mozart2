@@ -20,17 +20,16 @@
 %%% WARRANTIES.
 %%%
 
-{Application.syslet
- 'ozserver'
  functor $ prop once
 
  import
     Connection.{take}
 
-    Syslet.{args exit}
+    Syslet
 
     Module.{link}
  body
+    Syslet.spec = single(ticket(type:atom))
     try
        RunRet # CtrlRet = {Connection.take Syslet.args.ticket}
        RunStr CtrlStr
@@ -75,5 +74,3 @@
        {Syslet.exit 1}
     end
  end
-
- single(ticket(type:atom))}

@@ -27,20 +27,17 @@ local
    ErrorInit = 1
    ErrorTicket = 2
 in
-   {Application.syslet
-    %%
-    'ozvsserver'
-
-    %%
     functor $ prop once
     import
-       Syslet.{args exit}
+       Syslet
        Connection.{take}
        Module.{link}
        System.{get set showInfo gcDo}
 
        %%
     body
+       Syslet.spec = single(shmkey(type:atom)
+                            ticket(type:atom))
        %%
        CloseProc = proc {$} {Syslet.exit OKDone} end
 
@@ -96,10 +93,4 @@ in
 
        %%
     end
-
-    %%
-    single(shmkey(type:atom)
-           ticket(type:atom))}
-
-   %%
 end

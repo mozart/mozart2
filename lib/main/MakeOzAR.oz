@@ -32,14 +32,7 @@ declare
 
 declare
 local
-   fun {Check Is Js}
-      case Is of nil then true
-      [] I|Ir then
-         case Js of nil then false
-         [] J|Jr then I==J andthen {Check Ir Jr}
-         end
-      end
-   end
+   Check = String.isPrefix
 in
    fun {IsPrefix V1 V2}
       {Check {VirtualString.toString V1} {VirtualString.toString V2}}

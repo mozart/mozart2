@@ -13,7 +13,7 @@ export OZPATH = .:$(SRCDIR)
 
 # Test for spaces
 SPACELOCAL = \
-        basic nomosim queens lp sit-check
+        basic queens lp sit-check
 SPACEOZF = $(SPACELOCAL:%=./space/%.ozf)
 
 # Tests for finite domains

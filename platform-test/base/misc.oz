@@ -32,6 +32,7 @@ export
    Return
 
 define
+
    fun {Id X} X end
 
    Return=
@@ -43,7 +44,7 @@ define
                      end
                      keys:[fixedBug search])
               search2(
-                      proc {$}
+                 proc {$}
                          fun {FailChk}
                             local X={Id a} in
                                try choice true
@@ -75,7 +76,7 @@ define
                                end
                             end
                          end
-                      in
+                    in
                          {Search.base.all FailChk _}
                       end
                       keys:[fixedBug search])

@@ -603,7 +603,7 @@ define
 
              {MiscTest 51
               fun {$}
-                 R L [S1 S2 S3]=L
+                 R L [S1 _ S3]=L
               in
                  {FS.var.list.upperBound 3 1#3 L}
                  {FS.disjointN L}
@@ -614,7 +614,7 @@ define
 
              {MiscTest 52
               fun {$}
-                 R L [S1 S2 S3]=L
+                 R L [S1 _ S3]=L
               in
                  {FS.var.list.upperBound 3 1#3 L}
                  R = thread cond {FS.disjointN L} then 0 else 1 end end

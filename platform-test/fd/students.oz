@@ -35,10 +35,8 @@ define
                Next = {Choose F {GetSize F} L}
                M = {GetMax Next}
             in
-               thread
-                  dis Next=M then {Enum L}
-                  [] Next \=: M then {Enum L}
-                  end
+               dis Next=M then {Enum L}
+               [] Next \=: M then {Enum L}
                end
             end
          end

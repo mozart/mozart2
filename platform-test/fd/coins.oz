@@ -15,11 +15,6 @@ define
       Coins ::: 0#99
       P + 2*Tw + 5*Fv + 10*Te + 20*Twe + 50*Ff =: Total
       {Record.map Coins proc {$ A B}  A =<: B end PocketCoins}
-      thread
-      % syncronize on solution
-         {Record.forAll PocketCoins Wait}
-         {FD.distribute naive Coins}
-      end
       Total#Coins
    end
 
@@ -33,6 +28,9 @@ define
       {FD.sum PocketCoins '=:' Min}
       {List.forAllInd L fun {$ I} {CoinsTotal PocketCoins I} end}
       {FD.distribute naive PocketCoins}
+      {ForAll L proc {$ _#Cs}
+                   {FD.distribute naive Cs}
+                end}
    end
 
    CoinsSol =

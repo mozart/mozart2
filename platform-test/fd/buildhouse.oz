@@ -43,7 +43,7 @@ define
       {GeqOff SK SE 2}
       {GeqOff SK SJ 2}
       {GeqOff Send SK 1}
-      thread choice Send = {FD.reflect.min Send} end end
+      choice Send = {FD.reflect.min Send} end
    end
 
    BuildHouseSol =

@@ -369,13 +369,13 @@ in
                 {BatchCompiler enqueue(feedFile(X return))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                case {UI successful($)} then skip
-                else
+                case {UI hasBeenTopped($)} then
                    {System.printError {UI getVS($)}}
                    case {UI hasErrors($)} then
                       raise error end
                    else skip
                    end
+                else skip
                 end
              [] verbose then
                 skip   % has already been set
@@ -457,13 +457,13 @@ in
                  enqueue(feedFile(Arg return(result: ?R)))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                case {UI successful($)} then skip
-                else
+                case {UI hasBeenTopped($)} then
                    {System.printError {UI getVS($)}}
                    case {UI hasErrors($)} then
                       raise error end
                    else skip
                    end
+                else skip
                 end
                 case {Access Mode} of dump then
                    case {Component.smartSave R OFN} of nil then skip

@@ -9,6 +9,17 @@ export
    Return
 
 define
+
+   local
+      fun {Deref S}
+         case S of blocked(S) then {Deref S} else S end
+      end
+   in
+      fun {AskVerbose S}
+         {Space.askVerbose S}
+      end
+   end
+
    % tests may be performed (1) either at top-level or in a space
    % and (2) either width debugging on or off.
    local
@@ -21,7 +32,7 @@ define
          try
             {DebugSet Debug}
             if TopLevel then {Fun Debug true}
-            elsecase {Space.askVerbose
+            elsecase {AskVerbose
                       {Space.new fun {$} {Fun Debug false} end}}
             of succeeded(entailed) then true else false end
          finally
@@ -114,11 +125,11 @@ define
             thread T2=b lock Zlock then T3=c end end
          end}
    in
-      case (thread {Space.askVerbose S} end)
+      case (thread {AskVerbose S} end)
       of succeeded(suspended) then
          {Space.inject S
           proc {$ _#Synch} Synch=unit end}
-         case (thread {Space.askVerbose S} end)
+         case (thread {AskVerbose S} end)
          of succeeded(entailed) then
             case {Space.merge S} of
                c#unit then true

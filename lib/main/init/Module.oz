@@ -279,13 +279,14 @@ define
          end
       end
 
-      meth GetSystemName(Url $)
+      meth GetSystemName(Url IsBoot $)
          case {CondSelect Url path unit}
          of [Name] then
             %% drop the extension of any
             {String.token Name &. $ _}
-         else
+         elseif IsBoot then
             raise error(module(urlSyntax {UrlToAtom Url})) end
+         else unit
          end
       end
 
@@ -306,11 +307,11 @@ define
                %% a boot module may either be provided internally
                %% (i.e. statically linked in) or as a DLL
                {self trace('boot module' Url)}
-               try {self GetSystemBoot({self GetSystemName(Url $)} $)}
+               try {self GetSystemBoot({self GetSystemName(Url true $)} $)}
                catch _ then
                   {self Native({UrlMake {UrlToAtom Url}#'.so{native}'} $)}
                end
-            [] system then Name={self GetSystemName(Url $)} in
+            [] system then Name={self GetSystemName(Url false $)} in
                {self trace('system module' Url)}
                if {IsNatSystemName Name} then
                   RootManager,SYSTEM({UrlMake OzScheme#'://boot/'#Name} $)

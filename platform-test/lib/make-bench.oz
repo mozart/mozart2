@@ -276,7 +276,6 @@ in
    functor $
 
    import
-      Application
       System
       Syslet.{Argv=args Exit=exit spec}
       Module
@@ -364,8 +363,7 @@ in
       local
          Engine = {MakeTestEngine Keys Tests}
       in
-         {Application.save
-          './ozbench'
+         {Pickle.saveWithHeader
 
           functor $ prop once
           import Module Syslet
@@ -376,7 +374,10 @@ in
              Syslet.spec = TestOptions
 
              {Syslet.exit {{ModMan apply(url:'' Engine $)}.run Syslet.args}}
-          end}
+          end
+          './ozbench'
+          '#!/bin/sh\nexec ozengine $0 "$@"\n'
+          9}
 
          {Pickle.save
           Engine

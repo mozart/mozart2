@@ -70,12 +70,9 @@ in
 
    import
       OS
-
       Open
-
-      Foreign
-
       Property
+      Module
 
    export
       Return
@@ -84,14 +81,17 @@ in
       Return=
 
       link(equal(local
+                    OSS#CPU = {Property.get platform}
                     L={Lock.new}
                  in
                     fun {$}
                        lock L then
-                          File='/tmp/link_test_'#{OS.time}
+                          File   = '/tmp/link_test_'#{OS.time}
+                          FileSO = File#'.so-'#OSS#'-'#CPU
                           Goodies
                           F={New Open.file init(name:File#'.c'
                                                 flags:['create' write])}
+                          M={New Module.manager init}
                        in
                           {F write(vs:Code)}
                           {F close}
@@ -101,17 +101,17 @@ in
                                         File#'.c -o '#File#'.o'
                                         #' 2>/dev/null'
                                        )}
-                          0={OS.system ('ozdynld -o '#File#'.so '#
+                          0={OS.system ('ozdynld -o '#FileSO#' '#
                                         File#'.o -lc')}
-                          Goodies = {Foreign.load 'file:'#File#'.so'}
+                          Goodies={M link(url:File#'.so{native}' $)}
                           _={Goodies.getenv 'SHELL'}
                           _={OS.system
-                             'rm -f '#File#'.c '#File#'.o '#File#'.so'}
+                             'rm -f '#File#'.c '#File#'.o '#FileSO}
                           true
                        end
                     end
                  end
                  true)
-           keys: [link foreign])
+           keys: [link native])
    end
 end

@@ -128,12 +128,14 @@ TESTSRCS=make-test engine passed failed help-string compute-tests
 oztest: $(TESTSRCS:%=./lib/%.oz) $(COMPONENTS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
         $(OZE) ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
+        chmod +x oztest
         -rm -f ./make-test
 
 BENCHSRCS=make-bench engine compute-tests help-bench
 ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
         $(OZE) ./make-bench -verbose $(COMPONENTS:%=`pwd`/%)
+        chmod +x ozbench
         -rm -f ./make-bench
 
 

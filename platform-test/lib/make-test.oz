@@ -294,7 +294,7 @@ local
           threads(type:int optional:false default:1))
 
 in
-   {Application.exec
+   {Application.syslet
     './make-test'
     c('AP':eager 'OP':eager 'SP':eager 'CP':eager)
     fun {$ IMPORT}
@@ -377,7 +377,7 @@ in
           local
              Engine =      {MakeTestEngine Keys Tests}
           in
-             {Application.exec
+             {Application.syslet
               './oztest'
               c('AP':eager 'CP':eager 'SP':eager 'OP':eager)
               Engine

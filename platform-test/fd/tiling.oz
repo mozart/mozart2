@@ -70,25 +70,25 @@ define
    end
 
 
-   proc {NoOverlap Xs Ys Ss}
+   fun {NoOverlap Xs Ys Ss}
       % No rectangles must overlap
-      case Xs#Ys#Ss of nil#nil#nil then skip
+      case Xs#Ys#Ss of nil#nil#nil then nil
       [] (X|Xr)#(Y|Yr)#(S|Sr)
-      then {NoOverlap1 Xr Yr Sr X Y S}
-         {NoOverlap Xr Yr Sr}
+      then {Append {NoOverlap1 Xr Yr Sr X Y S}
+         {NoOverlap Xr Yr Sr}}
       end
    end
 
-   proc {NoOverlap1 Xs Ys Ss X1 Y1 S1}
-      case Xs#Ys#Ss of nil#nil#nil then skip
+   fun {NoOverlap1 Xs Ys Ss X1 Y1 S1}
+      case Xs#Ys#Ss of nil#nil#nil then nil
       [] (X|Xr)#(Y|Yr)#(S|Sr)
-      then {NoOverlap2 X1 Y1 S1 X Y S}
+      then {NoOverlap2 X1 Y1 S1 X Y S}|
          {NoOverlap1 Xr Yr Sr X1 Y1 S1}
       end
    end
 
-   proc {NoOverlap2 X1 Y1 S1 X2 Y2 S2}
-      thread C in
+   fun {NoOverlap2 X1 Y1 S1 X2 Y2 S2}
+      C in
          C :: 1#4
          thread
             or X1+S1 =<: X2 C=1
@@ -97,39 +97,18 @@ define
             [] Y1 >=: Y2+S2 C=4
             end
          end
-         {FD.distribute naive [C]}
-      end
-   end
-
-   proc {Enumerate Ls}
-      case Ls of nil then skip
-      [] L|Lr
-      then local Min = {FoldL Lr fun{$ I X}
-                                    local M ={FD.reflect.min X} in
-                                       if M < I then M else I end
-                                    end
-                                 end {FD.reflect.min L}}
-              Rest
-           in
-              {SelectSq Ls Min Rest}
-              {Enumerate Rest}
-           end
-      end
-   end
-   proc {SelectSq L|Lr Min Rest}
-      dis L=Min Rest=Lr
-      [] L>:Min then local R in Rest = L|R {SelectSq Lr Min R} end
-      end
+C
    end
 
    proc {Square P XCoord YCoord Sizes}
-      local SX SY in
+      local SX SY Cs in
          % SX and SY are global sizes
          % The Coordinates give the statring point of the rectangles
          {StateConstraints P XCoord YCoord Sizes SX SY}
-         {NoOverlap XCoord YCoord Sizes}
+         Cs={NoOverlap XCoord YCoord Sizes}
          {Capacity XCoord Sizes SX SY}
          {Capacity YCoord Sizes SY SX}
+         {FD.distribute ff Cs}
          {FD.distribute ff XCoord}
          {FD.distribute ff YCoord}
       end

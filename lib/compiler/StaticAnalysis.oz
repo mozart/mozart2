@@ -791,22 +791,18 @@ local
       else
          skip % weaker analysis for procedures with arity > 20
       end
-      {NameVariable P PN}
    end
 
    proc {MakeDummyObject PN P}
       P = {New BaseObject noop}
-      {NameVariable P PN}
    end
 
    proc {MakeDummyClass PN P}
       P = class $ end
-      {NameVariable P PN}
    end
 
 %   proc {MakeDummyArray PN P}
 %      P = {New Core.arrayToken init(Value)}
-%      {NameVariable P PN}
 %   end
 
 %-----------------------------------------------------------------------

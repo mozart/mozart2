@@ -42,7 +42,7 @@ Phrase            = fAnd(Phrase Phrase).
                   | fApply(Phrase [Phrase] Coordinates)
                   | fProc(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
                   | fFun(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
-                  | fFunctor(Phrase [Decl] [Decl] Phrase Coordinates)
+                  | fFunctor(Phrase [FunctorDescriptor] Phrase Coordinates)
                   | fClass(Phrase [ClassDescriptor] [Meth] Coordinates)
                   | fLocal(Phrase Phrase Coordinates)
                   | fBoolCase(Phrase Phrase OptElse Coordinates)
@@ -73,7 +73,12 @@ RecordArgument    = Phrase
 ProcFlag          = instantiate
                   | copy
                   | lazy.
-Decl              = NakedVariable.
+FunctorDescriptor = fImport([ImportDecl] Coord)
+                  | fExport([ExportDecl] Coord).
+ImportDecl        = fImportItem(NakedVariable [FeatureNoVar] OptFrom).
+OptFrom           = fFrom(Atom)
+                  | fNoFrom.
+ExportDecl        = fExportItem(NakedVariable).
 FDExpression      = fFdCompare(atom Phrase Phrase Coordinates)
                   | fFdIn(atom Phrase Phrase Coordinates).
 ClassDescriptor   = fFrom([Phrase] Coordinates)
@@ -98,8 +103,9 @@ MethHeadTerm      = NakedVariable
                   | fDollar(Coordinates).
 Default           = fNoDefault
                   | fDefault(P C).
-Feature           = Atom
-                  | NakedVariable
+Feature           = FeatureNoVar
+                  | NakedVariable.
+FeatureNoVar      = Atom
                   | fInt(int Coordinates).
 EscapedFeature    = Atom
                   | Variable

@@ -193,7 +193,7 @@ local
       % find all necessary modules and record them in ArgsMap
       %
       {Record.forAll Spec
-       proc {$ Name#Mode} {RegistryGetAllDeps R Name ArgsMap} end}
+       proc {$ Name#_} {RegistryGetAllDeps R Name ArgsMap} end}
       ArgsLst = {Dictionary.keys ArgsMap}
       %
       % for each one record the list of modules that directly

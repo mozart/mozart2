@@ -49,7 +49,7 @@ local
       HasForeignFDP = {{`Builtin` foreignFDProps 1}}
 
       fun {GetBiArity Spec}
-         BiName # BiArity = Spec in BiArity
+         _#BiArity = Spec in BiArity
       end
 
       fun {GetBi Spec}

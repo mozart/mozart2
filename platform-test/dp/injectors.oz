@@ -27,6 +27,8 @@ import
    Remote(manager)
    Fault
    TestMisc(localHost)
+   System
+Property
 export
    Return
 

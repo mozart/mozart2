@@ -11,6 +11,11 @@ AUXFILES = help.txt
 LIBMODULES = ${LOCALMODULES:%.oz=$(BrowserLib)/%.oz}
 AUXMODULES = ${AUXFILES:%.txt=$(BrowserLib)/%.txt}
 
+all:: ../Browser.oz
+
+../Browser.oz: $(LOCALMODULES)
+        touch ../Browser.oz
+
 install:: $(BrowserLib) $(LIBMODULES) $(AUXMODULES) bitmaps
 
 bitmaps: $(OzLib)/bitmaps

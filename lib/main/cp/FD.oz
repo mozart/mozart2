@@ -144,6 +144,7 @@ export
    choose:         FdChoose
 
    %% Miscellaneous
+   inf:            FdInf
    sup:            FdSup
    is:             FdIs
 
@@ -224,6 +225,7 @@ define
          end
       end
    in
+      FdInf = {FDB.getLimits $ _}
       FdSup = {FDB.getLimits _}
 
       FdInt  = FdPutList

@@ -588,11 +588,11 @@ define
                                                try
                                                   {Space.merge S _}
                                                   fail
-                                               catch error(kernel(spaceSuper _) ...) then skip
+                                               catch error(kernel(spaceAdmissible _) ...) then skip
                                                end
                                             end}
                                            {Space.ask S succeeded}
-                                        catch error(kernel(spaceSuper _) ...) then fail
+                                        catch error(kernel(spaceAdmissible _) ...) then fail
                                         end
                                         try
                                            S = {Space.new proc {$ X}
@@ -606,13 +606,13 @@ define
                                                    try
                                                       {Space.merge S _}
                                                       fail
-                                                   catch error(kernel(spaceSuper _) ...) then skip
+                                                   catch error(kernel(spaceAdmissible _) ...) then skip
                                                    end
                                                 end}
                                                {Space.ask X succeeded}
                                             end}
                                            {Space.ask S succeeded}
-                                        catch error(kernel(spaceSuper _) ...) then fail
+                                        catch error(kernel(spaceAdmissible _) ...) then fail
                                         end
                                         try
                                            S = {Space.new proc {$ X}
@@ -623,7 +623,7 @@ define
                                                               {Space.merge X _}
                                                            end}
                                            {Space.ask S succeeded}
-                                        catch error(kernel(spaceSuper _) ...) then fail
+                                        catch error(kernel(spaceAdmissible _) ...) then fail
                                         end
                                         try
                                            S1 = {Space.new Skip}
@@ -632,7 +632,7 @@ define
                                            {Space.inject S1 proc {$ X} {Space.merge S2 X} end}
                                            {Space.ask S1 succeeded}
                                            {Space.ask S2 merged}
-                                        catch error(kernel(spaceSuper _) ...) then fail
+                                        catch error(kernel(spaceAdmissible _) ...) then fail
                                         end
                                      end)
                             keys: [merge space])
@@ -645,7 +645,7 @@ define
                                      in
                                         {Space.inject S Skip}
                                         {Space.ask S succeeded}
-                                     catch error(kernel(spaceParent _) ...) then fail
+                                     catch error(kernel(spaceAdmissible _) ...) then fail
                                      end
                                      try
                                         S = {Space.new Skip}
@@ -655,11 +655,11 @@ define
                                             try
                                                {Space.inject S Skip}
                                                fail
-                                            catch error(kernel(spaceParent _) ...) then skip
+                                            catch error(kernel(spaceAdmissible _) ...) then skip
                                             end
                                          end}
                                         {Space.ask S succeeded}
-                                     catch error(kernel(spaceParent _) ...) then fail
+                                     catch error(kernel(spaceAdmissible _) ...) then fail
                                      end
                                      try
                                         S = {Space.new proc {$ X}
@@ -673,26 +673,11 @@ define
                                                 try
                                                    {Space.inject S Skip}
                                                    fail
-                                                catch error(kernel(spaceParent _) ...) then skip
+                                                catch error(kernel(spaceAdmissible _) ...) then skip
                                                 end
                                              end}
                                          end}
-                                     catch error(kernel(spaceParent _) ...) then fail
-                                     end
-                                     try
-                                        S1 = {Space.new Skip}
-                                        S2 = {Space.new Skip}
-                                     in
-                                        {Space.inject S1
-                                         proc {$ X}
-                                            try
-                                               {Space.inject S2 Skip}
-                                               fail
-                                            catch error(kernel(spaceParent _) ...) then skip
-                                            end
-                                         end}
-                                        {Space.ask S1 succeeded}
-                                     catch error(kernel(spaceParent _) ...) then fail
+                                     catch error(kernel(spaceAdmissible _) ...) then fail
                                      end
                                   end)
                          keys: [merge space])

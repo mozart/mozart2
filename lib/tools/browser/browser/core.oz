@@ -74,23 +74,12 @@ DeepFeed = BrowserSupport.deepFeed
 %% or rise type errors;
 
 local
-   BSCA = BrowserSupport.chunkArity
    BSCW = BrowserSupport.chunkWidth
-   fun {Unique Xs Us}
-      case Xs of nil then Us
-      [] X|Xr then
-         {Unique Xr if {Member X Us} then Us
-                    else X|Us
-                    end}
-      end
-   end
 in
    fun {ChunkHasFeatures Chunk}
       {BSCW Chunk}>0
    end
-   fun {ChunkArity Chunk}
-      {Unique {BSCA Chunk} nil}
-   end
+   ChunkArity = BrowserSupport.chunkArity
 end
 
 %%

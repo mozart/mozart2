@@ -78,8 +78,8 @@ import
 
    TkTools
 
-   BootClass(get)
-   at 'x-oz://boot/Class'
+   BootObject(getClass)
+   at 'x-oz://boot/Object'
 
 export
    'class':  BrowserClass

@@ -69,6 +69,7 @@ T_CompClass     = {NewName}
 %% other chunks:
 T_Dictionary    = {NewName}
 T_Array         = {NewName}
+T_Port          = {NewName}
 %% first-class threads and spaces;
 T_Thread        = {NewName}
 T_Space         = {NewName}

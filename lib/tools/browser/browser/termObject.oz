@@ -32,6 +32,7 @@ local
    GenChunkPrintName
    GenDictionaryPrintName
    GenArrayPrintName
+   GenPortPrintName
    GenThreadPrintName
    GenSpacePrintName
    GenObjPrintName
@@ -268,6 +269,14 @@ in
       %%
       case {Store read(StoreSmallNames $)} then '<Array>'
       else '<Array: ' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenPortPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Port>'
+      else '<Port: ' # {System.printName Term} # '>'
       end
    end
 
@@ -1037,6 +1046,37 @@ in
       %%
       meth otherwise(Message)
          ControlObject , processOtherwise('ArrayObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %% Ports;
+   %%
+   class PortTermObject from MetaTermObject
+      %%
+      feat
+         type: T_Port
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'PortTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenPortPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('PortObject::' Message)
       end
 
       %%

@@ -21,6 +21,8 @@ prepare
     "prepend" #prepend
     "while"   #while
     "until"   #until
+    "yield"   #yield
+    "yieldAppend"#yieldAppend
    ]
    ACCU_TYPE =
    ['return'    # ['return' 'default']
@@ -28,7 +30,8 @@ prepare
     'sum'       # ['return' 'default' 'sum']
     'multiply'  # ['return' 'default' 'multiply']
     'count'     # ['return' 'default' 'count']
-    'list'      # ['return' 'collect' 'append' 'prepend']]
+    'list'      # ['return' 'collect' 'append' 'prepend']
+    'yield'     # ['yield' 'yieldAppend']]
    GENERAL_FEATURES = ['break' 'continue' 'while' 'until']
    fun {IsNotGeneral F} {Not {Member F GENERAL_FEATURES}} end
    fun {CoordNoDebug Coord}
@@ -47,7 +50,17 @@ define
       case {Filter FEATURES fun {$ S#_} {List.isPrefix FS S} end}
       of  nil  then {RaiseError 'for'(  unknownFeature(F))} unit
       [] [_#A] then A
-      else          {RaiseError 'for'(ambiguousFeature(F))} unit end
+      [] L     then FoundExact in
+         {ForAll L
+          proc {$ _#A}
+             if A==F then
+                if {IsDet FoundExact} then
+                   {RaiseError 'for'(ambiguousFeature(F))}
+                else FoundExact=unit end
+             end
+          end}
+         F
+      end
    end
    %%
    fun {Compile fFOR(DECLS BODY COORDS)}
@@ -158,17 +171,25 @@ define
       else {RaiseError 'for'(ambiguousFeatures(Feats))} unit end
       %%
       VarD = {NewDictionary}
-      VarAccu
+      VarAccu VarYieldStream
       if AccuType==unit orelse AccuType=='return'
       then VarAccu=unit
       else
          VarAccu={MakeVar 'ForAccu'}
          VarD.'accu' := VarAccu
-         {Push 'outers' fEq(VarAccu
-                            fOpApply(
-                               {VirtualString.toAtom 'For.mk'#AccuType}
-                               nil unit)
-                            unit)}
+         case AccuType
+         of 'yield' then
+            %% delay the creation and initialization of the yield accu
+            %% until we wrap the thread around the main stuff
+            VarYieldStream={MakeVar 'YieldStream'}
+            {Push 'outers' VarAccu}
+         else
+            {Push 'outers' fEq(VarAccu
+                               fOpApply(
+                                  {VirtualString.toAtom 'For.mk'#AccuType}
+                                  nil unit)
+                               unit)}
+         end
       end
       WHILE UNTIL
       {ForAll {Dictionary.entries D2}
@@ -283,6 +304,8 @@ define
                       end)
               [] 'list' then
                  fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS_NODEBUG))
+              [] 'yield' then
+                 fAnd(Main2 fOpApplyStatement('For.retyield' [VarAccu] COORDS_NODEBUG))
               elseif {HasFeature D2 'default'} then
                  fAnd(Main2
                       fOpApply('For.retintdefault' [VarAccu VarD.'default'] COORDS_NODEBUG))
@@ -303,15 +326,36 @@ define
                        unit)
                     fNoFinally COORDS_NODEBUG)
               else Main3 end
-      Main5 = case D1.'outers'
-              of nil then Main4
+      Main5 = if {IsDet VarYieldStream} then
+                 fLocal(
+                    VarYieldStream
+                    fAnd(
+                       fThread(
+                          fAnd(
+                             %% fortunately liveness analysis will discover that
+                             %% the threads closure can forget about VarYieldStream
+                             %% after this statement
+                             fEq(VarYieldStream
+                                 fOpApply(
+                                    'For.mkyield'
+                                    [VarAccu] unit)
+                                 unit)
+                             Main4)
+                          COORDS_NODEBUG)
+                       VarYieldStream)
+                    COORDS_NODEBUG)
+              else
+                 Main4
+              end
+      Main6 = case D1.'outers'
+              of nil then Main5
               [] H|T then
                  fLocal(
                     {FoldL T fun {$ A D} fAnd(D A) end H}
-                    Main4
+                    Main5
                     COORDS_NODEBUG)
               end
    in
-      fStepPoint(Main5 'loop' COORDS)
+      fStepPoint(Main6 'loop' COORDS)
    end
 end

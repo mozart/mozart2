@@ -52,7 +52,8 @@ require
    BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
 
-   BootValue(dotAssign dotExchange catAccess catAssign catExchange catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
+   BootValue(newReadOnly:NewReadOnly bindReadOnly:BindReadOnly
+             dotAssign dotExchange catAccess catAssign catExchange catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
 prepare
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
@@ -193,6 +194,28 @@ prepare
          {Exchange C.2 nil unit}
          {Access C.1}
       end
+      proc {RetYield C}
+         {BindReadOnly {Access C} nil}
+      end
+      proc {Yield C X}
+         O
+         N={NewReadOnly}
+      in
+         {Exchange C O N}
+         {BindReadOnly O X|N}
+         {WaitNeeded N}
+      end
+      proc {MkYield C L}
+         {NewReadOnly L}
+         {NewCell L C}
+         {WaitNeeded L}
+      end
+      proc {YieldAppend C L}
+         case L
+         of nil then skip
+         [] H|T then {Yield C H} {YieldAppend C T}
+         end
+      end
    in
       ProcValuesFor =
       env(
@@ -211,7 +234,12 @@ prepare
          'For.prepend'       : Prepend
          'For.retintdefault' : RetIntDefault
          'For.retint'        : RetInt
-         'For.retlist'       : RetList)
+         'For.retlist'       : RetList
+         'For.retyield'      : RetYield
+         'For.yield'         : Yield
+         'For.yieldAppend'   : YieldAppend
+         'For.mkyield'       : MkYield
+         )
    end
    ProcValuesAll = {Adjoin ProcValues0 ProcValuesFor}
 define

@@ -333,6 +333,12 @@ local
             [] shallowTest2(X1 X2 X3 L X4) then A in
                A = {Dictionary.get @LabelDict L}
                shallowTest2(X1 X2 X3 A X4)
+            [] testLess(X1 X2 L X3) then A in
+               A = {Dictionary.get @LabelDict L}
+               testLess(X1 X2 A X3)
+            [] testLessEq(X1 X2 L X3) then A in
+               A = {Dictionary.get @LabelDict L}
+               testLessEq(X1 X2 A X3)
             [] testLiteral(X1 X2 L1 L2 X3) then A1 A2 in
                A1 = {Dictionary.get @LabelDict L1}
                A2 = {Dictionary.get @LabelDict L2}

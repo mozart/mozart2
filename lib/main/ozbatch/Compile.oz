@@ -23,7 +23,7 @@ local
    UsageError = 'command line option error'
    BatchCompilationError = 'batch compilation error'
 
-   DefaultSysletPrefix = '#!/bin/sh\nexec ozengine $0 "$@"\n'
+   DefaultExecHeader = '#!/bin/sh\nexec ozengine $0 "$@"\n'
 
    local
       fun {ConvertBooleanOpts OptSpecs}
@@ -45,7 +45,7 @@ local
                    &S#"outputcode"#mode(value: outputcode)
                    &e#"feedtoemulator"#mode(value: feedtoemulator)
                    &c#"dump"#mode(value: dump)
-                   &x#"syslet"#mode(value: syslet)
+                   &x#"executable"#mode(value: executable)
                    &M#"makedepend"#makedepend(type: bool)
                    &h#"help"#help(value: unit) &?#unit#help(value: unit)
                    &D#"define"#'define'(type: atom)
@@ -57,7 +57,7 @@ local
                    &I#"incdir"#incdir(type: string)
                    &z#"compress"#compress(type:int)
                    unit#"include"#include(type: string)
-                   unit#"sysletprefix"#sysletprefix(type: string)
+                   unit#"execheader"#execheader(type: string)
                    unit#"maxerrors"#maxerrors(type: int)
                    unit#"compilerpasses"#compilerpasses(type: bool)
                    unit#"showinsert"#showinsert(type: bool)
@@ -96,8 +96,8 @@ local
    '-c, --dump                    Compile and evaluate an expression,\n'#
    '                              pickling the result\n'#
    '                              (file extension: .ozf).\n'#
-   '-x, --syslet                  Compile and evaluate an expression,\n'#
-   '                              making a syslet of the result\n'#
+   '-x, --executable              Compile and evaluate an expression,\n'#
+   '                              making result executable\n'#
    '                              (file extension: none).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
@@ -115,7 +115,7 @@ local
    '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
-   '--sysletprefix=STRING         Use STRING as prefix to syslets (default:\n'#
+   '--execheader=STRING           Use STRING as header for executables (default:\n'#
    '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").'#
    '-z CLEV, --compress=CLEV      Use compression level CLEV for pickles.\n' #
    '\n'#
@@ -393,7 +393,7 @@ in
    proc {BatchCompile Argv ?Status}
       try
          Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
-         MakeDepend IncDir SysletPrefix CompLevel
+         MakeDepend IncDir ExecHeader CompLevel
       in
          try
             {ParseArgs Argv ?Opts ?FileNames}
@@ -414,7 +414,7 @@ in
          OutputFile = {NewCell unit}
          MakeDepend = {NewCell false}
          IncDir = {NewCell nil}
-         SysletPrefix = {NewCell unit}
+         ExecHeaderPrefix = {NewCell unit}
          CompLevel = {NewCell 0}
          {ForAll Opts
           proc {$ Opt#X}
@@ -444,12 +444,12 @@ in
                 if {UI hasErrors($)} then
                    raise error end
                 end
-             [] sysletprefix then
-                case {Access SysletPrefix} of unit then
+             [] execheader then
+                case {Access ExecHeader} of unit then
                    {Assign SysletPrefix X}
                 else
                    {Report error(kind: UsageError
-                                 msg: 'syslet prefix may only be given once'
+                                 msg: 'exec header may only be given once'
                                  items: [hint(l: 'Hint'
                                               m: ('Use --help to obtain '#
                                                   'usage information'))])}
@@ -518,11 +518,11 @@ in
                       OFN = unit
                    [] dump then
                       OFN = {ChangeExtension Arg ".ozf"}
-                   [] syslet then
+                   [] executable then
                       OFN = {ChangeExtension Arg ""}
                    end
                 elseif {Access OutputFile} == "-" then
-                   if {Access Mode} == dump orelse {Access Mode} == syslet then
+                   if {Access Mode} == dump orelse {Access Mode} == executable then
                       {Report
                        error(kind: UsageError
                              msg: 'dumping to stdout is not possible')}
@@ -553,7 +553,7 @@ in
                 [] feedtoemulator then
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator true))}
-                else   % dump, syslet
+                else   % dump, executable
                    {BatchCompiler enqueue(setSwitch(expression true))}
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator true))}
@@ -586,12 +586,12 @@ in
                          {Error.printExc E}
                          raise error end
                       end
-                   [] syslet then
+                   [] executable then
                       if {Functor.is R} then skip
                       else
                          {Report
                           error(kind: BatchCompilationError
-                                msg: 'syslets can only be built from functors'
+                                msg: 'only functors can be made executable'
                                 items: [hint(l: 'Value found'
                                              m: oz(R))])}
                       end
@@ -599,8 +599,8 @@ in
                          {Pickle.saveWithHeader
                           R % Value
                           OFN % Filename
-                          case {Access SysletPrefix} of unit then
-                             DefaultSysletPrefix
+                          case {Access ExecHeader} of unit then
+                             DefaultExecHeader
                           elseof S then S
                           end % Header
                           {Access CompLevel} % Compression level
@@ -609,7 +609,7 @@ in
                          of 0 then skip elseof N then
                             {Report
                              error(kind: BatchCompilationError
-                                   msg: 'writing syslet failed'
+                                   msg: 'writing executable functor failed'
                                    items: [hint(l: 'Error code' m: N)])}
                          end
                       catch E then

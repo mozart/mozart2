@@ -173,7 +173,8 @@ local
                {BitArray.nimpl S Name2Bits.N}
                N | {DecodeAux S}
             end
-         end      in
+         end
+      in
          fun {Decode S}
             if {IsFree S}
             then [value]
@@ -201,7 +202,9 @@ local
          constrain: BitArray.conj
          clash:     BitArray.disjoint
          clone:     BitArray.clone
-         toList:    BitArray.toList
+         toList:    fun {$ T}
+                       {Map {BitArray.toList T} fun {$ I} Index2Name.I end}
+                    end
         )
 
    end

@@ -135,10 +135,11 @@ define
       InternalScroll            = {NewName}
       InternalAdjNew            = {NewName}
       InternalScrollCanvasEvent = {NewName}
+      LoadImage                 = {NewName}
 
       fun {MakeFont Family Size Weight}
          {VirtualString.toString
-          "-*-"#Family#"-*-r-"#Weight#"-*-"#Size#"-*-*-*-m-0-iso8859-1"}
+          "-*-"#Family#"-medium-r-"#Weight#"-*-"#Size#"-*-*-*-m-*-iso8859-1"}
       end
    in
       class GraphicSupport from GTKCANVAS.canvas
@@ -170,6 +171,7 @@ define
             scrollYAdj      %% GTK ScrollYAdjustment
             scrollBars      %% GTK Scrollbars
             backgroundItem  %% Canvas Background Item
+            imageDict       %% Canvas GDKImlibImage Item Dictionary
             stopButton      %% Stop Button
          meth create(Parent DspWidth DspHeight)
             CanvasId = {IdCounter inc($)}
@@ -214,6 +216,7 @@ define
             @whiteColor     = {MakeColor '#ffffff'}
             @innerX         = 0.0
             @innerY         = 0.0
+            @imageDict      = {Dictionary.new}
             @backgroundItem =
             {self newItem(Root @rectType
                           ['x1'#0.0
@@ -398,7 +401,7 @@ define
                               @textAnchor @fontO Color _)}
          end
          meth paintXY(X Y ImageName Tag _)
-            Image  = {@imageObj loadImage(ImageName $)}
+            Image  = GraphicSupport, LoadImage({String.toAtom ImageName} $)
             FontX  = @fontX
             FontY  = @fontY
             ImageX = {Max 0 ((2 * FontX) - 2)}
@@ -409,6 +412,18 @@ define
             Tag = {self newSimpleTagItem(@tagRoot $)}
             {self newImageItem(Tag Image (FontX * X) ((FontY * Y) + @offY)
                                ImageX ImageY @textAnchor _)}
+         end
+         meth !LoadImage(ImageName $)
+            ImageDict = @imageDict
+            ImageObj  = {Dictionary.condGet ImageDict ImageName nil}
+         in
+            case ImageObj
+            of nil then
+               NewImage = {@imageObj loadImage(ImageName $)}
+            in
+               {Dictionary.put ImageDict ImageName NewImage} NewImage
+            [] ImageObj then ImageObj
+            end
          end
          meth delete(Tag)
             {Tag destroy}

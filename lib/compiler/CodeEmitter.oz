@@ -45,6 +45,23 @@ local
       [] nil then false
       end
    end
+
+   local
+      fun {MemQ Ys X}
+         case Ys of Y|Yr then {System.eq X Y} orelse {MemQ Yr X}
+         [] nil then false
+         end
+      end
+   in
+      fun {SubtractYs As Us}
+         case As of A|Ar then
+            if {MemQ Us A} then {SubtractYs Ar Us}
+            else A|{SubtractYs Ar Us}
+            end
+         [] nil then nil
+         end
+      end
+   end
 in
    fun {IsStep Coord}
       case {Label Coord} of pos then false
@@ -195,16 +212,17 @@ in
             [] nil then
                Emitter, DeallocateAndReturn()
             end
-         [] vShared(_ Label Count Addr) then
-            case Addr of nil then
+         elseof VInstr then
+            Emitter, FlushShortLivedRegs()
+            case VInstr of vShared(_ _ _ nil) then
                case @contLabels of nil then
                   Emitter, DeallocateAndReturn()
                [] ContLabel|_ then
                   Emitter, Emit(branch(ContLabel))
                end
-            else
-\ifdef NEW_VSHARED
+            [] vShared(_ Label Count Addr) then
                case {Dictionary.condGet @sharedDone Label unit} of unit then
+                  Emitter, LetDie(VInstr.1)
                   if {Access Count} > 1 then OldContLabels in
                      %% Make sure all delayed initializations are performed:
                      OldContLabels = @contLabels
@@ -262,35 +280,23 @@ in
                       end
                    end}
                   Permanents <- Ps
+                  FreeYs <- {SubtractYs @UsedYs {Dictionary.items Ps}}
                   Emitter, Emit(branch(Label))
                end
-\else
-               if {Dictionary.member @sharedDone Label} then
-                  Emitter, Emit(branch(Label))
-               else
-                  {Dictionary.put @sharedDone Label true}
-                  Emitter, Emit(lbl(Label))
-                  if {Access Count} > 1 then
-                     Emitter, KillAllTemporaries()
-                  end
-                  Emitter, EmitAddr(Addr)
+            else
+               Emitter, LetDie(VInstr.1)
+               case VInstr.(Continuations.{Label VInstr}) of nil then
+                  Emitter, EmitVInstr(VInstr)
+                  Emitter, EmitAddr(nil)
+               elseof Cont then OldContinuations Aux NewCont in
+                  OldContinuations = @continuations
+                  continuations <- Cont|OldContinuations
+                  Emitter, EmitVInstr(VInstr)
+                  Aux = @continuations
+                  Aux = NewCont|_   % may be different from Cont!
+                  continuations <- OldContinuations
+                  Emitter, EmitAddr(NewCont)   % may be nil
                end
-\endif
-            end
-         elseof VInstr then
-            Emitter, FlushShortLivedRegs()
-            Emitter, LetDie(VInstr.1)
-            case VInstr.(Continuations.{Label VInstr}) of nil then
-               Emitter, EmitVInstr(VInstr)
-               Emitter, EmitAddr(nil)
-            elseof Cont then OldContinuations Aux NewCont in
-               OldContinuations = @continuations
-               continuations <- Cont|OldContinuations
-               Emitter, EmitVInstr(VInstr)
-               Aux = @continuations
-               Aux = NewCont|_   % may be different from Cont!
-               continuations <- OldContinuations
-               Emitter, EmitAddr(NewCont)   % may be nil
             end
          end
       end

@@ -162,7 +162,9 @@ class CodeStore from Emitter
       [] vShared(RS0 _ Count Addr1) then
          {Assign Count {Access Count} + 1}
          if {IsDet RS0} then skip
-         else CodeStore, ComputeOccs(Addr1 ?RS0)
+         else RS1 in
+            CodeStore, ComputeOccs(Addr1 ?RS1)
+            RS0 = {BitArray.clone RS1}
          end
          RS = RS0
       elseof VInstr then

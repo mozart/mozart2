@@ -338,13 +338,14 @@ in
       %% It returns an application of the corresponding reified propagator.
       {NormalizeFdCompare Op E1 E2 C ?NewOp ?TmpE}
       NewE = {Normalize {MakeDNF TmpE} ?Const}
-      case NewE of fZero(C2) then X O D in
-         X = fRecord(fAtom('#' C2) [fInt(Const C2)])
+      case NewE of fZero(C2) then A X O D in
+         A = fRecord(fAtom('#' C2) [fInt(Const C2)])
+         X = fRecord(fAtom('#' C2) [fInt(1 C2)])
          O = fAtom(NewOp C)
          D = fInt(0 C2)
          fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C) fAtom('reified' C)] C)
-                              fAtom('sum' C)] C)
-                [X O D V] C)
+                              fAtom('sumC' C)] C)
+                [A X O D V] C)
       else
          if {AreLinearConstraints NewE} then Cs Vs in
             {MakeTuples NewE ?Cs nil ?Vs nil}

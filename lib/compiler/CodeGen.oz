@@ -132,7 +132,7 @@ define
    proc {MakePermanent Vs ?Regs VHd VTl}
       Regs = {FoldR Vs
               fun {$ V In}
-                 if {V getOrigin($)} \= generated then {V reg($)}|In
+                 if {V getPrintName($)} \= unit then {V reg($)}|In
                  else In
                  end
               end nil}
@@ -774,8 +774,8 @@ define
          case @coord of unit then FileName = '' Line = 1 Col = 0
          elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
-         PrintName = case {V getOrigin($)} of generated then @printName
-                     else {V getPrintName($)}
+         PrintName = case {V getPrintName($)} of unit then @printName
+                     elseof PN then PN
                      end
          PredId = pid(PrintName {Length @formalArgs} pos(FileName Line Col)
                       if {Member native @procFlags} then [native]
@@ -852,7 +852,9 @@ define
                               ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
-                           pid({VirtualString.toAtom PrintName#'/body'} 0
+                           pid(case PrintName of '' then ''
+                               else {VirtualString.toAtom PrintName#'/body'}
+                               end 0
                                4: if {Member native @procFlags} then [native]
                                   else nil
                                   end
@@ -943,7 +945,7 @@ define
             if {IsFree ErrAddr} then Label Addr in
                {CS newLabel(?Label)}
                ErrAddr = vShared(_ Label {NewCell 0} Addr)
-               {MakeException boolCaseType @coord nil CS Addr nil}
+               {MakeException boolCaseType @coord [@arbiter] CS Addr nil}
             end
             VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
                             @coord VTl _)
@@ -1164,11 +1166,10 @@ define
             {MakeAttrFeat 'attr' @attributes CS Cont2 Cont3 ?Attr}
             {MakeAttrFeat 'feat' @features CS Cont3 VInter1 ?Feat}
          end
-         case @printName of '' then
-            {{@designator getVariable($)} getPrintName(?PN)}
-         else
-            PN = @printName
-         end
+         PN = case @printName of '' then
+                 {{@designator getVariable($)} getPrintName($)}
+              else @printName
+              end
          Meth = {NewPseudoVariableOccurrence CS}
          case @methods of _|_ then
             fun {MakeMethods Methods VHd VTl}
@@ -1252,9 +1253,9 @@ define
             GRegs Code
          in
             CodeGenMethod, SortFormals(CS ?RecordArity)
-            PredId = pid({String.toAtom
-                          {VirtualString.toString
-                           PrintName#','#{@label methPrintName($)}#'/fast'}}
+            PredId = pid({VirtualString.toAtom
+                          case PrintName of unit then '_' else PrintName end#
+                          ','#{@label methPrintName($)}#'/fast'}
                          RecordArity pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
             {System.show PredId}
@@ -1323,9 +1324,9 @@ define
          PredId NLiveRegs Cont1 MessageReg MessageVO BodyVInstr
          AllRegs GRegs Code VInter1 VInter2
       in
-         PredId = pid({String.toAtom
-                       {VirtualString.toString
-                        PrintName#','#{@label methPrintName($)}}}
+         PredId = pid({VirtualString.toAtom
+                       case PrintName of unit then '_' else PrintName end#
+                       ','#{@label methPrintName($)}}
                       1 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
          {System.show PredId}
@@ -1464,7 +1465,7 @@ define
             ArgVO = {New PseudoVariableOccurrence init(ArgReg)}
             {VO makeEquation(CS ArgVO ElseVInstr nil)}
          end
-         {MakeException boolCaseType Coord nil CS ErrVInstr nil}
+         {MakeException boolCaseType Coord [ArbiterVO] CS ErrVInstr nil}
       end
    end
 
@@ -1720,14 +1721,30 @@ define
       end
    end
 
+   fun {Assoc Xs V}
+      case Xs of !V#Pos|Xr then Pos
+      [] _#_|Xr then {Assoc Xr V}
+      [] nil then unit
+      end
+   end
+
    class CodeGenPatternVariableOccurrence
-      meth makePattern(Arbiter Pos Hd Tl Seen CS) PrintName in
-         {@variable getPrintName(?PrintName)}
-         case {Dictionary.condGet Seen PrintName unit} of unit then
-            {Dictionary.put Seen PrintName Pos}
-            Hd = Tl
-         elseof FirstPos then
-            Hd = Pos#equal(FirstPos)|Tl
+      meth makePattern(Arbiter Pos Hd Tl Seen CS)
+         case {@variable getPrintName($)} of unit then Xs in
+            Xs = {Dictionary.condGet Seen 1 nil}
+            case {Assoc Xs @variable} of unit then
+               {Dictionary.put Seen 1 @variable#Pos|Xs}
+               Hd = Tl
+            elseof FirstPos then
+               Hd = Pos#equal(FirstPos)|Tl
+            end
+         elseof PrintName then
+            case {Dictionary.condGet Seen PrintName unit} of unit then
+               {Dictionary.put Seen PrintName Pos}
+               Hd = Tl
+            elseof FirstPos then
+               Hd = Pos#equal(FirstPos)|Tl
+            end
          end
       end
       meth assignRegs(Pos Mapping) Reg in

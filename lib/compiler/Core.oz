@@ -41,17 +41,20 @@
 
 functor
 import
+   CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
    StaticAnalysis
    CodeGen
 export
+   %% procedures:
    FlattenSequence
+   Output
 
-   % names:
+   %% names:
    ImAValueNode
    ImAVariableOccurrence
    ImAToken
 
-   % abstract syntax:
+   %% classes for abstract syntax:
    Statement
    TypeOf
    StepPoint
@@ -95,11 +98,13 @@ export
    BitStringNode
    ByteStringNode
    Variable
+   UserVariable
+   GeneratedVariable
    RestrictedVariable
    VariableOccurrence
    PatternVariableOccurrence
 
-   % token representations:
+   %% classes for token representations:
    Token
    NameToken
    ProcedureToken
@@ -117,19 +122,22 @@ export
    SpaceToken
    BitArrayToken
 
-define
+prepare
    \insert Annotate
 
-   %% some format strings auxiliaries for output
+   %% some format string auxiliaries for output
    IN = format(indent)
    EX = format(exdent)
    PU = format(push)
    PO = format(pop)
    GL = format(glue(" "))
    NL = format(break)
+
+define
    fun {LI Xs Sep R}
       list({Map Xs fun {$ X} {X output(R $)} end} Sep)
    end
+
    fun {LI2 Xs Sep R ?FS}
       case Xs of X1|Xr then FS01 FS02 FSs in
          {X1 output2(R ?FS01 ?FS02)}
@@ -145,10 +153,6 @@ define
       end
    end
 
-   fun {CheckOutput R Flagname}
-      {CondSelect R Flagname false}
-   end
-
    fun {OutputAttrFeat I R ?FS}
       case I of F#T then FS1 FS2 in
          FS = FS1#FS2
@@ -158,20 +162,45 @@ define
       end
    end
 
-   fun {FilterUnitsToVS Xs}
-      case Xs of X|Xr then
-         case X of unit then {FilterUnitsToVS Xr}
-         else X#{FilterUnitsToVS Xr}
+   local
+      ConcatenateAtomAndInt = CompilerSupport.concatenateAtomAndInt
+
+      proc {Generate Xs Origin D N}
+         case Xs of X|Xr then PrintName in
+            PrintName = {ConcatenateAtomAndInt Origin N}
+            if {Dictionary.member D PrintName} then
+               {Generate Xs Origin D N + 1}
+            else
+               X = PrintName
+               {Generate Xr Origin D N + 1}
+            end
+         [] nil then skip
          end
-      [] nil then ""
+      end
+   in
+      proc {Output DeclaredGVs GS Switches FS} R in
+         R = debug(realcore: {Switches getSwitch(realcore $)}
+                   debugValue: {Switches getSwitch(debugvalue $)}
+                   debugType: {Switches getSwitch(debugtype $)}
+                   printNames: {NewDictionary}
+                   toGenerate: {NewDictionary})
+         FS = (case DeclaredGVs of nil then ""
+               else
+                  'declare'#GL#
+                  {LI DeclaredGVs GL {AdjoinAt R realcore true}}#GL#'in'#NL
+               end#{LI GS NL R})
+         {ForAll {Dictionary.entries R.toGenerate}
+          proc {$ Origin#Xs}
+             {Generate {Reverse Xs} Origin R.printNames 1}
+          end}
       end
    end
 
    local
       proc {FlattenSequenceSub X Hd Tl}
-         % This procedure converts a statement sequence represented
-         % using '|' as a pair constructor, whose left and/or right
-         % element may also be a pair, into a list.
+         %% This procedure converts a statement sequence represented
+         %% using '|' as a pair constructor, whose left and/or right
+         %% element may also be a pair, into a list.
          case X of S1|S2 then Inter in
             {FlattenSequenceSub S1 Hd Inter}
             {FlattenSequenceSub S2 Inter Tl}
@@ -217,6 +246,15 @@ define
                else Hd
                end
          {LinkList Res}
+      end
+   end
+
+   fun {FilterUnitsToVS Xs}
+      case Xs of X|Xr then
+         case X of unit then {FilterUnitsToVS Xr}
+         else X#{FilterUnitsToVS Xr}
+         end
+      [] nil then ""
       end
    end
 
@@ -283,7 +321,7 @@ define
          coord <- Coord
       end
       meth output(R $)
-         'local'#GL#IN#{LI @localVars GL true}#EX#GL#'in'#IN#NL#
+         'local'#GL#IN#{LI @localVars GL R}#EX#GL#'in'#IN#NL#
          {LI @statements NL R}#EX#NL#'end'
       end
    end
@@ -430,7 +468,7 @@ define
          coord <- Coord
       end
       meth output(R $)
-         if {CheckOutput R realcore} then
+         if R.realcore then
             Application, OutputApplication(R $)
          else P = {{@designator getVariable($)} getPrintName($)} in
             case P of '`ooExch`' then Attr New Old FS1 FS2 FS3 in
@@ -1043,26 +1081,14 @@ define
    end
 
    class Variable
-      from Annotate.variable StaticAnalysis.variable CodeGen.variable
-      attr printName: unit origin: unit coord: unit isToplevel: false
-      meth init(PrintName Origin Coord)
-         printName <- PrintName
-         origin <- Origin
-         coord <- Coord
-         StaticAnalysis.variable, init()
-      end
+      from StaticAnalysis.variable CodeGen.variable
+      attr coord: unit isToplevel: false
       meth isRestricted($)
          false
       end
       meth isDenied(Feature ?GV $)
          GV = unit
          false
-      end
-      meth getPrintName($)
-         @printName
-      end
-      meth getOrigin($)
-         @origin
       end
       meth getCoord($)
          @coord
@@ -1076,27 +1102,41 @@ define
       meth occ(Coord ?VO)
          VO = {New VariableOccurrence init(self Coord)}
       end
-      meth output(R $)
-         pn(@printName)
-      end
       meth outputEscaped(R $)
-         '!'#pn(@printName)
+         '!'#{self output(R $)}
       end
-      meth outputPattern(R Vs $) PrintName = @printName in
-         if {Some Vs fun {$ V} {V getPrintName($)} == PrintName end} then
-            Variable, output(R $)
+      meth outputPattern(R Vs $)
+         if {Member self Vs} then
+            {self output(R $)}
          else
-            Variable, outputEscaped(R $)
+            {self outputEscaped(R $)}
          end
       end
    end
 
+   class UserVariable
+      from Variable Annotate.userVariable
+      attr printName: unit
+      meth init(PrintName Coord)
+         printName <- PrintName
+         coord <- Coord
+         Variable, init()
+      end
+      meth getPrintName($)
+         @printName
+      end
+      meth output(R $) PN = @printName in
+         {Dictionary.put R.printNames PN true}
+         pn(PN)
+      end
+   end
+
    class RestrictedVariable
-      from Variable Annotate.restrictedVariable
+      from UserVariable Annotate.restrictedVariable
       prop final
       attr features: unit
       meth init(PrintName Features Coord)
-         Variable, init(PrintName user Coord)
+         UserVariable, init(PrintName Coord)
          features <- Features
       end
       meth isRestricted($)
@@ -1124,6 +1164,30 @@ define
          [] nil then
             GV = unit
             true
+         end
+      end
+   end
+
+   class GeneratedVariable
+      from Variable Annotate.generatedVariable
+      prop final
+      attr origin: unit
+      meth init(Origin Coord)
+         origin <- Origin
+         coord <- Coord
+         Variable, init()
+      end
+      meth getPrintName($)
+         unit
+      end
+      meth output(R $)
+         case @origin of FS=pn(_) then FS
+         elseof Origin then D X FS in
+            D = R.toGenerate
+            {Dictionary.put D Origin X|{Dictionary.condGet D Origin nil}}
+            FS = pn(X)
+            origin <- FS
+            FS
          end
       end
    end
@@ -1171,12 +1235,12 @@ define
       meth OutputValue(R $)
          DebugOutputs =
          {FilterUnitsToVS
-          if {CheckOutput R debugValue} then
+          if R.debugValue then
              NL#'%    value: '#
              StaticAnalysis.variableOccurrence, outputDebugValue($)
           else unit
           end|
-          if {CheckOutput R debugType} then
+          if R.debugType then
              [NL#'%    type: '#{@variable outputDebugType($)}
               case {@variable outputDebugProps($)} of unit then unit
               elseof Ps then
@@ -1199,7 +1263,7 @@ define
       in
          case DebugOutputs of nil then ""
          else
-            NL#'% '#{@variable output(debug(realcore: true) $)}#':'#
+            NL#'% '#{@variable output({AdjoinAt R realcore true} $)}#':'#
             DebugOutputs
          end
       end

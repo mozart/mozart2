@@ -681,7 +681,7 @@ local
    class AnnotateFloatNode from AnnotateDefaults
    end
 
-   class AnnotateVariable
+   class AnnotateUserVariable
       attr use: unit
       meth setUse(Use)
          use <- Use
@@ -690,15 +690,13 @@ local
          @use
       end
       meth checkUse(Kind Rep)
-         if @origin == user then
-            case @use of unused then
-               {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                         msg: 'unused '#Kind#' '#pn(@printName))}
-            [] wildcard then
-               {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                         msg: Kind#' '#pn(@printName)#' used only once')}
-            else skip
-            end
+         case @use of unused then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: 'unused '#Kind#' '#pn(@printName))}
+         [] wildcard then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: Kind#' '#pn(@printName)#' used only once')}
+         else skip
          end
       end
    end
@@ -728,6 +726,18 @@ local
             AnnotateRestrictedVariable, CheckUse(Fr Rep)
          [] nil then skip
          end
+      end
+   end
+
+   class AnnotateGeneratedVariable
+      meth setUse(Use)
+         skip
+      end
+      meth getUse($)
+         multiple
+      end
+      meth checkUse(Kind Rep)
+         skip
       end
    end
 
@@ -787,7 +797,8 @@ in
                        atomNode: AnnotateAtomNode
                        intNode: AnnotateIntNode
                        floatNode: AnnotateFloatNode
-                       variable: AnnotateVariable
+                       userVariable: AnnotateUserVariable
+                       generatedVariable: AnnotateGeneratedVariable
                        restrictedVariable: AnnotateRestrictedVariable
                        variableOccurrence: AnnotateVariableOccurrence
                        patternVariableOccurrence:

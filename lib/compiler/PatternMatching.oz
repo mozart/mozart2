@@ -322,7 +322,7 @@ local
           {FoldR Regs0 fun {$ F#Reg In} {Append Pos [F]}#Reg|In end Mapping}
           VHd VTl Coord CS}
       else
-         TestReg TestVInstr TestProc TestArgs
+         TestReg TestVInstr TestProc TestArgs TestVOs
          TestVInter1 TestVInter2 TestVInter3 VInstr1 VInstr2 Regs ElseVInstr
       in
          {CS newReg(?TestReg)}
@@ -365,11 +365,11 @@ local
             TestArgs = [Reg Reg0 TestReg]
             Regs = nil
          end
-         {MakeRunTimeProcApplication TestProc unit
-          {Map TestArgs
-           fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
-          CS TestVInter1 TestVInter2}
-         {MakeException boolCaseType unit nil CS ElseVInstr nil}
+         TestVOs = {Map TestArgs
+                    fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
+         {MakeRunTimeProcApplication TestProc unit TestVOs CS
+          TestVInter1 TestVInter2}
+         {MakeException boolCaseType unit [TestVOs.1] CS ElseVInstr nil}
          TestVInter2 = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
                                  unit TestVInter3 _)
          {StepPoint Coord 'conditional' TestVInstr VTl TestVInter1 TestVInter3}

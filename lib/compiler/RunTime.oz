@@ -23,6 +23,14 @@
 %%%
 
 functor
+import
+   Module(manager)
+   Core(nameToken userVariable)
+export
+   Literals
+   Tokens
+   Procs
+   ProcValues
 require
    BootException(raiseDebugCheck: RaiseDebugCheck
                  taskStackError:  ThreadTaskStack
@@ -154,14 +162,6 @@ prepare
 
    TokenValues = env('true':  true
                      'false': false)
-import
-   Module(manager)
-   Core(nameToken variable)
-export
-   Literals
-   Tokens
-   Procs
-   ProcValues
 define
    fun {ApplyFunctor FileName F}
       ModMan = {New Module.manager init()}
@@ -180,7 +180,7 @@ define
             {AdjoinAt ProcValues 'ApplyFunctor' ApplyFunctor}
             proc {$ X Value ?V} PrintName in
                PrintName = {VirtualString.toAtom '`'#X#'`'}
-               V = {New Core.variable init(PrintName runTimeLibrary unit)}
+               V = {New Core.userVariable init(PrintName unit)}
                {V valToSubst(Value)}
                {V setUse(multiple)}
                {V reg(~1)}

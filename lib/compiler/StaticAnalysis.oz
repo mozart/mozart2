@@ -826,7 +826,7 @@ define
 %-----------------------------------------------------------------------
 %
 
-   fun {MakeDummyProcedure N PN}
+   fun {MakeDummyProcedure N}
       case N
       of 0 then  proc {$} skip end
       [] 1 then  proc {$ _} skip end
@@ -1117,9 +1117,12 @@ define
       end
       meth declareToplevelName(PrintName ?N)
          case @toCopy of unit then
-            N = {CompilerSupport.newNamedName PrintName}
+            N = case PrintName of unit then {NewName}
+                else {CompilerSupport.newNamedName PrintName}
+                end
          elseof Xs then
-            N = {CompilerSupport.newCopyableName PrintName}
+            N = {CompilerSupport.newCopyableName
+                 case PrintName of unit then '' else PrintName end}
             toCopy <- N|Xs
          end
       end
@@ -1457,8 +1460,7 @@ define
          isComplex:false
       meth saSimple(Ctrl)
          DummyProc = {MakeDummyProcedure
-                      {Length @formalArgs}
-                      {@designator getPrintName($)}}
+                      {Length @formalArgs}}
          Value
       in
          %% prepare some feature values for the code generator:
@@ -1802,7 +1804,7 @@ define
          BndVO = {Nth @actualArgs 1}
          {BndVO getVariable(?BndV)}
          {BndV getPrintName(?PrintName)}
-         if {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
+         if {Ctrl getTop($)} andthen {BndV getPrintName($)} \= unit then
             {Ctrl declareToplevelName(PrintName ?TheName)}
          else
             TheName = {CompilerSupport.newNamedName PrintName}
@@ -3558,9 +3560,9 @@ define
          end
       end
       meth valToSubst(Value)
-         SAVariable, ValToSubst(@printName nil AnalysisDepth Value)
+         SAVariable, ValToSubst(nil AnalysisDepth Value)
       end
-      meth ValToSubst(PrintNameBase Seen Depth Val) ValRepr in
+      meth ValToSubst(Seen Depth Val) ValRepr in
          ValRepr =
          if Depth =< 0 then
 \ifdef DEBUGSA
@@ -3581,9 +3583,9 @@ define
                [] name then
                   {New Core.nameToken init(Val true)}
                [] tuple then
-                  SAVariable, RecordToSubst(PrintNameBase Seen Depth Val $)
+                  SAVariable, RecordToSubst(Seen Depth Val $)
                [] record then
-                  SAVariable, RecordToSubst(PrintNameBase Seen Depth Val $)
+                  SAVariable, RecordToSubst(Seen Depth Val $)
                [] procedure then
                   if {CompilerSupport.isBuiltin Val} then
                      {New Core.builtinToken init(Val)}
@@ -3651,7 +3653,7 @@ define
          SAVariable, setLastValue(ValRepr)
          SAVariable, setType({OzValueToType Val})
       end
-      meth RecordToSubst(PrintNameBase Seen Depth Val $)
+      meth RecordToSubst(Seen Depth Val $)
          RecArgs = {Record.toListInd Val}
          Lab     = {Label Val}
          RecConstrValArgs RecVal
@@ -3661,7 +3663,6 @@ define
                                      (Val#self)|Seen
                                      Depth
                                      AnalysisWidth.Depth
-                                     PrintNameBase
                                      ?RecConstrValArgs)
          if {Width Val} =< AnalysisWidth.Depth then
             RecVal = {List.toRecord Lab RecConstrValArgs}
@@ -3671,25 +3672,19 @@ define
          end
          {New RecordConstr init(RecVal unit)}
       end
-      meth RecordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
+      meth RecordValToArgs(RecArgs Seen Depth Width ?ConstrValArgs)
          if Width > 0 then
             case RecArgs of (F#X)|RAs then V VO CVAr in
-               case {PLDotEQ X Seen} of unit then PrintName in   % not seen
-                  PrintName = {VirtualString.toAtom
-                               PrintNameBase#'.'#
-                               if {IsName F} then {Value.toVirtualString F 0 0}
-                               else F
-                               end}
-                  V = {New Core.variable init(PrintName generated unit)}
-                  {V ValToSubst(PrintName Seen Depth - 1 X)}
+               case {PLDotEQ X Seen} of unit then   % not seen
+                  V = {New Core.generatedVariable init('RecordArg' unit)}
+                  {V ValToSubst(Seen Depth - 1 X)}
                elseof X then
                   V = X
                end
                {V occ(unit ?VO)}
                {VO updateValue}
                ConstrValArgs = F#VO|CVAr
-               SAVariable, RecordValToArgs(RAs Seen Depth Width - 1
-                                           PrintNameBase CVAr)
+               SAVariable, RecordValToArgs(RAs Seen Depth Width - 1 CVAr)
             elseof nil then
                ConstrValArgs = nil
             end
@@ -3723,7 +3718,7 @@ define
                       [] name then
                          {New Core.nameToken init(F true)}
                       end
-            V = {New Core.variable init('' generated unit)}
+            V = {New Core.generatedVariable init('RecordType' unit)}
             {V TypeToSubst(Rec.F Depth - 1)}
             {V occ(unit ?VO)}
             {VO updateValue}
@@ -3906,7 +3901,9 @@ define
          then
             if IsData then _
             else   % dummy variable with right print name
-               {CompilerSupport.nameVariable $ {@variable getPrintName($)}}
+               case {@variable getPrintName($)} of unit then _
+               elseof PrintName then {CompilerSupport.nameVariable $ PrintName}
+               end
             end
          else
             {@value getFullData(D IsData $)}

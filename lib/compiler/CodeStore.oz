@@ -123,10 +123,10 @@ class CodeStore from Emitter
    meth newVariableReg(V ?Reg)
       Reg = @NextReg
       NextReg <- Reg + 1
-      case {V getOrigin($)} of generated then
+      case {V getPrintName($)} of unit then
          {Dictionary.remove @regNames Reg}
-      else
-         {Dictionary.put @regNames Reg {V getPrintName($)}}
+      elseof PrintName then
+         {Dictionary.put @regNames Reg PrintName}
       end
    end
    meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)

@@ -35,9 +35,8 @@ import
    ErrorListener('class')
    PrintName(is)
    Unnester(makeExpressionQuery unnestQuery)
-   Core(variable)
+   Core(userVariable output)
    Assembler(internalAssemble assemble)
-
 \ifndef NO_GUMP
    Gump(makeProductionTemplates)
    ProductionTemplates(default)

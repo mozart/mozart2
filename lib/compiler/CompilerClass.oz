@@ -287,7 +287,7 @@ local
       meth MergeEnv(Env)
          {Record.forAllInd Env
           proc {$ PrintName Value} V in
-             V = {New Core.variable init(PrintName putEnv unit)}
+             V = {New Core.userVariable init(PrintName unit)}
              CompilerStateClass, Enter(V Value true)
           end}
       end
@@ -440,8 +440,8 @@ local
                Queries = if CompilerStateClass, getSwitch(expression $) then
                             case Queries0 of nil then Queries0
                             else V in
-                               V = {New Core.variable
-                                    init('`result`' putEnv unit)}
+                               V = {New Core.userVariable
+                                    init('`result`' unit)}
                                CompilerStateClass,
                                enter(V {CondSelect Return result _} false)
                                {Unnester.makeExpressionQuery Queries0}
@@ -560,25 +560,9 @@ local
                                         {V outputDebugType($)}#'\n'))}
                 end}
             end
-            if CompilerStateClass, getSwitch(core $) then R1 R2 FS in
+            if CompilerStateClass, getSwitch(core $) then FS in
                {@reporter startPhase('writing core representation')}
-               R1 = debug(realcore:
-                             CompilerStateClass, getSwitch(realcore $)
-                          debugValue:
-                             CompilerStateClass, getSwitch(debugvalue $)
-                          debugType:
-                             CompilerStateClass, getSwitch(debugtype $))
-               R2 = {AdjoinAt R1 realcore true}
-               FS = case DeclaredGVs of nil then ""
-                    else FSs in
-                       FSs = {Map DeclaredGVs
-                              fun {$ GV} {GV output(R2 $)} end}
-                       'declare'#format(glue(" "))#
-                       list(FSs format(glue(" ")))#format(glue(" "))#
-                       'in'#format(break)
-                    end#
-                    list({Map GS fun {$ GS} {GS output(R1 $)} end}
-                         format(break))
+               FS = {Core.output DeclaredGVs GS self}
                {@reporter
                 tell(displaySource('Oz Compiler: Core Output' '.ozi'
                                    {FormatStringToVirtualString FS}#'\n'))}
@@ -645,7 +629,7 @@ local
                      if OPI \= false
                         andthen {OPI getNarrator($)} == @narrator
                      then
-                        % this helps Ozcar detect queries from the OPI:
+                        %% this helps Ozcar detect queries from the OPI:
                         {Debug.setId {Thread.this} 1}
                      end
                      thread {P} end
@@ -671,10 +655,10 @@ local
          lock @InterruptLock then {P} end
       end
       meth ExecProtected(P IsCompilerThread)
-         % This method executes {P} but protects the current thread
-         % against exceptions raised by P.  Furthermore, it sets the
-         % raiseOnBlock flag of the thread executing P if it is a
-         % compiler thread.
+         %% This method executes {P} but protects the current thread
+         %% against exceptions raised by P.  Furthermore, it sets the
+         %% raiseOnBlock flag of the thread executing P if it is a
+         %% compiler thread.
          T Completed Exceptionless RaiseOnBlock
       in
          T = {Thread.this}
@@ -687,7 +671,7 @@ local
             end
             OPI = {Property.condGet 'opi.compiler' false}
             if OPI \= false andthen {OPI getNarrator($)} == @narrator then
-               % this helps Ozcar detect queries from the OPI:
+               %% this helps Ozcar detect queries from the OPI:
                {Debug.setId {Thread.this} 1}
             end
             try
@@ -871,8 +855,8 @@ in
                Engine, Dequeue(Qr Id ?NewQr)
             end
          else
-            % make sure that no race conditions occur, since the
-            % queue is processed concurrently
+            %% make sure that no race conditions occur, since the
+            %% queue is processed concurrently
             NewQs = Qs
          end
       end

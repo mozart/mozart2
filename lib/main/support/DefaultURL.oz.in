@@ -32,8 +32,8 @@ prepare
    FunctorExt  = '.ozf'
    OzScheme    = 'x-oz'
 
-   HomeUrl    = {UrlMake 'http://mozart.ps.uni-sb.de/home/share/'}
-   ContribUrl = {UrlMake 'http://mozart.ps.uni-sb.de/home/contrib/'}
+   HomeUrl    = {UrlMake '@HOMEURL@/share/'}
+   ContribUrl = {UrlMake '@HOMEURL@/contrib/'}
    SystemUrl  = {UrlMake OzScheme#'://system/'}
    BootUrl    = {UrlMake OzScheme#'://system/'}
 

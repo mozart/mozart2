@@ -177,6 +177,15 @@ in
          end
       end
 
+      fun {DoReadAll Desc ?Xs Xt N}
+         Xr
+      in
+         case {OS.read Desc ReadSizeAll Xs Xr}
+         of 0 then Xr=Xt N
+         elseof M then {DoReadAll Desc Xr Xt N+M}
+         end
+      end
+
       class DescClass
          prop
             native
@@ -238,132 +247,110 @@ in
       %% The File Object
       %%
 
-      local
-         fun {DoReadAll Desc ?Xs Xt N}
-            Xr
-         in
-            case {OS.read Desc ReadSizeAll Xs Xr}
-            of 0 then Xr=Xt N
-            elseof M then {DoReadAll Desc Xr Xt N+M}
-            end
-         end
+      class File from DescClass
 
-         fun {DoWrite Desc V N}
-            case {OS.write Desc V}
-            of suspend(M S V) then {Wait S} {DoWrite Desc V M+N}
-            elseof M then M+N
-            end
-         end
-
-      in
-
-         class File
-            from DescClass
-
-            meth init(name:  Name  <= NoArg
-                      url:   Url   <= NoArg
-                      flags: FlagS <= [read]
-                      mode:  Mode  <= mode(owner:[write] all:[read])) = M
-               DescClass, InitLocks(M)
-               %% Handle read&write flags
-               case {FlagsToOS FlagS}
+         meth init(name:  Name  <= NoArg
+                   url:   Url   <= NoArg
+                   flags: FlagS <= [read]
+                   mode:  Mode  <= mode(owner:[write] all:[read])) = M
+            DescClass, InitLocks(M)
+            %% Handle read&write flags
+            case {FlagsToOS FlagS}
+            of false then {Raise {Exception.system
+                                  open(illegalFlags self M)}}
+            elseof OSFlagS then
+               %% Handle access modes
+               case {ModeToOS Mode}
                of false then {Raise {Exception.system
-                                     open(illegalFlags self M)}}
-               elseof OSFlagS then
-                  %% Handle access modes
-                  case {ModeToOS Mode}
-                  of false then {Raise {Exception.system
-                                        open(illegalModes self M)}}
-                  elseof OSModeS then
-                     %% Handle special filenames
-                     if
-                        (Name==NoArg andthen Url==NoArg) orelse
-                        (Name\=NoArg andthen Url\=NoArg)
-                     then
-                        {Raise {Exception.system
-                                open(nameOrUrl self M)}}
+                                     open(illegalModes self M)}}
+               elseof OSModeS then
+                  %% Handle special filenames
+                  if
+                     (Name==NoArg andthen Url==NoArg) orelse
+                     (Name\=NoArg andthen Url\=NoArg)
+                  then
+                     {Raise {Exception.system
+                             open(nameOrUrl self M)}}
                      else
-                        D = case Name
-                            of 'stdin'  then {OS.fileDesc 'STDIN_FILENO'}
-                            [] 'stdout' then {OS.fileDesc 'STDOUT_FILENO'}
-                            [] 'stderr' then {OS.fileDesc 'STDERR_FILENO'}
-                            [] !NoArg then
-                               if
-                                  {Member 'O_RDWR'   OSFlagS} orelse
-                                  {Member 'O_WRONLY' OSFlagS}
-                               then
-                                  {Raise {Exception.system
-                                          open(urlIsReadOnly self M)}}
-                                  _
-                               else {Resolve.open Url}
-                               end
-                            else
-                               {OS.open Name OSFlagS OSModeS}
+                     D = case Name
+                         of 'stdin'  then {OS.fileDesc 'STDIN_FILENO'}
+                         [] 'stdout' then {OS.fileDesc 'STDOUT_FILENO'}
+                         [] 'stderr' then {OS.fileDesc 'STDERR_FILENO'}
+                         [] !NoArg then
+                            if
+                               {Member 'O_RDWR'   OSFlagS} orelse
+                               {Member 'O_WRONLY' OSFlagS}
+                            then
+                               {Raise {Exception.system
+                                       open(urlIsReadOnly self M)}}
+                               _
+                            else {Resolve.open Url}
                             end
-                     in
-                        ReadDesc  <- D
-                        WriteDesc <- D
-                     end
+                         else
+                            {OS.open Name OSFlagS OSModeS}
+                         end
+                  in
+                     ReadDesc  <- D
+                     WriteDesc <- D
                   end
                end
-            end
-
-            meth read(size:Size <=ReadSize
-                      list:?Is  tail:It<=nil len:?N<=_)
-               lock self.ReadLock then
-                  lock self.WriteLock then D=@ReadDesc in
-                     if {IsInt D} then
-                        N = case Size of all then {DoReadAll D ?Is It 0}
-                            else {OS.read D Size ?Is It}
-                            end
-                     else
-                        {RaiseClosed self
-                         read(size:Size list:Is tail:It len:N)}
-                     end
-                  end
-               end
-            end
-
-            meth write(vs:V len:I<=_)
-               lock self.ReadLock then
-                  lock self.WriteLock then D=@WriteDesc in
-                     if {IsInt D} then I={DoWrite D V 0}
-                     else {RaiseClosed self write(vs:V len:I)}
-                     end
-                  end
-               end
-            end
-
-            meth seek(whence:W<='set' offset:O<=0)
-               lock self.ReadLock then
-                  lock self.WriteLock then D=@WriteDesc in
-                     if {IsInt D} then
-                        {OS.lSeek D O case W
-                                      of 'set'     then 'SEEK_SET'
-                                      [] 'current' then 'SEEK_CUR'
-                                      [] 'end'     then 'SEEK_END'
-                                      end _}
-                     else {RaiseClosed self seek(whence:W offset:O)}
-                     end
-                  end
-               end
-            end
-
-            meth tell(offset:?O)
-               lock self.ReadLock then
-                  lock self.WriteLock then D=@WriteDesc in
-                     if {IsInt D} then O={OS.lSeek D 0 'SEEK_CUR'}
-                     else {RaiseClosed self tell(offset:O)}
-                     end
-                  end
-               end
-            end
-
-            meth close
-               DescClass, CloseDescs
             end
          end
 
+         meth read(size:Size <=ReadSize
+                   list:?Is  tail:It<=nil len:?N<=_)
+            lock self.ReadLock then
+               lock self.WriteLock then D=@ReadDesc in
+                  if {IsInt D} then
+                     N = case Size of all then {DoReadAll D ?Is It 0}
+                         else {OS.read D Size ?Is It}
+                         end
+                  else
+                     {RaiseClosed self
+                      read(size:Size list:Is tail:It len:N)}
+                  end
+               end
+            end
+         end
+
+         meth write(vs:V len:I<=_)
+            lock self.ReadLock then
+               lock self.WriteLock then D=@WriteDesc in
+                  if {IsInt D} then I={DoWrite D V 0}
+                  else {RaiseClosed self write(vs:V len:I)}
+                  end
+               end
+            end
+         end
+
+         meth seek(whence:W<='set' offset:O<=0)
+            lock self.ReadLock then
+               lock self.WriteLock then D=@WriteDesc in
+                  if {IsInt D} then
+                     {OS.lSeek D O case W
+                                   of 'set'     then 'SEEK_SET'
+                                   [] 'current' then 'SEEK_CUR'
+                                   [] 'end'     then 'SEEK_END'
+                                   end _}
+                  else {RaiseClosed self seek(whence:W offset:O)}
+                  end
+               end
+            end
+         end
+
+         meth tell(offset:?O)
+            lock self.ReadLock then
+               lock self.WriteLock then D=@WriteDesc in
+                  if {IsInt D} then O={OS.lSeek D 0 'SEEK_CUR'}
+                  else {RaiseClosed self tell(offset:O)}
+                  end
+               end
+            end
+         end
+
+         meth close
+            DescClass, CloseDescs
+         end
       end
 
 
@@ -379,7 +366,9 @@ in
                    tail: Tail <= nil)
             lock self.ReadLock then D=@ReadDesc in
                if {IsInt D} then
-                  Len={OS.read D Size List Tail}
+                  Len = case Size of all then {DoReadAll D ?List Tail 0}
+                        else {OS.read D Size ?List Tail}
+                        end
                else {RaiseClosed self
                      read(size:Size len:Len list:List tail:Tail)}
                end

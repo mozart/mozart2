@@ -64,19 +64,6 @@ local
       end
    end
 
-   local
-      proc {Copy Fs Mod Adj}
-         case Fs of nil then skip
-         [] F|Fr then Adj.F=Mod^F {Copy Fr Mod Adj}
-         end
-      end
-   in
-      proc {AdjustImport Mod Fs ?Adj}
-         %% Projects import to features Fs
-         Adj={MakeRecord m Fs} {Copy Fs Mod Adj}
-      end
-   end
-
    fun {NewSyncDict}
       D = {Dictionary.new}
       L = {Lock.new}
@@ -114,17 +101,12 @@ in
                  {`Builtin` 'System.printInfo'  1}
               end
 
-      fun {LoadFromUrl Url}
-         %% Loads a functor from a given Url
-         V={RURL.urlToKey Url}
-      in
-         {Trace '[Module] Load: '#V#'\n'}
-         {Load V}
+      fun {LoadFromUrl UrlV}
+         {Trace '[Module] Load: '#UrlV#'\n'}
+         {Load UrlV}
       end
 
-      %% Mapping: URL -> e(top:      EXPORT that synchronizes on toplevel
-      %%                   features: EXPORT that synchronizes on features
-      %%                   load:     Unary procedure that loads)
+      %% Mapping: URL -> Module
       %%
       ModuleMap = {NewSyncDict}
 
@@ -132,6 +114,7 @@ in
       %% Url resolving
       %%
       SystemMap = {NewSyncDict}
+
 
       fun {ModNameToUrl ModName From BaseUrl}
          case {SystemMap.member ModName} then
@@ -147,106 +130,56 @@ in
          end
       end
 
+
       fun {LinkFunctor BaseUrl Func}
          IMPORT = {Record.mapInd Func.'import'
                    fun {$ ModName Info}
                       ImAddr = {ModNameToUrl ModName
                                 {CondSelect Info 'from' unit}
                                 BaseUrl}
-                      Feats  = {Functor.getFeatures Func.'import'.ModName}
                    in
-                      %% Shrink features to what has been imported
-                      case Feats==nil then
-                         {GetFunctor top ImAddr}
-                      else
-                         {AdjustImport {GetFunctor features ImAddr} Feats}
-                      end
+                      {GetFunctor ImAddr}
                    end}
       in
          {Func.'apply' IMPORT}
       end
 
-      fun {MakeLoadProc TopExp FeatExp Url}
-         %% Ensures that loading happens at most once
-         proc {DoLoad}
-            FeatExp={LinkFunctor Url {LoadFromUrl Url}}
-            TopExp=FeatExp
-         end
-         proc {DoSkip}
-            skip
-         end
-         C = {Cell.new DoLoad}
-      in
-         proc {$ _}
-            {{Cell.exchange C $ DoSkip}}
-         end
-      end
 
-      fun {GetFunctor Mode Url}
+      proc {GetFunctor Url ?Mod}
          UrlKey = {RURL.urlToKey Url}
-         LoadInfo
       in
-         case {ModuleMap.ensure UrlKey ?LoadInfo} then
-            {Trace '[Module] Get:  ('#Mode#') '#UrlKey#'\n'}
+         case {ModuleMap.ensure UrlKey ?Mod} then
+            {Trace '[Module] Get:  '#UrlKey#'\n'}
          else
-            TopExp FeatExp
-            LoadProc = {MakeLoadProc TopExp FeatExp Url}
-         in
             {Trace '[Module] Sync: '#UrlKey#'\n'}
-
-            LoadInfo = info(top:      TopExp
-                            features: FeatExp
-                            load:     LoadProc)
-            thread
-               %% Synchronize on feature request
-               {ForAll {Record.monitorArity FeatExp _}
-                proc {$ A}
-                   {Lazy.new LoadProc FeatExp.A}
-                end}
-            end
-
-            {Lazy.new LoadProc TopExp}
-         end
-
-         case Mode
-         of eager    then thread {LoadInfo.load _} end LoadInfo.top
-         [] top      then LoadInfo.top
-         [] features then LoadInfo.features
+            Mod={Lazy.new fun {$}
+                              Mod={LinkFunctor Url {LoadFromUrl UrlKey}}
+                          end}
          end
       end
+
 
       Module = module(load:
-                         fun {$ ModName From Feats}
+                         fun {$ ModName From}
                             Url={ModNameToUrl ModName From unit}
                          in
-                            case Feats==nil then
-                               {GetFunctor top Url}
-                            else
-                               {AdjustImport {GetFunctor features Url} Feats}
-                            end
+                            {GetFunctor Url}
                          end
                       link:
-                         fun {$ UrlV Func}
-                            Url      = {RURL.vsToUrl UrlV}
-                            LoadInfo = {ModuleMap.put {RURL.urlToKey Url}}
-                            Export   = thread
-                                          {LinkFunctor Url Func}
-                                       end
+                         proc {$ UrlV Func ?Mod}
+                            Url = {RURL.vsToUrl UrlV}
                          in
-                            LoadInfo = info(top:      Export
-                                            features: Export
-                                            load:     proc {$ _} skip end)
-                               Export
+                            {ModuleMap.put {RURL.urlToKey Url} Mod}
+                            thread
+                               Mod={LinkFunctor Url Func}
+                            end
                          end
                       enter:
-                         proc {$ UrlV Module}
+                         proc {$ UrlV Mod}
                             {Trace '[Module] Enter: '#UrlV#'\n'}
                             Url={RURL.vsToUrl UrlV}
                          in
-                            {ModuleMap.put {RURL.urlToKey Url}
-                             info(top:      Module
-                                  features: Module
-                                  load:     proc {$ _} skip end)}
+                            {ModuleMap.put {RURL.urlToKey Url} Mod}
                          end
                       system:
                          proc {$ ModName UrlV}

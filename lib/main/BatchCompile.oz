@@ -333,9 +333,9 @@ local
             {String.token {String.token S &, $ ?Rest} &= ?Var ?URL}
             VarAtom = {String.toAtom Var}
             try
-               Export = {Module.load VarAtom case URL==nil then unit
-                                             else URL
-                                             end  nil}
+               Export={Module.load VarAtom case URL==nil then unit
+                                           else URL
+                                           end}
                {Wait Export}
             catch _ then
                {Report

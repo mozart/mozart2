@@ -59,7 +59,7 @@ in
        {O ''}
        {O 'env('}
 
-       A={Module.load unit Syslet.args.'in' nil}
+       A={Module.load unit Syslet.args.'in'}
 
        {Wait A}
 

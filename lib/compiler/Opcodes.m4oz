@@ -93,7 +93,6 @@ define(FunBuiltinname,Builtinname)
 define(Arity,Int)
 define(NLiveRegs,Int)
 define(Count,Int)
-define(IsTail,Int)
 define(ArityAndIsTail,Int)
 define(Dummy,Int)
 

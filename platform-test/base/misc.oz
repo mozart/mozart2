@@ -24,6 +24,7 @@ functor
 
 import
    Search(base)
+   RecordC
    Space
    System(show)
    Browser(getsBoundB) at 'x-oz://boot/Browser'
@@ -60,14 +61,14 @@ define
                                       [] Ele=a        %% failure
                                       end
                                       {Wait Ele}
-                                      Ele^1=b
+                                      {RecordC.'^' Ele 1 b}
                                       Ele
                                    [] Ele in
                                       choice Ele=b(b) %% ok
                                       [] Ele=a        %% failure not caught!
                                       end
                                       {Wait Ele}
-                                      Ele^1=b
+                                      {RecordC.'^' Ele 1 b}
                                    end
                                catch failure(debug:D) then failure(D)
                                [] error(T debug:D) then error(T D)

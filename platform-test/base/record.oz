@@ -25,7 +25,7 @@ functor
 export
    Return
 import
-   System RecordC(width: WidthC)
+   System RecordC(width: WidthC tell '^')
 
 define
    Return =
@@ -67,10 +67,11 @@ define
               try _={Id f(3:a)}.1 fail catch error(kernel('.' ...) ...) then skip end
 
 % ^
-              {Eq f(a)^1 a}
+              {Eq {RecordC.'^' f(a) 1} a}
 
-              local X=f(...) in
-                 X^1=67
+              local X in
+                 {RecordC.tell f X}
+                 {RecordC.'^' X 1 67}
                  {Eq X.1 67}
                  {Eq {Label X} f}
               end
@@ -107,9 +108,10 @@ define
               {Eq {Adjoin b|c a|d} a|d}
 
 % `.` suspends for Open
-              local X=f(...) in
+              local X in
+                 {RecordC.tell f X}
                  thread {Eq X.a i} end
-                 X^a=i
+                 {RecordC.'^' X a i}
               end
 
 % bigint feature
@@ -124,13 +126,24 @@ define
                  {Eq a(X:a Y:b) a(XX:a YY:b)}
                  {Neq a(X:a Y:b) a(X:a Z:b)}
 
-                 {Eq a(X:a ...).X a}
+                 local R in
+                    {RecordC.tell a R}
+                    {RecordC.'^' R X a}
+                    {Eq R.X a}
+                 end
+
                  local
-                    R = a(X:a Y:b ...)
+                    R
                  in
+                    {RecordC.tell a R}
+                    {RecordC.'^' R X a}
+                    {RecordC.'^' R Y b}
                     {Eq R.X a}
                     {Eq R.Y b}
                  end
+
+/*
+
                  {Eq a(X:a).XX a}
                  {Eq a(X:a ...).XX a}
                  {Eq a(X:a ...).X a}
@@ -143,6 +156,9 @@ define
                     {WidthC R2 1}
                     {Eq R1 R2}
                  end
+
+*/
+
               end
 
 % Record.toList

@@ -33,12 +33,6 @@
 %%%
 %%%
 
-%%
-%\define    DEBUG_OPEN
-\undef     DEBUG_OPEN
-
-\ifdef LILO
-
 functor $ prop once
 
 import
@@ -63,32 +57,6 @@ export
    browse:       Browse
 
 body
-
-\else
-
-fun instantiate {$ IMPORT}
-   \insert 'SP.env'
-      = IMPORT.'SP'
-   \insert 'CP.env'
-      = IMPORT.'CP'
-   \insert 'WP.env'
-      = IMPORT.'WP'
-
-in
-
-\endif
-
-%%
-\ifdef DEBUG_OPEN
-declare
-
-\else
-local
-\endif
-
-\ifndef LILO
-   BrowserClass Browser Browse
-\endif
 
    %%
    %%
@@ -250,6 +218,9 @@ local
    ApplyBrowser
 
    %%
+
+   Browse Browser BrowserClass
+
 in
 
    %%
@@ -540,16 +511,5 @@ in
    Browser = {New BrowserClass init}
    Browse = proc {$ X} {Browser browse(X)} end
 
-\ifndef LILO
-   \insert 'Browser.env'
-\endif
-   %%
-   %%
-\ifndef DEBUG_OPEN
-end
-\endif
 
 end
-
-
-\insert 'browser/undefs.oz'

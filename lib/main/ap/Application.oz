@@ -423,6 +423,7 @@ prepare
          {Map Args
           fun {$ LongOpt#Arg}
              Spec = {GetOptSpec LongOpt}
+          in
              {StringToArgPrimType Arg LongOpt Spec.type}
           end}
       end

@@ -893,14 +893,20 @@ in
          in
             Emitter, newLabel(?Label1)
             case Addr2 of nil then
-               case Cont of nil then RS = {BitArray.new 0 0}
+               case Cont of nil then
+                  case @continuations of Cont1|_ then RS = Cont1.1
+                  [] nil then RS = {BitArray.new 0 0}
+                  end
                else RS = Cont.1
                end
             else
                case Cont of nil then RS = Addr2.1
                else
                   RS = {BitArray.clone Addr2.1}
-                  {BitArray.disj RS Cont.1}
+                  case @continuations of Cont1|_ then
+                     {BitArray.disj RS Cont1.1}
+                  [] nil then skip
+                  end
                end
             end
             Emitter, DoInits(InitsRS v(RS))

@@ -512,6 +512,8 @@ local
    end
 
    class TkAction
+      prop
+         native
       feat
          ActionId
          !TclName
@@ -582,6 +584,7 @@ local
    end
 
    class ReturnClass
+      prop native
       meth tkReturn(...) = M
          {self TkReturnMethod(M TkStringToString)}
       end
@@ -929,6 +932,8 @@ local
 
 
       class TkMenuentry
+         prop
+            native
          feat
             !TclSlaves
             !TclSlaveEntry
@@ -1067,6 +1072,7 @@ local
    %% Tcl/Tk variables
    %%
    class TkVariable
+      prop native
       feat !TclName
 
       meth tkInit(...) = Message

@@ -59,6 +59,8 @@ local
    end
 
    class DescClass from BaseObject
+      prop
+         native
       feat
          !ReadLock
          !WriteLock

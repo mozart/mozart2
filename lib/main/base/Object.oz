@@ -588,47 +588,63 @@ local
    %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
    local
-
-      %%
-      %% Builtins for Master slave mechanism
-      %%
-      AddSlave  = {`Builtin` addFastGroup 3}
-      DelSlave  = {`Builtin` delFastGroup 1}
-      GetSlaves = {`Builtin` getFastGroup 2}
-      Slaves = {NewName}
-
+      Slaves   = {NewName}
+      AddSlave = {NewName}
+      DelSlave = {NewName}
    in
-
       class MasterObject from BaseObject
-         feat !Slaves
+         attr !Slaves: nil
          meth init
-            self.Slaves = [nil]
+            Slaves <- nil
          end
          meth getSlaves($)
-            {GetSlaves self.Slaves}
+            @Slaves
+         end
+         meth !AddSlave(S)
+            OldSlaves
+         in
+            OldSlaves = (Slaves <- S|OldSlaves)
+         end
+         meth DoDel(Ss DS $)
+            S|Sr=Ss
+         in
+            case S==DS then Sr else S|MasterObject,DoDel(Sr DS $) end
+         end
+         meth !DelSlave(S)
+            OldSlaves NewSlaves
+         in
+            OldSlaves = (Slaves <- NewSlaves)
+            NewSlaves = MasterObject,DoDel(OldSlaves S $)
          end
       end
 
       class SlaveObject from BaseObject
-         attr SlaveEntry:free
+         attr
+            Master:unit
          meth becomeSlave(M)
-            case @SlaveEntry==free
-            then SlaveEntry <- {AddSlave M.Slaves self}
+            OldMaster NewMaster
+         in
+            OldMaster = (Master <- NewMaster)
+            case OldMaster==unit then
+               {M AddSlave(self)}
+               NewMaster = M
             else
+               NewMaster = OldMaster
                {`RaiseError` object(slaveNotFree)}
             end
-
          end
          meth isFree($)
-            @SlaveEntry==free
+            @Master==unit
          end
          meth free
-            case @SlaveEntry==free
-            then
+            OldMaster NewMaster
+         in
+            OldMaster = (Master <- NewMaster)
+            case OldMaster==unit then
                {`RaiseError` object(slaveAlreadyFree)}
             else
-               {DelSlave @SlaveEntry}
-               SlaveEntry <- free
+               {OldMaster DelSlave(self)}
+               NewMaster = unit
             end
          end
       end

@@ -24,11 +24,15 @@
 
 local
 
-   %%
-   %% Master slave mechanism for widgets
-   %%
-   AddSlave  = {`Builtin` addFastGroup    3}
-   DelSlave  = {`Builtin` delFastGroup    1}
+   VoidEntry = {NewName}
+
+   class Counter
+      prop locking final
+      attr n:0
+      meth get(?N)
+         lock N=@n n <- N+1 end
+      end
+   end
 
 in
 
@@ -150,15 +154,11 @@ in
       GenImageName  = WIF.genImageName
 
 
-      VoidEntry = {NewName}
-
-      class Counter
-         prop locking final
-         attr n:0
-         meth get(?N)
-            lock N=@n n <- N+1 end
-         end
-      end
+      %%
+      %% Master slave mechanism for widgets
+      %%
+      AddSlave  = WIF.addFastGroup
+      DelSlave  = WIF.delFastGroup
 
       %%
       %% Printing error messages

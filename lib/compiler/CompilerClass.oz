@@ -56,6 +56,7 @@ local
 
                             %% parsing and expanding:
                             %%
+                            unnest: true
                             expression: false
                             allowdeprecated: true
 
@@ -380,7 +381,7 @@ local
       meth Feed(ParseProc Data Return)
          ExecutingThread <- {Thread.this}
          {@reporter clearErrors()}
-         try DoParse Queries0 Queries in
+         try DoParse Queries0 in
             {@reporter logPhase('parsing ...')}
             proc {DoParse}
                Queries0 = {ParseProc Data @reporter
@@ -399,24 +400,28 @@ local
                raise rejected end
             else skip
             end
-            Queries = case CompilerStateClass, getSwitch(ozma $) then V in
-                         V = {New Core.variable
-                              init('`runTimeDict`' putEnv unit)}
-                         CompilerStateClass, enter(V {NewDictionary} false)
-                         {Unnest.joinQueries Queries0 @reporter}
-                      elsecase CompilerStateClass, getSwitch(expression $) then
-                         case Queries0 of nil then Queries0
-                         else V in
+            case CompilerInternal, getSwitch(unnest $) then Queries in
+               Queries = case CompilerStateClass, getSwitch(ozma $) then V in
                             V = {New Core.variable
-                                 init('`result`' putEnv unit)}
-                            CompilerStateClass,
-                            enter(V {CondSelect Return result _} false)
-                            {Unnest.makeExpressionQuery Queries0}
+                                 init('`runTimeDict`' putEnv unit)}
+                            CompilerStateClass, enter(V {NewDictionary} false)
+                            {Unnest.joinQueries Queries0 @reporter}
+                         elsecase CompilerStateClass, getSwitch(expression $)
+                         then
+                            case Queries0 of nil then Queries0
+                            else V in
+                               V = {New Core.variable
+                                    init('`result`' putEnv unit)}
+                               CompilerStateClass,
+                               enter(V {CondSelect Return result _} false)
+                               {Unnest.makeExpressionQuery Queries0}
+                            end
+                         else
+                            Queries0
                          end
-                      else
-                         Queries0
-                      end
-            CompilerInternal, FeedSub(Queries Return)
+               CompilerInternal, FeedSub(Queries Return)
+            else skip
+            end
          finally
             ExecutingThread <- unit
          end

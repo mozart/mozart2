@@ -27,6 +27,7 @@ export
    convert      : ConvertAtomExternal
    convertSML   : ConvertAtomSML
    atom         : AtomNode
+   atomSML      : AtomSMLNode
    label        : LabelNode
    labelSML     : LabelSMLNode
    separator    : SeparatorNode
@@ -100,6 +101,27 @@ define
             end
          end
       end
+      fun {QuoteStrSML Is}
+         case Is
+         of nil  then nil
+         [] I|Ir then
+            case {Char.type I}
+            of punct then
+               case I
+               of 34  then 92|34|{QuoteStrSML Ir}  %% '"'
+               [] 36  then 92|36|{QuoteStrSML Ir}  %% '$'
+               [] 39  then 92|39|{QuoteStrSML Ir}  %% '''
+               [] 92  then 92|92|{QuoteStrSML Ir}  %% '\'
+               [] 91  then 92|91|{QuoteStrSML Ir}  %% '['
+               [] 93  then 92|93|{QuoteStrSML Ir}  %% ']'
+               [] 123 then 92|123|{QuoteStrSML Ir} %% '{'
+               [] 125 then 92|125|{QuoteStrSML Ir} %% '}'
+               else I|{QuoteStrSML Ir}
+               end
+            else I|{QuoteStrSML Ir}
+            end
+         end
+      end
       proc {ConvertAtomExternal V PrintStr LenStr}
          LenStr   = {Value.toVirtualString V 0 0}
          PrintStr = {QuoteStr LenStr}
@@ -109,15 +131,23 @@ define
             case Vs
             of 39|nil then nil
             [] V|Vr   then V|{RemoveQuotes Vr}
+            [] V      then V
+            end
+         end
+         fun {RemoveBackQuotes Vs}
+            case Vs
+            of 92|39|Vr then 39|{RemoveBackQuotes Vr}
+            [] V|Vr     then V|{RemoveBackQuotes Vr}
+            [] V        then V
             end
          end
       in
          proc {ConvertAtomSML V PrintStr LenStr}
-            LenStr   = case {Value.toVirtualString V 0 0}
+            LenStr   = case {RemoveBackQuotes {Value.toVirtualString V 0 0}}
                        of 39|Vr then {RemoveQuotes Vr}
                        [] Vs    then Vs
                        end
-            PrintStr = {QuoteStr LenStr}
+            PrintStr = {QuoteStrSML LenStr}
          end
       end
 %      fun {ConvertAtom V}
@@ -280,6 +310,17 @@ define
          end
       end
 
+      class AtomSMLNode from AtomNode
+         meth create(Value Parent Index Visual Type)
+            @visual = Visual
+            @tag    = {Visual newTag($)}
+            @xDim   = ({VirtualString.length {ConvertAtomSML Value @string}} + 1)
+            @index  = Index
+            @type   = Type
+            @parent = Parent
+         end
+      end
+
       class LabelNode from SharedValues SecondTags SharedProcs
          attr
             value  %% Store Reference
@@ -350,10 +391,7 @@ define
             XDim = @xDim
          in
             if {IsFree XDim}
-            then
-               PrintStr = @string
-            in
-               XDim = ({VirtualString.length {ConvertAtomSML @value PrintStr}} + 1)
+            then XDim = ({VirtualString.length {ConvertAtomSML @value @string}} + 1)
             end
             XDim
          end

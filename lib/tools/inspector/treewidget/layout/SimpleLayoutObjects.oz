@@ -48,11 +48,10 @@ local
 in
    class IntLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         PrintStr  = @value
+         PrintStr  = {Int.toString @value}
          LengthStr = PrintStr
       end
    end
-
    class WordSMLLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          Value = @value

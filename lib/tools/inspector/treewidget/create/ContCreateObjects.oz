@@ -453,8 +453,14 @@ in
             @brace = {New Helper.atom create(']' self 0 Visual internal)}
          else
             @type  = conval
-            @label = {New Helper.labelSML create(ValLab '(' self Visual)}
-            @brace = {New Helper.atom create(')' self 0 Visual internal)}
+            if {Width Value} > 1
+            then
+               @label = {New Helper.labelSML create(ValLab '(' self Visual)}
+               @brace = {New Helper.atom create(')' self 0 Visual internal)}
+            else
+               @label = {New Helper.atomSML create(ValLab self 0 Visual label)}
+               @brace = {New Helper.empty create(self)}
+            end
          end
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end

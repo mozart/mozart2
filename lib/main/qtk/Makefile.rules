@@ -1,0 +1,37 @@
+QTKDEPS1        = \
+        QTkDevel.ozf QTkImage.ozf QTkMenu.ozf QTkSpace.ozf QTkLabel.ozf \
+        QTkButton.ozf QTkCheckbutton.ozf QTkRadiobutton.ozf             \
+        QTkScale.ozf QTkScrollbar.ozf QTkEntry.ozf QTkCanvas.ozf        \
+        QTkListbox.ozf QTkText.ozf
+QTKDEPS2        = $(QTKDEPS1)   \
+        QTkPlaceholder.ozf      \
+        QTkPanel.ozf QTkRubberframe.ozf QTkScrollframe.ozf QTkToolbar.ozf
+QTKDEPS3        = $(QTKDEPS2)   \
+        QTkDropdownlistbox.ozf QTkNumberentry.ozf
+
+QTkBare.ozf:QTk.oz Frame.oz QTkClipboard.oz QTkFont.oz QTkDialogbox.oz
+        $(OZC) $(OZCFLAGS) -c --define=FULLLOAD $< -o $@
+
+QTkDevel.ozf:QTkDevel.oz
+        $(OZC) $(OZCFLAGS) -c --define=DEBUG $< -o $@
+
+QTkDropdownbutton_bitmap.ozf: \
+        QTkImage.ozf $(QTKDEPS2) \
+        QTkDropdownbutton_gen_bitmap.ozf mini-down.xbm
+        $(OZE) QTkDropdownbutton_gen_bitmap.ozf
+
+QTkDropdownlistbox.ozf: \
+        QTkDropdownlistbox.oz \
+        QTkBare.ozf QTkImage.ozf QTkDevel.ozf \
+        QTkDropdownbutton_bitmap.ozf
+        $(OZC) $(OZCFLAGS) -c $< -o $@
+
+QTkNumberentry_bitmap.ozf: \
+        QTkImage.ozf $(QTKDEPS2) \
+        QTkNumberentry_gen_bitmap.ozf mini-inc.xbm mini-dec.xbm
+        $(OZE) QTkNumberentry_gen_bitmap.ozf
+
+QTkNumberentry.ozf: QTkNumberentry_bitmap.ozf
+
+QTk.ozf: QTkBare.ozf $(QTKDEPS3)
+        $(OZL) $(OZCZIP) $< -z 9 -o $@

@@ -1,0 +1,10 @@
+dnl replace install-sh by the name of a real source file
+AC_INIT(ozinstall)
+AC_PREFIX_DEFAULT(${OZSKEL_PREFIX:-${HOME}/.oz})
+OZSKEL_INIT
+AC_OUTPUT(Makefile)
+errprint(ifdef([OZSKEL_INIT],
+ [autoconf succeeded
+],
+ [autoconf failed: use "autoconf -l SRCDIR" to include aclocal.m4.
+]))

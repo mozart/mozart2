@@ -1,0 +1,3 @@
+#! /bin/sh
+echo "install-sh is obsolete use ozinstall instead" 1>&2
+exit 1

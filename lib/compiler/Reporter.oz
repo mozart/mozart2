@@ -36,7 +36,7 @@ local
       case Coord of pos(_ _ _) then Coord
       [] pos(F L C _ _ _) then pos(F L C)
       [] fineStep(F L C) then pos(F L C)
-      [] fineStep(F L C _ _ ) then pos(F L C)
+      [] fineStep(F L C _ _ _) then pos(F L C)
       [] coarseStep(F L C) then pos(F L C)
       [] coarseStep(F L C _ _ _) then pos(F L C)
       [] unit then unit

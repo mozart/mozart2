@@ -212,6 +212,7 @@ define
                 case R of grant(Grant) then
                    {DPMisc.freeConnGrant self.requestor Grant}
                 elseof fd(FD) then
+                   {OS.deSelect FD}
                    {OS.close FD}
                 end
              end}
@@ -245,7 +246,7 @@ in
                 OngoingRequests.Id:=r(thr:_)
                 thread
                    try
-                      case OngoingRequests.Id of r(thr:T ...) then
+                      case OngoingRequests.Id of r(thr:T) then
                          T={Thread.this}
                       end
                       _ = {New ConnectionController init(Id Requestor

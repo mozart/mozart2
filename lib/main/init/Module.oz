@@ -117,7 +117,7 @@ in
          case {CondSelect FromUrl scheme ""}==OzScheme then
             %% Reserved scheme for boot and system modules
             FromUrl
-         elsecase {HasFeature SystemMap ModName} then
+         elsecase From==unit andthen {HasFeature SystemMap ModName} then
             SystemMap.ModName
          else
             RelUrl = {ToUrl case From==unit then ModName#'.ozf'

@@ -54,9 +54,9 @@ in
 
 local
    URL = {\insert dp/URL.oz
-          .apply 'import'}
+       .apply 'import'}
 in
-   \insert 'init/Module.oz'
+\insert 'init/Module.oz'
 end
 
 local

@@ -634,17 +634,31 @@ local
             then {EliminateDeadCode Rest Assembler}
             else {Peephole Rest Assembler}
             end
-         [] inlineFun2('>' X1 X2 X3 NLiveRegs) then
-            {Assembler append(inlineFun2('<' X2 X1 X3 NLiveRegs))}
+
+         [] inlineFun2(Fun X1 X2 X3 NLiveRegs) then
+            case Fun of
+               '>'  then {Assembler append(inlineFun2('<' X2 X1 X3 NLiveRegs))}
+            [] '>=' then {Assembler append(inlineFun2('=<' X2 X1 X3 NLiveRegs))}
+            [] '-'  then {Assembler append(inlineMinus(X1 X2 X3 NLiveRegs))}
+            [] '+'  then {Assembler append(inlinePlus(X1 X2 X3 NLiveRegs))}
+            else {Assembler append(I1)}
+            end
             {Peephole Rest Assembler}
-         [] inlineFun2('>=' X1 X2 X3 NLiveRegs) then
-            {Assembler append(inlineFun2('=<' X2 X1 X3 NLiveRegs))}
+
+         [] inlineFun1(Fun X1 X2 NLiveRegs) then
+            case Fun of
+               '-1'  then {Assembler append(inlineMinus1(X1 X2 NLiveRegs))}
+            [] '+1'  then {Assembler append(inlinePlus1(X1 X2 NLiveRegs))}
+            else {Assembler append(I1)}
+            end
             {Peephole Rest Assembler}
-         [] inlineRel2('>Rel' X1 X2 NLiveRegs) then
-            {Assembler append(inlineRel2('<Rel' X2 X1 NLiveRegs))}
-            {Peephole Rest Assembler}
-         [] inlineRel2('>=Rel' X1 X2 NLiveRegs) then
-            {Assembler append(inlineRel2('=<Rel' X2 X1 NLiveRegs))}
+
+         [] inlineRel2(Rel X1 X2 NLiveRegs) then
+            case Rel of
+               '>Rel'  then {Assembler append(inlineRel2('<Rel' X2 X1 NLiveRegs))}
+            [] '>=Rel' then {Assembler append(inlineRel2('=<Rel' X2 X1 NLiveRegs))}
+            else {Assembler append(I1)}
+            end
             {Peephole Rest Assembler}
          [] genCall(GCI Arity) then
             case Rest of deAllocateL(I)|return|Rest then
@@ -836,7 +850,13 @@ local
                   {Peephole Rest Assembler}
                end
             else
-               {Assembler append(I1)}
+               case Builtinname of
+                  '<Rel'  then {Assembler append(testLess(X1 X2 L1 NLiveRegs))}
+               [] '=<Rel' then {Assembler append(testLessEq(X1 X2 L1 NLiveRegs))}
+               [] '>=Rel' then {Assembler append(testLess(X2 X1 L1 NLiveRegs))}
+               [] '>Rel'  then {Assembler append(testLessEq(X2 X1 L1 NLiveRegs))}
+               else {Assembler append(I1)}
+               end
                {Peephole Rest Assembler}
             end
          [] testLiteral(_ _ _ _ _) then

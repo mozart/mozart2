@@ -24,7 +24,7 @@
 
 
 declare
-   Chunk NewChunk `NewChunk` IsChunk
+   Chunk NewChunk IsChunk
 in
 
 
@@ -32,7 +32,6 @@ in
 %% Global
 %%
 NewChunk = {`Builtin` 'NewChunk' 2}
-`NewChunk` = NewChunk
 IsChunk  = {`Builtin` 'IsChunk'  2}
 
 

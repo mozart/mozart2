@@ -36,6 +36,10 @@ define
       case S of blocked(S) then {DerefBlocked S} else S end
    end
 
+   fun {AskVerbose S}
+      {DerefBlocked {Space.askVerbose S}}
+   end
+
    Return=
    space({Map
           [failure(equal(fun {$}
@@ -47,7 +51,7 @@ define
           entailment(equal(fun {$}
                               S={Space.new proc {$ X} X = 1 end}
                            in
-                              [{DerefBlocked {Space.askVerbose S}}
+                              [{AskVerbose S}
                                {Space.merge {Space.clone S}}
                                {Space.merge {Space.clone S}}
                                {Space.merge {Space.clone S}}
@@ -84,7 +88,7 @@ define
                                           end}
                                       end
                                in
-                                  case {DerefBlocked {Space.askVerbose S}}
+                                  case {AskVerbose S}
                                   of succeeded(suspended) then
                                      thread {Space.merge S 1} end
                                      %% Ho!
@@ -151,12 +155,12 @@ define
                                 {Space.inject S1 proc {$ Y}
                                                     X=Y
                                                  end}
-                                {DerefBlocked {Space.askVerbose S1}}=
+                                {AskVerbose S1}=
                                 succeeded(entailed)
                                 {Space.inject S2 proc {$ Y}
                                                     X=Y
                                                  end}
-                                {DerefBlocked {Space.askVerbose S2}}=
+                                {AskVerbose S2}=
                                 alternatives(2)
                              end)
                     keys: [space 'dis'])
@@ -210,9 +214,9 @@ define
                                     {Space.commit S1 1}
                                     {Space.commit S2 2}
                                     {Space.commit S3 3}
-                                    {Space.askVerbose S1 succeeded(entailed)}
-                                    {Space.askVerbose S2 succeeded(entailed)}
-                                    {Space.askVerbose S3 succeeded(entailed)}
+                                    {AskVerbose S1 succeeded(entailed)}
+                                    {AskVerbose S2 succeeded(entailed)}
+                                    {AskVerbose S3 succeeded(entailed)}
                                     {Space.merge S1 1}
                                     {Space.merge S2 2}
                                     {Space.merge S3 3}
@@ -532,7 +536,7 @@ define
                                                        end}
                                       {Space.ask S1 merged}
                                       {Space.ask S2 merged}
-                                      {Space.askVerbose S3 succeeded(entailed)}
+                                      {AskVerbose S3 succeeded(entailed)}
                                    end)
                           keys: [merge space])
 
@@ -569,7 +573,7 @@ define
                                      {Space.inject S proc {$ X}
                                                         X.5 = unit
                                                      end}
-                                     {Space.askVerbose S succeeded(entailed)}
+                                     {AskVerbose S succeeded(entailed)}
                                   end)
                          keys: [merge space])
 
@@ -705,7 +709,7 @@ define
                                       thread X=unit end
                                    end}
                            in
-                              {Space.askVerbose S}=succeeded(entailed)
+                              {AskVerbose S}=succeeded(entailed)
                               if {IsDet {Space.merge S}} then skip
                               else fail end
                            end)

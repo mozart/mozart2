@@ -151,7 +151,7 @@ in
       OS(putEnv getEnv system)
       Open(file)
       Pickle(saveWithHeader)
-      Compiler(engine quietInterface)
+      Compiler(engine interface)
       Application(getCmdArgs exit)
    define
       local
@@ -241,7 +241,7 @@ in
          else skip
          end
          BatchCompiler = {New Compiler.engine init()}
-         UI = {New Compiler.quietInterface init(BatchCompiler OptRec.verbose)}
+         UI = {New Compiler.interface init(BatchCompiler OptRec.verbose)}
          {BatchCompiler enqueue(setSwitch(showdeclares false))}
          {BatchCompiler enqueue(setSwitch(warnunused true))}
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}

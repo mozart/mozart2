@@ -62,7 +62,7 @@ in
                   'self':  S       <= unit)
          CurComp <- {New Compiler.engine init()}
          {@CurComp enqueue(mergeEnv(Env))}
-         CurCompUI <- {New Compiler.quietInterface init(@CurComp)}
+         CurCompUI <- {New Compiler.interface init(@CurComp)}
          Self <- S
          SpinnerLock <- {NewLock}
 

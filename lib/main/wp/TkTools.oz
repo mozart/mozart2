@@ -25,7 +25,7 @@ functor
 
 import
    Tk
-   Compiler(engine quietInterface)
+   Compiler(engine interface)
    Property(get)
    System(printInfo)
 

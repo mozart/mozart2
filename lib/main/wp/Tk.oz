@@ -239,7 +239,7 @@ prepare
 
       proc {Hear OMs}
          case OMs of nil then skip
-         [] OM|OMr then O#M=OMr in {O M} {Hear OMr}
+         [] OM|OMr then O#M=OM in {O M} {Hear OMr}
          end
       end
 
@@ -256,6 +256,9 @@ prepare
             NewTail
          in
             Action|NewTail = (Tail <- NewTail)
+         end
+         meth tkServe(M)
+            TkListener,ListenToThat(M)
          end
          meth tkClose
             Tail <- nil

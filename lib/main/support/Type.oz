@@ -201,7 +201,7 @@ in
               'lock':              IsLock
               literal:             IsLiteral
               name:                IsName
-              nil:                 IsNil
+              nilAtom:             IsNil
               number:              IsNumber
               object:              IsObject
               ordered:             IsOrdered
@@ -273,7 +273,7 @@ in
                    literal:           {GenericAsk IsLiteral literal}
                    'lock':            {GenericAsk IsLock 'lock'}
                    name:              {GenericAsk IsName name}
-                   nil:               {GenericAsk IsNil nil}
+                   nilAtom:           {GenericAsk IsNil nil}
                    number:            {GenericAsk IsNumber number}
                    object:            {GenericAsk IsObject object}
                    ordered:           {GenericAsk IsOrdered ordered}

@@ -40,7 +40,7 @@ local
       in
          case {Dictionary.condGet Meth L false} of false then
             case {Dictionary.condGet Meth otherwise false} of false then
-               {`RaiseError` object(lookup C.`ooPrintName` Mess)}
+               {`RaiseError` object(lookup C Mess)}
             elseof M then {M otherwise(Mess)}
             end
          elseof M then {M Mess}

@@ -627,6 +627,21 @@ local
       end
    end
    %%
+   fun  {RegistryMakeAppletProc R CompSpec Functor}
+      Loader = {RegistryGetLoader R
+                {Adjoin CompSpec c('WP': eager)}}
+   in
+      proc {$}
+         try
+            {{`Builtin` 'SystemSetInternal' 1} internal(applet:true)}
+            {Exit {{Functor {Loader}}}}
+               % provide some error message
+         catch E then
+            {{{`Builtin` getDefaultExceptionHandler 1}} E}
+         finally {Exit 1} end
+      end
+   end
+   %%
    proc {RegistryMakeExec R File CompSpec Functor ArgSpec}
       {MakeExec File
        {RegistryMakeExecProc R CompSpec ArgSpec Functor}}
@@ -635,6 +650,11 @@ local
    proc {RegistryMakeCgi R File CompSpec Functor InterSpec}
       {MakeExec File
        {RegistryMakeCgiProc R CompSpec InterSpec Functor}}
+   end
+   %%
+   proc {RegistryMakeApplet R File CompSpec Functor}
+      {MakeExec File
+       {RegistryMakeAppletProc R CompSpec Functor}}
    end
    %%
    %% Return the value that can be obtained by following the
@@ -759,6 +779,9 @@ local
    proc {DefaultMakeCgi File C F I}
       {RegistryMakeCgi DefaultRegistry File C F I}
    end
+   proc {DefaultMakeApplet File C F}
+      {RegistryMakeApplet DefaultRegistry File C F}
+   end
    %%
    %% Since the Error module needs to be loaded before it can
    %% provide nice formatting for escaping exceptions, we install
@@ -802,7 +825,7 @@ local
       try
          {Script write(vs:'#!/bin/sh\n')}
          {Script write(vs:': ${OZHOME='#{System.get home}#'}\n')}
-         {Script write(vs:'exec $OZHOME/bin/ozcs $0 "$@"\n')}
+         {Script write(vs:('exec $OZHOME/bin/ozcs $0 "$@"\n'))}
          {Script close}
          {Save ExecProc TmpFile o(components: unit
                                   include:    unit
@@ -821,11 +844,13 @@ in
                              plan       :DefaultGetPlan
                              exec       :DefaultMakeExec
                              cgi        :DefaultMakeCgi
+                             applet:    DefaultMakeApplet
                              registry   :registry(new     :MakeDefaultRegistry
                                                   register:RegistryRegister
                                                   loader  :RegistryGetLoader
                                                   plan    :RegistryGetPlan
                                                   exec    :RegistryMakeExec
-                                                  cgi     :RegistryMakeCgi)
+                                                  cgi     :RegistryMakeCgi
+                                                  applet:  RegistryMakeApplet)
                             )
 end

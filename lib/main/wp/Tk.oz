@@ -262,25 +262,77 @@ local
       end
    end
 
+   Magic = "Oz aPpLeT: the MOZART release"
+
+   class TextFile from Open.text Open.file
+      prop final
+   end
+
+   fun {AppletGetArgs}
+      SI
+   in
+      try
+         SI = {New TextFile init(name: stdin flags: [read])}
+         {SI getS(Magic)}
+         {ForThread 1 {String.toInt {SI getS($)}} 1
+          fun {$ AVs I}
+             A = {String.toAtom {SI getS($)}}
+             V = {SI getS($)}
+          in
+             A#V|AVs
+          end nil}
+      finally
+         {SI close()}
+      end
+   end
+
+   proc {CreateSocket ?Sock0}
+      SO
+   in
+      try Sock Port in
+         SO = {New TextFile init(name:stdout)}
+         thread
+            Sock = {New Open.socket server(port: ?Port)}
+         end
+         {SO write(vs: {OS.uName}.nodename#'\n')}
+         {SO write(vs: Port#'\n')}
+         Sock0 = Sock
+      finally
+         {SO close()}
+      end
+   end
+
 in
 
-   fun {NewTk Info}
-      Stream # Applet = case {IsRecord Info} then
-                           {New class $ from Info.pipe Info.text
-                                   prop final
-                                end
-                            init(cmd:case {System.get platform}.1==win32
-                                     then 'ozwish'
-                                     else 'oz.wish'
-                                     end)} #
-                           unit
-                        else
-                           Info #
+   fun {NewTk}
+      SGI = {System.get internal}
+      Stream # Applet = case SGI.browser then
+                           %% Connect to already running plugin
+                           {CreateSocket} #
                            thread
+%                             Args = {List.toRecord args {AppletGetArgs}}
+                              skip
+                           in
+%                             {Show Args}
                               {New AppletToplevel tkInit}
                            end
+                        else
+                           S={New class $ from Open.pipe Open.text
+                                     prop final
+                                  end
+                              init(cmd:case {System.get platform}.1==win32
+                                       then 'ozwish'
+                                       else 'oz.wish'
+                                       end)}
+                        in
+                           S # case SGI.applet then
+                                  thread
+                                     {New TkToplevel
+                                      tkInit(title:'Oz Applet')}
+                                  end
+                               else unit
+                               end
                         end
-
 
       ActionIdServer = {New Counter get(_)}
       TkDict         = {Dictionary.new}

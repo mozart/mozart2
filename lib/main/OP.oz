@@ -21,12 +21,19 @@
 %%%
 
 fun instantiate {$ IMPORT}
-      \insert 'SP.env'
-      = IMPORT.'SP'
+   \insert 'SP.env'
+   = IMPORT.'SP'
 
-      \insert 'OP/OS.oz'
-      \insert 'OP/Open.oz'
-      \insert 'OP/Component.oz'
-   in
-      \insert 'OP.env'
+   \insert 'OP/OS.oz'
+
+   URL = {System.property.get url}
+
+   \insert 'OP/Open.oz'
+
+   \insert 'OP/Component.oz'
+
+in
+
+   \insert 'OP.env'
+
 end

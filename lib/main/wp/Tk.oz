@@ -1234,7 +1234,6 @@ local
    end
 
    local
-      URL   = {System.property.get url}
       ImRes = {URL.makeResolver image
                vs('all=.:cache='#{OS.getEnv 'OZHOME'}#'/cache')}
    in

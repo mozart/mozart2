@@ -22,7 +22,7 @@
 
 oz('SP':             ['System' 'Exit' 'Print' 'Show' 'Foreign'
                       'Debug' 'Error' 'Finalize']
-   'OP':             ['OS' 'Open' 'Component' 'Load' 'Save']
+   'OP':             ['OS' 'URL' 'Open' 'Component' 'Load' 'Save']
    'AP':             ['Application']
    'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
                       'FD' 'FS']

@@ -195,8 +195,6 @@ local
          end
       end
 
-      UrlOpen = {`Builtin` 'URL.open' 2}
-
       NoArg = {NewName}
 
    in
@@ -239,7 +237,7 @@ local
                                {`Raise` {Exception.system
                                          open(urlIsReadOnly self M)}}
                                _
-                            else {UrlOpen Url}
+                            else {URL.open Url}
                             end
                          else
                             {OS.open Name OSFlagS OSModeS}

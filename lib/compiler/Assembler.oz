@@ -575,6 +575,9 @@ local
             elseof move(Y1=y(_) X1=x(_))|move(X2=x(_) Y2=y(_))|Rest then
                {Assembler append(moveMoveYXXY(Y1 X1 X2 Y2))}
                {Peephole Rest Assembler}
+            elseof move(Other X1)|callBI('funReturn' [X1]#nil)|Rest then
+               {Assembler append(funReturn(Other))}
+               {Peephole Rest Assembler}
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}
@@ -673,31 +676,50 @@ local
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] callBI(Builtinname Args) then BIInfo in
+         [] callBI(Builtinname Args) then NewRest BIInfo in
             BIInfo = {GetBuiltinInfo Builtinname}
             case Assembler.debugInfoControl then
                {Assembler append(I1)}
+               NewRest = Rest
             elsecase Builtinname of '+1' then [X1]#[X2] = Args in
                {Assembler append(inlinePlus1(X1 X2))}
+               NewRest = Rest
             [] '-1' then [X1]#[X2] = Args in
                {Assembler append(inlineMinus1(X1 X2))}
+               NewRest = Rest
             [] '+' then [X1 X2]#[X3] = Args in
                {Assembler append(inlinePlus(X1 X2 X3))}
+               NewRest = Rest
             [] '-' then [X1 X2]#[X3] = Args in
                {Assembler append(inlineMinus(X1 X2 X3))}
+               NewRest = Rest
             [] '>' then [X1 X2]#Out = Args in
                {Assembler append(callBI('<' [X2 X1]#Out))}
+               NewRest = Rest
             [] '>=' then [X1 X2]#Out = Args in
                {Assembler append(callBI('=<' [X2 X1]#Out))}
+               NewRest = Rest
             [] '^' then [X1 X2]#[X3] = Args in
                {Assembler append(inlineUparrow(X1 X2 X3))}
+               NewRest = Rest
+            [] 'funReturn' then [X1]#nil = Args in
+               case Rest of
+                  deAllocateL(N)|MoreRest then
+                  NewRest = deAllocateL(N)|funReturn(X1)|MoreRest
+               else NewRest = funReturn(X1)|Rest end
+            [] 'getReturn' then nil#[X1] = Args in
+               case Rest of
+                  move(!X1 Other)|MoreRest then
+                  NewRest = getReturn(Other)|MoreRest
+               else NewRest = getReturn(X1)|Rest end
             else
                {Assembler append(I1)}
+               NewRest = Rest
             end
             case {CondSelect BIInfo doesNotReturn false} then
-               {EliminateDeadCode Rest Assembler}
+               {EliminateDeadCode NewRest Assembler}
             else
-               {Peephole Rest Assembler}
+               {Peephole NewRest Assembler}
             end
          [] genCall(GCI Arity) then
             Arity = 0

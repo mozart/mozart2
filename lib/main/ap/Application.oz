@@ -650,11 +650,17 @@ prepare
    fun {ValidateCond C Dict}
       case C of true then true
       elseof false then false
-      elseif {IsAtom C} then {Dictionary.member Dict C}
-      elsecase C of nega(C) then {Not {ValidateCond C Dict}}
-      elsecase {Label C}
-      of     conj then {Record.all  C fun {$ C} {ValidateCond C Dict} end}
-      elseof disj then {Record.some C fun {$ C} {ValidateCond C Dict} end}
+      else
+         if {IsAtom C} then {Dictionary.member Dict C}
+         else
+            case C of nega(C) then {Not {ValidateCond C Dict}}
+            elsecase {Label C}
+            of     conj then
+               {Record.all  C fun {$ C} {ValidateCond C Dict} end}
+            elseof disj then
+               {Record.some C fun {$ C} {ValidateCond C Dict} end}
+            end
+         end
       end
    end
 

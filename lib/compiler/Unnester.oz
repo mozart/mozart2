@@ -1381,23 +1381,11 @@ local
          end
       end
       meth UnnestConstraint(FE FV ?GFront ?GBack)
-         %--** [] fEq(_ _ _) then true
-         %--** [] fAtom(_ _) then true
-         %--** [] fWildcard(_) then true
-         %--** [] fEscape(_ _) then true
-         %--** [] fInt(_ _) then true
-         %--** [] fFloat(_ _) then true
-         case FE of fEq(FE1 FE2 _) then
-            case FE1 of fWildcard(_) then
-               Unnester, UnnestConstraint(FE2 FV ?GFront ?GBack)
-            elsecase FE2 of fWildcard(_) then
-               Unnester, UnnestConstraint(FE1 FV ?GFront ?GBack)
-            else GFront1 GBack1 GFront2 GBack2 in
-               Unnester, UnnestConstraint(FE1 FV ?GFront1 ?GBack1)
-               Unnester, UnnestConstraint(FE2 FV ?GFront2 ?GBack2)
-               GFront = GFront1|GFront2
-               GBack = GBack1|GBack2
-            end
+         case FE of fEq(FE1 FE2 _) then GFront1 GBack1 GFront2 GBack2 in
+            Unnester, UnnestConstraint(FE1 FV ?GFront1 ?GBack1)
+            Unnester, UnnestConstraint(FE2 FV ?GFront2 ?GBack2)
+            GFront = GFront1|GFront2
+            GBack = GBack1|GBack2
          [] fRecord(Label Args) then
             fVar(PrintName C) = FV GRecord GVO
          in
@@ -1410,11 +1398,24 @@ local
             Unnester, UnnestRecord(PrintName Label Args true ?GRecord ?GBack)
             {@BA refer(PrintName C ?GVO)}
             GFront = {New Core.equation init(GVO GRecord C)}
-         [] fVar(PrintName C) then GVO fVar(PrintName2 C2) = FV GVO2 in
-            {@BA refer(PrintName C ?GVO)}
-            {@BA refer(PrintName2 C2 ?GVO2)}
-            GFront = {New Core.equation init(GVO GVO2 C)}
+         [] fVar(_ _) then
             GBack = nil
+            Unnester, UnnestExpression(FE FV ?GFront)
+         [] fWildcard(_) then
+            GFront = nil
+            GBack = nil
+         [] fEscape(NewFE _) then
+            GBack = nil
+            Unnester, UnnestExpression(NewFE FV ?GFront)
+         [] fAtom(_ _) then
+            GBack = nil
+            Unnester, UnnestExpression(FE FV ?GFront)
+         [] fInt(_ _) then
+            GBack = nil
+            Unnester, UnnestExpression(FE FV ?GFront)
+         [] fFloat(_ _) then
+            GBack = nil
+            Unnester, UnnestExpression(FE FV ?GFront)
          else
             GFront = nil
             Unnester, UnnestExpression(FE FV ?GBack)
@@ -1442,7 +1443,13 @@ local
                 FeatPrintName = {Access N}
                 {Assign N {Access N} + 1}
              end
-             case FE of fRecord(Label Args) then
+             case FE of fEq(_ _ C) then GV FV GFront0 GBack0 in
+                {@BA generate('Equation' C ?GV)}
+                {GV occ(C ?GArg)}
+                FV = fVar({GV getPrintName($)} C)
+                Unnester, UnnestConstraint(FE FV ?GFront0 ?GBack0)
+                NewGArgs#(GFront0|GBack|GBack0)
+             [] fRecord(Label Args) then
                 NewPrintName = case PrintName == '' then ''
                                else PrintName#'.'#FeatPrintName
                                end

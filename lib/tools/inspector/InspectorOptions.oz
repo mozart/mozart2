@@ -24,7 +24,7 @@ import
    System(eq show)
    Property(get)
    Tk(localize)
-   BS(chunkArity) at 'x-oz://boot/Browser'
+   BS(chunkArity shortName) at 'x-oz://boot/Browser'
    BO(getClass send) at 'x-oz://boot/Object'
    BN(newUnique) at 'x-oz://boot/Name'
    DefaultURL(homeUrl)
@@ -33,7 +33,7 @@ export
    options : Options
 define
    ChunkArity = BS.chunkArity
-
+   ShortName  = BS.shortName
    %%
    %% Inspector Global Settings
    %%
@@ -126,10 +126,13 @@ define
       end
       %% TK Bitmap Localize Function
       local
-         BitmapUrl = {URL.toAtom {URL.resolve DefaultURL.homeUrl {URL.make 'images/inspector/'}}}
+         BitmapUrl = {URL.toAtom {URL.resolve DefaultURL.homeUrl
+                                  {URL.make 'images/inspector/'}}}
       in
          fun {Root X}
-            {Tk.localize BitmapUrl#X}
+            F = {Tk.localize BitmapUrl#X}
+         in
+            {ShortName F}
          end
       end
       %% Context Menu Title Preparation Functions

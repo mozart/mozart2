@@ -674,17 +674,17 @@ define
              ?LazyFlags ?RestFlags}
             {@BA openScope()}
             N = {DollarsInScope FEs 0}
-            if N \= 1 andthen LazyFlags \= nil then
+            if LazyFlags \= nil then
                {@reporter
-                error(coord: {CoordinatesOf FE1} kind: SyntaxError
-                      msg: 'exactly one $ in head of lazy procedure required')}
+                error(coord: C kind: SyntaxError
+                      msg: 'procedure flag `lazy\' only allowed on functions')}
             elseif N =< 1 then skip
             else
                {@reporter
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: 'at most one $ in procedure head allowed')}
             end
-            Unnester, UnnestProc(FEs FS LazyFlags \= nil C ?GS)
+            Unnester, UnnestProc(FEs FS false C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
@@ -1622,19 +1622,19 @@ define
          %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         FS1 = if IsLazy then CND in
-                  CND = {CoordNoDebug C}
-                  fOpApply('Value.byNeed'
-                           [fFun(fDollar(C) nil FS nil CND)] CND)
-               else FS
-               end
-         FS2 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS1}
-         FS3 = {FoldR FMatches
+         FS1 = {FoldR FMatches
                 fun {$ FV#FE#C In}
                    fCase(FV [fCaseClause(FE In)]
                          fNoElse(C)   %--** raise a better exception here
                          C)
-                end FS2}
+                end FS}
+         FS2 = if IsLazy then CND in
+                  CND = {CoordNoDebug C}
+                  fOpApply('Value.byNeed'
+                           [fFun(fDollar(C) nil FS1 nil CND)] CND)
+               else FS1
+               end
+         FS3 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS2}
          {@BA openScope()}
          Unnester, UnnestStatement(FS3 ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}

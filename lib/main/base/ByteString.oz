@@ -13,4 +13,5 @@ byteString(
    toString     : Boot_ByteString.toString
    toStringWithTail: Boot_ByteString.toStringWithTail
    strchr       : Boot_ByteString.strchr
+   cmp          : Boot_ByteString.cmp
    )

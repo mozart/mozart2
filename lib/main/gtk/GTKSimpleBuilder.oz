@@ -23,7 +23,7 @@
 %%%
 
 functor
-import GTK
+import GTK GnomeCanvas
 export
    Register Make none:NONE
    HasWhichFeatureN
@@ -32,6 +32,7 @@ export
    CondGetFeatureN
    MakeChildrenByIndex MakeChildrenByList
    MakeChildrenByIndexNoRecurse MakeChildrenByListNoRecurse
+   HandlerMap
 define
    HandlerMap = {NewDictionary}
 
@@ -40,8 +41,8 @@ define
       Isa         = {CondSelect Info isa         unit}
       Features    = {CondSelect Info features     nil}
       Signals     = {CondSelect Info signals      nil}
-      Make        = {CondSelect Info make        unit}
-      MakeRecurse = {CondSelect Info makeRecurse unit}
+      Make        = {CondSelect Info make        NONE}
+      MakeRecurse = {CondSelect Info makeRecurse NONE}
    in
       HandlerMap.Key := o(isa         : Isa
                           features    : Features
@@ -608,16 +609,22 @@ define
 
    %% scrolled window
    local
+      CornerType = o(topLeft:0 bottomLeft:1 topRight:2 bottomRight:3)
+   in
+      proc {SetPlacement W X}
+         {W setPlacement(if {IsInt X} then X else CornerType.X end)}
+      end
+   end
+   local
       fun {MakeScrolledWindow D}
          {New GTK.scrolledWindow new(unit unit)}
       end
-      CornerType = o(topLeft:0 bottomLeft:1 topRight:2 bottomRight:3)
    in
       {Register
        scrolledwindow(
           isa:bin
           make:MakeScrolledWindow
-          features:[[cornertype cornerType]#setPlacement]
+          features:[[cornertype cornerType]#SetPlacement]
           )}
       {Register
        scrolledWindow(isa:scrolledwindow)}
@@ -631,7 +638,7 @@ define
    in
       {Register viewport(
                    isa:bin
-                   make:viewport
+                   make:MakeViewport
                    features:[[shadowtype shadowType relief]#SetShadowType]
                    )}
    end
@@ -679,12 +686,12 @@ define
    %% gnome canvas
    local
       fun {MakeCanvas D}
-         {New GTK.gnomeCanvas new}
+         {New GnomeCanvas.canvas new}
       end
    in
-      {Register gnomecanvas(
-                   make:MakeCanvas)}
-            {Register gnomeCanvas(isa:gnomecanvas)}
+      {Register gnomecanvas(make:MakeCanvas)}
+      {Register gnomeCanvas(isa:gnomecanvas)}
+      {Register canvas(isa:gnomecanvas)}
    end
 
 end

@@ -407,8 +407,8 @@ in
       ToInclude = {NewUrlFilter Spec RootUrl}
       Info      = {Find RootUrl ToInclude}
 
-%      {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
-%      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
+      {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
+      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
 
       Types     = {TypeCheck Info}
       UrlToInt  = {Schedule RootUrl Info}

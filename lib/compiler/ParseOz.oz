@@ -47,7 +47,7 @@ local
                   "`TRUE_LABEL'"#"`true' as label"
                   "`UNIT_LABEL'"#"`unit' as label"
                   "`DOTINT'"#"`.' followed by an integer"
-                  "`DEREF'"#"`!!'"
+                  "`DEREFF'"#"`!!'"
                   "`ENDOFFILE'"#"end-of-file"
                   "`REGEX'"#"regular expression"
                   "`REDUCE'"#"`=>'"

@@ -1,10 +1,13 @@
 /*
- *  Programming Systems Lab, DFKI Saarbruecken,
- *  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5312
- *  Author: Christian Schulte
- *  Email: schulte@dfki.uni-sb.de
- *  Last modified: $Date$ by $Author$
- *  Version: $Revision$
+ * This file is part of Mozart, an implementation of Oz 3:
+ *   http://www.mozart-oz.org
+ *
+ * See the file "LICENSE" or
+ *   http://www.mozart-oz.org/LICENSE.html
+ * for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
  */
 
 #define stop.xbm_width 16

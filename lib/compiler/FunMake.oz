@@ -10,6 +10,7 @@ local
 in
    functor prop once
    import
+      Property
       System   %.{gcDo printName valueToVirtualString get property
                %  printError eq}
       Foreign   %.{pointer staticLoad}
@@ -90,6 +91,7 @@ in
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          CompilerF = {FunCompiler.apply
                       c('System':                System
+                        'Property':              Property
                         'Error':                 Error
                         'ErrorRegistry':         ErrorRegistry
                         'Foreign':               Foreign

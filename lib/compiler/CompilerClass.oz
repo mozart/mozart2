@@ -107,7 +107,7 @@ local
 
       meth init(Env)
          defines <- {EnumerateVersionNumbers
-                     {Map {Atom.toString {System.get 'oz.version'}}
+                     {Map {Atom.toString {Property.get 'oz.version'}}
                       fun {$ C}
                          case C == &. then &_ else C end
                       end} "Oz_"}
@@ -324,7 +324,7 @@ local
          @reporter
       end
       meth notifyOne(P)
-         OZVERSION = {System.property.get 'oz.version'}
+         OZVERSION = {Property.get 'oz.version'}
 \ifdef OZM
       in
          {Send P info('Mozart Compiler '#OZVERSION#

@@ -29,7 +29,7 @@
 
 local
    fun {GetUsedHeap}
-      {System.property.get 'heap.used'}
+      {Property.get 'heap.used'}
    end
 
    fun {NormalizeCoord Coord}
@@ -68,7 +68,7 @@ in
 
       meth ProfileStart(PhaseLevel)
          case {self.Compiler getSwitch(showcompiletime $)} then
-            TimeUsed <- {System.get time}.user
+            TimeUsed <- {Property.get time}.user
             ThisPhaseLevel <- PhaseLevel
          else skip
          end
@@ -88,7 +88,7 @@ in
                      end
          in
             case {self.Compiler getSwitch(showcompiletime $)} then T in
-               T = {System.get time}.user
+               T = {Property.get time}.user
                {self.Wrapper
                 notify(info(Indent#'time: '#(T - @TimeUsed)#' msec\n'))}
                TimeUsed <- T

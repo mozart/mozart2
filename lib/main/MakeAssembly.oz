@@ -30,7 +30,7 @@ NewFD
 NewSearch
 NewOS
 NewOpen
-NewComponent
+NewPickle
 NewCompiler
 NewModule
 in
@@ -58,8 +58,8 @@ in
 \insert 'op/Open.oz'
 = NewOpen
 
-\insert 'op/Component.oz'
-= NewComponent
+\insert 'op/Pickle.oz'
+= NewPickle
 
 \insert 'Compiler.oz'
 = NewCompiler
@@ -87,7 +87,7 @@ in
     Open      = {NewOpen.'apply'
                  'import'('OS':  OS
                           'URL': 'export'(open:unit))}
-    Component = {NewComponent.'apply'
+    Pickle    = {NewPickle.'apply'
                  'import'}
     Compiler  = {NewCompiler.'apply'
                  'import'('System':  System
@@ -98,16 +98,16 @@ in
                           'Search':  Search
                          )}
     Module = {NewModule}
-    {ForAll ['System'#    System
-             'Foreign'#   Foreign
-             'Error'#     Error
-             'FD'#        FD
-             'FS'#        FS
-             'Search'#    Search
-             'OS'#        OS
-             'Open'#      Open
-             'Component'# Component
-             'Compiler'#  Compiler]
+    {ForAll ['System'#   System
+             'Foreign'#  Foreign
+             'Error'#    Error
+             'FD'#       FD
+             'FS'#       FS
+             'Search'#   Search
+             'OS'#       OS
+             'Open'#     Open
+             'Pickle'  # Pickle
+             'Compiler'# Compiler]
      proc {$ A#M}
         {Module.enter 'http://www.ps.uni-sb.de/ozhome/lib/'#A#'.ozf' M}
      end}
@@ -115,6 +115,6 @@ in
     \insert BatchCompile
  in
     {System.exit {BatchCompile {Map {System.get argv} Atom.toString}}}
- end 'ozc.ozc'}
+ end 'ozc.ozp'}
 
 {{`Builtin` 'shutdown' 1} 0}

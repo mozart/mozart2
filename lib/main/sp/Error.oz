@@ -1889,31 +1889,7 @@ in
          T = 'Error: distributed programming'
       in
          case E
-         of dp(save(components:C found:F call:Call)) then
-            {FormatExc
-             T
-             unit
-             [hint(l:'In statement' m:'{'# list(Call ' ')#'}')
-              hint(l:'Components authorized' m:oz(C))
-              hint(l:'Components found' m:oz(F))]
-             Exc}
-         elseof dp(save(resources:R found:F call:Call)) then
-            {FormatExc
-             T
-             unit
-             [hint(l:'In statement' m:'{'#list(Call ' ')#'}')
-              hint(l:'Resources authorized' m:oz(R))
-              hint(l:'Resources found' m:oz(F))]
-             Exc}
-         elseof dp(save(badArg call:Call)) then
-            {FormatExc
-             'Wrong Type'
-             unit
-             [hint(l:'In statement' m:'{'#list(Call ' ')#'}')
-              hint(l:'At 3rd argument' m:Call.2.2.2.1)
-              hint(l:'Expected' m:'virtual string or record')]
-             Exc}
-         elseof dp(save resources Filename Resources) then
+         of dp(save resources Filename Resources) then
             {FormatExc
              'Resources found during save'
              unit
@@ -1934,11 +1910,11 @@ in
              [hint(l:'Value exported'     m:oz(Value))
               hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
-         elseof dp(load versionMismatch ComponentName VerExpected VerGot) then
+         elseof dp(load versionMismatch PickleName VerExpected VerGot) then
             {FormatExc
              'Version mismatch when loading of pickle'
              unit
-             [hint(l:'Pickle name'      m:ComponentName)
+             [hint(l:'Pickle name'      m:PickleName)
               hint(l:'Version expected' m:VerExpected)
               hint(l:'Version got'      m:VerGot)]
              Exc}

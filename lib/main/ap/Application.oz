@@ -37,7 +37,7 @@ in
 
       Open.{file}
 
-      Component.{save}
+      Pickle.{save}
 
    export
       Syslet
@@ -52,7 +52,7 @@ in
       \insert ArgParser.oz
 
       %%
-      %% Creation of an executable component
+      %% Creation of an executable pickle
       %%
 
       local
@@ -82,7 +82,7 @@ in
                {Script write(vs:'#!/bin/sh\n')}
                {Script write(vs:'exec ozengine $0 "$@"\n')}
                {Script close}
-               {Component.save App TmpFile}
+               {Pickle.save App TmpFile}
                {OS.system 'cat '#TmpFile#' >> '#File#'; chmod +x '#File _}
             catch E then
                raise E end

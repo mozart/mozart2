@@ -88,8 +88,8 @@ local
    '-e, --feedtoemulator          Compile and execute a statement.\n'#
    '                              This is the default mode.\n'#
    '-c, --dump                    Compile and evaluate an expression,\n'#
-   '                              dumping the result into a component\n'#
-   '                              (file extension: .ozc).\n'#
+   '                              pickling the result\n'#
+   '                              (file extension: .ozp).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
    '-h, -?, --help                Output usage information and exit.\n'#
@@ -99,8 +99,9 @@ local
    '-q, --quiet                   Inhibit compiler messages\n'#
    '                              unless an error is encountered.\n'#
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
-   '-l COMPS, --environment=COMPS Make components COMPS (a comma-separated\n'#
-   '                              list) available in the environment.\n'#
+   '-l FNCS, --environment=FNCS   Make functors FNCS (a comma-separated\n'#
+   '                              pair list VAR=URL) available in the\n'#
+   '                              environment.\n'#
    '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
@@ -325,26 +326,38 @@ local
          end
       end
    in
-      proc {IncludeComponents S Compiler} Comp1 Atom1 Rest Export in
-         {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
-         Atom1 = {String.toAtom Comp1}
-         try
-            Export = {Module.load Atom1 unit nil}
-         catch error(...) then
-            {Report error(kind: UsageError
-                          msg: 'unknown component `'#Comp1#'\' requested'
-                          items: [hint(l: 'Hint'
-                                       m: ('Use --help to obtain '#
-                                           'usage information'))])}
-         end
-         case {IsPrintName Atom1} then
-            {Compiler enqueue(mergeEnv(env(Atom1:Export)))}
-         else skip
-         end
-         {Compiler enqueue(mergeEnv({Record.filterInd Export
-                                     fun {$ P _} {IsPrintName P} end}))}
-         case Rest of _|S2 then {IncludeComponents S2 Compiler}
-         [] nil then skip
+      proc {IncludeFunctors S Compiler}
+         case S==nil then skip else
+            Var VarAtom URL Rest Export
+         in
+            {String.token {String.token S &, $ ?Rest} &= ?Var ?URL}
+            VarAtom = {String.toAtom Var}
+            try
+               Export = {Module.load VarAtom case URL==nil then unit
+                                             else URL
+                                             end  nil}
+               {Wait Export}
+            catch _ then
+               {Report
+                error(kind: UsageError
+                      msg: 'unknown functor `'#Var#'='#URL#'\' requested'
+                      items: [hint(l: 'Hint'
+                                   m: ('Use --help to obtain '#
+                                       'usage information'))])}
+            end
+            case {IsPrintName VarAtom} then
+               {Compiler enqueue(mergeEnv(env(VarAtom:Export)))}
+            else
+               {Report
+                error(kind: UsageError
+                      msg: 'illegal variable identifier `'#Var#'\' specified'
+                      items: [hint(l: 'Hint'
+                                   m: ('Use --help to obtain '#
+                                       'usage information'))])}
+            end
+            {Compiler enqueue(mergeEnv({Record.filterInd Export
+                                        fun {$ P _} {IsPrintName P} end}))}
+            {IncludeFunctors Rest Compiler}
          end
       end
    end
@@ -400,7 +413,7 @@ in
              [] maxerrors then
                 {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
              [] environment then
-                {IncludeComponents X BatchCompiler}
+                {IncludeFunctors X BatchCompiler}
              [] incdir then
                 {Assign IncDir X|{Access IncDir}}
              [] include then
@@ -472,7 +485,7 @@ in
                    [] feedtoemulator then
                       OFN = unit
                    [] dump then
-                      OFN = {ChangeExtension Arg ".oz" ".ozc"}
+                      OFN = {ChangeExtension Arg ".oz" ".ozp"}
                    end
                 elsecase {Access OutputFile} == "-" then
                    case {Access Mode} of dump then
@@ -522,7 +535,7 @@ in
                 end
                 case {Access Mode} of dump then
                    try
-                      {Component.save R OFN}
+                      {Pickle.save R OFN}
                    catch error(dp(save resources Filename Vs) ...) then
                       {Report
                        error(kind: UsageError

@@ -37,7 +37,7 @@
 
     Open.{file}
 
-    Component.{save}
+    Pickle.{save}
 
     Compiler.{engine
               quietInterface}

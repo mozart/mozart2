@@ -919,7 +919,7 @@ body
 
    local
       UrlDefaults = \insert '../../url-defaults.oz'
-      ImageDir    = UrlDefaults.home # 'lib/images/'
+      ImageDir    = UrlDefaults.home # 'images/'
       IncStep     = 10
       IncTime     = 100
       IncWait     = 500

@@ -55,7 +55,7 @@ OZ_HOME         = case {Reverse {VirtualString.toString OZ_HOME_}}
 OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
                      case {Getenv 'OZ_PATH'} of false then
                         case {Getenv 'OZPATH'} of false then
-                           '.'#[PATH_SEPARATOR]#OZ_HOME#'/lib'
+                           '.'#[PATH_SEPARATOR]#OZ_HOME#'/share'
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end

@@ -531,6 +531,13 @@ define
       {Peephole {SkipDeadCode Instrs Assembler} Assembler}
    end
 
+   fun {HasLabel Instrs L}
+      case Instrs of lbl(!L)|_ then true
+      [] lbl(_)|Rest then {HasLabel Rest L}
+      else false
+      end
+   end
+
    proc {Peephole Instrs Assembler}
       case Instrs of lbl(I)|Rest then
          {Assembler setLabel(I)}
@@ -739,35 +746,21 @@ define
       [] testRecord(R '|' 2 L)|Rest then
          {Assembler append(testList(R L))}
          {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onScalar(X L)]))|(Rest=lbl(L)|_) then
+      [] match(R ht(ElseL [onScalar(X L)]))|Rest andthen {HasLabel Rest L} then
          if {IsNumber X} then
             {Assembler append(testNumber(R X ElseL))}
          else
             {Assembler append(testLiteral(R X ElseL))}
          end
          {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onScalar(X L)]))|(Rest=lbl(_)|lbl(L)|_) then
-         if {IsNumber X} then
-            {Assembler append(testNumber(R X ElseL))}
+      [] match(R ht(ElseL [onRecord(Label RecordArity L)]))|Rest
+         andthen {HasLabel Rest L}
+      then
+         case Label#RecordArity of '|'#2 then
+            {Assembler append(testList(R ElseL))}
          else
-            {Assembler append(testLiteral(R X ElseL))}
+            {Assembler append(testRecord(R Label RecordArity ElseL))}
          end
-         {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onRecord('|' 2 L)]))|(Rest=lbl(L)|_) then
-         {Assembler append(testList(R ElseL))}
-         {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onRecord('|' 2 L)]))|(Rest=lbl(_)|lbl(L)|_) then
-         {Assembler append(testList(R ElseL))}
-         {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onRecord(Label RecordArity L)]))|
-         (Rest=lbl(L)|_)
-      then
-         {Assembler append(testRecord(R Label RecordArity ElseL))}
-         {Peephole Rest Assembler}
-      [] match(R ht(ElseL [onRecord(Label RecordArity L)]))|
-         (Rest=lbl(_)|lbl(L)|_)
-      then
-         {Assembler append(testRecord(R Label RecordArity ElseL))}
          {Peephole Rest Assembler}
       [] (match(_ _)=I1)|Rest then
          {Assembler append(I1)}

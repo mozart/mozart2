@@ -48,7 +48,7 @@ local
             case Ls1 of nil then skip
             [] L1|Lr1 then
                case Ls2 of L2|Lr2 then
-                  case L1 == L2 then {DescendArity Lr1 Lr2}
+                  if L1 == L2 then {DescendArity Lr1 Lr2}
                   else {DescendArity Ls1 Lr2}
                   end
                else

@@ -9,9 +9,7 @@ export
    SequenceToList
    ListToSequence
 import
-   CompilerSupport(
-      newNamedName:NewNamedName
-      ) at 'x-oz://boot/CompilerSupport'
+   BootName(newNamed:NewNamedName) at 'x-oz://boot/Name'
    LoopMacro(loopExpander:LoopExpander)
    BackquoteMacro(backquoteExpander:BackquoteExpander)
 define

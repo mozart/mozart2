@@ -25,8 +25,8 @@
 
 functor
 import
-   BootName(newUnique) at 'x-oz://boot/Name'
-   CompilerSupport(newNamedName newCopyableName
+   BootName(newUnique newNamed) at 'x-oz://boot/Name'
+   CompilerSupport(newCopyableName
                    newProcedureRef newCopyableProcedureRef
                    nameVariable chunkArity
                    isBuiltin
@@ -1107,7 +1107,7 @@ define
       meth declareToplevelName(PrintName ?N)
          case @toCopy of unit then
             N = case PrintName of unit then {NewName}
-                else {CompilerSupport.newNamedName {System.printName PrintName}}
+                else {BootName.newNamed {System.printName PrintName}}
                 end
          elseof Xs then
             N = {CompilerSupport.newCopyableName
@@ -1732,7 +1732,7 @@ define
                     {New Core.valueNode init(TheName unit)}
                  else TheName in
                     TheName = case PrintName of unit then {NewName}
-                              else {CompilerSupport.newNamedName {System.printName PrintName}}
+                              else {BootName.newNamed {System.printName PrintName}}
                               end
                     {New Core.token init(TheName)}
                  end

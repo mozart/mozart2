@@ -1,6 +1,6 @@
 functor
 import
-   CompilerSupport(newNamedName:NewNamedName) at 'x-oz://boot/CompilerSupport'
+   BootName(newNamed:NewNamedName) at 'x-oz://boot/Name'
 export
    Compile
 prepare

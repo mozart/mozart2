@@ -1,0 +1,31 @@
+% Translation of condis:
+
+{`CDHeader`
+ '#'(n1 ... nm) '#'(CDControlVar_1 ... CDControlVar_m)
+ '#'(V1 ... Vr) '#'('#'(X[1,1] ... X[1,r]) ... '#'(X[m,1] ... X[m,r]))}
+T(CDControlVar_1 = Clause[1,1], Vj->X[1,j] for all j)
+...
+T(CDControlVar_1 = Clause[1,n1], Vj->X[1,j] for all j)
+...
+T(CDControlVar_m = Clause[m,1], Vj->X[m,j] for all j)
+...
+T(CDControlVar_m = Clause[m,nm], Vj->X[m,j] for all j)
+{`CDBody`
+ '#'(CDControlVar_1 ... CDControlVar_m)
+ '#'(V1 ... Vr) '#'('#'(X[1,1] ... X[1,r]) ... '#'(X[m,1] ... X[m,r]))}
+
+   condis
+      Clause[1,1] ... Clause[1,n1]
+   [] ...
+   []
+      Clause[m,1] ... Clause[m,nm]
+   end
+
+   Let S be the above statement (which is assumed to be unnested).
+   Let [V1 ... Vr] = FV(S) be the list of its free variables
+   Let X[i,j] = { W        if Vj occurs in FV(Clause[i,1] ... Clause[i,ni]),
+                {          where W is a fresh variable,
+                { 'void'   else.
+
+   where T(S) is the application created for an FD statement S
+   where all variables have been renamed as specified

@@ -1,0 +1,99 @@
+%%
+%% This file documents the virtual machine code produced as intermediary
+%% representation (between Core Syntax and Emulator Code).  This code
+%% has the following properties:
+%% -- At each address Addr is stored a virtual machine instruction VInstr.
+%% -- VInstrs are threaded, that is, they always specify in their continuation
+%%    argument (Cont) the address of the following instruction to execute or
+%%    nil if there is none.
+%% -- The graph defined by address references must be a tree.  The only
+%%    exception is the vShared instruction, which makes shared code explicit.
+%% -- References of addresses which are neither continuations nor made via
+%%    vShared are to be viewed as subroutine calls:  After execution of the
+%%    references instruction (and those threaded by it until a nil is found
+%%    as continuation), execution resumes with the continuation of the
+%%    referencing instruction.
+%%
+%% VInstrs differ from "real" machine instructions in the following way:
+%% -- No registers have as yet been assigned.
+%% -- No local environments are allocated nor freed.
+%% -- Instructions only used in conjunction with others (e.g., conditional
+%%    clauses) have been merged into a single instruction.
+%%
+
+Addr = VInstr
+     | nil.
+Cont = Addr.
+Label = int.
+VInstr = vMakePermanent(OccsRS Regs Cont)
+       | vClear(OccsRS Regs Cont)
+       | vUnify(OccsRS Reg Reg Cont)
+       | vFailure(OccsRS Cont)
+       | vEquateNumber(OccsRS Integer Reg Cont)
+       | vEquateLiteral(OccsRS Atomname Reg Cont)
+       | vEquateRecord(OccsRS Atomname RecordArity Reg [VRecordArgument] Cont)
+       | vGetVariable(OccsRS Reg Cont)
+       | vGetValue(OccsRS Reg Cont)
+       | vGetNumber(OccsRS Integer Cont)
+       | vGetLiteral(OccsRS Atomname Cont)
+       | vCallBuiltin(OccsRS Builtinname [Reg] Cont)
+       | vGenCall(OccsRS Reg IsMethod Atomname RecordArity [Reg] Coord Cont)
+       | vCall(OccsRS Reg [Reg] Coord Cont)
+       | vFastCall(OccsRS PredicateRef [Reg] Coord Cont)
+       | vApplMeth(OccsRS Reg Atomname RecordArity [Reg] Coord Cont)
+       | vInlineDot(OccsRS Reg Feature Reg AlwaysSucceeds Coord Cont)
+       | vInlineUparrow(OccsRS Reg Reg Reg Cont)
+       | vInlineAt(OccsRS Atomname Reg Cont)
+       | vInlineAssign(OccsRS Atomname Reg Cont)
+       | vGetSelf(OccsRS Reg Cont)
+       | vDefinition(OccsRS Reg PredId PredicateRef GRegs Code Cont)
+       | vShared(OccsRS Label Count Addr)
+       | vExHandler(OccsRS Addr Reg Addr Coord Cont InitsRS)
+       | vPopEx(OccsRS Coord Cont)
+       | vCreateCond(OccsRS [VClause] Addr Cont Coord AllocatesRS InitsRS)
+       | vCreateOr(OccsRS [VClause] Cont Coord AllocatesRS InitsRS)
+       | vCreateEnumOr(OccsRS [VClause] Cont Coord AllocatesRS InitsRS)
+       | vCreateChoice(OccsRS [VClause] Cont Coord AllocatesRS InitsRS)
+       | vAsk(OccsRS Cont)
+       | vWait(OccsRS Cont)
+       | vWaitTop(OccsRS Cont)
+       | vShallowGuard(OccsRS Addr Addr Addr Coord Cont AllocatesRS InitsRS)
+       | vTestBool(OccsRS Reg Addr Addr Addr Coord Cont InitsRS)
+       | vShallowTest(OccsRS Builtinname Regs Addr Addr Cont InitsRS)
+       | vTestNumber(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
+       | vTestLiteral(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
+       | vSwitchOnTerm(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
+       | vThread(OccsRS Addr Coord Cont InitsRS)
+       | vLockThread(OccsRS Reg Coord Cont SharedData)
+       | vLockEnd(OccsRS Coord Cont SharedData).
+
+Reg = int.
+Variablename = atom.
+Integer = int.
+Atomname = atom
+         | name.
+RecordArity = int
+            | [Feature].
+VRecordArgument = number(Integer)
+                | literal(Atomname)
+                | value(Reg)
+                | record(Atomname RecordArity [VRecordArgument]).
+Builtinname = atom.
+Feature = atom
+        | name
+        | int.
+IsMethod = bool.
+PredicateRef = int.
+PredId = pid(Variablename Arity atom int).
+GRegs = [Reg].
+Count = cell.
+VClause = InitsRS#Addr#Addr.
+VHashTableEntry = onVar(Addr)
+                | onScalar(NumOrLit Addr)
+                | onRecord(Atomname RecordArity Addr).
+AllocatesRS = RegSet.
+InitsRS = RegSet.
+OccsRS = RegSet.
+Code = [Instr].   % "real" machine instructions
+AlwaysSucceeds = bool.
+SharedData = value.   % used for sharing data between vLockThread/End

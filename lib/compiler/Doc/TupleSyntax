@@ -1,0 +1,164 @@
+Tuple Syntax used by the New Oz Compiler:
+-----------------------------------------
+
+File              = parseErrors(int)
+                  | fileNotFound
+                  | [Query].
+Query             = Phrase
+                  | Directive
+                  | fDeclare(Phrase Phrase Coordinates).
+Directive         = dirHalt
+                  | dirHelp
+                  | dirSwitch([Switch])
+                  | dirShowSwitches
+                  | dirFeed(Filename)
+                  | dirThreadedFeed(Filename)
+                  | dirCore(Filename)
+                  | dirMachine(Filename).
+Switch            = on(SwitchName Coordinates)
+                  | off(SwitchName Coordinates).
+Filename          = atom.
+SwitchName        = atom.
+
+Phrase            = fAnd(Phrase Phrase).
+                  | fEq(Phrase Phrase Coordinates)
+                  | fAssign(Phrase Phrase Coordinates)
+                  | fOrElse(Phrase Phrase Coordinates)
+                  | fAndThen(Phrase Phrase Coordinates)
+                  | fOpApply(atom [Phrase] Coordinates)
+                  | FDExpression
+                  | fObjApply(Phrase Phrase Coordinates)
+                  | fAt(Phrase Coordinates)
+                  | Atom
+                  | Variable
+                  | Wildcard
+                  | fSelf(Coordinates)
+                  | fDollar(Coordinates)
+                  | fInt(int Coordinates)
+                  | fFloat(float Coordinates)
+                  | fRecord(Label [RecordArgument])
+                  | fOpenRecord(Label [RecordArgument])
+                  | fObjPattern(Label [RecordArgument])
+                  | fApply(Phrase [Phrase] Coordinates)
+                  | fProc(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
+                  | fFun(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
+                  | fClass(Phrase [ClassDescriptor] [Meth] Coordinates)
+                  | fLocal(Phrase Phrase Coordinates)
+                  | fBoolCase(Phrase Phrase OptElse Coordinates)
+                  | fCase(Phrase [[CaseClause]] OptElse Coordinates)
+                  | fLockThen(Phrase Phrase Coordinates)
+                  | fLock(Phrase Coordinates)
+                  | fThread(Phrase Coordinates)
+                  | fTry(Phrase Catch Finally Coordinates)
+                  | fRaise(Phrase Coordinates)
+                  | fRaiseWith(Phrase Phrase Coordinates)
+                  | fSkip(Coordinates)
+                  | fFail(Coordinates)
+                  | fNot(Phrase Coordinates)
+                  | fIf([Clause] OptElse Coordinates)
+                  | fOr([ClauseOptThen] for Coordinates)
+                  | fOr([Clause] fdis Coordinates)
+                  | fOr([Clause] fchoice Coordinates)
+                  | fCondis([[FDExpression]] Coordinates).
+Label             = Atom
+                  | NakedVariable.
+Atom              = fAtom(atom Coordinates).
+NakedVariable     = fVar(atom Coordinates).
+Variable          = NakedVariable
+                  | fEscape(NakedVariable Coordinates).
+Wildcard          = fWildcard(Coordinates).
+RecordArgument    = Phrase
+                  | fColon(Feature Phrase).
+ProcFlag          = codeInstatiation.
+FDExpression      = fFdCompare(atom Phrase Phrase Coordinates)
+                  | fFdIn(atom Phrase Phrase Coordinates).
+ClassDescriptor   = fFrom([Phrase] Coordinates)
+                  | fProp([Phrase] Coordinates)
+                  | fAttr([AttrFeat] Coordinates)
+                  | fFeat([AttrFeat] Coordinates).
+AttrFeat          = EscapedFeature
+                  | EscapedFeature#Phrase.
+Meth              = fMeth(MethHead Phrase Coordinates).
+MethHead          = MethHead1
+                  | fEq(MethHead1 NakedVariable Coordinates).
+MethHead1         = Atom
+                  | Variable
+                  | fRecord(MethHeadLabel [MethHeadArgument])
+                  | fOpenRecord(MethHeadLabel [MethHeadArgument]).
+MethHeadLabel     = Atom
+                  | Variable.
+MethHeadArgument  = fMethArg(MethHeadTerm Default)
+                  | fMethColonArg(Feature MethHeadTerm Default).
+MethHeadTerm      = NakedVariable
+                  | Wildcard
+                  | fDollar(Coordinates).
+Default           = fNoDefault
+                  | fDefault(P C).
+Feature           = Atom
+                  | NakedVariable
+                  | fInt(int Coordinates).
+EscapedFeature    = Atom
+                  | Variable
+                  | fInt(int Coordinates).
+CaseClause        = fCaseClause(Phrase Phrase).
+Catch             = fNoCatch
+                  | [CaseClause].
+Finally           = fNoFinally
+                  | Phrase.
+Clause            = fClause(Phrase Phrase Phrase).
+ClauseOptThen     = fClause(Phrase Phrase OptThen).
+OptThen           = fNoThen(Position)
+                  | Phrase.
+OptElse           = Phrase
+                  | fNoElse(Coordinates).
+Coordinates       = pos(atom int int)   % atom is 'nofile' for parsing VSs
+                  | pos(atom int int atom int int)
+                  | unit.
+
+
+Extensions for Gump:
+--------------------
+
+File              = ...
+                  | fSynTopLevelProductionTemplates([ProdClause]).
+Phrase            = ...
+                  | fScanner(NakedVariable [ClassDescriptor] [Meth]
+                             [ScannerRule] Coordinates)
+                  | fParser(NakedVariable [ClassDescriptor] [Meth]
+                            TokenClause [ParserDescriptor] Coordinates).
+
+GrammarSymbol     = Atom
+                  | NakedVariable.
+ScannerRule       = fMode(NakedVariable [ModeDescriptor])
+                  | LexClause.
+ModeDescriptor    = fInheritedModes([NakedVariable])
+                  | LexClause.
+LexClause         = fLexicalAbbreviation(GrammarSymbol Regex)
+                  | fLexicalRule(Regex Phrase).
+Regex             = atom.
+
+TokenClause       = fToken([TokenDecl]).
+TokenDecl         = Atom
+                  | Atom#Phrase.
+ParserDescriptor  = ProdClause
+                  | SyntaxRule.
+ProdClause        = fProductionTemplate(ProdKey [ProdParam] [SyntaxRule]
+                                        SynExpression ProdRet)
+ProdParam         = NakedVariable
+                  | Wildcard.
+ProdKey           = none#string
+                  | atom#string.
+ProdRet           = none
+                  | NakedVariable
+                  | fDollar(nofd Coordinates).
+SyntaxRule        = fSyntaxRule(GrammarSymbol [SynFormal] SynExpression).
+SynFormal         = NakedVariable
+                  | Wildcard
+                  | fDollar(nofd Coordinates).
+SynExpression     = SynApplication
+                  | fSynAction(Phrase)
+                  | fSynSequence([NakedVariable] [SynExpression])
+                  | fSynAlternative([SynExpression])
+                  | fSynAssignment(Variable SynExpression)
+                  | fSynTemplateInstantiation(ProdKey [SynExpression] Coordinates).
+SynApplication    = fSynApplication(GrammarSymbol [Phrase]).

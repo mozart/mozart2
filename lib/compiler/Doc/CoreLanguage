@@ -1,0 +1,446 @@
+Oz Core Language: Graph Representation
+--------------------------------------
+
+V  ::=  <Variable>
+
+O  ::=  <VariableOccurrence>
+
+% coordinates
+C  ::=  pos(atom int int)
+     |  pos(atom int int atom int int)
+     |  posNoDebug(atom int int)
+     |  unit
+
+% terms
+T  ::=  <AtomNode> | <IntNode> | <FloatNode> | O | <Construction>
+
+% pattern terms
+P  ::=  <AtomNode> | <IntNode> | <FloatNode>
+     |  <RecordPattern> | <EquationPattern> | <PatternVariableOccurrence> | O
+
+% labels
+L  ::=  <AtomNode> | O
+
+% features
+F  ::=  <AtomNode> | <IntNode> | O
+
+% arities
+A  ::=  int | F+
+
+% attr/feat identifier and optional initializer
+I  ::=  F | F#O
+
+% method formal
+M  ::=  <MethFormal> | <MethFormalOptional> | <MethFormalWithDefault>
+
+% statements
+S  ::=  <Statement>
+
+------------------------------------------------------------------------
+
+% (never instantiated)
+<Statement>
+     next: S   % singly linked list terminated by self reference
+
+
+% 'local' localVars 'in' body 'end'
+<Declaration> from <Statement>
+     localVars: V+
+     body:      S+
+     coord:     C
+
+
+% 'skip' 'skip'
+<SkipNode> from <Statement>
+     coord: C
+
+
+% left '=' right
+<Equation> from <Statement>
+     left:  O
+     right: T
+     coord: C
+
+
+% label '(' args [ '...' ] ')'
+<Construction>
+     label:         L
+     args:          (T|F#T)+   % all featureless subtrees in front
+     isOpen:        bool
+     expansionOccs: record
+
+
+% 'proc' '{' designator formalArgs '}' body 'end'
+<Definition> from <Statement>
+     designator:    O
+     formalArgs:    V*
+     body:          S+
+     isStateUsing:  B
+     coord:         C
+     procFlags:     [atom]
+     toplevelNames: [name] | unit
+     globalVars:    V*   % those of "local formalArgs in body end"
+     expansionOccs: record
+
+
+% 'proc' '{' designator formalArgs '}' body 'end'
+<FunctionDefinition> from <Definition>
+
+
+% 'proc' '{' designator formalArgs '}' body 'end'
+<ClauseBody> from <Definition>
+
+
+% '{' designator actualArgs '}'
+<Application> from <Statement>
+     designator:    O
+     actualArgs:    O*
+     coord:         C
+     expansionOccs: record
+
+
+% 'case' arbiter 'then' consequent alternative 'end'
+<BoolCase> from <Statement>
+     arbiter:       O
+     consequent:    <BoolClause>
+     alternative:   <AbstractElse>
+     coord:         C
+     globalVars:    V*   % those of all clauses (not arbiter)
+     expansionOccs: record
+
+
+% body
+<BoolClause>
+     body:        S+
+     globalVars:  V*
+
+
+% 'case' arbiter 'of' ( clause // '[]' ) alternative 'end'
+<PatternCase> from <Statement>
+     arbiter:     O
+     clauses:     <PatternClause>+
+     alternative: <AbstractElse>
+     coord:       C
+     globalVars:  V*   % those of all clauses (not arbiter)
+
+
+% [ localVars 'in' ] pattern 'then' body
+<PatternClause>
+     localVars:         V*
+     pattern:           P
+     body:              S+
+     globalVars:        V*   % those of body and pattern
+     patternGlobalVars: V*   % those of pattern only
+
+
+% label '(' args [ '...' ] ')'
+<RecordPattern>
+     label:         L
+     args:          (P|F#P)+   % all featureless subpatterns in front
+     isOpen:        bool
+     expansionOccs: record
+
+
+% left '=' right
+<EquationPattern>
+     left:  <PatternVariableOccurrence>
+     right: P
+     coord: C
+
+
+% (never instantiated)
+<AbstractElse>
+
+
+% 'else' body
+<ElseNode> from <AbstractElse>
+     body:       S+
+     globalVars: V*
+
+
+% (empty)
+<NoElse> from <AbstractElse>
+     coord:         C
+     expansionOccs: record
+
+
+% 'thread' body 'end'
+<ThreadNode> from <Statement>
+     body:       S+
+     globalVars: V*
+
+
+% 'try' tryBody 'catch' exception 'then' catchBody 'end'
+<TryNode> from <Statement>
+     tryBody:    S+
+     exception:  V
+     catchBody:  S+
+     coord:      C
+     globalVars: V*   % those of tryBody and catchBody
+
+
+% 'lock' lockVar 'then' body 'end'
+<LockNode> from <Statement>
+     lockVar: O
+     body:    S+
+     coord:   C
+
+
+% 'class' designator [ 'from' parents ] [ 'prop' properties ]
+% [ 'attr' attributes ] [ 'feat' features ] methods 'end'
+<ClassNode> from <Statement>
+     designator:        O
+     parents:           O*
+     properties:        O*
+     attributes:        I*
+     features:          I*
+     methods:           ( <Method> | <MethodWithDesignator> )*
+     coord:             C
+     isVirtualToplevel: bool
+     expansionOccs:     record
+
+% 'meth' label '(' formalArgs ')' body 'end'
+<Method>
+     label:         L
+     formalArgs:    M*
+     body:          S+
+     coord:         C
+     globalVars:    V*   % only those of "local vars in label feats body end"
+     expansionOccs: record
+
+
+% 'meth' label '(' formalArgs [ '...' ] ')' '=' messageDesignator body 'end'
+<MethodWithDesignator> from <Method>
+     messageDesignator: V
+
+
+% F ':' V
+<MethFormal>
+     feature: F
+     arg:     V
+
+
+% F ':' V '<=' '_'
+<MethFormalOptional> from <MethFormal>
+     isInitialized: bool
+
+
+% F ':' V '<=' default
+<MethFormalWithDefault> from <MethFormal>
+     default: value   % must consist of int/float/atom/record exclusively
+
+
+% 'lock' body 'end'
+<ObjectLock> from <Statement>
+     body:          S+
+     coord:         C
+     expansionOccs: record
+
+
+% destination '=' 'self'
+<GetSelf> from <Statement>
+     destination: O
+
+
+% 'fail'
+<FailNode> from <Statement>
+     coord: C
+
+
+% 'if' ( clause // '[]' ) alternative 'end'
+<IfNode> from <Statement>
+     clauses:     <Clause>+
+     alternative: <AbstractElse>
+     coord:       C
+     globalVars:  V*
+
+
+% (never instantiated)
+<ChoicesAndDisjunctions> from <Statement>
+     clauses:    <Clause>+
+     coord:      C
+     globalVars: V*
+
+
+% 'or' ( clause // '[]' ) 'end'
+<OrNode> from <ChoicesAndDisjunctions>
+
+
+% 'dis' ( clause // '[]' ) 'end'
+<DisNode> from <ChoicesAndDisjunctions>
+
+
+% 'choice' ( clause // '[]' ) 'end'
+<ChoiceNode> from <ChoicesAndDisjunctions>
+
+
+% [ localVars 'in' ] guard 'then' body
+<Clause>
+     localVars:       V*
+     guard:           S+
+     kind:            'ask' | 'wait' | 'waitTop'
+     body:            S+
+     globalVars:      V*   % those of guard and body
+     guardGlobalVars: V*   % those of body only
+
+
+% (never instantiated)
+<ValueNode>
+     coord: C
+
+
+% value
+<AtomNode> from <ValueNode>
+     value: atom
+
+
+% value
+<IntNode> from <ValueNode>
+     value: int
+
+
+% value
+<FloatNode> from <ValueNode>
+     value: float
+
+
+% printName
+<Variable>
+     printName:  atom
+     origin:     putEnv | user | generated | error
+     coord:      C
+     isToplevel: bool
+     use:        unused | wildcard | linear | multiple
+
+
+% variable
+<VariableOccurrence>
+     variable: V
+     position: 'first' | 'nonfirst'
+     value:    O |   % may point to itself or directly to a representant
+                     % of a set of aliased variables.  The value attribute
+                     % of this representant points to the representant itself.
+               <IntNode> | <FloatNode> | <AtomNode> |
+               <Construction> |
+               <Token>
+
+
+% variable
+<PatternVariableOccurrence> from <VariableOccurrence>
+
+
+% (no textual representation)
+<Token>
+
+<NameToken> from <Token>
+     kind:       'name'
+     printName:  atom
+     isToplevel: bool
+     value:      name
+
+<BuiltinToken> from <Token>
+     kind:  'builtin'
+     name:  atom
+     arity: int
+     value: builtin   % created by `Builtin`
+
+<ProcedureToken> from <Token>
+     kind:  'procedure'
+     arity: int
+     value: procedure
+
+<CellToken> from <Token>
+     kind:  'cell'
+     value: cell
+
+<ChunkToken> from <Token>
+     kind:  'chunk'
+     value: chunk   % subtrees are occurrences
+
+<ArrayToken> from <Token>
+     kind:  'array'
+     low:   int
+     high:  int
+     value: array
+
+<DictionaryToken> from <Token>
+     kind:  'dictionary'
+     value: dictionary
+
+<ClassToken> from <Token>
+     kind:  'class'
+     value: class
+
+<ObjectToken> from <Token>
+     kind:  'object'
+     value: object
+
+<LockToken> from <Token>
+     kind:  'lock'
+     value: lock
+
+<PortToken> from <Token>
+     kind:  'port'
+     value: port
+
+<SpaceToken> from <Token>
+     kind:  'space'
+     value: space
+
+<ThreadToken> from <Token>
+     kind:  'thread'
+     value: thread
+
+
+Remarks:
+
+-- No run-time errors (`missing else') are represented in the core
+   language.  They are created by the code generator.
+
+-- No special node type is required for optimizing object applications:
+   the `value' attribute provides sufficient information.  (If an
+   application has a single argument and this is a variable bound to
+   a record, then the optimized method call is used.)
+
+-- In boolean case conditionals only a variable O is allowed as arbiter
+   where previously (in the Tel version) a variable or an application
+   was allowed.  A piece of code like the following:
+
+      {P ... ?O}
+      case O then ...
+
+   will now be optimized if P is one of a number of special builtins
+   (e. g., IsInt):  both the allocation of the output variable O and
+   the error case can then be omitted.
+
+-- The previous Core Language used label/goto constructs for sharing
+   code when optimizing boolean conditionals with andthen/orelse in
+   the guard, such as in
+
+      case X orelse Y then S1 else S2 end
+
+   This is now represented as
+
+      proc {A} S1 end   % these are both instances of <ClauseBody>
+      proc {B} S2 end   %
+      case X then {A}
+      else
+         case Y then {A}
+         else {B}
+         end
+      end
+
+   The code generator will behave differently for `Definition' and
+   `ClauseBody' and insert appropriate labels and branch instructions.
+
+-- The globalVars attributes contain the non-local variables referenced
+   in the corresponding construct.  Note that while all non-local unquoted
+   variables must be present, some system variables may be missing.
+
+-- Each expansionOccs feature contains a record whose features
+   are (system) variable print names and whose subtrees are either
+   corresponding variable occurrences or 'undeclared' if the variable
+   was unknown during unnesting.  These occurrences may be needed
+   during code generation to expand constructs that may not be
+   translated directly (such as record constructions with unknown
+   labels or features).

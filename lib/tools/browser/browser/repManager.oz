@@ -283,12 +283,7 @@ in
          of nil then
             {BrowserError 'GetTargetObj: no outer-most object??!'}
             InitValue
-         [] Obj|R then
-\ifdef DEBUG_RM
-            if R \= nil then
-               {BrowserWarning 'GetTargetObj: multiple outer-most objects?'}
-            end
-\endif
+         [] Obj|_ then
             Obj
          end
       end
@@ -304,12 +299,7 @@ in
          of nil then
             {BrowserError 'GetTargetObj: no inner-most object??!'}
             InitValue
-         [] Obj|R then
-\ifdef DEBUG_RM
-            if R \= nil then
-               {BrowserWarning 'GetTargetObj: multiple inner-most objects?'}
-            end
-\endif
+         [] Obj|_ then
             Obj
          end
       end

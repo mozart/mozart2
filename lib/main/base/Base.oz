@@ -68,6 +68,7 @@ prepare
    WaitOr       = Boot_Value.waitOr
    IsFree       = Boot_Value.isFree
    IsKinded     = Boot_Value.isKinded
+   IsFuture     = Boot_Value.isFuture
    IsDet        = Boot_Value.isDet
    Max          = Boot_Value.max
    Min          = Boot_Value.min

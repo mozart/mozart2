@@ -45,6 +45,7 @@ Value = value(wait:            Wait
 
               isFree:          IsFree
               isKinded:        IsKinded
+              isFuture:        IsFuture
               isDet:           IsDet
               status:          Boot_Value.status
               type:            Boot_Value.type

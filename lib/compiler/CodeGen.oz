@@ -1978,7 +1978,7 @@ local
          VHd = vEquateLiteral(_ @value {VO reg($)} VTl)
       end
       meth methPrintName($)
-         {System.valueToVirtualString @value 0 0}
+         @value
       end
    end
 
@@ -2119,7 +2119,7 @@ local
          NewPatternVs = PatternVs
       end
       meth methPrintName($)
-         {PrintNameToVirtualString {@variable getPrintName($)}}
+         {@variable getPrintName($)}
       end
       meth addPatternVs(PatternVs ?NewPatternVs)
          NewPatternVs = PatternVs

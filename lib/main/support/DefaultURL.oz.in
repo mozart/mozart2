@@ -49,7 +49,7 @@ prepare
       Libs      = ['Application'
                    'Search' 'FD' 'Schedule' 'FS' 'Combinator'
                    'RecordC'
-                   'Error' 'ErrorRegistry' 'Finalize'
+                   'Error' 'ErrorRegistry' 'Finalize' 'Service'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL' 'DPMisc'
                    'Open'
                    'Tk' 'TkTools'

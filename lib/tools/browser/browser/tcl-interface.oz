@@ -626,6 +626,10 @@ in
                    q(v(
                         'tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y'
                     )))
+              bind(BW '<<Copy>>'
+                   q(v(
+                        'tk_textCopy %W'
+                    )))
 
               %%
               %% X11 selection - shift-buttons[move];

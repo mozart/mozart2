@@ -268,6 +268,10 @@ local
       prop final
    end
 
+   class TextSock from Open.text Open.socket
+      prop final
+   end
+
    fun {AppletGetArgs}
       SI
    in
@@ -292,7 +296,7 @@ local
       try Sock Port in
          SO = {New TextFile init(name:stdout)}
          thread
-            Sock = {New Open.socket server(port: ?Port)}
+            Sock = {New TextSock server(port: ?Port)}
          end
          {SO write(vs: {OS.uName}.nodename#'\n')}
          {SO write(vs: Port#'\n')}

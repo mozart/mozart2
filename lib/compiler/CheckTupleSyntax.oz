@@ -85,6 +85,8 @@ local
       [] fCase(P Css E C) then
          {Phrase P} {ForAll Css proc {$ Cs} {ForAll Cs CaseClause} end}
          {Coord C}
+      [] fCaseNew(P Cs E C) then
+         {Phrase P} {ForAll Cs CaseClause} {Coord C}
       [] fLockThen(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fLock(P C) then {Phrase P} {Coord C}
       [] fThread(P C) then {Phrase P} {Coord C}

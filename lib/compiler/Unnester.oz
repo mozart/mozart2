@@ -978,12 +978,14 @@ define
                end
                GFrontEq|{MakeIfNode GVO GT GF C _ @BA}
             end
-         [] fCase(FE FClausess FS C) then GFrontEq GVO NewFClauses in
-            Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
+         [] fCase(FE FClausess FS C) then FCaseNew in
             %% `elseof' is equivalent to `[]':
-            NewFClauses = {FoldR FClausess Append nil}
+            FCaseNew = fCaseNew(FE {FoldR FClausess Append nil} FS C)
+            Unnester, UnnestStatement(FCaseNew $)
+         [] fCaseNew(FE FClauses FS C) then GFrontEq GVO in
+            Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
             GFrontEq|
-            Unnester, UnnestCase({GVO getVariable($)} NewFClauses FS C $)
+            Unnester, UnnestCase({GVO getVariable($)} FClauses FS C $)
          [] fLockThen(FE FS C) then GFrontEq GVO GS in
             Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
             Unnester, UnnestStatement(FS ?GS)
@@ -1356,27 +1358,29 @@ define
                     else fEq(FV FE3 {LastCoordinatesOf FE3})
                     end
             Unnester, UnnestStatement(fBoolCase(FE1 fEq(FV FE2 C2) FElse C) $)
-         [] fCase(FE1 FClausess FE2 C) then
-            PrintName GFrontEq GVO GV FV2 FClauses FVs FCase NewFV FS
+         [] fCase(FE1 FClausess FS2 C) then FCaseNew in
+            %% `elseof' is equivalent to `[]':
+            FCaseNew = fCaseNew(FE1 {FoldR FClausess Append nil} FS2 C)
+            Unnester, UnnestExpression(FCaseNew FV $)
+         [] fCaseNew(FE1 FClauses FE2 C) then
+            PrintName GFrontEq GVO GV FV2 FVs FCase NewFV FS
          in
             PrintName = FV.1
             Unnester, UnnestToVar(FE1 'Arbiter' ?GFrontEq ?GVO)
             {GVO getVariable(?GV)}
             FV2 = fVar({GV getPrintName($)} {GV getCoord($)})
-            %% `elseof' is equivalent to `[]':
-            FClauses = {FoldR FClausess Append nil}
             {FoldL FClauses
              fun {$ FVs fCaseClause(FE _)}
                 {GetPatternVariablesExpression FE FVs $}
              end FVs nil}
-            FCase = fCase(FV2 [{Map FClauses
-                                fun {$ fCaseClause(FE1 FE2)} C in
-                                   C = {LastCoordinatesOf FE2}
-                                   fCaseClause(FE1 fEq(NewFV FE2 C))
-                                end}]
-                          case FE2 of fNoElse(_) then FE2
-                          else fEq(FV FE2 {LastCoordinatesOf FE2})
-                          end C)
+            FCase = fCaseNew(FV2 {Map FClauses
+                                  fun {$ fCaseClause(FE1 FE2)} C in
+                                     C = {LastCoordinatesOf FE2}
+                                     fCaseClause(FE1 fEq(NewFV FE2 C))
+                                  end}
+                             case FE2 of fNoElse(_) then FE2
+                             else fEq(FV FE2 {LastCoordinatesOf FE2})
+                             end C)
             if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
                %% use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
@@ -1630,7 +1634,7 @@ define
          C2 = {LastCoordinatesOf FS}
          NewFS = {FoldR FMatches
                   fun {$ FV#FE#C In}
-                     fCase(FV [[fCaseClause(FE In)]] fNoElse(C) C)
+                     fCaseNew(FV [fCaseClause(FE In)] fNoElse(C) C)
                   end FS}
          FBody0 = if IsLazy then CND in
                      CND = {CoordNoDebug C}
@@ -2180,10 +2184,10 @@ define
             NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) CND))
                           fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
                           fNoFinally C)
-            NewFS2 = fCase(FV [[fCaseClause(FException
-                                            fOpApplyStatement('Raise' [FX]
-                                                              CND))]]
-                           fSkip(CND) CND)
+            NewFS2 = fCaseNew(FV [fCaseClause(FException
+                                              fOpApplyStatement('Raise' [FX]
+                                                                CND))]
+                              fSkip(CND) CND)
             Unnester, UnnestTry(NewFS1 $)|
             Unnester, UnnestStatement(FFinally $)|
             Unnester, UnnestStatement(NewFS2 $)
@@ -2211,7 +2215,7 @@ define
                    else
                       {Adjoin C2 {Label C}}
                    end
-            NewFS = fCase(FX [FCaseClauses] FElse NewC)
+            NewFS = fCaseNew(FX FCaseClauses FElse NewC)
             Unnester, UnnestStatement(NewFS ?GCatchBody)
             {@BA closeScope(_)}
             {New Core.tryNode init(GS X GCatchBody C)}
@@ -2417,6 +2421,8 @@ define
          [] fNoElse(C) then fNoElse({FS C})
          [] fCase(P1 Css P2 C) then
             fCase({NP P1} {Map Css fun {$ Cs} {Map Cs NP} end} {NP P2} {FS C})
+         [] fCaseNew(P1 Cs P2 C) then
+            fCaseNew({NP P1} {Map Cs NP} {NP P2} {FS C})
          [] fCaseClause(P1 P2) then fCaseClause(P1 {NP P2})
          [] fLockThen(P1 P2 C) then fLockThen({NP P1} {NP P2} {FS C})
          [] fLock(P C) then fLock({NP P} {FS C})
@@ -2484,6 +2490,8 @@ define
          [] fNoElse(C) then fNoElse({CS C})
          [] fCase(P1 Css P2 C) then
             fCase({NP P1} {Map Css fun {$ Cs} {Map Cs SP} end} {SP P2} {CS C})
+         [] fCaseNew(P1 Cs P2 C) then
+            fCaseNew({NP P1} {Map Cs SP} {SP P2} {CS C})
          [] fCaseClause(P1 P2) then fCaseClause(P1 {SP P2})
          [] fLockThen(P1 P2 C) then fLockThen({NP P1} {SP P2} {CS C})
          [] fLock(P C) then fLock({SP P} {CS C})

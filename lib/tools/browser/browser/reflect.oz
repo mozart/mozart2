@@ -210,7 +210,7 @@ in
                      ThPrio = {Thread.getPriority} in
 
                      %%  critical section!
-                     {Thread.setHighIntPri}
+                     {Thread.setPriority high}
                      %%
                      TermOut = {AtomConcatAll [{System.getPrintName TermIn}
                                                '<' {MetaGetNameAsAtom TermIn}

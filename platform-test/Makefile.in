@@ -17,7 +17,14 @@ FDLOCAL = \
         sumabs \
         constrdisj \
         binpacking \
-        bridge
+        bridge \
+        buildhouse \
+        cars \
+        change \
+        color \
+        conference \
+        configuration \
+        diagnosis
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

@@ -294,10 +294,11 @@ define
          of failed   then B=0
          [] entailed then B=1
          [] stuck    then {WUHFI}
+         [] merged   then skip
          end
       end
       thread
-         if B==1 then {Space.merge S} end
+         if B==1 then {Space.merge S _} end
       end
    end
 

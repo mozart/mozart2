@@ -1460,7 +1460,8 @@ in
                %--** X is not freed
                Unifies = Ur
             elsecase Emitter, GetReg(Reg $) of none then
-               Emitter, PredictBuiltinOutput(Reg ?X)
+               %--** here it would be nicer to PredictBuiltinOutput
+               Emitter, PredictTemp(Reg ?X)
                Unifies = Ur
             elseof R then
                Emitter, AllocateShortLivedTemp(?X)
@@ -2209,7 +2210,15 @@ in
       end
       meth EmitMultiple(Instrs NewCodeTl)
 \ifdef DEBUG_EMIT
-         {ForAll Instrs Show}
+         proc {ShowAll Instrs}
+            case {IsDet Instrs} then I|Ir = Instrs in
+               {Show I}
+               {ShowAll Ir}
+            else skip
+            end
+         end
+      in
+         {ShowAll Instrs}
 \endif
          @CodeTl = Instrs
          CodeTl <- NewCodeTl

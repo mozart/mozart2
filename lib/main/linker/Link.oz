@@ -41,7 +41,9 @@ local
       fun {NewUrlFilter Spec RootUrl}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
          AllSpecs= {Map {Append {Access IncludeSpecs}
-                         [exclude("x-oz://") include(BaseUrl)]}
+                         exclude("x-oz://")|
+                         if Args.relative
+                         then [include(BaseUrl)] else nil end}
                     fun {$ Spec}
                        Lab = {Label Spec}
                        Str = Spec.1

@@ -641,7 +641,9 @@ define
             end
             Unnester, UnnestProc(FEs FS false C ?GS)
             {@BA closeScope(?GFormals)}
-            IsStateUsing = @StateUsed
+            IsStateUsing = (@StateUsed orelse
+                            @Stateful andthen
+                            {@state getSwitch(staticvarnames $)})
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
@@ -668,7 +670,9 @@ define
             end
             Unnester, UnnestProc(NewFEs FE2 LazyFlags \= nil C ?GS)
             {@BA closeScope(?GFormals)}
-            IsStateUsing = @StateUsed
+            IsStateUsing = (@StateUsed orelse
+                            @Stateful andthen
+                            {@state getSwitch(staticvarnames $)})
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}

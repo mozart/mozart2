@@ -20,8 +20,10 @@ local
    MetaTupleTermTermObject
    MetaRecordTermTermObject
    MetaChunkTermTermObject
+
    %%
    GetListType
+
    %%
    StripName
    StripBQuotes
@@ -33,33 +35,35 @@ local
    GenClassPrintName
    GenProcPrintName
    GenCellPrintName
+
    %%
    TupleToList
    SelSubTerms
    IsListDepth   % functional! ... since there is message sending in there;
    LArity
+
    %%
    TestVarProc
    TestFDVarProc
    TestMetaVarProc
+
    %%
    GetWFListVar
+
    %%
    AtomicFilter
+
    %%
    IsThereAName
-   %%
 in
+
    %%
    %%  'Meta' 'term' term object;
    %%
    class MetaTermTermObject
       from UrObject
       %%
-      %%
-      %% feat
-      %% featureName            %  feature in parent record, if any;
-      %%
+
       %%
       %%  Returns a type of given term;
       %%  'Term' is a term to be investigated, 'Self' is 'self' of
@@ -75,8 +79,8 @@ in
          then
             case {IsVar Term} then
                %% non-monotonic operation;
+
                %%
-               %% relational;
                Type = if {IsRecordCVar Term} then T_ORecord
                       else
                          %% relational;
@@ -94,7 +98,7 @@ in
                [] tuple   then
                   local AreVSs in
                      AreVSs = {self.store read(StoreAreVSs $)}
-                     %%
+
                      %% I don't want to reprogram VirtualString.is;
                      if AreVSs = True {VirtualString.is Term True} then
                         Type = T_Atom
@@ -116,10 +120,12 @@ in
                         end
                      end
                   end
+
                [] procedure then
                   Type = case {Object.is Term} then T_Object
                          else T_Procedure
                          end
+
                [] cell then Type = T_Cell
                [] record then
                   Type = case {Class.is Term} then T_Class
@@ -134,6 +140,7 @@ in
             Type = T_Shrunken
          end
       end
+
       %%
       %%  Yields 'True' if referenced 'self' (i.e. 'RN=<term>')
       %% should be enclosed in (round) braces (i.e. '(RN=<term>)');
@@ -170,29 +177,25 @@ in
                         self.parentObj.type]}
                     False
                  end
-         %%
       end
+
       %%
       %%
       meth genLitPrintName(Lit ?PName)
-         %%
          PName = case {IsAtom Lit} then {GenAtomPrintName Lit}
                  else {GenNamePrintName Lit self.store}
                  end
       end
-      %%
+
       %%
       %%  default 'areCommas' - there are no commas;
       meth areCommas(?AreCommas)
          AreCommas = False
       end
-      %%
-      %%
-      %% meth setFeatureName(Feature)
-      %% self.featureName = Feature
-      %% end
+
       %%
    end
+
    %%
    %%
    %%  Atoms;
@@ -202,7 +205,7 @@ in
       %%
       feat
          name                   % print name;
-      %%
+
       %%
       %%  We need 'setName' here and for 'RecordTermTermObject', since
       %% it's redefined for chunk objects;
@@ -214,6 +217,7 @@ in
             Name = case AreVSs then {GenVSPrintName self.term}
                    else {GenAtomPrintName self.term}
                    end
+
             %%
             {Wait Name}
 
@@ -222,6 +226,8 @@ in
             <<nil>>
          end
       end
+
+      %%
       %%
       meth initTerm
 \ifdef DEBUG_TT
@@ -230,6 +236,8 @@ in
          <<setName>>
       end
    end
+
+   %%
    %%
    %%  Integers;
    %%
@@ -238,6 +246,7 @@ in
       %%
       feat
          name                   % print name;
+
       %%
       %%
       meth initTerm
@@ -250,6 +259,7 @@ in
             Name = case AreVSs then {GenVSPrintName self.term}
                    else {VirtualString.changeSign self.term "~"}
                    end
+
             %%
             {Wait Name}
 
@@ -259,6 +269,7 @@ in
          end
       end
    end
+
    %%
    %%  Floats;
    %%
@@ -267,6 +278,7 @@ in
       %%
       feat
          name                   % print name;
+
       %%
       %%
       meth initTerm
@@ -279,6 +291,7 @@ in
             Name = case AreVSs then {GenVSPrintName self.term}
                         else {VirtualString.changeSign self.term "~"}
                         end
+
             %%
             {Wait Name}
 
@@ -288,6 +301,7 @@ in
          end
       end
    end
+
    %%
    %%  Names;
    %%
@@ -296,6 +310,7 @@ in
       %%
       feat
          name                   % print name;
+
       %%
       %%
       meth initTerm
@@ -309,6 +324,7 @@ in
                       case Term then "<B: true>" else "<B: false>" end
                    else {GenNamePrintName Term self.store}
                    end
+
             %%
             {Wait Name}
 
@@ -318,6 +334,7 @@ in
          end
       end
    end
+
    %%
    %%
    %%  Generic compound (tuple-like) objects;
@@ -342,44 +359,50 @@ in
          local SWidth TWidth NumOfNew in
             SWidth = {self.store read(StoreWidth $)}
             TWidth = {Length SubsList} + StartNum - 1
+
             %%
             case SWidth < TWidth then
                %%
                NumOfNew = SWidth - StartNum + 1 - NumReuse
+
+               %%
                case NumOfNew > 0 then
-                  %%
                   %% we have really to add something;
                   EndNum = SWidth
+
                   %%
                   <<addSubterms(NumOfNew)>>
                else
-                  %%
                   %%  actual width is bigger than initially allowed
                   %% (because manual expansions);
                   EndNum = StartNum - 1 + NumReuse
+
+                  %%
                   %%  Note that this covers both cases
                   %% -  no subterms should be created
                   %%      (from StartNum-1 to startNum);
                   %% -  'NumReuse' subterms should be re-created;
                   %%
                end
+
                %%
                <<createSubtermObjs(StartNum EndNum SubsList)>>
             else
                EndNum = TWidth
+
                %%
                NumOfNew = TWidth - StartNum + 1 - NumReuse
                case NumOfNew > 0 then <<addSubterms(NumOfNew)>>
                else true
                end
+
                %%
                <<createSubtermObjs(StartNum TWidth SubsList)>>
             end
-            %%
          end
       end
-      %%
    end
+
    %%
    %%
    %%  Well-formed lists;
@@ -389,47 +412,52 @@ in
       %%
       feat
          name                   % print name;
-      %%
+
       %%
       %%
       meth initTerm
 \ifdef DEBUG_TT
          {Show 'WFListTermTermObject::initTerm is applied'#self.term}
 \endif
+         %%
          self.name = ''
-         %% self.subterms = self.term   % clever??! :))
-         %% ... and now 'self.term' is used instead of 'self.subterms';
+
          %%
          local SWidth TWidth in
             SWidth = {self.store read(StoreWidth $)}
             TWidth = {Length self.term}
+
             %%
             case SWidth < TWidth then
                <<subtermsStoreInit(SWidth True)>>
-               %%
+
                %% commas;
-               %%
                <<createSubtermObjs(1 SWidth self.term)>>
             else
                <<subtermsStoreInit(TWidth False)>>
+
                %%
                <<createSubtermObjs(1 TWidth self.term)>>
             end
-            %%
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = self.term
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          Subterms = self.term
       end
+
       %%
    end
+
+   %%
    %%
    %%  Tuples;
    %%
@@ -439,7 +467,7 @@ in
       feat
          name                   % print name;
          subterms               % list of subterms;
-      %%
+
       %%
       %%
       meth initTerm
@@ -449,40 +477,46 @@ in
          local Term Store Subterms SWidth TWidth in
             Term = self.term
             Store = self.store
+
             %%
             self.name = <<genLitPrintName({Label Term} $)>>
             Subterms = {TupleToList Term}
             self.subterms = Subterms
+
             %%
             SWidth = {Store read(StoreWidth $)}
             TWidth = {Width Term}
+
             %%
             case SWidth < TWidth then
                <<subtermsStoreInit(SWidth True)>>
-               %%
+
                %% commas;
-               %%
                <<createSubtermObjs(1 SWidth Subterms)>>
             else
                <<subtermsStoreInit(TWidth False)>>
+
                %%
                <<createSubtermObjs(1 TWidth Subterms)>>
             end
-            %%
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
    end
+
    %%
    %%
    %%  Lists;
@@ -496,7 +530,7 @@ in
       %%
       feat
          subterms               % list of subterms;
-      %%
+
       %%
       %%
       meth initTerm
@@ -505,29 +539,34 @@ in
 \endif
          local Term Subterms  in
             Term = self.term
+
             %%
             Subterms = [Term.1 Term.2]
             self.subterms = Subterms
-            %%
+
             %%  the width is always 2;
             <<subtermsStoreInit(2 False)>>
+
             %%
             <<createSubtermObjs(1 2 Subterms)>>
-            %%
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
    end
+
    %%
    %%
    %%  Hash tuples;
@@ -537,7 +576,7 @@ in
       %%
       feat
          subterms               % list of subterms;
-      %%
+
       %%
       %%
       meth initTerm
@@ -546,46 +585,51 @@ in
 \endif
          local Term Subterms SWidth TWidth in
             Term = self.term
+
             %%
             Subterms = {TupleToList Term}
             self.subterms = Subterms
+
             %%
             SWidth = {self.store read(StoreWidth $)}
             TWidth = {Width Term}
+
             %%
             case SWidth < TWidth then
                <<subtermsStoreInit(SWidth True)>>
-               %%
+
                %% commas;
-               %%
                <<createSubtermObjs(1 SWidth Subterms)>>
             else
                <<subtermsStoreInit(TWidth False)>>
+
                %%
                <<createSubtermObjs(1 TWidth Subterms)>>
             end
-            %%
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          Subterms = self.subterms
       end
+
       %%
    end
+
    %%
    %%
    %%  Flat lists;
    %%
    class FListTermTermObject
       from MetaTupleTermTermObject TupleSubtermsStore
-      %%
       %%
       %%
       attr
@@ -596,6 +640,8 @@ in
          tailVarNum             % number of 'tail' variable subterm, if any -
                                 % in the case when it's currently shown;
       %%  Note that 'subterms' is an *attribute* here;
+
+      %%
       %%
       meth initTerm
 \ifdef DEBUG_TT
@@ -604,27 +650,32 @@ in
          local Term Store Subterms TailVar SWidth TWidth in
             Term = self.term
             Store = self.store
+
             %%
             %%  get subterms and a tail variable, if any;
             {SelSubTerms Term Store Subterms TailVar}
             subterms <- Subterms
             tailVar <- TailVar
+
             %%
             SWidth = {Store read(StoreWidth $)}
             TWidth = {Length Subterms}
+
             %%
             case SWidth < TWidth then
                <<subtermsStoreInit(SWidth True)>>
-               %%
+
                %% commas;
-               %%
                <<createSubtermObjs(1 SWidth Subterms)>>
+
                %%
                tailVarNum <- ~1
             else
                <<subtermsStoreInit(TWidth False)>>
+
                %%
                <<createSubtermObjs(1 TWidth Subterms)>>
+
                %%
                %% relational;
                case TailVar
@@ -634,15 +685,16 @@ in
                   tailVarNum <- TWidth
                end
             end
-            %%
          end
       end
+
       %%
       %%  special: set the 'tailVarNum' attribute;
       %% ('reGetSubterms' should be already called;)
       meth initMoreSubterms(StartNum NumReuse SubsList ?EndNum)
          <<MetaTupleTermTermObject
          initMoreSubterms(StartNum NumReuse SubsList EndNum)>>
+
          %%
          <<setTailVarNum(EndNum)>>
       end
@@ -652,7 +704,7 @@ in
       meth setTailVarNum(OccNum)
          local TailVar in
             TailVar = @tailVar
-            %%
+
             %% relational;
             case TailVar
             of !InitValue then
@@ -660,7 +712,7 @@ in
             [] _ then
                local Obj in
                   Obj = <<getSubtermObj(OccNum $)>>
-                  %%
+
                   %% relational;
                   case Obj.term
                   of !TailVar then
@@ -672,6 +724,7 @@ in
             end
          end
       end
+
       %%
       %%
       meth noTailVar
@@ -685,36 +738,41 @@ in
          end
 \endif
       end
+
       %%
       %%
       meth isWFList(?IsWF)
          local Depth in
             Depth = {self.store read(StoreNodeNumber $)}
-            %%
+
             %% relational!
             IsWF = if {IsListDepth self.term Depth} then True
                    [] true then False
                    fi
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = @subterms
       end
+
       %%
       %%  updates 'subterms' and 'tailVar' in place;
       meth reGetSubterms(?Subterms)
          local TailVar in
             {SelSubTerms self.term self.store Subterms TailVar}
+
             %%
             subterms <- Subterms
             tailVar <- TailVar
-            %%
          end
       end
+
       %%
    end
+
    %%
    %%
    %%  Generic compound (record-like) objects;
@@ -727,6 +785,7 @@ in
          recArity               % list of features;
       %%  Note that 'recArity' is an incomplete list for open feature
       %% structures;
+
       %%
       %%
       attr
@@ -737,19 +796,23 @@ in
       %% of features change over time for open feature structures;
       %%
    end
+
+   %%
    %%
    %%  Records;
    %%
    class RecordTermTermObject
       from MetaRecordTermTermObject RecordSubtermsStore
       %%
-      %%
       %%  We need 'setName' here and for 'AtomTermTermObject',
       %% since it is redefined for chunks (see further);
+
+      %%
       %%
       meth setName
          self.name = <<genLitPrintName({Label self.term} $)>>
       end
+
       %%
       %%
       meth initTerm
@@ -762,6 +825,7 @@ in
             %%
             Store = self.store
             Term = self.term
+
             %%
             AF = case {Store read(StoreArityType $)}
                  of !AtomicArity then True
@@ -771,33 +835,37 @@ in
                      ['RecordTermTermObject::initTerm: invalid type of ArityType']}
                     False
                  end
+
             %%
             <<setName>>
+
             %%
             RecArity = case AF then {Arity Term}
                        else {RealArity Term}
                        end
             self.recArity = RecArity
-            %%
+
             %%  'Subtree' is used because `.` behavior for cells;
             Subterms = {Map RecArity proc {$ F S} {Subtree Term F S} end}
             subterms <- Subterms
+
             %%
             TWidth = {Length RecArity}
             RecFeatures = {Tuple recFeatures TWidth}
             {FoldL RecArity fun {$ I E} RecFeatures.I = E (I + 1) end 1 _}
+
             %%
             recFeatures <- RecFeatures
+
             %%
             SWidth = {Store read(StoreWidth $)}
+
             %%
-            AreSpecs = case AF then
-                          case TWidth == {Width Term} then False
-                             %% only atomic features;
-                          else True
-                          end
+            AreSpecs = case AF then TWidth \= {Width Term}
+                          %% only atomic features;
                        else False
                        end
+
             %%
             case SWidth < TWidth then
                <<subtermsStoreInit(SWidth True AreSpecs)>>
@@ -808,21 +876,24 @@ in
                %%
                <<createSubtermObjs(1 TWidth Subterms)>>
             end
-            %%
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = @subterms
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          Subterms = @subterms
       end
+
       %%
    end
+
    %%
    %%
    %%  Open feature structures;
@@ -832,17 +903,20 @@ in
       %%
       feat
          label                  % == {LabelC self.term $}
+
       %%
       attr
          name                   % for '_';
          tailVar                % tail variable in the list of features;
          CancelReq              %
          PrivateFeature         % == True if there is a private feature;
+
       %%
       %%
       meth setName
          name <- <<genLitPrintName({System.getPrintName self.label} $)>>
       end
+
       %%
       %%
       meth initTerm
@@ -856,6 +930,7 @@ in
             %%
             Store = self.store
             Term = self.term
+
             %%
             AF = case {Store read(StoreArityType $)}
                  of !AtomicArity then True
@@ -865,13 +940,14 @@ in
                      ['RecordTermTermObject::initTerm: invalid type of ArityType']}
                     False
                  end
+
             %%
             %%  This *must* be a job, and *not* a thread!
             job
                OFSLab = {LabelC self.term}
             end
             self.label = OFSLab
-            %%
+
             %%
             job
                SelfClosed = {Object.closed self}
@@ -879,8 +955,9 @@ in
 
             %%
             case {IsVar OFSLab} then
-               %% relational;
+               %%
                thread
+               %% relational;
                   if {Det OFSLab True} then {self replaceLabel}
                   [] {Det SelfClosed True} then true
                      %% cancel watching;
@@ -888,6 +965,7 @@ in
                end
             else true
             end
+
             %%
             <<setName>>
             self.name = @name   % just some value - it should not be used here;
@@ -917,6 +995,7 @@ in
 
             %%
             PrivateFeature <- False
+
             %%
             case AF then
                %%
@@ -963,6 +1042,7 @@ in
             end
          end
       end
+
       %%
       %%
       meth isProperOFS(?Is)
@@ -975,18 +1055,22 @@ in
          {Show 'ORecordTermTermObject::isProperOFS: '#Is}
 \endif
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
          Subterms = @subterms
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
          local Term TmpArity KnownArity TailVar RecFeatures in
             Term = self.term
+
             %%
             {GetWFListVar self.recArity TmpArity TailVar}
+
             %%  filter out already non-existing features -
             %%  cheers, Peter! ;-)
             {FoldL TmpArity
@@ -1007,18 +1091,20 @@ in
 %               end
 %            end
              KnownArity nil}
+
             %%
             %%  it could be 'InitValue' (if OFS has become a proper record
             %% already;)
             tailVar <- TailVar
+
             %%
             Subterms = {Map KnownArity proc {$ F S} {SubtreeC Term F S} end}
             subterms <- Subterms
+
             %%
             RecFeatures = {Tuple recFeatures {Length KnownArity}}
             {FoldL KnownArity fun {$ I E} RecFeatures.I = E (I + 1) end 1 _}
             recFeatures <- RecFeatures
-            %%
          end
       end
 
@@ -1033,32 +1119,31 @@ in
          %%  Note that it covers also the case when 'tailVar' gets bound
          %% meanwhile;
          case <<isProperOFS($)>> then
-            local Term Depth TailVar CancelVar in
-               %%
-               Term = self.term
-               Depth = @depth
-               TailVar = @tailVar
-               CancelReq <- CancelVar
-               %%
-               %% Note that this conditional may not block the state;
-               %% relational;
-               thread
-                  if {Det TailVar True} then
-                     %%
-                     {self extend}
-                  [] {TestVarProc Term} then
-                     %%
-                     case {self.termsStore checkCorefs(self $)} then
-                        %% gets bound somehow;
-                        {self.parentObj renewNum(self Depth)}
-                     else
-                        %%  wait for a 'TailVar';
-                        {self initTypeWatching}
-                     end
-                  [] {Det CancelVar True} then true
-                  fi
-               end
-               %%
+            Term Depth TailVar CancelVar
+         in
+            %%
+            Term = self.term
+            Depth = @depth
+            TailVar = @tailVar
+            CancelReq <- CancelVar
+
+            %% Note that this conditional may not block the state;
+            %% relational;
+            thread
+               if {Det TailVar True} then
+                  %%
+                  {self extend}
+               [] {TestVarProc Term} then
+                  %%
+                  case {self.termsStore checkCorefs(self $)} then
+                     %% gets bound somehow;
+                     {self.parentObj renewNum(self Depth)}
+                  else
+                     %%  wait for a 'TailVar';
+                     {self initTypeWatching}
+                  end
+               [] {Det CancelVar True} then true
+               fi
             end
          else true              % nothing to do - it's a proper record;
          end
@@ -1073,6 +1158,7 @@ in
          %%
          @CancelReq = True
       end
+
       %%
       %%
       meth setHiddenPFs
@@ -1080,19 +1166,21 @@ in
       in
          PrivateFeature <- True
          Depth = @depth
+
          %%
          case <<isProperOFS($)>> then
             <<addQuestion>>
          else
-            %%
             %%  I'm lazy - I tell you :))
             job
                {self.parentObj renewNum(self Depth)}
             end
          end
       end
+
       %%
    end
+
    %%
    %%
    %%
@@ -1107,7 +1195,7 @@ in
       %%
       %%   Note that we have redefined 'Width' so that
       %%  {Width X} == {Length {RealArity X}}  !!!
-      %%
+
       %%
       %%
       meth initTerm
@@ -1122,6 +1210,7 @@ in
             <<RecordTermTermObject initTerm>>
          end
       end
+
       %%
       %%
       meth getSubterms(?Subterms)
@@ -1132,6 +1221,7 @@ in
             <<AtomTermTermObject getSubterms(Subterms)>>
          end
       end
+
       %%
       %%
       meth reGetSubterms(?Subterms)
@@ -1142,6 +1232,7 @@ in
             <<AtomTermTermObject reGetSubterms(Subterms)>>
          end
       end
+
       %%
       %%
       meth areCommas(?Are)
@@ -1151,9 +1242,10 @@ in
             <<AtomTermTermObject areCommas(Are)>>
          end
       end
-      %%
+
       %%
    end
+
    %%
    %%
    %%  Procedures;
@@ -1161,12 +1253,16 @@ in
    class ProcedureTermTermObject
       from MetaChunkTermTermObject
       %%
+
+      %%
       %%
       meth setName
          self.name = {GenProcPrintName self.term self.store}
       end
+
       %%
    end
+
    %%
    %%
    %%  Objects;
@@ -1174,12 +1270,16 @@ in
    class ObjectTermTermObject
       from MetaChunkTermTermObject
       %%
+
+      %%
       %%
       meth setName
          self.name = {GenObjPrintName self.term self.store}
       end
+
       %%
    end
+
    %%
    %%
    %%  Cells;
@@ -1187,12 +1287,16 @@ in
    class CellTermTermObject
       from MetaChunkTermTermObject
       %%
+
+      %%
       %%
       meth setName
          self.name = {GenCellPrintName self.term self.store}
       end
+
       %%
    end
+
    %%
    %%
    %%  Classes;
@@ -1200,13 +1304,16 @@ in
    class ClassTermTermObject
       from MetaChunkTermTermObject
       %%
+
+      %%
       %%
       meth setName
          self.name = {GenClassPrintName self.term self.store}
       end
+
       %%
    end
-   %%
+
    %%
    %%
    %%  Special terms;
@@ -1218,15 +1325,17 @@ in
       %%
       feat
          name                   % print name;
+
       %%
       attr
          CancelReq              % watching is cancelled when it gets bound;
-      %%
+
       %%
       %%
       meth getVarName(?Name)
          Name = {GenVarPrintName {System.getPrintName self.term}}
       end
+
       %%
       %%  Yields 'True' if it is still an (unconstrained!) variable;
       %%
@@ -1236,7 +1345,7 @@ in
             %%
             %%  There could happen just everything: gets a value or
             %% some other (derived) type of variables;
-            %%
+
             %% relational;
             Is = if {Det Term True} then False
                  [] {IsRecordCVar Term} then False
@@ -1249,7 +1358,7 @@ in
                  fi
          end
       end
-      %%
+
       %%
       %%
       meth initTerm
@@ -1268,6 +1377,7 @@ in
             <<nil>>
          end
       end
+
       %%
       %%  Set a 'watchpoint';
       %%  It should be used when the (sub)term is actually drawn;
@@ -1279,7 +1389,7 @@ in
             %%
             Depth = @depth
             CancelReq <- CancelVar
-            %%
+
             %% Note that this conditional may not block the state;
             thread
                %% relational;
@@ -1288,7 +1398,7 @@ in
                [] {Det CancelVar True} then true
                fi
             end
-            %%
+
             %%  Check #1: is it still an (unconstrained) variable at all??
             case <<checkIsVar($)>> then
                %%
@@ -1297,14 +1407,15 @@ in
                NewName = <<getVarName($)>>
                OldNameStr = {VirtualString.toString self.name}
                NewNameStr = {VirtualString.toString NewName}
+
                %%
                case {DiffStrs OldNameStr NewNameStr} then
+                  %%
                   job
                      {self.parentObj renewNum(self Depth)}
                   end
                else true
                end
-               %%
             else
                %%
                job
@@ -1313,6 +1424,7 @@ in
             end
          end
       end
+
       %%
       %%  ... it should be used by 'undraw';
       meth stopTypeWatching
@@ -1322,8 +1434,10 @@ in
          %%
          @CancelReq = True
       end
+
       %%
    end
+
    %%
    %%
    %%  Finite domain variables;
@@ -1334,15 +1448,17 @@ in
       feat
          name                   % print name;
          card                   % actual domain size;
+
       %%
       attr
          CancelReq              % watching is cancelled when it gets bound;
-      %%
+
       %%
       %%
       meth getVarName(?Name)
          Name = {GenVarPrintName {System.getPrintName self.term}}
       end
+
       %%
       %%  Yields 'True' if it is still a FD variable;
       %%
@@ -1352,6 +1468,7 @@ in
          %%
          Is = {IsVar self.term}
       end
+
       %%
       %%
       meth initTerm
@@ -1360,26 +1477,31 @@ in
 \endif
          local Term ThPrio SubIntsL SubInts Le DomComp Name in
             Term = self.term
+
             %%
             ThPrio = {Thread.getPriority}
-            %%
             %%  critical section!
             {Thread.setHighIntPri}
+
             %%
             self.card = {FD.reflect.size Term}
+
             %%
             DomComp = {FD.reflect.dom Term}
+
             %%
             {Thread.setPriority ThPrio}
             %%  end of critical section;
+
             %%
             {List.mapInd DomComp
-             %% relational;
+             %%
              fun {$ Num Interval}
                 local Tmp in
-                   Tmp = if L H in Interval = L#H then L#"#"#H
+                   Tmp = case Interval of L#H then L#"#"#H
                          else Interval
-                         fi
+                         end
+
                    %%
                    case Num == 1 then Tmp
                    else " "#Tmp
@@ -1387,10 +1509,12 @@ in
                 end
              end
              SubIntsL}
+
             %%
             Le = {Length SubIntsL}
             SubInts = {Tuple '#' Le}
             {Loop.for 1 Le 1 proc {$ I} SubInts.I = {Nth SubIntsL I} end}
+
             %%
             %%  first subterm in hash-tuple must be a variable name!
             %% (see beneath in :initTypeWatching;)
@@ -1404,6 +1528,7 @@ in
             <<nil>>
          end
       end
+
       %%
       %%  Set a 'watchpoint';
       %%  It should be used when the (sub)term is actually drawn;
@@ -1415,7 +1540,7 @@ in
             %%
             Depth = @depth
             CancelReq <- CancelVar
-            %%
+
             %% Note that this conditional may not block the state;
             thread
                %% relational;
@@ -1424,7 +1549,7 @@ in
                [] {Det CancelVar True} then true
                fi
             end
-            %%
+
             %%  Check #1: is it still a FD variable at all??
             case <<checkIsVar($)>> then
                %%
@@ -1433,8 +1558,10 @@ in
                NewName = <<getVarName($)>>
                OldNameStr = {VirtualString.toString self.name.1}
                NewNameStr = {VirtualString.toString NewName}
+
                %%
                case {DiffStrs OldNameStr NewNameStr} then
+                  %%
                   job
                      {self.parentObj renewNum(self Depth)}
                   end
@@ -1449,6 +1576,7 @@ in
             end
          end
       end
+
       %%
       %%  ... it should be used by 'undraw';
       meth stopTypeWatching
@@ -1458,8 +1586,10 @@ in
          %%
          @CancelReq = True
       end
+
       %%
    end
+
    %%
    %%
    %%  Meta variables;
@@ -1470,15 +1600,17 @@ in
       feat
          name                   % print name;
          strength               % actual strength of constraint at this var;
+
       %%
       attr
          CancelReq              % watching is cancelled when it gets bound;
-      %%
+
       %%
       %%
       meth getVarName(?Name)
          Name = {GenVarPrintName {System.getPrintName self.term}}
       end
+
       %%
       %%  Yields 'True' if it is still a metavariable;
       %%
@@ -1488,6 +1620,7 @@ in
          %%
          IsVar = {IsVar self.term}
       end
+
       %%
       %%
       meth initTerm
@@ -1496,20 +1629,25 @@ in
 \endif
          local Term ThPrio Data MetaName Name in
             Term = self.term
+
             %%
             ThPrio = {Thread.getPriority}
-            %%
             %%  critical section!
             {Thread.setHighIntPri}
+
             %%
             self.strength = {MetaGetStrength Term}
+
             %%
             Data = {MetaGetDataAsAtom Term}
+
             %%
             MetaName = {MetaGetNameAsAtom Term}
+
             %%
             {Thread.setPriority ThPrio}
             %%  end of critical section;
+
             %%
             %%  first subterm in hash-tuple must be a variable name!
             %% (see beneath in :initTypeWatching;)
@@ -1532,6 +1670,7 @@ in
 \endif
          end
       end
+
       %%
       %%  Set a 'watchpoint';
       %%  It should be used when the (sub)term is actually drawn;
@@ -1543,7 +1682,7 @@ in
             %%
             Depth = @depth
             CancelReq <- CancelVar
-            %%
+
             %% Note that this conditional may not block the state;
             thread
                %% relational;
@@ -1552,7 +1691,7 @@ in
                [] {Det CancelVar True} then true
                fi
             end
-            %%
+
             %%  Check #1: is it still a FD variable at all??
             case <<checkIsVar($)>> then
                %%
@@ -1561,8 +1700,10 @@ in
                NewName = <<getVarName($)>>
                OldNameStr = {VirtualString.toString self.name.1}
                NewNameStr = {VirtualString.toString NewName}
+
                %%
                case {DiffStrs OldNameStr NewNameStr} then
+                  %%
                   job
                      {self.parentObj renewNum(self Depth)}
                   end
@@ -1577,6 +1718,7 @@ in
             end
          end
       end
+
       %%
       %%  ... it should be used by 'undraw';
       meth stopTypeWatching
@@ -1586,8 +1728,10 @@ in
          %%
          @CancelReq = True
       end
+
       %%
    end
+
    %%
    %%
    %%  References;
@@ -1598,6 +1742,7 @@ in
       %%  Note that 'name' is an *attribute* here!
       attr
          name                   % print name;
+
       %%
       %%
       meth initTerm
@@ -1606,6 +1751,7 @@ in
 \endif
          name <- '?'
       end
+
       %%
       %%
       meth setRefVar(Master Name)
@@ -1615,14 +1761,16 @@ in
          master <- Master
          name <- Name
          size <- {VSLength Name}
+
          %%
          job
             {self.parentObj redrawNum(self)}
          end
       end
-      %%
+
       %%
    end
+
    %%
    %%
    %%  Shrunken (sub)terms;
@@ -1630,6 +1778,7 @@ in
    class ShrunkenTermTermObject
       from MetaTermTermObject
       %%
+
       %%
       %%
       meth initTerm
@@ -1638,9 +1787,10 @@ in
 \endif
          true
       end
+
       %%
    end
-   %%
+
    %%
    %%
    %%  Unknown terms;
@@ -1650,10 +1800,11 @@ in
       %%
       feat
          name: '<UNKNOWN TERM>'         % print name;
-      %%
+
       %%
       %%  We need 'setName' here and for 'RecordTermTermObject', since
       %% it's redefined for chunk objects;
+
       %%
       meth initTerm
 \ifdef DEBUG_TT
@@ -1661,14 +1812,14 @@ in
 \endif
          true
       end
+
+      %%
    end
-   %%
-   %%
+
 %%%
 %%%
 %%%  Various local auxiliary procedures;
 %%%
-   %%
    %%
    local
       %%
@@ -1686,6 +1837,7 @@ in
          SetTab       = {Tuple tab 255}
          ScanTab      = {Tuple tab 255}
          SubstTab     = {Tuple tab 255}
+
          %%
          {Tuple.forAllInd SetTab
           fun {$ I}
@@ -1711,12 +1863,14 @@ in
              else illegal
              end
           end}
+
          %%
          ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
          SubstTab = {Tuple.map SetTab
                      fun {$ T}
                         case {IsAtom T} then nil else T.1 end
                      end}
+
          %%
          %% Check whether atom needs to be quoted and expand quotes in string
          fun {Check Is NeedsQuoteYet ?NeedsQuote}
@@ -1745,6 +1899,7 @@ in
                case NeedsQuote then "'"#Js#"'" else Js end
             end
          end
+
          %%
          fun {GenVarPrintName Atom}
             case Atom
@@ -1757,11 +1912,14 @@ in
             end
          end
       end
+
+      %%
       %%
       local
          SetTab       = {Tuple tab 256}
          SubstTab     = {Tuple tab 256}
          ScanTab      = {Tuple tab 256}
+
          %%
          {Tuple.forAllInd SetTab
           fun {$ J} I=J-1 in
@@ -1785,12 +1943,14 @@ in
                 end
              end
           end}
+
          %%
          ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
          SubstTab = {Tuple.map SetTab
                      fun {$ T}
                         case {IsAtom T} then "" else T.1 end
                      end}
+
          %%
          fun {QuoteString Is}
             case Is of nil then nil
@@ -1801,11 +1961,13 @@ in
                end
             end
          end
+
          %%
          proc {HashVS I V1 V2}
             V2.I={GenVS V1.I}
             case I>1 then {HashVS I-1 V1 V2} else true end
          end
+
          %%
          fun {GenVS V}
             case {Value.type V}
@@ -1828,12 +1990,12 @@ in
          end
       in
          %%
-         %%
          fun {GenVSPrintName V}
             '"'#{GenVS V}#'"'
          end
       end
    end
+
    %%
    %%
    %%  Extract a 'meaningful' part of a temporary name;
@@ -1841,16 +2003,18 @@ in
       fun {ParseFun I CI E}
          case E == CNameDelimiter then I else CI end
       end
-      %%
+
       %%
       fun {StripName IStr}
          local Pos in
             Pos = {List.foldLInd IStr ParseFun 0}
+
             %%
             case Pos == 0 then IStr else {Head IStr Pos-1} end
          end
       end
    end
+
    %%
    %%
    fun {StripBQuotes IStr}
@@ -1861,28 +2025,31 @@ in
          end
       end
    end
-   %%
+
    %%
    %%  Generate a printname for a name;
    proc {GenNamePrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
          PN = {System.getPrintName Term}
+
          %%
          case AreSmallNames then
             case PN == '' then Name = "<N>"
             else
-               local SPNS SSPNS in
-                  SPNS = {StripName {Atom.toString PN}}
+               SPNS SSPNS
+            in
+               SPNS = {StripName {Atom.toString PN}}
+
+               %%
+               case SPNS.1 == BQuote then
+                  SSPNS = {StripName {StripBQuotes SPNS}}
+
                   %%
-                  case SPNS.1 == BQuote then
-                     SSPNS = {StripName {StripBQuotes SPNS}}
-                     %%
-                     case SSPNS == nil then Name = "<N>"
-                     else Name = '#'("<N: `" SSPNS "`>")
-                     end
-                  else Name = '#'("<N: " SPNS ">")
+                  case SSPNS == nil then Name = "<N>"
+                  else Name = '#'("<N: `" SSPNS "`>")
                   end
+               else Name = '#'("<N: " SPNS ">")
                end
             end
          else
@@ -1895,6 +2062,7 @@ in
          end
       end
    end
+
    %%
    %%
    %%  Generate an object's print name;
@@ -1902,24 +2070,28 @@ in
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
          PN = {Class.printName {Class Term}}
+
          %%
          case AreSmallNames then
             case PN == '_' then Name = "<O>"
             else
-               local PNS SN in
-                  PNS = {Atom.toString PN}
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 == BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
                   %%
-                  case PNS.1 == BQuote then
-                     SN = {StripName {StripBQuotes PNS}}
-                     %%
-                     case SN == nil then Name = "<O>"
-                     else Name = '#'("<O: `" SN "`>")
-                     end
-                  else Name = '#'("<O: " PN ">")
+                  case SN == nil then Name = "<O>"
+                  else Name = '#'("<O: `" SN "`>")
                   end
+               else Name = '#'("<O: " PN ">")
                end
             end
          else
+            %%
             case PN == '_' then
                Name = '#'("<Object @ " {System.getValue Term addr} ">")
             else
@@ -1928,6 +2100,7 @@ in
          end
       end
    end
+
    %%
    %%
    %%  Generate an class's print name;
@@ -1939,20 +2112,23 @@ in
          case AreSmallNames then
             case PN == '_' then Name = "<C>"
             else
-               local PNS SN in
-                  PNS = {Atom.toString PN}
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 == BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
                   %%
-                  case PNS.1 == BQuote then
-                     SN = {StripName {StripBQuotes PNS}}
-                     %%
-                     case SN == nil then Name = "<C>"
-                     else Name = '#'("<C: `" SN "`>")
-                     end
-                  else Name = '#'("<C: " PN ">")
+                  case SN == nil then Name = "<C>"
+                  else Name = '#'("<C: `" SN "`>")
                   end
+               else Name = '#'("<C: " PN ">")
                end
             end
          else
+            %%
             case PN == '_' then
                Name = '#'("<Class @ " {System.getValue Term addr} ">")
             else
@@ -1961,6 +2137,7 @@ in
          end
       end
    end
+
    %%
    %%
    %%  Generate a procedure's print name;
@@ -1972,28 +2149,32 @@ in
          case AreSmallNames then
             case PN == '_' then Name = '#'("<P/" {System.getValue Term arity} ">")
             else
-               local PNS SN in
-                  PNS = {Atom.toString PN}
+               PNS SN
+            in
+               PNS = {Atom.toString PN}
+
+               %%
+               case PNS.1 == BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
                   %%
-                  case PNS.1 == BQuote then
-                     SN = {StripName {StripBQuotes PNS}}
-                     %%
-                     case SN == nil then
-                        Name = '#'("<P/" {System.getValue Term arity} ">")
-                     else
-                        Name = '#'("<P/" {System.getValue Term arity} " `" SN "`>")
-                     end
+                  case SN == nil then
+                     Name = '#'("<P/" {System.getValue Term arity} ">")
                   else
-                     Name = '#'("<P/" {System.getValue Term arity} " " PN ">")
+                     Name = '#'("<P/" {System.getValue Term arity} " `" SN "`>")
                   end
+               else
+                  Name = '#'("<P/" {System.getValue Term arity} " " PN ">")
                end
             end
          else
+            %%
             Name = '#'("<Procedure: " PN "/" {System.getValue Term arity} " @ "
                        {System.getValue Term addr} ">")
          end
       end
    end
+
    %%
    %%
    %%  Generate a cell's print name;
@@ -2005,24 +2186,28 @@ in
          case AreSmallNames then
             case CN == '_' then Name = "<Cell>"
             else
-               local PNS SN in
-                  PNS = {Atom.toString CN}
+               PNS SN
+            in
+               PNS = {Atom.toString CN}
+
+               %%
+               case PNS.1 == BQuote then
+                  SN = {StripName {StripBQuotes PNS}}
+
                   %%
-                  case PNS.1 == BQuote then
-                     SN = {StripName {StripBQuotes PNS}}
-                     %%
-                     case SN == nil then Name = "<C>"
-                     else Name = '#'("<Cell: `" SN "`>")
-                     end
-                  else Name = '#'("<Cell: " CN ">")
+                  case SN == nil then Name = "<C>"
+                  else Name = '#'("<Cell: `" SN "`>")
                   end
+               else Name = '#'("<Cell: " CN ">")
                end
             end
          else
+            %%
             Name = '#'("<Cell: " CN " @ " {System.getValue Term cellName} ">")
          end
       end
    end
+
    %%
    %%
    %%  'Watch' procedures;
@@ -2030,6 +2215,7 @@ in
    proc {TestVarProc Var}
       {GetsBound Var}
    end
+
    %%
    %%
    proc {TestFDVarProc FDVar Card}
@@ -2038,7 +2224,7 @@ in
          %% let us watch for both events;
       fi
    end
-   %%
+
    %%
    %%
    proc {TestMetaVarProc MetaVar Strength}
@@ -2047,7 +2233,6 @@ in
          %% let us watch for both events;
       fi
    end
-   %%
 
    %%
    %%
@@ -2057,6 +2242,7 @@ in
       else {Arity R}
       end
    end
+
    %%
    %%
    %%  Rudimentary, but still useful here...
@@ -2066,11 +2252,12 @@ in
          WidthOf = {Width Tuple}
          ListOf = {List WidthOf}
 
-         %
+         %%
          {FoldL ListOf fun {$ Num E} E = Tuple.Num Num + 1 end 1 _}
          ListOf
       end
    end
+
    %%
    %%
    %%  GetListType;
@@ -2080,11 +2267,13 @@ in
    fun {GetListType List Store}
       local Depth in
          Depth = {Store read(StoreNodeNumber $)}
+
          %%
          if {IsListDepth List Depth} then T_WFList
          [] true then           % non-monotonic;
             local AreFLists in
                AreFLists = {Store read(StoreFlatLists $)}
+
                %%
                case AreFLists then T_FList
                else T_List
@@ -2093,13 +2282,13 @@ in
          end
       end
    end
-   %%
 
    %%
    %%  Note: that's not a function!
    proc {IsListDepth L D}
       case D > 0 then
          %% 'List.is' exactly;
+
          %%
          case L
          of _|Xr then {IsListDepth Xr (D-1)}
@@ -2108,6 +2297,7 @@ in
       else L = nil
       end
    end
+
    %%
    %%
    %%  Flat representation of incomplete lists;
@@ -2120,12 +2310,13 @@ in
       %%
       %%  A 'new edition' of the 'IsCyclicList';
       %%  We consider simply the limited number of list constructors;
+
       %%
       proc {DoInfList Xs Ys Depth}
          case Depth > 0 then
             %% relational;
             if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
-               %% relational;
+               %%
                case {EQ Xr Yr} then true
                else
                   if {DoInfList Xr Yr (Depth-1)} then true
@@ -2137,18 +2328,21 @@ in
          else false
          end
       end
+
       %%
       proc {IsCyclicListDepth Xs Depth}
          case Xs of X|Xr then
             {DoInfList Xs Xr (Depth + Depth + 1)}
          end
       end
+
       %%
       proc {SelSubTerms List Store ?Subterms ?Var}
          local Depth Corefs Cycles in
             {Store [read(StoreNodeNumber Depth)
                     read(StoreCheckStyle Corefs)
                     read(StoreOnlyCycles Cycles)]}
+
             %%
             case Corefs orelse Cycles then
                %% relational;
@@ -2162,6 +2356,7 @@ in
             end
          end
       end
+
       %%
       proc {DoCyclicList List Stack ?Subterms}
          %% relational;
@@ -2170,31 +2365,34 @@ in
          else {DoCyclicList List.2 List|Stack ?Subterms}
          fi
       end
+
       %%
       proc {GetListAndVar List Depth ?Subterms ?Var}
          case Depth > 0 then
-            %% relational;
-            if H R NS in List = H|R then
-               Subterms = H|NS
-               {GetListAndVar R (Depth - 1) NS Var}
-            [] {Det List True} then
-               Subterms = [List]
-               Var = InitValue
-            [] true then
+            case {IsVar List} then
                Subterms = [List]
                Var = List
-            fi
+            elsecase List
+            of H|R then
+               NS in
+               Subterms = H|NS
+               {GetListAndVar R (Depth - 1) NS Var}
+            else
+               Subterms = [List]
+               Var = InitValue
+            end
          else
             Subterms = [List]
             Var = InitValue
          end
       end
+
       %%
       %% fails if no recursion was detected;
       proc {GetBaseList List Stack SavedStack ?BaseList}
          case Stack == nil then false
          else
-            %% relational;
+            %%
             case {EQ List {Subtree Stack 1}} then
                case Stack.2 == nil then
                   %% i.e. the cycle begins from the first list constructor;
@@ -2209,23 +2407,33 @@ in
             end
          end
       end
+
+      %%
    end
+
+   %%
    %%
    %%  ... used for open feature constraints browsing;
    proc {GetWFListVar LIn ?WFL ?Var}
       %%
-      %% relational;
-      case LIn
+      %%
+      case {IsVar LIn} then
+         WFL = nil
+         Var = LIn
+      elsecase LIn
       of E|R then
          WFL = E|{GetWFListVar R $ Var}
       [] nil then
          WFL = nil
          Var = InitValue
-      [] TailVar then
+      else                      % ???
+         {BrowserWarning ['Error in "GetWFListVar"?']}
+         %%
          WFL = nil
-         Var = TailVar
+         Var = LIn
       end
    end
+
    %%
    %%  Filter for 'RecordC.monitorArity';
    fun {AtomicFilter In}
@@ -2237,6 +2445,7 @@ in
       else nil
       end
    end
+
    %%
    %%  Yields 'True' if there is a name;
    fun {IsThereAName In}
@@ -2248,5 +2457,6 @@ in
       else False
       end
    end
+
    %%
 end

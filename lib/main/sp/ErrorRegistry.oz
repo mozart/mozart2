@@ -831,6 +831,56 @@ in
 
 
       %%
+      %% Register dp formatter
+      %%
+
+      fun {DpFormatter Exc}
+         E = {Error.dispatch Exc}
+         T = 'Error: distributed programming'
+      in
+         case E
+         of dp(generic Id Msg Hints) then
+            {Error.format
+             Msg
+             unit
+             {Map Hints fun {$ L#M} hint(l:L  m:oz(M)) end}
+             Exc}
+         elseof dp(modelChoose) then
+            {Error.format
+             'Cannot change distribution model: distribution layer already started'
+             unit
+             nil
+             Exc}
+         elseof dp(connection(wrongModel V)) then
+            {Error.format
+             'Ticket presupposes wrong distribution model'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(illegalTicket V)) then
+            {Error.format
+             'Illegal ticket for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(refusedTicket V)) then
+            {Error.format
+             'Ticket refused for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(ticketToDeadSite V)) then
+            {Error.format
+             'Ticket refused: refers to dead site'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         else
+            {Error.formatGeneric T Exc}
+         end
+      end
+
+      %%
       %% Foreign interface
       %%
 
@@ -904,6 +954,7 @@ in
       {NewFormatter recordC RecordCFormatter}
       {NewFormatter system  SystemFormatter}
       {NewFormatter ap      APFormatter}
+      {NewFormatter dp      DpFormatter}
       {NewFormatter os      OSFormatter}
       {NewFormatter foreign ForeignFormatter}
       {NewFormatter url     URLFormatter}

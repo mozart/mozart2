@@ -39,19 +39,18 @@ class Interface from ErrorListener.'class'
          elseof SVS then
             SourceVS <- SVS#'\n\n'#VS
          end
-      [] removeQuery(Id) then
-         {Dictionary.condGet @Waiting Id unit} = unit
+      [] pong(X) then
+         {Dictionary.condGet @Waiting X unit} = unit
       else skip
       end
    end
 
-   meth wait(Id) X N in
-      {Dictionary.put @Waiting Id X}
-      ErrorListener.'class', getNarrator(?N)
-      if {IsFree {N getQueryState(Id $)}} then
-         {Wait X}
-      end
-      {Dictionary.remove @Waiting Id}
+   meth sync() X Y in
+      X = {NewName}
+      {Dictionary.put @Waiting X Y}
+      {ErrorListener.'class', getNarrator($) enqueue(ping(_ X))}
+      {Wait Y}
+      {Dictionary.remove @Waiting X}
    end
    meth getInsertedFiles($)
       {Reverse @InsertedFiles}

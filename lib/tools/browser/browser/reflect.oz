@@ -17,7 +17,6 @@
 %%%
 
 local
-   IsDeepGuard
    IsSeen
    TupleSubterms
    TupleReflectLoop
@@ -37,9 +36,7 @@ in
          CurrentCluster = {System.getValue 0 currentBlackboard}
 
          %%
-         case RootCluster == CurrentCluster then False
-         else True
-         end
+         RootCluster \= CurrentCluster
       end
    end
 
@@ -161,8 +158,10 @@ in
                      KnownArity = {GetWFList Arity}
 
                      %% relational;
-                     if L in {LabelC TermIn L} then RLabel = L
-                     [] true then RLabel = '_'
+                     if L in {LabelC TermIn L} then
+                        RLabel =
+                        {String.toAtom {VirtualString.toString L#'...'}}
+                     [] true then RLabel = '_...'
                      fi
 
                      %%
@@ -257,8 +256,7 @@ in
                      end
                   elsecase {IsCell TermIn} then
                      LabelOf = {AtomConcatAll
-                                ['<Cell: ' {System.getPrintName TermIn } ' @ '
-                                 {IntToAtom {System.getValue TermIn cellName}} '>']}
+                                ['<Cell: ' {System.getValue TermIn name} '>']}
                   else
                      L
                   in
@@ -306,6 +304,7 @@ in
 
    %%
    %%  The 'final' reflect procedure;
+   %%  Should be used in a deep guard only;
    %%
    fun {Reflect Term}
       local IsDeep S ReflectedTerm in
@@ -325,4 +324,5 @@ in
       end
    end
 
+   %%
 end

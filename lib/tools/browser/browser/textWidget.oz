@@ -196,22 +196,18 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          local Tag in
             Tag = self.tag
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
 
             %%
-            Sync = True
+            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
          end
       end
 
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          {self.widgetObj deleteTag(self.tag)}
-
-         %%
-         Sync = True
       end
 
       %%
@@ -270,13 +266,13 @@ in
 
       %%
       %%  Note: leave dots for responsibility of parent object;
-      meth undraw(?Sync)
-         Sync = True
+      meth undraw
+         true
       end
 
       %%
-      meth setUndrawn(?Sync)
-         Sync = True
+      meth setUndrawn
+         true
       end
 
       %%
@@ -338,20 +334,18 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          local Tag in
             Tag = self.tag
+
+            %%
             {self.widgetObj [delete(Tag) deleteTag(Tag)]}
-            Sync = True
          end
       end
 
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          {self.widgetObj deleteTag(self.tag)}
-
-         %%
-         Sync = True
       end
 
       %%
@@ -534,22 +528,19 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          local Tag in
             Tag = self.tag
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
 
             %%
-            Sync = True
+            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
          end
       end
 
       %%
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          {self.widgetObj deleteTag(self.tag)}
-         %%
-         Sync = True
       end
 
       %%
@@ -758,27 +749,26 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          case @shown then
-            local Tag in
-               Tag = self.tag
-               {self.widgetObj [delete(Tag) deleteTag(Tag)]}
-               shown <- False
-            end
+            Tag
+         in
+            Tag = self.tag
+
+            %%
+            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
+            shown <- False
          else true
          end
-
-         %%
-         Sync = True
       end
 
       %%
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          {self.widgetObj deleteTag(self.tag)}
+
          %%
          shown <- False
-         Sync = True
       end
 
       %%
@@ -814,10 +804,6 @@ in
                     else
                        {self.widgetObj initBindings(self $)}
                     end
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -877,10 +863,6 @@ in
                     end
 
             %%
-            {Wait Tag}
-            {Wait TagId}
-
-            %%
             self.tag = Tag
             self.tagId = TagId
             size <- {VSLength self.name}
@@ -937,10 +919,6 @@ in
                     end
 
             %%
-            {Wait Tag}
-            {Wait TagId}
-
-            %%
             self.tag = Tag
             self.tagId = TagId
             size <- {VSLength self.name}
@@ -995,10 +973,6 @@ in
                     else
                        {self.widgetObj initBindings(self $)}
                     end
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -1497,7 +1471,7 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          case @shown then
             Tag TmpTag
          in
@@ -1507,38 +1481,31 @@ in
             {self.widgetObj [genTkName(TmpTag) duplicateTag(Tag TmpTag)]}
 
             %%
-            {Wait TmpTag}
-            {Wait <<setUndrawn($)>>}
+            <<setUndrawn>>
 
             %%
             {self.widgetObj [delete(TmpTag) deleteTag(TmpTag)]}
 
             %%
             <<nil>>
-            Sync = True
-         else
-            Sync = True
+         else true
          end
       end
 
       %%
       %%
-      meth setUndrawn(?Sync)
-         local SyncList in
-            shown <- False
-            %%
-            <<sendMessagesArg(setUndrawn SyncList)>>
-            %%
-            case {All SyncList IsValue} then
-               %%
-               %%  remove all marks;
-               <<mapObjInd(RemoveMark)>>
-               %%
-               {self.widgetObj deleteTag(self.tag)}
-               %%
-               Sync = True
-            end
-         end
+      meth setUndrawn
+         %%
+         <<sendMessages(setUndrawn)>>
+
+         %%
+         <<mapObjInd(RemoveMark)>>
+
+         %%
+         {self.widgetObj deleteTag(self.tag)}
+
+         %%
+         shown <- False
       end
 
       %%
@@ -1667,8 +1634,7 @@ in
                ObjSize = {Obj getSize($)}
 
                %%
-               {Wait ObjSize}
-
+               % {Wait ObjSize}
                %%
                NewOutInfo = {AdjoinAt OutInfo size ObjSize}
                <<setSubtermOutInfo(N NewOutInfo)>>
@@ -1699,10 +1665,14 @@ in
       end
 
       %%
+      %%  *** Async ***
+      %%
       %%  Generic 'draw subterm';
       meth !DrawSubterm(OutInfoIn N SObj SListIn ?SListOut ?OutInfoOut)
          local Sync in
-            {SObj draw(OutInfoIn.mark Sync)}
+            job
+               {SObj draw(OutInfoIn.mark Sync)}
+            end
 
             %%
             SListOut = Sync|SListIn
@@ -1761,10 +1731,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -1854,9 +1820,6 @@ in
                end
             end
 
-            %%
-            {Wait TmpMark}
-
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
             %%
@@ -1942,11 +1905,6 @@ in
 
             %%
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait NameGlueMark}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -2042,9 +2000,6 @@ in
                   %% '=', 'self.name', '(' and '@refVarName' itself;
                end
             end
-
-            %%
-            {Wait TmpMark}
 
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
@@ -2165,13 +2120,13 @@ in
       %%
       %%  ... remove also the 'name glue' mark;
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          %%
          {self.widgetObj unsetMark(self.nameGlueMark)}
          nameGlueSize <- 0
 
          %%
-         <<MetaTupleTWTermObject setUndrawn(Sync)>>
+         <<MetaTupleTWTermObject setUndrawn>>
       end
 
       %%
@@ -2374,10 +2329,6 @@ in
             TagId = {self.widgetObj initBindings(self $)}
 
             %%
-            {Wait Tag}
-            {Wait TagId}
-
-            %%
             self.tag = Tag
             self.tagId = TagId
 
@@ -2497,9 +2448,6 @@ in
                end
             end
 
-            %%
-            {Wait TmpMark}
-
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
             %%
@@ -2582,10 +2530,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -2711,9 +2655,6 @@ in
                end
             end
 
-            %%
-            {Wait TmpMark}
-
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
             %%
@@ -2796,10 +2737,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -2930,9 +2867,6 @@ in
                   %% '=', '(' and '@refVarName' itself;
                end
             end
-
-            %%
-            {Wait TmpMark}
 
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
@@ -3507,7 +3441,7 @@ in
                %%  Note: in this case we have to update 'prfxSize'
                %% field, since it was 0 (should be - we only extend records);
                %%
-               Mark FName PrfxSize ObjSize LSync
+               Mark FName PrfxSize ObjSize
             in
                Mark = OutInfo.mark
 
@@ -3527,15 +3461,11 @@ in
                   {self.widgetObj
                    insert(Mark FName#DColonS#DSpaceGlue)}
                   %% insert(Mark FName#<<getFeatDel($)>>)}
-
-                  %%
-                  LSync = True
                end
 
                %%  there were a subterm before;
                %%  Note that that subterm should be undrawn
                %% (and, actually, destroyed) already;
-               {Wait LSync}
                {Wait {Obj [getSize(ObjSize) draw(Mark $)]}}
 
                %%
@@ -3563,13 +3493,13 @@ in
       %%
       %%  ... remove also the 'name glue' mark;
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          %%
          {self.widgetObj unsetMark(self.nameGlueMark)}
          nameGlueSize <- 0
 
          %%
-         <<MetaTupleTWTermObject setUndrawn(Sync)>>
+         <<MetaTupleTWTermObject setUndrawn>>
       end
 
       %%
@@ -3654,11 +3584,6 @@ in
 
             %%
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait NameGlueMark}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -3772,9 +3697,6 @@ in
                end
             end
 
-            %%
-            {Wait TmpMark}
-
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
             %%
@@ -3865,11 +3787,6 @@ in
             TagId = {self.widgetObj initBindings(self $)}
 
             %%
-            {Wait Tag}
-            {Wait NameGlueMark}
-            {Wait TagId}
-
-            %%
             self.tag = Tag
             self.tagId = TagId
             self.nameGlueMark = NameGlueMark
@@ -3937,6 +3854,7 @@ in
          else true
          end
 \endif
+         %%
          local ActualTWWidth StartOffset TmpMark SyncList PTag Name in
             %%
             %% Force subsequent 'adjustGlues';
@@ -3987,9 +3905,6 @@ in
                   %% '=', 'self.name', '(' and '@refVarName' itself;
                end
             end
-
-            %%
-            {Wait TmpMark}
 
             %%  Resulting mark is consumed ('_' for third arg);
             <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
@@ -4080,7 +3995,7 @@ in
                <<getAnySubtermOutInfo((TotalWidth - 1) PreOutInfo)>>
 
                %%
-               {SpecsObj [getSize(SpecsSize) undraw(_) destroy]}
+               {SpecsObj [getSize(SpecsSize) undraw destroy]}
 
                %%
                {self.widgetObj
@@ -4126,7 +4041,7 @@ in
 
             %%
             case @shown then
-               UndrawMeth = undraw(_)
+               UndrawMeth = undraw
                DrawMeth = draw(SpecsOutInfo.mark _)
             else
                UndrawMeth = nil
@@ -4178,13 +4093,13 @@ in
 
       %%
       %%
-      meth undraw(?Sync)
+      meth undraw
          <<stopTypeWatching>>
          %%
          {self.widgetObj unsetMark(self.labelMark)}
 
          %%
-         <<MetaRecordTWTermObject undraw(Sync)>>
+         <<MetaRecordTWTermObject undraw>>
       end
 
       %%
@@ -4221,21 +4136,21 @@ in
       %%  'closeOut' ...
 
       %%
-      meth undraw(?Sync)
+      meth undraw
          case self.isCompound then
-            <<RecordTWTermObject undraw(Sync)>>
+            <<RecordTWTermObject undraw>>
          else
-            <<NameTWTermObject undraw(Sync)>>
+            <<NameTWTermObject undraw>>
          end
       end
 
       %%
       %%
-      meth setUndrawn(?Sync)
+      meth setUndrawn
          case self.isCompound then
-            <<RecordTWTermObject setUndrawn(Sync)>>
+            <<RecordTWTermObject setUndrawn>>
          else
-            <<NameTWTermObject setUndrawn(Sync)>>
+            <<NameTWTermObject setUndrawn>>
          end
       end
 
@@ -4331,10 +4246,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -4464,10 +4375,10 @@ in
 
       %%
       %%  'type watch' should be removed;
-      meth undraw(?Sync)
+      meth undraw
          <<stopTypeWatching>>
          %%
-         <<MetaTWTermObject undraw(Sync)>>
+         <<MetaTWTermObject undraw>>
       end
 
       %%
@@ -4505,10 +4416,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -4558,10 +4465,6 @@ in
             %%
             Tag = {self.widgetObj genTkName($)}
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag
@@ -4614,10 +4517,6 @@ in
             %%
             %%  ... are always active (to be able to 'Show' them);
             TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            {Wait Tag}
-            {Wait TagId}
 
             %%
             self.tag = Tag

@@ -609,7 +609,7 @@ in
 
             %%
             case Obj == StoredObj then
-               {Obj [isShown(WasShown) getSize(OldSize) undraw(_) destroy]}
+               {Obj [isShown(WasShown) getSize(OldSize) undraw destroy]}
 
                %%
                ActualDepth = @depth
@@ -653,9 +653,7 @@ in
 
             %%
             case Obj == StoredObj then
-               {Wait {Obj [isShown(WasShown)
-                           getSize(NewSize)
-                           undraw($)]}}
+               {Obj [isShown(WasShown) getSize(NewSize) undraw]}
 
                %%
                case WasShown then
@@ -721,7 +719,7 @@ in
                      <<makeLastSubterm(CommasObj)>>
 
                      %%
-                     {CommasObj [undraw(_) destroy]}
+                     {CommasObj [undraw destroy]}
 
                      %%  create a subterm;
                      <<createSubtermObjs(NewWidth NewWidth RestOf)>>
@@ -975,7 +973,7 @@ in
                         {self.parentObj renewNum(self Depth)}
                      end
                   else
-                     {RemovedObj [undraw(_) destroy]}
+                     {RemovedObj [undraw destroy]}
                      %% remove the (former) tail variable's representation;
 
                      %%

@@ -219,8 +219,7 @@ in
                    end
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -261,8 +260,7 @@ in
                    end
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -293,8 +291,7 @@ in
                         end
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -326,8 +323,7 @@ in
                    end
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -1009,9 +1005,6 @@ in
             end
 
             %%
-            {Wait AF}
-
-            %%
             case AF then
                %%  This *must* be a job, and *not* a thread!
                job
@@ -1370,8 +1363,7 @@ in
             Name = <<getVarName($)>>
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -1521,8 +1513,7 @@ in
             Name = <<getVarName($)>>#DLCBraceS#SubInts#DRCBraceS
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -1658,8 +1649,7 @@ in
 \endif
 
             %%
-            {Wait Name}
-
+            % {Wait Name}
             %%
             self.name = Name
             <<nil>>
@@ -2203,7 +2193,7 @@ in
             end
          else
             %%
-            Name = '#'("<Cell: " CN " @ " {System.getValue Term cellName} ">")
+            Name = '#'("<Cell: " {System.getValue Term name} ">")
          end
       end
    end

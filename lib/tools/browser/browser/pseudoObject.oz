@@ -50,12 +50,6 @@ class PseudoTermGenericObject
       {Show 'PTO::init: is applied: '#Term}
 \endif
       %%
-      {Wait RepType}
-      {Wait WidgetObj}
-      {Wait Depth}
-      {Wait Store}
-      {Wait TermsStore}
-      {Wait BrowserObj}
 
       %%  These values must be already instantiated!
       %%  We avoid this way such checking in term object's methods;
@@ -203,12 +197,14 @@ class PseudoTermGenericObject
       case self.repType
       of !In_Text_Widget then
          %%
-         {@termObj undraw(Sync)}
+         {@termObj undraw}
 
          %%
-         {Wait Sync}
          shown <- False
          <<delNL>>
+
+         %%
+         Sync = True
       else
          {BrowserError ['PseudoObject::undraw: unknown representation type']}
          Sync = True
@@ -264,7 +260,7 @@ class PseudoTermGenericObject
          IsScrolling WasShown
       in
          %%
-         {@termObj [isShown(WasShown) undraw(_) destroy]}
+         {@termObj [isShown(WasShown) undraw destroy]}
 
          %%
          depth <- Depth + 1

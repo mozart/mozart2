@@ -83,8 +83,6 @@ in
          %%
          %%  Array must be there, since we apply
          %% destructive modificator (GenericSet)!
-         {Wait Width}
-
          %%
          TotalWidth <- Width
          High <- Width + {`div` (Width * RArrayRRatio) 100}
@@ -96,8 +94,6 @@ in
       %%
       %%
       meth !RAInitFixed(Width)
-         {Wait Width}
-
          %%
          TotalWidth <- Width
          High <- Width
@@ -505,8 +501,7 @@ in
                <<Method>>
 
                %%
-               {Wait NewOutInfo}
-
+               % {Wait NewOutInfo}
                %%
                NewSRec = {AdjoinAt SRec outInfo NewOutInfo}
                <<RAPut(Low NewSRec)>>

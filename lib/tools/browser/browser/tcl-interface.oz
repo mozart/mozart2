@@ -887,7 +887,7 @@ in
       end
 
       %%
-      %%
+      %%  *must* yield a value (and not a variable);
       meth genTkName(?Mark)
 \ifdef DEBUG_TI
          {Show 'tcl/tk: genTkName:'}
@@ -1247,6 +1247,7 @@ in
 
       %%
       %%  Get the id for the tag for calling object;
+      %%  *must* yield a value (and not a variable);
       %%
       meth initBindings(Obj ?Id)
 \ifdef DEBUG_TI

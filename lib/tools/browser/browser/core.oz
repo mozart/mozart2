@@ -62,7 +62,7 @@ EQ = {`Builtin` eqB noHandler}
 TestC = {`Builtin` 'testCB' noHandler}
 
 %%
-%%  single argument is a term; suspends till this variable is bound to something;
+%%  single argument is a term; suspends till this variable is ever touched;
 %%  Useful for three reasons:
 %%  a) subsumes the 'IsValue'
 %%  b) fires when the name of a variable is changed;

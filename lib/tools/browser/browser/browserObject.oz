@@ -1729,7 +1729,14 @@ end
 %%
 %%  BrowserClass;
 %%
-class BrowserClass from BasicBrowser WindowPrimary
+class BrowserClass
+   from
+      BasicBrowser
+      WindowPrimary
+\ifdef FEGRAMED
+      FE_BrowserClass
+\endif
+
    %%
    feat
       standAlone
@@ -1758,7 +1765,10 @@ class BrowserClass from BasicBrowser WindowPrimary
       {Show 'BrowserClass::init is applied'}
 \endif
       %%
-      self.standAlone = StandAlone
+      %%  additional security because fools (like me);
+      self.standAlone = case StandAlone == True then True
+                        else False
+                        end
       self.DefaultBrowser = IsDefaultBrowser
       self.IsView = IsIsView
 
@@ -1787,8 +1797,10 @@ class BrowserClass from BasicBrowser WindowPrimary
                    store(StoreOnlyCycles IOnlyCycles)
                    store(StoreTWFont ITWFontUnknown)  % first approximation;
                    store(StoreHistoryLength IHistoryLength)
-                   store(StoreAreButtons case AreButtons then True else False end)
-                   store(StoreAreMenus case AreMenus then True else False end)
+                   store(StoreAreButtons case AreButtons == True
+                                         then True else False end)
+                   store(StoreAreMenus case AreMenus == True
+                                       then True else False end)
                    store(StoreOrigWindow OrigWindow)
                    store(StoreScreen Screen)]}
 
@@ -1881,7 +1893,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserScrolling              then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -1913,7 +1925,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserCoreferences           then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -1945,7 +1957,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserCycles                 then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -1976,7 +1988,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserPrivateFields          then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2008,7 +2020,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserVirtualStrings         then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2040,7 +2052,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserVariablesAligned       then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2072,7 +2084,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserRecordFieldsAligned    then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2104,7 +2116,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserListsFlat              then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2135,7 +2147,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserNamesAndProcsShort     then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2167,7 +2179,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserPrimitiveTermsActive   then
-         case ValueOf then
+         case ValueOf == True then
             TclVars
          in
             TclVars = @tclVars
@@ -2230,7 +2242,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserAreButtons             then
-         case ValueOf then
+         case ValueOf == True then
             case {@store read(StoreAreButtons $)} == False then
                case @window == InitValue then
                   {@store store(StoreAreButtons True)}
@@ -2256,7 +2268,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserAreMenus               then
-         case ValueOf then
+         case ValueOf == True then
             case {@store read(StoreAreMenus $)} == False then
                case @window == InitValue then
                   {@store store(StoreAreMenus True)}
@@ -2282,7 +2294,7 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
 
       [] !BrowserShowAll                then
-         case ValueOf then
+         case ValueOf == True then
             case @showAll then true
             else
                case @current == InitValue then showAll <- True
@@ -2337,17 +2349,13 @@ class BrowserClass from BasicBrowser WindowPrimary
       [] !BrowserCycles                 then
          ValueOf = {@store read(StoreOnlyCycles $)}
       [] !BrowserPrivateFields          then
-         case {@store read(StoreArityType $)} == TrueArity then ValueOf = True
-         else ValueOf = False
-         end
+         ValueOf = {@store read(StoreArityType $)} == TrueArity
       [] !BrowserVirtualStrings         then
          ValueOf = {@store read(StoreAreVSs $)}
       [] !BrowserVariablesAligned       then
          ValueOf = {@store read(StoreHeavyVars $)}
       [] !BrowserRecordFieldsAligned    then
-         case {@store read(StoreFillStyle $)} == Expanded then ValueOf = True
-         else ValueOf = False
-         end
+         ValueOf = {@store read(StoreFillStyle $)} == Expanded
       [] !BrowserListsFlat              then
          ValueOf = {@store read(StoreFlatLists $)}
       [] !BrowserNamesAndProcsShort     then
@@ -2361,10 +2369,9 @@ class BrowserClass from BasicBrowser WindowPrimary
       [] !BrowserAreMenus               then
          ValueOf = {@store read(StoreAreMenus $)}
       [] !BrowserShowAll                then
-         case @window == InitValue then ValueOf = False
-         else
-            ValueOf = @showAll
-         end
+         ValueOf = case @window == InitValue then False
+                   else @showAll
+                   end
       [] !BrowserBufferSize             then
          {@store read(StoreHistoryLength ValueOf)}
       else
@@ -3733,13 +3740,22 @@ class BrowserClass from BasicBrowser WindowPrimary
 \ifdef DEBUG_BO
       {Show 'BrowserClass::equate is applied'#Term}
 \endif
-      local ArityType in
+      local ArityType SelectedTerm Proc Handle in
          ArityType = {@store read(StoreArityType $)}
+         SelectedTerm = @selected.term
+         %%
+         Proc = proc {$} SelectedTerm = Term end
+         Handle = proc {$ E}
+                     %% Assumption: E is a virtual string?
+                     {Show '*********************************************'}
+                     {Show 'Exception occured while Browse.equate: '#E}
+                  end
 
          %%
          case ArityType == AtomicArity then
             case @selected == InitValue then true
-            else @selected.term = Term
+            else
+               {System.catch Proc Handle}
             end
          else
             {BrowserWarning ['cannot equate: the private fields are shown']}

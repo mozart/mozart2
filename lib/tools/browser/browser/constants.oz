@@ -129,7 +129,7 @@ TrueArity            = {NewName}
 %%
 %%  Help file;
 %%
-IHelpFile   = System.ozHome#'/lib/ozBrowser/help.txt'
+IHelpFile   = System.ozHome#'/lib/browser/help.txt'
 
 %%
 %%  window(graphic) parameters;

@@ -36,18 +36,17 @@ declare
 \else
 local
 \endif
-   %%
+
    %%
    %%
    %%  Local initial constants;
 \insert 'browser/constants.oz'
 \insert 'browser/setParameter.oz'
 
-
+   %%
 \ifdef FEGRAMED
    \insert  'browser/fegramed_Vars.oz'
 \endif
-
 
    %%
    %%
@@ -72,6 +71,7 @@ local
    DeepFeed       %  'feed', but also from local computation spaces;
    GenericSet     %  destructive {tuple,record} modification;
    Width          %  special 'Width': {Width X} == {Length {RealArity X}};
+
    %%
    %%  from 'atoms&strings.oz';
    AtomConcat
@@ -82,17 +82,21 @@ local
    Head
    GetStrs
    DiffStrs
+
    %%
    %%  'tcl-interface.oz';
    ProtoBrowserWindow
    ProtoMessageWindow
    ProtoHelpWindow
+
    %%
    %%  'termsStore.oz';
    ProtoTermsStore
+
    %%
    %%  'store.oz';
    ProtoStore
+
    %%
    %%  'errors.oz';
    BrowserMessagesInit
@@ -101,30 +105,38 @@ local
    BrowserMessagesNoFocus
    BrowserError
    BrowserWarning
+
    %%
    %%  reflection;
+   IsDeepGuard
    Reflect
+
    %%
    %%  local -- channel;
    BrowserStream
    BrowserCell
+
    %%
    %%  internal (after the stream) browser;
    InternalBrowse
+
    %%
    %%  (local) sub-classes for BrowserClass - from 'browserObject.oz';
    BasicBrowser
    WindowPrimary
+
    %%
    %%  from 'subterms.oz';
    TupleSubtermsStore
    RecordSubtermsStore
+
    %%
    %%  Term sub- and classes;
    %%
    %%  ... used by 'PseudoTermGenericObject';
    MetaGenericTermObject
    MetaTermTermObject
+
    %%
    %%  generic subclasses;
    AtomGenericTermObject
@@ -148,6 +160,7 @@ local
    ShrunkenGenericTermObject
    ReferenceGenericTermObject
    UnknownGenericTermObject
+
    %%  'in text widget' subclasses;
    AtomTermTermObject
    IntTermTermObject
@@ -170,6 +183,7 @@ local
    ShrunkenTermTermObject
    ReferenceTermTermObject
    UnknownTermTermObject
+
    %%  'term' subclasses;
    AtomTWTermObject
    IntTWTermObject
@@ -192,6 +206,7 @@ local
    ShrunkenTWTermObject
    ReferenceTWTermObject
    UnknownTWTermObject
+
    %%
    %%  'full' classes;
    AtomTermObject
@@ -215,14 +230,17 @@ local
    ShrunkenTermObject
    ReferenceTermObject
    UnknownTermObject
+
    %%
    %%  'Pseudo' term;
    PseudoTermObject
    PseudoTermGenericObject
    PseudoTermTWObject
+
    %%
    %%  local;
    BrowsersPool
+
    %%
    %%  "(semi) protected" methods, mainly defined for BrowserClass;
    CreateMenus = {NewName}
@@ -230,9 +248,11 @@ local
    SetTWWidth = {NewName}
    Iconify = {NewName}
    ResetWindowSize = {NewName}
+
    %%
    Bbrowse = {NewName}
    Bundraw = {NewName}
+
    %%
    UpdateSizes = {NewName}
    HistoryButtonsUpdate = {NewName}
@@ -252,93 +272,80 @@ local
    UnsetSelected = {NewName}
    SelectAndZoom = {NewName}
    SetActiveState = {NewName}
+
    %%
    %%  non-public attributes and features;
    DefaultBrowser = {NewName}
    IsView = {NewName}
+
    %%
    %%  for tcl, #$@#$% !!!!!
-   %%  (no (Oz) Names can be passed to wish;)
+   %%  (Oz Names can NOT be passed to wish;)
    TclFalse = 'tcl_False'
    TclTrue = 'tcl_True'
    TclExpanded = 'tcl_Expanded'
    TclFilled = 'tcl_Filled'
    TclAtomicArity = 'tcl_AtomicArity'
    TclTrueArity = 'tcl_TrueArity'
+
    %%
    %%
    BrowserClass
    %%
    DoBrowse
+   DoEquate
+   DoSetParameter
+   DoGetParameter
+   DoCreateWindow
    %%
-   %%
-   %% `.` = proc {$ X Y ?Z}
-   %%    case {IsRecord X} then
-   %%       case {IsAtom X} then
-   %%     {Show '***** .: bullshit!!! '#X#Y}
-   %%     Z = InitValue
-   %%       else
-   %%     case {IsLiteral Y} then
-   %%        {Subtree X Y Z}
-   %%     else
-   %%        {Show '***** .: bullshit!!! '#X#Y}
-   %%        Z = InitValue
-   %%     end
-   %%       end
-   %%    elsecase {IsTuple X} then
-   %%       case {IsAtom X} then
-   %%     {Show '***** .: bullshit!!! '#X#Y}
-   %%     Z = InitValue
-   %%       else
-   %%     case {IsNumber Y} then
-   %%        {Subtree X Y Z}
-   %%     else
-   %%        {Show '***** .: bullshit!!! '#X#Y}
-   %%        Z = InitValue
-   %%     end
-   %%       end
-   %%    else
-   %%       {Show '***** .: bullshit!!! '#X#Y}
-   %%       Z = InitValue
-   %%    end
-   %% end
+   %%  Undocumented;
+   DoThrowBrowser
    %%
 in
 
    %%
    %%  Various builtins to support meta-(oz)kernel browser's functionality;
 \insert 'browser/core.oz'
+
    %%  $%ck!
 \insert 'browser/atoms&strings.oz'
+
    %%
 \insert 'browser/errors.oz'
+
    %%
    %%  Local components:
 \insert 'browser/store.oz'
 \insert 'browser/termsStore.oz'
 \insert 'browser/subterms.oz'
 \insert 'browser/terms.oz'
+
    %%
    %%  Tcl/Tk interface;
 \insert 'browser/tcl-interface.oz'
+
    %%
    %%  In_Text_Widget
 \insert 'browser/textWidget.oz'
+
    %%
    %%  ProtoTermObject;
 \insert 'browser/termObject.oz'
+
    %%
    %%  PseudoTermObject;
 \insert 'browser/pseudoObject.oz'
-   %%
-   %%  BrowserClass;
-\insert 'browser/browserObject.oz'
-   %%
-\insert 'browser/reflect.oz'
 
+   %%
 \ifdef FEGRAMED
   \insert 'browser/fegramed.oz'
 \endif
+
+   %%  BrowserClass;
+\insert 'browser/browserObject.oz'
+
+   %%  Reflection (deep browsing;)
+\insert 'browser/reflect.oz'
 
    %%
    %%
@@ -347,6 +354,7 @@ in
    create BrowsersPool from UrObject
       attr
          listOf: nil
+
       %%
       %%
       meth browse(Term)
@@ -354,9 +362,6 @@ in
          case @listOf == nil then
             local Browser in
                create Browser from BrowserClass
-\ifdef FEGRAMED
-                                 FE_BrowserClass
-\endif
                   %% i.e. create the own one;
                   with init(areMenus: IAreMenus
                             areButtons: IAreButtons
@@ -364,15 +369,28 @@ in
                             DefaultBrowser: True   % 'protected' feature;
                            )
                end
+
                %%
                listOf <- [Browser]
             end
          else true
          end
+
          %%
-         %%  actually, "for historical reasons";
-         {ForAll @listOf proc {$ BO} {BO browse(Term)} end}
+         %%  Actually, "for historical reasons";
+         %%  Right now there can be only one "default" browser;
+         {ForAll @listOf
+          proc {$ BO}
+             %%
+             %%  Primarily, for the case if something goes wrong there
+             %% (suspends, etc.), and we can kill that browser;
+             %%  Note that the object state is released here!!!
+             job
+                {BO browse(Term)}
+             end
+          end}
       end
+
       %%
       %%
       meth equate(Term)
@@ -381,6 +399,7 @@ in
             {ForAll @listOf proc {$ BO} {BO equate(Term)} end}
          end
       end
+
       %%
       %%
       meth setPar(Par Val)
@@ -389,6 +408,7 @@ in
             {ForAll @listOf proc {$ BO} {BO setParameter(Par Val)} end}
          end
       end
+
       %%
       %%
       meth getPar(Par ?Val)
@@ -397,20 +417,24 @@ in
             {@listOf.1 getParameter(Par Val)}  % from a first one;
          end
       end
+
       %%
       %%
       meth addNewBrowser(BO)
          listOf <- BO|@listOf
       end
+
       %%
       %%
       meth removeBrowser(BO)
-         listOf <- {Filter
-                    @listOf
-                    fun {$ BOInList}
-                       case BOInList == BO then False else True end
-                    end}
+         listOf <- {Filter @listOf fun {$ BOInList} BOInList \= BO end}
       end
+      %%
+      meth removeAllBrowsers
+         listOf <- nil
+      end
+
+      %%
       %%
       meth createWindows
          case @listOf == nil then
@@ -422,62 +446,121 @@ in
                      standAlone: True       % may be omitted == True
                      DefaultBrowser: True   % 'protected' feature;
                     )}
+
                %%
                listOf <- [Browser]
             end
          else true
          end
+
          %%
-         local Syncs in
-            {Map @listOf fun {$ BO} {BO createWindow($)} end Syncs}
-            %%
-            case {All Syncs IsValue} then <<nil>> end
-         end
+         {ForAll @listOf proc {$ BO} {BO createWindow(_)} end}
+         %%
+         <<nil>>
       end
+
       %%
    end
+
    %%
    %%
    %%  Browser's cell;
    %%
    BrowserCell = {NewCell BrowserStream}
+
    %%
+   %%  "Internal" browser;
    %%
    proc {InternalBrowse S}
-      if Term Tail in S = Term|Tail then
-         {BrowsersPool browse(Term)}
+      case S
+      of Cmd|Tail then
+         local Proc Handle in
+            %%
+            Proc = proc {$} {BrowsersPool Cmd} end
+            Handle = proc {$ E}
+                        {Show '*********************************************'}
+                        {Show 'Exception occured in browser:'#E}
+                     end
+
+            %%
+            {System.catch Proc Handle}
+         end
+
+         %%
          {InternalBrowse Tail}
       else
          {BrowserError ['Browser channel is closed?']}
-      fi
+      end
    end
+
    %%
    %%  always running;
-   job {InternalBrowse BrowserStream} end
+   thread {InternalBrowse BrowserStream} end
+
+   %%
    %%
    %% pre-defined 'Browse' procedure;
    proc {DoBrowse Term}
-      {DeepFeed BrowserCell {Reflect Term}}
+      {DeepFeed BrowserCell
+       browse(case {IsDeepGuard} then {Reflect Term} else Term end)}
    end
+
+   %%
+   proc {DoEquate Term}
+      case {IsDeepGuard} then
+         {Show 'Browse.equate from a deep guard?'}
+      else
+         {DeepFeed BrowserCell equate(Term)}
+      end
+   end
+
+   %%
+   proc {DoSetParameter Par Val}
+      case {IsDeepGuard} then
+         {Show 'Browse.setParameter from a deep guard?'}
+      else
+         {DeepFeed BrowserCell setPar(Par Val)}
+      end
+   end
+
+   %% bogus ???
+   proc {DoGetParameter Par ?Val}
+      case {IsDeepGuard} then
+         {Show 'Browse.getParameter from a deep guard?'}
+      else
+         {DeepFeed BrowserCell getPar(Par Val)}
+      end
+   end
+
+   %%
+   proc {DoCreateWindow}
+      case {IsDeepGuard} then
+         {Show 'Browse.createWindow from a deep guard?'}
+      else
+         {DeepFeed BrowserCell createWindows}
+      end
+   end
+
+   %%
+   proc {DoThrowBrowser}
+      case {IsDeepGuard} then
+         {Show 'Browse.createWindow from a deep guard?'}
+      else
+         {DeepFeed BrowserCell removeAllBrowsers}
+      end
+   end
+
    %%
    %% 'Browse' module;
-   Browse = {Adjoin
-             browse(equate:
-                       proc {$ Term} {BrowsersPool equate(Term)} end
-                    setParameter:
-                       proc {$ Par Val} {BrowsersPool setPar(Par Val)} end
-                    getParameter:   % bogus ???
-                       proc {$ Par ?Val} {BrowsersPool getPar(Par Val)} end
-                    createWindow:
-                       proc {$} {BrowsersPool createWindows} end
-                    browserClass: class $ from BrowserClass
-\ifdef FEGRAMED
-                                             FE_BrowserClass
-\endif
-                                  end
-                    browse: DoBrowse)
-             DoBrowse}
-   %%
+   Browse = {Adjoin browse(equate:       DoEquate
+                           setParameter: DoSetParameter
+                           getParameter: DoGetParameter
+                           createWindow: DoCreateWindow
+                           browserClass: BrowserClass
+                           throwBrowser: DoThrowBrowser
+                           browse:       DoBrowse)
+            DoBrowse}
+
    %%
    %%
 \ifndef DEBUG_OPEN

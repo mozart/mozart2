@@ -38,7 +38,7 @@ $class =
                   'gtk_label_set_justify'         => { in  => ['GtkLabel*',
                                                                '%GtkJustification'] },
                   'gtk_label_get'                 => { in  => ['GtkLabel*',
-                                                               'gchar**'] },
+                                                               '+gchar**'] },
                   'gtk_label_parse_uline'         => { in  => ['GtkLabel*',
                                                                'const gchar*'],
                                                        out => 'guint' },

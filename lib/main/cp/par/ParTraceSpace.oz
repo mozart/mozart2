@@ -79,7 +79,7 @@ define
 
          meth merge($)
             PlainSpace,Update
-         {Space.merge @space $}
+            {Space.merge @space $}
          end
 
          meth commit(I)

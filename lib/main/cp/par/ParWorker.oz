@@ -156,12 +156,12 @@ define
             root
             id
          attr
-            fore: nil
-            back: nil
-            constrain: unit
-            overhead:  unit
-            nodes:     0
-            task_id:   0
+            fore:     nil
+            back:     nil
+            best:     unit
+            overhead: unit
+            nodes:    0
+            task_id:  0
 
          meth init(manager:M script:S order:O logger:L id:I)
             LogWriter, init(L)
@@ -171,12 +171,26 @@ define
             self.id         = I
             fore <- nil
             back <- nil
+            best <- unit
+         end
+
+         meth IsBetter(S1 S2 $)
+            %% Returns true, iff S2 is better than S1
+            if S1==unit then true else
+               TS={Space.new proc {$ _}
+                                {self.order S1 S2}
+                             end}
+            in
+               if {Space.ask TS}==failed then false else true end
+            end
          end
 
          meth constrain(S)
-            back      <- {Append @fore @back}
-            fore      <- nil
-            constrain <- S
+            if BestWorker,IsBetter(@best S $) then
+               back <- {Append @fore @back}
+               fore <- nil
+               best <- S
+            end
          end
 
          meth start(task:Is id:I)
@@ -192,27 +206,6 @@ define
             BestWorker, explore
          end
 
-         meth supplySolution(S)
-            S1 A
-         in
-            {self.manager constrain(S1 ?A)}
-            A = thread
-                   if S1==unit then
-                      S
-                   else
-                      TS={Space.new proc {$ _}
-                                       {self.order S1 S}
-                                    end}
-                   in
-                      if {Space.ask TS}==failed then
-                         unit
-                      else
-                         S
-                      end
-                   end
-                end
-         end
-
          meth explore
             case @fore of nil then
                case @back of nil then
@@ -222,9 +215,9 @@ define
                                               id:       @task_id)))
                   {self.manager idle(self.id)}
                [] S|Sr then
-                  {S constrain(@constrain)}
-                  fore <- [S]
                   back <- Sr
+                  fore <- [S]
+                  {S constrain(@best)}
                   {self.server explore}
                end
             [] S|Sr then
@@ -233,9 +226,10 @@ define
                of failed    then
                   fore <- Sr
                [] succeeded then Sol={S merge($)} in
-                  BestWorker,supplySolution(Sol)
-                  fore <- Sr
-                  BestWorker,constrain(Sol)
+                  {self.manager collect(Sol)}
+                  back <- {Append Sr @back}
+                  fore <- nil
+                  best <- Sol
                [] alternatives(N) then C={S clone($)} in
                   {S commit(1)} {C commit(2#N)}
                   fore <- S|C|Sr
@@ -252,7 +246,7 @@ define
                else
                   %% Steal from background stack
                   back <- {Steal @back ?S}
-                  {S constrain(@constrain)}
+                  {S constrain(@best)}
                end
                yes(task:{S externalize($)} id:@task_id
                    start:@nodes+@overhead)

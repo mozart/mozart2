@@ -29,6 +29,7 @@ import
    Process at 'ParProcess.ozf'
    Logging at 'x-oz://system/ParLogging.ozf'
    Manager at 'ParManager.ozf'
+   Module
 
 export
    Engine
@@ -135,10 +136,17 @@ define
       end
       meth best(SF ?Ss)
          lock
+            %% Get the script module
+            [S] = if {Functor.is SF} then
+                     {Module.apply [SF]}
+                  else
+                     {Module.link [SF]}
+                  end
             CurManager <- M
             L={self GetLogger($)}
             M={Server.new Manager.best
                init(logger: L
+                    order:  S.order
                     worker: {Record.map self.Hosts fun {$ H}
                                                       {H best(manager: M
                                                               logger:  L

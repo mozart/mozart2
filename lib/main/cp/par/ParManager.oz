@@ -26,12 +26,15 @@ functor
 require
    ParLogging(writer: LogWriter)
 
+import
+   Space
+
 export
    one:  OneManager
    all:  AllManager
    best: BestManager
 
-prepare
+define
 
    local
       DelayNoneFound = 100
@@ -190,24 +193,36 @@ prepare
          sol_head: nil
          sol_tail: nil
          sol_best: unit
-      meth init(logger:L worker:Ws)
+      feat
+         order
+      meth init(logger:L worker:Ws order:O)
          Ss
       in
          Manager, init(logger:L worker:Ws)
-         sol_head <- Ss
-         sol_tail <- Ss
-         sol_best <- unit
+         sol_head  <- Ss
+         sol_tail  <- Ss
+         sol_best  <- unit
+         self.order = O
       end
       meth done
          Manager, done
          @sol_tail = nil
       end
-      meth constrain(?S A)
-         S = @sol_best
-         if A\=unit then Ss in
-            sol_best <- A
-            Manager,broadcast(constrain(A))
-            A|Ss = (sol_tail <- Ss)
+      meth IsBetter(S1 S2 $)
+         %% Returns true, iff S2 is better than S1
+         if S1==unit then true else
+            TS={Space.new proc {$ _}
+                             {self.order S1 S2}
+                          end}
+         in
+            if {Space.ask TS}==failed then false else true end
+         end
+      end
+      meth collect(S)
+         if BestManager,IsBetter(@sol_best S $) then Ss in
+            Manager,broadcast(constrain(S))
+            sol_best <- S
+            S|Ss = (sol_tail <- Ss)
          end
       end
       meth get($)

@@ -218,11 +218,11 @@ define
    end
 
    fun {LabelToVS X}
-      case {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
+      if {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
    end
 
    fun {Bool2Token B}
-      case B then RunTime.tokens.'true' else RunTime.tokens.'false' end
+      if B then RunTime.tokens.'true' else RunTime.tokens.'false' end
    end
 
    %% assumes privacy of the following feature names used in Core:
@@ -236,10 +236,8 @@ define
    %% kinded records
 
    fun {CurrentArity R}
-      case {IsDet R}
-      then {Arity R}
-      elsecase {IsFree R}
-      then nil
+      if {IsDet R} then {Arity R}
+      elseif {IsFree R} then nil
       else {Record.reflectArity R}
       end
    end
@@ -255,17 +253,14 @@ define
    fun {GetClassData X}
       XV = {X getValue($)}
    in
-      case {IsDet XV}
-         andthen {IsObject XV}
-      then
-         case XV == X
-         then
+      if {IsDet XV} andthen {IsObject XV} then
+         if XV == X then
             unit % variable
-         elsecase {HasFeature XV ImAToken}
+         elseif {HasFeature XV ImAToken}
             andthen XV.kind == 'class'
          then
             XV
-         elsecase {HasFeature XV ImAVariableOccurrence}
+         elseif {HasFeature XV ImAVariableOccurrence}
          then
             {GetClassData XV}
          else
@@ -283,17 +278,17 @@ define
    fun {GetClassOfObjectData X}
       XV = {X getValue($)}
    in
-      case {IsDet XV}
+      if {IsDet XV}
          andthen {IsObject XV}
       then
-         case XV==X
+         if XV==X
          then
             unit % variable
-         elsecase {HasFeature XV ImAToken}
+         elseif {HasFeature XV ImAToken}
             andthen XV.kind == 'object'
          then
             {XV getClassNode($)}
-         elsecase {HasFeature XV ImAVariableOccurrence}
+         elseif {HasFeature XV ImAVariableOccurrence}
          then
             {GetClassOfObjectData XV}
          else
@@ -361,14 +356,14 @@ define
                 end
         det:    fun {$ X} XD = {GetData X} in
                    {IsDet XD} andthen
-                   case {IsObject XD} then
+                   if {IsObject XD} then
                       {Not {HasFeature XD ImAVariableOccurrence}}
                    else true end
                 end
         detOrKinded:
            fun {$ X} XD = {GetData X} in
-              case {IsDet XD} then
-                 case {IsObject XD} then
+              if {IsDet XD} then
+                 if {IsObject XD} then
                     {Not {HasFeature XD ImAVariableOccurrence}}
                  else true end
               else {IsKinded XD} end
@@ -379,7 +374,7 @@ define
    %%
 
    fun {IsListNow S}
-      case {IsDet S} then
+      if {IsDet S} then
          case S
          of nil then true
          elseof _|Sr then
@@ -389,7 +384,7 @@ define
    end
 
    fun {IsStringNow S}
-      case {IsDet S} then
+      if {IsDet S} then
          case S
          of nil then true
          elseof I|Sr then
@@ -403,14 +398,14 @@ define
    %% approximation of isVirtualString
 
    fun {IsVirtualStringNow S}
-      case {IsDet S} then
-         case {IsAtom S}
+      if {IsDet S} then
+         if {IsAtom S}
             orelse {IsInt S}
             orelse {IsFloat S}
             orelse {IsByteString S}
             orelse {IsStringNow S}
          then true
-         elsecase {IsTuple S}
+         elseif {IsTuple S}
             andthen {Label S} == '#'
          then unit
          else false end
@@ -425,8 +420,8 @@ define
          fun {$ X}
             XX = {GetData X}
          in
-            case {IsDet XX} then
-               case {IsObject XX}
+            if {IsDet XX} then
+               if {IsObject XX}
                   andthen {HasFeature XX ImAVariableOccurrence}
                then true
                else {Type XX} end
@@ -437,30 +432,34 @@ define
       fun {MaybePairOf L R X}
          XX = {GetData X}
       in
-         case {IsDet XX} then
-            case {IsObject XX}
+         if {IsDet XX} then
+            if {IsObject XX}
                andthen {HasFeature XX ImAVariableOccurrence}
             then true
-            elsecase XX
-            of A#B then
-               {DetTypeTest L A}
-               andthen {DetTypeTest R B}
-            else false end
+            else
+               case XX
+               of A#B then
+                  {DetTypeTest L A}
+                  andthen {DetTypeTest R B}
+               else false end
+            end
          else true end
       end
       fun {MaybeListOf T X}
          XX = {GetData X}
       in
-         case {IsDet XX} then
-            case {IsObject XX}
+         if {IsDet XX} then
+            if {IsObject XX}
                andthen {HasFeature XX ImAVariableOccurrence}
             then true
-            elsecase XX
-            of X|XXr then
-               {DetTypeTest T X}
-               andthen {MaybeListOf T XXr}
-            [] nil then true
-            else false end
+            else
+               case XX
+               of X|XXr then
+                  {DetTypeTest T X}
+                  andthen {MaybeListOf T XXr}
+               [] nil then true
+               else false end
+            end
          else true end
       end
       fun {MaybeList X}
@@ -472,17 +471,17 @@ define
       fun {MaybeVirtualString X}
          XX = {GetData X}
       in
-         case {IsDet XX} then
-            case {IsObject XX}
+         if {IsDet XX} then
+            if {IsObject XX}
                andthen {HasFeature XX ImAVariableOccurrence}
             then true
-            elsecase {IsAtom XX}
+            elseif {IsAtom XX}
                orelse {IsInt XX}
                orelse {IsFloat XX}
                orelse {IsByteString XX}
                orelse {MaybeString X}
             then true
-            elsecase {IsTuple XX} andthen {Label XX}=='#'
+            elseif {IsTuple XX} andthen {Label XX}=='#'
             then {Record.all XX MaybeVirtualString}
             else false end
          else true end
@@ -502,19 +501,21 @@ define
       = {Adjoin {Record.map TypeTests Maybe} DetTypeTests2}
 
       fun {DetTypeTest T X}
-         case
+         if
             {Width T} == 0
          then
             {DetTypeTests.{Label T} X}
 
-         elsecase T
-         of list(T1) then
-            {DetTypeTests.listOf T1 X}
-         [] pair(T1 T2) then
-            {DetTypeTests.pairOf T1 T2 X}
          else
-            {Exception.raiseError compiler(internal illegalTypeDeclaration(T))}
-            unit
+            case T
+            of list(T1) then
+               {DetTypeTests.listOf T1 X}
+            [] pair(T1 T2) then
+               {DetTypeTests.pairOf T1 T2 X}
+            else
+               {Exception.raiseError compiler(internal illegalTypeDeclaration(T))}
+               unit
+            end
          end
       end
    end
@@ -582,11 +583,11 @@ define
       % eg, first use within conditional;
       % atomic data need not be saved
 
-      case
+      if
          L==unit
       then
 
-         case {OzTypes.isMinimal T}
+         if {OzTypes.isMinimal T}
          then env(var:V last:L)
          else
             % copy non-minimal types
@@ -594,13 +595,13 @@ define
             env(var:V last:L type:T)
          end
 
-      elsecase
+      elseif
          {L isVariableOccurrence($)}
       then
 \ifdef DEBUGSA
          {System.show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
-         case {OzTypes.isMinimal T}
+         if {OzTypes.isMinimal T}
          then env(var:V last:L data:{GetDataObject L})
          else
             % copy non-constant types
@@ -608,13 +609,13 @@ define
             env(var:V last:L data:{GetDataObject L} type:T)
          end
 
-      elsecase
+      elseif
          {L isRecordConstr($)}
       then
 \ifdef DEBUGSA
          {System.show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
-         case {OzTypes.isMinimal T}
+         if {OzTypes.isMinimal T}
          then env(var:V last:L data:{GetDataObject L})
          else
             % copy non-constant types
@@ -625,7 +626,7 @@ define
       else
          % L is atomic: int, float, atom, token
          % has constant type
-         case {OzTypes.isMinimal T}
+         if {OzTypes.isMinimal T}
          then env(var:V last:L)
          else
 \ifdef DEBUGSA
@@ -651,13 +652,13 @@ define
 \endif
       {V setLastValue(L)}
 
-      case {HasFeature E data}
+      if {HasFeature E data}
       then {L setValue(E.data)}
-      else skip end
+      end
 
-      case {HasFeature E type}
+      if {HasFeature E type}
       then {V setType(E.type)}
-      else skip end
+      end
    end
 
    fun {GetGlobalEnv Vs}
@@ -681,14 +682,14 @@ define
 %
 
    fun {ValueToErrorLine Text X}
-      case
+      if
          X == unit
       then
          nil
       else
          XD = {GetPrintData X}
       in
-         case {X isVariableOccurrence($)}
+         if {X isVariableOccurrence($)}
          then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
          else [hint(l:Text m:oz(XD))] end
       end
@@ -713,7 +714,7 @@ define
                   hint(l:'Second type' m:{TypeToVS TY})]
                  {ValueToErrorLine 'First value' X}
                  {ValueToErrorLine 'Second value' Y}
-                 case UnifLeft \= unit
+                 if UnifLeft \= unit
                     andthen UnifRight \= unit
                  then
                     [hint(l:'Original assertion'
@@ -723,7 +724,7 @@ define
                ]
       Items  = {FoldR Msgs Append nil}
 
-      case {Ctrl getNeeded($)} then
+      if {Ctrl getNeeded($)} then
          {Ctrl.rep
           error(coord:Coord kind:SATypeError msg:ErrMsg items:Items)}
       else
@@ -740,7 +741,7 @@ define
       TX = {X getType($)}
       TY = {Y getType($)}
    in
-      case
+      if
          {OzTypes.clash TX TY}
       then
          {IssueTypeError TX TY X Y Ctrl Coord}
@@ -760,7 +761,7 @@ define
 \ifdef DEBUGSA
       {System.show constrainTypes({OzTypes.toList TX} {OzTypes.toList TY})}
 \endif
-      case
+      if
          {OzTypes.clash TX TY}
       then
          false
@@ -798,7 +799,7 @@ define
 
       Offend = hint(l:'Offending expression in' m:{NormalizeCoord Coord})
 
-      Text1 = case UnifLeft \= unit
+      Text1 = if UnifLeft \= unit
                  andthen UnifRight \= unit
               then
                  {Append Msgs
@@ -809,10 +810,10 @@ define
                  Msgs
               end
 
-      Text2 = case Origin==Coord orelse Coord==unit then Text1
+      Text2 = if Origin==Coord orelse Coord==unit then Text1
               else {Append Text1 [Offend]} end
 
-      case {Ctrl getNeeded($)} then
+      if {Ctrl getNeeded($)} then
          {Ctrl.rep error(coord: Origin
                          kind:  SAGenError
                          msg:   case ErrMsg of unit then
@@ -899,12 +900,12 @@ define
 
    fun {FormatArity Xs}
       {Map {CurrentArity Xs}
-       fun {$ X} case {IsLiteral X} then oz(X) else X end end}
+       fun {$ X} if {IsLiteral X} then oz(X) else X end end}
    end
 
    fun {Ozify Xs}
       {Map Xs
-       fun {$ X} case {IsVS X} then X else oz(X) end end}
+       fun {$ X} if {IsVS X} then X else oz(X) end end}
    end
 
    fun {TypeToVS T}
@@ -928,7 +929,7 @@ define
             Ill = N   % avoid free variables
             true
          [] X|Xr then
-            case {P X}
+            if {P X}
             then {AllUpToAux Xr P N+1 Ill}
             else Ill = X false end
          end
@@ -951,7 +952,7 @@ define
             Idx = N   % avoid free variables
             false
          [] X|Xr then
-            case {P X} then Idx = N true
+            if {P X} then Idx = N true
             else {SomeUpToNAux Xr P N+1 Idx}
             end
          end
@@ -970,14 +971,14 @@ define
    end
 
    fun {Add X Ys}
-      case {Member X Ys}
+      if {Member X Ys}
       then Ys else X|Ys end
    end
 
    fun {Union Xs Ys}
       case Xs of nil then Ys
       elseof X|Xr then
-         case {Member X Ys}
+         if {Member X Ys}
          then {Union Xr Ys}
          else X|{Union Xr Ys}
          end
@@ -999,7 +1000,7 @@ define
       [] YC|Yr then
          Y#C = YC
       in
-         case
+         if
             {System.eq X Y}
          then
             C
@@ -1027,7 +1028,7 @@ define
         fun {$ I1 M}
            {FoldL {Arity M}
             fun {$ I2 F}
-               case {HasFeature I2 F}
+               if {HasFeature I2 F}
                then {AdjoinAt I2 F (nil#unit)}
                else {AdjoinAt I2 F M.F}
                end
@@ -1307,7 +1308,7 @@ define
 
             % constructions forward the unification task
             % to their associated record value token
-         case {@right isConstruction($)}
+         if {@right isConstruction($)}
          then {@left unify(Ctrl {@right getValue($)})}
          else {@left unify(Ctrl @right)}              % l -> r
          end
@@ -1352,14 +1353,14 @@ define
                     case Arg of F#_ then F|In else In end
                  end nil}
       in
-         case
+         if
             {DetTypeTests.literal @label}
          then
             IllFeat TestFeats
          in
             {AllUpTo Args DetTypeTests.feature ?IllFeat ?TestFeats}
 
-            case
+            if
                TestFeats
             then
                LData = {GetData @label}
@@ -1373,7 +1374,7 @@ define
                               FF=I TT=Arg
                            end
 
-                           case {TT isConstruction($)}
+                           if{TT isConstruction($)}
                            then FF # {TT getValue($)}
                            else FF # TT end
                         end}
@@ -1382,18 +1383,18 @@ define
 \ifdef DEBUGSA
                {System.show makeValue(LData FData Fields)}
 \endif
-               case
+               if
                   {AllDistinct Fields}
                then
-                  case
+                  if
                      {All @label|Args DetTests.det}
                   then
-                     case
+                     if
                         @isOpen
                      then
-                        case {IsDet LData} then
+                        if {IsDet LData} then
                            Rec = {TellRecord LData}
-                        else skip end
+                        end
                         {ForAll FData proc {$ F#V} Rec^F=V end}
                      else
                         Rec = {List.toRecord LData FData}
@@ -1476,7 +1477,7 @@ define
          Value
       in
          % prepare some feature values for the code generator:
-         case {self isClauseBody($)} then
+         if {self isClauseBody($)} then
             Value = {New Core.clauseBodyToken init(DummyProc)}
             Value.clauseBodyStatements = @statements
          else
@@ -1500,7 +1501,7 @@ define
          T N
       in
          {Ctrl getTopNeeded(T N)}
-         case {Member 'instantiate' @procFlags} then
+         if {Member 'instantiate' @procFlags} then
             {Ctrl beginVirtualToplevel(@coord)}
             {Ctrl setTopNeeded(true false)}
             SAStatement, saBody(Ctrl @statements)
@@ -1521,18 +1522,18 @@ define
 
       meth typeCheckN(Ctrl N VOs Ts $)
          case VOs of nil then
-            case Ts\=nil then
+            if Ts\=nil then
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
                {Exception.raiseError compiler(internal typeCheckN)}
-            else skip end
+            end
             0
          [] VO|VOr then
             case Ts
             of T|Tr then
-               case
+               if
                   {DetTypeTest T VO}
                then
                   SABuiltinApplication, typeCheckN(Ctrl N+1 VOr Tr $)
@@ -1553,13 +1554,13 @@ define
 
       meth detCheck(Ctrl VOs Ds $)
          case VOs of nil then
-            case Ds\=nil then
+            if Ds\=nil then
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
                {Exception.raiseError compiler(internal detCheck)}
-            else skip end
+            end
             true
          [] VO|VOr then
             case Ds
@@ -1590,7 +1591,7 @@ define
 \ifdef DEBUG
                {System.show asserting(A T D)}
 \endif
-               case
+               if
                   {ConstrainTypes
                    {A getType($)}
                    {OzTypes.encode {Label T} nil}}
@@ -1665,13 +1666,13 @@ define
             Where = '???'
          end
 
-         case Meth==unit
+         if Meth==unit
          then
             skip
-         elsecase
+         elseif
             {IsDet Msg} andthen {IsRecord Msg}
          then
-            case
+            if
                {HasFeature Meth {Label Msg}}
             then
                Req # Opt = Meth.{Label Msg}
@@ -1679,7 +1680,7 @@ define
 
                {ForAll Req
                 proc {$ R}
-                   case {HasFeature Msg R}
+                   if {HasFeature Msg R}
                    then skip else
                       {Ctrl.rep
                        error(coord: @coord
@@ -1692,12 +1693,12 @@ define
                    end
                 end}
 
-               case
+               if
                   Opt \= unit
                then
                   {ForAll {Arity Msg}
                    proc {$ F}
-                      case {Member F Req}
+                      if {Member F Req}
                          orelse {Member F Opt}
                       then skip else
                          {Ctrl.rep
@@ -1715,7 +1716,7 @@ define
                    end}
                else skip end
 
-            elsecase
+            elseif
                {HasFeature Meth otherwise}
             then skip else
                {Ctrl.rep
@@ -1814,15 +1815,15 @@ define
          BndVO = {Nth @actualArgs 1}
          {BndVO getVariable(?BndV)}
          {BndV getPrintName(?PrintName)}
-         case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
+         if {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
             {Ctrl declareToplevelName(PrintName ?TheName)}
          else
             TheName = {CompilerSupport.newNamedName PrintName}
          end
          Token = {New Core.nameToken init(TheName {Ctrl getTop($)})}
          {BndVO unifyVal(Ctrl Token)}
-         case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
-         else skip end
+         if {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
+         end
       end
 
       meth doNewUniqueName(Ctrl)
@@ -1907,7 +1908,7 @@ define
       in
          {BndVO unifyVal(Ctrl Token)}
 
-         case Cls == unit
+         if Cls == unit
          then skip else
             Meth = {Cls getMethods($)}
          in
@@ -1937,7 +1938,7 @@ define
          {System.show dot(FirstArg RecOrCh F)}
 \endif
          %% dot selection from object
-         case
+         if
             {IsDet RecOrCh}
             andthen {TypeTests.object RecOrCh}
          then
@@ -1948,7 +1949,7 @@ define
             elseof Cls then
                Fs  = {Cls getFeatures($)}
             in
-               case
+               if
                   Fs == unit orelse {Member F Fs}
                then
                   skip
@@ -1963,7 +1964,7 @@ define
             end
 
             %% dot selection from class
-         elsecase
+         elseif
             {IsDet RecOrCh}
             andthen {TypeTests.'class' RecOrCh}
          then
@@ -1973,7 +1974,7 @@ define
             elseof Cls then
                Fs  = {Cls getFeatures($)}
             in
-               case Fs == unit
+               if Fs == unit
                   orelse {Member F Fs}
                then skip else
                   {Ctrl.rep
@@ -1986,11 +1987,11 @@ define
             end
 
             %% dot selection from record
-         elsecase
+         elseif
             {IsDet RecOrCh}
             andthen {TypeTests.record RecOrCh}
          then
-            case {HasFeature RecOrCh F}
+            if {HasFeature RecOrCh F}
             then
                BndVO = {Nth @actualArgs 3}
             in
@@ -2011,10 +2012,10 @@ define
             end
 
             %% dot selection from non-determined record
-         elsecase
+         elseif
             {TypeTests.recordC RecOrCh}
          then
-            case {HasFeatureNow RecOrCh F}
+            if {HasFeatureNow RecOrCh F}
             then
                BndVO = {Nth @actualArgs 3}
             in
@@ -2030,11 +2031,11 @@ define
             end
 
             %% dot selection from chunks
-         elsecase
+         elseif
             {IsDet RecOrCh}
             andthen {TypeTests.chunk RecOrCh}
          then
-            case {HasFeature RecOrCh F}
+            if {HasFeature RecOrCh F}
             then
                BndVO = {Nth @actualArgs 3}
             in
@@ -2067,7 +2068,7 @@ define
 \ifdef DEBUGSA
          {System.show hat(Rec Fea)}
 \endif
-         case
+         if
             {HasFeatureNow Rec Fea}
          then
             BndVO = {Nth @actualArgs 3}
@@ -2079,7 +2080,7 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         elsecase
+         elseif
             {IsDet Rec}
          then
             {Ctrl.rep
@@ -2098,7 +2099,7 @@ define
          Msg  = {Nth @actualArgs 2}
          PN   = {{Nth @actualArgs 1} getPrintName($)}
       in
-         case Cls == unit
+         if Cls == unit
          then skip else
             Meth = {Cls getMethods($)}
          in
@@ -2117,7 +2118,7 @@ define
                 else {Self getProperties($)}
                 end
       in
-         case
+         if
             Attrs==unit
             orelse {Not {DetTests.det FeaV}}
             orelse {Member Fea Attrs}
@@ -2130,16 +2131,16 @@ define
                    elseof 'Object.\'@\'' then '@' # oz(Fea) # ' = ' # oz(Val)
                    end
             Final = (Props\=unit andthen {Member final Props})
-            Hint = case Final
+            Hint = if Final
                    then '(correct use requires method application)'
                    else '(may be a correct forward declaration)'
                    end
-            Cls  = case Final
+            Cls  = if Final
                    then 'In final class'
                    else 'In class'
                    end
          in
-            case
+            if
                Final orelse
                {Ctrl.switches getSwitch(warnforward $)}
             then
@@ -2165,7 +2166,7 @@ define
          Val1 = {GetData BVO1}
          Val2 = {GetData BVO2}
       in
-         case
+         if
             {IsDet Val1} andthen {IsDet Val2}
          then
             Token = {Bool2Token {And Val1 Val2}}
@@ -2177,8 +2178,6 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else
-            skip
          end
       end
 
@@ -2189,7 +2188,7 @@ define
          Val1 = {GetData BVO1}
          Val2 = {GetData BVO2}
       in
-         case
+         if
             {IsDet Val1} andthen {IsDet Val2}
          then
             Token = {Bool2Token {Or Val1 Val2}}
@@ -2201,8 +2200,6 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else
-            skip
          end
       end
 
@@ -2211,7 +2208,7 @@ define
          BVO2 = {Nth @actualArgs 2}
          Val1 = {GetData BVO1}
       in
-         case
+         if
             {IsDet Val1}
          then
             Token = {Bool2Token {Not Val1}}
@@ -2223,7 +2220,7 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else skip end
+         end
       end
 
       meth doLabel(Ctrl)
@@ -2231,17 +2228,17 @@ define
          BVO2 = {Nth @actualArgs 2}
          Val  = {BVO1 getValue($)}
       in
-         case
+         if
             {Val isRecordConstr($)}
          then
             Lab={Val getLabel($)} LabNode
          in
-            case {IsDet Lab} then
+            if {IsDet Lab} then
 
                {Ctrl setErrorMsg('label assertion failed')}
                {Ctrl setUnifier(BVO2 Lab)}
 
-               case {IsAtom Lab} then
+               if {IsAtom Lab} then
                   LabNode = {New Core.atomNode init(Lab unit)}
                else
                   LabNode = {New Core.nameToken init(Lab unit)}
@@ -2250,8 +2247,8 @@ define
 
                {Ctrl resetUnifier}
                {Ctrl resetErrorMsg}
-            else skip end
-         else skip end
+            end
+         end
       end
 
       meth doWidth(Ctrl)
@@ -2259,7 +2256,7 @@ define
          BVO2  = {Nth @actualArgs 2}
          Data  = {GetData BVO1}
       in
-         case
+         if
             {IsDet Data}
          then
             IntVal= {New Core.intNode init({Width Data} @coord)}
@@ -2271,7 +2268,7 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else skip end
+         end
       end
 
       meth doProcedureArity(Ctrl)
@@ -2279,7 +2276,7 @@ define
          BVO2  = {Nth @actualArgs 2}
          Data  = {GetData BVO1}
       in
-         case
+         if
             {IsDet Data}
          then
             IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
@@ -2291,7 +2288,7 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else skip end
+         end
       end
 
       meth doCheckType(TestType Test Ctrl)
@@ -2312,10 +2309,10 @@ define
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
       in
-         case {DetTests.det BVO1} then
+         if {DetTests.det BVO1} then
             {Ctrl setErrorMsg('type test failed')}
 
-            case {Test {GetData BVO1}} then
+            if {Test {GetData BVO1}} then
                {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
                {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
             else
@@ -2325,7 +2322,7 @@ define
 
             {Ctrl resetUnifier}
             {Ctrl resetErrorMsg}
-         else skip end
+         end
       end
 
       meth DoRecDetType(ThreeValuedTest Ctrl)
@@ -2360,15 +2357,15 @@ define
       in
          {Ctrl setErrorMsg('type test failed')}
 
-         case {DetTests.detOrKinded BVO1} then
-            case {Test {GetData BVO1}} then
+         if {DetTests.detOrKinded BVO1} then
+            if {Test {GetData BVO1}} then
                {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
                {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
             else
                {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
                {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
             end
-         else skip end
+         end
          {Ctrl resetUnifier}
          {Ctrl resetErrorMsg}
       end
@@ -2389,7 +2386,7 @@ define
                      [] 6 then {OzTypes.encode 'procedure/6' nil}
                      else {OzTypes.encode 'procedure/>6' nil} end
       in
-         case
+         if
             {ConstrainTypes DesigType ProcType}
          then
             skip
@@ -2417,7 +2414,7 @@ define
          {System.show application({@designator getPrintName($)} )}
 \endif
 
-         case
+         if
             SAApplication, checkDesignatorBuiltin($)
          then
             BIName = {System.printName {GetData @designator}}
@@ -2439,7 +2436,7 @@ define
                {System.show applyingKnown(BIName)}
 \endif
                SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
-               case
+               if
                   ArgsOk
                then
                   Msg = {AdjoinAt M {Width M}+1 Ctrl}
@@ -2458,11 +2455,11 @@ define
             {System.show doneMsg(ArgsOk)}
 \endif
 
-            case ArgsOk then
+            if ArgsOk then
                SABuiltinApplication, assertTypes(Ctrl BIName)
-            else skip end
+            end
 
-         elsecase
+         elseif
             SAApplication, checkDesignatorProcedure($)
          then
             DVal = {GetData @designator}
@@ -2470,7 +2467,7 @@ define
             ExpA = {Procedure.arity DVal}
             GotA = {Length @actualArgs}
          in
-            case
+            if
                GotA \= ExpA
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
@@ -2487,16 +2484,16 @@ define
                                    m:{ApplToVS pn(PN)|PNs})
                               hint(l:'Application (values)'
                                    m:{ApplToVS pn(PN)|Vals})])}
-            else skip end
+            end
 
-         elsecase
+         elseif
             SAApplication, checkDesignatorObject($)
          then
             PN   = {@designator getPrintName($)}
             Cls  = {{@designator getValue($)} getClassNode($)}
             GotA = {Length @actualArgs}
          in
-            case
+            if
                GotA \= 1
             then
                {Ctrl.rep
@@ -2506,7 +2503,7 @@ define
                       items: [hint(l:'Object' m:pn(PN))
                               hint(l:'Expected' m:1)
                               hint(l:'Found' m:GotA)])}
-            elsecase
+            elseif
                Cls == unit
             then
                skip
@@ -2517,7 +2514,7 @@ define
                SAApplication, checkMessage(Ctrl Msg Meth object PN)
             end
 
-         elsecase
+         elseif
             {DetTests.det @designator}
          then
             Val = {GetPrintData @designator}
@@ -2557,7 +2554,7 @@ define
       meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-         case {DetTests.det @arbiter}
+         if {DetTests.det @arbiter}
             andthen {TypeTests.bool {GetData @arbiter}}
          then
             PN = {@arbiter getPrintName($)}
@@ -2565,7 +2562,7 @@ define
 \ifdef DEBUGSA
             {System.show isConst(PN)}
 \endif
-            case
+            if
                {TypeTests.'true' {GetData @arbiter}}
             then
                {Ctrl.rep
@@ -2598,7 +2595,7 @@ define
                {@alternative saDescendAndCommit(Ctrl)}
             end
 
-         elsecase
+         elseif
             {ConstrainTypes
              {@arbiter getType($)}
              {OzTypes.encode bool nil}}
@@ -2624,7 +2621,7 @@ define
                    kind:  SATypeError
                    items: hint(l:'Value' m:oz(Val))
                    | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
-                   | case {IsFree Val} then nil
+                   | if {IsFree Val} then nil
                      else [hint(l:'Name' m:pn(PN))] end)}
          end
       end
@@ -2715,7 +2712,7 @@ define
 
             % the value of record patterns is
             % not the pattern itself, but stored in it
-         PVal = case {@pattern isConstruction($)}
+         PVal = if {@pattern isConstruction($)}
                 then {@pattern getValue($)}
                 else @pattern end
 
@@ -2791,7 +2788,7 @@ define
          {@right sa(Ctrl)}                            % analyse right hand side
             % patterns forward the unification task
             % to their associated record value token
-         case {@right isConstruction($)}
+         if {@right isConstruction($)}
          then {@left unify(Ctrl {@right getValue($)})}
          else {@left unify(Ctrl @right)}              % l -> r
          end
@@ -2936,7 +2933,7 @@ define
          {System.show classNode({@designator getPrintName($)}
                                 {Map @parents fun {$ X} {X getPrintName($)} end})}
 \endif
-         case
+         if
             TestClass
          then
             PTs = {Map @parents fun {$ X} {X getValue($)} end}
@@ -2979,13 +2976,13 @@ define
          {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
 
          % type test
-         case TestAtom then
+         if TestAtom then
             % new determined properties
             Pro  = {Filter {Map @properties GetData}
                     TypeTests.atom}
             % properties of det parents
             PPro = {Map PTs fun {$ P}
-                               case {DetTests.det P}
+                               if {DetTests.det P}
                                then {P getProperties($)}
                                else unit end
                             end}
@@ -2995,7 +2992,7 @@ define
              fun {$ P} P\=unit andthen {Member final P} end
              ?NthFinal ?TestFinal}
 
-            case TestFinal then
+            if TestFinal then
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SATypeError
@@ -3027,21 +3024,21 @@ define
          {System.show attributes(Att TestFeat {Map Att GetData})}
 \endif
 
-         case
+         if
             TestFeat
          then
             AData = {Map Att GetData}
          in
             % distinct attributes required
-            case
+            if
                {AllDistinct AData}
             then
                % parents determined?
-               case PsDet then
+               if PsDet then
                   PAtt = {Map PTs fun {$ P} {P getAttributes($)} end}
                in
                   % type & det test
-                  case
+                  if
                      {Not {Member unit PAtt}}
                      andthen
                      {All AData TypeTests.feature}
@@ -3078,21 +3075,21 @@ define
 
          {AllUpTo Fea DetTypeTests.feature ?IllFeat ?TestFeat}
 
-         case
+         if
             TestFeat
          then
             FData = {Map Fea GetData}
          in
             % distinct features required
-            case
+            if
                {AllDistinct FData}
             then
                % parents determined?
-               case PsDet then
+               if PsDet then
                   PFea = {Map PTs fun {$ P} {P getFeatures($)} end}
                in
                   % type & det test
-                  case
+                  if
                      {Not {Member unit PFea}}
                      andthen
                      {All FData TypeTests.feature}
@@ -3136,34 +3133,34 @@ define
          {AllUpTo Met
           fun {$ _#(_#O)} O==unit orelse {All O DetTypeTests.feature} end ?IllOptMeth ?TestOpt}
 
-         case
+         if
             TestLab
          then
-            case
+            if
                TestReq
             then
-               case
+               if
                   TestOpt
                then
                   MData = {Map Met
                            fun {$ L#(R#O)}
                               {GetData L} #
                               ({Map R GetData} #
-                               case O==unit then O
+                               if O==unit then O
                                else {Map O GetData} end)
                            end}
                   MethNames = {Map MData fun {$ L#_} L end}
                in
             % distinct method names required
-                  case
+                  if
                      {AllDistinct MethNames}
                   then
                % parents determined?
-                     case PsDet then
+                     if PsDet then
                         PMet = {Map PTs fun {$ P} {P getMethods($)} end}
                      in
                   % type & det test
-                        case
+                        if
                            {All MethNames TypeTests.literal}
                            andthen
                            {Not {Member unit PMet}}
@@ -3301,7 +3298,7 @@ define
          {Partition Fs fun {$ F} {Label F}==required end R1 O1}
 
          R2 = {Map R1 fun {$ R} R.1 end}
-         O2 = case @isOpen then unit else {Map O1 fun {$ O} O.1 end} end
+         O2 = if @isOpen then unit else {Map O1 fun {$ O} O.1 end} end
 
          @label # (R2 # O2)
       end
@@ -3447,15 +3444,15 @@ define
 \ifdef LOOP
          {System.show unifyVN(@value {RHS getValue($)})}
 \endif
-         case
+         if
             {UnifyTypesOf self RHS Ctrl @coord}
          then
             RVal = {RHS getValue($)}
          in
-            case
+            if
                {IsDet RVal} andthen @value == {RHS getValue($)}
             then skip else
-               case {IsFree RVal}
+               if {IsFree RVal}
                then skip else
                   {IssueUnificationFailure Ctrl @coord
                    [hint(l:'First value' m:oz(@value))
@@ -3492,12 +3489,12 @@ define
          {TypeToVS @type}
       end
       meth outputDebugType($)
-         case @lastValue == unit then {TypeToVS @type}
+         if @lastValue == unit then {TypeToVS @type}
          else {@lastValue getPrintType(AnalysisDepth $)}
          end
       end
       meth outputDebugMeths($)
-         case @lastValue \= unit
+         if @lastValue \= unit
             andthen {HasFeature @lastValue kind}
          then
             case @lastValue.kind
@@ -3513,7 +3510,7 @@ define
          else unit end
       end
       meth outputDebugAttrs($)
-         case @lastValue \= unit
+         if @lastValue \= unit
             andthen {HasFeature @lastValue kind}
          then
             case @lastValue.kind
@@ -3523,7 +3520,7 @@ define
          else unit end
       end
       meth outputDebugFeats($)
-         case @lastValue \= unit
+         if @lastValue \= unit
             andthen {HasFeature @lastValue kind}
          then
             case @lastValue.kind
@@ -3533,7 +3530,7 @@ define
          else unit end
       end
       meth outputDebugProps($)
-         case @lastValue \= unit
+         if @lastValue \= unit
             andthen {HasFeature @lastValue kind}
          then
             case @lastValue.kind
@@ -3546,41 +3543,41 @@ define
       end
       meth setLastValue(O)
          lastValue <- O
-         case O == unit then skip
+         if O == unit then skip
          else type <- {O getType($)} end
       end
       meth deref(VO)
-         case
+         if
             @lastValue == unit                        % is free
          then
             SAVariable, setLastValue(VO)              % initialize with var-occ
 
-         elsecase
+         elseif
             {@lastValue isVariableOccurrence($)}
          then
             NewVal = {@lastValue getValue($)}         % getLastValue($) ?
          in
             SAVariable, setLastValue(NewVal)          % var path compression
-            case @lastValue == NewVal
+            if @lastValue == NewVal
             then skip else
                SAVariable, deref(VO)                  % recur
             end
-         elsecase
+         elseif
             {@lastValue isRecordConstr($)}
          then
             NewVal = {@lastValue getLastValue($)}
          in
-            case
+            if
                @lastValue == NewVal
             then
                skip                                   % self reference
-            elsecase
+            elseif
                NewVal == unit
             then
                {@lastValue setLastValue(@lastValue)}  % non initialised
             else
                SAVariable, setLastValue(NewVal)       % constr path compression
-               case
+               if
                   @lastValue == NewVal
                then skip else
                   SAVariable, deref(VO)               % recur
@@ -3595,7 +3592,7 @@ define
          {self ValToSubst(@printName nil AnalysisDepth Value)}
       end
       meth ValToSubst(PrintNameBase Seen Depth Value)
-         case
+         if
             Depth =< 0
          then
 \ifdef DEBUGSA
@@ -3603,7 +3600,7 @@ define
 \endif
             SAVariable, setLastValue(unit) % stop analysis here
 
-         elsecase
+         elseif
             {IsDet Value}
          then
 
@@ -3611,28 +3608,28 @@ define
             {System.show valToSubst(Value)}
 \endif
 
-            case
+            if
                {IsInt Value}
             then
                SAVariable, setLastValue({New Core.intNode init(Value unit)})
 
-            elsecase
+            elseif
                {IsFloat Value}
             then
                SAVariable, setLastValue({New Core.floatNode init(Value unit)})
 
-            elsecase
+            elseif
                {IsAtom Value}
             then
                SAVariable, setLastValue({New Core.atomNode init(Value unit)})
 
-            elsecase
+            elseif
                {IsName Value}
             then
                SAVariable,
                setLastValue({New Core.nameToken init(Value true)})
 
-            elsecase
+            elseif
                {IsRecord Value}
             then
                RecArgs   = {Record.toListInd Value}
@@ -3648,7 +3645,7 @@ define
                                      PrintNameBase
                                      ?RecConstrValArgs)}
 
-               case {Width Value} =< AnalysisWidth.Depth
+               if {Width Value} =< AnalysisWidth.Depth
                then RecVal = {List.toRecord Lab RecConstrValArgs}
                else
                   RecVal = {TellRecord Lab}
@@ -3657,14 +3654,14 @@ define
 
                RecConstr = {New RecordConstr init(RecVal unit)}
                SAVariable, setLastValue( RecConstr )
-            elsecase
+            elseif
                {CompilerSupport.isBuiltin Value}
             then
                BI      = {New Core.builtinToken init(Value)}
             in
                SAVariable, setLastValue(BI)
 
-            elsecase
+            elseif
                {IsProcedure Value}
             then
                ProcToken = {New Core.procedureToken init(Value)}
@@ -3672,7 +3669,7 @@ define
                ProcToken.predicateRef = Value
                SAVariable, setLastValue(ProcToken)
 
-            elsecase
+            elseif
                {IsClass Value}
             then
                Cls = {New Core.classToken init(Value)}
@@ -3688,7 +3685,7 @@ define
                {Cls setProperties(Props)}
                SAVariable, setLastValue(Cls)
 
-            elsecase
+            elseif
                {IsObject Value}
             then
                TheClass = {Class.get Value}
@@ -3705,59 +3702,59 @@ define
                {Cls setProperties(Props)}
                SAVariable, setLastValue({New Core.objectToken init(Value Cls)})
 
-            elsecase
+            elseif
                {IsCell Value}
             then
                SAVariable, setLastValue({New Core.cellToken init(Value)})
 
-            elsecase
+            elseif
                {IsLock Value}
             then
                SAVariable, setLastValue({New Core.lockToken init(Value)})
 
-            elsecase
+            elseif
                {IsPort Value}
             then
                SAVariable, setLastValue({New Core.portToken init(Value)})
 
-            elsecase
+            elseif
                {IsArray Value}
             then
                DummyArray = {New Core.arrayToken init(Value)}
             in
                SAVariable, setLastValue(DummyArray)
 
-            elsecase
+            elseif
                {IsDictionary Value}
             then
                SAVariable, setLastValue({New Core.dictionaryToken init(Value)})
 
-            elsecase
+            elseif
                {IsSpace Value}
             then
                SAVariable, setLastValue({New Core.spaceToken init(Value)})
 
-            elsecase
+            elseif
                {IsThread Value}
             then
                SAVariable, setLastValue({New Core.threadToken init(Value)})
 
-            elsecase
+            elseif
                {BitArray.is Value}
             then
                SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
 
-            elsecase
+            elseif
                {IsBitString Value}
             then
                SAVariable, setLastValue({New Core.bitStringNode init(Value unit)})
 
-            elsecase
+            elseif
                {IsByteString Value}
             then
                SAVariable, setLastValue({New Core.byteStringNode init(Value unit)})
 
-            elsecase
+            elseif
                {IsChunk Value}
             then
                SAVariable, setLastValue({New Core.chunkToken init(Value)})
@@ -3771,23 +3768,24 @@ define
          end
       end
       meth recordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
-         case
+         if
             Width>0
          then
             case RecArgs
             of (F#X) | RAs
             then
                Assoc = {PLDotEQ X Seen}
-               A = case {IsAtom F} then
+               A = if {IsAtom F} then
                       {New Core.atomNode init(F unit)}
-                   elsecase {IsName F} then
+                   elseif {IsName F} then
                       {New Core.nameToken init(F true)}
-                   elsecase {IsInt F} then
+                   else
+                      % if {IsInt F} then
                       {New Core.intNode init(F unit)}
                    end
                VO CVAr
             in
-               case
+               if
                   Assoc == unit % not seen
                then
                   PrintName = {String.toAtom {VS2S PrintNameBase#'.'#F}}
@@ -3832,11 +3830,12 @@ define
       end
       meth RecordToSubst(Arity Rec Depth ?Args ?RecArgs)
          case Arity of F|Fr then RecFeat V VO Argr RecArgr in
-            RecFeat = case {IsAtom F} then
+            RecFeat = if {IsAtom F} then
                          {New Core.atomNode init(F unit)}
-                      elsecase {IsName F} then
+                      elseif {IsName F} then
                          {New Core.nameToken init(F true)}
-                      elsecase {IsInt F} then
+                      else
+                         % if {IsInt F} then
                          {New Core.intNode init(F unit)}
                       end
             V = {New Core.variable init('' generated unit)}
@@ -3873,12 +3872,12 @@ define
          else
             SAVariable, deref(@lastValue)
 
-            case
+            if
                {@lastValue isVariableOccurrence($)} % free variable
             then
                % save self + representant (might differ!)
                {Add self {Add {@lastValue getVariable($)} Vs}}
-            elsecase
+            elseif
                {@lastValue isRecordConstr($)}
             then
                %
@@ -3925,23 +3924,23 @@ define
 \ifdef DEBUGSA
          {System.show updating(O)}
 \endif
-         case
+         if
             O==unit                       % no value known
          then
             {self setValue(self)}         % initialize value
-         elsecase
+         elseif
             {O isVariableOccurrence($)}   % fully deref var occs
          then
             OLV = {O getLastValue($)}
          in
-            case O == OLV
+            if O == OLV
                orelse {O getVariable($)} == @variable
             then
                {self setValue(O)}
             else
                SAVariableOccurrence, UpdateValue(OLV)
             end
-         elsecase
+         elseif
             {O isRecordConstr($)}
          then
             Args NArgs
@@ -3957,7 +3956,7 @@ define
                      end}
 
                % no change in record value
-            case Args == NArgs then
+            if Args == NArgs then
 \ifdef DEBUGSA
                {System.show notCopyingSame}
 \endif
@@ -3973,10 +3972,10 @@ define
                         end}
                Rec
             in
-               case
+               if
                   {O isOpen($)}
                then
-                  case {IsDet LData} then
+                  if {IsDet LData} then
                      Rec = {TellRecord LData}
                   else skip end
                   {ForAll FData proc {$ F#V} Rec^F=V end}
@@ -4017,10 +4016,10 @@ define
          {@value getValue($)}
       end
       meth getFullData(D IsData $)
-         case
+         if
             {HasFeature @value ImAVariableOccurrence}
          then
-            case IsData then _
+            if IsData then _
             else   % dummy variable with right print name
                {CompilerSupport.nameVariable $ {@variable getPrintName($)}}
             end
@@ -4037,7 +4036,7 @@ define
       end
 
       meth reachable(Vs $)
-         case
+         if
             {Member @variable Vs}
          then
             Vs
@@ -4056,15 +4055,15 @@ define
       in
          SAVariableOccurrence, getLastValue(LHS)
 
-         case
+         if
             {Not {UnifyTypesOf self RHS Ctrl @coord}}
          then
             skip % do not continue on type error
-         elsecase
+         elseif
             {LHS isVariableOccurrence($)}
          then
             SAVariableOccurrence, bind(Ctrl RHS)
-         elsecase
+         elseif
             {LHS isRecordConstr($)}
          then
             {LHS unify(Ctrl RHS)}
@@ -4080,7 +4079,7 @@ define
 \ifdef LOOP
          {System.show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
 \endif
-         case
+         if
             {UnifyTypesOf self RHS Ctrl @coord}
          then
                % set new value for following occurrences
@@ -4094,7 +4093,7 @@ define
 
       meth unify(Ctrl TorC)
 \ifdef LOOP
-         case
+         if
             {TorC isVariableOccurrence($)}
          then
             {System.show unifyV({self getPrintName($)} {TorC getPrintName($)})}
@@ -4107,15 +4106,15 @@ define
       in
          SAVariableOccurrence, getLastValue(LHS)
 
-         case
+         if
             {UnifyTypesOf LHS TorC Ctrl @coord}
          then
-            case
+            if
                {TorC isVariableOccurrence($)}
             then
                % implicit deref
                RHS = {TorC getLastValue($)}
-            elsecase
+            elseif
                {TorC isRecordConstr($)}
             then
                {TorC deref(TorC)}
@@ -4136,24 +4135,24 @@ define
 \ifdef LOOP
          {System.show unifyDR({self getPrintName($)} LHS RHS)}
 \endif
-         case
+         if
             LHS == RHS
          then
             skip                                % nothing to do
          else
-            case
+            if
                {LHS isVariableOccurrence($)}
             then
                {LHS bind(Ctrl RHS)}
-            elsecase
+            elseif
                {RHS isVariableOccurrence($)}
             then
                {RHS bind(Ctrl LHS)}
-            elsecase
+            elseif
                {LHS isRecordConstr($)}
             then
                   %--** here is some work on extension to ft unification
-               case
+               if
                   {RHS isRecordConstr($)}
                then
                   {RHS bind(Ctrl LHS)}
@@ -4161,7 +4160,7 @@ define
                   skip % and fail on unification
                end
                {LHS unify(Ctrl RHS)}
-            elsecase
+            elseif
                {RHS isRecordConstr($)}
             then
                {RHS unify(Ctrl LHS)}
@@ -4197,11 +4196,11 @@ define
          type({OzTypes.decode @type})
       end
       meth getData(IsObj $)
-         case IsObj then self
+         if IsObj then self
          else @value end
       end
       meth getFullData(D IsData $)
-         case IsData then self
+         if IsData then self
          else @value end
       end
       meth isRecordConstr($)
@@ -4211,12 +4210,12 @@ define
 \ifdef LOOP
          {System.show unifyT(@value {RHS getValue($)})}
 \endif
-         case
+         if
             {UnifyTypesOf self RHS Ctrl unit}
          then
             RVal = {RHS getValue($)}
          in
-            case
+            if
                {IsToken RHS} andthen @value==RVal
             then skip else
                {IssueUnificationFailure Ctrl unit
@@ -4231,7 +4230,7 @@ define
 
    class SANameToken
       meth reflectType(_ $)
-         case @isToplevel andthen {Not {CompilerSupport.isCopyableName @value}}
+         if @isToplevel andthen {Not {CompilerSupport.isCopyableName @value}}
          then value(@value)
          else type({OzTypes.decode @type})
          end
@@ -4261,13 +4260,13 @@ define
          value <- Val
       end
       meth getCodeGenValue($)
-         case @origin==unit % top-level value
+         if @origin==unit % top-level value
          then @value
          else {@origin getCodeGenValue($)}
          end
       end
       meth makeVO(CS VHd VTl ?VO)
-         case @origin==unit
+         if @origin==unit
          then {System.show 'SHOULD NOT HAPPEN'}
          else {@origin makeVO(CS VHd VTl ?VO)}
          end
@@ -4279,7 +4278,7 @@ define
          lastValue <- O
       end
       meth getLabel($)
-         case {IsDet @value} then {Label @value} else _ end
+         if {IsDet @value} then {Label @value} else _ end
       end
       meth getArgs($)
          {Map {CurrentArity @value}
@@ -4298,16 +4297,16 @@ define
          @type
       end
       meth getPrintType(D $)
-         case
+         if
             D =< 0
          then
             {TypeToVS @type}
          else
             {self deref(self)}
-            case
+            if
                {IsDet @value}
             then
-               case {IsTuple @value} then
+               if {IsTuple @value} then
                   {ListToVS
                    '(' | {Map {Record.toList @value}
                           fun {$ X} {X getPrintType(D-1 $)} end}
@@ -4321,12 +4320,12 @@ define
                           end}
                    {LabelToVS {Label @value}} ' ' ' )'}
                end
-            elsecase
+            elseif
                {IsFree @value}
             then
                {TypeToVS @type}
             else
-               Lab = case {Record.hasLabel @value} then {Label @value} else _ end
+               Lab = if {Record.hasLabel @value} then {Label @value} else _ end
             in
                {ListToVS
                 '(' | {Map {CurrentArity @value}
@@ -4340,7 +4339,7 @@ define
       end
       meth reflectType(Depth $)
          try
-            case
+            if
                Depth > 0 andthen {IsDet @value}
             then
                Lab  = {Label @value}
@@ -4368,25 +4367,25 @@ define
          @value
       end
       meth getFullData(D IsData $)
-         case
+         if
             D =< 0
          then
             _
          else
             {self deref(self)}
-            case
+            if
                {IsDet @value}
             then
                {Record.map @value fun {$ X} {X getFullData(D-1 IsData $)} end}
-            elsecase
+            elseif
                {IsFree @value}
             then
                @value
             else
                Rec
-               Lab = case {Record.hasLabel @value} then {Label @value} else _ end
+               Lab = if {Record.hasLabel @value} then {Label @value} else _ end
             in
-               case {IsDet Lab} then
+               if {IsDet Lab} then
                   Rec = {TellRecord Lab}
                else skip end
                {ForAll {CurrentArity @value}
@@ -4398,20 +4397,20 @@ define
          end
       end
       meth deref(VO)
-         case
+         if
             @lastValue == unit                          % is "free"
          then
             RecordConstr, setLastValue(VO)   % initialize with self
-         elsecase
+         elseif
             {@lastValue isRecordConstr($)}
          then
             NewVal = {@lastValue getLastValue($)}
          in
-            case
+            if
                @lastValue == NewVal
             then
                skip                                     % self reference
-            elsecase
+            elseif
                NewVal == unit
             then
                {@lastValue setLastValue(@lastValue)}    % non initialised
@@ -4428,7 +4427,7 @@ define
       %% the original program node
 
       meth reachable(Vs $)
-         case @origin==unit then Vs
+         if @origin==unit then Vs
          else {@origin reachable(Vs $)} end
       end
 
@@ -4438,7 +4437,7 @@ define
 \ifdef LOOP
          {System.show bindRecordConstr(self {RHS getValue($)})}
 \endif
-         case
+         if
             {UnifyTypesOf self RHS Ctrl unit}
          then
                % set new value for following occurrences
@@ -4454,11 +4453,11 @@ define
 \ifdef LOOP
          {System.show unifyC(RHS)}
 \endif
-         case
+         if
             {Not {UnifyTypesOf self RHS Ctrl unit}}
          then
             skip % do not continue on type error
-         elsecase
+         elseif
             {RHS isRecordConstr($)}
          then
             RLab  = {RHS getLabel($)}
@@ -4469,10 +4468,10 @@ define
             LArgs = {self getArgs($)}
             LOpen = {self isOpen($)}
          in
-            case
+            if
                {IsDet LLab} andthen {IsDet RLab}
             then
-               case
+               if
                   LLab==RLab
                then
                   skip
@@ -4485,7 +4484,7 @@ define
                end
             else skip end
 
-            case
+            if
                {Not LOpen} andthen {Not ROpen}
                andthen {Length LArgs} \= {Length RArgs}
             then
@@ -4496,7 +4495,7 @@ define
                  hint(l:'Second value' m:oz(RVal))]}
             else skip end
 
-            case
+            if
                {IsDet @value} andthen {IsDet RVal}
             then
                if {Arity @value} == {Arity RVal} then
@@ -4505,7 +4504,7 @@ define
                       VF = @value.F
                       RF = RVal.F
                    in
-                      case
+                      if
                          {RF isVariableOccurrence($)}
                       then
                          {RF unify(Ctrl VF)}
@@ -4526,13 +4525,13 @@ define
             in
                {ForAll RArity
                 proc {$ F}
-                   case
+                   if
                       {Member F LArity}
                    then
                       VF = @value^F
                       RF = RVal^F
                    in
-                      case
+                      if
                          {RF isVariableOccurrence($)}
                       then
                          {RF unify(Ctrl VF)}

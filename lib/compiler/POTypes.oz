@@ -32,7 +32,7 @@ local
 
    %% add to list if no duplicate
    fun {Add X Ys}
-      case {Member X Ys} then Ys else X|Ys end
+      if {Member X Ys} then Ys else X|Ys end
    end
 
    %% get list of sort names mentioned
@@ -131,7 +131,7 @@ local
        proc {$ Nam}
           {Loop.for 1 N 1
            proc {$ I}
-              case {Member I Name2Lists.Nam}
+              if {Member I Name2Lists.Nam}
               then {BitArray.set Name2Bits.Nam I}
               else skip end
            end}
@@ -139,11 +139,11 @@ local
 
       % encodes type: V Pos and not & Neg
       proc {Constrain Pos Neg S}
-         case {IsAtom Pos}
+         if {IsAtom Pos}
          then {BitArray.'or' S Name2Bits.Pos}
          else {ForAll Pos
                proc {$ P}
-                  case {HasFeature Name2Bits P}
+                  if {HasFeature Name2Bits P}
                   then {BitArray.'or' S Name2Bits.P}
                   else {Exception.raiseError compiler(internal constrain)}
                   end
@@ -151,14 +151,14 @@ local
          end
          {ForAll Neg
           proc {$ N}
-             case {HasFeature Name2Bits N}
+             if {HasFeature Name2Bits N}
              then {BitArray.nimpl S Name2Bits.N}
              else {Exception.raiseError compiler(internal contrain)} end
           end}
       end
 
       proc {Encode Pos Neg ?S}
-         case Pos==nil
+         if Pos==nil
          then {Exception.raiseError compiler(internal illegalType)}
          else S = {BitArray.new 1 N} {Constrain Pos Neg S} end
       end
@@ -176,7 +176,7 @@ local
             end
          end      in
          fun {Decode S}
-            case {IsFree S}
+            if {IsFree S}
             then [value]
             else {DecodeAux {BitArray.clone S}}
             end
@@ -188,7 +188,7 @@ local
       % add defined names
       {ForAll DefinedNames
        proc {$ def(N Ns)}
-          case {Member N Names}
+          if {Member N Names}
           then {Exception.raiseError
                 compiler(internal illegalPartialOrderSpecification)}
           else Name2Bits.N = {Constrain Ns nil}

@@ -320,6 +320,8 @@ fun {NewTkTools Tk}
             of ctrl(S) then AccCtrl # {MakeAcc S}
             [] alt(S)  then AccAlt  # {MakeAcc S}
             [] meta(S) then AccMeta # {MakeAcc S}
+            [] less    then '<'
+            [] greater then '>'
             else R
             end
          end

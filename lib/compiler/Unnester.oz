@@ -517,7 +517,13 @@ local
       end
 
       meth UnnestStatement(FS $)
-         case FS of fAnd(FS1 FS2) then
+         case FS of fStepPoint(FS Kind C) then GS in
+            Unnester, UnnestStatement(FS ?GS)
+            case {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            then {New Core.stepPoint init(GS Kind C)}
+            else GS
+            end
+         [] fAnd(FS1 FS2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestStatement(FS2 $)
          [] fEq(FE1 FE2 C) then
@@ -682,12 +688,13 @@ local
                               fAnd(FBody2 fRecord(fAtom('export' CND) FColons))
                               C)
             FFun = fFun(fDollar(CND) [ImportFV] NewFBody
-                        fAtom('instantiate' C)|FProp C)
+                        fAtom('instantiate' C)|FProp CND)
             FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
             FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
             Unnester,
-            UnnestStatement(fApply(fVar('`NewFunctor`' C)
-                                   [FImportDesc FExportDesc FFun FV] CND) ?GS)
+            UnnestStatement(fStepPoint(fApply(fVar('`NewFunctor`' C)
+                                              [FImportDesc FExportDesc FFun FV]
+                                              CND) 'definition' C) ?GS)
             GFrontEq|GS
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
@@ -957,7 +964,13 @@ local
       end
 
       meth UnnestExpression(FE FV $) C = {CoordinatesOf FE} in
-         case FE of fAnd(FS1 FE2) then
+         case FE of fStepPoint(FE Kind C) then GS in
+            Unnester, UnnestExpression(FE FV ?GS)
+            case {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            then {New Core.stepPoint init(GS Kind C)}
+            else GS
+            end
+         [] fAnd(FS1 FE2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestExpression(FE2 FV $)
          [] fEq(FE1 FE2 C) then GFront GBack in

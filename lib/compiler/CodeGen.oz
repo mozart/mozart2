@@ -852,6 +852,13 @@ local
       end
    end
 
+   class CodeGenStepPoint
+      meth codeGen(CS VHd VTl) VInter1 VInter2 in
+         {CodeGenList @statements CS VInter1 VInter2}
+         {StepPoint @coord @kind VHd VTl VInter1 VInter2}
+      end
+   end
+
    class CodeGenDeclaration
       meth codeGen(CS VHd VTl)
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
@@ -2329,6 +2336,7 @@ local
    end
 in
    CodeGen = codeGen(statement: CodeGenStatement
+                     stepPoint: CodeGenStepPoint
                      declaration: CodeGenDeclaration
                      skipNode: CodeGenSkipNode
                      equation: CodeGenEquation

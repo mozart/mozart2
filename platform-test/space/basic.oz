@@ -716,6 +716,18 @@ define
                                     {Space.merge  S _}
                                  end)
                         keys: [commit merge space 'choice'])
+           inst_adds_new_bindings(entailed(proc {$}
+                                              X Y
+                                              S={Space.new
+                                                 proc {$ _}
+                                                    X=f(a)
+                                                    {Wait Y} fail
+                                                 end}
+                                           in
+                                              X=f(Y)
+                                              {Space.ask S failed}
+                                           end)
+                                  keys: [space installation])
           ]
           fun {$ T}
              T

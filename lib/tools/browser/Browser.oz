@@ -57,6 +57,9 @@ import
                    addr}
       from 'x-oz://boot/Browser'
 
+   Debug
+      from 'x-oz://boot/Debug'
+
    FD.{reflect}
 
    Search.{one}

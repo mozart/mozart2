@@ -24,16 +24,18 @@ local
 
    proc {File X}
       case X of parseError then skip
-      else {ForAll X Query}
+      else {ForAll X CompilationUnit}
       end
    end
 
-   proc {Query X}
+   proc {CompilationUnit X}
       case X of dirSwitch(Ss) then {ForAll Ss Switch}
       [] dirLocalSwitches then skip
       [] dirPushSwitches then skip
       [] dirPopSwitches then skip
       [] fDeclare(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
+      [] fSynTopLevelProductionTemplates(Ts) then
+         {ForAll Ts ProdClause}
       else {Phrase X}
       end
    end
@@ -102,6 +104,16 @@ local
          {Coord C}
       [] fCondis(FEss C) then
          {ForAll FEss proc {$ FEs} {ForAll FEs FDExpression} end} {Coord C}
+      [] fScanner(V Cs Ms Rs A C) then
+         {NakedVariable V}
+         {ForAll Cs ClassDescriptor} {ForAll Ms Meth}
+         {ForAll Rs ScannerRule}
+         {Type.ask.atom A} {Coord C}
+      [] fParser(V Cs Ms T Ps I C) then
+         {NakedVariable V}
+         {ForAll Cs ClassDescriptor} {ForAll Ms Meth}
+         {TokenClause T} {ForAll Ps ParserDescriptor}
+         {Type.ask.int I} {Coord C}
       else {FDExpression X}
       end
    end
@@ -292,6 +304,110 @@ local
    proc {OptElse X}
       case X of fNoElse(C) then {Coord C}
       else {Phrase X}
+      end
+   end
+
+   proc {NakedVariable X}
+      case X of fVar(V C) then {AskPrintName V} {Coord C} end
+   end
+
+   proc {GrammarSymbol X}
+      case X of fAtom(A C) then {Type.ask.atom A} {Coord C}
+      else {NakedVariable X}
+      end
+   end
+
+   proc {ScannerRule X}
+      case X of fMode(V Ms) then
+         {NakedVariable V} {ForAll Ms ModeDescriptor}
+      else {LexClause X}
+      end
+   end
+
+   proc {ModeDescriptor X}
+      case X of fInheritedModes(Vs) then {ForAll Vs NakedVariable}
+      else {LexClause X}
+      end
+   end
+
+   proc {LexClause X}
+      case X of fLexicalAbbreviation(G R) then {GrammarSymbol G} {Regex R}
+      [] fLexicalRule(R P) then {Regex R} {Phrase P}
+      end
+   end
+
+   proc {Regex X}
+      {Type.ask.string X}
+   end
+
+   proc {TokenClause X}
+      case X of fToken(Ds) then {ForAll Ds TokenDecl} end
+   end
+
+   proc {TokenDecl X}
+      case X of A#P then {Atom A} {Phrase P}
+      else {Atom X}
+      end
+   end
+
+   proc {ParserDescriptor X}
+      case X of fProductionTemplate(...) then {ProdClause X}
+      else {SyntaxRule X}
+      end
+   end
+
+   proc {ProdClause X}
+      case X of fProductionTemplate(K Fs Rs Es Rs) then
+         {ProdKey K} {ForAll Fs ProdParam} {ForAll Rs SyntaxRule}
+         {ForAll Es SynExpression} {ForAll Rs ProdRet}
+      end
+   end
+
+   proc {ProdParam X}
+      case X of fWildcard(C) then {Coord C}
+      else {NakedVariable X}
+      end
+   end
+
+   proc {ProdKey X}
+      case X of A#S then {Type.ask.atom A} {Type.ask.string S} end
+   end
+
+   proc {ProdRet X}
+      case X of none then skip
+      [] fDollar(C) then {Coord C}
+      else {NakedVariable X}
+      end
+   end
+
+   proc {SyntaxRule X}
+      case X of fSyntaxrule(G Fs E) then
+         {GrammarSymbol G} {ForAll Fs SynFormal} {SynExpression E}
+      end
+   end
+
+   proc {SynFormal X}
+      case X of fDollar(C) then {Coord C}
+      [] fWildcard(C) then {Coord C}
+      else {NakedVariable X}
+      end
+   end
+
+   proc {Variable X}
+      case X of fEscape(V C) then {NakedVariable V} {Coord C}
+      else {NakedVariable X}
+      end
+   end
+
+   proc {SynExpression X}
+      case X of fSynApplication(G Ps) then {GrammarSymbol G} {ForAll Ps Phrase}
+      [] fSynAction(P) then {Phrase P}
+      [] fSynSequence(Vs Es) then
+         {ForAll Vs NakedVariable} {ForAll Es SynExpression}
+      [] fSynAlternative(Es) then {ForAll Es SynExpression}
+      [] fSynAssignment(V E) then {Variable V} {SynExpression E}
+      [] fSynTemplateInstantiation(K Es C) then
+         {ProdKey K} {ForAll Es SynExpression} {Coord C}
       end
    end
 

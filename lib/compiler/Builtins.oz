@@ -50,7 +50,10 @@
 %%             unless branched to from elsewhere.
 %%
 
-local
+functor
+export
+   getInfo: GetBuiltinInfo
+prepare
    BuiltinTable = builtinTable(
                                \insert compiler-Builtins
                               )
@@ -103,13 +106,8 @@ local
        else {E Name doesNotReturn}
        end
     end}
-in
-   functor
-   export
-      getInfo: GetBuiltinInfo
-   define
-      fun {GetBuiltinInfo Name}
-         {CondSelect BuiltinTable Name noInformation}
-      end
+
+   fun {GetBuiltinInfo Name}
+      {CondSelect BuiltinTable Name noInformation}
    end
 end

@@ -40,7 +40,6 @@ Continuations = c(vStepPoint: 5
                   vDefinition: 7
                   vDefinitionCopy: 8
                   vShared: ~1
-                  vBranch: ~1
                   vExHandler: 6
                   vPopEx: 3
                   vCreateCond: 4

@@ -1,3 +1,25 @@
+%%%
+%%% Authors:
+%%%   Denys Duchier (duchier@ps.uni-sb.de)
+%%%
+%%% Copyright:
+%%%   Denys Duchier, 1998
+%%%
+%%% Last change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+%%% This file is part of Mozart, an implementation
+%%% of Oz 3
+%%%    http://mozart.ps.uni-sb.de
+%%%
+%%% See the file "LICENSE" or
+%%%    http://mozart.ps.uni-sb.de/LICENSE.html
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
+
 %% TILDE and DOT NORMALIZATION: when `~' or `.' or `..' appear at the
 %% front of a filename, they can be expanded expanded respectively
 %% relative to a user directory of the current directory.
@@ -29,14 +51,14 @@ local
                end
             else raise urlbug end end
          in
-            {AdjoinAt Rel path abs({URL.normalizePath Path})}
+            {AdjoinAt Rel path abs({UrlNormalizePath Path})}
          end
       else Rel end
    end
 in
 
    fun {URL_expand Url}
-      U = {URL.make Url}
+      U = {UrlMake Url}
    in
       if {HasFeature U scheme   } orelse
          {HasFeature U authority} orelse
@@ -45,14 +67,14 @@ in
          case {CondSelect U path unit}
          of rel((&~|USER)#Slash|DIR) then
             {Expand
-             {URL.make
+             {UrlMake
               if USER==nil then {GET 'user.home'}
               else {OS.getpwnam USER}.dir end}
              DIR U}
          elseof rel(DIR=((C#_)|_)) then
             if C=="." orelse C==".." then
                {Expand
-                {URL.make {OS.getCWD}}
+                {UrlMake {OS.getCWD}}
                 DIR U}
             else U end
          else U end

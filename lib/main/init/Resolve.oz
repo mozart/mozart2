@@ -60,7 +60,7 @@ local
    %% found(V) is raised.
 
    proc {Do_Method M U} V OK in
-      try {M {URL.toString U} V} OK=true
+      try {M {UrlToString U} V} OK=true
       catch system(...) then     OK=false
       [] error(dp(generic 'Error in URL handler' _) ...)
       then                       OK=false
@@ -84,7 +84,7 @@ local
 
    Full_Url = o(full:true)
    fun {ToVS A}
-      if {URL.is A} then {URL.toVsExtended A Full_Url} else A end
+      if {UrlIs A} then {UrlToVsExtended A Full_Url} else A end
    end
 
    proc {TraceMsg A B C D E F}
@@ -111,7 +111,7 @@ local
    %% all
 
       fun {Make_All_Handler DIR}
-      Base = {URL.toBase DIR}
+      Base = {UrlToBase DIR}
    in
       proc {$ Url Meth Msg}
          Path = {CondSelect Url path unit}
@@ -120,7 +120,7 @@ local
             {Msg '...[not applicable] (all ' Base ')' nil nil}
          else
             Rel=url(path:rel([{List.last Path.1}]))
-            NewUrl = {URL_expand {URL.resolve Base Rel}}
+            NewUrl = {URL_expand {UrlResolve Base Rel}}
          in
             {Msg '...[' NewUrl '] (all)' nil nil}
             {Meth NewUrl}
@@ -131,11 +131,11 @@ local
    %% root
 
    fun {Make_Root_Handler DIR}
-      Base = {URL.toBase DIR}
+      Base = {UrlToBase DIR}
    in
       proc {$ Url Meth Msg}
-         if {URL.isRelative Url} then
-            NewUrl = {URL_expand {URL.resolve Base Url}}
+         if {UrlIsRelative Url} then
+            NewUrl = {URL_expand {UrlResolve Base Url}}
          in
             {Msg '...[' NewUrl '] (root)' nil nil}
             {Meth NewUrl}
@@ -148,12 +148,12 @@ local
    %% cache
 
    fun {Make_Cache_Handler DIR}
-      Base = {URL.toBase DIR}
+      Base = {UrlToBase DIR}
    in
       proc {$ Url Meth Msg}
          if {HasFeature Url scheme} then
-            Rel = {URL.make {URL.toVsExtended Url x(cache:true)}}
-            NewUrl = {URL.resolve Base Rel}
+            Rel = {UrlMake {UrlToVsExtended Url x(cache:true)}}
+            NewUrl = {UrlResolve Base Rel}
          in
             {Msg '...[' NewUrl '] (cache)' nil nil}
             {Meth NewUrl}
@@ -171,10 +171,10 @@ local
    in
       proc {$ Url Meth Msg}
          try
-            Alist  = {Pattern_Match LPat {URL.toString Url}}
+            Alist  = {Pattern_Match LPat {UrlToString Url}}
             Arec   = {List.toRecord alist Alist}
             NewPat = {Pattern_Instantiate RPat Arec}
-            NewUrl = {URL_expand {URL.make NewPat}}
+            NewUrl = {URL_expand {UrlMake NewPat}}
          in
             {Msg '...[' NewUrl '] (pattern)' nil nil}
             {Meth NewUrl}
@@ -364,7 +364,7 @@ local
       end
       proc {Get Loc Value MethodName}
          Msg  = if {Access Trace} then MSG else NoMSG end
-         Url  = {URL.make Loc}
+         Url  = {UrlMake Loc}
          Meth = Methods.MethodName
       in
          {Msg MethodName ' request: ' Url nil nil}
@@ -374,7 +374,7 @@ local
             {Msg '...all handlers failed' nil nil nil nil}
             raise error(url(MethodName
                             {VirtualString.toAtom
-                             {URL.toVsExtended Url o(full:true)}})
+                             {UrlToVsExtended Url o(full:true)}})
                         debug:debug) with debug end
          catch found(V) then
             {Msg '...' MethodName ' succeeded' nil nil}

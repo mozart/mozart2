@@ -26,19 +26,18 @@
 
 local
 
-   BootUrl    = {URL.make "x-oz://boot/DUMMY"}
-   SystemUrl  = {URL.make "x-oz://system/DUMMY"}
-   %ContribUrl = {URL.make "x-oz://contrib/DUMMY"}
+   BootUrl   = {UrlMake "x-oz://boot/DUMMY"}
+   SystemUrl = {UrlMake "x-oz://system/DUMMY"}
    OzScheme  = BootUrl.scheme = SystemUrl.scheme
 
    local
       UrlDefaults = \insert '../../url-defaults.oz'
    in
-      FunExt     = UrlDefaults.'functor'
-      MozartHome = UrlDefaults.'home'
-      ContribHome= UrlDefaults.'contrib'
-      SystemHomeUrl  = {URL.toBase MozartHome}
-      ContribHomeUrl = {URL.toBase ContribHome}
+      FunExt         = UrlDefaults.'functor'
+      MozartHome     = UrlDefaults.'home'
+      ContribHome    = UrlDefaults.'contrib'
+      SystemHomeUrl  = {UrlToBase MozartHome}
+      ContribHomeUrl = {UrlToBase ContribHome}
    end
 
    %%
@@ -53,8 +52,8 @@ local
                              {Append Functors.lib Functors.tools}}
                         fun {$ ModName}
                            ModName #
-                           {URL.resolve SystemUrl
-                            {URL.make ModName}}
+                           {UrlResolve SystemUrl
+                            {UrlMake ModName}}
                         end}}
                    end
 
@@ -64,7 +63,7 @@ local
       if {HasFeature SystemModules ModKey} then
          SystemModules.ModKey
       else
-         {URL.make ModKey#FunExt}
+         {UrlMake ModKey#FunExt}
       end
    end
 
@@ -76,7 +75,7 @@ local
 
    fun {NameOrUrlToUrl ModName UrlV}
       if UrlV==NONE then {ModNameToUrl ModName}
-      else {URL.make UrlV}
+      else {UrlMake UrlV}
       end
    end
 
@@ -95,7 +94,7 @@ local
 
       meth !Link(Url ?Module)
          %% Return module from "Url"
-         lock Key={URL.toAtom Url} ModMap=self.ModuleMap in
+         lock Key={UrlToAtom Url} ModMap=self.ModuleMap in
             if {Dictionary.member ModMap Key} then
                {self trace('link [found]' Url)}
                {Dictionary.get ModMap Key Module}
@@ -121,12 +120,12 @@ local
          IM={Record.mapInd Func.'import'
              fun {$ ModName Info}
                 EmbedUrl = if {HasFeature Info 'from'} then
-                              {URL.make Info.'from'}
+                              {UrlMake Info.'from'}
                            else
                               {ModNameToUrl ModName}
                            end
              in
-                BaseManager,Link({URL.resolve Url EmbedUrl} $)
+                BaseManager,Link({UrlResolve Url EmbedUrl} $)
              end}
       in
          {Func.apply IM}
@@ -135,7 +134,7 @@ local
       meth Enter(Url Module)
          {self trace('enter' Url)}
          %% Stores "Module" under "Url"
-         lock Key={URL.toAtom Url} in
+         lock Key={UrlToAtom Url} in
             if {Dictionary.member self.ModuleMap Key} then
                raise module(alreadyInstalled Key) end
             else
@@ -192,7 +191,7 @@ in
    define
 
       proc {TraceON X1 X2}
-         {System.printError 'Module manager: '#X1#' '#{URL.toVs X2}#'\n'}
+         {System.printError 'Module manager: '#X1#' '#{UrlToVs X2}#'\n'}
       end
 
       Trace = {NewCell
@@ -227,11 +226,11 @@ in
             %% note that this method will not attempt to
             %% localize. A derived class could redefine it
             %% to attempt localization.
-            {Resolve.native.native {URL.toVs Url}#'-'#PLATFORM}
+            {Resolve.native.native {UrlToVs Url}#'-'#PLATFORM}
          end
 
          meth systemResolve(Auth Url $)
-            {URL.resolve
+            {UrlResolve
              case Auth
              of system  then SystemHomeUrl
              [] contrib then ContribHomeUrl
@@ -278,11 +277,11 @@ in
                   {self systemApply(contrib Url $)}
                else raise badUrl end end
             catch error(url(load _) ...) then
-               raise module(systemNotFound {URL.toAtom Url}) end
+               raise module(systemNotFound {UrlToAtom Url}) end
             [] error(system(unknownBootModule _) ...) then
-               raise module(bootNotFound {URL.toAtom Url}) end
+               raise module(bootNotFound {UrlToAtom Url}) end
             [] badUrl then
-               raise module(urlSyntax {URL.toAtom Url}) end
+               raise module(urlSyntax {UrlToAtom Url}) end
             end
          end
 

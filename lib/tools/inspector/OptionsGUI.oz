@@ -152,7 +152,7 @@ local
          MyCanvas = {New Tk.canvas
                      tkInit(parent:             MyNote
                             width:              400
-                            height:             345 %% former 360
+                            height:             400
                             borderwidth:        0
                             highlightthickness: 0)}
          MyFrame  = {New Tk.frame
@@ -243,7 +243,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             345 %% former 360
+                               height:             400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -615,6 +615,7 @@ local
             visualGreen
             visualBlue
             visualRecAlign
+            visualStringShow
          meth create
             MyBook   = @book
             MyNote   = {New TkTools.note
@@ -623,7 +624,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             345 %% former 360
+                               height:             400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -724,7 +725,7 @@ local
                                       anchor:   w)}
                BoldFillCanv = {New Tk.canvas
                                tkInit(parent:             FontInner
-                                      width:              207 % 205
+                                      width:              190 % 205
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
@@ -750,10 +751,35 @@ local
                                       anchor:   w)}
                RecordFillC  = {New Tk.canvas
                                tkInit(parent:             RecordInner
-                                      width:              221 % 220
+                                      width:              211 % 221
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
+               StringFrame  = {New TkTools.textframe
+                               tkInit(parent: MyFrame
+                                      text:   'String Handling')}
+               StringInner  = StringFrame.inner
+               StringVar    = local
+                                 Val = {Dictionary.get OpDict
+                                        widgetShowStrings}
+                                 NewVal = if Val then 1 else 0 end
+                              in
+                                 {New Tk.variable tkInit(NewVal)}
+                              end
+               StringButton = {New Tk.checkbutton
+                               tkInit(parent:   StringInner
+                                      text:     'Show Strings'
+                                      onvalue:  1
+                                      offvalue: 0
+                                      font:     MediumFont
+                                      variable: StringVar
+                                      anchor:   w)}
+               StringFillC = {New Tk.canvas
+                              tkInit(parent:             StringInner
+                                     width:              265
+                                     height:             0
+                                     borderwidth:        0
+                                     highlightthickness: 0)}
             in
                @visualCurType = SelColor
                @visualCanvas  = ColorCanvas
@@ -764,6 +790,7 @@ local
                @visualFontBold = BoldVar
                @visualFontSize = InitFSize
                @visualRecAlign = RecordVar
+               @visualStringShow = StringVar
                {self handle(selCol(VisualNote, MatchColor(1 GetColor $)))}
                {Tk.batch [grid(row: 0 column: 0 SizeLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 SizeSelector padx: 4 pady: 4 sticky: nw)
@@ -775,12 +802,16 @@ local
                           grid(row: 0 column: 1 RecordFillC padx:0 pady:0 sticky: nw)
                           grid(row: 1 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)
 
+                          grid(row: 0 column: 0 StringButton padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 1 StringFillC padx: 0 pady: 0 sticky: nw)
+                          grid(row: 2 column: 0 StringFrame padx: 4 pady: 4 sticky: nw)
+
                           grid(row: 0 column: 0 TypeLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 TypeSelector padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 2 FillCanvas   padx: 0 pady: 0 sticky: nw)
                           grid(row: 0 column: 0 TypeFrame padx: 4 pady: 4 sticky:nw)
                           grid(row: 1 column: 0 ColorCanvas padx: 50 pady: 4 sticky: nw)
-                          grid(row: 2 column: 0 ColorFrame padx: 4 pady: 4 sticky: nw)]}
+                          grid(row: 3 column: 0 ColorFrame padx: 4 pady: 4 sticky: nw)]}
             end
             {Tk.send pack(MyCanvas anchor: nw padx: 0 pady: 0)}
          end
@@ -954,6 +985,8 @@ local
                                  size:   @visualFontSize
                                  weight: {@visualFontBold tkReturnAtom($)})}
             {Dictionary.put OpDict widgetUseNodeSet {@visualRecAlign tkReturnInt($)}}
+            {Dictionary.put OpDict widgetShowStrings
+             ({@visualStringShow tkReturnInt($)} == 1)}
          end
       end
    end

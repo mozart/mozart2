@@ -160,7 +160,7 @@ ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
 
 clean:
         -rm -f *~ ./*/*~ ./*/*/*~
-        -rm -f $(COMPONENTS) $(OTHERS)
+        -rm -f $(TESTCOMPONENTS) $(BENCHCOMPONENTS) $(OTHERS)
         -rm -f $(SONATIVES)
         -rm -f LambdaScanner.* LambdaParser.*
         -rm -f make-test

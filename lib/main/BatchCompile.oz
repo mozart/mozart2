@@ -49,7 +49,7 @@ local
                    &x#"syslet"#mode(value: syslet)
                    &M#"makedepend"#makedepend(type: bool)
                    &h#"help"#help(value: unit) &?#unit#help(value: unit)
-                   &D#"define"#define(type: atom)
+                   &D#"define"#'define'(type: atom)
                    &U#"undefine"#undef(type: atom)
                    &v#"verbose"#verbose(value: true)
                    &q#"quiet"#verbose(value: false)
@@ -412,7 +412,7 @@ in
                 X = {Property.get 'root.url'}
                 {System.printInfo 'Usage: '#X#' [options] [file] ...\n'#Usage}
                 raise success end
-             [] define then
+             [] 'define' then
                 {BatchCompiler enqueue(macroDefine(X))}
              [] undef then
                 {BatchCompiler enqueue(macroUndef(X))}

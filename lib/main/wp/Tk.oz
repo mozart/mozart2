@@ -461,7 +461,7 @@ body
 
       %% Start reading wish's output
       thread
-         {{`Builtin` 'Thread.setId' 2} {Thread.this} 2}
+         {Thread.setId {Thread.this} 2}
          {Thread.setThisPriority high}
          {TkReadLoop RetStream}
       end

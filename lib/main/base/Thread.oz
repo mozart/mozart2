@@ -56,6 +56,7 @@ in
                     setThisPriority:    SetThisPriority
                     getThisPriority:    GetThisPriority
                     this:               ThisThread
+                    setId:              {`Builtin` 'Thread.setId'           2}
                     id:                 {`Builtin` 'Thread.id'              2}
                     parentId:           {`Builtin` 'Thread.parentId'        2}
                     is:                 IsThread

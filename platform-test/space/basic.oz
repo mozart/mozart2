@@ -119,7 +119,7 @@ define
                                 Z = 1
                                 {Thread.setThisPriority low}
                                 case A1 of succeeded then
-                                   {Loop.for 1 10 1
+                                   {For 1 10 1
                                     proc {$ _}
                                        thread
                                           {Space.merge {Space.clone S1}} = 1
@@ -127,7 +127,7 @@ define
                                     end}
                                 end
                                 case A2 of blocked(succeeded(entailed)) then
-                                   {Loop.for 1 10 1
+                                   {For 1 10 1
                                     proc {$ _}
                                        thread
                                           {Space.merge {Space.clone S2}} = 1

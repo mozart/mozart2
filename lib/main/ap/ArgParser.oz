@@ -204,10 +204,10 @@ local
       fun {NormArgSpec DefSpec ArgSpec}
          D={Dictionary.new}
       in
-         {Record.forAll ArgSpec proc {$ AS}
+         {Record.forAll DefSpec proc {$ AS}
                                    {Normalize AS D}
                                 end}
-         {Record.forAll DefSpec proc {$ AS}
+         {Record.forAll ArgSpec proc {$ AS}
                                    {Normalize AS D}
                                 end}
          {Dictionary.toRecord m D}

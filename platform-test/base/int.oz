@@ -22,7 +22,7 @@
 
 functor
 
-require
+import
    Property(get)
 
 export
@@ -47,14 +47,14 @@ prepare
       N - M
    end
 
-   MAXSMALL = {Property.get limits}.'int.max'
-   MINSMALL = {Property.get limits}.'int.min'
-
    fun {ID N}
       N
    end
 
 define
+
+   MAXSMALL = {Property.get limits}.'int.max'
+   MINSMALL = {Property.get limits}.'int.min'
 
    Return=
    int([unary(proc {$}

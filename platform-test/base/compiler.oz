@@ -52,5 +52,15 @@ define
                                       {X {X S} _}
                                    end}
                                end
-                               keys:[compiler codeGen fixedBug])])
+                               keys:[compiler codeGen fixedBug])
+             clippedTestTree(proc {$}
+                                {fun {$ X}
+                                    case X of a(_ ...) then 1
+                                    [] b then 2
+                                    elseif {IsRecord X} then 3
+                                    else unit
+                                    end
+                                 end x} = 3
+                             end
+                             keys: [compiler codeGen fixedBug])])
 end

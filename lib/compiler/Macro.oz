@@ -130,6 +130,7 @@ define
       [] fDollar(_) then false
       [] fInt(_ _) then false
       [] fFloat(_ _) then false
+      [] fColon(_ P) then {ContainsMacro P}
       [] fRecord(Lab L) then {ContainsMacro Lab} orelse {Some L ContainsMacro}
       [] fOpenRecord(Lab L) then {ContainsMacro Lab}
          orelse {Some L ContainsMacro}

@@ -84,23 +84,6 @@ define
       end
    end
 
-   fun {LastCoordinatesOf P}
-      case P of fAnd(_ S) then {LastCoordinatesOf S}
-      [] fAtom(_ C) then C
-      [] fVar(_ C) then C
-      [] fWildcard(C) then C
-      [] fEscape(_ C) then C
-      [] fSelf(C) then C
-      [] fDollar(C) then C
-      [] fInt(_ C) then C
-      [] fFloat(_ C) then C
-      [] fRecord(L _) then {CoordinatesOf L}
-      [] fOpenRecord(L _) then {CoordinatesOf L}
-      [] fLocal(_ P _) then {LastCoordinatesOf P}
-      else unit
-      end
-   end
-
    fun {GetLast X}
       case X of S1|S2 then Last in
          Last = {GetLast S2}
@@ -315,21 +298,6 @@ define
             {IsPatternSub As AllowDollar}
          else false
          end
-      end
-   end
-
-   fun {IsConstraint FE}
-      case FE of fEq(_ _ _) then true
-      [] fAtom(_ _) then true
-      [] fVar(_ _) then true
-      [] fOcc(_) then true
-      [] fWildcard(_) then true
-      [] fEscape(_ _) then true
-      [] fInt(_ _) then true
-      [] fFloat(_ _) then true
-      [] fRecord(_ _) then true
-      [] fOpenRecord(_ _) then true
-      else false
       end
    end
 
@@ -568,40 +536,28 @@ define
          [] fAnd(FS1 FS2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestStatement(FS2 $)
-         [] fEq(FE1 FE2 C) then
-            if {IsStep C} andthen
-               {IsConstraint FE1} andthen {IsConstraint FE2}
-            then GV1 GV2 GFront1 GBack1 GFront2 GBack2 FS Equation in
-               {@BA generate('Left' C ?GV1)}
-               {@BA generate('Right' C ?GV2)}
-               Unnester, UnnestConstraint(FE1 GV1 ?GFront1 ?GBack1)
-               Unnester, UnnestConstraint(FE2 GV2 ?GFront2 ?GBack2)
-               FS = fOpApplyStatement('=' [fOcc(GV1) fOcc(GV2)] C)
-               Unnester, UnnestStatement(FS ?Equation)
-               GFront1|GFront2|Equation|GBack1|GBack2
-            else GFront GBack in
-               case FE2 of fVar(PrintName C) then GV in
-                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
-                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
-               [] fOcc(GV) then
-                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
-               [] fEscape(fVar(PrintName C) _) then GV in
-                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
-                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
-               elsecase FE1 of fVar(PrintName C) then GV in
-                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
-                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
-               [] fOcc(GV) then
-                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
-               [] fEscape(fVar(PrintName C) _) then GV in
-                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
-                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
-               else GV in
-                  {@BA generate('Equation' C ?GV)}
-                  Unnester, UnnestConstraint(FS GV ?GFront ?GBack)
-               end
-               GFront|GBack
+         [] fEq(FE1 FE2 C) then GFront GBack in
+            case FE2 of fVar(PrintName C2) then GV in
+               {{@BA refer(PrintName C2 $)} getVariable(?GV)}   %--**
+               Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+            [] fOcc(GV) then
+               Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+            [] fEscape(fVar(PrintName C2) _) then GV in
+               {{@BA refer(PrintName C2 $)} getVariable(?GV)}   %--**
+               Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+            elsecase FE1 of fVar(PrintName C2) then GV in
+               {{@BA refer(PrintName C2 $)} getVariable(?GV)}   %--**
+               Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+            [] fOcc(GV) then
+               Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+            [] fEscape(fVar(PrintName C2) _) then GV in
+               {{@BA refer(PrintName C2 $)} getVariable(?GV)}   %--**
+               Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+            else GV in
+               {@BA generate('Equation' C ?GV)}
+               Unnester, UnnestConstraint(FS GV ?GFront ?GBack)
             end
+            GFront|GBack
          [] fAssign(FE1 FE2 C) then
             if @Stateful then
                StateUsed <- true
@@ -807,7 +763,7 @@ define
                FS2 = fEq(FE fOpApply('.' [fOpApply('ApplyFunctor'
                                                    [fAtom(BaseURL unit) FV1]
                                                    CND)
-                                          fAtom(inner unit)] CND) CND)
+                                          fAtom(inner unit)] CND) C)
                Unnester, UnnestStatement(FS1 $)|
                Unnester, UnnestStatement(FS2 $)
             end
@@ -1206,9 +1162,9 @@ define
             end
             FS = fOpApplyStatement('Object.\'@\'' [FE fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
-         [] fAtom(X C) then GVO in
-            {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
+         [] fAtom(_ _) then GFront GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
+            GFront|GBack
          [] fVar(PrintName C) then GVO1 GVO2 in
             {ToGV occ(C ?GVO1)}
             {@BA refer(PrintName C ?GVO2)}
@@ -1235,12 +1191,12 @@ define
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
             {New Core.skipNode init(C)}
-         [] fInt(X C) then GVO in
-            {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
-         [] fFloat(X C) then GVO in
-            {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
+         [] fInt(_ _) then GFront GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
+            GFront|GBack
+         [] fFloat(_ _) then GFront GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
+            GFront|GBack
          [] fRecord(_ _) then GRecord GBack in
             Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
             GRecord|GBack
@@ -1346,22 +1302,20 @@ define
                      Unnester, UnnestExpression(FE ToGV $))
                {MakeDeclaration {@BA closeScope($)} GS C}
             end
-         [] fBoolCase(FE1 FE2 FE3 C) then C2 FV FS in
-            C2 = {LastCoordinatesOf FE2}
+         [] fBoolCase(FE1 FE2 FE3 C) then FV FS in
             FV = fOcc(ToGV)
-            FS = fBoolCase(FE1 fEq(FV FE2 C2)
+            FS = fBoolCase(FE1 fEq(FV FE2 C)
                            case FE3 of fNoElse(_) then FE3
-                           else fEq(FV FE3 {LastCoordinatesOf FE3})
+                           else fEq(FV FE3 C)
                            end C)
             Unnester, UnnestStatement(FS $)
          [] fCase(FE1 FClauses FE2 C) then FS NewFV FVs PrintName in
             FS = fCase(FE1 {Map FClauses
-                            fun {$ fCaseClause(FE1 FE2)} C in
-                               C = {LastCoordinatesOf FE2}
+                            fun {$ fCaseClause(FE1 FE2)}
                                fCaseClause(FE1 fEq(NewFV FE2 C))
                             end}
                        case FE2 of fNoElse(_) then FE2
-                       else fEq(NewFV FE2 {LastCoordinatesOf FE2})
+                       else fEq(NewFV FE2 C)
                        end C)
             {FoldL FClauses
              fun {$ FVs fCaseClause(FE _)}
@@ -1387,9 +1341,8 @@ define
                                 msg: 'object lock used outside of method')}
             end
             Unnester, UnnestStatement(fLock(fEq(fOcc(ToGV) FE C) C) $)
-         [] fThread(FE C) then C2 in
-            C2 = {LastCoordinatesOf FE}
-            Unnester, UnnestStatement(fThread(fEq(fOcc(ToGV) FE C2) C) $)
+         [] fThread(FE C) then
+            Unnester, UnnestStatement(fThread(fEq(fOcc(ToGV) FE C) C) $)
          [] fTry(FE FCatch FFinally C) then FV GV2 FV2 TryFS in
             FV = fOcc(ToGV)
             {@BA generate('TryResult' C ?GV2)}
@@ -1400,8 +1353,7 @@ define
             [] fCatch(FCaseClauses C2) then FVs PrintName NewFV FS NewFCatch in
                FS = fTry(TryFS fCatch(NewFCatch C2) FFinally C)
                NewFCatch = {Map FCaseClauses
-                            fun {$ fCaseClause(FE1 FE2)} C in
-                               C = {CoordinatesOf FE2}
+                            fun {$ fCaseClause(FE1 FE2)}
                                fCaseClause(FE1 fEq(NewFV FE2 C))
                             end}
                {FoldL FCaseClauses
@@ -1422,8 +1374,6 @@ define
             Unnester, UnnestStatement(FE $)
          [] fRaiseWith(_ _ _) then
             Unnester, UnnestStatement(FE $)
-         [] fNot(FE C) then
-            Unnester, UnnestStatement(fNot(fEq(fOcc(ToGV) FE C) C) $)
          [] fFail(C) then
             {New Core.failNode init(C)}
          [] fCond(FClauses FE C) then PrintName FVs NewFV FS in
@@ -1512,46 +1462,72 @@ define
       end
       meth UnnestConstraint(FE ToGV ?GFront ?GBack)
          case FE of fEq(FE1 FE2 _) then GFront1 GBack1 GFront2 GBack2 in
-            Unnester, UnnestConstraint(FE1 ToGV ?GFront1 ?GBack1)
-            Unnester, UnnestConstraint(FE2 ToGV ?GFront2 ?GBack2)
             GFront = GFront1|GFront2
             GBack = GBack1|GBack2
+            Unnester, UnnestConstraint(FE1 ToGV ?GFront1 ?GBack1)
+            Unnester, UnnestConstraint(FE2 ToGV ?GFront2 ?GBack2)
          [] fRecord(Label Args) then C GVO PrintName GRecord in
             C = {CoordinatesOf Label}
             {ToGV occ(C ?GVO)}
             {ToGV getPrintName(?PrintName)}
             Unnester, UnnestRecord(PrintName Label Args false ?GRecord ?GBack)
-            GFront = {New Core.equation init(GVO GRecord C)}
+            Unnester, MakeEquation(GVO GRecord C ?GFront)
          [] fOpenRecord(Label Args) then C GVO PrintName GRecord in
             C = {CoordinatesOf Label}
             {ToGV occ(C ?GVO)}
             {ToGV getPrintName(?PrintName)}
             Unnester, UnnestRecord(PrintName Label Args true ?GRecord ?GBack)
-            GFront = {New Core.equation init(GVO GRecord C)}
-         [] fOcc(_) then
+            Unnester, MakeEquation(GVO GRecord C ?GFront)
+         [] fOcc(GV) then C GVO1 GVO2 in
             GBack = nil
-            Unnester, UnnestExpression(FE ToGV ?GFront)
-         [] fVar(_ _) then
+            {ToGV getCoord(?C)}
+            {ToGV occ(C ?GVO1)}
+            {GV occ(C ?GVO2)}
+            GFront = {New Core.equation init(GVO1 GVO2 C)}
+         [] fVar(PrintName C) then GVO1 GVO2 in
             GBack = nil
-            Unnester, UnnestExpression(FE ToGV ?GFront)
+            {ToGV occ(C ?GVO1)}
+            {@BA refer(PrintName C ?GVO2)}
+            Unnester, MakeEquation(GVO1 GVO2 C ?GFront)
          [] fWildcard(_) then
             GFront = nil
             GBack = nil
          [] fEscape(NewFE _) then
+            Unnester, UnnestConstraint(NewFE ToGV ?GFront ?GBack)
+         [] fAtom(X C) then GVO GRight in
             GBack = nil
-            Unnester, UnnestExpression(NewFE ToGV ?GFront)
-         [] fAtom(_ _) then
+            {ToGV occ(C ?GVO)}
+            GRight = {New Core.valueNode init(X C)}
+            Unnester, MakeEquation(GVO GRight C ?GFront)
+         [] fInt(X C) then GVO GRight in
             GBack = nil
-            Unnester, UnnestExpression(FE ToGV ?GFront)
-         [] fInt(_ _) then
+            {ToGV occ(C ?GVO)}
+            GRight = {New Core.valueNode init(X C)}
+            Unnester, MakeEquation(GVO GRight C ?GFront)
+         [] fFloat(X C) then GVO GRight in
             GBack = nil
-            Unnester, UnnestExpression(FE ToGV ?GFront)
-         [] fFloat(_ _) then
-            GBack = nil
-            Unnester, UnnestExpression(FE ToGV ?GFront)
+            {ToGV occ(C ?GVO)}
+            GRight = {New Core.valueNode init(X C)}
+            Unnester, MakeEquation(GVO GRight C ?GFront)
          else
             GFront = nil
             Unnester, UnnestExpression(FE ToGV ?GBack)
+         end
+      end
+      meth MakeEquation(GVO GRight C $)
+         if {IsStep C} then AppGVO in
+            {RunTime.procs.'=' occ(C ?AppGVO)}
+            if {HasFeature GRight Core.imAVariableOccurrence} then RightGVO in
+               RightGVO = GRight
+               {New Core.application init(AppGVO [GVO RightGVO] C)}
+            else RightGV RightGVO in
+               {@BA generate('Right' C ?RightGV)}
+               {RightGV occ(C ?RightGVO)}
+               {New Core.equation init({RightGV occ(C $)} GRight C)}|
+               {New Core.application init(AppGVO [GVO RightGVO] C)}
+            end
+         else
+            {New Core.equation init(GVO GRight C)}
          end
       end
       meth UnnestRecord(PrintName Label Args IsOpen ?GRecord ?GBack)
@@ -1615,25 +1591,24 @@ define
       end
 
       meth UnnestProc(FEs FS IsLazy C ?GS)
-         FMatches FResultVars C2 FS1 FS2 FS3 GBody
+         FMatches FResultVars FS1 CND FS2 FS3 GBody
       in
          %% each formal argument in FEs must be a pattern;
          %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
-         C2 = {LastCoordinatesOf FS}
          FS1 = {FoldR FMatches
                 fun {$ FV#FE#C In}
                    fCase(FV [fCaseClause(FE In)]
                          fNoElse(C)   %--** raise a better exception here
                          C)
                 end FS}
-         FS2 = if IsLazy then CND in
-                  CND = {CoordNoDebug C}
+         CND = {CoordNoDebug C}
+         FS2 = if IsLazy then
                   fOpApply('Value.byNeed'
                            [fFun(fDollar(C) nil FS1 nil CND)] CND)
                else FS1
                end
-         FS3 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS2}
+         FS3 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C) end FS2}
          {@BA openScope()}
          Unnester, UnnestStatement(FS3 ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}
@@ -2219,8 +2194,8 @@ define
             FV = fOcc(V)
             FX = fVar('X' C)
             FException = fRecord(fAtom('ex' C) [FX])
-            NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) CND))
-                          fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
+            NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) C))
+                          fCatch([fCaseClause(FX fEq(FV FException C))] CND)
                           fNoFinally C)
             NewFS2 = fCase(FV [fCaseClause(FException
                                            fOpApplyStatement(
@@ -2411,95 +2386,22 @@ define
          case C of unit then C else {Adjoin C coarseStep} end
       end
 
-      fun {NP P}
-         case P of fDeclare(P1 P2 C) then fDeclare({NP P1} {NP P2} C)
-         [] fAnd(P1 P2) then fAnd({NP P1} {NP P2})
-         [] fEq(P1 P2 C) then fEq({NP P1} {NP P2} C)   %--** {FS C}?
-         [] fAssign(P1 P2 C) then fAssign({NP P1} {NP P2} {FS C})
-         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)
-         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)
-         [] fOpApply(X Ps C) then fOpApply(X {Map Ps NP} {FS C})
-         [] fOpApplyStatement(X Ps C) then
-            fOpApplyStatement(X {Map Ps NP} {FS C})
-         [] fFdCompare(X P1 P2 C) then fFdCompare(X {NP P1} {NP P2} {FS C})
-         [] fFdIn(X P1 P2 C) then fFdIn(X {NP P1} {NP P2} {FS C})
-         [] fObjApply(P1 P2 C) then fObjApply({NP P1} {NP P2} {FS C})
-         [] fAt(P C) then fAt({NP P} {FS C})
-         [] fAtom(_ _) then P
-         [] fVar(_ _) then P
-         [] fEscape(_ _) then P
-         [] fWildcard(_) then P
-         [] fSelf(_) then P
-         [] fDollar(_) then P
-         [] fInt(_ _) then P
-         [] fFloat(_ _) then P
-         [] fRecord(L As) then fRecord(L {Map As NP})
-         [] fOpenRecord(L As) then fOpenRecord(L {Map As NP})
-         [] fColon(F P) then fColon(F {NP P})
-         [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {FS C})
-         [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {FS C})
-         [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {FS C})
-         [] fFunctor(P1 Ds C) then
-            fFunctor({NP P1} {Map Ds NP} {FS C})
-         [] fRequire(_ _) then P
-         [] fPrepare(P1 P2 C) then fPrepare({SP P1} {SP P2} C)
-         [] fImport(_ _) then P
-         [] fExport(_ _) then P
-         [] fDefine(P1 P2 C) then fDefine({SP P1} {SP P2} C)
-         [] fClass(P Ds Ms C) then
-            fClass({NP P} {Map Ds NP} {Map Ms SP} {FS C})
-         [] fFrom(Ps C) then fFrom({Map Ps NP} C)
-         [] fProp(Ps C) then fProp({Map Ps NP} C)
-         [] fAttr(Ps C) then fAttr({Map Ps NP} C)
-         [] fFeat(Ps C) then fFeat({Map Ps NP} C)
-         [] P1#P2 then {NP P1}#{NP P2}
-         [] fLocal(P1 P2 C) then fLocal({NP P1} {NP P2} C)
-         [] fBoolCase(P1 P2 P3 C) then
-            fBoolCase({NP P1} {NP P2} {NP P3} {FS C})
-         [] fNoElse(C) then fNoElse({FS C})
-         [] fCase(P1 Cs P2 C) then
-            fCase({NP P1} {Map Cs NP} {NP P2} {FS C})
-         [] fCaseClause(P1 P2) then fCaseClause(P1 {NP P2})
-         [] fLockThen(P1 P2 C) then fLockThen({NP P1} {NP P2} {FS C})
-         [] fLock(P C) then fLock({NP P} {FS C})
-         [] fThread(P C) then fThread({SP P} {FS C})
-         [] fTry(P1 P2 P3 C) then fTry({NP P1} {NP P2} {SP P3} {FS C})
-         [] fCatch(Cs C) then fCatch({Map Cs NP} C)
-         [] fNoCatch then P
-         [] fRaise(P C) then fRaise({NP P} {FS C})
-         [] fRaiseWith(P1 P2 C) then fRaiseWith({NP P1} {NP P2} {FS C})
-         [] fSkip(_) then P
-         [] fFail(_) then P
-         [] fNot(P C) then fNot({NP P} {FS C})
-         [] fCond(Cs P C) then fCond({Map Cs NP} {NP P} {FS C})
-         [] fClause(P1 P2 P3) then fClause({NP P1} {NP P2} {NP P3})
-         [] fNoThen(_) then P
-         [] fOr(Cs X C) then fOr({Map Cs NP} X {FS C})
-         [] fCondis(Pss C) then
-            fCondis({Map Pss fun {$ Ps} {Map Ps NP} end} {FS C})
-         [] fScanner(P1 Ds Ms Rs X C) then
-            fScanner({NP P1} {Map Ds NP} {Map Ms SP} {Map Rs SP} X {FS C})
-         [] fParser(P1 Ds Ms T Ps X C) then
-            fParser({NP P1} {Map Ds NP} {Map Ms SP} T {Map Ps SP} X {FS C})
-         end
-      end
-
       fun {SP P}
          case P of fDeclare(P1 P2 C) then NewP1 Vs in
             NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
             fDeclare({VsToFAnd Vs} {SP fAnd(NewP1 P2)} C)
          [] fAnd(P1 P2) then fAnd({SP P1} {SP P2})
-         [] fEq(P1 P2 C) then fEq({NP P1} {NP P2} {CS C})
-         [] fAssign(P1 P2 C) then fAssign({NP P1} {NP P2} {CS C})
-         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)
-         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)
-         [] fOpApply(X Ps C) then fOpApply(X {Map Ps NP} {CS C})
+         [] fEq(P1 P2 C) then fEq({TP P1} {SP P2} C)
+         [] fAssign(P1 P2 C) then fAssign({TP P1} {TP P2} {CS C})
+         [] fOrElse(P1 P2 C) then fOrElse({TP P1} {TP P2} C)
+         [] fAndThen(P1 P2 C) then fAndThen({TP P1} {TP P2} C)
+         [] fOpApply(X Ps C) then fOpApply(X {Map Ps TP} {CS C})
          [] fOpApplyStatement(X Ps C) then
-            fOpApplyStatement(X {Map Ps NP} {CS C})
-         [] fFdCompare(X P1 P2 C) then fFdCompare(X {NP P1} {NP P2} {CS C})
-         [] fFdIn(X P1 P2 C) then fFdIn(X {NP P1} {NP P2} {CS C})
-         [] fObjApply(P1 P2 C) then fObjApply({NP P1} {NP P2} {CS C})
-         [] fAt(P C) then fAt({NP P} {CS C})
+            fOpApplyStatement(X {Map Ps TP} {CS C})
+         [] fFdCompare(X P1 P2 C) then fFdCompare(X {TP P1} {TP P2} {CS C})
+         [] fFdIn(X P1 P2 C) then fFdIn(X {TP P1} {TP P2} {CS C})
+         [] fObjApply(P1 P2 C) then fObjApply({TP P1} {TP P2} {CS C})
+         [] fAt(P C) then fAt({TP P} {CS C})
          [] fAtom(X C) then fAtom(X {CS C})
          [] fVar(X C) then fVar(X {CS C})
          [] fEscape(V C) then fEscape(V {CS C})
@@ -2508,34 +2410,34 @@ define
          [] fDollar(C) then fDollar({CS C})
          [] fInt(X C) then fInt(X {CS C})
          [] fFloat(X C) then fFloat(X {CS C})
-         [] fRecord(L As) then fRecord({SP L} {Map As NP})
-         [] fOpenRecord(L As) then fOpenRecord({SP L} {Map As NP})
-         [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {CS C})
-         [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {CS C})
-         [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {CS C})
+         [] fRecord(L As) then fRecord({SP L} {Map As TP})
+         [] fOpenRecord(L As) then fOpenRecord({SP L} {Map As TP})
+         [] fApply(P Ps C) then fApply({TP P} {Map Ps TP} {CS C})
+         [] fProc(P1 Ps P2 Fs C) then fProc({TP P1} Ps {SP P2} Fs {CS C})
+         [] fFun(P1 Ps P2 Fs C) then fFun({TP P1} Ps {SP P2} Fs {CS C})
          [] fFunctor(P1 Ds C) then
-            fFunctor({NP P1} {Map Ds NP} {CS C})
+            fFunctor({TP P1} {Map Ds EP} {CS C})
          [] fClass(P Ds Ms C) then
-            fClass({NP P} {Map Ds NP} {Map Ms SP} {CS C})
+            fClass({TP P} {Map Ds EP} {Map Ms SP} {CS C})
          [] fMeth(X P C) then fMeth(X {SP P} C)
          [] fLocal(P1 P2 C) then NewP1 Vs in
             NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
             fLocal({VsToFAnd Vs} {SP fAnd(NewP1 P2)} C)
          [] fBoolCase(P1 P2 P3 C) then
-            fBoolCase({NP P1} {SP P2} {SP P3} {CS C})
+            fBoolCase({TP P1} {SP P2} {SP P3} {CS C})
          [] fNoElse(C) then fNoElse({CS C})
          [] fCase(P1 Cs P2 C) then
-            fCase({NP P1} {Map Cs SP} {SP P2} {CS C})
+            fCase({TP P1} {Map Cs SP} {SP P2} {CS C})
          [] fCaseClause(P1 P2) then fCaseClause(P1 {SP P2})
-         [] fLockThen(P1 P2 C) then fLockThen({NP P1} {SP P2} {CS C})
+         [] fLockThen(P1 P2 C) then fLockThen({TP P1} {SP P2} {CS C})
          [] fLock(P C) then fLock({SP P} {CS C})
          [] fThread(P C) then fThread({SP P} {CS C})
          [] fTry(P1 P2 P3 C) then fTry({SP P1} {SP P2} {SP P3} {CS C})
          [] fCatch(Cs C) then fCatch({Map Cs SP} C)
          [] fNoCatch then P
          [] fNoFinally then P
-         [] fRaise(P C) then fRaise({NP P} {CS C})
-         [] fRaiseWith(P1 P2 C) then fRaiseWith({NP P1} {NP P2} {CS C})
+         [] fRaise(P C) then fRaise({TP P} {CS C})
+         [] fRaiseWith(P1 P2 C) then fRaiseWith({TP P1} {TP P2} {CS C})
          [] fSkip(C) then fSkip({CS C})
          [] fFail(C) then fFail({CS C})
          [] fNot(P C) then fNot({SP P} {CS C})
@@ -2548,13 +2450,13 @@ define
          [] fCondis(Pss C) then
             fCondis({Map Pss fun {$ Ps} {Map Ps SP} end} {CS C})
          [] fScanner(P1 Ds Ms Rs X C) then
-            fScanner({NP P1} {Map Ds NP} {Map Ms SP} {Map Rs SP} X {CS C})
+            fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {CS C})
          [] fMode(V Ms) then fMode(V {Map Ms SP})
          [] fInheritedModes(_) then P
          [] fLexicalAbbreviation(_ _) then P
          [] fLexicalRule(R P) then fLexicalRule(R {SP P})
          [] fParser(P1 Ds Ms T Ps X C) then
-            fParser({NP P1} {Map Ds NP} {Map Ms SP} T {Map Ps SP} X {CS C})
+            fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {CS C})
          [] fProductionTemplate(K Ps Rs E R) then
             fProductionTemplate(K Ps {Map Rs SP} {SP E} R)
          [] fSyntaxRule(G Ds E) then fSyntaxRule(G Ds {SP E})
@@ -2565,6 +2467,94 @@ define
          [] fSynAssignment(V E) then fSynAssignment(V {SP E})
          [] fSynTemplateInstantiation(K Es C) then
             fSynTemplateInstantiation(K {Map Es SP} C)
+         end
+      end
+
+      fun {EP P}
+         case P of fDeclare(P1 P2 C) then fDeclare({EP P1} {EP P2} C)
+         [] fAnd(P1 P2) then fAnd({EP P1} {EP P2})
+         [] fEq(P1 P2 C) then fEq({TP P1} {EP P2} C)
+         [] fAssign(P1 P2 C) then fAssign({TP P1} {TP P2} {FS C})
+         [] fOrElse(P1 P2 C) then fOrElse({TP P1} {TP P2} C)
+         [] fAndThen(P1 P2 C) then fAndThen({TP P1} {TP P2} C)
+         [] fOpApply(X Ps C) then fOpApply(X {Map Ps TP} {FS C})
+         [] fOpApplyStatement(X Ps C) then
+            fOpApplyStatement(X {Map Ps TP} {FS C})
+         [] fFdCompare(X P1 P2 C) then fFdCompare(X {TP P1} {TP P2} {FS C})
+         [] fFdIn(X P1 P2 C) then fFdIn(X {TP P1} {TP P2} {FS C})
+         [] fObjApply(P1 P2 C) then fObjApply({TP P1} {TP P2} {FS C})
+         [] fAt(P C) then fAt({TP P} {FS C})
+         [] fAtom(X C) then fAtom(X {FS C})
+         [] fVar(X C) then fVar(X {FS C})
+         [] fEscape(V C) then fEscape(V {FS C})
+         [] fWildcard(C) then fWildcard({FS C})
+         [] fSelf(C) then fSelf({FS C})
+         [] fDollar(C) then fDollar({FS C})
+         [] fInt(X C) then fInt(X {FS C})
+         [] fFloat(X C) then fFloat(X {FS C})
+         [] fRecord(L As) then fRecord({EP L} {Map As TP})
+         [] fOpenRecord(L As) then fOpenRecord({EP L} {Map As TP})
+         [] fApply(P Ps C) then fApply({TP P} {Map Ps TP} {FS C})
+         [] fProc(P1 Ps P2 Fs C) then fProc({TP P1} Ps {SP P2} Fs {FS C})
+         [] fFun(P1 Ps P2 Fs C) then fFun({TP P1} Ps {SP P2} Fs {FS C})
+         [] fFunctor(P1 Ds C) then
+            fFunctor({TP P1} {Map Ds EP} {FS C})
+         [] fRequire(_ _) then P
+         [] fPrepare(P1 P2 C) then fPrepare({EP P1} {EP P2} C)
+         [] fImport(_ _) then P
+         [] fExport(_ _) then P
+         [] fDefine(P1 P2 C) then fDefine({SP P1} {SP P2} C)
+         [] fClass(P Ds Ms C) then
+            fClass({TP P} {Map Ds EP} {Map Ms SP} {FS C})
+         [] fFrom(Ps C) then fFrom({Map Ps TP} C)
+         [] fProp(Ps C) then fProp({Map Ps TP} C)
+         [] fAttr(Ps C) then fAttr({Map Ps TP} C)
+         [] fFeat(Ps C) then fFeat({Map Ps TP} C)
+         [] P1#P2 then {TP P1}#{TP P2}
+         [] fLocal(P1 P2 C) then fLocal({EP P1} {EP P2} C)
+         [] fBoolCase(P1 P2 P3 C) then
+            fBoolCase({TP P1} {EP P2} {EP P3} {FS C})
+         [] fNoElse(C) then fNoElse({FS C})
+         [] fCase(P1 Cs P2 C) then
+            fCase({TP P1} {Map Cs EP} {EP P2} {FS C})
+         [] fCaseClause(P1 P2) then fCaseClause(P1 {EP P2})
+         [] fLockThen(P1 P2 C) then fLockThen({TP P1} {EP P2} {FS C})
+         [] fLock(P C) then fLock({EP P} {FS C})
+         [] fThread(P C) then fThread({SP P} {FS C})
+         [] fTry(P1 P2 P3 C) then fTry({EP P1} {EP P2} {SP P3} {FS C})
+         [] fCatch(Cs C) then fCatch({Map Cs EP} C)
+         [] fNoCatch then P
+         [] fRaise(P C) then fRaise({TP P} {FS C})
+         [] fRaiseWith(P1 P2 C) then fRaiseWith({TP P1} {TP P2} {FS C})
+         [] fSkip(C) then fSkip({FS C})
+         [] fFail(C) then fFail({FS C})
+         [] fNot(P C) then fNot({EP P} {FS C})
+         [] fCond(Cs P C) then fCond({Map Cs EP} {EP P} {FS C})
+         [] fClause(P1 P2 P3) then fClause({EP P1} {EP P2} {EP P3})
+         [] fNoThen(_) then P
+         [] fOr(Cs X C) then fOr({Map Cs EP} X {FS C})
+         [] fCondis(Pss C) then
+            fCondis({Map Pss fun {$ Ps} {Map Ps TP} end} {FS C})
+         [] fScanner(P1 Ds Ms Rs X C) then
+            fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {FS C})
+         [] fParser(P1 Ds Ms T Ps X C) then
+            fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {FS C})
+         end
+      end
+
+      fun {TP P}
+         case P of fAtom(_ _) then P
+         [] fVar(_ _) then P
+         [] fEscape(_ _) then P
+         [] fWildcard(_) then P
+         [] fSelf(_) then P
+         [] fDollar(_) then P
+         [] fInt(_ _) then P
+         [] fFloat(_ _) then P
+         [] fRecord(L As) then fRecord(L {Map As TP})
+         [] fOpenRecord(L As) then fOpenRecord(L {Map As TP})
+         [] fColon(F P) then fColon(F {TP P})
+         else {EP P}
          end
       end
    in

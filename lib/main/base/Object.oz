@@ -653,6 +653,7 @@ in
                  ',':             Boot_Object.','
                  '@':             Boot_Object.'@'
                  '<-':            Boot_Object.'<-'
+                 exchange:        Boot_Object.ooExch
                  'class':         `class`
 
                  %% only in module

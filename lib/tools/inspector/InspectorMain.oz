@@ -36,6 +36,7 @@ export
    'close'      : Close
    'nodes'      : TreeNodes
    'new'        : NewInspector
+   'reflect'    : Reflect
 define
    fun {NewServer O}
       S P
@@ -568,13 +569,14 @@ define
    %%
    %% Object Creation Function
    %%
+   Reflect = Reflection.reflect
    fun {NewInspector}
       InspectorPort InspectorObject
    in
       InspectorPort   = {NewServer InspectorObject}
       InspectorObject = {New InspectorClass create(InspectorPort)}
       proc {$ M}
-         {Port.send InspectorPort {Reflection.reflect M}}
+         {Port.send InspectorPort {Reflect M}}
       end
    end
 

@@ -637,6 +637,12 @@ define
       of ap(usage Msg) then
          error(kind: T
                msg: Msg)
+      elseof ap(spec env Var) then
+         error(kind: T
+               msg: 'environment variable '#Var#' not set'
+               items: [hint(l: 'Hint'
+                            m: ('Have you started a CGI script '#
+                                'from the command line?'))])
       else
          error(kind: T
                items: [line(oz(E))])

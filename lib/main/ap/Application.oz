@@ -679,8 +679,6 @@ define
 
    local
       local
-         GetEnv = OS.getEnv
-
          class StdIn from Open.file
             prop final
             meth init
@@ -694,13 +692,24 @@ define
          end
 
          fun {CgiRawGet}
-            case {String.toAtom {GetEnv 'REQUEST_METHOD'}}
-            of 'GET'  then {GetEnv 'QUERY_STRING'}
-            [] 'POST' then
-               F={New StdIn init}
-            in
-               {F get({String.toInt {GetEnv 'CONTENT_LENGTH'}} $)}
-               %% NEVER ATTEMPT TO CLOSE!
+            case {OS.getEnv 'REQUEST_METHOD'} of false then
+               {Exception.raiseError ap(spec env 'REQUEST_METHOD')} unit
+            elseof S then
+               case {String.toAtom S}
+               of 'GET'  then
+                  case {OS.getEnv 'QUERY_STRING'} of false then
+                     {Exception.raiseError ap(spec env 'QUERY_STRING')} unit
+                  elseof S then S
+                  end
+               [] 'POST' then
+                  case {OS.getEnv 'CONTENT_LENGTH'} of false then
+                     {Exception.raiseError ap(spec env 'CONTENT_LENGTH')} unit
+                  elseof S then F in
+                     F = {New StdIn init()}
+                     {F get({String.toInt S} $)}
+                     %% NEVER ATTEMPT TO CLOSE!
+                  end
+               end
             end
          end
       in

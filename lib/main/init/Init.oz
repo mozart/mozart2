@@ -88,6 +88,82 @@ prepare
 
    \insert 'init/Module.oz'
 
+\ifdef DENYS_EVENTS
+   functor Event
+   import
+      Event(getStream) at 'x-oz://boot/Event'
+      Error(registerFormatter)
+      EventSIGCHLD(handler) at 'x-oz://system/EventSIGCHLD'
+      EventSIGUSR2(handler) at 'x-oz://system/EventSIGUSR2'
+   export
+      put            : PutEventHandler
+      get            : GetEventHandler
+      condGet        : CondGetEventHandler
+   define
+      Handlers = {Dictionary.new}
+      proc {PutEventHandler Label P}
+         {Dictionary.put Handlers Label P}
+      end
+      fun {GetEventHandler Label}
+         {Dictionary.get Handlers Label}
+      end
+      fun {CondGetEventHandler Label Default}
+         {Dictionary.condGet Handlers Label Default}
+      end
+
+      %% default handler raises an exception in a new thread
+
+      proc {DefaultHandler E}
+         thread {Exception.raiseError event(noHandler E)} end
+      end
+
+      %% to handle an event, look up the handler using the
+      %% event label
+
+      proc {HandleEvent E}
+         if {IsDet E} andthen {IsRecord E} then
+            try
+               {{Dictionary.condGet Handlers {Label E} DefaultHandler} E}
+            catch Exc then
+               thread {Raise Exc} end
+            end
+         else
+            thread {Exception.raiseError event(noEvent E)} end
+         end
+      end
+
+      %% print out nice error messages
+
+      {Error.registerFormatter event
+       fun {$ E}
+          T = 'error in Event module'
+       in
+          case E
+          of event(noHandler E) then
+             error(kind : T
+                   msg  : 'no handler for event'
+                   items: [hint(l:'event: ' m:oz(E))])
+          [] event(noEvent E) then
+             error(kind : T
+                   msg  : 'not an event value'
+                   items: [hint(l:'event: ' m:oz(E))])
+          end
+       end}
+
+      %% register some handlers
+
+      {PutEventHandler 'SIGCHLD' EventSIGCHLD.handler}
+      {PutEventHandler 'SIGUSR2' EventSIGUSR2.handler}
+
+      %% start a high priority thread to process the event stream
+
+      thread
+         {Thread.setPriority {Thread.this} 'high'}
+         {ForAll {Event.getStream} HandleEvent}
+      end
+   end
+\endif
+
 import
    Boot at 'x-oz://boot/Boot'
 
@@ -158,6 +234,11 @@ define
 
       %% Install error handler
       {RM apply(ErrorHandler)}
+
+\ifdef DENYS_EVENTS
+      %% Start event handling
+      {RM apply(name:'Event' Event)}
+\endif
 
       %% Link root functor (i.e. application)
       {RM link(url:{GET 'application.url'})}

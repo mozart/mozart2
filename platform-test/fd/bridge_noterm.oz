@@ -164,13 +164,13 @@ define
                {Post H Tasks Start Dur}
                {EnumResource {List.subtract Tasks H} Rest Start Dur}
             else
-               dis
+               choice
 %                    {Show deep#H}
                   {Post H Tasks Start Dur}
-               then
+
 %                    {Show after}
                   {EnumResource {List.subtract Tasks H} Rest Start Dur}
-               [] skip then
+               []
 %                    {Show trueCase}
                   {TryFirstsLasts T Mode Tasks Rest Start Dur}
                end

@@ -1053,7 +1053,7 @@ in
                   case Xs of X|Xr then ArgIn VInter1 ConsReg ConsArg1 in
                      ArgIn = {MakeCopyList Xr VHd VInter1}
                      {CS newReg(?ConsReg)}
-                     ConsArg1 = case {Foreign.pointer.is X} then
+                     ConsArg1 = case {ForeignPointer.is X} then
                                    predicateRef(X)
                                 elsecase {IsName X} then
                                    literal(X)

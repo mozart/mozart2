@@ -1,6 +1,5 @@
 functor prop once
 import
-   Foreign.pointer
    System.printName
    Builtins.getInfo
    ImAVariableOccurrence

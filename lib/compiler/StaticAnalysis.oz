@@ -286,7 +286,7 @@ local
         port:              IsPort
         space:             IsSpace
         'thread':          IsThread
-        foreignPointer:    Foreign.pointer.is
+        foreignPointer:    ForeignPointer.is
         fset:              fun {$ X}
                               {FS.value.is X} orelse {FS.var.is X}
                            end

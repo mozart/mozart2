@@ -5,7 +5,6 @@ import
    CompilerSupport  from 'x-oz-boot:CompilerSupport'
    Property
    System   %.{gcDo printName valueToVirtualString get property printError eq}
-   Foreign   %.{pointer staticLoad}
    Error   %.{formatExc formatPos formatLine formatGeneric format dispatch msg}
    ErrorRegistry   %.put
    FS   %.{include var subset value reflect isIn}
@@ -37,7 +36,6 @@ body
                    c('FD':                    FD
                      'FS':                    FS
                      'Search':                Search
-                     'Foreign':               Foreign
                      'System':                System
                      'Misc':                  Misc
                      'ImAConstruction':       ImAConstruction
@@ -48,8 +46,7 @@ body
                      'CompilerSupport':       CompilerSupport
                      'Builtins':              Builtins)}
       Code      = {FunCode.apply
-                   c('Foreign':               Foreign
-                     'System':                System
+                   c('System':                System
                      'Misc':                  Misc
                      'ImAVariableOccurrence': ImAVariableOccurrence
                      'Core':                  Core
@@ -74,7 +71,6 @@ body
                     )}
       Assembler = {FunAssembler.apply
                    c('System':                System
-                     'Foreign':               Foreign
                      'AssemblerSupport':      AssemblerSupport
                      'CompilerSupport':       CompilerSupport
                      'Builtins':              Builtins)}

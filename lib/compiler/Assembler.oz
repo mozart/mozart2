@@ -139,7 +139,6 @@ local
          IsUniqueName           = CompilerSupport.isUniqueName
          IsCopyableName         = CompilerSupport.isCopyableName
          IsCopyablePredicateRef = CompilerSupport.isCopyablePredicateRef
-         ForeignPointerToInt    = {`Builtin` 'ForeignPointerToInt'             2}
 
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
@@ -192,10 +191,10 @@ local
                else
                   {System.valueToVirtualString Value 0 0}
                end
-            elsecase {Foreign.pointer.is Value} then I in
+            elsecase {ForeignPointer.is Value} then I in
                % foreign pointers are assigned increasing integers
                % in order of appearance so that diffs are sensible
-               I = {ForeignPointerToInt Value}
+               I = {ForeignPointer.toInt Value}
                case {IsCopyablePredicateRef Value} then '<Q: '
                else '<P: '
                end#

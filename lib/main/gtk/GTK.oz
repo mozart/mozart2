@@ -1,4 +1,3 @@
-%!/usr/bin/perl
 %
 % Authors:
 %   Andreas Simon (2000)
@@ -151,7 +150,9 @@ define
          in
             registry <- {Dictionary.new}
             port     <- {Port.new @stream}
+            {System.show 'M1'}
             {GtkNative.initializeSignalPort @port} % Tell the 'C side' about the signal port
+            {System.show 'M2'}
             thread
                fillerThread <- {Thread.this $}
                {FillStream}
@@ -217,7 +218,9 @@ define
 % -----------------------------------------------------------------------------
 
    % Start the dispatcher
+   {System.show 'I am just a stupid debugging message ...'}
    Dispatcher = {New DispatcherClass init}
+   {System.show 'I am an other stupid debugging message ...'}
    thread {Dispatcher dispatch} end
    {System.show 'Dispatcher successfully started and running ...'}
 

@@ -1,4 +1,3 @@
-%!/usr/bin/perl
 %
 % Authors:
 %   Andreas Simon (2000)

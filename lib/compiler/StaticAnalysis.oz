@@ -765,45 +765,41 @@ local
 %-----------------------------------------------------------------------
 %
 
-   proc {MakeDummyProcedure N PN P}
+   fun {MakeDummyProcedure N PN}
       case N
-      of 0 then  proc {P} skip end
-      [] 1 then  proc {P _} skip end
-      [] 2 then  proc {P _ _} skip end
-      [] 3 then  proc {P _ _ _} skip end
-      [] 4 then  proc {P _ _ _ _} skip end
-      [] 5 then  proc {P _ _ _ _ _} skip end
-      [] 6 then  proc {P _ _ _ _ _ _} skip end
-      [] 7 then  proc {P _ _ _ _ _ _ _} skip end
-      [] 8 then  proc {P _ _ _ _ _ _ _ _} skip end
-      [] 9 then  proc {P _ _ _ _ _ _ _ _ _} skip end
-      [] 10 then proc {P _ _ _ _ _ _ _ _ _ _} skip end
-      [] 11 then proc {P _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 12 then proc {P _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 13 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 14 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 15 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 16 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 17 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 18 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 19 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 20 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      of 0 then  proc {$} skip end
+      [] 1 then  proc {$ _} skip end
+      [] 2 then  proc {$ _ _} skip end
+      [] 3 then  proc {$ _ _ _} skip end
+      [] 4 then  proc {$ _ _ _ _} skip end
+      [] 5 then  proc {$ _ _ _ _ _} skip end
+      [] 6 then  proc {$ _ _ _ _ _ _} skip end
+      [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
+      [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
+      [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
+      [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       else
-         skip % weaker analysis for procedures with arity > 20
+         _ % weaker analysis for procedures with arity > 20
       end
    end
 
-   proc {MakeDummyObject PN P}
-      P = {New BaseObject noop}
+   fun {MakeDummyObject PN}
+      {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop}
    end
 
-   proc {MakeDummyClass PN P}
-      P = class $ end
+   fun {MakeDummyClass PN}
+      {Object.'class' nil '#' 'attr' 'feat' nil PN}
    end
-
-%   proc {MakeDummyArray PN P}
-%      P = {New Core.arrayToken init(Value)}
-%   end
 
 %-----------------------------------------------------------------------
 % some formatting
@@ -1874,7 +1870,7 @@ local
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
          Msg     = {GetData MsgArg}
-         MsgData = {GetPrintData MsgArg}
+         MsgData = {GetPrintData MsgArg}   %--** memory leak with named vars!
 \ifdef DEBUG
          {Show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
@@ -4543,10 +4539,10 @@ local
          case
             {HasFeature @value ImAVariableOccurrence}
          then
-            X % Leif's hack: dummy variable with right print name
-         in
-            {NameVariable X {self getPrintName($)}}
-            X
+            case IsData then _
+            else   % dummy variable with right print name
+               {NameVariable $ {self getPrintName($)}}
+            end
          else
             {@value getFullData(D IsData $)}
          end

@@ -69,7 +69,10 @@ body
 
       %%
       meth init
-         Ticket = {Connection.offer vsserver(taskPort: self.TaskPort
+         %% 'watchedEntity' is used by the slave for watching
+         %% for master's (premature) termination;
+         Ticket = {Connection.offer vsserver(watchedEntity: {Port.new _}
+                                             taskPort: self.TaskPort
                                              ctrlPort: self.CtrlPort)}
       in
          self.VSMailbox = {NewVSMailbox}
@@ -88,6 +91,20 @@ body
          %%
          {Wait self.TaskPort}
          {Wait self.CtrlPort}
+
+         %%
+         %% kost@ : to be replaced by 'Fault.install';
+         local
+            InstallHW = {`Builtin` 'installHW' 3}
+         in
+            {InstallHW
+             self.TaskPort
+             watcher(cond:permHome once_only:yes variable:no)
+             proc {$ E C}
+                {System.showInfo "VS: slave exited."}
+                {self close}
+             end}
+         end
       end
 
       %%

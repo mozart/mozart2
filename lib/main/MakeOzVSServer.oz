@@ -24,7 +24,7 @@ local
    %%
    %% Right now we load just everything, but that can be easily
    %% changed;
-\insert 'dp/VSServer.oz'
+   \insert 'dp/VSServer.oz'
 
    %%
    %% exit codes;
@@ -42,12 +42,15 @@ in
        Syslet.{args exit}
        Connection.{take}
        Module.{link}
-       System.{showInfo}
+       System.{set showInfo}
 
        %%
     body
        CloseProc = proc {$} {Syslet.exit OKDone} end
     in
+       %%
+       {System.set messages(idle:false)}
+
        %%
        try
           %%
@@ -62,9 +65,28 @@ in
 
        %%
        try
-          vsserver(taskPort:TaskPort ctrlPort:CtrlPort) =
+          vsserver(watchedEntity: WatchedEntity
+                   taskPort:TaskPort
+                   ctrlPort:CtrlPort) =
           {Connection.take Syslet.args.ticket}
        in
+          %%
+          {Wait WatchedEntity}  % but should be there already;
+          %%
+          %% kost@ : to be replaced by 'Fault.install';
+          local
+             InstallHW = {`Builtin` 'installHW' 3}
+          in
+             {InstallHW
+              WatchedEntity
+              watcher(cond:permHome once_only:yes variable:no)
+              proc {$ E C}
+                 {System.showInfo "VS: master is gone?"}
+                 {CloseProc}
+              end}
+          end
+
+          %%
           {VSServer.engine Module.link CloseProc TaskPort CtrlPort}
        catch _ then
           {System.showInfo "VS: engine failed"}

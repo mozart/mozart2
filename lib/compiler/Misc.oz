@@ -58,15 +58,19 @@ local
       end
    end
 in
-   fun {IsPrintName X} S in
-      S = {Atom.toString X}
-      case S of C|Cr then
-         case C of &` then
-            {IsQuotedVariable Cr}
-         else
-            {Char.isUpper C} andthen {All Cr IsIDChar}
+   fun {IsPrintName X}
+      {IsAtom X} andthen
+      local
+         S = {Atom.toString X}
+      in
+         case S of C|Cr then
+            case C of &` then
+               {IsQuotedVariable Cr}
+            else
+               {Char.isUpper C} andthen {All Cr IsIDChar}
+            end
+         [] nil then false
          end
-      [] nil then false
       end
    end
 end

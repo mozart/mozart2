@@ -130,10 +130,14 @@ in
       end
       meth logReject()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('%** ------------------ rejected '#
-                                   '('#@ErrorCount#' error'#
-                                   case @ErrorCount == 1 then "" else 's' end#
-                                   ')\n'))}
+         {self.Wrapper notify(info('%** ------------------ rejected'#
+                                   case @ErrorCount > 0 then
+                                      ' ('#@ErrorCount#' error'#
+                                      case @ErrorCount == 1 then ""
+                                      else 's'
+                                      end#')'
+                                   else ""
+                                   end#'\n'))}
       end
       meth logAbort()
          Reporter, ProfileEnd()
@@ -163,7 +167,8 @@ in
       meth error(coord: Coord <= unit
                  kind: Kind <= unit
                  msg: Msg <= unit
-                 items: Items <= nil) MaxNumberOfErrors in
+                 items: Items <= nil
+                 abort: Abort <= true) MaxNumberOfErrors in
          Reporter, ToTop(true)
          {self.Wrapper
           notify(message(error(kind: Kind msg: Msg
@@ -172,7 +177,7 @@ in
                                       end) Coord))}
          ErrorCount <- @ErrorCount + 1
          {self.Compiler getMaxNumberOfErrors(?MaxNumberOfErrors)}
-         case MaxNumberOfErrors < 0 then skip
+         case MaxNumberOfErrors < 0 orelse {Not Abort} then skip
          elsecase @ErrorCount > MaxNumberOfErrors then
             raise tooManyErrors end
          else skip

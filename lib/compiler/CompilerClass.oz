@@ -150,9 +150,17 @@ local
          elsecase {HasFeature @switches SwitchName} then
             switches <- {AdjoinAt @switches SwitchName B}
             {@wrapper notify(switch(SwitchName B))}
+         elsecase C == unit then
+            {@reporter error(coord: C kind: 'compiler engine error'
+                             msg: 'unknown switch `'#SwitchName#'\''
+                             items: [hint(l: 'Query'
+                                          m: oz(setSwitch(SwitchName B)))]
+                             abort: false)}
+            {@reporter logReject()}
          else
-            {@reporter warn(coord: C kind: 'compiler directive warning'
-                            msg: 'unknown switch `'#SwitchName#'\'')}
+            {@reporter error(coord: C kind: 'compiler directive error'
+                             msg: 'unknown switch `'#SwitchName#'\''
+                             abort: false)}
          end
       end
       meth getSwitch(SwitchName $)
@@ -223,15 +231,9 @@ local
       end
       meth MergeEnv(Env)
          {Record.forAllInd Env
-          proc {$ PrintName Value}
-             case {IsPrintName PrintName} then V in
-                V = {New Core.variable init(PrintName putEnv unit)}
-                CompilerStateClass, Enter(V Value true)
-             else
-                {@reporter warn(kind: 'warning'
-                                msg: ('tried to add variable with '#
-                                      'illegal print name to environment'))}
-             end
+          proc {$ PrintName Value} V in
+             V = {New Core.variable init(PrintName putEnv unit)}
+             CompilerStateClass, Enter(V Value true)
           end}
       end
       meth annotateEnv(Vs ?TheInterface)
@@ -250,8 +252,15 @@ local
       meth lookupVariableInEnv(PrintName $)
          {Dictionary.condGet self.variables PrintName undeclared}
       end
-      meth lookupInEnv(PrintName $)
-         {Dictionary.get self.values PrintName}
+      meth lookupInEnv(PrintName ?X)=M
+         case {Dictionary.member self.values PrintName} then
+            X = {Dictionary.get self.values PrintName}
+         else
+            {@reporter error(kind: 'compiler engine error'
+                             msg: 'undeclared variable '#oz(PrintName)
+                             items: [hint(l: 'Query' m: oz(M))]
+                             abort: false)}
+         end
       end
       meth removeFromEnv(PrintName)
          {Dictionary.remove self.variables PrintName}
@@ -652,15 +661,15 @@ local
                      end
                      CompilerEngine, ExecuteUninterruptible(Proc)
                      case CompilerStateClass, getSwitch(threadedqueries $) then
+                        OPI = {{`Builtin` getOPICompiler 1}}
+                     in
                         {@reporter
                          logSubPhase('executing in an independent thread ...')}
-                        case {{`Builtin` getOPICompiler 1}} of false then skip
-                        elseof OPI then
-                           case {OPI getCompiler($)} == @wrapper then
-                              % this helps Ozcar detect queries from the OPI:
-                              {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
-                           else skip
-                           end
+                        case OPI of false then skip
+                        elsecase {OPI getCompiler($)} == @wrapper then
+                           % this helps Ozcar detect queries from the OPI:
+                           {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
+                        else skip
                         end
                         thread {P} end
                      else
@@ -671,8 +680,8 @@ local
                      end
 \else
                      {@reporter error(kind: 'compiler restriction'
-                                      msg: ('Cannot load code with '#
-                                            'this restricted compiler'))}
+                                      msg: ('Loading of code not supported '#
+                                            'by this compiler'))}
 \endif
                   else skip
                   end
@@ -738,6 +747,16 @@ local
             raise aborted end
          end
       end
+   end
+
+   proc {TypeCheck P M I A}
+      case {P M.I} then skip
+      else {Exception.raiseError compiler(invalidQuery M I A)}
+      end
+   end
+
+   fun {IsEnv E}
+      {IsRecord E} andthen {All {Arity E} IsPrintName}
    end
 in
    class CompilerClass
@@ -818,43 +837,48 @@ in
       %%
       %% Managing the query queue
       %%
-      %% Each query is enqueued into the compilers query queue; the
-      %% enqueueing operation immediately returns.  The output variables
-      %% of information requesting queries become bound when the query
-      %% is actually executed.  In answer to state change requests, a
-      %% notification message is broadcast on all registered interface
-      %% ports.  Exceptions are raised on the thread that enqueued the
-      %% query.
-      %%
-      %% Each query is assigned a unique identification that is immediately
-      %% unified with Id when enqueueing.  This Id may be used to remove a
-      %% query from the queue.
-      %%
 
       meth enqueue(M ?Id <= _)
          lock self.QueueLock then NewTl in
-            case M of macroDefine(X) then skip
-            [] macroUndef(X) then skip
-            [] getDefines(?Xs) then skip
-            [] getSwitch(SwitchName ?B) then skip
-            [] setSwitch(SwitchName B) then skip
+            case M of macroDefine(_) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+            [] macroUndef(_) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+            [] getDefines(_) then skip
+            [] getSwitch(_ _) then
+               {TypeCheck IsAtom M 1 'atom'}
+            [] setSwitch(SwitchName B) then
+               {TypeCheck IsAtom M 1 'atom'}
+               {TypeCheck IsBool M 2 'bool'}
             [] pushSwitches() then skip
             [] popSwitches() then skip
-            [] getMaxNumberOfErrors(?N) then skip
-            [] setMaxNumberOfErrors(N) then skip
-            [] addToEnv(PrintName Value) then skip
-            [] lookupInEnv(PrintName ?Value) then skip
-            [] removeFromEnv(PrintName) then skip
-            [] putEnv(Env) then skip
-            [] mergeEnv(Env) then skip
-            [] getEnv(?Env) then skip
-            [] feedVirtualString(VS) then skip
-            [] feedVirtualString(VS Return) then skip
-            [] feedFile(VS) then skip
-            [] feedFile(VS Return) then skip
+            [] getMaxNumberOfErrors(_) then skip
+            [] setMaxNumberOfErrors(_) then
+               {TypeCheck IsInt M 1 'int'}
+            [] addToEnv(_ _) then
+               {TypeCheck IsPrintName M 1 'print name'}
+            [] lookupInEnv(_ _) then
+               {TypeCheck IsPrintName M 1 'print name'}
+            [] removeFromEnv(_) then
+               {TypeCheck IsPrintName M 1 'print name'}
+            [] putEnv(_) then
+               {TypeCheck IsEnv M 1 'environment'}
+            [] mergeEnv(_) then
+               {TypeCheck IsEnv M 1 'environment'}
+            [] getEnv(_) then skip
+            [] feedVirtualString(_) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+            [] feedVirtualString(VS Return) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+               {TypeCheck IsRecord M 2 'record'}
+            [] feedFile(_) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+            [] feedFile(_ _) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+               {TypeCheck IsRecord M 2 'record'}
             [] ping(?HereIAm) then skip
             else
-               raise compiler(invalidQuery M) end
+               {Exception.raiseError compiler(invalidQuery M)}
             end
             Id = @NextId
             NextId <- Id + 1
@@ -923,11 +947,15 @@ in
             end
             try
                {self.Compiler M}
-            catch failure(...) then Reporter in
+            catch E then Reporter in
                {self.Compiler getReporter(?Reporter)}
-               {Reporter error(kind: 'error'
-                               msg: 'execution of query raised failure'
-                               items: [hint(l: 'Query' m: oz(M))])}
+               {Reporter error(kind: 'compiler engine error'
+                               msg: ('execution of query raised an exception '#
+                                     '-- description follows')
+                               items: [hint(l: 'Query' m: oz(M))]
+                               abort: false)}
+               CompilerClass, notify(message({AdjoinAt {Error.formatExc E}
+                                              footer false} unit))
                {Reporter logReject()}
             end
             lock self.QueueLock then

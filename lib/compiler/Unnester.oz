@@ -782,17 +782,17 @@ define
                Unnester, UnnestStatement(FFun ?GFun)
                FImportDesc = fRecord(fAtom('import' CND)
                                      {FoldR @AdditionalImports
-                                      fun {$ X#F In} Type From in
-                                         X = {GenerateImportFeature 1
-                                              ImportFeatures}
+                                      fun {$ X#F In#Fs} Type From in
+                                         X = {GenerateImportFeature 1 Fs}
                                          Type = fColon(fAtom('type' unit)
                                                        fAtom(nil unit))
                                          From = fColon(fAtom('from' unit)
                                                        fAtom(F unit))
-                                         fColon(fAtom(X unit)
-                                                fRecord(fAtom(info unit)
-                                                        [Type From]))|In
-                                      end FImportArgs})
+                                         (fColon(fAtom(X unit)
+                                                 fRecord(fAtom(info unit)
+                                                         [Type From]))|In)#
+                                         (X|Fs)
+                                      end FImportArgs#ImportFeatures}.1)
                AdditionalImports <- OldAdditionalImports
                CurrentImportFV <- OldImportFV
                FExportDesc = fRecord(fAtom('export' CND) FExportArgs)

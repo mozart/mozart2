@@ -67,7 +67,7 @@
 
 local
    BuiltinTable = builtinTable(
-                               \insert ../compiler-Builtins.oz
+                               \insert compiler-Builtins.oz
                               )
 in
    %%

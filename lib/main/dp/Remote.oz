@@ -1,11 +1,11 @@
 %%%
 %%% Authors:
-%%%   Konstantin Popov <kost@sics.se>
 %%%   Christian Schulte <schulte@dfki.de>
+%%%   Konstantin Popov <kost@sics.se>
 %%%
 %%% Copyright:
-%%%   Kostantin Popov, 1998
 %%%   Christian Schulte, 1997, 1998
+%%%   Kostantin Popov, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$

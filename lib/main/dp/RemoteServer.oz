@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Christian Schulte <schulte@dfki.de>
+%%%   Konstantin Popov <kost@sics.se>
 %%%
 %%% Copyright:
-%%%   Christian Schulte, 1997
+%%%   Christian Schulte, 1997, 1998
+%%%   Kostantin Popov, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$

@@ -59,6 +59,9 @@ local
        {"getenv",1,1,BIgetenv},
        {0,0,0,0}
      };
+     OZ_C_proc_interface *oz_init_module() {
+       return oz_interface;
+     }
 '
 
 in

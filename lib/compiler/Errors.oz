@@ -47,7 +47,8 @@
         Exc}
     elseof compiler(evalExpression VS Ms) then
        {Error.format T
-        'Compiler.evalExpression applied to an erroneous query'
+        'Erroneous expression in Compiler.evalExpression'
+        hint(l: 'Expression' m: VS)|
         {Map Ms
          fun {$ M}
             case M of error(kind: Kind msg: Msg ...) then line(Kind#': '#Msg)

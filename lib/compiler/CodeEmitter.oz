@@ -653,11 +653,6 @@ in
                                               {FilterNonlinearRegs Regs} VArgs)
                   end
                elseof R then
-                  if Emitter, IsLast(Reg $) then
-                     if {OccursInVArgs VArgs Reg} then skip
-                     else Emitter, FreeReg(Reg)
-                     end
-                  end
                   Emitter, EmitRecordRead(Literal RecordArity R
                                           {FilterNonlinearRegs Regs} VArgs)
                end

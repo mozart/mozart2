@@ -5,7 +5,6 @@ export
    DowncasePrintName
    NameVariable
    IsBuiltin
-   GetBuiltinName
    ConcatenateAtomAndInt
 body
    \insert 'Misc.oz'

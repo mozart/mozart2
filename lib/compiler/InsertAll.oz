@@ -26,7 +26,6 @@ local
    DowncasePrintName
    NameVariable
    IsBuiltin
-   GetBuiltinName
    ConcatenateAtomAndInt
 
    % Builtins

@@ -2175,7 +2175,7 @@ local
 
    class CodeGenBuiltinToken
       meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
-         Builtinname = {GetBuiltinName @value}
+         Builtinname = {System.printName @value}
          BIInfo = {GetBuiltinInfo Builtinname}
       in
          case BIInfo == noInformation

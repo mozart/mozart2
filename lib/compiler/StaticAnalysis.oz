@@ -1972,7 +1972,7 @@ local
       %          the arguments have been tested
 
       meth checkArguments(Ctrl Det $)
-         N         = {GetBuiltinName {GetData @designator}}
+         N         = {System.printName {GetData @designator}}
          BIInfo    = {GetBuiltinInfo N}
          NumArgs   = {Length @actualArgs}
          BIData    = {GetData @designator}
@@ -2359,7 +2359,7 @@ local
             skip
          else
             Val  = {GetData {Nth @actualArgs 2}}
-            Expr = case {GetBuiltinName {GetData @designator}}
+            Expr = case {System.printName {GetData @designator}}
                    of '<-' then oz(Fea) # ' <- ' # oz(Val)
                    elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
                    end
@@ -2381,7 +2381,7 @@ local
                 warn(coord: @coord
                      kind:  SAGenWarn
                      msg:   'applying ' #
-                     {GetBuiltinName {GetData @designator}} #
+                     {System.printName {GetData @designator}} #
                      ' to unavailable attribute'
                      items: [hint(l:'Expression' m:Expr)
                              hint(l:Cls
@@ -2650,7 +2650,7 @@ local
          case
             SAApplication, checkDesignatorBuiltin($)
          then
-            BIName = {GetBuiltinName {GetData @designator}}
+            BIName = {System.printName {GetData @designator}}
             ArgsOk
          in
 \ifdef DEBUGSA

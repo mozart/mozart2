@@ -226,9 +226,9 @@ define
            deep(equal(fun {$}
                          {Search.base.all proc {$ X}
                                        dis X = 1
-                                       []
+                                       [] skip then
                                           dis X = 3
-                                          [] dis X = a [] X = b end
+                                          [] skip then dis X = a [] X = b end
                                           [] X = 4
                                           end
                                        [] X = 5
@@ -247,9 +247,9 @@ define
                                            cond U=1 then skip end
                                            thread
                                               dis X = 1
-                                              []
+                                              [] skip then
                                                  dis X = 3
-                                                 [] dis X = a [] X = b end
+                                                 [] skip then dis X = a [] X = b end
                                                  [] X = 4
                                                  end
                                               [] X = 5

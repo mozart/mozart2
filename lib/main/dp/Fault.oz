@@ -51,38 +51,72 @@ define
          {Exception.raiseError distribution(entity:Entity condition:Cond)}
       end
 
+
       proc{InjectorH T  E P}
-         TT in
-         if T == install then   TT = Fault.distHandlerInstall
-         else TT = Fault.distHandlerDeInstall end
-         {TT injector('cond':[permBlocked]
+         TT Res in
+         if T == install then   TT = Install0
+         else TT = DeInstall0 end
+         Res={TT safeInjector('cond':[permBlocked]
                       'thread':this
                       entityType:single
-                      entity:E)  P}
+                          entity:E)  P}
+         if Res==false then
+            raise distribution('connection') end
+         end
       end
 
       proc{SiteWH T E P}
-         TT in
-         if T == install then   TT = Fault.distHandlerInstall
-         else TT = Fault.distHandlerDeInstall end
-         {TT siteWatcher('cond':[permWillBlock]
-                         entity:E) P}
+         TT Res in
+         if T == install then   TT = Install0
+         else TT = DeInstall0 end
+         Res={TT siteWatcher('cond':[permWillBlock]
+                             entity:E) P}
+         if Res==false then
+            raise distribution('connection') end
+         end
+      end
+
+      proc{IsUnsafe Cond Out}
+        if {Record.is Cond} then
+           if {Record.hasLabel Cond}==injector then
+              Out=true
+           else
+              Out=false
+           end
+        else
+           Out=false
+        end
+      end
+
+      fun{Install0 Cond Proc}
+        if{IsUnsafe Cond} then
+            {Fault.distHandlerInstall Cond Proc}
+        else
+            {InterFault.interDistHandlerInstall Cond Proc}
+        end
+      end
+
+      fun{DeInstall0 Cond Proc}
+        if{IsUnsafe Cond} then
+            {Fault.distHandlerDeInstall Cond Proc}
+        else
+            {InterFault.interDistHandlerDeInstall Cond Proc}
+        end
       end
 
    in
       {Wait DPB}
 
       GetEntityCond  = Fault.getEntityCond
-      Install        = Fault.distHandlerInstall
-      Deinstall      = Fault.distHandlerDeInstall
+      Install        = Install0
+      Deinstall      = DeInstall0
 
-      EInstall      = proc{$ Cond}
-                         {Fault.distHandlerInstall Cond ExceptionHandler}
-
+      EInstall      = fun{$ Cond}
+                         {Install0 Cond ExceptionHandler}
                       end
 
-      EDeinstall    = proc{$ Cond}
-                         {Fault.distHandlerDeInstall Cond ExceptionHandler}
+      EDeinstall    = fun{$ Cond}
+                         {DeInstall0 Cond ExceptionHandler}
                       end
 
       Injector      = proc{$ E P} {InjectorH install E P} end

@@ -25,8 +25,10 @@ import
 export
    quoteString  : QuoteStr
    convert      : ConvertAtomExternal
+   convertSML   : ConvertAtomSML
    atom         : AtomNode
    label        : LabelNode
+   labelSML     : LabelSMLNode
    separator    : SeparatorNode
    separatorSML : SeparatorSMLNode
    feature      : FeatureNode
@@ -38,6 +40,7 @@ export
    empty        : EmptyNode
    tupleSML     : TupleSMLNode
    recordSML    : RecordSMLNode
+   recordSMLInd : RecordSMLIndNode
 define
    QuoteStr
    local
@@ -100,6 +103,22 @@ define
       proc {ConvertAtomExternal V PrintStr LenStr}
          LenStr   = {Value.toVirtualString V 0 0}
          PrintStr = {QuoteStr LenStr}
+      end
+      local
+         fun {RemoveQuotes Vs}
+            case Vs
+            of 39|nil then nil
+            [] V|Vr   then V|{RemoveQuotes Vr}
+            end
+         end
+      in
+         proc {ConvertAtomSML V PrintStr LenStr}
+            LenStr   = case {Value.toVirtualString V 0 0}
+                       of 39|Vr then {RemoveQuotes Vr}
+                       [] Vs    then Vs
+                       end
+            PrintStr = {QuoteStr LenStr}
+         end
       end
 %      fun {ConvertAtom V}
 %        {QuoteStr {Value.toVirtualString V 0 0}}
@@ -266,8 +285,6 @@ define
             value  %% Store Reference
             parent %% Parent Node
             limStr %% Limiter String
-         prop
-            final
          meth create(LabVal Limiter Parent Visual)
             @visual = Visual
             @tag    = {Visual newTag($)}
@@ -326,6 +343,22 @@ define
          end
       end
 
+      class LabelSMLNode from LabelNode
+         prop
+            final
+         meth layoutX($)
+            XDim = @xDim
+         in
+            if {IsFree XDim}
+            then
+               PrintStr = @string
+            in
+               XDim = ({VirtualString.length {ConvertAtomSML @value PrintStr}} + 1)
+            end
+            XDim
+         end
+      end
+
       class FeatureNode from CombinedValues SecondTags GetType
          attr
             sDim %% String Length
@@ -341,10 +374,6 @@ define
                       else FeaVal
                       end
             @sDim   = {VirtualString.length String}
-         end
-         meth smlCreate(FeaVal Visual Node)
-            sepString <- '='
-            FeatureNode, create(FeaVal Visual Node)
          end
          meth isInfix($)
             {@node isInfix($)}
@@ -656,7 +685,7 @@ define
             case String
             of '' then skip
             elseif @dirty
-            then dirty <- false {Visual printXY(NewX NewY String @tag separator)}
+            then dirty <- false {Visual printXY(NewX NewY String @tag internal)}
             else {Visual place(NewX NewY @tag)}
             end
          end
@@ -700,6 +729,19 @@ define
 
       local
          class FeatureSMLNode from FeatureNode
+            meth create(FeaVal Visual Node)
+               String = @string
+            in
+               CombinedValues, create(Node Visual)
+               @secTag = {Visual newTag($)}
+               String  = if {IsAtom FeaVal}
+                         then {ConvertAtomSML FeaVal _}
+                         elseif {IsName FeaVal}
+                         then '<N:'#{System.printName FeaVal}#'>'
+                         else FeaVal
+                         end
+               @sDim   = {VirtualString.length String}
+            end
             meth draw(X Y)
                Visual = @visual
                SDim   = @sDim
@@ -723,6 +765,47 @@ define
                {@node getParent($)}
             end
          end
+         class FeatureSMLIndNode from FeatureIndNode
+            meth create(FeaVal Visual Node)
+               String = @string
+            in
+               CombinedValues, create(Node Visual)
+               @secTag = {Visual newTag($)}
+               String  = if {IsAtom FeaVal}
+                         then {ConvertAtomSML FeaVal _}
+                         elseif {IsName FeaVal}
+                         then '<N:'#{System.printName FeaVal}#'>'
+                         else FeaVal
+                         end
+               @sDim   = {VirtualString.length String}
+            end
+            meth draw(X Y)
+               Visual = @visual
+               SDim   = @sDim
+               Node   = @node
+            in
+               if @dirty
+               then
+                  dirty <- false
+                  {Visual printXY(X Y @string @tag feature)}
+                  {Visual printXY((X + SDim) Y '=' @secTag colon)}
+               else {Visual doublePlace(X Y SDim @tag @secTag)}
+               end
+               if {{Node getParent($)} getHorzMode($)}
+               then {Node draw((X + SDim + 1) Y)}
+               else {Node draw((X + 3) (Y + 1))}
+               end
+            end
+            meth drawX(X Y $)
+               FeatureSMLIndNode, draw(X Y) (X + @xDim)
+            end
+            meth drawY(X Y $)
+               FeatureSMLIndNode, draw(X Y) (Y + @yDim)
+            end
+            meth getParent($)
+               {@node getParent($)}
+            end
+         end
       in
          class RecordSMLNode from TupleSMLNode
             meth create(FeaVal Visual Node)
@@ -733,6 +816,14 @@ define
             end
             meth change(Node)
                {@node change(Node)}
+            end
+         end
+         class RecordSMLIndNode from RecordSMLNode
+            meth create(FeaVal Visual Node)
+               NewNode = {New FeatureSMLIndNode create(FeaVal Visual Node)}
+            in
+               @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
+               CombinedValues, create(NewNode Visual)
             end
          end
       end
@@ -1179,7 +1270,18 @@ define
                end
             end
             meth searchNode(XA YA X Y $)
-               {@node searchNode((XA + 1) YA X Y $)}
+               Node = @node
+            in
+               {System.show 'Entered EmbracedNode::SearchNode:'#XA#YA#X#Y}
+               if Y == YA andthen X >= XA andthen X < (XA + 1)
+               then Node
+               elsecase {Node getXYDim($)}
+               of XD|YD then
+                  if Y == (YA + YD - 1) andthen X == (XA + XD)
+                  then Node
+                  else {Node searchNode((XA + 1) YA X Y $)}
+                  end
+               end
             end
             meth getFirstItem($)
                @tag

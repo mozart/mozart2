@@ -158,7 +158,7 @@ in
             Depth  = @depth
          in
             if I > @width orelse {IsDet Stop}
-            then PipeShare, finalInsert(I {New Helper.bitmap create(width self I Visual)})
+            then PipeShare, finalInsert(I {New Helper.bitmap treeCreate(width self I Visual Vs)})
             elseif {IsUnbound Vs}
             then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
             elsecase Vs
@@ -213,7 +213,7 @@ in
             Depth  = @depth
          in
             if I > @width orelse {IsDet Stop}
-            then PipeShare, finalInsert(I {New Helper.bitmap create(width self I Visual)})
+            then PipeShare, finalInsert(I {New Helper.bitmap treeCreate(width self I Visual Vs)})
             elseif {IsUnbound Vs}
             then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
             elsecase Vs
@@ -353,8 +353,8 @@ in
       in
          @maxWidth   = 1
          @type       = cell
-         @label      = {New Helper.label create('ref' '(' self Visual)}
-         @brace      = {New Helper.atom create(')' self 0 Visual internal)}
+         @label      = {New Helper.atom create('ref ' self 0 Visual internal)}
+         @brace      = {New Helper.empty create(self)}
          @savedValue = Value
          value <- ref({Access Value})
          ContainerCreateObject, adjustWidth({Visual getWidth($)} 1)
@@ -442,12 +442,20 @@ in
       meth createContainer
          Visual = @visual
          Value  = @value
+         ValLab = {Label Value}
       in
-         @type     = vector
          @maxWidth = {Width Value}
          @arity    = {Record.arity Value}
-         @label    = {New Helper.atom create('#[' self 0 Visual internal)}
-         @brace    = {New Helper.atom create(']' self 0 Visual internal)}
+         case ValLab
+         of '#[]' then
+            @type  = vector
+            @label = {New Helper.atom create('#[' self 0 Visual internal)}
+            @brace = {New Helper.atom create(']' self 0 Visual internal)}
+         else
+            @type  = conval
+            @label = {New Helper.labelSML create(ValLab '(' self Visual)}
+            @brace = {New Helper.atom create(')' self 0 Visual internal)}
+         end
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
    end
@@ -466,6 +474,11 @@ in
          @brace    = {New Helper.atom create('}' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
+   end
+
+   class RecordSMLIndCreateObject from RecordSMLCreateObject
+      attr
+         auxfeat : Helper.recordSMLInd %% Aux Separator Class
    end
 
    class RecordGrCreateObject from RecordCreateObject GraphCreate LabelModeShare end

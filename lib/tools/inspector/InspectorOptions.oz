@@ -35,13 +35,6 @@ define
    ChunkArity = BS.chunkArity
 
    local
-      fun {FillDict Os D}
-         case Os
-         of (Key#Value)|Or then {Dictionary.put D Key Value} {FillDict Or D}
-         else D
-         end
-      end
-
       local
          local
             local
@@ -388,30 +381,31 @@ define
                              kindedrecord#kindedrecordGrInd fdint#fdintGr
                              fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
                              byteString#bytestring]
-         NormalSMLNodes   = [int#int word#wordSML float#float atom#atom name#nameSML
+         NormalSMLNodes   = [int#int word#wordSML float#float atom#atomSML name#nameSML
                              procedure#procedure
                              hashtuple#tupleSML pipetuple#listSML labeltuple#vectorSML
-                             record#recordSML kindedrecord#kindedrecordInd fdint#fdint cell#cellSML
+                             record#recordSML kindedrecord#kindedrecord fdint#fdint cell#cellSML
                              fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
-         RelationSMLNodes = [int#int float#float atom#atom name#name procedure#procedure
-                             hashtuple#hashtupleGr pipetuple#pipetupleGrM
-                             labeltuple#labeltupleGrInd record#recordGrInd
-                             kindedrecord#kindedrecordGrInd fdint#fdintGr
-                             fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
-                             byteString#bytestring]
+         NormalSMLIndNodes = [int#int word#wordSML float#float atom#atomSML name#nameSML
+                              procedure#procedure hashtuple#tupleSML
+                              pipetuple#listSML labeltuple#vectorSML record#recordSMLInd
+                              kindedrecord#kindedrecordInd fdint#fdint cell#cellSML
+                              fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
       in
          DefaultValues =
          [inspectorWidth         # 600
           inspectorHeight        # 400
+          inspectorLanguage      # 'Oz'     %% 'Alice' or 'Oz'
           optionsRange           # 'active' %% 'active' or 'all'
 
           widgetTreeWidth        # 50
           widgetTreeDepth        # 15
           widgetTreeDisplayMode  # true
-          widgetUseNodeSet       # 1 %% Select the used node-set (1,2 or 3)
+          widgetUseNodeSet       # 1 %% Select the used node-set (1,2 or 3,4)
           widgetNodeSets         # ((NormalNodes|RelationNodes)#
                                     (NormalIndNodes|RelationIndNodes)#
-                                    (NormalSMLNodes|RelationSMLNodes))
+                                    (NormalSMLNodes|NormalSMLNodes)#
+                                    (NormalSMLIndNodes|NormalSMLIndNodes))
           widgetRelationList     # ['Structural Equality'(StructEqual)
                                    auto('Token Equality'(System.eq))]
           widgetWidthLimitBitmap # {Root 'width.xbm'}
@@ -479,7 +473,7 @@ define
                                          'Split Odd/Even'(TupSplitOddEven)]
                                         nil)
           pipetupleMenu          # menu(WidthList DepthList
-                                        ['Show String'(ShowString) # auto disabled
+                                        ['Show String'(ShowString) %% auto disabled
                                          'Prune Odd'(PipPruneOdd)
                                          'Prune Even'(PipPruneEven)
                                          'Split Odd/Even'(PipSplitOddEven)]
@@ -568,8 +562,12 @@ define
          ]
       end
    in
-      fun {Options}
-         {FillDict DefaultValues {Dictionary.new}}
-      end
+      Options = {FoldL DefaultValues fun {$ D O}
+                                        case O
+                                        of Key#Value then
+                                           {Dictionary.put D Key Value} D
+                                        else D
+                                        end
+                                     end {Dictionary.new}}
    end
 end

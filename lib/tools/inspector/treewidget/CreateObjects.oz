@@ -65,6 +65,7 @@ export
    vectorSMLCreateObject         : VectorSMLCreateObject
    listSMLCreateObject           : ListSMLCreateObject
    recordSMLCreateObject         : RecordSMLCreateObject
+   recordSMLIndCreateObject      : RecordSMLIndCreateObject
    cellSMLCreateObject           : CellSMLCreateObject
    wordSMLCreateObject           : WordSMLCreateObject
 define

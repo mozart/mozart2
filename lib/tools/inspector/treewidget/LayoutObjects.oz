@@ -29,6 +29,7 @@ export
    intLayoutObject             : IntLayoutObject
    floatLayoutObject           : FloatLayoutObject
    atomLayoutObject            : AtomLayoutObject
+   atomSMLLayoutObject         : AtomSMLLayoutObject
    nameLayoutObject            : NameLayoutObject
    nameSMLLayoutObject         : NameSMLLayoutObject
    procedureLayoutObject       : ProcedureLayoutObject

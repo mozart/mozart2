@@ -30,6 +30,7 @@ export
    'class'     : InspectorClass
    'object'    : InspectorObj
    'inspect'   : Inspect
+   'inspectN'  : InspectN
    'configure' : Configure
    'close'     : Close
 define
@@ -86,14 +87,15 @@ define
 
                L1      = {New Tk.label
                           tkInit(parent:     UpFrame
-                                 text:       'Oz Inspector'
-                                 width:      20
+                                 text:       {Dictionary.get @options inspectorLanguage}#
+                                 ' Inspector'
+                                 width:      25
                                  font:       '-adobe-helvetica-bold-r-*-*-*-140-*'
                                  foreground: 'blue4'
                                  justify:     center)}
                L2      = {New Tk.label
                           tkInit(parent:     UpFrame
-                                 text:       'Thorsten Brunklaus\n(bruni@ps.uni-sb.de)'
+                                 text:       'Thorsten Brunklaus\n(brunklaus@ps.uni-sb.de)'
                                  foreground: 'black'
                                  justify:    'center')}
             in
@@ -129,9 +131,16 @@ define
             meth create(Options)
                Width  = {Dictionary.get Options inspectorWidth}
                Height = {Dictionary.get Options inspectorHeight}
-               Frame ManagerFrame
+               Frame ManagerFrame Prefix
             in
-               Tk.toplevel, tkInit(title:    'Oz Inspector'
+               case {Dictionary.get Options inspectorLanguage}
+               of 'Alice' then
+                  Prefix = 'Alice'
+                  {Dictionary.put Options widgetUseNodeSet 3}
+               [] 'Oz'    then
+                  Prefix = 'Oz'
+               end
+               Tk.toplevel, tkInit(title:    Prefix#' Inspector'
                                    delete:   proc {$} {Port.send InspPort close} end
                                    width:    Width
                                    height:   Height
@@ -273,6 +282,13 @@ define
                end
                {@widget display(Value)}
             end
+            meth inspectN(N Value)
+               if @isVisible
+               then skip
+               else isVisible <- true {Tk.send wm(deiconify self)}
+               end
+               {{{Dictionary.get @Items (1 + (N * 2))} getCanvas($)} display(Value)}
+            end
             meth !Call(P)
                {P}
             end
@@ -285,6 +301,14 @@ define
             meth configureEntry(Key Value)
                Options = @options
             in
+               if Key == 'inspectorLanguage'
+               then
+                  {Tk.send wm(title self Value#' Inspector')}
+                  if Value == 'Alice'
+                  then
+                     {Dictionary.put Options widgetUseNodeSet 3}
+                  end
+               end
                {Dictionary.put Options Key Value}
                InspectorClass, setOptions(Options)
             end
@@ -531,13 +555,16 @@ define
       end
 
       local
-         RealInspectorObj = {New InspectorClass create({InspectorOptions.'options'})}
+         RealInspectorObj = {New InspectorClass create(InspectorOptions.'options')}
       in
          InspPort     = {NewServer RealInspectorObj}
          InspectorObj = proc {$ M} {Port.send InspPort M} end
       end
       proc {Inspect Value}
          {Port.send InspPort inspect(Value)}
+      end
+      proc {InspectN N Value}
+         {Port.send InspPort inspectN(N Value)}
       end
       proc {Configure Key Value}
          {Port.send InspPort configureEntry(Key Value)}

@@ -75,6 +75,12 @@ in
       end
    end
 
+   class AtomSMLLayoutObject from SimpleLayoutObject
+      meth createRep(PrintStr LengthStr)
+         {Helper.convertSML @value PrintStr LengthStr}
+      end
+   end
+
    class NameLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          Value = @value

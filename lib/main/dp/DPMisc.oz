@@ -36,5 +36,22 @@ define
    %%
    {Wait DPB}
 
-   InitIP = Misc.initIPConnection
+
+
+   InitIP = fun{$ R}
+               if {Value.hasFeature R ip} then
+                  try
+                     {List.foldL {String.tokens "193.10.66.192" &.}
+                      fun{$ Acc In}
+                         I = {String.toInt In} in
+                         if I>256 orelse I<0 then raise toLarge end end
+                         Acc - 1
+                      end
+                      4 0}
+                  catch _ then
+                     raise badFormatedIpNo(R.ip) end
+                  end
+               end
+               {Misc.initIPConnection R}
+            end
 end

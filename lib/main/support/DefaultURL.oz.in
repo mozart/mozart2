@@ -50,7 +50,7 @@ prepare
                    'Search' 'FD' 'Schedule' 'FS' 'Combinator'
                    'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize'
-                   'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'
+                   'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL' 'DPMisc'
                    'Open'
                    'Tk' 'TkTools'
                    'Compiler' 'Macro'

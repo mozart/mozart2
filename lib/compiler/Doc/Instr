@@ -358,6 +358,20 @@ tailCall            == call(Arg1 Arg2) return
    Register
    Arity
 
+consCall
+   Register
+   Arity
+
+tailConsCall
+   Register
+   Arity
+
+deconsCall
+   Register
+
+tailDeconsCall
+   Register
+
 callConstant
    Constant         procedure
    ArityAndIsTail   2 * arity + (isTailCall? 1: 0)

@@ -22,7 +22,7 @@
 functor
 import
    Module
-   Property(get)
+   Property(get put)
    System(printInfo printError)
    Error(messageToVirtualString)
    OS(putEnv getEnv system)
@@ -75,6 +75,9 @@ prepare
                                              false)))
                      compress(rightmost char: &z
                               type: int(min: 0 max: 9) default: 0)
+                     %% directory in which Gump should create scanners
+                     %% if not specified, default is current directory
+                     gumpdir(single type:string default:unit)
 
                      %%
                      %% between all of the following, order is important
@@ -310,6 +313,9 @@ in
          {System.printInfo 'Usage: '#X#' { [option] | [file] }\n'#Usage}
          raise success end
       else skip
+      end
+      if OptRec.gumpdir\=unit then
+         {Property.put 'oz.gump.directory' OptRec.gumpdir}
       end
       BatchCompiler = {New Compiler.engine init()}
       UI = {New Compiler.interface init(BatchCompiler OptRec.verbose)}

@@ -40,6 +40,7 @@ local
 % Some constants and shorthands
 
    SAGenError    = 'static analysis error'
+   SAFatalError  = 'static analysis fatal error'
    SAGenWarn     = 'static analysis warning'
    SATypeError   = 'type error'
 
@@ -49,13 +50,12 @@ local
    VS2S = VirtualString.toString
    IsVS = IsVirtualString
    Partition = List.partition
-   FSClone = {`Builtin` fsClone 2}
 
-   IsConstType = IsDet
-
-   fun {TypeClone T}
-      case {IsFree T} then _ else {FSClone T} end
+   fun {IsMinimalType T}
+      {BitArray.card T} == 1
    end
+
+   TypeClone = BitArray.clone
 
    fun {FirstOrId X}
       case X of F#_ then F else X end
@@ -459,45 +459,6 @@ local
    end
 
 %-----------------------------------------------------------------------
-% perform determination & type checks
-
-   local
-      fun {TypeCheckN N VOs Ts}
-         case VOs of nil then
-            Ts = nil
-            0
-         [] VO|VOr then
-            T|Tr = Ts
-         in
-            case
-               {DetTypeTest T VO}
-            then
-               {TypeCheckN N+1 VOr Tr}
-            else
-               N
-            end
-         end
-      end
-   in
-      fun {TypeCheck VOs Ts}
-         {TypeCheckN 1 VOs Ts}
-      end
-   end
-
-   fun {DetCheck VOs Ds}
-      case VOs of nil then
-         Ds = nil
-         true
-      [] VO|VOr then
-         D|Dr = Ds
-      in
-         {DetTests.{Label D} VO}
-         andthen
-         {DetCheck VOr Dr}
-      end
-   end
-
-%-----------------------------------------------------------------------
 
    BINameToMethod
    = bi(    'NewName'      : doNewName
@@ -565,10 +526,10 @@ local
          L==unit
       then
 
-         case {IsConstType T}
+         case {IsMinimalType T}
          then env(var:V last:L)
          else
-            % copy non-constant types
+            % copy non-minimal types
             {V setType({TypeClone T})}
             env(var:V last:L type:T)
          end
@@ -579,7 +540,7 @@ local
 \ifdef DEBUGSA
          {Show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
-         case {IsConstType T}
+         case {IsMinimalType T}
          then env(var:V last:L data:{GetDataObject L})
          else
             % copy non-constant types
@@ -593,7 +554,7 @@ local
 \ifdef DEBUGSA
          {Show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
-         case {IsConstType T}
+         case {IsMinimalType T}
          then env(var:V last:L data:{GetDataObject L})
          else
             % copy non-constant types
@@ -604,7 +565,7 @@ local
       else
          % L is atomic: int, float, atom, token
          % has constant type
-         case {IsConstType T}
+         case {IsMinimalType T}
          then env(var:V last:L)
          else
 \ifdef DEBUGSA
@@ -658,30 +619,10 @@ local
 %-----------------------------------------------------------------------
 % type equality assertions
 
-% TryUnifyTypes: FSET x FSET
-% propagate type information both ways
-% (cloning values to avoid incorrect backflow of data)
-
-   fun {TryUnifyTypes TX TY}
-      try
-         case {IsConstType TX}
-            orelse {IsConstType TY}
-         then
-            TX = TY
-         else
-            TX = {TypeClone TY}
-            TY = {TypeClone TX}
-         end
-         true
-      catch
-         failure(...)
-      then
-         false
-      end
-   end
+   TypeClash = BitArray.disjoint
 
 %
-% IssueTypeError: FSET x FSET x VALUE x VALUE
+% ValueToErrorLine: VS x Oz-Value -> <error line>
 %
 
    fun {ValueToErrorLine Text X}
@@ -697,6 +638,10 @@ local
          else [hint(l:Text m:oz(XD))] end
       end
    end
+
+%
+% IssueTypeError: BitArray x BitArray x Oz-Value x Oz-Value
+%
 
    proc {IssueTypeError TX TY X Y Ctrl Coord}
 \ifdef DEBUGSA
@@ -732,17 +677,41 @@ local
       end
    end
 
-   fun {UnifyTypes X Y Ctrl Coord}
+%
+% UnifyTypesOf: Oz-Value x Oz-Value
+%
+
+   fun {UnifyTypesOf X Y Ctrl Coord}
       TX = {X getType($)}
       TY = {Y getType($)}
    in
       case
-         {TryUnifyTypes TX TY}
+         {TypeClash TX TY}
       then
-         true
-      else
          {IssueTypeError TX TY X Y Ctrl Coord}
          false
+      else
+         {BitArray.and TX TY}
+         {BitArray.and TY TX}
+         true
+      end
+   end
+
+%
+% UnifyTypesOf: BitArray x BitArray
+%
+
+   fun {ConstrainTypes TX TY}
+\ifdef DEBUGSA
+      {Show constrainTypes(TX TY)}
+\endif
+      case
+         {TypeClash TX TY}
+      then
+         false
+      else
+         {BitArray.and TX TY}
+         true
       end
    end
 
@@ -889,7 +858,7 @@ local
 % but in addition, it returns the first element
 % Wit in Xs such that {P Wit} holds (if such an Wit exists)
 
-   local
+     local
       fun {SomeUpToAux Xs P N Wit}
          case Xs
          of nil then
@@ -1273,7 +1242,7 @@ local
          lastValue : unit
 
       meth init()
-         type <- {OzTypes.new record nil}
+         type <- {OzTypes.encode record nil}
       end
       meth getValue($)
          @value
@@ -1494,12 +1463,12 @@ local
          {Show bindConstruction(self {RHS getValue($)})}
 \endif
          case
-            {Not {UnifyTypes self RHS Ctrl {@label getCoord($)}}}
+            {UnifyTypesOf self RHS Ctrl {@label getCoord($)}}
          then
-            skip % not continue on type error
-         else
             % set new value for following occurrences
             SAConstructionOrPattern, setLastValue(RHS)
+         else
+            skip % not continue on type error
          end
       end
 
@@ -1512,7 +1481,7 @@ local
          Coord = {@label getCoord($)}
       in
          case
-            {Not {UnifyTypes self RHS Ctrl Coord}}
+            {Not {UnifyTypesOf self RHS Ctrl Coord}}
          then
             skip % do not continue on type error
          elsecase
@@ -1748,7 +1717,68 @@ local
 
    class SABuiltinApplication
 
+      meth typeCheckN(Ctrl N VOs Ts $)
+         case VOs of nil then
+            case Ts\=nil then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               raise crashed end
+            else skip end
+            0
+         [] VO|VOr then
+            case Ts
+            of T|Tr then
+               case
+                  {DetTypeTest T VO}
+               then
+                  SABuiltinApplication, typeCheckN(Ctrl N+1 VOr Tr $)
+               else N end
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               raise crashed end
+            end
+         end
+      end
+
+      meth typeCheck(Ctrl VOs Ts $)
+         SABuiltinApplication, typeCheckN(Ctrl 1 VOs Ts $)
+      end
+
+      meth detCheck(Ctrl VOs Ds $)
+         case VOs of nil then
+            case Ds\=nil then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               raise crashed end
+            else skip end
+            true
+         [] VO|VOr then
+            case Ds
+            of D|Dr then
+               {DetTests.{Label D} VO}
+               andthen
+               SAApplication, detCheck(Ctrl VOr Dr $)
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               raise crashed end
+            end
+         end
+      end
+
       meth AssertTypes(Ctrl N Args Types Det)
+\ifdef DEBUGSA
+         {Show 'AssertTypes'(Args Types Det)}
+\endif
          case Args
          of nil then skip
          elseof A|Ar then
@@ -1756,10 +1786,12 @@ local
             of (T|Tr) # (D|Dr)
             then
 \ifdef DEBUG
-         {Show asserting(A T D)}
+               {Show asserting(A T D)}
 \endif
                case
-                  {TryUnifyTypes {OzTypes.new {Label T} nil} {A getType($)}}
+                  {ConstrainTypes
+                   {A getType($)}
+                   {OzTypes.encode {Label T} nil}}
                then
                   SABuiltinApplication, AssertTypes(Ctrl N+1 Ar Tr Dr)
                else
@@ -1790,6 +1822,10 @@ local
       end
 
       meth assertTypes(Ctrl BIName)
+
+\ifdef DEBUGSA
+         {Show assertTypes(BIName)}
+\endif
 
          case {GetBuiltinInfo BIName}
          of noInformation then skip
@@ -1905,6 +1941,9 @@ local
          BIData    = {GetData @designator}
          ProcArity = {Procedure.arity BIData}
       in
+\ifdef DEBUGSA
+         {Show checkArguments}
+\endif
          case
             NumArgs==ProcArity
          then
@@ -1912,15 +1951,15 @@ local
             of noInformation then
                false
             elsecase
-               {TypeCheck @actualArgs BIInfo.types}
+               SABuiltinApplication, typeCheck(Ctrl @actualArgs BIInfo.types $)
             of
                0 % no type error
             then
 \ifdef DEBUGSA
-               {Show det({Map @actualArgs GetData}
-                         {DetCheck @actualArgs BIInfo.det})}
+               {Show det(N {Map @actualArgs GetData})}
 \endif
-               {Not Det} orelse {DetCheck @actualArgs BIInfo.det}
+               {Not Det} orelse
+               SABuiltinApplication, detCheck(Ctrl @actualArgs BIInfo.det $)
             elseof
                Pos
             then
@@ -2474,17 +2513,17 @@ local
       meth AssertArity(Ctrl)
          DesigType = {@designator getType($)}
          ProcType  = case {Length @actualArgs}
-                     of 0 then TypeConstants.'procedure/0'
-                     [] 1 then {OzTypes.new unaryProcOrObject nil}
-                     [] 2 then TypeConstants.'procedure/2'
-                     [] 3 then TypeConstants.'procedure/3'
-                     [] 4 then TypeConstants.'procedure/4'
-                     [] 5 then TypeConstants.'procedure/5'
-                     [] 6 then TypeConstants.'procedure/6'
-                     else TypeConstants.'procedure/>6' end
+                     of 0 then {OzTypes.encode 'procedure/0' nil}
+                     [] 1 then {OzTypes.encode unaryProcOrObject nil}
+                     [] 2 then {OzTypes.encode 'procedure/2' nil}
+                     [] 3 then {OzTypes.encode 'procedure/3' nil}
+                     [] 4 then {OzTypes.encode 'procedure/4' nil}
+                     [] 5 then {OzTypes.encode 'procedure/5' nil}
+                     [] 6 then {OzTypes.encode 'procedure/6' nil}
+                     else {OzTypes.encode 'procedure/>6' nil} end
       in
          case
-            {TryUnifyTypes ProcType DesigType}
+            {ConstrainTypes DesigType ProcType}
          then
             skip
          else
@@ -2547,6 +2586,10 @@ local
             %%
             %% type-assertions go here if no type error raised yet
             %%
+
+\ifdef DEBUGSA
+            {Show doneMsg(ArgsOk)}
+\endif
 
             case ArgsOk then
                SABuiltinApplication, assertTypes(Ctrl BIName)
@@ -2653,11 +2696,22 @@ local
       meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
+\ifdef DEBUGSA
+         {Show boolDescend}
+         {Show withData({GetData @arbiter})}
+         {Show isDet({DetTests.det @arbiter})}
+         {Show isBool({TypeTests.bool {GetData @arbiter}})}
+         {Show arbiterType({@arbiter getType($)})}
+         {Show newBool({OzTypes.encode bool nil})}
+\endif
          case {DetTests.det @arbiter}
             andthen {TypeTests.bool {GetData @arbiter}}
          then
             PN = {@arbiter getPrintName($)}
          in
+\ifdef DEBUGSA
+         {Show isConst(PN)}
+\endif
             case
                {TypeTests.'true' {GetData @arbiter}}
             then
@@ -2692,9 +2746,9 @@ local
             end
 
          elsecase
-            {TryUnifyTypes
-             {OzTypes.new bool nil}
-             {@arbiter getType($)}}
+            {ConstrainTypes
+             {@arbiter getType($)}
+             {OzTypes.encode bool nil}}
          then
             T N in
             {Ctrl getTopNeeded(T N)}
@@ -3255,7 +3309,7 @@ local
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'illegal class attribute '
+                           msg:   'illegal class attribute '
                    items: [hint(l:'Attribute found' m:oz({GetPrintData IllFeat}))])}
          end
       end
@@ -3324,7 +3378,7 @@ local
          IllOptMeth TestOpt
       in
 \ifdef DEBUGSA
-         {Show methods(PTs PMet Met)}
+         {Show methods(PTs Met)}
 \endif
 
          {AllUpTo Met
@@ -3802,24 +3856,26 @@ local
          {Show unifyA(RHS)}
 \endif
          case
-            {Not {UnifyTypes self RHS Ctrl @coord}}
+            {UnifyTypesOf self RHS Ctrl @coord}
          then
-            skip % do not continue on type error
-         elsecase
-            {TypeTests.token RHS}
-         then
-            {IssueUnificationFailure Ctrl @coord
-             [line('atom = token')
-              hint(l:'First value' m:oz(@value))
-              hint(l:'Second value' m:oz({RHS getValue($)}))]}
-         elsecase
-            @value == {RHS getValue($)}
-         then
-            skip
+            case
+               {TypeTests.token RHS}
+            then
+               {IssueUnificationFailure Ctrl @coord
+                [line('atom = token')
+                 hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz({RHS getValue($)}))]}
+            elsecase
+               @value == {RHS getValue($)}
+            then
+               skip
+            else
+               {IssueUnificationFailure Ctrl @coord
+                [hint(l:'First value' oz(@value))
+                 hint(l:'Second value' oz({RHS getValue($)}))]}
+            end
          else
-            {IssueUnificationFailure Ctrl @coord
-             [hint(l:'First value' oz(@value))
-              hint(l:'Second value' oz({RHS getValue($)}))]}
+            skip % do not continue on type error
          end
       end
    end
@@ -3850,26 +3906,28 @@ local
 \endif
 
          case
-            {Not {UnifyTypes self RHS Ctrl @coord}}
+            {UnifyTypesOf self RHS Ctrl @coord}
          then
-            skip % do not continue on type error
-         elsecase
-            {TypeTests.token RHS}
-         then
-            {IssueUnificationFailure Ctrl @coord
-             [line('integer = token')
-              hint(l:'First value' m:oz(@value))
-              hint(l:'Second value' m:oz({RHS getValue($)}))
-             ]}
-         elsecase
-            @value == {RHS getValue($)}
-         then
-            skip
+            case
+               {TypeTests.token RHS}
+            then
+               {IssueUnificationFailure Ctrl @coord
+                [line('integer = token')
+                 hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz({RHS getValue($)}))
+                ]}
+            elsecase
+               @value == {RHS getValue($)}
+            then
+               skip
+            else
+               {IssueUnificationFailure Ctrl @coord
+                [hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz({RHS getValue($)}))
+                ]}
+            end
          else
-            {IssueUnificationFailure Ctrl @coord
-             [hint(l:'First value' m:oz(@value))
-              hint(l:'Second value' m:oz({RHS getValue($)}))
-             ]}
+            skip % do not continue on type error
          end
       end
    end
@@ -3900,25 +3958,27 @@ local
 \endif
 
          case
-            {Not {UnifyTypes self RHS Ctrl @coord}}
+            {UnifyTypesOf self RHS Ctrl @coord}
          then
-            skip % do not continue on type error
-         elsecase
-            {TypeTests.token RHS}
-         then
-            {IssueUnificationFailure Ctrl @coord
-             [line('float = token')
-              hint(l:'First value' m:oz(@value))
-              hint(l:'Second value' m:oz({RHS getValue($)})) ]}
-         elsecase
-            @value == {RHS getValue($)}
-         then
-            skip
+            case
+               {TypeTests.token RHS}
+            then
+               {IssueUnificationFailure Ctrl @coord
+                [line('float = token')
+                 hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz({RHS getValue($)})) ]}
+            elsecase
+               @value == {RHS getValue($)}
+            then
+               skip
+            else
+               {IssueUnificationFailure Ctrl @coord
+                [hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz({RHS getValue($)}))
+                ]}
+            end
          else
-            {IssueUnificationFailure Ctrl @coord
-             [hint(l:'First value' m:oz(@value))
-              hint(l:'Second value' m:oz({RHS getValue($)}))
-             ]}
+            skip % do not continue on type error
          end
       end
    end
@@ -3928,7 +3988,7 @@ local
          lastValue : unit
          type: unit
       meth init()
-         type <- {OzTypes.new value nil}
+         type <- {OzTypes.encode value nil}
       end
       meth getType($)
          @type
@@ -3938,23 +3998,6 @@ local
       end
       meth getPrintType(D $)
          {TypeToVS @type}
-      end
-      meth OutputDebugType(Depth $)
-         case
-            Depth =< 0
-         then
-            {TypeToVS @type}
-         elsecase
-            {IsRecord @lastValue}
-         then
-            case @lastValue == unit then skip
-            else
-               {System.show @lastValue} {System.show {GetData @lastValue}}
-            end
-            {TypeToVS @type}
-         else
-            {TypeToVS @type}
-         end
       end
       meth outputDebugType($)
          case @lastValue == unit then {TypeToVS @type}
@@ -4389,7 +4432,7 @@ local
          SAVariableOccurrence, getLastValue(LHS)
 
          case
-            {Not {UnifyTypes self RHS Ctrl @coord}}
+            {Not {UnifyTypesOf self RHS Ctrl @coord}}
          then
             skip % do not continue on type error
          elsecase
@@ -4435,12 +4478,12 @@ local
          {Show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
 \endif
          case
-            {Not {UnifyTypes self RHS Ctrl @coord}}
+            {UnifyTypesOf self RHS Ctrl @coord}
          then
-            skip % not continue on type error
-         else
             % set new value for following occurrences
             {@variable setLastValue(RHS)}
+         else
+            skip % not continue on type error
          end
       end
 
@@ -4462,10 +4505,8 @@ local
          SAVariableOccurrence, getLastValue(LHS)
 
          case
-            {Not {UnifyTypes LHS TorC Ctrl @coord}}
+            {UnifyTypesOf LHS TorC Ctrl @coord}
          then
-            skip % do not continue on type error
-         else
             case
                {TorC isVariableOccurrence($)}
             then
@@ -4481,6 +4522,8 @@ local
             end
 
             SAVariableOccurrence, UnifyDeref(Ctrl LHS RHS)
+         else
+            skip % do not continue on type error
          end
       end
 

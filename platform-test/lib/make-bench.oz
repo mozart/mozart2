@@ -143,7 +143,7 @@ local
          end
 
          fun {Run Argv}
-            if Argv.usage orelse Argv.help then
+            if Argv.help then
                {System.printInfo \insert 'help-bench.oz'
                }
                0

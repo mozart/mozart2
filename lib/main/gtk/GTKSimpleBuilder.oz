@@ -92,7 +92,6 @@ define
    end
 
    proc {Make D W}
-   in
       {MakeNoRecurse D W}
       {MakeDoRecurse D W}
    end
@@ -560,7 +559,8 @@ define
          for X in L do
             case X of CW#CD then
                {W append(CW)}
-               {MakeDoRecurse CW CD}
+               {MakeDoRecurse CD CW}
+               {CW show}
             end
          end
       end
@@ -584,7 +584,9 @@ define
          else {New GTK.treeItem newWithLabel(L)} end
       end
       proc {MakeTreeItemRecurse D W}
-         {W setSubtree({Make D.subtree})}
+         if {HasFeature D subtree} then
+            {W setSubtree({Make D.subtree})}
+         end
       end
    in
       {Register treeitem(isa:item

@@ -23,7 +23,7 @@
 %%%
 
 functor
-import FD Search
+import FD Search Space
 export Return
 prepare
    TrainSol = [r(a:1895 b:1904 n:1918 x:1)
@@ -47,49 +47,102 @@ define
       Q
    end
 
-   fun {Third X N}
-      proc {$ _}
-         C  = {Year}  % C's year of birth
-         Y  = {Day}   % C's day of birth
-         Q  = {DS C}
-      in
+   fun {MakeTrain Mode}
+
+      Third = case Mode
+              of reified then
+                 fun {$ X N}
+                    proc {$ _}
+                       C  = {Year}  % C's year of birth
+                       Y  = {Day}   % C's day of birth
+                       Q  = {DS C}
+                    in
+                       {FD.disj
+                        {FD.conj Y<:X  Q=:N-C}
+                        {FD.conj Y>:X  Q=:N-C-1}
+                        1}
+                       {FD.distribute split [Y C]}
+                    end
+                 end
+              [] combinator then
+                 fun {$ X N}
+                    proc {$ _}
+                       C  = {Year}  % C's year of birth
+                       Y  = {Day}   % C's day of birth
+                       Q  = {DS C}
+                    in
+                       thread
+                          or Y<:X  Q=:N-C  []  Y>:X  Q=:N-C-1 end
+                       end
+                       {FD.distribute split [Y C]}
+                    end
+                 end
+              end
+
+      proc {NoThird X N}
          thread
-            or Y<:X  Q=:N-C  []  Y>:X  Q=:N-C-1 end
+            {Search.base.one {Third X N} nil}
          end
-         {FD.distribute split [Y C]}
       end
-   end
 
-   proc {NoThird X N}
-      thread
-         {Search.base.one {Third X N} nil}
-      end
-   end
-
-   proc {Train S}
-      N = {Year}  % year of train ride
-      X = {Day}   % day of train ride
-      A = {Year}  % A's year of birth
-      B = {Year}  % B's year of birth
    in
-      S=r(a:A b:B n:N x:X)
-      N >=: 1825   % no trains before that year
-      {DS A} =: N-A
-      {DS B} =: N-B
-      A <: B       % wlog
-      {NoThird X N}
-      {FD.distribute split [A B X]}
+      proc {$ S}
+         N = {Year}  % year of train ride
+         X = {Day}   % day of train ride
+         A = {Year}  % A's year of birth
+         B = {Year}  % B's year of birth
+      in
+         S=r(a:A b:B n:N x:X)
+         N >=: 1825   % no trains before that year
+         {DS A} =: N-A
+         {DS B} =: N-B
+         A <: B       % wlog
+         {NoThird X N}
+         {FD.distribute split [A B X]}
+      end
+   end
+
+   fun {Trace P}
+      S={Space.new P}
+      D={Dictionary.new}
+      proc {Inc F}
+         {Dictionary.put D F {Dictionary.condGet D F 0}+1}
+      end
+      proc {Explore S}
+         case {Space.ask S}
+         of failed          then {Inc failed}
+         [] succeeded       then {Inc succeeded}
+         [] alternatives(N) then C={Space.clone S} in
+            {Inc alternatives}
+            {Space.commit S 1} {Space.commit C 2#N}
+            {Explore S} {Explore C}
+         end
+      end
+   in
+      {Explore S}
+      {Dictionary.toRecord stat D}
    end
 
    Return =
-   fd([train([all(equal(fun {$}
-                           {Search.base.all Train}
-                        end
-                        TrainSol)
-                  keys: [fd space])
-              all_entailed(entailed(proc {$}
-                                       {Search.base.all Train _}
-                                    end)
-                           keys: [fd space])])])
+   fd([train([reified(equal(fun {$}
+                               {Search.base.all {MakeTrain reified}}
+                            end
+                            TrainSol)
+                      keys: [fd space])
+              combinator(equal(fun {$}
+                                  {Search.base.all {MakeTrain combinator}}
+                               end
+                               TrainSol)
+                         keys: [fd space])
+              compare(entailed(proc {$}
+                                  S1={Trace {MakeTrain reified}}
+                                  S2={Trace {MakeTrain combinator}}
+                               in
+                                  S1=S2
+                                  S1=stat(alternatives:3884
+                                          failed:3883
+                                          succeeded:2)
+                               end)
+                      keys: [fd space])])])
 
 end

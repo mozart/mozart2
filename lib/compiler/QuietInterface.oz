@@ -19,80 +19,105 @@
 %%% WARRANTIES.
 %%%
 
-class QuietInterface from GenericInterface
-   prop final
-   attr
-      Verbose: false AccVS: "" SourceVS: ""
-      HasErrors: false HasBeenTopped: false
-   meth init(CompilerObject DoVerbose <= false)
-      Verbose <- DoVerbose
-      GenericInterface, init(CompilerObject Serve)
-   end
-   meth reset()
-      lock
-         AccVS <- ""
-         SourceVS <- ""
-         HasErrors <- false
-         HasBeenTopped <- false
-      end
-   end
-   meth Serve(Ms)
-      case Ms of M|Mr then OutputVS in
-         case M of info(VS) then
-            OutputVS = VS
-         [] info(VS _) then
-            OutputVS = VS
-         [] message(Record _) then VSCell in
-            VSCell = {NewCell ""}
-            {Error.msg
-             proc {$ X}
-                {Assign VSCell {Access VSCell}#{Error.formatLine X}}
-             end
-             Record}
-            OutputVS = {Access VSCell}
-         [] displaySource(_ _ VS) then
-            SourceVS <- VS
-            OutputVS = ""
-         [] errorFound() then
-            HasErrors <- true
-            OutputVS = ""
-         [] toTop() then
-            HasBeenTopped <- true
-            OutputVS = ""
-         else
-            OutputVS = ""
-         end
-         case OutputVS of "" then skip
-         elsecase @Verbose of true then
-            {System.printError OutputVS}
-         [] auto then
-            case @HasBeenTopped then
-               {System.printError @AccVS#OutputVS}
-               AccVS <- ""
-               Verbose <- true
-            else
-               AccVS <- @AccVS#OutputVS
-            end
-         else
-            AccVS <- @AccVS#OutputVS
-         end
-         QuietInterface, Serve(Mr)
+local
+   fun {MessageToVS Item}
+      case Item of info(VS) then VS
+      [] info(VS _) then VS
+      [] message(Record _) then VSCell in
+         VSCell = {NewCell ""}
+         {Error.msg
+          proc {$ X}
+             {Assign VSCell {Access VSCell}#{Error.formatLine X}}
+          end
+          Record}
+         {Access VSCell}
       end
    end
 
-   meth setVerbosity(B)
-      Verbose <- B
+   fun {HistoryToVS History}
+      {FoldL History
+       fun {$ In M}
+          {MessageToVS M}#In
+       end ""}
    end
-   meth hasErrors($)
-      @HasErrors
-   end
-   meth hasBeenTopped($)
-      @HasBeenTopped
-   end
-   meth getVS($)
-      @AccVS
-   end
-   meth getSource($)
-      @SourceVS
+in
+   class QuietInterface from GenericInterface
+      prop final
+      attr
+         Verbose: false History: nil SourceVS: ""
+         HasErrors: false HasBeenTopped: false
+      meth init(CompilerObject DoVerbose <= false)
+         Verbose <- DoVerbose
+         GenericInterface, init(CompilerObject Serve)
+      end
+      meth reset()
+         lock
+            History <- nil
+            SourceVS <- ""
+            HasErrors <- false
+            HasBeenTopped <- false
+         end
+      end
+      meth Serve(Ms)
+         case Ms of M|Mr then OutputMessage in
+            case M of info(_) then
+               OutputMessage = M
+            [] info(_ _) then
+               OutputMessage = M
+            [] message(_ _) then
+               OutputMessage = M
+            [] displaySource(_ _ VS) then
+               SourceVS <- VS
+               OutputMessage = unit
+            [] errorFound() then
+               HasErrors <- true
+               OutputMessage = unit
+            [] toTop() then
+               HasBeenTopped <- true
+               OutputMessage = unit
+            else
+               OutputMessage = unit
+            end
+            case OutputMessage of unit then skip
+            elsecase @Verbose of true then
+               {System.printError {MessageToVS OutputMessage}}
+            [] auto then
+               History <- OutputMessage|@History
+               case @HasBeenTopped then
+                  {System.printError {HistoryToVS @History}}
+                  History <- nil
+                  Verbose <- true
+               else skip
+               end
+            else
+               History <- OutputMessage|@History
+            end
+            QuietInterface, Serve(Mr)
+         end
+      end
+
+      meth setVerbosity(B)
+         Verbose <- B
+      end
+      meth hasErrors($)
+         @HasErrors
+      end
+      meth hasBeenTopped($)
+         @HasBeenTopped
+      end
+      meth getVS($)
+         {HistoryToVS @History}
+      end
+      meth getMessages($)
+         {FoldL @History
+          fun {$ In M}
+             case M of message(Record _) then Record|In
+             else In
+             end
+          end nil}
+      end
+      meth getSource($)
+         @SourceVS
+      end
    end
 end

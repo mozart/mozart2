@@ -799,7 +799,9 @@ define
                {@BA closeScope(_)}
                FV1 = fVar({GV1 getPrintName($)} C)
                FV2 = fVar({GV2 getPrintName($)} C)
-               FS1 = fFunctor(FV1 [fImport(FRequire unit)
+               FS1 = fFunctor(FV1 [fImport(case FRequire of unit then nil
+                                           else FRequire
+                                           end unit)
                                    fExport([fExportItem(fColon(fAtom(inner
                                                                      unit)
                                                                FV2))] unit)

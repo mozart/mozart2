@@ -69,6 +69,7 @@ in
 
 end
 
+
 proc{InjectInj2 Ce Lo E}
       Inj = proc{$ A B} B = proc{$ _ _ _} A = unit end end
 in
@@ -88,6 +89,20 @@ in
    try
       E.lokk = port
       {Assign CC true}
+   catch _ then skip end
+   {Access CC false}
+end
+
+proc{CheckWatM E}
+   CC = {NewCell unit}
+in
+   try
+      E.cell = port
+      {Assign CC true}
+   catch _ then skip end
+   try
+      E.lokk = port
+      {Assign CC false}
    catch _ then skip end
    {Access CC false}
 end
@@ -166,7 +181,6 @@ proc{TryCell C}
              {S close}
              {Delay 100}
              {TryCell DistCell}
-             {TryLock DistLock}
           end
           keys:[fault])
 
@@ -187,7 +201,6 @@ proc{TryCell C}
                                 {Wait DistCell}
                                 {Access DistCell} = unit
                                 {Assign DistCell skit}
-                                lock DistLock then skip end
                              end)}
              {S ping}
              {Wait Sync}
@@ -195,7 +208,6 @@ proc{TryCell C}
              {Delay 100}
              {InjectInj DistCell DistLock}
              {TryCell DistCell}
-             {TryLock DistLock}
           end
           keys:[fault])
 
@@ -256,19 +268,13 @@ proc{TryCell C}
              {Wait Sync}
              {S close}
              {Delay 100}
-
              {InjectInj2 DistCell DistLock AA}
              try
                 {Access DistCell _}
              catch X then
                 skip
              end
-             try
-                lock DistLock then skip end
-             catch X then
-                skip
-             end
-             {CheckWat AA}
+             {CheckWatM AA}
           end
           keys:[fault])
 

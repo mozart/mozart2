@@ -2373,9 +2373,9 @@ in
 
       %%
       meth init(windowObj: WO)
-         proc {Okay}
+         proc {Okay} S in
+            {Size enter}
             S = {Size tkGet($)}
-         in
             case {IsInt S} then
                {WO.browserObj SetBufferSize(S)}
                {WO.store store(StoreAreSeparators
@@ -2554,12 +2554,15 @@ in
       %%
       meth init(windowObj: WO)
          %%
-         proc {Okay}
+         proc {Okay} D W DI WI in
+            {D enter}
+            {W enter}
+            {DI enter}
+            {WI enter}
             D  = {Depth tkGet($)}
             W  = {Width tkGet($)}
             DI = {DepthInc tkGet($)}
             WI = {WidthInc tkGet($)}
-         in
             case {All [D W DI WI] IsInt} then
                {WO.browserObj SetDepth(D)}
                {WO.browserObj SetWidth(W)}

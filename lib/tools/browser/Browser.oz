@@ -39,17 +39,19 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 import
-   SP.{System = 'System'
-       Show   = 'Show'}
+   FD.{watch}
 
-   CP.{FD     = 'FD'
-       Search = 'Search'}
+   Search.{a}
 
-   WP.{Tk      = 'Tk'
-       TkTools = 'TkTools'}
+   System.{a
+           Show = 'Show'}
+
+   Tk.{a}
+
+   TkTools.{a}
 
 export
    'BrowserClass': BrowserClass

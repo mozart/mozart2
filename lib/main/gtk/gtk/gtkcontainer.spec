@@ -68,7 +68,7 @@ $class =
 #                 'gtk_container_arg_get'
 #                 'gtk_container_child_args_collect'
 #                 'gtk_container_child_arg_get_info'
-                  'gtk_container_forall'                => { code => 'meth forall(Container Proc) {List.forAll {Container children(_)} Proc} end' },
+                  'gtk_container_forall'                => { code => 'meth forall(Container Proc) {List.forAll {Container children($)} Proc} end' },
                   'gtk_container_child_composite_name'  => { in => ['GtkContainer*',
                                                                     '!GtkWidget*'],
                                                              out => 'gchar*' },

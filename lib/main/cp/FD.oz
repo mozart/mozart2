@@ -46,7 +46,7 @@ local
            fdp_atLeast:        FdpAtLeast
            fdp_atMost:         FdpAtMost
            fdp_element:        FdpElement
-           fdp_notEqOff:       FdpNotEqOff
+           % fdp_notEqOff:       FdpNotEqOff
            fdp_lessEqOff:      FdpLessEqOff
            fdp_minimum:        FdpMinimum
            fdp_maximum:        FdpMaximum
@@ -792,390 +792,191 @@ local
 
    local
 
-      ForceClone = {NewName}
-
-      proc {MakeDistrTuple V ?T}
-         T = case {VectorToType V}==tuple then
-                {Adjoin V ForceClone}
-             else {VectorToTuple V}
-             end
-
-         case {Record.all T FdIs} then skip else
-            {`RaiseError`
-             kernel(type
-                    'MakeDistrTuple'
-                    [V T]
-                    list(fd)
-                    1
-                    'Distribution vector must contain finite domains.')}
+      local
+         ForceClone = {NewName}
+      in
+         proc {MakeDistrTuple V ?T}
+            T = case {VectorToType V}==tuple then
+                   {Adjoin V ForceClone}
+                else {VectorToTuple V}
+                end
+            case {Record.all T FdIs} then skip else
+               {`RaiseError`
+                kernel(type 'MakeDistrTuple' [V T] list(fd) 1
+                       'Distribution vector must contain finite domains.')}
+            end
          end
       end
 
       local
-         DistGenFast = {`Builtin` fddistribute 5}
+         %% Optimized and generic
+         SelVal = map(min:      FdReflect.min
+                      max:      FdReflect.max
+                      mid:      FdReflect.mid
+                      splitMin: fun {$ V}
+                                   0#{FdReflect.mid V}
+                                end
+                      splitMax: fun {$ V}
+                                   {FdReflect.mid V}+1#FdSup
+                                end)
 
-         proc {AssertChoose T O V ?Sel ?Spec}
-            case Spec==~1 then
-               {`RaiseError`
-                fd(noChoice 'FD.choose' [T O V Sel Spec] 1
-                   'Vector must contain non-determined elements.')}
-            else skip
-            end
+         %% Optimized only
+         OptSelVar = map(min:     {`Builtin` fdd_select_min     2}
+                         max:     {`Builtin` fdd_select_max     2}
+                         size:    {`Builtin` fdd_select_size    2}
+                         naive:   {`Builtin` fdd_select_naive   2}
+                         nbSusps: {`Builtin` fdd_select_nbSusps 2})
+
+         %% Generic only
+         GenSelVar = map(naive:   fun {$ _ _}
+                                     false
+                                  end
+                         size:    fun {$ X Y}
+                                     {FdReflect.size X}<{FdReflect.size Y}
+                                  end
+                         nbSusps: fun {$ X Y}
+                                     L1={FdReflect.nbSusps X}
+                                     L2={FdReflect.nbSusps Y}
+                                  in
+                                     L1>L2 orelse
+                                     (L1==L2 andthen
+                                      {FdReflect.size X}<{FdReflect.size Y})
+                                  end
+                         min:     fun {$ X Y}
+                                     {FdReflect.min X}<{FdReflect.min Y}
+                                  end
+                         max:     fun {$ X Y}
+                                     {FdReflect.max X}>{FdReflect.max Y}
+                                  end)
+
+         GenSelFil = map(undet:  fun {$ X}
+                                    {FdReflect.size X} > 1
+                                 end)
+
+         GenSelPro = map(noProc: proc {$}
+                                    skip
+                                 end)
+
+         GenSelSel = map(id:     fun {$ X}
+                                    X
+                                 end)
+
+         fun {MapSelect Map AOP}
+            case {IsAtom AOP} then Map.AOP else AOP end
          end
 
       in
 
-         proc {DistrFast T Order Value}
-            DistrVar DistrVal
+         fun {PreProcessSpec Spec}
+            FullSpec = {Adjoin
+                        generic(order:     size
+                                filter:    undet
+                                select:    id
+                                value:     min
+                                procedure: noProc)
+                        case Spec
+                        of naive then generic(order:naive)
+                        [] ff    then generic
+                        [] split then generic(value:splitMin)
+                        else Spec
+                        end}
+            IsOpt =    case FullSpec
+                       of generic(select:id filter:undet procedure:noProc
+                                  order:OrdSpec value:ValSpec) then
+                          {IsAtom OrdSpec} andthen {IsAtom ValSpec}
+                       else false
+                       end
          in
-            {DistGenFast T Order Value ?DistrVar ?DistrVal}
-            case DistrVal of ~1 then skip else
-               choice
-                  DistrVar=DistrVal
-               [] {FdpNotEqOff DistrVar DistrVal 0}
-               end
-               {WaitStable}
-               {DistrFast T Order Value}
+            case IsOpt then
+               opt(order: OptSelVar.(FullSpec.order)
+                   value: SelVal.(FullSpec.value))
+            else
+               gen(order:     {MapSelect GenSelVar FullSpec.order}
+                   value:     {MapSelect SelVal FullSpec.value}
+                   select:    {MapSelect GenSelSel FullSpec.select}
+                   filter:    {MapSelect GenSelFil FullSpec.filter}
+                   procedure: {MapSelect GenSelPro FullSpec.procedure})
             end
-         end
-
-         proc {DistrFF T}
-            DistrVar DistrVal
-         in
-            {DistGenFast T size min ?DistrVar ?DistrVal}
-            case DistrVal of ~1 then skip else
-               choice
-                  DistrVar=DistrVal
-               [] {FdpNotEqOff DistrVar DistrVal 0}
-               end
-               {WaitStable}
-               {DistrFF T}
-            end
-         end
-
-         proc {DistrNaive T}
-            DistrVar DistrVal
-         in
-            {DistGenFast T naive min ?DistrVar ?DistrVal}
-            case DistrVal of ~1 then skip else
-               choice
-                  DistrVar=DistrVal
-               [] {FdpNotEqOff DistrVar DistrVal 0}
-               end
-               {WaitStable}
-               {DistrNaive T}
-            end
-         end
-
-         proc {DistrFastSplitMin T Order}
-            DistrVar DistrVal
-         in
-            {DistGenFast T Order mid ?DistrVar ?DistrVal}
-            case DistrVal of ~1 then skip else
-               choice
-                  {FdInt 0         #DistrVal DistrVar}
-               [] {FdInt DistrVal+1#FdSup    DistrVar}
-               end
-               {WaitStable}
-               {DistrFastSplitMin T Order}
-            end
-         end
-
-         proc {DistrFastSplitMax T Order}
-            DistrVar DistrVal
-         in
-            {DistGenFast T Order mid ?DistrVar ?DistrVal}
-            case DistrVal of ~1 then skip else
-               choice
-                  {FdInt DistrVal+1#FdSup    DistrVar}
-               [] {FdInt 0         #DistrVal DistrVar}
-               end
-               {WaitStable}
-               {DistrFastSplitMax T Order}
-            end
-         end
-
-
-         proc {ChooseFast T Order Value ?Selected ?Spec}
-            {DistGenFast T Order Value ?Selected ?Spec}
-            {AssertChoose T Order Value Selected Spec}
-         end
-
-         proc {ChooseFF T ?Selected ?Spec}
-            {DistGenFast T size min ?Selected ?Spec}
-            {AssertChoose T size min Selected Spec}
-         end
-
-         proc {ChooseNaive T ?Selected ?Spec}
-            {DistGenFast T naive min ?Selected ?Spec}
-            {AssertChoose T naive min Selected Spec}
-         end
-
-         fun {ChooseFastSplitMin T Order ?Selected}
-            Val={DistGenFast T Order mid ?Selected}
-         in
-            {AssertChoose T Order mid Selected Val}
-            0#Val
-         end
-
-         fun {ChooseFastSplitMax T Order ?Selected}
-            Val={DistGenFast T Order mid ?Selected}
-         in
-            {AssertChoose T Order mid Selected Val}
-            Val+1#FdSup
          end
       end
 
-      %%
-      %% The generic part of distribution
-      %%
       fun {Choose Xs Y Order}
          case Xs of nil then Y
          [] X|Xr then {Choose Xr case {Order X Y} then X else Y end Order}
          end
       end
 
-      %%
-      %% Order for distribution
-      %%
-      fun {OrderNaive _ _}
-         false
-      end
-
-      fun {OrderSize X Y}
-         {FdReflect.size X} < {FdReflect.size Y}
-      end
-
-      fun {OrderNbSusps X Y}
-         L1={FdReflect.nbSusps X} L2={FdReflect.nbSusps Y}
-      in
-         L1>L2 orelse
-         (L1==L2 andthen {FdReflect.size X} < {FdReflect.size Y})
-      end
-
-      fun {OrderMin X Y}
-         {FdReflect.min X} < {FdReflect.min Y}
-      end
-
-      fun {OrderMax X Y}
-         {FdReflect.max X} > {FdReflect.max Y}
-      end
-
-      %%
-      %% Selection for distribution
-      %%
-      fun {SelectId X}
-         X
-      end
-
-      %%
-      %% Filtering for distribution
-      %%
-      fun {FilterUnDet X}
-         {FdReflect.size X} > 1
-      end
-
-      %%
-      %% Value distribution
-      %%
-      local
-         fun {MkDistr GetDom}
-            proc {$ X Xs Cont Proc}
-               {Proc} {WaitStable}
-               Dom={GetDom X}
-            in
-               {FdInt choice Dom [] compl(Dom) end X}
-               {WaitStable} {Cont Xs}
-            end
-         end
-      in
-         ValueMin      = {MkDistr FdReflect.min}
-         ValueMid      = {MkDistr FdReflect.mid}
-         ValueMax      = {MkDistr FdReflect.max}
-         ValueSplitMin = {MkDistr fun {$ X}
-                                     0#{FdReflect.mid X}
-                                  end}
-         ValueSplitMax = {MkDistr fun {$ X}
-                                     {FdReflect.mid X}+1#FdSup
-                                  end}
-      end
-
-      fun {SelectValueSplitMin S}
-         0#{FdReflect.mid S}
-      end
-
-      fun {SelectValueSplitMax S}
-         ({FdReflect.mid S}+1)#FdSup
-      end
-
-      fun {DoChoose Xs FilterDistr SelectDistr OrderDistr}
-         case {Filter Xs FilterDistr}
-         of nil then
-            {`RaiseError`
-             fd(noChoice
-                'FD.choose'
-                [Xs FilterDistr SelectDistr OrderDistr]
-                1
-                'The vector to choose from does not contain non-determined elements.')}
-            _
-         elseof Xs=X|Xr then
-            {SelectDistr {Choose Xr X OrderDistr}}
-         end
-      end
    in
-      proc {Distribute Dist Vector}
-         choice
-            case Dist
-            of naive then {DistrNaive {MakeDistrTuple Vector}}
-            [] ff    then {DistrFF {MakeDistrTuple Vector}}
-            [] split then {DistrFastSplitMin {MakeDistrTuple Vector} size}
-            elsecase {Label Dist}
-            of generic then
-               OrderSpec  = {CondSelect Dist order  size}
-               FilterSpec = {CondSelect Dist filter undet}
-               SelectSpec = {CondSelect Dist select id}
-               ValueSpec  = {CondSelect Dist value  min}
-               ProcSpec   = {CondSelect Dist procedure noProc}
-            in
-               case
-                  SelectSpec==id andthen FilterSpec==undet andthen
-                  {Member OrderSpec [size naive nbSusps min max]} andthen
-                  {Member ValueSpec [min max mid splitMin splitMax]} andthen
-                  ProcSpec == noProc
-               then
-                  % no proc
-                  case ValueSpec
-                  of splitMin then
-                     {DistrFastSplitMin {MakeDistrTuple Vector} OrderSpec}
-                  [] splitMax then
-                     {DistrFastSplitMax {MakeDistrTuple Vector} OrderSpec}
-                  else
-                     {DistrFast {MakeDistrTuple Vector} OrderSpec ValueSpec}
-                  end
-               else
-                  % with proc
-                  OrderDistr  = case OrderSpec
-                                of size        then OrderSize
-                                [] naive       then OrderNaive
-                                [] nbSusps     then OrderNbSusps
-                                [] min         then OrderMin
-                                [] max         then OrderMax
-                                else OrderSpec
-                                end
-                  FilterDistr = case FilterSpec
-                                of undet then FilterUnDet
-                                else FilterSpec
-                                end
-                  SelectDistr = case SelectSpec
-                                of id then SelectId
-                                else SelectSpec
-                                end
-                  ValueDistr  = case ValueSpec
-                                of min      then ValueMin
-                                [] max      then ValueMax
-                                [] mid      then ValueMid
-                                [] splitMin then ValueSplitMin
-                                [] splitMax then ValueSplitMax
-                                else ValueSpec
-                                end
-                  ProcDistr = case ProcSpec
-                              of noProc then proc {$} skip end
-                              else ProcSpec
-                              end
 
-                  proc {DoDistribute Xs }
-                     case {Filter Xs FilterDistr}
-                     of nil then skip
-                     elseof Xs=X|Xr then
-                        {ValueDistr {SelectDistr {Choose Xr X OrderDistr}}
-                         Xs DoDistribute ProcDistr}
-                     end
-                  end
-               in
-                  {DoDistribute {VectorToList Vector}}
-               end
-            else
-               {`RaiseError`
-                kernel(type
-                       'FD.distribute'
-                       [Dist Vector]
-                       fdDistrDesc
-                       1
-                       'Incorrect specification for distribution.')}
-            end
-         end
-      end
-
-      proc {FDChoose Dist Vector ?Selected ?Spec}
+      proc {FdDistribute RawSpec Vec}
          {WaitStable}
-         case Dist
-         of naive then
-            {ChooseNaive {MakeDistrTuple Vector} Selected Spec}
-         [] ff    then
-            {ChooseFF {MakeDistrTuple Vector} Selected Spec}
-         [] split then
-            {ChooseFastSplitMin {MakeDistrTuple Vector} size Selected Spec}
-         elsecase {Label Dist}
-         of generic then
-            OrderSpec   = {CondSelect Dist order  size}
-            FilterSpec  = {CondSelect Dist filter undet}
-            SelectSpec  = {CondSelect Dist select id}
-            ValueSpec   = {CondSelect Dist value  min}
-         in
-            case
-               SelectSpec==id andthen FilterSpec==undet andthen
-               {Member OrderSpec [size naive nbSusps min max]} andthen
-               {Member ValueSpec [min max mid splitMin splitMax]}
-            then
-               case ValueSpec
-               of splitMin then
-                  {ChooseFastSplitMin {MakeDistrTuple Vector} OrderSpec Selected Spec}
-               [] splitMax then
-                  {ChooseFastSplitMax {MakeDistrTuple Vector} OrderSpec Selected Spec}
-               else
-                  {ChooseFast {MakeDistrTuple Vector} OrderSpec ValueSpec Selected Spec}
-               end
-            else
-               OrderDistr  = case OrderSpec
-                             of size        then OrderSize
-                             [] naive       then OrderNaive
-                             [] nbSusps     then OrderNbSusps
-                             [] min         then OrderMin
-                             [] max         then OrderMax
-                             else OrderSpec
-                             end
-               FilterDistr = case FilterSpec
-                             of undet then FilterUnDet
-                             else FilterSpec
-                             end
-               SelectDistr = case SelectSpec
-                             of id then SelectId
-                             else SelectSpec
-                             end
-               ValueSelect = case ValueSpec
-                             of min      then FdReflect.min
-                             [] max      then FdReflect.max
-                             [] mid      then FdReflect.mid
-                             [] splitMin then SelectValueSplitMin
-                             [] splitMax then SelectValueSplitMax
-                             else ValueSpec
-                             end
+         case {PreProcessSpec RawSpec}
+         of opt(value:SelVal order:SelVar) then
+            VecTuple = {MakeDistrTuple Vec}
+            proc {Do}
+               V={SelVar VecTuple}
+               D={SelVal V}
             in
-               Selected = {DoChoose {VectorToList Vector} FilterDistr SelectDistr OrderDistr}
-               Spec     = {ValueSelect Selected}
+               choice {FdInt D V} [] {FdInt compl(D) V} end
+               {WaitStable}
+               {Do}
             end
-         else
-            {`RaiseError`
-             kernel(type
-                    'FD.distribute'
-                    [Dist Vector]
-                    fdDistrDesc
-                    1
-                    'Incorrect specification for distribution.')}
+         in
+            try {Do}
+            catch ~1 then skip
+            end
+         [] gen(value:     SelVal
+                order:     Order
+                select:    Select
+                filter:    Fil
+                procedure: Proc) then
+
+            proc {Do Xs}
+               case {Filter Xs Fil} of nil then skip elseof Xs=X|Xr then
+                  V={Select {Choose Xr X Order}}
+                  D={SelVal V}
+               in
+                  {Proc}
+                  {WaitStable}
+                  choice {FdInt D V} [] {FdInt compl(D) V} end
+                  {WaitStable}
+                  {Do Xs}
+               end
+            end
+         in
+            {Do {VectorToList Vec}}
          end
       end
 
+
+      proc {FdChoose RawSpec Vec ?V ?D}
+         {WaitStable}
+         try
+            case {PreProcessSpec RawSpec}
+            of opt(value:SelVal order:SelVar) then
+               V={SelVar {MakeDistrTuple Vec}}
+               D={SelVal V}
+            [] gen(value:     SelVal
+                   order:     Order
+                   select:    Select
+                   filter:    Fil
+                   procedure: _)
+            then
+               case {Filter {VectorToList Vec} Fil} of nil then
+                  raise ~1 end
+               elseof Xs=X|Xr then
+                  V={Select {Choose Xr X Order}}
+                  D={SelVal V}
+               end
+            end
+         catch ~1 then
+            {`RaiseError`
+             fd(noChoice 'FD.choose' [RawSpec Vec V D] 2
+                'Vector must contain non-determined elements.')}
+         end
+      end
    end
+
 
    %%
    %% Watching variables
@@ -1270,8 +1071,8 @@ in
          schedule:       FdSchedule
 
          %% Distribution
-         distribute:     Distribute
-         choose:         FDChoose
+         distribute:     FdDistribute
+         choose:         FdChoose
 
          %% Miscellaneous
          sup:            FdSup

@@ -37,6 +37,7 @@ define
    UnregisterObject       = GTK.unregisterObject
    UnregisterNativeObject = GTK.unregisterNativeObject
    GetObject              = GTK.getObject
+   GetNativeOrUnit        = GTK.getNativeOrUnit
 
    % References to GTK classes
    Layout                 = GTK.layout

@@ -104,7 +104,6 @@ define
       meth getNative($) % get native GTK object from an Oz object
          @nativeObject
       end
-
       meth ref
          {Native.ref @nativeObject}
       end

@@ -662,8 +662,7 @@ HashTableRef = ht(Label [HashTableEntry]).
 PrintName = atom.
 IsMethod = bool.
 IsTail = bool.
-HashTableEntry = onVar(Label)   % if this is not present, use the else-Label
-               | onScalar(NumOrLit Label)
+HashTableEntry = onScalar(NumOrLit Label)
                | onRecord(Literal RecordArity Label).
 NumOrLit = atom
          | name

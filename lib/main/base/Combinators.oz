@@ -47,18 +47,6 @@ local
       {{Space.merge G}}
    end
 
-   fun {DerefCheck S}
-      if {IsDet S} then
-         case S
-         of blocked(S)      then {DerefCheck S}
-         [] alternatives(_) then suspended
-         [] succeeded(S)    then S
-         else S
-         end
-      else S
-      end
-   end
-
    fun {Deref S}
       case S
       of blocked(S)      then {Deref S}
@@ -107,23 +95,24 @@ local
       proc {Resolve G A N B E}
          if N==0 then
             if B then {WUHFI} else {E} end
-         else
-            I  = {DictWaitOr A}
-            AI = {DerefCheck {Dictionary.get A I}}
-         in
-            if {IsDet AI} then
+         else I={DictWaitOr A} in
+            case {Dictionary.get A I}
+            of failed    then
                {Dictionary.remove A I}
-               case AI
-               of failed    then
-                  {Resolve G A N-1 B E}
-               [] suspended then
-                  {Space.discard G.I}
-                  {Resolve G A N-1 true E}
-               [] entailed then
-                  {DiscardGuards {Dictionary.keys A} G}
-                  {CommitGuard G.I}
-               end
-            else
+               {Resolve G A N-1 B E}
+            [] succeeded(suspended) then
+               {Dictionary.remove A I}
+               {Space.discard G.I}
+               {Resolve G A N-1 true E}
+            [] alternatives(_) then
+               {Dictionary.remove A I}
+               {Space.discard G.I}
+               {Resolve G A N-1 true E}
+            [] succeeded(entailed) then
+               {Dictionary.remove A I}
+               {DiscardGuards {Dictionary.keys A} G}
+               {CommitGuard G.I}
+            [] blocked(AI) then
                {Dictionary.put A I AI}
                {Resolve G A N B E}
             end
@@ -144,39 +133,32 @@ local
 
    local
       proc {WaitFailed G A N}
-         if N>0 then
-            I  = {DictWaitOr A}
-            AI = {DerefCheck {Dictionary.get A I}}
-         in
-            if {IsDet AI} then
+         if N>0 then I={DictWaitOr A} in
+            case {Dictionary.get A I}
+            of failed then
                {Dictionary.remove A I}
-               if AI==failed then
-                  {WaitFailed G A N-1}
-               else
-                  {WUHFI}
-               end
-            else
+               {WaitFailed G A N-1}
+            [] blocked(AI) then
                {Dictionary.put A I AI}
                {WaitFailed G A N}
+            else
+               {WUHFI}
             end
          end
       end
       proc {Resolve G A N}
-         if N>1 then
-            I  = {DictWaitOr A}
-            AI = {DerefCheck {Dictionary.get A I}}
-         in
-            if {IsDet AI} then
+         if N>1 then I={DictWaitOr A} in
+            case {Dictionary.get A I}
+            of failed then
                {Dictionary.remove A I}
-               if AI==failed then
-                  {Resolve G A N-1}
-               else
-                  {WaitFailed G A N-1}
-                  {CommitGuard G.I}
-               end
-            else
+               {Resolve G A N-1}
+            [] blocked(AI) then
                {Dictionary.put A I AI}
                {Resolve G A N}
+            else
+               {Dictionary.remove A I}
+               {WaitFailed G A N-1}
+               {CommitGuard G.I}
             end
          else [I]={Dictionary.keys A} in
             {CommitGuard G.I}
@@ -216,15 +198,14 @@ local
       end
       proc {Control G A J I}
          {WaitOr A I}
-         if {IsDet I} then {CommitOrDiscard G J I}
-         else DA={DerefCheck A} in
-            if {IsDet DA} then
-               case DA
-               of failed then {Tell compl(J) I}
-               [] merged then skip
-               else {CommitOrDiscard G J I}
-               end
-            else {Control G DA J I}
+         if {IsDet I} then
+            {CommitOrDiscard G J I}
+         else
+            case A
+            of failed     then {Tell compl(J) I}
+            [] merged     then skip
+            [] blocked(A) then {Control G A J I}
+            else {CommitOrDiscard G J I}
             end
          end
       end

@@ -41,9 +41,6 @@ declare
    `ooRequiredArg`
    `ooGetLock`
    `class`
-\ifndef NEWCOMPILER
-`class.old`
-\endif
    `extend`
    `ooPrivate`
    %% Needed by other modules
@@ -90,12 +87,8 @@ local
    local
       NewUniqueName = {`Builtin` 'NewUniqueName' 2}
    in
-      `ooAllAttr`        = {NewUniqueName 'ooAllAttr'}
       `ooNewAttr`        = {NewUniqueName 'ooNewAttr'}
-      `ooFreeFeat`       = {NewUniqueName 'ooFreeFeat'}
-      `ooAllFeat`        = {NewUniqueName 'ooAllFeat'}
       `ooNewFeat`        = {NewUniqueName 'ooNewFeat'}
-      `ooAllMeth`        = {NewUniqueName 'ooAllMeth'}
       `ooFastMeth`       = {NewUniqueName 'ooFastMeth'}
       `ooNewMeth`        = {NewUniqueName 'ooNewMeth'}
       `ooAttr`           = {NewUniqueName 'ooAttr'}
@@ -555,29 +548,6 @@ local
            end
            Feat Defaults IsLocking}
    end
-\ifndef NEWCOMPILER
-   fun {!`class.old` FromList NewAttr NewFeat NewProp NewMeth PrintName Send}
-      {`class`
-       FromList
-       {List.toTuple m
-        {Map NewMeth fun {$ L#M#F#D}
-                        HasNoFast    = (F==`ooNoFastMethod`)
-                        HasNoDefault = (D==`ooNoDefault`)
-                     in
-                        case HasNoFast then
-                           case HasNoDefault then L|M
-                           else o(L M default:D)
-                           end
-                        elsecase HasNoDefault then o(L M fast:F)
-                        else o(L M default:D fast:F)
-                        end
-                     end}}
-       {List.toRecord a NewAttr}
-       {List.toRecord f NewFeat}
-       NewProp
-       PrintName}
-   end
-\endif
    fun {!`extend` From NewFeat NewFreeFeat}
       %% Methods
       Defaults  = From.`ooDefaults`

@@ -20,11 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
+fun instantiate {$ IMPORT}
 
    \insert 'Misc/Server.oz'
    \insert 'Misc/Agenda.oz'

@@ -42,34 +42,3 @@ in
    Base     = {Load 'Base.ozc'}
    Standard = {Load 'Standard.ozc'}
 end
-
-\ifndef NEWCOMPILER
-declare
-   Dump
-in
-
-local
-   SmartSave = {`Builtin` smartSave 3}
-   PutProperty = {`Builtin` 'PutProperty' 2}
-
-   proc {ALL Xs P}
-      case Xs of X|Xr then {P X} {ALL Xr P}
-      [] nil then skip
-      else skip
-      end
-   end
-in
-   proc {Dump X Name}
-      {PutProperty print  print(depth: 100 width: 100)}
-      {PutProperty errors print(depth: 100 width: 100)}
-
-      ExtPATH = Name # '.ozc'
-   in
-      case {SmartSave X ExtPATH} of nil then skip
-      elseof Xs then
-         {ALL Xs {`Builtin` 'Wait' 1}}
-         {SmartSave X ExtPATH nil}
-      end
-   end
-end
-\endif

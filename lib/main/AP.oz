@@ -24,11 +24,7 @@
 %%% This file creates the Open Programming Functor
 %%%
 
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
+fun instantiate {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
    \insert 'OP.env'

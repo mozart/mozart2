@@ -24,11 +24,7 @@
 %%% This file creates the System Programming Functor
 %%%
 
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
+fun instantiate {$ IMPORT}
    \insert SP/System
    \insert SP/Foreign
    \insert SP/Debug

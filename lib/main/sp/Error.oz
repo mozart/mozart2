@@ -1657,14 +1657,6 @@ in
               line({BugReport})]
              Exc}
 
-         elseof system(virtualStringToValue VS) then
-
-            {FormatExc
-             'Representation fault'
-             'System.virtualStringToValue failed'
-             [hint(l:'Virtual String' m:VS)]
-             Exc}
-
          elseof system(reinstallFormatter Key) then
 
 \ifdef TYPE_DEBUG

@@ -56,70 +56,6 @@ local
       {PrintError V # '\n'}
    end
 
-   %%
-   %% StringToValue and vice versa
-   %%
-   local
-      fun {Trans X}
-         case X of fAtom(A _) then A
-         [] fVar(PrintName _) then
-            case PrintName of '`true`' then true
-            [] '`false`' then false
-            [] '`unit`' then unit
-            else raise notAValue end
-            end
-         [] fEscape(V _) then
-            {Trans V}
-         [] fWildcard(_) then _
-         [] fInt(I _) then I
-         [] fFloat(F _) then F
-         [] fRecord(Label Args) then ArgCounter in
-            ArgCounter = {NewCell 1}
-            {List.toRecord {Trans Label}
-             {Map Args
-              fun {$ Arg}
-                 case Arg of fColon(F T) then
-                    {Trans F}#{Trans T}
-                 else N NewN in
-                    {Exchange ArgCounter ?N NewN}
-                    NewN = N + 1
-                    N#{Trans Arg}
-                 end
-              end}}
-         [] fOpenRecord(Label Args) then ArgCounter Res in
-            ArgCounter = {NewCell 1}
-            Res = {Record.tell {Trans Label}}
-            {ForAll Args
-             proc {$ Arg}
-                case Arg of fColon(F T) then
-                   Res^{Trans F} = {Trans T}
-                else N NewN in
-                   {Exchange ArgCounter ?N NewN}
-                   NewN = N + 1
-                   Res^N = {Trans Arg}
-                end
-             end}
-            Res
-         else
-            raise notAValue end
-         end
-      end
-
-      ParseVirtualString = {`Builtin` ozparser_parseVirtualString 3}
-   in
-      fun {SystemVirtualStringToValue VS}
-         case {ParseVirtualString VS defaults} of [ParseTree] then
-            try
-               {Trans ParseTree}
-            catch notAValue then
-               {`RaiseError` system(virtualStringToValue VS)} unit
-            end
-         else
-            {`RaiseError` system(virtualStringToValue VS)} unit
-         end
-      end
-   end
-
    proc {SystemSet W}
       {PutProperty {Label W} W}
    end
@@ -154,7 +90,6 @@ in
                    %% misc functionality
                    apply:                {`Builtin` 'System.apply' 2}
                    tellRecordSize:       `tellRecordSize`
-                   virtualStringToValue: SystemVirtualStringToValue
                    valueToVirtualString:
                       {`Builtin` 'System.valueToVirtualString' 4}
                    exit: Exit

@@ -126,6 +126,9 @@ class CodeStore from Emitter
          {Dictionary.put @regNames Reg PrintName}
       end
    end
+   meth assignRegName(Reg PrintName)
+      {Dictionary.put @regNames Reg PrintName}
+   end
    meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)
       Saved0 = @Saved
       OldMinReg|SavedRest = Saved0

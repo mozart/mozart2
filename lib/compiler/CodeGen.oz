@@ -1042,6 +1042,10 @@ define
          end
          @reached = true
          {@pattern assignRegs(nil Mapping)}
+         {ForAll @localVars
+          proc {$ V}
+             {CS assignRegName({V reg($)} {V getPrintName($)})}
+          end}
          {MakePermanent @localVars VHd VInter1 VInter2 VTl CS}
          {CodeGenList @statements CS VInter1 VInter2}
       end
@@ -1555,6 +1559,10 @@ define
           end VHd VInter}
          FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
                        {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
+         {ForAll FormalVars
+          proc {$ V}
+             {CS assignRegName({V reg($)} {V getPrintName($)})}
+          end}
          {MakePermanent FormalVars VInter @vInter _ _ CS}
          VTl = nil
       end

@@ -383,13 +383,11 @@ define
          %% (i.e. we fall back on the old behaviour) this is expected
          %% to be a short term fix until further investigations have
          %% made it unnecessary.
+         %%
+         %% keving: On the main branch we have removed the fallback. If the constraints
+         %% are unsolvable the compiler will crash.
          meth optimize(Res)
-            Res = try
-                     {self Optimize(true $)}
-                  catch X then
-                     {System.show X}
-                     {self Optimize(false $)}
-                  end
+            Res = {self Optimize(true $)}
             {self reset()}
          end
 

@@ -29,14 +29,11 @@ import
    Connection % Do not request!
 
    Application(exit getCmdArgs)
-
    Module(manager)
-
    System(showError)
-
    Fault
-
    Property(put)
+   OS(signal)
 
 prepare
    ExitDone        = 0
@@ -103,7 +100,9 @@ define
    %% This is the case, if one of the ports is found to refer to a dead
    %% site
 
-   if {Not Args.detached} then
+   if Args.detached then
+      {OS.signal 'SIGHUP' proc {$ _} skip end}
+   else
       {Fault.siteWatcher  RunRet
        proc {$ E C}
           {System.showError 'RemoteServer: client crashed.'}

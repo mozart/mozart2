@@ -670,7 +670,9 @@ define
             %% the X register pointed to by LowestFreeX, we must make
             %% sure LowestFreeX is really free in both the current (old) X
             %% registers and the (new) X registers being constructed.
-            LowestFreeX <- {NextFreeIndex @Temporaries @Arity}
+            %% kost@ : 'UsedX' keeps the real registers while
+            %% 'Temporaries' keeps the abstract ones!
+            LowestFreeX <- {NextFreeIndex @UsedX @Arity}
 
             Emitter, ConfigureXBank()
             Temporaries <- {Dictionary.clone Ts}

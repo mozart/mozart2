@@ -55,19 +55,6 @@ define
       end
    end
 
-   local
-      proc {Sum3 Xs N R}
-         dis Xs = nil R = N
-         [] X|Xr = Xs in
-            {Sum3 Xr X+N R}
-         end
-      end
-   in
-      proc {DisSum Xs R}
-         {Sum3 Xs 0 R}
-      end
-   end
-
    proc {OrInts N Xs}
       or N = 0 Xs = nil
       [] Xr in

@@ -32,6 +32,18 @@
 \define DEBUGSA_POS
 \define REMINDER
 \define DEBUG_SAVESUBST
+
+NOTE: whether or not an error or a warning is
+issued should NOT depend on whether or not
+the statement is a top-level statement: We need
+another parameter here!
+
+BTW: Get rid of the Top argument and put it into
+an attribute of the Ctrl object.
+
+\define THREAD_ISTOPLEVEL
+\define UNARYIF_ISTOPLEVEL
+\define PROC_ISTOPLEVEL
 */
 
 local
@@ -1780,16 +1792,22 @@ local
       end
 
       % Det: flag whether to check determination
+      % Returns: success flag depending on whether
+      %          the arguments have been tested
 
       meth checkArguments(Ctrl N Det $)
-         BIInfo = {GetBuiltinInfo N}
+         BIInfo    = {GetBuiltinInfo N}
+         NumArgs   = {Length @actualArgs}
+         BIData    = {GetData @designator}
+         ProcArity = {Procedure.arity BIData}
       in
-         case BIInfo
-         of noInformation then false
-         elsecase
-            {Length @actualArgs} == {Length BIInfo.types}
+         case
+            NumArgs==ProcArity
          then
-            case
+            case BIInfo
+            of noInformation then
+               false
+            elsecase
                {TypeCheck @actualArgs BIInfo.types}
             of
                0 % no type error
@@ -1806,15 +1824,14 @@ local
                Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
                Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
             in
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'ill-typed application'
-                      body:  [hint(l:'Builtin' m:pn(N))
-                              hint(l:'At argument' m:Pos)
-                              hint(l:'Expected types' m:{ProdToVS Ts})
-                              hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
-                              hint(l:'Argument values' m:{ApplToVS pn(N)|Vals})])}
+               {Ctrl.rep error(coord: @coord
+                               kind:  SATypeError
+                               msg:   'ill-typed application'
+                               body:  [hint(l:'Builtin' m:pn(N))
+                                       hint(l:'At argument' m:Pos)
+                                       hint(l:'Expected types' m:{ProdToVS Ts})
+                                       hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
+                                       hint(l:'Argument values' m:{ApplToVS pn(N)|Vals})])}
                false
             end
          else
@@ -1825,9 +1842,8 @@ local
                             kind:  SAGenError
                             msg:   'illegal arity in application'
                             body:  [hint(l:'Builtin' m:N)
-                                    hint(l:'Expected'
-                                         m:{Length BIInfo.types})
-                                    hint(l:'Found' m:{Length @actualArgs})
+                                    hint(l:'Expected' m:ProcArity)
+                                    hint(l:'Found' m:NumArgs)
                                     hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
@@ -1845,12 +1861,15 @@ local
             BIArity= {GetData {Nth @actualArgs 2}}
             BndVO  = {Nth @actualArgs 3}
          in
+\ifdef DEBUGSA
+               {Show newBuiltinDef(BIName BIArity)}
+\endif
             try
                Proc = {`Builtin` BIName BIArity}
                BI = {New Core.builtinToken init(Proc)}
             in
 \ifdef DEBUGSA
-               {Show newBuiltin(BIName BIArity Proc)}
+               {Show newBuiltin(Proc)}
 \endif
                {BndVO unifyVal(Ctrl Top BI)}
 
@@ -3029,11 +3048,15 @@ local
 \endif
       end
       meth saDescend(Ctrl Top)
+\ifdef THREAD_ISTOPLEVEL
+         SAStatement, saBody(Ctrl false @body)
+\else
          Env = {GetGlobalEnv @globalVars}
       in
          SAStatement, saBody(Ctrl false @body)
          {InstallGlobalEnv Env}
       end
+\endif
    end
 
    class SATryNode

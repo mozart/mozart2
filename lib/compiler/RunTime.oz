@@ -42,9 +42,6 @@ require
    BootException('fail')
    at 'x-oz://boot/Exception'
 
-   BootSpace(choose)
-   at 'x-oz://boot/Space'
-
    BootThread(create)
    at 'x-oz://boot/Thread'
 
@@ -103,14 +100,6 @@ prepare
 
                     %% Functor
                     'Functor.new': Functor.new
-
-                    %% Combinators
-                    'Combinators.\'cond\'': Combinators.'cond'
-                    'Combinators.\'or\'': Combinators.'or'
-                    'Combinators.\'dis\'': Combinators.'dis'
-
-                    %% Space
-                    'Space.choose': BootSpace.choose
 
                     %% Internal
                     'tellRecordSize': BootRecord.tellRecordSize

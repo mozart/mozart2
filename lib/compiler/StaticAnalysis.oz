@@ -74,6 +74,7 @@ export
    variableOccurrence:     SAVariableOccurrence
    token:                  SAToken
 require
+   Space(waitStable)
    Search(base)
    FD(less distinct distribute record sup)
    FS(var value include subset reflect monitorIn)
@@ -337,7 +338,6 @@ prepare
             'Array.new'         : doNewArray
             'Dictionary.new'    : doNewDictionary
             'Chunk.new'         : doNewChunk
-            'Space.new'         : doNewSpace
             'Object.new'        : doNew
             'Array.is'          : doCheckType(det IsArray)
             'Atom.is'           : doCheckType(det IsAtom)
@@ -359,7 +359,6 @@ prepare
             'Procedure.is'      : doCheckType(det IsProcedure)
             'Record.is'         : doCheckType(det IsRecord)
             'Record.isC'        : doCheckType(kind IsRecordC)
-            'Space.is'          : doCheckType(det IsSpace)
             'String.is'         : doCheckType(rec IsStringNow)
             'Tuple.is'          : doCheckType(det IsTuple)
             'Unit.is'           : doCheckType(det IsUnit)
@@ -1792,17 +1791,6 @@ define
          Rec  = {GetData {Nth @actualArgs 1}}
          Token= {New Core.token init({NewChunk Rec})}
          BndVO= {Nth @actualArgs 2}
-      in
-         {BndVO unifyVal(Ctrl Token)}
-      end
-
-      meth doNewSpace(Ctrl)
-         Token= {New Core.token init({Space.new proc {$ _} skip end})}
-         BndVO= {Nth @actualArgs 2}
-\ifdef DEBUGSA
-         Pred = {GetData {Nth @actualArgs 1}}
-         {System.show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
-\endif
       in
          {BndVO unifyVal(Ctrl Token)}
       end

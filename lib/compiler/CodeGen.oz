@@ -825,7 +825,7 @@ local
             end
          end
          meth isConstruction($) Value = self.Val in
-            {IsRecord Value} andthen {Not {IsAtom Value}}
+            {IsRecord Value} andthen {Not {IsLiteral Value}}
          end
       end
    end
@@ -855,6 +855,12 @@ in
                     BodyCode)|
          endDefinition(StartLabel)|
          {Append BodyCode2 [lbl(EndLabel) tailCall(x(0) 0)]}
+      end
+   end
+
+   class CodeGenTypeOf
+      meth codeGen(CS VHd VTl)
+         {{New CodeGenOzValue init(@value)} makeEquation(CS @res VHd VTl)}
       end
    end
 

@@ -12,6 +12,7 @@ export
 
    % abstract syntax:
    Statement
+   TypeOf
    StepPoint
    Declaration
    SkipNode

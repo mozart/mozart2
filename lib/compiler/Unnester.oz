@@ -507,6 +507,10 @@ local
          [] fEscape(FV _) then fVar(PrintName C) = FV in
             GEqs = nil
             {@BA refer(PrintName C ?GVO)}
+         [] fGetBinder(FV GV) then fVar(PrintName C) = FV in
+            GEqs = nil
+            {@BA refer(PrintName C ?GVO)}
+            {GVO getVariable(?GV)}
          else NewOrigin C = {CoordinatesOf FE} GV FV in
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
@@ -704,7 +708,7 @@ local
             if FRequire == unit andthen FPrepare == unit then
                GFrontEq GVO FV
                ImportGV ImportFV FImportArgs ImportFS FExportArgs FColons CND
-               NewFDefine FFun FImportDesc FExportDesc FS GS
+               NewFDefine FunGV FunFV FFun FImportDesc FExportDesc FS GS
             in
                Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
                FV = fVar({{GVO getVariable($)} getPrintName($)}
@@ -721,14 +725,16 @@ local
                                    fAnd(FDefine2
                                         fRecord(fAtom('export' CND) FColons))
                                    C)
-               FFun = fFun(fDollar(CND) [ImportFV] NewFDefine
+               {@BA generate('Body' C ?FunGV)}
+               FunFV = fVar({FunGV getPrintName($)} C)
+               FFun = fFun(FunFV [ImportFV] NewFDefine
                            fAtom('instantiate' C)|FProp CND)
                FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
                FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
                FS = fOpApplyStatement('NewFunctor'
-                                      [FImportDesc FExportDesc FFun FV] CND)
+                                      [FImportDesc FExportDesc FunFV FV] CND)
                Unnester,
-               UnnestStatement(fStepPoint(FS 'definition' C) ?GS)
+               UnnestStatement(fStepPoint(fAnd(FFun FS) 'definition' C) ?GS)
                GFrontEq|GS
             else GV1 GV2 FV1 FV2 FS1 CND FS2 in
                {@BA openScope()}
@@ -1026,7 +1032,10 @@ local
       end
 
       meth UnnestExpression(FE FV $) C = {CoordinatesOf FE} in
-         case FE of fStepPoint(FE Kind C) then GS in
+         case FE of fTypeOf(GV) then fVar(PrintName C) = FV GVO in
+            {@BA refer(PrintName C ?GVO)}
+            {New Core.typeOf init(GV GVO)}
+         [] fStepPoint(FE Kind C) then GS in
             Unnester, UnnestExpression(FE FV ?GS)
             if {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
@@ -1719,21 +1728,17 @@ local
       end
       meth AnalyseExports(Ds ?FExportArgs ?FColons)
          case Ds of D|Dr then
-            fExportItem(FEI) = D FeatureName FV PrintName C
-            FeatureName FExportArgr FColonr
+            fExportItem(FEI) = D FeatureName FV GV FExportArgr FColonr
          in
             case FEI of fColon(X Y) then
                FeatureName = X
                FV = Y
-            [] fVar(PrintName _) then
+            [] fVar(PrintName C) then
                FeatureName = fAtom({Misc.downcasePrintName PrintName} C)
                FV = FEI
             end
-            fVar(PrintName C) = FV
-            {@BA bind(PrintName C _)}
-            %--** insert type derived by static analysis instead of `value'
-            FExportArgs = fColon(FeatureName fAtom(value C))|FExportArgr
-            FColons = fColon(FeatureName FV)|FColonr
+            FExportArgs = fColon(FeatureName fTypeOf(GV))|FExportArgr
+            FColons = fColon(FeatureName fGetBinder(FV GV))|FColonr
             Unnester, AnalyseExports(Dr ?FExportArgr ?FColonr)
          [] nil then
             FExportArgs = nil

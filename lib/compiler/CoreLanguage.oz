@@ -157,6 +157,21 @@ in
       end
    end
 
+   class TypeOf
+      from Statement Annotate.typeOf SA.typeOf CodeGen.typeOf
+      attr arg: unit res: unit value: unit
+      meth init(Arg Res)
+         arg <- Arg
+         res <- Res
+         value <- type([value])
+      end
+      meth output(R $) FS in
+         {@res output2(R $ ?FS)}#' = '#
+         {System.valueToVirtualString @value 50 1000}#
+         '   % typeof '#{@arg output(R $)}#FS
+      end
+   end
+
    class StepPoint
       from Statement Annotate.stepPoint SA.stepPoint CodeGen.stepPoint
       prop final
@@ -1205,7 +1220,7 @@ in
       end
    end
 
-   class NameToken from Token CodeGen.nameToken
+   class NameToken from Token SA.nameToken CodeGen.nameToken
       prop final
       attr printName: unit isToplevel: unit
       feat kind: 'name'

@@ -14,6 +14,7 @@ import
    CompilerSupport
 export
    statement: SAStatement
+   typeOf: SATypeOf
    stepPoint: SAStepPoint
    declaration: SADeclaration
    skipNode: SASkipNode
@@ -57,6 +58,7 @@ export
    variable: SAVariable
    variableOccurrence: SAVariableOccurrence
    token: SAToken
+   nameToken: SANameToken
 body
    local
       \insert POTypes

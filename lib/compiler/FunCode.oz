@@ -9,6 +9,7 @@ import
 export
    % mixin classes for the abstract syntax:
    statement: CodeGenStatement
+   typeOf: CodeGenTypeOf
    stepPoint: CodeGenStepPoint
    declaration: CodeGenDeclaration
    skipNode: CodeGenSkipNode

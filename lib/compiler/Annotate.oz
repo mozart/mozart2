@@ -134,6 +134,15 @@ local
    class AnnotateStatement
    end
 
+   class AnnotateTypeOf
+      meth annotateGlobalVars(Ls VsHd VsTl)
+         {@res annotateGlobalVars(Ls VsHd VsTl)}
+      end
+      meth markFirst(WarnFormals Rep)
+         {@res markFirst(WarnFormals Rep)}
+      end
+   end
+
    class AnnotateStepPoint
       meth annotateGlobalVars(Ls VsHd VsTl)
          {AnnotateGlobalVarsList @statements Ls VsHd VsTl}
@@ -779,6 +788,7 @@ local
    end
 in
    Annotate = annotate(statement: AnnotateStatement
+                       typeOf: AnnotateTypeOf
                        stepPoint: AnnotateStepPoint
                        declaration: AnnotateDeclaration
                        skipNode: AnnotateSkipNode

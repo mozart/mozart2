@@ -68,7 +68,7 @@ local
    end
 
    fun {LabelToVS X}
-      case X=='#' then "#" else X end
+      case {IsDet X} then {System.valueToVirtualString X 0 0} else '_' end
    end
 
    fun {Bool2Token B}
@@ -1228,6 +1228,14 @@ in
       end
    end
 
+   class SATypeOf
+      meth sa(Ctrl)
+         value <- {@arg reflectType(AnalysisDepth $)}
+         %--** the new information about res is not propagated
+         {@res sa(Ctrl)}
+      end
+   end
+
    class SAStepPoint
       meth sa(Ctrl)
          skip
@@ -1327,7 +1335,10 @@ in
                else
                   {ListToVS
                    '(' | {Map {Record.toListInd @value}
-                          fun {$ F#X} F # ': ' # {X getPrintType(D-1 $)} end}
+                          fun {$ F#X}
+                             {System.valueToVirtualString F 0 0} # ': ' #
+                             {X getPrintType(D-1 $)}
+                          end}
                    {LabelToVS {Label @value}} ' ' ' )'}
                end
             elsecase
@@ -1339,9 +1350,35 @@ in
             in
                {ListToVS
                 '(' | {Map {CurrentArity @value}
-                       fun {$ F} F # ': ' # {@value^F getPrintType(D-1 $)} end}
+                       fun {$ F}
+                          {System.valueToVirtualString F 0 0} # ': ' #
+                          {@value^F getPrintType(D-1 $)}
+                       end}
                 {LabelToVS Lab}  ' ' '...)'}
             end
+         end
+      end
+      meth reflectType(Depth $)
+         try Lab Args Rec in
+            if Depth =< 0 orelse @isOpen then fail end
+            Lab = case {@label reflectType(Depth $)} of value(V) then V
+                  else fail unit
+                  end
+            Args = {List.mapInd @args
+                    fun {$ I Arg}
+                       case Arg of F#X then
+                          case {F reflectType(Depth $)} of value(V) then
+                             V#{X reflectType(Depth - 1 $)}
+                          else fail unit
+                          end
+                       else
+                          I#{Arg reflectType(Depth - 1 $)}
+                       end
+                    end}
+            Rec = {List.toRecord Lab Args}
+            record(Rec)
+         catch failure(...) then
+            type({OzTypes.decode @type})
          end
       end
       meth setType(T)
@@ -3885,6 +3922,9 @@ in
       meth getPrintType(D $)
          {TypeToVS @type}
       end
+      meth reflectType(_ $)
+         value(@value)
+      end
       meth getData(IsObj $)
          @value
       end
@@ -4207,7 +4247,12 @@ in
             then
                RecArgs   = {Record.toListInd Value}
                Lab       = {Label Value}
-               ConstrLab = {New Core.atomNode init(Lab unit)}
+               ConstrLab = case {IsAtom Lab} then
+                              {New Core.atomNode init(Lab unit)}
+                           elsecase {IsName Lab} then
+                              {New Core.nameToken
+                               init({System.printName Lab} Lab true)}
+                           end
                ConstrArgs ConstrValArgs Constr
             in
                {self recordValToArgs(RecArgs
@@ -4217,7 +4262,7 @@ in
                                      ?ConstrArgs
                                      ?ConstrValArgs)}
 
-               Constr = {New Core.construction init(ConstrLab ConstrArgs true)}
+               Constr = {New Core.construction init(ConstrLab ConstrArgs false)}
                {Constr setValue({List.toRecord Lab ConstrValArgs})}
                {Constr makeType}
 
@@ -4332,7 +4377,13 @@ in
          of (F#X) | RAs
          then
             Assoc = {PLDotEQ X Seen}
-            A = {New Core.atomNode init(F unit)}
+            A = case {IsAtom F} then
+                   {New Core.atomNode init(F unit)}
+                elsecase {IsName F} then
+                   {New Core.nameToken init({System.printName F} F true)}
+                elsecase {IsInt F} then
+                   {New Core.intNode init(F unit)}
+                end
             VO CAr CVAr
          in
 
@@ -4360,6 +4411,62 @@ in
          then
             ConstrArgs = nil
             ConstrValArgs = nil
+         end
+      end
+      meth typeToSubst(Type)
+         SAVariable, TypeToSubst(Type AnalysisDepth)
+      end
+      meth TypeToSubst(Type Depth)
+         % no sharing is supported
+         case Type of value(Value) then
+            SAVariable, valToSubst(Value)
+         [] type(Xs) then
+            SAVariable, setType({OzTypes.encode Xs nil})
+         [] record(Rec) then Lab ConstrLab Args ConstrArgs Constr in
+            Lab = {Label Rec}
+            ConstrLab = case {IsAtom Lab} then
+                           {New Core.atomNode init(Lab unit)}
+                        elsecase {IsName Lab} then
+                           {New Core.nameToken
+                            init({System.printName Lab} Lab true)}
+                        end
+            SAVariable, RecordToSubst({Arity Rec} Rec Depth ?Args ?ConstrArgs)
+            Constr = {New Core.construction init(ConstrLab ConstrArgs false)}
+            {Constr setValue({List.toRecord Lab Args})}
+            {Constr makeType()}
+            SAVariable, setLastValue(Constr)
+         end
+      end
+      meth RecordToSubst(Arity Rec Depth ?Args ?ConstrArgs)
+         case Arity of F|Fr then ConstrFeat V VO Argr ConstrArgr in
+            ConstrFeat = case {IsAtom F} then
+                            {New Core.atomNode init(F unit)}
+                         elsecase {IsName F} then
+                            {New Core.nameToken
+                             init({System.printName F} F true)}
+                         elsecase {IsInt F} then
+                            {New Core.intNode init(F unit)}
+                         end
+            V = {New Core.variable init('' generated unit)}
+            {V TypeToSubst(Rec.F Depth - 1)}
+            {V occ(unit ?VO)}
+            {VO updateValue({V getLastValue($)})}
+            Args = F#VO|Argr
+            ConstrArgs = ConstrFeat#VO|ConstrArgr
+            SAVariable, RecordToSubst(Fr Rec Depth ?Argr ?ConstrArgr)
+         [] nil then
+            Args = nil
+            ConstrArgs = nil
+         end
+      end
+      meth reflectType(Depth $)
+         case @lastValue of unit then type({OzTypes.decode @type})
+         elseof X then
+            if {HasFeature X ImAVariableOccurrence} then
+               type({OzTypes.decode @type})
+            else
+               {X reflectType(Depth $)}
+            end
          end
       end
       meth reachable(Vs $)
@@ -4505,6 +4612,9 @@ in
       end
       meth getPrintType(D $)
          {@variable getPrintType(D $)}
+      end
+      meth reflectType(Depth $)
+         {@variable reflectType(Depth $)}
       end
 
       meth getData(IsObj $)
@@ -4721,11 +4831,17 @@ in
       meth init()
          type <- {OzValueToType @value}
       end
+      meth getLastValue($)
+         self
+      end
       meth getType($)
          @type
       end
       meth getPrintType(D $)
          {TypeToVS @type}
+      end
+      meth reflectType(_ $)
+         type({OzTypes.decode @type})
       end
       meth getData(IsObj $)
          case IsObj then self
@@ -4733,7 +4849,16 @@ in
       end
       meth getFullData(D IsData $)
          case IsData then self
-         else {self getValue($)} end
+         else {System.valueToVirtualString {self getValue($)} 0 0}
+         end
+      end
+   end
+
+   class SANameToken
+      meth reflectType(_ $)
+         if @isToplevel then value(@value)
+         else type({OzTypes.decode @type})
+         end
       end
    end
 end

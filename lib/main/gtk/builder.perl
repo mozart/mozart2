@@ -225,18 +225,38 @@ sub build_classes {
     }
 }
 
+sub build_exports {
+    my @files = @_;
+
+    foreach my $file (@files) {
+        require($file);
+        print '   ' . gtk2oz_class_name($$class{name}) . "\n";
+    }
+}
+
 sub usage() {
     print <<EOF;
 usage: $0 INPUT_FILE ...
 
 Generate Oz glue code for the GTK+ binding of Oz
+
+    --oz-classes            build Oz glue code
+    --oz-exportlist         build export list for Oz functor
+
 EOF
 
     exit 0;
 }
 
+my ($opt_oz_classes, $opt_oz_exportlist);
+
+&GetOptions("oz-classes"     =>    \$opt_oz_classes,
+            "oz-exportlist"  =>    \$opt_oz_exportlist);
+
 @input = @ARGV;
 
 usage() unless @input != 0;
+usage() unless $opt_oz_classes | $opt_oz_exportlist;
 
-build_classes(@input);
+build_classes(@input) if $opt_oz_classes;
+build_exports(@input) if $opt_oz_exportlist;

@@ -21,7 +21,7 @@
 
 functor
 import
-   Pickle(save load)
+   Pickle(save load saveCompressed)
    OS(tmpnam unlink)
 export
    Return
@@ -39,6 +39,7 @@ define
 
    Nogoods =
      [{NewCell 1}
+      {NewPort _}
       _
       {New BaseObject noop}
       proc native {$} skip end
@@ -51,6 +52,7 @@ define
      [4711
       111111111111111111111111111111111111111111111111
       23.056
+      {NewChunk Goods}
       f(a:    'an atom with blanks'
         NN:   BaseObject
         2:    Append
@@ -62,9 +64,17 @@ define
    pickles(proc {$}
               Tmp = {OS.tmpnam}
            in
+              % check nogoods
               {All Nogoods fun {$ X} {TrySave X Tmp}==[X] end}=true
+
+              % check saving
               {TrySave Goods Tmp} = nil
               {Pickle.load Tmp} = Goods
+
+              % check compressed save
+              {Pickle.saveCompressed Goods Tmp 9}
+              {Pickle.load Tmp} = Goods
+
               {OS.unlink Tmp}
            end
            keys:[pickles])

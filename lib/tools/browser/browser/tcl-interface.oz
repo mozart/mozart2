@@ -1862,17 +1862,11 @@ in
       end
 
       %%
-      %%  We wouldn't have it closed from the Tk interface;
-      %%
-      meth close
-         true
-      end
-
-      %%
       %%  Delete the tag, recover binding resources and close the
       %% object itslef;
       meth closeItself
          <<Tk.textTag close>>
+         <<Object.closedFeature close>>
       end
 
       %%

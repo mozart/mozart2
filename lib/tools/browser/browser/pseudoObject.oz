@@ -145,7 +145,7 @@ class PseudoTermGenericObject
          %%
          case TermObj \= InitValue then
             %%  must go first;
-            <<UrObject close>>
+            <<Object.closedFeature close>>
 
             %%
             {@termObj destroy}

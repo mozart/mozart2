@@ -75,7 +75,7 @@ in
    %%  It defines the features/attributes which are common for all types of
    %% generic term classes;
    %%
-   class MetaGenericTermObject from UrObject
+   class MetaGenericTermObject from UrObject Object.closedFeature
       %%
       feat
          term                   % browsed term itself;
@@ -171,6 +171,13 @@ in
       %%
       meth isShown(?IsShown)
          IsShown = @shown
+      end
+
+
+      %%
+      %%
+      meth close
+         <<Object.closedFeature close>>
       end
 
       %%
@@ -1696,12 +1703,12 @@ in
 \ifdef DEBUG_TO
          {Show 'ReferenceGenericTermObject::watchMaster for ref term '#self.term}
 \endif
-         case {Object.closed MasterObj} then
+         case MasterObj.closed then
             PTO IsAlivePTO Tmp
          in
             PTO = {self getPTObject($)}
             job
-               Tmp = {Object.closed PTO}
+               Tmp = PTO.closed
             end
 
             %%

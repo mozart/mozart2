@@ -52,7 +52,7 @@ in
          then
             %%
             job
-               IsAway = {Object.closed Obj}
+               IsAway = Obj.closed
             end
 
             %%
@@ -92,7 +92,7 @@ in
             then
                %%
                job
-                  IsAway = {Object.closed}
+                  IsAway = Obj.closed
                end
 
                %%
@@ -136,7 +136,7 @@ in
             in
                %%
                job
-                  IsAway = {Object.closed SelfObject}
+                  IsAway = SelfObject.closed
                end
 
                %%
@@ -183,7 +183,7 @@ in
 
          %%
          job
-            IsAway = {Object.closed Obj}
+            IsAway = Obj.closed
          end
 
          %%

@@ -236,7 +236,7 @@ local
    %% Schedule functors for application
    %%
 
-   fun {Schedule RootUrl Info}
+   fun {Schedule RootUrl Info Spec}
       {Debug 'Scheduling'}
       %% Map URLs to integers
       %% Assumptions: Exclude functors come first.
@@ -278,7 +278,9 @@ local
       case {Search.base.one Script}
       of nil then
          %% Naive fallback
-         {Trace 'Scheduling: Due to cyclic dependencies using naive fallback'}
+         if Spec.sequential then
+            {Trace 'Scheduling: Due to cyclic dependencies using fallback'}
+         end
          cyclic({List.toRecord urllToInt
                  {List.mapInd {Append {List.subtract AllUrls RootKey}
                                [RootKey]}
@@ -286,15 +288,17 @@ local
                      A#I
                   end}})
       [] [IntToUrl] then
-         {Trace 'Scheduling:\n'#
-          ({CommaList
-            {Record.toList
-             {List.toRecord ''
-              {Map {Filter {Record.toListInd IntToUrl}
-                    fun {$ UrlKey#_} {HasFeature Info.include UrlKey} end}
-               fun {$ UrlKey#I}
-                  I#UrlKey
-               end}}}})}
+         if Spec.sequential then
+            {Trace 'Scheduling:\n'#
+             ({CommaList
+               {Record.toList
+                {List.toRecord ''
+                 {Map {Filter {Record.toListInd IntToUrl}
+                       fun {$ UrlKey#_} {HasFeature Info.include UrlKey} end}
+                  fun {$ UrlKey#I}
+                     I#UrlKey
+                  end}}}})}
+         end
          acyclic(IntToUrl)
       end
 
@@ -445,7 +449,7 @@ in
       {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
 
       Types     = {TypeCheck Info}
-      UrlToInt  = {Schedule RootUrl Info}
+      UrlToInt  = {Schedule RootUrl Info Spec}
    in
 
       {Assemble RootUrl Spec.sequential Info Types UrlToInt}

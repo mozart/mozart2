@@ -120,6 +120,12 @@ in
                                                 else {ToString V}
                                                 end
                                              end
+                                 toAtom:     fun {$ V}
+                                                case {IsAtom V} then V
+                                                else
+                                                   {StringToAtom {ToString V}}
+                                                end
+                                             end
                                  changeSign: ChangeSign
                                  length:     fun {$ V}
                                                 {BiLength V 0}

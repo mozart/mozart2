@@ -74,11 +74,11 @@ define
    in
       proc {AddInclude _ L} Old New in
          {Exchange IncludeSpecs Old New}
-         {Append Old {Map L MakeInclude} New}
+         {Append {Map L MakeInclude} Old New}
       end
       proc {AddExclude _ L} Old New in
          {Exchange IncludeSpecs Old New}
-         {Append Old {Map L MakeExclude} New}
+         {Append {Map L MakeExclude} Old New}
       end
    end
    ArgSpec = record(include(accumulate(AddInclude)
@@ -90,13 +90,14 @@ define
                     out(single char: &o type: string optional:true)
 
                     verbose(rightmost char: &v type: bool default: false)
-                    quiet(char: &q alias: verbose#false)
+                    quiet(char: &q alias: [verbose#false debug#false])
                     sequential(rightmost type: bool default: false)
                     executable(rightmost char: &x type: bool default: false)
                     execheader(single type: string default: ExecPrefix)
                     compress(rightmost char: &z
                              type: int(min: 0 max: 9) default: 0)
 
+                    debug(rightmost type:bool default:false)
                     usage(alias: help)
                     help(rightmost char: [&h &?] default: false))
 
@@ -112,12 +113,18 @@ define
        end
 
        RootUrl = case Args.1 of [GetInFile] then
-                   {UrlExpand {UrlMake GetInFile}}
+                   {UrlExpand {UrlResolve './' GetInFile}}
                  else
                     raise ar(inputFile) end
                  end
 
        Trace  = if Args.verbose then
+                   System.showError
+                else
+                   Swallow
+                end
+
+       Debug  = if Args.debug then
                    System.showError
                 else
                    Swallow

@@ -113,7 +113,8 @@ define
       end
       meth map(Index F)
          Val      = @value
-         NewValue = try {F Val}
+         Visual   = @visual
+         NewValue = try {F Val {Visual getWidth($)} {Visual getDepth($)}}
                     catch X then
                        mapping_failed(ex:{Value.byNeed fun {$} X end} val:Val)
                     end

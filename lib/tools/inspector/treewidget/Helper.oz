@@ -101,9 +101,9 @@ define
          LenStr   = {Value.toVirtualString V 0 0}
          PrintStr = {QuoteStr LenStr}
       end
-      fun {ConvertAtom V}
-         {QuoteStr {Value.toVirtualString V 0 0}}
-      end
+%      fun {ConvertAtom V}
+%        {QuoteStr {Value.toVirtualString V 0 0}}
+%      end
    end
 
    local

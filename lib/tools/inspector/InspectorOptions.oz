@@ -521,7 +521,7 @@ define
           lockMenu               # nil
           portMenu               # nil
           chunkMenu              # menu(nil nil [auto('Show Entries'(MapChunk))] nil)
-          cellMenu               # menu(nil nil ['Show Entries'(ShowCellCont)] nil) %% auto dis
+          cellMenu               # menu(nil nil ['Show Contents'(ShowCellCont)] nil) %% auto dis
 
           %% This is to provide Human readable Selections in OptionsGUI
           typeConversion         # [ procedure    # 'Procedure'

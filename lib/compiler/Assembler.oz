@@ -174,10 +174,45 @@ local
                {System.valueToVirtualString Value 1000 1000}
             end
          end
+         ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}
+         fun {FPToVS FP FPToIntMap}
+            I={ForeignPointerToInt FP}
+            V={Dictionary.condGet FPToIntMap I unit}
+         in
+            case V==unit then
+               N={Dictionary.get FPToIntMap 0}+1
+            in
+               {Dictionary.put FPToIntMap 0 N}
+               {Dictionary.put FPToIntMap I N}
+               '<ForeignPointer '#N#'>'
+            else
+               '<ForeignPointer '#V#'>'
+            end
+         end
       in
-         fun {InstrToVirtualString Instr}
+         fun {InstrToVirtualString Instr FPToIntMap}
             case {IsAtom Instr} then
                {Label Instr}
+            elsecase Instr of genFastCall(FP N) then
+               case {Foreign.pointer.is FP} then
+                  VS={FPToVS FP FPToIntMap}
+               in
+                  'genFastCall('#VS#' '#N#')'
+               else
+                  {ValueToVirtualString Instr}
+               end
+            elsecase Instr of definition(X1 X2 X3 FP X5) then
+               case  {Foreign.pointer.is FP} then
+                  VS={FPToVS FP FPToIntMap}
+               in
+                  'definition('#
+                  {ValueToVirtualString X1}#' '#
+                  {ValueToVirtualString X2}#' '#
+                  {ValueToVirtualString X3}#' '#VS#' '#
+                  {ValueToVirtualString X5}#')'
+               else
+                  {ValueToVirtualString Instr}
+               end
             else
                {ValueToVirtualString Instr}
             end
@@ -262,9 +297,11 @@ local
             else skip
             end
          end
-         meth output($) AddrToLabelMap in
+         meth output($) AddrToLabelMap FPToIntMap in
             AssemblerClass, MarkEnd()
             AddrToLabelMap = {NewDictionary}
+            FPToIntMap = {NewDictionary}
+            {Dictionary.put FPToIntMap 0 0}
             {ForAll {Dictionary.entries @LabelDict}
              proc {$ Label#Addr}
                 case {IsDet Addr} then
@@ -273,9 +310,9 @@ local
                 end
              end}
             '%% Code Size:\n'#@Size#' % words\n'#
-            AssemblerClass, OutputSub(@InstrsHd AddrToLabelMap 0 $)
+            AssemblerClass, OutputSub(@InstrsHd AddrToLabelMap FPToIntMap 0 $)
          end
-         meth OutputSub(Instrs AddrToLabelMap Addr ?VS)
+         meth OutputSub(Instrs AddrToLabelMap FPToIntMap Addr ?VS)
             case Instrs of Instr|Ir then LabelVS NewInstr VSRest NewAddr in
                LabelVS = case {Dictionary.member AddrToLabelMap Addr}
                          then
@@ -284,9 +321,9 @@ local
                          else '\t\t'
                          end
                AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
-               VS = LabelVS#{InstrToVirtualString NewInstr}#'\n'#VSRest
+               VS = LabelVS#{InstrToVirtualString NewInstr FPToIntMap}#'\n'#VSRest
                NewAddr = Addr + InstructionSizes.{Label Instr}
-               AssemblerClass, OutputSub(Ir AddrToLabelMap NewAddr ?VSRest)
+               AssemblerClass, OutputSub(Ir AddrToLabelMap FPToIntMap NewAddr ?VSRest)
             [] nil then
                VS = ""
             end

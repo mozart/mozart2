@@ -3,10 +3,12 @@
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Contributor:
+%%%   Martin Homik <homik@ps.uni-sb.de>
 %%%   Benjamin Lorenz <lorenz@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Christian Schulte, 1997
+%%%   Martin Homik, 2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -1299,12 +1301,16 @@ define
       end
    in
       class PopupMenu from Tk.menubutton
+
          feat
-            Entries
             Menu
             Action
+
          attr
             Current
+            Entries
+            Commands: nil
+
          meth tkInit(parent:   P
                      entries:  E <= [empty]
                      selected: X <= 1
@@ -1323,33 +1329,36 @@ define
              else
                 tkInit(text:T)
              end}
-            self.Entries = E
+            Entries     <- E
             self.Action  = A
             self.Menu    =
-            if F == unit then
-               {New Tk.menu tkInit(parent:  P
-                                   tearoff: false)}
-            else
-               {New Tk.menu tkInit(parent:  P
-                                   font:    F
-                                   tearoff: false)}
-            end
+              if F == unit then
+                 {New Tk.menu tkInit(parent:  P
+                                     tearoff: false)}
+              else
+                 {New Tk.menu tkInit(parent:  P
+                                     font:    F
+                                     tearoff: false)}
+              end
             {ForAll E
              proc {$ S}
                 case S
                 of T#C then
-                   {New Tk.menuentry.command
-                    tkInit(parent:           self.Menu
-                           label:            T
-                           foreground:       C
-                           activeforeground: C
-                           action:           self # Select(S)) _}
+                   Cmd = {New Tk.menuentry.command
+                          tkInit(parent:           self.Menu
+                                 label:            T
+                                 foreground:       C
+                                 activeforeground: C
+                                 action:           self # Select(S))}
+                in
+                   Commands <- {Append @Commands [T#Cmd]}
                 end
              end}
             Tk.menubutton,tkBind(event:  '<1>'
                                  action: self # Popup)
             Current <- T#C
          end
+
          meth Select(S)
             Current <- S
             case S of T#C then
@@ -1357,17 +1366,61 @@ define
                {self.Action T}
             end
          end
+
          meth Popup
             X  = {Tk.returnInt winfo(rootx     self)}
             XW = {Tk.returnInt winfo(reqwidth  self)}
             Y  = {Tk.returnInt winfo(rooty     self)}
             YH = {Tk.returnInt winfo(reqheight self)}
-            N  = {Where self.Entries @Current}
+            N  = {Where @Entries @Current}
          in
             {Tk.send tk_popup(self.Menu X+(XW div 2) Y+(YH div 2)+1 N)}
          end
+
          meth getCurrent($)
             case @Current of T#_ then T end
+         end
+
+         meth add(S)
+            case S
+            of T#C then
+               if {Not {Member S @Entries}} then
+                  Cmd = {New Tk.menuentry.command
+                         tkInit(parent:           self.Menu
+                                label:            T
+                                foreground:       C
+                                activeforeground: C
+                                action:           self # Select(S))}
+               in
+                  Entries  <- {Append @Entries [S]}
+                  Commands <- {Append @Commands [T#Cmd]}
+               end
+            end
+         end
+
+         meth rem(S)
+            L1 L2
+            L3
+         in
+            {List.partition @Commands
+             fun {$ X#_}
+                X==S
+             end
+             L1 L2}
+
+            {ForAll L1 proc {$ _#Li} {Li tkClose} end}
+            Commands <- L2
+
+            L3 = {List.filter @Entries
+                  fun {$ X#_}
+                     X\=S
+                  end}
+
+            Entries <- L3
+
+            if @Entries\=nil then
+               {self Select(@Entries.1)}
+            end
          end
       end
    end

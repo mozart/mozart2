@@ -22,12 +22,12 @@
 functor $
 import
    TreeWidgetComponent('class' : TreeWidget 'nodes' : TreeNodes) at 'TreeWidget.ozf'
+   Reflection
    InspectorOptions
    Tk
    TkTools
-   System(eq show)
+   System(eq show onToplevel)
 export
-   'class'      : InspectorClass
    'object'     : InspectorObj
    'inspect'    : Inspect
    'inspectN'   : InspectN
@@ -35,6 +35,7 @@ export
    'configureN' : ConfigureN
    'close'      : Close
    'nodes'      : TreeNodes
+   'new'        : NewInspector
 define
    fun {NewServer O}
       S P
@@ -238,6 +239,7 @@ define
             in
                {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
                @options = Options
+               {Dictionary.put Options widgetSitedId Reflection.label}
                @selMenu = Menu.selection
                {Menu.inspector tk(conf borderwidth: 1)}
                {Menu.insoptions tk(conf borderwidth: 1)}
@@ -338,13 +340,18 @@ define
          meth preferences(WinEntry)
             RealDict = {@widget getOptions($)}
          in
-            configWin <- {New InspectorGUIClass create(WinEntry RealDict @inspPort)}|WinEntry
+            configWin <- {New InspectorGUIClass
+                          create(WinEntry RealDict @inspPort)}|WinEntry
          end
          meth freeze
             {Wait _}
          end
          meth close
-            if @isVisible then isVisible <- false {Tk.send wm(withdraw self)} end
+            if @isVisible
+            then
+               isVisible <- false
+               {Tk.send wm(withdraw self)}
+            end
             InspectorClass, addPane
             InspectorClass, performClose((@NumWidgets - 1))
          end
@@ -558,27 +565,37 @@ define
       end
    end
 
-   local
-      RealInspectorObj InspPort
+   %%
+   %% Object Creation Function
+   %%
+   fun {NewInspector}
+      InspectorPort InspectorObject
    in
-      InspPort         = {NewServer RealInspectorObj}
-      RealInspectorObj = {New InspectorClass create(InspPort)}
-      InspectorObj     = proc {$ M} {Port.send InspPort M} end
+      InspectorPort   = {NewServer InspectorObject}
+      InspectorObject = {New InspectorClass create(InspectorPort)}
+      proc {$ M}
+         {Port.send InspectorPort {Reflection.reflect M}}
+      end
+   end
 
-      proc {Inspect Value}
-         {Port.send InspPort inspect(Value)}
-      end
-      proc {InspectN N Value}
-         {Port.send InspPort inspectN(N Value)}
-      end
-      proc {Configure Key Value}
-         {Port.send InspPort configureEntry(Key Value)}
-      end
-      proc {ConfigureN N Key Value}
-         {Port.send InspPort configureNEntry(N Key Value)}
-      end
-      proc {Close}
-         {Port.send InspPort close}
-      end
+   %%
+   %% Create System Inspector and its access wrappers
+   %%
+   InspectorObj = {NewInspector}
+
+   proc {Inspect Value}
+      {InspectorObj inspect(Value)}
+   end
+   proc {InspectN N Value}
+      {InspectorObj inspectN(N Value)}
+   end
+   proc {Configure Key Value}
+      {InspectorObj configureEntry(Key Value)}
+   end
+   proc {ConfigureN N Key Value}
+      {InspectorObj configureNEntry(N Key Value)}
+   end
+   proc {Close}
+      {InspectorObj close}
    end
 end

@@ -21,9 +21,9 @@
 
 functor $
 import
-   FS(value)
+   FD(int)
+   FS
    System(eq show)
-   Property(get)
    HelperComponent('nodes' : Helper) at 'Helper.ozf'
    TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
    StoreListenerComponent('class' : StoreListener) at 'StoreListener.ozf'
@@ -97,6 +97,7 @@ define
          globalRelMan  %% Global Relation Manager
          isAtomic      %% Atomic Test Function (must not be changed in Oz)
          showString    %% String Flag
+         sitedId       %% Sited Value Label
       meth create(Options Parent DspWidth DspHeight)
          StoreListener, create
          GraphicSupport, create(Parent DspWidth DspHeight)
@@ -108,6 +109,7 @@ define
          @nodes        = {Dictionary.new}
          @relManDict   = {Dictionary.new}
          @lines        = {Dictionary.new}
+         @sitedId      = {Dictionary.get Options widgetSitedId}
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
       end
@@ -179,7 +181,11 @@ define
             else skip
             end
             TreeWidget, extractAutoMappings(Mr O D)
-         else skip
+         else
+            %% Add Default Sited Data Handler
+            {Dictionary.put D @sitedId fun {$ V _ _}
+                                          TreeWidget, createSited(V $)
+                                       end}
          end
       end
       meth hasAuto(Fs $)
@@ -372,6 +378,8 @@ define
          [] det(Type) then
             case Type
             of tuple then
+               SitedId = @sitedId
+            in
                case {Label V}
                of '#' then hashtuple
                [] '|' then
@@ -381,6 +389,7 @@ define
                   then string
                   else pipetuple
                   end
+               [] !SitedId then SitedId
                else labeltuple
                end
             else Type
@@ -484,6 +493,21 @@ define
          in
             {New {Dictionary.condGet @normNodesDict ValKey @treeNodes.generic}
              create(Val Parent Index self Depth)}
+         end
+      end
+      meth createSited(Val $)
+         Type = Val.1
+         Info = Val.2
+      in
+         case Type
+         of free   then _
+         [] future then !!_
+         [] fd     then {FD.int Info}
+         [] fsval  then {FS.value.make Info}
+         [] fsvar  then
+            case Info
+            of LB#UB then {FS.var.bounds LB UB}
+            end
          end
       end
       meth getRefNode($)

@@ -107,7 +107,7 @@ end
 
 class OptionsManager
    attr Resources Window
-   meth init(Res Class<='OzTools')
+   meth tkInit(Res Class<='OzTools')
       Resources <- Res
       Window <- {New TkToplevel tkInit(withdraw: true
                                        'class':  Class)}

@@ -221,6 +221,11 @@ fun {StringToHandlers L}
          SUBST#REST = {Gather TMP SEPARATOR ESCAPE}
       in
          {MakePrefixHandler PREFIX SUBST}|{Parse REST}
+      [] &p|&a|&t|&t|&e|&r|&n|&=|T then
+         LEFT #TMP  = {Gather T &= ESCAPE}
+         RIGHT#REST = {Gather TMP SEPARATOR ESCAPE}
+      in
+         {MakePatternHandler LEFT RIGHT}|{Parse REST}
       else
          URL#REST = {Gather L SEPARATOR ESCAPE}
       in
@@ -407,6 +412,103 @@ fun {StripPrefix Prefix URL}
          case H==HH then {StripPrefix Prefix URL}
          else unit end
       else unit end
+   end
+end
+
+%% pattern handler
+
+fun {MakePatternHandler Left Right}
+   LPat = {ParsePattern Left}
+   RPat = {ParsePattern Right}
+in
+   proc {$ REP Meth MethName MSG}
+      try
+         PATH = {NormalizePath
+                 {InstantiatePattern RPat
+                  {List.toRecord alist
+                   {MatchPattern LPat REP.string}}}}
+      in
+         {MSG '...['#PATH#'] (pattern)'}
+         {HApply PATH Meth}
+      catch no then
+         {MSG '...[not applicable] (pattern '#Left#' -> '#Right#')'}
+      end
+   end
+end
+
+proc {SplitAtString Str Input Prefix Suffix}
+   case {IsPrefix Str Input Suffix} then
+      Prefix=nil
+   elsecase Input of H|T then
+      PrefixTail
+   in
+      Prefix=H|PrefixTail
+      {SplitAtString Str T PrefixTail Suffix}
+   else raise no end end
+end
+
+fun {IsPrefix S1 S2 S3}
+   case S1 of H1|T1 then
+      case S2 of H2|T2 then
+         case H1==H2 then {IsPrefix T1 T2 S3}
+         else false end
+      else false end
+   else S3=S2 true end
+end
+
+fun {ParsePattern Input}
+   Prefix Suffix
+in
+   if try {SplitAtString "?{" Input Prefix Suffix} true
+      catch no then false end
+   then
+      str(Prefix)|{ParsePatternAux Suffix}
+   else
+      [str(Input)]
+   end
+end
+
+fun {ParsePatternAux Input}
+   Prefix1 Suffix1 Prefix2 Suffix2
+in
+   {SplitAtString "}" Input Prefix1 Suffix1}
+   if try {SplitAtString "?{" Suffix1 Prefix2 Suffix2} true
+      catch no then false end
+   then
+      var({String.toAtom Prefix1} Prefix2)
+      | {ParsePatternAux Suffix2}
+   else
+      [var({String.toAtom Prefix1} Suffix1)]
+   end
+end
+
+fun {MatchPattern Specs Input}
+   case Specs
+   of nil then case Input of nil then nil else raise no end end
+   [] H|T then
+      case H
+      of var(V SEP) then
+         case SEP of nil then (V#Input)|{MatchPattern T nil}
+         else Prefix Suffix in
+            {SplitAtString SEP Input Prefix Suffix}
+            (V#Prefix)|{MatchPattern T Suffix}
+         end
+      [] str(STR)   then Suffix in
+         if {IsPrefix STR Input Suffix} then
+            {MatchPattern T Suffix}
+         else raise no end end
+      end
+   end
+end
+
+fun {InstantiatePattern Pat Alist}
+   case Pat
+   of nil then nil
+   [] H|T then
+      case H
+      of str(STR) then STR#{InstantiatePattern T Alist}
+      [] var(V SEP) then Alist.V#SEP#{InstantiatePattern T Alist}
+      end
    end
 end
 

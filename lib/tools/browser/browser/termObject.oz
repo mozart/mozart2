@@ -183,7 +183,8 @@ in
 
          %%
          <<closeOut>>
-         <<UrObject close>>
+         %%  actually, Tk.textTag::close closes the object too;
+         %% <<UrObject close>>
 
          %%
          %%  Note that no term object can close itself, but only on
@@ -598,7 +599,7 @@ in
 
          %%
          <<[destroyChilds(_) closeOut]>>
-         <<UrObject close>>
+         %% <<UrObject close>>
 
          %%
          <<retract>>

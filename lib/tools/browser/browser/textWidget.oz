@@ -628,7 +628,7 @@ in
          else true
          end
 \endif
-         true
+         <<closeItself>>
       end
 
       %%

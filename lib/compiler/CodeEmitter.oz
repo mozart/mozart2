@@ -142,17 +142,6 @@ local
          end
       end
 
-      proc {Enumerate Regs N W}
-         if N =< W then Reg in
-            Reg = Regs.N
-            {Space.waitStable}
-            if {IsKinded Reg} then
-               Reg = {FD.reflect.min Reg}
-            end
-            {Enumerate Regs N + 1 W}
-         end
-      end
-
 \ifdef DEBUG_OPTIMIZER
       proc {Send P M}
          {System.show M}
@@ -186,7 +175,7 @@ local
                                X = {Dictionary.toRecord y D}
                                N = {Width X}
                                {Reserve X 1 N NumberReserved}
-                               {Enumerate X 1 N}
+                               {FD.assign min X}
                             end
                          end
                       in

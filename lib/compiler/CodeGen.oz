@@ -37,8 +37,8 @@ import
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    CompilerSupport(isBuiltin featureLess isCopyableName)
    at 'x-oz://boot/CompilerSupport'
-   Space(new waitStable ask merge)
-   FD(decl distinct sumC reflect)
+   Space(new ask merge)
+   FD(decl distinct sumC reflect assign)
    System(printName)
    Property(get)
    Builtins(getInfo)

@@ -612,12 +612,12 @@ define
          in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-            Unnester, AddImport('x-oz://system/FD' ?FD)
+            Unnester, AddImport('x-oz://system/FD.ozf' ?FD)
             FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then FS in
             %% note: reverse arguments!
-            case Unnester, AddImport('x-oz://system/FD' $)
+            case Unnester, AddImport('x-oz://system/FD.ozf' $)
             of unit then
                FS = fOpApplyStatement(case Op of '::' then 'FD.int'
                                       [] ':::' then 'FD.dom'
@@ -1040,7 +1040,7 @@ define
             Unnester, UnnestStatement(NewFS $)
          [] fNot(FS C) then CND CombinatorFS NewFS in
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinator' $)
+            case Unnester, AddImport('x-oz://system/Combinator.ozf' $)
             of unit then
                CombinatorFS = fOpApplyStatement('Combinator.\'not\''
                                                 [fProc(fDollar(C) nil FS
@@ -1063,7 +1063,7 @@ define
                               else FElse
                               end nil CND)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinator' $)
+            case Unnester, AddImport('x-oz://system/Combinator.ozf' $)
             of unit then
                CombinatorFS = fOpApplyStatement('Combinator.\'cond\''
                                                 [fRecord(fAtom('#' C)
@@ -1079,7 +1079,7 @@ define
          [] fOr(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinator' $)
+            case Unnester, AddImport('x-oz://system/Combinator.ozf' $)
             of unit then
                CombinatorFS = fOpApplyStatement('Combinator.\'or\''
                                                 [fRecord(fAtom('#' C)
@@ -1093,7 +1093,7 @@ define
          [] fDis(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinator' $)
+            case Unnester, AddImport('x-oz://system/Combinator.ozf' $)
             of unit then
                CombinatorFS = fOpApplyStatement('Combinator.\'dis\''
                                                 [fRecord(fAtom('#' C)
@@ -1113,7 +1113,7 @@ define
             %% end
             CND = {CoordNoDebug C}
             N = {Length FSs}
-            case Unnester, AddImport('x-oz://system/Space' $) of unit then
+            case Unnester, AddImport('x-oz://system/Space.ozf' $) of unit then
                CombinatorFE = fOpApply('Space.choose' [fInt(N C)] CND)
             elseof FE then
                CombinatorFE = fApply(fOpApply('.' [FE fAtom('choose' CND)] CND)
@@ -1210,7 +1210,7 @@ define
                {ToGV occ(C3 ?RightGVO)}
                {New Core.equation init(LeftGVO RightGVO C)}
             elseof fOpApply('^' [FE1 FE2] C) then NewFS in
-               NewFS = case Unnester, AddImport('x-oz://system/RecordC' $)
+               NewFS = case Unnester, AddImport('x-oz://system/RecordC.ozf' $)
                        of unit then
                           fOpApplyStatement('RecordC.\'^\''
                                             [FE1 FE2 fOcc(ToGV)] C)
@@ -1245,12 +1245,12 @@ define
          in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-            Unnester, AddImport('x-oz://system/FD' ?FD)
+            Unnester, AddImport('x-oz://system/FD.ozf' ?FD)
             FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C fOcc(ToGV) FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then FS in
             %% note: reverse arguments!
-            case Unnester, AddImport('x-oz://system/FD' $)
+            case Unnester, AddImport('x-oz://system/FD.ozf' $)
             of unit then
                FS = fOpApplyStatement(case Op of '::' then 'FD.reified.int'
                                       [] ':::' then 'FD.reified.dom'
@@ -1720,7 +1720,7 @@ define
             CND = {CoordNoDebug {GLabel getCoord($)}}
             {@BA generate('OpenRecord' CND ?RecordGV)}
             Unnester, UnnestToVar(Label 'Label' ?GFront3 ?LabelGVO)
-            FSs = (case Unnester, AddImport('x-oz://system/RecordC' $)
+            FSs = (case Unnester, AddImport('x-oz://system/RecordC.ozf' $)
                    of unit then
                       fOpApplyStatement('RecordC.tellSize'
                                         [fOcc({LabelGVO getVariable($)})

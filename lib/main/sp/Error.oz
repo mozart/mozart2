@@ -1826,6 +1826,14 @@ in
              unit
              [hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
+         elseof dp(load versionMismatch ComponentName VerExpected VerGot) then
+            {FormatExc
+             'Version mismatch when loading of pickle'
+             unit
+             [hint(l:'Pickle name'      m:ComponentName)
+              hint(l:'Version expected' m:VerExpected)
+              hint(l:'Version got'      m:VerGot)]
+             Exc}
          elseof dp(send nogoods NoGoods) then
             {FormatExc
              'Trying to send non-distributables to port'

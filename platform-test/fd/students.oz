@@ -30,7 +30,7 @@ define
       choice
          case {Filter L fun {$ X} {GetSize X} > 1 end}
          of nil then skip
-         [] F|R = L then
+         [] F|_ = L then
             local
                Next = {Choose F {GetSize F} L}
                M = {GetMax Next}

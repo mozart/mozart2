@@ -31,7 +31,7 @@ local
    fun {IsIn Is Js}
       %% Is is contained in Js
       case Js of nil then false
-      [] J|Jr then
+      [] _|Jr then
          {List.isPrefix Is Js} orelse {IsIn Is Jr}
       end
    end

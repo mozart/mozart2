@@ -45,7 +45,7 @@ fun {ComputeTests Argv}
       fun {FindTest I|Is S}
          {Label S}=I
          case Is of nil then S
-         [] I|Ir then {FindTest Is {GetIt S.1 I}}
+         [] I|_ then {FindTest Is {GetIt S.1 I}}
          end
       end
 

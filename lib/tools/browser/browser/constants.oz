@@ -132,7 +132,7 @@ TrueArity            = {NewName}
 %%
 %%  Help file;
 %%
-IHelpFile   = System.ozHome#'/lib/browser/help.txt'
+IHelpFile   = {System.get home}#'/lib/browser/help.txt'
 
 %%
 %%  window(graphic) parameters;
@@ -150,9 +150,9 @@ IMITitle    = "Messages"
 IHITitle    = "Help"
 
 %% IIBitmap    = '/opt/ps/soft/X/bitmaps/misc/face_angry.xbm'
-IIBitmap    = System.ozHome#'/lib/bitmaps/browserIcon.xbm'
+IIBitmap    = {System.get home}#'/lib/bitmaps/browserIcon.xbm'
 %% IMIBitmap   = '/opt/ps/soft/X/bitmaps/std/RIP.xbm'
-IMIBitmap   = System.ozHome#'/lib/bitmaps/browserMIcon.xbm'
+IMIBitmap   = {System.get home}#'/lib/bitmaps/browserMIcon.xbm'
 %%          IIBMask     ?
 %%          IIBitmap    '/home/ps-home/popow/prgs/Oz/modernBrowser/icon.xbm'
 %%          IMIBitmap   '/home/ps-home/popow/prgs/Oz/modernBrowser/micon.xbm'

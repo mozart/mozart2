@@ -26,14 +26,26 @@
 functor
 
 require
-   URL(make:    UrlMake
-       toAtom:  UrlToAtom
-       toVs:    UrlToVs
-       resolve: UrlResolve)
+   URL(make:         UrlMake
+       toVsExtended: UrlToVsExt
+       resolve:      UrlResolve)
 
    DefaultURL(nameToUrl: ModNameToUrl)
 
 prepare
+
+   fun {UrlToVs U}
+      {UrlToVsExt U o(full:true)}
+   end
+
+   local
+      V2A = VirtualString.toAtom
+   in
+      fun {UrlToAtom U}
+         {V2A {UrlToVs U}}
+      end
+   end
+
 
    \insert 'Print.oz'
 
@@ -67,9 +79,21 @@ import
    System(printError showError)
    FD(record distinct distribute sumC)
    Search(base)
-   OS(system)
+   OS(system getCWD)
 
 define
+
+   fun {UrlExpand U}
+      Au={Arity U}
+   in
+      if Au==[path] orelse Au==[info path] then
+         if {Label U.path}==rel then
+            {UrlResolve {UrlMake {OS.getCWD}#'/'} U}
+         else U
+         end
+      else U
+      end
+   end
 
    {Application.exit
     try
@@ -80,10 +104,11 @@ define
           raise ar(exit) end
        end
 
-       InFile = case Args.1 of [GetInFile] then GetInFile
-                else
-                   raise ar(inputFile) end
-                end
+       RootUrl = case Args.1 of [GetInFile] then
+                   {UrlExpand {UrlMake GetInFile}}
+                 else
+                    raise ar(inputFile) end
+                 end
 
        Trace  = if Args.verbose then
                    System.showError
@@ -93,7 +118,7 @@ define
 
        \insert 'Link.oz'
 
-       OutFunctor = {Link InFile Args}
+       OutFunctor = {Link RootUrl Args}
 
     in
 

@@ -31,54 +31,43 @@ local
          false
       end
 
-      local
-         fun {IsPath Url}
-            {HasFeature Url path} andthen {Width Url}==1
-         end
-      in
-         fun {IsRelativePath Url}
-            {IsPath Url} andthen {Label Url.path}\=abs
-         end
+      fun {IsNativeUrl Url}
+         {HasFeature {CondSelect Url info no} native}
       end
 
-      local
-         fun {UrlToString Url}
-            {VirtualString.toString {UrlToVs Url}}
-         end
-      in
-         fun {NewPrefixFilter RawUrls}
-            if RawUrls==nil then
-               AlwaysFalse
-            else
-               Urls = {Map RawUrls
-                       fun {$ Url}
-                          {UrlToString {UrlMake Url}}
-                       end}
-            in
-               fun {$ Url}
-                  {Some Urls fun {$ UrlPre}
-                                {List.isPrefix UrlPre {UrlToString Url}}
-                             end}
-               end
+      fun {UrlToString Url}
+         {VirtualString.toString {UrlToVs Url}}
+      end
+
+      fun {NewPrefixFilter RawUrls}
+         if RawUrls==nil then
+            AlwaysFalse
+         else
+            Urls = {Map RawUrls
+                    fun {$ Url}
+                       {UrlToString {UrlMake Url}}
+                    end}
+         in
+            fun {$ Url}
+               {Some Urls fun {$ UrlPre}
+                             {List.isPrefix UrlPre {UrlToString Url}}
+                          end}
             end
          end
       end
 
    in
 
-      fun {NewUrlFilter Spec}
-         IsRel  = if {CondSelect Spec relative false} then
-                     IsRelativePath
-                  else
-                     AlwaysFalse
-                  end
-         ToExcl = {NewPrefixFilter {CondSelect Spec exclude nil}}
-         ToIncl = {NewPrefixFilter {CondSelect Spec include nil}}
+      fun {NewUrlFilter Spec RootUrl}
+         BaseUrl = {UrlToString {UrlResolve RootUrl {UrlMake ''}}}
+         ToExcl  = {NewPrefixFilter {CondSelect Spec exclude nil}}
+         ToIncl  = {NewPrefixFilter
+                    BaseUrl|{CondSelect Spec include nil}}
       in
          fun {$ Url}
-            if     {ToExcl Url} then false
+            if {IsNativeUrl Url} then false
+            elseif {ToExcl Url} then false
             elseif {ToIncl Url} then true
-            elseif {IsRel  Url} then true
             else false
             end
          end
@@ -415,9 +404,8 @@ local
 in
 
 
-   fun {Link InFile Spec}
-      ToInclude = {NewUrlFilter Spec}
-      RootUrl   = {UrlMake InFile}
+   fun {Link RootUrl Spec}
+      ToInclude = {NewUrlFilter Spec RootUrl}
       Info      = {Find RootUrl ToInclude}
 
       {Trace 'Include:\n'#{CommaList {Arity Info.include}}}

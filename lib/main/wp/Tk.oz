@@ -291,7 +291,8 @@ local
       {OS.putEnv 'TCL_LIBRARY' HOME#'/lib/wish/tcl'}
       {OS.putEnv 'TK_LIBRARY'  HOME#'/lib/wish/tk'}
       OSS#CPU = {System.get platform}
-      Cmd    = HOME # '/platform/'#OSS#'-'#CPU#'/oz.wish.bin'
+      WISH    = case OSS=='win32' then 'ozwish.exe' else 'oz.wish.bin' end
+      Cmd     = HOME # '/platform/'#OSS#'-'#CPU#'/'#WISH
    in
       Stream = {New class $ from Open.pipe Open.text
                        prop final

@@ -547,7 +547,7 @@ YRegister = y(RegisterIndex).
 GRegister = g(RegisterIndex).
 RegisterIndex = int.
 Label = int.
-PredId = pid(PrintName Arity Coord Flags NLiveRegs).
+PredId = pid(PrintName RecordArity Coord Flags NLiveRegs).
 Coord = pos(FileName Line Column)
       | pos('' 1 0).
 Flags = [atom].   % only sited is recognized

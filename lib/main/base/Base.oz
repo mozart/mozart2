@@ -69,12 +69,6 @@ in
    functor
 
    export
-      %% Unit
-      '`unit`'          : `unit`
-      %% Bool
-      '`true`'          : `true`
-      '`false`'         : `false`
-
       %% Value
       'Value'           : Value
       'Wait'            : Wait

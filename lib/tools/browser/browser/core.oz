@@ -68,16 +68,15 @@ GetsBound = {`Builtin` getsBoundB noHandler}
 
 %%
 DeepFeed = {`Builtin` deepFeed proc {$ C X}
-                                  case {Det C} then {DeepFeed C X}
-                                  else true
-                                  end
+                                  {Wait C}
+                                  {DeepFeed C X}
                                end}
 
 %%
 GenericSet = {`Builtin`
               genericSet
               proc {$ X Y Z}
-                 case {Det X} andthen {Det Y} then {GenericSet X Y Z} end
+                 {Wait X} {Wait Y} {GenericSet X Y Z}
               end}
 
 %%

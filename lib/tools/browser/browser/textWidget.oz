@@ -1,5 +1,5 @@
 %  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Stuhlsatzenhausweg 3, D-661b23 Saarbruecken, Phone (+49) 681 302-5337
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
 %  Last modified: $Date$ by $Author$
@@ -112,7 +112,7 @@ in
             V = {CreateSpaces H}
             V#V
          else
-               V = {CreateSpaces H}
+            V = {CreateSpaces H}
             ' '#V#V
          end
       end
@@ -262,9 +262,8 @@ in
             SyncVar = @sync
 
             %%
-            case {Det SyncVar} then
-               {self drawOFSWidth(Num)}
-            end
+            {Wait SyncVar}
+            {self drawOFSWidth(Num)}
          end
       end
 
@@ -1530,52 +1529,51 @@ in
                   OldMark = PreOutInfo.mark
 
                   %%
-                  case {All RightMostMarks Det} then
-                     %%
-                     %%  Note that 'CreateSimpleGlue' handles non-enclosed
-                     %% structures properly (i.e. extends (sub)term's
-                     %% tag(s));
-                     <<CreateSimpleGlue(OldMark NewMark)>>
+                  {ForAll RightMostMarks Wait}
+                  %%
+                  %%  Note that 'CreateSimpleGlue' handles non-enclosed
+                  %% structures properly (i.e. extends (sub)term's
+                  %% tag(s));
+                  <<CreateSimpleGlue(OldMark NewMark)>>
 
-                     %%  NOTE !!!
-                     %%  Actually, this is not correct as well.
-                     %% The potential problem is that those non-enclosed
-                     %% objects may be replaced between generating a new glue
-                     %% (previous lines) and this point. So, a really
-                     %% correct solution would be either (a) produce a glue
-                     %% and move "rightmost" marks in _atomic_ fashion,
-                     %% or (b) block corresponding subterm objects (all of
-                     %% them, not only direct one!);
-                     {ForAll RightMostMarks
-                      proc {$ MarkMoved}
-                         %% actually, not duplicate, - but just reset it;
-                         {WidgetObj duplicateMark(NewMark MarkMoved)}
-                      end}
+                  %%  NOTE !!!
+                  %%  Actually, this is not correct as well.
+                  %% The potential problem is that those non-enclosed
+                  %% objects may be replaced between generating a new glue
+                  %% (previous lines) and this point. So, a really
+                  %% correct solution would be either (a) produce a glue
+                  %% and move "rightmost" marks in _atomic_ fashion,
+                  %% or (b) block corresponding subterm objects (all of
+                  %% them, not only direct one!);
+                  {ForAll RightMostMarks
+                   proc {$ MarkMoved}
+                      %% actually, not duplicate, - but just reset it;
+                      {WidgetObj duplicateMark(NewMark MarkMoved)}
+                   end}
 
-                     %%
-                     %%  Update 'OutInfo' for previous subterm -
-                     %% set the newly created mark in it;
-                     NewPreOutInfo = {Adjoin PreOutInfo
-                                      twInfo(mark:     NewMark
-                                             glueSize: DSpace)}
-                     <<setSubtermOutInfo(PreNum NewPreOutInfo)>>
+                  %%
+                  %%  Update 'OutInfo' for previous subterm -
+                  %% set the newly created mark in it;
+                  NewPreOutInfo = {Adjoin PreOutInfo
+                                   twInfo(mark:     NewMark
+                                          glueSize: DSpace)}
+                  <<setSubtermOutInfo(PreNum NewPreOutInfo)>>
 
-                     %%  ... and now, 'OldMark' is our new mark;
-                     %%  Note that 'size' is already in there;
-                     NewOutInfo = {Adjoin OutInfo
-                                   twInfo(mark:     OldMark
-                                          glueSize: PreOutInfo.glueSize)}
-                     <<setSubtermOutInfo(N NewOutInfo)>>
+                  %%  ... and now, 'OldMark' is our new mark;
+                  %%  Note that 'size' is already in there;
+                  NewOutInfo = {Adjoin OutInfo
+                                twInfo(mark:     OldMark
+                                       glueSize: PreOutInfo.glueSize)}
+                  <<setSubtermOutInfo(N NewOutInfo)>>
 
-                     %%
-                     %%  The 'checkLayout' method should be applied later;
-                     {Wait {Obj draw(OldMark $)}}
+                  %%
+                  %%  The 'checkLayout' method should be applied later;
+                  {Wait {Obj draw(OldMark $)}}
 
-                     %%
-                     %%  'meta' size of the subterm just added should
-                     %% be already there (by 'InitOutInfoRec');
-                     size <- @size + DSpace
-                  end
+                  %%
+                  %%  'meta' size of the subterm just added should
+                  %% be already there (by 'InitOutInfoRec');
+                  size <- @size + DSpace
                end
             else
                ObjSize
@@ -1588,7 +1586,7 @@ in
                ObjSize = {Obj getSize($)}
 
                %%
-               % {Wait ObjSize}
+               %% {Wait ObjSize}
                %%
                NewOutInfo = {AdjoinAt OutInfo size ObjSize}
                <<setSubtermOutInfo(N NewOutInfo)>>
@@ -1603,7 +1601,6 @@ in
             end
          end
       end
-
       %%
       %%
       %%  Perform 'drawSubterm' for all numbers >= Low && =< High;
@@ -1695,7 +1692,7 @@ in
             %%
             %% commas;
             Obj
-            in
+         in
             Obj = {New PseudoTermTWCommas init(parentObj: self)}
 
             %%
@@ -1708,7 +1705,7 @@ in
 
          %%
          case @refVarName == '' then true
-            else
+         else
             size <- @size + DSpace + {VSLength @refVarName} +
             case <<needsBracesRef($)>> then DSpace else 0 end
          end
@@ -1794,10 +1791,9 @@ in
             %% all their glues are simple).
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -1956,10 +1952,9 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -2116,21 +2111,20 @@ in
                   RightMostMarks = <<GetRightMostMarks($)>>
 
                   %%
-                  case {All RightMostMarks Det} then
-                     {self.widgetObj
-                      [setMarksGravity(RightMostMarks left)
-                       insertBeforeTag(self Tags
-                                       DLRBraceS#RefVarName#DEqualS#DLRBraceS)
-                       insertAfterTag(self Tags DRRBraceS)
-                       setMarksGravity(RightMostMarks right)]}
+                  {ForAll RightMostMarks Wait}
+                  {self.widgetObj
+                   [setMarksGravity(RightMostMarks left)
+                    insertBeforeTag(self Tags
+                                    DLRBraceS#RefVarName#DEqualS#DLRBraceS)
+                    insertAfterTag(self Tags DRRBraceS)
+                    setMarksGravity(RightMostMarks right)]}
 
-                     %%
-                     PrfxSize = DTSpace + RefVarNameLen
-                     SfxSize = DDSpace
+                  %%
+                  PrfxSize = DTSpace + RefVarNameLen
+                  SfxSize = DDSpace
 
-                     %%
-                     <<UrObject nil>>
-                  end
+                  %%
+                  <<UrObject nil>>
                end
             else
                case <<needsBracesGen($)>> then
@@ -2150,20 +2144,19 @@ in
                   RightMostMarks = <<GetRightMostMarks($)>>
 
                   %%
-                  case {All RightMostMarks Det} then
-                     {self.widgetObj
-                      [setMarksGravity(RightMostMarks left)
-                       insertBeforeTag(self Tags RefVarName#DEqualS#DLRBraceS)
-                       insertAfterTag(self Tags DRRBraceS)
-                       setMarksGravity(RightMostMarks right)]}
+                  {ForAll RightMostMarks Wait}
+                  {self.widgetObj
+                   [setMarksGravity(RightMostMarks left)
+                    insertBeforeTag(self Tags RefVarName#DEqualS#DLRBraceS)
+                    insertAfterTag(self Tags DRRBraceS)
+                    setMarksGravity(RightMostMarks right)]}
 
-                     %%
-                     PrfxSize = DDSpace + RefVarNameLen
-                     SfxSize = DSpace
+                  %%
+                  PrfxSize = DDSpace + RefVarNameLen
+                  SfxSize = DSpace
 
-                     %%
-                     <<UrObject nil>>
-                  end
+                  %%
+                  <<UrObject nil>>
                end
             end
 
@@ -2388,10 +2381,9 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -2579,10 +2571,9 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -2777,10 +2768,9 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -2822,8 +2812,8 @@ in
 
             %%
             NewOutInfo = {Adjoin OutInfo
-                             twInfo(glueSize: LastSTOutInfo.glueSize
-                                    mark:     OldMark)}
+                          twInfo(glueSize: LastSTOutInfo.glueSize
+                                 mark:     OldMark)}
 
             %%
             <<setCommasOutInfo(NewOutInfo)>>
@@ -3103,9 +3093,9 @@ in
                                             Spaces)}
                         else
                            {self.widgetObj
-                               deleteAfterMark(OutInfoIn.mark
-                                               RefSize
-                                               (GlueSize - RefSize))}
+                            deleteAfterMark(OutInfoIn.mark
+                                            RefSize
+                                            (GlueSize - RefSize))}
                         end
                      else
                         %%  GlueSize == DSpace -
@@ -3113,7 +3103,7 @@ in
                         %% (it seems to be a very frequent case;)
                         {self.widgetObj
                          insertAfterMark(OutInfoIn.mark
-                                            GlueSize
+                                         GlueSize
                                          @ReferenceGlue)}
                      end
 
@@ -3268,54 +3258,53 @@ in
                   OldMark = PreOutInfo.mark
 
                   %%
-                  case {All RightMostMarks Det} then
-                     %%
-                     %%  Note that 'CreateSimpleGlue' handles non-enclosed
-                     %% structures properly (i.e. extends (sub)term's
-                     %% tag(s));
-                     <<CreateSimpleGlue(OldMark NewMark)>>
+                  {ForAll RightMostMarks Wait}
+                  %%
+                  %%  Note that 'CreateSimpleGlue' handles non-enclosed
+                  %% structures properly (i.e. extends (sub)term's
+                  %% tag(s));
+                  <<CreateSimpleGlue(OldMark NewMark)>>
 
-                     %%  NOTE !!!
-                     %%  See the comment in
-                     %% 'MetaTupleTWTermObject::drawNewSubterm'
-                     {ForAll RightMostMarks
-                      proc {$ MarkMoved}
-                         {WidgetObj duplicateMark(NewMark MarkMoved)}
-                      end}
+                  %%  NOTE !!!
+                  %%  See the comment in
+                  %% 'MetaTupleTWTermObject::drawNewSubterm'
+                  {ForAll RightMostMarks
+                   proc {$ MarkMoved}
+                      {WidgetObj duplicateMark(NewMark MarkMoved)}
+                   end}
 
-                     %%  Update 'OutInfo' for previous subterm -
-                     %% set the newly created mark in it;
-                     NewPreOutInfo = {Adjoin PreOutInfo
-                                      twInfo(mark:     NewMark
-                                             glueSize: DSpace)}
-                     <<setSubtermOutInfo(PreNum NewPreOutInfo)>>
+                  %%  Update 'OutInfo' for previous subterm -
+                  %% set the newly created mark in it;
+                  NewPreOutInfo = {Adjoin PreOutInfo
+                                   twInfo(mark:     NewMark
+                                          glueSize: DSpace)}
+                  <<setSubtermOutInfo(PreNum NewPreOutInfo)>>
 
-                     %%  ... and now, 'OldMark' is our new mark;
-                     %%  Note that 'size' is already in there;
-                     %%
-                     %%  Insert the prefix (feature name);
-                     FName = <<genFeatPrintName(@recFeatures.N $)>>
+                  %%  ... and now, 'OldMark' is our new mark;
+                  %%  Note that 'size' is already in there;
+                  %%
+                  %%  Insert the prefix (feature name);
+                  FName = <<genFeatPrintName(@recFeatures.N $)>>
 
-                     %%
-                     case {VirtualString.is FName} then
-                        {self.widgetObj
-                         insert(OldMark FName#DColonS#DSpaceGlue)}
-                        %% insert(OldMark FName#<<getFeatDel($)>>)}
-
-                        %%
-                        NewOutInfo = {Adjoin OutInfo
-                                      twInfo(mark:     OldMark
-                                             glueSize: PreOutInfo.glueSize)}
-                        <<setSubtermOutInfo(N NewOutInfo)>>
-                        %%
-                     end
+                  %%
+                  case {VirtualString.is FName} then
+                     {self.widgetObj
+                      insert(OldMark FName#DColonS#DSpaceGlue)}
+                     %% insert(OldMark FName#<<getFeatDel($)>>)}
 
                      %%
-                     {Wait {Obj draw(OldMark $)}}
-
+                     NewOutInfo = {Adjoin OutInfo
+                                   twInfo(mark:     OldMark
+                                          glueSize: PreOutInfo.glueSize)}
+                     <<setSubtermOutInfo(N NewOutInfo)>>
                      %%
-                     size <- @size + DSpace
                   end
+
+                  %%
+                  {Wait {Obj draw(OldMark $)}}
+
+                  %%
+                  size <- @size + DSpace
                end
             else
                %%
@@ -3330,7 +3319,7 @@ in
                case OutInfo.prfxSize \= 0 then
                   {BrowserError
                    ['MetaRecordTWTermObject::drawNewSubterm: not implemented']}
-                  else true
+               else true
                end
 
                %%  Insert the prefix (feature name);
@@ -3580,10 +3569,9 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               <<UrObject nil>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            <<UrObject nil>>
          end
       end
 
@@ -3777,11 +3765,10 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList Det} then
-               Sync = True
-               %%
-               <<initTypeWatching>>
-            end
+            {ForAll SyncList Wait}
+            Sync = True
+            %%
+            <<initTypeWatching>>
          end
       end
 

@@ -2094,22 +2094,21 @@ in
                   RealLWindow = {Tk.return winfo(toplevel LeaderWindow)}
 
                   %%
-                  case {All RealLWindow Det} then
-                     {Tk.return wm(geometry RealLWindow) G}
-                     P = {Tail G {FindChar G "+".1}}
-                     X = {String.toInt {Head P.2 ({FindChar P.2 "+".1} - 1)}}
-                     Y = {String.toInt {Tail P.2 ({FindChar P.2 "+".1} + 1)}}
+                  {ForAll RealLWindow Wait}
+                  {Tk.return wm(geometry RealLWindow) G}
+                  P = {Tail G {FindChar G "+".1}}
+                  X = {String.toInt {Head P.2 ({FindChar P.2 "+".1} - 1)}}
+                  Y = {String.toInt {Tail P.2 ({FindChar P.2 "+".1} + 1)}}
 
-                     %%
-                     %%  should wait before?
-                     case {All [X Y] Det} then
-                        {Tk.batch [update
-                                   wm(geometry @window
-                                      '+'#(X + IMWXOffset)#
-                                      '+'#(Y + IMWYOffset))
-                                   wm(deiconify @window)]}
-                     end
-                  end
+                  %%
+                  %%  should wait before?
+                  {Wait X}
+                  {Wait Y}
+                  {Tk.batch [update
+                             wm(geometry @window
+                                '+'#(X + IMWXOffset)#
+                                '+'#(Y + IMWYOffset))
+                             wm(deiconify @window)]}
                end
             end
          end

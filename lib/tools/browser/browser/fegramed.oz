@@ -44,32 +44,30 @@ in
          ShowCurrent <- X
       end
       %
-      meth WriteFegramedFile( TermObject ?FileName ?Wait )
+      meth WriteFegramedFile( TermObject ?FileName ?Ack )
          FE FegramedTerm File in
          {FE_GenSym reset}
          FegramedTerm = {TermObject fE_Term( $ )}
          FileName = {Unix.tempName "" "feg"}#!FegramedFileExtension
          File={New Open.file [init(name: FileName
                                    flags: [read write 'create'])
-                              write(vs:FegramedTerm) sync(Wait)]}
+                              write(vs:FegramedTerm) sync(Ack)]}
       end
       %
       meth ShowTermObjectInFE( PseudoObj )
-         Wait FileName in
-         <<WriteFegramedFile( PseudoObj ?FileName ?Wait )>>
-         case {Det Wait} then
-            extern
-               case @FEApplication of !FE_InitValue then
+         Ack FileName in
+         <<WriteFegramedFile( PseudoObj ?FileName ?Ack )>>
+         {Wait Ack}
+         extern
+            case @FEApplication of !FE_InitValue then
+               FEApplication <- {New FE_Application [init newTerm(FileName)]}
+            elseof Fegramed then
+               case {Fegramed stillAlive($)} then
+                  {Fegramed newTerm(FileName)}
+               else
                   FEApplication <- {New FE_Application [init newTerm(FileName)]}
-               elseof Fegramed then
-                  case {Fegramed stillAlive($)} then
-                     {Fegramed newTerm(FileName)}
-                  else
-                     FEApplication <- {New FE_Application [init newTerm(FileName)]}
-                  end
                end
             end
-
          end
       end
       %
@@ -134,16 +132,15 @@ in
                                  end})
                       close  ]
             end
-            case {Det FegramedBin} then
-               case {Unix.system "test -x "#FegramedBin} == 0 then
-                  <<Open.pipe init(cmd: FegramedBin
-                                   args:["-xrm \"Fegramed.geometry:600x800\""
-                                         "-poll"]
-                                   pid : self.PidI)>>
-                  {self ReportFE}
-               else
-                  {self error("Wrong path '"#FegramedBin#"'")}
-               end
+            {Wait FegramedBin}
+            case {Unix.system "test -x "#FegramedBin} == 0 then
+               <<Open.pipe init(cmd: FegramedBin
+                                args:["-xrm \"Fegramed.geometry:600x800\""
+                                      "-poll"]
+                                pid : self.PidI)>>
+               {self ReportFE}
+            else
+               {self error("Wrong path '"#FegramedBin#"'")}
             end
          else
             {self error("Can't find path '"#FegramedPathFile#"'")}
@@ -572,9 +569,8 @@ class FE_ReferenceObject from FE_Generic
       Master = @master in
       case Master of !InitValue then
          %see line 481 in termObject.oz
-         case {Det {Time.sleep 1000 go}} then
-            {self fE_Term(Term)}
-         end
+         {Wait {Time.sleep 1000 go}}
+         {self fE_Term(Term)}
       else
          %Term = Master.tag
          Term = {Master fE_getRef($)}

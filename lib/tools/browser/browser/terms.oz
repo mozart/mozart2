@@ -1826,8 +1826,8 @@ in
                   end
 
                   %%
-                  if GotLabel = True then {self replaceLabel}
-                  [] GotClosed = True then true
+                  if GotLabel = Unit then {self replaceLabel}
+                  [] GotClosed = Unit then true
                      %% cancel watching;
                   end
                end
@@ -1996,10 +1996,10 @@ in
             job
                %%
                %% test: {SpecsObj drawOFSWidth(5)}
-               if GotValue = True then
+               if GotValue = Unit then
                   %%
                   {self extend}
-               [] ChVar = True then
+               [] ChVar = Unit then
                   %%
                   case {self.termsStore checkCorefs(self $)} then
                      %% gets bound somehow;
@@ -2008,13 +2008,13 @@ in
                      %%  wait for a 'TailVar';
                      {self initTypeWatching}
                   end
-               [] ChWidth = True then
+               [] ChWidth = Unit then
                   {SpecsObj drawOFSWidth(OFSWidth)}
 
                   %%
                   %%  it has got a record probably...
                   {self extend}
-               [] CancelVar = True then true
+               [] CancelVar = Unit then true
                end
             end
          else true              % nothing to do - it's a proper record;
@@ -2028,7 +2028,7 @@ in
          {Show 'ORecordTermTermObject::stopTypeWatching: '#self.term}
 \endif
          %%
-         @CancelReq = True
+         @CancelReq = Unit
       end
 
       %%
@@ -2248,7 +2248,7 @@ in
             job
                if ChVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] CancelVar = True then true
+               [] CancelVar = Unit then true
                end
             end
 
@@ -2286,7 +2286,7 @@ in
          {Show 'VariableTermTermObject::stopTypeWatching: '#self.term}
 \endif
          %%
-         @CancelReq = True
+         @CancelReq = Unit
       end
 
       %%
@@ -2403,7 +2403,7 @@ in
             job
                if ChFDVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] CancelVar = True then true
+               [] CancelVar = Unit then true
                end
             end
 
@@ -2441,7 +2441,7 @@ in
          {Show 'FDVariableTermTermObject::stopTypeWatching: '#self.term}
 \endif
          %%
-         @CancelReq = True
+         @CancelReq = Unit
       end
 
       %%
@@ -2546,7 +2546,7 @@ in
             job
                if ChMetaVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] CancelVar = True then true
+               [] CancelVar = Unit then true
                end
             end
 
@@ -2584,7 +2584,7 @@ in
          {Show 'MetaVariableTermTermObject::stopTypeWatching: '#self.term}
 \endif
          %%
-         @CancelReq = True
+         @CancelReq = Unit
       end
 
       %%

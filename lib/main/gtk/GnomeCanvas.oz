@@ -23,8 +23,8 @@
 functor
 
 import
-   GTK
    Native at 'GnomeCanvas.so{native}'
+   GTK
    System
 
 export

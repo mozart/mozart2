@@ -45,6 +45,7 @@ export
    Main
    MainQuit
    Make
+   GetNativeOrUnit
 
    \insert 'gtkexports.oz'
 
@@ -138,56 +139,56 @@ define
 % -----------------------------------------------------------------------------
 
    local
-      PollingIntervall = 50
+      PollingIntervall  = 50
+      GetUniqueSignalID = {NewName}
+      FillStream        = {NewName}
    in
       class DispatcherClass
          attr
-            id_counter : 0
+            signalID : 0
             registry % A dictionary with id <--> handler corrospondences
             port
             stream
             fillerThread
          meth init
-            proc {FillStream}
-               {Native.handlePendingEvents} % Send all pending GTK events to the Oz port
-               {Time.delay PollingIntervall}
-               {FillStream}
-            end
-         in
             registry <- {Dictionary.new}
             port     <- {Port.new @stream}
             {Native.initializeSignalPort @port} % Tell the 'C side' about the signal port
             thread
                fillerThread <- {Thread.this $}
-               {FillStream}
+               DispatcherClass, FillStream
             end
          end
-         meth GetUniqueID($)
-            id_counter <- @id_counter + 1
-            @id_counter
+         meth !FillStream
+            {Native.handlePendingEvents} % Sends all pending GTK events to the Oz port
+            {Time.delay PollingIntervall}
+            DispatcherClass, FillStream
+         end
+         meth !GetUniqueSignalID($)
+            signalID <- @signalID + 1
+            @signalID
          end
          meth registerHandler(Handler ?Id)
-         {self GetUniqueID(Id)}
+            {self GetUniqueSignalID(Id)}
             {Dictionary.put @registry Id Handler}
          end
          meth unregisterHandler(Id)
             {Dictionary.remove @registry Id}
          end
          meth dispatch
-            Handler
-            Event
-            Tail
-         in
-            @stream = Event|Tail
-            {Dictionary.get @registry Event Handler}
-            % TODO: suspend marshaller with sending a new variable to a second port
-            {Handler}
-            % TODO: terminate marshaller with bounding this variable
-            stream <- Tail
-            DispatcherClass,dispatch
+            case @stream
+            of Event|Tail then
+               {{Dictionary.get @registry Event}} % Execute handler
+               % TODO: suspend marshaller with sending a new variable to a second port
+               % TODO: terminate marshaller with bounding this variable
+               stream <- Tail
+               DispatcherClass, dispatch
+            end
          end
          meth exit
+            {Thread.terminate @fillerThread}
             {Thread.terminate {Thread.this $}}
+            {System.print 'Dispatcher stoped'}
          end
       end
    end
@@ -231,6 +232,6 @@ define
    % Start the dispatcher
    Dispatcher = {New DispatcherClass init}
    thread {Dispatcher dispatch} end
-   {System.show 'Dispatcher successfully started and running ...'}
+   {System.show 'Dispatcher started'}
 
 end % functor

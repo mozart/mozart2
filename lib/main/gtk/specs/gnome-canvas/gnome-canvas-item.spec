@@ -57,6 +57,7 @@ $class =
                                                                          'const double[6]'] },
 # Because of some very strange reason these two functions
 # are in the headers but not in the libs (I dunno why)
+# Update: This is a known error to the GTK developers as of version 1.2.8
 #                 'gnome_canvas_item_scale'                 => { in  => ['GnomeCanvasItem*',
 #                                                                        'double',
 #                                                                        'double',

@@ -38,7 +38,7 @@ import
 
    Space(waitStable)
 
-   FD(decl list sum)
+   FD(decl list sum int)
 
    Error(registerFormatter)
 
@@ -613,7 +613,10 @@ define
                        boundsN:
                           FSP.'reified.boundsN'
                        partition:
-                          FSP.'reified.partition'
+                          proc {$ SVs Is GSet Rs}
+                             Rs = {Map Is fun {$ I} {FD.int [0 I]} end}
+                             {FSP.'reified.partition' SVs GSet Rs}
+                          end
                        equal:
                           FSEqualReif)
 

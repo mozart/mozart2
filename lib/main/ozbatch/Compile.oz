@@ -159,7 +159,7 @@ in
       Open(file)
       Pickle(saveWithHeader)
       Compiler(engine interface)
-      Application(getCmdArgs exit)
+      Application(getArgs exit)
    define
       local
          fun {IsIDChar C}
@@ -230,7 +230,7 @@ in
    in
       try OptRec BatchCompiler UI IncDir FileNames in
          try
-            OptRec = {Application.getCmdArgs OptSpecs}
+            OptRec = {Application.getArgs OptSpecs}
          catch error(ap(usage VS) ...) then
             {Report error(kind: UsageError
                           msg: VS

@@ -58,7 +58,7 @@ prepare
 
 import
    Pickle(load saveWithHeader)
-   Application(exit getCmdArgs)
+   Application(exit getArgs)
    System(printError showError)
    FD(record distinct distribute sumC)
    Search(base)
@@ -105,7 +105,7 @@ define
 
    {Application.exit
     try
-       Args = {Application.getCmdArgs ArgSpec}
+       Args = {Application.getArgs ArgSpec}
 
        if Args.help then
           {System.showError {Usage}}

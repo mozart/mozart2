@@ -116,7 +116,7 @@ in
       % Assembler
       Assemble
    in
-      \insert Version
+      \insert compiler-Version
       \insert FormatStrings
       \insert Reporter
       \insert ParseOz

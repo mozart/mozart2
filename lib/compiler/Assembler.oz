@@ -135,7 +135,7 @@ local
          end
       end
 
-      \insert Opcodes
+      \insert compiler-Opcodes
 
       local
          fun {Sub In V}

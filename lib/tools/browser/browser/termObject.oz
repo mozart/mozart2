@@ -886,7 +886,7 @@ in
                              L
                           in
                              L = {Label ObjTerm} % no suspension;
-                             case L == '|' then True
+                             case L == '|' orelse L == nil then True
                              else False
                              end
                           else False

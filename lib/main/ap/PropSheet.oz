@@ -4,7 +4,7 @@ Get = {NewName}
 Set = {NewName}
 
 class Editor
-   feat sticky:nw default up
+   feat sticky:nw default up manager
    attr state %% default, usr, set(Value)
    meth init(default:D up:U)
       state   <- default
@@ -188,7 +188,7 @@ NoDefault = {NewName}
 
 class PropManager
    feat name text type occ default alias optional
-      parent
+      parent editor init
    attr rows:nil
    meth init(Spec parent:P)
       self.parent   = P
@@ -200,6 +200,7 @@ class PropManager
       self.optional = {CondSelect Spec optional
                        {HasFeature Spec default}}
       self.alias    = {CondSelect Spec alias nil}
+      {TypeToEditor self.editor#self.init}
    end
    meth createRow($)
 
@@ -219,9 +220,21 @@ class PropManager
    end
 end
 
-%%
+%% A PropRow corresponds to an option and is managed by the
+%% PropManager for that option.  It contains widgets to be
+%% inserted in the various columns of a row of a PropSheetFrame.
 
 class PropRow
+   feat manager label editor
+   meth init(manager:M)
+      self.label = {New PropLabel
+                    tkInit(parent : M.parent
+                           text   : M.text)}
+      self.label.manager = self
+      self.editor = {New Manager.editor
+                     {Adjoin {Adjoin tkInit
+   end
+end
 
 %%
 

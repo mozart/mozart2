@@ -978,8 +978,11 @@ define
                                                         [FE] C) $)
          [] fSkip(C) then
             {New Core.skipNode init(C)}
-         [] fFail(C) then
-            {New Core.failNode init(C)}
+         [] fFail(C) then CND NewFS in
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Exception.\'fail\'' nil CND)
+                               'fail' C)
+            Unnester, UnnestStatement(NewFS $)
          [] fNot(FS C) then NewFS in
             NewFS = fThread(fCond([fClause(fSkip(C) FS fFail(C))]
                                   fSkip(C) C) C)
@@ -1413,8 +1416,8 @@ define
             end
          [] fRaise(_ _) then
             Unnester, UnnestStatement(FE $)
-         [] fFail(C) then
-            {New Core.failNode init(C)}
+         [] fFail(_) then
+            Unnester, UnnestStatement(FE $)
          [] fCond(FClauses FE C) then PrintName FVs NewFV FS in
             FS = fCond({Map FClauses
                         fun {$ fClause(FVs FS FE)}

@@ -611,17 +611,6 @@ define
          {Peephole Rest Assembler}
       [] 'skip'|Rest then
          {Peephole Rest Assembler}
-      [] failure|deAllocateL(I)|Rest then
-         {MakeDeAllocate I Assembler}
-         {Assembler append(failure)}
-%--**    {EliminateDeadCode Rest Assembler}
-         {Peephole Rest Assembler}
-      [] failure|Rest then
-         {Assembler append(failure)}
-%--** this may eliminate too much, e.g., in:
-%--** proc {_ A B} if {IsInt A} then fail else {B} end {B} end
-%--**    {EliminateDeadCode Rest Assembler}
-         {Peephole Rest Assembler}
       [] branch(L)|Rest then Rest1 in
          {Assembler declareLabel(L)}
          Rest1 = {SkipDeadCode Rest Assembler}
@@ -634,9 +623,14 @@ define
          {EliminateDeadCode Rest Assembler}
       [] (callBI(Builtinname Args)=I1)|Rest
          andthen {Not Assembler.controlFlowInfo}
-      then
-%--**    BIInfo = {Builtins.getInfo Builtinname}
-%--**      in
+      then BIInfo in
+         BIInfo = {Builtins.getInfo Builtinname}
+         if {CondSelect BIInfo doesNotReturn false} then
+            case Rest of deAllocateL(I)|return|_ then
+               {MakeDeAllocate I Assembler}
+            else skip
+            end
+         end
          case Builtinname of 'Int.\'+1\'' then [X1]#[X2] = Args in
             {Assembler append(inlinePlus1(X1 X2))}
          [] 'Int.\'-1\'' then [X1]#[X2] = Args in
@@ -654,6 +648,7 @@ define
          else
             {Assembler append(I1)}
          end
+%--** this does not work with current liveness analysis
 %--**    if {CondSelect BIInfo doesNotReturn false} then
 %--**       {EliminateDeadCode Rest Assembler}
 %--**    else

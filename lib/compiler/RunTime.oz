@@ -39,15 +39,17 @@ require
    BootObject(ooGetLock ',' '@' '<-' ooExch)
    at 'x-oz://boot/Object'
 
-   BootName(newUnique: NewUniqueName)
-   at 'x-oz://boot/Name'
-
-   BootThread(create)
-   at 'x-oz://boot/Thread'
+   BootException('fail')
+   at 'x-oz://boot/Exception'
 
    BootSpace(choose)
    at 'x-oz://boot/Space'
 
+   BootThread(create)
+   at 'x-oz://boot/Thread'
+
+   BootName(newUnique: NewUniqueName)
+   at 'x-oz://boot/Name'
 prepare
    ProcValues = env(%% Operators
                     '.': Value.'.'
@@ -97,6 +99,7 @@ prepare
                     %% Exception
                     'Exception.\'raise\'': Exception.'raise'
                     'Exception.raiseError': Exception.raiseError
+                    'Exception.\'fail\'': BootException.'fail'
 
                     %% Functor
                     'Functor.new': Functor.new

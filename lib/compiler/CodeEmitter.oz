@@ -608,8 +608,6 @@ in
                else skip
                end
             end
-         [] vFailure(_ _) then
-            Emitter, Emit(failure)
          [] vEquateConstant(_ Constant Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
                if self.controlFlowInfoSwitch then R in

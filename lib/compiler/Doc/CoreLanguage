@@ -222,10 +222,6 @@ S  ::=  <Statement>
      destination: O
 
 
-% 'fail'
-<FailNode> from <Statement>
-
-
 % 'raise kernel(noElse ...) end'
 <ExceptionNode> from <Statement>
 

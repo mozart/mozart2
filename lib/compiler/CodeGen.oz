@@ -71,7 +71,6 @@ export
    methFormalWithDefault: CodeGenMethFormalWithDefault
    objectLockNode: CodeGenObjectLockNode
    getSelf: CodeGenGetSelf
-   failNode: CodeGenFailNode
    exceptionNode: CodeGenExceptionNode
    valueNode: CodeGenValueNode
    variable: CodeGenVariable
@@ -1630,12 +1629,6 @@ define
    class CodeGenGetSelf from CodeGenStatement
       meth codeGen(CS VHd VTl)
          VHd = vGetSelf(_ {@destination reg($)} VTl)
-      end
-   end
-
-   class CodeGenFailNode from CodeGenStatement
-      meth codeGen(CS VHd VTl) VInter in
-         {StepPoint @coord 'fail' VHd VTl vFailure(_ VInter) VInter}
       end
    end
 

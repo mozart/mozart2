@@ -518,8 +518,6 @@ getVoid
 
 skip
 
-failure
-
 %%
 %%           lockThread(L1 _)
 %%           ...      % `lock' body instructions

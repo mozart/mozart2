@@ -24,7 +24,6 @@ Continuations = c(vDebugExit: 4
                   vMakePermanent: 3
                   vClear: 3
                   vUnify: 4
-                  vFailure: 2
                   vEquateConstant: 4
                   vEquateRecord: 6
                   vGetVariable: 3
@@ -237,8 +236,6 @@ class CodeStore from Emitter
          [] vUnify(_ Reg1 Reg2 _) then
             CodeStore, RegOcc(Reg1 RS)
             CodeStore, RegOcc(Reg2 RS)
-         [] vFailure(_ _) then
-            skip
          [] vEquateConstant(_ _ Reg _) then
             CodeStore, RegOcc(Reg RS)
          [] vEquateRecord(_ _ _ Reg VArgs _) then
@@ -380,7 +377,6 @@ class CodeStore from Emitter
          [] vMakePermanent(_ _ _) then skip
          [] vClear(_ _ _) then skip
          [] vUnify(_ _ _ _) then skip
-         [] vFailure(_ _) then skip
          [] vEquateConstant(_ _ _ _) then skip
          [] vEquateRecord(_ _ _ _ _ _) then skip
          [] vGetVariable(_ _ _) then skip

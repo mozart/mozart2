@@ -68,7 +68,6 @@ export
    methFormalWithDefault:  SAMethFormalWithDefault
    objectLockNode:         SAObjectLockNode
    getSelf:                SAGetSelf
-   failNode:               SAFailNode
    exceptionNode:          SAExceptionNode
    valueNode:              SAValueNode
    variable:               SAVariable
@@ -3265,9 +3264,6 @@ define
       meth applyEnvSubst(Ctrl)
          {@destination applyEnvSubst(Ctrl)}
       end
-   end
-
-   class SAFailNode from SAStatement
    end
 
    class SAExceptionNode from SAStatement

@@ -83,7 +83,6 @@ export
    MethFormalWithDefault
    ObjectLockNode
    GetSelf
-   FailNode
    ExceptionNode
    ValueNode
    Variable
@@ -934,17 +933,6 @@ define
       end
       meth output(R $) FS in
          {@destination output2(R $ ?FS)}#' = self'#FS
-      end
-   end
-
-   class FailNode
-      from Statement Annotate.failNode StaticAnalysis.failNode CodeGen.failNode
-      prop final
-      meth init(Coord)
-         coord <- Coord
-      end
-      meth output(_ $)
-         'fail'
       end
    end
 

@@ -68,7 +68,6 @@ export
    methFormalWithDefault: AnnotateMethFormalWithDefault
    objectLockNode: AnnotateObjectLockNode
    getSelf: AnnotateGetSelf
-   failNode: AnnotateDefaults
    exceptionNode: AnnotateDefaults
    valueNode: AnnotateValueNode
    userVariable: AnnotateUserVariable

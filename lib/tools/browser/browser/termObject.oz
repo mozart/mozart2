@@ -2846,7 +2846,8 @@ in
              end}
 
             %%
-            Name = DLCBraceS # DLSBraceS # SubInts # DRSBraceS # DRCBraceS
+            Name = (DLCBraceS # DLSBraceS # SubInts # DRSBraceS # DRCBraceS #
+                    "#" # {FSetGetCard Term})
 
             %%
             RepManagerObject , insert(str: Name)
@@ -2855,7 +2856,7 @@ in
 
             %%
             local
-               Term GlbComp LubComp GlbLe LubLe GlbSubInts LubSubInts Name
+               Term GlbComp LubComp GlbLe LubLe GlbSubInts LubSubInts Name Card
             in
                Term = self.term
 
@@ -2898,10 +2899,14 @@ in
                 end}
 
                %%
-               Name = {self GetName($)} # (DLCBraceS # DLSBraceS #
-                                           GlbSubInts # DRSBraceS #
-                                           DDblPeriod # DLSBraceS #
-                                           LubSubInts # DRSBraceS # DRCBraceS)
+               Card = case {FSetGetCard Term}
+                      of L#U then DLSBraceS # L # "#" # U # DRSBraceS
+                      [] C then C
+                      end
+
+               Name = ({self GetName($)} # DLCBraceS # DLSBraceS #
+                       GlbSubInts # DRSBraceS # DDblPeriod # DLSBraceS #
+                       LubSubInts # DRSBraceS # DRCBraceS # "#" # Card)
 
                %%
                RepManagerObject , insert(str: Name)

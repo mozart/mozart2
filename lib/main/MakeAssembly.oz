@@ -54,8 +54,18 @@ in
 \insert 'op/Open.oz'
 = NewOpen
 
-\insert 'Compiler.oz'
-= NewCompiler
+local
+   FunMisc      = \insert compiler/FunMisc
+   FunBuiltins  = \insert compiler/FunBuiltins
+   FunSA        = \insert compiler/FunSA
+   FunCode      = \insert compiler/FunCode
+   FunCore      = \insert compiler/FunCore
+   FunUnnest    = \insert compiler/FunUnnest
+   FunAssembler = \insert compiler/FunAssembler
+   FunCompiler  = \insert compiler/FunCompiler
+in
+   NewCompiler  = \insert compiler/FunMain
+end
 
 
 UrlDefaults = \insert '../url-defaults.oz'

@@ -118,7 +118,7 @@ Finally           = fNoFinally
                   | Phrase.
 Clause            = fClause(Phrase Phrase Phrase).
 ClauseOptThen     = fClause(Phrase Phrase OptThen).
-OptThen           = fNoThen(Position)
+OptThen           = fNoThen(Coordinates)
                   | Phrase.
 OptElse           = Phrase
                   | fNoElse(Coordinates).

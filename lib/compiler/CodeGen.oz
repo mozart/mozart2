@@ -39,7 +39,7 @@ import
    at 'x-oz://boot/CompilerSupport'
    Space(new ask merge)
    FD(decl distinct sumC reflect assign)
-   System(printName)
+   System(show printName)
    Property(get)
    Builtins(getInfo)
    Core

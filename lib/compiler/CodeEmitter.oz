@@ -135,6 +135,8 @@ local
       {FilterNonlinearRegs {GetRegs VArgs $ nil}}
    end
 
+\ifdef OLD_OPTIMIZER
+
    local
       proc {Reserve Regs N W K}
          if N =< W then Reg in
@@ -222,6 +224,172 @@ local
          end
       end
    end
+
+\else
+
+
+   local
+      local
+         proc {DoAssign L H D X N}
+            if L=<H then
+               if {BitArray.test D L} then
+                  X.L=N {DoAssign L+1 H D X N+1}
+               else
+                  {DoAssign L+1 H D X N}
+               end
+            end
+         end
+      in
+         proc {AssignFirst _|D X}
+            {DoAssign {BitArray.low D} {BitArray.high D} D X 0}
+         end
+      end
+      local
+         proc {DoVector L H D X V I}
+            if L=<H then
+               if {BitArray.test D L} then
+                  V.I=X.L {DoVector L+1 H D X V I+1}
+               else
+                  {DoVector L+1 H D X V I}
+               end
+            end
+         end
+      in
+         fun {MakeVector C|D X}
+            V={MakeTuple v C}
+         in
+            {DoVector {BitArray.low D} {BitArray.high D} D X V 1}
+            V
+         end
+
+      end
+   in
+      class RegisterOptimizer
+         attr
+            N:      1    % Current Y index
+            CDs:    nil  % List of pairs cardinality and bitarrays
+                         % representing distinct constraints
+            Es:     nil  % List of pairs of equality constraints
+            Ss:     nil  % List of hard assignments
+         feat
+            Mapping      % Maps allocation to real registers
+
+         meth init
+            %% Assumption: register indices start from 1
+            self.Mapping = {Dictionary.new}
+         end
+
+         meth Distinct(Ys)
+            case Ys of [_] then skip else
+               D2={BitArray.fromList Ys}
+            in
+               case @CDs
+               of (_|D1)|CDr then
+                  if {BitArray.subsumes D2 D1} then
+                     CDs <- ({BitArray.card D2}|D2)|CDr
+                  else
+                     CDs <- ({BitArray.card D2}|D2)|@CDs
+                  end
+               else
+                  CDs <- [{BitArray.card D2}|D2]
+               end
+            end
+         end
+
+         meth decl(Is ?Y ?I)
+            J
+         in
+            I=@N
+            N <- I+1
+            Y=y(J)
+            {Dictionary.put self.Mapping I J}
+            {self Distinct(I|Is)}
+         end
+
+         meth isEmpty($)
+            {Dictionary.isEmpty self.Mapping}
+         end
+
+         meth eq(Y1 Y2)
+            if Y1\=Y2 then
+               Es <- (Y1|Y2)|@Es
+            end
+         end
+
+         meth set(Y I)
+            Ss <- (Y|I)|@Ss
+         end
+
+         meth optimize($)
+            LCDs = {Sort @CDs fun {$ C1|_ C2|_}
+                                 C1>C2
+                              end}
+            CDs <- nil
+            LEs = @Es
+            Es  <- nil
+            LSs = @Ss
+            Ss  <- nil
+            LN  = @N-1
+            S = {Space.new proc {$ X}
+                              %% Create mapping
+                              X = {MakeTuple regs LN}
+                              %% Process equality constraints
+                              {ForAll LEs
+                               proc {$ Y1|Y2}
+                                  X.Y1=X.Y2
+                               end}
+                              if LSs==nil then
+                                 %% Take the first distinct and assign directly
+                                 if LCDs\=nil then
+                                    {AssignFirst LCDs.1 X}
+                                 end
+                              else
+                                 %% Do hard assignments
+                                 {ForAll LSs
+                                  proc {$ Y|I}
+                                     X.Y=I
+                                  end}
+                              end
+                              %% Tell domain constraints
+                              X ::: 0#LN
+                              local
+                                 Vs={Map if LSs==nil andthen LCDs\=nil then
+                                            LCDs.2
+                                         else LCDs
+                                         end
+                                     fun {$ LCD}
+                                        {MakeVector LCD X}
+                                     end}
+                              in
+                                 %% Post distincts
+                                 {ForAll Vs FD.distinct}
+                                 %% Assign following distincts
+                                 {ForAll Vs proc {$ V}
+                                               {FD.assign min V}
+                                            end}
+                              end
+                              {FD.assign min X}
+                           end}
+            T = {Thread.this}
+            RaiseOnBlock = {Debug.getRaiseOnBlock T}
+            Alloc
+         in
+            {Debug.setRaiseOnBlock T false}
+            {Space.ask S succeeded}
+            {Debug.setRaiseOnBlock T RaiseOnBlock}
+            Alloc = {Space.merge S}
+            {Record.foldLInd Alloc
+             fun {$ I M J}
+                {Dictionary.get self.Mapping I}=J
+                {Max M J}
+             end ~1}+1
+         end
+
+      end
+   end
+
+\endif
+
 in
    fun {IsStep Coord}
       case {Label Coord} of pos then false
@@ -275,7 +443,11 @@ in
          LowestFreeX <- 0
          HighestEverX <- ~1
          NamedYs <- {NewDictionary}
+\ifdef OLD_OPTIMIZER
          RegOpt <- {New RegisterOptimizer init(NumberReserved)}
+\else
+         RegOpt <- {New RegisterOptimizer init}
+\endif
          HighestUsedG <- ~1
          LocalEnvSize <- _
          CodeHd <- allocateL(@LocalEnvSize)|NewCodeTl
@@ -1832,7 +2004,11 @@ in
                Emitter, EmitAddr(Addr)
             end
             {@RegOpt optimize(?NumberOfYs)}
+\ifdef OLD_OPTIMIZER
             RegOpt <- {New RegisterOptimizer init(0)}
+\else
+            RegOpt <- {New RegisterOptimizer init}
+\endif
             LocalEnvSize <- OldLocalEnvSize
          else OldLocalEnvsInhibited in
             OldLocalEnvsInhibited = @LocalEnvsInhibited

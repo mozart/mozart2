@@ -23,7 +23,7 @@ FDLOCAL = \
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 
-# Tests for finite domains
+# Tests for finite sets
 FSLOCAL = \
         crew \
         hamming \
@@ -49,7 +49,7 @@ CORE = $(FCORE:%=./core/%.ozc)
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(EXCEPTOZC)
+        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(FSOZC) $(EXCEPTOZC)
 
 
 ####################################################

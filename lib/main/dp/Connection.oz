@@ -129,7 +129,7 @@ local
             S={TicketToString Ticket}
             Ticket
          catch _ then
-            {`RaiseError` connection(illegalTicket V)} _
+            {`RaiseError` dp(connection(illegalTicket V))} _
          end
       end
    end
@@ -186,10 +186,10 @@ local
    in
       case T.single then
          case {SendToPid T}
-         of no     then {`RaiseError` connection(refusedTicket V)}
+         of no     then {`RaiseError` dp(connection(refusedTicket V))}
          [] yes(Y) then X=Y
          end
-      else {`RaiseError` connection(illegalTicket V)}
+      else {`RaiseError` dp(connection(illegalTicket V))}
       end
    end
 
@@ -234,9 +234,9 @@ local
       T = {VsToTicket V}
    in
       case T.single then
-         {`RaiseError` connection(illegalTicket V)}
+         {`RaiseError` dp(connection(illegalTicket V))}
       elsecase {SendToPid T}
-      of no then {`RaiseError` connection(illegalTicket V)}
+      of no then {`RaiseError` dp(connection(illegalTicket V))}
       [] yes(Y) then X=Y
       end
    end

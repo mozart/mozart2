@@ -327,10 +327,6 @@ RArrayRRatio       = 10
 \undef     DEBUG_TI
 %\define    DEBUG_TI_DET
 \undef     DEBUG_TI_DET
-%%
-%\define    DEBUG_OPEN
-\undef     DEBUG_OPEN
-
 %\define   DEBUG_METAVAR
 \undef    DEBUG_METAVAR
 %%

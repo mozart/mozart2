@@ -875,22 +875,30 @@ in
 \ifdef DEBUG_TO
          {Show 'FListGenericTermObject::renewNum: term '#Obj.term#Obj.numberOf}
 \endif
-         local TailVarNum StoredObj in
+         local TailVarNum StoredObj ObjTerm CanBeExt in
             StoredObj = <<getSubtermObj(Obj.numberOf $)>>
             %%
             case Obj == StoredObj then
                TailVarNum = @tailVarNum
+               ObjTerm = Obj.term
+               CanBeExt = case {IsVar ObjTerm} then False
+                          elsecase  {IsTuple ObjTerm} then
+                             L
+                          in
+                             L = {Label ObjTerm} % no suspension;
+                             case L == '|' then True
+                             else False
+                             end
+                          else False
+                          end
                %%
-               case {IsValue <<sync($)>>} then
-                  ObjNumberOf = Obj.numberOf
-                  ObjTermDet  = {Det Obj.term}
-               in
-                  %%
-                  %% relational!
-                  if TailVarNum=ObjNumberOf ObjTermDet=True then <<extend>>
-                  [] true then
-                     <<MetaTupleGenericTermObject renewNum(Obj Depth)>> % TODO!
-                  fi
+               %%
+               case
+                  TailVarNum == Obj.numberOf andthen CanBeExt
+               then
+                  <<extend>>
+               else
+                  <<MetaTupleGenericTermObject renewNum(Obj Depth)>>
                end
             else true           % ignore irrelevant message;
             end
@@ -903,105 +911,107 @@ in
          {Show 'FListGenericTermObject::extend: term '#self.term}
 \endif
          case @shown then
-            local
-               OldSubs OldSize NewSize NewSubs OldRest NewRest
-               ActWidth NewWidth RemovedObj
-            in
-               OldSubs = <<getSubterms($)>>
-               %%
-               %% updates 'subterms' attribute in place;
-               NewSubs = <<reGetSubterms($)>>
-               %%
-               case <<areCommas($)>> then
-                  case <<isFWList($)>> then
-                     job
-                        {self.parentObj renewNum(self @depth)}
-                     end
-                  else
-                     %%  width is already exceeded - nothing to do;
-                     true
+            OldSubs OldSize NewSize NewSubs OldRest NewRest
+            ActWidth NewWidth RemovedObj Depth
+         in
+            OldSubs = <<getSubterms($)>>
+            Depth = @depth
+            %%
+            %% updates 'subterms' attribute in place;
+            NewSubs = <<reGetSubterms($)>>
+            %%
+            case <<areCommas($)>> then
+               case <<isFWList($)>> then
+                  job
+                     {self.parentObj renewNum(self Depth)}
                   end
                else
-                  ActWidth = @width
+                  %%  width is already exceeded - nothing to do;
+                  true
+               end
+            else
+               ActWidth = @width
+               %%
+               {DiffRest OldSubs NewSubs OldRest NewRest}
+               %%
+               case {Length OldRest}
+               of 1 then
                   %%
-                  {DiffRest OldSubs NewSubs OldRest NewRest}
+                  %%  first case: variable -> many (>1) subterms;
+                  RemovedObj = <<getSubtermObj(ActWidth $)>>
                   %%
-                  case {Length OldRest}
-                  of 1 then
+                  case <<isWFList($)>> then
+                     job
+                        {self.parentObj renewNum(self Depth)}
+                     end
+                  elsecase
+                     {IsValue {RemovedObj [undraw(_) destroy($)]}}
+                     %% remove the (former) tail variable's representation;
+                  then
+                     OldSize = <<getSize($)>>
                      %%
-                     %%  first case: variable -> many (>1) subterms;
-                     RemovedObj = <<getSubtermObj(ActWidth $)>>
+                     %%  ('1' is the number of subterms which slots
+                     %% should be reused;)
+                     %%  ('NewWidth' is an output argument;)
+                     <<initMoreSubterms(ActWidth 1 NewRest NewWidth)>>
                      %%
-                     case <<isWFList($)>> then
-                        job
-                           {self.parentObj renewNum(self @depth)}
-                        end
-                     elsecase
-                        {IsValue {RemovedObj [undraw(_) destroy($)]}}
-                        %% remove the (former) tail variable's representation;
-                     then
-                        OldSize = <<getSize($)>>
-                        %%
-                        %%  ('1' is the number of subterms which slots
-                        %% should be reused;)
-                        %%  ('NewWidth' is an output argument;)
-                        <<initMoreSubterms(ActWidth 1 NewRest NewWidth)>>
-                        %%
-                        %%  ('NewWidth' is an input argument here;)
-                        <<initMoreOutInfo((ActWidth + 1) NewWidth)>>
-                        %%
-                        <<drawNewSubterms(ActWidth NewWidth)>>
-                        %%
-                        case
-                           NewWidth - ActWidth + 1 < {Length NewRest}
-                           %% less subterms as available are shown;
-                        then <<drawCommas>>
-                        else true
-                        end
-                        %%
-                        NewSize = <<getSize($)>>
-                        %%
+                     %%  ('NewWidth' is an input argument here;)
+                     <<initMoreOutInfo((ActWidth + 1) NewWidth)>>
+                     %%
+                     <<drawNewSubterms(ActWidth NewWidth)>>
+                     %%
+                     case
+                        NewWidth - ActWidth + 1 < {Length NewRest}
+                        %% less subterms as available are shown;
+                     then <<drawCommas>>
+                     else true
+                     end
+                     %%
+                     NewSize = <<getSize($)>>
+                     %%
                         job
                            {self.parentObj checkSize(self OldSize NewSize)}
                         end
-                     end
-                  [] 0 then
-                     %%
-                     %% second case: variable --> value (not another variable!);
-                     %%
-                     case <<isWFList($)>> then
-                        job
-                           {self.parentObj renewNum(self @depth)}
-                        end
-                     else
-                        <<noTailVar>>
-                        %%
-                        %%  Actually incorrect - it forces subterm's depth
-                        %% to (@depth - 1);
-                        <<MetaTupleGenericTermObject
-                        renewNum(<<getSubtermObj(ActWidth $)>> (@depth - 1))>>
+                  end
+               [] 0 then
+                  %%
+                  %% second case: variable --> value (not another variable!);
+                  %%
+                  case <<isWFList($)>> then
+                     job
+                        {self.parentObj renewNum(self Depth)}
                      end
                   else
+                     <<noTailVar>>
                      %%
-                     %%  Not optimized.
-                     %% It could mean, for instance, that we have feeded
-                     %% the following lines
-                     %%   declare X in
-                     %%   X = _|_|_
-                     %%   X.2 = X.2.2
-                     %%  This list is recursive, but not 'from the first cons';
-                     %%
-                     job
-                        {self.parentObj renewNum(self @depth)}
-                     end
+                     %%  Actually incorrect - it forces subterm's depth
+                     %% to (@depth - 1);
+                     <<MetaTupleGenericTermObject
+                     renewNum(<<getSubtermObj(ActWidth $)>> (@depth - 1))>>
+                  end
+               else
+                  %%
+                  %%  Not optimized.
+                  %% It could mean, for instance, that we have feeded
+                  %% the following lines
+                  %%   declare X in
+                  %%   X = _|_|_
+                  %%   X.2 = X.2.2
+                  %%  This list is recursive, but not 'from the first cons';
+                  %%
+                  job
+                     {self.parentObj renewNum(self Depth)}
                   end
                end
             end
          else
+            Depth
+         in
+            Depth = @depth
             %%
             %%  if it's not shown - just create a new one;
             job
-               {self.parentObj renewNum(self @depth)}
+               {self.parentObj renewNum(self Depth)}
             end
          end
       end
@@ -1074,9 +1084,10 @@ in
          case @shown then
             local
                OldSubs OldSize NewSize NewSubs OldRest NewRest
-               ActWidth NewStart NewWidth RemovedObj
+               ActWidth NewStart NewWidth RemovedObj Depth
             in
                OldSubs = <<getSubterms($)>>
+               Depth = @depth
                %%
                %% updates 'subterms' attribute in place;
                NewSubs = <<reGetSubterms($)>>
@@ -1122,7 +1133,7 @@ in
                         else
                            %% should be simply a literal;
                            job
-                              {self.parentObj renewNum(self @depth)}
+                              {self.parentObj renewNum(self Depth)}
                            end
                         end
                      end
@@ -1175,7 +1186,7 @@ in
                      else
                         %%
                         job
-                           {self.parentObj renewNum(self @depth)}
+                           {self.parentObj renewNum(self Depth)}
                         end
                      end
                   end
@@ -1186,10 +1197,13 @@ in
             <<initTypeWatching>>
             %%
          else
+            Depth
+         in
+            Depth = @depth
             %%
             %%  if it's not shown - just create new one;
             job
-               {self.parentObj renewNum(self @depth)}
+               {self.parentObj renewNum(self Depth)}
             end
          end
       end
@@ -1558,8 +1572,12 @@ in
 \ifdef DEBUG_TO
          {Show 'ReferenceGenericTermObject::checkRef for ref term '#self.term}
 \endif
+         Depth
+      in
+         Depth = @depth
+         %%
          job
-            {self.parentObj renewNum(self @depth)}
+            {self.parentObj renewNum(self Depth)}
          end
       end
       %%
@@ -1638,8 +1656,7 @@ in
       %%
    end
    %%
-   %%
-   %%
+
    %%
    %% Compare two lists and yield their different tail lists;
    %%
@@ -1648,7 +1665,7 @@ in
       %% relational;
       if {Subtree L1 1} = {Subtree L2 1} then
          {DiffRest L1.2 L2.2 LOut1 LOut2}
-      [] true then  % TODO!
+      [] true then
          LOut1 = L1
          LOut2 = L2
       fi

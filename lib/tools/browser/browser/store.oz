@@ -38,7 +38,11 @@ class ProtoStore from UrObject
    %%  Extract some value from store;
    %%
    meth read(What Value)
-      if V in V = @store.What then Value = V
+      Store
+   in
+      Store = @store
+      %%
+      if V in V = Store.What then Value = V
       else {BrowserError
             ['Attempt to read undefined parameter in store: ' What]}
       fi
@@ -48,7 +52,11 @@ class ProtoStore from UrObject
    %%  Is there such parameter?
    %%
    meth test(What Result)
-      if _ = @store.What then Result = True
+      Store
+   in
+      Store = @store
+      %%
+      if _ = Store.What then Result = True
       else Result = False
       fi
    end
@@ -57,13 +65,15 @@ class ProtoStore from UrObject
    %%  Some debug methods;
    %%
    meth dShow(What)
-      if V in V = @store.What then {Show V}
+      Store
+   in
+      if V in V = Store.What then {Show V}
       else {Show '*** undefined parameter ***'}
       fi
    end
    meth dShowAll
       local Store = @store in
-         {ForAll {Arity @store} proc {$ Feature} {Show Store.Feature} end}
+         {ForAll {Arity Store} proc {$ Feature} {Show Store.Feature} end}
       end
    end
 end

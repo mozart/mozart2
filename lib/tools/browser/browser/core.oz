@@ -26,21 +26,15 @@ IntToAtom = {`Builtin` 'intToAtom'
 RealArity = {`Builtin` trueArity noHandler}
 
 %%
-%%  (of course, non-monotonic operation;)
-IsFdVar = {`Builtin` 'fdIsVar' noHandler}
-
-%%
-%%
-IsRecordCVar = {`Builtin` 'recordCIsVar' noHandler}
+%%  (of course, non-monotonic operations;)
+IsVar = {`Builtin` 'isVarB' noHandler}
+IsFdVar = {`Builtin` 'fdIsVar' noHandler}           % logical;
+IsRecordCVar = {`Builtin` 'recordCIsVar' noHandler} % logical;
+IsMetaVar = {`Builtin` 'metaIsVar' noHandler}       % logical;
 
 %%
 %%  first argument is a FD variable, and second - reference cardinality;
 WatchDomain = {`Builtin` fdWatchDom1 noHandler}
-
-%%
-%%  (of course, non-monotonic operation;)
-IsMetaVar = {`Builtin` 'metaIsVar' noHandler}
-
 
 %%
 %%  first argument is a meta variable, and second - reference strength;
@@ -61,6 +55,11 @@ MetaGetStrength = {`Builtin` metaGetStrength noHandler}
 %%
 %%  Equality on terms using their physical location (pointers);
 EQ = {`Builtin` eq noHandler}
+
+%% X is an undetermined record, F is a literal.  Do an immediate test whether
+%% X has the feature F.  Gives a type error if X or F is of wrong type.
+%% No suspensions are ever created.
+TestC = {`Builtin` 'testCB' noHandler}
 
 %%
 %%  single argument is a term; suspends till this variable is bound to something;

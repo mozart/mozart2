@@ -260,42 +260,55 @@ in
    %%  For efficiency reasons this is the procedure on top level;
    %%  It is being used in 'Check' to perform check recursively;
    fun {CheckProc Term List}
-      %% relational;
-      if Obj R in List = Obj|R then
+      %%
+      case {IsVar List} then InitValue
+      else
+         Obj R IsAway
+      in
+         List = Obj|R
          %% relational;
          if Obj.term = Term then
-            %% relational;
-            if {Object.closed Obj True} then {CheckProc Term R}
-            [] true then Obj    % TODO!
-            fi
+            %%
+            job
+               IsAway = {Object.closed Obj}
+            end
+            %%
+            case {IsVar IsAway} then Obj
+            else {CheckProc Term R}
+            end
             %%> alternative, but only 'proper' coreferences (incl. cycles);
             %%> if {EQ Obj.term Term} then ...
          [] true then {CheckProc Term R}  % non-monotonic!
          fi
-      [] true then InitValue
-      fi
+      end
    end
 
    %%
    %%  Almost the same as above, but excluding 'self' (and it yields bool);
    fun {SearchProc Self List}
-      %% relational;
-      if Obj R in List = Obj|R then
+      %%
+      case {IsVar List} then False
+      else
+         Obj R IsAway
+      in
+         List = Obj|R
+         %%
          case Obj == Self then {SearchProc Self R}
          else
             %% relational;
             if Obj.term = Self.term then
-               %% relational;
-               if {Object.closed Obj True} then {SearchProc Self R}
-               [] true then True
-               fi
-               %%> alternative, but only 'proper' coreferences (incl. cycles);
-               %%> if {EQ Obj.term Self.term} then ...
+               %%
+               job
+                  IsAway = {Object.closed}
+               end
+               %%
+               case {IsVar IsAway} then True
+               else {SearchProc Self R}
+               end
             [] true then {SearchProc Self R}  % non-monotonic!
             fi
          end
-      [] true then False
-      fi
+      end
    end
 
    %%
@@ -311,9 +324,18 @@ in
          %%
          case SelfObject.type == T_PSTerm then InitValue
          else
+            IsAway
+         in
             %%
-            %% relational;
-            if PO in {Object.closed SelfObject True} then
+            job
+               IsAway = {Object.closed SelfObject}
+            end
+
+            %%
+            case {IsVar IsAway} then SelfObject
+            else
+               PO
+            in
                %% i.e., this is garbage (or lack of synchronization);
                %%
                PO = SelfObject.parentObj
@@ -321,8 +343,7 @@ in
                case PO == InitValue then InitValue
                else {CheckCycleProc Term PO}
                end
-            [] true then SelfObject
-            fi
+            end
          end
       [] PO in true then
          PO = SelfObject.parentObj
@@ -332,23 +353,32 @@ in
          end
       fi
    end
-   %%
+
    %%
    proc {GCProc List Length ?NewList ?NewLength}
-      %% relational;
-      if Obj R in List = Obj|R then
-         %%
-         %% relational;
-         if {Object.closed Obj True} then
-            {GCProc R Length NewList NewLength}
-         [] NewTail in true then
-            NewList = Obj|NewTail
-            {GCProc R (Length + 1) NewTail NewLength}
-         fi
-      [] true then
+      %%
+      case {IsVar List} then
          List = NewList         % keep the tail unchanged;
          NewLength = Length
-      fi
+      else
+         Obj R IsAway
+      in
+         List = Obj|R
+         %%
+         %%
+         job
+            IsAway = {Object.closed Obj}
+         end
+         %%
+         case {IsVar IsAway} then
+            NewTail
+         in
+            NewList = Obj|NewTail
+            {GCProc R (Length + 1) NewTail NewLength}
+         else
+            {GCProc R Length NewList NewLength}
+         end
+      end
    end
 
 end

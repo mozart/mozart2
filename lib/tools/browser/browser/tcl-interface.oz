@@ -2173,55 +2173,49 @@ in
       meth showIn(VS)
          case @window == InitValue then true
          else
-            local G P X Y MyScreen LWScreen in
+            local G P X Y MyScreen LWScreen LeaderWindow RealLWindow in
                {@messageWidget [tk(insert(insert VS))
                                 tk(insert(insert "\n"))
                                 tk(yview("insert - 2 lines"))]}
                %%
                %%
-               %% lazy (I'm);
-               if LeaderWindow RealLWindow in
-                  @leaderWindow = LeaderWindow
-               then
-                  case LeaderWindow == InitValue then
+               LeaderWindow = @leaderWindow
+               case LeaderWindow == InitValue then
+                  {Tk.batch [update wm(deiconify @window)]}
+               else
+                  MyScreen = {VirtualString.toString
+                              {Tk.return
+                               winfo(screen @window)}}
+                  LWScreen = {VirtualString.toString
+                              {Tk.return
+                               winfo(screen LeaderWindow)}}
+                  %%
+                  case {DiffStrs MyScreen LWScreen} then
                      {Tk.batch [update wm(deiconify @window)]}
                   else
-                     MyScreen = {VirtualString.toString
-                                 {Tk.return
-                                  winfo(screen @window)}}
-                     LWScreen = {VirtualString.toString
-                                 {Tk.return
-                                  winfo(screen LeaderWindow)}}
                      %%
-                     case {DiffStrs MyScreen LWScreen} then
-                        {Tk.batch [update wm(deiconify @window)]}
-                     else
+                     %%  the same screen;
+                     RealLWindow = {VirtualString.toString
+                                    {Tk.return
+                                     winfo(toplevel LeaderWindow)}}
+                     %%
+                     case {All RealLWindow IsValue} then
+                        {Tk.return wm(geometry RealLWindow) G}
+                        P = {Tail G {FindChar G "+".1}}
+                        X = {String.toInt {Head P.2 ({FindChar P.2 "+".1} - 1)}}
+                        Y = {String.toInt {Tail P.2 ({FindChar P.2 "+".1} + 1)}}
                         %%
-                        %%  the same screen;
-                        RealLWindow = {VirtualString.toString
-                                       {Tk.return
-                                        winfo(toplevel LeaderWindow)}}
-                        %%
-                        case {All RealLWindow IsValue} then
-                           {Tk.return wm(geometry RealLWindow) G}
-                           P = {Tail G {FindChar G "+".1}}
-                           X = {String.toInt {Head P.2 ({FindChar P.2 "+".1} - 1)}}
-                           Y = {String.toInt {Tail P.2 ({FindChar P.2 "+".1} + 1)}}
+                        case {All [X Y] IsValue} then
                            %%
-                           case {All [X Y] IsValue} then
-                              %%
-                              {Tk.batch [update
-                                          wm(geometry @window
-                                             '+'#(X + IMWXOffset)#
-                                             '+'#(Y + IMWYOffset))
-                                          wm(deiconify @window)]}
-                           end
+                           {Tk.batch [update
+                                      wm(geometry @window
+                                         '+'#(X + IMWXOffset)#
+                                         '+'#(Y + IMWYOffset))
+                                      wm(deiconify @window)]}
                         end
                      end
                   end
-               else
-                  {Tk.batch [update wm(deiconify @window)]}
-               fi
+               end
             end
          end
       end

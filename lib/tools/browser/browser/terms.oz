@@ -73,7 +73,19 @@ in
          case
             @depth > 1 andthen {self.termsStore canCreateObject($)}
          then
-            if {Det Term True} then
+            case {IsVar Term} then
+               %% non-monotonic operation;
+               %%
+               %% relational;
+               Type = if {IsRecordCVar Term} then T_ORecord
+                      else
+                         %% relational;
+                         if {IsFdVar Term} then T_FDVariable
+                         [] {IsMetaVar Term} then T_MetaVariable
+                         else T_Variable
+                         fi
+                      fi
+            else
                case {Value.type Term}
                of atom    then Type = T_Atom
                [] int     then Type = T_Int
@@ -83,10 +95,10 @@ in
                   local AreVSs in
                      AreVSs = {self.store read(StoreAreVSs $)}
                      %%
-                     %% relational!
+                     %% I don't want to reprogram VirtualString.is;
                      if AreVSs = True {VirtualString.is Term True} then
                         Type = T_Atom
-                     [] true then   % non-monotonic!! TODO!
+                     [] true then   % non-monotonic!!
                         if Term = _|_ then
                            case self.type
                            of !T_List then
@@ -117,19 +129,7 @@ in
                   {BrowserWarning ['Oz Term of unknown type: ' Term]}
                   Type = T_Unknown
                end
-            [] true then
-               %% non-monotonic operation;
-               %%
-               %% relational;
-               Type = if {IsRecordCVar Term} then T_ORecord
-                      else
-                         %% relational;
-                         if {IsFdVar Term} then T_FDVariable
-                         [] {IsMetaVar Term} then T_MetaVariable
-                         else T_Variable
-                         fi
-                      fi
-            fi
+            end
          else
             Type = T_Shrunken
          end
@@ -691,7 +691,7 @@ in
             %%
             %% relational!
             IsWF = if {IsListDepth self.term Depth} then True
-                   [] true then False % TODO!
+                   [] true then False
                    fi
          end
       end
@@ -870,14 +870,13 @@ in
             end
             self.label = OFSLab
             %%
-            %% relational;
+            %%
             job
                SelfClosed = {Object.closed self}
             end
+
             %%
-            %% relational;
-            if {Det OFSLab True} then true
-            [] true then        % TODO!
+            case {IsVar OFSLab} then
                %% relational;
                thread
                   if {Det OFSLab True} then {self replaceLabel}
@@ -885,7 +884,8 @@ in
                      %% cancel watching;
                   fi
                end
-            fi
+            else true
+            end
             %%
             <<setName>>
             self.name = @name   % just some value - it should not be used here;
@@ -907,10 +907,12 @@ in
             %% any changes to X that occur after K becomes determined.
             %%
             %% Peter
-            thread
+            %%
+            %%  This *must* be a job, and *not* a thread!
+            job
                RecArity = {RecordC.monitorArity Term SelfClosed}
             end
-            %%
+
             %%
             PrivateFeature <- False
             %%
@@ -980,16 +982,25 @@ in
             Term = self.term
             %%
             {GetWFListVar self.recArity TmpArity TailVar}
-            {Show '!'#':'#Term#TailVar}
             %%  filter out already non-existing features -
             %%  cheers, Peter! ;-)
             {FoldL TmpArity
              fun {$ I E}
                 if Vp in {SubtreeC Term E _} then
                    I = E|Vp Vp
-                [] true then I  % TODO!
+                [] true then I
                 fi
              end
+%  The following doesn't work because 'TestC' fails if
+% the record is determined (why ??!);
+%            fun {$ I E}
+%               case {TestC Term E} then
+%                  Vp
+%               in
+%                  I = E|Vp Vp
+%               else I
+%               end
+%            end
              KnownArity nil}
             %%
             %%  it could be 'InitValue' (if OFS has become a proper record
@@ -1005,7 +1016,7 @@ in
             %%
          end
       end
-      %%
+
       %%
       %%  Set a 'watchpoint';
       %%  It should be used when the (sub)term is actually drawn;
@@ -1029,11 +1040,9 @@ in
                thread
                   if {Det TailVar True} then
                      %%
-                     {Show '!'#2}
                      {self extend}
                   [] {TestVarProc Term} then
                      %%
-                     {Show '!'#3}
                      case {self.termsStore checkCorefs(self $)} then
                         %% gets bound somehow;
                         {self.parentObj renewNum(self Depth)}
@@ -1041,7 +1050,7 @@ in
                         %%  wait for a 'TailVar';
                         {self initTypeWatching}
                      end
-                  [] {Det CancelVar True} then {Show '!'#4} true
+                  [] {Det CancelVar True} then true
                   fi
                end
                %%
@@ -1062,7 +1071,10 @@ in
       %%
       %%
       meth setHiddenPFs
+         Depth
+      in
          PrivateFeature <- True
+         Depth = @depth
          %%
          case <<isProperOFS($)>> then
             <<addQuestion>>
@@ -1070,7 +1082,7 @@ in
             %%
             %%  I'm lazy - I tell you :))
             job
-               {self.parentObj renewNum(self @depth)}
+               {self.parentObj renewNum(self Depth)}
             end
          end
       end
@@ -1213,7 +1225,7 @@ in
       %%
       %%  Yields 'True' if it is still an (unconstrained!) variable;
       %%
-      meth checkIsVar(?IsVar)
+      meth checkIsVar(?Is)
          local Term in
             Term = self.term
             %%
@@ -1221,15 +1233,15 @@ in
             %% some other (derived) type of variables;
             %%
             %% relational;
-            IsVar = if {Det Term True} then False
-                    [] {IsRecordCVar Term} then False
-                    [] true then
-                       %% relational;
-                       if {IsFdVar Term} then False
-                       [] {IsMetaVar Term} then False
-                       else True
-                       fi
+            Is = if {Det Term True} then False
+                 [] {IsRecordCVar Term} then False
+                 [] true then
+                    %% relational;
+                    if {IsFdVar Term} then False
+                    [] {IsMetaVar Term} then False
+                    else True
                     fi
+                 fi
          end
       end
       %%
@@ -1262,8 +1274,8 @@ in
             CancelReq <- CancelVar
             %%
             %% Note that this conditional may not block the state;
-            %% relational;
             thread
+               %% relational;
                if {TestVarProc self.term} then
                   {self.parentObj renewNum(self Depth)}
                [] {Det CancelVar True} then true
@@ -1327,14 +1339,11 @@ in
       %%
       %%  Yields 'True' if it is still a FD variable;
       %%
-      meth checkIsVar(?IsVar)
+      meth checkIsVar(?Is)
          %%
          %%  There could happen only one thing: it can get a value;
          %%
-         %% relational;
-         IsVar = if {Det self.term True} then False
-                 [] true then True % TODO!
-                 fi
+         Is = {IsVar self.term}
       end
       %%
       %%
@@ -1399,8 +1408,8 @@ in
             CancelReq <- CancelVar
             %%
             %% Note that this conditional may not block the state;
-            %% relational;
             thread
+               %% relational;
                if {TestFDVarProc self.term self.card} then
                   {self.parentObj renewNum(self Depth)}
                [] {Det CancelVar True} then true
@@ -1464,14 +1473,11 @@ in
       %%
       %%  Yields 'True' if it is still a metavariable;
       %%
-      meth checkIsVar(?IsVar)
+      meth checkIsVar(?Is)
          %%
          %%  There could happen only one thing: it can get a value;
          %%
-         %% relational;
-         IsVar = if {Det self.term True} then False
-                 [] true then True % TODO!
-                 fi
+         IsVar = {IsVar self.term}
       end
       %%
       %%
@@ -1526,8 +1532,8 @@ in
             CancelReq <- CancelVar
             %%
             %% Note that this conditional may not block the state;
-            %% relational;
             thread
+               %% relational;
                if {TestMetaVarProc self.term self.strength} then
                   {self.parentObj renewNum(self Depth)}
                [] {Det CancelVar True} then true
@@ -2063,7 +2069,7 @@ in
          Depth = {Store read(StoreNodeNumber $)}
          %%
          if {IsListDepth List Depth} then T_WFList
-         [] true then           % non-monotonic; % TODO!
+         [] true then           % non-monotonic;
             local AreFLists in
                AreFLists = {Store read(StoreFlatLists $)}
                %%
@@ -2108,7 +2114,7 @@ in
             if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
                %% relational;
                if {EQ Xr Yr} then true
-               [] {DoInfList Xr Yr (Depth-1)} then true % TODO?
+               [] {DoInfList Xr Yr (Depth-1)} then true
                else false
                fi
             else false
@@ -2134,7 +2140,7 @@ in
                if {IsCyclicListDepth List Depth} then
                   {DoCyclicList List nil ?Subterms}
                   Var = InitValue
-               [] true then     % not yet instantiated; % TODO!
+               [] true then     % not yet instantiated;
                   {GetListAndVar List Depth Subterms Var}
                fi
             else {GetListAndVar List Depth Subterms Var}
@@ -2159,7 +2165,7 @@ in
             [] {Det List True} then
                Subterms = [List]
                Var = InitValue
-            [] true then        % TODO!
+            [] true then
                Subterms = [List]
                Var = List
             fi

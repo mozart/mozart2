@@ -1499,8 +1499,11 @@ class WindowPrimary from UrObject
          local Depth Sync in
             {@store read(StoreDepth Depth)}
             case @showAll == False then
-               % relational!
-               if TermObject in {Subtree @current termObject} = TermObject then
+               Current
+            in
+               Current = @current
+               %%
+               if TermObject in {Subtree Current termObject} = TermObject then
                   {TermObject updateSizes(Depth Sync)}
                else
                   {BrowserError ['termObject is not found for @curent (UpdateSizes)']}
@@ -1548,8 +1551,11 @@ class WindowPrimary from UrObject
 
             %
             case @showAll == False then
+               Current
+            in
+               Current = @current
                % relational!
-               if TermObject in {Subtree @current termObject} = TermObject then
+               if TermObject in {Subtree Current termObject} = TermObject then
                   {TermObject checkLayout(Sync)}
                else
                   {BrowserError ['termObject is not found for @curent (SetTWWidth)']}
@@ -1582,18 +1588,19 @@ class WindowPrimary from UrObject
                         <<nil>>
                      end
                   else
-                     local Sync in
-                        % relational!
-                        if TermObject in {Subtree @current termObject} = TermObject then
-                           {TermObject checkLayout(Sync)}
-                        else {BrowserError
-                              ['termObject is not found for @curent (SetTWWidth)']}
-                        fi
+                     Sync Current
+                  in
+                     Current = @current
+                     %% relational!
+                     if TermObject in {Subtree Current termObject} = TermObject then
+                        {TermObject checkLayout(Sync)}
+                     else {BrowserError
+                           ['termObject is not found for @curent (SetTWWidth)']}
+                     fi
 
-                        %
-                        case {IsValue Sync} then
-                           <<nil>>
-                        end
+                     %%
+                     case {IsValue Sync} then
+                        <<nil>>
                      end
                   end
                end
@@ -1922,17 +1929,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserScrolling              then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreScrolling True)}
-            if V in {Subtree @tclVars scrolling} = V then
+            % relational!
+            if V in {Subtree TclVars scrolling} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreScrolling False)}
-               if V in {Subtree @tclVars scrolling} = V then
+               %% relational!
+               if V in {Subtree TclVars scrolling} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -1943,17 +1958,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserCoreferences           then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreCheckStyle True)}
-            if V in {Subtree @tclVars cycleCheck} = V then
+            %% relational!
+            if V in {Subtree TclVars cycleCheck} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreCheckStyle False)}
-               if V in {Subtree @tclVars cycleCheck} = V then
+               %% relational!
+               if V in {Subtree TclVars cycleCheck} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -1964,17 +1987,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserCycles                 then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreOnlyCycles True)}
-            if V in {Subtree @tclVars onlyCycles} = V then
+            %% relational!
+            if V in {Subtree TclVars onlyCycles} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreOnlyCycles False)}
-               if V in {Subtree @tclVars onlyCycles} = V then
+               %% relational!
+               if V in {Subtree TclVars onlyCycles} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -1984,17 +2015,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserPrivateFields          then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreArityType TrueArity)}
-            if V in {Subtree @tclVars arityType} = V then
+            %% relational!
+            if V in {Subtree TclVars arityType} = V then
                {V tkSet(TclTrueArity)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreArityType AtomicArity)}
-               if V in {Subtree @tclVars arityType} = V then
+               %% relational!
+               if V in {Subtree TclVars arityType} = V then
                   {V tkSet(TclAtomicArity)}
                else true
                fi
@@ -2005,17 +2044,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserVirtualStrings         then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreAreVSs True)}
-            if V in {Subtree @tclVars vss} = V then
+            %% relational!
+            if V in {Subtree TclVars vss} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreAreVSs False)}
-               if V in {Subtree @tclVars vss} = V then
+               %% relational!
+               if V in {Subtree TclVars vss} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -2026,17 +2073,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserVariablesAligned       then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreHeavyVars True)}
-            if V in {Subtree @tclVars heavyVars} = V then
+            %% relational!
+            if V in {Subtree TclVars heavyVars} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreHeavyVars False)}
-               if V in {Subtree @tclVars heavyVars} = V then
+               %% relational!
+               if V in {Subtree TclVars heavyVars} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -2047,17 +2102,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserRecordFieldsAligned    then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreFillStyle Expanded)}
-            if V in {Subtree @tclVars fillStyle} = V then
+            %% relational!
+            if V in {Subtree TclVars fillStyle} = V then
                {V tkSet(TclExpanded)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreFillStyle Filled)}
-               if V in {Subtree @tclVars fillStyle} = V then
+               %% relational!
+               if V in {Subtree TclVars fillStyle} = V then
                   {V tkSet(TclFilled)}
                else true
                fi
@@ -2068,17 +2131,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserListsFlat              then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreFlatLists True)}
-            if V in {Subtree @tclVars flatLists} = V then
+            %% relational!
+            if V in {Subtree TclVars flatLists} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreFlatLists False)}
-               if V in {Subtree @tclVars flatLists} = V then
+               %% relational!
+               if V in {Subtree TclVars flatLists} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -2088,17 +2159,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserNamesAndProcsShort     then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreSmallNames True)}
-            if V in {Subtree @tclVars smallNames} = V then
+            %% relational!
+            if V in {Subtree TclVars smallNames} = V then
                {V tkSet(TclTrue)}
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreSmallNames False)}
-               if V in {Subtree @tclVars smallNames} = V then
+               %% relational!
+               if V in {Subtree TclVars smallNames} = V then
                   {V tkSet(TclFalse)}
                else true
                fi
@@ -2109,17 +2188,25 @@ class BrowserClass from BasicBrowser WindowPrimary
          end
       [] !BrowserPrimitiveTermsActive   then
          case ValueOf then
-            % relational!
+            TclVars
+         in
+            TclVars = @tclVars
+            %%
             {@store store(StoreAreInactive False)}
-            if V in {Subtree @tclVars areInactive} = V then
+            %% relational!
+            if V in {Subtree TclVars areInactive} = V then
                {V tkSet(TclFalse)}  % reverse!
             else true
             fi
          else
             case ValueOf == False then
-               % relational!
+               TclVars
+            in
+               TclVars = @tclVars
+               %%
                {@store store(StoreAreInactive True)}
-               if V in {Subtree @tclVars areInactive} = V then
+               %% relational!
+               if V in {Subtree TclVars areInactive} = V then
                   {V tkSet(TclTrue)}
                else true
                fi
@@ -2134,9 +2221,10 @@ class BrowserClass from BasicBrowser WindowPrimary
                Fonts = {Filter
                         {Append IKnownMiscFonts IKnownCourFonts}
                         fun {$ F} F.font == ValueOf end}
-               if Font in Fonts = [Font] then
+               if Font TclVars in Fonts = [Font] then
+                  TclVars = @tclVars
                   %%
-                  if V in {Subtree @tclVars font} = V then
+                  if V in {Subtree TclVars font} = V then
                      {V tkSet(Font.font)}
                   else
                      {@store store(StoreTWFont Font)}
@@ -3209,15 +3297,21 @@ class BrowserClass from BasicBrowser WindowPrimary
          %%
          case @current == InitValue then true
          else
+            Buttons Entries
+         in
+            Buttons = @buttons
+            Entries = @entries
+            %%
             case @showAll then
                showAll <- False
                %%
                %% relational!
-               if AllButton in AllButton = {Subtree @buttons all} then
+
+               if AllButton in AllButton = {Subtree Buttons all} then
                   {AllButton state normal}
                else true
                fi
-               if AllEntry in AllEntry = {Subtree @entries all} then
+               if AllEntry in AllEntry = {Subtree Entries all} then
                   {AllEntry state normal}
                else true
                fi
@@ -3248,19 +3342,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                      <<Bundraw(@current)>>
                      %%
                      %%
-                     case @buttons == InitValue then true
+                     case Buttons == InitValue then true
                      else
-                        local Buttons = @buttons in
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
+                        {Buttons.unzoom state disabled}
+                        {Buttons.top state disabled}
                      end
-                     case @entries == InitValue then true
+                     case Entries == InitValue then true
                      else
-                        local Entries = @entries in
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
+                        {Entries.unzoom state disabled}
+                        {Entries.top state disabled}
                      end
                      %%
                      %%
@@ -3307,19 +3397,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                         <<Bundraw(@current)>>
                         %%
                         %%
-                        case @buttons == InitValue then true
+                        case Buttons == InitValue then true
                         else
-                           local Buttons = @buttons in
-                              {Buttons.unzoom state disabled}
-                              {Buttons.top state disabled}
-                           end
+                           {Buttons.unzoom state disabled}
+                           {Buttons.top state disabled}
                         end
-                        case @entries == InitValue then true
+                        case Entries == InitValue then true
                         else
-                           local Entries = @entries in
-                              {Entries.unzoom state disabled}
-                              {Entries.top state disabled}
-                           end
+                           {Entries.unzoom state disabled}
+                           {Entries.top state disabled}
                         end
                         %%
                         %%
@@ -3361,15 +3447,20 @@ class BrowserClass from BasicBrowser WindowPrimary
          %%
          case @current == InitValue then true
          else
+            Buttons Entries
+         in
+            Buttons = @buttons
+            Entries = @entries
+            %%
             case @showAll then
                showAll <- False
                %%
                %% relational!
-               if AllButton in AllButton = {Subtree @buttons all} then
+               if AllButton in AllButton = {Subtree Buttons all} then
                   {AllButton state normal}
                else true
                fi
-               if AllEntry in AllEntry = {Subtree @entries all} then
+               if AllEntry in AllEntry = {Subtree Entries all} then
                   {AllEntry state normal}
                else true
                fi
@@ -3400,19 +3491,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                      <<Bundraw(@current)>>
                      %%
                      %%
-                     case @buttons == InitValue then true
+                     case Buttons == InitValue then true
                      else
-                        local Buttons = @buttons in
-                           {Buttons.unzoom state disabled}
-                           {Buttons.top state disabled}
-                        end
+                        {Buttons.unzoom state disabled}
+                        {Buttons.top state disabled}
                      end
-                     case @entries == InitValue then true
+                     case Entries == InitValue then true
                      else
-                        local Entries = @entries in
-                           {Entries.unzoom state disabled}
-                           {Entries.top state disabled}
-                        end
+                        {Entries.unzoom state disabled}
+                        {Entries.top state disabled}
                      end
                      %%
                      %%
@@ -3458,19 +3545,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                         <<Bundraw(@current)>>
                         %%
                         %%
-                        case @buttons == InitValue then true
+                        case Buttons == InitValue then true
                         else
-                           local Buttons = @buttons in
-                              {Buttons.unzoom state disabled}
-                              {Buttons.top state disabled}
-                           end
+                           {Buttons.unzoom state disabled}
+                           {Buttons.top state disabled}
                         end
-                        case @entries == InitValue then true
+                        case Entries == InitValue then true
                         else
-                           local Entries = @entries in
-                              {Entries.unzoom state disabled}
-                              {Entries.top state disabled}
-                           end
+                           {Entries.unzoom state disabled}
+                           {Entries.top state disabled}
                         end
                         %%
                         %%
@@ -3512,6 +3595,10 @@ class BrowserClass from BasicBrowser WindowPrimary
          %%
          case @current == InitValue then true
          else
+            Buttons Entries
+         in
+            Buttons = @buttons
+            Entries = @entries
             %%
             <<UnsetSelected>>
             %%
@@ -3537,19 +3624,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                         <<Bundraw(@current)>>
                         %%
                         %%
-                        case @buttons == InitValue then true
+                        case Buttons == InitValue then true
                         else
-                           local Buttons = @buttons in
-                              {Buttons.unzoom state disabled}
-                              {Buttons.top state disabled}
-                           end
+                           {Buttons.unzoom state disabled}
+                           {Buttons.top state disabled}
                         end
-                        case @entries == InitValue then true
+                        case Entries == InitValue then true
                         else
-                           local Entries = @entries in
-                              {Entries.unzoom state disabled}
-                              {Entries.top state disabled}
-                           end
+                           {Entries.unzoom state disabled}
+                           {Entries.top state disabled}
                         end
                         %%
                         %%
@@ -3589,6 +3672,10 @@ class BrowserClass from BasicBrowser WindowPrimary
          %%
          case @current == InitValue then true
          else
+            Buttons Entries
+         in
+            Buttons = @buttons
+            Entries = @entries
             %%
             <<UnsetSelected>>
             %%
@@ -3614,19 +3701,15 @@ class BrowserClass from BasicBrowser WindowPrimary
                         <<Bundraw(@current)>>
                         %%
                         %%
-                        case @buttons == InitValue then true
+                        case Buttons == InitValue then true
                         else
-                           local Buttons = @buttons in
-                              {Buttons.unzoom state disabled}
-                              {Buttons.top state disabled}
-                           end
+                           {Buttons.unzoom state disabled}
+                           {Buttons.top state disabled}
                         end
-                        case @entries == InitValue then true
+                        case Entries == InitValue then true
                         else
-                           local Entries = @entries in
-                              {Entries.unzoom state disabled}
-                              {Entries.top state disabled}
-                           end
+                           {Entries.unzoom state disabled}
+                           {Entries.top state disabled}
                         end
                         %%
                         %%
@@ -3853,19 +3936,24 @@ class BrowserClass from BasicBrowser WindowPrimary
                end
             end
          else
+            Buttons Entries
+         in
+            Buttons = @buttons
+            Entries = @entries
+            %%
             case @forward == nil then
-               % relational;
+               %% relational;
                if Next Last in
-                  Next = {Subtree @entries next}
-                  Last = {Subtree @entries last} then
+                  Next = {Subtree Entries next}
+                  Last = {Subtree Entries last} then
                   {Next state disabled}
                   {Last state disabled}
                else true
                fi
                % relational;
                if Next Last in
-                  Next = {Subtree @buttons next}
-                  Last = {Subtree @buttons last} then
+                  Next = {Subtree Buttons next}
+                  Last = {Subtree Buttons last} then
                   {Next state disabled}
                   {Last state disabled}
                else true
@@ -3873,16 +3961,16 @@ class BrowserClass from BasicBrowser WindowPrimary
             else
                % relational;
                if Next Last in
-                  Next = {Subtree @entries next}
-                  Last = {Subtree @entries last} then
+                  Next = {Subtree Entries next}
+                  Last = {Subtree Entries last} then
                   {Next state normal}
                   {Last state normal}
                else true
                fi
                % relational;
                if Next Last in
-                  Next = {Subtree @buttons next}
-                  Last = {Subtree @buttons last} then
+                  Next = {Subtree Buttons next}
+                  Last = {Subtree Buttons last} then
                   {Next state normal}
                   {Last state normal}
                else true
@@ -3893,16 +3981,16 @@ class BrowserClass from BasicBrowser WindowPrimary
             case @backward == nil then
                % relational;
                if Previous First in
-                  Previous = {Subtree @entries previous}
-                  First = {Subtree @entries first} then
+                  Previous = {Subtree Entries previous}
+                  First = {Subtree Entries first} then
                   {Previous state disabled}
                   {First state disabled}
                else true
                fi
                % relational;
                if Previous First in
-                  Previous = {Subtree @buttons previous}
-                  First = {Subtree @buttons first} then
+                  Previous = {Subtree Buttons previous}
+                  First = {Subtree Buttons first} then
                   {Previous state disabled}
                   {First state disabled}
                else true
@@ -3910,16 +3998,16 @@ class BrowserClass from BasicBrowser WindowPrimary
             else
                % relational;
                if Previous First in
-                  Previous = {Subtree @entries previous}
-                  First = {Subtree @entries first} then
+                  Previous = {Subtree Entries previous}
+                  First = {Subtree Entries first} then
                   {Previous state normal}
                   {First state normal}
                else true
                fi
                % relational;
                if Previous First in
-                  Previous = {Subtree @buttons previous}
-                  First = {Subtree @buttons first} then
+                  Previous = {Subtree Buttons previous}
+                  First = {Subtree Buttons first} then
                   {Previous state normal}
                   {First state normal}
                else true

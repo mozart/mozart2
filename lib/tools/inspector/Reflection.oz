@@ -315,6 +315,7 @@ define
                          [] array      then {ReflArray X InRs NewRs}
                          [] dictionary then {ReflDict X InRs NewRs}
                          [] procedure  then {ReflProc X InRs NewRs}
+                         [] fset       then {ReflFS X InRs NewRs}
                          [] _          then {ReflDrop InRs NewRs}
                          end
                       [] kinded(Type) then

@@ -27,6 +27,8 @@ fun
    {$ IMPORT}
    \insert 'OP.env'
    = IMPORT.'OP'
+   \insert 'AP.env'
+   = IMPORT.'AP'
 
    \insert 'DP/Connection.oz'
    \insert 'DP/Remote.oz'

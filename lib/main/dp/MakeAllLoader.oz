@@ -20,7 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-fun {MakeAllLoader IMPORT}
+fun lazy {MakeAllLoader IMPORT}
    {Application.loader
     {List.toRecord full
      {Append

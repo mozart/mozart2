@@ -28,6 +28,8 @@ local
 
    AllLoader = {MakeAllLoader full}
 
+   {Wait AllLoader}
+
 in
 
    {Application.exec

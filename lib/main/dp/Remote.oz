@@ -22,6 +22,12 @@
 
 local
 
+   \insert 'RemoteServer.oz'
+
+   \insert 'MakeAllLoader.oz'
+
+   IMPORT_ALL = {MakeAllLoader {Adjoin IMPORT full}}
+
    proc {StartRemote Host Cmd}
       try
          0={OS.system 'rsh '#Host#' '#Cmd#' '#[&&]}
@@ -30,11 +36,9 @@ local
       end
    end
 
-   fun {Idle}
-      unit
-   end
-
    class ComputeClient
+      prop
+         locking
       feat
          Run
          Ctrl
@@ -45,12 +49,19 @@ local
       meth init(Host)
          RunRet  RunPort ={Port.new RunRet}
          CtrlRet CtrlPort={Port.new CtrlRet}
-         Ticket={Connection.offer RunPort#CtrlPort}
          Show = {`Builtin` 'Show' 1}
       in
-         {StartRemote Host
-          {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
-         {Show started(RunRet CtrlRet)}
+         case {VirtualString.toAtom Host}==samehost then
+            {RemoteServer RunRet CtrlRet
+             IMPORT_ALL
+             proc {$} skip end}
+         else
+            Ticket={Connection.offer RunPort#CtrlPort}
+         in
+            {StartRemote Host
+             {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
+            {Show started(RunRet CtrlRet)}
+         end
          Run      <- RunRet.2
          {Show run}
          Ctrl     <- CtrlRet.2
@@ -62,8 +73,10 @@ local
       meth Send(Which What $)
          OldS NewS Ret
       in
-         {Port.send self.Which What}
-         OldS = (Which <- NewS)
+         lock
+            OldS = (Which <- NewS)
+            {Port.send self.Which What}
+         end
          {Wait OldS}
          Ret|NewS = OldS
          case Ret
@@ -75,9 +88,6 @@ local
       %% Run methods
       meth run(P $)
          ComputeClient,Send(Run P $)
-      end
-      meth idle($)
-         ComputeClient,Send(Run Idle $)
       end
 
       %% Ctrl methods

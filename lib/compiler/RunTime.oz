@@ -55,7 +55,7 @@ local
                case L1==L2 then {DescendArity Lr1 Lr2}
                else {DescendArity Ls1 Lr2}
                end
-            else {`RaiseError` object(arityMismatchDefaultMethod L1)}
+            else {Exception.raiseError object(arityMismatchDefaultMethod L1)}
             end
          end
       end

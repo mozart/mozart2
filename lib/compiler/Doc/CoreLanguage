@@ -301,16 +301,22 @@ S  ::=  <Statement>
 
 % printName
 <Variable>
-     printName:  atom
-     origin:     runTimeLibrary | putEnv | user | generated | error
      coord:      C
      isToplevel: bool
-     use:        unused | wildcard | linear | multiple
-
 
 % printName
-<RestrictedVariable> from <Variable>
+<UserVariable> from <Variable>
+     printName: atom
+     use:       unused | wildcard | linear | multiple
+
+% printName
+<RestrictedVariable> from <UserVariable>
      features: ( atom#C#bool | int#C#bool )+
+
+
+% (generated)
+<GeneratedVariable> from <Variable>
+     origin: atom
 
 
 % variable

@@ -38,8 +38,7 @@ Phrase            = fStepPoint(Phrase atom Coordinates)
                   | fApply(Phrase [Phrase] Coordinates)
                   | fProc(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
                   | fFun(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
-                  | fFunctor(Phrase [FunctorDescriptor] Phrase Phrase
-                             Coordinates)
+                  | fFunctor(Phrase [FunctorDescriptor] Coordinates)
                   | fClass(Phrase [ClassDescriptor] [Meth] Coordinates)
                   | fLocal(Phrase Phrase Coordinates)
                   | fBoolCase(Phrase Phrase OptElse Coordinates)
@@ -67,15 +66,18 @@ Variable          = NakedVariable
 Wildcard          = fWildcard(Coordinates).
 RecordArgument    = Phrase
                   | fColon(Feature Phrase).
-ProcFlag          = atom.   % for the moment: instantiate, copy, lazy
-FunctorDescriptor = fImport([ImportDecl] Coordinates)
+ProcFlag          = atom.   % for the moment: instantiate, copy, lazy, native
+FunctorDescriptor = fRequire([ImportDecl] Coordinates)
+                  | fPrepare(Phrase Phrase Coordinates)
+                  | fImport([ImportDecl] Coordinates)
                   | fExport([ExportDecl] Coordinates)
-                  | fProp([Phrase] Coordinates).
-ImportDecl        = fImportItem(NakedVariable [AliasedFeature] OptFrom).
+                  | fProp([Phrase] Coordinates)
+                  | fBody(Phrase Phrase Coordinates).
+ImportDecl        = fImportItem(NakedVariable [AliasedFeature] OptImportAt).
 AliasedFeature    = FeatureNoVar
                   | NakedVariable#FeatureNoVar.
-OptFrom           = fFrom(Atom)
-                  | fNoFrom.
+OptImportAt       = fImportAt(Atom)
+                  | fNoImportAt.
 ExportDecl        = fExportItem(NakedVariable)
                   | fExportItem(fColon(FeatureNoVar NakedVariable)).
 FDExpression      = fFdCompare(atom Phrase Phrase Coordinates)

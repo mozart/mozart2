@@ -12,8 +12,6 @@ fun
    instantiate
 \endif
    {NewDP IMPORT}
-   \insert 'Standard.env'
-       = IMPORT.'Standard'
    \insert 'SP.env'
        = IMPORT.'SP'
    \insert 'OP.env'

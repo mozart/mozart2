@@ -15,7 +15,12 @@ declare
    Base
    Dump
    \insert 'Base.env'
-      = Base
+= Base
+\ifdef STANDARD
+Standard
+\insert 'Standard.env'
+= Standard
+\endif
 in
 
 local
@@ -23,6 +28,9 @@ local
    Load = {`Builtin` load 2}
 in
    Base = {Load ComDIR#'Base'#ComEXT}
+\ifdef STANDARD
+   Standard = {{Load ComDIR#'Standard'#ComEXT} m}
+\endif
 end
 
 \insert 'Dump.oz'

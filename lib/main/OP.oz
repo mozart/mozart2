@@ -17,8 +17,6 @@ fun
    instantiate
 \endif
    {NewOP IMPORT}
-   \insert 'Standard.env'
-   = IMPORT.'Standard'
    \insert 'SP.env'
    = IMPORT.'SP'
 

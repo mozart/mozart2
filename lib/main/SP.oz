@@ -15,9 +15,6 @@ fun
    instantiate
 \endif
    {NewSP IMPORT}
-   \insert 'Standard.env'
-   = IMPORT.'Standard'
-
    \insert 'Foreign.oz'
    \insert 'System.oz'
    \insert 'Debug.oz'

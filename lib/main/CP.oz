@@ -12,8 +12,6 @@ fun
    instantiate
 \endif
    {NewCP IMPORT}
-   \insert 'Standard.env'
-       = IMPORT.'Standard'
    \insert 'SP.env'
        = IMPORT.'SP'
 in

@@ -12,8 +12,6 @@ fun
    instantiate
 \endif
    {NewWP IMPORT}
-   \insert 'Standard.env'
-       = IMPORT.'Standard'
    \insert 'OP.env'
        = IMPORT.'OP'
    \insert 'SP.env'

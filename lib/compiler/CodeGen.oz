@@ -2169,44 +2169,6 @@ local
                end
             else skip
             end
-         [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
-            {Arg1 getCodeGenValue(?Atomname)}
-            case {IsDet Atomname} andthen {IsLiteral Atomname} then
-               VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
-            else skip
-            end
-         [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
-            {Arg1 getCodeGenValue(?Atomname)}
-            case {IsDet Atomname} andthen {IsLiteral Atomname} then
-               VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
-            else skip
-            end
-         [] ',' then [Arg1 Arg2] = ActualArgs Value in
-            {Arg2 getCodeGenValue(?Value)}
-            case {IsDet Value} andthen {IsRecord Value}
-               andthen {Not CS.debugInfoControlSwitch}
-            then
-               RecordArity ActualArgs Regs Cont1 in
-               case {IsTuple Value} then
-                  RecordArity = {Width Value}
-                  ActualArgs = {ForThread RecordArity 1 ~1
-                                fun {$ In I} Value.I|In end nil}
-               else
-                  RecordArity = {Arity Value}
-                  ActualArgs = {Map RecordArity fun {$ I} Value.I end}
-               end
-               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-               case {{Arg1 getVariable($)} isToplevel($)} then
-                  Cont1 = vGenCall(_ {Arg1 reg($)} true
-                                   {Label Value} RecordArity Regs
-                                   {Designator getCoord($)} VTl)
-               else
-                  Cont1 = vApplMeth(_ {Arg1 reg($)}
-                                    {Label Value} RecordArity Regs
-                                    {Designator getCoord($)} VTl)
-               end
-            else skip
-            end
          [] 'New' then [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont in
             % this ensures that the created object is always a fresh
             % register and that the message is sent before the new
@@ -2255,6 +2217,43 @@ local
                   VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
                                      {Designator getCoord($)} VTl)
                else skip
+               end
+            else skip
+            end
+         elsecase CS.debugInfoControlSwitch then skip
+         elsecase Builtinname of '@' then [Arg1 Arg2] = ActualArgs Atomname in
+            {Arg1 getCodeGenValue(?Atomname)}
+            case {IsDet Atomname} andthen {IsLiteral Atomname} then
+               VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
+            else skip
+            end
+         [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
+            {Arg1 getCodeGenValue(?Atomname)}
+            case {IsDet Atomname} andthen {IsLiteral Atomname} then
+               VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
+            else skip
+            end
+         [] ',' then [Arg1 Arg2] = ActualArgs Value in
+            {Arg2 getCodeGenValue(?Value)}
+            case {IsDet Value} andthen {IsRecord Value} then
+               RecordArity ActualArgs Regs Cont1 in
+               case {IsTuple Value} then
+                  RecordArity = {Width Value}
+                  ActualArgs = {ForThread RecordArity 1 ~1
+                                fun {$ In I} Value.I|In end nil}
+               else
+                  RecordArity = {Arity Value}
+                  ActualArgs = {Map RecordArity fun {$ I} Value.I end}
+               end
+               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+               case {{Arg1 getVariable($)} isToplevel($)} then
+                  Cont1 = vGenCall(_ {Arg1 reg($)} true
+                                   {Label Value} RecordArity Regs
+                                   {Designator getCoord($)} VTl)
+               else
+                  Cont1 = vApplMeth(_ {Arg1 reg($)}
+                                    {Label Value} RecordArity Regs
+                                    {Designator getCoord($)} VTl)
                end
             else skip
             end

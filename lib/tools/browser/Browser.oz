@@ -390,7 +390,7 @@ in
 
                   %%
                   %% ignore faults in the current thread;
-               catch failure(debug:_) skip
+               catch failure(debug:_) then skip
                [] error(_ debug:_) then skip
                [] system(_ debug:_) then skip
                end

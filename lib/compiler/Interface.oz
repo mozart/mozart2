@@ -19,7 +19,7 @@
 %%% WARRANTIES.
 %%%
 
-class QuietInterface from ErrorListener.'class'
+class Interface from ErrorListener.'class'
    prop final
    attr InsertedFiles: nil SourceVS: "" Waiting: unit
    meth init(CompilerObject DoVerbose <= false)

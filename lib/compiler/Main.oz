@@ -32,7 +32,6 @@ import
    ErrorRegistry(put)
    Type   %--**(ask)
    Narrator('class')
-   Listener('class')
    ErrorListener('class')
    PrintName(is)
    Builtins   %--**(getInfo)
@@ -47,13 +46,12 @@ import
 \endif
 export
    Engine
+   Interface
    ParseOzFile
    ParseOzVirtualString
-   GenericInterface
-   QuietInterface
+   Assemble
    EvalExpression
    VirtualStringToValue
-   Assemble
 define
    local
       \insert FormatStrings
@@ -61,8 +59,7 @@ define
    in
       \insert CompilerClass
       \insert ParseOz
-      \insert GenericInterface
-      \insert QuietInterface
+      \insert Interface
       \insert Abstractions
       \insert Errors
    end

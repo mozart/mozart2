@@ -51,7 +51,10 @@ local
    BURL_open            = BURL.open
    BURL_load            = BURL.load
    Native_load          = fun {$ FN}
-                             {ObtainNative false FN}
+                             {ObtainNative false
+                              if {UrlIsRelative FN} then
+                                 {URL_expand {UrlResolve DotUrl FN}}
+                              else FN end}
                           end
    \insert UrlExpand.oz
 

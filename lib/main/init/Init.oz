@@ -45,6 +45,7 @@ require
 
 prepare
 
+   DotUrl         = {UrlMake './'}
    SystemHomeUrl  = {UrlToBase MozartHome}
    ContribHomeUrl = {UrlToBase ContribHome}
    OzScheme       = {VirtualString.toString DefaultURL.ozScheme}

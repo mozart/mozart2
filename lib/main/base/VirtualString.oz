@@ -49,7 +49,7 @@ local
             [] nil then nil
             else {Atom.toString V}
             end
-         [] byteString then V
+         [] byteString then {Boot_ByteString.toString V}
          [] tuple then
             case {Label V}
             of '#' then {AllToString {Width V} V ""}

@@ -2104,20 +2104,6 @@ in
             Emitter, AllocateAnyTemp(Reg ?R)
          [] vExHandler(_ Addr _ _ _ Cont InitsRS) then
             Emitter, PredictRegForInits(Reg InitsRS [Addr Cont] ?R)
-         [] vCreateCond(_ _ _ _ _ _ _) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vCreateOr(_ _ _ _ _ _) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vCreateEnumOr(_ _ _ _ _ _) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vCreateChoice(_ _ _ _ _ _) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vAsk(_ Cont) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vWait(_ Cont) then
-            Emitter, PredictPermReg(Reg Cont ?R)
-         [] vWaitTop(_ Cont) then
-            Emitter, PredictPermReg(Reg Cont ?R)
          [] vTestBool(_ _ Addr1 Addr2 Addr3 _ Cont) then Addrs in
             Addrs = [Addr1 Addr2 Addr3 Cont]
             Emitter, PredictRegForBranches(Addrs Reg ?R)

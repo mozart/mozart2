@@ -185,6 +185,7 @@ S  ::=  <Statement>
      methods:           <Method>*
      isVirtualToplevel: bool
 
+
 % 'meth' label '(' formalArgs [ '...' ] ')' [ '=' messageDesignator ]
 % statements 'end'
 <Method>

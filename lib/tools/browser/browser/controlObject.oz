@@ -134,7 +134,7 @@ in
          {Show 'ControlObject::Close method for the term ' # self.term}
 \endif
          %%
-         Object.closedFeature , close
+         Object.closable , close
 
          %%  overloaded depending on the "primitiveness" :-)
          %%
@@ -152,7 +152,7 @@ in
           # self.term}
 \endif
          %%
-         Object.closedFeature , close
+         Object.closable , close
          %%
          self , closeTerm
 
@@ -758,7 +758,7 @@ in
          {Show 'RootTermObject::Close is applied: ' # self.term}
 \endif
          %%
-         Object.closedFeature , close
+         Object.closable , close
 
          %% ... + removes a representation;
          {@termObj [SetCursorAt Close]}

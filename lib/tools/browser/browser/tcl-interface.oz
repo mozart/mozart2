@@ -448,20 +448,16 @@ in
                      case N of &-|_ then 'backward' else 'forward' end
 
                      %%
-                     thread
-                        Last = {Tk.returnInt o(BW index 'end')}
-                     end
-                     thread
-                        [FT FB] =
-                        {Map
-                         {GetStrs {Tk.return o(BW yview)} CharSpace nil}
-                         fun {$ E}
-                            case E of "0" then 0.
-                            elseof    "1" then 1.
-                            else {String.toFloat E}
-                            end
-                         end}
-                     end
+                     Last = {Tk.returnInt o(BW index 'end')}
+                     [FT FB] =
+                     {Map
+                      {GetStrs {Tk.return o(BW yview)} CharSpace nil}
+                      fun {$ E}
+                         case E of "0" then 0.
+                         elseof    "1" then 1.
+                         else {String.toFloat E}
+                         end
+                      end}
 
                      %%
                      %% that's the line just before the top one in
@@ -621,7 +617,7 @@ in
                %%
                proc {ButtonClickAction B X Y}
                   %%
-                  case B of '1' then thread {self setScrolling(X Y)} end
+                  case B of '1' then {self setScrolling(X Y)}
                   else skip
                   end
 
@@ -1256,8 +1252,8 @@ in
             Base = self.TclBase
 
             %%
-            thread I1 = {Tk.return o(BW index Base#M1)} end
-            thread I2 = {Tk.return o(BW index Base#M2)} end
+            I1 = {Tk.return o(BW index Base#M1)}
+            I2 = {Tk.return o(BW index Base#M2)}
 
             %%
             {Show 'DEBUG: Indices: ' # {Map [I1 I2] String.toAtom}}
@@ -1420,11 +1416,9 @@ in
 
             %%
             %% either we stay at the end of the text;
-            thread
             {self.BrowseWidget tk(m s insert '@'#X#','#Y)}
             V = {Tk.returnInt
                  o(self.BrowseWidget comp 'insert+1li' '==' 'end')} == 1
-            end
          end
       end
 
@@ -1448,15 +1442,8 @@ in
          {Show 'BrowserWindowClass::scrollToMark' # Mark}
 \endif
          %%
-         local V in
-            V = @ScrollingOn
-
-            %%
-            thread
-               case V then {self pickMark(Mark 'any')}
-               else skip
-               end
-            end
+         case @ScrollingOn then {self pickMark(Mark 'any')}
+         else skip
          end
       end
 
@@ -1579,9 +1566,7 @@ in
             Mark = self.Cursor
 
             %%
-            thread              % job
-               {X11ResourceCache getSmallestFont(SFont YRes)}
-            end
+            {X11ResourceCache getSmallestFont(SFont YRes)}
 
             %%
             %% we have to do this because text widget may be even not
@@ -1592,13 +1577,11 @@ in
             %%
             %%  The 'highlightthickness' should be set to zero (while
             %% these three components constitute the width 'overhead');
-            thread              % job
-               TWWidth =
-               {Tk.returnInt winfo(width BW)} - 2*ITWPad - 2*IBigBorder
-            end
+            TWWidth =
+            {Tk.returnInt winfo(width BW)} - 2*ITWPad - 2*IBigBorder
 
             %%
-            thread S1 S2 in     % job
+            local S1 S2 in      % job
                [S1 S2] = {GetStrs {Tk.return o(BW xview)} CharSpace nil}
 
                %%

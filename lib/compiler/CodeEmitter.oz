@@ -120,7 +120,7 @@ in
          @LocalEnvSize = @HighestEverY + 1
          @CodeTl = nil
          case self.debugInfoVarnamesSwitch then
-            case @HighestEverY == 0 andthen GRegs == nil then
+            case @HighestEverY == ~1 andthen GRegs == nil then
                % Emitting at least one `...Varname' instruction
                % flags this procedure as having been compiled with
                % the switch +debuginfovarnames:

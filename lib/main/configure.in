@@ -86,7 +86,7 @@ dnl *****************************************************************
 dnl FINALIZE
 dnl *****************************************************************
 
-AC_OUTPUT(Makefile env)
+AC_OUTPUT(Makefile)
 
 
 errprint(ifdef([OZ_INIT],

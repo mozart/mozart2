@@ -174,6 +174,7 @@ local
    PrimChunkTermObject
    DictionaryTermObject
    ArrayTermObject
+   BitArrayTermObject
    PortTermObject
    LockTermObject
    ThreadTermObject

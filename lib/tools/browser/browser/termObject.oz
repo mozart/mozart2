@@ -58,6 +58,7 @@ local
    GenChunkPrintName
    GenDictionaryPrintName
    GenArrayPrintName
+   GenBitArrayPrintName
    GenPortPrintName
    GenLockPrintName
    GenThreadPrintName
@@ -315,6 +316,14 @@ in
       %%
       case {Store read(StoreSmallNames $)} then '<Array>'
       else '<Array>'
+      end
+   end
+
+   %%
+   fun {GenBitArrayPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Bit Array>'
+      else '<Bit Array>'
       end
    end
 
@@ -1142,6 +1151,38 @@ in
       %%
       meth otherwise(Message)
          ControlObject , processOtherwise('ArrayObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Bit Arrays;
+   %%
+   class BitArrayTermObject from MetaTermObject
+      %%
+      feat
+         type: T_BitArray
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'BitArrayTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenBitArrayPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('BitArrayObject::' Message)
       end
 
       %%

@@ -194,6 +194,7 @@ in
             elsecase {Array.is Term} then T_Array
             elsecase {Port.is Term} then T_Port
             elsecase {Lock.is Term} then T_Lock
+            elsecase {BitArray.is Term} then T_BitArray
             elsecase CW of 0 then T_PrimChunk else T_CompChunk
             end
 
@@ -229,6 +230,7 @@ in
       [] !T_PrimChunk      then PrimChunkTermObject
       [] !T_Dictionary     then DictionaryTermObject
       [] !T_Array          then ArrayTermObject
+      [] !T_BitArray       then BitArrayTermObject
       [] !T_Port           then PortTermObject
       [] !T_Lock           then LockTermObject
       [] !T_Thread         then ThreadTermObject
@@ -273,6 +275,7 @@ in
       [] !T_PrimChunk      then false
       [] !T_Dictionary     then false
       [] !T_Array          then false
+      [] !T_BitArray       then false
       [] !T_Lock           then false
       [] !T_Thread         then false
       [] !T_Space          then false
@@ -317,6 +320,7 @@ in
       [] !T_PrimChunk      then true
       [] !T_Dictionary     then true
       [] !T_Array          then true
+      [] !T_BitArray       then true
       [] !T_Lock           then true
       [] !T_Thread         then true
       [] !T_Space          then true

@@ -96,6 +96,7 @@ T_CompClass     = {NewName}
 %% other chunks:
 T_Dictionary    = {NewName}
 T_Array         = {NewName}
+T_BitArray      = {NewName}
 T_Port          = {NewName}
 T_Lock          = {NewName}
 %% first-class threads and spaces;

@@ -71,6 +71,8 @@ OZFLAGS =
 OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c
 
+.PHONY: all bootstrap install check dirs clean veryclean distclean depend
+
 all: oztest
 
 bootstrap:
@@ -115,10 +117,10 @@ distclean: veryclean
 
 include $(SRCTOP)/share/Makefile.boot
 
-bootstrap:
-
 Makefile: Makefile.in ../config.status
         cd .. && ./config.status
 
 ../config.status: ../configure
         cd .. && ./config.status --recheck
+
+depend:

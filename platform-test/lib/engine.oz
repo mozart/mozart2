@@ -84,8 +84,11 @@ in
              {Ask S}
           end
           fun {$ X} X==succeeded(suspended) end}
-      else
+      elsecase {Procedure.arity T}
+      of 0 then
          {RawTest fun {$} {T} true end fun {$ X} X end}
+      [] 1 then
+         {RawTest T fun {$ X} X end}
       end
    end
 

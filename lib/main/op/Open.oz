@@ -164,7 +164,7 @@ in
       %% Exception handling
       %%
       proc {RaiseClosed S M}
-         {`Raise` {Exception.system open(alreadyClosed S M)}}
+         {Raise {Exception.system open(alreadyClosed S M)}}
       end
 
       %%
@@ -196,7 +196,7 @@ in
                self.ReadLock  = {NewLock}
                self.WriteLock = {NewLock}
             catch failure(debug:_) then
-               {`Raise` {Exception.system open(alreadyInitialized self M)}}
+               {Raise {Exception.system open(alreadyInitialized self M)}}
             end
          end
 
@@ -272,21 +272,21 @@ in
                DescClass, InitLocks(M)
                %% Handle read&write flags
                case {FlagsToOS FlagS}
-               of false then {`Raise` {Exception.system
-                                       open(illegalFlags self M)}}
+               of false then {Raise {Exception.system
+                                     open(illegalFlags self M)}}
                elseof OSFlagS then
                   %% Handle access modes
                   case {ModeToOS Mode}
-                  of false then {`Raise` {Exception.system
-                                          open(illegalModes self M)}}
+                  of false then {Raise {Exception.system
+                                        open(illegalModes self M)}}
                   elseof OSModeS then
                      %% Handle special filenames
                      case
                         (Name==NoArg andthen Url==NoArg) orelse
                         (Name\=NoArg andthen Url\=NoArg)
                      then
-                        {`Raise` {Exception.system
-                                  open(nameOrUrl self M)}}
+                        {Raise {Exception.system
+                                open(nameOrUrl self M)}}
                      else
                         D = case Name
                             of 'stdin'  then {OS.fileDesc 'STDIN_FILENO'}
@@ -297,8 +297,8 @@ in
                                   {Member 'O_RDWR'   OSFlagS} orelse
                                   {Member 'O_WRONLY' OSFlagS}
                                then
-                                  {`Raise` {Exception.system
-                                            open(urlIsReadOnly self M)}}
+                                  {Raise {Exception.system
+                                          open(urlIsReadOnly self M)}}
                                   _
                                else {Resolve.open Url}
                                end

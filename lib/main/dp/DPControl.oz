@@ -5,6 +5,8 @@ import
 export
    SetDGC
    GetDGC
+   GetMsgPriority
+   SetMsgPriority
 define
    %%
    %% Force linking of base library
@@ -39,5 +41,13 @@ define
       elseof A then
          {Map A fun{$ V} V.1 end}
       end
+   end
+
+   fun{GetMsgPriority}
+      {C_DPMisc.getMsgPriority}
+   end
+
+   proc{SetMsgPriority Msg Prio}
+      {C_DPMisc.setMsgPriority Msg Prio}
    end
 end

@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1998
+%%%   Leif Kornstaedt, 1998-1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -33,14 +33,7 @@ local
                   'export': Export
                   'apply': Apply)}
    end
-
-   fun {GetFeatures Info}
-      case Info.type of Fs=_|_ then Fs
-      else nil
-      end
-   end
 in
-   Functor = 'functor'(is:          IsFunctor
-                       new:         NewFunctor
-                       getFeatures: GetFeatures)
+   Functor = 'functor'(is:  IsFunctor
+                       new: NewFunctor)
 end

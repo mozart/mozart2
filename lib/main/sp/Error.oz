@@ -179,11 +179,7 @@ in
       end
 
       fun {FormatPartialAppl A Xs N}
-         P = case {IsProcedure A}
-             then {System.printName A}
-             else A end
-      in
-         '{' # pn(P) #
+         '{' # oz(A) #
          case Xs of nil then '' else ' ' # list(Xs ' ') end #
          case N==0 then "}"
          else {Loop.forThread 1 N 1

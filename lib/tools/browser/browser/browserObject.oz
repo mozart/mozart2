@@ -2505,9 +2505,6 @@ class BrowserClass
          %%
          NewBrowser =
          create $ from  BrowserClass
-\ifdef FEGRAMED
-                     FE_BrowserClass
-\endif
             with init(areMenus: {@store read(StoreAreMenus $)}
                       areButtons: {@store read(StoreAreButtons $)}
                       standAlone: True    % even from embedded browser;

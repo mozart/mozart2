@@ -37,31 +37,34 @@ BrowserDepthInc              = browserDepthInc
 BrowserWidthInc              = browserWidthInc
 
 %%
-%% Scrolling - boolean;
-% BrowserSmoothScrolling       = smoothScrolling
-
-%%
-%% Representation mode - tree, graph or minGraph;
+%% Representation mode - atoms 'tree', 'graph' or 'minGraph';
 BrowserRepMode               = browserRepMode
 
 %%
 %% Extensions - booleans;
 BrowserChunkFields           = browserChunkFields
-BrowserVirtualStrings        = browserVirtualStrings
-
-%%
-%% Layout modes - booleans;
-BrowserRecordFieldsAligned   = browserRecordFieldsAligned
 BrowserNamesAndProcsShort    = browserNamesAndProcsShort
 
 %%
-%% Fonts - atoms from beneath;
-BrowserFont                  = browserFont
-%% Known fonts are:
-%% fixed:   '6x10', '6x12', '6x13bold', '6x13', '7x13bold', '7x13',
-%%           '8x13bold', '8x13', '9x15bold', '9x15', and '10x20';
-%% courier: '24', '24bold', '18', '18bold', '14', '14bold',
-%%           '12', '12bold', '10', '10bold';
+%% A special representatio type - show virtual strings as strings;
+BrowserVirtualStrings        = browserVirtualStrings
 
+%%
+%% Fonts - records of the shape
+%%    font(size:Size wght:Weight)
+%% where 'Size' is an integer out of 10,12,14,18 and 24, and
+%% 'Weight' is an atom out of 'medium' and 'bold'.
+%% Normally, Browser takes matching Adobe courier fonts;
+BrowserFont                  = browserFont
+
+%%
 %% Buffer size - non-negative integers;
 BrowserBufferSize            = browserBufferSize
+
+%%
+%% Separators between buffer entries - boolean;
+BrowserSeparators            = browserSeparators
+
+%%
+%% Layout mode - boolean;
+BrowserRecordFieldsAligned   = browserRecordFieldsAligned

@@ -690,8 +690,8 @@ in
                %% appropriate radio button;
                thread   % job
                   {self.browserObj
-                   setParameter(BrowserFont
-                                font(size:IFont.size wght:IFont.wght))}
+                   setParameter(name:BrowserFont
+                                value:font(size:IFont.size wght:IFont.wght))}
                end
                %%
                false
@@ -1399,13 +1399,6 @@ in
          %%
          {self.BrowseWidget tk(ins self.Cursor '\n')}
          cursorCol <- 0
-
-         %%
-%        case {self.store read(StoreSmoothScrolling $)} then
-%           {self.BrowseWidget tk(see self.Cursor)}
-%           {Tk.send update(idletasks)}
-%        else skip
-%        end
       end
 
       %%
@@ -1544,7 +1537,7 @@ in
             %%
             {self.BrowseWidget tk(tag add TB#Tag TB#M1 TB#M2)}
             {self.BrowseWidget tk(tag conf TB#Tag
-                                  background:black foreground:white)}
+                                  background:IEntryColor foreground:black)}
 
             %%
             HighlightTag <- Tag
@@ -1672,6 +1665,50 @@ in
       end
 
       %%
+      meth setTkVarUpdateProc(TkVar UpdateProc)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setTkVarUpdateProc is applied'}
+\endif
+         local
+            A = {New Tk.action tkInit(parent: self.Window
+                                      action: proc{$ _ _ _}
+                                                 %% is not interesting;
+                                                 local A in
+                                                    A = {TkVar tkReturn($)}
+                                                    {UpdateProc A}
+                                                 end
+                                              end)}
+         in
+            %%
+            {Tk.send trace(variable TkVar w A)}
+         end
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setTkVarUpdateProc is finished'}
+\endif
+      end
+
+      %%
+      %% Create a tcl/tk variable - for check&radio buttons/menu entries;
+      %% UpdateProc is called every time when the cariable changes
+      %% its value, i.e. when user clicks a button that controls it;
+      %% UpdateProc is an unary procedure that gets the (actual) value
+      %% of the variable as the string;
+      %%
+      meth createTkVar(FValue UpdateProc ?TkVar)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::createTkVar'#FValue}
+\endif
+         %%
+         TkVar = {New Tk.variable tkInit(FValue)}
+         BrowserWindowClass , setTkVarUpdateProc(TkVar UpdateProc)
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::createTkVar is finished'}
+\endif
+      end
+
+      %%
       meth setTkVar(Var Value)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTkVar'}
@@ -1726,14 +1763,13 @@ in
       %% (which is described in the style 'view(font(misc(menu)))');
       %% Value is the 'active' value of this (particular) radio button;
       %%
-      meth addRadioEntry(MenuDesc Label TkVar Value ?EntryProc)
+      meth addRadioEntry(MenuDesc Label TkVar Value)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::addRadioEntry'#
           {String.toAtom {VirtualString.toString Label}}}
 \endif
          %%
-         case @menuBar == InitValue then
-            EntryProc = proc {$ _ _} skip end
+         case @menuBar == InitValue then skip
          else Menu in
             %%
             %%  This can be also done by 'Tk.menuentry.radiobutton',
@@ -1746,22 +1782,36 @@ in
             {Menu tk(add radio label:Label value:Value variable:TkVar)}
 
             %%
-            EntryProc =
-            proc {$ Action Arg}
-               case Action
-               of state  then {Menu tk(entryconf Label#'*' state: Arg)}
-               [] label  then {Menu tk(entryconf Label#'*' label: Arg)}
-               [] delete then {Menu tk(del Label#'*')}
-               else {BrowserError 'Undefined action for a menu entry'}
-               end
-            end
-
-            %%
          end
 
          %%
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::addRadioEntry is finished'}
+\endif
+      end
+
+      %%
+      meth removeRadioEntry(MenuDesc N)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::removeRadioEntry'}
+\endif
+         %%
+         case @menuBar == InitValue then skip
+         else Menu in
+            %%
+            %%  This can be also done by 'Tk.menuentry.radiobutton',
+            %% but i do it so (as an example, if you want);
+
+            %%
+            Menu = {DerefEntry @menuBar MenuDesc}
+
+            %%
+            {Menu tk(delete N)}
+         end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::removeRadioEntry is finished'}
 \endif
       end
 
@@ -1955,8 +2005,8 @@ in
                                  pack:    false
                                  default: 1)
          Title = {New Tk.label tkInit(parent:     self
-                                      text:       'Oz Browser')}
-                                      % foreground: AboutColor)}
+                                      text:       'Oz Browser'
+                                      foreground: IAboutColor)}
          self.TitleW = Title
          {Wait {FoldL_Obj self [IAFont1 IAFont2 IAFont3] SetTitleFont true}}
 
@@ -2024,7 +2074,7 @@ in
                                                    text:   'Size')}
          Left = {New Tk.frame tkInit(parent: SizeFrame.inner)}
          Size = {New Tk.entry tkInit(parent: Left
-                                     % back:   EntryColor
+                                     back:   IEntryColor
                                      width:  ISEntryWidth)}
          Right = {New Tk.frame tkInit(parent: SizeFrame.inner)}
          SepFrame  = {New TkTools.textframe tkInit(parent: self
@@ -2175,6 +2225,7 @@ in
                {WO.browserObj SetWidth(W)}
                {WO.browserObj SetDInc(DI)}
                {WO.browserObj SetWInc(WI)}
+               {WO.browserObj UpdateSizes}
                {self tkClose}
                {self close}
             else skip
@@ -2202,10 +2253,10 @@ in
                         tkInit(parent:self text:'Browse Limit')}
          LimitsLeft  = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
          Depth       = {New Tk.entry tkInit(parent: LimitsLeft
-                                            % back:   EntryColor
+                                            back:   IEntryColor
                                             width:  ISEntryWidth)}
          Width       = {New Tk.entry tkInit(parent: LimitsLeft
-                                            % back:   EntryColor
+                                            back:   IEntryColor
                                             width:  ISEntryWidth)}
          LimitsRight = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
 
@@ -2213,10 +2264,10 @@ in
                      tkInit(parent:self text:'Expansion Increment')}
          IncLeft  = {New Tk.frame tkInit(parent:IncFrame.inner)}
          DepthInc = {New Tk.entry tkInit(parent: IncLeft
-                                         % back:   EntryColor
+                                         back:   IEntryColor
                                          width:  ISEntryWidth)}
          WidthInc = {New Tk.entry tkInit(parent: IncLeft
-                                         % back:   EntryColor
+                                         back:   IEntryColor
                                          width:  ISEntryWidth)}
          IncRight = {New Tk.frame tkInit(parent:IncFrame.inner)}
       in

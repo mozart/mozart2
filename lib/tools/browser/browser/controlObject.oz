@@ -510,12 +510,13 @@ in
             %%
             %% it's going to be browsed just at the current cursor
             %% position;
-            Obj = {New ObjClass Make(term:       ST
-                                     depth:      STDepth
-                                     numberOf:   N
-                                     parentObj:  self
-                                     store:      Store
-                                     iTermsStore: self.TermsStore)}
+            Obj = {New ObjClass noop}
+            {Obj Make(term:       ST
+                      depth:      STDepth
+                      numberOf:   N
+                      parentObj:  self
+                      store:      Store
+                      iTermsStore: self.TermsStore)}
 
             %%
             case ObjClass == ReferenceTermObject then StreamObj RefType in
@@ -648,15 +649,14 @@ in
             TDepth <- Depth
 
             %%  first phase: update width;
-            ActWidth = {self  getShownWidth($)}
+            ActWidth = {self getShownWidth($)}
             MaxWidth = {self.store read(StoreWidth $)}
 
             %%
             %%  ... check whether we are allowed to show more subterms
             %% than actually shown;
-            case
-               {self  hasCommas($)}
-               andthen ActWidth < MaxWidth then
+            case {self  hasCommas($)} andthen ActWidth < MaxWidth
+            then
                {{self.store read(StoreStreamObj $)}
                 enq(expandWidth(self (MaxWidth-ActWidth)))}
             else skip
@@ -760,11 +760,17 @@ in
                       obj:      $)
 
          %%
-         %% Note that 'makeUnderline' inserts yet another '\n'. The
-         %% general convention is that outside the
-         %% 'RootTermObject::Make' scope the 'end' index in the text
-         %% widget has zero indentation;
-         self.underline = {WidgetObjIn [insertNL makeUnderline($)]}
+         {WidgetObjIn insertNL}
+         self.underline =
+         case {Store read(StoreAreSeparators $)} then
+            %%
+            %% Note that 'makeUnderline' inserts yet another '\n'. The
+            %% general convention is that outside the
+            %% 'RootTermObject::Make' scope the 'end' index in the text
+            %% widget has zero indentation;
+            {WidgetObjIn makeUnderline($)}
+         else InitValue
+         end
 
          %%
          {@termObj scrollTo}
@@ -784,7 +790,11 @@ in
          {@termObj Close}
 
          %%
-         {self.WidgetObj [removeNL removeUnderline(self.underline)]}
+         {self.WidgetObj removeNL}
+         case self.underline \= InitValue then
+            {self.WidgetObj removeUnderline(self.underline)}
+         else skip
+         end
 \ifdef DEBUG_CO
          {Show 'RootTermObject::Close is finished'}
 \endif

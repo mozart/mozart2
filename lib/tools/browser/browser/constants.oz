@@ -110,7 +110,6 @@ StoreFillStyle       = {NewName}
 StoreArityType       = {NewName}
 StoreWidthInc        = {NewName}
 StoreDepthInc        = {NewName}
-% StoreSmoothScrolling = {NewName}
 StoreAreSeparators   = {NewName}
 StoreRepMode         = {NewName}
 StoreSmallNames      = {NewName}
@@ -126,6 +125,7 @@ StoreBrowserObj      = {NewName}
 StoreStreamObj       = {NewName}
 StoreOrigWindow      = {NewName}
 StoreScreen          = {NewName}
+StoreProcessAction   = {NewName}
 %%
 StoreBreak           = {NewName}
 %%
@@ -184,10 +184,24 @@ IMITitle    = 'Messages'
 %%
 IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
 IMIBitmap   = !OzHome # '/lib/bitmaps/browserMIcon.xbm'
+%%
+%IStopBitmap = '@' # !OzHome # '/lib/bitmaps/stop.xbm'
+IEjectBitmap= '@' # !OzHome # '/lib/bitmaps/eject.xbm'
+IPlayBitmap = '@' # !OzHome # '/lib/bitmaps/play.xbm'
+IPauseBitmap= '@' # !OzHome # '/lib/bitmaps/pause.xbm'
+%%
+%IStopWidth  = 30
+IEjectWidth = 40
+IPlayWidth  = 20
+IPauseWidth = 20
 
 %% curosr name (see include file X11/cursorfont.h);
 ICursorName    = 'hand2'
 ICursorClock   = 'watch'
+
+%%
+IAboutColor = blue
+IEntryColor  = wheat
 
 %%
 %% he following two are in pixels (no subwindows are gridded);
@@ -315,8 +329,7 @@ ISmallNames       = true
 IAreVSs           = false
 IDepthInc         = 1
 IWidthInc         = 1
-% ISmoothScrolling  = false
-ISeparators       = false
+ISeparators       = true
 IRepMode          = !TreeRep
 %% ... only one of the previous two should be toggled one;
 IBufferSize       = 15

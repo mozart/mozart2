@@ -189,6 +189,9 @@ local
    DoEquate
    DoSetParameter
    DoGetParameter
+   DoAddProcessAction
+   DoSetProcessAction
+   DoRemoveProcessAction
    DoCreateWindow
 
    %%
@@ -279,9 +282,9 @@ in
       %% browser object - hidden methods, to be used by Browser's
       %% window manager and tcl/tk interface;
       [Reset SetBufferSize ChangeBufferSize SetSelected UnsetSelected
-       SelExpand SelShrink SelShow SelZoom SelDeref About SetDepth
-       SetWidth ChangeWidth SetDInc ChangeDInc SetWInc ChangeWInc
-       UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
+       Pause Continue SelExpand SelShrink Process SelZoom SelDeref About
+       SetDepth SetWidth ChangeWidth SetDInc ChangeDInc SetWInc
+       ChangeWInc UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
 
       %%
    in
@@ -431,6 +434,38 @@ in
 
       %%
       %%
+      meth addProcessAction(Action Label)
+         case @browserObj == InitValue then skip
+         else {@browserObj addProcessAction(action:Action label:Label)}
+         end
+      end
+
+      %%
+      %%
+      meth setProcessAction(Action)
+         case @browserObj == InitValue then skip
+         else {@browserObj setProcessAction(action:Action)}
+         end
+      end
+
+      %%
+      %%
+      meth setProcessAction(Action)
+         case @browserObj == InitValue then skip
+         else {@browserObj setProcessAction(action:Action)}
+         end
+      end
+
+      %%
+      %%
+      meth removeProcessAction(Action)
+         case @browserObj == InitValue then skip
+         else {@browserObj removeProcessAction(action:Action)}
+         end
+      end
+
+      %%
+      %%
       meth removeBrowser
          browserObj <- InitValue
       end
@@ -513,6 +548,30 @@ in
    end
 
    %%
+   proc {DoAddProcessAction Action Label}
+      case {IsDeepGuard} then
+         {Show 'BrowserModule.addProcessAction from a deep guard?'}
+      else {DefaultBrowser addProcessAction(Action Label)}
+      end
+   end
+
+   %%
+   proc {DoSetProcessAction Action}
+      case {IsDeepGuard} then
+         {Show 'BrowserModule.setProcessAction from a deep guard?'}
+      else {DefaultBrowser setProcessAction(Action)}
+      end
+   end
+
+   %%
+   proc {DoRemoveProcessAction Action}
+      case {IsDeepGuard} then
+         {Show 'BrowserModule.removeProcessAction from a deep guard?'}
+      else {DefaultBrowser removeProcessAction(Action)}
+      end
+   end
+
+   %%
    proc {DoCreateWindow}
       case {IsDeepGuard} then
          {Show 'BrowserModule.createWindow from a deep guard?'}
@@ -530,13 +589,16 @@ in
 
    %%
    %% 'Browse' module;
-   BrowserModule = browse(equate:       DoEquate
-                             setParameter: DoSetParameter
-                             getParameter: DoGetParameter
-                             createWindow: DoCreateWindow
-                             browserClass: BrowserClass
-                             throwBrowser: DoThrowBrowser
-                             browse:       Browse)
+   BrowserModule = browse(equate:              DoEquate
+                          setParameter:        DoSetParameter
+                          getParameter:        DoGetParameter
+                          addProcessAction:    DoAddProcessAction
+                          setProcessAction:    DoSetProcessAction
+                          removeProcessAction: DoRemoveProcessAction
+                          createWindow:        DoCreateWindow
+                          browserClass:        BrowserClass
+                          throwBrowser:        DoThrowBrowser
+                          browse:              Browse)
 
    %%
    %%

@@ -26,8 +26,11 @@ class WindowManagerClass from MyClosableObject BatchObject
 
    %%
    attr
-      window:  InitValue        %  the window object itself;
-      menu:    InitValue        %  menubar;
+      window:      InitValue    %  the window object itself;
+   %%
+      actionVar:   InitValue    %  tcl's variable;
+      actions:     InitValue    %  dictionary of actions;
+      nextANumber: InitValue    %  ... and a next free index in it;
 
    %%
    %%
@@ -47,20 +50,13 @@ class WindowManagerClass from MyClosableObject BatchObject
          [] close             then browser(close)
          [] clear             then browser(clear)
          [] clearAllButLast   then browser(clearAllButLast)
-         [] expand            then navigate(expand)
-         [] shrink            then navigate(shrink)
-         [] deref             then navigate(deref)
-         [] rebrowse          then navigate(rebrowse)
-         [] zoom              then navigate(zoom)
-         [] showOPI           then navigate(showOPI)
-         [] newView           then navigate(newView)
-%        [] smoothScrolling   then view(smoothScrolling)
-         [] showGraph         then view(showGraph)
-         [] showMinGraph      then view(showMinGraph)
-         [] arityType         then view(arityType)
-         [] areVSs            then view(areVSs)
-         [] smallNames        then view(smallnames)
-         [] fillStyle         then view(fillStyle)
+         [] expand            then selection(expand)
+         [] shrink            then selection(shrink)
+         [] deref             then selection(deref)
+         [] rebrowse          then selection(rebrowse)
+         [] zoom              then selection(zoom)
+         [] process           then selection(process)
+         [] newView           then selection(newView)
          else InitValue
          end
       end
@@ -70,7 +66,8 @@ class WindowManagerClass from MyClosableObject BatchObject
       fun {$ Button}
          case Button
          of break             then break
-         [] unselect          then unselect
+         [] continue          then continue
+         [] pause             then pause
          else InitValue
          end
       end
@@ -117,11 +114,13 @@ class WindowManagerClass from MyClosableObject BatchObject
 \endif
       %%
       case {self.store read(StoreAreMenus $)} then skip
-      else Store BO Window Menus in
+      else Store BO Window Menus ActionVar Actions in
          %%
          Store = self.store
          BO = self.browserObj
          Window = @window
+         Actions = {Dictionary.new}
+         actions <- Actions
 
          %%
          %%  All the elements of the menubar
@@ -140,7 +139,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                             separator
 
                             %%
-%                           command(label:   'Toggle menus'
+%                           command(label:   'Toggle Menus'
 %                                   % key:     ctrl(alt(m))
 %                                   acc:     '   C-A-m'
 %                                   action:  BO#toggleMenus
@@ -159,7 +158,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                             separator
 
                             %%
-                            command(label:   'Refine layout'
+                            command(label:   'Refine Layout'
                                     % key:     ctrl(l)
                                     acc:     '     C-l'
                                     action:  BO#checkLayout
@@ -183,8 +182,8 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     feature: close)]
                      feature: browser)
 
-          %% 'Navigate' menu;
-          menubutton(text: 'Navigate'
+          %% 'Selection' menu;
+          menubutton(text: 'Selection'
                      menu: [%%
                             command(label:   'Expand'
                                     % key:     e
@@ -217,17 +216,23 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     acc:     '       z'
                                     action:  BO#SelZoom
                                     feature: zoom)
-                            command(label:   'Show in OPI'
-                                      % key:     ctrl(s)
-                                      acc:     '     C-s'
-                                      action:  BO#SelShow
-                                      feature: showOPI)
-                            command(label:   'New view'
+                            command(label:   'New View'
                                     % key:     ctrl(n)
                                     acc:     '     C-n'
                                     action:  BO#createNewView
-                                    feature: newView)]
-                     feature: navigate)
+                                    feature: newView)
+                            separator
+
+                            %%
+                            cascade(label:   'Process Action'
+                                    menu:    nil
+                                    feature: action)
+                            command(label:   'Process'
+                                    % key:     ctrl(p)
+                                    acc:     '     C-p'
+                                    action:  BO#Process
+                                    feature: process)]
+                     feature: selection)
 
           %% 'Buffer' menu;
           menubutton(text: 'Options'
@@ -253,24 +258,55 @@ class WindowManagerClass from MyClosableObject BatchObject
          %%
          %%  create & pack it;
          {Window [createMenuBar(Menus)
-                  pushButton(break(text:   'Break'
-                                   action: BO#break))
-                  pushButton(unselect(text:   'Unselect'
-                                      action: BO#UnsetSelected))
+                  pushButton(break(%%
+                                   % text:   'Break'
+                                   action: BO#break
+                                   bitmap: IEjectBitmap
+                                   bd: 0
+                                   anchor: 'e'
+                                   width: IEjectWidth))
+                  pushButton(continue(%%
+                                      % text:   'Continue'
+                                      action: BO#Continue
+                                      bitmap: IPlayBitmap
+                                      bd: 0
+                                      anchor: 'e'
+                                      width: IPlayWidth))
+                  pushButton(pause(%%
+                                   % text:   'Pause'
+                                   action: BO#Pause
+                                   bitmap: IPauseBitmap
+                                   bd: 0
+                                   anchor: 'e'
+                                   width: IPauseWidth))
+                  createTkVar(0 % must be 0;
+                              proc {$ V}
+                                 Action = {Dictionary.get Actions
+                                           {String.toInt V}}.action
+                              in
+                                 %%
+                                 {Store store(StoreProcessAction Action)}
+                              end
+                              ActionVar)
                   exposeMenuBar]}
+         actionVar <- ActionVar
+         nextANumber <- 1
 
          %%
          %%  everything else is done asynchronously;
          thread
             %%
             %% no "tear-off" menus;
-            {Window noTearOff([browser(menu) navigate(menu) options(menu)])}
+            {Window noTearOff([browser(menu)
+                               selection(menu)
+                               selection(action(menu))
+                               options(menu)])}
 
             %%
             %% Key bindings;
             {Window [bindKey(key: ctrl(c)      action: BO#break)
                      bindKey(key: ctrl(b)      action: BO#rebrowse)
-                     bindKey(key: ctrl(s)      action: BO#SelShow)
+                     bindKey(key: ctrl(p)      action: BO#Process)
                      bindKey(key: ctrl(n)      action: BO#createNewView)
                      bindKey(key: ctrl(l)      action: BO#checkLayout)
                      bindKey(key: ctrl(alt(m)) action: BO#toggleMenus)
@@ -281,6 +317,12 @@ class WindowManagerClass from MyClosableObject BatchObject
                      bindKey(key: d            action: BO#SelDeref)
                      bindKey(key: e            action: BO#SelExpand)
                      bindKey(key: s            action: BO#SelShrink)]}
+
+            %%
+            {Window addRadioEntry(selection(action(menu))
+                                  'Show' ActionVar 0)}
+            {Dictionary.put Actions 0 r(action:Show number:0)} % must be 0s;
+            {Store store(StoreProcessAction Show)}
 
             %%
          end
@@ -356,6 +398,9 @@ class WindowManagerClass from MyClosableObject BatchObject
          {self.store read(StoreAreMenus $)}
       then
          {@window closeMenuBar}
+         actions <- InitValue
+         actionVar <- InitValue
+         nextANumber <- InitValue
          {self.store store(StoreAreMenus false)}
       else skip
       end
@@ -379,6 +424,9 @@ class WindowManagerClass from MyClosableObject BatchObject
          %%
          {@window close}
          window <- InitValue
+         actions <- InitValue
+         actionVar <- InitValue
+         nextANumber <- InitValue
          {self.store store(StoreIsWindow false)}
       end
 \ifdef DEBUG_WM
@@ -438,13 +486,109 @@ class WindowManagerClass from MyClosableObject BatchObject
          WindowManagerClass , WrapMenuBar(buttonsDisable(Bs))
 
          %%
-         case Arg of [break] then
+         case {Filter Arg fun {$ E} E == break end} of [break] then
             WindowManagerClass , WrapWindow(setDefaultCursor)
          else skip
          end
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::entriesDisable is finished'}
+\endif
+   end
+
+   %%
+   %%
+   meth addAction(Action Label)
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::addProcessAction is applied'}
+\endif
+      %%
+      case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+      then Actions N PA in
+         Actions = @actions
+         N = @nextANumber
+         PA = {Dictionary.get Actions (N-1)}      % cannot be empty;
+         {@window addRadioEntry(selection(action(menu)) Label @actionVar N)}
+         {Dictionary.put @actions N r(action:Action number:(PA.number+1))}
+         nextANumber <- N + 1
+      else skip
+      end
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::addProcessAction is finished'}
+\endif
+   end
+
+   %%
+   %%
+   meth removeAction(Action)
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::removeProcessAction is applied'}
+\endif
+      %%
+      case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+      then Window Actions in
+         Window = @window
+         Actions = @actions
+         {ForAll
+          {List.filter {Dictionary.keys Actions}
+           fun {$ K}
+              case {Value.status Action}
+              of free      then false
+              [] kinded(_) then false
+              else
+                 {Dictionary.get Actions K}.action == Action orelse
+                 (Action == 'all' andthen K \= 0)
+              end
+           end}
+          proc {$ N}
+             {Window removeRadioEntry(selection(action(menu)) N)}
+             {Dictionary.remove Actions N}
+          end}
+
+         %%
+         %% Slide numbers - since menu entries could get new
+         %% indexes (after executing the code above);
+         nextANumber <-
+         {List.foldL
+          {Sort {Dictionary.keys Actions} `<`}
+          fun {$ I K}
+             {Dictionary.put Actions K
+              {AdjoinAt {Dictionary.get Actions K} number I}}
+             I + 1
+          end
+          0}                    % must be 0;
+      else skip
+      end
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::removeProcessAction is finished'}
+\endif
+   end
+
+   %%
+   %%
+   meth setAction(Action)
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::setAction is applied'}
+\endif
+      %%
+      local Actions AVar in
+         Actions = @actions
+         AVar = @actionVar
+
+         %%
+         {ForAll {Dictionary.keys Actions}
+          proc {$ K}
+             A = {Dictionary.get Actions K}
+          in
+             case A.action == Action then
+                {AVar tkSet(K)}
+                {self.store store(StoreProcessAction Action)}
+             else skip
+             end
+          end}
+      end
+\ifdef DEBUG_WM
+      {Show 'WindowManagerClass::setAction is finished'}
 \endif
    end
 

@@ -41,7 +41,7 @@ class BrowserClass
    %%
    attr
       selected: InitValue       %  selected term's object;
-      UnselectSync: unit        %  gets bound when selection goes away;
+      ContinueSync: unit        %
 
    %%
    %%
@@ -77,7 +77,6 @@ class BrowserClass
            store(StoreAreVSs IAreVSs)
            store(StoreDepthInc IDepthInc)
            store(StoreWidthInc IWidthInc)
-%       store(StoreSmoothScrolling ISmoothScrolling)
            store(StoreAreSeparators ISeparators)
            store(StoreRepMode IRepMode)
            store(StoreTWFont ITWFontUnknown)     % first approximation;
@@ -271,8 +270,8 @@ class BrowserClass
          else
             {self.BrowserStream
              [enq(createMenus)
-              enq(entriesDisable([unselect rebrowse showOPI newView
-                                  clear clearAllButLast
+              enq(entriesDisable([unselect continue pause break rebrowse
+                                  process newView clear clearAllButLast
                                   expand shrink zoom deref]))]}
          end
 
@@ -371,6 +370,7 @@ class BrowserClass
             then
                %% Startup a thread which eventually cleans up some place
                %% in the buffer;
+               {self.BrowserStream [enq(entriesEnable([pause]))]}
                thread
                   {self UndrawWait}
                end
@@ -635,12 +635,7 @@ class BrowserClass
       lock
          case {self.BrowserBuffer getSize($)} > 0 then RootTermObj in
             %%
-            case
-               {self.BrowserBuffer getFirstEl(RootTermObj $)} andthen
-               {GetRootTermObject @selected} == RootTermObj
-            then {Wait @UnselectSync}
-            else skip
-            end
+            {Wait @ContinueSync}
 
             %%
             %% state is free already;
@@ -657,7 +652,7 @@ class BrowserClass
 
    %%
    %%
-   meth setParameter(NameOf ValueOf)
+   meth setParameter(name:NameOf value:ValueOf)
 \ifdef DEBUG_BO
       {Show 'BrowserClass::setParameter is applied'#NameOf#ValueOf}
 \endif
@@ -691,25 +686,17 @@ class BrowserClass
 
          [] !BrowserDepth                  then
             BrowserClass , SetDepth(ValueOf)
+            BrowserClass , UpdateSizes
 
          [] !BrowserWidth                  then
             BrowserClass , SetWidth(ValueOf)
+            BrowserClass , UpdateSizes
 
          [] !BrowserDepthInc               then
             BrowserClass , SetDInc(ValueOf)
 
          [] !BrowserWidthInc               then
             BrowserClass , SetWInc(ValueOf)
-
-%      [] !BrowserSmoothScrolling        then
-%        case ValueOf of true then
-%           {self.Store store(StoreSmoothScrolling true)}
-%        elseof false then
-%           {self.Store store(StoreSmoothScrolling false)}
-%        else
-%           {BrowserError
-%            'Illegal value of parameter BrowserSmoothScrolling'}
-%        end
 
          [] !BrowserRepMode                then
             {self.Store store(StoreRepMode
@@ -793,6 +780,18 @@ class BrowserClass
          [] !BrowserBufferSize             then
             BrowserClass , SetBufferSize(ValueOf)
 
+         [] !BrowserSeparators             then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreAreSeparators true)}
+            elseof false then
+               %%
+               {self.Store store(StoreAreSeparators false)}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserSeparators'}
+            end
+
          else
             {BrowserError 'Unknown parameter in setParameter'}
          end
@@ -803,7 +802,7 @@ class BrowserClass
 
    %%
    %%
-   meth getParameter(NameOf $)
+   meth getParameter(name:NameOf value:$)
 \ifdef DEBUG_BO
       {Show 'BrowserClass::getParameter is applied'#NameOf}
 \endif
@@ -826,10 +825,15 @@ class BrowserClass
             {self.Store read(StoreDepthInc $)}
          [] !BrowserWidthInc               then
             {self.Store read(StoreWidthInc $)}
-%      [] !BrowserSmoothScrolling        then
-%        {self.Store read(StoreSmoothScrolling $)}
          [] !BrowserRepMode                then
-            {self.Store read(StoreRepMode $)}
+            case {self.Store read(StoreRepMode $)}
+            of !TreeRep     then tree
+            [] !GraphRep    then grapth
+            [] !MinGraphRep then minGraph
+            else
+               {BrowserError 'Unknown representation type!'}
+               {NewName}
+            end
          [] !BrowserChunkFields            then
             {self.Store read(StoreArityType $)} == TrueArity
          [] !BrowserVirtualStrings         then
@@ -844,11 +848,49 @@ class BrowserClass
             font(size:F.size wght:F.wght)
          [] !BrowserBufferSize             then
             {self.Store read(StoreBufferSize $)}
+         [] !BrowserSeparators             then
+            {self.Store read(StoreAreSeparators $)}
          else
-            {BrowserError 'Unknown parameter in setParameter'}
+            {BrowserError 'Unknown parameter in getParameter'}
             {NewName}
          end
       end
+   end
+
+   %%
+   %%
+   meth addProcessAction(action:Action label:Label)
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::addProcessAction is applied'}
+\endif
+      {self.BrowserStream enq(addAction(Action Label))}
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::addProcessAction is finished'}
+\endif
+   end
+
+   %%
+   %%
+   meth setProcessAction(action:Action)
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::setProcessAction is applied'}
+\endif
+      {self.BrowserStream enq(setAction(Action))}
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::setProcessAction is finished'}
+\endif
+   end
+
+   %%
+   %%  Acepts 'all' as a special keyword;
+   meth removeProcessAction(action:Action)
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::removeProcessAction is applied'}
+\endif
+      {self.BrowserStream enq(removeAction(Action))}
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::removeProcessAction is finished'}
+\endif
    end
 
    %%
@@ -866,12 +908,11 @@ class BrowserClass
 
          %%
          selected <- Obj
-         UnselectSync <- _
          thread {Obj Highlight} end
 
          %%
          {self.BrowserStream
-          enq(entriesEnable([unselect rebrowse showOPI newView zoom]))}
+          enq(entriesEnable([unselect rebrowse process newView zoom]))}
 
          %%
          case Obj.type of !T_Shrunken then
@@ -903,12 +944,11 @@ class BrowserClass
 \endif
       lock
          selected <- InitValue
-         @UnselectSync = unit
 
          %%
          {self.BrowserStream
           [enq(unHighlightTerm)
-           enq(entriesDisable([unselect rebrowse showOPI newView
+           enq(entriesDisable([unselect rebrowse process newView
                                expand shrink zoom deref]))]}
 
          %%
@@ -916,6 +956,17 @@ class BrowserClass
          {Show 'BrowserClass::UnsetSelected is finished'}
 \endif
       end
+   end
+
+   %%
+   meth !Pause
+      ContinueSync <- _
+      {self.BrowserStream
+       [enq(entriesDisable([pause])) enq(entriesEnable([continue]))]}
+   end
+   meth !Continue
+      @ContinueSync = unit
+      {self.BrowserStream enq(entriesDisable([continue]))}
    end
 
    %%
@@ -968,14 +1019,27 @@ class BrowserClass
 
    %%
    %%
-   meth !SelShow
+   meth !Process
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SelShow is applied'}
+      {Show 'BrowserClass::Process is applied'}
 \endif
       %%
       lock
          case @selected == InitValue then skip
-         else {Show @selected.term}
+         else
+            Action = {self.Store read(StoreProcessAction $)}
+            proc {CrashProc E T D}
+               {Show '*********************************************'}
+               {Show 'Exception occured in ProcessAction:'#E}
+               {Show 'ProcessAction was '#Action}
+            end
+         in
+            %%
+            try {Action @selected.term}
+            catch failure(debug:D) then {CrashProc failure unit D}
+            [] error(T debug:D) then {CrashProc error T D}
+            [] system(T debug:D) then {CrashProc system T D}
+            end
 \ifdef DEBUG_RM
             {@selected debugShow}
 \endif
@@ -983,7 +1047,7 @@ class BrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'BrowserClass::SelShow is finished'}
+         {Show 'BrowserClass::Process is finished'}
 \endif
       end
    end
@@ -1087,7 +1151,6 @@ class BrowserClass
       lock
          case {IsInt Depth} andthen Depth > 0 then
             {self.Store store(StoreDepth Depth)}
-            BrowserClass , UpdateSizes
          else {BrowserError 'Illegal value of parameter BrowserDepth'}
          end
       end
@@ -1097,6 +1160,7 @@ class BrowserClass
    meth !ChangeDepth(Inc)
       lock
          BrowserClass , SetDepth({self.Store read(StoreDepth $)} + Inc)
+         BrowserClass , UpdateSizes
       end
    end
 
@@ -1105,7 +1169,6 @@ class BrowserClass
       lock
          case {IsInt Width} andthen Width > 1 then
             {self.Store store(StoreWidth Width)}
-            BrowserClass , UpdateSizes
          else {BrowserError 'Illegal value of parameter BrowserWidth'}
          end
       end
@@ -1115,6 +1178,7 @@ class BrowserClass
    meth !ChangeWidth(Inc)
       lock
          BrowserClass , SetWidth({self.Store read(StoreWidth $)} + Inc)
+         BrowserClass , UpdateSizes
       end
    end
 

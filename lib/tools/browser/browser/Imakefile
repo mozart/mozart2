@@ -7,7 +7,7 @@ LOCALMODULES =  XResources.oz browserObject.oz browserTerm.oz \
                 setParameter.oz store.oz tcl-interface.oz termObject.oz \
                 termsStore.oz undefs.oz windowManager.oz
 
-AUXFILES = help.txt
+AUXFILES =
 
 LIBMODULES = ${LOCALMODULES:%.oz=$(BrowserLib)/%.oz}
 AUXMODULES = ${AUXFILES:%.txt=$(BrowserLib)/%.txt}

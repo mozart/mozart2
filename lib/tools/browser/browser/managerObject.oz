@@ -102,7 +102,7 @@ in
                BrowserManagerClass , DoIdle
 
                %%
-               WindowManagerClass , entriesDisable([break])
+               WindowManagerClass , entriesDisable([break pause])
                {self.Stream waitElement}
 
                %%

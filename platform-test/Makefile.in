@@ -5,6 +5,7 @@ SRCDIR=         @srcdir@
 BUILDTOP=       @BUILDTOP@
 SRCTOP=         @SRCTOP@
 HOMEURL=        @HOMEURL@
+OZPLATFORM=     @PLATFORM@
 
 INSTALL_DIR     = @INSTALL_DIR@
 
@@ -45,7 +46,7 @@ SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 FBASE = \
         conversion float record type exception guards future misc \
         link instruction compiler except dictionary ofs pickles \
-        thread
+        thread unix
 
 BASE = $(FBASE:%=./base/%.ozf)
 
@@ -66,6 +67,11 @@ FTOOLS = \
 
 TOOLS = $(FTOOLS:%=./tools/%.ozf)
 
+FNATIVES = \
+        base/smallbuf
+
+SONATIVES = $(FNATIVES:%=%.so-$(OZPLATFORM))
+
 DIRS = base space fd fs scheduling dp tools bench
 
 # All tests
@@ -82,6 +88,7 @@ COMPRESSFLAGS   = --compress=$(COMPRESSLEVEL)
 OZE =
 OZC = @OZC@
 OZFLAGS = $(COMPRESSFLAGS)
+OZTOOL = @OZTOOL@
 
 OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c
@@ -89,7 +96,7 @@ OZCC = $(OZEE) -c
 .PHONY: all bootstrap install check dirs clean veryclean distclean depend
 .PHONY: boot-check boot-all
 
-all: dirs oztest ozbench
+all: dirs oztest ozbench $(SONATIVES)
 
 boot-all:
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
@@ -101,7 +108,7 @@ boot-all:
 
 BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
 CURDIRA   = $(BUILDTOPA)/share/test
-OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
+#OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
 PREFIX    = @prefix@
 
 boot-check: boot-all
@@ -184,3 +191,8 @@ tools/gump.ozf: gump-examples
 
 gump-examples:
         ln -s $(SRCDIR)/../tools/gump/examples $@
+
+%.so-$(OZPLATFORM): %.o
+        $(OZTOOL) ld $< -o $@
+%.o: %.cc
+        $(OZTOOL) c++ -I$(SRCTOP)/platform/emulator -c $< -o $@

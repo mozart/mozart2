@@ -24,7 +24,18 @@ FDLOCAL = \
         color \
         conference \
         configuration \
-        diagnosis
+        diagnosis \
+        divmod \
+        donald \
+        equations \
+        family \
+        fraction \
+        guards \
+        zebra \
+        grocery \
+        pythagoras \
+        safe \
+        schur
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

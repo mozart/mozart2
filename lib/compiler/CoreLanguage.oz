@@ -765,7 +765,6 @@ in
                                                '`hasFeature`': _
                                                '`RaiseError`': _
                                                '`aritySublist`': _
-                                               '`condSelect`': _
                                                '`tuple`': _
                                                '`record`': _)
             label <- Label

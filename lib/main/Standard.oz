@@ -67,7 +67,7 @@
 
 \ifndef OZM
 
-{{`Builtin` save 2}
+{Pickle.save
 functor $ prop once
 
 export

@@ -123,7 +123,8 @@ boot-check: boot-all
         OZTOOL="/bin/sh $(BUILDTOP)/platform/emulator/oztool.sh" \
         OZTOOL_INCLUDES="-I$(SRCTOP)/platform/emulator -I$(SRCTOP)/platform/tools/gump" \
         OZFLEX=$(BUILDTOP)/platform/tools/gump/ozflex/flex \
-        OZTESTOPTS="$(OZTESTOPTS) --ignores=dp"
+        OZTESTOPTS="$(OZTESTOPTS) --ignores=dp" \
+        OZENGINE=$(SRCTOP)/share/lib/oze.sh
 
 bootstrap:
 

@@ -54,10 +54,10 @@ body
       FunExt      = UrlDefaults.'functor'
       MozartUrl   = UrlDefaults.'home'
 
-      {Module.enter 'x-oz-boot:OS'       OS}
-      {Module.enter 'x-oz-boot:Property' OS}
-      {Module.enter 'x-oz-boot:URL'      BURL}
-      {Module.enter 'x-oz-boot:Pickle'   Pickle}
+      {Module.enter 'x-oz-boot://OS'       OS}
+      {Module.enter 'x-oz-boot://Property' OS}
+      {Module.enter 'x-oz-boot://URL'      BURL}
+      {Module.enter 'x-oz-boot://Pickle'   Pickle}
 
       {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
       {Module.enter MozartUrl#'lib/Property'#FunExt Property}

@@ -32,6 +32,7 @@ NewSearch
 NewOpen
 NewCompiler
 UrlDefaults
+OuterBoot
 in
 \insert 'sp/System.oz'
 = NewSystem
@@ -63,7 +64,9 @@ in
 
 UrlDefaults = \insert '../url-defaults.oz'
 
-{{`Builtin` 'save' 2}
+OuterBoot = {`Builtin` 'BootManager' 2}
+
+{{OuterBoot 'Pickle'}.save
  functor prop once body
 
     IMPORT
@@ -135,7 +138,7 @@ UrlDefaults = \insert '../url-defaults.oz'
              'Pickle'#   Pickle
              'Property'# Property]
      proc {$ A#M}
-        {Module.enter 'x-oz-boot:'#A M}
+        {Module.enter 'x-oz-boot://'#A M}
      end}
 
     {ForAll ['System'#       System

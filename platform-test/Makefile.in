@@ -3,9 +3,6 @@
 BUILDTOP= @BUILDTOP@
 TOPDIR  = @TOPDIR@
 
-# Tests for exceptions
-EXCEPTOZC = except.ozc
-
 # Test for spaces
 SPACELOCAL = \
         basic nomosim queens
@@ -39,20 +36,22 @@ FSOZC = $(FSLOCAL:%=./fs/%.ozc)
 # Tests for scheduling
 SCHEDLOCAL = \
         abz6 \
-        basf \
+        company \
         product
 
 SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 
 FCORE = \
         conversion float record type exception guards misc \
-        link instruction
+        link instruction except
+
+
 CORE = $(FCORE:%=./core/%.ozc)
 
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(FSOZC) $(EXCEPTOZC)
+        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(FSOZC)
 
 
 ####################################################
@@ -82,6 +81,7 @@ clean:
         $(RM) *~ ./*/*~ ./*/*/*~
         $(RM) $(COMPONENTS)
         $(RM) make-test
+        $(RM) te.ozc
 
 realclean: veryclean
 

@@ -42,8 +42,7 @@
        thread
           {ForAll RunStr
            proc {$ What}
-              try
-                 {Port.send RunRet
+               try
                   try
                      X = case {Procedure.is What} then {What}
                          elsecase {Chunk.is What} andthen
@@ -51,14 +50,13 @@
                             {Module.link '' What}
                          end
                   in
-                     okay(X)
+                     {Port.send RunRet okay(X)}
                   catch E then
-                     exception(E)
-                  end}
-              catch _ then
-                 {Port.send RunRet
-                  exception('ozserver execution failed')}
-              end
+                     {Port.send RunRet exception({Record.subtract E debug})}
+                  end
+               catch _ then
+                  {Port.send RunRet failed}
+               end
            end}
        end
 

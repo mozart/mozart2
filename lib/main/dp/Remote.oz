@@ -84,18 +84,23 @@ body
          self.Host
       end
 
-      meth Send(Which What $)
-         OldS NewS Ret
+      meth AsyncSend(Which What ?Ret)
+         OldS NewS
       in
          lock
             OldS = (Which <- NewS)
             {Port.send self.Which What}
          end
-         {Wait OldS}
          Ret|NewS = OldS
-         case Ret
+      end
+
+      meth Send(Which What $)
+         case {self AsyncSend(Which What $)}
          of okay(A)      then A
-         [] exception(E) then raise E end
+         [] exception(E) then
+            raise E end
+         [] failed       then
+            raise error(dp('export' exceptionNogoods self)) end
          end
       end
 
@@ -106,10 +111,11 @@ body
 
       %% Ctrl methods
       meth ping($)
-         ComputeClient,Send(Ctrl ping  $)
+         ComputeClient,Send(Ctrl ping $)
       end
+
       meth close
-         ComputeClient,Send(Ctrl close _)
+         ComputeClient,AsyncSend(Ctrl close _)
       end
    end
 

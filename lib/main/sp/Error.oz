@@ -1889,6 +1889,12 @@ in
              [hint(l:'Value exported'     m:oz(Value))
               hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
+         elseof dp('export' exceptionNogoods Server) then
+            {FormatExc
+             'Non-distributables found in remote exception'
+             unit
+             [hint(l:'Remote server'     m:oz(Server))]
+             Exc}
          elseof dp(load versionMismatch PickleName VerExpected VerGot) then
             {FormatExc
              'Version mismatch when loading of pickle'

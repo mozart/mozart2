@@ -22,6 +22,7 @@
 functor $
 import
    System(eq show)
+   Name(newUnique) at 'x-oz://boot/Name'
    HelperComponent('nodes' : Helper) at 'Helper.ozf'
    TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
    StoreListenerComponent('class' : StoreListener) at 'StoreListener.ozf'
@@ -31,6 +32,9 @@ export
    'class' : TreeWidget
    'nodes' : AllNodes
 define
+   %% Identify Reflection Constructs
+   Wrapper = {Name.newUnique 'generic.reflected.value'}
+
    %% Create All Nodes Export Record
    AllNodes = {Record.adjoinAt TreeNodes.all 'helper' Helper}
 
@@ -95,7 +99,6 @@ define
          globalRelMan  %% Global Relation Manager
          isAtomic      %% Atomic Test Function (must not be changed in Oz)
          showString    %% String Flag
-         sitedId       %% Sited Value Label
          reflMan       %% Reflection Manager
       meth create(Options Parent DspWidth DspHeight)
          StoreListener, create
@@ -108,7 +111,6 @@ define
          @nodes        = {Dictionary.new}
          @relManDict   = {Dictionary.new}
          @lines        = {Dictionary.new}
-         @sitedId      = {Dictionary.get Options widgetSitedId}
          @reflMan      = {Dictionary.get Options widgetReflectMan}
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
@@ -174,7 +176,8 @@ define
          of Key|Mr then
             FetchKey = {VirtualString.toAtom Key}
             PutKey   = {VirtualString.toAtom {CutSub Key "Menu"}}
-            Filter   = case {Dictionary.get O FetchKey} of menu(_ _ Fs _) then Fs else nil end
+            Filter   = case {Dictionary.get O FetchKey}
+                       of menu(_ _ Fs _) then Fs else nil end
          in
             case TreeWidget, hasAuto(Filter $)
             of auto(F) then {Dictionary.put D PutKey F}
@@ -183,10 +186,10 @@ define
             TreeWidget, extractAutoMappings(Mr O D)
          else
             %% Add Default Sited Data Handler
-            {Dictionary.put D @sitedId fun {$ V _ _}
-                                          %% reflMan is synced
-                                          {@reflMan getValue(V $)}
-                                       end}
+            {Dictionary.put D Wrapper fun {$ V _ _}
+                                         %% reflMan is synced
+                                         {@reflMan getValue(V $)}
+                                      end}
          end
       end
       meth hasAuto(Fs $)
@@ -379,8 +382,6 @@ define
          [] det(Type) then
             case Type
             of tuple then
-               SitedId = @sitedId
-            in
                case {Label V}
                of '#' then hashtuple
                [] '|' then
@@ -390,7 +391,7 @@ define
                   then string
                   else pipetuple
                   end
-               [] !SitedId then SitedId
+               [] !Wrapper then Wrapper
                else labeltuple
                end
             else Type

@@ -22,7 +22,7 @@
 functor $
 import
    TreeWidgetComponent('class' : TreeWidget 'nodes' : TreeNodes) at 'TreeWidget.ozf'
-   Reflection
+   Reflection(reflect unreflect manager)
    InspectorOptions
    Tk
    TkTools
@@ -244,7 +244,6 @@ define
             in
                {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
                @options = Options
-               {Dictionary.put Options widgetSitedId Reflection.label}
                {Dictionary.put Options widgetReflectMan Reflection.manager}
                @selMenu = Menu.selection
                {Menu.inspector tk(conf borderwidth: 1)}
@@ -574,7 +573,7 @@ define
    %%
    %% Object Creation Function
    %%
-   Reflect = Reflection.reflect
+   Reflect   = Reflection.reflect
    Unreflect = Reflection.unreflect
    fun {NewInspector Options}
       InspectorPort InspectorObject

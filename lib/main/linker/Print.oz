@@ -21,7 +21,7 @@
 %%%
 
 fun {Usage}
-   'Usage: ozar [options] --in=URL --out=FILE\n' #
+   'Usage: ozl [options] URL -o FILE\n' #
    '\n' #
    'Options:\n' #
    '--help, --usage, -h, -?\n' #

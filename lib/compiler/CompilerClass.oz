@@ -653,7 +653,7 @@ local
                      {@reporter
                       startSubPhase('executing in an independent thread')}
                      if OPI \= false
-                        andthen {OPI getCompiler($)} == @narrator
+                        andthen {OPI getNarrator($)} == @narrator
                      then
                         % this helps Ozcar detect queries from the OPI:
                         {Debug.setId {Thread.this} 1}
@@ -706,7 +706,7 @@ local
                {Debug.setRaiseOnBlock {Thread.this} true}
             end
             OPI = {Property.condGet 'opi.compiler' false}
-            if OPI \= false andthen {OPI getCompiler($)} == @narrator then
+            if OPI \= false andthen {OPI getNarrator($)} == @narrator then
                % this helps Ozcar detect queries from the OPI:
                {Debug.setId {Thread.this} 1}
             end

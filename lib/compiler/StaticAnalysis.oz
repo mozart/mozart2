@@ -1935,29 +1935,6 @@ define
                skip
             end
 
-            %% dot selection from chunks
-         elseif
-            {IsDet RecOrCh}
-            andthen {TypeTests.chunk RecOrCh}
-         then
-            if {HasFeature RecOrCh F}
-            then
-               BndVO = {Nth @actualArgs 3}
-            in
-               {Ctrl setErrorMsg('feature selection (.) on chunk failed')}
-               {Ctrl setUnifier(BndVO RecOrCh.F)}
-
-               {BndVO unify(Ctrl RecOrCh.F)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAGenError
-                      msg:   'illegal feature selection on chunk'
-                      items: [hint(l:'Found' m:oz(F))])}
-            end
          else
             skip
          end

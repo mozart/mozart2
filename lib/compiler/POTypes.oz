@@ -128,7 +128,7 @@ local
 
       {ForAll Names
        proc {$ Nam}
-          {Loop.for 1 N 1
+          {For 1 N 1
            proc {$ I}
               if {Member I Name2Lists.Nam}
               then {BitArray.set Name2Bits.Nam I}

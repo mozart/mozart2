@@ -21,7 +21,8 @@ Switch            = on(SwitchName Coordinates)
 Filename          = atom.
 SwitchName        = atom.
 
-Phrase            = fAnd(Phrase Phrase).
+Phrase            = fStepPoint(Phrase Coordinates)
+                  | fAnd(Phrase Phrase)
                   | fEq(Phrase Phrase Coordinates)
                   | fAssign(Phrase Phrase Coordinates)
                   | fOrElse(Phrase Phrase Coordinates)
@@ -169,10 +170,10 @@ SyntaxRule        = fSyntaxRule(GrammarSymbol [SynFormal] SynExpression).
 SynFormal         = NakedVariable
                   | Wildcard
                   | fDollar(nofd Coordinates).
-SynExpression     = SynApplication
+SynExpression     = fSynApplication(GrammarSymbol [Phrase])
                   | fSynAction(Phrase)
                   | fSynSequence([NakedVariable] [SynExpression])
                   | fSynAlternative([SynExpression])
                   | fSynAssignment(Variable SynExpression)
-                  | fSynTemplateInstantiation(ProdKey [SynExpression] Coordinates).
-SynApplication    = fSynApplication(GrammarSymbol [Phrase]).
+                  | fSynTemplateInstantiation(ProdKey [SynExpression]
+                                              Coordinates).

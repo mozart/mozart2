@@ -53,10 +53,13 @@
 functor
 export
    getInfo: GetBuiltinInfo
+require
+   GroundZip(zip)
 prepare
-   BuiltinTable = builtinTable(
-                               \insert compiler-Builtins
-                              )
+   BuiltinTable = {GroundZip.zip
+                   builtinTable(
+                      \insert compiler-Builtins
+                      )}
 
    proc {E Name T}
       {Exception.raiseError compiler(badBuiltinTableEntry Name T)}

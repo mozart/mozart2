@@ -94,15 +94,7 @@ in
                   %% The convension is that a request is just a manager
                   %% object's method;
                   BrowserManagerClass , Req
-               catch E then T = {Label E} I = E.1 in
-                  case T
-                  of !BEx then
-                     case I
-                     of 'alreadyClosed' then skip
-                     else fail
-                     end
-                  else {`raise` T I}
-                  end
+               catch !BEx then skip
                end
             else
                %% is empty at the moment - do 'idle' step and sleep for
@@ -128,7 +120,7 @@ in
 
       %%
       meth CheckObj(Obj)
-         case {Obj isClosed($)} then {`raise` BEx 'alreadyClosed'}
+         case {Obj isClosed($)} then {Raise BEx}
          else skip
          end
       end

@@ -32,7 +32,8 @@ $class =
 
        inits => { 'gtk_button_new'                => { out => 'GtkWidget*' },
                   'gtk_button_new_with_label'     => { in  => ['const gchar*'],
-                                                       out => 'GtkWidget*' }},
+                                                       out => 'GtkWidget*',
+                                                       imp => { 'GtkLabel' => 'child' } }},
 
        meths => { 'gtk_button_pressed'            => { in  => ['GtkButton*'] },
                   'gtk_button_released'           => { in  => ['GtkButton*'] },

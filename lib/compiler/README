@@ -92,7 +92,7 @@ Misc.oz
 GenericInterface.oz
    base class for all interfaces provided here.  Takes over the
    basic registering/unregistering with a running compiler.
-   See http://mozart.ps.uni-sb.de/compiler/.
+   See http://www.mozart-oz.org/compiler/.
 
 QuietInterface.oz
    front-end to the CompilerClass.  This only stores the compiler's

@@ -29,7 +29,7 @@ import
    Open.file
    Pickle.save
    Compiler.{engine quietInterface}
-   Syslet
+   Syslet.{spec args exit}
 body
    Syslet.spec = plain
    \insert BatchCompile

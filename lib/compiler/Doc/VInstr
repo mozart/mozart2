@@ -33,9 +33,6 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vEquateConstant(OccsRS Constant Reg Cont)
        | vEquateRecord(OccsRS Atomname RecordArity Reg [VRecordArgument] Cont)
        | vGetVariable(OccsRS Reg Cont)
-       | vGetValue(OccsRS Reg Cont)
-       | vGetNumber(OccsRS Integer Cont)
-       | vGetLiteral(OccsRS Atomname Cont)
        | vCallBuiltin(OccsRS Builtinname [Reg] Coord Cont)
        | vGenCall(OccsRS Reg IsMethod Atomname RecordArity [Reg] Coord Cont)
        | vCall(OccsRS Reg [Reg] Coord Cont)
@@ -64,6 +61,7 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
        | vLockThread(OccsRS Reg Coord Cont SharedData)
        | vLockEnd(OccsRS Coord Cont SharedData).
+       | vThread(OccsRS Addr Coord Cont InitsRS)
 
 Reg = int.
 Variablename = atom.

@@ -27,505 +27,400 @@
 %%% to retrieve the data from a different location instead.  For
 %%% example: (1) to access a local cache (faster than downloading from
 %%% the net, (2) to override one implementation with another without
-%%% changing the URL.  Also, we want this capability for file paths,
-%%% relative or not.  This package implements a mechanism that
-%%% generalizes the concept of `search path': instead of having
-%%% several alternative directories, we have several alternative
-%%% `methods'.
+%%% changing the URL, (3) to bootstrap a system.  Also, we want this
+%%% capability for file paths, relative or not.  This package
+%%% implements a mechanism that generalizes the concept of `search
+%%% path': instead of having several alternative directories, we have
+%%% several alternative `methods'.
 %%%
-%%% Each `method' or `handler' H is a procedure.  It is called as
-%%% follows:
-%%%                     {H REP ACTION ACTIONNAME MSG}
+%%% Each `method' or `handler' H is a procedure, called as follows:
 %%%
-%%% REP is the parsed representation of a URL (see ParseURL), ACTION
-%%% is a function which takes the transformed URL as a virtual string
-%%% and either returns a value if it succeeded or raises an exception,
-%%% ACTIONAME is an atom which identifies the ACTION.  MSG is a
-%%% procedure that takes a virtual string as an argument and prints it
-%%% out on standard output with an appropriate prefix (see [TITLE]
-%%% below) if tracing is enabled.
+%%%                     {H URL METH MSG}
 %%%
-%%% Currently there are only 3 builtin actions which can be performed
-%%% on a URL: localize, open, and load.
-%%%
-%%% The handler H either (1) raises the exception found(V) if ACTION
-%%% returned the value V, or (2) skips if it raised an acceptable
-%%% exception indicating that the resource was not found.  There are
-%%% two reasons for doing it this way: (a) we can just loop through
-%%% the handlers and the first one that succeeds will escape the loop
-%%% by raising the exception found(V), (b) only the handler itself
-%%% knows which exceptions simply indicate that the resource was not
-%%% found and which ones indicate problems that should be reported by
-%%% letting the exception through.
-%%%
-%%% {URL.makeResolver +TITLE +INIT ?M}
-%%%
-%%% Creates a new module M that has its own set of handlers.  This may
-%%% be useful to create different ways of resolving urls for different
-%%% purposes.  TITLE is an atom that identifies the module for tracing
-%%% purposes: all trace messages will be prefixed with [TITLE].  INIT
-%%% indicates how to initialize the module and must have one of the
-%%% following forms:
-%%%
-%%% unit
-%%%     in which case only the default handler is in effect.
-%%% init(L)
-%%%     where L is a list of handlers.
-%%% env(S)
-%%%     where S names an environment variable: the methods decribed by
-%%%     S will be created and the default handler added at the end. If
-%%%     S doesn't exist, only the default handlers is present.
-%%% env(S D)
-%%%     same as above except that if S doesn't exist, virtual string D
-%%%     is used as its missing value.
-%%% vs(S)
-%%%     S is a virtual string that will be treated just like the value
-%%%     of the environment variable of the previous case.
-%%%
-%%% When using an environment variable or a virtual string to create
-%%% the initial list of handlers, the corresponding string should be
-%%% of the form:
-%%%                     meth1:meth2:...:methN   (unix)
-%%%                     meth1;meth2;...;methN   (windows)
-%%%
-%%% i.e. description of methods separated by `:' on unix and by `;' on
-%%% windows, or, more precisely, separated by the value of system
-%%% property file.separator which can be initialized with environment
-%%% variable OZ_PATH_SEPARATOR (by default it is `:' on unix and `;'
-%%% on windows).
-%%%
-%%% Each method descriptor is of the form KIND=VALUE.
-%%%
-%%% all=DIR             .../FILE ==> DIR/FILE
-%%% root=DIR            PATH ==> DIR/PATH       (if PATH is relative)
-%%% cache=DIR           PROTO://HOST/PATH ==> DIR/PROTO/HOST/PATH
-%%% prefix=PREFIX=SUBST (PREFIX)PATH ==> (SUBST)PATH
-%%% DIR                 PATH ==> DIR/PATH       (if PATH is relative)
-%%%
-%%% When the method is just DIR, it means root=DIR, and thus emulates
-%%% the usual search path mechanism.
+%%% where URL is the parsed representation of a URL. METH is a
+%%% a procedure which takes as an argument the URL transformed by the
+%%% handler and either raises found(V), if it successfully retrieved
+%%% value V from the location, or returns if it failed. MSG is a
+%%% procedure that takes 5 arguments, each is either a virtual string
+%%% or a URL, which are printed as a 1 line message if tracing is
+%%% enabled.
+%%% ==================================================================
 
 local
+   BURL_localize        = BURL.localize
+   BURL_open            = BURL.open
+   BURL_load            = BURL.load
+   \insert UrlExpand.oz
 
-   URL_localize = BURL.localize
-   URL_open     = BURL.open
-   URL_load     = BURL.load
-   PrintError   = System.printError
-   Getpwnam     = OS.getpwnam
-   GetCWD               = OS.getCWD
+   %% the default way of applying a method to a parsed URL: all system
+   %% exceptions are considered to indicate that the data was not
+   %% available at this location and are ignored; all other exceptions
+   %% are passed through.  If a value V is obtained, exception
+   %% found(V) is raised.
+
+   proc {Do_Method M U} V OK in
+      try {M {URL.toString U} V} OK=true
+      catch system(...) then     OK=false
+      [] error(dp(generic 'Error in URL handler' _) ...)
+      then                       OK=false end
+      case OK then raise found(V) end else skip end
+   end
+
+   Methods = m(localize : proc {$ U} {Do_Method BURL_localize U} end
+               open     : proc {$ U} {Do_Method BURL_open     U} end
+               load     : proc {$ U} {Do_Method BURL_load     U} end)
+
+   %% ----------------------------------------------------------------
+   %% Tracing
+   %% ----------------------------------------------------------------
 
    Trace = {NewCell {GET 'oz.trace.load'}}
-
    proc {GetTrace B} {Access Trace B} end
    proc {SetTrace B} {Assign Trace B} end
 
-%%% {ParseURL +URL ?REP}
-%%%
-%%% Parse the input url and return a description of it to be used by
-%%% the various handlers.  The description has the following form:
-%%%
-%%% url(string:STRING type:TYPE last:LAST path:PATH)
-%%%
-%%% where STRING is URL as a string, TYPE is either url(http),
-%%% url(ftp), url(file), or file(abs) for an absolute pathname, or
-%%% file(rel) for a relative pathname.  LAST is the last component of
-%%% the pathname obtained by skipping all slashes and backslashes.
-%%% PATH is the non PROTO[:[//]] suffix of STRING.
-
-fun {ParseURL URL}
-   L = {VirtualString.toString URL}
-in
-   case L
-   of     &h|&t|&t|&p|&:|&/|&/|T then
-      url(string:L type:url(http) last:{GetLAST T T} path:T)
-   elseof &f|&t|&p   |&:|&/|&/|T then
-      url(string:L type:url(ftp ) last:{GetLAST T T} path:T)
-   elseof &f|&i|&l|&e|&:      |T then
-      url(string:L type:url(file) last:{GetLAST T T} path:T)
-   elseof &/                  |T then
-      url(string:L type:file(abs) last:{GetLAST T T} path:L)
-   elseof &\\                 |T then
-      url(string:L type:file(abs) last:{GetLAST T T} path:L)
-   elseof &~                  |_ then
-      url(string:L type:file(abs) last:{GetLAST L L} path:L)
-   elseof C|&:|T then
-      case {GET 'os.name'}==win32 andthen {Char.isAlpha C} then
-         url(string:L type:file(abs) last:{GetLAST T T} path:L)
-      else url(string:L type:file(rel) last:{GetLAST L L} path:L) end
-   else url(string:L type:file(rel) last:{GetLAST L L} path:L)
+   Full_Url = o(full:true)
+   fun {ToVS A}
+      if {URL.is A} then {URL.toVsExtended A Full_Url} else A end
    end
-end
 
-fun {GetLAST L Was}
-   case L of &/|T then {GetLAST T T}
-   elseof   &\\|T then {GetLAST T T}
-   elseof     H|T then {GetLAST T Was}
-   elseof     nil then Was
+   proc {TraceMsg A B C D E F}
+      %% the 1st arg is the resolver's title
+      %% the other 5 args are the MSG procedure's arguments
+      {System.printError
+       '['#{ToVS A}#'] '
+       #{ToVS B}#{ToVS C}#{ToVS D}#{ToVS E}#{ToVS F}#'\n'}
    end
-end
 
-%% the default way of applying a handler to a parsed URL: all system
-%% exceptions are considered to indicate that the data was not
-%% available at this location, and ignored. all other exceptions are
-%% passed through.  If a value V is obtained, exception found(V) is
-%% raised.
+   %% ----------------------------------------------------------------
+   %% Handler Constructors
+   %% ----------------------------------------------------------------
 
-proc {HApply URL Meth} V OK in
-   try {Meth URL V} OK=true catch system(...) then OK=false end
-   case OK then raise found(V) end else skip end
-end
+   %% default
 
-%% {Gather L TO ESC} ==> PREFIX#SUFFIX
-%% where PREFIX is the beginning of L before the first occurrence of TO
-%% and SUFFIX is everything after TO.  ESC is the escape character: it
-%% can be used to include an occurrence of TO in the PREFIX.  If TO doesn't
-%% occur in L: the PREFIX is all of L and SUFFIX is nil.
-
-fun {Gather L TO ESC}
-   fun {Loop L Accu}
-      case L of nil then {Reverse Accu}#nil
-      elseof H|T then
-         case H==ESC then
-            case T of C|T then {Loop T C|Accu}
-            elseof    nil then {Reverse H|Accu}#nil
-            end
-         elsecase H==TO then {Reverse Accu}#T
-         else {Loop T H|Accu}
-         end
-      end
-   end
-in {Loop L nil} end
-
-fun {StringToHandlers L}
-   SEPARATOR = {GET 'path.separator'}
-   ESCAPE    = {GET 'path.escape'   }
-
-   fun {Parse L}
-      case L of
-         nil then [DefaultHandler]
-      [] "=" then nil
-      [] &a|&l|&l|&=|T then
-         URL#REST = {Gather T SEPARATOR ESCAPE}
-      in
-         {MakeAllHandler URL}|{Parse REST}
-      [] &r|&o|&o|&t|&=|T then
-         URL#REST = {Gather T SEPARATOR ESCAPE}
-      in
-         {MakeRootHandler URL}|{Parse REST}
-      [] &c|&a|&c|&h|&e|&=|T then
-         URL#REST = {Gather T SEPARATOR ESCAPE}
-      in
-         {MakeCacheHandler URL}|{Parse REST}
-      [] &p|&r|&e|&f|&i|&x|&=|T then
-         PREFIX#TMP = {Gather T &= ESCAPE}
-         SUBST#REST = {Gather TMP SEPARATOR ESCAPE}
-      in
-         {MakePrefixHandler PREFIX SUBST}|{Parse REST}
-      [] &p|&a|&t|&t|&e|&r|&n|&=|T then
-         LEFT #TMP  = {Gather T &= ESCAPE}
-         RIGHT#REST = {Gather TMP SEPARATOR ESCAPE}
-      in
-         {MakePatternHandler LEFT RIGHT}|{Parse REST}
-      else
-         URL#REST = {Gather L SEPARATOR ESCAPE}
-      in
-         {MakeRootHandler URL}|{Parse REST}
-      end
-   end
-in
-   {Parse L}
-end
-
-%%% Normalizing a pathname.  A pathname is in normal form if it contains
-%%% no doubling of the file separators (/ and \), does not begin with
-%%% a tilde (~) or a period (.).
-local
-   fun {NoDoubling L Path}
-      case L of H|T then
-         case H==&/ orelse H==&\\ then
-            case T of H|R then
-               case H==&/ orelse H==&\\ orelse H==&~
-               then {NoDoubling T T}
-               else {NoDoubling R Path} end
-            else Path end
-         else {NoDoubling T Path} end
-      else Path end
-   end
-   %% this should look up system property 'user.home' instead
-   fun {NoTildeOrDot Path}
-      case Path of H|T then
-         case H==&~ then
-            case T of &/|_ then {GET 'user.home'}#T
-            else
-               USER#DIR = {Gather T &/ unit}
-               PATH = case DIR==nil then nil else &/|DIR end
-            in
-               try R={Getpwnam USER} in R.dir#PATH
-               catch _ then Path end
-            end
-         elsecase H==&. then CWD = {GetCWD} in
-            case T of &/|_ then CWD#T
-            else CWD #(&/|Path) end
-         else Path end
-      else Path end
-   end
-in
-   fun {NormalizePath Path} L = {VirtualString.toString Path} in
-      case L
-      of  &h|&t|&t|&p|&:|&/|&/|_ then L
-      elseof &f|&t|&p|&:|&/|&/|_ then L
-      else {NoTildeOrDot {NoDoubling  L L}} end
-   end
-end
-
-fun {MakeResolver Title Init}
-   proc {MSG S}
-      case {Access Trace}
-      then {PrintError '['#Title#'] '#S#'\n'}
-      else skip end
-   end
-   Handlers = {NewCell [ DefaultHandler ]}
-   proc {GetHandlers L} {Access Handlers L} end
-   proc {SetHandlers L} {Assign Handlers L} end
-   proc {AddHandler H}
-      case H
-      of front(H) then L in {Exchange Handlers L H|L}
-      [] back( H) then O N in
-         {Exchange Handlers O N}
-         {Append O [H] N}
-      else L in {Exchange Handlers L H|L} end
-   end
-   proc {Get URL VAL Meth MethName}
-      {MSG MethName#' request: '#URL}
-      try REP={ParseURL URL} in
-         {ForAll {Access Handlers}
-          proc {$ H} {H REP Meth MethName MSG} end}
-         {MSG '...all handlers failed'}
-         raise error(url(MethName URL) debug:debug) with debug end
-      catch found(V) then
-         {MSG '...'#MethName#' succeeded'}
-         V=VAL
-      end
-   end
-   proc {Localize URL VAL} {Get URL VAL URL_localize localize} end
-   proc {Open     URL VAL} {Get URL VAL URL_open     open    } end
-   proc {Load     URL VAL} {Get URL VAL URL_load     load    } end
-in
-   case Init of
-      unit    then skip
-   [] init(L) then {SetHandlers L}
-   [] env( L) then S={Getenv L} in
-      case S==false then skip else
-         {SetHandlers {StringToHandlers S}}
-      end
-   [] env( L D) then S={Getenv L} in
-      {SetHandlers {StringToHandlers
-                    case S==false then {VirtualString.toString D}
-                    else S end}}
-   [] vs(  L) then
-      {SetHandlers {StringToHandlers {VirtualString.toString L}}}
-   end
-   url(getHandlers: GetHandlers
-       setHandlers: SetHandlers
-       addHandler : AddHandler
-       localize   : Localize
-       open       : Open
-       load       : Load
-       get        : Get
-       msg        : MSG)
-end
-
-%% default handler
-
-proc {DefaultHandler REP Meth MethName MSG}
-   PATH = {NormalizePath REP.string}
-in
-   {MSG '...['#PATH#'] (default)'}
-   {HApply PATH Meth}
-end
-
-%% all handler
-
-fun {MakeAllHandler DIR}
-   proc {$ REP Meth MethName MSG}
-      case REP.last of nil then
-         {MSG '...[not applicable] (all '#DIR#')'}
-      elseof Path then
-         PATH = {NormalizePath DIR#'/'#Path}
-      in
-         {MSG '...['#PATH#'] (all)'}
-         {HApply PATH Meth}
-      end
-   end
-end
-
-%% root handler
-
-fun {MakeRootHandler DIR}
-   proc {$ REP Meth MethName MSG}
-      case REP.type of file(rel) then
-         PATH = {NormalizePath DIR#'/'#REP.string}
-      in
-         {MSG '...['#PATH#'] (root)'}
-         {HApply PATH Meth}
-      else
-         {MSG '...[not applicable] (root '#DIR#')'}
-      end
-   end
-end
-
-%% cache handler
-
-fun {MakeCacheHandler DIR}
-   proc {$ REP Meth MethName MSG}
-      case REP.type of url(PROTO) then
-         PATH = {NormalizePath DIR#'/'#PROTO#'/'#REP.path}
-      in
-         {MSG '...['#PATH#'] (cache)'}
-         {HApply PATH Meth}
-      else
-         {MSG '...[not applicable] (cache '#DIR#')'}
-      end
-   end
-end
-
-%% prefix handler
-
-fun {MakePrefixHandler PREFIX SUBST}
-   proc {$ REP Meth MethName MSG}
-      case {StripPrefix PREFIX REP.string}
-      of ok(REST) then
-         PATH = {NormalizePath SUBST#REST}
-      in
-         {MSG '...['#PATH#'] (prefix)'}
-         {HApply PATH Meth}
-      else
-         {MSG '...[not applicable] (prefix '#PREFIX#' '#SUBST#')'}
-      end
-   end
-end
-
-fun {StripPrefix Prefix URL}
-   case Prefix of nil then ok(URL)
-   elseof H|Prefix then
-      case URL of HH|URL then
-         case H==HH then {StripPrefix Prefix URL}
-         else unit end
-      else unit end
-   end
-end
-
-%% pattern handler
-
-fun {MakePatternHandler Left Right}
-   LPat = {ParsePattern Left}
-   RPat = {ParsePattern Right}
-in
-   proc {$ REP Meth MethName MSG}
-      try
-         PATH = {NormalizePath
-                 {InstantiatePattern RPat
-                  {List.toRecord alist
-                   {MatchPattern LPat REP.string}}}}
-      in
-         {MSG '...['#PATH#'] (pattern)'}
-         {HApply PATH Meth}
-      catch no then
-         {MSG '...[not applicable] (pattern '#Left#' -> '#Right#')'}
-      end
-   end
-end
-
-proc {SplitAtString Str Input Prefix Suffix}
-   case {IsPrefix Str Input Suffix} then
-      Prefix=nil
-   elsecase Input of H|T then
-      PrefixTail
+   proc {Default_Handler Url Meth Msg}
+      NewUrl = {URL_expand Url}
    in
-      Prefix=H|PrefixTail
-      {SplitAtString Str T PrefixTail Suffix}
-   else raise no end end
-end
-
-fun {IsPrefix S1 S2 S3}
-   case S1 of H1|T1 then
-      case S2 of H2|T2 then
-         case H1==H2 then {IsPrefix T1 T2 S3}
-         else false end
-      else false end
-   else S3=S2 true end
-end
-
-fun {ParsePattern Input}
-   Prefix Suffix
-in
-   if try {SplitAtString "?{" Input Prefix Suffix} true
-      catch no then false end
-   then
-      str(Prefix)|{ParsePatternAux Suffix}
-   else
-      [str(Input)]
+      {Msg '...[' NewUrl '] (default)' nil nil}
+      {Meth NewUrl}
    end
-end
 
-fun {ParsePatternAux Input}
-   Prefix1 Suffix1 Prefix2 Suffix2
-in
-   {SplitAtString "}" Input Prefix1 Suffix1}
-   if try {SplitAtString "?{" Suffix1 Prefix2 Suffix2} true
-      catch no then false end
-   then
-      var({String.toAtom Prefix1} Prefix2)
-      | {ParsePatternAux Suffix2}
-   else
-      [var({String.toAtom Prefix1} Suffix1)]
-   end
-end
+   %% all
 
-fun {MatchPattern Specs Input}
-   case Specs
-   of nil then case Input of nil then nil else raise no end end
-   [] H|T then
-      case H
-      of var(V SEP) then
-         case SEP of nil then (V#Input)|{MatchPattern T nil}
-         else Prefix Suffix in
-            {SplitAtString SEP Input Prefix Suffix}
-            (V#Prefix)|{MatchPattern T Suffix}
+      fun {Make_All_Handler DIR}
+      Base = {URL.toBase DIR}
+   in
+      proc {$ Url Meth Msg}
+         Path = {CondSelect Url path unit}
+      in
+         if Path==unit orelse Path.1==nil then
+            {Msg '...[not applicable] (all ' Base ')' nil nil}
+         else
+            Rel=url(path:rel([{List.last Path.1}]))
+            NewUrl = {URL_expand {URL.resolve Base Rel}}
+         in
+            {Msg '...[' NewUrl '] (all)' nil nil}
+            {Meth NewUrl}
          end
-      [] str(STR)   then Suffix in
-         if {IsPrefix STR Input Suffix} then
-            {MatchPattern T Suffix}
-         else raise no end end
       end
    end
-end
 
-fun {InstantiatePattern Pat Alist}
-   case Pat
-   of nil then nil
-   [] H|T then
-      case H
-      of str(STR) then STR#{InstantiatePattern T Alist}
-      [] var(V SEP) then Alist.V#SEP#{InstantiatePattern T Alist}
+   %% root
+
+   fun {Make_Root_Handler DIR}
+      Base = {URL.toBase DIR}
+   in
+      proc {$ Url Meth Msg}
+         if {URL.isRelative Url} then
+            NewUrl = {URL_expand {URL.resolve Base Url}}
+         in
+            {Msg '...[' NewUrl '] (root)' nil nil}
+            {Meth NewUrl}
+         else
+            {Msg '...[not applicable] (root ' Base ')' nil nil}
+         end
       end
    end
-end
 
-%% create a resolver for loading
+   %% cache
 
-LoadResolver = {MakeResolver url vs(OZ_SEARCH_LOAD)}
+   fun {Make_Cache_Handler DIR}
+      Base = {URL.toBase DIR}
+   in
+      proc {$ Url Meth Msg}
+         if {HasFeature Url scheme} then
+            Rel = {URL.make {URL.toVsExtended Url x(cache:true)}}
+            NewUrl = {URL.resolve Base Rel}
+         in
+            {Msg '...[' NewUrl '] (cache)' nil nil}
+            {Meth NewUrl}
+         else
+            {Msg '...[not applicable] (cache ' Base ')' nil nil}
+         end
+      end
+   end
+
+   %% pattern
+
+   fun {Make_Pattern_Handler LSpec RSpec}
+      LPat = {Pattern_Parse LSpec}
+      RPat = {Pattern_Parse RSpec}
+   in
+      proc {$ Url Meth Msg}
+         try
+            Alist  = {Pattern_Match LPat {URL.toString Url}}
+            Arec   = {List.toRecord alist Alist}
+            NewPat = {Pattern_Instantiate RPat Arec}
+            NewUrl = {URL_expand {URL.make NewPat}}
+         in
+            {Msg '...[' NewUrl '] (pattern)' nil nil}
+            {Meth NewUrl}
+         catch no then
+            {Msg '...[not applicable] (pattern ' LSpec ' -> ' RSpec ')'}
+         end
+      end
+   end
+
+   %% prefix
+
+   fun {Make_Prefix_Handler Prefix Subst}
+      {Make_Pattern_Handler
+       {Append Prefix "?{x}"}
+       {Append Subst  "?{x}"}}
+   end
+
+   %% pattern utils
+
+   %% returns true if S1 is a prefix of S2 and binds S3 to the
+   %% remaining suffix
+
+   fun {IsPrefix S1 S2 S3}
+      case S1
+      of nil then S3=S2 true
+      [] H1|T1 then
+         case S2 of H2|T2 then
+            case H1==H2 then {IsPrefix T1 T2 S3}
+            else false end
+         else false end
+      end
+   end
+
+   %% Splits Input at the first occurrence of string Str
+   %% binds Prefix to what occurred before and Suffix
+   %% to what is left after
+
+   proc {SplitAtString Str Input Prefix Suffix}
+      case {IsPrefix Str Input Suffix} then
+         Prefix=nil
+      elsecase Input of H|T then
+         PrefixTail
+      in
+         Prefix=H|PrefixTail
+         {SplitAtString Str T PrefixTail Suffix}
+      else raise no end end
+   end
+
+   %% returns a list of element of the form str(S) or var(V S) where S
+   %% is a string and V a symbol. str(S) can only occur at the front
+   %% of the pattern: it is the string that precedes the 1st pattern
+   %% variable.  var(V S) represents  a pattern variable that extends
+   %% to the first occurrence of string S.
+
+   fun {Pattern_Parse Input}
+      Prefix Suffix
+   in
+      try
+         if try {SplitAtString "?{" Input Prefix Suffix} true
+            catch no then false end
+         then str(Prefix)|{Pattern_Parse_aux Suffix}
+         else [str(Input)] end
+      catch badPattern then
+         raise resolve(patternParse Input) end
+      end
+   end
+
+   fun {Pattern_Parse_aux Input}
+      Prefix1 Suffix1 Prefix2 Suffix2
+   in
+      {SplitAtString "}" Input Prefix1 Suffix1}
+      if try {SplitAtString "?{" Suffix1 Prefix2 Suffix2} true
+         catch no then false end
+      then var({String.toAtom Prefix1} Prefix2)
+         | {Pattern_Parse_aux Suffix2}
+      else
+         [ var({String.toAtom Prefix1} Suffix1) ]
+      end
+   end
+
+   fun {Pattern_Match Specs Input}
+      case Specs
+      of nil then case Input of nil then nil else raise no end end
+      [] H|T then
+         case H
+         of var(V Sep) then
+            case Sep of nil then (V#Input)|{Pattern_Match T nil}
+            else Prefix Suffix in
+               {SplitAtString Sep Input Prefix Suffix}
+               (V#Prefix)|{Pattern_Match T Suffix}
+            end
+         [] str(Str) then Suffix in
+            if {IsPrefix Str Input Suffix} then
+               {Pattern_Match T Suffix}
+            else raise no end end
+         end
+      end
+   end
+
+   fun {Pattern_Instantiate Pat Arec}
+      case Pat
+      of nil then nil
+      [] H|T then
+         case H
+         of str(Str) then Str#{Pattern_Instantiate T Arec}
+         [] var(V Sep) then Arec.V#Sep#{Pattern_Instantiate T Arec}
+         end
+      end
+   end
+
+   %% convert a string to a list of handlers
+
+   fun {StringToHandlers L}
+      SEP       = {GET 'path.separator'} % usually `:'
+      ESC       = {GET 'path.escape'   } % usually `\'
+
+      fun {Parse L}
+         case L
+         of nil then [Default_Handler]
+         elseof "=" then nil
+         elseof &a|&l|&l|&=|T then
+            DIR#Rest = {Gather T SEP ESC}
+         in {Make_All_Handler DIR}|{Parse Rest}
+         elseof &r|&o|&o|&t|&=|T then
+            DIR#Rest = {Gather T SEP ESC}
+         in {Make_Root_Handler DIR}|{Parse Rest}
+         elseof &c|&a|&c|&h|&e|&=|T then
+            DIR#Rest = {Gather T SEP ESC}
+         in {Make_Cache_Handler DIR}|{Parse Rest}
+         elseof &p|&r|&e|&f|&i|&x|&=|T then
+            PREFIX#Tmp  = {Gather T   &=  ESC}
+            SUBST #Rest = {Gather Tmp SEP ESC}
+         in {Make_Prefix_Handler PREFIX SUBST}|{Parse Rest}
+         elseof &p|&a|&t|&t|&e|&r|&n|&=|T then
+            LEFT #Tmp  = {Gather T   &=  ESC}
+            RIGHT#Rest = {Gather Tmp SEP ESC}
+         in {Make_Pattern_Handler LEFT RIGHT}|{Parse Rest}
+         else URL#Rest = {Gather L SEP ESC}
+         in {Make_Root_Handler URL}|{Parse Rest} end
+      end
+   in
+      {Parse L}
+   end
+
+   %% {Gather L SEP ESC} ==> PREFIX#SUFFIX
+   %% Splits string L at the first non-escaped occurrence of character
+   %% SEP.  Any character can be escaped by preceding it with
+   %% character ESC.  The ESC character is stripped off.  A pair is
+   %% returned: PREFIX is what occurred before SEP, and SUFFIX is what
+   %% is left after it.
+
+   fun {Gather L SEP ESC}
+      fun {Loop L Accu}
+         case L
+         of nil then {Reverse Accu}#nil
+         [] H|T then
+            if H==ESC then
+               case T
+               of nil then {Reverse H|Accu}#nil
+               [] H|T then {Loop T  H|Accu}
+               end
+            elseif H==SEP then {Reverse Accu}#T
+            else {Loop T H|Accu} end
+         end
+      end
+   in {Loop L nil} end
+
+   %% creating a resolver
+
+   proc {NoMSG _ _ _ _ _} skip end
+
+   fun {MakeResolver TITLE Init}
+      Title = {VirtualString.toAtom TITLE}
+      proc {MSG S1 S2 S3 S4 S5}
+         {TraceMsg Title S1 S2 S3 S4 S5}
+      end
+      Handlers = {NewCell [Default_Handler]}
+      proc {GetHandlers L} {Access Handlers L} end
+      proc {SetHandlers L} {Assign Handlers L} end
+      proc {AddHandler H}
+         case H
+         of front(H) then L in {Exchange Handlers L H|L}
+         [] back( H) then O N in
+            {Exchange Handlers O N}
+            {Append O [H] N}
+         else L in {Exchange Handlers L H|L} end
+      end
+      proc {Get Loc Value MethodName}
+         Msg  = if {Access Trace} then MSG else NoMSG end
+         Url  = {URL.make Loc}
+         Meth = Methods.MethodName
+      in
+         {Msg MethodName ' request: ' Url nil nil}
+         try
+            {ForAll {Access Handlers}
+              proc {$ H} {H Url Meth Msg} end}
+            {Msg '...all handlers failed' nil nil nil nil}
+            raise error(url(MethodName {VirtualString.toString Loc})
+                        debug:debug) with debug end
+         catch found(V) then
+            {Msg '...' MethodName ' succeeded' nil nil}
+            Value=V
+         end
+      end
+      proc {Localize Url Value} {Get Url Value localize} end
+      proc {Open     Url Value} {Get Url Value open    } end
+      proc {Load     Url Value} {Get Url Value load    } end
+   in
+      case Init
+      of unit then skip
+      [] init(L) then {SetHandlers L}
+      [] env( L) then S={OS.getEnv L} in
+         if S==false then skip else
+            {SetHandlers {StringToHandlers S}}
+         end
+      [] env( L D) then S={OS.getEnv L} in
+         {SetHandlers
+          {StringToHandlers
+           if S==false then {VirtualString.toString D} else S end}}
+      [] vs(  L) then
+         {SetHandlers {StringToHandlers {VirtualString.toString L}}}
+      end
+      Title(getHandlers : GetHandlers
+            setHandlers : SetHandlers
+            addHandler  : AddHandler
+            localize    : Localize
+            open        : Open
+            load        : Load)
+   end
+
+   %% create a resolver for loading
+
+   LoadResolver = {MakeResolver load vs(OZ_SEARCH_LOAD)}
 
 in
-   Resolve = {Adjoin
-              url(getTrace : GetTrace
-                  setTrace : SetTrace
-                  handler  : handler(default:DefaultHandler
-                                     all        :MakeAllHandler
-                                     root       :MakeRootHandler
-                                     cache      :MakeCacheHandler
-                                     prefix     :MakePrefixHandler)
-                  makeResolver : MakeResolver
-                  normalizePath: NormalizePath)
-              LoadResolver}
+   Resolve = {Adjoin LoadResolver
+              resolve(
+                 getTrace       : GetTrace
+                 setTrace       : SetTrace
+                 handler        :
+                 handler(
+                    default     : Default_Handler
+                    all         : Make_All_Handler
+                    root        : Make_Root_Handler
+                    cache       : Make_Cache_Handler
+                    prefix      : Make_Prefix_Handler
+                    pattern     : Make_Pattern_Handler
+                    )
+                 makeResolver   : MakeResolver
+                 make           : MakeResolver
+                 expand         : URL_expand
+                 )}
 end

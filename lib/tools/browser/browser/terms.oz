@@ -301,9 +301,9 @@ in
          else
             %%
             case PN of '' then
-               '<Name @ ' # {System.getValue Term addr} # '>'
+               '<Name @ ' # {AddrOf Term} # '>'
             else
-               '<Name: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
+               '<Name: ' # PN # ' @ ' # {AddrOf Term} # '>'
             end
          end
       end
@@ -356,9 +356,9 @@ in
          else
             %%
             case PN of '_' then
-               '<Object @ ' # {System.getValue Term addr} # '>'
+               '<Object @ ' # {AddrOf Term} # '>'
             else
-               '<Object: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
+               '<Object: ' # PN # ' @ ' # {AddrOf Term} # '>'
             end
          end
       end
@@ -397,9 +397,9 @@ in
          else
             %%
             case PN of '_' then
-               '<Class @ ' # {System.getValue Term addr} # '>'
+               '<Class @ ' # {AddrOf Term} # '>'
             else
-               '<Class: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
+               '<Class: ' # PN # ' @ ' # {AddrOf Term} # '>'
             end
          end
       end
@@ -441,7 +441,7 @@ in
          else
             %%
             '<Procedure: ' # PN # '/' # {Procedure.arity Term} #
-            ' @ ' # {System.getValue Term addr} # '>'
+            ' @ ' # {AddrOf Term} # '>'
          end
       end
    end
@@ -478,7 +478,7 @@ in
             end
          else
             %%
-            '<Cell: ' # {System.getValue Term name} # '>'
+            '<Cell: ' # {System.termToVS Term} # '>'
          end
       end
    end

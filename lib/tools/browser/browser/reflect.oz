@@ -31,13 +31,7 @@ in
    %%  Aux: check whether the actual blackboard is a deep one;
    %%
    fun {IsDeepGuard}
-      local RootCluster CurrentCluster in
-         RootCluster = {System.getValue 0 root}
-         CurrentCluster = {System.getValue 0 currentBlackboard}
-
-         %%
-         RootCluster \= CurrentCluster
-      end
+      {Not {OnToplevel}}
    end
 
    %%
@@ -240,7 +234,7 @@ in
                   else
                      {AtomConcatAll
                       ['<Name: ' {System.getPrintName TermIn } ' @ '
-                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                       {IntToAtom {AddrOf TermIn}} '>']}
                   end
 
                   %%
@@ -253,14 +247,14 @@ in
                              ['<Procedure: '
                               {System.getPrintName TermIn } '/'
                               {IntToAtom {Procedure.arity TermIn}} ' @ '
-                              {IntToAtom {System.getValue TermIn addr}} '>']}
+                              {IntToAtom {AddrOf TermIn}} '>']}
                    ListOut = TmpList
                [] cell then
                   %%
 
                   %%
                   TermOut = {AtomConcatAll
-                             ['<Cell: ' {System.getValue TermIn name} '>']}
+                             ['<Cell: ' {AddrOf TermIn} '>']}
                   ListOut = TmpList
                [] record then RArity L LabelOf in
                   RArity = {Map {Arity TermIn}
@@ -289,20 +283,20 @@ in
                      {AtomConcatAll
                       ['<Object: '
                        {Class.printName {Class.get TermIn}} ' @ '
-                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                       {IntToAtom {AddrOf TermIn}} '>']}
                   elsecase {IsClass TermIn} then
                      {AtomConcatAll
                       ['<Class: '
                        {Class.printName TermIn} ' @ '
-                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                       {IntToAtom {AddrOf TermIn}} '>']}
                   elsecase {IsArray TermIn} then
                      {AtomConcatAll
                       ['<Array: @ '
-                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                       {IntToAtom {AddrOf TermIn}} '>']}
                   elsecase {IsDictionary TermIn} then
                      {AtomConcatAll
                       ['<Dictionary: @ '
-                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                       {IntToAtom {AddrOf TermIn}} '>']}
                   else
                      {System.getPrintName TermIn}
                   end

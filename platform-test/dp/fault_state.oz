@@ -25,10 +25,8 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
-   Property
-   System
    Fault
+   TestMisc(localHost)
 export
    Return
 
@@ -36,22 +34,28 @@ define
    proc{InjectorInstall Entity Proc}
       {Fault.install Entity 'thread'(this) [permFail] Proc true}
    end
+   /*
    proc{InjectorDeInstall Entity Proc}
       {Fault.deInstall Entity 'thread'(this) true}
    end
+   */
    proc{SiteWatcherInstall Entity Proc}
       {Fault.installWatcher Entity [permFail] Proc true}
    end
+   /*
    proc{SiteWatcherDeInstall Entity Proc}
       {Fault.deInstallWatcher Entity Proc true}
    end
+   */
    proc{NetWatcherInstall Entity Proc}
       {Fault.installWatcher Entity
        [remoteProblem(permSome) remoteProblem(permAll)] Proc true}
    end
+   /*
    proc{NetWatcherDeInstall Entity Proc}
       {Fault.deInstallWatcher Entity Proc true}
    end
+   */
 
    proc{InjectInj Ce Lo}
       Inj = proc{$ A B C} raise injector end end
@@ -116,18 +120,20 @@ proc{TryCell C}
       end
    end
 
+/*
    proc{TryLock L}
       try
          lock L then skip end
          raise abort end
       catch injector then skip end
    end
+*/
 
    Return=
    dp([
        fault_proxy_naive(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
+             S={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
@@ -150,7 +156,7 @@ proc{TryCell C}
              try
                 {Access DistCell _}
                 {Assign CC true}
-             catch XX then
+             catch _ then
                 skip
              end
              {Access CC false}
@@ -158,8 +164,8 @@ proc{TryCell C}
           keys:[fault])
        fault_state_manager_injector_live(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
-             CC = {NewCell false}
+             S={New Remote.manager init(host:TestMisc.localHost)}
+             _ = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
              DistLock = {NewLock}
@@ -186,8 +192,8 @@ proc{TryCell C}
 
        fault_state_manager_injector_dead(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
-             CC = {NewCell false}
+             S={New Remote.manager init(host:TestMisc.localHost)}
+             _ = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
              DistLock = {NewLock}
@@ -213,8 +219,8 @@ proc{TryCell C}
 
        fault_state_manager_watcher_live(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
-             CC = {NewCell false}
+             S={New Remote.manager init(host:TestMisc.localHost)}
+             _ = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
              DistLock = {NewLock}
@@ -246,8 +252,8 @@ proc{TryCell C}
 
        fault_state_manager_watcher_dead(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
-             CC = {NewCell false}
+             S={New Remote.manager init(host:TestMisc.localHost)}
+             _ = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
              DistLock = {NewLock}
@@ -271,7 +277,7 @@ proc{TryCell C}
              {InjectInj2 DistCell DistLock AA}
              try
                 {Access DistCell _}
-             catch X then
+             catch _ then
                 skip
              end
              {CheckWatM AA}
@@ -281,8 +287,8 @@ proc{TryCell C}
 
        fault_state_proxy_tokenLost_live_injector(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
              Sync
              DistCell
              Inj = proc{$ A B C} raise injector end end
@@ -295,7 +301,7 @@ proc{TryCell C}
 
              {S2 ping}
              {S2 apply(url:'' functor
-                              import Property System
+                              import Property
                               define
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
@@ -313,9 +319,9 @@ proc{TryCell C}
 
        fault_state_proxy_tokenLost_dead_injector(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
-             CC = {NewCell false}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
+             _ = {NewCell false}
              Sync
              DistCell
              Inj = proc{$ A B C} raise injector end end
@@ -329,7 +335,7 @@ proc{TryCell C}
 
              {S2 ping}
              {S2 apply(url:'' functor
-                              import Property System
+                              import Property
                               define
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
@@ -350,12 +356,12 @@ proc{TryCell C}
 
        fault_state_proxy_tokenLost_live_watcher(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              Sync
              DistCell
-             Inj = proc{$ A B} raise injector end end
+             _ = proc{$ A B} raise injector end end
           in
              {S1 ping}
              {S1 apply(url:'' functor
@@ -366,7 +372,7 @@ proc{TryCell C}
 
              {S2 ping}
              {S2 apply(url:'' functor
-                              import Property System
+                              import Property
                               define
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
@@ -387,12 +393,12 @@ proc{TryCell C}
 
        fault_state_proxy_tokenLost_dead_watcher(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              Sync
              DistCell
-             Inj = proc{$ A B} raise injector end end
+             _ = proc{$ A B} raise injector end end
           in
              {S1 ping}
              {S1 apply(url:'' functor
@@ -403,7 +409,7 @@ proc{TryCell C}
 
              {S2 ping}
              {S2 apply(url:'' functor
-                              import Property System
+                              import Property
                               define
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
@@ -425,9 +431,9 @@ proc{TryCell C}
 
        fault_chain_broken_watcher_dead(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
-             S3={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
+             S3={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              DistLock
              Sync1 Sync2 Sync3 Sync4
@@ -502,9 +508,9 @@ proc{TryCell C}
 
        fault_chain_broken_watcher_live(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
-             S3={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
+             S3={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              DistLock
              Sync1 Sync2 Sync3 Sync4

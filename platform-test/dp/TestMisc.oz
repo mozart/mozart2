@@ -26,8 +26,10 @@ import
    Remote(manager)
    System(gcDo show)
    Fault(deinstall)
+   Property(get)
 export
    getHostNames:GetHostNames
+   localHost:LocalHost
    getRemoteManagers:GetRemoteManagers
    gcAll:GCAll
    listApply:ListApply
@@ -35,9 +37,13 @@ export
    raiseError:RaiseError
    watcher:Watcher
    deinstallWatchers:DeinstallWatchers
+   win32: Win32
 define
+   Win32 = ({Property.get 'platform.os'} == win32)
+   LocalHost = if Win32 then localhost else {OS.uName}.nodename end
+
    fun {GetHostNames}
-      [localhost {OS.uName}.nodename]
+      [localhost LocalHost]
    end
 
    proc {GetRemoteManagers Number Hosts Managers}
@@ -120,8 +126,9 @@ define
 
    proc {DeinstallWatchers Ws}
       case Ws
-      of W|Wr then
+%     of W|Wr then
 %        {Fault.deinstall W watcher('cond':permHome) Watcher}
+      of _|Wr then
          {DeinstallWatchers Wr}
       [] nil then skip
       end

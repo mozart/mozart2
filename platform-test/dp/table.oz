@@ -24,8 +24,8 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
    System
+   TestMisc(localHost)
 export
    Return
 
@@ -69,9 +69,8 @@ define
    dp([
        table_nofrag(
             proc {$}
-               S={New Remote.manager init(host:{OS.uName}.nodename)}
+               S={New Remote.manager init(host:TestMisc.localHost)}
                D
-               Lim = 10000
 
                proc{Stuffer PP}
                   S
@@ -89,7 +88,6 @@ define
                {S ping}
                {S apply(url:'' functor
                                import
-                                  Property(put)
                                   System
                                export
                                   PP
@@ -99,7 +97,7 @@ define
                                   CC = {NewCell nil}
                                   proc{R X}
                                      case X of
-                                        store(E Nr) then
+                                        store(E _) then
                                         {Assign CC E|{Access CC}}
                                      elseof gc then
                                         {System.gcDo}
@@ -139,9 +137,8 @@ define
 
        table_frag(
             proc {$}
-               S={New Remote.manager init(host:{OS.uName}.nodename)}
+               S={New Remote.manager init(host:TestMisc.localHost)}
                D
-               Lim = 10000
 
                proc{Stuffer PP}
                   S
@@ -161,7 +158,6 @@ define
                {S ping}
                {S apply(url:'' functor
                                import
-                                  Property(put)
                                   System
                                export
                                   PP

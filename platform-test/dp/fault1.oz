@@ -28,6 +28,7 @@ import
    OS(uName)
    Property
    System
+   TestMisc(localHost)
 export
    Return
 
@@ -36,7 +37,7 @@ define
    dp([
        fault_proxy(
           proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
+             S={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
@@ -75,8 +76,8 @@ define
 
        fault_tokenLost(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              Sync
              DistCell
@@ -122,9 +123,9 @@ define
 
        fault_chain_broken(
           proc {$}
-             S1={New Remote.manager init(host:{OS.uName}.nodename)}
-             S2={New Remote.manager init(host:{OS.uName}.nodename)}
-             S3={New Remote.manager init(host:{OS.uName}.nodename)}
+             S1={New Remote.manager init(host:TestMisc.localHost)}
+             S2={New Remote.manager init(host:TestMisc.localHost)}
+             S3={New Remote.manager init(host:TestMisc.localHost)}
              CC = {NewCell false}
              DistLock
              Sync1 Sync2 Sync3 Sync4

@@ -24,8 +24,8 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
    System
+   TestMisc(localHost)
    %Fault(install deinstall)
 export
    Return
@@ -106,7 +106,7 @@ define
          {For 2 4 1
           proc{$ Nr}
              RM.Nr={New Remote.manager
-                    init(host:{OS.uName}.nodename)}
+                    init(host:TestMisc.localHost)}
              {RM.Nr ping}
              {RM.Nr apply(url:'' functor
                                  import

@@ -25,9 +25,9 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
    Property
    Connection
+   TestMisc(localHost)
    System
 export
    Return
@@ -37,14 +37,14 @@ define
    dp([
        maxi(
           proc{$}
-             S My CC = {NewCell false} in
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
+             S My CC = {NewCell false}
+             LocalHost = TestMisc.localHost in
+             S={New Remote.manager init(host:LocalHost)}
              {S ping}
              {S apply(url:'' functor
                              import
                                 Property
                                 Remote
-                                OS
                                 System
                                 Connection
                              export
@@ -52,15 +52,13 @@ define
                              define
                                 {Property.put 'close.time' 0}
                                 local S A in
-                                   S={New Remote.manager init(host:{OS.uName}.nodename)}
+                                   S={New Remote.manager init(host:LocalHost)}
                                    {S ping}
                                    try
                                    {S apply(url:'' functor
                                                    import
                                                       Connection
                                                       Property
-                                                      Remote
-                                                      System
                                                    export
                                                       My
                                                    define

@@ -25,10 +25,8 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
-   Property
    Fault
-   System
+   TestMisc(localHost)
 export
    Return
 
@@ -37,9 +35,11 @@ define
    proc{SiteWatcherInstall Entity Proc}
       {Fault.installWatcher Entity [permFail] Proc true}
    end
+   /*
    proc{SiteWatcherDeInstall Entity Proc}
       {Fault.deInstallWatcher Entity Proc true}
    end
+   */
 
 
    proc{WatchWat S E}
@@ -135,7 +135,7 @@ define
    end
 
    proc{StartServer S E}
-      S={New Remote.manager init(host:{OS.uName}.nodename)}
+      S={New Remote.manager init(host:TestMisc.localHost)}
       {S ping}
       {S apply(url:'' functor
                       import
@@ -172,6 +172,7 @@ define
       {CheckWat Ans}
    end
 
+   /*
    proc {DeadTest Try Entity}
       S Deads Ans in
       {StartServer S Deads}
@@ -182,6 +183,7 @@ define
       {Delay 1000}
       {CheckWat Ans}
    end
+   */
 
    Return=
    dp([

@@ -25,10 +25,8 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
-   Property
    Fault
-   System
+   TestMisc(localHost)
 export
    Return
 
@@ -36,10 +34,11 @@ define
    proc{InjectorInstall Entity Proc}
       {Fault.install Entity 'thread'(this) [permFail] Proc true}
    end
+   /*
    proc{InjectorDeInstall Entity Proc}
       {Fault.deInstall Entity 'thread'(this) true}
    end
-
+*/
 
    proc{InjectInj S}
       Inj = proc{$ A B C} raise injector end end
@@ -124,7 +123,7 @@ define
    end
 
    proc{StartServer S E}
-      S={New Remote.manager init(host:{OS.uName}.nodename)}
+      S={New Remote.manager init(host:TestMisc.localHost)}
       {S ping}
       {S apply(url:'' functor
                       import

@@ -24,8 +24,9 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
    Property(get)
+   TestMisc(getHostNames win32)
+   System
 export
    Return
 
@@ -42,12 +43,15 @@ define
                   else [sh rsh automatic]
                   end
                   proc {$ Fork}
-                     {ForAll [localhost {OS.uName}.nodename]
+                     {ForAll {TestMisc.getHostNames}
                       proc {$ Host}
-% workaround: Redhat does not allow rsh localhost by default
-                         if Host == localhost andthen  Fork == rsh
+                         if TestMisc.win32 andthen Fork == rsh
+                         then {System.show 'rsh not supported under win32'}
+                         % workaround: Redhat does not allow rsh localhost by default
+                         elseif Host == localhost andthen  Fork == rsh
                          then skip
                          else
+%                           {System.show init(host:Host fork:Fork detach:Detach)}
                             S={New Remote.manager
                                init(host:Host fork:Fork detach:Detach)}
                          in

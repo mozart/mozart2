@@ -26,10 +26,9 @@ functor
 
 import
    Remote(manager)
-   OS(uName)
-   Property
    Fault
    System
+   TestMisc(localHost)
 export
    Return
 
@@ -47,7 +46,7 @@ define
    proc{InjectorDeInstall Entity Proc}
       {Fault.deInstall Entity 'thread'(this) true}
    end
-
+/*
    proc{WatchWat S E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
    in
@@ -57,7 +56,6 @@ define
       {SiteWatcherInstall S.lokk {Inj E.lokk}}
       {SiteWatcherInstall S.var  {Inj E.var}}
    end
-
 
    proc{CheckWat E}
       CC = {NewCell false}
@@ -82,6 +80,7 @@ define
       catch _ then skip end
       {Access CC false}
    end
+*/
 
    proc{TryCell C}
        try {Access C _}
@@ -105,7 +104,7 @@ define
       try V = apa
       catch hell  then
          raise hell end
-      [] X then
+      [] _ then
          skip
       end
    end
@@ -151,7 +150,7 @@ define
 
 
    proc{StartServer S E}
-      S={New Remote.manager init(host:{OS.uName}.nodename)}
+      S={New Remote.manager init(host:TestMisc.localHost)}
       {S ping}
       {S apply(url:'' functor
                       import

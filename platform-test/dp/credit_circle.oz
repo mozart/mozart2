@@ -22,9 +22,6 @@ export
 define
    Sites=15
    Rounds=3
-   Dones={MakeList Sites}
-   Ports={MakeList Sites}
-
 \ifdef DBG
    PrintPort
    thread {ForAll {NewPort $ PrintPort} System.show} end
@@ -40,6 +37,8 @@ define
    end
 
    proc {Start}
+      Dones={MakeList Sites}
+      Ports={MakeList Sites}
       Managers
       InP InS={NewPort $ InP}
    in

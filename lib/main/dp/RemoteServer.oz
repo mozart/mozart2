@@ -76,7 +76,6 @@ define
       %% that the emulator has support for virtual sites indeed.
 
       VirtualSite = {ModMan link(name:'x-oz://boot/VirtualSite' $)}
-
    in
 
       try
@@ -84,6 +83,10 @@ define
          %% ticket-based connection following it uses the
          %% virtual site communication mechanism.
          {VirtualSite.initServer Args.shmkey}
+\ifdef DENYS_EVENTS
+         %% start VS threads
+         {ModMan link(name:'x-oz://system/VirtualSite')}
+\endif
       catch _ then
          {System.showError 'Virtual Site: failed to initialize'}
          {Application.exit ExitErrorInit}

@@ -25,7 +25,8 @@ use Getopt::Long;
 
 # Regular Expressions
 $rexp_type        = qr/\w[\w ]+[\*\[\]]*/;
-$rexp_name        = qr/(?<=\W)\w+/;
+# We allow '?' as first character of a name to mark return values
+$rexp_name        = qr/(?<=\W)\??\w+/;
 $rexp_arg         = qr/${rexp_type}\s*${rexp_name}/;
 $rexp_arg_list    = qr/${rexp_arg}(\s*,\s*${rexp_arg})*/;
 
@@ -41,7 +42,7 @@ sub gtk2oz_name {
     my @substrings;
     my $string;
 
-    $gtk_name =~ s/^ozgtk_//s;
+    $gtk_name =~ s/^gtk_//is;
     @substrings = split /_/, $gtk_name;
     foreach $string (@substrings) {
         $string = ucfirst $string;
@@ -49,6 +50,12 @@ sub gtk2oz_name {
     $gtk_name = join '', @substrings;
 
     return $gtk_name;
+}
+
+sub gtk2oz_meth_name {
+    my ($gtk_name) = @_;
+
+    return lcfirst(gtk2oz_name($gtk_name));
 }
 
 sub gtk_class_name_2_function_prefix {
@@ -113,8 +120,8 @@ sub split_argument_string {
     my %arg;
 
     $arg_string =~ m/(${rexp_type})\s*(${rexp_name})/;
-    $arg{'type'} = $1;
-    $arg{'name'} = $2;
+    $arg{type} = $1;
+    $arg{name} = $2;
 
     return \%arg;
 }
@@ -137,7 +144,7 @@ sub get_method_list {
 
         # method name
         $meth =~ m/meth\s+(${rexp_name})/;
-        $method{'name'} = $+;
+        $method{name} = $+;
 
         # method arguments
         if ( $meth =~ m/meth\s+${rexp_name}\((${rexp_arg_list})\)/ ) {
@@ -147,11 +154,11 @@ sub get_method_list {
         foreach my $arg (@args) {
             @dummy = (@dummy, split_argument_string($arg));
         }
-        $method{'args'} = \@dummy;
+        $method{args} = \@dummy;
 
         # method return type
         if ( $meth =~ m/meth\s+${rexp_name}\(${rexp_arg_list}\)\s*:\s*(${rexp_type})/ ) {
-            $method{'return_type'} = $1;
+            $method{return_type} = $+;
         }
 
         @methods = (@methods, \%method);
@@ -180,7 +187,7 @@ sub write_oz_fields_wrappers {
         my $oz_class = $class_name;
         $oz_class =~ s/^Gtk//s;
         $oz_class = lcfirst($oz_class);
-        my $oz_meth = lcfirst(gtk2oz_name("get_$field_name"));
+        my $oz_meth = gtk2oz_meth_name("get_$field_name");
         my $oz_field = gtk2oz_name($field_name);
 
 
@@ -203,9 +210,39 @@ EOF
    }
 }
 
+sub is_return_value {
+    my ($arg) = @_;
+
+    return ($arg{name} =~ m/^\?/s);
+}
+
 sub write_oz_meth_wrappers {
     my ($class_name, @meths) = @_;
 
+    print "   % Wrappers for Gtk class methods\n";
+
+    foreach my $meth (@meths) {
+        print "   meth " . gtk2oz_meth_name($$meth{name}) . "(";
+
+        # Arguments
+        my @arg = @$meth{args};
+
+        foreach $i (@arg) { print "::: $i{name}\n"; }
+
+        print " ?ReturnValue" if $$meth{return_type};
+        foreach my $ret_val (@arg) {
+            print " $ret_val{name}" if is_return_value($ret_val);
+        }
+
+        print ")\n";
+
+        # Method invocation
+        print "      ";
+        print "ReturnValue = " if $$meth{return_type};
+        print "{GtkNative." . gtk2oz_meth_name($$meth{name}) . "\n";
+
+        print "   end\n";
+    }
 }
 
 sub process_class {
@@ -217,10 +254,10 @@ sub process_class {
     my @fields           = get_fields_list($class_string);
     my @methods          = get_method_list($class_string);
 
-    #write_oz_class_header($class_name, $super_class_name);
-    #write_oz_fields_wrappers($class_name, @fields) if @fields;
-    #write_oz_meth_wrappers($class_name, @methods)  if @methods
-    #print "end\n\n";
+    write_oz_class_header($class_name, $super_class_name);
+    write_oz_fields_wrappers($class_name, @fields) if @fields;
+    write_oz_meth_wrappers($class_name, @methods)  if @methods;
+    print "end\n\n";
 }
 
 sub build_classes {

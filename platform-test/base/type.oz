@@ -23,14 +23,28 @@
 fun {$ IMPORT}
    \insert 'lib/import.oz'
 in
-   type([misc(proc {$}
-                 {Type.ofValue a}=atom
-                 {Type.ofValue 1}=int
-                 {Type.ofValue 1.0}=float
-                 {Type.ofValue a(1)}=tuple
-                 {Type.ofValue a(a:1)}=record
-              end
-              keys:[module])
+   type([basic(proc {$}
+                  Cases = [ atom(a IsAtom) int(1 IsInt) float(1.0 IsFloat)
+                            tuple(a(1) IsTuple) record(a(a:1) IsRecord)
+                            string("a" IsString)
+                          ]
+
+               in
+                  {ForAll Cases
+                   proc {$ C}
+
+                      {Type.ofValue C.1}={Label C}
+
+                      local
+                         X
+                      in
+                         thread X=C.1 end
+                         {C.2 X}=true
+                      end
+                   end
+                  }
+               end
+               keys:[module type basic])
 
          isString(proc {$}
                      {IsString a false}
@@ -41,7 +55,7 @@ in
                      {IsString nil true}
 
                   end
-                  keys:[module string])
+                  keys:[module type string])
 
          isStringSusp(proc {$}
                          X Y Sync in
@@ -49,7 +63,7 @@ in
                          {IsFree Y true} X=1 Y=true
                          {Wait Sync}
                       end
-                      keys:[module string])
+                      keys:[module type string])
 
          isStringSuspInt(proc {$}
                             X Y Sync in
@@ -57,7 +71,7 @@ in
                             {IsFree Y true} X=1 Y=false
                             {Wait Sync}
                          end
-                         keys:[module type string])
+                         keys:[module type type string])
 
 
          isStringSuspAtom(proc {$}
@@ -66,6 +80,6 @@ in
                              {IsFree Y true} X=a Y=false
                              {Wait Sync}
                           end
-                          keys:[module type string])
+                          keys:[module type type string])
         ])
 end

@@ -132,7 +132,7 @@ in
       %%
       %% Window-specific operations from the 'WindowManagerClass' (But
       %% not only, if necessary);
-      meth sync($) Unit end
+      meth sync($) unit end
 
       %%
       %% "Proper" browse method;

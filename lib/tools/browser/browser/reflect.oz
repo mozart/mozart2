@@ -28,7 +28,6 @@ local
    ReflectTerm
 
    %%
-   NameUnit = {{`Builtin` getUnit noHandler}}
 in
 
    %%
@@ -209,7 +208,7 @@ in
                   case TermIn then '<Bool: true>'
                   else '<Bool: false>'
                   end
-               elsecase TermIn == NameUnit then "<N: unit>"
+               elsecase TermIn == unit then "<N: unit>"
                else
                   {AtomConcatAll
                    ['<Name: ' {System.printName TermIn } ' @ '

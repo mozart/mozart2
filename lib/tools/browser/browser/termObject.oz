@@ -550,7 +550,7 @@ in
                %% representation: the later can be bigger because it's
                %% performed later. Anyway, 'LimitedTermSize' can only
                %% *approximate* a size of a term's representation;
-               RArity = {Record.monitorArity Term Unit}
+               RArity = {Record.monitorArity Term unit}
                case {HasLabel Term}
                then RLabel = {Label Term}
                else skip

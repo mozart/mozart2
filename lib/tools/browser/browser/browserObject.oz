@@ -40,7 +40,7 @@ class BrowserClass from Object.base
    %%
    attr
       selected: InitValue       %  selected term's object;
-      UnselectSync: Unit        %  gets bound when selection goes away;
+      UnselectSync: unit        %  gets bound when selection goes away;
 
    %%
    %%
@@ -372,11 +372,11 @@ class BrowserClass from Object.base
             {self.BrowserStream [enq(browse(Term RootTermObj)) ToEnable]}
 
             %%
-            Sync = Unit
+            Sync = unit
          end
          %%
          proc {DiscardProc}
-            Sync = Unit
+            Sync = unit
          end
 
          %%
@@ -564,11 +564,11 @@ class BrowserClass from Object.base
             {self.BrowserStream enq(undraw(RootTermObj))}
 
             %%
-            Sync = Unit
+            Sync = unit
          end
          %%
          proc {DiscardProc}
-            Sync = Unit
+            Sync = unit
          end
 
          %%
@@ -900,7 +900,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::UnsetSelected is applied'}
 \endif
       selected <- InitValue
-      @UnselectSync = Unit
+      @UnselectSync = unit
 
       %%
       {self.BrowserStream

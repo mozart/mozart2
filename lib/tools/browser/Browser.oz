@@ -360,7 +360,7 @@ in
             catch E then
                {Show '*********************************************'}
                {Show 'Exception occured in browser:'#E}
-               HasCrashed = Unit
+               HasCrashed = unit
             end
 
             %%

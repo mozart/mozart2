@@ -32,6 +32,41 @@
 
 declare
 
+local
+   UrlDefaults = \insert '../url-defaults.oz'
+in
+   FunExt     = UrlDefaults.'functor'
+   MozartHome = UrlDefaults.'home'
+end
+
+SystemModules = local
+                   Functors = \insert '../functor-defaults.oz'
+                   BaseUrl  = {URL.fromVs "x-oz://system/DUMMY"}
+                in
+                   {List.toRecord map
+                    {Map {Append Functors.volatile
+                          {Append Functors.lib Functors.tools}}
+                     fun {$ ModName}
+                        ModName #
+                        {URL.resolve BaseUrl
+                         {URL.fromVs ModName}}
+                     end}}
+                end
+
+fun {ModNameToUrl ModName}
+   ModKey = {VirtualString.toAtom ModName}
+in
+   if {HasFeature SystemModules ModKey} then
+      SystemModules.ModKey
+   else
+      {URL.fromVs ModKey#FunExt}
+   end
+end
+
+fun {IsSystemUrl Url}
+   {CondSelect Url scheme ""}=="x-oz"
+end
+
 fun {IsPath Url}
    {HasFeature Url path} andthen {Width Url}==1
 end
@@ -46,159 +81,166 @@ end
 
 fun {ToInclude Url}
    %% Returns true, iff functor at Url is to be included
+   {Not {IsSystemUrl Url}}
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\insert 'init/RURL.oz'
+%%
+%% First Step: Determine functors for both exclusion and inclusion
+%%
 
 declare
-local
-   Check = String.isPrefix
+%% Map URL-keys to import information and possibly functors
+FuncMap   = {Dictionary.new}
+InclMap   = {Dictionary.new}
+ExclMap   = {Dictionary.new}
+
+proc {FindIncl Url}
+   UrlKey = {URL.toAtom Url}
+   {Show find(UrlKey)}
 in
-   fun {IsPrefix V1 V2}
-      {Check {VirtualString.toString V1} {VirtualString.toString V2}}
+   if {Dictionary.member InclMap UrlKey}
+      orelse {Dictionary.member ExclMap UrlKey} then
+      skip
+   else
+      if {ToInclude Url} then
+         %% Load the functor
+         Func  = {Pickle.load UrlKey}
+         Embed
+      in
+         {Dictionary.put FuncMap UrlKey Func}
+         {Dictionary.put InclMap UrlKey incl(embed:Embed url:Url)}
+         Embed={Record.mapInd Func.'import'
+                fun {$ ModName Info}
+                   EmbedUrl = if {HasFeature Info 'from'} then
+                                 {URL.fromVs Info.'from'}
+                              else
+                                 {ModNameToUrl ModName}
+                              end
+                in
+                   {FindIncl {URL.resolve Url EmbedUrl}}
+                   o(url:EmbedUrl key:{URL.toAtom EmbedUrl})
+                end}
+      else
+         {Dictionary.put ExclMap UrlKey Url}
+      end
    end
 end
+
+{FindIncl {URL.fromVs 'F.ozf'}}
+
+{Browse o(incl: {Dictionary.toRecord g InclMap})}
+{Browse o(incl: {Dictionary.toRecord g InclMap})}
+
+
+%%
+%% Type checking
+%%
 
 declare
-%% Maps URLs to import
-QualImpMap = {NewDictionary}
-UnquImpMap = {NewDictionary}
-FunctorMap = {NewDictionary}
+ExclTypes = {Dictionary.new}
 
-proc {ProcessURLs URLs}
-   case URLs of nil then skip
-   [] URL|URLr then
-      Key = {RURL.urlToKey URL}
-      Fun = {Pickle.load Key}
-      ArURLs NoArURLs
-   in
-      %% Store functor
-      {Dictionary.put FunctorMap Key Fun}
-      %% Compute and store URLs for import
-      ImportURLs =
-      {Record.mapInd Fun.'import'
-       fun {$ ModName Info}
-          {Module.getUrl ModName {CondSelect Info 'from' unit}}
-       end}
-      %% Resolve URLs
-      ResImportURLs =
-      {Record.map ImportUrl
-       fun {$ IUrl}
-          {RURL.resolve Url IUrl}
-       end}
-      {Dictionary.put ImportUrlMap Key ImportUrls}
-      %% Partition imports
-      {Record.partitionInd Fun.'import'
-       fun {$ ModName _}
-          {RURL.isAbsUrl ImportUrls.ModName}
-       end
-       ?ArUrls ?NoArUrls}
+local
 
-          AURL={RURL.resolve URL IURL}
-       in
-
-      {ProcessURLs
-       {Record.foldLInd Fun.'import'
-           case {RURL.isAbsUrl IURL} then URLs else
-              Key={RURL.urlToKey AURL}
-           in
-              %% Functor for inclusion found
-              case {Dictionary.member FunctorMap Key} then
-                 URLs
-              else
-                 AURL|URLs
-              end
-           end
-        end URLr}}
+   fun {CheckExpImp ExpType ImpType}
+      %% no(TypeConflictDescription)
+      ok
    end
+
+   fun {CheckImpImp ImpType1 ImpType2}
+      %% no(TypeConflictDescription)
+      %% ok(CommonTyp)
+      ok(ImpType1)
+   end
+
+in
+
+   proc {CheckTypes}
+      %%
+      %% Check for export -> import matches
+      %% Collect external import types
+      %%
+      {ForAll {Dictionary.entries InclMap}
+       %% All modules that are included
+       proc {$ UrlKey#Spec}
+          {Record.forAllInd Spec.embed
+           %% All imported modules
+           proc {$ ModName Imp}
+              EmbedKey = Imp.key
+              ImpType  = {Dictionary.get FuncMap UrlKey}.'import'.ModName
+           in
+              if {Dictionary.member InclMap EmbedKey} then
+                 {Show check(UrlKey EmbedKey)}
+                 %% Typecheck what the module manager would normally do
+                 ExpType = {Dictionary.get FuncMap EmbedKey}.'export'
+              in
+                 case {CheckExpImp ExpType ImpType} then
+                 of ok then skip
+                 [] no(Conflict) then
+                    raise type(exportImport(Conflict)
+                               EmbedKey UrlKey)
+                    end
+                 end
+              else
+                 %% Collect type
+                 {Dictionary.put ExclTypes EmbedKey
+                  ImpType|{Dictionary.condGet ExclTypes EmbedKey nil}}
+              end
+           end}
+       end}
+      %%
+      %% Check for import <-> import matches
+      %%
+      {ForAll {Dictionary.entries ExclTypes}
+       proc {$ UrlKey#(T|Tr)}
+          if Tr==nil then T else
+             {Dictionary.put ExclTypes UrlKey
+              {FoldL Tr
+               fun {$ CurType EmbedKey#Type}
+                  case {CheckImpImp CurType Type}
+                  of ok(Type)     then Type
+                  [] no(Conflict) then
+                    raise type(importImport(Conflict)
+                               EmbedKey)
+                    end
+                  end
+               end T}}
+          end
+       end}
+   end
+
 end
 
-{ProcessURLs [{RURL.vsToUrl './F.ozf'}]}
+{CheckTypes}
 
-{Browse {Dictionary.toRecord map FunctorMap}}
+{
+local
+   Ctr = {New class $
+                  attr n:0
+                  prop final
+                  meth init
+                     n <- 0
+                  end
+                  meth get($)
+                     n <- @n+1
+                  end
+               end
+          init}
+   fun {GenVarName}
+      {VirtualString.toAtom 'V'#{Ctr get($)}}
+   end
+in
+   fun {MakeImport}
+      {List.toRecord 'import'
+end
 
-{Application.syslet
- 'ozar'
- functor $ prop once
 
- import
-    Syslet.{args exit}
-    Pickle.{load}
-    Module.{link
-            expand}
 
- body
-    Args = Syslet.args
 
-    {ProcessImports [{RURL.vsToUrl Args.'in'}]}
 
-    try
-       RunRet # CtrlRet = {Connection.take Syslet.args.ticket}
-       RunStr CtrlStr
-    in
-       {Port.send RunRet  {Port.new RunStr}}
-       {Port.send CtrlRet {Port.new CtrlStr}}
 
-       %% The server for running procedures and functors
-       thread
-          {ForAll RunStr
-           proc {$ What}
-              {Port.send RunRet
-               try
-                  X = case {Procedure.is What} then {What}
-                      elsecase {Functor.is What} then
-                         {Module.link '' What}
-                      end
-               in
-                  okay(X)
-               catch E then
-                  exception(E)
-               end}
-              end}
-       end
 
-       %% The server for control messages
-       thread
-          {ForAll CtrlStr
-           proc {$ C}
-              {Port.send CtrlRet
-               okay(case C
-                    of ping  then unit
-                    [] close then {Syslet.exit 0} unit
-                    end)}
-           end}
-       end
 
-    catch _ then
-       {Syslet.exit 1}
-    end
- end
-
- single(verbose(type:bool default:false)
-        threads(type:bool default:true)
-        'in'(type:string)
-        'out'(type:string)
-        'prefix'(type:string default:""))
-}
 
 
 /*
@@ -221,12 +263,13 @@ end
            body skip
            end
   'down/V'#functor
-           import FD System Tk
+           import FD System Tk U
            body skip
            end
  ]
  proc {$ URL#F}
     {Pickle.save F URL#'.ozf'}
  end}
+
 
 */

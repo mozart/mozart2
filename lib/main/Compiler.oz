@@ -20,55 +20,22 @@
 %%%
 
 local
-
    StandardEnv = \insert 'compiler-Env.oz'
-
 in
-
-   functor $ prop once
-
+   functor prop once
    import
-      System.{gcDo
-              printName
-              valueToVirtualString
-              get
-              property
-              printError
-              eq}
-
-      Foreign.{pointer
-               staticLoad}
-
-      Error.{formatExc
-             formatPos
-             formatLine
-             formatGeneric
-             format
-             dispatch
-             msg}
-
-      ErrorRegistry.{put}
-
-      FS.{include
-          var
-          subset
-          value
-          reflect
-          isIn}
-
-      FD.{int
-          is
-          less
-          distinct
-          distribute}
-
+      System   %.{gcDo printName valueToVirtualString get property
+               %  printError eq}
+      Foreign   %.{pointer staticLoad}
+      Error   %.{formatExc formatPos formatLine formatGeneric format
+              %  dispatch msg}
+      ErrorRegistry   %.put
+      FS.{include var subset value reflect isIn}
+      FD.{int is less distinct distribute}
       Search.{SearchOne = 'SearchOne'}
-
 \ifndef OZM
       Gump
 \endif
-
-
    export
       engine:               CompilerEngine
       compilerClass:        CompilerEngine   %--** deprecated
@@ -77,7 +44,6 @@ in
       evalExpression:       EvalExpression
       virtualStringToValue: VirtualStringToValue
       assemble:             DoAssemble
-
    body
       \insert 'compiler/InsertAll.oz'
    end

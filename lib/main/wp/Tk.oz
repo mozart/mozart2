@@ -397,7 +397,7 @@ define
            Exc}
        [] tk(engineCrashed) then
           {Error.format T
-           'Graphics engine crashed or could not be started' nil
+           'Graphics engine (tk.exe) crashed or could not be started' nil
            Exc}
        else
           {Error.formatGeneric T Exc}

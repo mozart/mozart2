@@ -29,6 +29,7 @@ in
    Dictionary =
    dictionary(new:          NewDictionary
               is:           IsDictionary
+              isEmpty:      Boot_Dictionary.isEmpty
               put:          Boot_Dictionary.put
               get:          Boot_Dictionary.get
               condGet:      Boot_Dictionary.condGet

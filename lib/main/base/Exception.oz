@@ -22,36 +22,25 @@
 
 declare
    Exception Raise
-   `RaiseDebugCheck` `RaiseDebugExtend`
+
+   `RaiseDebugCheck`
+   `RaiseDebugExtend`
 in
 
 
 Raise = `Raise`
 
-local
-   GetProp = {`Builtin` 'GetProperty' 2}
-in
-   fun {`RaiseDebugCheck` T1}
-      {GetProp 'errors.debug'} andthen
-      {IsDet T1} andthen
-      {IsRecord T1} andthen
-      {HasFeature T1 debug} andthen
-      {IsDet T1.debug} andthen
-      {IsRecord T1.debug}
-   end
-end
+`RaiseDebugCheck` = {`Builtin` 'Exception.raiseDebugCheck' 2}
 
 local
-   GetProp         = {`Builtin` 'GetProperty' 2}
-   ThreadThis      = {`Builtin` 'Thread.this' 1}
-   ThreadTaskStack = {`Builtin` 'Thread.taskStack' 4}
-   ThreadLocation  = {`Builtin` 'Thread.location' 2}
+   ThreadThis      = {`Builtin` 'Thread.this'           1}
+   ThreadTaskStack = {`Builtin` 'Thread.taskStackError' 3}
+   ThreadLocation  = {`Builtin` 'Thread.location'       2}
 in
    proc {`RaiseDebugExtend` T1 T2}
       L        = {Label T1.debug}
       This     = {ThreadThis}
-      N        = {GetProp 'errors.thread'}
-      Stack    = {ThreadTaskStack This N false}
+      Stack    = {ThreadTaskStack This false}
       Location = {ThreadLocation This}
    in
       {`Raise` {AdjoinAt

@@ -28,7 +28,6 @@ import
    Fault
    TestMisc(localHost)
    System
-Property
 export
    Return
 

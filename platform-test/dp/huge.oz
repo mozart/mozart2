@@ -1,9 +1,9 @@
 /*
-   This test sends a number of large data structures to remote managers and
-   expects them to be returned.
-   The goal is to test the suspendable marshaler.
-   If the size is set large enough gc of continuations will happen and cause
-   more problems than using just fragmented messages
+This test sends a number of large data structures to remote managers and
+expects them to be returned.
+The goal is to test the suspendable marshaler.
+If the size is set large enough gc of continuations will happen and cause
+more problems than using just fragmented messages
 */
 
 functor
@@ -11,7 +11,7 @@ import
    TestMisc
    Compiler
    Fault
-%   System(show:Show)
+  %   System(show:Show)
 export
    Return
 define
@@ -48,8 +48,8 @@ define
    Proc={Compiler.evalExpression ProcString env _}
    % Class
    fun {CodeGenClass N Size}
-   if N=<Size then
-      {VirtualString.toAtom "a"#N}#":"#N#" "#thread {CodeGenClass N+1 Size}end
+      if N=<Size then
+         {VirtualString.toAtom "a"#N}#":"#N#" "#thread {CodeGenClass N+1 Size}end
       else "meth init skip end" end
    end
    ClassString="class $ attr "#{CodeGenClass 1 {Float.toInt
@@ -64,51 +64,81 @@ define
                  tuple#Tup record#Rec /*array#A*/ procedure#Proc
                  'class'#Cl object#Obj bytestring#ByteS]
 
-   {Fault.defaultDisable _}
-   {Fault.defaultEnable [permFail] _}
-
-   proc {Start}
-      Managers
-      InP InSCell={NewCell {NewPort $ InP}}
-      OutS OutP={NewPort OutS}
-      proc {CheckStream S Value Times}
-         if Times > 0 then
-            case S of !Value|Rest then
-               {CheckStream Rest Value (Times-1)}
-            else
-               raise equality_test_failed(S.1 Value) end
+   class TcpPropMonitor
+      prop locking
+      attr n:0
+      meth init skip end
+      meth enter
+         lock
+            if @n==0 then
+               {Fault.defaultDisable _}
+               {Fault.defaultEnable [permFail] _}
             end
-         else
-            {Assign InSCell S} % Store away where to start with next value...
+            n <- @n+1
          end
       end
-   in
-      try Hosts in
-         {TestMisc.getHostNames Hosts}
-         {TestMisc.getRemoteManagers Sites Hosts Managers}
-         {ForAll Managers proc {$ RemMan}
-                             {StartRemSite RemMan OutS InP}
-                          end}
+      meth leave
+         lock
+            if @n==1 then
+               % Assumes that the system had these settings to begin with.
+               % If there was a way to check, this could have been done
+               % in enter...
+               {Fault.defaultEnable [tempFail permFail] _}
+            end
+            n <- @n-1
+         end
+      end
+   end
 
-         {ForAll TestValues proc {$ Lable#X}
-                               try
+   Monitor = {New TcpPropMonitor init}
+
+   proc {Start}
+      try
+         {Monitor enter}
+         Managers
+         InP InSCell={NewCell {NewPort $ InP}}
+         OutS OutP={NewPort OutS}
+         proc {CheckStream S Value Times}
+            if Times > 0 then
+               case S of !Value|Rest then
+                  {CheckStream Rest Value (Times-1)}
+               else
+                  raise equality_test_failed(S.1 Value) end
+               end
+            else
+               {Assign InSCell S} % Store away where to start with next value...
+            end
+         end
+      in
+         try Hosts in
+            {TestMisc.getHostNames Hosts}
+            {TestMisc.getRemoteManagers Sites Hosts Managers}
+            {ForAll Managers proc {$ RemMan}
+                                {StartRemSite RemMan OutS InP}
+                             end}
+
+            {ForAll TestValues proc {$ Lable#X}
+                                  try
 %                                 {Show trying(Lable)}
-                                  {Send OutP X}
-                                  {CheckStream {Access InSCell}
-                                   X {List.length Managers}}
-                               catch Ex then
-                                  raise failed(Lable Ex) end
-                               end
-                            end}
-      catch X then
+                                     {Send OutP X}
+                                     {CheckStream {Access InSCell}
+                                      X {List.length Managers}}
+                                  catch Ex then
+                                     raise failed(Lable Ex) end
+                                  end
+                               end}
+         catch X then
 %        {Show manager_caught(X)}
+            {TestMisc.gcAll Managers}
+            {TestMisc.listApply Managers close}
+            raise X end
+         end
          {TestMisc.gcAll Managers}
          {TestMisc.listApply Managers close}
-         raise X end
-      end
-      {TestMisc.gcAll Managers}
-      {TestMisc.listApply Managers close}
 %      {Show done}
+      finally
+         {Monitor leave}
+      end
    end
 
    proc {StartRemSite Manager InS OutP}

@@ -541,7 +541,10 @@ in
                    base: BaseObject)
 
    Class = 'class'(is:             IsClass
-                   new:            NewClass)
+                   new:            NewClass
+                   getAttr:        fun {$ C A}
+                                      C.`ooAttr`.A
+                                   end)
 
    OoExtensions = oo('class':      NewFullClass
                      getClass:     GetClass

@@ -58,10 +58,10 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        url mini maxi equality table port cell cellAndLock variable object \
+        url mini maxi equality port cell cellAndLock variable object \
         objectAndLock injectors watchers basicfault fault_state \
         parallel-search variable2 huge object_proc_port caching credit_circle \
-        init_settings
+        init_settings table
 
 DP2=
 DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)

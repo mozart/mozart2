@@ -34,11 +34,12 @@ oz('SP':             nil
    'Browser':        ['SP' 'WP' 'CP']
    'Explorer':       ['SP' 'WP' 'Browser'#lazy]
    'Compiler':       ['SP' 'CP' 'Gump'#lazy]
-   'CompilerPanel':  ['SP' 'CP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
-   'Emacs':          ['OP' 'SP']
-   'Ozcar':          ['SP' 'CP'#lazy 'WP' 'Browser'#lazy
-                      'Compiler' 'Emacs'#lazy]
-   'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
+   'CompilerPanel':  ['SP' 'CP' 'OP' 'WP' 'Compiler'
+                      'Browser'#lazy 'Emacs'#lazy]
+   'Emacs':          ['OP' 'SP' 'Compiler']
+   'Ozcar':          ['SP' 'CP'#lazy 'WP'
+                      'Browser'#lazy 'Compiler'#lazy 'Emacs'#lazy]
+   'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Emacs'#lazy]
    'Gump':           ['SP' 'OP']
    'GumpScanner':    ['SP']
    'GumpParser':     ['SP']

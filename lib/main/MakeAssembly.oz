@@ -22,14 +22,18 @@
 \insert Standard
 
 declare
-NewSP NewOP NewCP NewCompiler
+NewSP NewCP NewOP NewAP NewGump NewCompiler
 in
 \insert SP
 = NewSP
-\insert OP
-= NewOP
 \insert CP
 = NewCP
+\insert OP
+= NewOP
+\insert AP
+= NewAP
+\insert Gump
+= NewGump
 \insert Compiler
 = NewCompiler
 
@@ -37,6 +41,8 @@ local
    Env = m('SP':       \insert SP.env
            'CP':       \insert CP.env
            'OP':       \insert OP.env
+           'AP':       \insert AP.env
+           'Gump':     \insert Gump.env
            'Compiler': \insert Compiler.env
           )
    \insert SP.env
@@ -45,6 +51,10 @@ local
    = {NewCP Env}
    \insert OP.env
    = {NewOP Env}
+   \insert AP.env
+   = {NewAP Env}
+   \insert Gump.env
+   = {NewGump Env}
    \insert Compiler.env
    = {NewCompiler Env}
 

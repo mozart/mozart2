@@ -10,10 +10,10 @@
 %%%   $Revision$
 %%%
 %%% This file is part of Mozart, an implementation of Oz 3:
-%%%    $MOZARTURL$
+%%%   $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
-%%%    $LICENSEURL$
+%%%   $LICENSEURL$
 %%% for information on usage and redistribution
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
@@ -28,6 +28,8 @@ fun
    = IMPORT.'SP'
    \insert 'CP.env'
    = IMPORT.'CP'
+   \insert 'Gump.env'
+   = IMPORT.'Gump'
 in
    local
       \insert 'compiler/InsertAll.oz'

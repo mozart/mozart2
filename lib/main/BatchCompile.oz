@@ -66,6 +66,7 @@ local
                    unit#"warnredecl"#warnredecl(type: bool)
                    unit#"warnforward"#warnforward(type: bool)
                    unit#"system"#system(type: bool)
+                   unit#"gump"#gump(type: bool)
                    unit#"staticanalysis"#staticanalysis(type: bool)
                    unit#"realcore"#realcore(type: bool)
                    unit#"debugvalue"#debugvalue(type: bool)
@@ -112,6 +113,7 @@ local
    '--(no)warnredecl              Warn about top-level redeclarations.\n'#
    '--(no)warnforward             Warn about oo forward declarations.\n'#
    '--(no)system                  Allow use of system variables.\n'#
+   '--(no)gump                    Allow Gump definitions.\n'#
    '--(no)staticanalysis          Run static analysis.\n'#
    '--(no)realcore                Output the real non-fancy core syntax.\n'#
    '--(no)debugvalue              Annotate variable values in core output.\n'#

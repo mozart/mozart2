@@ -20,6 +20,8 @@
 %%% WARRANTIES.
 %%%
 
+{OS.chDir {OS.getEnv 'HOME'}#'/mozart/share/test'}
+
 declare
 T={{New Module.manager init}
    link(url:{OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf' $)}.run

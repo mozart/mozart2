@@ -30,13 +30,13 @@
 
 local
 
-   % add to list if no duplicate
+   %% add to list if no duplicate
    fun {Add X Ys}
       case {Member X Ys} then Ys else X|Ys end
    end
 
-   % get list of sort names mentioned
-   % in Ord (no duplicates)
+   %% get list of sort names mentioned
+   %% in Ord (no duplicates)
    fun {GetNames Ord}
       {FoldR Ord
        fun {$ A#B I} {Add A {Add B I}} end
@@ -48,26 +48,20 @@ local
       Names = {GetNames Ord}
       N     = {Length Names}
 
-      % define mapping names -> indexes
+      %% define mapping names -> indexes
       proc {IdxMapping N2I}
-         N2I = {Record.make n2i Names}
+         N2I = {FD.record n2i Names 1#N}
 
-         % each name receives an integer between 1 and N
-         {Record.forAll N2I
-          proc {$ A}
-             A = {FD.int 1#N}
-          end}
-
-         % numbering must respect the partial order
+         %% numbering must respect the partial order
          {ForAll Ord
           proc {$ A#B}
              {FD.less N2I.B N2I.A}
           end}
 
-         % numbering must be one-one
+         %% numbering must be one-one
          {FD.distinct N2I}
 
-         % go
+         %% go
          {FD.distribute naive N2I}
       end
 
@@ -95,9 +89,9 @@ local
          % minimize set values after proPagation
          {ForAll Names
           proc {$ Nam}
-             S = N2S.Nam
-          in
              choice
+                S = N2S.Nam
+             in
                 S = {FS.value.new {FS.reflect.lowerBound S}}
              end
           end}

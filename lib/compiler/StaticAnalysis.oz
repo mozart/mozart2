@@ -4,6 +4,7 @@
 %%%
 %%% Contributors:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+%%%   Christian Schulte <schulte@dfki.de>
 %%%
 %%% Copyright:
 %%%   Martin Mueller, 1997
@@ -22,906 +23,900 @@
 %%% WARRANTIES.
 %%%
 
-/*
-\define LOOP
-\define DEBUGSA
-*/
+functor
 
-local
+require
+   Search(base)
+
+   FD(less distinct distribute record)
+
+   FS(var value include subset reflect monitorIn)
+
+prepare
+
    \insert POTypes
-in
 
-   functor
-   import
-      BootName at 'x-oz://boot/Name'
-      CompilerSupport(newNamedName newCopyableName isCopyableName
-                      newPredicateRef newCopyablePredicateRef
-                      nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
-      FD(is)
-      System(eq printName show)
-      Type(is)
-      Core
-      Builtins(getInfo)
-      RunTime(tokens)
-   export
-      ImARecordConstr
-      ImAValueNode
-      ImAVariableOccurrence
-      ImAToken
 
-      statement: SAStatement
-      typeOf: SATypeOf
-      stepPoint: SAStepPoint
-      declaration: SADeclaration
-      equation: SAEquation
-      construction: SAConstruction
-      definition: SADefinition
-      application: SAApplication
-      boolCase: SABoolCase
-      boolClause: SABoolClause
-      patternCase: SAPatternCase
-      patternClause: SAPatternClause
-      recordPattern: SARecordPattern
-      equationPattern: SAEquationPattern
-      elseNode: SAElseNode
-      noElse: SANoElse
-      threadNode: SAThreadNode
-      tryNode: SATryNode
-      lockNode: SALockNode
-      classNode: SAClassNode
-      method: SAMethod
-      methodWithDesignator: SAMethodWithDesignator
-      methFormal: SAMethFormal
-      methFormalOptional: SAMethFormalOptional
-      methFormalWithDefault: SAMethFormalWithDefault
-      objectLockNode: SAObjectLockNode
-      getSelf: SAGetSelf
-      ifNode: SAIfNode
-      choicesAndDisjunctions: SAChoicesAndDisjunctions
-      clause: SAClause
-      valueNode: SAValueNode
-      variable: SAVariable
-      variableOccurrence: SAVariableOccurrence
-      token: SAToken
-      nameToken: SANameToken
-   define
+import
+   BootName at 'x-oz://boot/Name'
 
-      % this is a hack that should disappear once the treatment
-      % of sequential threads and lazy linking is compatible
-      {Wait FD.is}
+   CompilerSupport(newNamedName newCopyableName isCopyableName
+                   newPredicateRef newCopyablePredicateRef
+                   nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
 
-%-----------------------------------------------------------------------
-% this translation routine is here since it depends on FD and hence
-% refers to a resource. no other reason: logically, it belongs to POTypes
+   FD(is)
+   System(eq printName show)
+   Type(is)
+   Core
+   Builtins(getInfo)
+   RunTime(tokens)
 
-      OzTypes = {MkOzPartialOrder}
+export
+   ImARecordConstr
+   ImAValueNode
+   ImAVariableOccurrence
+   ImAToken
 
+   statement:              SAStatement
+   typeOf:                 SATypeOf
+   stepPoint:              SAStepPoint
+   declaration:            SADeclaration
+   equation:               SAEquation
+   construction:           SAConstruction
+   definition:             SADefinition
+   application:            SAApplication
+   boolCase:               SABoolCase
+   boolClause:             SABoolClause
+   patternCase:            SAPatternCase
+   patternClause:          SAPatternClause
+   recordPattern:          SARecordPattern
+   equationPattern:        SAEquationPattern
+   elseNode:               SAElseNode
+   noElse:                 SANoElse
+   threadNode:             SAThreadNode
+   tryNode:                SATryNode
+   lockNode:               SALockNode
+   classNode:              SAClassNode
+   method:                 SAMethod
+   methodWithDesignator:   SAMethodWithDesignator
+   methFormal:             SAMethFormal
+   methFormalOptional:     SAMethFormalOptional
+   methFormalWithDefault:  SAMethFormalWithDefault
+   objectLockNode:         SAObjectLockNode
+   getSelf:                SAGetSelf
+   ifNode:                 SAIfNode
+   choicesAndDisjunctions: SAChoicesAndDisjunctions
+   clause:                 SAClause
+   valueNode:              SAValueNode
+   variable:               SAVariable
+   variableOccurrence:     SAVariableOccurrence
+   token:                  SAToken
+   nameToken:              SANameToken
+
+define
+
+   %% this is a hack that should disappear once the treatment
+   %% of sequential threads and lazy linking is compatible
+   {Wait FD.is}
+
+   %%-----------------------------------------------------------------------
+   %% this translation routine is here since it depends on FD and hence
+   %% refers to a resource. no other reason: logically, it belongs to POTypes
+
+   OzTypes = {MkOzPartialOrder}
+
+   local
+      OTE = OzTypes.encode
+   in
       fun {OzValueToType V}
-         case
-            {IsDet V}
-         then
-            case {IsInt V}
-            then
-               case {IsChar V}
-               then {OzTypes.encode char nil}
-               elsecase {FD.is V}
-               then {OzTypes.encode fdIntC nil}
-               else {OzTypes.encode int nil}
+         if {IsDet V} then
+            if {IsInt V} then
+               {OTE if {IsChar V} then char
+                    elseif {FD.is V} then fdIntC
+                    else int
+                    end nil}
+            elseif {IsFloat V} then
+               {OTE float nil}
+            elseif {IsAtom V} then
+               {OTE if V==nil then nilAtom
+                    else atom
+                    end nil}
+            elseif {IsName V} then
+               {OTE case V
+                    of true  then bool
+                    [] false then bool
+                    [] unit  then 'unit'
+                    else name
+                    end nil}
+            elseif {IsTuple V} then
+               {OTE case V
+                    of _|_ then cons
+                    [] _#_ then pair
+                    else tuple
+                    end nil}
+            elseif {IsRecord V} then
+               {OTE record nil}
+            elseif {IsProcedure V} then
+               {OTE case {ProcedureArity V}
+                    of 0 then 'procedure/0'
+                    [] 1 then 'procedure/1'
+                    [] 2 then 'procedure/2'
+                    [] 3 then 'procedure/3'
+                    [] 4 then 'procedure/4'
+                    [] 5 then 'procedure/5'
+                    [] 6 then 'procedure/6'
+                    else 'procedure/>6'
+                    end nil}
+            elseif {IsCell V} then
+               {OTE cell nil}
+            elseif {IsSpace V} then
+               {OTE space nil}
+            elseif {IsThread V} then
+               {OTE 'thread' nil}
+            elseif {IsBitString V} then
+               {OTE bitString nil}
+            elseif {IsByteString V} then
+               {OTE byteString nil}
+            elseif {IsChunk V} then
+               if {IsArray V} then
+                  {OTE array nil}
+               elseif {IsDictionary V} then
+                  {OTE dictionary nil}
+               elseif {IsClass V} then
+                  {OTE 'class' nil}
+               elseif {IsObject V} then
+                  {OTE object nil}
+               elseif {IsLock V} then
+                  {OTE 'lock' nil}
+               elseif {IsPort V} then
+                  {OTE port nil}
+               elseif {BitArray.is V} then
+                  {OTE bitArray nil}
+               else
+                  {OTE chunk [array dictionary 'class'
+                              'object' 'lock' port
+                              bitArray]}
                end
-            elsecase {IsFloat V}
-            then {OzTypes.encode float nil}
-            elsecase {IsAtom V}
-            then
-               case V == nil
-               then {OzTypes.encode nilAtom nil}
-               else {OzTypes.encode atom nil}
-               end
-            elsecase {IsName V}
-            then
-               case V == true orelse V == false
-               then {OzTypes.encode bool nil}
-               elsecase V == unit
-               then {OzTypes.encode 'unit' nil}
-               else {OzTypes.encode name nil}
-               end
-            elsecase {IsTuple V}
-            then
-               case V of _|_
-               then {OzTypes.encode cons nil}
-               elseof _#_
-               then {OzTypes.encode pair nil}
-               else {OzTypes.encode tuple nil}
-               end
-            elsecase {IsRecord V}
-            then {OzTypes.encode record nil}
-            elsecase {IsProcedure V}
-            then
-               case {ProcedureArity V}
-               of 0 then {OzTypes.encode 'procedure/0' nil}
-               elseof 1 then {OzTypes.encode 'procedure/1' nil}
-               elseof 2 then {OzTypes.encode 'procedure/2' nil}
-               elseof 3 then {OzTypes.encode 'procedure/3' nil}
-               elseof 4 then {OzTypes.encode 'procedure/4' nil}
-               elseof 5 then {OzTypes.encode 'procedure/5' nil}
-               elseof 6 then {OzTypes.encode 'procedure/6' nil}
-               else {OzTypes.encode 'procedure/>6' nil}
-               end
-            elsecase {IsCell V}
-            then {OzTypes.encode cell nil}
-            elsecase {IsSpace V}
-            then {OzTypes.encode space nil}
-            elsecase {IsThread V}
-            then {OzTypes.encode 'thread' nil}
-            elsecase {IsBitString V}
-            then {OzTypes.encode bitString nil}
-            elsecase {IsByteString V}
-            then {OzTypes.encode byteString nil}
-            elsecase {IsChunk V}
-            then
-               case {IsArray V}
-               then {OzTypes.encode array nil}
-               elsecase {IsDictionary V}
-               then
-                  {OzTypes.encode dictionary nil}
-               elsecase {IsClass V}
-               then {OzTypes.encode 'class' nil}
-               elsecase {IsObject V}
-               then {OzTypes.encode object nil}
-               elsecase {IsLock V}
-               then {OzTypes.encode 'lock' nil}
-               elsecase {IsPort V}
-               then {OzTypes.encode port nil}
-               elsecase {BitArray.is V}
-               then {OzTypes.encode bitArray nil}
-               else {OzTypes.encode chunk [array dictionary 'class'
-                                           'object' 'lock' port
-                                           bitArray]}
-               end
-            else {OzTypes.encode value [int float record procedure
-                                        cell chunk space 'thread']}
+            else
+               {OTE value [int float record procedure
+                           cell chunk space 'thread']}
             end
-         elsecase
-            {IsKinded V}
-         then
-            case {FD.is V}
-            then {OzTypes.encode fdIntC nil}
-            elsecase {IsRecordC V}
-            then {OzTypes.encode recordC nil}
-            else {OzTypes.encode value [fdIntC recordC]}
+         elseif {IsKinded V} then
+            if {FD.is V} then
+               {OTE fdIntC nil}
+            elseif {IsRecordC V} then
+               {OTE recordC nil}
+            else
+               {OTE value [fdIntC recordC]}
             end
          else
-            {OzTypes.encode value nil}
+            {OTE value nil}
          end
       end
+   end
 
-%-----------------------------------------------------------------------
-% Some constants and shorthands
+   %%-----------------------------------------------------------------------
+   %% Some constants and shorthands
 
-      SAGenError    = 'static analysis error'
-      SAFatalError  = 'static analysis fatal error'
-      SAGenWarn     = 'static analysis warning'
-      SATypeError   = 'type error'
+   SAGenError    = 'static analysis error'
+   SAFatalError  = 'static analysis fatal error'
+   SAGenWarn     = 'static analysis warning'
+   SATypeError   = 'type error'
 
-      AnalysisDepth = 3          % analysis of current environment
-      AnalysisWidth = w(5 10 50) % analysis of current environment at depth 1 2 3
+   AnalysisDepth = 3          % analysis of current environment
+   AnalysisWidth = w(5 10 50) % analysis of current environment at depth 1 2 3
                                  % must be a tuple of width AnalysisDepth
-      PrintDepth    = 3          % output of analysed structure
+   PrintDepth    = 3          % output of analysed structure
 
-      VS2S = VirtualString.toString
-      IsVS = IsVirtualString
-      Partition = List.partition
+   VS2S = VirtualString.toString
+   IsVS = IsVirtualString
+   Partition = List.partition
 
-      fun {NormalizeCoord Coord}
-         case Coord of unit then Coord
-         else pos(Coord.1 Coord.2 Coord.2)
-         end
+   fun {NormalizeCoord Coord}
+      case Coord of unit then Coord
+      else pos(Coord.1 Coord.2 Coord.2)
       end
+   end
 
-      fun {FirstOrId X}
-         case X of F#_ then F else X end
+   fun {FirstOrId X}
+      case X of F#_ then F else X end
+   end
+
+   fun {LabelToVS X}
+      case {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
+   end
+
+   fun {Bool2Token B}
+      case B then RunTime.tokens.'true' else RunTime.tokens.'false' end
+   end
+
+   %% assumes privacy of the following feature names used in Core:
+
+   ImAVariableOccurrence = {NewName}
+   ImAValueNode          = {NewName}
+   ImARecordConstr       = {NewName}
+   ImAToken              = {NewName}
+
+   %%
+   %% kinded records
+
+   fun {CurrentArity R}
+      case {IsDet R}
+      then {Arity R}
+      elsecase {IsFree R}
+      then nil
+      else {Record.reflectArity R}
       end
+   end
 
-      fun {LabelToVS X}
-         case {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
-      end
+   fun {HasFeatureNow R F}
+      {Member F {CurrentArity R}}
+   end
 
-      fun {Bool2Token B}
-         case B then RunTime.tokens.'true' else RunTime.tokens.'false' end
-      end
+   %% GetClassData: T -> <value>
+   %% given a T node, assumes a class value and
+   %% returns an associated class token or unit
 
-%      fun {FirstN Xs N}
-%        {List.takeWhileInd Xs fun {$ I X} I=<N end}
-%      end
-
-% assumes privacy of the following feature names used in Core:
-
-      ImAVariableOccurrence = {NewName}
-      ImAValueNode          = {NewName}
-      ImARecordConstr        = {NewName}
-      ImAToken              = {NewName}
-
-%-----------------------------------------------------------------------
-% kinded records
-
-      fun {CurrentArity R}
-         case {IsDet R}
-         then {Arity R}
-         elsecase {IsFree R}
-         then nil
-         else {Record.reflectArity R}
-         end
-      end
-
-      fun {HasFeatureNow R F}
-         {Member F {CurrentArity R}}
-      end
-
-%-----------------------------------------------------------------------
-
-% GetClassData: T -> <value>
-% given a T node, assumes a class value and
-% returns an associated class token or unit
-
-      fun {GetClassData X}
-         XV = {X getValue($)}
-      in
-         case {IsDet XV}
-            andthen {IsObject XV}
+   fun {GetClassData X}
+      XV = {X getValue($)}
+   in
+      case {IsDet XV}
+         andthen {IsObject XV}
+      then
+         case XV == X
          then
-            case XV == X
-            then
-               unit % variable
-            elsecase {HasFeature XV ImAToken}
-               andthen XV.kind == 'class'
-            then
-               XV
-            elsecase {HasFeature XV ImAVariableOccurrence}
-            then
-               {GetClassData XV}
-            else
-               unit % type checking elsewhere
-            end
-         else
-            unit    % variable
-         end
-      end
-
-% GetClassOfObjectData: T -> <value>
-% given a T node, assumes an object value and
-% returns an associated class token or unit
-
-      fun {GetClassOfObjectData X}
-         XV = {X getValue($)}
-      in
-         case {IsDet XV}
-            andthen {IsObject XV}
-         then
-            case XV==X
-            then
-               unit % variable
-            elsecase {HasFeature XV ImAToken}
-               andthen XV.kind == 'object'
-            then
-               {XV getClassNode($)}
-            elsecase {HasFeature XV ImAVariableOccurrence}
-            then
-               {GetClassOfObjectData XV}
-            else
-               unit % type checking elsewhere
-            end
-         else
             unit % variable
+         elsecase {HasFeature XV ImAToken}
+            andthen XV.kind == 'class'
+         then
+            XV
+         elsecase {HasFeature XV ImAVariableOccurrence}
+         then
+            {GetClassData XV}
+         else
+            unit % type checking elsewhere
          end
+      else
+         unit    % variable
       end
+   end
 
-% GetValue: T -> <value>
-% given a T node, returns the associated value
-% ie, an integer/float/atom/construction, or a token;
-% constructions may contain embedded T nodes
+   %% GetClassOfObjectData: T -> <value>
+   %% given a T node, assumes an object value and
+   %% returns an associated class token or unit
 
-      fun {GetDataObject X}
-         {X getData(true $)}
+   fun {GetClassOfObjectData X}
+      XV = {X getValue($)}
+   in
+      case {IsDet XV}
+         andthen {IsObject XV}
+      then
+         case XV==X
+         then
+            unit % variable
+         elsecase {HasFeature XV ImAToken}
+            andthen XV.kind == 'object'
+         then
+            {XV getClassNode($)}
+         elsecase {HasFeature XV ImAVariableOccurrence}
+         then
+            {GetClassOfObjectData XV}
+         else
+            unit % type checking elsewhere
+         end
+      else
+         unit % variable
       end
+   end
 
-% GetData: T -> <value>
-% given a T node, returns the associated value
-% ie, an integer/float/atom/construction; or the
-% value associated with a token (proc/builtin/class etc.)
-% constructions may contain embedded T nodes
+   %% GetValue: T -> <value>
+   %% given a T node, returns the associated value
+   %% ie, an integer/float/atom/construction, or a token;
+   %% constructions may contain embedded T nodes
 
-      fun {GetData X}
-         {X getData(false $)}
-      end
+   fun {GetDataObject X}
+      {X getData(true $)}
+   end
 
-% GetFullData: T -> <oz-term>
-% given a T node, returns the associated value
-% ie, an integer/float/atom/construction; or the
-% value associated with a token (proc/builtin/class etc.)
-% constructions are expanded recursively up to limited depth
+   %% GetData: T -> <value>
+   %% given a T node, returns the associated value
+   %% ie, an integer/float/atom/construction; or the
+   %% value associated with a token (proc/builtin/class etc.)
+   %% constructions may contain embedded T nodes
 
-      fun {GetFullData X}
-         {X getFullData(PrintDepth true $)}
-      end
+   fun {GetData X}
+      {X getData(false $)}
+   end
 
-      fun {GetPrintData X}
-         {X getFullData(PrintDepth false $)}
-      end
+   %% GetFullData: T -> <oz-term>
+   %% given a T node, returns the associated value
+   %% ie, an integer/float/atom/construction; or the
+   %% value associated with a token (proc/builtin/class etc.)
+   %% constructions are expanded recursively up to limited depth
 
-%-----------------------------------------------------------------------
-% Type predicates
+   fun {GetFullData X}
+      {X getFullData(PrintDepth true $)}
+   end
 
-      fun {IsToken X}
-         {IsObject X} andthen {HasFeature X ImAToken}
-      end
+   fun {GetPrintData X}
+      {X getFullData(PrintDepth false $)}
+   end
 
-      TypeTests = {AdjoinAt Type.is object
-                   fun {$ X}
-                      {IsObject X} andthen
-                      {Not {HasFeature X ImARecordConstr}
-                       orelse {HasFeature X ImAValueNode}
-                       orelse {HasFeature X ImAToken}}
-                   end}
+   %%
+   %% Type predicates
 
-%-----------------------------------------------------------------------
-% Determination predicates
+   fun {IsToken X}
+      {IsObject X} andthen {HasFeature X ImAToken}
+   end
 
-      DetTests
-      = dt(any:    fun {$ X}
-                      true
-                   end
-           det:    fun {$ X} XD = {GetData X} in
-                      {IsDet XD} andthen
-                      case {IsObject XD} then
-                         {Not {HasFeature XD ImAVariableOccurrence}}
-                      else true end
-                   end
-           detOrKinded:
-              fun {$ X} XD = {GetData X} in
-                 case {IsDet XD} then
-                    case {IsObject XD} then
-                       {Not {HasFeature XD ImAVariableOccurrence}}
-                    else true end
-                 else {IsKinded XD} end
-              end)
+   TypeTests = {AdjoinAt Type.is object
+                fun {$ X}
+                   {IsObject X} andthen
+                   {Not {HasFeature X ImARecordConstr}
+                    orelse {HasFeature X ImAValueNode}
+                    orelse {HasFeature X ImAToken}}
+                end}
 
-   %
-   % three valued tests for recursive data structures
-   %
+   %%
+   %% Determination predicates
 
-      fun {IsListNow S}
-         case {IsDet S} then
-            case S
-            of nil then true
-            elseof _|Sr then
-               {IsListNow Sr}
-            else false end
-         else unit end
-      end
+   DetTests
+   = dt(any:    fun {$ X}
+                   true
+                end
+        det:    fun {$ X} XD = {GetData X} in
+                   {IsDet XD} andthen
+                   case {IsObject XD} then
+                      {Not {HasFeature XD ImAVariableOccurrence}}
+                   else true end
+                end
+        detOrKinded:
+           fun {$ X} XD = {GetData X} in
+              case {IsDet XD} then
+                 case {IsObject XD} then
+                    {Not {HasFeature XD ImAVariableOccurrence}}
+                 else true end
+              else {IsKinded XD} end
+           end)
 
-      fun {IsStringNow S}
-         case {IsDet S} then
-            case S
-            of nil then true
-            elseof I|Sr then
-               {IsDet I}
-               andthen {IsChar I}
-               andthen {IsStringNow Sr}
-            else false end
-         else unit end
-      end
+   %%
+   %% three valued tests for recursive data structures
+   %%
 
-   % approximation of isVirtualString
+   fun {IsListNow S}
+      case {IsDet S} then
+         case S
+         of nil then true
+         elseof _|Sr then
+            {IsListNow Sr}
+         else false end
+      else unit end
+   end
 
-      fun {IsVirtualStringNow S}
-         case {IsDet S} then
-            case {IsAtom S}
-               orelse {IsInt S}
-               orelse {IsFloat S}
-               orelse {IsByteString S}
-               orelse {IsStringNow S}
-            then true
-            elsecase {IsTuple S}
-               andthen {Label S} == '#'
-            then unit
-            else false end
-         else unit end
-      end
+   fun {IsStringNow S}
+      case {IsDet S} then
+         case S
+         of nil then true
+         elseof I|Sr then
+            {IsDet I}
+            andthen {IsChar I}
+            andthen {IsStringNow Sr}
+         else false end
+      else unit end
+   end
 
-%-----------------------------------------------------------------------
-% Determination & type predicates
+   %% approximation of isVirtualString
 
-      local
-         fun {Maybe Type}
-            fun {$ X}
-               XX = {GetData X}
-            in
-               case {IsDet XX} then
-                  case {IsObject XX}
-                     andthen {HasFeature XX ImAVariableOccurrence}
-                  then true
-                  else {Type XX} end
-               else true
-               end
+   fun {IsVirtualStringNow S}
+      case {IsDet S} then
+         case {IsAtom S}
+            orelse {IsInt S}
+            orelse {IsFloat S}
+            orelse {IsByteString S}
+            orelse {IsStringNow S}
+         then true
+         elsecase {IsTuple S}
+            andthen {Label S} == '#'
+         then unit
+         else false end
+      else unit end
+   end
+
+   %%-----------------------------------------------------------------------
+   %% Determination & type predicates
+
+   local
+      fun {Maybe Type}
+         fun {$ X}
+            XX = {GetData X}
+         in
+            case {IsDet XX} then
+               case {IsObject XX}
+                  andthen {HasFeature XX ImAVariableOccurrence}
+               then true
+               else {Type XX} end
+            else true
             end
          end
-         fun {MaybePairOf L R X}
-            XX = {GetData X}
-         in
-            case {IsDet XX} then
-               case {IsObject XX}
-                  andthen {HasFeature XX ImAVariableOccurrence}
-               then true
-               elsecase XX
-               of A#B then
-                  {DetTypeTest L A}
-                  andthen {DetTypeTest R B}
-               else false end
-            else true end
-         end
-         fun {MaybeListOf T X}
-            XX = {GetData X}
-         in
-            case {IsDet XX} then
-               case {IsObject XX}
-                  andthen {HasFeature XX ImAVariableOccurrence}
-               then true
-               elsecase XX
-               of X|XXr then
-                  {DetTypeTest T X}
-                  andthen {MaybeListOf T XXr}
-               [] nil then true
-               else false end
-            else true end
-         end
-         fun {MaybeList X}
-            {MaybeListOf value X}
-         end
-         fun {MaybeString X}
-            {MaybeListOf char X}
-         end
-         fun {MaybeVirtualString X}
-            XX = {GetData X}
-         in
-            case {IsDet XX} then
-               case {IsObject XX}
-                  andthen {HasFeature XX ImAVariableOccurrence}
-               then true
-               elsecase {IsAtom XX}
-                  orelse {IsInt XX}
-                  orelse {IsFloat XX}
-                  orelse {IsByteString XX}
-                  orelse {MaybeString X}
-               then true
-               elsecase {IsTuple XX} andthen {Label XX}=='#'
-               then {Record.all XX MaybeVirtualString}
-               else false end
-            else true end
-         end
-         DetTypeTests2
-         = dtt(list: MaybeList
-               listOf: MaybeListOf
-               pairOf: MaybePairOf
-               string: MaybeString
-               virtualString:MaybeVirtualString)
-
+      end
+      fun {MaybePairOf L R X}
+         XX = {GetData X}
       in
-      % flat type tests generalize to "isdet then type"
-      % complex ones must be recursively checked
+         case {IsDet XX} then
+            case {IsObject XX}
+               andthen {HasFeature XX ImAVariableOccurrence}
+            then true
+            elsecase XX
+            of A#B then
+               {DetTypeTest L A}
+               andthen {DetTypeTest R B}
+            else false end
+         else true end
+      end
+      fun {MaybeListOf T X}
+         XX = {GetData X}
+      in
+         case {IsDet XX} then
+            case {IsObject XX}
+               andthen {HasFeature XX ImAVariableOccurrence}
+            then true
+            elsecase XX
+            of X|XXr then
+               {DetTypeTest T X}
+               andthen {MaybeListOf T XXr}
+            [] nil then true
+            else false end
+         else true end
+      end
+      fun {MaybeList X}
+         {MaybeListOf value X}
+      end
+      fun {MaybeString X}
+         {MaybeListOf char X}
+      end
+      fun {MaybeVirtualString X}
+         XX = {GetData X}
+      in
+         case {IsDet XX} then
+            case {IsObject XX}
+               andthen {HasFeature XX ImAVariableOccurrence}
+            then true
+            elsecase {IsAtom XX}
+               orelse {IsInt XX}
+               orelse {IsFloat XX}
+               orelse {IsByteString XX}
+               orelse {MaybeString X}
+            then true
+            elsecase {IsTuple XX} andthen {Label XX}=='#'
+            then {Record.all XX MaybeVirtualString}
+            else false end
+         else true end
+      end
+      DetTypeTests2
+      = dtt(list: MaybeList
+            listOf: MaybeListOf
+            pairOf: MaybePairOf
+            string: MaybeString
+            virtualString:MaybeVirtualString)
 
-         DetTypeTests
-         = {Adjoin {Record.map TypeTests Maybe} DetTypeTests2}
+   in
+      %% flat type tests generalize to "isdet then type"
+      %% complex ones must be recursively checked
 
-         fun {DetTypeTest T X}
-            case
-               {Width T} == 0
-            then
-               {DetTypeTests.{Label T} X}
+      DetTypeTests
+      = {Adjoin {Record.map TypeTests Maybe} DetTypeTests2}
 
-            elsecase T
-            of list(T1) then
-               {DetTypeTests.listOf T1 X}
-            [] pair(T1 T2) then
-               {DetTypeTests.pairOf T1 T2 X}
-            else
-               {Exception.raiseError compiler(internal illegalTypeDeclaration(T))}
-               unit
-            end
+      fun {DetTypeTest T X}
+         case
+            {Width T} == 0
+         then
+            {DetTypeTests.{Label T} X}
+
+         elsecase T
+         of list(T1) then
+            {DetTypeTests.listOf T1 X}
+         [] pair(T1 T2) then
+            {DetTypeTests.pairOf T1 T2 X}
+         else
+            {Exception.raiseError compiler(internal illegalTypeDeclaration(T))}
+            unit
          end
       end
+   end
 
 %-----------------------------------------------------------------------
 
-      BINameToMethod
-      = bi(    'Name.new'               : doNewName
-               'Name.newUnique' : doNewUniqueName
-               'Cell.new'               : doNewCell
-               'Lock.new'               : doNewLock
-               'Port.new'               : doNewPort
-               'Array.new'              : doNewArray
-               'Dictionary.new' : doNewDictionary
-               'Chunk.new'              : doNewChunk
-               'Space.new'              : doNewSpace
-               'Object.new'     : doNew
-               'Array.is'               : doCheckType(det IsArray)
-               'Atom.is'                : doCheckType(det IsAtom)
-               'Bool.is'                : doCheckType(det IsBool)
-               'Cell.is'                : doCheckType(det IsCell)
-               'Char.is'                : doCheckType(det IsChar)
-               'Chunk.is'               : doCheckType(det IsChunk)
-               'Value.isDet'    : doCheckType(det IsDet)
-               'Dictionary.is'  : doCheckType(det IsDictionary)
-               'Float.is'               : doCheckType(det IsFloat)
-               'Int.is'         : doCheckType(det IsInt)
-               'List.is'                : doCheckType(rec IsList)
-               'Literal.is'     : doCheckType(det IsLiteral)
-               'Lock.is'                : doCheckType(det IsLock)
-               'Name.is'                : doCheckType(det IsName)
-               'Number.is'              : doCheckType(det IsNumber)
-               'Object.is'              : doCheckType(det IsObject)
-               'Port.is'                : doCheckType(det IsPort)
-               'Procedure.is'   : doCheckType(det IsProcedure)
-               'Record.is'              : doCheckType(det IsRecord)
-               'Record.isC'     : doCheckType(kind IsRecordC)
-               'Space.is'               : doCheckType(det IsSpace)
-               'String.is'              : doCheckType(rec IsStringNow)
-               'Tuple.is'               : doCheckType(det IsTuple)
-               'Unit.is'                : doCheckType(det IsUnit)
-               'VirtualString.is'       : doCheckType(rec IsVirtualStringNow)
-               'Record.label'   : doLabel
-               'Record.width'   : doWidth
-               'Procedure.arity'        : doProcedureArity
-               'Value.\'=\''    : doEq
-               'Value.\'.\''    : doDot
-               'Record.\'^\''   : doHat
-               'Object.\',\''   : doComma
-               'Object.\'<-\''  : doAssignAccess
-               'Object.\'@\''   : doAssignAccess
-               'Bool.and'          : doAnd
-               'Bool.or'           : doOr
-               'Bool.not'          : doNot
-          )
+   BINameToMethod
+   = bi(    'Name.new'          : doNewName
+            'Name.newUnique'    : doNewUniqueName
+            'Cell.new'          : doNewCell
+            'Lock.new'          : doNewLock
+            'Port.new'          : doNewPort
+            'Array.new'         : doNewArray
+            'Dictionary.new'    : doNewDictionary
+            'Chunk.new'         : doNewChunk
+            'Space.new'         : doNewSpace
+            'Object.new'        : doNew
+            'Array.is'          : doCheckType(det IsArray)
+            'Atom.is'           : doCheckType(det IsAtom)
+            'Bool.is'           : doCheckType(det IsBool)
+            'Cell.is'           : doCheckType(det IsCell)
+            'Char.is'           : doCheckType(det IsChar)
+            'Chunk.is'          : doCheckType(det IsChunk)
+            'Value.isDet'       : doCheckType(det IsDet)
+            'Dictionary.is'     : doCheckType(det IsDictionary)
+            'Float.is'          : doCheckType(det IsFloat)
+            'Int.is'            : doCheckType(det IsInt)
+            'List.is'           : doCheckType(rec IsList)
+            'Literal.is'        : doCheckType(det IsLiteral)
+            'Lock.is'           : doCheckType(det IsLock)
+            'Name.is'           : doCheckType(det IsName)
+            'Number.is'         : doCheckType(det IsNumber)
+            'Object.is'         : doCheckType(det IsObject)
+            'Port.is'           : doCheckType(det IsPort)
+            'Procedure.is'      : doCheckType(det IsProcedure)
+            'Record.is'         : doCheckType(det IsRecord)
+            'Record.isC'        : doCheckType(kind IsRecordC)
+            'Space.is'          : doCheckType(det IsSpace)
+            'String.is'         : doCheckType(rec IsStringNow)
+            'Tuple.is'          : doCheckType(det IsTuple)
+            'Unit.is'           : doCheckType(det IsUnit)
+            'VirtualString.is'  : doCheckType(rec IsVirtualStringNow)
+            'Record.label'      : doLabel
+            'Record.width'      : doWidth
+            'Procedure.arity'   : doProcedureArity
+            'Value.\'=\''       : doEq
+            'Value.\'.\''       : doDot
+            'Record.\'^\''      : doHat
+            'Object.\',\''      : doComma
+            'Object.\'<-\''     : doAssignAccess
+            'Object.\'@\''      : doAssignAccess
+            'Bool.and'          : doAnd
+            'Bool.or'           : doOr
+            'Bool.not'          : doNot
+       )
 
 %-----------------------------------------------------------------------
 %
 
-      fun {GetReachable V}
-         L = {V getLastValue($)}
-         T = {V getType($)}
-      in
+   fun {GetReachable V}
+      L = {V getLastValue($)}
+      T = {V getType($)}
+   in
       % L == unit if V is uninitialized
       % eg, first use within conditional;
       % atomic data need not be saved
 
-         case
-            L==unit
-         then
+      case
+         L==unit
+      then
 
-            case {OzTypes.isMinimal T}
-            then env(var:V last:L)
-            else
-            % copy non-minimal types
-               {V setType({OzTypes.clone T})}
-               env(var:V last:L type:T)
-            end
-
-         elsecase
-            {L isVariableOccurrence($)}
-         then
-\ifdef DEBUGSA
-            {System.show env(var:V last:L data:{GetDataObject L} type:T)}
-\endif
-            case {OzTypes.isMinimal T}
-            then env(var:V last:L data:{GetDataObject L})
-            else
-            % copy non-constant types
-               {V setType({OzTypes.clone T})}
-               env(var:V last:L data:{GetDataObject L} type:T)
-            end
-
-         elsecase
-            {L isRecordConstr($)}
-         then
-\ifdef DEBUGSA
-            {System.show env(var:V last:L data:{GetDataObject L} type:T)}
-\endif
-            case {OzTypes.isMinimal T}
-            then env(var:V last:L data:{GetDataObject L})
-            else
-            % copy non-constant types
-               {V setType({OzTypes.clone T})}
-               env(var:V last:L data:{GetDataObject L} type:T)
-            end
-
+         case {OzTypes.isMinimal T}
+         then env(var:V last:L)
          else
+            % copy non-minimal types
+            {V setType({OzTypes.clone T})}
+            env(var:V last:L type:T)
+         end
+
+      elsecase
+         {L isVariableOccurrence($)}
+      then
+\ifdef DEBUGSA
+         {System.show env(var:V last:L data:{GetDataObject L} type:T)}
+\endif
+         case {OzTypes.isMinimal T}
+         then env(var:V last:L data:{GetDataObject L})
+         else
+            % copy non-constant types
+            {V setType({OzTypes.clone T})}
+            env(var:V last:L data:{GetDataObject L} type:T)
+         end
+
+      elsecase
+         {L isRecordConstr($)}
+      then
+\ifdef DEBUGSA
+         {System.show env(var:V last:L data:{GetDataObject L} type:T)}
+\endif
+         case {OzTypes.isMinimal T}
+         then env(var:V last:L data:{GetDataObject L})
+         else
+            % copy non-constant types
+            {V setType({OzTypes.clone T})}
+            env(var:V last:L data:{GetDataObject L} type:T)
+         end
+
+      else
          % L is atomic: int, float, atom, token
          % has constant type
-            case {OzTypes.isMinimal T}
-            then env(var:V last:L)
-            else
+         case {OzTypes.isMinimal T}
+         then env(var:V last:L)
+         else
 \ifdef DEBUGSA
-               {System.show weird(L T)}
+            {System.show weird(L T)}
 \endif
             % copy non-constant types
-               {V setType({OzTypes.clone T})}
-               env(var:V last:L type:T)
-            end
+            {V setType({OzTypes.clone T})}
+            env(var:V last:L type:T)
          end
       end
+   end
 
-      fun {AppendReachable In V}
-         {V reachable(In $)}
-      end
+   fun {AppendReachable In V}
+      {V reachable(In $)}
+   end
 
-      proc {InstallEntry E}
-         V = E.var
-         L = E.last
-      in
+   proc {InstallEntry E}
+      V = E.var
+      L = E.last
+   in
 \ifdef DEBUGSA
-         {System.show install({V getPrintName($)} L {V getLastValue($)})}
+      {System.show install({V getPrintName($)} L {V getLastValue($)})}
 \endif
-         {V setLastValue(L)}
+      {V setLastValue(L)}
 
-         case {HasFeature E data}
-         then {L setValue(E.data)}
-         else skip end
+      case {HasFeature E data}
+      then {L setValue(E.data)}
+      else skip end
 
-         case {HasFeature E type}
-         then {V setType(E.type)}
-         else skip end
-      end
+      case {HasFeature E type}
+      then {V setType(E.type)}
+      else skip end
+   end
 
-      fun {GetGlobalEnv Vs}
-         ReachableVs = {FoldL Vs AppendReachable nil}
-      in
+   fun {GetGlobalEnv Vs}
+      ReachableVs = {FoldL Vs AppendReachable nil}
+   in
 \ifdef DEBUGSA
-         {System.show v(Vs {Map Vs fun {$ V} {V getPrintName($)} end})}
-         {System.show r(ReachableVs {Map ReachableVs fun {$ V} {V getPrintName($)} end})}
+      {System.show v(Vs {Map Vs fun {$ V} {V getPrintName($)} end})}
+      {System.show r(ReachableVs {Map ReachableVs fun {$ V} {V getPrintName($)} end})}
 \endif
 
-         {Map ReachableVs GetReachable}
-      end
+      {Map ReachableVs GetReachable}
+   end
 
-      proc {InstallGlobalEnv Env}
-         {ForAll Env InstallEntry}
-      end
+   proc {InstallGlobalEnv Env}
+      {ForAll Env InstallEntry}
+   end
 
 %-----------------------------------------------------------------------
 %
 % ValueToErrorLine: VS x Oz-Value -> <error line>
 %
 
-      fun {ValueToErrorLine Text X}
-         case
-            X == unit
-         then
-            nil
-         else
-            XD = {GetPrintData X}
-         in
-            case {X isVariableOccurrence($)}
-            then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
-            else [hint(l:Text m:oz(XD))] end
-         end
+   fun {ValueToErrorLine Text X}
+      case
+         X == unit
+      then
+         nil
+      else
+         XD = {GetPrintData X}
+      in
+         case {X isVariableOccurrence($)}
+         then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
+         else [hint(l:Text m:oz(XD))] end
       end
+   end
 
 %
 % IssueTypeError: OzPOType x OzPOType x Oz-Value x Oz-Value
 %
 
-      proc {IssueTypeError TX TY X Y Ctrl Coord}
+   proc {IssueTypeError TX TY X Y Ctrl Coord}
 \ifdef DEBUGSA
-         {System.show issuetypeerror(TX TY X Y)}
+      {System.show issuetypeerror(TX TY X Y)}
 \endif
 
-         ErrMsg UnifLeft UnifRight Msgs Items
-      in
+      ErrMsg UnifLeft UnifRight Msgs Items
+   in
 
-         ErrMsg = {Ctrl getErrorMsg($)}
-         {Ctrl getUnifier(UnifLeft UnifRight)}
+      ErrMsg = {Ctrl getErrorMsg($)}
+      {Ctrl getUnifier(UnifLeft UnifRight)}
 
-         Msgs   = [ [hint(l:'First type' m:{TypeToVS TX})
-                     hint(l:'Second type' m:{TypeToVS TY})]
-                    {ValueToErrorLine 'First value' X}
-                    {ValueToErrorLine 'Second value' Y}
-                    case UnifLeft \= unit
-                       andthen UnifRight \= unit
-                    then
-                       [hint(l:'Original assertion'
-                             m:oz({GetPrintData UnifLeft}) # ' = ' #
-                             oz({GetPrintData UnifRight}))]
-                    else nil end
-                  ]
-         Items  = {FoldR Msgs Append nil}
+      Msgs   = [ [hint(l:'First type' m:{TypeToVS TX})
+                  hint(l:'Second type' m:{TypeToVS TY})]
+                 {ValueToErrorLine 'First value' X}
+                 {ValueToErrorLine 'Second value' Y}
+                 case UnifLeft \= unit
+                    andthen UnifRight \= unit
+                 then
+                    [hint(l:'Original assertion'
+                          m:oz({GetPrintData UnifLeft}) # ' = ' #
+                          oz({GetPrintData UnifRight}))]
+                 else nil end
+               ]
+      Items  = {FoldR Msgs Append nil}
 
-         case {Ctrl getNeeded($)} then
-            {Ctrl.rep
-             error(coord:Coord kind:SATypeError msg:ErrMsg items:Items)}
-         else
-            {Ctrl.rep
-             warn(coord:Coord kind:SAGenWarn msg:ErrMsg items:Items)}
-         end
+      case {Ctrl getNeeded($)} then
+         {Ctrl.rep
+          error(coord:Coord kind:SATypeError msg:ErrMsg items:Items)}
+      else
+         {Ctrl.rep
+          warn(coord:Coord kind:SAGenWarn msg:ErrMsg items:Items)}
       end
+   end
 
 %
 % UnifyTypesOf: Oz-Value x Oz-Value
 %
 
-      fun {UnifyTypesOf X Y Ctrl Coord}
-         TX = {X getType($)}
-         TY = {Y getType($)}
-      in
-         case
-            {OzTypes.clash TX TY}
-         then
-            {IssueTypeError TX TY X Y Ctrl Coord}
-            false
-         else
-            {OzTypes.constrain TX TY}
-            {OzTypes.constrain TY TX}
-            true
-         end
+   fun {UnifyTypesOf X Y Ctrl Coord}
+      TX = {X getType($)}
+      TY = {Y getType($)}
+   in
+      case
+         {OzTypes.clash TX TY}
+      then
+         {IssueTypeError TX TY X Y Ctrl Coord}
+         false
+      else
+         {OzTypes.constrain TX TY}
+         {OzTypes.constrain TY TX}
+         true
       end
+   end
 
 %
 % ConstrainTypes: OzPOType x OzPOType
 %
 
-      fun {ConstrainTypes TX TY}
+   fun {ConstrainTypes TX TY}
 \ifdef DEBUGSA
-         {System.show constrainTypes({OzTypes.toList TX} {OzTypes.toList TY})}
+      {System.show constrainTypes({OzTypes.toList TX} {OzTypes.toList TY})}
 \endif
-         case
-            {OzTypes.clash TX TY}
-         then
-            false
-         else
-            {OzTypes.constrain TX TY}
-            true
-         end
+      case
+         {OzTypes.clash TX TY}
+      then
+         false
+      else
+         {OzTypes.constrain TX TY}
+         true
       end
+   end
 
 %-----------------------------------------------------------------------
 % type representation conversion
 
-      fun {OptimizeTypeRepr X}
-         case X of type(Ns) then
-            case Ns of [N] then N
-            else {List.toTuple '#' Ns}
-            end
-         [] value(V) then
-            {OptimizeTypeRepr type({OzTypes.decode {OzValueToType V}})}
-         [] record(Rec) then
-            record({Record.map Rec OptimizeTypeRepr})
+   fun {OptimizeTypeRepr X}
+      case X of type(Ns) then
+         case Ns of [N] then N
+         else {List.toTuple '#' Ns}
          end
+      [] value(V) then
+         {OptimizeTypeRepr type({OzTypes.decode {OzValueToType V}})}
+      [] record(Rec) then
+         record({Record.map Rec OptimizeTypeRepr})
       end
+   end
 
 %-----------------------------------------------------------------------
 % equality assertions
 
-      proc {IssueUnificationFailure Ctrl Coord Msgs}
-         ErrMsg Origin Offend UnifLeft UnifRight Text1 Text2
-      in
-         Origin = {Ctrl getCoord($)}
-         ErrMsg = {Ctrl getErrorMsg($)}
+   proc {IssueUnificationFailure Ctrl Coord Msgs}
+      ErrMsg Origin Offend UnifLeft UnifRight Text1 Text2
+   in
+      Origin = {Ctrl getCoord($)}
+      ErrMsg = {Ctrl getErrorMsg($)}
 
-         {Ctrl getUnifier(UnifLeft UnifRight)}
+      {Ctrl getUnifier(UnifLeft UnifRight)}
 
-         Offend = hint(l:'Offending expression in' m:{NormalizeCoord Coord})
+      Offend = hint(l:'Offending expression in' m:{NormalizeCoord Coord})
 
-         Text1 = case UnifLeft \= unit
-                    andthen UnifRight \= unit
-                 then
-                    {Append Msgs
-                     [hint(l:'Original assertion'
-                           m:oz({GetPrintData UnifLeft}) # ' = '
-                           # oz({GetPrintData UnifRight}))]}
-                 else
-                    Msgs
-                 end
+      Text1 = case UnifLeft \= unit
+                 andthen UnifRight \= unit
+              then
+                 {Append Msgs
+                  [hint(l:'Original assertion'
+                        m:oz({GetPrintData UnifLeft}) # ' = '
+                        # oz({GetPrintData UnifRight}))]}
+              else
+                 Msgs
+              end
 
-         Text2 = case Origin==Coord orelse Coord==unit then Text1
-                 else {Append Text1 [Offend]} end
+      Text2 = case Origin==Coord orelse Coord==unit then Text1
+              else {Append Text1 [Offend]} end
 
-         case {Ctrl getNeeded($)} then
-            {Ctrl.rep error(coord: Origin
-                            kind:  SAGenError
-                            msg:   case ErrMsg of unit then
-                                      'unification error in needed statement'
-                                   else ErrMsg end
-                            items: Text2)}
-         else
-            {Ctrl.rep warn(coord: Origin
-                           kind:  SAGenWarn
-                           msg:   case ErrMsg of unit then
-                                     'unification error in possibly unneeded statement'
-                                  else ErrMsg end
-                           items: Text2)}
-         end
+      case {Ctrl getNeeded($)} then
+         {Ctrl.rep error(coord: Origin
+                         kind:  SAGenError
+                         msg:   case ErrMsg of unit then
+                                   'unification error in needed statement'
+                                else ErrMsg end
+                         items: Text2)}
+      else
+         {Ctrl.rep warn(coord: Origin
+                        kind:  SAGenWarn
+                        msg:   case ErrMsg of unit then
+                                  'unification error in possibly unneeded statement'
+                               else ErrMsg end
+                        items: Text2)}
       end
+   end
 
 %-----------------------------------------------------------------------
 %
 
-      fun {MakeDummyProcedure N PN}
-         case N
-         of 0 then  proc {$} skip end
-         [] 1 then  proc {$ _} skip end
-         [] 2 then  proc {$ _ _} skip end
-         [] 3 then  proc {$ _ _ _} skip end
-         [] 4 then  proc {$ _ _ _ _} skip end
-         [] 5 then  proc {$ _ _ _ _ _} skip end
-         [] 6 then  proc {$ _ _ _ _ _ _} skip end
-         [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
-         [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
-         [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
-         [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-         else
-            _ % weaker analysis for procedures with arity > 20
-         end
+   fun {MakeDummyProcedure N PN}
+      case N
+      of 0 then  proc {$} skip end
+      [] 1 then  proc {$ _} skip end
+      [] 2 then  proc {$ _ _} skip end
+      [] 3 then  proc {$ _ _ _} skip end
+      [] 4 then  proc {$ _ _ _ _} skip end
+      [] 5 then  proc {$ _ _ _ _ _} skip end
+      [] 6 then  proc {$ _ _ _ _ _ _} skip end
+      [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
+      [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
+      [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
+      [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      else
+         _ % weaker analysis for procedures with arity > 20
       end
+   end
 
-      fun {MakeDummyObject PN}
-         {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop}
-      end
+   fun {MakeDummyObject PN}
+      {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop}
+   end
 
-      fun {MakeDummyClass PN}
-         {Object.'class' nil '#' 'attr' 'feat' nil PN}
-      end
+   fun {MakeDummyClass PN}
+      {Object.'class' nil '#' 'attr' 'feat' nil PN}
+   end
 
 %-----------------------------------------------------------------------
 % some formatting
 
-      fun {ListToVS Xs L Sep R}
-         case Xs
-         of nil then
-            L # R
-         elseof [X] then
-            L # X # R
-         elseof X1|(Xr=(_|_)) then
-            L # X1 #
-            {FoldR Xr
-             fun {$ X In} Sep # X # In end
-             R}
-         end
+   fun {ListToVS Xs L Sep R}
+      case Xs
+      of nil then
+         L # R
+      elseof [X] then
+         L # X # R
+      elseof X1|(Xr=(_|_)) then
+         L # X1 #
+         {FoldR Xr
+          fun {$ X In} Sep # X # In end
+          R}
       end
+   end
 
-      fun {SetToVS Xs}
-         {ListToVS Xs '{' ', ' '}'}
-      end
+   fun {SetToVS Xs}
+      {ListToVS Xs '{' ', ' '}'}
+   end
 
-      fun {ProdToVS Xs}
-         {ListToVS Xs '' ' x ' ''}
-      end
+   fun {ProdToVS Xs}
+      {ListToVS Xs '' ' x ' ''}
+   end
 
-      fun {ApplToVS Xs}
-         {ListToVS Xs '{' ' ' '}'}
-      end
+   fun {ApplToVS Xs}
+      {ListToVS Xs '{' ' ' '}'}
+   end
 
-      fun {FormatArity Xs}
-         {Map {CurrentArity Xs}
-          fun {$ X} case {IsLiteral X} then oz(X) else X end end}
-      end
+   fun {FormatArity Xs}
+      {Map {CurrentArity Xs}
+       fun {$ X} case {IsLiteral X} then oz(X) else X end end}
+   end
 
-      fun {Ozify Xs}
-         {Map Xs
-          fun {$ X} case {IsVS X} then X else oz(X) end end}
-      end
+   fun {Ozify Xs}
+      {Map Xs
+       fun {$ X} case {IsVS X} then X else oz(X) end end}
+   end
 
-      fun {TypeToVS T}
-         X = {ListToVS {OzTypes.decode T} '' ' ++ ' ''}
-      in
-         X
-      end
+   fun {TypeToVS T}
+      X = {ListToVS {OzTypes.decode T} '' ' ++ ' ''}
+   in
+      X
+   end
 
 %-----------------------------------------------------------------------
 % some set routines
@@ -931,93 +926,93 @@ in
 % Ill in Xs such that {P Ill} does not hold
 % (if such an Ill exists)
 
-      local
-         fun {AllUpToAux Xs P N Ill}
-            case Xs
-            of nil then
-               Ill = N   % avoid free variables
-               true
-            [] X|Xr then
-               case {P X}
-               then {AllUpToAux Xr P N+1 Ill}
-               else Ill = X false end
-            end
-         end
-      in
-         fun {AllUpTo Xs P ?Ill}
-            {AllUpToAux Xs P 1 Ill}
+   local
+      fun {AllUpToAux Xs P N Ill}
+         case Xs
+         of nil then
+            Ill = N   % avoid free variables
+            true
+         [] X|Xr then
+            case {P X}
+            then {AllUpToAux Xr P N+1 Ill}
+            else Ill = X false end
          end
       end
+   in
+      fun {AllUpTo Xs P ?Ill}
+         {AllUpToAux Xs P 1 Ill}
+      end
+   end
 
 % {SomeUpTo Xs P Ill} is defined like {Some Xs P}
 % but in addition, it returns the index Idx of the first
 % element Wit in Xs such that {P Wit} holds (if such a
 % Wit exists)
 
-      local
-         fun {SomeUpToNAux Xs P N Idx}
-            case Xs
-            of nil then
-               Idx = N   % avoid free variables
-               false
-            [] X|Xr then
-               case {P X} then Idx = N true
-               else {SomeUpToNAux Xr P N+1 Idx}
-               end
+   local
+      fun {SomeUpToNAux Xs P N Idx}
+         case Xs
+         of nil then
+            Idx = N   % avoid free variables
+            false
+         [] X|Xr then
+            case {P X} then Idx = N true
+            else {SomeUpToNAux Xr P N+1 Idx}
             end
          end
-      in
-         fun {SomeUpToN Xs P ?Wit}
-            {SomeUpToNAux Xs P 1 Wit}
-         end
       end
-
-      fun {AllDistinct Xs}
-         case Xs of nil then true
-         elseof X|Xr then
-            {Not {Member X Xr}} andthen {AllDistinct Xr}
-         end
+   in
+      fun {SomeUpToN Xs P ?Wit}
+         {SomeUpToNAux Xs P 1 Wit}
       end
+   end
 
-      fun {Add X Ys}
+   fun {AllDistinct Xs}
+      case Xs of nil then true
+      elseof X|Xr then
+         {Not {Member X Xr}} andthen {AllDistinct Xr}
+      end
+   end
+
+   fun {Add X Ys}
+      case {Member X Ys}
+      then Ys else X|Ys end
+   end
+
+   fun {Union Xs Ys}
+      case Xs of nil then Ys
+      elseof X|Xr then
          case {Member X Ys}
-         then Ys else X|Ys end
-      end
-
-      fun {Union Xs Ys}
-         case Xs of nil then Ys
-         elseof X|Xr then
-            case {Member X Ys}
-            then {Union Xr Ys}
-            else X|{Union Xr Ys}
-            end
+         then {Union Xr Ys}
+         else X|{Union Xr Ys}
          end
       end
+   end
 
-      fun {UnionAll XXs}
-         case XXs of nil then nil
-         elseof X|XXr then {FoldR XXr Union X}
-         end
+   fun {UnionAll XXs}
+      case XXs of nil then nil
+      elseof X|XXr then {FoldR XXr Union X}
       end
+   end
 
 %-----------------------------------------------------------------------
 % property list dot access
 
-      fun {PLDotEQ X Ys}
-         case Ys
-         of nil then unit
-         [] YC|Yr then
-            Y#C = YC
-         in
-            case
-               {System.eq X Y}
-            then
-               C
-            else
-               {PLDotEQ X Yr}
-            end
+   fun {PLDotEQ X Ys}
+      case Ys
+      of nil then unit
+      [] YC|Yr then
+         Y#C = YC
+      in
+         case
+            {System.eq X Y}
+         then
+            C
+         else
+            {PLDotEQ X Yr}
          end
       end
+   end
 
 %-----------------------------------------------------------------------
 % ApproxInheritance: list(record) x list(record) -> record(pair(<req> <opt>))
@@ -1031,171 +1026,171 @@ in
 % about the message format (required/optional features); this avoids the
 % need to carry around the inheritance hierarchy completely
 
-      fun {ApproxInheritance PMet PNew}
-         {Adjoin
-          {FoldL PMet
-           fun {$ I1 M}
-              {FoldL {Arity M}
-               fun {$ I2 F}
-                  case {HasFeature I2 F}
-                  then {AdjoinAt I2 F (nil#unit)}
-                  else {AdjoinAt I2 F M.F}
-                  end
-               end I1}
-           end m} % combine parents methods
-          PNew}   % and then adjoin new information
-      end
+   fun {ApproxInheritance PMet PNew}
+      {Adjoin
+       {FoldL PMet
+        fun {$ I1 M}
+           {FoldL {Arity M}
+            fun {$ I2 F}
+               case {HasFeature I2 F}
+               then {AdjoinAt I2 F (nil#unit)}
+               else {AdjoinAt I2 F M.F}
+               end
+            end I1}
+        end m} % combine parents methods
+       PNew}   % and then adjoin new information
+   end
 
-%-----------------------------------------------------------------------
-%  global control information
+   %%-----------------------------------------------------------------------
+   %%  global control information
 
-      class Control
-         prop final
-         feat
-            rep                 % the reporter object
-            switches            % interface switch control
-         attr
-            'self': nil         % currently active class context
-            coord: unit         % current coordinates
-            top: true           % top-level expression
+   class Control
+      prop final
+      feat
+         rep                 % the reporter object
+         switches            % interface switch control
+      attr
+         'self': nil         % currently active class context
+         coord: unit         % current coordinates
+         top: true           % top-level expression
                              % (immediate execution) yes/no?
                              % if no: static analysis branches
-            needed: true        % analysing needed expression
+         needed: true        % analysing needed expression
                              % (eventual execution) yes/no?
                              % if yes: more errors
-            toCopy: unit        % list of things to copy in a virtual toplevel
-            savedToCopy: nil    % for managing nested virtual toplevels
-            errorMsg: unit      % currently active error message
-            unifierLeft: unit   % last unification requested
-            unifierRight: unit  %
+         toCopy: unit        % list of things to copy in a virtual toplevel
+         savedToCopy: nil    % for managing nested virtual toplevels
+         errorMsg: unit      % currently active error message
+         unifierLeft: unit   % last unification requested
+         unifierRight: unit  %
 
-         meth init(Rep Switches)
-            self.rep = Rep
-            self.switches = Switches
-            'self'        <- nil
-            coord         <- unit
-            top           <- true
-            needed        <- true
-            toCopy        <- unit
-            savedToCopy   <- nil
-            errorMsg      <- unit
-            unifierLeft   <- unit
-            unifierRight  <- unit
-         end
+      meth init(Rep Switches)
+         self.rep = Rep
+         self.switches = Switches
+         'self'        <- nil
+         coord         <- unit
+         top           <- true
+         needed        <- true
+         toCopy        <- unit
+         savedToCopy   <- nil
+         errorMsg      <- unit
+         unifierLeft   <- unit
+         unifierRight  <- unit
+      end
 
-         meth pushSelf(S)
-            'self' <- S|@'self'
-         end
-         meth popSelf
-            case @'self'
-            of _|S then 'self' <- S
-            else
-               {Exception.raiseError compiler(internal popEmptyStack)}
-            end
-         end
-         meth getSelf($)
-            case @'self' of Self|_ then Self
-            [] nil then unit
-            end
-         end
-
-         meth setCoord(C)
-            coord <- C
-         end
-         meth getCoord($)
-            @coord
-         end
-
-         meth getTop($)
-            @top
-         end
-         meth setTop(T)
-            top <- T
-         end
-
-         meth getNeeded($)
-            @needed
-         end
-         meth setNeeded(N)
-            needed <- N
-         end
-
-         meth getTopNeeded(T N)
-            T = @top
-            N = @needed
-         end
-         meth setTopNeeded(T N)
-            Control, setTop(T)
-            Control, setNeeded(N)
-         end
-         meth notTopNotNeeded
-            Control, setTopNeeded(false false)
-         end
-         meth notTopButNeeded
-            Control, setTopNeeded(false true)
-         end
-
-         meth beginVirtualToplevel(Coord)
-            case @toCopy of unit then skip
-            elseof Xs then
-               savedToCopy <- Xs|@savedToCopy
-            end
-            toCopy <- nil
-         end
-         meth declareToplevelName(PrintName ?N)
-            case @toCopy of unit then
-               N = {CompilerSupport.newNamedName PrintName}
-            elseof Xs then
-               N = {CompilerSupport.newCopyableName PrintName}
-               toCopy <- N|Xs
-            end
-         end
-         meth declareToplevelProcedure(?PredicateRef)
-            case @toCopy of unit then
-               PredicateRef = {CompilerSupport.newPredicateRef}
-            elseof Xs then
-               PredicateRef = {CompilerSupport.newCopyablePredicateRef}
-               toCopy <- PredicateRef|Xs
-            end
-         end
-         meth endVirtualToplevel(?Xs)
-            Xs = @toCopy
-            case @savedToCopy of Ys1|Ysr then
-               toCopy <- Ys1
-               savedToCopy <- Ysr
-            [] nil then
-               toCopy <- unit
-            end
-         end
-
-         meth setErrorMsg(E)
-            errorMsg <- E
-         end
-         meth resetErrorMsg
-            errorMsg <- unit
-         end
-         meth getErrorMsg($)
-            @errorMsg
-         end
-
-         meth setUnifier(L R)
-            unifierLeft  <- L
-            unifierRight <- R
-         end
-         meth resetUnifier
-            unifierLeft  <- unit
-            unifierRight <- unit
-         end
-         meth getUnifier(L R)
-            L = @unifierLeft
-            R = @unifierRight
+      meth pushSelf(S)
+         'self' <- S|@'self'
+      end
+      meth popSelf
+         case @'self'
+         of _|S then 'self' <- S
+         else
+            {Exception.raiseError compiler(internal popEmptyStack)}
          end
       end
+      meth getSelf($)
+         case @'self' of Self|_ then Self
+         [] nil then unit
+         end
+      end
+
+      meth setCoord(C)
+         coord <- C
+      end
+      meth getCoord($)
+         @coord
+      end
+
+      meth getTop($)
+         @top
+      end
+      meth setTop(T)
+         top <- T
+      end
+
+      meth getNeeded($)
+         @needed
+      end
+      meth setNeeded(N)
+         needed <- N
+      end
+
+      meth getTopNeeded(T N)
+         T = @top
+         N = @needed
+      end
+      meth setTopNeeded(T N)
+         Control, setTop(T)
+         Control, setNeeded(N)
+      end
+      meth notTopNotNeeded
+         Control, setTopNeeded(false false)
+      end
+      meth notTopButNeeded
+         Control, setTopNeeded(false true)
+      end
+
+      meth beginVirtualToplevel(Coord)
+         case @toCopy of unit then skip
+         elseof Xs then
+            savedToCopy <- Xs|@savedToCopy
+         end
+         toCopy <- nil
+      end
+      meth declareToplevelName(PrintName ?N)
+         case @toCopy of unit then
+            N = {CompilerSupport.newNamedName PrintName}
+         elseof Xs then
+            N = {CompilerSupport.newCopyableName PrintName}
+            toCopy <- N|Xs
+         end
+      end
+      meth declareToplevelProcedure(?PredicateRef)
+         case @toCopy of unit then
+            PredicateRef = {CompilerSupport.newPredicateRef}
+         elseof Xs then
+            PredicateRef = {CompilerSupport.newCopyablePredicateRef}
+            toCopy <- PredicateRef|Xs
+         end
+      end
+      meth endVirtualToplevel(?Xs)
+         Xs = @toCopy
+         case @savedToCopy of Ys1|Ysr then
+            toCopy <- Ys1
+            savedToCopy <- Ysr
+         [] nil then
+            toCopy <- unit
+         end
+      end
+
+      meth setErrorMsg(E)
+         errorMsg <- E
+      end
+      meth resetErrorMsg
+         errorMsg <- unit
+      end
+      meth getErrorMsg($)
+         @errorMsg
+      end
+
+      meth setUnifier(L R)
+         unifierLeft  <- L
+         unifierRight <- R
+      end
+      meth resetUnifier
+         unifierLeft  <- unit
+         unifierRight <- unit
+      end
+      meth getUnifier(L R)
+         L = @unifierLeft
+         R = @unifierRight
+      end
+   end
 
 %-----------------------------------------------------------------------
 %  static analysis mix-ins
 
-      class SAStatement
+   class SAStatement
 
       % a complex statement is one which may do more than suspend immediately
       % or bind a variable; _not_ complex in this sense are constraints,
@@ -1204,1711 +1199,1711 @@ in
       %
       % we only deal with definitions and class nodes at this point
 
-         feat
-            isComplex:true
+      feat
+         isComplex:true
 
-            %%
-            %% static analysis iteration
-            %%
+         %%
+         %% static analysis iteration
+         %%
 
-         meth staticAnalysis(Rep Switches Ss)
-            Ctrl = {New Control init(Rep Switches)}
-         in
-            {self SaDo(Ctrl true)}          % initiate first lookahead
+      meth staticAnalysis(Rep Switches Ss)
+         Ctrl = {New Control init(Rep Switches)}
+      in
+         {self SaDo(Ctrl true)}          % initiate first lookahead
+      end
+      meth SaDo(Ctrl Cpx)
+         if
+            Cpx                          % if last statement was complex
+         then
+            {self SaLookahead(Ctrl)}     % then do lookahead
          end
-         meth SaDo(Ctrl Cpx)
+
+         {Ctrl setCoord(@coord)}         % save coordinates for error messages
+         {self applyEnvSubst(Ctrl)}      % apply old substitutions
+         {self sa(Ctrl)}
+         {self saDescend(Ctrl)}
+
+         if
+            @next\=self
+         then
+            {@next SaDo(Ctrl self.isComplex)}
+         end
+      end
+      meth SaLookahead(Ctrl)
+         if
+            self.isComplex               % if this statement is complex
+         then
+            skip                         % then terminate
+         else
+            {self saSimple(Ctrl)}
+
             if
-               Cpx                          % if last statement was complex
+               @next\=self               % if there is another one
             then
-               {self SaLookahead(Ctrl)}     % then do lookahead
+               {@next SaLookahead(Ctrl)}
             end
-
-            {Ctrl setCoord(@coord)}         % save coordinates for error messages
-            {self applyEnvSubst(Ctrl)}      % apply old substitutions
-            {self sa(Ctrl)}
-            {self saDescend(Ctrl)}
-
-            if
-               @next\=self
-            then
-               {@next SaDo(Ctrl self.isComplex)}
-            end
-         end
-         meth SaLookahead(Ctrl)
-            if
-               self.isComplex               % if this statement is complex
-            then
-               skip                         % then terminate
-            else
-               {self saSimple(Ctrl)}
-
-               if
-                  @next\=self               % if there is another one
-               then
-                  {@next SaLookahead(Ctrl)}
-               end
-            end
-         end
-
-         meth saBody(Ctrl Ss)
-            case
-               Ss
-            of
-               S|Sr
-            then
-               {S SaDo(Ctrl true)}          % new lookahead in bodies
-            end
-         end
-
-         meth sa(Ctrl)
-            skip
-\ifdef DEBUGSA
-            {System.show saStatement(@coord)}
-\endif
-         end
-         meth saDescend(Ctrl)
-            skip
-         end
-         meth applyEnvSubst(Ctrl)
-            skip
          end
       end
 
-      class SATypeOf
-         meth sa(Ctrl) T in
-            {@arg reflectType(AnalysisDepth ?T)}
-            value <- {OptimizeTypeRepr T}
+      meth saBody(Ctrl Ss)
+         case
+            Ss
+         of
+            S|Sr
+         then
+            {S SaDo(Ctrl true)}          % new lookahead in bodies
+         end
+      end
+
+      meth sa(Ctrl)
+         skip
+\ifdef DEBUGSA
+         {System.show saStatement(@coord)}
+\endif
+      end
+      meth saDescend(Ctrl)
+         skip
+      end
+      meth applyEnvSubst(Ctrl)
+         skip
+      end
+   end
+
+   class SATypeOf
+      meth sa(Ctrl) T in
+         {@arg reflectType(AnalysisDepth ?T)}
+         value <- {OptimizeTypeRepr T}
          %--** the new information about res is not propagated
-         end
       end
+   end
 
-      class SAStepPoint
-         meth saDescend(Ctrl)
-            SAStatement, saBody(Ctrl @statements)
-         end
+   class SAStepPoint
+      meth saDescend(Ctrl)
+         SAStatement, saBody(Ctrl @statements)
       end
+   end
 
-      class SADeclaration
-         meth sa(Ctrl)
+   class SADeclaration
+      meth sa(Ctrl)
 \ifdef DEBUGSA
-            {System.show declaration({Map @localVars
-                                      fun {$ V} {V getPrintName($)} end})}
+         {System.show declaration({Map @localVars
+                                   fun {$ V} {V getPrintName($)} end})}
 \endif
 
-            if {Ctrl getTop($)} then
-               {ForAll @localVars proc {$ V} {V setToplevel(true)} end}
-            end
+         if {Ctrl getTop($)} then
+            {ForAll @localVars proc {$ V} {V setToplevel(true)} end}
          end
-         meth saDescend(Ctrl)
+      end
+      meth saDescend(Ctrl)
          % descend with same environment
-            SAStatement, saBody(Ctrl @statements)
-         end
+         SAStatement, saBody(Ctrl @statements)
       end
+   end
 
-      class SAEquation
-         meth sa(Ctrl)
+   class SAEquation
+      meth sa(Ctrl)
 \ifdef DEBUGSA
-            {System.show saEQ(@left @right)}
+         {System.show saEQ(@left @right)}
 \endif
-            {@right sa(Ctrl)}                            % analyse right hand side
+         {@right sa(Ctrl)}                            % analyse right hand side
 
-            {Ctrl setErrorMsg('equality constraint failed')}
-            {Ctrl setUnifier(@left @right)}
+         {Ctrl setErrorMsg('equality constraint failed')}
+         {Ctrl setUnifier(@left @right)}
 
             % constructions forward the unification task
             % to their associated record value token
-            case {@right isConstruction($)}
-            then {@left unify(Ctrl {@right getValue($)})}
-            else {@left unify(Ctrl @right)}              % l -> r
-            end
+         case {@right isConstruction($)}
+         then {@left unify(Ctrl {@right getValue($)})}
+         else {@left unify(Ctrl @right)}              % l -> r
+         end
 
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@left applyEnvSubst(Ctrl)}
-            {@right applyEnvSubst(Ctrl)}
-         end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
+      end
+      meth applyEnvSubst(Ctrl)
+         {@left applyEnvSubst(Ctrl)}
+         {@right applyEnvSubst(Ctrl)}
+      end
+   end
+
+   class SAConstructionOrPattern
+      attr
+         type: unit
+         lastValue : unit
+         value
+
+      meth init()
+         type <- {OzTypes.encode record nil}
+      end
+      meth getValue($)
+         @value
+      end
+      meth reachable(Vs $)
+         {FoldL @args
+          fun {$ VsIn Arg}
+             case Arg of F#T then
+                {T reachable({F reachable(VsIn $)} $)}
+             else
+                {Arg reachable(VsIn $)}
+             end
+          end
+          {@label reachable(Vs $)}}
       end
 
-      class SAConstructionOrPattern
-         attr
-            type: unit
-            lastValue : unit
-            value
-
-         meth init()
-            type <- {OzTypes.encode record nil}
-         end
-         meth getValue($)
-            @value
-         end
-         meth reachable(Vs $)
-            {FoldL @args
-             fun {$ VsIn Arg}
-                case Arg of F#T then
-                   {T reachable({F reachable(VsIn $)} $)}
-                else
-                   {Arg reachable(VsIn $)}
-                end
-             end
-             {@label reachable(Vs $)}}
-         end
-
-         meth makeValue(Ctrl ?Rec)
-            Coord= {@label getCoord($)}
-            Args = {FoldL @args
-                    fun {$ In Arg}
-                       case Arg of F#_ then F|In else In end
-                    end nil}
+      meth makeValue(Ctrl ?Rec)
+         Coord= {@label getCoord($)}
+         Args = {FoldL @args
+                 fun {$ In Arg}
+                    case Arg of F#_ then F|In else In end
+                 end nil}
+      in
+         case
+            {DetTypeTests.literal @label}
+         then
+            IllFeat TestFeats
          in
+            {AllUpTo Args DetTypeTests.feature ?IllFeat ?TestFeats}
+
             case
-               {DetTypeTests.literal @label}
+               TestFeats
             then
-               IllFeat TestFeats
+               LData = {GetData @label}
+               FData = {List.mapInd
+                        @args
+                        fun {$ I Arg}
+                           FF TT in
+                           case Arg of F#T then
+                              FF={GetData F} TT=T
+                           else
+                              FF=I TT=Arg
+                           end
+
+                           case {TT isConstruction($)}
+                           then FF # {TT getValue($)}
+                           else FF # TT end
+                        end}
+               Fields= {Map FData fun {$ F#_} F end}
             in
-               {AllUpTo Args DetTypeTests.feature ?IllFeat ?TestFeats}
-
-               case
-                  TestFeats
-               then
-                  LData = {GetData @label}
-                  FData = {List.mapInd
-                           @args
-                           fun {$ I Arg}
-                              FF TT in
-                              case Arg of F#T then
-                                 FF={GetData F} TT=T
-                              else
-                                 FF=I TT=Arg
-                              end
-
-                              case {TT isConstruction($)}
-                              then FF # {TT getValue($)}
-                              else FF # TT end
-                           end}
-                  Fields= {Map FData fun {$ F#_} F end}
-               in
 \ifdef DEBUGSA
-                  {System.show makeValue(LData FData Fields)}
+               {System.show makeValue(LData FData Fields)}
 \endif
+               case
+                  {AllDistinct Fields}
+               then
                   case
-                     {AllDistinct Fields}
+                     {All @label|Args DetTests.det}
                   then
                      case
-                        {All @label|Args DetTests.det}
+                        @isOpen
                      then
-                        case
-                           @isOpen
-                        then
-                           case {IsDet LData} then
-                              Rec = {TellRecord LData}
-                           else skip end
-                           {ForAll FData proc {$ F#V} Rec^F=V end}
-                        else
-                           Rec = {List.toRecord LData FData}
-                        end
+                        case {IsDet LData} then
+                           Rec = {TellRecord LData}
+                        else skip end
+                        {ForAll FData proc {$ F#V} Rec^F=V end}
                      else
-\ifdef DEBUGSA
-                        {System.show noRecordConstructed}
-\endif
-                        % no record constructed
-                        Rec = _
+                        Rec = {List.toRecord LData FData}
                      end
                   else
-                     {Ctrl.rep
-                      error(coord: Coord
-                            kind:  SAGenError
-                            msg:   'duplicate features in record construction'
-                            items: [hint(l:'Features found' m:{SetToVS Fields})])}
+\ifdef DEBUGSA
+                     {System.show noRecordConstructed}
+\endif
+                        % no record constructed
+                     Rec = _
                   end
                else
-                  {Ctrl.rep error(coord: Coord
-                                  kind:  SAGenError
-                                  msg:   'illegal record feature '
-                                  items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
+                  {Ctrl.rep
+                   error(coord: Coord
+                         kind:  SAGenError
+                         msg:   'duplicate features in record construction'
+                         items: [hint(l:'Features found' m:{SetToVS Fields})])}
                end
             else
                {Ctrl.rep error(coord: Coord
                                kind:  SAGenError
-                               msg:   'illegal record label '
-                               items: [hint(l:'Label found' m:oz({GetPrintData @label}))])}
+                               msg:   'illegal record feature '
+                               items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
             end
+         else
+            {Ctrl.rep error(coord: Coord
+                            kind:  SAGenError
+                            msg:   'illegal record label '
+                            items: [hint(l:'Label found' m:oz({GetPrintData @label}))])}
+         end
 \ifdef DEBUGSA
-            {System.show madeValue(Rec)}
+         {System.show madeValue(Rec)}
 \endif
-         end
-
-         meth sa(Ctrl)
-
-\ifdef DEBUGSA
-            {System.show saConstruction}
-\endif
-
-            {ForAll
-             @args
-             proc {$ Arg}
-                case Arg of _#T then
-                   {T sa(Ctrl)}
-                else
-                   {Arg sa(Ctrl)}
-                end
-             end}
-
-            value <- {New RecordConstr
-                      init(SAConstruction,makeValue(Ctrl $) self)}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@label applyEnvSubst(Ctrl)}
-            {ForAll @args
-             proc {$ Arg}
-                case Arg of F#T then
-                   {F applyEnvSubst(Ctrl)}
-                   {T applyEnvSubst(Ctrl)}
-                else
-                   {Arg applyEnvSubst(Ctrl)}
-                end
-             end}
-         end
       end
 
-      class SAConstruction
-         from SAConstructionOrPattern
-      end
+      meth sa(Ctrl)
 
-      class SADefinition
-         feat
-            isComplex:false
-         meth saSimple(Ctrl)
-            DummyProc = {MakeDummyProcedure
-                         {Length @formalArgs}
-                         {@designator getPrintName($)}}
-            Value
-         in
+\ifdef DEBUGSA
+         {System.show saConstruction}
+\endif
+
+         {ForAll
+          @args
+          proc {$ Arg}
+             case Arg of _#T then
+                {T sa(Ctrl)}
+             else
+                {Arg sa(Ctrl)}
+             end
+          end}
+
+         value <- {New RecordConstr
+                   init(SAConstruction,makeValue(Ctrl $) self)}
+      end
+      meth applyEnvSubst(Ctrl)
+         {@label applyEnvSubst(Ctrl)}
+         {ForAll @args
+          proc {$ Arg}
+             case Arg of F#T then
+                {F applyEnvSubst(Ctrl)}
+                {T applyEnvSubst(Ctrl)}
+             else
+                {Arg applyEnvSubst(Ctrl)}
+             end
+          end}
+      end
+   end
+
+   class SAConstruction
+      from SAConstructionOrPattern
+   end
+
+   class SADefinition
+      feat
+         isComplex:false
+      meth saSimple(Ctrl)
+         DummyProc = {MakeDummyProcedure
+                      {Length @formalArgs}
+                      {@designator getPrintName($)}}
+         Value
+      in
          % prepare some feature values for the code generator:
-            case {self isClauseBody($)} then
-               Value = {New Core.clauseBodyToken init(DummyProc)}
-               Value.clauseBodyStatements = @statements
-            else
-               Value = {New Core.procedureToken init(DummyProc)}
-               if {Ctrl getTop($)} then PredicateRef in
-                  {Ctrl declareToplevelProcedure(?PredicateRef)}
-                  Value.predicateRef = PredicateRef
-                  predicateRef <- PredicateRef
-               end
+         case {self isClauseBody($)} then
+            Value = {New Core.clauseBodyToken init(DummyProc)}
+            Value.clauseBodyStatements = @statements
+         else
+            Value = {New Core.procedureToken init(DummyProc)}
+            if {Ctrl getTop($)} then PredicateRef in
+               {Ctrl declareToplevelProcedure(?PredicateRef)}
+               Value.predicateRef = PredicateRef
+               predicateRef <- PredicateRef
             end
+         end
 
-            {@designator unifyVal(Ctrl Value)}
+         {@designator unifyVal(Ctrl Value)}
 
 \ifdef DEBUGSA
-            {System.show lookedAhead({@designator getPrintName($)} Value)}
+         {System.show lookedAhead({@designator getPrintName($)} Value)}
 \endif
+      end
+      meth saDescend(Ctrl)
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         case {Member 'instantiate' @procFlags} then
+            {Ctrl beginVirtualToplevel(@coord)}
+            {Ctrl setTopNeeded(true false)}
+            SAStatement, saBody(Ctrl @statements)
+            toCopy <- {Ctrl endVirtualToplevel($)}
+         else
+            {Ctrl notTopNotNeeded}
+            SAStatement, saBody(Ctrl @statements)
          end
-         meth saDescend(Ctrl)
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            case {Member 'instantiate' @procFlags} then
-               {Ctrl beginVirtualToplevel(@coord)}
-               {Ctrl setTopNeeded(true false)}
-               SAStatement, saBody(Ctrl @statements)
-               toCopy <- {Ctrl endVirtualToplevel($)}
+         {Ctrl setTopNeeded(T N)}
+         {InstallGlobalEnv Env}
+      end
+      meth applyEnvSubst(Ctrl)
+         {@designator applyEnvSubst(Ctrl)}
+      end
+   end
+
+   class SABuiltinApplication
+
+      meth typeCheckN(Ctrl N VOs Ts $)
+         case VOs of nil then
+            case Ts\=nil then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               {Exception.raiseError compiler(internal typeCheckN)}
+            else skip end
+            0
+         [] VO|VOr then
+            case Ts
+            of T|Tr then
+               case
+                  {DetTypeTest T VO}
+               then
+                  SABuiltinApplication, typeCheckN(Ctrl N+1 VOr Tr $)
+               else N end
             else
-               {Ctrl notTopNotNeeded}
-               SAStatement, saBody(Ctrl @statements)
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               {Exception.raiseError compiler(internal typeCheckN)} unit
             end
-            {Ctrl setTopNeeded(T N)}
-            {InstallGlobalEnv Env}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@designator applyEnvSubst(Ctrl)}
          end
       end
 
-      class SABuiltinApplication
+      meth typeCheck(Ctrl VOs Ts $)
+         SABuiltinApplication, typeCheckN(Ctrl 1 VOs Ts $)
+      end
 
-         meth typeCheckN(Ctrl N VOs Ts $)
-            case VOs of nil then
-               case Ts\=nil then
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAFatalError
-                         msg:   'builtin arity does not match declaration')}
-                  {Exception.raiseError compiler(internal typeCheckN)}
-               else skip end
-               0
-            [] VO|VOr then
-               case Ts
-               of T|Tr then
-                  case
-                     {DetTypeTest T VO}
-                  then
-                     SABuiltinApplication, typeCheckN(Ctrl N+1 VOr Tr $)
-                  else N end
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAFatalError
-                         msg:   'builtin arity does not match declaration')}
-                  {Exception.raiseError compiler(internal typeCheckN)} unit
-               end
-            end
-         end
-
-         meth typeCheck(Ctrl VOs Ts $)
-            SABuiltinApplication, typeCheckN(Ctrl 1 VOs Ts $)
-         end
-
-         meth detCheck(Ctrl VOs Ds $)
-            case VOs of nil then
-               case Ds\=nil then
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAFatalError
-                         msg:   'builtin arity does not match declaration')}
-                  {Exception.raiseError compiler(internal detCheck)}
-               else skip end
-               true
-            [] VO|VOr then
-               case Ds
-               of D|Dr then
-                  {DetTests.{Label D} VO}
-                  andthen
-                  SAApplication, detCheck(Ctrl VOr Dr $)
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAFatalError
-                         msg:   'builtin arity does not match declaration')}
-                  {Exception.raiseError compiler(internal detCheck)} unit
-               end
-            end
-         end
-
-         meth AssertTypes(Ctrl N Args Types Det)
-\ifdef DEBUGSA
-            {System.show 'AssertTypes'(Args Types Det)}
-\endif
-            case Args
-            of nil then skip
-            elseof A|Ar then
-               case Types # Det
-               of (T|Tr) # (D|Dr)
-               then
-\ifdef DEBUG
-                  {System.show asserting(A T D)}
-\endif
-                  case
-                     {ConstrainTypes
-                      {A getType($)}
-                      {OzTypes.encode {Label T} nil}}
-                  then
-                     SABuiltinApplication, AssertTypes(Ctrl N+1 Ar Tr Dr)
-                  else
-                     PN  = pn({@designator getPrintName($)})
-                     PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                     Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
-                     Ts  = {Map @actualArgs fun {$ A} {TypeToVS {A getType($)}} end}
-                  in
-                     {Ctrl.rep
-                      error(coord: @coord
-                            kind:  SATypeError
-                            msg:   'ill-typed application'
-                            items: [hint(l:'Procedure' m:PN)
-                                    hint(l:'At argument' m:N)
-                                    hint(l:'Expected' m:oz(T))
-                                    hint(l:'Found' m:{TypeToVS {A getType($)}})
-                                    hint(l:'Application (names)'
-                                         m:{ApplToVS PN|PNs})
-                                    hint(l:'Application (values)'
-                                         m:{ApplToVS PN|Vals})
-                                    hint(l:'Application (types)'
-                                         m:{ApplToVS PN|Ts})])}
-                  end
-               else
-                  skip % number of arguments has been checked earlier
-               end
-            end
-         end
-
-         meth assertTypes(Ctrl BIName)
-\ifdef DEBUGSA
-            {System.show assertTypes(BIName)}
-\endif
-            I = {Builtins.getInfo BIName}
-         in
-            case I of noInformation then skip
+      meth detCheck(Ctrl VOs Ds $)
+         case VOs of nil then
+            case Ds\=nil then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               {Exception.raiseError compiler(internal detCheck)}
+            else skip end
+            true
+         [] VO|VOr then
+            case Ds
+            of D|Dr then
+               {DetTests.{Label D} VO}
+               andthen
+               SAApplication, detCheck(Ctrl VOr Dr $)
             else
-               Types = I.types
-               Det   = I.det
-            in
-\ifdef DEBUGSA
-               {System.show assert(BIName I @actualArgs)}
-\endif
-               SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAFatalError
+                      msg:   'builtin arity does not match declaration')}
+               {Exception.raiseError compiler(internal detCheck)} unit
             end
          end
+      end
 
-         meth checkMessage(Ctrl MsgArg Meth Type PN)
-            Msg     = {GetData MsgArg}
-            MsgData = {GetPrintData MsgArg}   %--** memory leak with named vars!
-\ifdef DEBUG
-            {System.show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
+      meth AssertTypes(Ctrl N Args Types Det)
+\ifdef DEBUGSA
+         {System.show 'AssertTypes'(Args Types Det)}
 \endif
-            What Where
-         in
-
-            case Type
-            of object then
-               What  = 'Object'
-               Where = 'object application'
-            elseof new then
-               What  = 'Object'
-               Where = 'object creation'
-            elseof 'class' then
-               What  = 'Class'
-               Where = 'class application'
-            else
-               What  = '???'
-               Where = '???'
-            end
-
-            case Meth==unit
+         case Args
+         of nil then skip
+         elseof A|Ar then
+            case Types # Det
+            of (T|Tr) # (D|Dr)
             then
-               skip
-            elsecase
-               {IsDet Msg} andthen {IsRecord Msg}
-            then
+\ifdef DEBUG
+               {System.show asserting(A T D)}
+\endif
                case
-                  {HasFeature Meth {Label Msg}}
+                  {ConstrainTypes
+                   {A getType($)}
+                   {OzTypes.encode {Label T} nil}}
                then
-                  Req # Opt = Meth.{Label Msg}
+                  SABuiltinApplication, AssertTypes(Ctrl N+1 Ar Tr Dr)
+               else
+                  PN  = pn({@designator getPrintName($)})
+                  PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
+                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+                  Ts  = {Map @actualArgs fun {$ A} {TypeToVS {A getType($)}} end}
                in
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind:  SATypeError
+                         msg:   'ill-typed application'
+                         items: [hint(l:'Procedure' m:PN)
+                                 hint(l:'At argument' m:N)
+                                 hint(l:'Expected' m:oz(T))
+                                 hint(l:'Found' m:{TypeToVS {A getType($)}})
+                                 hint(l:'Application (names)'
+                                      m:{ApplToVS PN|PNs})
+                                 hint(l:'Application (values)'
+                                      m:{ApplToVS PN|Vals})
+                                 hint(l:'Application (types)'
+                                      m:{ApplToVS PN|Ts})])}
+               end
+            else
+               skip % number of arguments has been checked earlier
+            end
+         end
+      end
 
-                  {ForAll Req
-                   proc {$ R}
-                      case {HasFeature Msg R}
+      meth assertTypes(Ctrl BIName)
+\ifdef DEBUGSA
+         {System.show assertTypes(BIName)}
+\endif
+         I = {Builtins.getInfo BIName}
+      in
+         case I of noInformation then skip
+         else
+            Types = I.types
+            Det   = I.det
+         in
+\ifdef DEBUGSA
+            {System.show assert(BIName I @actualArgs)}
+\endif
+            SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
+         end
+      end
+
+      meth checkMessage(Ctrl MsgArg Meth Type PN)
+         Msg     = {GetData MsgArg}
+         MsgData = {GetPrintData MsgArg}   %--** memory leak with named vars!
+\ifdef DEBUG
+         {System.show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
+\endif
+         What Where
+      in
+
+         case Type
+         of object then
+            What  = 'Object'
+            Where = 'object application'
+         elseof new then
+            What  = 'Object'
+            Where = 'object creation'
+         elseof 'class' then
+            What  = 'Class'
+            Where = 'class application'
+         else
+            What  = '???'
+            Where = '???'
+         end
+
+         case Meth==unit
+         then
+            skip
+         elsecase
+            {IsDet Msg} andthen {IsRecord Msg}
+         then
+            case
+               {HasFeature Meth {Label Msg}}
+            then
+               Req # Opt = Meth.{Label Msg}
+            in
+
+               {ForAll Req
+                proc {$ R}
+                   case {HasFeature Msg R}
+                   then skip else
+                      {Ctrl.rep
+                       error(coord: @coord
+                             kind:  SAGenError
+                             msg:   'missing message feature in ' # Where
+                             items: [hint(l:What m:pn(PN))
+                                     hint(l:'Required feature' m:R)
+                                     hint(l:'Message found'
+                                          m:oz(MsgData))])}
+                   end
+                end}
+
+               case
+                  Opt \= unit
+               then
+                  {ForAll {Arity Msg}
+                   proc {$ F}
+                      case {Member F Req}
+                         orelse {Member F Opt}
                       then skip else
                          {Ctrl.rep
                           error(coord: @coord
                                 kind:  SAGenError
-                                msg:   'missing message feature in ' # Where
+                                msg:   'illegal message feature in ' # Where
                                 items: [hint(l:What m:pn(PN))
-                                        hint(l:'Required feature' m:R)
+                                        hint(l:'Required features'
+                                             m:{SetToVS Req})
+                                        hint(l:'Optional features'
+                                             m:{SetToVS Opt})
                                         hint(l:'Message found'
                                              m:oz(MsgData))])}
                       end
                    end}
+               else skip end
 
-                  case
-                     Opt \= unit
-                  then
-                     {ForAll {Arity Msg}
-                      proc {$ F}
-                         case {Member F Req}
-                            orelse {Member F Opt}
-                         then skip else
-                            {Ctrl.rep
-                             error(coord: @coord
-                                   kind:  SAGenError
-                                   msg:   'illegal message feature in ' # Where
-                                   items: [hint(l:What m:pn(PN))
-                                           hint(l:'Required features'
-                                                m:{SetToVS Req})
-                                           hint(l:'Optional features'
-                                                m:{SetToVS Opt})
-                                           hint(l:'Message found'
-                                                m:oz(MsgData))])}
-                         end
-                      end}
-                  else skip end
-
-               elsecase
-                  {HasFeature Meth otherwise}
-               then skip else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'illegal message label in ' # Where
-                         items: [hint(l:What m:pn(PN))
-                                 hint(l:'Expected' m:{SetToVS {FormatArity Meth}})
-                                 hint(l:'Message found' m:oz(MsgData))])}
-               end
-            else
-               skip
+            elsecase
+               {HasFeature Meth otherwise}
+            then skip else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAGenError
+                      msg:   'illegal message label in ' # Where
+                      items: [hint(l:What m:pn(PN))
+                              hint(l:'Expected' m:{SetToVS {FormatArity Meth}})
+                              hint(l:'Message found' m:oz(MsgData))])}
             end
+         else
+            skip
          end
+      end
 
       % Det:     flag whether to check determination
       % Returns: success flag depending on whether
       %          the arguments have been tested
 
-         meth checkArguments(Ctrl Det $)
-            N         = {System.printName {GetData @designator}}
-            BIInfo    = {Builtins.getInfo N}
-            NumArgs   = {Length @actualArgs}
-            BIData    = {GetData @designator}
-            ProcArity = {Procedure.arity BIData}
-         in
+      meth checkArguments(Ctrl Det $)
+         N         = {System.printName {GetData @designator}}
+         BIInfo    = {Builtins.getInfo N}
+         NumArgs   = {Length @actualArgs}
+         BIData    = {GetData @designator}
+         ProcArity = {Procedure.arity BIData}
+      in
 \ifdef DEBUGSA
-            {System.show checkArguments}
+         {System.show checkArguments}
 \endif
-            if
-               BIInfo==noInformation
+         if
+            BIInfo==noInformation
+         then
+            PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+         in
+            {Ctrl.rep error(coord: @coord
+                            kind:  SAGenError
+                            msg:   'application of unknown builtin'
+                            items: [hint(l:'Builtin' m:N)
+                                    hint(l:'Argument names'
+                                         m:{ApplToVS pn(N)|PNs})
+                                    hint(l:'Argument values'
+                                         m:{ApplToVS pn(N)|Vals})])}
+            false
+         elseif
+            NumArgs==ProcArity
+         then
+            case
+               SABuiltinApplication, typeCheck(Ctrl @actualArgs BIInfo.types $)
+            of
+               0 % no type error
+            then
+\ifdef DEBUGSA
+               {System.show det(N Det {Map @actualArgs GetData})}
+\endif
+               {Not Det} orelse
+               SABuiltinApplication, detCheck(Ctrl @actualArgs BIInfo.det $)
+            elseof
+               Pos
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
                Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+               Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
             in
                {Ctrl.rep error(coord: @coord
-                               kind:  SAGenError
-                               msg:   'application of unknown builtin'
-                               items: [hint(l:'Builtin' m:N)
-                                       hint(l:'Argument names'
-                                            m:{ApplToVS pn(N)|PNs})
-                                       hint(l:'Argument values'
-                                            m:{ApplToVS pn(N)|Vals})])}
-               false
-            elseif
-               NumArgs==ProcArity
-            then
-               case
-                  SABuiltinApplication, typeCheck(Ctrl @actualArgs BIInfo.types $)
-               of
-                  0 % no type error
-               then
-\ifdef DEBUGSA
-                  {System.show det(N Det {Map @actualArgs GetData})}
-\endif
-                  {Not Det} orelse
-                  SABuiltinApplication, detCheck(Ctrl @actualArgs BIInfo.det $)
-               elseof
-                  Pos
-               then
-                  PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
-                  Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
-               in
-                  {Ctrl.rep error(coord: @coord
-                                  kind:  SATypeError
-                                  msg:   'ill-typed application'
-                                  items: [hint(l:'Builtin' m:pn(N))
-                                          hint(l:'At argument' m:Pos)
-                                          hint(l:'Expected types' m:{ProdToVS Ts})
-                                          hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
-                                          hint(l:'Argument values' m:{ApplToVS pn(N)|Vals})])}
-                  false
-               end
-            else
-               PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
-            in
-               {Ctrl.rep error(coord: @coord
-                               kind:  SAGenError
-                               msg:   'illegal arity in application'
-                               items: [hint(l:'Builtin' m:N)
-                                       hint(l:'Expected' m:ProcArity)
-                                       hint(l:'Found' m:NumArgs)
-                                       hint(l:'Argument names'
-                                            m:{ApplToVS pn(N)|PNs})
-                                       hint(l:'Argument values'
-                                            m:{ApplToVS pn(N)|Vals})])}
+                               kind:  SATypeError
+                               msg:   'ill-typed application'
+                               items: [hint(l:'Builtin' m:pn(N))
+                                       hint(l:'At argument' m:Pos)
+                                       hint(l:'Expected types' m:{ProdToVS Ts})
+                                       hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
+                                       hint(l:'Argument values' m:{ApplToVS pn(N)|Vals})])}
                false
             end
-         end
-
-         meth doNewName(Ctrl)
-            BndVO BndV PrintName TheName Token
+         else
+            PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
-            BndVO = {Nth @actualArgs 1}
-            {BndVO getVariable(?BndV)}
-            {BndV getPrintName(?PrintName)}
-            case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
-               {Ctrl declareToplevelName(PrintName ?TheName)}
-            else
-               TheName = {CompilerSupport.newNamedName PrintName}
-            end
-            Token = {New Core.nameToken init(TheName {Ctrl getTop($)})}
-            {BndVO unifyVal(Ctrl Token)}
-            case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
-            else skip end
-         end
-
-         meth doNewUniqueName(Ctrl)
-            NName = {GetData {Nth @actualArgs 1}}
-            Value = {BootName.newUnique NName}   % always succeeds
-            Token = {New Core.nameToken init(Value true)}
-            BndVO = {Nth @actualArgs 2}
-         in
-\ifdef DEBUGSA
-            {System.show newUniqueName(NName Token)}
-\endif
-            {BndVO unifyVal(Ctrl Token)}
-            self.codeGenMakeEquateLiteral = Value
-         end
-
-         meth doNewLock(Ctrl)
-            Token = {New Core.lockToken init({NewLock})}
-            BndVO = {Nth @actualArgs 1}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewPort(Ctrl)
-            Token = {New Core.portToken init({NewPort _})}
-            BndVO = {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewCell(Ctrl)
-            Token = {New Core.cellToken init({NewCell _})}
-            BndVO = {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewArray(Ctrl)
-            Low  = {GetData {Nth @actualArgs 1}}
-            High = {GetData {Nth @actualArgs 2}}
-            Token= {New Core.arrayToken init({Array.new Low High _})}
-            BndVO= {Nth @actualArgs 4}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewDictionary(Ctrl)
-            Token= {New Core.dictionaryToken init({Dictionary.new})}
-            BndVO= {Nth @actualArgs 1}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewChunk(Ctrl)
-            Rec  = {GetData {Nth @actualArgs 1}}
-            Token= {New Core.chunkToken init({NewChunk Rec})}
-            BndVO= {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNewSpace(Ctrl)
-            Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
-            BndVO= {Nth @actualArgs 2}
-\ifdef DEBUGSA
-            Pred = {GetData {Nth @actualArgs 1}}
-            {System.show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
-\endif
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         end
-
-         meth doNew(Ctrl)
-            DummyObj = {MakeDummyObject {@designator getPrintName($)}}
-            Cls      = {GetClassData {Nth @actualArgs 1}}
-            Msg      = {Nth @actualArgs 2}
-            Token    = {New Core.objectToken init(DummyObj Cls)}
-            BndVO    = {Nth @actualArgs 3}
-            PN       = {BndVO getPrintName($)}
-\ifdef DEBUGSA
-            {System.show doNew(Token)}
-\endif
-         in
-            {BndVO unifyVal(Ctrl Token)}
-
-            case Cls == unit
-            then skip else
-               Meth = {Cls getMethods($)}
-            in
-               SABuiltinApplication, checkMessage(Ctrl Msg Meth new PN)
-            end
-         end
-
-         meth doEq(Ctrl)
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-         in
-            {Ctrl setErrorMsg('equation failed')}
-            {Ctrl setUnifier(BVO1 BVO2)}
-
-            {BVO1 unify(Ctrl BVO2)}
-
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
-         end
-
-         meth doDot(Ctrl)
-            FirstArg = {Nth @actualArgs 1}
-            RecOrCh  = {GetData FirstArg}
-            F        = {GetData {Nth @actualArgs 2}}
-         in
-\ifdef DEBUGSA
-            {System.show dot(FirstArg RecOrCh F)}
-\endif
-            %% dot selection from object
-            case
-               {IsDet RecOrCh}
-               andthen {TypeTests.object RecOrCh}
-            then
-
-               case {GetClassOfObjectData FirstArg}
-               of unit then
-                  skip
-               elseof Cls then
-                  Fs  = {Cls getFeatures($)}
-               in
-                  case
-                     Fs == unit orelse {Member F Fs}
-                  then
-                     skip
-                  else
-                     {Ctrl.rep
-                      error(coord: @coord
+            {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
-                            msg:   'illegal feature selection from object'
-                            items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:oz(F))])}
-                  end
-               end
-
-               %% dot selection from class
-            elsecase
-               {IsDet RecOrCh}
-               andthen {TypeTests.'class' RecOrCh}
-            then
-               case {GetClassData FirstArg}
-               of unit then
-                  skip
-               elseof Cls then
-                  Fs  = {Cls getFeatures($)}
-               in
-                  case Fs == unit
-                     orelse {Member F Fs}
-                  then skip else
-                     {Ctrl.rep
-                      error(coord: @coord
-                            kind:  SAGenError
-                            msg:   'illegal feature selection from class'
-                            items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:oz(F))])}
-                  end
-               end
-
-               %% dot selection from record
-            elsecase
-               {IsDet RecOrCh}
-               andthen {TypeTests.record RecOrCh}
-            then
-               case {HasFeature RecOrCh F}
-               then
-                  BndVO = {Nth @actualArgs 3}
-               in
-                  {Ctrl setErrorMsg('feature selection (.) on record failed')}
-                  {Ctrl setUnifier(BndVO RecOrCh.F)}
-
-                  {BndVO unify(Ctrl RecOrCh.F)}
-
-                  {Ctrl resetUnifier}
-                  {Ctrl resetErrorMsg}
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'illegal feature selection on record'
-                         items: [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
-                                 hint(l:'Found' m:oz(F))])}
-               end
-
-               %% dot selection from non-determined record
-            elsecase
-               {TypeTests.recordC RecOrCh}
-            then
-               case {HasFeatureNow RecOrCh F}
-               then
-                  BndVO = {Nth @actualArgs 3}
-               in
-                  {Ctrl setErrorMsg('feature selection (.) on record failed')}
-                  {Ctrl setUnifier(BndVO RecOrCh.F)}
-
-                  {BndVO unify(Ctrl RecOrCh^F)}
-
-                  {Ctrl resetUnifier}
-                  {Ctrl resetErrorMsg}
-               else
-                  skip
-               end
-
-               %% dot selection from chunks
-            elsecase
-               {IsDet RecOrCh}
-               andthen {TypeTests.chunk RecOrCh}
-            then
-               case {HasFeature RecOrCh F}
-               then
-                  BndVO = {Nth @actualArgs 3}
-               in
-                  {Ctrl setErrorMsg('feature selection (.) on chunk failed')}
-                  {Ctrl setUnifier(BndVO RecOrCh.F)}
-
-                  {BndVO unify(Ctrl RecOrCh.F)}
-
-                  {Ctrl resetUnifier}
-                  {Ctrl resetErrorMsg}
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'illegal feature selection on chunk'
-                         items: [hint(l:'Found' m:oz(F))])}
-               end
-            else
-               skip
-            end
-         end
-
-         meth doHat(Ctrl)
-\ifdef DEBUGSA
-            {System.show hat(@actualArgs {Map @actualArgs GetData})}
-\endif
-            Rec = {GetData {Nth @actualArgs 1}}
-            Fea = {GetData {Nth @actualArgs 2}}
-         in
-\ifdef DEBUGSA
-            {System.show hat(Rec Fea)}
-\endif
-            case
-               {HasFeatureNow Rec Fea}
-            then
-               BndVO = {Nth @actualArgs 3}
-            in
-               {Ctrl setErrorMsg('feature selection (^) failed')}
-               {Ctrl setUnifier(BndVO Rec^Fea)}
-
-               {BndVO unify(Ctrl Rec^Fea)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            elsecase
-               {IsDet Rec}
-            then
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAGenError
-                      msg:   'illegal feature selection from record'
-                      items: [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
-                              hint(l:'Found' m:oz(Fea))])}
-            else
-               skip
-            end
-         end
-
-         meth doComma(Ctrl)
-            Cls  = {GetClassData {Nth @actualArgs 1}}
-            Msg  = {Nth @actualArgs 2}
-            PN   = {{Nth @actualArgs 1} getPrintName($)}
-         in
-            case Cls == unit
-            then skip else
-               Meth = {Cls getMethods($)}
-            in
-               SABuiltinApplication, checkMessage(Ctrl Msg Meth 'class' PN)
-            end
-         end
-
-         meth doAssignAccess(Ctrl)
-            Self = {Ctrl getSelf($)}
-            FeaV = {Nth @actualArgs 1}
-            Fea  = {GetData FeaV}
-            Attrs= case Self of unit then unit
-                   else {Self getAttributes($)}
-                   end
-            Props= case Self of unit then unit
-                   else {Self getProperties($)}
-                   end
-         in
-            case
-               Attrs==unit
-               orelse {Not {DetTests.det FeaV}}
-               orelse {Member Fea Attrs}
-            then
-               skip
-            else
-               Val  = {GetData {Nth @actualArgs 2}}
-               Expr = case {System.printName {GetData @designator}}
-                      of 'Object.\'<-\'' then oz(Fea) # ' <- ' # oz(Val)
-                      elseof 'Object.\'@\'' then '@' # oz(Fea) # ' = ' # oz(Val)
-                      end
-               Final = (Props\=unit andthen {Member final Props})
-               Hint = case Final
-                      then '(correct use requires method application)'
-                      else '(may be a correct forward declaration)'
-                      end
-               Cls  = case Final
-                      then 'In final class'
-                      else 'In class'
-                      end
-            in
-               case
-                  Final orelse
-                  {Ctrl.switches getSwitch(warnforward $)}
-               then
-                  {Ctrl.rep
-                   warn(coord: @coord
-                        kind:  SAGenWarn
-                        msg:   'applying ' #
-                        {System.printName {GetData @designator}} #
-                        ' to unavailable attribute'
-                        items: [hint(l:'Expression' m:Expr)
-                                hint(l:Cls
-                                     m:pn({System.printName {Self getValue($)}}))
-                                hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
-                                line(Hint)])}
-               else skip end
-            end
-         end
-
-         meth doAnd(Ctrl)
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            BVO3 = {Nth @actualArgs 3}
-            Val1 = {GetData BVO1}
-            Val2 = {GetData BVO2}
-         in
-            case
-               {IsDet Val1} andthen {IsDet Val2}
-            then
-               Token = {Bool2Token {And Val1 Val2}}
-            in
-               {Ctrl setErrorMsg('boolean and failed')}
-               {Ctrl setUnifier(BVO3 Token)}
-
-               {BVO3 unifyVal(Ctrl Token)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else
-               skip
-            end
-         end
-
-         meth doOr(Ctrl)
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            BVO3 = {Nth @actualArgs 3}
-            Val1 = {GetData BVO1}
-            Val2 = {GetData BVO2}
-         in
-            case
-               {IsDet Val1} andthen {IsDet Val2}
-            then
-               Token = {Bool2Token {Or Val1 Val2}}
-            in
-               {Ctrl setErrorMsg('boolean and failed')}
-               {Ctrl setUnifier(BVO3 Token)}
-
-               {BVO3 unifyVal(Ctrl Token)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else
-               skip
-            end
-         end
-
-         meth doNot(Ctrl)
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            Val1 = {GetData BVO1}
-         in
-            case
-               {IsDet Val1}
-            then
-               Token = {Bool2Token {Not Val1}}
-            in
-               {Ctrl setErrorMsg('boolean not failed')}
-               {Ctrl setUnifier(BVO2 Token)}
-
-               {BVO2 unifyVal(Ctrl Token)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else skip end
-         end
-
-         meth doLabel(Ctrl)
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            Val  = {BVO1 getValue($)}
-         in
-            case
-               {Val isRecordConstr($)}
-            then
-               Lab={Val getLabel($)} LabNode
-            in
-               case {IsDet Lab} then
-
-                  {Ctrl setErrorMsg('label assertion failed')}
-                  {Ctrl setUnifier(BVO2 Lab)}
-
-                  case {IsAtom Lab} then
-                     LabNode = {New Core.atomNode init(Lab unit)}
-                  else
-                     LabNode = {New Core.nameToken init(Lab unit)}
-                  end
-                  {BVO2 unify(Ctrl LabNode)}
-
-                  {Ctrl resetUnifier}
-                  {Ctrl resetErrorMsg}
-               else skip end
-            else skip end
-         end
-
-         meth doWidth(Ctrl)
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-            Data  = {GetData BVO1}
-         in
-            case
-               {IsDet Data}
-            then
-               IntVal= {New Core.intNode init({Width Data} @coord)}
-            in
-               {Ctrl setErrorMsg('width assertion failed')}
-               {Ctrl setUnifier(BVO2 IntVal)}
-
-               {BVO2 unifyVal(Ctrl IntVal)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else skip end
-         end
-
-         meth doProcedureArity(Ctrl)
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-            Data  = {GetData BVO1}
-         in
-            case
-               {IsDet Data}
-            then
-               IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
-            in
-               {Ctrl setErrorMsg('assertion of procedure arity failed')}
-               {Ctrl setUnifier(BVO2 IntVal)}
-
-               {BVO2 unifyVal(Ctrl IntVal)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else skip end
-         end
-
-         meth doCheckType(TestType Test Ctrl)
-\ifdef DEBUGSA
-            {System.show doCheckType(TestType Test)}
-\endif
-            case TestType
-            of det  then SABuiltinApplication, DoDetType(Test Ctrl)
-            [] rec  then SABuiltinApplication, DoRecDetType(Test Ctrl)
-            [] kind then SABuiltinApplication, DoKindedType(Test Ctrl)
-            end
-         end
-
-         meth DoDetType(Test Ctrl)
-\ifdef DEBUGSA
-            {System.show doDetType(Test @actualArgs)}
-\endif
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-         in
-            case {DetTests.det BVO1} then
-               {Ctrl setErrorMsg('type test failed')}
-
-               case {Test {GetData BVO1}} then
-                  {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
-                  {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
-               else
-                  {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
-                  {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
-               end
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            else skip end
-         end
-
-         meth DoRecDetType(ThreeValuedTest Ctrl)
-\ifdef DEBUGSA
-            {System.show doRecDetType(ThreeValuedTest)}
-\endif
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-\ifdef DEBUGSA
-            {System.show doRecDetType({GetFullData BVO1})}
-\endif
-         in
-            {Ctrl setErrorMsg('type test failed')}
-
-            case {ThreeValuedTest {GetFullData BVO1}}
-            of true then
-               {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
-               {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
-            elseof false then
-               {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
-               {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
-            elseof unit then
-               skip
-            end
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
-         end
-
-         meth DoKindedType(Test Ctrl)
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-         in
-            {Ctrl setErrorMsg('type test failed')}
-
-            case {DetTests.detOrKinded BVO1} then
-               case {Test {GetData BVO1}} then
-                  {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
-                  {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
-               else
-                  {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
-                  {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
-               end
-            else skip end
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
+                            msg:   'illegal arity in application'
+                            items: [hint(l:'Builtin' m:N)
+                                    hint(l:'Expected' m:ProcArity)
+                                    hint(l:'Found' m:NumArgs)
+                                    hint(l:'Argument names'
+                                         m:{ApplToVS pn(N)|PNs})
+                                    hint(l:'Argument values'
+                                         m:{ApplToVS pn(N)|Vals})])}
+            false
          end
       end
 
-      class SAApplication
-         from SABuiltinApplication
+      meth doNewName(Ctrl)
+         BndVO BndV PrintName TheName Token
+      in
+         BndVO = {Nth @actualArgs 1}
+         {BndVO getVariable(?BndV)}
+         {BndV getPrintName(?PrintName)}
+         case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
+            {Ctrl declareToplevelName(PrintName ?TheName)}
+         else
+            TheName = {CompilerSupport.newNamedName PrintName}
+         end
+         Token = {New Core.nameToken init(TheName {Ctrl getTop($)})}
+         {BndVO unifyVal(Ctrl Token)}
+         case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
+         else skip end
+      end
 
-         meth AssertArity(Ctrl)
-            DesigType = {@designator getType($)}
-            ProcType  = case {Length @actualArgs}
-                        of 0 then {OzTypes.encode 'procedure/0' nil}
-                        [] 1 then {OzTypes.encode unaryProcOrObject nil}
-                        [] 2 then {OzTypes.encode 'procedure/2' nil}
-                        [] 3 then {OzTypes.encode 'procedure/3' nil}
-                        [] 4 then {OzTypes.encode 'procedure/4' nil}
-                        [] 5 then {OzTypes.encode 'procedure/5' nil}
-                        [] 6 then {OzTypes.encode 'procedure/6' nil}
-                        else {OzTypes.encode 'procedure/>6' nil} end
+      meth doNewUniqueName(Ctrl)
+         NName = {GetData {Nth @actualArgs 1}}
+         Value = {BootName.newUnique NName}   % always succeeds
+         Token = {New Core.nameToken init(Value true)}
+         BndVO = {Nth @actualArgs 2}
+      in
+\ifdef DEBUGSA
+         {System.show newUniqueName(NName Token)}
+\endif
+         {BndVO unifyVal(Ctrl Token)}
+         self.codeGenMakeEquateLiteral = Value
+      end
+
+      meth doNewLock(Ctrl)
+         Token = {New Core.lockToken init({NewLock})}
+         BndVO = {Nth @actualArgs 1}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewPort(Ctrl)
+         Token = {New Core.portToken init({NewPort _})}
+         BndVO = {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewCell(Ctrl)
+         Token = {New Core.cellToken init({NewCell _})}
+         BndVO = {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewArray(Ctrl)
+         Low  = {GetData {Nth @actualArgs 1}}
+         High = {GetData {Nth @actualArgs 2}}
+         Token= {New Core.arrayToken init({Array.new Low High _})}
+         BndVO= {Nth @actualArgs 4}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewDictionary(Ctrl)
+         Token= {New Core.dictionaryToken init({Dictionary.new})}
+         BndVO= {Nth @actualArgs 1}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewChunk(Ctrl)
+         Rec  = {GetData {Nth @actualArgs 1}}
+         Token= {New Core.chunkToken init({NewChunk Rec})}
+         BndVO= {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewSpace(Ctrl)
+         Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
+         BndVO= {Nth @actualArgs 2}
+\ifdef DEBUGSA
+         Pred = {GetData {Nth @actualArgs 1}}
+         {System.show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
+\endif
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNew(Ctrl)
+         DummyObj = {MakeDummyObject {@designator getPrintName($)}}
+         Cls      = {GetClassData {Nth @actualArgs 1}}
+         Msg      = {Nth @actualArgs 2}
+         Token    = {New Core.objectToken init(DummyObj Cls)}
+         BndVO    = {Nth @actualArgs 3}
+         PN       = {BndVO getPrintName($)}
+\ifdef DEBUGSA
+         {System.show doNew(Token)}
+\endif
+      in
+         {BndVO unifyVal(Ctrl Token)}
+
+         case Cls == unit
+         then skip else
+            Meth = {Cls getMethods($)}
+         in
+            SABuiltinApplication, checkMessage(Ctrl Msg Meth new PN)
+         end
+      end
+
+      meth doEq(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+      in
+         {Ctrl setErrorMsg('equation failed')}
+         {Ctrl setUnifier(BVO1 BVO2)}
+
+         {BVO1 unify(Ctrl BVO2)}
+
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
+      end
+
+      meth doDot(Ctrl)
+         FirstArg = {Nth @actualArgs 1}
+         RecOrCh  = {GetData FirstArg}
+         F        = {GetData {Nth @actualArgs 2}}
+      in
+\ifdef DEBUGSA
+         {System.show dot(FirstArg RecOrCh F)}
+\endif
+         %% dot selection from object
+         case
+            {IsDet RecOrCh}
+            andthen {TypeTests.object RecOrCh}
+         then
+
+            case {GetClassOfObjectData FirstArg}
+            of unit then
+               skip
+            elseof Cls then
+               Fs  = {Cls getFeatures($)}
+            in
+               case
+                  Fs == unit orelse {Member F Fs}
+               then
+                  skip
+               else
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind:  SAGenError
+                         msg:   'illegal feature selection from object'
+                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
+                                 hint(l:'Found' m:oz(F))])}
+               end
+            end
+
+            %% dot selection from class
+         elsecase
+            {IsDet RecOrCh}
+            andthen {TypeTests.'class' RecOrCh}
+         then
+            case {GetClassData FirstArg}
+            of unit then
+               skip
+            elseof Cls then
+               Fs  = {Cls getFeatures($)}
+            in
+               case Fs == unit
+                  orelse {Member F Fs}
+               then skip else
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind:  SAGenError
+                         msg:   'illegal feature selection from class'
+                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
+                                 hint(l:'Found' m:oz(F))])}
+               end
+            end
+
+            %% dot selection from record
+         elsecase
+            {IsDet RecOrCh}
+            andthen {TypeTests.record RecOrCh}
+         then
+            case {HasFeature RecOrCh F}
+            then
+               BndVO = {Nth @actualArgs 3}
+            in
+               {Ctrl setErrorMsg('feature selection (.) on record failed')}
+               {Ctrl setUnifier(BndVO RecOrCh.F)}
+
+               {BndVO unify(Ctrl RecOrCh.F)}
+
+               {Ctrl resetUnifier}
+               {Ctrl resetErrorMsg}
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAGenError
+                      msg:   'illegal feature selection on record'
+                      items: [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
+                              hint(l:'Found' m:oz(F))])}
+            end
+
+            %% dot selection from non-determined record
+         elsecase
+            {TypeTests.recordC RecOrCh}
+         then
+            case {HasFeatureNow RecOrCh F}
+            then
+               BndVO = {Nth @actualArgs 3}
+            in
+               {Ctrl setErrorMsg('feature selection (.) on record failed')}
+               {Ctrl setUnifier(BndVO RecOrCh.F)}
+
+               {BndVO unify(Ctrl RecOrCh^F)}
+
+               {Ctrl resetUnifier}
+               {Ctrl resetErrorMsg}
+            else
+               skip
+            end
+
+            %% dot selection from chunks
+         elsecase
+            {IsDet RecOrCh}
+            andthen {TypeTests.chunk RecOrCh}
+         then
+            case {HasFeature RecOrCh F}
+            then
+               BndVO = {Nth @actualArgs 3}
+            in
+               {Ctrl setErrorMsg('feature selection (.) on chunk failed')}
+               {Ctrl setUnifier(BndVO RecOrCh.F)}
+
+               {BndVO unify(Ctrl RecOrCh.F)}
+
+               {Ctrl resetUnifier}
+               {Ctrl resetErrorMsg}
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAGenError
+                      msg:   'illegal feature selection on chunk'
+                      items: [hint(l:'Found' m:oz(F))])}
+            end
+         else
+            skip
+         end
+      end
+
+      meth doHat(Ctrl)
+\ifdef DEBUGSA
+         {System.show hat(@actualArgs {Map @actualArgs GetData})}
+\endif
+         Rec = {GetData {Nth @actualArgs 1}}
+         Fea = {GetData {Nth @actualArgs 2}}
+      in
+\ifdef DEBUGSA
+         {System.show hat(Rec Fea)}
+\endif
+         case
+            {HasFeatureNow Rec Fea}
+         then
+            BndVO = {Nth @actualArgs 3}
+         in
+            {Ctrl setErrorMsg('feature selection (^) failed')}
+            {Ctrl setUnifier(BndVO Rec^Fea)}
+
+            {BndVO unify(Ctrl Rec^Fea)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         elsecase
+            {IsDet Rec}
+         then
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SAGenError
+                   msg:   'illegal feature selection from record'
+                   items: [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
+                           hint(l:'Found' m:oz(Fea))])}
+         else
+            skip
+         end
+      end
+
+      meth doComma(Ctrl)
+         Cls  = {GetClassData {Nth @actualArgs 1}}
+         Msg  = {Nth @actualArgs 2}
+         PN   = {{Nth @actualArgs 1} getPrintName($)}
+      in
+         case Cls == unit
+         then skip else
+            Meth = {Cls getMethods($)}
+         in
+            SABuiltinApplication, checkMessage(Ctrl Msg Meth 'class' PN)
+         end
+      end
+
+      meth doAssignAccess(Ctrl)
+         Self = {Ctrl getSelf($)}
+         FeaV = {Nth @actualArgs 1}
+         Fea  = {GetData FeaV}
+         Attrs= case Self of unit then unit
+                else {Self getAttributes($)}
+                end
+         Props= case Self of unit then unit
+                else {Self getProperties($)}
+                end
+      in
+         case
+            Attrs==unit
+            orelse {Not {DetTests.det FeaV}}
+            orelse {Member Fea Attrs}
+         then
+            skip
+         else
+            Val  = {GetData {Nth @actualArgs 2}}
+            Expr = case {System.printName {GetData @designator}}
+                   of 'Object.\'<-\'' then oz(Fea) # ' <- ' # oz(Val)
+                   elseof 'Object.\'@\'' then '@' # oz(Fea) # ' = ' # oz(Val)
+                   end
+            Final = (Props\=unit andthen {Member final Props})
+            Hint = case Final
+                   then '(correct use requires method application)'
+                   else '(may be a correct forward declaration)'
+                   end
+            Cls  = case Final
+                   then 'In final class'
+                   else 'In class'
+                   end
          in
             case
-               {ConstrainTypes DesigType ProcType}
+               Final orelse
+               {Ctrl.switches getSwitch(warnforward $)}
             then
-               skip
+               {Ctrl.rep
+                warn(coord: @coord
+                     kind:  SAGenWarn
+                     msg:   'applying ' #
+                     {System.printName {GetData @designator}} #
+                     ' to unavailable attribute'
+                     items: [hint(l:'Expression' m:Expr)
+                             hint(l:Cls
+                                  m:pn({System.printName {Self getValue($)}}))
+                             hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
+                             line(Hint)])}
+            else skip end
+         end
+      end
+
+      meth doAnd(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         BVO3 = {Nth @actualArgs 3}
+         Val1 = {GetData BVO1}
+         Val2 = {GetData BVO2}
+      in
+         case
+            {IsDet Val1} andthen {IsDet Val2}
+         then
+            Token = {Bool2Token {And Val1 Val2}}
+         in
+            {Ctrl setErrorMsg('boolean and failed')}
+            {Ctrl setUnifier(BVO3 Token)}
+
+            {BVO3 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else
+            skip
+         end
+      end
+
+      meth doOr(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         BVO3 = {Nth @actualArgs 3}
+         Val1 = {GetData BVO1}
+         Val2 = {GetData BVO2}
+      in
+         case
+            {IsDet Val1} andthen {IsDet Val2}
+         then
+            Token = {Bool2Token {Or Val1 Val2}}
+         in
+            {Ctrl setErrorMsg('boolean and failed')}
+            {Ctrl setUnifier(BVO3 Token)}
+
+            {BVO3 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else
+            skip
+         end
+      end
+
+      meth doNot(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         Val1 = {GetData BVO1}
+      in
+         case
+            {IsDet Val1}
+         then
+            Token = {Bool2Token {Not Val1}}
+         in
+            {Ctrl setErrorMsg('boolean not failed')}
+            {Ctrl setUnifier(BVO2 Token)}
+
+            {BVO2 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else skip end
+      end
+
+      meth doLabel(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         Val  = {BVO1 getValue($)}
+      in
+         case
+            {Val isRecordConstr($)}
+         then
+            Lab={Val getLabel($)} LabNode
+         in
+            case {IsDet Lab} then
+
+               {Ctrl setErrorMsg('label assertion failed')}
+               {Ctrl setUnifier(BVO2 Lab)}
+
+               case {IsAtom Lab} then
+                  LabNode = {New Core.atomNode init(Lab unit)}
+               else
+                  LabNode = {New Core.nameToken init(Lab unit)}
+               end
+               {BVO2 unify(Ctrl LabNode)}
+
+               {Ctrl resetUnifier}
+               {Ctrl resetErrorMsg}
+            else skip end
+         else skip end
+      end
+
+      meth doWidth(Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+         Data  = {GetData BVO1}
+      in
+         case
+            {IsDet Data}
+         then
+            IntVal= {New Core.intNode init({Width Data} @coord)}
+         in
+            {Ctrl setErrorMsg('width assertion failed')}
+            {Ctrl setUnifier(BVO2 IntVal)}
+
+            {BVO2 unifyVal(Ctrl IntVal)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else skip end
+      end
+
+      meth doProcedureArity(Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+         Data  = {GetData BVO1}
+      in
+         case
+            {IsDet Data}
+         then
+            IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
+         in
+            {Ctrl setErrorMsg('assertion of procedure arity failed')}
+            {Ctrl setUnifier(BVO2 IntVal)}
+
+            {BVO2 unifyVal(Ctrl IntVal)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else skip end
+      end
+
+      meth doCheckType(TestType Test Ctrl)
+\ifdef DEBUGSA
+         {System.show doCheckType(TestType Test)}
+\endif
+         case TestType
+         of det  then SABuiltinApplication, DoDetType(Test Ctrl)
+         [] rec  then SABuiltinApplication, DoRecDetType(Test Ctrl)
+         [] kind then SABuiltinApplication, DoKindedType(Test Ctrl)
+         end
+      end
+
+      meth DoDetType(Test Ctrl)
+\ifdef DEBUGSA
+         {System.show doDetType(Test @actualArgs)}
+\endif
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+      in
+         case {DetTests.det BVO1} then
+            {Ctrl setErrorMsg('type test failed')}
+
+            case {Test {GetData BVO1}} then
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
             else
-               PN  = {@designator getPrintName($)}
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
+            end
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         else skip end
+      end
+
+      meth DoRecDetType(ThreeValuedTest Ctrl)
+\ifdef DEBUGSA
+         {System.show doRecDetType(ThreeValuedTest)}
+\endif
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+\ifdef DEBUGSA
+         {System.show doRecDetType({GetFullData BVO1})}
+\endif
+      in
+         {Ctrl setErrorMsg('type test failed')}
+
+         case {ThreeValuedTest {GetFullData BVO1}}
+         of true then
+            {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+            {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
+         elseof false then
+            {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+            {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
+         elseof unit then
+            skip
+         end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
+      end
+
+      meth DoKindedType(Test Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+      in
+         {Ctrl setErrorMsg('type test failed')}
+
+         case {DetTests.detOrKinded BVO1} then
+            case {Test {GetData BVO1}} then
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
+            else
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
+            end
+         else skip end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
+      end
+   end
+
+   class SAApplication
+      from SABuiltinApplication
+
+      meth AssertArity(Ctrl)
+         DesigType = {@designator getType($)}
+         ProcType  = case {Length @actualArgs}
+                     of 0 then {OzTypes.encode 'procedure/0' nil}
+                     [] 1 then {OzTypes.encode unaryProcOrObject nil}
+                     [] 2 then {OzTypes.encode 'procedure/2' nil}
+                     [] 3 then {OzTypes.encode 'procedure/3' nil}
+                     [] 4 then {OzTypes.encode 'procedure/4' nil}
+                     [] 5 then {OzTypes.encode 'procedure/5' nil}
+                     [] 6 then {OzTypes.encode 'procedure/6' nil}
+                     else {OzTypes.encode 'procedure/>6' nil} end
+      in
+         case
+            {ConstrainTypes DesigType ProcType}
+         then
+            skip
+         else
+            PN  = {@designator getPrintName($)}
+            PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'wrong arity in application of ' # pn(PN)
+                   items: [hint(l:'Procedure type' m:{TypeToVS DesigType})
+                           hint(l:'Application arity' m:{Length @actualArgs})
+                           hint(l:'Application (names)'
+                                m:{ApplToVS pn(PN)|PNs})
+                           hint(l:'Application (values)'
+                                m:{ApplToVS pn(PN)|Vals})])}
+         end
+      end
+
+      meth sa(Ctrl)
+
+\ifdef DEBUGSA
+         {System.show application({@designator getPrintName($)} )}
+\endif
+
+         case
+            SAApplication, checkDesignatorBuiltin($)
+         then
+            BIName = {System.printName {GetData @designator}}
+            ArgsOk
+         in
+\ifdef DEBUGSA
+            {System.show applying(BIName)}
+\endif
+            case
+               {CondSelect BINameToMethod BIName unit}
+            of
+               unit
+            then
+               SABuiltinApplication, checkArguments(Ctrl false ArgsOk)
+            elseof
+               M
+            then
+\ifdef DEBUGSA
+               {System.show applyingKnown(BIName)}
+\endif
+               SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
+               case
+                  ArgsOk
+               then
+                  Msg = {AdjoinAt M {Width M}+1 Ctrl}
+               in
+                  SABuiltinApplication, Msg
+               else
+                  skip
+               end
+            end
+
+            %%
+            %% type-assertions go here if no type error raised yet
+            %%
+
+\ifdef DEBUGSA
+            {System.show doneMsg(ArgsOk)}
+\endif
+
+            case ArgsOk then
+               SABuiltinApplication, assertTypes(Ctrl BIName)
+            else skip end
+
+         elsecase
+            SAApplication, checkDesignatorProcedure($)
+         then
+            DVal = {GetData @designator}
+            PN   = {@designator getPrintName($)}
+            ExpA = {Procedure.arity DVal}
+            GotA = {Length @actualArgs}
+         in
+            case
+               GotA \= ExpA
+            then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
                Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
             in
                {Ctrl.rep
                 error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'wrong arity in application of ' # pn(PN)
-                      items: [hint(l:'Procedure type' m:{TypeToVS DesigType})
-                              hint(l:'Application arity' m:{Length @actualArgs})
+                      kind:  SAGenError
+                      msg:   'illegal number of arguments in application'
+                      items: [hint(l:'Procedure' m:pn(PN))
+                              hint(l:'Expected' m:ExpA)
+                              hint(l:'Found' m:GotA)
                               hint(l:'Application (names)'
                                    m:{ApplToVS pn(PN)|PNs})
                               hint(l:'Application (values)'
                                    m:{ApplToVS pn(PN)|Vals})])}
-            end
-         end
+            else skip end
 
-         meth sa(Ctrl)
-
-\ifdef DEBUGSA
-            {System.show application({@designator getPrintName($)} )}
-\endif
-
+         elsecase
+            SAApplication, checkDesignatorObject($)
+         then
+            PN   = {@designator getPrintName($)}
+            Cls  = {{@designator getValue($)} getClassNode($)}
+            GotA = {Length @actualArgs}
+         in
             case
-               SAApplication, checkDesignatorBuiltin($)
+               GotA \= 1
             then
-               BIName = {System.printName {GetData @designator}}
-               ArgsOk
-            in
-\ifdef DEBUGSA
-               {System.show applying(BIName)}
-\endif
-               case
-                  {CondSelect BINameToMethod BIName unit}
-               of
-                  unit
-               then
-                  SABuiltinApplication, checkArguments(Ctrl false ArgsOk)
-               elseof
-                  M
-               then
-\ifdef DEBUGSA
-                  {System.show applyingKnown(BIName)}
-\endif
-                  SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
-                  case
-                     ArgsOk
-                  then
-                     Msg = {AdjoinAt M {Width M}+1 Ctrl}
-                  in
-                     SABuiltinApplication, Msg
-                  else
-                     skip
-                  end
-               end
-
-               %%
-               %% type-assertions go here if no type error raised yet
-               %%
-
-\ifdef DEBUGSA
-               {System.show doneMsg(ArgsOk)}
-\endif
-
-               case ArgsOk then
-                  SABuiltinApplication, assertTypes(Ctrl BIName)
-               else skip end
-
-            elsecase
-               SAApplication, checkDesignatorProcedure($)
-            then
-               DVal = {GetData @designator}
-               PN   = {@designator getPrintName($)}
-               ExpA = {Procedure.arity DVal}
-               GotA = {Length @actualArgs}
-            in
-               case
-                  GotA \= ExpA
-               then
-                  PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
-               in
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'illegal number of arguments in application'
-                         items: [hint(l:'Procedure' m:pn(PN))
-                                 hint(l:'Expected' m:ExpA)
-                                 hint(l:'Found' m:GotA)
-                                 hint(l:'Application (names)'
-                                      m:{ApplToVS pn(PN)|PNs})
-                                 hint(l:'Application (values)'
-                                      m:{ApplToVS pn(PN)|Vals})])}
-               else skip end
-
-            elsecase
-               SAApplication, checkDesignatorObject($)
-            then
-               PN   = {@designator getPrintName($)}
-               Cls  = {{@designator getValue($)} getClassNode($)}
-               GotA = {Length @actualArgs}
-            in
-               case
-                  GotA \= 1
-               then
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'illegal number of arguments in object application'
-                         items: [hint(l:'Object' m:pn(PN))
-                                 hint(l:'Expected' m:1)
-                                 hint(l:'Found' m:GotA)])}
-               elsecase
-                  Cls == unit
-               then
-                  skip
-               else
-                  Msg  = {Nth @actualArgs 1}
-                  Meth = {Cls getMethods($)}
-               in
-                  SAApplication, checkMessage(Ctrl Msg Meth object PN)
-               end
-
-            elsecase
-               {DetTests.det @designator}
-            then
-               Val = {GetPrintData @designator}
-            in
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SAGenError
-                      msg:   'applying non-procedure and non-object ' # oz(Val))}
+                      msg:   'illegal number of arguments in object application'
+                      items: [hint(l:'Object' m:pn(PN))
+                              hint(l:'Expected' m:1)
+                              hint(l:'Found' m:GotA)])}
+            elsecase
+               Cls == unit
+            then
+               skip
             else
-               SAApplication, AssertArity(Ctrl)
+               Msg  = {Nth @actualArgs 1}
+               Meth = {Cls getMethods($)}
+            in
+               SAApplication, checkMessage(Ctrl Msg Meth object PN)
             end
-         end
 
-         meth checkDesignatorBuiltin($)
+         elsecase
             {DetTests.det @designator}
-            andthen {CompilerSupport.isBuiltin {GetData @designator}}
+         then
+            Val = {GetPrintData @designator}
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SAGenError
+                   msg:   'applying non-procedure and non-object ' # oz(Val))}
+         else
+            SAApplication, AssertArity(Ctrl)
          end
-         meth checkDesignatorProcedure($)
-            {DetTests.det @designator}
-            andthen {TypeTests.procedure {GetData @designator}}
-         end
-         meth checkDesignatorObject($)
-            {DetTests.det @designator}
-            andthen {TypeTests.object {GetData @designator}}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@designator applyEnvSubst(Ctrl)}
-            {ForAll @actualArgs
-             proc {$ A}
-                {A applyEnvSubst(Ctrl)}
-             end}
-         end
-
       end
 
-      class SABoolCase
-         meth saDescend(Ctrl)
+      meth checkDesignatorBuiltin($)
+         {DetTests.det @designator}
+         andthen {CompilerSupport.isBuiltin {GetData @designator}}
+      end
+      meth checkDesignatorProcedure($)
+         {DetTests.det @designator}
+         andthen {TypeTests.procedure {GetData @designator}}
+      end
+      meth checkDesignatorObject($)
+         {DetTests.det @designator}
+         andthen {TypeTests.object {GetData @designator}}
+      end
+      meth applyEnvSubst(Ctrl)
+         {@designator applyEnvSubst(Ctrl)}
+         {ForAll @actualArgs
+          proc {$ A}
+             {A applyEnvSubst(Ctrl)}
+          end}
+      end
+
+   end
+
+   class SABoolCase
+      meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-            case {DetTests.det @arbiter}
-               andthen {TypeTests.bool {GetData @arbiter}}
-            then
-               PN = {@arbiter getPrintName($)}
-            in
+         case {DetTests.det @arbiter}
+            andthen {TypeTests.bool {GetData @arbiter}}
+         then
+            PN = {@arbiter getPrintName($)}
+         in
 \ifdef DEBUGSA
-               {System.show isConst(PN)}
+            {System.show isConst(PN)}
 \endif
-               case
-                  {TypeTests.'true' {GetData @arbiter}}
-               then
-                  {Ctrl.rep
-                   warn(coord: {@arbiter getCoord($)}
-                        kind:  SAGenWarn
-                        msg:   'boolean guard ' # pn(PN) # ' is always true')}
+            case
+               {TypeTests.'true' {GetData @arbiter}}
+            then
+               {Ctrl.rep
+                warn(coord: {@arbiter getCoord($)}
+                     kind:  SAGenWarn
+                     msg:   'boolean guard ' # pn(PN) # ' is always true')}
 
-                  local T N in
-                     {Ctrl getTopNeeded(T N)}
-                     {Ctrl notTopNotNeeded}
-                     {@alternative saDescend(Ctrl)}
-                     {Ctrl setTopNeeded(T N)}
-                  end
-
-                  {@consequent saDescendAndCommit(Ctrl)}
-               else
-               % {TypeTests.'false' {GetData @arbiter}}
-                  {Ctrl.rep
-                   warn(coord: {@arbiter getCoord($)}
-                        kind:  SAGenWarn
-                        msg:   'boolean guard ' # pn(PN) # ' is always false')}
-
-                  local T N in
-                     {Ctrl getTopNeeded(T N)}
-                     {Ctrl notTopNotNeeded}
-                     {@consequent saDescend(Ctrl)}
-                     {Ctrl setTopNeeded(T N)}
-                  end
-
-                  {@alternative saDescendAndCommit(Ctrl)}
+               local T N in
+                  {Ctrl getTopNeeded(T N)}
+                  {Ctrl notTopNotNeeded}
+                  {@alternative saDescend(Ctrl)}
+                  {Ctrl setTopNeeded(T N)}
                end
 
-            elsecase
-               {ConstrainTypes
-                {@arbiter getType($)}
-                {OzTypes.encode bool nil}}
-            then
-               T N in
-               {Ctrl getTopNeeded(T N)}
-               {Ctrl notTopNotNeeded}
-
-               {@consequent
-                saDescendWithValue(Ctrl @arbiter RunTime.tokens.'true')}
-
-               {@alternative
-                saDescendWithValue(Ctrl @arbiter RunTime.tokens.'false')}
-
-               {Ctrl setTopNeeded(T N)}
+               {@consequent saDescendAndCommit(Ctrl)}
             else
-               PN  = {@arbiter getPrintName($)}
-               Val = {GetPrintData @arbiter}
-            in
+               % {TypeTests.'false' {GetData @arbiter}}
                {Ctrl.rep
-                error(coord: @coord
-                      msg:   'Non-boolean arbiter in boolean case statement'
-                      kind:  SATypeError
-                      items: hint(l:'Value' m:oz(Val))
-                      | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
-                      | case {IsFree Val} then nil
-                        else [hint(l:'Name' m:pn(PN))] end)}
+                warn(coord: {@arbiter getCoord($)}
+                     kind:  SAGenWarn
+                     msg:   'boolean guard ' # pn(PN) # ' is always false')}
+
+               local T N in
+                  {Ctrl getTopNeeded(T N)}
+                  {Ctrl notTopNotNeeded}
+                  {@consequent saDescend(Ctrl)}
+                  {Ctrl setTopNeeded(T N)}
+               end
+
+               {@alternative saDescendAndCommit(Ctrl)}
             end
-         end
-         meth applyEnvSubst(Ctrl)
-            {@arbiter applyEnvSubst(Ctrl)}
+
+         elsecase
+            {ConstrainTypes
+             {@arbiter getType($)}
+             {OzTypes.encode bool nil}}
+         then
+            T N in
+            {Ctrl getTopNeeded(T N)}
+            {Ctrl notTopNotNeeded}
+
+            {@consequent
+             saDescendWithValue(Ctrl @arbiter RunTime.tokens.'true')}
+
+            {@alternative
+             saDescendWithValue(Ctrl @arbiter RunTime.tokens.'false')}
+
+            {Ctrl setTopNeeded(T N)}
+         else
+            PN  = {@arbiter getPrintName($)}
+            Val = {GetPrintData @arbiter}
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   msg:   'Non-boolean arbiter in boolean case statement'
+                   kind:  SATypeError
+                   items: hint(l:'Value' m:oz(Val))
+                   | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
+                   | case {IsFree Val} then nil
+                     else [hint(l:'Name' m:pn(PN))] end)}
          end
       end
+      meth applyEnvSubst(Ctrl)
+         {@arbiter applyEnvSubst(Ctrl)}
+      end
+   end
 
-      class SABoolClause
-         meth saDescendWithValue(Ctrl Arbiter Val)
-            ArbV = {Arbiter getVariable($)}
+   class SABoolClause
+      meth saDescendWithValue(Ctrl Arbiter Val)
+         ArbV = {Arbiter getVariable($)}
          % arbiter value unknown, hence also save arbiter value
-            Env  = {GetGlobalEnv {Add ArbV @globalVars}}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
+         Env  = {GetGlobalEnv {Add ArbV @globalVars}}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-            {Arbiter unifyVal(Ctrl Val)}
-            SAStatement, saBody(Ctrl @statements)
+         {Arbiter unifyVal(Ctrl Val)}
+         SAStatement, saBody(Ctrl @statements)
 
-            {Ctrl setTopNeeded(T N)}
-            {InstallGlobalEnv Env}
-         end
-         meth saDescend(Ctrl)
-         % arbiter value known, hence no need to save arbiter value
-            Env  = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-
-            SAStatement, saBody(Ctrl @statements)
-
-            {Ctrl setTopNeeded(T N)}
-            {InstallGlobalEnv Env}
-         end
-         meth saDescendAndCommit(Ctrl)
-            SAStatement, saBody(Ctrl @statements)
-         end
+         {Ctrl setTopNeeded(T N)}
+         {InstallGlobalEnv Env}
       end
+      meth saDescend(Ctrl)
+         % arbiter value known, hence no need to save arbiter value
+         Env  = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-      class SAPatternCase
+         SAStatement, saBody(Ctrl @statements)
+
+         {Ctrl setTopNeeded(T N)}
+         {InstallGlobalEnv Env}
+      end
+      meth saDescendAndCommit(Ctrl)
+         SAStatement, saBody(Ctrl @statements)
+      end
+   end
+
+   class SAPatternCase
 \ifdef DEBUGSA
-         meth sa(Ctrl)
-            {System.show
-             patternCase(@clauses {Map @globalVars
-                                   fun {$ V} {V getPrintName($)} end})}
-         end
+      meth sa(Ctrl)
+         {System.show
+          patternCase(@clauses {Map @globalVars
+                                fun {$ V} {V getPrintName($)} end})}
+      end
 \endif
-         meth saDescend(Ctrl)
+      meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-            {ForAll @clauses
-             proc {$ C} {C saDescendWith(Ctrl @arbiter)} end}
-            {@alternative saDescendWith(Ctrl @arbiter)}
+         {ForAll @clauses
+          proc {$ C} {C saDescendWith(Ctrl @arbiter)} end}
+         {@alternative saDescendWith(Ctrl @arbiter)}
 
-            {Ctrl setTopNeeded(T N)}
-         end
-         meth applyEnvSubst(Ctrl)
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-
-            {@arbiter applyEnvSubst(Ctrl)}
-            {ForAll @clauses
-             proc {$ C} {C applyEnvSubst(Ctrl)} end}
-
-            {Ctrl setTopNeeded(T N)}
-         end
+         {Ctrl setTopNeeded(T N)}
       end
+      meth applyEnvSubst(Ctrl)
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-      class SAPatternClause
-         meth saDescendWith(Ctrl Arbiter)
+         {@arbiter applyEnvSubst(Ctrl)}
+         {ForAll @clauses
+          proc {$ C} {C applyEnvSubst(Ctrl)} end}
+
+         {Ctrl setTopNeeded(T N)}
+      end
+   end
+
+   class SAPatternClause
+      meth saDescendWith(Ctrl Arbiter)
 \ifdef DEBUGSA
-            {System.show patternClause}
+         {System.show patternClause}
 \endif
-            ArbV  = {Arbiter getVariable($)}
+         ArbV  = {Arbiter getVariable($)}
             % also save arbiter !!
-            Env   = {GetGlobalEnv {Add ArbV @globalVars}}
-            T N PVal
-         in
-            {@pattern sa(Ctrl)}
+         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
+         T N PVal
+      in
+         {@pattern sa(Ctrl)}
 
             % the value of record patterns is
             % not the pattern itself, but stored in it
-            PVal = case {@pattern isConstruction($)}
-                   then {@pattern getValue($)}
-                   else @pattern end
+         PVal = case {@pattern isConstruction($)}
+                then {@pattern getValue($)}
+                else @pattern end
 
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-            {Ctrl setErrorMsg('pattern never matches')}
-            {Ctrl setUnifier(Arbiter PVal)}
+         {Ctrl setErrorMsg('pattern never matches')}
+         {Ctrl setUnifier(Arbiter PVal)}
 
-            {Arbiter unify(Ctrl PVal)}
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
+         {Arbiter unify(Ctrl PVal)}
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
 
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
 
-            {InstallGlobalEnv Env}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@pattern applyEnvSubst(Ctrl)}
-         end
+         {InstallGlobalEnv Env}
       end
-
-      class SARecordPattern
-         from SAConstructionOrPattern
+      meth applyEnvSubst(Ctrl)
+         {@pattern applyEnvSubst(Ctrl)}
       end
+   end
+
+   class SARecordPattern
+      from SAConstructionOrPattern
+   end
 
       %
       % equation pattern:
       %   behave like equations for sa
       %   and like their rhs for all properties
       %
-      class SAEquationPattern
-         meth getValue($)
-            {@right getValue($)}
-         end
-         meth setValue(Val)
-            {@right setValue(Val)}
-         end
-         meth getLastValue($)
-            {@right getLastValue($)}
-         end
-         meth setLastValue(Val)
-            {@right setLastValue(Val)}
-         end
-         meth getLabel($)
-            {@right getLabel($)}
-         end
-         meth getArgs($)
-            {@right getArgs($)}
-         end
-         meth getType($)
-            {@right getType($)}
-         end
-         meth isOpen($)
-            {@right isOpen($)}
-         end
-         meth isRecordConstr($)
-            {@right isRecordConstr($)}
-         end
+   class SAEquationPattern
+      meth getValue($)
+         {@right getValue($)}
+      end
+      meth setValue(Val)
+         {@right setValue(Val)}
+      end
+      meth getLastValue($)
+         {@right getLastValue($)}
+      end
+      meth setLastValue(Val)
+         {@right setLastValue(Val)}
+      end
+      meth getLabel($)
+         {@right getLabel($)}
+      end
+      meth getArgs($)
+         {@right getArgs($)}
+      end
+      meth getType($)
+         {@right getType($)}
+      end
+      meth isOpen($)
+         {@right isOpen($)}
+      end
+      meth isRecordConstr($)
+         {@right isRecordConstr($)}
+      end
 
-         meth deref(VO)
-            {@right deref(VO)}
-         end
+      meth deref(VO)
+         {@right deref(VO)}
+      end
 
-         meth sa(Ctrl)
+      meth sa(Ctrl)
 \ifdef DEBUGSA
-            {System.show equationPattern(@left @right)}
+         {System.show equationPattern(@left @right)}
 \endif
-            {Ctrl setErrorMsg('equational constraint in pattern failed')}
-            {Ctrl setUnifier(@left @right)}
+         {Ctrl setErrorMsg('equational constraint in pattern failed')}
+         {Ctrl setUnifier(@left @right)}
 
-            {@right sa(Ctrl)}                            % analyse right hand side
+         {@right sa(Ctrl)}                            % analyse right hand side
             % patterns forward the unification task
             % to their associated record value token
-            case {@right isConstruction($)}
-            then {@left unify(Ctrl {@right getValue($)})}
-            else {@left unify(Ctrl @right)}              % l -> r
-            end
-
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
+         case {@right isConstruction($)}
+         then {@left unify(Ctrl {@right getValue($)})}
+         else {@left unify(Ctrl @right)}              % l -> r
          end
 
-         meth reachable(Vs $)
-            {@right reachable({@left reachable(Vs $)} $)}
-         end
-
-         meth applyEnvSubst(Ctrl)
-            {@left applyEnvSubst(Ctrl)}
-            {@right applyEnvSubst(Ctrl)}
-         end
-
-         meth isVariableOccurrence($)
-            false
-         end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
       end
 
-      class SAElseNode
-         meth saDescend(Ctrl)
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+      meth reachable(Vs $)
+         {@right reachable({@left reachable(Vs $)} $)}
+      end
 
-            {InstallGlobalEnv Env}
-         end
-         meth saDescendWithValue(Ctrl Arbiter Val)
-            ArbV  = {Arbiter getVariable($)}
-            Env   = {GetGlobalEnv {Add ArbV @globalVars}}
-            T N
-         in
-            {Arbiter unifyVal(Ctrl Val)}
+      meth applyEnvSubst(Ctrl)
+         {@left applyEnvSubst(Ctrl)}
+         {@right applyEnvSubst(Ctrl)}
+      end
 
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+      meth isVariableOccurrence($)
+         false
+      end
+   end
 
-            {InstallGlobalEnv Env}
-         end
-         meth saDescendWith(Ctrl Arbiter)
-            ArbV  = {Arbiter getVariable($)}
+   class SAElseNode
+      meth saDescend(Ctrl)
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
+
+         {InstallGlobalEnv Env}
+      end
+      meth saDescendWithValue(Ctrl Arbiter Val)
+         ArbV  = {Arbiter getVariable($)}
+         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
+         T N
+      in
+         {Arbiter unifyVal(Ctrl Val)}
+
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
+
+         {InstallGlobalEnv Env}
+      end
+      meth saDescendWith(Ctrl Arbiter)
+         ArbV  = {Arbiter getVariable($)}
          % also save arbiter !!
-            Env   = {GetGlobalEnv {Add ArbV @globalVars}}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
 
-            {InstallGlobalEnv Env}
-         end
-         meth saDescendAndCommit(Ctrl)
-            SAStatement, saBody(Ctrl @statements)
-         end
+         {InstallGlobalEnv Env}
       end
-      class SANoElse
-         meth saDescend(Ctrl)
-            skip
-         end
-         meth saDescendWithValue(Ctrl Arbiter Val)
-            skip
-         end
-         meth saDescendWith(Ctrl Arbiter)
-            skip
-         end
-         meth saDescendAndCommit(Ctrl)
-            skip
-         end
+      meth saDescendAndCommit(Ctrl)
+         SAStatement, saBody(Ctrl @statements)
       end
-
-      class SAThreadNode
-         meth saDescend(Ctrl)
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopButNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
-
-            {InstallGlobalEnv Env}
-         end
+   end
+   class SANoElse
+      meth saDescend(Ctrl)
+         skip
       end
+      meth saDescendWithValue(Ctrl Arbiter Val)
+         skip
+      end
+      meth saDescendWith(Ctrl Arbiter)
+         skip
+      end
+      meth saDescendAndCommit(Ctrl)
+         skip
+      end
+   end
 
-      class SATryNode
-         meth saDescend(Ctrl)
-            Env1 Env2
-            T N
-         in
+   class SAThreadNode
+      meth saDescend(Ctrl)
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopButNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
+
+         {InstallGlobalEnv Env}
+      end
+   end
+
+   class SATryNode
+      meth saDescend(Ctrl)
+         Env1 Env2
+         T N
+      in
          % check try clause
-            Env1 = {GetGlobalEnv @globalVars}
+         Env1 = {GetGlobalEnv @globalVars}
 
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopButNeeded}
-            SAStatement, saBody(Ctrl @tryStatements)
-            {Ctrl setTopNeeded(T N)}
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopButNeeded}
+         SAStatement, saBody(Ctrl @tryStatements)
+         {Ctrl setTopNeeded(T N)}
 
-            {InstallGlobalEnv Env1}
+         {InstallGlobalEnv Env1}
 
          % check catch clause
 
@@ -2918,1019 +2913,1019 @@ in
          % variables are cloned (possible optimization: compute
          % reachable variables only once and _only_ clone types here)
 
-            Env2 = {GetGlobalEnv @globalVars}
+         Env2 = {GetGlobalEnv @globalVars}
 
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @catchStatements)
-            {Ctrl setTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @catchStatements)
+         {Ctrl setTopNeeded(T N)}
 
-            {InstallGlobalEnv Env2}
-         end
+         {InstallGlobalEnv Env2}
       end
+   end
 
-      class SALockNode
-         meth saDescend(Ctrl)
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopButNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
-         end
-         meth applyEnvSubst(Ctrl)
-            {@lockVar applyEnvSubst(Ctrl)}
-         end
+   class SALockNode
+      meth saDescend(Ctrl)
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopButNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
       end
+      meth applyEnvSubst(Ctrl)
+         {@lockVar applyEnvSubst(Ctrl)}
+      end
+   end
 
-      class SAClassNode
-         feat
-            isComplex:false
+   class SAClassNode
+      feat
+         isComplex:false
 
-         meth saSimple(Ctrl)
-            IllClass TestClass
-            DummyClass = {MakeDummyClass {@designator getPrintName($)}}
-            Value = {New Core.classToken init(DummyClass)}
-         in
-            isToplevel <- {Ctrl getTop($)}
+      meth saSimple(Ctrl)
+         IllClass TestClass
+         DummyClass = {MakeDummyClass {@designator getPrintName($)}}
+         Value = {New Core.classToken init(DummyClass)}
+      in
+         isToplevel <- {Ctrl getTop($)}
 
-            {AllUpTo @parents
-             DetTypeTests.'class' ?IllClass ?TestClass} % do type test, return exc
+         {AllUpTo @parents
+          DetTypeTests.'class' ?IllClass ?TestClass} % do type test, return exc
 
 \ifdef DEBUG
-            {System.show classNode({@designator getPrintName($)}
-                                   {Map @parents fun {$ X} {X getPrintName($)} end})}
+         {System.show classNode({@designator getPrintName($)}
+                                {Map @parents fun {$ X} {X getPrintName($)} end})}
 \endif
-            case
-               TestClass
-            then
-               PTs = {Map @parents fun {$ X} {X getValue($)} end}
-               PsDet
-            in
-               {AllUpTo @parents DetTests.det _  PsDet}
+         case
+            TestClass
+         then
+            PTs = {Map @parents fun {$ X} {X getValue($)} end}
+            PsDet
+         in
+            {AllUpTo @parents DetTests.det _  PsDet}
 
-               SAClassNode, InheritProperties(Value Ctrl PTs)
-               SAClassNode, InheritAttributes(Value Ctrl PTs PsDet)
-               SAClassNode, InheritFeatures(Value Ctrl PTs PsDet)
-               SAClassNode, InheritMethods(Value Ctrl PTs PsDet)
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'inheriting from non-class ' # oz({GetPrintData IllClass}))}
-            end
-
-            {Ctrl setErrorMsg('class definition failed')}
-            {Ctrl setUnifier(@designator Value)}
-
-            {@designator unify(Ctrl Value)}
-
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
-
-\ifdef DEBUGSA
-            {System.show lookedAhead({@designator getPrintName($)} Value)}
-\endif
+            SAClassNode, InheritProperties(Value Ctrl PTs)
+            SAClassNode, InheritAttributes(Value Ctrl PTs PsDet)
+            SAClassNode, InheritFeatures(Value Ctrl PTs PsDet)
+            SAClassNode, InheritMethods(Value Ctrl PTs PsDet)
+         else
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'inheriting from non-class ' # oz({GetPrintData IllClass}))}
          end
 
-         meth InheritProperties(Value Ctrl PTs)
-            IllAtom TestAtom
-         in
+         {Ctrl setErrorMsg('class definition failed')}
+         {Ctrl setUnifier(@designator Value)}
+
+         {@designator unify(Ctrl Value)}
+
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
 
 \ifdef DEBUGSA
-            {System.show properties(@properties)}
+         {System.show lookedAhead({@designator getPrintName($)} Value)}
+\endif
+      end
+
+      meth InheritProperties(Value Ctrl PTs)
+         IllAtom TestAtom
+      in
+
+\ifdef DEBUGSA
+         {System.show properties(@properties)}
 \endif
 
-            {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
+         {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
 
          % type test
-            case TestAtom then
+         case TestAtom then
             % new determined properties
-               Pro  = {Filter {Map @properties GetData}
-                       TypeTests.atom}
+            Pro  = {Filter {Map @properties GetData}
+                    TypeTests.atom}
             % properties of det parents
-               PPro = {Map PTs fun {$ P}
-                                  case {DetTests.det P}
-                                  then {P getProperties($)}
-                                  else unit end
-                               end}
-               NthFinal TestFinal
-            in
-               {SomeUpToN PPro
-                fun {$ P} P\=unit andthen {Member final P} end
-                ?NthFinal ?TestFinal}
+            PPro = {Map PTs fun {$ P}
+                               case {DetTests.det P}
+                               then {P getProperties($)}
+                               else unit end
+                            end}
+            NthFinal TestFinal
+         in
+            {SomeUpToN PPro
+             fun {$ P} P\=unit andthen {Member final P} end
+             ?NthFinal ?TestFinal}
 
-               case TestFinal then
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SATypeError
-                         msg:   'inheritance from final class '
-                         # pn({System.printName
-                               {{Nth PTs NthFinal} getValue($)}}))}
-               else
-                  NonUnitPro = {Filter PPro fun {$ P} P\=unit end}
-               in
+            case TestFinal then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SATypeError
+                      msg:   'inheritance from final class '
+                      # pn({System.printName
+                            {{Nth PTs NthFinal} getValue($)}}))}
+            else
+               NonUnitPro = {Filter PPro fun {$ P} P\=unit end}
+            in
                % type & det test
-                  {Value setProperties({UnionAll Pro|NonUnitPro})}
-               end
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'non-atomic class property '
-                      # pn({IllAtom getPrintName($)}))}
-
+               {Value setProperties({UnionAll Pro|NonUnitPro})}
             end
+         else
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'non-atomic class property '
+                   # pn({IllAtom getPrintName($)}))}
+
          end
-         meth InheritAttributes(Value Ctrl PTs PsDet)
-            Att  = {Map @attributes FirstOrId}
-            IllFeat TestFeat
-         in
-            {AllUpTo Att DetTypeTests.feature ?IllFeat ?TestFeat}
+      end
+      meth InheritAttributes(Value Ctrl PTs PsDet)
+         Att  = {Map @attributes FirstOrId}
+         IllFeat TestFeat
+      in
+         {AllUpTo Att DetTypeTests.feature ?IllFeat ?TestFeat}
 
 \ifdef DEBUGSA
-            {System.show attributes(Att TestFeat {Map Att GetData})}
+         {System.show attributes(Att TestFeat {Map Att GetData})}
 \endif
 
-            case
-               TestFeat
-            then
-               AData = {Map Att GetData}
-            in
+         case
+            TestFeat
+         then
+            AData = {Map Att GetData}
+         in
             % distinct attributes required
-               case
-                  {AllDistinct AData}
-               then
-               % parents determined?
-                  case PsDet then
-                     PAtt = {Map PTs fun {$ P} {P getAttributes($)} end}
-                  in
-                  % type & det test
-                     case
-                        {Not {Member unit PAtt}}
-                        andthen
-                        {All AData TypeTests.feature}
-                     then
-                        {Value setAttributes({UnionAll AData|PAtt})}
-                     else
-                        skip
-                     end
-               % complain about parents elsewhere
-                  else skip end
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'duplicate attributes in class definition'
-                         items: [hint(l:'Attributes found'
-                                      m:{SetToVS {Ozify AData}})])}
-               end
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'illegal class attribute '
-                      items: [hint(l:'Attribute found' m:oz({GetPrintData IllFeat}))])}
-            end
-         end
-         meth InheritFeatures(Value Ctrl PTs PsDet)
-            Fea = {Map @features FirstOrId}
-            IllFeat TestFeat
-         in
-\ifdef DEBUGSA
-            {System.show features(Fea)}
-\endif
-
-            {AllUpTo Fea DetTypeTests.feature ?IllFeat ?TestFeat}
-
             case
-               TestFeat
+               {AllDistinct AData}
             then
-               FData = {Map Fea GetData}
-            in
-            % distinct features required
-               case
-                  {AllDistinct FData}
-               then
                % parents determined?
-                  case PsDet then
-                     PFea = {Map PTs fun {$ P} {P getFeatures($)} end}
-                  in
+               case PsDet then
+                  PAtt = {Map PTs fun {$ P} {P getAttributes($)} end}
+               in
                   % type & det test
-                     case
-                        {Not {Member unit PFea}}
-                        andthen
-                        {All FData TypeTests.feature}
-                     then
-                        {Value setFeatures({UnionAll FData|PFea})}
-                     else
-                        skip
-                     end
-               % complain about parents elsewhere
-                  else skip end
-               else
-                  {Ctrl.rep
-                   error(coord: @coord
-                         kind:  SAGenError
-                         msg:   'duplicate features in class definition'
-                         items: [hint(l:'Features found'
-                                      m:{SetToVS {Ozify FData}})])}
-               end
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SATypeError
-                      msg:   'illegal class feature '
-                      items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
-            end
-         end
-         meth InheritMethods(Value Ctrl PTs PsDet)
-            Met  = {Map @methods fun {$ M} {M getPattern($)} end}
-            IllLab TestLab
-            IllReqMeth TestReq
-            IllOptMeth TestOpt
-         in
-\ifdef DEBUGSA
-            {System.show methods(PTs Met)}
-\endif
-
-            {AllUpTo Met
-             fun {$ L#_} {DetTypeTests.literal L} end ?IllLab ?TestLab}
-            {AllUpTo Met
-             fun {$ _#(R#_)} {All R DetTypeTests.feature} end ?IllReqMeth ?TestReq}
-            {AllUpTo Met
-             fun {$ _#(_#O)} O==unit orelse {All O DetTypeTests.feature} end ?IllOptMeth ?TestOpt}
-
-            case
-               TestLab
-            then
-               case
-                  TestReq
-               then
                   case
-                     TestOpt
+                     {Not {Member unit PAtt}}
+                     andthen
+                     {All AData TypeTests.feature}
                   then
-                     MData = {Map Met
-                              fun {$ L#(R#O)}
-                                 {GetData L} #
-                                 ({Map R GetData} #
-                                  case O==unit then O
-                                  else {Map O GetData} end)
-                              end}
-                     MethNames = {Map MData fun {$ L#_} L end}
-                  in
-            % distinct method names required
-                     case
-                        {AllDistinct MethNames}
-                     then
-               % parents determined?
-                        case PsDet then
-                           PMet = {Map PTs fun {$ P} {P getMethods($)} end}
-                        in
-                  % type & det test
-                           case
-                              {All MethNames TypeTests.literal}
-                              andthen
-                              {Not {Member unit PMet}}
-                           then
-                              NewMet   = {List.toRecord m MData}
-                              TotalMet = {ApproxInheritance PMet NewMet}
-                           in
-                              {Value setMethods(TotalMet)}
-                           else
-                              skip
-                           end
-               % complain about parents elsewhere
-                        else skip end
-                     else
-                        {Ctrl.rep
-                         error(coord: @coord
-                               kind:  SAGenError
-                               msg:   'duplicate method names in class definition'
-                               items: [hint(l:'Method names'
-                                            m:{SetToVS {Ozify MethNames}})])}
-                     end
+                     {Value setAttributes({UnionAll AData|PAtt})}
                   else
-                     L#(_#O) = IllOptMeth
-                     IllOpt  = {GetPrintData {AllUpTo O DetTypeTests.feature $ _}}
-                  in
+                     skip
+                  end
+               % complain about parents elsewhere
+               else skip end
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAGenError
+                      msg:   'duplicate attributes in class definition'
+                      items: [hint(l:'Attributes found'
+                                   m:{SetToVS {Ozify AData}})])}
+            end
+         else
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'illegal class attribute '
+                   items: [hint(l:'Attribute found' m:oz({GetPrintData IllFeat}))])}
+         end
+      end
+      meth InheritFeatures(Value Ctrl PTs PsDet)
+         Fea = {Map @features FirstOrId}
+         IllFeat TestFeat
+      in
+\ifdef DEBUGSA
+         {System.show features(Fea)}
+\endif
+
+         {AllUpTo Fea DetTypeTests.feature ?IllFeat ?TestFeat}
+
+         case
+            TestFeat
+         then
+            FData = {Map Fea GetData}
+         in
+            % distinct features required
+            case
+               {AllDistinct FData}
+            then
+               % parents determined?
+               case PsDet then
+                  PFea = {Map PTs fun {$ P} {P getFeatures($)} end}
+               in
+                  % type & det test
+                  case
+                     {Not {Member unit PFea}}
+                     andthen
+                     {All FData TypeTests.feature}
+                  then
+                     {Value setFeatures({UnionAll FData|PFea})}
+                  else
+                     skip
+                  end
+               % complain about parents elsewhere
+               else skip end
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind:  SAGenError
+                      msg:   'duplicate features in class definition'
+                      items: [hint(l:'Features found'
+                                   m:{SetToVS {Ozify FData}})])}
+            end
+         else
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'illegal class feature '
+                   items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
+         end
+      end
+      meth InheritMethods(Value Ctrl PTs PsDet)
+         Met  = {Map @methods fun {$ M} {M getPattern($)} end}
+         IllLab TestLab
+         IllReqMeth TestReq
+         IllOptMeth TestOpt
+      in
+\ifdef DEBUGSA
+         {System.show methods(PTs Met)}
+\endif
+
+         {AllUpTo Met
+          fun {$ L#_} {DetTypeTests.literal L} end ?IllLab ?TestLab}
+         {AllUpTo Met
+          fun {$ _#(R#_)} {All R DetTypeTests.feature} end ?IllReqMeth ?TestReq}
+         {AllUpTo Met
+          fun {$ _#(_#O)} O==unit orelse {All O DetTypeTests.feature} end ?IllOptMeth ?TestOpt}
+
+         case
+            TestLab
+         then
+            case
+               TestReq
+            then
+               case
+                  TestOpt
+               then
+                  MData = {Map Met
+                           fun {$ L#(R#O)}
+                              {GetData L} #
+                              ({Map R GetData} #
+                               case O==unit then O
+                               else {Map O GetData} end)
+                           end}
+                  MethNames = {Map MData fun {$ L#_} L end}
+               in
+            % distinct method names required
+                  case
+                     {AllDistinct MethNames}
+                  then
+               % parents determined?
+                     case PsDet then
+                        PMet = {Map PTs fun {$ P} {P getMethods($)} end}
+                     in
+                  % type & det test
+                        case
+                           {All MethNames TypeTests.literal}
+                           andthen
+                           {Not {Member unit PMet}}
+                        then
+                           NewMet   = {List.toRecord m MData}
+                           TotalMet = {ApproxInheritance PMet NewMet}
+                        in
+                           {Value setMethods(TotalMet)}
+                        else
+                           skip
+                        end
+               % complain about parents elsewhere
+                     else skip end
+                  else
                      {Ctrl.rep
                       error(coord: @coord
-                            kind:  SATypeError
-                            msg:   'illegal feature in method definition'
-                            items: [hint(l:'Message label' m:oz({GetPrintData L}))
-                                    hint(l:'Illegal feature' m:oz(IllOpt))])}
+                            kind:  SAGenError
+                            msg:   'duplicate method names in class definition'
+                            items: [hint(l:'Method names'
+                                         m:{SetToVS {Ozify MethNames}})])}
                   end
                else
-                  L#(R#_) = IllReqMeth
-                  IllReq  = {GetPrintData {AllUpTo R DetTypeTests.feature $ _}}
+                  L#(_#O) = IllOptMeth
+                  IllOpt  = {GetPrintData {AllUpTo O DetTypeTests.feature $ _}}
                in
                   {Ctrl.rep
                    error(coord: @coord
                          kind:  SATypeError
                          msg:   'illegal feature in method definition'
-                         items: [hint(l:'Message found' m:oz({GetPrintData L}))
-                                 hint(l:'Illegal feature' m:oz(IllReq))])}
+                         items: [hint(l:'Message label' m:oz({GetPrintData L}))
+                                 hint(l:'Illegal feature' m:oz(IllOpt))])}
                end
             else
-               L#_ = IllLab
+               L#(R#_) = IllReqMeth
+               IllReq  = {GetPrintData {AllUpTo R DetTypeTests.feature $ _}}
             in
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SATypeError
-                      msg:   'non-literal method label '
-                      items: [hint(l:'Label found' m:oz({GetPrintData L}))])}
+                      msg:   'illegal feature in method definition'
+                      items: [hint(l:'Message found' m:oz({GetPrintData L}))
+                              hint(l:'Illegal feature' m:oz(IllReq))])}
             end
+         else
+            L#_ = IllLab
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SATypeError
+                   msg:   'non-literal method label '
+                   items: [hint(l:'Label found' m:oz({GetPrintData L}))])}
          end
-         meth saDescend(Ctrl)
-            {Ctrl pushSelf({@designator getValue($)})}
+      end
+      meth saDescend(Ctrl)
+         {Ctrl pushSelf({@designator getValue($)})}
 
          % descend with global environment
          % will be saved in methods
-            SAClassNode, SaBody(@methods Ctrl)
+         SAClassNode, SaBody(@methods Ctrl)
 
-            {Ctrl popSelf}
-         end
-         meth SaBody(Methods Ctrl)
-            case Methods of M|Mr then
-               {M saDescend(Ctrl)}
-               SAClassNode, SaBody(Mr Ctrl)
-            [] nil then skip
-            end
-         end
-         meth applyEnvSubst(Ctrl)
-
-            {@designator applyEnvSubst(Ctrl)}
-            {ForAll @parents
-             proc {$ P}
-                {P applyEnvSubst(Ctrl)}
-             end}
-            {ForAll @properties
-             proc {$ P} {P applyEnvSubst(Ctrl)} end}
-            {ForAll @attributes
-             proc {$ I}
-                case I of F#T then
-                   {F applyEnvSubst(Ctrl)}
-                   {T applyEnvSubst(Ctrl)}
-                else {I applyEnvSubst(Ctrl)} end
-             end}
-            {ForAll @features
-             proc {$ I}
-                case I of F#T then
-                   {F applyEnvSubst(Ctrl)}
-                   {T applyEnvSubst(Ctrl)}
-                else {I applyEnvSubst(Ctrl)} end
-             end}
-            {ForAll @methods
-             proc {$ M} {M preApplyEnvSubst(Ctrl)} end}
+         {Ctrl popSelf}
+      end
+      meth SaBody(Methods Ctrl)
+         case Methods of M|Mr then
+            {M saDescend(Ctrl)}
+            SAClassNode, SaBody(Mr Ctrl)
+         [] nil then skip
          end
       end
+      meth applyEnvSubst(Ctrl)
 
-      class SAMethod
-         meth getPattern($)
-            Fs R1 O1 R2 O2
-         in
-            Fs = {Map @formalArgs fun {$ M} {M getFormal($)} end}
-            {Partition Fs fun {$ F} {Label F}==required end R1 O1}
+         {@designator applyEnvSubst(Ctrl)}
+         {ForAll @parents
+          proc {$ P}
+             {P applyEnvSubst(Ctrl)}
+          end}
+         {ForAll @properties
+          proc {$ P} {P applyEnvSubst(Ctrl)} end}
+         {ForAll @attributes
+          proc {$ I}
+             case I of F#T then
+                {F applyEnvSubst(Ctrl)}
+                {T applyEnvSubst(Ctrl)}
+             else {I applyEnvSubst(Ctrl)} end
+          end}
+         {ForAll @features
+          proc {$ I}
+             case I of F#T then
+                {F applyEnvSubst(Ctrl)}
+                {T applyEnvSubst(Ctrl)}
+             else {I applyEnvSubst(Ctrl)} end
+          end}
+         {ForAll @methods
+          proc {$ M} {M preApplyEnvSubst(Ctrl)} end}
+      end
+   end
 
-            R2 = {Map R1 fun {$ R} R.1 end}
-            O2 = {Map O1 fun {$ O} O.1 end}
+   class SAMethod
+      meth getPattern($)
+         Fs R1 O1 R2 O2
+      in
+         Fs = {Map @formalArgs fun {$ M} {M getFormal($)} end}
+         {Partition Fs fun {$ F} {Label F}==required end R1 O1}
 
-            @label # (R2 # O2)
-         end
-         meth saDescend(Ctrl)
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+         R2 = {Map R1 fun {$ R} R.1 end}
+         O2 = {Map O1 fun {$ O} O.1 end}
 
-            {InstallGlobalEnv Env}
-            if {Ctrl getTop($)} then
-               predicateRef <- {Ctrl declareToplevelProcedure($)}
-            end
-         end
-         meth preApplyEnvSubst(Ctrl)
-            {@label applyEnvSubst(Ctrl)}
-            {ForAll @formalArgs
-             proc {$ A} {A applyEnvSubst(Ctrl)} end}
+         @label # (R2 # O2)
+      end
+      meth saDescend(Ctrl)
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
+
+         {InstallGlobalEnv Env}
+         if {Ctrl getTop($)} then
+            predicateRef <- {Ctrl declareToplevelProcedure($)}
          end
       end
-      class SAMethodWithDesignator
-         meth getPattern($)
-            Fs R1 O1 R2 O2
-         in
-            Fs = {Map @formalArgs fun {$ M} {M getFormal($)} end}
-            {Partition Fs fun {$ F} {Label F}==required end R1 O1}
-
-            R2 = {Map R1 fun {$ R} R.1 end}
-            O2 = case @isOpen then unit else {Map O1 fun {$ O} O.1 end} end
-
-            @label # (R2 # O2)
-         end
-         meth saDescend(Ctrl)
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
-
-            {InstallGlobalEnv Env}
-         end
+      meth preApplyEnvSubst(Ctrl)
+         {@label applyEnvSubst(Ctrl)}
+         {ForAll @formalArgs
+          proc {$ A} {A applyEnvSubst(Ctrl)} end}
       end
+   end
+   class SAMethodWithDesignator
+      meth getPattern($)
+         Fs R1 O1 R2 O2
+      in
+         Fs = {Map @formalArgs fun {$ M} {M getFormal($)} end}
+         {Partition Fs fun {$ F} {Label F}==required end R1 O1}
 
-      class SAMethFormal
-         meth getFormal($)
-            required(@feature)
-         end
-         meth applyEnvSubst(Ctrl)
-            {@feature applyEnvSubst(Ctrl)}
-         end
-      end
-      class SAMethFormalOptional
-         meth getFormal($)
-            optional(@feature)
-         end
-      end
-      class SAMethFormalWithDefault
-         meth getFormal($)
-            optional(@feature)
-         end
-      end
+         R2 = {Map R1 fun {$ R} R.1 end}
+         O2 = case @isOpen then unit else {Map O1 fun {$ O} O.1 end} end
 
-      class SAObjectLockNode
-         meth saDescend(Ctrl)
+         @label # (R2 # O2)
+      end
+      meth saDescend(Ctrl)
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
+
+         {InstallGlobalEnv Env}
+      end
+   end
+
+   class SAMethFormal
+      meth getFormal($)
+         required(@feature)
+      end
+      meth applyEnvSubst(Ctrl)
+         {@feature applyEnvSubst(Ctrl)}
+      end
+   end
+   class SAMethFormalOptional
+      meth getFormal($)
+         optional(@feature)
+      end
+   end
+   class SAMethFormalWithDefault
+      meth getFormal($)
+         optional(@feature)
+      end
+   end
+
+   class SAObjectLockNode
+      meth saDescend(Ctrl)
          % descend with same environment
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopButNeeded}
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
-         end
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopButNeeded}
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
       end
+   end
 
-      class SAGetSelf
-         meth sa(Ctrl)
-            skip   %--** do more here if +warnforward
-         end
-         meth applyEnvSubst(Ctrl)
-            {@destination applyEnvSubst(Ctrl)}
-         end
+   class SAGetSelf
+      meth sa(Ctrl)
+         skip   %--** do more here if +warnforward
       end
+      meth applyEnvSubst(Ctrl)
+         {@destination applyEnvSubst(Ctrl)}
+      end
+   end
 
-      class SAIfNode
-         meth saDescend(Ctrl)
+   class SAIfNode
+      meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-            {ForAll @clauses
-             proc {$ C} {C saDescend(Ctrl)} end}
-            {@alternative saDescend(Ctrl)}
+         {ForAll @clauses
+          proc {$ C} {C saDescend(Ctrl)} end}
+         {@alternative saDescend(Ctrl)}
 
-            {Ctrl setTopNeeded(T N)}
-         end
+         {Ctrl setTopNeeded(T N)}
       end
+   end
 
-      class SAChoicesAndDisjunctions
-         meth saDescend(Ctrl)
+   class SAChoicesAndDisjunctions
+      meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-            T N in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
+         T N in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
 
-            {ForAll @clauses
-             proc {$ C} {C saDescend(Ctrl)} end}
+         {ForAll @clauses
+          proc {$ C} {C saDescend(Ctrl)} end}
 
-            {Ctrl setTopNeeded(T N)}
-         end
+         {Ctrl setTopNeeded(T N)}
       end
+   end
 
-      class SAClause
-         meth saDescend(Ctrl)
+   class SAClause
+      meth saDescend(Ctrl)
          % shared local environment
          % for guard and body
-            Env = {GetGlobalEnv @globalVars}
-            T N
-         in
-            {Ctrl getTopNeeded(T N)}
-            {Ctrl notTopNotNeeded}
-            SAStatement, saBody(Ctrl @guard)
-            SAStatement, saBody(Ctrl @statements)
-            {Ctrl setTopNeeded(T N)}
+         Env = {GetGlobalEnv @globalVars}
+         T N
+      in
+         {Ctrl getTopNeeded(T N)}
+         {Ctrl notTopNotNeeded}
+         SAStatement, saBody(Ctrl @guard)
+         SAStatement, saBody(Ctrl @statements)
+         {Ctrl setTopNeeded(T N)}
 
-            {InstallGlobalEnv Env}
-         end
+         {InstallGlobalEnv Env}
       end
+   end
 
-      class SAValueNode
-         attr type: unit
-         meth init()
-            type <- {OzValueToType @value}
-         end
-         meth getType($)
-            @type
-         end
-         meth getPrintType(D $)
-            {TypeToVS @type}
-         end
-         meth reflectType(_ $)
-            value(@value)
-         end
-         meth getData(IsObj $)
-            @value
-         end
-         meth getFullData(D IsData $)
-            @value
-         end
-         meth getLastValue($)
-            self
-         end
-         meth isRecordConstr($)
-            false
-         end
-         meth deref(VO)
-            skip
-         end
-         meth reachable(Vs $)
-            Vs
-         end
+   class SAValueNode
+      attr type: unit
+      meth init()
+         type <- {OzValueToType @value}
+      end
+      meth getType($)
+         @type
+      end
+      meth getPrintType(D $)
+         {TypeToVS @type}
+      end
+      meth reflectType(_ $)
+         value(@value)
+      end
+      meth getData(IsObj $)
+         @value
+      end
+      meth getFullData(D IsData $)
+         @value
+      end
+      meth getLastValue($)
+         self
+      end
+      meth isRecordConstr($)
+         false
+      end
+      meth deref(VO)
+         skip
+      end
+      meth reachable(Vs $)
+         Vs
+      end
 
       % unify: _ x Token U ValueNode
 
-         meth unify(Ctrl RHS)
+      meth unify(Ctrl RHS)
 \ifdef LOOP
-            {System.show unifyVN(@value {RHS getValue($)})}
+         {System.show unifyVN(@value {RHS getValue($)})}
 \endif
+         case
+            {UnifyTypesOf self RHS Ctrl @coord}
+         then
+            RVal = {RHS getValue($)}
+         in
             case
-               {UnifyTypesOf self RHS Ctrl @coord}
-            then
-               RVal = {RHS getValue($)}
-            in
-               case
-                  {IsDet RVal} andthen @value == {RHS getValue($)}
+               {IsDet RVal} andthen @value == {RHS getValue($)}
+            then skip else
+               case {IsFree RVal}
                then skip else
-                  case {IsFree RVal}
-                  then skip else
-                     {IssueUnificationFailure Ctrl @coord
-                      [hint(l:'First value' m:oz(@value))
-                       hint(l:'Second value' m:oz(RVal))]}
-                  end
+                  {IssueUnificationFailure Ctrl @coord
+                   [hint(l:'First value' m:oz(@value))
+                    hint(l:'Second value' m:oz(RVal))]}
                end
-            else
-               skip % do not continue on type error
             end
-         end
-
-         meth sa(Ctrl)
-            skip
-         end
-         meth applyEnvSubst(Ctrl)
-            skip
+         else
+            skip % do not continue on type error
          end
       end
 
-      class SAVariable
-         attr
-            lastValue : unit
-            type: unit
-         meth init()
-            type <- {OzTypes.encode value nil}
-         end
-         meth getType($)
-            @type
-         end
-         meth setType(T)
-            type <- T
-         end
-         meth getPrintType(D $)
-            {TypeToVS @type}
-         end
-         meth outputDebugType($)
-            case @lastValue == unit then {TypeToVS @type}
-            else {@lastValue getPrintType(AnalysisDepth $)}
-            end
-         end
-         meth outputDebugMeths($)
-            case @lastValue \= unit
-               andthen {HasFeature @lastValue kind}
-            then
-               case @lastValue.kind
-               of 'class' then
-                  case {@lastValue getMethods($)}
-                  of unit then unit
-                  elseof Ms then {Arity Ms} end
-               [] 'object' then
-                  case {{@lastValue getClassNode($)} getMethods($)}
-                  of unit then unit
-                  elseof Ms then {Arity Ms} end
-               else unit end
-            else unit end
-         end
-         meth outputDebugAttrs($)
-            case @lastValue \= unit
-               andthen {HasFeature @lastValue kind}
-            then
-               case @lastValue.kind
-               of 'class' then {@lastValue getAttributes($)}
-               [] 'object' then {{@lastValue getClassNode($)} getAttributes($)}
-               else unit end
-            else unit end
-         end
-         meth outputDebugFeats($)
-            case @lastValue \= unit
-               andthen {HasFeature @lastValue kind}
-            then
-               case @lastValue.kind
-               of 'class' then {@lastValue getFeatures($)}
-               [] 'object' then {{@lastValue getClassNode($)} getFeatures($)}
-               else unit end
-            else unit end
-         end
-         meth outputDebugProps($)
-            case @lastValue \= unit
-               andthen {HasFeature @lastValue kind}
-            then
-               case @lastValue.kind
-               of 'class' then {@lastValue getProperties($)}
-               else unit end
-            else unit end
-         end
-         meth getLastValue($)
-            @lastValue
-         end
-         meth setLastValue(O)
-            lastValue <- O
-            case O == unit then skip
-            else type <- {O getType($)} end
-         end
-         meth deref(VO)
-            case
-               @lastValue == unit                        % is free
-            then
-               SAVariable, setLastValue(VO)              % initialize with var-occ
+      meth sa(Ctrl)
+         skip
+      end
+      meth applyEnvSubst(Ctrl)
+         skip
+      end
+   end
 
-            elsecase
-               {@lastValue isVariableOccurrence($)}
+   class SAVariable
+      attr
+         lastValue : unit
+         type: unit
+      meth init()
+         type <- {OzTypes.encode value nil}
+      end
+      meth getType($)
+         @type
+      end
+      meth setType(T)
+         type <- T
+      end
+      meth getPrintType(D $)
+         {TypeToVS @type}
+      end
+      meth outputDebugType($)
+         case @lastValue == unit then {TypeToVS @type}
+         else {@lastValue getPrintType(AnalysisDepth $)}
+         end
+      end
+      meth outputDebugMeths($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then
+               case {@lastValue getMethods($)}
+               of unit then unit
+               elseof Ms then {Arity Ms} end
+            [] 'object' then
+               case {{@lastValue getClassNode($)} getMethods($)}
+               of unit then unit
+               elseof Ms then {Arity Ms} end
+            else unit end
+         else unit end
+      end
+      meth outputDebugAttrs($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getAttributes($)}
+            [] 'object' then {{@lastValue getClassNode($)} getAttributes($)}
+            else unit end
+         else unit end
+      end
+      meth outputDebugFeats($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getFeatures($)}
+            [] 'object' then {{@lastValue getClassNode($)} getFeatures($)}
+            else unit end
+         else unit end
+      end
+      meth outputDebugProps($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getProperties($)}
+            else unit end
+         else unit end
+      end
+      meth getLastValue($)
+         @lastValue
+      end
+      meth setLastValue(O)
+         lastValue <- O
+         case O == unit then skip
+         else type <- {O getType($)} end
+      end
+      meth deref(VO)
+         case
+            @lastValue == unit                        % is free
+         then
+            SAVariable, setLastValue(VO)              % initialize with var-occ
+
+         elsecase
+            {@lastValue isVariableOccurrence($)}
+         then
+            NewVal = {@lastValue getValue($)}         % getLastValue($) ?
+         in
+            SAVariable, setLastValue(NewVal)          % var path compression
+            case @lastValue == NewVal
+            then skip else
+               SAVariable, deref(VO)                  % recur
+            end
+         elsecase
+            {@lastValue isRecordConstr($)}
+         then
+            NewVal = {@lastValue getLastValue($)}
+         in
+            case
+               @lastValue == NewVal
             then
-               NewVal = {@lastValue getValue($)}         % getLastValue($) ?
-            in
-               SAVariable, setLastValue(NewVal)          % var path compression
-               case @lastValue == NewVal
-               then skip else
-                  SAVariable, deref(VO)                  % recur
-               end
+               skip                                   % self reference
             elsecase
-               {@lastValue isRecordConstr($)}
+               NewVal == unit
             then
-               NewVal = {@lastValue getLastValue($)}
-            in
+               {@lastValue setLastValue(@lastValue)}  % non initialised
+            else
+               SAVariable, setLastValue(NewVal)       % constr path compression
                case
                   @lastValue == NewVal
-               then
-                  skip                                   % self reference
-               elsecase
-                  NewVal == unit
-               then
-                  {@lastValue setLastValue(@lastValue)}  % non initialised
-               else
-                  SAVariable, setLastValue(NewVal)       % constr path compression
-                  case
-                     @lastValue == NewVal
-                  then skip else
-                     SAVariable, deref(VO)               % recur
-                  end
+               then skip else
+                  SAVariable, deref(VO)               % recur
                end
-            else
-            % number, atom, token (ground value)
-               skip
             end
+         else
+            % number, atom, token (ground value)
+            skip
          end
-         meth valToSubst(Value)
-            {self ValToSubst(@printName nil AnalysisDepth Value)}
-         end
-         meth ValToSubst(PrintNameBase Seen Depth Value)
-            case
-               Depth =< 0
-            then
+      end
+      meth valToSubst(Value)
+         {self ValToSubst(@printName nil AnalysisDepth Value)}
+      end
+      meth ValToSubst(PrintNameBase Seen Depth Value)
+         case
+            Depth =< 0
+         then
 \ifdef DEBUGSA
-               {System.show valToSubstBreakDepth(Value)}
+            {System.show valToSubstBreakDepth(Value)}
 \endif
-               SAVariable, setLastValue(unit) % stop analysis here
+            SAVariable, setLastValue(unit) % stop analysis here
+
+         elsecase
+            {IsDet Value}
+         then
+
+\ifdef DEBUGSA
+            {System.show valToSubst(Value)}
+\endif
+
+            case
+               {IsInt Value}
+            then
+               SAVariable, setLastValue({New Core.intNode init(Value unit)})
 
             elsecase
-               {IsDet Value}
+               {IsFloat Value}
             then
+               SAVariable, setLastValue({New Core.floatNode init(Value unit)})
 
-\ifdef DEBUGSA
-               {System.show valToSubst(Value)}
-\endif
+            elsecase
+               {IsAtom Value}
+            then
+               SAVariable, setLastValue({New Core.atomNode init(Value unit)})
 
-               case
-                  {IsInt Value}
-               then
-                  SAVariable, setLastValue({New Core.intNode init(Value unit)})
+            elsecase
+               {IsName Value}
+            then
+               SAVariable,
+               setLastValue({New Core.nameToken init(Value true)})
 
-               elsecase
-                  {IsFloat Value}
-               then
-                  SAVariable, setLastValue({New Core.floatNode init(Value unit)})
-
-               elsecase
-                  {IsAtom Value}
-               then
-                  SAVariable, setLastValue({New Core.atomNode init(Value unit)})
-
-               elsecase
-                  {IsName Value}
-               then
-                  SAVariable,
-                  setLastValue({New Core.nameToken init(Value true)})
-
-               elsecase
-                  {IsRecord Value}
-               then
-                  RecArgs   = {Record.toListInd Value}
-                  Lab       = {Label Value}
-                  RecConstrValArgs RecConstr RecVal
-               in
+            elsecase
+               {IsRecord Value}
+            then
+               RecArgs   = {Record.toListInd Value}
+               Lab       = {Label Value}
+               RecConstrValArgs RecConstr RecVal
+            in
                   % reconstruct heap only up to limited width of records
 
-                  {self recordValToArgs(RecArgs
-                                        (Value#self)|Seen
-                                        Depth
-                                        AnalysisWidth.Depth
-                                        PrintNameBase
-                                        ?RecConstrValArgs)}
+               {self recordValToArgs(RecArgs
+                                     (Value#self)|Seen
+                                     Depth
+                                     AnalysisWidth.Depth
+                                     PrintNameBase
+                                     ?RecConstrValArgs)}
 
-                  case {Width Value} =< AnalysisWidth.Depth
-                  then RecVal = {List.toRecord Lab RecConstrValArgs}
-                  else
-                     RecVal = {TellRecord Lab}
-                     {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
-                  end
-
-                  RecConstr = {New RecordConstr init(RecVal unit)}
-                  SAVariable, setLastValue( RecConstr )
-               elsecase
-                  {CompilerSupport.isBuiltin Value}
-               then
-                  BI      = {New Core.builtinToken init(Value)}
-               in
-                  SAVariable, setLastValue(BI)
-
-               elsecase
-                  {IsProcedure Value}
-               then
-                  ProcToken = {New Core.procedureToken init(Value)}
-               in
-                  ProcToken.predicateRef = Value
-                  SAVariable, setLastValue(ProcToken)
-
-               elsecase
-                  {IsClass Value}
-               then
-                  Cls = {New Core.classToken init(Value)}
-                  Meths = {Record.make m {Class.methodNames Value}}
-                  Attrs = {Class.attrNames Value}
-                  Feats = {Class.featNames Value}
-                  Props = {Class.propNames Value}
-               in
-                  {Record.forAll Meths fun {$} nil#unit end}
-                  {Cls setMethods(Meths)}
-                  {Cls setAttributes(Attrs)}
-                  {Cls setFeatures(Feats)}
-                  {Cls setProperties(Props)}
-                  SAVariable, setLastValue(Cls)
-
-               elsecase
-                  {IsObject Value}
-               then
-                  TheClass = {Class.get Value}
-                  Meths = {Record.make m {Class.methodNames TheClass}}
-                  Attrs = {Class.attrNames TheClass}
-                  Feats = {Class.featNames TheClass}
-                  Props = {Class.propNames TheClass}
-                  Cls   = {New Core.classToken init(TheClass)}
-               in
-                  {Record.forAll Meths fun {$} nil#unit end}
-                  {Cls setMethods(Meths)}
-                  {Cls setAttributes(Attrs)}
-                  {Cls setFeatures(Feats)}
-                  {Cls setProperties(Props)}
-                  SAVariable, setLastValue({New Core.objectToken init(Value Cls)})
-
-               elsecase
-                  {IsCell Value}
-               then
-                  SAVariable, setLastValue({New Core.cellToken init(Value)})
-
-               elsecase
-                  {IsLock Value}
-               then
-                  SAVariable, setLastValue({New Core.lockToken init(Value)})
-
-               elsecase
-                  {IsPort Value}
-               then
-                  SAVariable, setLastValue({New Core.portToken init(Value)})
-
-               elsecase
-                  {IsArray Value}
-               then
-                  DummyArray = {New Core.arrayToken init(Value)}
-               in
-                  SAVariable, setLastValue(DummyArray)
-
-               elsecase
-                  {IsDictionary Value}
-               then
-                  SAVariable, setLastValue({New Core.dictionaryToken init(Value)})
-
-               elsecase
-                  {IsSpace Value}
-               then
-                  SAVariable, setLastValue({New Core.spaceToken init(Value)})
-
-               elsecase
-                  {IsThread Value}
-               then
-                  SAVariable, setLastValue({New Core.threadToken init(Value)})
-
-               elsecase
-                  {BitArray.is Value}
-               then
-                  SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
-
-               elsecase
-                  {IsBitString Value}
-               then
-                  SAVariable, setLastValue({New Core.bitStringNode init(Value unit)})
-
-               elsecase
-                  {IsByteString Value}
-               then
-                  SAVariable, setLastValue({New Core.byteStringNode init(Value unit)})
-
-               elsecase
-                  {IsChunk Value}
-               then
-                  SAVariable, setLastValue({New Core.chunkToken init(Value)})
-
+               case {Width Value} =< AnalysisWidth.Depth
+               then RecVal = {List.toRecord Lab RecConstrValArgs}
                else
-                  SAVariable, setLastValue(unit)
+                  RecVal = {TellRecord Lab}
+                  {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
                end
+
+               RecConstr = {New RecordConstr init(RecVal unit)}
+               SAVariable, setLastValue( RecConstr )
+            elsecase
+               {CompilerSupport.isBuiltin Value}
+            then
+               BI      = {New Core.builtinToken init(Value)}
+            in
+               SAVariable, setLastValue(BI)
+
+            elsecase
+               {IsProcedure Value}
+            then
+               ProcToken = {New Core.procedureToken init(Value)}
+            in
+               ProcToken.predicateRef = Value
+               SAVariable, setLastValue(ProcToken)
+
+            elsecase
+               {IsClass Value}
+            then
+               Cls = {New Core.classToken init(Value)}
+               Meths = {Record.make m {Class.methodNames Value}}
+               Attrs = {Class.attrNames Value}
+               Feats = {Class.featNames Value}
+               Props = {Class.propNames Value}
+            in
+               {Record.forAll Meths fun {$} nil#unit end}
+               {Cls setMethods(Meths)}
+               {Cls setAttributes(Attrs)}
+               {Cls setFeatures(Feats)}
+               {Cls setProperties(Props)}
+               SAVariable, setLastValue(Cls)
+
+            elsecase
+               {IsObject Value}
+            then
+               TheClass = {Class.get Value}
+               Meths = {Record.make m {Class.methodNames TheClass}}
+               Attrs = {Class.attrNames TheClass}
+               Feats = {Class.featNames TheClass}
+               Props = {Class.propNames TheClass}
+               Cls   = {New Core.classToken init(TheClass)}
+            in
+               {Record.forAll Meths fun {$} nil#unit end}
+               {Cls setMethods(Meths)}
+               {Cls setAttributes(Attrs)}
+               {Cls setFeatures(Feats)}
+               {Cls setProperties(Props)}
+               SAVariable, setLastValue({New Core.objectToken init(Value Cls)})
+
+            elsecase
+               {IsCell Value}
+            then
+               SAVariable, setLastValue({New Core.cellToken init(Value)})
+
+            elsecase
+               {IsLock Value}
+            then
+               SAVariable, setLastValue({New Core.lockToken init(Value)})
+
+            elsecase
+               {IsPort Value}
+            then
+               SAVariable, setLastValue({New Core.portToken init(Value)})
+
+            elsecase
+               {IsArray Value}
+            then
+               DummyArray = {New Core.arrayToken init(Value)}
+            in
+               SAVariable, setLastValue(DummyArray)
+
+            elsecase
+               {IsDictionary Value}
+            then
+               SAVariable, setLastValue({New Core.dictionaryToken init(Value)})
+
+            elsecase
+               {IsSpace Value}
+            then
+               SAVariable, setLastValue({New Core.spaceToken init(Value)})
+
+            elsecase
+               {IsThread Value}
+            then
+               SAVariable, setLastValue({New Core.threadToken init(Value)})
+
+            elsecase
+               {BitArray.is Value}
+            then
+               SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
+
+            elsecase
+               {IsBitString Value}
+            then
+               SAVariable, setLastValue({New Core.bitStringNode init(Value unit)})
+
+            elsecase
+               {IsByteString Value}
+            then
+               SAVariable, setLastValue({New Core.byteStringNode init(Value unit)})
+
+            elsecase
+               {IsChunk Value}
+            then
+               SAVariable, setLastValue({New Core.chunkToken init(Value)})
 
             else
                SAVariable, setLastValue(unit)
             end
+
+         else
+            SAVariable, setLastValue(unit)
          end
-         meth recordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
-            case
-               Width>0
+      end
+      meth recordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
+         case
+            Width>0
+         then
+            case RecArgs
+            of (F#X) | RAs
             then
-               case RecArgs
-               of (F#X) | RAs
+               Assoc = {PLDotEQ X Seen}
+               A = case {IsAtom F} then
+                      {New Core.atomNode init(F unit)}
+                   elsecase {IsName F} then
+                      {New Core.nameToken init(F true)}
+                   elsecase {IsInt F} then
+                      {New Core.intNode init(F unit)}
+                   end
+               VO CVAr
+            in
+               case
+                  Assoc == unit % not seen
                then
-                  Assoc = {PLDotEQ X Seen}
-                  A = case {IsAtom F} then
+                  PrintName = {String.toAtom {VS2S PrintNameBase#'.'#F}}
+                  V = {New Core.variable init(PrintName generated unit)}
+               in
+                  {V ValToSubst(PrintName Seen Depth-1 X)}
+                  {V occ(unit ?VO)}
+                  {VO updateValue}
+               else
+                  {Assoc occ(unit ?VO)}
+                  {VO updateValue}
+               end
+
+               ConstrValArgs = F#VO | CVAr
+
+               {self recordValToArgs(RAs Seen Depth Width-1 PrintNameBase CVAr)}
+            elseof
+               nil
+            then
+               ConstrValArgs = nil
+            end
+         else
+            ConstrValArgs = nil
+         end
+      end
+      meth typeToSubst(Type)
+         SAVariable, TypeToSubst(Type AnalysisDepth)
+      end
+      meth TypeToSubst(Type Depth)
+         % no sharing is supported
+         case Type of value(Value) then
+            SAVariable, valToSubst(Value)
+         [] type(Xs) then
+            SAVariable, setType({OzTypes.encode Xs nil})
+         [] record(Rec) then Lab RecArgs RecConstr in
+            Lab = {Label Rec}
+            SAVariable, RecordToSubst({Arity Rec} Rec Depth _ ?RecArgs)
+            RecConstr = {New RecordConstr
+                         init({List.toRecord Lab RecArgs} unit)}
+            SAVariable, setLastValue( RecConstr )
+         end
+      end
+      meth RecordToSubst(Arity Rec Depth ?Args ?RecArgs)
+         case Arity of F|Fr then RecFeat V VO Argr RecArgr in
+            RecFeat = case {IsAtom F} then
                          {New Core.atomNode init(F unit)}
                       elsecase {IsName F} then
                          {New Core.nameToken init(F true)}
                       elsecase {IsInt F} then
                          {New Core.intNode init(F unit)}
                       end
-                  VO CVAr
-               in
-                  case
-                     Assoc == unit % not seen
-                  then
-                     PrintName = {String.toAtom {VS2S PrintNameBase#'.'#F}}
-                     V = {New Core.variable init(PrintName generated unit)}
-                  in
-                     {V ValToSubst(PrintName Seen Depth-1 X)}
-                     {V occ(unit ?VO)}
-                     {VO updateValue}
-                  else
-                     {Assoc occ(unit ?VO)}
-                     {VO updateValue}
-                  end
-
-                  ConstrValArgs = F#VO | CVAr
-
-                  {self recordValToArgs(RAs Seen Depth Width-1 PrintNameBase CVAr)}
-               elseof
-                  nil
-               then
-                  ConstrValArgs = nil
-               end
+            V = {New Core.variable init('' generated unit)}
+            {V TypeToSubst(Rec.F Depth - 1)}
+            {V occ(unit ?VO)}
+            {VO updateValue}
+            Args = F#VO|Argr
+            RecArgs = RecFeat#VO|RecArgr
+            SAVariable, RecordToSubst(Fr Rec Depth ?Argr ?RecArgr)
+         [] nil then
+            Args = nil
+            RecArgs = nil
+         end
+      end
+      meth reflectType(Depth $)
+         case @lastValue of unit then type({OzTypes.decode @type})
+         elseof X then
+            if {HasFeature X ImAVariableOccurrence} then
+               type({OzTypes.decode @type})
             else
-               ConstrValArgs = nil
+               {X reflectType(Depth $)}
             end
          end
-         meth typeToSubst(Type)
-            SAVariable, TypeToSubst(Type AnalysisDepth)
-         end
-         meth TypeToSubst(Type Depth)
-         % no sharing is supported
-            case Type of value(Value) then
-               SAVariable, valToSubst(Value)
-            [] type(Xs) then
-               SAVariable, setType({OzTypes.encode Xs nil})
-            [] record(Rec) then Lab RecArgs RecConstr in
-               Lab = {Label Rec}
-               SAVariable, RecordToSubst({Arity Rec} Rec Depth _ ?RecArgs)
-               RecConstr = {New RecordConstr
-                            init({List.toRecord Lab RecArgs} unit)}
-               SAVariable, setLastValue( RecConstr )
-            end
-         end
-         meth RecordToSubst(Arity Rec Depth ?Args ?RecArgs)
-            case Arity of F|Fr then RecFeat V VO Argr RecArgr in
-               RecFeat = case {IsAtom F} then
-                            {New Core.atomNode init(F unit)}
-                         elsecase {IsName F} then
-                            {New Core.nameToken init(F true)}
-                         elsecase {IsInt F} then
-                            {New Core.intNode init(F unit)}
-                         end
-               V = {New Core.variable init('' generated unit)}
-               {V TypeToSubst(Rec.F Depth - 1)}
-               {V occ(unit ?VO)}
-               {VO updateValue}
-               Args = F#VO|Argr
-               RecArgs = RecFeat#VO|RecArgr
-               SAVariable, RecordToSubst(Fr Rec Depth ?Argr ?RecArgr)
-            [] nil then
-               Args = nil
-               RecArgs = nil
-            end
-         end
-         meth reflectType(Depth $)
-            case @lastValue of unit then type({OzTypes.decode @type})
-            elseof X then
-               if {HasFeature X ImAVariableOccurrence} then
-                  type({OzTypes.decode @type})
-               else
-                  {X reflectType(Depth $)}
-               end
-            end
-         end
-         meth reachable(Vs $)
+      end
+      meth reachable(Vs $)
+         SAVariable, deref(@lastValue)
+
+         case
+            @lastValue
+         of
+            unit         % uninitialized variable
+         then
+            {Add self Vs}
+         else
             SAVariable, deref(@lastValue)
 
             case
-               @lastValue
-            of
-               unit         % uninitialized variable
+               {@lastValue isVariableOccurrence($)} % free variable
             then
-               {Add self Vs}
-            else
-               SAVariable, deref(@lastValue)
-
-               case
-                  {@lastValue isVariableOccurrence($)} % free variable
-               then
                % save self + representant (might differ!)
-                  {Add self {Add {@lastValue getVariable($)} Vs}}
-               elsecase
-                  {@lastValue isRecordConstr($)}
-               then
+               {Add self {Add {@lastValue getVariable($)} Vs}}
+            elsecase
+               {@lastValue isRecordConstr($)}
+            then
                %
                % if we do not implement ft unification fully
                % but only on determined records, then
                % we actually need not save self here.
                %
-                  {@lastValue reachable({Add self Vs} $)}
-               else
-                  Vs       % ground: int, float, atom, token
-               end
+               {@lastValue reachable({Add self Vs} $)}
+            else
+               Vs       % ground: int, float, atom, token
             end
          end
       end
+   end
 
-      class SAVariableOccurrence
-         meth outputDebugValue($)
+   class SAVariableOccurrence
+      meth outputDebugValue($)
             %--** provide more readable output here
-            {Value.toVirtualString {self getValue($)} 10 10}#' // '#
-            {Value.toVirtualString {GetData self} 10 10}
-         end
+         {Value.toVirtualString {self getValue($)} 10 10}#' // '#
+         {Value.toVirtualString {GetData self} 10 10}
+      end
 
-         meth getLastValue($)
-            {@variable deref(self)}
-            {@variable getLastValue($)}
-         end
-         meth isRecordConstr($)
-            false
-         end
-         meth deref(VO)
-            {@variable deref(VO)}
-         end
+      meth getLastValue($)
+         {@variable deref(self)}
+         {@variable getLastValue($)}
+      end
+      meth isRecordConstr($)
+         false
+      end
+      meth deref(VO)
+         {@variable deref(VO)}
+      end
 
          % copies the value Val after replacing variable occurrences
          % with the currently last variable occurrences ones of the
@@ -3938,80 +3933,80 @@ in
          %
          % if Val is unit, then VO is returned as current value
 
-         meth updateValue
-            SAVariableOccurrence, UpdateValue({@variable getLastValue($)})
-         end
-         meth UpdateValue(O)
+      meth updateValue
+         SAVariableOccurrence, UpdateValue({@variable getLastValue($)})
+      end
+      meth UpdateValue(O)
 \ifdef DEBUGSA
-            {System.show updating(O)}
+         {System.show updating(O)}
 \endif
-            case
-               O==unit                       % no value known
+         case
+            O==unit                       % no value known
+         then
+            {self setValue(self)}         % initialize value
+         elsecase
+            {O isVariableOccurrence($)}   % fully deref var occs
+         then
+            OLV = {O getLastValue($)}
+         in
+            case O == OLV
+               orelse {O getVariable($)} == @variable
             then
-               {self setValue(self)}         % initialize value
-            elsecase
-               {O isVariableOccurrence($)}   % fully deref var occs
-            then
-               OLV = {O getLastValue($)}
-            in
-               case O == OLV
-                  orelse {O getVariable($)} == @variable
-               then
-                  {self setValue(O)}
-               else
-                  SAVariableOccurrence, UpdateValue(OLV)
-               end
-            elsecase
-               {O isRecordConstr($)}
-            then
-               Args NArgs
-            in
-               Args  = {O getArgs($)}
-               NArgs = {Map Args
-                        fun {$ Arg}
-                           case Arg of F#T then
-                              F#{T getLastValue($)}
-                           else
-                              {Arg getLastValue($)}
-                           end
-                        end}
+               {self setValue(O)}
+            else
+               SAVariableOccurrence, UpdateValue(OLV)
+            end
+         elsecase
+            {O isRecordConstr($)}
+         then
+            Args NArgs
+         in
+            Args  = {O getArgs($)}
+            NArgs = {Map Args
+                     fun {$ Arg}
+                        case Arg of F#T then
+                           F#{T getLastValue($)}
+                        else
+                           {Arg getLastValue($)}
+                        end
+                     end}
 
                % no change in record value
-               case Args == NArgs then
+            case Args == NArgs then
 \ifdef DEBUGSA
-                  {System.show notCopyingSame}
+               {System.show notCopyingSame}
 \endif
-                  {self setValue(O)}
-               else
-\ifdef DEBUGSA
-                  {System.show copyingStruct({O getValue($)})}
-\endif
-                  LData = {O getLabel($)}
-                  FData = {List.mapInd NArgs
-                           fun {$ I Arg}
-                              case Arg of F#T then Arg else I#Arg end
-                           end}
-                  Rec
-               in
-                  case
-                     {O isOpen($)}
-                  then
-                     case {IsDet LData} then
-                        Rec = {TellRecord LData}
-                     else skip end
-                     {ForAll FData proc {$ F#V} Rec^F=V end}
-                  else
-                     Rec = {List.toRecord LData FData}
-                  end
-
-                  {self setValue( {New RecordConstr
-                                   init(Rec {O getOrigin($)})} )}
-               end
-            else
-               % atom, integer, float, token (ground values)
                {self setValue(O)}
+            else
+\ifdef DEBUGSA
+               {System.show copyingStruct({O getValue($)})}
+\endif
+               LData = {O getLabel($)}
+               FData = {List.mapInd NArgs
+                        fun {$ I Arg}
+                           case Arg of F#T then Arg else I#Arg end
+                        end}
+               Rec
+            in
+               case
+                  {O isOpen($)}
+               then
+                  case {IsDet LData} then
+                     Rec = {TellRecord LData}
+                  else skip end
+                  {ForAll FData proc {$ F#V} Rec^F=V end}
+               else
+                  Rec = {List.toRecord LData FData}
+               end
+
+               {self setValue( {New RecordConstr
+                                init(Rec {O getOrigin($)})} )}
             end
+         else
+               % atom, integer, float, token (ground values)
+            {self setValue(O)}
          end
+      end
 
       % there is only one type field per variable
       % this could be improved but would - in the
@@ -4019,557 +4014,556 @@ in
       % wrt saving/installing variable environments
       % for conditional clauses
 
-         meth setType(T)
-            {@variable setType(T)}
-         end
-         meth getType($)
-            {@variable getType($)}
-         end
-         meth getPrintType(D $)
-            {@variable getPrintType(D $)}
-         end
-         meth reflectType(Depth $)
-            {@variable reflectType(Depth $)}
-         end
+      meth setType(T)
+         {@variable setType(T)}
+      end
+      meth getType($)
+         {@variable getType($)}
+      end
+      meth getPrintType(D $)
+         {@variable getPrintType(D $)}
+      end
+      meth reflectType(Depth $)
+         {@variable reflectType(Depth $)}
+      end
 
-         meth getData(IsObj $)
-            {@variable deref(self)}
-            {@value getValue($)}
-         end
-         meth getFullData(D IsData $)
-            case
-               {HasFeature @value ImAVariableOccurrence}
-            then
-               case IsData then _
-               else   % dummy variable with right print name
-                  {CompilerSupport.nameVariable $ {@variable getPrintName($)}}
-               end
-            else
-               {@value getFullData(D IsData $)}
+      meth getData(IsObj $)
+         {@variable deref(self)}
+         {@value getValue($)}
+      end
+      meth getFullData(D IsData $)
+         case
+            {HasFeature @value ImAVariableOccurrence}
+         then
+            case IsData then _
+            else   % dummy variable with right print name
+               {CompilerSupport.nameVariable $ {@variable getPrintName($)}}
             end
+         else
+            {@value getFullData(D IsData $)}
          end
+      end
 
-         meth getPrintName($)
-            {@variable getPrintName($)}
+      meth getPrintName($)
+         {@variable getPrintName($)}
+      end
+      meth applyEnvSubst(Ctrl)
+         SAVariableOccurrence, updateValue
+      end
+
+      meth reachable(Vs $)
+         case
+            {Member @variable Vs}
+         then
+            Vs
+         else
+            {@variable reachable(Vs $)}
          end
-         meth applyEnvSubst(Ctrl)
-            SAVariableOccurrence, updateValue
-         end
+      end
 
-         meth reachable(Vs $)
-            case
-               {Member @variable Vs}
-            then
-               Vs
-            else
-               {@variable reachable(Vs $)}
-            end
-         end
+      %% unifyVal: _ x Token U RecordConstr U ValueNode
 
-         %% unifyVal: _ x Token U RecordConstr U ValueNode
-
-         meth unifyVal(Ctrl RHS)
+      meth unifyVal(Ctrl RHS)
 \ifdef LOOP
-            {System.show unifyVO({self getPrintName($)} RHS)}
+         {System.show unifyVO({self getPrintName($)} RHS)}
 \endif
-            LHS
-         in
-            SAVariableOccurrence, getLastValue(LHS)
+         LHS
+      in
+         SAVariableOccurrence, getLastValue(LHS)
 
-            case
-               {Not {UnifyTypesOf self RHS Ctrl @coord}}
-            then
-               skip % do not continue on type error
-            elsecase
-               {LHS isVariableOccurrence($)}
-            then
-               SAVariableOccurrence, bind(Ctrl RHS)
-            elsecase
-               {LHS isRecordConstr($)}
-            then
-               {LHS unify(Ctrl RHS)}
-            else
+         case
+            {Not {UnifyTypesOf self RHS Ctrl @coord}}
+         then
+            skip % do not continue on type error
+         elsecase
+            {LHS isVariableOccurrence($)}
+         then
+            SAVariableOccurrence, bind(Ctrl RHS)
+         elsecase
+            {LHS isRecordConstr($)}
+         then
+            {LHS unify(Ctrl RHS)}
+         else
                % LHS is Valuenode or Token
-               {LHS unify(Ctrl RHS)}
-            end
+            {LHS unify(Ctrl RHS)}
          end
+      end
 
-         %% Bind: _ x VariableOccurrence U Token U RecordConstr U ValueNode
+      %% Bind: _ x VariableOccurrence U Token U RecordConstr U ValueNode
 
-         meth bind(Ctrl RHS)
+      meth bind(Ctrl RHS)
 \ifdef LOOP
-            {System.show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
+         {System.show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
 \endif
-            case
-               {UnifyTypesOf self RHS Ctrl @coord}
-            then
+         case
+            {UnifyTypesOf self RHS Ctrl @coord}
+         then
                % set new value for following occurrences
-               {@variable setLastValue(RHS)}
-            else
-               skip % not continue on type error
-            end
+            {@variable setLastValue(RHS)}
+         else
+            skip % not continue on type error
          end
+      end
 
-         %% unify: _ x VariableOccurrence U Token U RecordConstr U ValueNode
+      %% unify: _ x VariableOccurrence U Token U RecordConstr U ValueNode
 
-         meth unify(Ctrl TorC)
+      meth unify(Ctrl TorC)
 \ifdef LOOP
+         case
+            {TorC isVariableOccurrence($)}
+         then
+            {System.show unifyV({self getPrintName($)} {TorC getPrintName($)})}
+         else
+            {System.show unifyV({self getPrintName($)} TorC)}
+         end
+\endif
+
+         LHS RHS
+      in
+         SAVariableOccurrence, getLastValue(LHS)
+
+         case
+            {UnifyTypesOf LHS TorC Ctrl @coord}
+         then
             case
                {TorC isVariableOccurrence($)}
             then
-               {System.show unifyV({self getPrintName($)} {TorC getPrintName($)})}
-            else
-               {System.show unifyV({self getPrintName($)} TorC)}
-            end
-\endif
-
-            LHS RHS
-         in
-            SAVariableOccurrence, getLastValue(LHS)
-
-            case
-               {UnifyTypesOf LHS TorC Ctrl @coord}
-            then
-               case
-                  {TorC isVariableOccurrence($)}
-               then
                % implicit deref
-                  RHS = {TorC getLastValue($)}
-               elsecase
-                  {TorC isRecordConstr($)}
-               then
-                  {TorC deref(TorC)}
-                  RHS = {TorC getLastValue($)}
-               else
-                  RHS = TorC
-               end
-
-               SAVariableOccurrence, UnifyDeref(Ctrl LHS RHS)
-            else
-               skip % do not continue on type error
-            end
-         end
-
-         %% UnifyDeref: _ x VariableOccurrence U Token U RecordConstr U ValueNode
-
-         meth UnifyDeref(Ctrl LHS RHS)
-\ifdef LOOP
-            {System.show unifyDR({self getPrintName($)} LHS RHS)}
-\endif
-            case
-               LHS == RHS
+               RHS = {TorC getLastValue($)}
+            elsecase
+               {TorC isRecordConstr($)}
             then
-               skip                                % nothing to do
+               {TorC deref(TorC)}
+               RHS = {TorC getLastValue($)}
             else
-               case
-                  {LHS isVariableOccurrence($)}
-               then
-                  {LHS bind(Ctrl RHS)}
-               elsecase
-                  {RHS isVariableOccurrence($)}
-               then
-                  {RHS bind(Ctrl LHS)}
-               elsecase
-                  {LHS isRecordConstr($)}
-               then
+               RHS = TorC
+            end
+
+            SAVariableOccurrence, UnifyDeref(Ctrl LHS RHS)
+         else
+            skip % do not continue on type error
+         end
+      end
+
+      %% UnifyDeref: _ x VariableOccurrence U Token U RecordConstr U ValueNode
+
+      meth UnifyDeref(Ctrl LHS RHS)
+\ifdef LOOP
+         {System.show unifyDR({self getPrintName($)} LHS RHS)}
+\endif
+         case
+            LHS == RHS
+         then
+            skip                                % nothing to do
+         else
+            case
+               {LHS isVariableOccurrence($)}
+            then
+               {LHS bind(Ctrl RHS)}
+            elsecase
+               {RHS isVariableOccurrence($)}
+            then
+               {RHS bind(Ctrl LHS)}
+            elsecase
+               {LHS isRecordConstr($)}
+            then
                   %--** here is some work on extension to ft unification
-                  case
-                     {RHS isRecordConstr($)}
-                  then
-                     {RHS bind(Ctrl LHS)}
-                  else
-                     skip % and fail on unification
-                  end
-                  {LHS unify(Ctrl RHS)}
-               elsecase
+               case
                   {RHS isRecordConstr($)}
                then
-                  {RHS unify(Ctrl LHS)}
+                  {RHS bind(Ctrl LHS)}
                else
-                  % LHS is ValueNode or Token
-                  {LHS unify(Ctrl RHS)}
+                  skip % and fail on unification
                end
-            end
-         end
-         meth sa(Ctrl)
-            skip
-\ifdef DEBUGSA
-            {System.show varOccurrence({self getPrintName($)} @value)}
-\endif
-         end
-      end
-
-      class SAToken
-         attr type: unit
-         meth init()
-            type <- {OzValueToType @value}
-         end
-         meth getLastValue($)
-            self
-         end
-         meth getType($)
-            @type
-         end
-         meth getPrintType(D $)
-            {TypeToVS @type}
-         end
-         meth reflectType(_ $)
-            type({OzTypes.decode @type})
-         end
-         meth getData(IsObj $)
-            case IsObj then self
-            else @value end
-         end
-         meth getFullData(D IsData $)
-            case IsData then self
-            else @value end
-         end
-         meth isRecordConstr($)
-            false
-         end
-         meth unify(Ctrl RHS)
-\ifdef LOOP
-            {System.show unifyT(@value {RHS getValue($)})}
-\endif
-            case
-               {UnifyTypesOf self RHS Ctrl unit}
-            then
-               RVal = {RHS getValue($)}
-            in
-               case
-                  {IsToken RHS} andthen @value==RVal
-               then skip else
-                  {IssueUnificationFailure Ctrl unit
-                   [hint(l:'First value' m:oz(@value))
-                    hint(l:'Second value' m:oz(RVal))]}
-               end
-            else
-               skip % do not continue on type error
-            end
-         end
-      end
-
-      class SANameToken
-         meth reflectType(_ $)
-            case @isToplevel andthen {Not {CompilerSupport.isCopyableName @value}}
-            then value(@value)
-            else type({OzTypes.decode @type})
-            end
-         end
-      end
-
-      class RecordConstr
-         feat !ImARecordConstr
-         attr value type lastValue origin
-
-         meth init(Val Origin)
-            RecordConstr, setValue(Val)
-            RecordConstr, makeType
-            RecordConstr, setLastValue(self)
-            origin <- Origin
-         end
-         meth isVariableOccurrence($)
-            false
-         end
-         meth isRecordConstr($)
-            true
-         end
-         meth getValue($)
-            @value
-         end
-         meth setValue(Val)
-            value <- Val
-         end
-         meth getCodeGenValue($)
-            case @origin==unit % top-level value
-            then @value
-            else {@origin getCodeGenValue($)}
-            end
-         end
-         meth makeVO(CS VHd VTl ?VO)
-            case @origin==unit
-            then {System.show 'SHOULD NOT HAPPEN'}
-            else {@origin makeVO(CS VHd VTl ?VO)}
-            end
-         end
-         meth getLastValue($)
-            @lastValue
-         end
-         meth setLastValue(O)
-            lastValue <- O
-         end
-         meth getLabel($)
-            case {IsDet @value} then {Label @value} else _ end
-         end
-         meth getArgs($)
-            {Map {CurrentArity @value}
-             fun {$ F} F#@value^F end}
-         end
-         meth isOpen($)
-            {Not {IsDet @value}}
-         end
-         meth getOrigin($)
-            @origin
-         end
-         meth makeType
-            type <- {OzValueToType @value}
-         end
-         meth getType($)
-            @type
-         end
-         meth getPrintType(D $)
-            case
-               D =< 0
-            then
-               {TypeToVS @type}
-            else
-               {self deref(self)}
-               case
-                  {IsDet @value}
-               then
-                  case {IsTuple @value} then
-                     {ListToVS
-                      '(' | {Map {Record.toList @value}
-                             fun {$ X} {X getPrintType(D-1 $)} end}
-                      {LabelToVS {Label @value}} ' ' ' )'}
-                  else
-                     {ListToVS
-                      '(' | {Map {Record.toListInd @value}
-                             fun {$ F#X}
-                                {Value.toVirtualString F 0 0} # ': ' #
-                                {X getPrintType(D-1 $)}
-                             end}
-                      {LabelToVS {Label @value}} ' ' ' )'}
-                  end
-               elsecase
-                  {IsFree @value}
-               then
-                  {TypeToVS @type}
-               else
-                  Lab = case {Record.hasLabel @value} then {Label @value} else _ end
-               in
-                  {ListToVS
-                   '(' | {Map {CurrentArity @value}
-                          fun {$ F}
-                             {Value.toVirtualString F 0 0} # ': ' #
-                             {@value^F getPrintType(D-1 $)}
-                          end}
-                   {LabelToVS Lab}  ' ' '...)'}
-               end
-            end
-         end
-         meth reflectType(Depth $)
-            try
-               case
-                  Depth > 0 andthen {IsDet @value}
-               then
-                  Lab  = {Label @value}
-                  Args = {List.mapInd
-                          RecordConstr, getArgs($)
-                          fun {$ I Arg}
-                             case Arg of F#X then
-                                F#{X reflectType(Depth - 1 $)}
-                             else
-                                I#{Arg reflectType(Depth - 1 $)}
-                             end
-                          end}
-               in
-                  record({List.toRecord Lab Args})
-               else fail unit
-               end
-            catch failure(...) then
-               type({OzTypes.decode @type})
-            end
-         end
-         meth setType(T)
-            type <- T
-         end
-         meth getData(IsObj $)
-            @value
-         end
-         meth getFullData(D IsData $)
-            case
-               D =< 0
-            then
-               _
-            else
-               {self deref(self)}
-               case
-                  {IsDet @value}
-               then
-                  {Record.map @value fun {$ X} {X getFullData(D-1 IsData $)} end}
-               elsecase
-                  {IsFree @value}
-               then
-                  @value
-               else
-                  Rec
-                  Lab = case {Record.hasLabel @value} then {Label @value} else _ end
-               in
-                  case {IsDet Lab} then
-                     Rec = {TellRecord Lab}
-                  else skip end
-                  {ForAll {CurrentArity @value}
-                   proc {$ F}
-                      Rec^F = {@value^F getFullData(D-1 IsData $)}
-                   end}
-                  Rec
-               end
-            end
-         end
-         meth deref(VO)
-            case
-               @lastValue == unit                          % is "free"
-            then
-               RecordConstr, setLastValue(VO)   % initialize with self
-            elsecase
-               {@lastValue isRecordConstr($)}
-            then
-               NewVal = {@lastValue getLastValue($)}
-            in
-               case
-                  @lastValue == NewVal
-               then
-                  skip                                     % self reference
-               elsecase
-                  NewVal == unit
-               then
-                  {@lastValue setLastValue(@lastValue)}    % non initialised
-               else
-                  RecordConstr, setLastValue(NewVal) % constr path compr
-                  RecordConstr, deref(VO)
-               end
-            else
-               skip % atom
-            end
-         end
-
-         %% reachability for record values is defined through
-         %% the original program node
-
-         meth reachable(Vs $)
-            case @origin==unit then Vs
-            else {@origin reachable(Vs $)} end
-         end
-
-         %% Bind: _ x RecordConstr
-
-         meth bind(Ctrl RHS)
-\ifdef LOOP
-            {System.show bindRecordConstr(self {RHS getValue($)})}
-\endif
-            case
-               {UnifyTypesOf self RHS Ctrl unit}
-            then
-               % set new value for following occurrences
-               RecordConstr, setLastValue(RHS)
-            else
-               skip % not continue on type error
-            end
-         end
-
-      % unify: _ x Token U RecordConstr U ValueNode
-
-         meth unify(Ctrl RHS)
-\ifdef LOOP
-            {System.show unifyC(RHS)}
-\endif
-            case
-               {Not {UnifyTypesOf self RHS Ctrl unit}}
-            then
-               skip % do not continue on type error
+               {LHS unify(Ctrl RHS)}
             elsecase
                {RHS isRecordConstr($)}
             then
-               RLab  = {RHS getLabel($)}
-               RArgs = {RHS getArgs($)}
-               ROpen = {RHS isOpen($)}
-               RVal  = {GetData RHS}
-               LLab  = {self getLabel($)}
-               LArgs = {self getArgs($)}
-               LOpen = {self isOpen($)}
-            in
-               case
-                  {IsDet LLab} andthen {IsDet RLab}
-               then
-                  case
-                     LLab==RLab
-                  then
-                     skip
-                  else
-                     {IssueUnificationFailure Ctrl unit
-                      [hint(l:'Incompatible labels'
-                            m:oz(LLab) # ' and ' # oz(RLab))
-                       hint(l:'First value' m:oz(@value))
-                       hint(l:'Second value' m:oz(RVal))]}
-                  end
-               else skip end
+               {RHS unify(Ctrl LHS)}
+            else
+                  % LHS is ValueNode or Token
+               {LHS unify(Ctrl RHS)}
+            end
+         end
+      end
+      meth sa(Ctrl)
+         skip
+\ifdef DEBUGSA
+         {System.show varOccurrence({self getPrintName($)} @value)}
+\endif
+      end
+   end
 
+   class SAToken
+      attr type: unit
+      meth init()
+         type <- {OzValueToType @value}
+      end
+      meth getLastValue($)
+         self
+      end
+      meth getType($)
+         @type
+      end
+      meth getPrintType(D $)
+         {TypeToVS @type}
+      end
+      meth reflectType(_ $)
+         type({OzTypes.decode @type})
+      end
+      meth getData(IsObj $)
+         case IsObj then self
+         else @value end
+      end
+      meth getFullData(D IsData $)
+         case IsData then self
+         else @value end
+      end
+      meth isRecordConstr($)
+         false
+      end
+      meth unify(Ctrl RHS)
+\ifdef LOOP
+         {System.show unifyT(@value {RHS getValue($)})}
+\endif
+         case
+            {UnifyTypesOf self RHS Ctrl unit}
+         then
+            RVal = {RHS getValue($)}
+         in
+            case
+               {IsToken RHS} andthen @value==RVal
+            then skip else
+               {IssueUnificationFailure Ctrl unit
+                [hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz(RVal))]}
+            end
+         else
+            skip % do not continue on type error
+         end
+      end
+   end
+
+   class SANameToken
+      meth reflectType(_ $)
+         case @isToplevel andthen {Not {CompilerSupport.isCopyableName @value}}
+         then value(@value)
+         else type({OzTypes.decode @type})
+         end
+      end
+   end
+
+   class RecordConstr
+      feat !ImARecordConstr
+      attr value type lastValue origin
+
+      meth init(Val Origin)
+         RecordConstr, setValue(Val)
+         RecordConstr, makeType
+         RecordConstr, setLastValue(self)
+         origin <- Origin
+      end
+      meth isVariableOccurrence($)
+         false
+      end
+      meth isRecordConstr($)
+         true
+      end
+      meth getValue($)
+         @value
+      end
+      meth setValue(Val)
+         value <- Val
+      end
+      meth getCodeGenValue($)
+         case @origin==unit % top-level value
+         then @value
+         else {@origin getCodeGenValue($)}
+         end
+      end
+      meth makeVO(CS VHd VTl ?VO)
+         case @origin==unit
+         then {System.show 'SHOULD NOT HAPPEN'}
+         else {@origin makeVO(CS VHd VTl ?VO)}
+         end
+      end
+      meth getLastValue($)
+         @lastValue
+      end
+      meth setLastValue(O)
+         lastValue <- O
+      end
+      meth getLabel($)
+         case {IsDet @value} then {Label @value} else _ end
+      end
+      meth getArgs($)
+         {Map {CurrentArity @value}
+          fun {$ F} F#@value^F end}
+      end
+      meth isOpen($)
+         {Not {IsDet @value}}
+      end
+      meth getOrigin($)
+         @origin
+      end
+      meth makeType
+         type <- {OzValueToType @value}
+      end
+      meth getType($)
+         @type
+      end
+      meth getPrintType(D $)
+         case
+            D =< 0
+         then
+            {TypeToVS @type}
+         else
+            {self deref(self)}
+            case
+               {IsDet @value}
+            then
+               case {IsTuple @value} then
+                  {ListToVS
+                   '(' | {Map {Record.toList @value}
+                          fun {$ X} {X getPrintType(D-1 $)} end}
+                   {LabelToVS {Label @value}} ' ' ' )'}
+               else
+                  {ListToVS
+                   '(' | {Map {Record.toListInd @value}
+                          fun {$ F#X}
+                             {Value.toVirtualString F 0 0} # ': ' #
+                             {X getPrintType(D-1 $)}
+                          end}
+                   {LabelToVS {Label @value}} ' ' ' )'}
+               end
+            elsecase
+               {IsFree @value}
+            then
+               {TypeToVS @type}
+            else
+               Lab = case {Record.hasLabel @value} then {Label @value} else _ end
+            in
+               {ListToVS
+                '(' | {Map {CurrentArity @value}
+                       fun {$ F}
+                          {Value.toVirtualString F 0 0} # ': ' #
+                          {@value^F getPrintType(D-1 $)}
+                       end}
+                {LabelToVS Lab}  ' ' '...)'}
+            end
+         end
+      end
+      meth reflectType(Depth $)
+         try
+            case
+               Depth > 0 andthen {IsDet @value}
+            then
+               Lab  = {Label @value}
+               Args = {List.mapInd
+                       RecordConstr, getArgs($)
+                       fun {$ I Arg}
+                          case Arg of F#X then
+                             F#{X reflectType(Depth - 1 $)}
+                          else
+                             I#{Arg reflectType(Depth - 1 $)}
+                          end
+                       end}
+            in
+               record({List.toRecord Lab Args})
+            else fail unit
+            end
+         catch failure(...) then
+            type({OzTypes.decode @type})
+         end
+      end
+      meth setType(T)
+         type <- T
+      end
+      meth getData(IsObj $)
+         @value
+      end
+      meth getFullData(D IsData $)
+         case
+            D =< 0
+         then
+            _
+         else
+            {self deref(self)}
+            case
+               {IsDet @value}
+            then
+               {Record.map @value fun {$ X} {X getFullData(D-1 IsData $)} end}
+            elsecase
+               {IsFree @value}
+            then
+               @value
+            else
+               Rec
+               Lab = case {Record.hasLabel @value} then {Label @value} else _ end
+            in
+               case {IsDet Lab} then
+                  Rec = {TellRecord Lab}
+               else skip end
+               {ForAll {CurrentArity @value}
+                proc {$ F}
+                   Rec^F = {@value^F getFullData(D-1 IsData $)}
+                end}
+               Rec
+            end
+         end
+      end
+      meth deref(VO)
+         case
+            @lastValue == unit                          % is "free"
+         then
+            RecordConstr, setLastValue(VO)   % initialize with self
+         elsecase
+            {@lastValue isRecordConstr($)}
+         then
+            NewVal = {@lastValue getLastValue($)}
+         in
+            case
+               @lastValue == NewVal
+            then
+               skip                                     % self reference
+            elsecase
+               NewVal == unit
+            then
+               {@lastValue setLastValue(@lastValue)}    % non initialised
+            else
+               RecordConstr, setLastValue(NewVal) % constr path compr
+               RecordConstr, deref(VO)
+            end
+         else
+            skip % atom
+         end
+      end
+
+      %% reachability for record values is defined through
+      %% the original program node
+
+      meth reachable(Vs $)
+         case @origin==unit then Vs
+         else {@origin reachable(Vs $)} end
+      end
+
+      %% Bind: _ x RecordConstr
+
+      meth bind(Ctrl RHS)
+\ifdef LOOP
+         {System.show bindRecordConstr(self {RHS getValue($)})}
+\endif
+         case
+            {UnifyTypesOf self RHS Ctrl unit}
+         then
+               % set new value for following occurrences
+            RecordConstr, setLastValue(RHS)
+         else
+            skip % not continue on type error
+         end
+      end
+
+      % unify: _ x Token U RecordConstr U ValueNode
+
+      meth unify(Ctrl RHS)
+\ifdef LOOP
+         {System.show unifyC(RHS)}
+\endif
+         case
+            {Not {UnifyTypesOf self RHS Ctrl unit}}
+         then
+            skip % do not continue on type error
+         elsecase
+            {RHS isRecordConstr($)}
+         then
+            RLab  = {RHS getLabel($)}
+            RArgs = {RHS getArgs($)}
+            ROpen = {RHS isOpen($)}
+            RVal  = {GetData RHS}
+            LLab  = {self getLabel($)}
+            LArgs = {self getArgs($)}
+            LOpen = {self isOpen($)}
+         in
+            case
+               {IsDet LLab} andthen {IsDet RLab}
+            then
                case
-                  {Not LOpen} andthen {Not ROpen}
-                  andthen {Length LArgs} \= {Length RArgs}
+                  LLab==RLab
                then
+                  skip
+               else
                   {IssueUnificationFailure Ctrl unit
-                   [hint(l:'Incompatible widths'
-                         m:{Length LArgs} # ' and ' # {Length RArgs})
+                   [hint(l:'Incompatible labels'
+                         m:oz(LLab) # ' and ' # oz(RLab))
                     hint(l:'First value' m:oz(@value))
                     hint(l:'Second value' m:oz(RVal))]}
-               else skip end
+               end
+            else skip end
 
-               case
-                  {IsDet @value} andthen {IsDet RVal}
-               then
-                  if {Arity @value} == {Arity RVal} then
-                     {ForAll {Arity @value}
-                      proc {$ F}
-                         VF = @value.F
-                         RF = RVal.F
-                      in
-                         case
-                            {RF isVariableOccurrence($)}
-                         then
-                            {RF unify(Ctrl VF)}
-                         else
-                            {VF unify(Ctrl RF)}
-                         end
-                      end}
-                  else
-                     {IssueUnificationFailure Ctrl unit
-                      [hint(l:'Incompatible arities'
-                            m:oz({Arity @value}) # ' and ' # oz({Arity RVal}))
-                       hint(l:'First value' m:oz(@value))
-                       hint(l:'Second value' m:oz(RVal))]}
-                  end
-               else
-                  LArity = {CurrentArity @value}
-                  RArity = {CurrentArity RVal}
-               in
-                  {ForAll RArity
+            case
+               {Not LOpen} andthen {Not ROpen}
+               andthen {Length LArgs} \= {Length RArgs}
+            then
+               {IssueUnificationFailure Ctrl unit
+                [hint(l:'Incompatible widths'
+                      m:{Length LArgs} # ' and ' # {Length RArgs})
+                 hint(l:'First value' m:oz(@value))
+                 hint(l:'Second value' m:oz(RVal))]}
+            else skip end
+
+            case
+               {IsDet @value} andthen {IsDet RVal}
+            then
+               if {Arity @value} == {Arity RVal} then
+                  {ForAll {Arity @value}
                    proc {$ F}
+                      VF = @value.F
+                      RF = RVal.F
+                   in
                       case
-                         {Member F LArity}
+                         {RF isVariableOccurrence($)}
                       then
-                         VF = @value^F
-                         RF = RVal^F
-                      in
-                         case
-                            {RF isVariableOccurrence($)}
-                         then
-                            {RF unify(Ctrl VF)}
-                         else
-                            {VF unify(Ctrl RF)}
-                         end
+                         {RF unify(Ctrl VF)}
                       else
-                         %--** incomplete ft unification
-                         skip
+                         {VF unify(Ctrl RF)}
                       end
                    end}
+               else
+                  {IssueUnificationFailure Ctrl unit
+                   [hint(l:'Incompatible arities'
+                         m:oz({Arity @value}) # ' and ' # oz({Arity RVal}))
+                    hint(l:'First value' m:oz(@value))
+                    hint(l:'Second value' m:oz(RVal))]}
                end
-
             else
-               % ValueNode or Token
-               {RHS unify(Ctrl self)}
+               LArity = {CurrentArity @value}
+               RArity = {CurrentArity RVal}
+            in
+               {ForAll RArity
+                proc {$ F}
+                   case
+                      {Member F LArity}
+                   then
+                      VF = @value^F
+                      RF = RVal^F
+                   in
+                      case
+                         {RF isVariableOccurrence($)}
+                      then
+                         {RF unify(Ctrl VF)}
+                      else
+                         {VF unify(Ctrl RF)}
+                      end
+                   else
+                         %--** incomplete ft unification
+                      skip
+                   end
+                end}
             end
+
+         else
+               % ValueNode or Token
+            {RHS unify(Ctrl self)}
          end
       end
    end

@@ -7,7 +7,7 @@
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Tobias Mueller, 1997
+%%%   Tobias Mueller, 1998
 %%%   Martin Mueller, 1997
 %%%
 %%% Last change:
@@ -29,8 +29,10 @@
 functor
 
 require
-   CpSupport(vectorToList:   VectorToList
-             expand:         ExpandList)
+   CpSupport(vectorToList:
+                VectorToList
+             expand:
+                ExpandList)
 
 prepare
 
@@ -47,9 +49,7 @@ import
    FD(bool
       decl
       list
-      reflect
-      sum
-      watch)
+      sum)
 
 export
    include:      FSIsIncl
@@ -65,7 +65,7 @@ export
    distinct:     FSDistinct
    distinctN:    FSDistinctN
    partition:    FSPartition
-   newWeights:   FSNewWeights
+   makeWeights:  FSMakeWeights
 
    card:         FSCard
    cardRange:    FSCardRange
@@ -127,11 +127,6 @@ define
    FSSet        = FSB.set
    FSDisjoint   = FSP.disjoint
    FSDistinct   = FSP.distinct
-\ifdef CONSTRAINT_N_NAIVE
-   fun {FSDisjointWith S1}
-      proc {$ S2}{FSDisjoint S1 S2} end
-   end
-\endif
    fun {FSDistinctWith S1}
       proc {$ S2} {FSDistinct S1 S2} end
    end
@@ -147,13 +142,12 @@ define
    FSisValue       = FSB.isValueB
    FSvalueToString = FSB.valueToString
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   %% DISTRIBUTION
+   %%
+   %% Distribution
+   %%
 
    local
-
-      GetFeaturePath =
-      fun {$ Rec Spec Path}
+      fun {GetFeaturePath Rec Spec Path}
          case Path of FD|T then
             F#D = FD
             PP  = if {HasFeature Spec F} then Rec.(Spec.F)
@@ -165,28 +159,24 @@ define
          end
       end
 
-      Find =
-      fun {$ L C}
+      fun {Find L C}
          {FoldL {Tail L}
           fun {$ I E} if {C I E} then I else E end end
           {Head L}}
       end
 
-      MinElement =
-      fun {$ CL}
+      fun {MinElement CL}
          Y = {Head CL} in case Y of L#_ then L else Y end
       end
 
-      MaxElement =
-      fun {$ CL}
+      fun {MaxElement CL}
          Y = {Last CL} in case Y of _#R then R else Y end
       end
 
       MINELEM = {NewName}
       MAXELEM = {NewName}
 
-      LESS =
-      fun {$ X Y}
+      fun {LESS X Y}
          case X#Y
          of     !MINELEM#!MINELEM then false
          elseof !MINELEM#_       then true
@@ -198,8 +188,7 @@ define
          end
       end
 
-      GREATER =
-      fun {$ X Y}
+      fun {GREATER X Y}
          case X#Y
          of     !MINELEM#!MINELEM then false
          elseof !MINELEM#_       then false
@@ -211,8 +200,7 @@ define
          end
       end
 
-      WeightMin =
-      fun {$ DF}
+      fun {WeightMin DF}
          fun {$ CL WT}
             if CL == nil then DF
             else {Find {ExpandList CL} fun {$ X Y} {WT X} < {WT Y} end}
@@ -220,8 +208,7 @@ define
          end
       end
 
-      WeightMax =
-      fun {$ DF}
+      fun {WeightMax DF}
          fun {$ CL WT}
             if CL == nil then DF
             else {Find {ExpandList CL} fun {$ X Y} {WT X} > {WT Y} end}
@@ -229,35 +216,45 @@ define
          end
       end
 
-      WeightSum =
-      fun {$ CL WT}
+      fun {WeightSum CL WT}
          {FD.sum {Map {ExpandList CL} fun {$ X} {WT X} end} '=:'} = {FD.decl}
       end
 
-      OrderFun =
-      fun {$ Spec Select WT}
-
+      fun {OrderFun Spec Select WT}
          CardTable =
-         c(unknown:    fun {$ S} {FSGetNumOfUnknown {Select S}} end
-           lowerBound: fun {$ S} {FSGetNumOfGlb {Select S}} end
-           upperBound: fun {$ S} {FSGetNumOfLub {Select S}} end)
+         c(unknown:
+              fun {$ S} {FSGetNumOfUnknown {Select S}} end
+           lowerBound:
+              fun {$ S} {FSGetNumOfGlb {Select S}} end
+           upperBound:
+              fun {$ S} {FSGetNumOfLub {Select S}} end)
 
-         MakeCompTableWeight =
-         fun {$ F}
-            c(unknown:    fun {$ S} {F {FSGetUnknown {Select S}} WT} end
-              lowerBound: fun {$ S} {F {FSGetGlb     {Select S}} WT} end
-              upperBound: fun {$ S} {F {FSGetLub     {Select S}} WT} end)
+         fun {MakeCompTableWeight F}
+            c(unknown:
+                 fun {$ S} {F {FSGetUnknown {Select S}} WT} end
+              lowerBound:
+                 fun {$ S} {F {FSGetGlb     {Select S}} WT} end
+              upperBound:
+                 fun {$ S} {F {FSGetLub     {Select S}} WT} end)
          end
 
          OrderFunTable =
-         s(min: c(card:      CardTable
-                  weightMin: {MakeCompTableWeight {WeightMin MAXELEM}}
-                  weightMax: {MakeCompTableWeight {WeightMax MAXELEM}}
-                  weightSum: {MakeCompTableWeight WeightSum})
-           max: c(card:      CardTable
-                  weightMin: {MakeCompTableWeight {WeightMin MINELEM}}
-                  weightMax: {MakeCompTableWeight {WeightMax MINELEM}}
-                  weightSum: {MakeCompTableWeight WeightSum})
+         s(min: c(card:
+                     CardTable
+                  weightMin:
+                     {MakeCompTableWeight {WeightMin MAXELEM}}
+                  weightMax:
+                     {MakeCompTableWeight {WeightMax MAXELEM}}
+                  weightSum:
+                     {MakeCompTableWeight WeightSum})
+           max: c(card:
+                     CardTable
+                  weightMin:
+                     {MakeCompTableWeight {WeightMin MINELEM}}
+                  weightMax:
+                     {MakeCompTableWeight {WeightMax MINELEM}}
+                  weightSum:
+                     {MakeCompTableWeight WeightSum})
           )
 
          OrderFunTableRel = s(min: LESS max: GREATER)
@@ -267,47 +264,48 @@ define
          else
             if Spec == naive then fun {$ L} L end
             else
-               OrderFunRel =
-               {GetFeaturePath OrderFunTableRel Spec [sel#min]}
+               OrderFunRel = {GetFeaturePath OrderFunTableRel Spec [sel#min]}
 
-               OrderFun =
-               {GetFeaturePath OrderFunTable Spec [sel#min cost#card comp#unknown]}
+               OrderFun = {GetFeaturePath OrderFunTable Spec
+                           [sel#min cost#card comp#unknown]}
             in
                fun {$ L}
-                  {Sort L fun {$ X Y} {OrderFunRel {OrderFun X} {OrderFun Y}} end}
+                  {Sort L fun {$ X Y}
+                             {OrderFunRel {OrderFun X} {OrderFun Y}}
+                          end}
                end
             end
          end
       end
 
-      ElementFun =
-      fun {$ Spec Select WT}
+      fun {ElementFun Spec Select WT}
          ElementFunTable =
-         v(min: v(unknown: fun {$ S}
-                              {MinElement {FSReflect.unknown {Select S}}}
-                           end
-                  weight:  fun {$ S}
-                              {{WeightMin error}
-                               {FSReflect.unknown {Select S}} WT}
-                           end
-                 )
-           max: v(unknown: fun {$ S}
-                              {MaxElement {FSReflect.unknown {Select S}}}
-                           end
-                  weight:  fun {$ S}
-                              {{WeightMax error}
-                               {FSReflect.unknown {Select S}} WT}
-                           end
-                 )
+         v(min: v(unknown:
+                     fun {$ S}
+                        {MinElement {FSReflect.unknown {Select S}}}
+                     end
+                  weight:
+                     fun {$ S}
+                        {{WeightMin error}
+                         {FSReflect.unknown {Select S}} WT}
+                     end)
+           max: v(unknown:
+                     fun {$ S}
+                        {MaxElement {FSReflect.unknown {Select S}}}
+                     end
+                  weight:
+                     fun {$ S}
+                        {{WeightMax error}
+                         {FSReflect.unknown {Select S}} WT}
+                     end)
           )
       in
          if {IsProcedure Spec} then Spec
          else {GetFeaturePath ElementFunTable Spec [sel#min wrt#unknown]}
          end
-      end % fun
+      end
 
-      FilterFun =
-      fun {$ Spec Select}
+      fun {FilterFun Spec Select}
          case Spec
          of true then
             fun {$ X} {FSGetNumOfUnknown {Select X}} > 0 end
@@ -315,27 +313,25 @@ define
             fun {$ X} Y = {Select X} in
                {FSGetNumOfUnknown Y} > 0 andthen  {Spec Y}
             end
-         end % case
+         end
       end
 
-      SelectFun =
-      fun {$ Spec}
+      fun {SelectFun Spec}
          case Spec
          of id then fun {$ X} X end
          else Spec
          end
       end
 
-      RRobinFun =
-      fun {$ Spec}
+      fun {RRobinFun Spec}
          if Spec then fun {$ H|T} {Append T [H]} end
          else fun {$ L} L end
          end
       end
 
-      FSDistNaive =
-      proc {$ SL}
-         if SL \= nil then
+      proc {FSDistNaive SL}
+         if SL == nil then skip
+         else
             choice
                case {FSReflect.unknown {Head SL}}
                of nil then {FSDistNaive {Tail SL}}
@@ -350,14 +346,13 @@ define
                      {FSIsExcl UnknownVal {Head SL}}
 
                      {FSDistNaive SL}
-                  end % dis
-               end % case
-            end % choice
-         end % case
-      end % proc
+                  end
+               end
+            end
+         end
+      end
 
-      FSDistGeneric =
-      proc {$ Vs Order FCond Elem RRobin Sel Proc}
+      proc {FSDistGeneric Vs Order FCond Elem RRobin Sel Proc}
          SL = {VectorToList Vs}
       in
          choice
@@ -373,20 +368,21 @@ define
                   choice
                      {FSIsIncl UnknownVal DistVar}
 
-                     {FSDistGeneric {RRobin SortedSL} Order FCond Elem RRobin Sel Proc}
+                     {FSDistGeneric {RRobin SortedSL}
+                      Order FCond Elem RRobin Sel Proc}
                   []
                      {FSIsExcl UnknownVal DistVar}
 
-                     {FSDistGeneric {RRobin SortedSL} Order FCond Elem RRobin Sel Proc}
-                  end % dis
-               end % case
-            end % choice
-         end% choice
-      end % proc
+                     {FSDistGeneric {RRobin SortedSL}
+                      Order FCond Elem RRobin Sel Proc}
+                  end
+               end
+            end
+         end
+      end
    in
-
-      FSDistribute =
-      proc {$ K Vs} L = {VectorToList Vs}
+      proc {FSDistribute K Vs}
+         L = {VectorToList Vs}
       in
          case K
          of naive then {FSDistNaive L}
@@ -394,7 +390,7 @@ define
             case {Label K}
             of generic then
                Select  = {SelectFun {CondSelect K select id}}
-               Weights = {CondSelect K weights {FSNewWeights nil}}
+               Weights = {CondSelect K weights {FSMakeWeights nil}}
                Order   = {OrderFun {CondSelect K order order} Select Weights}
                Filter  = {FilterFun {CondSelect K filter true} Select}
                Element = {ElementFun {CondSelect K element element}
@@ -405,41 +401,14 @@ define
                {FSDistGeneric L Order Filter Element RRobin Select Proc}
             else
                raise 'Error in FSDistribute'#K end
-            end % case
-         end % case
-      end % proc
-
-   end % local
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   %% WATCHING BOUNDS OF FD DOMAINS
-
-
-   %% {FDWatchMax I P}
-   %% I is a finite domain variable and P is a unary procedure.
-   %% P is invoked each time the max of I's domain changes.  It is
-   %% invoked with this new max as argument.
-   proc {FDWatchMax I P}
-      if {IsDet I} then {P I} else
-         Max={FD.reflect.max I}
-      in
-         {P Max}
-         if {FD.watch.max I Max} then {FDWatchMax I P} end
+            end
+         end
       end
    end
 
-   %% similarly with the min.
-   proc {FDWatchMin I P}
-      if {IsDet I} then {P I} else
-         Min={FD.reflect.min I}
-      in
-         {P Min}
-         if {FD.watch.min I Min} then {FDWatchMin I P} end
-      end
-   end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   %% SHORTHANDS
+   %%
+   %% Shorthands
+   %%
 
    local
       FSCardBI = FSP.card
@@ -462,15 +431,13 @@ define
    FSGetNumOfLub     = FSB.getNumOfKnownNotIn
    FSGetNumOfUnknown = FSB.getNumOfUnknown
 
-\ifdef CONSTRAINT_N_NAIVE
-   FSEmpty         = {FSSetValue nil}
-\endif
    FSSup           = {FSB.sup}
    FSInf           = 0
    FSUniversalRefl = [0#FSSup]
    FSUniversal     = {FSSetValue FSUniversalRefl}
 
-   fun {FSIntersectN Vs} Xs = {VectorToList Vs}
+   fun {FSIntersectN Vs}
+      Xs = {VectorToList Vs}
    in
       {FoldR Xs FSIntersect FSUniversal}
    end
@@ -483,7 +450,8 @@ define
 
    FSDisjointN = FSP.disjointN
 
-   proc {FSDistinctN Vs} Xs = {VectorToList Vs}
+   proc {FSDistinctN Vs}
+      Xs = {VectorToList Vs}
    in
       {ForAllTail Xs
        proc {$ Ts}
@@ -496,11 +464,10 @@ define
 
    proc {FSPartition Vs U}
       {FSP.partition Vs U}
-      {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end}
-       '=:' {FSCard U}}
+      {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end} '=:' {FSCard U}}
    end
 
-   fun {FSNewWeights WL}
+   fun {FSMakeWeights WL}
       WeightTable = {NewDictionary}
       ScanWeightDescr =
       proc {$ D}
@@ -525,11 +492,8 @@ define
       {ScanWeightDescr WL}
       Default = {Dictionary.get WeightTable default}
 
-      fun {$ E}
-         {Dictionary.condGet WeightTable E Default}
-      end
+      fun {$ E} {Dictionary.condGet WeightTable E Default} end
    end
-
 
    fun {FSCompl S}
       {FSDiff FSUniversal S}
@@ -540,172 +504,195 @@ define
       {FSUnion S1 S2 A}
    end
 
-
    proc {FSForAllIn S P}
       {ForAll {FSMonitorIn S} P}
    end
 
-   FSVar =          v(is:    FSisVar
+   FSVar = var(is:
+                  FSisVar
+               decl:
+                  fun {$} {FSSet nil FSUniversalRefl} end
+               upperBound:
+                  fun {$ B} {FSSet nil B} end
+               lowerBound:
+                  fun {$ A} {FSSet A FSUniversalRefl} end
+               bounds:
+                  FSSet
 
-                      decl:  fun {$}
-                                {FSSet nil FSUniversalRefl}
-                             end
-                      upperBound:
-                         fun {$ B}
-                            {FSSet nil B}
-                         end
+               list:  list(decl:
+                              proc {$ Len Ss}
+                                 Ss = {MakeList Len}
+                                 {ForAll Ss
+                                  proc {$ X}
+                                     {FSVar.decl X}
+                                  end}
+                              end
+                           upperBound:
+                              proc {$ Len A Ss}
+                                 Ss = {MakeList Len}
+                                 {ForAll Ss
+                                  proc {$ X}
+                                     {FSVar.upperBound A X}
+                                  end}
+                              end
+                           lowerBound:
+                              proc {$ Len A Ss}
+                                 Ss = {MakeList Len}
+                                 {ForAll Ss
+                                  proc {$ X}
+                                     {FSVar.lowerBound A X}
+                                  end}
+                              end
+                           bounds:
+                              proc {$ Len GLB LUB Ss}
+                                 Ss = {MakeList Len}
+                                 {ForAll Ss
+                                  proc {$ X}
+                                     {FSVar.bounds GLB LUB X}
+                                  end}
+                              end)
 
-                      lowerBound: fun {$ A}
-                                     {FSSet A FSUniversalRefl}
-                                  end
-
-                      new:   FSSet
-
-                      list:  l(decl: proc {$ Len Ss}
-                                        Ss = {MakeList Len}
-                                        {ForAll Ss
-                                         proc {$ X}
-                                            {FSVar.decl X}
-                                         end}
-                                     end
-                               upperBound:  proc {$ Len A Ss}
-                                               Ss = {MakeList Len}
-                                               {ForAll Ss
-                                                proc {$ X}
-                                                   {FSVar.upperBound A X}
-                                                end}
-                                            end
-                               lowerBound:  proc {$ Len A Ss}
-                                               Ss = {MakeList Len}
-                                               {ForAll Ss
-                                                proc {$ X}
-                                                   {FSVar.lowerBound A X}
-                                                end}
-                                            end
-                               new:  proc {$ Len GLB LUB Ss}
-                                        Ss = {MakeList Len}
-                                        {ForAll Ss
-                                         proc {$ X}
-                                            {FSVar.new GLB LUB X}
-                                         end}
-                                     end
-                              )
-                      tuple: t(decl: proc {$ L Size Ss}
-                                        Ss = {MakeTuple L Size}
-                                        {Record.forAll Ss
-                                         proc {$ X}
-                                            {FSVar.decl X}
-                                         end}
-                                     end
-                               upperBound:  proc {$ L Size A Ss}
-                                               Ss = {MakeTuple L Size}
-                                               {Record.forAll Ss
-                                                proc {$ X}
-                                                   {FSVar.upperBound A X}
-                                                end}
-                                            end
-                               lowerBound:  proc {$ L Size A Ss}
-                                               Ss = {MakeTuple L Size}
-                                               {Record.forAll Ss
-                                                proc {$ X}
-                                                   {FSVar.lowerBound A X}
-                                                end}
-                                            end
-                               new:  proc {$ L Size GLB LUB Ss}
-                                        Ss = {MakeTuple L Size}
-                                        {Record.forAll Ss
-                                         proc {$ X}
-                                            {FSVar.new GLB LUB X}
-                                         end}
-                                     end
-                              )
-
-                      record: r(decl: proc {$ L Ls Ss}
-                                         Ss = {MakeRecord L Ls}
-                                         {Record.forAll Ss
-                                          proc {$ X}
-                                             {FSVar.decl X}
-                                          end}
-                                      end
-                                upperBound:  proc {$ L Ls A Ss}
-                                                Ss = {MakeRecord L Ls}
-                                                {Record.forAll Ss
-                                                 proc {$ X}
-                                                    {FSVar.upperBound A X}
-                                                 end}
-                                             end
-                                lowerBound:  proc {$ L Ls A Ss}
-                                                Ss = {MakeRecord L Ls}
-                                                {Record.forAll Ss
-                                                 proc {$ X}
-                                                    {FSVar.lowerBound A X}
-                                                 end}
-                                             end
-                                new:  proc {$ L Ls GLB LUB Ss}
-                                         Ss = {MakeRecord L Ls}
-                                         {Record.forAll Ss
-                                          proc {$ X}
-                                             {FSVar.new GLB LUB X}
-                                          end}
-                                      end
-                               )
-                     )
-
-   FSValue =          c(empty:     {FSSetValue nil}
-                        universal: {FSSetValue FSUniversalRefl}
-                        singl:     fun {$ N}
-                                      {FSSetValue [N]}
-                                   end
-                        new:       FSSetValue
-                        is:        FSisValue
-                        toString:  FSvalueToString
-                       )
-
-   FSReified =     r(isIn:     proc {$ E S B}
-                                  {FD.bool B}
-                                  {FSIsInReif E S B}
+               tuple: tuple(decl:
+                               proc {$ L Size Ss}
+                                  Ss = {MakeTuple L Size}
+                                  {Record.forAll Ss
+                                   proc {$ X}
+                                      {FSVar.decl X}
+                                   end}
                                end
-                     areIn:    proc {$ WList S BList}
-                                  BList
-                                  = {FD.list {Length WList} 0#1}
-                                  = {Map WList
-                                     fun {$ E} {FSIsInReif E S} end}
+                            upperBound:
+                               proc {$ L Size A Ss}
+                                  Ss = {MakeTuple L Size}
+                                  {Record.forAll Ss
+                                   proc {$ X}
+                                      {FSVar.upperBound A X}
+                                   end}
                                end
-                     include:  proc {$ E S B}
-                                  {FD.bool B}
-                                  {FSP.includeR E S B}
+                            lowerBound:
+                               proc {$ L Size A Ss}
+                                  Ss = {MakeTuple L Size}
+                                  {Record.forAll Ss
+                                   proc {$ X}
+                                      {FSVar.lowerBound A X}
+                                   end}
                                end
-                     bounds:   FSP.bounds
-                     boundsN:  FSP.boundsN
-                     partition: FSP.partitionReified
-                     equal:     FSEqualReif
-                    )
+                            bounds:
+                               proc {$ L Size GLB LUB Ss}
+                                  Ss = {MakeTuple L Size}
+                                  {Record.forAll Ss
+                                   proc {$ X}
+                                      {FSVar.bounds GLB LUB X}
+                                   end}
+                               end)
 
-
-   FSMonitorIn =    FSP.monitorIn
-
-   FSMonitorOut =   FSP.monitorOut
-
-   FSReflect =   r( unknown:    FSGetUnknown
-                    lowerBound:        FSGetGlb
-                    upperBound:        FSGetLub
-
-                    card:       FSGetCard
-
-                    cardOf:     c(lowerBound:     FSGetNumOfGlb
-                                  upperBound:     FSGetNumOfLub
-                                  unknown: FSGetNumOfUnknown)
-
-                  ) % r
-
-   FSInt =   i(match:        FSMatch
-               minN:         FSMinN
-               maxN:         FSMaxN
-               seq:          FSSeq
-               min:          FSMin
-               max:          FSMax
-               convex:       FSConvex
+               record: record(decl:
+                                 proc {$ L Ls Ss}
+                                    Ss = {MakeRecord L Ls}
+                                    {Record.forAll Ss
+                                     proc {$ X}
+                                        {FSVar.decl X}
+                                     end}
+                                 end
+                              upperBound:
+                                 proc {$ L Ls A Ss}
+                                    Ss = {MakeRecord L Ls}
+                                    {Record.forAll Ss
+                                     proc {$ X}
+                                        {FSVar.upperBound A X}
+                                     end}
+                                 end
+                              lowerBound:
+                                 proc {$ L Ls A Ss}
+                                    Ss = {MakeRecord L Ls}
+                                    {Record.forAll Ss
+                                     proc {$ X}
+                                        {FSVar.lowerBound A X}
+                                     end}
+                                 end
+                              bounds:
+                                 proc {$ L Ls GLB LUB Ss}
+                                    Ss = {MakeRecord L Ls}
+                                    {Record.forAll Ss
+                                     proc {$ X}
+                                        {FSVar.bounds GLB LUB X}
+                                     end}
+                                 end)
               )
+
+   FSValue = value(empty:
+                      {FSSetValue nil}
+                   universal:
+                      {FSSetValue FSUniversalRefl}
+                   singl:
+                      fun {$ N} {FSSetValue [N]} end
+                   make:
+                      FSSetValue
+                   is:
+                      FSisValue
+                   toString:
+                      FSvalueToString)
+
+   FSReified = reified(isIn:
+                          proc {$ E S B}
+                             {FD.bool B}
+                             {FSIsInReif E S B}
+                          end
+                       areIn:
+                          proc {$ WList S BList}
+                             BList
+                             = {FD.list {Length WList} 0#1}
+                             = {Map WList
+                                fun {$ E} {FSIsInReif E S} end}
+                          end
+                       include:
+                          proc {$ E S B}
+                             {FD.bool B}
+                             {FSP.includeR E S B}
+                          end
+                       bounds:
+                          FSP.bounds
+                       boundsN:
+                          FSP.boundsN
+                       partition:
+                          FSP.partitionReified
+                       equal:
+                          FSEqualReif)
+
+
+   FSMonitorIn = FSP.monitorIn
+
+   FSMonitorOut = FSP.monitorOut
+
+   FSReflect = reflect(unknown:
+                          FSGetUnknown
+                       lowerBound:
+                          FSGetGlb
+                       upperBound:
+                          FSGetLub
+                       card:
+                          FSGetCard
+                       cardOf:
+                          card(lowerBound:
+                                  FSGetNumOfGlb
+                               upperBound:
+                                  FSGetNumOfLub
+                               unknown:
+                                  FSGetNumOfUnknown))
+
+   FSInt = int(match:
+                  FSMatch
+               minN:
+                  FSMinN
+               maxN:
+                  FSMaxN
+               seq:
+                  FSSeq
+               min:
+                  FSMin
+               max:
+                  FSMax
+               convex:
+                  FSConvex)
 
 
 end

@@ -652,7 +652,7 @@ in
          attr
             designator: unit parents: unit properties: unit
             attributes: unit features: unit methods: unit
-            printName: ''
+            printName: '' isToplevel: false
          feat expansionOccs
          meth init(Designator Parents Props Attrs Feats Meths Coord)
             self.expansionOccs = expansionOccs('`class`': _

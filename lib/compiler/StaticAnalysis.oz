@@ -3079,6 +3079,7 @@ local
          DummyClass = class $ end
       in
          value <- {New Core.classToken init(DummyClass)}
+         isToplevel <- {Ctrl getTop($)}
 
 \ifdef ANALYSEINHERITANCE
 

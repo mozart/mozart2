@@ -1472,9 +1472,7 @@ local
             fun {MakeMethods Methods VHd VTl}
                case Methods of M|Mr then MethReg VInter in
                   {CS newReg(?MethReg)}
-                  {M makeQuadruple(PN CS MethReg
-                                   {{@designator getVariable($)} isToplevel($)}
-                                   VHd VInter)}
+                  {M makeQuadruple(PN CS MethReg @isToplevel VHd VInter)}
                   value(MethReg)|{MakeMethods Mr VInter VTl}
                [] nil then
                   VHd = VTl

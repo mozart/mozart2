@@ -2350,7 +2350,9 @@ local
          Props= {CTok getProperties($)}
       in
          case
-            Attrs==unit orelse {Member Fea Attrs}
+            Attrs==unit
+            orelse {Not {DetTests.det Fea}}
+            orelse {Member Fea Attrs}
          then
             skip
          else

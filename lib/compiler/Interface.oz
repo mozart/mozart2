@@ -27,8 +27,7 @@ class Interface from ErrorListener.'class'
       Waiting <- {NewDictionary}
    end
    meth reset()
-      InsertedFiles <- nil
-      SourceVS <- ""
+      Interface, clear()
    end
    meth ServeOne(M)
       case M of insert(VS _) then
@@ -45,6 +44,11 @@ class Interface from ErrorListener.'class'
       end
    end
 
+   meth clear()
+      ErrorListener.'class', clear()
+      InsertedFiles <- nil
+      SourceVS <- ""
+   end
    meth sync() X Y in
       X = {NewName}
       {Dictionary.put @Waiting X Y}

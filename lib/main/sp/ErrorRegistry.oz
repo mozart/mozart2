@@ -713,9 +713,10 @@ define
                items: [hint(l:'Module URL' m:Url)])
       [] module(notFound Kind Url) then K in
          K = case Kind
-             of system then 'Unknown system module'
-             [] native then 'Could not load native functor at URL'
-             [] load   then 'Could not load functor at URL'
+             of system   then 'Unknown system module'
+             [] native   then 'Could not load native functor at URL'
+             [] load     then 'Could not load functor at URL'
+             [] localize then 'Could not load functor at URL'
              end
          error(kind: T
                msg: 'Could not link module'

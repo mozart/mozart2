@@ -427,10 +427,7 @@ define
 
       fun {ErrorItems Message}
          case {CondSelect Message items unit} of unit then ""
-         elseof Ts then
-            if {Property.get 'errors.hints'} then {Lines Ts}
-            else ""
-            end
+         elseof Ts then {Lines Ts}
          end
       end
 
@@ -438,11 +435,8 @@ define
          case {CondSelect Message loc unit} of unit then ""
          [] nil then ""
          elseof Ls then
-            if {Property.get 'errors.location'} then
-               EmptyLine#
-               {StarLine 'Level: '#{FoldR Ls fun {$ I W} I#' '#W end ''}}
-            else ""
-            end
+            EmptyLine#
+            {StarLine 'Level: '#{FoldR Ls fun {$ I W} I#' '#W end ''}}
          end
       end
 

@@ -3,13 +3,65 @@
 %%%  Author: Leif Kornstaedt <kornstae@ps.uni-sb.de>
 
 proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
-   MenuFont       = '-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*'
-   SwitchFont     = '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'
-   TextFont       = '9x15'
-   MessagesWidth  = 80
-   MessagesHeight = 17
-   BitmapPath     = '@'#{System.get home}#'/lib/bitmaps/'
-   TextBackground = case Tk.isColor then c(239 239 239) else white end
+   local
+      Resources =
+      resources(compilerTextFont:
+                   return#'Font'#'9x15'
+                compilerTextForeground:
+                   return#'Foreground'#black
+                compilerTextBackground:
+                   (return#'Background'#
+                    case Tk.isColor then c(239 239 239) else white end)
+                compilerVSEntryWidth:
+                   returnInt#'Width'#40
+                compilerVSEntryHeight:
+                   returnInt#'Height'#5
+                compilerMessagesWidth:
+                   returnInt#'Width'#80
+                compilerMessagesHeight:
+                   returnInt#'Height'#17
+                compilerMessagesWrap:
+                   return#'Wrap'#none
+                compilerTypeListHeight:
+                   returnInt#'Height'#10
+                compilerColorDisplayBorder:
+                   returnInt#'BorderWidth'#2
+                compilerURLEntryWidth:
+                   returnInt#'Width'#60
+                compilerSwitchGroupFont:
+                   (return#'Font'#
+                    '-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*')
+                compilerSwitchFont:
+                   (return#'Font'#
+                    '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*')
+                compilerEnvCols:
+                   returnInt#'EnvCols'#4
+                compilerSourceWidth:
+                   returnInt#'Width'#80
+                compilerSourceHeight:
+                   returnInt#'Height'#25
+                compilerSourceWrap:
+                   return#'Wrap'#none)
+
+      class OptionsClass
+         attr Window
+         meth init()
+            Window <- {New Tk.toplevel tkInit(withdraw: true)}
+         end
+         meth get(Name $)
+            Return#Class#Default = Resources.Name
+         in
+            case {Tk.Return option(get @Window Name Class)} of nil then Default
+            elseof false then Default
+            elseof Value then Value
+            end
+         end
+      end
+   in
+      Options = {New OptionsClass init()}
+   end
+
+   BitmapPath = '@'#{System.get home}#'/lib/bitmaps/'
 
    Black = c(0 0 0)
    Gray = c(127 127 127)
@@ -78,25 +130,36 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
          proc {DoClear}
             {Entry tk(delete p(1 0) 'end')}
          end
+         proc {DoClose}
+            {self tkClose()}
+         end
          TkTools.dialog, tkInit(master: Master
                                 root: pointer
                                 title: 'Oz Compiler: Feed Virtual String'
                                 buttons: ['Ok'#DoFeed
                                           'Clear'#DoClear
-                                          'Cancel'#tkClose()]
+                                          'Cancel'#DoClose]
                                 pack: false)
          Frame = {New Tk.frame tkInit(parent: self
                                       highlightthickness: 0)}
          Title = {New Tk.label tkInit(parent: Frame
-                                      text: 'Feed virtual string:'
-                                      font: MenuFont)}
+                                      text: 'Feed virtual string:')}
+         TextFont = {Options get(compilerTextFont $)}
+         TextForeground = {Options get(compilerTextForeground $)}
+         TextBackground = {Options get(compilerTextBackground $)}
+         Width = {Options get(compilerVSEntryWidth $)}
+         Height = {Options get(compilerVSEntryHeight $)}
          Entry = {New Tk.text tkInit(parent: Frame
                                      font: TextFont
-                                     foreground: black
+                                     foreground: TextForeground
                                      background: TextBackground
-                                     width: 40
-                                     height: 5)}
+                                     width: Width
+                                     height: Height)}
          {Entry tk(insert p(1 0) VS)}
+         {Entry tkBind(event: '<Meta-Return>' action: DoFeed)}
+         {Entry tkBind(event: '<Escape>' action: DoClose)}
+         {Entry tkBind(event: '<Control-x>' action: DoClose)}
+         {Entry tkBind(event: '<Control-r>' action: DoClear)}
       in
          {Tk.batch [pack(Title Entry anchor: w)
                     pack(Frame pady: 4)
@@ -130,65 +193,58 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
                                 focus: 1
                                 pack: false)
          TypeFrame = {New TkTools.textframe tkInit(parent: self
-                                                   text: 'Type'
-                                                   font: MenuFont)}
+                                                   text: 'Type')}
          ListFrame = {New Tk.frame tkInit(parent: TypeFrame.inner
                                           highlightthickness: 0)}
+         TypeListHeight = {Options get(compilerTypeListHeight $)}
          self.TypeList = {New Tk.listbox tkInit(parent: ListFrame
-                                                font: MenuFont
                                                 selectmode: single
-                                                height: 10)}
+                                                height: TypeListHeight)}
          Scrollbar = {New Tk.scrollbar tkInit(parent: ListFrame)}
          {Tk.addYScrollbar self.TypeList Scrollbar}
          ColorFrame = {New TkTools.textframe tkInit(parent: self
-                                                    text: 'Color'
-                                                    font: MenuFont)}
+                                                    text: 'Color')}
          RedLabel = {New Tk.label tkInit(parent: ColorFrame.inner
                                          text: 'Red'
-                                         foreground: Red
-                                         font: MenuFont)}
+                                         foreground: Red)}
          self.RedVariable = {New Tk.variable tkInit(0)}
          RedScale = {New Tk.scale tkInit(parent: ColorFrame.inner
                                          orient: horizontal
-                                         font: MenuFont
                                          to: 255
                                          variable: self.RedVariable
                                          action: self#setColor(1)
                                          args: [int])}
          GreenLabel = {New Tk.label tkInit(parent: ColorFrame.inner
                                            text: 'Green'
-                                           foreground: Green
-                                           font: MenuFont)}
+                                           foreground: Green)}
          self.GreenVariable = {New Tk.variable tkInit(0)}
          GreenScale = {New Tk.scale tkInit(parent: ColorFrame.inner
                                            orient: horizontal
-                                           font: MenuFont
                                            to: 255
                                            variable: self.GreenVariable
                                            action: self#setColor(2)
                                            args: [int])}
          BlueLabel = {New Tk.label tkInit(parent: ColorFrame.inner
                                           text: 'Blue'
-                                          foreground: Blue
-                                          font: MenuFont)}
+                                          foreground: Blue)}
          self.BlueVariable = {New Tk.variable tkInit(0)}
          BlueScale = {New Tk.scale tkInit(parent: ColorFrame.inner
                                           orient: horizontal
-                                          font: MenuFont
                                           to: 255
                                           variable: self.BlueVariable
                                           action: self#setColor(3)
                                           args: [int])}
+         ColorDisplayBorder = {Options get(compilerColorDisplayBorder $)}
          ColorDisplayFrame = {New Tk.frame tkInit(parent: ColorFrame.inner
                                                   relief: ridge
-                                                  borderwidth: 2)}
+                                                  borderwidth:
+                                                     ColorDisplayBorder)}
          self.ColorDisplay = {New Tk.frame tkInit(parent: ColorDisplayFrame
                                                   background: Black
                                                   highlightthickness: 0)}
          EnableVariable = {New Tk.variable tkInit(IsEnabled)}
          EnableButton = {New Tk.checkbutton tkInit(parent: self
                                                    text: 'Enable Coloring'
-                                                   font: MenuFont
                                                    variable: EnableVariable)}
       in
          {Tk.batch [pack(self.TypeList Scrollbar
@@ -273,13 +329,16 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
                                       highlightthickness: 0)}
          Title = {New Tk.label tkInit(parent: Frame
                                       text: 'URL to load into variable '#
-                                            PrintName#':'
-                                      font: MenuFont)}
+                                            PrintName#':')}
+         TextFont = {Options get(compilerTextFont $)}
+         TextForeground = {Options get(compilerTextForeground $)}
+         TextBackground = {Options get(compilerTextBackground $)}
+         URLEntryWidth = {Options get(compilerURLEntryWidth $)}
          Entry = {New Tk.entry tkInit(parent: Frame
                                       font: TextFont
-                                      foreground: black
+                                      foreground: TextForeground
                                       background: TextBackground
-                                      width: 60)}
+                                      width: URLEntryWidth)}
          {Entry tk(insert '0' URL)}
       in
          {Tk.batch [pack(Title Entry anchor: w)
@@ -292,7 +351,10 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
    class SourceWindow from Tk.toplevel
       prop final
       feat Source TheVS
-      meth init(Parent Title VS) Menu SourceFrame Scrollbar in
+      meth init(Parent Title VS)
+         Menu SourceFrame TextFont TextForeground TextBackground
+         SourceWidth SourceHeight SourceWrap Scrollbar
+      in
          Tk.toplevel, tkInit(parent: Parent
                              title: Title
                              'class': 'OzTools'
@@ -301,32 +363,33 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
          {Tk.send wm(iconname self Title)}
          Menu = {TkTools.menubar self self
                  [menubutton(text: 'File'
-                             font: MenuFont
                              feature: file
                              menu: [command(label: 'Save as ...'
-                                            font: MenuFont
                                             action: self#SaveAs())
                                     separator
                                     command(label: 'Close window'
-                                            font: MenuFont
                                             key: ctrl(x)
                                             action: self#tkClose())])
                   menubutton(text: 'Edit'
-                             font: MenuFont
                              feature: edit
                              menu: [command(label: 'Select all'
-                                            font: MenuFont
                                             action: self#SelectAll())])]
                  nil}
          SourceFrame = {New Tk.frame tkInit(parent: self
                                             highlightthickness: 0)}
+         TextFont = {Options get(compilerTextFont $)}
+         TextForeground = {Options get(compilerTextForeground $)}
+         TextBackground = {Options get(compilerTextBackground $)}
+         SourceWidth = {Options get(compilerSourceWidth $)}
+         SourceHeight = {Options get(compilerSourceHeight $)}
+         SourceWrap = {Options get(compilerSourceWrap $)}
          self.Source = {New Tk.text tkInit(parent: SourceFrame
                                            font: TextFont
-                                           foreground: black
+                                           foreground: TextForeground
                                            background: TextBackground
-                                           width: 80
-                                           height: 25
-                                           wrap: none)}
+                                           width: SourceWidth
+                                           height: SourceHeight
+                                           wrap: SourceWrap)}
          {self.Source tk(insert p(1 0) VS)}
          {self.Source tk(configure state: disabled)}
          Scrollbar = {New Tk.scrollbar tkInit(parent: SourceFrame)}
@@ -537,7 +600,6 @@ in
                {New Tk.menuentry.radiobutton
                 tkInit(parent: self.Actions
                        label: ActionName
-                       font: MenuFont
                        variable: self.ActionVariable
                        value: @ActionCount) _}
                {Dictionary.put self.ActionDict @ActionCount Proc}
@@ -561,95 +623,89 @@ in
                                  delete: {MkAction Close()}
                                  highlightthickness: 0
                                  withdraw: true)}
+         TextFont        = {Options get(compilerTextFont $)}
+         TextForeground  = {Options get(compilerTextForeground $)}
+         TextBackground  = {Options get(compilerTextBackground $)}
+         MessagesWidth   = {Options get(compilerMessagesWidth $)}
+         MessagesHeight  = {Options get(compilerMessagesHeight $)}
+         MessagesWrap    = {Options get(compilerMessagesWrap $)}
+         SwitchGroupFont = {Options get(compilerSwitchGroupFont $)}
+         SwitchFont      = {Options get(compilerSwitchFont $)}
+         NCols           = {Options get(compilerEnvCols $)}
+
          {Tk.batch [wm(iconname self.TopLevel 'Oz Compiler')
                     wm(iconbitmap self.TopLevel BitmapPath#'compiler.xbm')
                     wm(iconmask self.TopLevel BitmapPath#'compilermask.xbm')
                     wm(resizable self.TopLevel 0 0)]}
          self.SystemVariables = {New Tk.variable tkInit(false)}
-         self.NColsInEnv = {New Tk.variable tkInit(4)}
+         self.NColsInEnv = {New Tk.variable tkInit(NCols)}
          ColumnMenu = {ForThread 7 1 ~1
                        fun {$ In I}
                           radiobutton(label: I
-                                      font: MenuFont
                                       variable: self.NColsInEnv
                                       value: I
                                       action: {MkAction RedisplayEnv()})|In
                        end nil}
          Menu = {TkTools.menubar self.TopLevel self.TopLevel
                  [menubutton(text: 'Compiler'
-                             font: MenuFont
                              feature: compiler
                              menu: [command(label: 'Feed file ...'
-                                            font: MenuFont
                                             action: {MkAction FeedFile()})
                                     command(label: 'Feed virtual string ...'
-                                            font: MenuFont
                                             action: {MkAction
                                                      FeedVirtualString()})
                                     separator
                                     command(label: 'Clear message window'
-                                            font: MenuFont
                                             key: ctrl(u)
                                             action: {MkAction ClearInfo()})
                                     command(label: 'Interrupt'
-                                            font: MenuFont
                                             feature: interrupt
                                             key: ctrl(c)
                                             state: disabled
                                             action: {MkAction Interrupt()})
                                     command(label: 'Reset'
-                                            font: MenuFont
                                             key: ctrl(r)
                                             action: {MkAction Reset()})
                                     separator
                                     command(label: 'Close window'
-                                            font: MenuFont
                                             key: ctrl(x)
                                             action: {MkAction Close()})])
                   menubutton(text: 'Options'
-                             font: MenuFont
                              feature: options
                              menu: [checkbutton(label: 'Show system variables'
-                                                font: MenuFont
                                                 variable: self.SystemVariables
                                                 action: {MkAction
                                                          RedisplayEnv()})
                                     command(label: 'Configure colors ...'
-                                            font: MenuFont
                                             feature: colors
                                             action: {MkAction
                                                      ConfigureColors()})
                                     cascade(label: 'Number of columns'
-                                            font: MenuFont
                                             feature: columns
                                             menu: ColumnMenu)
                                     cascade(label: 'Set action'
-                                            font: MenuFont
                                             feature: action
                                             menu: nil)])]
                  [menubutton(text: 'Help'
-                             font: MenuFont
                              feature: help
                              menu: [command(label: 'About ...'
-                                            font: MenuFont
                                             action: {MkAction
                                                      AboutDialog()})])]}
          case Tk.isColor then skip
          else {Menu.options.colors tk(entryconfigure state: disabled)}
          end
 
-         self.Book = {New TkTools.notebook tkInit(parent: self.TopLevel
-                                                  font: MenuFont)}
+         self.Book = {New TkTools.notebook tkInit(parent: self.TopLevel)}
          self.Messages = {New TkTools.note tkInit(parent: self.Book
                                                   text: 'Messages')}
          {self.Book add(self.Messages)}
          self.Text = {New Tk.text tkInit(parent: self.Messages
                                          font: TextFont
-                                         foreground: black
+                                         foreground: TextForeground
                                          background: TextBackground
                                          width: MessagesWidth
                                          height: MessagesHeight
-                                         wrap: none
+                                         wrap: MessagesWrap
                                          state: disabled)}
          TextYScrollbar = {New Tk.scrollbar tkInit(parent: self.Messages)}
          {Tk.addYScrollbar self.Text TextYScrollbar}
@@ -659,11 +715,9 @@ in
          ScrollToBottomButton = {New Tk.checkbutton
                                  tkInit(parent: MessageOptionsFrame
                                         text: 'Scroll to bottom on output'
-                                        font: MenuFont
                                         variable: self.ScrollToBottom)}
          Clear = {New Tk.button tkInit(parent: MessageOptionsFrame
                                        text: 'Clear'
-                                       font: MenuFont
                                        action: {MkAction ClearInfo()})}
 
          Environment = {New TkTools.note tkInit(parent: self.Book
@@ -671,7 +725,7 @@ in
          {self.Book add(Environment)}
          self.EnvDisplay = {New Tk.text tkInit(parent: Environment
                                                font: TextFont
-                                               foreground: black
+                                               foreground: TextForeground
                                                background: TextBackground
                                                width: MessagesWidth
                                                height: MessagesHeight
@@ -683,20 +737,18 @@ in
                                                 highlightthickness: 0)}
          self.EditedVariable = {New Tk.entry tkInit(parent: EnvOptionsFrame
                                                     font: TextFont
-                                                    foreground: black
+                                                    foreground:
+                                                       TextForeground
                                                     background:
                                                        TextBackground)}
          Remove = {New Tk.button tkInit(parent: EnvOptionsFrame
                                         text: 'Remove'
-                                        font: MenuFont
                                         action: {MkAction RemoveVariable()})}
          Load = {New Tk.button tkInit(parent: EnvOptionsFrame
                                       text: 'Load ...'
-                                      font: MenuFont
                                       action: {MkAction LoadVariable()})}
          Save = {New Tk.button tkInit(parent: EnvOptionsFrame
                                       text: 'Save ...'
-                                      font: MenuFont
                                       action: {MkAction SaveVariable()})}
 
          Switches = {New TkTools.note tkInit(parent: self.Book
@@ -713,7 +765,7 @@ in
                                             highlightthickness: 0)}
          GlobalLabel = {New Tk.label tkInit(parent: GlobalFrame
                                             text: 'Global Configuration'
-                                            font: MenuFont)}
+                                            font: SwitchGroupFont)}
          CompilerPasses = {New Tk.variable tkInit(false)}
          CompilerPassesSw = {New Tk.checkbutton
                              tkInit(parent: GlobalFrame
@@ -760,7 +812,7 @@ in
                                               highlightthickness: 0)}
          WarningsLabel = {New Tk.label tkInit(parent: WarningsFrame
                                               text: 'Warnings'
-                                              font: MenuFont)}
+                                              font: SwitchGroupFont)}
          WarnRedecl = {New Tk.variable tkInit(false)}
          WarnRedeclSw = {New Tk.checkbutton
                          tkInit(parent: WarningsFrame
@@ -787,7 +839,7 @@ in
                                              highlightthickness: 0)}
          ParsingLabel = {New Tk.label tkInit(parent: ParsingFrame
                                              text: 'I. Parsing and Expanding'
-                                             font: MenuFont)}
+                                             font: SwitchGroupFont)}
          System = {New Tk.variable tkInit(true)}
          SystemSw = {New Tk.checkbutton
                      tkInit(parent: ParsingFrame
@@ -807,7 +859,7 @@ in
                                         highlightthickness: 0)}
          SALabel = {New Tk.label tkInit(parent: SAFrame
                                         text: 'II. Static Analysis'
-                                        font: MenuFont)}
+                                        font: SwitchGroupFont)}
          StaticAnalysis = {New Tk.variable tkInit(true)}
          StaticAnalysisSw = {New Tk.checkbutton
                              tkInit(parent: SAFrame
@@ -820,7 +872,7 @@ in
                                           highlightthickness: 0)}
          CoreLabel = {New Tk.label tkInit(parent: CoreFrame
                                           text: 'III. Core Output'
-                                          font: MenuFont)}
+                                          font: SwitchGroupFont)}
          Core = {New Tk.variable tkInit(false)}
          CoreSw = {New Tk.checkbutton
                    tkInit(parent: CoreFrame
@@ -854,7 +906,7 @@ in
                                              highlightthickness: 0)}
          CodeGenLabel = {New Tk.label tkInit(parent: CodeGenFrame
                                              text: 'IV. Code Generation'
-                                             font: MenuFont)}
+                                             font: SwitchGroupFont)}
          CodeGen = {New Tk.variable tkInit(true)}
          CodeGenSw = {New Tk.checkbutton
                       tkInit(parent: CodeGenFrame
@@ -875,7 +927,7 @@ in
          EmulatorLabel = {New Tk.label tkInit(parent: EmulatorFrame
                                               text:
                                                  'V. Feeding to the Emulator'
-                                              font: MenuFont)}
+                                              font: SwitchGroupFont)}
          FeedToEmulator = {New Tk.variable tkInit(true)}
          FeedToEmulatorSw = {New Tk.checkbutton
                              tkInit(parent: EmulatorFrame
@@ -903,7 +955,7 @@ in
                                               highlightthickness: 0)}
          DebuggerLabel = {New Tk.label tkInit(parent: DebuggerFrame
                                               text: 'VI. Debugging'
-                                              font: MenuFont)}
+                                              font: SwitchGroupFont)}
          RunWithDebugger = {New Tk.variable tkInit(false)}
          RunWithDebuggerSw = {New Tk.checkbutton
                               tkInit(parent: DebuggerFrame
@@ -1048,13 +1100,11 @@ in
                                              focus: 1
                                              pack: false)}
          Title = {New Tk.label tkInit(parent: Dialog
-                                      text: 'Oz Compiler'
-                                      font: MenuFont)}
+                                      text: 'Oz Compiler')}
          Author = {New Tk.label tkInit(parent: Dialog
                                        text: 'Programming Systems Lab\n'#
                                              'Contact: Leif Kornstaedt\n'#
-                                             '<kornstae@ps.uni-sb.de>'
-                                       font: MenuFont)}
+                                             '<kornstae@ps.uni-sb.de>')}
       in
          {Tk.send pack(Title Author padx: 4 pady: 4 expand: true)}
          {Dialog tkPack()}
@@ -1075,7 +1125,8 @@ in
       end
 
       meth RedisplayEnv()
-         PrintNames Count NCols Rows RowArray NCharsInCol NewEnvDisplay
+         PrintNames Count NCols Rows RowArray MessagesWidth NCharsInCol
+         NewEnvDisplay
       in
          case {self.SystemVariables tkReturnInt($)} == 1 then
             PrintNames = {Sort {Dictionary.keys @ValueDict} Value.'<'}
@@ -1090,6 +1141,7 @@ in
          {self.NColsInEnv tkReturnInt(?NCols)}
          Rows = {Max (Count + NCols - 1) div NCols 1}
          RowArray = {NewArray 1 Rows ''}
+         MessagesWidth = {Options get(compilerMessagesWidth $)}
          NCharsInCol = (MessagesWidth - (NCols - 1)) div NCols
          {FoldL
           {Map
@@ -1377,8 +1429,7 @@ in
                            text: '#'('Execution of the query threw an '
                                      'uncaught exception.  Should this be '
                                      'ignored?')
-                           aspect: 250
-                           font: MenuFont)}
+                           aspect: 250)}
       in
          {Tk.send pack(Bitmap Message side: left padx: 4 pady: 4 expand: true)}
          {Dialog tkPack()}

@@ -660,7 +660,6 @@ local
                      CompilerStateClass, ExecProtected(P false)
                   end
                end
-            else skip
             end
          end
       end

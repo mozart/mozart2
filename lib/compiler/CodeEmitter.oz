@@ -84,7 +84,7 @@ in
          GRegRef HighestUsedG
          LocalEnvSize LocalVarnames
          CodeHd CodeTl
-         InExceptionHandler
+         LocalEnvsInhibited
          continuations contLabels
 
          % These are only needed temporarily for call argument initialization:
@@ -115,7 +115,7 @@ in
          LocalEnvSize <- _
          CodeHd <- allocateL(@LocalEnvSize)|NewCodeTl
          CodeTl <- NewCodeTl
-         InExceptionHandler <- false
+         LocalEnvsInhibited <- false
          continuations <- nil
          contLabels <- nil
          {List.forAllInd FormalRegs
@@ -188,7 +188,7 @@ in
                    else X
                    end = NewVInstr.I
                 end}
-               {Show NewVInstr}
+               {{`Builtin` 'Show' 1} NewVInstr}
             end
          in
             {ShowVInstr Addr}
@@ -645,9 +645,8 @@ in
                end
             end
          [] vExHandler(_ Addr1 Reg Addr2 Coord Cont InitsRS) then
-            OldContLabels Label1 RegMap
+            OldContLabels Label1 RegMap OldLocalEnvsInhibited
          in
-            InExceptionHandler <- true
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, newLabel(?Label1)
             Emitter, DoInits(InitsRS ThisAddr)
@@ -655,7 +654,10 @@ in
             Emitter, SaveRegisterMapping(?RegMap)
             Emitter, KillAllTemporaries()
             Emitter, AllocateThisTemp(0 Reg _)
+            OldLocalEnvsInhibited = @LocalEnvsInhibited
+            LocalEnvsInhibited <- true
             Emitter, EmitAddr(Addr2)
+            LocalEnvsInhibited <- OldLocalEnvsInhibited
             Emitter, RestoreRegisterMapping(RegMap)
             Emitter, Emit(lbl(Label1))
             Emitter, DebugEntry(Coord 'exception handler')
@@ -851,7 +853,8 @@ in
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'conditional')
          [] vThread(_ Addr Coord Cont InitsRS) then
-            HasLocalEnv ContLabel Dest RegMap OldContLabels
+            HasLocalEnv ContLabel Dest RegMap
+            OldContLabels OldLocalEnvsInhibited
          in
             Emitter, DoInits(InitsRS ThisAddr)
             Emitter, MayAllocateEnvLocally(Cont true ?HasLocalEnv)
@@ -862,7 +865,13 @@ in
             Emitter, KillAllTemporaries()
             OldContLabels = @contLabels
             contLabels <- nil
+            OldLocalEnvsInhibited = @LocalEnvsInhibited
+            case HasLocalEnv then skip
+            else
+               LocalEnvsInhibited <- true
+            end
             Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
+            LocalEnvsInhibited <- OldLocalEnvsInhibited
             contLabels <- OldContLabels
             Emitter, RestoreAllRegisterMappings(RegMap)
             Emitter, Emit(lbl(ContLabel))
@@ -1662,7 +1671,7 @@ in
          Emitter, Emit(return)
       end
       meth MayAllocateEnvLocally(Cont B $)
-         case @InExceptionHandler then false
+         case @LocalEnvsInhibited then false
          elsecase B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
@@ -2219,7 +2228,7 @@ in
 
       meth Emit(Instr) NewCodeTl in
 \ifdef DEBUG_EMIT
-         {Show Instr}
+         {{`Builtin` 'Show' 1} Instr}
 \endif
          @CodeTl = Instr|NewCodeTl
          CodeTl <- NewCodeTl
@@ -2228,7 +2237,7 @@ in
 \ifdef DEBUG_EMIT
          proc {ShowAll Instrs}
             case {IsDet Instrs} then I|Ir = Instrs in
-               {Show I}
+               {{`Builtin` 'Show' 1} I}
                {ShowAll Ir}
             else skip
             end

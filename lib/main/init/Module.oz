@@ -204,25 +204,30 @@ in
 
          meth system(Url $)
             {self trace(systemOrBoot({URL.toAtom Url}))}
-            %% Gets system or boot module
-            try
-               Netloc  = {StringToAtom Url.netloc}
-               ModName = {String.token Url.path.1.1 &. $ _}
+            case {CondSelect Url path unit} of abs([Name#false]) then
+               %% drop the extension if any
+               ModName = {String.token Name &. $ _}
             in
-               case Netloc
-               of boot   then
-                  {self trace(boot({URL.toAtom Url}))}
-                  {Boot.manager ModName}
-               [] system then
-                  {self trace(system(ModName {URL.toAtom Url}))}
-                  {self Apply(Url {Pickle.load
-                                   MozartHome#ModName#FunExt} $)}
+               try
+                  Authority = {StringToAtom {CondSelect Url authority ""}}
+               in
+                  case Authority
+                  of boot then
+                     {self trace(boot({URL.toAtom Url}))}
+                     {Boot.manager ModName}
+                  [] system then
+                     {self trace(system(ModName {URL.toAtom Url}))}
+                     {self Apply(Url {Pickle.load
+                                      MozartHome#ModName#FunExt} $)}
+                  else
+                     raise module(urlSyntax {URL.toAtom Url}) end
+                  end
+               catch error(url(load _) ...) then
+                  raise module(systemNotFound {URL.toAtom Url}) end
+               [] error(system(unknownBootModule _) ...) then
+                  raise module(bootNotFound {URL.toAtom Url}) end
                end
-            catch error(url(load _) ...) then
-               raise module(systemNotFound {URL.toAtom Url}) end
-            [] error(system(unknownBootModule _) ...) then
-               raise module(bootNotFound {URL.toAtom Url}) end
-            end
+            else raise module(urlSyntax {URL.toAtom Url}) end end
          end
 
       end

@@ -11,7 +11,7 @@ proc {TestURI URI}
    in
       {ForAll Test.alist
        proc {$ Relative#Wanted}
-          Resolved = {URI.toString
+          Resolved = {URI.toStringFull
                       {URI.resolve Base {URI.make Relative}}}
        in
           {System.printInfo '\t'#Relative#'\t-> '#Wanted#

@@ -70,7 +70,7 @@ in
 
       %% usual system initialization
       \insert 'init/Prop.oz'
-      \insert 'init/Resolve.oz'
+      \insert 'init/NewResolve.oz'
 
       {SET load Resolve.load}
 

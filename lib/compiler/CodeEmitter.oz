@@ -127,7 +127,7 @@ in
                   fun {$ In I} {Dictionary.get @GRegRef I}|In end nil}
          @LocalEnvSize = @HighestEverY + 1
          @CodeTl = nil
-         if self.staticVarnamesSwitch then
+         if {self.state getSwitch(staticvarnames $)} then
             if @HighestEverY == ~1 andthen GRegs == nil then
                %% Emitting at least one `...Varname' instruction
                %% flags this procedure as having been compiled with
@@ -277,17 +277,38 @@ in
             Emitter, EmitAddr(Addr)
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord Kind)
-         [] vMakePermanent(_ Regs _) then
+         [] vMakePermanent(_ Regs _) then S D in
+            S = self.staticVarnamesSwitch
+            D = self.dynamicVarnamesSwitch
             {ForAll Regs
              proc {$ Reg}
-                case Emitter, GetPerm(Reg $) of none then Y in
-                   Emitter, AllocatePerm(Reg ?Y)
-                   case Emitter, GetTemp(Reg $) of none then
-                      Emitter, Emit(createVariable(Y))
-                   elseof X then
-                      Emitter, Emit(move(X Y))
+                if S then
+                   case Emitter, GetPerm(Reg $) of none then Y in
+                      Emitter, AllocatePerm(Reg ?Y)
+                      case Emitter, GetTemp(Reg $) of none then
+                         Emitter, Emit(createVariable(Y))
+                      elseof X then
+                         Emitter, Emit(move(X Y))
+                      end
+                   else skip
                    end
-                else skip
+                end
+                if D then N X1 X2 in
+                   N = {Dictionary.get @regNames Reg}
+                   case Emitter, GetTemp(Reg $) of none then
+                      case Emitter, GetPerm(Reg $) of none then
+                         Emitter, PredictTemp(Reg ?X1)
+                         Emitter, Emit(createVariable(X1))
+                      elseof Y then
+                         Emitter, AllocateShortLivedTemp(?X1)
+                         Emitter, Emit(move(Y X1))
+                      end
+                   elseof X then
+                      X1 = X
+                   end
+                   Emitter, AllocateShortLivedTemp(?X2)
+                   Emitter, Emit(putConstant(N X2))
+                   Emitter, Emit(callBI('Value.nameVariable' [X1 X2]#nil))
                 end
              end}
          [] vClear(_ Regs _) then
@@ -1899,7 +1920,7 @@ in
       end
       meth AllocatePerm(Reg ?Y)
          case Emitter, GetPerm(Reg $) of none then I in
-            if self.staticVarnamesSwitch then
+            if {self.state getSwitch(staticvarnames $)} then
                case {Dictionary.condGet @regNames Reg ''} of '' then
                   I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
                        @LowestFreeY}

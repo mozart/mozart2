@@ -122,7 +122,7 @@ define
    end
 
    proc {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
-      if CS.staticVarnamesSwitch then Regs in
+      if CS.staticVarnamesSwitch orelse CS.dynamicVarnamesSwitch then Regs in
          Regs = {FoldR Vs
                  fun {$ V In} Reg in
                     {V reg(?Reg)}
@@ -838,7 +838,7 @@ define
          {System.show PredId}
 \endif
          if @isStateUsing then
-            if CS.staticVarnamesSwitch then
+            if {CS.state getSwitch(staticvarnames $)} then
                {CS newSelfReg(?StateReg)}
             else
                {CS newReg(?StateReg)}
@@ -1508,7 +1508,9 @@ define
                case @messageDesignator of unit then nil
                elseof V then [V]
                end}
-         if CS.staticVarnamesSwitch then StateReg Cont1 Cont2 Cont3 in
+         if {CS.state getSwitch(staticvarnames $)} then
+            StateReg Cont1 Cont2 Cont3
+         in
             {CS newSelfReg(?StateReg)}
             {MakePermanent {New PseudoVariableOccurrence init(StateReg)}|Vs
              VHd Cont1 Cont3 VTl CS}

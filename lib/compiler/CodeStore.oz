@@ -68,7 +68,7 @@ class CodeStore from Emitter
       nextLabel
       sharedDone
    feat
-      controlFlowInfoSwitch staticVarnamesSwitch
+      controlFlowInfoSwitch staticVarnamesSwitch dynamicVarnamesSwitch
       state reporter
    meth init(State Reporter)
       Emitter, init()
@@ -77,10 +77,9 @@ class CodeStore from Emitter
       Saved <- nil
       nextLabel <- 1
       sharedDone <- {NewDictionary}
-      self.controlFlowInfoSwitch =
-      {State getSwitch(controlflowinfo $)}
-      self.staticVarnamesSwitch =
-      {State getSwitch(staticvarnames $)}
+      self.controlFlowInfoSwitch = {State getSwitch(controlflowinfo $)}
+      self.staticVarnamesSwitch = {State getSwitch(staticvarnames $)}
+      self.dynamicVarnamesSwitch = {State getSwitch(dynamicvarnames $)}
       self.state = State
       self.reporter = Reporter
    end

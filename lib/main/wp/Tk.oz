@@ -44,7 +44,7 @@ import
       pipe
       stat)
 
-   Resolve(makeResolver)
+   Resolve(makeResolver pickle handler)
 
 export
    send:          TkSend
@@ -1292,13 +1292,13 @@ define
    %%
 
    local
-      local
-         Sep   = {Property.get 'path.separator'}
-         Home  = {Property.get 'oz.home'}
-      in
-         ImRes = {Resolve.makeResolver image
-                  vs('all=.'#[Sep]#'root='#Home#[Sep]#'cache='#Home#'/cache')}
-      end
+      %% use essentially the same resolver as for pickles
+      %% this used to be all=.:root=$OZHOME which was completely
+      %% bogus and could not be parametrized using env vars.  I
+      %% don't really see why we need a different resolver.
+      ImRes = {Resolve.makeResolver image
+               init({Resolve.pickle.getHandlers})}
+      {ImRes.addHandler front({Resolve.handler.root '.'})}
 
       PathStore = {New class $
                           prop final locking

@@ -741,6 +741,7 @@ in
       %%    env(Env)   %--** is a dictionary, should be a record
       %%
       %%    info(VS Coord <= unit)
+      %%    message(Record Coord)
       %%    displaySource(TitleVS ExtVS VS)
       %%    errorFound()
       %%    toTop()

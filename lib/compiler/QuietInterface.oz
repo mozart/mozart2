@@ -42,6 +42,14 @@ class QuietInterface from GenericInterface
             OutputVS = VS
          [] info(VS _) then
             OutputVS = VS
+         [] message(Record _) then VSCell in
+            VSCell = {NewCell ""}
+            {Error.msg
+             proc {$ X}
+                {Assign VSCell {Access VSCell}#{Error.formatLine X}}
+             end
+             Record}
+            OutputVS = {Access VSCell}
          [] displaySource(_ _ VS) then
             SourceVS <- VS
             OutputVS = ""

@@ -166,14 +166,11 @@ in
                  msg: Msg <= unit
                  items: Items <= nil) MaxNumberOfErrors in
          Reporter, ToTop(true)
-         {Error.msg
-          proc {$ X}
-             {self.Wrapper notify(info({Error.formatLine X} Coord))}
-          end
-          error(kind: Kind msg: Msg
-                items: case Coord == unit then Items
-                       else {Append Items [Coord]}
-                       end)}
+         {self.Wrapper
+          notify(message(error(kind: Kind msg: Msg
+                               items: case Coord == unit then Items
+                                      else {Append Items [Coord]}
+                                      end) Coord))}
          ErrorCount <- @ErrorCount + 1
          {self.Compiler getMaxNumberOfErrors(?MaxNumberOfErrors)}
          case MaxNumberOfErrors < 0 then skip
@@ -187,14 +184,11 @@ in
                 msg: Msg <= unit
                 items: Items <= nil)
          Reporter, ToTop(false)
-         {Error.msg
-          proc {$ X}
-             {self.Wrapper notify(info({Error.formatLine X} Coord))}
-          end
-          warn(kind: Kind msg: Msg
-               items: case Coord == unit then Items
-                      else {Append Items [Coord]}
-                      end)}
+         {self.Wrapper
+          notify(message(warn(kind: Kind msg: Msg
+                              items: case Coord == unit then Items
+                                     else {Append Items [Coord]}
+                                     end) Coord))}
       end
       meth addErrors(N)
          Reporter, ToTop(true)

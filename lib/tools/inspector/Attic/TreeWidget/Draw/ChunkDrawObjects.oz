@@ -21,17 +21,14 @@ class ClassDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, draw(X Y)
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, reDraw(X Y)
       else
@@ -54,17 +51,14 @@ class ArrayDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, draw(X Y)
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, reDraw(X Y)
       else
@@ -80,17 +74,14 @@ class DictionaryDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, draw(X Y)
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
-      then
+      if @dirty then
          DrawObject, initMenu(@type)
          DrawObject, reDraw(X Y)
       else

@@ -19,7 +19,7 @@ class FSSetDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          Visual    = @visual
          Server    = {Visual getServer($)}
@@ -30,7 +30,6 @@ class FSSetDrawObject
          FSSetDrawObject, performDraw(1 X Y StopValue)
          {Server logVar(self @value normal)}
          dirty <- false
-      else skip
       end
    end
 
@@ -38,16 +37,13 @@ class FSSetDrawObject
       Node|Add = {Dictionary.get @items I}
       XDim     = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node draw(X Y)}
-         case I < @maxPtr
+         if I < @maxPtr
          then FSSetDrawObject,
             performDraw((I + 1) (X + XDim + Add) Y StopValue)
-         else skip
          end
-      else
-         skip
       end
    end
 
@@ -60,14 +56,13 @@ class FSSetDrawObject
       Node|_ = {Dictionary.get @items I}
    in
       {Node undraw}
-      case I < @maxPtr
+      if I < @maxPtr
       then FSSetDrawObject, performUndraw((I + 1))
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          Visual    = @visual
          Server    = {Visual getServer($)}
@@ -101,21 +96,18 @@ class FSSetDrawObject
       Node|Add = {Dictionary.get @items I}
       XDim     = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node reDraw(X Y)}
-         case I < @maxPtr
+         if I < @maxPtr
          then FSSetDrawObject,
             performReDraw((I + 1) (X + XDim + Add) Y StopValue)
-         else skip
          end
-      else
-         skip
       end
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          xAnchor <- (@xAnchor + X)
@@ -128,9 +120,8 @@ class FSSetDrawObject
       Node|_ = {Dictionary.get @items I}
    in
       {Node moveNodeXY(X XF Y YF)}
-      case I < @maxPtr
+      if I < @maxPtr
       then FSSetDrawObject, performMoveNodeXY((I + 1) X XF Y YF)
-      else skip
       end
    end
 

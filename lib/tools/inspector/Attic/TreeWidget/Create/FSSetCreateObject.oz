@@ -49,7 +49,7 @@ class FSSetCreateObject
    end
 
    meth iterateList(Ls StopValue)
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          case Ls
          of Li|Lr then
@@ -62,8 +62,6 @@ class FSSetCreateObject
          in
             {Dictionary.put Items MaxPtr Node|0}
          end
-      else
-         skip
       end
    end
 

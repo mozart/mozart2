@@ -19,8 +19,7 @@ class FDIntLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
-      then
+      if @dazzle then
          StopValue = {@visual getStop($)}
          VarName   = @varName
          XDim
@@ -31,7 +30,6 @@ class FDIntLayoutObject
          {@cbrace layout}
          XDim = ({VarName getXDim($)} + 3)
          FDIntLayoutObject, performLayout(1 XDim StopValue)
-      else skip
       end
    end
 
@@ -39,11 +37,11 @@ class FDIntLayoutObject
       Node = {Dictionary.get @items I}
       IXDim
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node layout}
          IXDim = {Node getXDim($)}
-         case I < @width
+         if I < @width
          then
             FDIntLayoutObject, performLayout((I + 1) (XDim + (IXDim + 1)))
          else

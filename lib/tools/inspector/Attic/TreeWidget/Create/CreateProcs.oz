@@ -19,7 +19,7 @@
 fun {Create CurValue Parent Index Visual Depth}
    MaxDepth = {Visual getDepth($)}
 in
-   case Depth =< MaxDepth
+   if Depth =< MaxDepth
    then
       case {Value.status CurValue}
       of kinded(Type) then
@@ -55,7 +55,7 @@ in
             {New TreeNodes.atomTreeNode
              create(CurValue Parent Index Visual Depth)}
          [] name   then
-            case {IsBool CurValue}
+            if {IsBool CurValue}
             then {New TreeNodes.boolTreeNode
                   create(CurValue Parent Index Visual Depth)}
             else {New TreeNodes.nameTreeNode
@@ -98,7 +98,7 @@ end
 fun {CycleCreate CurValue Parent Index Visual CycleMan Depth}
    MaxDepth = {Visual getDepth($)}
 in
-   case Depth =< MaxDepth
+   if Depth =< MaxDepth
    then
       Ret = {CycleMan get(CurValue $)}
    in
@@ -138,7 +138,7 @@ in
                {New TreeNodes.atomTreeNode
                 create(CurValue Parent Index Visual Depth)}
             [] name   then
-               case {IsBool CurValue}
+               if {IsBool CurValue}
                then {New TreeNodes.boolTreeNode
                      create(CurValue Parent Index Visual Depth)}
                else {New TreeNodes.nameTreeNode

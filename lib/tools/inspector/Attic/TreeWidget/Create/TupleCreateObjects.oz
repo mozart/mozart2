@@ -61,16 +61,16 @@ in
          Visual = @visual
          Depth  = @depth
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Node      = {Create @value.I self I Visual Depth}
                Separator = {New InternalAtomNode create('#' self I Visual Depth)}
             in
                {Dictionary.put @items I Node|Separator}
                HashTupleCreateObject, performInsertion((I + 1) StopValue)
-            elsecase I == @widthLen
+            elseif I == @widthLen
             then
                Node = {Create @value.I self I Visual Depth}
             in
@@ -130,11 +130,11 @@ in
       end
 
       meth performInsertion(I Vs StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< @maxWidth
+            if I =< @maxWidth
             then
-               case {IsFree Vs}
+               if {IsFree Vs}
                then
                   Node = {Create Vs self I @visual @depth}
                in
@@ -188,14 +188,13 @@ in
       in
          {Separator undraw}
          {Dictionary.put Items I Node}
-         case I < @width
+         if I < @width
          then PipeTupleCreateObject, removeSeparators((I + 1))
-         else skip
          end
       end
 
       meth addSeparators(I)
-         case I > 0
+         if I > 0
          then
             Items = @items
             Node  = {Dictionary.get Items I}
@@ -204,7 +203,6 @@ in
          in
             {Dictionary.put Items I Node|Separator}
             PipeTupleCreateObject, addSeparators(I - 1)
-         else skip
          end
       end
    end
@@ -246,9 +244,9 @@ in
          Depth    = @depth
          CycleMan = @cycleMan
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Separator = {New InternalAtomNode
                             create('#' self I Visual Depth)}
@@ -261,7 +259,7 @@ in
                {Dictionary.put @items I Node|Separator}
                HashTupleCycleCreateObject,
                performInsertion((I + 1) StopValue)
-            elsecase I == @widthLen
+            elseif I == @widthLen
             then
                Node
             in
@@ -324,11 +322,11 @@ in
       end
 
       meth performInsertion(I Vs StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< @maxWidth
+            if I =< @maxWidth
             then
-               case {IsFree Vs}
+               if {IsFree Vs}
                then
                   CycleMan = @cycleMan
                   Node
@@ -354,7 +352,7 @@ in
                   {CycleMan pop}
                   {CycleMan getStack(Node)}
                   {Dictionary.put @items I Node|Separator}
-                  case {System.eq Vr @value}
+                  if {System.eq Vr @value}
                   then PipeTupleCycleCreateObject, endCycleInsertion((I + 1))
                   else PipeTupleCycleCreateObject, performInsertion((I + 1) Vr)
                   end
@@ -397,7 +395,7 @@ in
       meth endCycleInsertion(I)
          CycleMan = @cycleMan
       in
-         case I =< @maxWidth
+         if I =< @maxWidth
          then
             Node
          in
@@ -463,15 +461,15 @@ class LabelTupleCreateObject
    meth performInsertion(I StopValue)
       Width = @width
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
-         case I =< Width
+         if I =< Width
          then
             Node = {Create @value.I self I @visual @depth}
          in
             {Dictionary.put @items I Node}
             LabelTupleCreateObject, performInsertion((I + 1) StopValue)
-         elsecase Width < @widthLen
+         elseif Width < @widthLen
          then
             Bitmap = {New BitmapTreeNode create(width self I @visual @depth)}
          in
@@ -525,9 +523,9 @@ class LabelTupleCycleCreateObject
       Width    = @width
       CycleMan = @cycleMan
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
-         case I =< Width
+         if I =< Width
          then
             Node
          in
@@ -537,14 +535,13 @@ class LabelTupleCycleCreateObject
             {CycleMan getStack(Node)}
             {Dictionary.put @items I Node}
             LabelTupleCycleCreateObject, performInsertion((I + 1) StopValue)
-         elsecase Width < @widthLen
+         elseif Width < @widthLen
          then
             Bitmap = {New BitmapTreeNode create(width @visual @depth)}
          in
             {CycleMan getStack(Bitmap)}
             {Dictionary.put @items I Bitmap}
             width <- I
-         else skip
          end
       else
          {self stopCreation}

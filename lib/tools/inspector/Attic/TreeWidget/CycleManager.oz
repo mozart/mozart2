@@ -66,7 +66,7 @@ define
       meth seek(Value Is $)
          case Is
          of (IVal|Node|IR)|Ir then
-            case {System.eq Value IVal}
+            if {System.eq Value IVal}
             then Node|IR
             else CycleManager, seek(Value Ir $)
             end

@@ -16,9 +16,9 @@
 
 local
    fun {FCreate Value Parent Index Visual Depth}
-      case {IsAtom Value}
+      if {IsAtom Value}
       then {New TreeNodes.atomTreeNode create(Value Parent Index Visual Depth)}
-      elsecase {IsName Value}
+      elseif {IsName Value}
       then {New TreeNodes.nameTreeNode create(Value Parent Index Visual Depth)}
       else {New TreeNodes.intTreeNode  create(Value Parent Index Visual Depth)}
       end
@@ -81,9 +81,9 @@ in
       meth performInsertion(I As StopValue)
          Width = @width
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< Width
+            if I =< Width
             then
                A|Ar   = As
                Visual = @visual
@@ -94,7 +94,7 @@ in
                {Label setLayoutType(record)}
                {Dictionary.put @items I Label|Node}
                RecordCreateObject, performInsertion((I + 1) Ar StopValue)
-            elsecase Width < @arityLen
+            elseif Width < @arityLen
             then
                Visual  = @visual
                Depth   = @depth
@@ -145,7 +145,7 @@ in
       end
 
       meth computeArityLen(As I)
-         case {IsFree As}
+         if {IsFree As}
          then arityLen <- I
          elsecase As
          of nil then arityLen <- (I - 1)
@@ -156,11 +156,11 @@ in
       meth performInsertion(I As StopValue)
          Width = @width
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< Width
+            if I =< Width
             then
-               case {IsFree As}
+               if {IsFree As}
                then
                   Visual = @visual
                   Depth  = @depth
@@ -185,7 +185,7 @@ in
                [] nil then
                   width <- (I - 1)
                end
-            elsecase Width < @arityLen
+            elseif Width < @arityLen
             then
                Visual = @visual
                Depth  = @depth
@@ -241,9 +241,9 @@ in
       meth performInsertion(I As StopValue)
          Width = @width
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< Width
+            if I =< Width
             then
                A|Ar     = As
                Visual   = @visual
@@ -260,7 +260,7 @@ in
                {Dictionary.put @items I Label|Node}
                RecordCycleCreateObject,
                performInsertion((I + 1) Ar StopValue)
-            elsecase Width < @arityLen
+            elseif Width < @arityLen
             then
                Visual  = @visual
                Depth   = @depth
@@ -314,11 +314,11 @@ in
       meth performInsertion(I As StopValue)
          Width = @width
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I =< Width
+            if I =< Width
             then
-               case {IsFree As}
+               if {IsFree As}
                then
                   Visual = @visual
                   Depth  = @depth
@@ -349,7 +349,7 @@ in
                [] nil then
                   width <- (I - 1)
                end
-            elsecase Width < @arityLen
+            elseif Width < @arityLen
             then
                Visual = @visual
                Depth  = @depth
@@ -359,7 +359,6 @@ in
                {@cycleMan getStack(Bitmap)}
                {Dictionary.put @items I Label|Bitmap}
                width <- I
-            else skip
             end
          else
             {self stopCreation}

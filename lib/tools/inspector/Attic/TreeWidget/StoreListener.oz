@@ -55,7 +55,7 @@ define
             VarDict     = @varDict
             Value|Nodes = {Dictionary.get VarDict MatchNum}
          in
-            case {Member Node Nodes}
+            if {Member Node Nodes}
             then skip
             else {Dictionary.put VarDict MatchNum Value|(Node|Nodes)}
             end
@@ -72,9 +72,9 @@ define
       meth performSeekVar(I Value $)
          CurValue|_ = {Dictionary.get @varDict I}
       in
-         case {System.eq Value CurValue}
+         if {System.eq Value CurValue}
          then I
-         elsecase I < @varNum
+         elseif I < @varNum
          then StoreListener, performSeekVar((I + 1) Value $)
          else 0
          end
@@ -94,7 +94,7 @@ define
          {Wait Touched}
          %% Re-enter sync barrier
          {Server notifyNodes(VarNum Mode)}
-         case {IsDet Value}
+         if {IsDet Value}
          then skip
          else
             %% Keep on running until determined
@@ -120,7 +120,7 @@ define
             RI = {Node getRootIndex(0 $)}
          in
             {Node tell}
-            case {Member RI RIs}
+            if {Member RI RIs}
             then StoreListener, performNotifyNodes(RIs Nr)
             else StoreListener, performNotifyNodes((RI|RIs) Nr)
             end
@@ -135,7 +135,7 @@ define
             RI = {Node getRootIndex(0 $)}
          in
             {Node tellLabel}
-            case {Member RI RIs}
+            if {Member RI RIs}
             then StoreListener, performNotifyFeatureNodes(RIs Nr)
             else StoreListener, performNotifyFeatureNodes((RI|RIs) Nr)
             end

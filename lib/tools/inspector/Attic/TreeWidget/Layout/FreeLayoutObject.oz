@@ -19,15 +19,13 @@ class FreeLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
-      then
+      if @dazzle then
          string <- {System.printName @value}
          xDim   <- {VirtualString.length @string}
          yDim   <- 1
          color  <- {OpMan get(freeVarColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end

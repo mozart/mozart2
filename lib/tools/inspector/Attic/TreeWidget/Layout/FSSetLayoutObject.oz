@@ -19,12 +19,11 @@ class FSSetLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          StopValue = {@visual getStop($)}
       in
          FSSetLayoutObject, performLayout(1 0 StopValue)
-      else skip
       end
    end
 
@@ -32,11 +31,11 @@ class FSSetLayoutObject
       Node|Add = {Dictionary.get @items I}
       IXDim
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node layout}
          IXDim = {Node getXDim($)}
-         case I < @maxPtr
+         if I < @maxPtr
          then
             FSSetLayoutObject, performLayout((I + 1) (XDim + IXDim + Add))
          else

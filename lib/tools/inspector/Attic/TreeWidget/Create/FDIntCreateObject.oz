@@ -48,8 +48,7 @@ class FDIntCreateObject
    end
 
    meth performInsertion(I Ds StopValue)
-      case {IsFree StopValue}
-      then
+      if {IsFree StopValue} then
          case Ds
          of Entry|Dr then
             Node = {Create Entry self I @visual @depth}
@@ -59,8 +58,6 @@ class FDIntCreateObject
          [] nil      then
             width <- (I - 1)
          end
-      else
-         skip
       end
    end
 end

@@ -19,14 +19,14 @@ class FreeDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          Visual = @visual
       in
          xAnchor <- X
          yAnchor <- Y
          dirty   <- false
-         case @haveTag
+         if @haveTag
          then {@tag tkClose}
          else haveTag <- true
          end
@@ -34,19 +34,18 @@ class FreeDrawObject
                  tkInit(parent: @canvas)}
          {Visual printXY(X Y @string @tag @color)}
          {Visual logVar(self @value normal)}
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          Visual = @visual
       in
          xAnchor <- X
          yAnchor <- Y
          dirty   <- false
-         case @haveTag
+         if @haveTag
          then {@tag tkClose}
          else haveTag <- true
          end

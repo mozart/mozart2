@@ -19,7 +19,7 @@ class FDIntDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          VarName   = @varName
          XDim      = {VarName getXDim($)}
@@ -36,7 +36,6 @@ class FDIntDrawObject
          FDIntDrawObject, performDraw(1 (DeltaX + 2) Y StopValue)
          {Server logVar(self @value normal)}
          dirty <- false
-      else skip
       end
    end
 
@@ -44,10 +43,10 @@ class FDIntDrawObject
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node draw(X Y)}
-         case I < @width
+         if I < @width
          then FDIntDrawObject,
             performDraw((I + 1) (X + (XDim + 1)) Y StopValue)
          else {@cbrace draw((X + XDim) Y)}
@@ -69,14 +68,14 @@ class FDIntDrawObject
       Node = {Dictionary.get @items I}
    in
       {Node undraw}
-      case I < @width
+      if I < @width
       then FDIntDrawObject, performUndraw((I + 1))
       else {@cbrace undraw}
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          VarName   = @varName
          XDim      = {VarName getXDim($)}
@@ -116,10 +115,10 @@ class FDIntDrawObject
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node reDraw(X Y)}
-         case I < @width
+         if I < @width
          then FDIntDrawObject,
             performReDraw((I + 1) (X + (XDim + 1)) Y StopValue)
          else {@cbrace reDraw((X + XDim) Y)}
@@ -130,7 +129,7 @@ class FDIntDrawObject
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          xAnchor <- (@xAnchor + X)
@@ -146,7 +145,7 @@ class FDIntDrawObject
       Node = {Dictionary.get @items I}
    in
       {Node moveNodeXY(X XF Y YF)}
-      case I < @width
+      if I < @width
       then FDIntDrawObject, performMoveNodeXY((I + 1) X XF Y YF)
       else {@cbrace moveNodeXY(X XF Y YF)}
       end

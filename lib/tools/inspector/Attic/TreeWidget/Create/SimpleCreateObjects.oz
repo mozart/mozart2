@@ -52,7 +52,7 @@ class AtomCreateObject
       AtomStr = {Atom.toString Value}
    in
       @type = atom
-      case AtomCreateObject, skipQuoting(AtomStr $)
+      if AtomCreateObject, skipQuoting(AtomStr $)
       then CreateObject, create(MakeStr Parent Index Visual Depth)
       else CreateObject, create('\''#MakeStr#'\'' Parent Index Visual Depth)
       end
@@ -81,7 +81,7 @@ class AtomCreateObject
       [] A|Ar then
          Type = {Char.type A}
       in
-         case ((Type == upper) orelse
+         if ((Type == upper) orelse
                (Type == lower) orelse
                (Type == digit) orelse
                (A == 95))

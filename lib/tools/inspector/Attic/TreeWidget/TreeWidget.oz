@@ -125,12 +125,12 @@ define
       end
 
       meth performSearchNode(I Min X Y $)
-         case I =< @maxPtr
+         if I =< @maxPtr
          then
             Node = {Dictionary.get @nodes I}
             Max  = (Min + {Node getYDim($)})
          in
-            case Y >= Min andthen Y =< Max
+            if Y >= Min andthen Y =< Max
             then {Node searchNode(coord(X (Y - Min)) $)}
             else TreeWidget, performSearchNode((I + 1) Max X Y $)
             end
@@ -219,7 +219,7 @@ define
          Node = TreeWidget, performCreation(Value self MaxPtr 0 $)
          maxPtr <- MaxPtr
          {Node layout}
-         case {IsFree @stopV}
+         if {IsFree @stopV}
          then {Dictionary.put Nodes MaxPtr Node}
          else
             Node = {New BitmapTreeNode
@@ -232,12 +232,12 @@ define
          end
          RealNode = {Dictionary.get Nodes MaxPtr}
          {RealNode draw(1 @curY)}
-         case {IsFree @stopV}
+         if {IsFree @stopV}
          then
             YDim = {RealNode getYDim($)}
             curY <- (@curY + YDim)
             TreeWidget, moveCanvasView
-         elsecase {RealNode ignoreStop($)}
+         elseif {RealNode ignoreStop($)}
          then
             YDim = {RealNode getYDim($)}
             curY <- (@curY + YDim)
@@ -272,14 +272,13 @@ define
       end
 
       meth calcMaxX(I)
-         case I =< @maxPtr
+         if I =< @maxPtr
          then
             Node = {Dictionary.get @nodes I}
             XDim = {Node getXDim($)}
          in
-            case @maxX < XDim
+            if @maxX < XDim
             then maxX <- XDim
-            else skip
             end
             TreeWidget, calcMaxX((I + 1))
          else skip
@@ -322,7 +321,7 @@ define
       in
          {OldNode undraw}
          {Node setYDim(YDim)}
-         case {OldNode isProxy($)}
+         if {OldNode isProxy($)}
          then {OldNode alter(Node)}
          else {Dictionary.put Items I Node}
          end
@@ -348,7 +347,7 @@ define
          Node
       in
          {OldNode undraw}
-         case N > 0
+         if N > 0
          then
             DDepth = @dDepth
          in
@@ -400,9 +399,7 @@ define
       end
 
       meth handleDepthExpansion(N Value Index)
-         case N =< 0
-         then skip
-         else
+         if N > 0 then
             Items    = @nodes
             Node     = {Dictionary.get Items Index}
             YDim     = {Node getYDim($)}
@@ -452,7 +449,7 @@ define
          curY <- (@curY + Delta)
          case Delta
          of 0 then skip
-         elsecase I == @maxPtr
+         elseif I == @maxPtr
          then skip
          else
             Zero = 0
@@ -476,9 +473,8 @@ define
          Node = {Dictionary.get @nodes I}
       in
          {Node moveNodeXY(X XF Y YF)}
-         case I < @maxPtr
+         if I < @maxPtr
          then TreeWidget, moveNodes((I + 1) X XF Y YF)
-         else skip
          end
       end
 

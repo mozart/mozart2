@@ -20,7 +20,7 @@ local
          DrawObject
 
       meth draw(X Y)
-         case @dirty
+         if @dirty
          then
             StopValue = {@visual getStop($)}
          in
@@ -33,14 +33,13 @@ local
                TupleShareDrawObject, verticalDraw(1 X Y StopValue)
             end
             dirty <- false
-         else skip
          end
       end
 
       meth horizontalDraw(I X Y StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Node|Separator = {Dictionary.get @items I}
                XDim           = {Node getXDim($)}
@@ -61,9 +60,9 @@ local
       end
 
       meth verticalDraw(I X Y StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Node|Separator = {Dictionary.get @items I}
                YDim           = {Node getYDim($)}
@@ -90,7 +89,7 @@ local
       end
 
       meth performUndraw(I)
-         case I < @width
+         if I < @width
          then
             Node|Separator = {Dictionary.get @items I}
          in
@@ -112,13 +111,13 @@ local
          Items = @items
          Node
       in
-         case I < @width
+         if I < @width
          then
             OldNode|Separator = {Dictionary.get @items I}
          in
             {OldNode undraw}
             Node = {self Call(OldNode Value I $)}
-            case {OldNode isProxy($)}
+            if {OldNode isProxy($)}
             then {OldNode alter(Node)}
             else {Dictionary.put Items I Node|Separator}
             end
@@ -127,7 +126,7 @@ local
          in
             {OldNode undraw}
             Node = {self Call(OldNode Value I $)}
-            case {OldNode isProxy($)}
+            if {OldNode isProxy($)}
             then {OldNode alter(Node)}
             else {Dictionary.put Items I Node}
             end
@@ -152,7 +151,7 @@ local
          Items = @items
          Node
       in
-         case I < @width
+         if I < @width
          then
             OldNode|Separator = {Dictionary.get @items I}
             Proxy             = {New ProxyNode create(OldNode Node)}
@@ -174,7 +173,7 @@ local
       meth unlink(I)
          Items = @items
       in
-         case I < @width
+         if I < @width
          then
             OldNode|Separator = {Dictionary.get Items I}
             Node              = {OldNode delete($)}
@@ -196,7 +195,7 @@ local
       end
 
       meth menuHint(Index Status)
-         case Index < @width
+         if Index < @width
          then
             Node|_ = {Dictionary.get @items Index}
          in
@@ -214,7 +213,7 @@ local
       end
 
       meth moveNodeXY(X XF Y YF)
-         case @dirty
+         if @dirty
          then skip
          else
             xAnchor <- (@xAnchor + X)
@@ -224,7 +223,7 @@ local
       end
 
       meth performMoveNodeXY(I X XF Y YF)
-         case I < @width
+         if I < @width
          then
             Node|Separator = {Dictionary.get @items I}
          in
@@ -239,7 +238,7 @@ local
       end
 
       meth reDraw(X Y)
-         case @dirty
+         if @dirty
          then
             StopValue = {@visual getStop($)}
          in
@@ -272,9 +271,9 @@ local
       end
 
       meth horizontalReDraw(I X Y StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Node|Separator = {Dictionary.get @items I}
                XDim           = {Node getXDim($)}
@@ -289,15 +288,13 @@ local
             in
                {Node reDraw(X Y)}
             end
-         else
-            skip
          end
       end
 
       meth verticalReDraw(I X Y StopValue)
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
-            case I < @width
+            if I < @width
             then
                Node|Separator = {Dictionary.get @items I}
                YDim           = {Node getYDim($)}
@@ -313,8 +310,6 @@ local
             in
                {Node reDraw(X Y)}
             end
-         else
-            skip
          end
       end
 
@@ -330,12 +325,12 @@ local
       end
 
       meth horizontalSearch(I Min X $)
-         case I < @width
+         if I < @width
          then
             Node|_ = {Dictionary.get @items I}
             Max    = (Min + {Node getXDim($)})
          in
-            case X >= Min andthen X =< Max
+            if X >= Min andthen X =< Max
             then {Node searchNode(coord((X - Min) 0) $)}
             else TupleShareDrawObject, horizontalSearch((I + 1) (Max + 1) X $)
             end
@@ -343,7 +338,7 @@ local
             Node = {Dictionary.get @items I}
             Max  = (Min + {Node getXDim($)})
          in
-            case X >= Min andthen X =< Max
+            if X >= Min andthen X =< Max
             then {Node searchNode(coord((X - Min) 0) $)}
             else nil
             end
@@ -351,12 +346,12 @@ local
       end
 
       meth verticalSearch(I Min X Y $)
-         case I < @width
+         if I < @width
          then
             Node|_ = {Dictionary.get @items I}
             Max    = (Min + {Node getYDim($)})
          in
-            case Y >= Min andthen Y =< Max
+            if Y >= Min andthen Y =< Max
             then {Node searchNode(coord(X (Y - Min)) $)}
             else TupleShareDrawObject, verticalSearch((I + 1) Max X Y $)
             end
@@ -364,7 +359,7 @@ local
             Node = {Dictionary.get @items I}
             Max  = (Min + {Node getXDim($)})
          in
-            case Y >= Min andthen Y =< Max
+            if Y >= Min andthen Y =< Max
             then {Node searchNode(coord(X (Y - Min)) $)}
             else nil
             end
@@ -372,7 +367,7 @@ local
       end
 
       meth handleWidthExpansion(N Index)
-         case N > 0
+         if N > 0
          then
             Node = {Dictionary.get @items Index}
             Type = {Node getType($)}
@@ -418,7 +413,7 @@ local
       end
 
       meth eraseNodes(Index N)
-         case Index < @width
+         if Index < @width
          then
             Node|Separator = {Dictionary.get @items Index}
          in
@@ -429,14 +424,13 @@ local
          in
             {Node undraw}
          end
-         case N > 1
+         if N > 1
          then TupleShareDrawObject, eraseNodes((Index - 1) (N - 1))
-         else skip
          end
       end
 
       meth handleDepthExpansion(N Value Index)
-         case N < 0
+         if N < 0
          then {@parent up((N + 1) @index)}
          elsecase N
          of 0 then skip
@@ -447,7 +441,7 @@ local
             NewDepth = (@depth + N - 1)
             Node NewNode
          in
-            case Index < @width
+            if Index < @width
             then
                Separator
             in
@@ -466,7 +460,7 @@ local
       end
 
       meth up(N I)
-         case N < 0
+         if N < 0
          then {@parent up((N + 1) @index)}
          else {self replace(I @value replaceDepth)}
          end
@@ -539,7 +533,7 @@ local
       end
 
       meth moveNodeXY(X XF Y YF)
-         case @dirty
+         if @dirty
          then skip
          elsecase @cycleCount
          of 0 then
@@ -615,7 +609,7 @@ in
       end
 
       meth fastDraw(X Y)
-         case @dirty
+         if @dirty
          then
             StopValue = {@visual getStop($)}
          in
@@ -629,7 +623,6 @@ in
                fastVerticalDraw(1 (X + 1) Y StopValue)
             end
             dirty <- false
-         else skip
          end
       end
 
@@ -637,10 +630,10 @@ in
          Node = {Dictionary.get @items I}
          XDim = {Node getXDim($)}
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
             {Node draw(X Y)}
-            case I < @width
+            if I < @width
             then PipeTupleDrawObject,
                fastHorizontalDraw((I + 1) (X + (XDim + 1)) Y StopValue)
             else {@cbrace draw((X + XDim) Y)}
@@ -654,10 +647,10 @@ in
          Node = {Dictionary.get @items I}
          YDim = {Node getYDim($)}
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
             {Node draw(X Y)}
-            case I < @width
+            if I < @width
             then PipeTupleDrawObject,
                fastVerticalDraw((I + 1) X (Y + YDim) StopValue)
             else
@@ -688,16 +681,15 @@ in
          Node = {Dictionary.get @items I}
       in
          {Node undraw}
-         case I < @width
+         if I < @width
          then PipeTupleDrawObject, performFastUndraw((I + 1))
-         else skip
          end
       end
 
       meth replace(I Value Call)
          case @type
          of pipeTuple then
-            case I < @width
+            if I < @width
             then TupleShareDrawObject, replace(I Value Call)
             else PipeTupleDrawObject, slowReplace(I Value Call)
             end
@@ -724,7 +716,7 @@ in
          OldNode = {Dictionary.get Items I}
       in
          {OldNode undraw}
-         case {OldNode isProxy($)}
+         if {OldNode isProxy($)}
          then TupleShareDrawObject, replace(I Value Call)
          elsecase Call
          of replaceNormal then
@@ -746,7 +738,7 @@ in
          Node    = {self Call(OldNode Value I $)}
       in
          {OldNode undraw}
-         case {OldNode isProxy($)}
+         if {OldNode isProxy($)}
          then {OldNode alter(Node)}
          else {Dictionary.put Items I Node}
          end
@@ -792,7 +784,7 @@ in
       end
 
       meth fastMoveNodeXY(X XF Y YF)
-         case @dirty
+         if @dirty
          then skip
          else
             xAnchor <- (@xAnchor + X)
@@ -806,7 +798,7 @@ in
          Node = {Dictionary.get @items I}
       in
          {Node moveNodeXY(X XF Y YF)}
-         case I < @width
+         if I < @width
          then PipeTupleDrawObject, performMoveNodeXY((I + 1) X XF Y YF)
          else {@cbrace moveNodeXY(X XF Y YF)}
          end
@@ -820,7 +812,7 @@ in
       end
 
       meth fastReDraw(X Y)
-         case @dirty
+         if @dirty
          then
             StopValue = {@visual getStop($)}
          in
@@ -859,10 +851,10 @@ in
          Node = {Dictionary.get @items I}
          XDim = {Node getXDim($)}
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
             {Node reDraw(X Y)}
-            case I < @width
+            if I < @width
             then
                PipeTupleDrawObject,
                fastHorizontalReDraw((I + 1) (X + (XDim + 1)) Y StopValue)
@@ -878,10 +870,10 @@ in
          Node = {Dictionary.get @items I}
          YDim = {Node getYDim($)}
       in
-         case {IsFree StopValue}
+         if {IsFree StopValue}
          then
             {Node reDraw(X Y)}
-            case I < @width
+            if I < @width
             then PipeTupleDrawObject,
                fastVerticalReDraw((I + 1) X (Y + YDim) StopValue)
             else
@@ -889,8 +881,6 @@ in
             in
                {@cbrace reDraw((X + LXDim) (Y + (YDim - 1)))}
             end
-         else
-            skip
          end
       end
 
@@ -913,12 +903,12 @@ in
       end
 
       meth fastHorizontalSearch(I Min X $)
-         case I =< @width
+         if I =< @width
          then
             Node = {Dictionary.get @items I}
             Max  = (Min + {Node getXDim($)})
          in
-            case X >= Min andthen X =< Max
+            if X >= Min andthen X =< Max
             then
                {Node searchNode(coord((X - Min) 0) $)}
             else
@@ -929,12 +919,12 @@ in
       end
 
       meth fastVerticalSearch(I Min X Y $)
-         case I =< @width
+         if I =< @width
          then
             Node = {Dictionary.get @items I}
             Max  = (Min + {Node getYDim($)})
          in
-            case Y >= Min andthen Y =< Max
+            if Y >= Min andthen Y =< Max
             then {Node searchNode(coord(X (Y - Min)) $)}
             else PipeTupleDrawObject, fastVerticalSearch((I + 1) Max X Y $)
             end
@@ -943,7 +933,7 @@ in
       end
 
       meth handleWidthExpansion(N Index)
-         case N > 0
+         if N > 0
          then
             widthLen <- (@width + N)
             TupleShareDrawObject, handleWidthExpansion(N Index)
@@ -966,9 +956,8 @@ in
          Node = {Dictionary.get @items Index}
       in
          {Node undraw}
-         case N > 1
+         if N > 1
          then PipeTupleDrawObject, fastEraseNodes((Index - 1) (N - 1))
-         else skip
          end
       end
 
@@ -982,7 +971,7 @@ in
       end
 
       meth fastHandleDepthExpansion(N Value Index)
-         case N < 0
+         if N < 0
          then {@parent up((N + 1) @index)}
          elsecase N
          of 0 then skip
@@ -1065,7 +1054,7 @@ in
       meth replace(I Value Call)
          case @type
          of pipeTuple then
-            case I < @width
+            if I < @width
             then TupleShareDrawObject, replace(I Value Call)
             else PipeTupleDrawObject, slowReplace(I Value Call)
             end
@@ -1143,7 +1132,7 @@ class LabelTupleDrawObject
       locking
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          StopValue = {@visual getStop($)}
       in
@@ -1159,7 +1148,6 @@ class LabelTupleDrawObject
             verticalDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
-      else skip
       end
    end
 
@@ -1167,10 +1155,10 @@ class LabelTupleDrawObject
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node draw(X Y)}
-         case I < @width
+         if I < @width
          then LabelTupleDrawObject,
             horizontalDraw((I + 1) (X + XDim + 1) Y StopValue)
          else {@brace draw((X + XDim) Y)}
@@ -1184,10 +1172,10 @@ class LabelTupleDrawObject
       Node = {Dictionary.get @items I}
       YDim = {Node getYDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node draw(X Y)}
-         case I < @width
+         if I < @width
          then
             LabelTupleDrawObject,
             verticalDraw((I + 1) X (Y + YDim) StopValue)
@@ -1212,9 +1200,8 @@ class LabelTupleDrawObject
       Node = {Dictionary.get @items I}
    in
       {Node undraw}
-      case I < @width
+      if I < @width
       then LabelTupleDrawObject, performUndraw((I + 1))
-      else skip
       end
    end
 
@@ -1224,7 +1211,7 @@ class LabelTupleDrawObject
       Node    = {self Call(OldNode Value I $)}
    in
       {OldNode undraw}
-      case {OldNode isProxy($)}
+      if {OldNode isProxy($)}
       then {OldNode alter(Node)}
       else {Dictionary.put Items I Node}
       end
@@ -1275,7 +1262,7 @@ class LabelTupleDrawObject
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          {@label moveNodeXY(X XF Y YF)}
@@ -1289,14 +1276,14 @@ class LabelTupleDrawObject
       xAnchor <- (@xAnchor + X)
       yAnchor <- (@yAnchor + Y)
       {Node moveNodeXY(X XF Y YF)}
-      case I < @width
+      if I < @width
       then LabelTupleDrawObject, performMoveNodeXY((I + 1) X XF Y YF)
       else {@brace moveNodeXY(X XF Y YF)}
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          StopValue = {@visual getStop($)}
       in
@@ -1335,16 +1322,14 @@ class LabelTupleDrawObject
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node reDraw(X Y)}
-         case I < @width
+         if I < @width
          then LabelTupleDrawObject,
             horizontalReDraw((I + 1) (X + XDim + 1) Y StopValue)
          else {@brace reDraw((X + XDim) Y)}
          end
-      else
-         skip
       end
    end
 
@@ -1352,10 +1337,10 @@ class LabelTupleDrawObject
       Node = {Dictionary.get @items I}
       YDim = {Node getYDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Node reDraw(X Y)}
-         case I < @width
+         if I < @width
          then
             LabelTupleDrawObject,
             verticalReDraw((I + 1) X (Y + YDim) StopValue)
@@ -1364,8 +1349,6 @@ class LabelTupleDrawObject
          in
             {@brace reDraw((X + LXDim) ((Y + YDim) - 1))}
          end
-      else
-         skip
       end
    end
 
@@ -1388,12 +1371,12 @@ class LabelTupleDrawObject
    end
 
    meth horizontalSearch(I Min X $)
-      case I =< @width
+      if I =< @width
       then
          Node = {Dictionary.get @items I}
          Max  = (Min + {Node getXDim($)})
       in
-         case X >= Min andthen X =< Max
+         if X >= Min andthen X =< Max
          then {Node searchNode(coord((X - Min) 0) $)}
          else LabelTupleDrawObject, horizontalSearch((I + 1) (Max + 1) X $)
          end
@@ -1402,12 +1385,12 @@ class LabelTupleDrawObject
    end
 
    meth verticalSearch(I Min X Y $)
-      case I =< @width
+      if I =< @width
       then
          Node = {Dictionary.get @items I}
          Max  = (Min + {Node getYDim($)})
       in
-         case Y >= Min andthen Y =< Max
+         if Y >= Min andthen Y =< Max
          then {Node searchNode(coord(X (Y - Min)) $)}
          else LabelTupleDrawObject, verticalSearch((I + 1) Max X Y $)
          end
@@ -1446,7 +1429,7 @@ class LabelTupleDrawObject
    end
 
    meth handleWidthExpansion(N Index)
-      case N > 0
+      if N > 0
       then
          Node = {Dictionary.get @items Index}
          Type = {Node getType($)}
@@ -1492,14 +1475,13 @@ class LabelTupleDrawObject
 
    meth eraseNodes(Index N)
       LabelTupleDrawObject, eraseSingleNode(Index)
-      case N > 1
+      if N > 1
       then LabelTupleDrawObject, eraseNodes((Index - 1) (N - 1))
-      else skip
       end
    end
 
    meth handleDepthExpansion(N Value Index)
-      case N < 0
+      if N < 0
       then {@parent up((N + 1) @index)}
       elsecase N
       of 0 then skip
@@ -1523,7 +1505,7 @@ class LabelTupleDrawObject
    end
 
    meth up(N I)
-      case N < 0
+      if N < 0
       then {@parent up((N + 1) @index)}
       else {self replace(I @value replaceDepth)}
       end
@@ -1585,7 +1567,7 @@ class LabelTupleCycleDrawObject
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          case @cycleCount

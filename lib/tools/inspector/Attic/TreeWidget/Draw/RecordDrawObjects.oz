@@ -21,7 +21,7 @@ class RecordDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          StopValue = {@visual getStop($)}
       in
@@ -35,7 +35,6 @@ class RecordDrawObject
             RecordDrawObject, verticalDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
-      else skip
       end
    end
 
@@ -45,11 +44,11 @@ class RecordDrawObject
       NodeXDim   = {Node getXDim($)}
       DeltaX     = (X + LabelXDim)
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label draw(X Y)}
          {Node draw(DeltaX Y)}
-         case I < @width
+         if I < @width
          then RecordDrawObject,
             horizontalDraw((I + 1) (DeltaX + NodeXDim + 1) Y StopValue)
          else {@brace draw((DeltaX + NodeXDim) Y)}
@@ -64,11 +63,11 @@ class RecordDrawObject
       LabelXDim  = {Label getXDim($)}
       NodeYDim   = {Node getYDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label draw(X Y)}
          {Node draw((X + LabelXDim) Y)}
-         case I < @width
+         if I < @width
          then RecordDrawObject,
             verticalDraw((I + 1) X (Y + NodeYDim) StopValue)
          else
@@ -106,9 +105,8 @@ class RecordDrawObject
    in
       {Label undraw}
       {Node undraw}
-      case I < @width
+      if I < @width
       then RecordDrawObject, performUndraw((I + 1))
-      else skip
       end
    end
 
@@ -118,7 +116,7 @@ class RecordDrawObject
       Node          = {self Call(OldNode Value I $)}
    in
       {OldNode undraw}
-      case {OldNode isProxy($)}
+      if {OldNode isProxy($)}
       then {OldNode alter(Node)}
       else {Dictionary.put Items I Label|Node}
       end
@@ -168,7 +166,7 @@ class RecordDrawObject
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          xAnchor <- (@xAnchor + X)
@@ -183,14 +181,14 @@ class RecordDrawObject
    in
       {Label moveNodeXY(X XF Y YF)}
       {Node moveNodeXY(X XF Y YF)}
-      case I < @width
+      if I < @width
       then RecordDrawObject, performMoveNodeXY((I + 1) X XF Y YF)
       else {@brace moveNodeXY(X XF Y YF)}
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          StopValue = {@visual getStop($)}
       in
@@ -229,17 +227,15 @@ class RecordDrawObject
       NodeXDim   = {Node getXDim($)}
       DeltaX     = (X + LabelXDim)
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label reDraw(X Y)}
          {Node reDraw(DeltaX Y)}
-         case I < @width
+         if I < @width
          then RecordDrawObject,
             horizontalReDraw((I + 1) (DeltaX + NodeXDim + 1) Y StopValue)
          else {@brace reDraw((DeltaX + NodeXDim) Y)}
          end
-      else
-         skip
       end
    end
 
@@ -248,11 +244,11 @@ class RecordDrawObject
       LabelXDim  = {Label getXDim($)}
       NodeYDim   = {Node getYDim($)}
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label reDraw(X Y)}
          {Node reDraw((X + LabelXDim) Y)}
-         case I < @width
+         if I < @width
          then RecordDrawObject,
             verticalReDraw((I + 1) X (Y + NodeYDim) StopValue)
          else
@@ -260,8 +256,6 @@ class RecordDrawObject
          in
             {@brace reDraw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
          end
-      else
-         skip
       end
    end
 
@@ -284,13 +278,13 @@ class RecordDrawObject
    end
 
    meth horizontalSearch(I Min X $)
-      case I =< @width
+      if I =< @width
       then
          Label|Node = {Dictionary.get @items I}
          LabelX     = {Label getXDim($)}
          Max        = ((Min + {Node getXDim($)}) + LabelX)
       in
-         case X >= Min andthen X =< Max
+         if X >= Min andthen X =< Max
          then {Node searchNode(coord((X - Min - LabelX) 0) $)}
          else RecordDrawObject, horizontalSearch((I + 1) (Max + 1) X $)
          end
@@ -299,13 +293,13 @@ class RecordDrawObject
    end
 
    meth verticalSearch(I Min X Y $)
-      case I =< @width
+      if I =< @width
       then
          Label|Node = {Dictionary.get @items I}
          LabelX     = {Label getXDim($)}
          Max        = (Min + {Node getYDim($)})
       in
-         case Y >= Min andthen Y =< Max
+         if Y >= Min andthen Y =< Max
          then {Node searchNode(coord((X - LabelX) (Y - Min)) $)}
          else RecordDrawObject, verticalSearch((I + 1) Max X Y $)
          end
@@ -344,7 +338,7 @@ class RecordDrawObject
    end
 
    meth handleWidthExpansion(N Index)
-      case N > 0
+      if N > 0
       then
          _|Node = {Dictionary.get @items Index}
          Type   = {Node getType($)}
@@ -391,14 +385,13 @@ class RecordDrawObject
 
    meth eraseNodes(Index N)
       RecordDrawObject, eraseSingleNode(Index)
-      case N > 1
+      if N > 1
       then RecordDrawObject, eraseNodes((Index - 1) (N - 1))
-      else skip
       end
    end
 
    meth handleDepthExpansion(N Value Index)
-      case N < 0
+      if N < 0
       then
          {@parent up((N + 1) @index)}
       elsecase N
@@ -423,7 +416,7 @@ class RecordDrawObject
    end
 
    meth up(N I)
-      case N < 0
+      if N < 0
       then {@parent up((N + 1) @index)}
       else {self replace(I nil replaceDepth)} %% nil is Dummy Value
       end
@@ -441,17 +434,16 @@ class KindedRecordDrawObject
       haveLabel : false %% Label Hint
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          RecordDrawObject, draw(X Y)
          {@visual logVar(self @monitorValue normal)}
          KindedRecordDrawObject, watchLabel
-      else skip
       end
    end
 
    meth watchLabel
-      case @haveLabel
+      if @haveLabel
       then skip
       else
          LabelVar = @labelVar
@@ -464,7 +456,7 @@ class KindedRecordDrawObject
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          RecordDrawObject, reDraw(X Y)
          {@visual logVar(self @monitorValue normal)}
@@ -585,7 +577,7 @@ class RecordCycleDrawObject
    end
 
    meth moveNodeXY(X XF Y YF)
-      case @dirty
+      if @dirty
       then skip
       else
          case @cycleCount

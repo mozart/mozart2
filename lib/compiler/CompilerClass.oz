@@ -188,13 +188,11 @@ local
                {@reporter error(coord: C kind: 'compiler engine error'
                                 msg: 'unknown switch `'#SwitchName#'\''
                                 items: [hint(l: 'Query'
-                                             m: oz(setSwitch(SwitchName B)))]
-                                abort: false)}
+                                             m: oz(setSwitch(SwitchName B)))])}
                {@reporter endBatch(rejected)}
             else
                {@reporter error(coord: C kind: 'compiler directive error'
-                                msg: 'unknown switch `'#SwitchName#'\''
-                                abort: false)}
+                                msg: 'unknown switch `'#SwitchName#'\'')}
             end
          end
       end
@@ -298,20 +296,18 @@ local
             X = {Dictionary.get self.values PrintName}
          else
             {@reporter error(kind: 'compiler engine error'
-                             msg: 'undeclared variable '#oz(PrintName)
-                             items: [hint(l: 'Query' m: oz(M))]
-                             abort: false)}
+                             msg: 'undeclared variable '#pn(PrintName)
+                             items: [hint(l: 'Query' m: oz(M))])}
          end
       end
       meth removeFromEnv(PrintName)
-         if {Dictionary.member PrintName self.variables} then
+         if {Dictionary.member self.variables PrintName} then
             {Dictionary.remove self.variables PrintName}
             {Dictionary.remove self.values PrintName}
             {@narrator tell(env({Dictionary.toRecord env self.values}))}
          else
-            {@narrator warn(kind: 'compiler engine warning'
-                            msg: 'undeclared variable '#oz(PrintName)
-                            items: [hint(l: 'Print Name' m: pn(PrintName))])}
+            {@reporter error(kind: 'compiler engine error'
+                             msg: 'undeclared variable '#pn(PrintName))}
          end
       end
       meth getVars($)
@@ -899,8 +895,7 @@ in
                {Reporter error(kind: 'compiler engine error'
                                msg: ('execution of query raised an exception '#
                                      '-- description follows')
-                               items: [hint(l: 'Query' m: oz(M))]
-                               abort: false)}
+                               items: [hint(l: 'Query' m: oz(M))])}
                Narrator.'class', tell(message({AdjoinAt {Error.formatExc E}
                                                footer false} unit))
                {Reporter endBatch(rejected)}

@@ -82,10 +82,12 @@ local
       end
    in
       fun {TicketToString T}
+         Stamp#Pid = T.time
          S = {App ["ozticket://"
                    T.host
                    &:|{Int.toString T.port}
-                   &:|{IntToKey T.time}
+                   &:|{IntToKey Stamp}
+                   &:|{IntToKey Pid}
                    &/|{IntToKey T.key}
                    [&: case T.single then &s else &m end]] nil}
       in
@@ -97,11 +99,11 @@ local
             %% syntactically illegal
             S={VirtualString.toString V}
             [_ nil ProcPart KeyPart]  = {String.tokens S &/}
-            [HostS PortS TimeS]       = {String.tokens ProcPart &:}
+            [HostS PortS Stamp Pid]   = {String.tokens ProcPart &:}
             [KeyS SingS _]            = {String.tokens KeyPart  &:}
             Ticket = ticket(host:   HostS
                             port:   {String.toInt PortS}
-                            time:   {KeyToInt TimeS}
+                            time:   {KeyToInt Stamp}#{KeyToInt Pid}
                             key:    {KeyToInt KeyS}
                             single: SingS=="s")
          in
@@ -129,13 +131,12 @@ in
       local
          PID = pid(get:      {`Builtin` 'PID.get'      1}
                    received: {`Builtin` 'PID.received' 1}
-                   toPort:   {`Builtin` 'PID.toPort' 4})
-
+                   toPort:   {`Builtin` 'PID.toPort' 5})
       in
          ReqStream = {PID.received}
          ThisPid   = {PID.get}
          fun {ToPort T}
-            {PID.toPort T.host T.port T.time}
+            {PID.toPort T.host T.port T.time.1 T.time.2}
          end
       end
 

@@ -24,8 +24,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
-
 functor $ prop once
 
 import
@@ -77,46 +75,3 @@ body
    ProcedureCoord = {`Builtin` 'Debug.procedureCoord' 2}
 
 end
-
-\else
-
-
-local
-
-   BIdumpThreads        = {`Builtin` 'Debug.dumpThreads' 0}
-   BIprepareDumpThreads = {`Builtin` 'Debug.prepareDumpThreads' 0}
-   BIlistThreads        = {`Builtin` 'Debug.listThreads' 1}
-
-   local
-      proc {Dummy} skip end
-   in
-      proc {DumpThreads}
-         {BIprepareDumpThreads}
-         {System.gcDo}
-         {Dummy} % force GC
-         {BIdumpThreads}
-      end
-      proc {ListThreads ?Ts}
-         {BIprepareDumpThreads}
-         {System.gcDo}
-         {Dummy} % force GC
-         {BIlistThreads ?Ts}
-      end
-   end
-
-in
-
-   Debug = debug(dumpThreads:    DumpThreads
-                 listThreads:    ListThreads
-                 breakpointAt:   {`Builtin` 'Debug.breakpointAt'   4}
-                 breakpoint:     {`Builtin` 'Debug.breakpoint'     0}
-                 displayDef:     {`Builtin` 'Debug.displayDef'     2}
-                 displayCode:    {`Builtin` 'Debug.displayCode'    2}
-                 print:          {`Builtin` 'Debug.print'          2}
-                 printLong:      {`Builtin` 'Debug.printLong'      2}
-                 procedureCode:  {`Builtin` 'Debug.procedureCode'  2}
-                 procedureCoord: {`Builtin` 'Debug.procedureCoord' 2}
-                )
-end
-
-\end

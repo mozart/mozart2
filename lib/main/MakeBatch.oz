@@ -19,9 +19,6 @@
 %%% WARRANTIES.
 %%%
 
-%\define LILO
-\ifdef LILO
-
 {Application.syslet
  'ozc'
  functor
@@ -53,27 +50,3 @@
     {Syslet.exit {BatchCompile Syslet.args}}
  end
  plain}
-
-\else
-
-{Application.syslet
- 'ozbatch'
- c('SP':       eager
-   'OP':       lazy
-   'AP':       lazy
-   'Compiler': eager)
- proc instantiate {$ IMPORT ?BatchCompile}
-    \insert 'SP.env'
-    = IMPORT.'SP'
-    \insert 'OP.env'
-    = IMPORT.'OP'
-    \insert 'AP.env'
-    = IMPORT.'AP'
-    \insert 'Compiler.env'
-    = IMPORT.'Compiler'
- in
-    \insert BatchCompile
- end
- plain}
-
-\endif

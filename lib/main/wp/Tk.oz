@@ -22,7 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
 functor $ prop once
 
 import
@@ -106,10 +105,6 @@ body
                      toListAtom:   TkStringToListAtom
                      toListInt:    TkStringToListInt
                      toListFloat:  TkStringToListFloat)
-\else
-local
-\endif
-
 
    %%
    %% Load & link wish interface
@@ -1341,69 +1336,5 @@ local
          {Dictionary.remove TkDict ActionId}
       end
    end
-
-\ifndef LILO
-in
-
-   tk(send:          TkSend
-      batch:         TkBatch
-
-      return:           TkReturnString
-      returnString:     TkReturnString
-      returnAtom:       TkReturnAtom
-      returnInt:        TkReturnInt
-      returnFloat:      TkReturnFloat
-      returnList:       TkReturnListString
-      returnListString: TkReturnListString
-      returnListAtom:   TkReturnListAtom
-      returnListInt:    TkReturnListInt
-      returnListFloat:  TkReturnListFloat
-
-      getPrefix:        TkGetPrefix
-      getId:            TkGetId
-      getTclName:       TkGetTclName
-
-      invoke:        InvokeAction
-
-      button:        TkButton
-      canvas:        TkCanvas
-      checkbutton:   TkCheckbutton
-      entry:         TkEntry
-      frame:         TkFrame
-      label:         TkLabel
-      listbox:       TkListbox
-      menu:          TkMenu
-      menubutton:    TkMenubutton
-      message:       TkMessage
-      radiobutton:   TkRadiobutton
-      scale:         TkScale
-      scrollbar:     TkScrollbar
-      text:          TkText
-      toplevel:      TkToplevel
-
-      menuentry:     TkMenuentries
-
-      image:         TkImage
-
-      textTag:       TkTextTag
-      textMark:      TkTextMark
-      canvasTag:     TkCanvasTag
-
-      action:        TkAction
-      variable:      TkVariable
-      string:        string(toInt:        TkStringToInt
-                            toFloat:      TkStringToFloat
-                            toListString: TkStringToListString
-                            toListAtom:   TkStringToListAtom
-                            toListInt:    TkStringToListInt
-                            toListFloat:  TkStringToListFloat)
-
-      isColor:       IsColor
-
-      addYScrollbar: AddYScrollbar
-      addXScrollbar: AddXScrollbar
-
-      defineUserCmd: DefineUserCmd)
-\end
 
 end

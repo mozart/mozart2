@@ -23,8 +23,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
-
 functor $ prop once
 
 export
@@ -47,17 +45,3 @@ body
       {SetHandler FinalizeHandler}
    end
 end
-
-\else
-
-local
-   Register   = {`Builtin` 'Finalize.register'   2}
-   SetHandler = {`Builtin` 'Finalize.setHandler' 1}
-   proc {FinalizeEntry Value|Handler} {Handler Value} end
-   proc {FinalizeHandler L} {ForAll L FinalizeEntry} end
-in
-   {SetHandler FinalizeHandler}
-   Finalize = finalize(register:Register setHandler:SetHandler)
-end
-
-\endif

@@ -19,8 +19,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
-
 functor $ prop once
 
 import
@@ -76,32 +74,3 @@ export
 body
    \insert 'compiler/InsertAll.oz'
 end
-
-\else
-
-fun instantiate {$ IMPORT}
-   \insert 'SP.env'
-   = IMPORT.'SP'
-   \insert 'CP.env'
-   = IMPORT.'CP'
-\ifndef OZM
-   \insert '../tools/Gump.env'
-   = IMPORT.'Gump'
-\endif
-in
-   local
-      \insert 'compiler/InsertAll.oz'
-
-      Compiler = compiler(engine: CompilerEngine
-                          compilerClass: CompilerEngine   %--** deprecated
-                          genericInterface: GenericInterface
-                          quietInterface: QuietInterface
-                          evalExpression: EvalExpression
-                          virtualStringToValue: VirtualStringToValue
-                          assemble: DoAssemble)
-   in
-      \insert 'Compiler.env'
-   end
-end
-
-\endif

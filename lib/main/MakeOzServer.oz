@@ -20,8 +20,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
-
 local
 
    \insert 'dp/RemoteServer.oz'
@@ -52,40 +50,3 @@ in
    }
 
 end
-
-\else
-
-local
-
-   \insert 'dp/MakeAllLoader.oz'
-
-   \insert 'dp/RemoteServer.oz'
-
-in
-
-   {Application.syslet
-    'ozserver'
-    c
-
-    fun {$ _}
-       IMPORT = {AllLoader}
-    in
-       proc {$ Argv ?Status}
-          try
-             RunRet # CtrlRet = {IMPORT.'DP'.'Connection'.take Argv.ticket}
-          in
-             {RemoteServer RunRet CtrlRet IMPORT proc {$}
-                                                    Status = 0
-                                                 end}
-          catch _ then Status = 1
-          end
-          {Wait Status}
-       end
-
-    end
-
-    single(ticket(type:atom))
-   }
-
-end
-\end

@@ -23,31 +23,10 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
 functor $ prop once
 
 import
-   Tk.{toplevel
-       frame
-       label
-       message
-       button
-       menu
-       menubutton
-       canvas
-       scale
-       menuentry
-       entry
-
-       returnInt
-
-       isColor
-       invoke
-       send
-       batch
-       string
-       image
-       canvasTag}
+   Tk
 
    System.{get}
 
@@ -64,10 +43,6 @@ export
    images:      LoadImages
 
 body
-
-\else
-local
-\endif
 
    DefaultFont = local
                     T = {New Tk.toplevel
@@ -1364,23 +1339,5 @@ local
          end
       end
    end
-
-\ifndef LILO
-
-
-in
-
-   tkTools(error:       Error
-           dialog:      Dialog
-           menubar:     MakeMenu
-           popupmenu:   PopupMenu
-           textframe:   Textframe
-           notebook:    Notebook
-           note:        Note
-           scale:       DiscreteScale
-           numberentry: NumberEntry
-           images:      LoadImages)
-
-\endif
 
 end

@@ -778,8 +778,6 @@ local
       end
    end
 
-\ifdef LILO
-
    %%
    %% Often used short cuts
    %%
@@ -815,34 +813,3 @@ in
    end
 
 end
-\else
-
-in
-
-   Search = search(one:    OneModule
-
-                   all:    All
-                   allS:   AllS
-                   allP:   AllP
-
-                   best:   BestModule
-                   object: SearchObject)
-
-end
-
-%%
-%% Often used short cuts
-%%
-fun {SearchOne P}
-   {Search.one.depth P 1 _}
-end
-
-fun {SearchAll P}
-   {Search.all P 1 _}
-end
-
-fun {SearchBest P O}
-   {Search.best.bab P O 1 _}
-end
-
-\endif

@@ -66,8 +66,6 @@
 \insert 'standard/Functor.oz'
 \insert 'standard/BitArray.oz'
 
-\ifdef LILO
-
 \ifndef OZM
 
 {{`Builtin` save 2}
@@ -328,7 +326,5 @@ body
    skip
 end
 'Standard.ozf'}
-
-\endif
 
 \endif

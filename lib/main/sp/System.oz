@@ -28,8 +28,6 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef LILO
-
 functor $ prop once
 
 export
@@ -111,81 +109,3 @@ body
    ValueToVirtualString = {`Builtin` 'System.valueToVirtualString' 4}
 
 end
-
-
-\else
-
-
-%%
-%% Global
-%%
-Show            = {`Builtin` 'Show'            1}
-Print           = {`Builtin` 'Print'           1}
-Exit            = {`Builtin` shutdown          1}
-GetProperty     = {`Builtin` 'GetProperty'     2}
-PutProperty     = {`Builtin` 'PutProperty'     2}
-CondGetProperty = {`Builtin` 'CondGetProperty' 3}
-
-%%
-%% Module
-%%
-local
-
-   %%
-   %% Printing
-   %%
-   PrintInfo  = {`Builtin` 'System.printInfo'  1}
-   proc {ShowInfo V}
-      {PrintInfo V # '\n'}
-   end
-   PrintError = {`Builtin` 'System.printError' 1}
-   proc {ShowError V}
-      {PrintError V # '\n'}
-   end
-
-   proc {SystemSet W}
-      {PutProperty {Label W} W}
-   end
-
-   fun {SystemGet C}
-      case C
-      of     standalone then {GetProperty 'oz.standalone'}
-      elseof home       then {GetProperty 'oz.home'      }
-      else                   {GetProperty C              }
-      end
-   end
-in
-
-   System = system(%% Querying and configuring system parameters
-                   get:        SystemGet
-                   set:        SystemSet
-                   %% printing and showing of virtual strings
-                   printError: PrintError
-                   printInfo:  PrintInfo
-                   showError:  ShowError
-                   showInfo:   ShowInfo
-                   %% printing and showing of trees
-                   print:      Print
-                   show:       Show
-                   %% test for pointer equality
-                   eq:         {`Builtin` 'System.eq' 3}
-                   %% system related inquiry functions
-                   nbSusps:    {`Builtin` 'System.nbSusps' 2}
-                   printName:  {`Builtin` 'System.printName' 2}
-                   %% system control functionality
-                   gcDo:       {`Builtin` 'System.gcDo' 0}
-                   %% misc functionality
-                   apply:                {`Builtin` 'System.apply' 2}
-                   tellRecordSize:       `tellRecordSize`
-                   valueToVirtualString:
-                      {`Builtin` 'System.valueToVirtualString' 4}
-                   exit: Exit
-                   %% interface to system properties
-                   property:
-                      property(get:GetProperty
-                               put:PutProperty
-                               condGet:CondGetProperty)
-                  )
-end
-
-\endif

@@ -25,8 +25,6 @@
 %%%
 
 
-\ifdef LILO
-
 functor $ prop once
 
 export
@@ -38,13 +36,3 @@ body
    Load = {`Builtin` load 2}
    Save = {`Builtin` save 2}
 end
-
-\else
-
-Load = {`Builtin` load 2}
-Save = {`Builtin` save 2}
-
-Component = component(load:      Load
-                      save:      Save)
-
-\end

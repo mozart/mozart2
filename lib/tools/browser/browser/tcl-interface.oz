@@ -731,6 +731,18 @@ in
                               end)}
 
             %%
+            %% Windows: need an explicit "copy" key stroke:
+            local
+               PN =
+               {List.take {Atom.toString {Property.get 'platform'}.name} 3}
+            in
+               if PN == "win" then
+                  {Tk.send event(add '<<Copy>>' '<Control-q>')}
+               else skip
+               end
+            end
+
+            %%
 \ifdef DEBUG_TI
             {Show 'BrowserWindowClass::init: bindings done;'}
 \endif

@@ -71,6 +71,8 @@ import
 
    Search(one)
 
+   Property(get)
+
    System(show
           printName
           eq

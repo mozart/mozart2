@@ -113,25 +113,16 @@ prepare
       end
    end
 
-   local
-      proc {Noop noop}
-         skip
-      end
-   in
-      fun {MakeDummyObject PN}
-         DummyClass = {Object.'class' nil
-                       'meth'(noop#Noop) 'attr' 'feat' nil PN}
-      in
-         {New DummyClass noop()}
-      end
+   fun {MakeDummyObject PN}
+      {New BaseObject noop()}
+   end
 
-      fun {MakeDummyClass PN}
-         {Object.'class' nil '#' 'attr' 'feat' nil PN}
-      end
+   fun {MakeDummyClass PN}
+      {OoExtensions.'class' nil '#' 'attr' 'feat' nil PN}
    end
 
 
-      %%-----------------------------------------------------------------------
+   %%-----------------------------------------------------------------------
    %% Some constants and shorthands
 
    SAGenError    = 'static analysis error'
@@ -3592,10 +3583,10 @@ define
                   {New Core.valueNode init(Val unit)}
                [] 'class' then
                   Cls = {New Core.classToken init(Val)}
-                  Meths = {Record.make m {Class.methodNames Val}}
-                  Attrs = {Class.attrNames Val}
-                  Feats = {Class.featNames Val}
-                  Props = {Class.propNames Val}
+                  Meths = {Record.make m {OoExtensions.getMethNames Val}}
+                  Attrs = {OoExtensions.getAttrNames Val}
+                  Feats = {OoExtensions.getFeatNames Val}
+                  Props = {OoExtensions.getProps Val}
                in
                   {Record.forAll Meths fun {$} nil#unit end}
                   {Cls setMethods(Meths)}
@@ -3604,11 +3595,11 @@ define
                   {Cls setProperties(Props)}
                   Cls
                [] object then
-                  TheClass = {Class.get Val}
-                  Meths = {Record.make m {Class.methodNames TheClass}}
-                  Attrs = {Class.attrNames TheClass}
-                  Feats = {Class.featNames TheClass}
-                  Props = {Class.propNames TheClass}
+                  TheClass = {OoExtensions.getClass Val}
+                  Meths = {Record.make m {OoExtensions.getMethNames TheClass}}
+                  Attrs = {OoExtensions.getAttrNames TheClass}
+                  Feats = {OoExtensions.getFeatNames TheClass}
+                  Props = {OoExtensions.getProps TheClass}
                   Cls   = {New Core.classToken init(TheClass)}
                in
                   {Record.forAll Meths fun {$} nil#unit end}

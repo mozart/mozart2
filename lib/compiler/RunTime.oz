@@ -40,7 +40,7 @@ require
    BootRecord(tellRecordSize test testLabel testFeature)
    at 'x-oz://boot/Record'
 
-   BootObject(ooGetLock)
+   BootObject(ooGetLock ',' '@' '<-' ooExch)
    at 'x-oz://boot/Object'
 
    BootName(newUnique: NewUniqueName)
@@ -111,15 +111,15 @@ prepare
                     %% Record
                     'Record.width': Record.width
                     'Record.test': BootRecord.test
-                    'Record.testLabel': BootRecord.testLabel
+                    'Record.testLabel':   BootRecord.testLabel
                     'Record.testFeature': BootRecord.testFeature
 
                     %% Object
-                    'Object.\'@\'': Object.'@'
-                    'Object.\'<-\'': Object.'<-'
-                    'Object.exchange': Object.exchange
-                    'Object.\',\'': Object.','
-                    'Object.\'class\'': Object.'class'
+                    'Object.\'@\'':     BootObject.'@'
+                    'Object.\'<-\'':    BootObject.'<-'
+                    'Object.exchange':  BootObject.ooExch
+                    'Object.\',\'':     BootObject.','
+                    'Object.\'class\'': OoExtensions.'class'
 
                     %% Thread
 
@@ -138,8 +138,8 @@ prepare
                     'RaiseDebugCheck': RaiseDebugCheck
                     'RaiseDebugExtend': RaiseDebugExtend)
 
-   LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
-                       'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
+   LiteralValues = env('ooDefaultVar':  {NewUniqueName 'ooDefaultVar'}
+                       'ooFreeFlag':    {NewUniqueName 'ooFreeFlag'}
                        'ooRequiredArg': {NewUniqueName 'ooRequiredArg'})
 
    TokenValues = env('true': true

@@ -664,7 +664,10 @@ define
 
       else
          %% L is atomic: int, float, atom, token
-         {OzTypes.isMinimal T true}   % must have constant type
+
+         %% T must have constant type, but it need not be {OzTypes.minimal T}
+         %% (T could be, e.g., [atom nilAtom])
+
          env(var:V last:L)
       end
    end

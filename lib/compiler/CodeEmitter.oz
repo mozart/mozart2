@@ -803,18 +803,43 @@ in
             Emitter, RestoreRegisterMapping(RegMap2)
             Emitter, PopContLabel(OldContLabels)
          [] vTestConstant(_ Reg Constant Addr1 Addr2 Coord Cont InitsRS) then
-            Instr = if {IsLiteral Constant} then testLiteral
-                    elseif {IsNumber Constant} then testNumber
-                    else
-                       {Exception.raiseError
-                        compiler(internal testConstant(Constant))} unit
-                    end
+            LocalEnv1 LocalEnv2
+            HasLocalEnv R OldContLabels Label2 Dest2 InstrLabel RegMap1 RegMap2
          in
-            Emitter, EmitTestConstant(Instr Reg Constant Addr1 Addr2
-                                      Coord Cont InitsRS ThisAddr)
-         [] vTestLiteral(_ Reg Literal Addr1 Addr2 Coord Cont InitsRS) then
-            Emitter, EmitTestConstant(testLiteral Reg Literal Addr1 Addr2
-                                      Coord Cont InitsRS ThisAddr)
+            Emitter, DoInits(InitsRS Cont)
+            Emitter, PrepareShared(Addr1 ?LocalEnv1)
+            Emitter, PrepareShared(Addr2 ?LocalEnv2)
+            Emitter, MayAllocateEnvLocally(Cont {And LocalEnv1 LocalEnv2}
+                                           ?HasLocalEnv)
+            case Emitter, GetReg(Reg $) of none then
+               {self.reporter
+                warn(coord: Coord kind: 'code generation warning'
+                     msg: 'conditional suspends forever'
+                     items: [hint(l: 'Hint'
+                                  m: ('undetermined variable used '#
+                                      'as boolean guard'))])}
+               Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
+            elseof XYG then R = XYG
+            end
+            Emitter, PushContLabel(Cont ?OldContLabels)
+            Emitter, Dereference(Addr2 ?Label2 ?Dest2)
+            Emitter, DebugEntry(Coord 'conditional')
+            InstrLabel = if {IsLiteral Constant} then testLiteral
+                         elseif {IsNumber Constant} then testNumber
+                         else
+                            {Exception.raiseError
+                             compiler(internal testConstant(Constant))} unit
+                         end
+            Emitter, Emit(InstrLabel(R Constant Dest2))
+            Emitter, SaveAllRegisterMappings(?RegMap1)
+            Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
+            Emitter, RestoreAllRegisterMappings(RegMap1)
+            Emitter, Emit(lbl(Label2))
+            Emitter, SaveRegisterMapping(?RegMap2)
+            Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
+            Emitter, RestoreRegisterMapping(RegMap2)
+            Emitter, PopContLabel(OldContLabels)
+            Emitter, DebugExit(Coord 'conditional')
          [] vMatch(_ Reg Addr VHashTableEntries Coord Cont InitsRS) then
             LocalEnv1 HasLocalEnv
             R OldContLabels Label Dest NewVHashTableEntries RegMap
@@ -859,8 +884,7 @@ in
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'conditional')
          [] vThread(_ Addr Coord Cont InitsRS) then
-            HasLocalEnv ContLabel Dest RegMap
-            OldContLabels OldLocalEnvsInhibited
+            HasLocalEnv ContLabel Dest RegMap OldContLabels
          in
             Emitter, DoInits(InitsRS ThisAddr)
             Emitter, MayAllocateEnvLocally(Cont true ?HasLocalEnv)
@@ -871,13 +895,7 @@ in
             Emitter, KillAllTemporaries()
             OldContLabels = @contLabels
             contLabels <- nil
-            OldLocalEnvsInhibited = @LocalEnvsInhibited
-            if HasLocalEnv then skip
-            else
-               LocalEnvsInhibited <- true
-            end
             Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
-            LocalEnvsInhibited <- OldLocalEnvsInhibited
             contLabels <- OldContLabels
             Emitter, RestoreAllRegisterMappings(RegMap)
             Emitter, Emit(lbl(ContLabel))
@@ -1550,40 +1568,6 @@ in
          Emitter, PopContLabel(OldContLabels)
          Emitter, DebugExit(Coord 'conditional')
       end
-      meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
-                            Coord Cont InitsRS ThisAddr)
-         LocalEnv1 LocalEnv2
-         HasLocalEnv R OldContLabels Label2 Dest2 RegMap1 RegMap2
-      in
-         Emitter, DoInits(InitsRS Cont)
-         Emitter, PrepareShared(Addr1 ?LocalEnv1)
-         Emitter, PrepareShared(Addr2 ?LocalEnv2)
-         Emitter, MayAllocateEnvLocally(Cont {And LocalEnv1 LocalEnv2}
-                                        ?HasLocalEnv)
-         case Emitter, GetReg(Reg $) of none then
-            {self.reporter
-             warn(coord: Coord kind: 'code generation warning'
-                  msg: 'conditional suspends forever'
-                  items: [hint(l: 'Hint'
-                               m: ('undetermined variable used '#
-                                   'as boolean guard'))])}
-            Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
-         elseof XYG then R = XYG
-         end
-         Emitter, PushContLabel(Cont ?OldContLabels)
-         Emitter, Dereference(Addr2 ?Label2 ?Dest2)
-         Emitter, DebugEntry(Coord 'conditional')
-         Emitter, Emit(InstrLabel(R Constant Dest2))
-         Emitter, SaveAllRegisterMappings(?RegMap1)
-         Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
-         Emitter, RestoreAllRegisterMappings(RegMap1)
-         Emitter, Emit(lbl(Label2))
-         Emitter, SaveRegisterMapping(?RegMap2)
-         Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
-         Emitter, RestoreRegisterMapping(RegMap2)
-         Emitter, PopContLabel(OldContLabels)
-         Emitter, DebugExit(Coord 'conditional')
-      end
 
       meth DoInits(InitsRS Cont) Regs in
          %% make all already initialized Registers occurring
@@ -1672,14 +1656,12 @@ in
       end
       meth MayAllocateEnvLocally(Cont B $)
          if @LocalEnvsInhibited then false
+         elseif self.debugInfoControlSwitch then false
          elseif B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
-            andthen {Not self.debugInfoControlSwitch}
          then
             %% This means that in a conditional, local environments may be
             %% allocated per branch instead of for the procedure as a whole.
-            @LocalEnvSize = 0   % cancel preceding allocateL instruction
-            LocalEnvSize <- _
             true
          else false
          end
@@ -1692,37 +1674,37 @@ in
          if HasLocalEnv then
             case Addr of vShared(_ _ _ _) then
                Emitter, EmitAddrInLocalEnvShared(Addr)
-            else
+            else OldLocalEnvSize in
+               OldLocalEnvSize = @LocalEnvSize
+               LocalEnvSize <- _
                Emitter, Emit(allocateL(@LocalEnvSize))
                Emitter, EmitAddr(Addr)
+               @LocalEnvSize = @HighestEverY + 1
+               HighestEverY <- ~1
+               LocalEnvSize <- OldLocalEnvSize
             end
-            @LocalEnvSize = @HighestEverY + 1
-            HighestEverY <- ~1
-            LocalEnvSize <- _
-         else
+         else OldLocalEnvsInhibited in
+            OldLocalEnvsInhibited = @LocalEnvsInhibited
+            LocalEnvsInhibited <- true
             Emitter, EmitAddr(Addr)
+            LocalEnvsInhibited <- OldLocalEnvsInhibited
          end
       end
       meth EmitAddrInLocalEnvShared(Addr)
-         case Addr of vShared(_ Label _ Addr2) then
-            case Addr2 of nil then
+         case Addr of vShared(_ _ _ nil) then
                case @contLabels of nil then
                   Emitter, DeallocateAndReturn()
                [] ContLabel|_ then
                   Emitter, Emit(branch(ContLabel))
                end
+         [] vShared(_ Label _ Addr2) then
+            if {Dictionary.member @sharedDone Label} then
+               Emitter, Emit(branch(Label))
             else
-               if {Dictionary.member @sharedDone Label} then
-                  Emitter, Emit(branch(Label))
-               else
-                  {Dictionary.put @sharedDone Label true}
-                  Emitter, Emit(lbl(Label))
-                  Emitter, EmitAddrInLocalEnvShared(Addr2)
-               end
+               {Dictionary.put @sharedDone Label true}
+               Emitter, Emit(lbl(Label))
+               Emitter, EmitAddrInLocalEnv(Addr2 true)
             end
-         else
-            Emitter, Emit(allocateL(@LocalEnvSize))
-            Emitter, EmitAddr(Addr)
          end
       end
 

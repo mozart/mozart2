@@ -318,9 +318,9 @@ in
    proc {CheckTupleSyntax X}
       try {File X}
       catch E then
-         case E of error(kernel(noElse _) ...) then
+         case E of error(kernel(noElse _ _) ...) then
             {Exception.raiseError compiler(malformedSyntaxTree)}
-         elseof error(kernel(noElse _ X) ...) then
+         elseof error(kernel(noElse _ _ X) ...) then
             {Exception.raiseError compiler(malformedSyntaxTree X)}
          elseof failure(...) then
             {Exception.raiseError compiler(malformedSyntaxTree)}

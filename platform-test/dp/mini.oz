@@ -35,7 +35,7 @@ define
           proc {$}
              {ForAll [true false]
               proc {$ Detach}
-                 {ForAll [sh rsh]% virtual automatic]
+                 {ForAll [sh rsh virtual automatic]
                   proc {$ Fork}
                      {ForAll [localhost {OS.uName}.nodename]
                       proc {$ Host}

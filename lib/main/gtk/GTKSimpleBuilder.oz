@@ -31,6 +31,7 @@ export
    GetFeatureN
    CondGetFeatureN
    MakeChildrenByIndex MakeChildrenByList
+   MakeChildrenByIndexNoRecurse MakeChildrenByListNoRecurse
 define
    HandlerMap = {NewDictionary}
 
@@ -91,13 +92,24 @@ define
    end
 
    proc {Make D W}
+   in
+      {MakeNoRecurse D W}
+      {MakeDoRecurse D W}
+   end
+
+   proc {MakeNoRecurse D W}
       ISA           = {Label D}
       MyMake        = {GetMake ISA}
-      MyMakeRecurse = {GetMakeRecurse ISA}
    in
       {CondSelect D handle W W}
       {MyMake D W}
       {Configure D W}
+   end
+
+   proc {MakeDoRecurse D W}
+      ISA           = {Label D}
+      MyMakeRecurse = {GetMakeRecurse ISA}
+   in
       if MyMakeRecurse==NONE orelse MyMakeRecurse==unit then skip
       else {MyMakeRecurse D W} end
    end
@@ -172,6 +184,23 @@ define
       case L
       of nil then nil
       [] H|T then ({Make H}#H)|{MakeChildrenByList T}
+      end
+   end
+
+   fun {MakeChildrenByIndexNoRecurse D I}
+      if {HasFeature D I} then
+         ({MakeNoRecurse D.I}#D.I)
+         |{MakeChildrenByIndexNoRecurse D I+1}
+      else
+         nil
+      end
+   end
+
+   fun {MakeChildrenByListNoRecurse L}
+      case L
+      of nil then nil
+      [] H|T then ({MakeNoRecurse H}#H)
+         |{MakeChildrenByListNoRecurse T}
       end
    end
 
@@ -525,11 +554,14 @@ define
       fun {MakeTree D} {New GTK.tree new} end
       proc {MakeTreeRecurse D W}
          L = if {HasFeature D items}
-             then {MakeChildrenByList D.items}
-             else {MakeChildrenByIndex D 1} end
+             then {MakeChildrenByListNoRecurse D.items}
+             else {MakeChildrenByIndexNoRecurse D 1} end
       in
          for X in L do
-            case X of CW#_ then {W append(CW)} end
+            case X of CW#CD then
+               {W append(CW)}
+               {MakeDoRecurse CW CD}
+            end
          end
       end
    in
@@ -561,5 +593,21 @@ define
                          makeRecurse:MakeTreeItemRecurse)}
       {Register treeItem(isa:treeitem)}
    end
+
+   %% scrolled window
+%   local
+%      fun {MakeScrolledWindow D}
+%        Hadj = {New GTK.adjustment new(
+%        {New GTK.scrolledWindow new({CondSelect
+%   in
+%      {Register
+%       scrolledwindow(
+%         isa:bin
+%
+%
+%         )}
+%      {Register
+%       scrolledWindow(isa:scrolledwindow)}
+%   end
 
 end

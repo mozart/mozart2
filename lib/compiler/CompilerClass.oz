@@ -294,11 +294,6 @@ local
 \endif
    end
 
-   StandardEnv = {Adjoin
-                  \insert Base.env
-                  \insert Standard.env
-                 }
-
    class CompilerInternal from CompilerStateClass
       prop final
       attr wrapper reporter ExecutingThread InterruptLock

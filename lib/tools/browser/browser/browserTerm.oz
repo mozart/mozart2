@@ -92,6 +92,7 @@ in
                [] '|' then {LocalIsString X}
                else false
                end
+            [] byteString then true
             else false
             end
          else false

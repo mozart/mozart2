@@ -65,6 +65,12 @@ T_Record        = {NewName}
 T_CompChunk     = {NewName}
 T_CompObject    = {NewName}
 T_CompClass     = {NewName}
+%% other chunks:
+T_Dictionary    = {NewName}
+T_Array         = {NewName}
+%% first-class threads and spaces;
+T_Thread        = {NewName}
+T_Space         = {NewName}
 
 %%
 %% group #3: variables (but not OFSs);

@@ -101,15 +101,17 @@ in
             case CW of 0 then T_PrimObject else T_CompObject end
          elsecase {Class.is Term} then
             case CW of 0 then T_PrimClass else T_CompClass end
-         elsecase {Dictionary.is Term} then T_PrimChunk   % TODO
-         elsecase {Array.is Term} then T_PrimChunk        % TODO
+         elsecase {Dictionary.is Term} then T_Dictionary
+         elsecase {Array.is Term} then T_Array
          elsecase CW of 0 then T_PrimChunk else T_CompChunk
          end
 
-      [] 'thread' then T_Unknown    % TODO
+      [] 'thread' then T_Thread
              /*
           end           % "Oz" emacs mode problems;
          */
+
+      [] 'space' then T_Space
 
       else
          %% 'of' is a keyword ;-)
@@ -131,6 +133,10 @@ in
       [] !T_Procedure    then ProcedureTermObject
       [] !T_Cell         then CellTermObject
       [] !T_PrimChunk    then PrimChunkTermObject
+      [] !T_Dictionary   then DictionaryTermObject
+      [] !T_Array        then ArrayTermObject
+      [] !T_Thread       then ThreadTermObject
+      [] !T_Space        then SpaceTermObject
       [] !T_CompChunk    then CompChunkTermObject
       [] !T_PrimObject   then PrimObjectTermObject
       [] !T_CompObject   then CompObjectTermObject
@@ -165,6 +171,10 @@ in
       [] !T_Procedure    then False
       [] !T_Cell         then False
       [] !T_PrimChunk    then False
+      [] !T_Dictionary   then False
+      [] !T_Array        then False
+      [] !T_Thread       then False
+      [] !T_Space        then False
       [] !T_CompChunk    then True
       [] !T_PrimObject   then False
       [] !T_CompObject   then True
@@ -200,6 +210,10 @@ in
       [] !T_Procedure    then True
       [] !T_Cell         then True
       [] !T_PrimChunk    then True
+      [] !T_Dictionary   then True
+      [] !T_Array        then True
+      [] !T_Thread       then True
+      [] !T_Space        then True
       [] !T_CompChunk    then True
       [] !T_PrimObject   then True
       [] !T_CompObject   then True

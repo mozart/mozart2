@@ -29,6 +29,10 @@ local
    GenNamePrintName
    GenLitPrintName
    GenChunkPrintName
+   GenDictionaryPrintName
+   GenArrayPrintName
+   GenThreadPrintName
+   GenSpacePrintName
    GenObjPrintName
    GenClassPrintName
    GenProcPrintName
@@ -259,6 +263,38 @@ in
    fun {GenChunkPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Ch>'
+      else '<' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenDictionaryPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Dict>'
+      else '<' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenArrayPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Array>'
+      else '<' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenThreadPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Thr>'
+      else '<' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenSpacePrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Space>'
       else '<' # {System.printName Term} # '>'
       end
    end
@@ -956,6 +992,130 @@ in
       %%
       meth otherwise(Message)
          ControlObject , processOtherwise('ClassObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %% Dictionaries;
+   %%
+   class DictionaryTermObject from MetaTermObject
+      %%
+      feat
+         type: T_Dictionary
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'DictionaryTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenDictionaryPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('DictionaryObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %% Arrays;
+   %%
+   class ArrayTermObject from MetaTermObject
+      %%
+      feat
+         type: T_Array
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'ArrayTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenArrayPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('ArrayObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %% First-class threads;
+   %%
+   class ThreadTermObject from MetaTermObject
+      %%
+      feat
+         type: T_Thread
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'ThreadTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenThreadPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('ThreadObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %% First-class computation spaces;
+   %%
+   class SpaceTermObject from MetaTermObject
+      %%
+      feat
+         type: T_Space
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'SpaceTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenSpacePrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('SpaceObject::' Message)
       end
 
       %%

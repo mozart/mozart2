@@ -138,6 +138,10 @@ local
    ProcedureTermObject
    CellTermObject
    PrimChunkTermObject
+   DictionaryTermObject
+   ArrayTermObject
+   ThreadTermObject
+   SpaceTermObject
    PrimObjectTermObject
    PrimClassTermObject
    ListTermObject

@@ -313,6 +313,7 @@ in
 
             %%
             MyHandler
+            MyTkTextButton1
             SelfBWO
          in
             %%
@@ -437,6 +438,9 @@ in
 \endif
 
             %%
+            MyTkTextButton1 = {Tk.server tkGet($)}
+
+            %%
             %%  pack them;
             {Tk.batch
              [pack(FHS side: bottom fill: x padx: 0 pady: 0)
@@ -453,8 +457,9 @@ in
 
               %%
               bind(BW '<Shift-1>'
-                   q(v(
-                        'myTkTextButton1 %W %x %y; %W tag remove sel 0.0 end'
+                   q(MyTkTextButton1
+                     v(
+                        '%W %x %y; %W tag remove sel 0.0 end'
                       )))
               bind(BW '<Shift-B1-Motion>'
                    q(v(
@@ -475,7 +480,7 @@ in
               %% 'xterm';
               %%
               %%  exclude '$w mark set insert @$x,$y';
-              o(pr#oc myTkTextButton1 q(w x y)
+              o(pr#oc MyTkTextButton1 q(w x y)
                 q(
                    v('global tkPriv;')
                    v('set tkPriv(selectMode) char;')

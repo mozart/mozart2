@@ -563,8 +563,8 @@ define
          coord <- Coord
       end
       meth output(R $) FS in
-         'case '#{@arbiter output2(R $ ?FS)}#' of '#IN#
-         {LI @clauses NL#'[] ' R}#EX#NL#
+         'case '#{@arbiter output2(R $ ?FS)}#' of'#
+         {LI @clauses NL#'[]' R}#NL#
          {@alternative output(R $)}#'end'#FS
       end
    end
@@ -580,7 +580,7 @@ define
          statements <- {FlattenSequence Statements}
       end
       meth output(R $) FS in
-         {@pattern outputPattern2(R @localVars $ ?FS)}#GL#'then'#IN#
+         IN#GL#{@pattern outputPattern2(R @localVars $ ?FS)}#EX#GL#'then'#IN#
          FS#NL#{LI @statements NL R}#EX
       end
    end

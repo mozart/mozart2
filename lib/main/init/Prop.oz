@@ -1,4 +1,4 @@
-%%%
+%%% -*-oz-*-
 %%% Authors:
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%
@@ -43,7 +43,7 @@ PATH_ESCAPE     = case {Getenv 'OZ_PATH_ESCAPE'} of [C] then C
 
 OZ_HOME_        = case {Getenv 'OZ_HOME'} of false then
                      case {Getenv 'OZHOME'} of false then
-                        {GET 'oz.conf.home'}
+                        {GET 'oz.configure.home'}
                      elseof V then V end
                   elseof V then V end
 OZ_HOME         = case {Reverse {VirtualString.toString OZ_HOME_}}

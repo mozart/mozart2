@@ -358,12 +358,10 @@ in
             SelfBWO = self
             create MyHandler from UrObject
                meth m(...) = Mess
-                  case Mess
-                  of m("moveto" F) then
+                  case Mess of m("moveto" F) then
                       %% "moveto Fraction" - just feed it further;
                      {BW tk(yview 'moveto' F)}
-                  elsecase Mess
-                  of m("scroll" N "pages") then
+                  elseof       m("scroll" N "pages") then
                      Last FT FB Current Kind NewMark Pairs
                   in
                      %% "scroll N Type" - filter the 'pages' case;
@@ -381,7 +379,7 @@ in
                          {GetStrs {Tk.return o(BW yview)} CharSpace nil}
                          fun {$ E}
                             case E of "0" then 0.
-                            elsecase E of "1" then 1.
+                            elseof    "1" then 1.
                             else {String.toFloat E}
                             end
                          end}
@@ -407,8 +405,7 @@ in
                         else {SelfBWO.browserObj ScrollTo(TO Kind)}
                         end
                      end
-                  elsecase Mess
-                  of m("scroll" N "units") then
+                  elseof       m("scroll" N "units") then
                      %% basically, there is only 'units' type left;
                      {BW tk(yview 'scroll' N 'units')}
                   else {BrowserError 'Unknown type of scrollbar operation!'}

@@ -114,20 +114,20 @@ in
       {Record.forAllInd SetTab
        fun {$ J} I=J-1 in
           case {Char.isCntrl I} then
-             subst(case     [I] of "\a" then "\\a"
-                   elsecase [I] of "\b" then "\\b"
-                   elsecase [I] of "\f" then "\\f"
-                   elsecase [I] of "\n" then "\\n"
-                   elsecase [I] of "\r" then "\\r"
-                   elsecase [I] of "\t" then "\\t"
-                   elsecase [I] of "\v" then "\\v"
+             subst(case [I] of "\a" then "\\a"
+                   elseof      "\b" then "\\b"
+                   elseof      "\f" then "\\f"
+                   elseof      "\n" then "\\n"
+                   elseof      "\r" then "\\r"
+                   elseof      "\t" then "\\t"
+                   elseof      "\v" then "\\v"
                    else {Append "\\" {OctString I}}
                    end)
           elsecase I =< 255 andthen 127 =< I then
              subst({Append "\\" {OctString I}})
           else
              case [I] of "\"" then subst("\\\"")
-             elsecase [I] of "\\" then subst("\\\\")
+             elseof      "\\" then subst("\\\\")
              else legal
              end
           end

@@ -679,10 +679,10 @@ class BrowserClass from Object.base
          BrowserClass , SetWInc(ValueOf)
 
 %      [] !BrowserSmoothScrolling        then
-%        case ValueOf == True then
+%        case ValueOf of !True then
 %           {self.Store store(StoreSmoothScrolling True)}
 %           {self.BrowserStream enq(setVarValue(smoothScrolling True))}
-%        elsecase ValueOf == False then
+%        elseof !False then
 %           {self.Store store(StoreSmoothScrolling False)}
 %           {self.BrowserStream enq(setVarValue(smoothScrolling False))}
 %        else
@@ -691,11 +691,11 @@ class BrowserClass from Object.base
 %        end
 
       [] !BrowserShowGraph              then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreShowGraph True)}
             {self.BrowserStream enq(setVarValue(showGraph True))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreShowGraph False)}
             {self.BrowserStream enq(setVarValue(showGraph False))}
@@ -705,11 +705,11 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserShowMinGraph           then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreShowMinGraph True)}
             {self.BrowserStream enq(setVarValue(showMinGraph True))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreShowMinGraph False)}
             {self.BrowserStream enq(setVarValue(showMinGraph False))}
@@ -718,11 +718,11 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserChunkFields            then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreArityType TrueArity)}
             {self.BrowserStream enq(setVarValue(arityType TrueArity))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreArityType AtomicArity)}
             {self.BrowserStream enq(setVarValue(arityType AtomicArity))}
@@ -732,11 +732,11 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserVirtualStrings         then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreAreVSs True)}
             {self.BrowserStream enq(setVarValue(areVSs True))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreAreVSs False)}
             {self.BrowserStream enq(setVarValue(areVSs False))}
@@ -746,11 +746,11 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserRecordFieldsAligned    then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreFillStyle Expanded)}
             {self.BrowserStream enq(setVarValue(fillStyle Expanded))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreFillStyle Filled)}
             {self.BrowserStream enq(setVarValue(fillStyle Filled))}
@@ -760,11 +760,11 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserNamesAndProcsShort     then
-         case ValueOf == True then
+         case ValueOf of !True then
             %%
             {self.Store store(StoreSmallNames True)}
             {self.BrowserStream enq(setVarValue(smallNams True))}
-         elsecase ValueOf == False then
+         elseof !False then
             %%
             {self.Store store(StoreSmallNames False)}
             {self.BrowserStream enq(setVarValue(smallNames False))}
@@ -872,10 +872,10 @@ class BrowserClass from Object.base
        enq(entriesEnable([unselect rebrowse showOPI newView zoom]))}
 
       %%
-      case Obj.type == T_Shrunken then
+      case Obj.type of !T_Shrunken then
          {self.BrowserStream [enq(entriesDisable([deref shrink]))
                               enq(entriesEnable([expand]))]}
-      elsecase Obj.type == T_Reference then
+      elseof !T_Reference then
          {self.BrowserStream [enq(entriesDisable([expand shrink]))
                               enq(entriesEnable([deref]))]}
       elsecase AreCommas then

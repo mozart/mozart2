@@ -280,8 +280,8 @@ in
         case Del1
         of !DSpaceGlue then False
         [] !DVBarGlue  then
-           case Del2     of !DHashGlue then True
-           elsecase Del2 of !DVBarGlue then True
+           case Del2 of !DHashGlue then True
+           elseof       !DVBarGlue then True
            else False
            end
         [] !DEqualS    then
@@ -289,8 +289,7 @@ in
            of !DSpaceGlue then False
            else True            % but 'Del2' should not be '=';
            end
-        elsecase Del1
-        of !DHashGlue  then Del2 == DHashGlue
+        elseof !DHashGlue  then Del2 == DHashGlue
         else {BrowserError 'Unknown delimiter!'} False
         end
    end

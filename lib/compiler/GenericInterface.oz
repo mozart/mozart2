@@ -19,45 +19,8 @@
 %%% WARRANTIES.
 %%%
 
-class GenericInterface
-   prop locking
-   attr Compiler: unit Port: unit ServerThread: unit
-   meth init(CompilerObject Serve)
-      lock Ms in
-         GenericInterface, exit()
-         Compiler <- CompilerObject
-         Port <- {NewPort Ms}
-         {CompilerObject register(@Port)}
-         thread
-            ServerThread <- {Thread.this}
-            {self Serve(Ms)}
-         end
-      end
-   end
-   meth exit()
-      lock
-         case @Compiler of unit then skip
-         else
-            {Thread.terminate @ServerThread}
-            {@Compiler unregister(@Port)}
-            Compiler <- unit
-            Port <- unit
-            ServerThread <- unit
-         end
-         {self reset()}
-      end
-   end
-   meth reset()
-      skip
-   end
-   meth getCompiler($)
-      @Compiler
-   end
-   meth getPort($)
-      @Port
-   end
-
+class GenericInterface from Listener.'class'
    meth enqueue(M)
-      {@Compiler enqueue(M)}
+      {Listener.'class', getNarrator($) enqueue(M)}
    end
 end

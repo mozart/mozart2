@@ -97,13 +97,23 @@ local
          end
       end
    in
-      proc {Output Messages Reporter}
+      proc {Output Messages Reporter ShowInsert}
          {ForAll {Reverse Messages}
           proc {$ M}
-             case M of error(kind: 'parse error' ...) then
-                {Reporter {AdjoinAt M msg {Beautify {Atom.toString M.msg}}}}
-             else
-                {Reporter M}
+             case {Label M} of error then
+                case {CondSelect M kind unit} of 'parse error' then
+                   {Reporter {AdjoinAt M msg {Beautify {Atom.toString M.msg}}}}
+                else
+                   {Reporter M}
+                end
+             [] logInsert then FileName Coord in
+                FileName = M.1
+                Coord = {CondSelect M 2 unit}
+                {Reporter tell(insert(FileName Coord))}
+                if ShowInsert then
+                   {Reporter tell(info('%%%         inserted file "'#
+                                       FileName#'"\n' Coord))}
+                end
              end
           end}
       end
@@ -115,7 +125,7 @@ in
                               allowdeprecated: {GetSwitch allowdeprecated}
                               defines: Defines)}
    in
-      {Output Messages Reporter}
+      {Output Messages Reporter {GetSwitch showinsert}}
       case Res of fileNotFound then
          {Reporter error(kind: 'compiler directive error'
                          msg: ('could not open file "'#FileName#
@@ -131,7 +141,7 @@ in
                               allowdeprecated: {GetSwitch allowdeprecated}
                               defines: Defines)}
    in
-      {Output Messages Reporter}
+      {Output Messages Reporter {GetSwitch showinsert}}
       Res
    end
 end

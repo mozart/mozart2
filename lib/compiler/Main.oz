@@ -28,21 +28,24 @@ import
    Parser                        at 'x-oz://boot/Parser'
    CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
    Property(get condGet)
-   System(gcDo printError valueToVirtualString)
-   Error   %--**(formatPos msg formatLine formatExc dispatch format formatGeneric)
+   System(valueToVirtualString)
+   Error   %--**(formatPos formatExc dispatch format formatGeneric)
    ErrorRegistry(put)
    Type   %--**(ask)
+   Narrator('class')
+   Listener('class')
+   ErrorListener('class')
    PrintName(is)
-   Builtins   %--**
+   Builtins   %--**(getInfo)
    Unnester   %--**(makeExpressionQuery unnestQuery)
    Core.variable
    Assembler   %--**(internalAssemble assemble)
    RunTime   %--**
 
-   %% The Gump dependent part
+\ifndef NO_GUMP
    Gump(makeProductionTemplates)
    ProductionTemplates(default)
-
+\endif
 export
    Engine
    ParseOzFile
@@ -55,7 +58,6 @@ export
 define
    local
       \insert FormatStrings
-      \insert Reporter
       \insert CheckTupleSyntax
    in
       \insert CompilerClass

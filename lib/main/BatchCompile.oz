@@ -326,18 +326,21 @@ local
          end
       end
    in
-      proc {IncludeComponents S Compiler Load} Comp1 Rest Export in
+      proc {IncludeComponents S Compiler Load} Comp1 Atom1 Rest Export in
          {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
+         Atom1 = {String.toAtom Comp1}
          try
-            X = {String.toAtom Comp1}
-         in
-            Export = {Load 'http://www.ps.uni-sb.de/ozhome/lib/'#X#'.ozf'}
+            Export = {LILO.load Atom1}
          catch error(...) then
             {Report error(kind: UsageError
                           msg: 'unknown component `'#Comp1#'\' requested'
                           items: [hint(l: 'Hint'
                                        m: ('Use --help to obtain '#
                                            'usage information'))])}
+         end
+         case {IsPrintName Atom1} then
+            {Compiler enqueue(mergeEnv(env(Atom1:Export)))}
+         else skip
          end
          {Compiler enqueue(mergeEnv({Record.filterInd Export
                                      fun {$ P _} {IsPrintName P} end}))}

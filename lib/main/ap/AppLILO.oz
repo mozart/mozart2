@@ -20,7 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-% \define INTERACTIVE
+%\define INTERACTIVE
 \ifdef INTERACTIVE
 declare
 AF =
@@ -40,8 +40,7 @@ in
           unlink}
       System.{get}
       Open.{file}
-      Component.{load
-                 save}
+      Component.{save}
 
    export
       Syslet
@@ -84,7 +83,7 @@ in
             BaseURL = '.'
          in
             fun {RootLink Functor ?LILO}
-               LILO = {NewLILO Component.load}
+               LILO = {NewLILO}
 
                local
                   EXPORT = {LILO.link Functor BaseURL}
@@ -105,11 +104,10 @@ in
                ArgParser = {Parser.cmd ArgSpec}
             in
                proc {$}
-                  LILO = {NewLILO {`Builtin` load 2}}
+                  LILO = {NewLILO}
                in
                   {{`Builtin` 'PutProperty' 2}
                    print print(width:100 depth:100)}
-                  {{`Builtin` 'Show' 1} hallo}
 
                   {{`Builtin` setDefaultExceptionHandler 1}
                    proc {$ E}
@@ -226,7 +224,7 @@ in
 end
 
 
-/*
+\ifdef INTERACTIVE
 
 declare
 Application = {AF.apply 'import'('OS':        OS
@@ -234,6 +232,4 @@ Application = {AF.apply 'import'('OS':        OS
                                  'Open':      Open
                                  'Component': Component)}
 
-{Browse Application}
-
-*/
+\endif

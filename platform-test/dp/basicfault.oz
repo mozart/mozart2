@@ -22,6 +22,7 @@
 %%% WARRANTIES.
 %%%
 
+%\define DBG
 functor
 
 import
@@ -33,7 +34,15 @@ export
    Return
 
 define
-
+\ifdef DBG
+   PrintPort
+   thread {ForAll {NewPort $ PrintPort} System.show} end
+   proc {Show X}
+      {Send PrintPort X}
+   end
+\else
+   proc {Show _} skip end
+\endif
    proc{SiteWatcherInstall Entity Proc}
       {Fault.installWatcher Entity [permFail] Proc true}
    end
@@ -441,42 +450,56 @@ define
              end
              {S2 ping}
 
+             thread
+                % A helper that will stop this test if
+                % the proxy suspends.
+                % If you run the test repeatedly the delay has to be
+                % this high!
+                {Delay 100000}
+                try Ans = crash {Show timeout} catch _ then skip end
+             end
+
              {S2 apply(url:'' functor
                               define
                                  T in
                                  try
+                                    {Show sending}
                                     {Send Po apa}
+                                    {Show sent}
                                        % if the send succeds => crash
-                                    Ans = crash
+% This is no longer true, a send may succeed if we don't yet know the other
+% site was lost. AN!
+%                                   Ans = crash
                                  catch _ then
-                                    thread
-                                          try
-                                             Va = unit
-                                          catch _ then
-                                             T  = done
-                                          end
+                                    {Show did_not_send}
+                                 end
+
+                                 thread
+                                    try
+                                       {Show binding}
+                                       Va = unit
+                                       {Show bound}
+                                    catch _ then
+                                       {Show did_not_bind}
+                                       T  = done
                                     end
-                                    {Delay 500}
-                                       % if the binding suspends => crash
-                                    if{IsDet T} then
-                                       Ans = ok
-                                    else
-                                       Ans = crash
-                                    end
+                                 end
+                                 {Delay 500}
+                                 % if the binding suspends => crash
+                                 if{IsDet T} then
+                                    Ans = ok
+                                 else
+                                    Ans = crash
                                  end
                               end)}
 
-             thread
-                % A helper that will stop this test if
-                % the proxy suspends.
-                {Delay 10000}
-                try Ans = crash catch _ then skip end
-             end
-
+             {Show evaluating(Ans)}
              if Ans == crash then
                 raise stop end
              end
+             {Show evaluated(Ans)}
              {S2 close}
+             {Show done}
           end
              keys:[fault])
       ])

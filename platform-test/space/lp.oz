@@ -106,7 +106,7 @@ define
                               N S X
                            in
                               thread {DisInts N S} end
-                              thread {DisSum S X}  end
+                              thread {OrSum S X}  end
                               N=10
                               {Wait X}
                               X=55

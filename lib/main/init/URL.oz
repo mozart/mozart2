@@ -119,7 +119,7 @@ WINDOWS         = case {GetPlatform} of win32#_  then true else false end
 Separator       = case {GetEnv 'OZ_SEPARATOR'} of [C] then C
                   elsecase WINDOWS then &; else &: end
 
-Trace           = {NewCell true}
+Trace           = {NewCell false}
 
 proc {GetTrace B} {Access Trace B} end
 proc {SetTrace B} {Assign Trace B} end

@@ -45,7 +45,6 @@ export
    scale:       DiscreteScale
    numberentry: NumberEntry
    images:      LoadImages
-   smoother:    Smoother
 
 define
 
@@ -1341,61 +1340,6 @@ define
          end
          meth getCurrent($)
             case @Current of T#_ then T end
-         end
-      end
-   end
-
-   local
-      Timeout = 15 % ms
-   in
-      class Smoother
-         prop
-            locking
-         attr
-            QueueSync : _
-            MsgList   : nil
-            MsgListTl : nil
-         meth tk(...)=M
-            Smoother,Enqueue(o(self d(M)))
-         end
-         meth Enqueue(Ticklet)
-            lock
-               case Ticklet
-               of nil  then skip
-               [] T|Tr then
-                  Smoother,Enqueue(T)
-                  Smoother,Enqueue(Tr)
-               else NewTl in
-                  if {IsDet @MsgListTl} then
-                     MsgList <- Ticklet|NewTl
-                  else
-                     @MsgListTl = Ticklet|NewTl
-                  end
-                  MsgListTl <- NewTl
-                  Smoother,ClearQueue
-               end
-            end
-         end
-         meth ClearQueue
-            New in
-            QueueSync <- New = unit
-            thread
-               {WaitOr New {Alarm Timeout}}
-               if {IsDet New} then skip else
-                  Smoother,DoClearQueue
-               end
-            end
-         end
-         meth DoClearQueue
-            lock
-               @MsgListTl = nil
-               try
-                  {Tk.batch @MsgList}
-               catch _ then  %% maybe the window has been closed already?
-                  skip
-               end
-               MsgList <- nil
-            end
          end
       end
    end

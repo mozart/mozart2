@@ -41,7 +41,7 @@ local
       end
 
       fun {TagBody I Tag}
-         if I>0 then {TagBody I-1 N Tag}#{Tag2Vs Tag.I} else '' end
+         if I>0 then {TagBody I-1 Tag}#{Tag2Vs Tag.I} else '' end
       end
    in
       fun {Tag2Vs Tag}

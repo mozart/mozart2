@@ -21,9 +21,13 @@
 %%%
 
 proc {$}
+   Getenv = {`Builtin` 'OS.getEnv' 2}
+   SystemRegistry = {{`Builtin` 'SystemRegistry' 1}}
+   proc {SET P V} {Dictionary.put SystemRegistry P V} end
+   proc {GET P V} {Dictionary.get SystemRegistry P V} end
+   \insert Init/Prop
    \insert Init/URL
-   ServiceRegistry = {{`Builtin` 'ServiceRegistry' 1}}
 in
-   {Dictionary.put ServiceRegistry url  URL}
-   {Dictionary.put ServiceRegistry load URL.load}
+   {SET url  URL}
+   {SET load URL.load}
 end

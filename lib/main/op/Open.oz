@@ -732,14 +732,23 @@ in
             WriteDesc <- WD
          end
 
-         meth close
+         meth Kill(SIG)
+            {OS.kill self.PID SIG _}
+            %% Ignore errors, since process may be killed anyway
+            {Delay KillTime}
+            {OS.wait _ _}
+            {OS.wait _ _}
+         end
+
+         meth close(DoKill <= false)
+            if DoKill then
+               Pipe,Kill('SIGKILL')
+            end
             lock self.ReadLock then
                lock self.WriteLock then
-                  {OS.kill self.PID 'SIGTERM' _}
-                  %% Ignore errors, since process may be killed anyway
-                  {Delay KillTime}
-                  {OS.wait _ _}
-                  {OS.wait _ _}
+                  if DoKill then skip else
+                     Pipe,Kill('SIGTERM')
+                  end
                   DescClass, CloseDescs
                end
             end

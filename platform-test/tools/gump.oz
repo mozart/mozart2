@@ -34,7 +34,7 @@ in
       GumpScanner
       GumpParser
       System
-      Foreign
+      Module
    export
       Return
    body
@@ -46,7 +46,7 @@ in
           'in LambdaScanner\n'
           env('GumpScanner': GumpScanner
               'System': System
-              'Foreign': Foreign) _}
+              'Module': Module) _}
       end
 
       fun {MakeParser}

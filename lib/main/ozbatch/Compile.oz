@@ -227,7 +227,7 @@ in
       try OptRec BatchCompiler UI IncDir FileNames in
          try
             OptRec = {Application.getCmdArgs OptSpecs}
-         catch usage(VS) then
+         catch error(ap(usage VS) ...) then
             {Report error(kind: UsageError
                           msg: VS
                           items: [hint(l: 'Hint'

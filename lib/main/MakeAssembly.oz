@@ -35,25 +35,28 @@ in
 \insert Compiler
 = NewCompiler
 
-local
-   Env = m('SP':       \insert SP.env
-           'CP':       \insert CP.env
-           'OP':       \insert OP.env
-           'AP':       \insert AP.env
-           'Compiler': \insert Compiler.env
-          )
-   \insert SP.env
-   = {NewSP Env}
-   \insert CP.env
-   = {NewCP Env}
-   \insert OP.env
-   = {NewOP Env}
-   \insert AP.env
-   = {NewAP Env}
-   \insert Compiler.env
-   = {NewCompiler Env}
+{{`Builtin` 'save' 2}
+ proc instantiate {$}
+    Env = m('SP':       \insert SP.env
+            'CP':       \insert CP.env
+            'OP':       \insert OP.env
+            'AP':       \insert AP.env
+            'Compiler': \insert Compiler.env
+           )
+    \insert SP.env
+    = {NewSP Env}
+    \insert CP.env
+    = {NewCP Env}
+    \insert OP.env
+    = {NewOP Env}
+    \insert AP.env
+    = {NewAP Env}
+    \insert Compiler.env
+    = {NewCompiler Env}
 
-   \insert BatchCompile
-in
-   {Exit {BatchCompile {Map {System.get argv} Atom.toString}}}
-end
+    \insert BatchCompile
+ in
+    {Exit {BatchCompile {Map {System.get argv} Atom.toString}}}
+ end 'ozbatch.ozc'}
+
+{{`Builtin` 'shutdown' 1} 0}

@@ -34,7 +34,7 @@ import
    Property(get condGet put)
    Module(link)
    Error(registerFormatter)
-
+   Fault
 export
    manager: ManagerProxy
 
@@ -128,6 +128,7 @@ define
       feat
          Run
          Ctrl
+         ProxyFailed
 
       attr
          Run:    nil
@@ -180,6 +181,10 @@ define
                Ctrl       <- CtrlRet.2
                self.Run    = RunRet.1
                self.Ctrl   = CtrlRet.1
+               {Fault.installWatcher self.Run [permFail]
+                proc{$ _ _ } self.ProxyFailed = failed end _}
+               {Fault.installWatcher self.Ctrl [permFail]
+                proc{$ _ _ } self.ProxyFailed = failed end _}
             else
                {Exception.raiseError remote(cannotCreate self Host)}
             end
@@ -199,14 +204,19 @@ define
                {Exception.raiseError remote(alreadyClosed self What)}
             end
          end
-         %% might block, since OldS might be future
-         Answer|NewS = OldS
-         case Answer
-         of okay         then skip
-         [] exception(E) then
-            raise E end
-         [] failed       then
-            raise error(dp('export' exceptionNogoods self)) end
+         %% The operation might fail if the proxy has failed
+         case {Record.waitOr OldS#self.ProxyFailed} of
+            2 then
+            {Exception.raiseError remote(crashed self What)}
+         elseof 1 then
+            Answer|NewS = OldS
+            case Answer
+            of okay         then skip
+            [] exception(E) then
+               raise E end
+            [] failed       then
+               raise error(dp('export' exceptionNogoods self)) end
+            end
          end
       end
 

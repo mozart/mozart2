@@ -2766,6 +2766,115 @@ in
 
    %%
    %%
+   %% Finite set variables;
+   %%
+   class FSetTermObject from I_MetaVariableTermObject
+      %%
+      feat
+         type: T_FSet
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'FSetTermObject::makeTerm is applied' # self.term}
+\endif
+         %%
+         case {IsDet self.term}
+         then
+            Term Comp Le SubInts Name
+         in
+            Term = self.term
+
+            %%
+            Comp = {FSetGetGlb Term}
+            Le = {Length Comp}
+            SubInts = {Tuple.make '#' Le}
+
+            %%
+            {List.forAllInd Comp
+             %%
+             proc {$ Num Interval}
+                local Tmp in
+                   Tmp = case Interval of L#H then L#"#"#H
+                         else Interval
+                         end
+
+                   %%
+                   case Num == 1 then SubInts.1 = Tmp
+                   else SubInts.Num = " "#Tmp
+                   end
+                end
+             end}
+
+            %%
+            Name = DLCBraceS # DLSBraceS # SubInts # DRSBraceS # DRCBraceS
+
+            %%
+            RepManagerObject , insert(str: Name)
+         else
+            I_MetaVariableTermObject , SetWatchPoint
+
+            %%
+            local
+               Term GlbComp LubComp GlbLe LubLe GlbSubInts LubSubInts Name
+            in
+               Term = self.term
+
+            %%
+               GlbComp = {FSetGetGlb Term}
+               LubComp = {FSetGetLub Term}
+               GlbLe = {Length GlbComp}
+               LubLe = {Length LubComp}
+               GlbSubInts = {Tuple.make '#' GlbLe}
+               LubSubInts = {Tuple.make '#' LubLe}
+
+               %%
+               {List.forAllInd GlbComp
+             %%
+                proc {$ Num Interval}
+                   local Tmp in
+                      Tmp = case Interval of L#H then L#"#"#H
+                            else Interval
+                            end
+
+                      %%
+                      case Num == 1 then GlbSubInts.1 = Tmp
+                      else GlbSubInts.Num = " "#Tmp
+                      end
+                   end
+                end}
+               {List.forAllInd LubComp
+                %%
+                proc {$ Num Interval}
+                   local Tmp in
+                      Tmp = case Interval of L#H then L#"#"#H
+                            else Interval
+                            end
+
+                      %%
+                      case Num == 1 then LubSubInts.1 = Tmp
+                      else LubSubInts.Num = " "#Tmp
+                      end
+                   end
+                end}
+
+               %%
+               Name = {self GetName($)} # (DLCBraceS # DLSBraceS #
+                                           GlbSubInts # DRSBraceS #
+                                           DDblPeriod # DLSBraceS #
+                                           LubSubInts # DRSBraceS # DRCBraceS)
+
+               %%
+               RepManagerObject , insert(str: Name)
+            end
+         end
+      end
+      %%
+   end
+
+   %%
+   %%
    %% Meta variables;
    %%
    class MetaVariableTermObject from I_MetaVariableTermObject

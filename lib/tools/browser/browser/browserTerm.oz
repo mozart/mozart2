@@ -115,6 +115,7 @@ in
          case KT
          of record  then T_Record
          [] int     then T_FDVariable
+         [] fset    then T_FSet
          [] other   then
             case {IsMetaVar Term} then T_MetaVariable % TODO
             else T_Variable     % don't know;
@@ -126,6 +127,7 @@ in
          case DT
          of atom       then T_Atom
          [] int        then T_Int
+         [] fset       then T_FSet
          [] float      then T_Float
          [] name       then T_Name
 
@@ -211,6 +213,7 @@ in
       [] !T_HashTuple    then HashTupleTermObject
       [] !T_Variable     then VariableTermObject
       [] !T_FDVariable   then FDVariableTermObject
+      [] !T_FSet         then FSetTermObject
       [] !T_MetaVariable then MetaVariableTermObject
       [] !T_Unknown      then UnknownTermObject
       else
@@ -251,6 +254,7 @@ in
       [] !T_HashTuple    then true
       [] !T_Variable     then false
       [] !T_FDVariable   then false
+      [] !T_FSet         then false
       [] !T_MetaVariable then false
       [] !T_Unknown      then false
       else
@@ -291,6 +295,7 @@ in
       [] !T_HashTuple    then true
       [] !T_Variable     then true
       [] !T_FDVariable   then true
+      [] !T_FSet         then true
       [] !T_MetaVariable then true
       [] !T_Unknown      then false
       else

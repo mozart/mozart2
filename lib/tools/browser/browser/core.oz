@@ -91,3 +91,9 @@ AddrOf = {`Builtin` 'addr' 2}
 
 %%
 OnToplevel = {`Builtin` 'onToplevel' 1}
+
+%%
+FSetGetGlb = {`Builtin` fsGetGlb 2}
+FSetGetLub = {`Builtin` fsGetLub 2}
+FSetGetCard = {`Builtin` fsGetCard 2}
+IsFSetVar = {`Builtin` fsIsVarB 2}

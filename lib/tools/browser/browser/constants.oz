@@ -83,6 +83,8 @@ T_Variable      = {NewName}
 T_FDVariable    = {NewName}
 %%  ... and Meta variable;
 T_MetaVariable  = {NewName}
+%%  ... and finite set variable resp. finite set value;
+T_FSet          = {NewName}
 
 %%
 %% group #4: What for a bullsh$t ??!
@@ -500,6 +502,7 @@ DRCBraceS       = '}'
 %%
 DNameUnshown    = ',,,'         % DTSpace;
 DOpenFS         = '...'         % DTSpace;
+DDblPeriod      = '..'          % DDSpace;
 DDBar           = '||'          % DDSpace;
 DUnderscore     = '_'           % DSpace;
 DUnshownPFs     = '?'           % DSpace

@@ -1488,6 +1488,7 @@ in
          case Unifies of U|Ur then X#R = U in
             Emitter, Emit(unify(X R))
             Emitter, FreeX(X.1)
+            Emitter, EmitUnifies(Ur)
          [] nil then skip
          end
       end

@@ -39,9 +39,6 @@ local
    %%%
 
    class Repeat
-
-      from BaseObject
-
       prop
          locking
 

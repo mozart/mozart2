@@ -697,7 +697,7 @@ local
 
    in
 
-      class SearchObject from BaseObject
+      class SearchObject
          prop
             locking
          attr

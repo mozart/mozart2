@@ -23,10 +23,6 @@
 
 BaseObject
 
-fun {IsClass X}
-   {IsChunk X} andthen {HasFeature X `ooPrintName`}
-end
-
 local
 
    %%
@@ -58,6 +54,15 @@ local
       Fallback = fallback(new:   FbNew
                           apply: FbApply)
    end
+
+   %%
+   %% Property tests
+   %%
+   fun {ClassIsFinal C}
+      {Not {HasFeature C `ooMethSrc`}}
+   end
+   ClassIsSited   = Boot_Class.isSited
+   ClassIsLocking = Boot_Class.isLocking
 
    local
       %%
@@ -254,30 +259,22 @@ local
       proc {CheckParents Cs PrintName}
          case Cs of nil then skip
          [] C|Cr then
-            if {HasFeature C `ooPrintName`} then
-               if {HasFeature C `ooParents`} then skip else
-                  {`RaiseError` object(final C.`ooPrintName` PrintName)}
+            if {IsClass C} then
+               if {ClassIsFinal C} then
+                  {`RaiseError` object(final C PrintName)}
                end
-            else {`RaiseError` object(inheritanceFromNonClass
-                                      C PrintName)}
+            else
+               {`RaiseError` object(inheritanceFromNonClass C PrintName)}
             end
             {CheckParents Cr PrintName}
          end
       end
 
-      %%
-      %% Test whether at least one parent has a certain property
-      %%
-      fun {HasPropertyParents Cs Prop}
-         case Cs of nil then false
-         [] C|Cr then C.Prop orelse {HasPropertyParents Cr Prop}
-         end
-      end
+   in
 
       %%
       %% The real class creation
       %%
-   in
       proc {NewFullClass Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
          {CheckParents Parents PrintName}
          %% To be computed for methods
@@ -288,10 +285,10 @@ local
          Feat FreeFeat FeatSrc
          %% Properties
          IsLocking = ({Member locking NewProp} orelse
-                      {HasPropertyParents Parents `ooLocking`})
-         IsNative  = ({Member native NewProp}  orelse
-                      {HasPropertyParents Parents `ooNative`})
-         IsFinal   = {Member final   NewProp}
+                      {Some Parents ClassIsLocking})
+         IsSited   = ({Member sited NewProp}  orelse
+                      {Some Parents ClassIsSited})
+         IsFinal   = {Member final NewProp}
          NoNewMeth = {Width NewMeth}
          AsNewAttr = {Arity NewAttr}
          AsNewFeat = {Arity NewFeat}
@@ -318,22 +315,50 @@ local
             end
          [] [P] then
             %% Methods
-            Meth     = {Dictionary.clone P.`ooMeth`}
-            FastMeth = {Dictionary.clone P.`ooFastMeth`}
-            Defaults = {Dictionary.clone P.`ooDefaults`}
-            {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+            if NoNewMeth==0 then
+               Meth     = P.`ooMeth`
+               FastMeth = P.`ooFastMeth`
+               Defaults = P.`ooDefaults`
+               if IsFinal then skip else
+                  MethSrc  = P.`ooMethSrc`
+               end
+            else
+               Meth     = {Dictionary.clone P.`ooMeth`}
+               FastMeth = {Dictionary.clone P.`ooFastMeth`}
+               Defaults = {Dictionary.clone P.`ooDefaults`}
+               {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+               if IsFinal then skip else
+                  MethSrc  = {Dictionary.clone P.`ooMethSrc`}
+                  {DefMeth NoNewMeth NewMeth MethSrc C}
+               end
+            end
             %% Attributes
-            Attr     = {Adjoin P.`ooAttr` NewAttr}
+            if AsNewAttr==nil then
+               Attr = P.`ooAttr`
+               if IsFinal then skip else
+                  AttrSrc = P.`ooAttrSrc`
+               end
+            else
+               Attr = {Adjoin P.`ooAttr` NewAttr}
+               if IsFinal then skip else
+                  AttrSrc = {Dictionary.clone P.`ooAttrSrc`}
+                  {DefOther AsNewAttr AttrSrc C}
+               end
+            end
             %% Features
-            Feat     = {Adjoin P.`ooUnFreeFeat` NewFeat}
-            FreeFeat = {MakeFree Feat}
-            if IsFinal then skip else
-               MethSrc  = {Dictionary.clone P.`ooMethSrc`}
-               AttrSrc  = {Dictionary.clone P.`ooAttrSrc`}
-               FeatSrc  = {Dictionary.clone P.`ooFeatSrc`}
-               {DefMeth NoNewMeth NewMeth MethSrc C}
-               {DefOther AsNewAttr AttrSrc C}
-               {DefOther AsNewFeat FeatSrc C}
+            if AsNewFeat==nil then
+               Feat     = P.`ooUnFreeFeat`
+               FreeFeat = P.`ooFreeFeatR`
+               if IsFinal then skip else
+                  FeatSrc = P.`ooFeatSrc`
+               end
+            else
+               Feat     = {Adjoin P.`ooUnFreeFeat` NewFeat}
+               FreeFeat = {MakeFree Feat}
+               if IsFinal then skip else
+                  FeatSrc = {Dictionary.clone P.`ooFeatSrc`}
+                  {DefOther AsNewFeat FeatSrc C}
+               end
             end
          else
             MethConf = {Dictionary.new}
@@ -409,16 +434,15 @@ local
                          `ooDefaults`:   Defaults
                          `ooPrintName`:  PrintName
                          `ooLocking`:    IsLocking
-                         `ooNative`:     IsNative
                          `ooFallback`:   Fallback)
               else
                  %% Mark these dictionaries safe as it comes to marshalling
                  {MarkSafe MethSrc}
                  {MarkSafe AttrSrc}
                  {MarkSafe FeatSrc}
-                 'class'(`ooParents`:    Parents       % List of classes
-                         %% Information for methods
+                 'class'(%% Information for methods
                          `ooMethSrc`:    MethSrc       % Dictionary
+                         `ooLocking`:    IsLocking
                          `ooMeth`:       Meth          % Dictionary
                          `ooFastMeth`:   FastMeth      % Dictionary
                          `ooDefaults`:   Defaults      % Dictionary
@@ -432,36 +456,9 @@ local
                          `ooFreeFeatR`:  FreeFeat      % Record
                          %% Other info
                          `ooPrintName`:  PrintName     % Atom
-                         `ooFallback`:   Fallback      % Record
-                         `ooLocking`:    IsLocking     % Bool
-                         `ooNative`:     IsNative)     % Bool
+                         `ooFallback`:   Fallback)     % Record
               end
-              Feat Defaults IsLocking IsNative}
-      end
-
-      fun {Extend From FeatSpec}
-         %% Properties
-         Locking   = From.`ooLocking`
-         Native    = From.`ooNative`
-         %% Methods
-         Defaults  = From.`ooDefaults`
-         FastMeth  = From.`ooFastMeth`
-         %% Features
-         NewFeat   = {SpecToOoNew FeatSpec}
-         Feat      = {Adjoin From.`ooUnFreeFeat` NewFeat}
-         FreeFeat  = {MakeFree Feat}
-      in
-         {MakeClass FastMeth c(`ooAttr`:       From.`ooAttr`
-                               `ooFreeFeatR`:  FreeFeat
-                               `ooUnFreeFeat`: Feat
-                               `ooMeth`:       From.`ooMeth`
-                               `ooFastMeth`:   FastMeth
-                               `ooDefaults`:   Defaults
-                               `ooPrintName`:  From.`ooPrintName`
-                               `ooLocking`:    Locking
-                               `ooNative`:     Native
-                               `ooFallback`:   Fallback)
-          Feat Defaults Locking Native}
+              Feat Defaults IsLocking IsSited}
       end
 
       fun {NewClass Parents AttrSpec FeatSpec Prop}
@@ -494,8 +491,7 @@ in
                    base: BaseObject)
 
    Class = 'class'(is:             IsClass
-                   new:            NewClass
-                   extendFeatures: Extend)
+                   new:            NewClass)
 
    OoExtensions = oo('class':      NewFullClass
                      getClass:     GetClass
@@ -512,10 +508,10 @@ in
                                       C={GetC OC}
                                    in
                                       {Append
-                                       if {HasFeature C `ooParents`} then nil
-                                       else [final]
+                                       if {ClassIsFinal C} then [final]
+                                       else nil
                                        end
-                                       if C.`ooLocking` then [locking]
+                                       if {ClassIsLocking C} then [locking]
                                        else nil
                                        end}
                                    end)

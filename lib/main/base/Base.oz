@@ -235,13 +235,11 @@ prepare
    IsSpace      = Boot_Space.is
 
    %%
-   %% Object
+   %% Object, Class, and OoExtensions
    %%
    IsObject      = Boot_Object.is
    New           = Boot_Object.new
-   %% Properties
-   `ooLocking`   = {NewUniqueName 'ooLocking'}
-   `ooNative`    = {NewUniqueName 'ooNative'}
+   IsClass       = Boot_Class.is
    %% Methods
    `ooMeth`      = {NewUniqueName 'ooMeth'}
    `ooFastMeth`  = {NewUniqueName 'ooFastMeth'}
@@ -253,18 +251,13 @@ prepare
    `ooUnFreeFeat`= {NewUniqueName 'ooUnFreeFeat'}
    `ooFreeFeatR` = {NewUniqueName 'ooFreeFeatR'}
    %% Inheritance related
-   `ooParents`   = {NewUniqueName 'ooParents'}
    `ooMethSrc`   = {NewUniqueName 'ooMethSrc'}
    `ooAttrSrc`   = {NewUniqueName 'ooAttrSrc'}
    `ooFeatSrc`   = {NewUniqueName 'ooFeatSrc'}
    %% Other
    `ooPrintName` = {NewUniqueName 'ooPrintName'}
    `ooFallback`  = {NewUniqueName 'ooFallback'}
-
-   %%
-   %% Class
-   %%
-   {Wait Boot_Class}            % force linking
+   `ooLocking`   = {NewUniqueName 'ooLocking'}
 
    %%
    %% BitArray

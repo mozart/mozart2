@@ -44,6 +44,7 @@ define
                 atom       # [atom atom base]
                 name       # [name name base]
                 procedure  # [procedure procedure base]
+                string     # [string string base]
                 byteString # [byteString byteString base]
 
                 %% Container Nodes

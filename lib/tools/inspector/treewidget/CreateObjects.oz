@@ -49,6 +49,7 @@ export
    labelTupleGrCreateObject      : LabelTupleGrCreateObject
    futureCreateObject            : FutureCreateObject
    futureGrCreateObject          : FutureGrCreateObject
+   stringCreateObject            : StringCreateObject
    byteStringCreateObject        : ByteStringCreateObject
    freeCreateObject              : FreeCreateObject
    freeGrCreateObject            : FreeGrCreateObject

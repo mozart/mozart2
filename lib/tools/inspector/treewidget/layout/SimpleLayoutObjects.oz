@@ -32,7 +32,8 @@ local
             LengthStr
          in
             {self createRep(String LengthStr)}
-            XDim = case String of 39|_ then 2 else 0 end + {VirtualString.length LengthStr}
+            XDim = case String of 39|_ then 2 else 0 end +
+            {VirtualString.length LengthStr}
          end
       end
       meth layoutX($)
@@ -166,6 +167,69 @@ in
       in
          class FutureLayoutObject from SimpleLayoutObject FutureRep end
          class FutureGrLayoutObject from SimpleGrLayoutObject FutureRep end
+      end
+   end
+
+   local
+      %% Reduce to visible part of a String and add end quotes
+      fun {BuildString Ss W}
+         case Ss
+         of S|Sr then
+            if W == 0
+            then "..."
+            else S|{BuildString Sr (W - 1)}
+            end
+         [] nil then nil
+         end
+      end
+
+      %% QuoteString Taken from Browser
+      local
+         fun {OctString I Ir}
+            ((I div 64) mod 8 + &0) |
+            ((I div 8)  mod 8 + &0) |
+            (I mod 8 + &0         ) | Ir
+         end
+      in
+         fun {QuoteString Is}
+            case Is of nil then nil
+            [] I|Ir then
+               case {Char.type I}
+               of space then
+                  case I
+                  of &\n then &\\|&n|{QuoteString Ir}
+                  [] &\f then &\\|&f|{QuoteString Ir}
+                  [] &\r then &\\|&r|{QuoteString Ir}
+                  [] &\t then &\\|&t|{QuoteString Ir}
+                  [] &\v then &\\|&v|{QuoteString Ir}
+                  else I|{QuoteString Ir}
+                  end
+               [] other then
+                  case I
+                  of &\a then &\\|&a|{QuoteString Ir}
+                  [] &\b then &\\|&b|{QuoteString Ir}
+                  else &\\|{OctString I {QuoteString Ir}}
+                  end
+               [] punct then
+                  case I
+                  of &\" then &\\|&\"|{QuoteString Ir}
+                  [] &\\ then &\\|&\\|{QuoteString Ir}
+                  else I|{QuoteString Ir}
+                  end
+               else I|{QuoteString Ir}
+               end
+            end
+         end
+      end
+   in
+      class StringLayoutObject from SimpleLayoutObject
+         meth createRep(PrintStr LengthStr)
+            VisibleString = {BuildString @value {@visual getWidth($)}}
+         in
+            LengthStr = {Append "\""
+                         {Append {QuoteString VisibleString} "\""}}
+            PrintStr  = {Helper.tkQuoteStr LengthStr}
+         end
       end
    end
 

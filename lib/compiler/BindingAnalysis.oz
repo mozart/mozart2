@@ -86,6 +86,38 @@ in
             V = X
          end
       end
+      meth bindImport(PrintName Coord Features ?V)
+         X Env = @env (D#G#Hd#Tl)|Dr = Env
+      in
+         X = {Dictionary.condGet D PrintName undeclared}
+         case X == undeclared then NewTl in
+            V = {New Core.restrictedVariable init(PrintName Features Coord)}
+            {Dictionary.put D PrintName V}
+            Tl = V|NewTl
+            env <- (D#G#Hd#NewTl)|Dr
+         else
+            {self.MyReporter
+             error(coord: Coord kind: BindingAnalysisError
+                   msg: 'variable '#pn(PrintName)#' imported more than once')}
+            V = X
+         end
+      end
+      meth bindExport(PrintName Coord ?V)
+         X Env = @env (D#G#Hd#Tl)|Dr = Env
+      in
+         X = {Dictionary.condGet D PrintName undeclared}
+         case X == undeclared then NewTl in
+            V = {New Core.variable init(PrintName user Coord)}
+            {Dictionary.put D PrintName V}
+            Tl = V|NewTl
+            env <- (D#G#Hd#NewTl)|Dr
+         else
+            {self.MyReporter
+             error(coord: Coord kind: BindingAnalysisError
+                   msg: 'variable '#pn(PrintName)#' declared more than once')}
+            V = X
+         end
+      end
       meth refer(PrintName Coord ?VO) V in
          BindingAnalysis, Refer(PrintName Coord @env ?V)
          case V of undeclared then
@@ -94,6 +126,29 @@ in
                    msg: 'variable '#pn(PrintName)#' not introduced')}
             {BindingAnalysis, bind(PrintName Coord $) occ(Coord ?VO)}
          else
+            case {V isRestricted($)} then
+               {self.MyReporter
+                error(coord: Coord kind: BindingAnalysisError
+                      msg: 'illegal use of imported variable '#pn(PrintName))}
+            else skip
+            end
+            {V occ(Coord ?VO)}
+         end
+      end
+      meth referImport(PrintName Coord Feature ?VO) V in
+         BindingAnalysis, Refer(PrintName Coord @env ?V)
+         case V of undeclared then
+            {self.MyReporter
+             error(coord: Coord kind: BindingAnalysisError
+                   msg: 'variable '#pn(PrintName)#' not introduced')}
+            {BindingAnalysis, bind(PrintName Coord $) occ(Coord ?VO)}
+         else
+            case {V isDenied(Feature $)} then
+               {self.MyReporter
+                error(coord: Coord kind: BindingAnalysisError
+                      msg: 'illegal use of imported variable '#pn(PrintName))}
+            else skip
+            end
             {V occ(Coord ?VO)}
          end
       end

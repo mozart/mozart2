@@ -778,6 +778,32 @@ local
       end
    end
 
+   class AnnotateRestrictedVariable
+      meth checkUse(Kind Rep)
+         case @use of unused then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: 'unused '#Kind#' '#pn(@printName))}
+         [] wildcard then
+            {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                      msg: Kind#' '#pn(@printName)#' used only once')}
+         else
+            AnnotateRestrictedVariable, CheckUse(@features Rep)
+         end
+      end
+      meth CheckUse(Fs Rep)
+         case Fs of X|Fr then F#C#B = X in
+            case {IsDet B} then skip
+            else
+               {Rep warn(coord: C kind: BindingAnalysisWarning
+                         msg: ('feature '#pn(@printName)#'.'#oz(F)#
+                               ' imported but never used'))}
+            end
+            AnnotateRestrictedVariable, CheckUse(Fr Rep)
+         [] nil then skip
+         end
+      end
+   end
+
    class AnnotateVariableOccurrence
       meth annotateGlobalVars(Ls VsHd VsTl) V = @variable in
          case {Member V Ls} then VsHd = VsTl
@@ -839,6 +865,7 @@ in
                        intNode: AnnotateIntNode
                        floatNode: AnnotateFloatNode
                        variable: AnnotateVariable
+                       restrictedVariable: AnnotateRestrictedVariable
                        variableOccurrence: AnnotateVariableOccurrence
                        patternVariableOccurrence:
                           AnnotatePatternVariableOccurrence)

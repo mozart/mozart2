@@ -1017,13 +1017,18 @@ in
 
       class Variable
          from Annotate.variable SA.variable CodeGen.variable
-         prop final
          attr printName: unit origin: unit coord: unit isToplevel: false
          meth init(PrintName Origin Coord)
             printName <- PrintName
             origin <- Origin
             coord <- Coord
             SA.variable, init()
+         end
+         meth isRestricted($)
+            false
+         end
+         meth isDenied(Feature $)
+            false
          end
          meth getPrintName($)
             @printName
@@ -1064,6 +1069,38 @@ in
                Variable, output(R $)
             else
                Variable, outputEscaped(R $)
+            end
+         end
+      end
+
+      class RestrictedVariable
+         from Variable Annotate.restrictedVariable
+         prop final
+         attr features: unit
+         meth init(PrintName Features Coord)
+            Variable, init(PrintName user Coord)
+            features <- {Map Features
+                         fun {$ F}
+                            case F of fAtom(X C) then X#C#_
+                            [] fInt(I C) then I#C#_
+                            end
+                         end}
+         end
+         meth isRestricted($)
+            @features \= nil
+         end
+         meth isDenied(Feature $) Fs = @features in
+            Fs \= nil andthen RestrictedVariable, IsDenied(Fs Feature $)
+         end
+         meth IsDenied(Fs Feature $)
+            case Fs of X|Fr then F#_#B = X in
+               case Feature == F then
+                  B = true
+                  false
+               else
+                  RestrictedVariable, IsDenied(Fr Feature $)
+               end
+            [] nil then true
             end
          end
       end
@@ -1379,6 +1416,7 @@ in
                   intNode: IntNode
                   floatNode: FloatNode
                   variable: Variable
+                  restrictedVariable: RestrictedVariable
                   variableOccurrence: VariableOccurrence
                   patternVariableOccurrence: PatternVariableOccurrence
                   token: Token

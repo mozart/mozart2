@@ -174,12 +174,18 @@ local
       case FS of fAnd(S1 S2) then FVsInter in
          fAnd({MakeTrivialLocalPrefix S1 FVsHd FVsInter}
               {MakeTrivialLocalPrefix S2 FVsInter FVsTl})
-      [] fVar(_ C) then   % remove single variable
+      [] fVar(_ _) then   % remove single variable
          FVsHd = FS|FVsTl
-         fSkip(C)
-      [] fWildcard(C) then   % ignore solitary wildcard
+         fSkip(unit)
+      [] fWildcard(_) then   % ignore solitary wildcard
          FVsHd = FVsTl
-         fSkip(C)
+         fSkip(unit)
+      [] fDoImport(_ _ _) then
+         FVsHd = FS|FVsTl
+         FS
+      [] fExportItem(_) then
+         FVsHd = FS|FVsTl
+         fSkip(unit)
       else
          {GetPatternVariablesStatement FS FVsHd FVsTl}
          FS
@@ -302,6 +308,38 @@ local
       end
    end
 
+   proc {SortFunctorDescriptors FDescriptors Rep ?FImport ?FExport ?FProp}
+      case FDescriptors of D|Dr then
+         case D of fImport(Ds C) then
+            case {IsFree FImport} then FImport = Ds
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `import\' descriptor '#
+                                'in functor definition'))}
+            end
+         [] fExport(Ds C) then
+            case {IsFree FExport} then FExport = Ds
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `export\' descriptor '#
+                                'in functor definition'))}
+            end
+         [] fProp(Ps C) then
+            case {IsFree FProp} then FProp = Ps
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `prop\' descriptor '#
+                                'in functor definition'))}
+            end
+         end
+         {SortFunctorDescriptors Dr Rep ?FImport ?FExport ?FProp}
+      [] nil then
+         case {IsFree FImport} then FImport = nil else skip end
+         case {IsFree FExport} then FExport = nil else skip end
+         case {IsFree FProp} then FProp = nil else skip end
+      end
+   end
+
    proc {SortClassDescriptors FDescriptors Rep ?FFrom ?FProp ?FAttr ?FFeat}
       case FDescriptors of D|Dr then
          case D of fFrom(Fs C) then
@@ -408,6 +446,7 @@ local
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
                         [] fFun(_ _ _ _ _) then 'Fun'
+                        [] fFunctor(_ _ _ _) then 'Functor'
                         [] fClass(_ _ _ _) then 'Class'
                         [] fScanner(_ _ _ _ _ _) then 'Scanner'
                         [] fParser(_ _ _ _ _ _ _) then 'Parser'
@@ -569,6 +608,42 @@ local
             end
             {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
+         [] fFunctor(FE FDescriptors FBody C) then
+            GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
+            ImportFS ExportFS FColons FBody2 FFun GS
+         in
+            Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
+            FV = fVar({{GVO getVariable($)} getPrintName($)}
+                      {CoordinatesOf FE})
+            {SortFunctorDescriptors FDescriptors @reporter
+             ?FImport ?FExport ?FProp}
+            {@BA openScope()}
+            Unnester, AnalyseImports(FImport ImportFV ?ImportFS)
+            Unnester, AnalyseExports(FExport ?ExportFS ?FColons)
+            {@BA generate('IMPORT' C ?ImportGV)}
+            {@BA closeScope(_)}
+            ImportFV = fVar({ImportGV getPrintName($)} C)
+            FBody2 = fLocal(fAnd(ImportFS ExportFS)
+                            fAnd(FBody fRecord(fAtom('export' C) FColons)) C)
+            FFun = fFun(fDollar(unit) [ImportFV] FBody2
+                        fAtom('instantiate' C)|FProp C)
+            Unnester,
+            UnnestStatement(fApply(fVar('`NewChunk`' unit)
+                                   [fRecord(fAtom(f unit)
+                                            [fColon(fAtom(apply unit) FFun)])
+                                    FV] unit) ?GS)
+            GFrontEq|GS
+         [] fDoImport(_ GV ImportFV) then
+            fVar(PrintName C) = ImportFV DotGVO ImportGVO
+            GFrontEqs FeatureGVO ResGVO
+         in
+            {@BA refer('`.`' C ?DotGVO)}
+            {@BA refer(PrintName C ?ImportGVO)}
+            Unnester, UnnestToVar(fAtom({GV getPrintName($)} C) 'Feature'
+                                  ?GFrontEqs ?FeatureGVO)
+            {GV occ(C ?ResGVO)}
+            GFrontEqs|
+            {New Core.application init(DotGVO [ImportGVO FeatureGVO ResGVO] C)}
          [] fClass(FE FDescriptors FMeths C) then
             GFrontEq GVO FPrivates GPrivates
             FFrom FProp FAttr FFeat
@@ -647,7 +722,17 @@ local
             {@BA openScope()}
             NewFS1 = {MakeTrivialLocalPrefix FS1 ?FVs nil}
             {ForAll FVs
-             proc {$ fVar(PrintName C)} {@BA bind(PrintName C _)} end}
+             proc {$ FV}
+                case FV of fVar(PrintName C) then
+                   {@BA bind(PrintName C _)}
+                elseof fDoImport(FI GV _) then
+                   fImportItem(fVar(PrintName C) Features _) = FI
+                in
+                   {@BA bindImport(PrintName C Features ?GV)}
+                elseof fExportItem(fVar(PrintName C)) then
+                   {@BA bindExport(PrintName C _)}
+                end
+             end}
             GS = (Unnester, UnnestStatement(NewFS1 $)|
                   Unnester, UnnestStatement(FS2 $))
             {MakeDeclaration {@BA closeScope($)} GS C}
@@ -826,7 +911,7 @@ local
          [] fAndThen(FE1 FE2 C) then FS in
             FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fVar('`false`' C) C) C)
             Unnester, UnnestStatement(FS $)
-         [] fOpApply(Op FEs C) then PrintName in
+         [] fOpApply(Op FEs C) then
             case {DollarsInScope FEs 0} == 0 then skip
             else OpKind in
                OpKind = case FEs of [_] then 'prefix' else 'infix' end
@@ -834,9 +919,27 @@ local
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: OpKind#' operator cannot take $ as argument')}
             end
-            PrintName = {VirtualString.toAtom '`'#Op#'`'}
-            Unnester, UnnestStatement(fApply(fVar(PrintName C)
-                                             {Append FEs [FV]} C) $)
+            case FE of fOpApply('.' [fVar(X C2) FA=fAtom(Y _)] _) then
+               LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
+            in
+               {@BA referImport(X C2 Y ?LeftGVO)}
+               {@BA refer('`.`' C ?DotGVO)}
+               Unnester, UnnestApplyArgs([FA FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+               GFrontEqs1|GFrontEqs2|
+               {New Core.application init(DotGVO LeftGVO|GTs C)}
+            elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] _) then
+               LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
+            in
+               {@BA referImport(X C2 Y ?LeftGVO)}
+               {@BA refer('`.`' C ?DotGVO)}
+               Unnester, UnnestApplyArgs([FI FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+               GFrontEqs1|GFrontEqs2|
+               {New Core.application init(DotGVO LeftGVO|GTs C)}
+            else PrintName in
+               PrintName = {VirtualString.toAtom '`'#Op#'`'}
+               Unnester, UnnestStatement(fApply(fVar(PrintName C)
+                                                {Append FEs [FV]} C) $)
+            end
          [] fFdCompare(Op FE1 FE2 C) then
             GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
@@ -972,6 +1075,15 @@ local
                                       'of nested function'))}
                Unnester, UnnestStatement(FE $)
             end
+         [] fFunctor(FE FDescriptors FBody C) then
+            case FE of fDollar(_) then
+               Unnester, UnnestStatement(fFunctor(FV FDescriptors FBody C) $)
+            else
+               {@reporter
+                error(coord: {CoordinatesOf FE} kind: SyntaxError
+                      msg: 'nesting marker expected in nested functor')}
+               Unnester, UnnestStatement(FE $)
+            end
          [] fClass(FE1 FDescriptors FMeths C) then
             case FE1 of fDollar(_) then
                Unnester, UnnestStatement(fClass(FV FDescriptors FMeths C) $)
@@ -1003,9 +1115,19 @@ local
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FS FVs nil}
             case   % is a new temporary needed to avoid name clashes?
-               {FoldL FVs fun {$ In fVar(X C)}
-                             {@BA bind(X C _)}
-                             {Or In X == PrintName}
+               {FoldL FVs fun {$ In FV}
+                             case FV of fVar(X C) then
+                                {@BA bind(X C _)}
+                                {Or In X == PrintName}
+                             elseof fDoImport(FI GV _) then
+                                fImportItem(fVar(X C) Features _) = FI
+                             in
+                                {@BA bindImport(X C Features ?GV)}
+                                {Or In X == PrintName}
+                             elseof fExportItem(fVar(X C)) then
+                                {@BA bindExport(X C _)}
+                                {Or In X == PrintName}
+                             end
                           end false}
             then NewGV NewFV GS in
                {@BA generateForOuterScope('AntiNameClash' C ?NewGV)}
@@ -1367,6 +1489,34 @@ local
             NewOccs = Occs
             GdHd = fEq(fVar({GV getPrintName($)} C) FE C)|GdTl
             RtHd = RtTl
+         end
+      end
+
+      meth AnalyseImports(Ds ImportFV ?ImportFS)
+         case Ds of D|Dr then
+            fImportItem(fVar(PrintName C) _ _) = D ImportFS2
+         in
+            {@BA bind(PrintName C _)}
+            %--** respect from clause
+            %--** check that all features are distinct
+            %--** read corresponding type description from pickle
+            ImportFS = fAnd(fDoImport(D _ ImportFV) ImportFS2)
+            Unnester, AnalyseImports(Dr ImportFV ?ImportFS2)
+         [] nil then
+            ImportFS = fSkip(unit)
+         end
+      end
+      meth AnalyseExports(Ds ?ExportFS ?FColons)
+         case Ds of D|Dr then
+            fExportItem(FV=fVar(PrintName C)) = D ExportFS2 FColonr
+         in
+            {@BA bind(PrintName C _)}
+            ExportFS = fAnd(D ExportFS2)
+            FColons = fColon(fAtom({DowncasePrintName PrintName} C) FV)|FColonr
+            Unnester, AnalyseExports(Dr ?ExportFS2 ?FColonr)
+         [] nil then
+            ExportFS = fSkip(unit)
+            FColons = nil
          end
       end
 

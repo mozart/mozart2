@@ -71,6 +71,16 @@ in
    end
 end
 
+fun {DowncasePrintName X} S in
+   S = {Atom.toString X}
+   case S of C|Cr then
+      case {Char.isUpper C} then {String.toAtom {Char.toLower C}|Cr}
+      elsecase C == &` then X
+      end
+   [] nil then X
+   end
+end
+
 NameVariable = {`Builtin` 'nameVariable' 2}
 
 IsBuiltin = {`Builtin` 'isBuiltin' 2}

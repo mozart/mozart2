@@ -314,6 +314,11 @@ S  ::=  <Statement>
      use:        unused | wildcard | linear | multiple
 
 
+% printName
+<RestrictedVariable> from <Variable>
+     features: ( atom#C#bool | int#C#bool )+
+
+
 % variable
 <VariableOccurrence>
      variable: V

@@ -23,6 +23,7 @@ local
    % Misc
    PrintNameToVirtualString
    IsPrintName
+   DowncasePrintName
    NameVariable
    IsBuiltin
    GetBuiltinName

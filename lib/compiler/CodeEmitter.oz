@@ -1757,13 +1757,15 @@ in
          if HasLocalEnv then
             case Addr of vShared(_ _ _ _) then
                Emitter, EmitAddrInLocalEnvShared(Addr)
-            else NumberOfYs in
+            else OldLocalEnvSize NumberOfYs in
+               OldLocalEnvSize = @LocalEnvSize
                LocalEnvSize <- NumberOfYs
                Emitter, Emit(allocateL(NumberOfYs))
                Emitter, EmitAddr(Addr)
                NumberOfYs = {Length @UsedYs}
                {List.forAllInd @UsedYs proc {$ I y(J)} J = NumberOfYs - I end}
                UsedYs <- nil
+               LocalEnvSize <- OldLocalEnvSize
             end
          else OldLocalEnvsInhibited in
             OldLocalEnvsInhibited = @LocalEnvsInhibited

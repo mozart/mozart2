@@ -42,11 +42,11 @@ in
 \insert 'sp/Foreign.oz'
 = NewForeign
 
-\insert 'sp/ErrorRegistry.oz'
-= NewErrorRegistry
-
 \insert 'sp/Error.oz'
 = NewError
+
+\insert 'sp/ErrorRegistry.oz'
+= NewErrorRegistry
 
 \insert 'cp/FD.oz'
 = NewFD
@@ -76,46 +76,40 @@ UrlDefaults = \insert '../url-defaults.oz'
 {{`Builtin` 'save' 2}
  proc instantiate {$}
 
-    System        = {NewSystem.apply
-                     'import'()}
-    ErrorRegistry = {NewErrorRegistry.apply
-                     'import'('Error': Error)}
-    Error         = {NewError.apply
-                     'import'('System':        System
-                              'ErrorRegistry': ErrorRegistry)}
-    Foreign       = {NewForeign.apply
-                     'import'('System':        System
-                              'Error':         Error
-                              'ErrorRegistry': ErrorRegistry)}
+    IMPORT
 
-    FD            = {NewFD.apply
-                     'import'('Foreign': Foreign
-                              'Error':         Error
-                              'ErrorRegistry': ErrorRegistry)}
-    FS            = {NewFS.apply
-                     'import'('Foreign': Foreign
-                              'FD':      FD)}
-    Search        = {NewSearch.apply
-                     'import'('Error':         Error
-                              'ErrorRegistry': ErrorRegistry)}
-    OS            = {NewOS.apply
-                     'import'()}
-    Open          = {NewOpen.apply
-                     'import'('OS':            OS
-                              'Error':         Error
-                              'ErrorRegistry': ErrorRegistry
-                              'URL':           'export'(open: unit))}
-    Pickle        = {NewPickle.apply
-                     'import'()}
-    Compiler      = {NewCompiler.apply
-                     'import'('System':        System
-                              'Foreign':       Foreign
-                              'Error':         Error
-                              'ErrorRegistry': ErrorRegistry
-                              'FS':            FS
-                              'FD':            FD
-                              'Search':        Search)}
+    'import'('System':        System
+             'Foreign':       Foreign
+             'Error':         Error
+             'ErrorRegistry': ErrorRegistry
+             'FD':            FD
+             'OS':            OS
+             'Open':          Open
+             'URL':           'export'(open:unit)
+             'FS':            FS
+             'Pickle':        Pickle
+             'Search':        Search)
+    =IMPORT
+
+    Compiler
+
+    {ForAll [System        # NewSystem
+             Foreign       # NewForeign
+             ErrorRegistry # NewErrorRegistry
+             Error         # NewError
+             FD            # NewFD
+             FS            # NewFS
+             Search        # NewSearch
+             OS            # NewOS
+             Open          # NewOpen
+             Pickle        # NewPickle
+             Compiler      # NewCompiler]
+     proc {$ V#F}
+        thread {F.apply IMPORT}=V end
+     end}
+
     Module = {NewModule}
+
     {ForAll ['System'#       System
              'Foreign'#      Foreign
              'ErrorRegistry'#ErrorRegistry
@@ -127,6 +121,7 @@ UrlDefaults = \insert '../url-defaults.oz'
              'Open'#         Open
              'Pickle'#       Pickle
              'Compiler'#     Compiler]
+
      proc {$ A#M}
         {Module.enter UrlDefaults.home#'lib/'#A#UrlDefaults.'functor' M}
      end}

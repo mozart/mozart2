@@ -34,7 +34,6 @@
 
 OS_NAME         = {GET 'os.name'}
 OS_CPU          = {GET 'os.cpu'}
-%OS_NAME#OS_CPU = {{`Builtin` 'SystemGetPlatform' 1}}
 
 PATH_SEPARATOR  = case {Getenv 'OZ_PATH_SEPARATOR'} of [C] then C
                   elsecase OS_NAME of win32 then &; else &: end
@@ -44,7 +43,7 @@ PATH_ESCAPE     = case {Getenv 'OZ_PATH_ESCAPE'} of [C] then C
 
 OZ_HOME         = case {Getenv 'OZ_HOME'} of false then
                      case {Getenv 'OZHOME'} of false then
-                        {{`Builtin` 'SystemGetHome' 1}}
+                        {GET 'oz.conf.home'}
                      elseof V then V end
                   elseof V then V end
 
@@ -80,7 +79,7 @@ USER_HOME       = case {Getenv 'HOME'} of false then
 %{SET 'os.cpu'          OS_CPU          }
 {SET 'path.separator'   PATH_SEPARATOR  }
 {SET 'path.escape'      PATH_ESCAPE     }
-%{SET 'oz.home'         OZ_HOME         }
+{SET 'oz.home'          OZ_HOME         }
 {SET 'oz.search.path'   OZ_SEARCH_PATH  }
 {SET 'oz.search.load'   OZ_SEARCH_LOAD  }
 {SET 'oz.search.dload'  OZ_SEARCH_DLOAD }

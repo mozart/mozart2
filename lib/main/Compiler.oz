@@ -50,8 +50,6 @@ in
          end
       in
          proc {StartCompiler Env} Compiler OZRC in
-            {`ooSiteInit`}
-
             Compiler = {New CompilerInterfaceEmacs init()}
             {Compiler mergeEnv(Env)}
             {SetOPICompiler Compiler}

@@ -270,7 +270,8 @@ in
 
    define
 
-      Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
+      Argv = {Application.getCmdArgs
+              record(verbose(rightmost type: bool default: false))}
 
       fun {X2V X}
          {Value.toVirtualString X 100 100}

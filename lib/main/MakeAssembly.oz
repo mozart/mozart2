@@ -30,6 +30,7 @@ NewError
 NewFS
 NewFD
 NewSearch
+Search
 NewOpen
 NewCompiler
 UrlDefaults
@@ -51,6 +52,8 @@ in
 
 \insert 'cp/Search.oz'
 = NewSearch
+
+Search = {NewSearch.apply 'import'}
 
 \insert 'op/Open.oz'
 = NewOpen
@@ -111,8 +114,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FD':            FD
              'Open':          Open
              'Resolve':       'export'(open:unit)
-             'FS':            FS
-             'Search':        Search)
+             'FS':            FS)
     =IMPORT
 
     BootManager = {`Builtin` 'BootManager'  2}
@@ -138,7 +140,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              Error         # NewError
              FD            # NewFD
              FS            # NewFS
-             Search        # NewSearch
              Open          # NewOpen
              Compiler      # NewCompiler]
      proc {$ V#F}
@@ -167,7 +168,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Error'#        Error
              'FD'#           FD
              'FS'#           FS
-             'Search'#       Search
              'OS'#           OS
              'Open'#         Open
              'Pickle'#       Pickle

@@ -60,6 +60,36 @@ define
                      end
                      keys:[exception object])
 
+              'self'(equal(fun {$}
+                              class CA
+                                 meth whoAmI($)
+                                    a
+                                 end
+                                 meth raiseIt
+                                    raise gaga end
+                                 end
+                              end
+                              class CB
+                                 meth whoAmI($)
+                                    b
+                                 end
+                                 meth check($)
+                                    try
+                                       {A raiseIt} _
+                                    catch gaga then
+                                       {self whoAmI($)}
+                                    end
+                                 end
+                              end
+                              A = {New CA whoAmI(_)}
+                              B = {New CB whoAmI(_)}
+                           in
+                              {B check($)}
+                           end
+                           b)
+                     keys:['self' object exception])
+
+
               'lock'(proc {$}
                         local X = thread {NewLock} end in
                            try

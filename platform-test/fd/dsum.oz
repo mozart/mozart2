@@ -2,7 +2,7 @@ functor
 
 import
 
-   FD
+   FD Space Search
 
 export
    Return
@@ -79,6 +79,48 @@ Return=
                  thread cond S::9 [E N D R Y]:::0#8 M::1#2 O::0#1 then 1 else 0 end end
               end
              }
+
+% test that sumD actually wakes up when holes appear in the domains of its parameters
+
+             {MiscTest 6
+              fun {$}
+                 case {Search.base.all
+                       proc {$ D}
+                          L X1 X2 X3 Y
+                       in
+                          L = [X1 X2 X3]
+                          L:::1#3
+                          Y::0#9
+                          {FD.sumD L '=:' Y}
+                          X1\=:2
+                          X2\=:2
+                          X3\=:2
+                          {Space.waitStable}
+                          D={FD.reflect.domList Y}
+                       end}
+                 of [[3 5 7 9]] then 1 else 0 end
+              end}
+
+% test that sumCD actually wakes up when holes appear in the domains of its parameters
+
+             {MiscTest 7
+              fun {$}
+                 case {Search.base.all
+                       proc {$ D}
+                          L X1 X2 X3 Y
+                       in
+                          L = [X1 X2 X3]
+                          L:::1#3
+                          Y::0#100
+                          {FD.sumCD [1 2 4] L '=:' Y}
+                          X1\=:2
+                          X2\=:2
+                          X3\=:2
+                          {Space.waitStable}
+                          D={FD.reflect.domList Y}
+                       end}
+                 of [[7 9 11 13 15 17 19 21]] then 1 else 0 end
+              end}
 
             ])
       ])

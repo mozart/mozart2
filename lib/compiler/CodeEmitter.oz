@@ -274,6 +274,10 @@ define
          end
 
          meth set(Y I)
+            if I >= @N then
+               %% Must accomodate fixed (for debugger) Y registers
+               N <- I+1
+            end
             Ss <- (Y|I)|@Ss
          end
 
@@ -362,8 +366,13 @@ define
             Alloc = {Space.merge S}
             {Record.foldLInd Alloc
              fun {$ I M J}
-                {Dictionary.get self.Mapping I}=J
-                {Max M J}
+                %% Because of fixed register assignment (\switch +staticvarname)
+                %% some registers may not be in use.
+                if {Dictionary.member self.Mapping I} then
+                   {Dictionary.get self.Mapping I}=J
+                   {Max M J}
+                else M
+                end
              end ~1}+1
          end
          %% PR#571, PR#931, PR#1244

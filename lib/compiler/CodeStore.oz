@@ -19,7 +19,7 @@
 %%% WARRANTIES.
 %%%
 
-Continuations = c(vStepPoint: 4
+Continuations = c(vStepPoint: 5
                   vMakePermanent: 3
                   vClear: 3
                   vUnify: 4
@@ -71,7 +71,7 @@ class CodeStore from Emitter
       nextLabel
       sharedDone
    feat
-      debugInfoControlSwitch debugInfoStatementsSwitch debugInfoVarnamesSwitch
+      debugInfoControlSwitch debugInfoVarnamesSwitch
       switches reporter
    meth init(Switches Reporter)
       Emitter, init()
@@ -82,8 +82,6 @@ class CodeStore from Emitter
       sharedDone <- {NewDictionary}
       self.debugInfoControlSwitch =
       {Switches getSwitch(debuginfocontrol $)}
-      self.debugInfoStatementsSwitch =
-      {Switches getSwitch(debuginfostatements $)}
       self.debugInfoVarnamesSwitch =
       {Switches getSwitch(debuginfovarnames $)}
       self.switches = Switches
@@ -164,7 +162,7 @@ class CodeStore from Emitter
          elseof Cont then
             RS = {RegSet.copy CodeStore, ComputeOccs(Cont $)}
          end
-         case VInstr of vStepPoint(_ Addr _ _) then RS1 in
+         case VInstr of vStepPoint(_ Addr _ _ _) then RS1 in
             CodeStore, ComputeOccs(Addr ?RS1)
             {RegSet.union RS RS1}
          [] vMakePermanent(_ Regs _) then
@@ -395,7 +393,7 @@ class CodeStore from Emitter
                CodeStore, GetOccs(Cont ?AddRS2)
             end
          end
-         case VInstr of vStepPoint(_ Addr _ _) then skip
+         case VInstr of vStepPoint(_ Addr _ _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
          [] vMakePermanent(_ _ _) then skip
          [] vClear(_ _ _) then skip

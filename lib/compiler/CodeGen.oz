@@ -42,6 +42,22 @@ local
       end
    end
 
+   fun {CoordNoDebug Coord}
+      case {Label Coord} of pos then Coord
+      else {Adjoin Coord pos}
+      end
+   end
+
+   proc {StepPoint Coord Comment VHd VTl VInter1 VInter2}
+      case {IsStep Coord} then
+         VInter2 = nil
+         VHd = vStepPoint(_ VInter1 Coord Comment VTl)
+      else
+         VHd = VInter1
+         VInter2 = VTl
+      end
+   end
+
    proc {MakeUnify Reg1 Reg2 VHd VTl}
       case Reg1 == Reg2 then
          % If we left it in, it would create unnecessary Reg occurrences.
@@ -192,30 +208,30 @@ local
          end
       end
    in
-      proc {MakeApplication Designator ActualArgs CS VHd VTl}
-         Value NewActualArgs VInter in
+      proc {MakeApplication Designator Coord ActualArgs CS VHd VTl}
+         Value NewActualArgs VInter
+      in
          {Designator getCodeGenValue(?Value)}
          {LoadActualArgs ActualArgs CS VHd VInter ?NewActualArgs}
          case {IsDet Value} andthen {IsProcedure Value} then
             {Designator
-             codeGenApplication(Designator NewActualArgs CS VInter VTl)}
-         elsecase CS.debugInfoControlSwitch then
-            VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
-                           {Designator getCoord($)} VTl)
-         elsecase {{Designator getVariable($)} isToplevel($)} then
+             codeGenApplication(Designator Coord NewActualArgs CS VInter VTl)}
+         elsecase {{Designator getVariable($)} isToplevel($)}
+            andthen {Not CS.debugInfoControlSwitch}
+         then
             VInter = vGenCall(_ {Designator reg($)}
                               false '' {Length NewActualArgs}
-                              {GetRegs NewActualArgs}
-                              {Designator getCoord($)} VTl)
+                              {GetRegs NewActualArgs} Coord VTl)
          else
             VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
-                           {Designator getCoord($)} VTl)
+                           Coord VTl)
          end
       end
    end
 
    proc {MakeException Node Literal Coord VOs CS VHd VTl}
-      RaiseError Reg VO VArgs VInter in
+      RaiseError Reg VO VArgs VInter
+   in
       RaiseError = {GetExpansionOcc '`RaiseError`' Node Coord CS}
       {CS newReg(?Reg)}
       VO = {New PseudoVariableOccurrence init(Reg)}
@@ -223,7 +239,7 @@ local
       literal(Literal)|number(case Coord of unit then ~1 else Coord.2 end)|
       {Map VOs fun {$ VO} value({VO reg($)}) end}
       VHd = vEquateRecord(_ 'kernel' {Length VArgs} Reg VArgs VInter)
-      {MakeApplication RaiseError [VO] CS VInter VTl}
+      {MakeApplication RaiseError {CoordNoDebug Coord} [VO] CS VInter VTl}
    end
 
    fun {GuardNeedsThread VInstr}
@@ -573,26 +589,27 @@ local
          end
       end
       meth MakeConstructionOpen(CS VO VHd VTl)
-         C TellRecordSize Hat WidthReg WidthVO Cont1 Cont2 in
+         C CND TellRecordSize Hat WidthReg WidthVO Cont1 Cont2 in
          % translate the construction as:
          %    {`tellRecordSize` Label Width ?VO}
          %    {`^` VO Feat1 Subtree1} ... {`^` VO Featn Subtreen}
          {@label getCoord(?C)}
+         CND = {CoordNoDebug C}
          TellRecordSize = {GetExpansionOcc '`tellRecordSize`' self C CS}
          Hat = {GetExpansionOcc '`^`' self C CS}
          {CS newReg(?WidthReg)}
          WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
          VHd = vEquateNumber(_ {Length @args} WidthReg Cont1)
          case {@label isVariableOccurrence($)} then
-            {MakeApplication TellRecordSize [@label WidthVO VO] CS
-             Cont1 Cont2}
+            {MakeApplication TellRecordSize CND
+             [@label WidthVO VO] CS Cont1 Cont2}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont1 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication TellRecordSize [LabelVO WidthVO VO] CS
-             Inter Cont2}
+            {MakeApplication TellRecordSize {CoordNoDebug C}
+             [LabelVO WidthVO VO] CS Inter Cont2}
          end
          {List.foldLInd @args
           proc {$ I VHd Arg VTl} VO1 VO2 VInter1 in
@@ -605,15 +622,17 @@ local
                 VHd = vEquateNumber(_ I {VO1 reg($)} VInter2)
                 {Arg makeVO(CS VInter2 VInter1 ?VO2)}
              end
-             {MakeApplication Hat [VO VO1 VO2] CS VInter1 VTl}
+             {MakeApplication Hat CND [VO VO1 VO2] CS VInter1 VTl}
           end Cont2 VTl}
       end
       meth MakeConstructionTuple(CS VO Rec VHd VTl)
-         BQTuple SubtreesReg SubtreesVO WidthValue WidthReg WidthVO Cont1 Cont2
+         C BQTuple SubtreesReg SubtreesVO WidthValue WidthReg WidthVO
+         Cont1 Cont2
       in
          % translate the construction as:
          %    {`tuple` Label [Subtree1 ... Subtreen] Width ?Reg}
-         BQTuple = {GetExpansionOcc '`tuple`' self {@label getCoord($)} CS}
+         {@label getCoord(?C)}
+         BQTuple = {GetExpansionOcc '`tuple`' self C CS}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
          WidthValue = {Width Rec}
@@ -644,22 +663,24 @@ local
          end
          Cont1 = vEquateNumber(_ WidthValue WidthReg Cont2)
          case {@label isVariableOccurrence($)} then
-            {MakeApplication BQTuple [@label SubtreesVO WidthVO VO] CS
-             Cont2 VTl}
+            {MakeApplication BQTuple {CoordNoDebug C}
+             [@label SubtreesVO WidthVO VO] CS Cont2 VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont2 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication BQTuple [LabelVO SubtreesVO WidthVO VO] CS
-             Inter VTl}
+            {MakeApplication BQTuple {CoordNoDebug C}
+             [LabelVO SubtreesVO WidthVO VO] CS Inter VTl}
          end
       end
       meth MakeConstructionRecord(CS VO Args VHd VTl)
-         BQRecord SubtreesReg SubtreesVO Cont in
+         C BQRecord SubtreesReg SubtreesVO Cont
+      in
          % translate the construction as:
          %    {`record` Label [Feat1#Subtree1 ... Featn#Subtreen] ?Reg}
-         BQRecord = {GetExpansionOcc '`record`' self {@label getCoord($)} CS}
+         {@label getCoord(?C)}
+         BQRecord = {GetExpansionOcc '`record`' self C CS}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
          case Args of (F1#A1)|Argr then   % else it would have been a tuple
@@ -701,13 +722,15 @@ local
                                     [value(PairReg) Arg] Cont)
          end
          case {@label isVariableOccurrence($)} then
-            {MakeApplication BQRecord [@label SubtreesVO VO] CS Cont VTl}
+            {MakeApplication BQRecord {CoordNoDebug C}
+             [@label SubtreesVO VO] CS Cont VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication BQRecord [LabelVO SubtreesVO VO] CS Inter VTl}
+            {MakeApplication BQRecord {CoordNoDebug C}
+             [LabelVO SubtreesVO VO] CS Inter VTl}
          end
       end
    end
@@ -827,13 +850,6 @@ local
       end
    end
 
-   class CodeGenStepPoint
-      meth codeGen(CS VHd VTl) VBody in
-         {CodeGenList @statements CS VBody nil}
-         VHd = vStepPoint(_ VBody @coord VTl)
-      end
-   end
-
    class CodeGenDeclaration
       meth codeGen(CS VHd VTl)
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
@@ -848,8 +864,8 @@ local
    end
 
    class CodeGenSkipNode
-      meth codeGen(CS VHd VTl)
-         VHd = VTl
+      meth codeGen(CS VHd VTl) VInter in
+         {StepPoint @coord 'skip' VHd VTl VInter VInter}
       end
    end
 
@@ -923,13 +939,11 @@ local
 
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
-         V FileName Line PrintName PredId PredicateRef StateReg
+         VHd0 VTl0 V FileName Line PrintName PredId PredicateRef StateReg
       in
          {@designator getVariable(?V)}
          case @coord of unit then FileName = 'nofile' Line = 1
-         elseof pos(F L _) then FileName = F Line = L
-         [] pos(F L _ _ _ _) then FileName = F Line = L
-         [] posNoDebug(F L _) then FileName = F Line = L
+         elseof C then FileName = C.1 Line = C.2
          end
          PrintName = case {V getOrigin($)} of generated then @printName
                      else {V getPrintName($)}
@@ -975,16 +989,17 @@ local
             case StateReg of none then
                BodyVInstr = BodyVInter
                {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-               VHd = VInter
+               VHd0 = VInter
             else StateVO OOSetSelf in
                StateVO = {New PseudoVariableOccurrence init(StateReg)}
                OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
-               {MakeApplication OOSetSelf [StateVO] CS BodyVInstr BodyVInter}
+               {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
+                BodyVInstr BodyVInter}
                {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-               VHd = vGetSelf(_ StateReg VInter)
+               VHd0 = vGetSelf(_ StateReg VInter)
             end
             VInter = vDefinition(_ {V reg($)} PredId PredicateRef
-                                 GRegs Code VTl)
+                                 GRegs Code VTl0)
          else
             VInter FormalRegs AllRegs
             InnerBodyVInter InnerBodyVInstr InnerGRegs InnerCode
@@ -1006,15 +1021,15 @@ local
                InnerBodyVInstr = InnerBodyVInter
                {CS endDefinition(InnerBodyVInstr nil AllRegs
                                  ?InnerGRegs ?InnerCode)}
-               VHd = VInter
+               VHd0 = VInter
             else StateVO OOSetSelf in
                StateVO = {New PseudoVariableOccurrence init(StateReg)}
                OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
-               {MakeApplication OOSetSelf [StateVO] CS
+               {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
                 InnerBodyVInstr InnerBodyVInter}
                {CS endDefinition(InnerBodyVInstr nil AllRegs
                                  ?InnerGRegs ?InnerCode)}
-               VHd = vGetSelf(_ StateReg VInter)
+               VHd0 = vGetSelf(_ StateReg VInter)
             end
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
@@ -1056,8 +1071,9 @@ local
             {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
                               ?OuterGRegs ?OuterCode)}
             VInter = vDefinition(_ {V reg($)} PredId PredicateRef
-                                 OuterGRegs OuterCode VTl)
+                                 OuterGRegs OuterCode VTl0)
          end
+         {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
          statements <- unit   % hand them to the garbage collector
       end
    end
@@ -1076,10 +1092,11 @@ local
          case {IsDet self.codeGenMakeEquateLiteral} then
             % the application is either a toplevel application of NewName
             % or any application of NewUniqueName:
+            %--** Coordinates for step point
             VHd = vEquateLiteral(_ self.codeGenMakeEquateLiteral
                                  {{List.last @actualArgs} reg($)} VTl)
          else
-            {MakeApplication @designator @actualArgs CS VHd VTl}
+            {MakeApplication @designator @coord @actualArgs CS VHd VTl}
          end
       end
    end
@@ -1438,12 +1455,12 @@ local
 
    class CodeGenClassNode
       meth codeGen(CS VHd VTl)
-         Class From Attr Feat Prop PN Meth PrintName
+         VHd0 VTl0 Class From Attr Feat Prop PN Meth PrintName
          VInter1 VInter2 VInter3
       in
          Class = {GetExpansionOcc '`class`' self @coord CS}
          local Cont1 Cont2 Cont3 in
-            {MakeFromProp @parents CS VHd Cont1 ?From}
+            {MakeFromProp @parents CS VHd0 Cont1 ?From}
             {MakeFromProp @properties CS Cont1 Cont2 ?Prop}
             {MakeAttrFeat 'attr' @attributes self @coord CS Cont2 Cont3 ?Attr}
             {MakeAttrFeat 'feat' @features self @coord CS Cont3 VInter1 ?Feat}
@@ -1481,8 +1498,9 @@ local
             VInter2 = vEquateLiteral(_ PN Reg VInter3)
             PrintName = {New PseudoVariableOccurrence init(Reg)}
          end
-         {MakeApplication Class
-          [From Meth Attr Feat Prop PrintName @designator] CS VInter3 VTl}
+         {MakeApplication Class {CoordNoDebug @coord}
+          [From Meth Attr Feat Prop PrintName @designator] CS VInter3 VTl0}
+         {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
       end
    end
 
@@ -1511,9 +1529,7 @@ local
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
          case @coord of unit then FileName = 'nofile' Line = 1
-         elseof pos(F L _) then FileName = F Line = L
-         [] pos(F L _ _ _ _) then FileName = F Line = L
-         [] posNoDebug(F L _) then FileName = F Line = L
+         elseof C then FileName = C.1 Line = C.2
          end
          local PredId FormalRegs AllRegs BodyVInstr GRegs Code in
             PredId = pid({String.toAtom
@@ -1580,6 +1596,7 @@ local
             else
                {MakeApplication
                 {New PseudoVariableOccurrence init(FastMeth)}
+                {CoordNoDebug @coord}
                 {Map @formalArgs
                  fun {$ Formal}
                     {New PseudoVariableOccurrence
@@ -1613,8 +1630,8 @@ local
       meth makeArityCheck(MessageVO CS VHd VTl)
          case self.hasDefaults then AritySublist in
             AritySublist = {GetExpansionOcc '`aritySublist`' self @coord CS}
-            {MakeApplication AritySublist [MessageVO self.MessagePatternVO] CS
-             VHd VTl}
+            {MakeApplication AritySublist {CoordNoDebug @coord}
+             [MessageVO self.MessagePatternVO] CS VHd VTl}
          else NArgs LabelValue in
             NArgs = {Length @formalArgs}
             {@label getCodeGenValue(?LabelValue)}
@@ -1625,7 +1642,8 @@ local
                VO = {New PseudoVariableOccurrence init(Reg)}
                WidthVO = {GetExpansionOcc '`width`' self @coord CS}
                VHd = vEquateNumber(_ NArgs Reg Cont1)
-               {MakeApplication WidthVO [MessageVO VO] CS Cont1 VTl}
+               {MakeApplication WidthVO {CoordNoDebug @coord}
+                [MessageVO VO] CS Cont1 VTl}
             end
          end
       end
@@ -1659,9 +1677,7 @@ local
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
          case @coord of unit then FileName = 'nofile' Line = 1
-         elseof pos(F L _) then FileName = F Line = L
-         [] pos(F L _ _ _ _) then FileName = F Line = L
-         [] posNoDebug(F L _) then FileName = F Line = L
+         elseof C then FileName = C.1 Line = C.2
          end
          local
             PredId MessageReg MessageVO BodyVInstr
@@ -1728,13 +1744,15 @@ local
          {GetExpansionOcc '`ooRequiredArg`' ExpansionOccNode C CS}
       end
       meth bindMethFormal(MessageVO CS ExpansionOccNode VHd VTl)
-         Dot FeatureVO ArgVO VInter in
+         C Dot FeatureVO ArgVO VInter
+      in
          {@arg setFreshReg(CS)}
-         Dot = {GetExpansionOcc '`.`' ExpansionOccNode
-                {@feature getCoord($)} CS}
+         {@feature getCoord(?C)}
+         Dot = {GetExpansionOcc '`.`' ExpansionOccNode C CS}
          ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
          {@feature makeVO(CS VHd VInter ?FeatureVO)}
-         {MakeApplication Dot [MessageVO FeatureVO ArgVO] CS VInter VTl}
+         {MakeApplication Dot {CoordNoDebug C}
+          [MessageVO FeatureVO ArgVO] CS VInter VTl}
       end
    end
    class CodeGenMethFormalOptional
@@ -1747,10 +1765,11 @@ local
          case @isInitialized then
             VHd = VTl
          else
-            Coord HasFeature Dot ArbiterReg ArbiterVO
+            Coord CND HasFeature Dot ArbiterReg ArbiterVO
             FeatureVO ArgVO ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
          in
             {@arg getCoord(?Coord)}
+            CND = {CoordNoDebug Coord}
             HasFeature = {GetExpansionOcc '`hasFeature`' ExpansionOccNode
                           Coord CS}
             Dot = {GetExpansionOcc '`.`' ExpansionOccNode Coord CS}
@@ -1758,12 +1777,13 @@ local
             ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
             {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
             ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-            {MakeApplication Dot [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
+            {MakeApplication Dot CND
+             [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
             ElseVInstr = nil
             {MakeException ExpansionOccNode boolCaseType Coord nil CS
              ErrVInstr nil}
-            {MakeApplication HasFeature [MessageVO FeatureVO ArbiterVO] CS
-             Cont1 Cont2}
+            {MakeApplication HasFeature CND
+             [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
             Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
                               unit VTl _)
          end
@@ -1774,11 +1794,12 @@ local
          {New CodeGenOzValue init(@default)}
       end
       meth bindMethFormal(MessageVO CS ExpansionOccNode VHd VTl)
-         Coord HasFeature Dot ArbiterReg ArbiterVO
+         Coord CND HasFeature Dot ArbiterReg ArbiterVO
          FeatureVO ArgVO ThenVInstr Default ElseVInstr ErrVInstr Cont1 Cont2
       in
          {@arg setFreshReg(CS)}
          {@arg getCoord(?Coord)}
+         CND = {CoordNoDebug Coord}
          HasFeature = {GetExpansionOcc '`hasFeature`' ExpansionOccNode
                        Coord CS}
          Dot = {GetExpansionOcc '`.`' ExpansionOccNode Coord CS}
@@ -1786,13 +1807,14 @@ local
          ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
          {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
          ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-         {MakeApplication Dot [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
+         {MakeApplication Dot CND
+          [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
          Default = {New CodeGenOzValue init(@default)}
          {Default makeEquation(CS ArgVO ElseVInstr nil)}
          {MakeException ExpansionOccNode boolCaseType Coord nil CS
           ErrVInstr nil}
-         {MakeApplication HasFeature [MessageVO FeatureVO ArbiterVO] CS
-          Cont1 Cont2}
+         {MakeApplication HasFeature CND
+          [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
          Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
                            unit VTl _)
       end
@@ -1805,7 +1827,7 @@ local
          OOGetLock = {GetExpansionOcc '`ooGetLock`' self @coord CS}
          {CS newReg(?Reg)}
          Arg = {New PseudoVariableOccurrence init(Reg)}
-         {MakeApplication OOGetLock [Arg] CS VHd Cont1}
+         {MakeApplication OOGetLock {CoordNoDebug @coord} [Arg] CS VHd Cont1}
          Cont1 = vLockThread(_ Reg @coord Cont2 SharedData)
          {CodeGenList @statements CS Cont2 vLockEnd(_ @coord VTl SharedData)}
       end
@@ -1818,8 +1840,8 @@ local
    end
 
    class CodeGenFailNode
-      meth codeGen(CS VHd VTl)
-         VHd = vFailure(_ VTl)
+      meth codeGen(CS VHd VTl) VInter in
+         {StepPoint @coord 'fail' VHd VTl vFailure(_ VInter) VInter}
       end
    end
 
@@ -2009,8 +2031,8 @@ local
          else _
          end
       end
-      meth codeGenApplication(Designator ActualArgs CS VHd VTl)
-         {@value codeGenApplication(Designator ActualArgs CS VHd VTl)}
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
+         {@value codeGenApplication(Designator Coord ActualArgs CS VHd VTl)}
       end
       meth reg($) Value = @value in
          case {IsDet Value}
@@ -2139,14 +2161,14 @@ local
    end
 
    class CodeGenBuiltinToken
-      meth codeGenApplication(Designator ActualArgs CS VHd VTl)
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
          Builtinname = {GetBuiltinName @value}
          BIInfo = {GetBuiltinInfo Builtinname}
       in
          case BIInfo == noInformation then
             VHd = vCall(_ {Designator reg($)}
                         {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
-                        {Designator getCoord($)} VTl)
+                        Coord VTl)
          elsecase Builtinname of '.' then
             [Arg1 Arg2 Arg3] = ActualArgs Feature in
             {Arg2 getCodeGenValue(?Feature)}
@@ -2172,7 +2194,7 @@ local
                   % use the variable's original register:
                   VHd = vInlineDot(_ {Arg1 reg($)} Feature
                                    {{Arg3 getVariable($)} reg($)}
-                                   AlwaysSucceeds {Designator getCoord($)} VTl)
+                                   AlwaysSucceeds Coord VTl)
                end
             else skip
             end
@@ -2184,17 +2206,17 @@ local
             % performed in the CodeEmitter:
             {CS newReg(?ObjReg)}
             VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
-                               {Designator getCoord($)} Cont)
+                               Coord Cont)
             Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
          [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
             {Arg1 getCodeGenValue(?Value)}
             case {IsDet Value} then
                case Value of 1 then
                   VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                     {Designator getCoord($)} VTl)
+                                     Coord VTl)
                [] ~1 then
                   VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                     {Designator getCoord($)} VTl)
+                                     Coord VTl)
                else skip
                end
             else skip
@@ -2205,10 +2227,10 @@ local
                case {IsDet Value} then
                   case Value of 1 then
                      VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        {Designator getCoord($)} VTl)
+                                        Coord VTl)
                   [] ~1 then
                      VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        {Designator getCoord($)} VTl)
+                                        Coord VTl)
                   else skip
                   end
                else skip
@@ -2219,10 +2241,10 @@ local
             case {IsDet Value} then
                case Value of 1 then
                   VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                     {Designator getCoord($)} VTl)
+                                     Coord VTl)
                [] ~1 then
                   VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                     {Designator getCoord($)} VTl)
+                                     Coord VTl)
                else skip
                end
             else skip
@@ -2256,11 +2278,11 @@ local
                case {{Arg1 getVariable($)} isToplevel($)} then
                   Cont1 = vGenCall(_ {Arg1 reg($)} true
                                    {Label Value} RecordArity Regs
-                                   {Designator getCoord($)} VTl)
+                                   Coord VTl)
                else
                   Cont1 = vApplMeth(_ {Arg1 reg($)}
                                     {Label Value} RecordArity Regs
-                                    {Designator getCoord($)} VTl)
+                                    Coord VTl)
                end
             else skip
             end
@@ -2269,19 +2291,19 @@ local
          case {IsDet VHd} then skip
          else Regs in
             Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
-            VHd = vCallBuiltin(_ Builtinname Regs {Designator getCoord($)} VTl)
+            VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
          end
       end
    end
 
    class CodeGenProcedureToken
       feat ClauseBodyShared
-      meth codeGenApplication(Designator ActualArgs CS VHd VTl) ID in
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl) ID in
          ID = self.predicateRef
          case {IsDet ID} andthen ID \= unit then
             % ID may also be a real procedure
             VHd = vFastCall(_ ID {Map ActualArgs fun {$ A} {A reg($)} end}
-                            {Designator getCoord($)} VTl)
+                            Coord VTl)
          elsecase {IsDet self.clauseBodyStatements} then
             % this is the value produced by a ClauseBody node
             % (by construction, ActualArgs is nil)
@@ -2296,14 +2318,12 @@ local
             end
          else
             VHd = vCall(_ {Designator reg($)}
-                        {Map ActualArgs fun {$ A} {A reg($)} end}
-                        {Designator getCoord($)} VTl)
+                        {Map ActualArgs fun {$ A} {A reg($)} end} Coord VTl)
          end
       end
    end
 in
    CodeGen = codeGen(statement: CodeGenStatement
-                     stepPoint: CodeGenStepPoint
                      declaration: CodeGenDeclaration
                      skipNode: CodeGenSkipNode
                      equation: CodeGenEquation

@@ -532,6 +532,7 @@ local
             'Label'        : doLabel
             'Width'        : doWidth
             'ProcedureArity': doProcedureArity
+            '='            : doEq
             '.'            : doDot
             '^'            : doHat
             ','            : doComma
@@ -1165,13 +1166,10 @@ local
       meth saSimple(Ctrl)
          skip
 \ifdef DEBUGSA_POS
-         case @coord of pos(F L C) then
-            {System.showError {Error.formatPos F L C unit}}
-         [] pos(F L C _ _ _) then
-            {System.showError {Error.formatPos F L C unit}}
-         [] posNoDebug(F L C) then
-            {System.showError {Error.formatPos F L C unit}}
-         else skip
+         case @coord of unit then skip
+         else
+            {System.showError
+             {Error.formatPos @coord.1 @coord.2 @coord.3 unit}}
          end
 \endif
       end
@@ -1218,18 +1216,6 @@ local
          then
             {S SaDo(Ctrl true)} % new lookahead in bodies // self.isComplex
          end
-      end
-   end
-
-   class SAStepPoint
-      meth sa(Ctrl)
-\ifdef DEBUGSA
-         {Show stepPoint}
-\endif
-         skip
-      end
-      meth saDescend(Ctrl)
-         SAStatement, saBody(Ctrl @statements)
       end
    end
 
@@ -2095,6 +2081,13 @@ local
          in
             SABuiltinApplication, checkMessage(Ctrl Msg Meth new PN)
          end
+      end
+
+      meth doEq(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+      in
+         {BVO1 unify(Ctrl BVO2)}
       end
 
       meth doDot(Ctrl)
@@ -4540,7 +4533,6 @@ local
    end
 in
    SA = sa(statement: SAStatement
-           stepPoint: SAStepPoint
            declaration: SADeclaration
            skipNode: SASkipNode
            equation: SAEquation

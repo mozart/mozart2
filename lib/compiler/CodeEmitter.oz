@@ -61,6 +61,13 @@ local
       end
    end
 in
+   fun {IsStep Coord}
+      case {Label Coord} of pos then false
+      [] unit then false
+      else true
+      end
+   end
+
    %%
    %% The Emitter class maintains information about which registers are
    %% currently in use.  The dictionaries UsedX and UsedY map X and Y
@@ -256,12 +263,14 @@ in
          end
       end
       meth EmitVInstr(ThisAddr)
-         case ThisAddr of vStepPoint(_ Addr Coord Cont) then OldContLabels in
+         case ThisAddr of vStepPoint(_ Addr Coord Kind Cont) then
+            OldContLabels
+         in
             Emitter, PushContLabel(Cont ?OldContLabels)
-            Emitter, DebugEntry(Coord 'statement')
+            Emitter, DebugEntry(Coord Kind)
             Emitter, EmitAddr(Addr)
             Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'statement')
+            Emitter, DebugExit(Coord Kind)
          [] vMakePermanent(_ Regs _) then
             {ForAll Regs
              proc {$ Reg}
@@ -631,11 +640,11 @@ in
             Emitter, EmitAddr(Addr2)
             Emitter, RestoreRegisterMapping(RegMap)
             Emitter, Emit(lbl(Label1))
-            Emitter, DebugEntry(Coord 'handler')
+            Emitter, DebugEntry(Coord 'exception handler')
             Emitter, EmitAddr(Addr1)
             Emitter, PopContLabel(OldContLabels)
          [] vPopEx(_ Coord _) then
-            Emitter, DebugExit(Coord 'handler')
+            Emitter, DebugExit(Coord 'exception handler')
             Emitter, Emit(popEx)
          [] vCreateCond(_ VClauses Addr Cont Coord _ InitsRS) then
             OldContLabels Label Dest RegMap
@@ -644,7 +653,7 @@ in
             Emitter, PrepareShared(Addr _)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
-            Emitter, DebugEntry(Coord 'cond')
+            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(createCond(Dest 0))
             Emitter, KillAllTemporaries()
             {FoldLTail VClauses
@@ -668,7 +677,7 @@ in
             Emitter, EmitAddr(Addr)
             Emitter, RestoreRegisterMapping(RegMap)
             Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'cond')
+            Emitter, DebugExit(Coord 'conditional')
          [] vCreateOr(_ VClauses Cont Coord _ InitsRS) then
             Emitter, EmitDisjunction(createOr VClauses Cont Coord InitsRS
                                      ThisAddr)
@@ -696,7 +705,7 @@ in
             Emitter, DoInits(InitsRS Cont)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr3 ?Label3 ?Dest3)
-            Emitter, DebugEntry(Coord 'cond')
+            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(shallowGuard(Dest3 @HighestUsedX + 1))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitGuard(Addr1)
@@ -710,7 +719,7 @@ in
             Emitter, EmitAddrInLocalEnv(Addr3 HasLocalEnv)
             Emitter, RestoreRegisterMapping(RegMap2)
             Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'cond')
+            Emitter, DebugExit(Coord 'conditional')
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord Cont InitsRS) then
             LocalEnv1 LocalEnv2 LocalEnv3
             HasLocalEnv R OldContLabels Label1 Dest1 Label2 Dest2 Label3 Dest3
@@ -736,7 +745,7 @@ in
             Emitter, Dereference(Addr1 ?Label1 ?Dest1)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
             Emitter, Dereference(Addr3 ?Label3 ?Dest3)
-            Emitter, DebugEntry(Coord 'cond')
+            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(testBool(R Dest1 Dest2 Dest3 @HighestUsedX + 1))
             Emitter, Emit(lbl(Label1))
             Emitter, SaveAllRegisterMappings(?RegMap1)
@@ -751,7 +760,7 @@ in
             Emitter, EmitAddrInLocalEnv(Addr3 HasLocalEnv)
             Emitter, RestoreRegisterMapping(RegMap3)
             Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'cond')
+            Emitter, DebugExit(Coord 'conditional')
          [] vTestBuiltin(_ Builtinname Regs Addr1 Addr2 Cont InitsRS) then
             LocalEnv1 LocalEnv2
             HasLocalEnv OldContLabels Label2 Dest2 BIInfo XsIn NLiveRegs
@@ -801,7 +810,7 @@ in
             end
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
-            Emitter, DebugEntry(Coord 'cond')
+            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(match(R ht(Dest NewVHashTableEntries)
                                 @HighestUsedX + 1))
             NewVHashTableEntries =
@@ -825,13 +834,14 @@ in
             Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
             Emitter, RestoreRegisterMapping(RegMap)
             Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'cond')
+            Emitter, DebugExit(Coord 'conditional')
          [] vThread(_ Addr Coord Cont InitsRS) then
             HasLocalEnv ContLabel Dest RegMap OldContLabels
          in
             Emitter, DoInits(InitsRS ThisAddr)
             Emitter, MayAllocateEnvLocally(Cont true ?HasLocalEnv)
             Emitter, Dereference(Cont ?ContLabel ?Dest)
+            Emitter, DebugEntry(Coord 'thread')
             Emitter, Emit('thread'(Dest))
             Emitter, SaveAllRegisterMappings(?RegMap)
             Emitter, KillAllTemporaries()
@@ -841,6 +851,7 @@ in
             contLabels <- OldContLabels
             Emitter, RestoreAllRegisterMappings(RegMap)
             Emitter, Emit(lbl(ContLabel))
+            Emitter, DebugExit(Coord 'thread')
          [] vLockThread(_ Reg Coord Cont Dest) then X in
             case Emitter, IsFirst(Reg $) then
                {self.reporter
@@ -855,9 +866,7 @@ in
             Emitter, Emit(lockThread(Dest X @HighestUsedX + 1))
          [] vLockEnd(_ Coord Cont Dest) then ContLabel Dest0 in
             Emitter, Dereference(Cont ?ContLabel ?Dest0)
-            Dest = case self.debugInfoControlSwitch
-                      orelse self.debugInfoStatementsSwitch
-                   then ContLabel
+            Dest = case self.debugInfoControlSwitch then ContLabel
                    else Dest0
                    end
             Emitter, DoInits(nil Cont)
@@ -873,36 +882,42 @@ in
       %%
 
       meth DebugEntry(Coord Comment NLiveRegs <= ~1)
-         case self.debugInfoControlSwitch andthen Comment \= statement
-            orelse self.debugInfoStatementsSwitch andthen Comment == statement
-         then
+         case {IsStep Coord} then FileName Line Column Kind N in
+            case Coord of fineStep(F L C) then
+               FileName = F Line = L Column = C Kind = 'f'
+            [] fineStep(F L C _ _ _) then
+               FileName = F Line = L Column = C Kind = 'f'
+            [] coarseStep(F L C) then
+               FileName = F Line = L Column = C Kind = 'c'
+            [] coarseStep(F L C _ _ _) then
+               FileName = F Line = L Column = C Kind = 'c'
+            end
             N = case NLiveRegs \= ~1 then NLiveRegs
                 else @HighestUsedX + 1
                 end
-         in
-            case Coord of pos(FileName Line Column) then
-               Emitter, Emit(debugEntry(FileName Line Column Comment N))
-            [] pos(FileName Line Column _ _ _) then
-               Emitter, Emit(debugEntry(FileName Line Column Comment N))
-            else skip
-            end
+            Emitter,
+            Emit(debugEntry(FileName Line Column
+                            {VirtualString.toAtom Comment#'/'#Kind} N))
          else skip
          end
       end
       meth DebugExit(Coord Comment NLiveRegs <= ~1)
-         case self.debugInfoControlSwitch andthen Comment \= statement
-            orelse self.debugInfoStatementsSwitch andthen Comment == statement
-         then
+         case {IsStep Coord} then FileName Line Column Kind N in
+            case Coord of fineStep(F L C) then
+               FileName = F Line = L Column = C Kind = 'f'
+            [] fineStep(_ _ _ F L C) then
+               FileName = F Line = L Column = C Kind = 'f'
+            [] coarseStep(F L C) then
+               FileName = F Line = L Column = C Kind = 'c'
+            [] coarseStep(_ _ _ F L C) then
+               FileName = F Line = L Column = C Kind = 'c'
+            end
             N = case NLiveRegs \= ~1 then NLiveRegs
                 else @HighestUsedX + 1
                 end
-         in
-            case Coord of pos(FileName Line Column) then
-               Emitter, Emit(debugExit(FileName Line Column Comment N))
-            [] pos(_ _ _ FileName Line Column) then
-               Emitter, Emit(debugExit(FileName Line Column Comment N))
-            else skip
-            end
+            Emitter,
+            Emit(debugExit(FileName Line Column
+                           {VirtualString.toAtom Comment#'/'#Kind} N))
          else skip
          end
       end
@@ -1508,7 +1523,7 @@ in
       in
          Emitter, DoInits(InitsRS ThisAddr)
          Emitter, PushContLabel(Cont ?OldContLabels)
-         Emitter, DebugEntry(Coord 'cond')
+         Emitter, DebugEntry(Coord 'conditional')
          Emitter, Emit(Instr)
          Emitter, KillAllTemporaries()
          {FoldLTail VClauses
@@ -1528,7 +1543,7 @@ in
              Emitter, RestoreRegisterMapping(RegMap)
           end Emitter, newLabel($) _}
          Emitter, PopContLabel(OldContLabels)
-         Emitter, DebugExit(Coord 'cond')
+         Emitter, DebugExit(Coord 'conditional')
       end
       meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
                             Coord Cont InitsRS ThisAddr)
@@ -1553,7 +1568,7 @@ in
          Emitter, PushContLabel(Cont ?OldContLabels)
          Emitter, Dereference(Addr1 ?Label1 ?Dest1)
          Emitter, Dereference(Addr2 ?Label2 ?Dest2)
-         Emitter, DebugEntry(Coord 'cond')
+         Emitter, DebugEntry(Coord 'conditional')
          Emitter, Emit(InstrLabel(R Constant Dest1 Dest2 @HighestUsedX + 1))
          Emitter, Emit(lbl(Label1))
          Emitter, SaveAllRegisterMappings(?RegMap1)
@@ -1564,7 +1579,7 @@ in
          Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
          Emitter, RestoreRegisterMapping(RegMap2)
          Emitter, PopContLabel(OldContLabels)
-         Emitter, DebugExit(Coord 'cond')
+         Emitter, DebugExit(Coord 'conditional')
       end
 
       meth DoInits(InitsRS Cont) Regs in
@@ -1614,10 +1629,7 @@ in
       end
       meth PushContLabel(Cont ?OldContLabels)
          OldContLabels = @contLabels
-         case Cont \= nil
-            orelse self.debugInfoControlSwitch
-            orelse self.debugInfoStatementsSwitch
-         then
+         case Cont \= nil orelse self.debugInfoControlSwitch then
             contLabels <- Emitter, newLabel($)|OldContLabels
          else skip
          end
@@ -1659,7 +1671,6 @@ in
          elsecase B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
-            andthen {Not self.debugInfoStatementsSwitch}
          then
             % This means that in a conditional, local environments may be
             % allocated per branch instead of for the procedure as a whole.

@@ -151,11 +151,7 @@ local
       end
    in
       fun {IsEnvCoord Coord}
-         case Coord of posNoDebug(F _ _) then {IsEnvCoordSub {Atom.toString F}}
-         [] pos(F _ _) then {IsEnvCoordSub {Atom.toString F}}
-         [] pos(F _ _ _ _ _) then {IsEnvCoordSub {Atom.toString F}}
-         [] unit then false
-         end
+         Coord \= unit andthen {IsEnvCoordSub {Atom.toString Coord.1}}
       end
    end
 
@@ -169,15 +165,6 @@ local
    end
 
    class AnnotateStatement
-   end
-
-   class AnnotateStepPoint
-      meth annotateGlobalVars(Ls VsHd VsTl)
-         {AnnotateGlobalVarsList @statements Ls VsHd VsTl}
-      end
-      meth markFirst(WarnFormals Rep)
-         {MarkFirstList @statements WarnFormals Rep}
-      end
    end
 
    class AnnotateDeclaration
@@ -837,7 +824,6 @@ local
    end
 in
    Annotate = annotate(statement: AnnotateStatement
-                       stepPoint: AnnotateStepPoint
                        declaration: AnnotateDeclaration
                        skipNode: AnnotateSkipNode
                        equation: AnnotateEquation

@@ -71,6 +71,7 @@ in
          RegSet
 
          % CodeEmitter
+         IsStep
          Emitter
 
          % CodeStore

@@ -22,25 +22,17 @@
 %%% WARRANTIES.
 %%%
 
-
-local
-   Entries = Boot_Dictionary.entries
-in
-   Dictionary =
-   dictionary(new:          NewDictionary
-              is:           IsDictionary
-              isEmpty:      Boot_Dictionary.isEmpty
-              put:          Boot_Dictionary.put
-              get:          Boot_Dictionary.get
-              condGet:      Boot_Dictionary.condGet
-              keys:         Boot_Dictionary.keys
-              entries:      Entries
-              items:        Boot_Dictionary.items
-              remove:       Boot_Dictionary.remove
-              removeAll:    Boot_Dictionary.removeAll
-              clone:        Boot_Dictionary.clone
-              member:       Boot_Dictionary.member
-              toRecord:     fun {$ L D}
-                               {Boot_List.toRecord L {Entries D}}
-                            end)
-end
+Dictionary = dictionary(new:          NewDictionary
+                        is:           IsDictionary
+                        isEmpty:      Boot_Dictionary.isEmpty
+                        put:          Boot_Dictionary.put
+                        get:          Boot_Dictionary.get
+                        condGet:      Boot_Dictionary.condGet
+                        keys:         Boot_Dictionary.keys
+                        entries:      Boot_Dictionary.entries
+                        items:        Boot_Dictionary.items
+                        remove:       Boot_Dictionary.remove
+                        removeAll:    Boot_Dictionary.removeAll
+                        clone:        Boot_Dictionary.clone
+                        member:       Boot_Dictionary.member
+                        toRecord:     Boot_Dictionary.toRecord)

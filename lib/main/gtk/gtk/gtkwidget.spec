@@ -59,5 +59,11 @@ $class =
                   'gtk_widget_draw_focus'         => { in => ['GtkWidget*'] },
                   'gtk_widget_draw_default'       => { in => ['GtkWidget*'] },
                   'gtk_widget_size_request'       => { in => ['GtkWidget*',
-                                                              'GtkRequisition*'] }}}
+                                                              'GtkRequisition*'] },
+                  'gtk_widget_set_uposition'      => { in => ['GtkWidget*',
+                                                              'gint',
+                                                              'gint'] },
+                  'gtk_widget_set_usize'          => { in => ['GtkWidget*',
+                                                              'gint',
+                                                              'gint'] }}}
      );

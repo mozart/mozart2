@@ -7,10 +7,11 @@ File              = parseErrors(int)
 Query             = Phrase
                   | Directive
                   | fDeclare(Phrase Phrase Coordinates).
-Directive         = dirHalt
-                  | dirHelp
+Directive         = dirHelp
                   | dirSwitch([Switch])
                   | dirShowSwitches
+                  | dirPushSwitches
+                  | dirPopSwitches
                   | dirFeed(Filename)
                   | dirThreadedFeed(Filename)
                   | dirCore(Filename)

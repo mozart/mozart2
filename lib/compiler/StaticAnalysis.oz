@@ -50,6 +50,12 @@ local
    IsVS = IsVirtualString
    Partition = List.partition
 
+   fun {NormalizeCoord Coord}
+      case Coord of unit then Coord
+      else pos(Coord.1 Coord.2 Coord.2)
+      end
+   end
+
    fun {IsMinimalType T}
       {BitArray.card T} == 1
    end
@@ -729,7 +735,7 @@ local
 
       {Ctrl getUnifier(UnifLeft UnifRight)}
 
-      Offend = hint(l:'Offending expression in' m:Coord)
+      Offend = hint(l:'Offending expression in' m:{NormalizeCoord Coord})
 
       Text1 = case UnifLeft \= unit
                  andthen UnifRight \= unit
@@ -742,7 +748,7 @@ local
                  Msgs
               end
 
-      Text2 = case Origin==Coord then Text1
+      Text2 = case Origin==Coord orelse Coord==unit then Text1
               else {Append Text1 [Offend]} end
 
       case {Ctrl getNeeded($)} then

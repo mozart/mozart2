@@ -1463,7 +1463,7 @@ in
 
    CompileDate = {FDP.init}
    case {System.get standalone} then skip
-   else {System.showInfo 'Loaded Finite Domain Library of '#CompileDate#'.'}
+   else {System.showError 'Loaded Finite Domain Library of '#CompileDate#'.'}
    end
 
 end

@@ -788,6 +788,6 @@ in
    CompileDate = {FSP.init}
 
    case {System.get standalone} then skip
-   else {System.showInfo 'Loaded Finite Set Library of '#CompileDate#'.'}
+   else {System.showError 'Loaded Finite Set Library of '#CompileDate#'.'}
    end
 end

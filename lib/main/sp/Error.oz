@@ -168,7 +168,7 @@ local
    %% current output: strings into emulator window
    %%
 
-   Output   = proc {$ X} {System.printInfo {VS2A X}} end
+   Output   = proc {$ X} {System.printError {VS2A X}} end
    Alert    = proc {$} {System.printError ''} end
 
    %%

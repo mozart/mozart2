@@ -54,11 +54,11 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        mini url port cell cellAndLock variable objectAndLock \
-        equality
+        mini url port cell cellAndLock variable objectAndLock
 # not yet proper tests, but include anyway:
 #DP2=   equality object
-DP=     $(DP1:%=./dp/%.ozf)
+DP2=
+DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)
 
 FTOOLS = \
         gump

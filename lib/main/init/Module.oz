@@ -37,11 +37,9 @@
 
 local
 
-   \insert 'RURL.oz'
-
    local
-      BootUrl   = {RURL.vsToUrl "x-oz://boot//DUMMY"}
-      SystemUrl = {RURL.vsToUrl "x-oz://system//DUMMY"}
+      BootUrl   = {URL.fromVs "x-oz://boot//DUMMY"}
+      SystemUrl = {URL.fromVs "x-oz://system//DUMMY"}
    in
       OzScheme  = BootUrl.scheme = SystemUrl.scheme
       %% BootLoc   = BootUrl.netloc
@@ -56,7 +54,7 @@ local
    end
 
    fun {ToUrl UorV}
-      case {VirtualString.is UorV} then {RURL.vsToUrl UorV}
+      case {VirtualString.is UorV} then {URL.fromVs UorV}
       else UorV
       end
    end
@@ -71,15 +69,15 @@ local
 
    SystemMap = local
                   Functors = \insert '../../functor-defaults.oz'
-                  BaseUrl  = {RURL.vsToUrl MozartUrl#"DUMMY"}
+                  BaseUrl  = {URL.fromVs MozartUrl#"DUMMY"}
                in
                   {List.toRecord map
                    {Map {Append Functors.volatile
                          {Append Functors.lib Functors.tools}}
                     fun {$ ModName}
                        ModName #
-                       {RURL.resolve BaseUrl
-                        {RURL.vsToUrl ModName#FunExt}}
+                       {URL.resolve BaseUrl
+                        {URL.fromVs ModName#FunExt}}
                     end}}
                end
 
@@ -127,7 +125,7 @@ in
                             end}
          in
             case BaseUrl==unit then RelUrl else
-               {RURL.resolve BaseUrl RelUrl}
+               {URL.resolve BaseUrl RelUrl}
             end
          end
       end
@@ -150,7 +148,7 @@ in
          GetLock = {NewLock}
       in
          fun {GetFunctor Url}
-            UrlKey = {RURL.urlToKey Url}
+            UrlKey = {URL.toAtom Url}
          in
             lock GetLock then
                case {Dictionary.member ModuleMap UrlKey} then skip else
@@ -171,10 +169,10 @@ in
 
          proc {ModuleLink UrlV Func ?Mod}
             {Trace '[Module] Link:  '#UrlV}
-            Url = {RURL.vsToUrl UrlV}
+            Url = {URL.fromVs UrlV}
          in
             lock GetLock then
-               {Dictionary.put ModuleMap {RURL.urlToKey Url} Mod}
+               {Dictionary.put ModuleMap {URL.toAtom Url} Mod}
             end
             thread
                Mod={LinkFunctor Url Func}
@@ -183,10 +181,10 @@ in
 
          proc {ModuleEnter UrlV Mod}
             {Trace '[Module] Enter: '#UrlV}
-            Url={RURL.vsToUrl UrlV}
+            Url={URL.fromVs UrlV}
          in
             lock GetLock then
-               {Dictionary.put ModuleMap {RURL.urlToKey Url} Mod}
+               {Dictionary.put ModuleMap {URL.toAtom Url} Mod}
             end
          end
       end

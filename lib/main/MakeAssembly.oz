@@ -52,7 +52,12 @@ in
 \insert 'op/Open.oz'
 = NewOpen
 
-\insert 'init/Module.oz'
+local
+   URL = {\insert dp/URL.oz
+          .apply 'import'}
+in
+   \insert 'init/Module.oz'
+end
 
 local
    FunMisc      = \insert compiler/FunMisc

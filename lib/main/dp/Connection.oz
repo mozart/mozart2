@@ -22,7 +22,32 @@
 %%% WARRANTIES.
 %%%
 
-local
+
+functor
+
+import
+   Fault(install deinstall)
+
+   PID(get received toPort) at 'x-oz://boot/PID'
+
+   Distribution('export') at 'x-oz://boot/Distribution'
+
+   Property(get)
+
+   ErrorRegistry(put)
+
+   Error(formatGeneric
+         format
+         dispatch)
+
+
+export
+   offer: Offer
+   take:  Take
+   gate:  Gate
+
+
+prepare
 
    %%
    %% Mapping between integers and characters
@@ -81,6 +106,7 @@ local
          end
       end
    in
+
       fun {TicketToString T}
          Stamp#Pid = T.time
          S = {App ["x-ozticket://"
@@ -89,161 +115,215 @@ local
                    &:|{IntToKey Stamp}
                    &:|{IntToKey Pid}
                    &/|{IntToKey T.key}
-                   [&: if T.single then &s else &m end]] nil}
+                   [&: if T.single  then &s else &m end
+                    &: if T.minimal then &m else &f end]] nil}
       in
          {Append S &:|{IntToKey {CheckSum S 0}}}
       end
+
       fun {VsToTicket V}
          try
             %% Raises an exception if has wrong checksum or if
             %% syntactically illegal
             S={VirtualString.toString V}
-            [_ nil ProcPart KeyPart]  = {String.tokens S &/}
-            [HostS PortS Stamp Pid]   = {String.tokens ProcPart &:}
-            [KeyS SingS _]            = {String.tokens KeyPart  &:}
-            Ticket = ticket(host:   HostS
-                            port:   {String.toInt PortS}
-                            time:   {KeyToInt Stamp}#{KeyToInt Pid}
-                            key:    {KeyToInt KeyS}
-                            single: SingS=="s")
+            [_ nil ProcPart KeyPart] = {String.tokens S &/}
+            [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
+            [KeyS SingS MinimalS _]  = {String.tokens KeyPart  &:}
+            Ticket = ticket(host:    HostS
+                            port:    {String.toInt PortS}
+                            time:    {KeyToInt Stamp}#{KeyToInt Pid}
+                            key:     {KeyToInt KeyS}
+                            single:  SingS=="s"
+                            minimal: MinimalS=="m")
          in
             S={TicketToString Ticket}
             Ticket
-         catch _ then
-            {Exception.raiseError dp(connection(illegalTicket V))} _
+         catch E then
+            {Exception.raiseError dp(connection(if E==wrongModel then
+                                                   E
+                                                else
+                                                   illegalTicket
+                                                end V))} _
          end
       end
    end
 
-in
 
-   functor
+define
 
-   import
-      Fault(install deinstall)
+   %%
+   %% Base Process Identifier package
+   %%
+   ReqStream = {PID.received}
 
-      PID(get received toPort) at 'x-oz://boot/PID'
+   ThisPid   = {PID.get}
 
-      Distribution('export') at 'x-oz://boot/Distribution'
+   fun {ToPort T}
+      {PID.toPort T.host T.port T.time.1 T.time.2}
+   end
 
-   export
-      offer: Offer
-      take:  Take
-      gate:  Gate
-
-   define
-      %%
-      %% Base Process Identifier package
-      %%
-
-             ReqStream = {PID.received}
-
-      ThisPid   = {PID.get}
-      fun {ToPort T}
-         {PID.toPort T.host T.port T.time.1 T.time.2}
+   local
+      KeyCtr = {New class $
+                       prop final locking
+                       attr n:0
+                       meth get(N)
+                          lock N=@n n<-N+1 end
+                       end
+                    end get(_)}
+   in
+      fun {NewTicket IsSingle}
+         {Adjoin ThisPid ticket(single:  IsSingle
+                                key:     {KeyCtr get($)}
+                                minimal: {Property.get 'perdio.minimal'})}
       end
-
-      local
-         KeyCtr = {New class $
-                          prop final locking
-                          attr n:0
-                          meth get(N)
-                             lock N=@n n<-N+1 end
-                          end
-                       end get(_)}
-      in
-         fun {NewTicket IsSingle}
-            {Adjoin ThisPid ticket(single: IsSingle
-                                   key:    {KeyCtr get($)})}
-         end
-      end
+   end
 
 
-      %% Mapping of Keys to values
-      KeyDict   = {Dictionary.new}
+   %% Mapping of Keys to values
+   KeyDict   = {Dictionary.new}
+
+   thread
+      {ForAll ReqStream
+       proc {$ T#A}
+          if
+             T.time == ThisPid.time andthen
+             {Dictionary.member KeyDict T.key}
+          then Y={Dictionary.get KeyDict T.key} in
+             if T.single then {Dictionary.remove KeyDict T.key} end
+             thread A=yes(Y) end
+          else
+             thread A=no end
+          end
+       end}
+   end
 
 
-      thread
-         {ForAll ReqStream
-          proc {$ T#A}
-             if
-                T.time == ThisPid.time andthen
-                {Dictionary.member KeyDict T.key}
-             then Y={Dictionary.get KeyDict T.key} in
-                if T.single then {Dictionary.remove KeyDict T.key} end
-                thread A=yes(Y) end
-             else
-                thread A=no end
-             end
-          end}
-      end
+   %%
+   %% Single connections
+   %%
+   fun {Offer X}
+      T={NewTicket true}
+   in
+      {Distribution.'export' X}
+      {Dictionary.put KeyDict T.key X}
+      {String.toAtom {TicketToString T}}
+   end
 
+   %%
+   %% Gates
+   %%
+   class Gate
+      feat
+         Ticket
+         TicketAtom
 
-      %%
-      %% Single connections
-      %%
-      fun {Offer X}
-         T={NewTicket true}
+      meth init(X ?AT <= _)
+         T={NewTicket false}
       in
          {Distribution.'export' X}
          {Dictionary.put KeyDict T.key X}
-         {String.toAtom {TicketToString T}}
+         self.Ticket     = T
+         self.TicketAtom = {String.toAtom {TicketToString T}}
+         AT = self.TicketAtom
       end
 
-      %%
-      %% Gates
-      %%
-      class Gate
-         feat
-            Ticket
-            TicketAtom
-
-         meth init(X ?AT <= _)
-            T={NewTicket false}
-         in
-            {Distribution.'export' X}
-            {Dictionary.put KeyDict T.key X}
-            self.Ticket     = T
-            self.TicketAtom = {String.toAtom {TicketToString T}}
-            AT = self.TicketAtom
-         end
-
-         meth getTicket($)
-            self.TicketAtom
-         end
-
-         meth close
-            {Dictionary.remove KeyDict self.Ticket.key}
-         end
+      meth getTicket($)
+         self.TicketAtom
       end
 
-
-      proc {Take V Entity}
-         T = {VsToTicket V}
-         P = {ToPort T}
-         X Y
-         proc {Watch _ _}
-            Y=no
-         end
-         proc {Handle _ _}
-            {Exception.raiseError dp(connection(ticketToDeadSite V))}
-         end
-      in
-         {Fault.install P watcher('cond':permHome) Watch}
-         {Fault.install P handler('cond':perm)     Handle}
-         {Send P T#X}
-         case X#Y
-         of no#_ then
-            {Exception.raiseError dp(connection(refusedTicket V))}
-         [] _#no then
-            {Exception.raiseError dp(connection(ticketToDeadSite V))}
-         [] yes(A)#_ then
-            Entity=A
-         end
-         {Fault.deinstall P watcher('cond':permHome) Watch}
-         {Fault.deinstall P handler('cond':perm)     Handle}
+      meth close
+         {Dictionary.remove KeyDict self.Ticket.key}
       end
-
    end
+
+
+   proc {Take V Entity}
+      T = {VsToTicket V}
+      P = {ToPort T}
+      X Y
+      proc {Watch _ _}
+         Y=no
+      end
+      proc {Handle _ _}
+         {Exception.raiseError dp(connection(ticketToDeadSite V))}
+      end
+   in
+      if T.minimal\={Property.get 'perdio.minimal'} then
+         {Exception.raiseError dp(connection(wrongModel V))}
+      end
+
+      {Fault.install P watcher('cond':permHome) Watch}
+      {Fault.install P handler('cond':perm)     Handle}
+
+      {Send P T#X}
+
+      case X#Y
+      of no#_ then
+         {Exception.raiseError dp(connection(refusedTicket V))}
+      [] _#no then
+         {Exception.raiseError dp(connection(ticketToDeadSite V))}
+      [] yes(A)#_ then
+         Entity=A
+      end
+
+      {Fault.deinstall P watcher('cond':permHome) Watch}
+      {Fault.deinstall P handler('cond':perm)     Handle}
+   end
+
+
+   %%
+   %% Register error formatter
+   %%
+
+   local
+      fun {DpFormatter Exc}
+         E = {Error.dispatch Exc}
+         T = 'Error: distributed programming'
+      in
+         case E
+         of dp(generic Msg Hints) then
+            {Error.format
+             Msg
+             unit
+             {Map Hints fun {$ L#M} hint(l:L  m:oz(M)) end}
+             Exc}
+         elseof dp(modelChoose) then
+            {Error.format
+             'Cannot change distribution model: distribution layer already started'
+             unit
+             nil
+             Exc}
+         elseof dp(connection(wrongModel V)) then
+            {Error.format
+             'Ticket presupposes wrong distribution model'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(illegalTicket V)) then
+            {Error.format
+             'Illegal ticket for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(refusedTicket V)) then
+            {Error.format
+             'Ticket refused for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof dp(connection(ticketToDeadSite V)) then
+            {Error.format
+             'Ticket refused: refers to dead site'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         else
+            {Error.formatGeneric T Exc}
+         end
+      end
+   in
+      {ErrorRegistry.put dp DpFormatter}
+   end
+
 
 end

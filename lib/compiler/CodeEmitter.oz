@@ -662,12 +662,10 @@ in
          end
       end
       meth EmitVInstr(ThisAddr)
-         case ThisAddr of vDebugExit(_ Coord Kind _) then
-            Emitter, DebugExit(Coord Kind)
-         [] vStepPoint(_ Addr Coord Kind Cont) then
+         case ThisAddr of vDebugEntry(_ Coord Kind _) then
             Emitter, DebugEntry(Coord Kind)
-            Emitter, PushDebugExit(Coord Kind Cont)
-            Emitter, EmitAddr(Addr)
+         [] vDebugExit(_ Coord Kind _) then
+            Emitter, DebugExit(Coord Kind)
          [] vMakePermanent(_ RegIndices _) then TempX1 TempX2 S D in
             Emitter, AllocateShortLivedTemp(?TempX2)
             Emitter, AllocateShortLivedTemp(?TempX1)
@@ -677,22 +675,25 @@ in
              proc {$ Reg#Index#PrintName}
                 {Dictionary.put @regNames Reg PrintName}
                 if S then
-                   case Emitter, GetPerm(Reg $) of none then Y in
-                      Emitter, AllocatePerm(Reg ?Y)
-                      case Emitter, GetTemp(Reg $) of none then
-                         Emitter, Emit(createVariable(Y))
-                      elseof X then
-                         Emitter, Emit(move(X Y))
+                   case Emitter, GetPerm(Reg $) of g(_) then skip
+                   elseof Perm then
+                      case Perm of none then Y in
+                         Emitter, AllocatePerm(Reg ?Y)
+                         case Emitter, GetTemp(Reg $) of none then
+                            Emitter, Emit(createVariable(Y))
+                         elseof X then
+                            Emitter, Emit(move(X Y))
+                         end
+                      elseof OldY then NewY in
+                         {Dictionary.remove @Permanents Reg}
+                         Emitter, AllocatePerm(Reg ?NewY)
+                         Emitter, Emit(move(OldY NewY))
                       end
-                   elseof OldY then NewY in
-                      {Dictionary.remove @Permanents Reg}
-                      Emitter, AllocatePerm(Reg ?NewY)
-                      Emitter, Emit(move(OldY NewY))
+                      case {Dictionary.get @Permanents Reg} of _#I then
+                         {@RegOpt set(I Index)}
+                      end
+                      {Dictionary.put @NamedYs Index PrintName}
                    end
-                   case {Dictionary.get @Permanents Reg} of _#I then
-                      {@RegOpt set(I Index)}
-                   end
-                   {Dictionary.put @NamedYs Index PrintName}
                 end
                 if D then X1 X2 in
                    case Emitter, GetTemp(Reg $) of none then
@@ -1128,7 +1129,7 @@ in
          [] vPopEx(_ Coord _) then
             Emitter, DebugExit(Coord 'exception handler')
             Emitter, Emit(popEx)
-         [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord Cont) then
+         [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord _) then
             HasLocalEnv R Dest2 Dest3 RegMap1 RegMap2 RegMap3
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
@@ -1142,9 +1143,7 @@ in
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end
-            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(testBool(R Dest2 Dest3))
-            Emitter, PushDebugExit(Coord 'conditional' Cont)
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -1170,7 +1169,7 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap2)
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap2)
-         [] vTestConstant(_ Reg Constant Addr1 Addr2 Coord Cont) then
+         [] vTestConstant(_ Reg Constant Addr1 Addr2 Coord _) then
             HasLocalEnv R Dest2 InstrLabel RegMap1 RegMap2
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
@@ -1184,7 +1183,6 @@ in
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end
-            Emitter, DebugEntry(Coord 'conditional')
             InstrLabel = if {IsLiteral Constant} then testLiteral
                          elseif {IsNumber Constant} then testNumber
                          else
@@ -1192,7 +1190,6 @@ in
                              compiler(internal testConstant(Constant))} unit
                          end
             Emitter, Emit(InstrLabel(R Constant Dest2))
-            Emitter, PushDebugExit(Coord 'conditional' Cont)
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -1200,7 +1197,7 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap2)
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap2)
-         [] vMatch(_ Reg Addr VHashTableEntries Coord Cont) then
+         [] vMatch(_ Reg Addr VHashTableEntries Coord _) then
             HasLocalEnv R Dest NewVHashTableEntries RegMap
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
@@ -1214,9 +1211,7 @@ in
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end
-            Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(match(R ht(Dest NewVHashTableEntries)))
-            Emitter, PushDebugExit(Coord 'conditional' Cont)
             NewVHashTableEntries =
             {Map VHashTableEntries
              proc {$ VHashTableEntry ?NewEntry} Addr Dest RegMap in
@@ -1275,27 +1270,6 @@ in
             Emitter,
             Emit(debugEntry(FileName Line Column
                             {VirtualString.toAtom Comment#'/'#Kind}))
-         end
-      end
-      meth PushDebugExit(Coord Kind Cont)
-         if {IsStep Coord} then
-            case Cont of nil then RS Label NewCont Inter in
-               RS = case @continuations of Cont|_ then {BitArray.clone Cont.1}
-                    [] nil then CodeStore, makeRegSet($)
-                    end
-               CodeStore, newLabel(?Label)
-               NewCont = vShared({BitArray.clone RS} _ Label Inter)
-               Inter = vDebugExit(RS Coord Kind nil)
-               continuations <- NewCont|@continuations
-            elsecase @continuations of !Cont|Rest then
-               RS Label NewCont Inter
-            in
-               RS = {BitArray.clone Cont.1}
-               CodeStore, newLabel(?Label)
-               NewCont = vShared({BitArray.clone RS} _ Label Inter)
-               Inter = vDebugExit({BitArray.clone RS} Coord Kind Cont)
-               continuations <- NewCont|Rest
-            end
          end
       end
       meth DebugExit(Coord Comment)

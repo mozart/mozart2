@@ -239,11 +239,12 @@ local
    in
       proc {MakeMatch Reg Tree Mapping Pos0 VHd VTl Coord CS}
          node(Pos Test ThenTree ElseTree _ _) = Tree
-         VHashTableEntries Rest VElse
+         VHashTableEntries Rest VElse VInter1 VInter2
       in
          VHashTableEntries = {MakeHTEntry Pos Test Mapping ThenTree CS}|Rest
          {MakeMatchSub ElseTree Mapping Pos0 CS ?Rest ?VElse}
-         VHd = vMatch(_ Reg VElse VHashTableEntries Coord VTl)
+         VInter1 = vMatch(_ Reg VElse VHashTableEntries Coord VInter2)
+         {StepPoint Coord 'conditional' VHd VTl VInter1 VInter2}
       end
    end
 

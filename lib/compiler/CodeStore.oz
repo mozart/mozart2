@@ -19,8 +19,8 @@
 %%% WARRANTIES.
 %%%
 
-Continuations = c(vDebugExit: 4
-                  vStepPoint: 5
+Continuations = c(vDebugEntry: 4
+                  vDebugExit: 4
                   vMakePermanent: 3
                   vClear: 3
                   vUnify: 4
@@ -151,9 +151,6 @@ class CodeStore from Emitter
 
    meth Deref(Addr $)
       case Addr of nil then nil
-      [] vStepPoint(OccsRS Addr Coord Kind Cont) then
-         vStepPoint(OccsRS CodeStore, Deref(Addr $) Coord Kind
-                    CodeStore, Deref(Cont $))
       [] vShared(OccsRS InitsRS Label Addr) then
          if {Dictionary.member @sharedDone Label} then
             {Dictionary.get @sharedDone Label}
@@ -217,9 +214,8 @@ class CodeStore from Emitter
          elseof Cont then
             RS = {BitArray.clone CodeStore, ComputeOccs(Cont $)}
          end
-         case VInstr of vStepPoint(_ Addr _ _ _) then RS1 in
-            CodeStore, ComputeOccs(Addr ?RS1)
-            {BitArray.disj RS RS1}
+         case VInstr of vDebugEntry(_ _ _ _) then skip
+         [] vDebugExit(_ _ _ _) then skip
          [] vMakePermanent(_ RegIndices _) then
             {ForAll RegIndices
              proc {$ Reg#_#_}
@@ -368,8 +364,8 @@ class CodeStore from Emitter
                CodeStore, GetOccs(Cont ?AddRS2)
             end
          end
-         case VInstr of vStepPoint(_ Addr _ _ _) then
-            CodeStore, AddRegOccs(Addr AddRS2)
+         case VInstr of vDebugEntry(_ _ _ _) then skip
+         [] vDebugExit(_ _ _ _) then skip
          [] vMakePermanent(_ _ _) then skip
          [] vClear(_ _ _) then skip
          [] vUnify(_ _ _ _) then skip

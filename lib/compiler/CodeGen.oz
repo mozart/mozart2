@@ -101,10 +101,10 @@ define
       end
    end
 
-   proc {StepPoint Coord Comment VHd VTl VInter1 VInter2}
+   proc {StepPoint Coord Kind VHd VTl VInter1 VInter2}
       if {IsStep Coord} then
-         VInter2 = nil
-         VHd = vStepPoint(_ VInter1 Coord Comment VTl)
+         VHd = vDebugEntry(_ Coord Kind VInter1)
+         VInter2 = vDebugExit(_ Coord Kind VTl)
       else
          VHd = VInter1
          VInter2 = VTl
@@ -962,13 +962,14 @@ define
             {@consequent codeGen(CS VHd VTl)}
          elseif {IsDet Value} andthen Value == false then
             {@alternative codeGen(CS VHd VTl)}
-         else ThenAddr AltAddr ErrAddr in
+         else ThenAddr AltAddr ErrAddr VInter1 VInter2 in
             {@consequent codeGen(CS ThenAddr nil)}
             {@alternative codeGen(CS AltAddr nil)}
             {MakeException kernel boolCaseType @coord [@arbiter] CS
              ErrAddr nil}
-            VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
-                            @coord VTl)
+            VInter1 = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
+                                @coord VInter2)
+            {StepPoint @coord 'conditional' VHd VTl VInter1 VInter2}
          end
       end
    end
@@ -1024,14 +1025,15 @@ define
          {@pattern assignRegs(Pos Mapping)}
       end
       meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)
-         ErrVInstr VInter1 VInter2 VInter3
+         ErrVInstr VInter1 VInter2 VInter3 VInter4 VInter5
       in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
          {MakePermanent @localVars VHd VInter1 VInter2 VInter3 CS}
          {CodeGenList @statements CS VInter1 VInter2}
          {MakeException kernel boolCaseType @coord [@arbiter] CS ErrVInstr nil}
-         VInter3 = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr
-                             ErrVInstr @coord VTl)
+         VInter4 = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr
+                             ErrVInstr @coord VInter5)
+         {StepPoint @coord 'conditional' VInter3 VTl VInter4 VInter5}
       end
    end
 

@@ -430,9 +430,9 @@ define
                        of _|_ then cons
                        [] _#_ then pair
                        else tuple
-                       end nil}
+                       end [literal]}
                [] record then
-                  {OTE record nil}
+                  {OTE record [tuple]}
                [] procedure then
                   {OTE case {ProcedureArity V}
                        of 0 then 'procedure/0'
@@ -476,7 +476,7 @@ define
                   {OTE fset nil}
                else
                   {OTE value [int float record procedure
-                              cell chunk space 'thread']}
+                              cell chunk space 'thread' fset]}
                end
             [] kinded(T) then
                case T
@@ -3363,6 +3363,9 @@ define
          Env = {GetGlobalEnv @globalVars}
          T N
       in
+         for A in @formalArgs do
+            {A checkFeature(Ctrl @label)}
+         end
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
          SAStatement, saBody(Ctrl @statements)
@@ -3387,13 +3390,27 @@ define
       meth applyEnvSubst(Ctrl)
          {@feature applyEnvSubst(Ctrl)}
       end
+      meth checkFeature(Ctrl Label)
+         if {OzTypes.clash {@feature getType($)} {OzTypes.encode [int atom name] nil}}
+         then
+            {Ctrl.rep
+             error(coord: {@feature getCoord($)}
+                   kind : SAGenError
+                   msg  : 'illegal value as feature on method definition'
+                   items: [hint(l:'Method' m:{GetPrintData Label})
+                           hint(l:'Value type' m:oz(case {OzTypes.decode {@feature getType($)}}
+                                                    of [X] then X
+                                                    [] L then L end))
+                           hint(l:'Value (approx)' m:{GetPrintData @feature})])}
+         end
+      end
    end
    class SAMethFormalOptional from SAMethFormal   %--** why inherit?
       meth getFormal($)
          optional(@feature)
       end
    end
-   class SAMethFormalWithDefault
+   class SAMethFormalWithDefault from SAMethFormal
       meth getFormal($)
          optional(@feature)
       end
@@ -3627,7 +3644,7 @@ define
          elseif {CompilerSupport.isLocalDet Val} then
             case {Value.status Val} of det(Type) then
 \ifdef DEBUGSA
-               {System.show valToSubst(Val)}
+               {System.show valToSubst(Val Type)}
 \endif
                case Type of int then
                   {New Core.valueNode init(Val unit)}

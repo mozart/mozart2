@@ -413,6 +413,13 @@ define
          end
       end
 
+      proc {UnreflectArray X ?A}
+         case {Arity X} of Low|_ then
+            A = {Array.new Low {Width X} + Low - 1 unit}
+            {Record.forAllInd X proc {$ F Y} A.F := Y end}
+         end
+      end
+
       %% Node Creation
       fun {CreateNode Type Info}
          case Type
@@ -422,7 +429,7 @@ define
          [] fsvar      then case Info of LB#UB then {FS.var.bounds LB UB} end
          [] bytestring then {ByteString.make Info}
          [] cell       then {Cell.new {UnreflectValue Info}}
-         [] array      then {Tuple.toArray {UnreflectValue Info}}
+         [] array      then {UnreflectArray {UnreflectValue Info}}
          [] dictionary then {Record.toDictionary {UnreflectValue Info}}
          [] procedure  then
             case Info of N#A then

@@ -103,7 +103,8 @@ local
                               dynamicvarnames: false)
 
    DefaultOptions = options(maxNumberOfErrors: 17
-                            baseURL: unit)
+                            baseURL: unit
+                            gumpDirectory: unit)
 
    InterruptException = {NewName}
 
@@ -252,6 +253,13 @@ local
       meth getBaseURL($)
          @options.baseURL
       end
+      meth setGumpDirectory(X)
+         options <- {AdjoinAt @options gumpDirectory X}
+         {@narrator tell(gumpDirectory(X))}
+      end
+      meth getGumpDirectory($)
+         @options.gumpDirectory
+      end
 
       %%
       %% Environment
@@ -363,6 +371,7 @@ local
          {Send P switches(@switches)}
          {Send P maxNumberOfErrors(@options.maxNumberOfErrors)}
          {Send P baseURL(@options.baseURL)}
+         {Send P gumpDirectory(@options.gumpDirectory)}
          {Send P env({Dictionary.toRecord env self.values})}
       end
 
@@ -799,6 +808,9 @@ in
             [] setBaseURL(_) then
                {TypeCheck IsVirtualStringOrUnit M 1 'virtual string or unit'}
             [] getBaseURL(_) then skip
+            [] setGumpDirectory(_) then
+               {TypeCheck IsVirtualStringOrUnit M 1 'virtual string or unit'}
+            [] getGumpDirectory(_) then skip
             [] addToEnv(_ _) then
                {TypeCheck PrintName.is M 1 'print name'}
             [] lookupInEnv(_ _) then

@@ -16,8 +16,9 @@
 
 %%
 %% ... to be used in 'reflect.oz' *only*;
-IntToAtom = {`Builtin` 'intToAtom'
-             fun {$ I} case {IsInt I} then {IntToAtom I} end end}
+fun {IntToAtom I}
+   {String.toAtom {Int.toString I}}
+end
 
 %%
 %% These are non-monotonic tests, that is, they never suspend.

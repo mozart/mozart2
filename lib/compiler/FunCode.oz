@@ -1,17 +1,16 @@
-proc
-   %instantiate
-   {$ IMPORTS}
-   RegSet
-   Emitter
-   Continuations
-   CodeStore
-   \insert SP.env
-   = IMPORTS.'SP'
-   \insert Common.env
-   = IMPORTS.'Common'
-in
+functor
+import
+   \insert SP-new.env
+   \insert Misc-new.env
+   GetBuiltinInfo
+   ImAVariableOccurrence
+   Core
+export
+   CodeGen
+body
    \insert RegSet
    \insert CodeEmitter
    \insert CodeStore
+in
    \insert CodeGen
 end

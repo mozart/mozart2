@@ -1,18 +1,18 @@
 functor
 import
    \insert SP-new.env
+   \insert CP-new.env
    \insert Misc-new.env
-   SA
-   CodeGen
    ImAConstruction
    ImAValueNode
    ImAVariableOccurrence
    ImAToken
-export
-   FlattenSequence
    Core
+   GetBuiltinInfo
+export
+   SA
 body
-   \insert Annotate
+   \insert POTypes
 in
-   \insert CoreLanguage
+   \insert StaticAnalysis
 end

@@ -136,7 +136,7 @@ local
          FuncMap = {Dictionary.new}
       in
          {DoFind RootUrl UrlFilter InclMap ExclMap FuncMap}
-
+         {System.show 'finding completed.'}
          o(include:  {Dictionary.toRecord incl InclMap}
            exclude:  {Dictionary.toRecord excl ExclMap}
            functors: {Dictionary.toRecord func FuncMap})
@@ -412,6 +412,8 @@ in
    fun {Link RootUrl Spec}
       ToInclude = {NewUrlFilter Spec RootUrl}
       Info      = {Find RootUrl ToInclude}
+
+      {System.show Info}
 
       {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
       {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}

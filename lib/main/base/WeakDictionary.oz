@@ -20,19 +20,20 @@
 %%% WARRANTIES.
 %%%
 
-WeakDictionary = weakDictionary(
-                    new         : Boot_WeakDictionary.new
-                    is          : Boot_WeakDictionary.is
-                    put         : Boot_WeakDictionary.put
-                    get         : Boot_WeakDictionary.get
-                    condGet     : Boot_WeakDictionary.condGet
-                    close       : Boot_WeakDictionary.close
-                    keys        : Boot_WeakDictionary.keys
-                    entries     : Boot_WeakDictionary.entries
-                    items       : Boot_WeakDictionary.items
-                    isEmpty     : Boot_WeakDictionary.isEmpty
-                    toRecord    : Boot_WeakDictionary.toRecord
-                    remove      : Boot_WeakDictionary.remove
-                    removeAll   : Boot_WeakDictionary.removeAll
-                    member      : Boot_WeakDictionary.member
-                    )
+WeakDictionary = weakDictionary(new:          Boot_WeakDictionary.new
+                                is:           Boot_WeakDictionary.is
+                                put:          Boot_WeakDictionary.put
+                                exchange:     Boot_WeakDictionary.exchange
+                                condExchange: Boot_WeakDictionary.condExchange
+                                get:          Boot_WeakDictionary.get
+                                condGet:      Boot_WeakDictionary.condGet
+                                close:        Boot_WeakDictionary.close
+                                keys:         Boot_WeakDictionary.keys
+                                entries:      Boot_WeakDictionary.entries
+                                items:        Boot_WeakDictionary.items
+                                isEmpty:      Boot_WeakDictionary.isEmpty
+                                toRecord:     Boot_WeakDictionary.toRecord
+                                remove:       Boot_WeakDictionary.remove
+                                removeAll:    Boot_WeakDictionary.removeAll
+                                member:       Boot_WeakDictionary.member
+                               )

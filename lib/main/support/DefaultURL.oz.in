@@ -56,8 +56,7 @@ prepare
                    'Discovery'
                    'Open'
                    'Tk' 'TkTools' 'Tix'
-% QTK DISABLED SCHULTE
-%                   'QTk'
+                   'QTk'
                    'Compiler' 'Macro'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'

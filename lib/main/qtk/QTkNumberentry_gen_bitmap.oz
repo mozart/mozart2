@@ -15,7 +15,7 @@ functor
 
 import
    Application
-   QTkImage(newImageLibrary: NewImageLibrary
+   QTkImageLibBoot(newImageLibrary: NewImageLibrary
             saveImageLibrary:SaveImageLibrary)
 
 define

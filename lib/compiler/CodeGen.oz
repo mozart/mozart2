@@ -1004,12 +1004,10 @@ local
                   literal(nil)
                end
             end
-            Reg1 Reg2 VInter3
+            Reg
          in
-            value(Reg1) = {MakeCopyList Xs VHd VInter1}
-            {CS newReg(?Reg2)}
-            VInter2 = vCallBuiltin(_ 'generateCopies' [Reg1 Reg2] unit VInter3)
-            VInter3 = vDefinitionCopy(_ Reg2 {V reg($)} PredId PredicateRef
+            value(Reg) = {MakeCopyList Xs VHd VInter1}
+            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
                                       GRegs Code VTl)
          end
       end

@@ -40,7 +40,6 @@ SCHEDLOCAL = \
         abz6 company product
 
 SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
-SCHEDBENCH = ./scheduling/abz6.ozf
 
 FCORE = \
         conversion float record type exception guards future misc \
@@ -49,7 +48,7 @@ FCORE = \
 CORE = $(FCORE:%=./core/%.ozf)
 
 FBENCH = \
-        nrev tak
+        nrev tak fd compiler
 
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
@@ -154,6 +153,9 @@ distclean: veryclean
 
 .oz.ozf:
         $(OZCC) $< -o $@
+
+%.ozm: %.oz
+        $(OZC) --expression -S $< -o $@
 
 include $(SRCTOP)/share/Makefile.boot
 

@@ -60,7 +60,7 @@ local
 
       fun {NewUrlFilter Spec RootUrl}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
-         ToExcl  = {NewPrefixFilter {CondSelect Spec exclude nil}}
+         ToExcl  = {NewPrefixFilter "x-oz://"|{CondSelect Spec exclude nil}}
          ToIncl  = {NewPrefixFilter
                     BaseUrl|{CondSelect Spec include nil}}
       in

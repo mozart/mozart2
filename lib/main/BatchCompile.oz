@@ -138,41 +138,43 @@ local
 
    local
       fun {SignConvert S}
-         {Map S fun {$ C} case C == &- then &~ end end}
+         {Map S fun {$ C} if C == &- then &~ else C end end}
       end
 
       proc {ParseOptArg Spec Args ?Opt ?Rest} Value in
-         case {HasFeature Spec value} then
+         if {HasFeature Spec value} then
             Value = Spec.value
             Rest = Args
-         elsecase Args of Arg1|Argr then
-            case Spec.type of string then
-               Value = Arg1
-            [] atom then
-               Value = {String.toAtom Arg1}
-            [] int then S = {SignConvert Arg1} in
-               case {String.isInt S} then
-                  Value = {String.toInt S}
-               else
-                  raise usage('integer argument expected') end
+         else
+            case Args of Arg1|Argr then
+               case Spec.type of string then
+                  Value = Arg1
+               [] atom then
+                  Value = {String.toAtom Arg1}
+               [] int then S = {SignConvert Arg1} in
+                  if {String.isInt S} then
+                     Value = {String.toInt S}
+                  else
+                     raise usage('integer argument expected') end
+                  end
+               [] float then S = {SignConvert Arg1} in
+                  if {String.isFloat S} then
+                     Value = {String.toFloat S}
+                  else
+                     raise usage('float argument expected') end
+                  end
                end
-            [] float then S = {SignConvert Arg1} in
-               case {String.isFloat S} then
-                  Value = {String.toFloat S}
-               else
-                  raise usage('float argument expected') end
-               end
+               Rest = Argr
+            [] nil then
+               raise usage('missing argument') end
             end
-            Rest = Argr
-         [] nil then
-            raise usage('missing argument') end
          end
          Opt = {Label Spec}#Value
       end
 
       fun {GetOptSpec OptSpecs OptChar}
          case OptSpecs of OptSpec|OptSpecr then C#_#Spec = OptSpec in
-            case C == OptChar then Spec
+            if C == OptChar then Spec
             else {GetOptSpec OptSpecr OptChar}
             end
          [] nil then unit
@@ -185,11 +187,13 @@ local
          elseof Spec then
             case Arg1r of nil then
                {ParseOptArg Spec Args ?Opt ?Rest}
-            elsecase {HasFeature Spec value} then
-               Opt = {Label Spec}#Spec.value
-               Rest = (&-|Arg1r)|Args
             else
-               {ParseOptArg Spec Arg1r|Args ?Opt ?Rest}
+               if {HasFeature Spec value} then
+                  Opt = {Label Spec}#Spec.value
+                  Rest = (&-|Arg1r)|Args
+               else
+                  {ParseOptArg Spec Arg1r|Args ?Opt ?Rest}
+               end
             end
          end
       end
@@ -216,19 +220,18 @@ local
             S Spec1 Exact1 Value1
          in
             _#S#Spec1 = OptSpec
-            case S \= unit andthen {IsPrefix LongOpt S ?Exact1 ?Value1}
-            then
-               case Exact1 then
+            if S \= unit andthen {IsPrefix LongOpt S ?Exact1 ?Value1} then
+               if Exact1 then
                   Exact = true
                   Value = Value1
                   Spec1
                else Spec2 Exact2 Value2 in
                   Spec2 = {GetLongOptSpec OptSpecr LongOpt ?Exact2 ?Value2}
-                  case Spec2 == unit then
+                  if Spec2 == unit then
                      Exact = false
                      Value = Value1
                      Spec1
-                  elsecase Exact2 then
+                  elseif Exact2 then
                      Exact = true
                      Value = Value2
                      Spec2
@@ -251,20 +254,22 @@ local
             raise usage('unknown option `--'#LongOpt#'\'') end
          elseof Spec then NewArgs in
             case Value of unit then
-               case {HasFeature Spec value} then
+               if {HasFeature Spec value} then
                   NewArgs = Args
                else
                   raise
                      usage('option `--'#LongOpt#'\' expects an argument')
                   end
                end
-            elsecase {HasFeature Spec value} then
-               raise
-                  usage('option `--'#LongOpt#
-                        '\' does not expect an argument')
-               end
             else
-               NewArgs = Value|Args
+               if {HasFeature Spec value} then
+                  raise
+                     usage('option `--'#LongOpt#
+                           '\' does not expect an argument')
+                  end
+               else
+                  NewArgs = Value|Args
+               end
             end
             {ParseOptArg Spec NewArgs ?Opt ?Rest}
          end
@@ -312,8 +317,8 @@ local
 
       fun {IsQuotedVariable S}
          case S of C1|Cr then
-            case C1 == &` andthen Cr == nil then true
-            elsecase C1 == 0 then false
+            if C1 == &` andthen Cr == nil then true
+            elseif C1 == 0 then false
             else {IsQuotedVariable Cr}
             end
          [] nil then false
@@ -337,26 +342,13 @@ local
       end
    in
       proc {IncludeFunctors S Compiler}
-         case S==nil then skip else
-            Var VarAtom URL Rest Export
-         in
+         case S of _|_ then Var VarAtom URL Rest Export in
             {String.token {String.token S &, $ ?Rest} &= ?Var ?URL}
             VarAtom = {String.toAtom Var}
-            try
-               Export={Module.load VarAtom case URL==nil then unit
-                                           else URL
-                                           end}
-               {Wait Export}
-            catch _ then
-               {Report
-                error(kind: UsageError
-                      msg: 'unknown functor `'#Var#'='#URL#'\' requested'
-                      items: [hint(l: 'Hint'
-                                   m: ('Use --help to obtain '#
-                                       'usage information'))])}
-            end
-            case {IsPrintName VarAtom} then
-               {Compiler enqueue(mergeEnv(env(VarAtom:Export)))}
+            Export = {Module.load VarAtom
+                      case URL of nil then unit else URL end}
+            if {IsPrintName VarAtom} then
+               {Compiler enqueue(mergeEnv(env(VarAtom: Export)))}
             else
                {Report
                 error(kind: UsageError
@@ -368,6 +360,7 @@ local
             {Compiler enqueue(mergeEnv({Record.filterInd Export
                                         fun {$ P _} {IsPrintName P} end}))}
             {IncludeFunctors Rest Compiler}
+         [] nil then skip
          end
       end
    end
@@ -435,16 +428,14 @@ in
                 {BatchCompiler enqueue(feedFile(X return))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                case {UI hasBeenTopped($)} then
+                if {UI hasBeenTopped($)} then
                    {System.printError {UI getVS($)}}
-                else skip
                 end
-                case {UI hasErrors($)} then
+                if {UI hasErrors($)} then
                    raise error end
-                else skip
                 end
              [] sysletprefix then
-                case {Access SysletPrefix} == unit then
+                case {Access SysletPrefix} of unit then
                    {Assign SysletPrefix X}
                 else
                    {Report error(kind: UsageError
@@ -456,7 +447,7 @@ in
              [] verbose then
                 skip   % has already been set
              [] mode then
-                case {IsDet ModeGiven} then
+                if {IsDet ModeGiven} then
                    {Report error(kind: UsageError
                                  msg: 'mode specified multiply on command line'
                                  items: [hint(l: 'Hint'
@@ -483,13 +474,13 @@ in
            case {OS.getEnv 'OZPATH'} of false then "."
            elseof S then S
            end}}
-         case FileNames of nil then
+         if FileNames == nil then
             {Report error(kind: UsageError
                           msg: 'no input files given'
                           items: [hint(l: 'Hint'
                                        m: ('Use --help to obtain '#
                                            'usage information'))])}
-         elsecase {Access OutputFile} \= "-"
+         elseif {Access OutputFile} \= "-"
             andthen {Access OutputFile} \= unit
             andthen {Length FileNames} > 1
          then
@@ -500,7 +491,7 @@ in
             {ForAll FileNames
              proc {$ Arg} OFN R in
                 {UI reset()}
-                case {Access OutputFile} == unit then
+                if {Access OutputFile} == unit then
                    case {Access Mode} of core then
                       OFN = {ChangeExtension Arg ".ozi"}
                    [] outputcode then
@@ -508,12 +499,11 @@ in
                    [] ozma then
                       OFN = {ChangeExtension Arg ".ozm"}
                    [] feedtoemulator then
-                      case {Access MakeDepend} then
+                      if {Access MakeDepend} then
                          {Report
                           error(kind: UsageError
                                 msg: ('--makedepend with --feedtoemulator '#
                                       'needs an --outputfile'))}
-                      else skip
                       end
                       OFN = unit
                    [] dump then
@@ -521,17 +511,15 @@ in
                    [] syslet then
                       OFN = {ChangeExtension Arg ""}
                    end
-                elsecase {Access OutputFile} == "-" then
-                   case {Access Mode} == dump
-                      orelse {Access Mode} == syslet
-                   then
+                elseif {Access OutputFile} == "-" then
+                   if {Access Mode} == dump orelse {Access Mode} == syslet then
                       {Report
                        error(kind: UsageError
                              msg: 'dumping to stdout is not possible')}
                    else
                       OFN = stdout
                    end
-                elsecase {Access Mode} == feedtoemulator
+                elseif {Access Mode} == feedtoemulator
                    andthen {Not {Access MakeDepend}}
                 then
                    {Report
@@ -542,9 +530,8 @@ in
                    OFN = {Access OutputFile}
                 end
                 {BatchCompiler enqueue(pushSwitches())}
-                case {Access MakeDepend} then
+                if {Access MakeDepend} then
                    {BatchCompiler enqueue(setSwitch(unnest false))}
-                else skip
                 end
                 case {Access Mode} of core then
                    {BatchCompiler enqueue(setSwitch(core true))}
@@ -567,15 +554,13 @@ in
                  enqueue(feedFile(Arg return(result: ?R)))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                case {UI hasBeenTopped($)} then
+                if {UI hasBeenTopped($)} then
                    {System.printError {UI getVS($)}}
-                else skip
                 end
-                case {UI hasErrors($)} then
+                if {UI hasErrors($)} then
                    raise error end
-                else skip
                 end
-                case {Access MakeDepend} then File VS in
+                if {Access MakeDepend} then File VS in
                    File = {New Open.file init(name: stdout flags: [write])}
                    VS = (OFN#':'#
                          case {UI getInsertedFiles($)} of Ns=_|_ then
@@ -585,69 +570,70 @@ in
                          end#'\n')
                    {File write(vs: VS)}
                    {File close()}
-                elsecase {Access Mode} of dump then Exceptionless Done in
-                   thread
-                      try
-                         {Pickle.save R OFN}
-                         Exceptionless = true
-                      finally
-                         Done = unit
-                      end
-                   end
-                   {Wait Done}
-                   case {IsDet Exceptionless} then skip
-                   else raise error end
-                   end
-                [] syslet then Exceptionless Done in
-                   case {Functor.is R} then skip
-                   else
-                      {Report
-                       error(kind: BatchCompilationError
-                             msg: 'syslets can only be built from functors'
-                             items: [hint(l: 'Value found'
-                                          m: oz(R))])}
-                   end
-                   thread TmpFileName in
-                      TmpFileName = {OS.tmpnam}
-                      try File VS in
-                         File = {New Open.file
-                                 init(name: OFN
-                                      flags: [write create truncate])}
-                         VS = case {Access SysletPrefix} of unit then
-                                 DefaultSysletPrefix
-                              elseof S then S
-                              end
-                         {File write(vs: VS)}
-                         {File close()}
-                         {Pickle.save R TmpFileName}
-                         case
-                            {OS.system
-                             'cat '#TmpFileName#' >> '#OFN#'; '#
-                             'chmod +x '#OFN}
-                         of 0 then skip
-                         elseof N then
-                            {Report
-                             error(kind: BatchCompilationError
-                                   msg: 'writing syslet failed'
-                                   items: [hint(l: 'Error code' m: N)])}
+                else
+                   case {Access Mode} of dump then Exceptionless Done in
+                      thread
+                         try
+                            {Pickle.save R OFN}
+                            Exceptionless = true
+                         finally
+                            Done = unit
                          end
-                         Exceptionless = true
-                      finally
-                         {OS.unlink TmpFileName}
-                         Done = unit
                       end
+                      {Wait Done}
+                      if {IsFree Exceptionless} then
+                         raise error end
+                      end
+                   [] syslet then Exceptionless Done in
+                      if {Functor.is R} then skip
+                      else
+                         {Report
+                          error(kind: BatchCompilationError
+                                msg: 'syslets can only be built from functors'
+                                items: [hint(l: 'Value found'
+                                             m: oz(R))])}
+                      end
+                      thread TmpFileName in
+                         TmpFileName = {OS.tmpnam}
+                         try File VS in
+                            File = {New Open.file
+                                    init(name: OFN
+                                         flags: [write create truncate])}
+                            VS = case {Access SysletPrefix} of unit then
+                                    DefaultSysletPrefix
+                                 elseof S then S
+                                 end
+                            {File write(vs: VS)}
+                            {File close()}
+                            {Pickle.save R TmpFileName}
+                            case {OS.system
+                                  'cat '#TmpFileName#' >> '#OFN#'; '#
+                                  'chmod +x '#OFN}
+                            of 0 then skip
+                            elseof N then
+                               {Report
+                                error(kind: BatchCompilationError
+                                      msg: 'writing syslet failed'
+                                      items: [hint(l: 'Error code' m: N)])}
+                            end
+                            Exceptionless = true
+                         finally
+                            {OS.unlink TmpFileName}
+                            Done = unit
+                         end
+                      end
+                      {Wait Done}
+                      if {IsFree Exceptionless} then
+                         raise error end
+                      end
+                   [] feedtoemulator then skip
+                   else File in   % core, outputcode, ozma
+                      File = {New Open.file
+                              init(name: OFN
+                                   flags: [write create truncate])}
+                      {File write(vs: {UI getSource($)})}
+                      {File close()}
                    end
-                   {Wait Done}
-                   case {IsDet Exceptionless} then skip
-                   else raise error end
-                   end
-                [] feedtoemulator then skip
-                else File in   % core, outputcode, ozma
-                   File = {New Open.file
-                           init(name: OFN
-                                flags: [write create truncate])}
-                   {File write(vs: {UI getSource($)})}
-                   {File close()}
                 end
              end}
          end

@@ -126,11 +126,10 @@ in
       thread
          {ForAll CtrlStr
           proc {$ C}
-             {Port.send CtrlRet
-              okay(case C
-                   of ping  then unit
-                   [] close then {Syslet.exit ExitDone} unit
-                   end)}
+              case C
+              of ping  then {Port.send CtrlRet okay}
+              [] close then {Syslet.exit ExitDone}
+              end
           end}
       end
 

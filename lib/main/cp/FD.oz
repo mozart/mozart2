@@ -29,12 +29,11 @@ functor
 
 require
    CpSupport(vectorToList:   VectorToList
-             vectorsToLists: VectorsToLists
              vectorToType:   VectorToType
              vectorToTuple:  VectorToTuple
+             vectorMap:      VectorMap
 
              expand:         Expand
-             cloneList:      CloneList
 
              formatOrigin:   FormatOrigin)
 
@@ -143,9 +142,6 @@ export
    disjointC:      FdDisjointC
    disjoint:       FdpDisjoint
 
-   %% Constructive disjunction support (compiler)
-   cd:             FdCD
-
    %% Distribution
    distribute:     FdDistribute
    choose:         FdChoose
@@ -202,9 +198,6 @@ define
    FdpSumR = FDP.'reified.sum'
    FdpSumCR = FDP.'reified.sumC'
    FdpSumCNR = FDP.'reified.sumCN'
-   FdpSumCD = FDP.sum_CD
-   FdpSumCCD = FDP.sumC_CD
-   FdpSumCNCD = FDP.sumCN_CD
 
    %%
    %% Telling Domains
@@ -283,81 +276,21 @@ define
    end
 
 
-
-   %%
-   %% Constructive disjunction
-   %%
-
-   local
-      FdPutListCD = FDB.tellConstraintCD
-
-      proc {ListDomCD Xs Dom C}
-         case Xs of nil then skip
-         [] X|Xr then {FdPutListCD X Dom C} {ListDomCD Xr Dom C}
-         end
-      end
-
-      proc {TupleDomCD N T Dom C}
-         if N>0 then {FdPutListCD T.N Dom C} {TupleDomCD N-1 T Dom C}
-         end
-      end
-
-      proc {RecordDomCD As R Dom C}
-         case As of nil then skip
-         [] A|Ar then {FdPutListCD R.A Dom C} {RecordDomCD Ar R Dom C}
-         end
-      end
-
-      proc {FdIntCD Dom X C}
-         {FdPutListCD X Dom C}
-      end
-
-      proc {FdDomCD Dom Vec C}
-         case {VectorToType Vec}
-         of list   then {ListDomCD Vec Dom C}
-         [] tuple  then {TupleDomCD {Width Vec} Vec Dom C}
-         [] record then {RecordDomCD {Arity Vec} Vec Dom C}
-         end
-      end
-
-   in
-
-      FdCD = cd(header: FDB.constrDisjSetUp
-                'body': FDB.constrDisj
-                sum:    FdpSumCD
-                sumC:   FdpSumCCD
-                sumCN:  FdpSumCNCD
-                int:    FdIntCD
-                dom:    FdDomCD)
-
-   end
-
-
    %%
    %% Generic Propagators
    %%
 
-   proc {GenSumACN IIs DDs Rel D}
-      thread
-         Ds      = {VectorsToLists DDs}
-         Coeffs1 = {VectorToList IIs}
-         Coeffs2 = {Map Coeffs1 Number.'~'}
-      in
-         if FwdRelTable.Rel then
-            {FdpSumCN Coeffs1 Ds Rel D}
-            {FdpSumCN Coeffs2 Ds Rel D}
-         else
-            D1 D2 B1 B2
-            TVars1   = {Map Ds CloneList}
-            TVars2   = {Map Ds CloneList}
-            TVars1_D = {VectorToTuple D1|{FoldL TVars1 Append nil}}
-            TVars2_D = {VectorToTuple D2|{FoldL TVars2 Append nil}}
-            TVars    = {VectorToTuple D|{FoldL Ds Append nil}}
-         in
-            {FdCD.header 1#1 B1#B2 TVars TVars1_D#TVars2_D}
-            {FdCD.sumCN  Coeffs1 TVars1 Rel D1 B1}
-            {FdCD.sumCN  Coeffs2 TVars2 Rel D2 B2}
-            {FdCD.'body' B1#B2 TVars TVars1_D#TVars2_D}
+   proc {GenSumACN IV DDV Rel D}
+      NIV = {VectorMap IV Number.'~'}
+   in
+      if FwdRelTable.Rel then
+         {FdpSumCN IV  DDV Rel D}
+         {FdpSumCN NIV DDV Rel D}
+      else
+         thread
+            or {FdpSumCN IV  DDV Rel D}
+            [] {FdpSumCN NIV DDV Rel D}
+            end
          end
       end
    end
@@ -416,85 +349,29 @@ define
       end
 
       proc {GenSumACR IV DV Rel D B}
+         NegRel = NegRelTable.Rel
+      in
+         {FdBool B}
          thread
-            NegRel = NegRelTable.Rel
-            IT     = {VectorToTuple IV}
-            NIT    = {Record.map IT Number.'~'}
-            DT     = {VectorToTuple DV}
-         in
-            {FdBool B}
-            if FwdRelTable.Rel then
-               or B=1
-                  {FdpSumC IT  DT Rel D}
-                  {FdpSumC NIT DT Rel D}
-               [] B=0
-                  {FdpSumC IT  DT NegRel D}
-               [] B=0
-                  {FdpSumC NIT DT NegRel D}
-               end
-            else
-               or B1 B2 D1 D2
-                  ND = {Width DT}
-                  TVars1   = {MakeTuple '#' ND}
-                  TVars2   = {MakeTuple '#' ND}
-                  TVars1_D = {Tuple.append v(D1) TVars1}
-                  TVars2_D = {Tuple.append v(D2) TVars2}
-                  TVars    = {Tuple.append v(D)  DT}
-               in
-                  B=1
-                  {FdCD.header 1#1 B1#B2 TVars TVars1_D#TVars2_D}
-                  {FdCD.sumC IT  TVars1 Rel D1 B1}
-                  {FdCD.sumC NIT TVars2 Rel D2 B2}
-                  {FdCD.'body' B1#B2 TVars TVars1_D#TVars2_D}
-               [] B=0
-                  {FdpSumC IT  DT NegRel D}
-                  {FdpSumC NIT DT NegRel D}
-               end
+            or B=1 {FdpSumAC IV DV Rel    D}
+            [] B=0 {FdpSumAC IV DV NegRel D}
             end
          end
       end
 
-      proc {GenSumACNR IIs DDs Rel D B}
+      proc {GenSumACNR IV DDV Rel D B}
+         NegRel = NegRelTable.Rel
+      in
+         {FdBool B}
          thread
-            NegRel  = NegRelTable.Rel
-            Ds      = {VectorsToLists DDs}
-            Coeffs1 = {VectorToList IIs}
-            Coeffs2 = {Map Coeffs1 Number.'~'}
-         in
-            {FdBool B}
-            if FwdRelTable.Rel then
-               or B=1
-                  {FdpSumCN Coeffs1 Ds Rel D}
-                  {FdpSumCN Coeffs2 Ds Rel D}
-               [] B=0
-                  {FdpSumCN Coeffs1 Ds NegRel D}
-               [] B=0
-                  {FdpSumCN Coeffs2 Ds NegRel D}
-               end
-            else
-               or
-                  D1 D2 B1 B2
-                  TVars1   = {Map Ds CloneList}
-                  TVars2   = {Map Ds CloneList}
-                  TVars1_D = {VectorToTuple D1|{FoldL TVars1 Append nil}}
-                  TVars2_D = {VectorToTuple D2|{FoldL TVars2 Append nil}}
-                  TVars    = {VectorToTuple D|{FoldL Ds Append nil}}
-               in
-                  B=1
-                  {FdCD.header 1#1 B1#B2 TVars TVars1_D#TVars2_D}
-                  {FdCD.sumCN Coeffs1 {VectorToTuple TVars1} Rel D1 B1}
-                  {FdCD.sumCN Coeffs2 {VectorToTuple TVars2} Rel D2 B2}
-                  {FdCD.'body' B1#B2 TVars TVars1_D#TVars2_D}
-               [] B=0
-                  {FdpSumCN Coeffs1 Ds NegRel D}
-                  {FdpSumCN Coeffs2 Ds NegRel D}
-               end
+            or B=1 {GenSumACN IV DDV Rel    D}
+            [] B=0 {GenSumACN IV DDV NegRel D}
             end
          end
       end
 
       proc {DistanceR X Y Rel D B}
-         {GenSumACR [1 ~1] [X Y] Rel D B}
+         {GenSumACR 1#~1 X#Y Rel D B}
       end
 
    in
@@ -517,19 +394,12 @@ define
 
    local
 
-      local
-         ForceClone = {NewName}
-      in
-         proc {MakeDistrTuple V ?T}
-            T = if {VectorToType V}==tuple then
-                   {Adjoin V ForceClone}
-                else {VectorToTuple V}
-                end
-            if {Record.all T FdIs} then skip else
-               {Exception.raiseError
-                kernel(type MakeDistrTuple [V T] 'vector(fd)' 1
-                       'Distribution vector must contain finite domains.')}
-            end
+      proc {MakeDistrTuple V ?T}
+         T = {VectorToTuple V}
+         if {Record.all T FdIs} then skip else
+            {Exception.raiseError
+             kernel(type MakeDistrTuple [V T] 'vector(fd)' 1
+                    'Distribution vector must contain finite domains.')}
          end
       end
 

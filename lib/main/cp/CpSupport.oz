@@ -45,6 +45,12 @@ prepare
       end
    end
 
+   fun {VectorMap V P}
+      if {VectorToType V}==list then {Map V P}
+      else {Record.map V P}
+      end
+   end
+
    fun {VectorToList V}
       if {VectorToType V}==list then V
       else {R2L V}
@@ -69,12 +75,6 @@ prepare
          [] record then
             T={MakeTuple '#' {Width V}} {RecordToTuple {Arity V} 1 V T}
          end
-      end
-   end
-
-   fun {CloneList Xs}
-      case Xs of nil then nil
-      [] _|Xr then _|{CloneList Xr}
       end
    end
 
@@ -162,12 +162,6 @@ prepare
            fdWatchSize:        ['FD.watch.size'    nil]
            fdWatchMin:         ['FD.watch.min'     nil]
            fdWatchMax:         ['FD.watch.max'     nil]
-
-           fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
-           fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
-           sumCD:              [sumCD          ['condis ... end']]
-           sumCCD:             [sumCCD         ['condis ... end']]
-           sumCNCD:            [sumCNCD        ['condis ... end']]
           )
 
       fun {BIPrintName X}
@@ -202,9 +196,8 @@ export
    vectorToList:   VectorToList
    vectorsToLists: VectorsToLists
    vectorToTuple:  VectorToTuple
+   vectorMap:      VectorMap
 
    expand:         Expand
-
-   cloneList:      CloneList
 
 end

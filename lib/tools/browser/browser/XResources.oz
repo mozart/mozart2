@@ -116,7 +116,7 @@ in
       %%
       meth getFontRes(Font ?XRes ?YRes)
          case {Dictionary.condGet self.FontResCache Font InitValue}
-         of R = _#_    then XRes#YRes = R
+         of XR#YR    then XRes=XR YRes=YR
          [] !InitValue then
             %%
             case X11ResourceCacheClass , tryFont(Font $) then

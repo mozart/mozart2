@@ -361,8 +361,9 @@ in
                   case Mess
                   of m("moveto" F) then
                       %% "moveto Fraction" - just feed it further;
-                      {BW tk(yview 'moveto' F)}
-                  [] m("scroll" N "pages") then
+                     {BW tk(yview 'moveto' F)}
+                  elsecase Mess
+                  of m("scroll" N "pages") then
                      Last FT FB Current Kind NewMark Pairs
                   in
                      %% "scroll N Type" - filter the 'pages' case;
@@ -379,9 +380,8 @@ in
                         {Map
                          {GetStrs {Tk.return o(BW yview)} CharSpace nil}
                          fun {$ E}
-                            case E
-                            of "0" then 0.
-                            [] "1" then 1.
+                            case E of "0" then 0.
+                            elsecase E of "1" then 1.
                             else {String.toFloat E}
                             end
                          end}
@@ -402,11 +402,13 @@ in
                      Pairs = {SelfBWO mapMark(NewMark $)}
 
                      %%
-                     case {GetTargetObj Pairs}
-                     of !InitValue then skip
-                     [] TO then {SelfBWO.browserObj ScrollTo(TO Kind)}
+                     local TO = {GetTargetObj Pairs} in
+                        case TO == InitValue then skip
+                        else {SelfBWO.browserObj ScrollTo(TO Kind)}
+                        end
                      end
-                  [] m("scroll" N "units") then
+                  elsecase Mess
+                  of m("scroll" N "units") then
                      %% basically, there is only 'units' type left;
                      {BW tk(yview 'scroll' N 'units')}
                   else {BrowserError 'Unknown type of scrollbar operation!'}
@@ -532,10 +534,10 @@ in
                      Pairs = {self mapMark(NewMark $)}
 
                      %%
-                     case {GetTargetObj Pairs}
-                     of !InitValue then skip
-                     [] TO then
-                        {StreamObj enq(processEvent(TO Handler Arg))}
+                     local TO = {GetTargetObj Pairs} in
+                        case TO == InitValue then skip
+                        else {StreamObj enq(processEvent(TO Handler Arg))}
+                        end
                      end
                   end
                end

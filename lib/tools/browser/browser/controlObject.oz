@@ -369,7 +369,7 @@ in
          local PM in
             PM = case {Type.ofValue Message}
                  of atom then Message
-                 [] Name then {System.printName Message}
+                 [] name then {System.printName Message}
                  [] tuple then L in
                     L = {Label Message}
                     case {IsAtom L} then L

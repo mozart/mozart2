@@ -125,9 +125,13 @@ in
    %% Convert an incomplete list to the wf-list (non-monotonically);
    fun {GetWFList LIn}
       %%
-      case LIn
-      of E|R then E|{GetWFList R}
-      [] _ then nil
+      case {Value.status LIn}
+      of det(_) then
+         case LIn
+         of E|R then E|{GetWFList R}
+         else nil
+         end
+      else nil
       end
    end
 

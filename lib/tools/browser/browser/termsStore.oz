@@ -18,6 +18,7 @@
 local
    %%
    GCProc
+   NMTest
 in
 
 %%%
@@ -43,6 +44,19 @@ in
          else {GCProc R Length NewList NewLength}
          end
       end
+   end
+
+   %%
+   %% Due to Denys;
+   %%
+   %% 'P' must a unary procedure doing something. If it blocks or
+   %% fails, 'False' is returned, and if it's entailed - 'True';
+   fun {NMTest P}
+      S={Space.new P}
+      W
+   in
+      thread {Space.askVerbose S W} end
+      W == succeeded(entailed)
    end
 
    %%
@@ -98,16 +112,15 @@ in
             %%
             List = Obj|R
 
-            %%> alternative, but only 'proper' coreferences (incl. cycles);
-            %%> case {EQ Obj.term Term} then ...
-            if Obj.term = Term then
+            %%
+            case {NMTest proc {$ _} Obj.term = Term end} then
                %%
                case {IsFree Obj.closed} then Obj
                else
                   fails <- @fails + 1
                   TermsStoreClass , Check(Term R $)
                end
-            [] true then        % TODO !!!
+            else                % not or not yet;
                %%  both - monotonic and non-monotonic;
                TermsStoreClass , Check(Term R $)
             end
@@ -130,15 +143,14 @@ in
                TermsStoreClass , Search(Self R $)
             else
                %%
-               if Obj.term = Self.term then
+               case {NMTest proc {$ _} Obj.term = Self.term end} then
                   %%
                   case {IsFree Obj.closed} then True
                   else
                      fails <- @fails + 1
                      TermsStoreClass , Search(Self R $)
                   end
-               [] true then     % TODO !!!
-                  TermsStoreClass , Search(Self R $)
+               else TermsStoreClass , Search(Self R $)
                end
             end
          end

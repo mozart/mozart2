@@ -234,12 +234,13 @@ in
       proc {SplitPairs Pairs ?LeftObjs ?RightObjs}
          case Pairs
          of nil then LeftObjs = RightObjs = nil
-         [] E|T then NewLeftObjs NewRightObjs in
-            case E
-            of left#Obj then
+         [] E|T then NewLeftObjs NewRightObjs Type Obj in
+            E = Type#Obj
+            case Type
+            of left then
                LeftObjs = Obj|NewLeftObjs
                RightObjs = NewRightObjs
-            [] right#Obj then
+            [] right then
                LeftObjs = NewLeftObjs
                RightObjs = Obj|NewRightObjs
             else
@@ -270,12 +271,14 @@ in
          of nil then
             {BrowserError 'GetTargetObj: no outer-most object??!'}
             InitValue
-         [] [Obj] then Obj
-         [] List then
+         [] Obj|R then
 \ifdef DEBUG_RM
-            {BrowserWarning 'GetTargetObj: multiple outer-most objects?'}
+            case R \= nil then
+               {BrowserWarning 'GetTargetObj: multiple outer-most objects?'}
+            else skip
+            end
 \endif
-            List.1
+            Obj
          end
       end
 
@@ -290,12 +293,14 @@ in
          of nil then
             {BrowserError 'GetTargetObj: no inner-most object??!'}
             InitValue
-         [] [Obj] then Obj
-         [] List then
+         [] Obj|R then
 \ifdef DEBUG_RM
-            {BrowserWarning 'GetTargetObj: multiple inner-most objects?'}
+            case R \= nil then
+               {BrowserWarning 'GetTargetObj: multiple inner-most objects?'}
+            else skip
+            end
 \endif
-            List.1
+            Obj
          end
       end
 
@@ -2082,8 +2087,7 @@ in
                {WO setCursor(Group.mark @UsedIndentOut)}
 
                %%
-               case Group.glueSize
-               of 0 then Spaces in
+               case Group.glueSize == 0 then Spaces in
                   %%
                   %% there were no glue - we have to take care about
                   %% the mark's gravity:
@@ -2093,7 +2097,8 @@ in
                        setMarkGravity(Group.mark right)]}
 
                   %%
-               [] GS then
+               else GS in
+                  GS = Group.glueSize
                   case GS > ReqGlueSize then
                      %% remove something;
                      {WO [advanceCursor(DSpace)
@@ -2492,7 +2497,8 @@ in
          %%
          case {Int.is IndExpr} then IndExpr
          elsecase IndExpr
-         of st_size(B # LN) then
+         of st_size(N) then B LN in
+            N = B#LN
             %%
             case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
             then Group in
@@ -2528,7 +2534,8 @@ in
             else 0
             end
 
-         [] gr_size(B # LN) then
+         [] gr_size(N) then B LN in
+            N = B#LN
             %%
             case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
             then Group in
@@ -2563,7 +2570,8 @@ in
             %% 'EvalDesc' is used!
          [] current then @UsedIndentOut
 
-         [] st_indent(B # LN) then
+         [] st_indent(N) then B LN in
+            N = B#LN
             %%
             case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
             then Group in

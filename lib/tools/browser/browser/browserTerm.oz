@@ -42,13 +42,17 @@ in
    in
       fun {IsVirtualString X}
          case {Value.status X}
-         of det(atom)  then True
-         [] det(int)   then True
-         [] det(float) then True
-         [] det(tuple) then
-            case {Label X}
-            of '#' then {IsAll {Width X} X}
-            [] '|' then {IsString X}
+         of det(DT) then
+            case DT
+            of atom  then True
+            [] int   then True
+            [] float then True
+            [] tuple then
+               case {Label X}
+               of '#' then {IsAll {Width X} X}
+               [] '|' then {IsString X}
+               else False
+               end
             else False
             end
          else False
@@ -81,63 +85,74 @@ in
    fun {GetTermType Term Store}
       %%
       case {Value.status Term}
-      of free then T_Variable
+      of free       then T_Variable
 
-      [] kinded(record) then T_Record
-      [] kinded(int)    then T_FDVariable
-      [] kinded(other)  then
-         case {IsMetaVar Term} then T_MetaVariable % TODO
-         else T_Variable        % don't know;
-         end
-
-      [] det(atom)      then T_Atom
-      [] det(int)       then T_Int
-      [] det(float)     then T_Float
-      [] det(name)      then T_Name
-
-      [] det(tuple)     then
-         %%
-         case {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
-         then T_Atom
-         elsecase Term of _|_ then
-            case {IsListDepth Term ({Store read(StoreWidth $)} * 2)}
-            then T_List
-            else T_FCons
+      [] kinded(KT) then
+         case KT
+         of record  then T_Record
+         [] int     then T_FDVariable
+         [] other   then
+            case {IsMetaVar Term} then T_MetaVariable % TODO
+            else T_Variable     % don't know;
             end
-         elsecase
-            case {Label Term}
-            of '#' then TW in TW = {Width Term}
-               %%  must fit into width constraint;
-               TW > 1 andthen TW =< {Store read(StoreWidth $)}
-            else False
+         else T_Unknown
+         end
+
+      [] det(DT)    then
+         case DT
+         of atom       then T_Atom
+         [] int        then T_Int
+         [] float      then T_Float
+         [] name       then T_Name
+
+         [] tuple      then
+            %%
+            case {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
+            then T_Atom
+            elsecase Term of _|_ then
+               case {IsListDepth Term ({Store read(StoreWidth $)} * 2)}
+               then T_List
+               else T_FCons
+               end
+            elsecase
+               case {Label Term}
+               of '#' then TW in TW = {Width Term}
+                  %%  must fit into width constraint;
+                  TW > 1 andthen TW =< {Store read(StoreWidth $)}
+               else False
+               end
+            then T_HashTuple
+            else T_Tuple
             end
-         then T_HashTuple
-         else T_Tuple
+
+         [] procedure  then T_Procedure
+         [] cell       then T_Cell
+         [] record     then T_Record
+
+         [] chunk      then CW in
+            CW = {ChunkWidth Term}
+            case {Object.is Term} then
+               case CW of 0 then T_PrimObject else T_CompObject end
+            elsecase {Class.is Term} then
+               case CW of 0 then T_PrimClass else T_CompClass end
+            elsecase {Dictionary.is Term} then T_Dictionary
+            elsecase {Array.is Term} then T_Array
+            elsecase CW of 0 then T_PrimChunk else T_CompChunk
+            end
+
+         [] 'thread'  then T_Thread
+                /*
+             end
+            */
+         [] 'space'   then T_Space
+
+         else
+            %% 'of' is a keyword ;-)
+            {BrowserWarning 'Oz Term _o_f an unknown type '
+             # {System.valueToVirtualString Term DInfinite DInfinite}}
+            T_Unknown
          end
-
-      [] det(procedure) then T_Procedure
-      [] det(cell)      then T_Cell
-      [] det(record)    then T_Record
-
-      [] det(chunk)     then CW in
-         CW = {ChunkWidth Term}
-         case {Object.is Term} then
-            case CW of 0 then T_PrimObject else T_CompObject end
-         elsecase {Class.is Term} then
-            case CW of 0 then T_PrimClass else T_CompClass end
-         elsecase {Dictionary.is Term} then T_Dictionary
-         elsecase {Array.is Term} then T_Array
-         elsecase CW of 0 then T_PrimChunk else T_CompChunk
-         end
-
-      [] det('thread')  then T_Thread
-      [] det('space')   then T_Space
-
-      else
-         %% 'of' is a keyword ;-)
-         {BrowserWarning 'Oz Term _o_f an unknown type '
-          # {System.valueToVirtualString Term DInfinite DInfinite}}
-         T_Unknown
+      else T_Unknown
       end
    end
 
@@ -264,15 +279,9 @@ in
         %%
         case Del1
         of !DSpaceGlue then False
-        [] !DHashGlue  then
-           case Del2
-           of !DHashGlue  then True
-           else False
-           end
         [] !DVBarGlue  then
-           case Del2
-           of !DHashGlue  then True
-           [] !DVBarGlue  then True
+           case Del2     of !DHashGlue then True
+           elsecase Del2 of !DVBarGlue then True
            else False
            end
         [] !DEqualS    then
@@ -280,6 +289,9 @@ in
            of !DSpaceGlue then False
            else True            % but 'Del2' should not be '=';
            end
+        elsecase Del1
+        of !DHashGlue  then Del2 == DHashGlue
+        else {BrowserError 'Unknown delimiter!'} False
         end
    end
 

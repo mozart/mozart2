@@ -114,14 +114,13 @@ in
       {Record.forAllInd SetTab
        fun {$ J} I=J-1 in
           case {Char.isCntrl I} then
-             subst(case [I]
-                   of "\a" then "\\a"
-                   [] "\b" then "\\b"
-                   [] "\f" then "\\f"
-                   [] "\n" then "\\n"
-                   [] "\r" then "\\r"
-                   [] "\t" then "\\t"
-                   [] "\v" then "\\v"
+             subst(case     [I] of "\a" then "\\a"
+                   elsecase [I] of "\b" then "\\b"
+                   elsecase [I] of "\f" then "\\f"
+                   elsecase [I] of "\n" then "\\n"
+                   elsecase [I] of "\r" then "\\r"
+                   elsecase [I] of "\t" then "\\t"
+                   elsecase [I] of "\v" then "\\v"
                    else {Append "\\" {OctString I}}
                    end)
           elsecase I =< 255 andthen 127 =< I then
@@ -604,9 +603,8 @@ in
 
          %%
          %% suspends until either ...
-         if ChMetaVar = True then True
-         [] GotTouched = True then True
-         end
+         {Wait {Select ChMetaVar GotTouched}}
+         True
       end
    end
 
@@ -2352,8 +2350,8 @@ in
             %%
             %% Note that this conditional may not block the state;
             thread
-               if ChVar = True then {self checkTermReq}
-               [] ObjClosed = True then skip
+               case {Select ChVar ObjClosed} then {self checkTermReq}
+               else skip
                end
             end
 
@@ -2365,8 +2363,8 @@ in
 
                %%
                thread
-                  if GotLabel = Unit then {self checkTermReq}
-                  [] ObjClosed = True then skip
+                  case {Select GotLabel ObjClosed} then {self checkTermReq}
+                  else skip
                   end
                end
             end
@@ -2601,8 +2599,8 @@ in
             %%
             %% Note that this conditional may not block the state;
             thread
-               if ChVar = True then {self checkTermReq}
-               [] ObjClosed = True then skip
+               case {Select ChVar ObjClosed} then {self checkTermReq}
+               else skip
                end
             end
 

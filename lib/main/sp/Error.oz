@@ -77,7 +77,7 @@ local
    fun {PosToVS F L C PC}
       Elems =
       {Filter
-       [case F == '' orelse F == 'nofile' then "" else 'file "'#F#'"' end
+       [case F == '' then "" else 'file "'#F#'"' end
         case L == unit then "" else 'line '#L end
         case C == unit then "" else 'column '#C end
         case PC == unit then "" else 'PC = '#PC end]
@@ -388,7 +388,7 @@ in
             [] X|Xr then
                case N > 0 then
                   Pos = {PosToVS
-                         {CondSelect X file nofile}
+                         {CondSelect X file ''}
                          {CondSelect X line unit}
                          {CondSelect X column unit}
                          {CondSelect X 'PC' unit}}

@@ -1197,18 +1197,29 @@ fun {NewTkTools Tk}
       end
    end
 
-%   %% balloon help
-%   local
-%      F      = {System.get home} # '/lib/wish/tk/tools/BalloonHelp.tcl'
-%      Exists = try {OS.stat F _} true
-%              catch system(...) then false end
-%   in
-%      case Exists then
-%        {Tk.send source(F)}
-%      else
-%        {System.showError 'TkTools: ' # F # ': can\'t read file'}
-%      end
-%   end
+   local
+      proc {Select Url ?Base ?Ext}
+         S={Reverse {VirtualString.toString Url}} R
+      in
+         Ext  = {String.toAtom {Reverse {String.token S &. $ ?R}}}
+         Base = {String.toAtom {Reverse {String.token R &/ $ _}}}
+      end
+      fun {MkImg Url}
+         Ext Base
+      in
+         {Select Url Base Ext}
+         Base # case Ext
+                of gif then
+                   {New Tk.image tkInit(type:photo format:gif url:Url)}
+                [] xbm then
+                   {New Tk.image tkInit(type:bitmap url:Url)}
+                end
+      end
+   in
+      fun {LoadImages Vs}
+         {List.toRecord images {Map Vs MkImg}}
+      end
+   end
 
 in
 
@@ -1219,6 +1230,7 @@ in
            notebook:    Notebook
            note:        Note
            scale:       DiscreteScale
-           numberentry: NumberEntry)
+           numberentry: NumberEntry
+           images:      LoadImages)
 
 end

@@ -656,7 +656,7 @@ define
                  R
               end}
              {MiscTest 55
-              fun {$} Z Xs [X1 X2 X3 X4] = Xs R
+              fun {$} Z X2 Xs=[_ X2 _ _] R
               in
                  {ForAll Xs proc {$ E} {FS.var.upperBound 1#4 E} end}
                  {FS.intersectN Xs Z}

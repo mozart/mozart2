@@ -1341,6 +1341,7 @@ define
          MessageVO = {New PseudoVariableOccurrence init(MessageReg)}
          CodeGenMethod, MakeArityCheck(HasDefaults MessageVO CS
                                        BodyVInstr VInter1)
+         %--** use pattern matching
          {FoldL @formalArgs
           proc {$ VHd Formal VTl}
              {Formal bindMethFormal(MessageVO CS VHd VTl)}
@@ -1443,27 +1444,27 @@ define
          end
       end
       meth bindMethFormal(MessageVO CS VHd VTl)
-         Coord CND ArbiterReg ArbiterVO
-         FeatureVO ArgVO ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
+         Coord CND FeatureVO ArbiterVO TempVO
+         ArgReg ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
       in
          {@arg setFreshReg(CS)}
          {@arg getCoord(?Coord)}
          CND = {CoordNoDebug Coord}
-         {CS newReg(?ArbiterReg)}
-         ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
          {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
-         ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-         {MakeRunTimeProcApplication '.' CND
-          [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
+         ArbiterVO = {NewPseudoVariableOccurrence CS}
+         TempVO = {NewPseudoVariableOccurrence CS}
+         {MakeRunTimeProcApplication 'Record.testFeature' CND
+          [MessageVO FeatureVO ArbiterVO TempVO] CS Cont1 Cont2}
+         Cont2 = vTestBool(_ ArbiterVO.reg ThenVInstr ElseVInstr ErrVInstr
+                           unit VTl _)
+         {@arg reg(?ArgReg)}
+         ThenVInstr = vUnify(_ ArgReg TempVO.reg nil)
          case @default of unit then ElseVInstr = nil
-         elseof VO then {VO makeEquation(CS ArgVO ElseVInstr nil)}
+         elseof VO then ArgVO in
+            ArgVO = {New PseudoVariableOccurrence init(ArgReg)}
+            {VO makeEquation(CS ArgVO ElseVInstr nil)}
          end
          {MakeException boolCaseType Coord nil CS ErrVInstr nil}
-         %--** use 'Record.testFeature'
-         {MakeRunTimeProcApplication 'hasFeature' CND
-          [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
-         Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
-                           unit VTl _)
       end
    end
 

@@ -33,7 +33,6 @@ in
                      defines: {CompilerState getDefines($)}
                      errorOutput: ?VS)}
       case Res of fileNotFound then
-         {Reporter userInfo(VS)}
          {Reporter error(kind: 'compiler directive error'
                          msg: ('could not open file "'#FileName#
                                '" for reading'))}

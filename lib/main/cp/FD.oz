@@ -789,8 +789,14 @@ local
 
    local
 
+      ForceClone = {NewName}
+
       proc {MakeDistrTuple V ?T}
-         T={VectorToTuple V}
+         T = case {VectorToType V}==tuple then
+                {Adjoin V ForceClone}
+             else {VectorToTuple V}
+             end
+
          case {Record.all T FdIs} then skip else
             {`RaiseError`
              kernel(type

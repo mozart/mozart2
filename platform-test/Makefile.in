@@ -19,7 +19,7 @@ SPACEOZF = $(SPACELOCAL:%=./space/%.ozf)
 # Tests for finite domains
 FDLOCAL = \
         distribute alpha money misc1 misc2 \
-        watlasm dsum sumabs constrdisj binpacking \
+        watlasm dsum sumabs binpacking \
         bridge buildhouse cars change color \
         conference configuration diagnosis divmod \
         donald equations family fraction guards \

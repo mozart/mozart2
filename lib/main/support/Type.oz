@@ -152,8 +152,8 @@ prepare
 import
    FDB(is: IsFDIntC)
    at 'x-oz://boot/FDB'
-   FSB(isValueB: IsFSet
-       isVarB:   IsFSetC)
+   FSB('value.is': IsFSet
+       'var.is':   IsFSetC)
    at 'x-oz://boot/FSB'
    System(printName)
 

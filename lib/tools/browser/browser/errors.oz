@@ -26,26 +26,22 @@ local MessageWindowObject in
 
          %%
          meth get(?MW)
-            local Sync in
-               case @window == InitValue then
-                  <<[createMessageWindow
-                     pushButton(clear
-                                proc {$} {self clear} end
-                                _)
-                     %% pushButton(iconify
-                     %%              proc {$} {self iconify} end
-                     %%              _)
-                     pushButton(close
-                                proc {$} {self closeWindow} end
-                                _)]>>
-               else true
-               end
-               %%
-               %%
-               <<sync(Sync)>>
-               {Wait Sync}
-               MW = self
+            case @window == InitValue then
+               <<[createMessageWindow
+                  pushButton(clear
+                             proc {$} {self clear} end
+                             _)
+                  %% pushButton(iconify
+                  %%         proc {$} {self iconify} end
+                  %%         _)
+                  pushButton(close
+                             proc {$} {self closeWindow} end
+                             _)]>>
+            else true
             end
+
+            %%
+            MW = self
          end
 
          %%
@@ -116,7 +112,7 @@ local MessageWindowObject in
          end
       end
    end
-   %%
+
    %%
    proc {BrowserWarning Desc}
       %%
@@ -135,6 +131,6 @@ local MessageWindowObject in
          end
       end
    end
-   %%
+
    %%
 end

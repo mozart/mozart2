@@ -54,7 +54,7 @@ MetaGetStrength = {`Builtin` metaGetStrength noHandler}
 
 %%
 %%  Equality on terms using their physical location (pointers);
-EQ = {`Builtin` eq noHandler}
+EQ = {`Builtin` eqB noHandler}
 
 %% X is an undetermined record, F is a literal.  Do an immediate test whether
 %% X has the feature F.  Gives a type error if X or F is of wrong type.
@@ -75,13 +75,14 @@ DeepFeed = {`Builtin` deepFeed proc {$ C X}
                                   else true
                                   end
                                end}
+
 %%
 GenericSet = {`Builtin`
               genericSet
               proc {$ X Y Z}
                  case {Det X} andthen {Det Y} then {GenericSet X Y Z} end
               end}
-%%
+
 %%
 local
    ProperWidth ProcZeroWidth CellZeroWidth

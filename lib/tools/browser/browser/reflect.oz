@@ -57,7 +57,7 @@ in
              %%< if X.1 = Term then true
              %%< [] true then False
              %%< fi
-             if {EQ X.1 Term} then True else False fi
+             case {EQ X.1 Term} then True else False end
           end} then
          {ForAll ListOfSeen
           proc {$ X}
@@ -66,9 +66,9 @@ in
              %%< if X.1 = Term then X.2 = ReflectedTerm
              %%< [] true then true
              %%< fi
-             if {EQ X.1 Term} then X.2 = ReflectedTerm
+             case {EQ X.1 Term} then X.2 = ReflectedTerm
              else true
-             fi
+             end
           end}
          Status = True
          NewList = ListOfSeen

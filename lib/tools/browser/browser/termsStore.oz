@@ -277,7 +277,7 @@ in
             else {CheckProc Term R}
             end
             %%> alternative, but only 'proper' coreferences (incl. cycles);
-            %%> if {EQ Obj.term Term} then ...
+            %%> case {EQ Obj.term Term} then ...
          [] true then {CheckProc Term R}  % non-monotonic!
          fi
       end
@@ -317,7 +317,7 @@ in
    fun {CheckCycleProc Term SelfObject}
       %% faster, but if you write 'declare T = a(a(T)) in {Browse T}'
       %% the representation 'C1=a(a(C1))' will be shown (instead 'C1=a(C1)')!
-      %%< if {EQ SelfObject.term Term} then FoundObj = SelfObject
+      %%< case {EQ SelfObject.term Term} then FoundObj = SelfObject
       %%
       %% relational;
       if SelfObject.term = Term then

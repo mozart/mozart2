@@ -2113,10 +2113,12 @@ in
             %% relational;
             if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
                %% relational;
-               if {EQ Xr Yr} then true
-               [] {DoInfList Xr Yr (Depth-1)} then true
-               else false
-               fi
+               case {EQ Xr Yr} then true
+               else
+                  if {DoInfList Xr Yr (Depth-1)} then true
+                  else false
+                  fi
+               end
             else false
             fi
          else false
@@ -2180,7 +2182,7 @@ in
          case Stack == nil then false
          else
             %% relational;
-            if {EQ List {Subtree Stack 1}} then
+            case {EQ List {Subtree Stack 1}} then
                case Stack.2 == nil then
                   %% i.e. the cycle begins from the first list constructor;
                   BaseList = {Append {Map {Reverse SavedStack}
@@ -2191,7 +2193,7 @@ in
                end
             else
                {GetBaseList List Stack.2 SavedStack ?BaseList}
-            fi
+            end
          end
       end
    end

@@ -77,7 +77,9 @@ ProcFlag          = instantiate
 FunctorDescriptor = fImport([ImportDecl] Coordinates)
                   | fExport([ExportDecl] Coordinates)
                   | fProp([Phrase] Coordinates).
-ImportDecl        = fImportItem(NakedVariable [FeatureNoVar] OptFrom).
+ImportDecl        = fImportItem(NakedVariable [AliasedFeature] OptFrom).
+AliasedFeature    = FeatureNoVar
+                  | NakedVariable#FeatureNoVar.
 OptFrom           = fFrom(Atom)
                   | fNoFrom.
 ExportDecl        = fExportItem(NakedVariable).

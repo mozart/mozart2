@@ -232,33 +232,45 @@ local
 in
 
    OzTypes = {PartialOrder
-              ['thread' # value  space  # value
-               chunk  # value    cell   # value
-               foreignPointer # value fset # value
+              ['thread' # value
+               space  # value
+               chunk  # value
+               cell   # value
+               foreignPointer # value
+               fset   # value
                recordC# value
                record # recordC
                number # value
                intC   # number
                int    # intC
-               float  # number   char   # fdint
+               float  # number
+               char   # fdint
                fdint  # int
-               tuple  # record   literal# tuple
-               atom   # literal  name   # literal
-               nilAtom # atom     cons   # tuple
-               bool   # name     'unit' # name
-               array  # chunk    dictionary # chunk
+               tuple  # record
+               literal# tuple
+               atom   # literal
+               name   # literal
+               nilAtom# atom
+               cons   # tuple
+               bool   # name
+               'unit' # name
+               array  # chunk
+               dictionary # chunk
                bitArray # chunk
-               'class'# chunk    'object'# chunk
-               'lock'   # chunk  port   # chunk
+               'class'# chunk
+               'object'# chunk
+               'lock' # chunk
+               port   # chunk
+               promise   # chunk
                'procedure/0' # value
-               'procedure/1'   # value
-               'procedure/2'  # value
+               'procedure/1' # value
+               'procedure/2' # value
                'procedure/3' # value
                'procedure/4' # value
                'procedure/5' # value
                'procedure/6' # value
-               'procedure/>6'   # value
-               pair # tuple
+               'procedure/>6'# value
+               pair   # tuple
               ]
 
               [def(feature           [int literal])
@@ -313,7 +325,8 @@ in
         space:    {OzTypes.new space nil}
         'thread': {OzTypes.new 'thread' nil}
         foreignPointer: {OzTypes.new foreignPointer nil}
-        fset:     {OzTypes.new fset nil})
+        fset:     {OzTypes.new fset nil}
+        promise:  {OzTypes.new promise nil})
 
    % consistency check
    % all type constants should be set constants
@@ -392,17 +405,21 @@ in
             then TypeConstants.'lock'
             elsecase {IsPort V}
             then TypeConstants.port
+            elsecase {Promise.is V}
+            then TypeConstants.promise
             elsecase {BitArray.is V}
             then TypeConstants.bitArray
             else {OzTypes.new chunk [array dictionary 'class'
-                                     'object' 'lock' port bitArray]}
+                                     'object' 'lock' port
+                                     bitArray promise]}
             end
          elsecase {IsSpace V}
          then TypeConstants.space
          elsecase {IsThread V}
          then TypeConstants.'thread'
-         else {OzTypes.new value[int float record procedure
-                                 cell chunk space 'thread']}
+%        else {OzTypes.new value [int float record procedure
+%                                 cell chunk space 'thread']}
+         else {OzTypes.new value [number record procedure chunk]}
          end
       elsecase
          {IsKinded V}

@@ -276,6 +276,7 @@ local
         port:              IsPort
         space:             IsSpace
         'thread':          IsThread
+        promise:           Promise.is
         foreignPointer:    Foreign.pointer.is
         fset:              fun {$ X}
                               {FS.value.is X} orelse {FS.var.is X}
@@ -2691,14 +2692,10 @@ local
             end
 
          elsecase
-            {Not {DetTypeTests.bool @arbiter}}
+            {TryUnifyTypes
+             {OzTypes.new bool nil}
+             {@arbiter getType($)}}
          then
-            {Ctrl.rep
-             error(coord: @coord
-                   kind:  SATypeError
-                   msg:   'Non-boolean arbiter in boolean case statement')}
-
-         else
             T N in
             {Ctrl getTopNeeded(T N)}
             {Ctrl notTopNotNeeded}
@@ -2712,6 +2709,18 @@ local
                                 self.expansionOccs.'`false`')}
 
             {Ctrl setTopNeeded(T N)}
+         else
+            PN  = {@arbiter getPrintName($)}
+            Val = {GetPrintData @arbiter}
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   msg:   'Non-boolean arbiter in boolean case statement'
+                   kind:  SATypeError
+                   items: hint(l:'Value' m:oz(Val))
+                          | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
+                          | case {IsFree Val} then nil
+                            else [hint(l:'Name' m:pn(PN))] end)}
          end
       end
       meth applyEnvSubst(Ctrl)
@@ -2745,25 +2754,7 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-
-         case
-            {TryUnifyTypes
-             {OzTypes.new bool nil}
-             {Arbiter getType($)}}
-         then
-            {Arbiter unifyVal(Ctrl Val)}
-         else
-            PN  = {Arbiter getPrintName($)}
-            Val = {GetPrintData Arbiter}
-         in
-            {Ctrl.rep
-             error(coord: {@statements.1 getCoord($)}
-                   msg:   'Non-boolean arbiter in boolean case statement'
-                   kind:  SATypeError
-                   items: [hint(l:'Name' m:pn(PN))
-                           hint(l:'Value' m:oz(Val))])}
-         end
-
+         {Arbiter unifyVal(Ctrl Val)}
          SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
 
@@ -3406,7 +3397,7 @@ local
                   {Ctrl.rep
                    error(coord: @coord
                          kind:  SATypeError
-                         msg:   'illegal optional feature in method definition'
+                         msg:   'illegal feature in method definition'
                          items: [hint(l:'Message label' m:oz({GetPrintData L}))
                                  hint(l:'Illegal feature' m:oz(IllOpt))])}
                end

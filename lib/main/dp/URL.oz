@@ -605,7 +605,8 @@ define
       fun {Encode S}
          case S of nil then nil
          [] H|T then
-            if {CharIsAlNum H} orelse
+            %% check that it is an `ascii' alphanum
+            if H<128 andthen {CharIsAlNum H} orelse
                H==&; orelse
                H==&- orelse
                H==&_ orelse

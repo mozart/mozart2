@@ -206,11 +206,11 @@ in
                case {IsFdVar TermIn} then
                   %%
                   TermOut =
-                  {String.toAtom {System.valueToVirtualString TermIn 1 1}}
+                  {VirtualString.toAtom {Value.toVirtualString TermIn 1 1}}
                elsecase {IsFSetVar TermIn} then
                   %%
                   TermOut =
-                  {String.toAtom {System.valueToVirtualString TermIn 1 1}}
+                  {VirtualString.toAtom {Value.toVirtualString TermIn 1 1}}
                elsecase {IsCtVar TermIn} then
                   %%
                   TermOut = {AtomConcatAll

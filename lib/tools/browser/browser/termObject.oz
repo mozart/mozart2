@@ -116,7 +116,7 @@ in
    %%  (to be found among "retired modern browsers" ;-));
    %%
    fun {GenAtomPrintName Atom}
-      {System.valueToVirtualString Atom 1 1}
+      {Value.toVirtualString Atom 1 1}
    end
 
    %%

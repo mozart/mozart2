@@ -664,7 +664,7 @@ class FBrowserClass
 
              else
                 {BrowserError 'Unknown "special" option: ' #
-                 {String.toAtom {System.valueToVirtualString F 0 0}}}
+                 {String.toAtom {Value.toVirtualString F 0 0}}}
              end
           end}
 
@@ -689,7 +689,7 @@ class FBrowserClass
                 end
 
              else {BrowserError 'Unknown "buffer" option: ' #
-                   {String.toAtom {System.valueToVirtualString F 0 0}}}
+                   {String.toAtom {Value.toVirtualString F 0 0}}}
              end
           end}
 
@@ -760,7 +760,7 @@ class FBrowserClass
                 end
 
              else {BrowserError 'Unknown "representation" option: ' #
-                   {String.toAtom {System.valueToVirtualString F 0 0}}}
+                   {String.toAtom {Value.toVirtualString F 0 0}}}
              end
           end}
 
@@ -784,7 +784,7 @@ class FBrowserClass
                 {self SetWInc(M.F)}
 
              else {BrowserError 'Unknown "display parameters" option: ' #
-                   {String.toAtom {System.valueToVirtualString F 0 0}}}
+                   {String.toAtom {Value.toVirtualString F 0 0}}}
              end
           end}
 
@@ -854,12 +854,12 @@ class FBrowserClass
                 end
 
              else {BrowserError 'Unknown "layout" option: ' #
-                   {String.toAtom {System.valueToVirtualString F 0 0}}}
+                   {String.toAtom {Value.toVirtualString F 0 0}}}
              end
           end}
 
       else {BrowserError 'Unknown option group: ' #
-            {String.toAtom {System.valueToVirtualString M.1 0 0}}}
+            {String.toAtom {Value.toVirtualString M.1 0 0}}}
       end
 
       %%

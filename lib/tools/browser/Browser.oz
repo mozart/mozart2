@@ -62,7 +62,6 @@ import
    Search(one)
 
    System(show
-          valueToVirtualString
           printName
           eq
           onToplevel)

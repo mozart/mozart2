@@ -31,9 +31,7 @@ fun
        = IMPORT.'SP'
    \insert WP/Tk
    Tk      = {NewTk Open}
-
    \insert WP/TkOptions
-
    \insert WP/TkTools
    TkTools = {NewTkTools Tk}
 in

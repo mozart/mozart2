@@ -54,11 +54,15 @@ FCORE = \
 
 CORE = $(FCORE:%=./core/%.ozf)
 
-DIRS = core space fd fs scheduling
+DP1= \
+        mini
+DP = $(DP1:%=./dp/%.ozf)
+
+DIRS = core space fd fs scheduling dp
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF)
+        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP)
 
 
 ####################################################

@@ -25,7 +25,7 @@ $class =
     (
      { name  => 'GtkWindow',
 
-       super => 'GtkWidget',
+       super => 'GtkBin',
 
        args  => { 'type'                           => 'GtkWindowType',
                   'title'                          => 'gchar*',

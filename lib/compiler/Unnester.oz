@@ -1884,7 +1884,7 @@ in
             {Append Directives [fLocal(P1 P2 C)]}
          elseof [FE] then
             {Append Directives NewQueries}
-         elseof nil then
+         [] nil then
             Directives
          else
             {Reporter error(kind: ExpansionError

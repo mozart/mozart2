@@ -311,7 +311,7 @@ local
       meth Feed(ParseOz Data Return)
          ExecutingThread <- {Thread.this}
          {@reporter clearErrors()}
-         try Queries0 Directives Queries1 Queries in
+         try Queries0 Queries in
             {@reporter logPhase('parsing ...')}
             Queries0 = {ParseOz Data @reporter
                         CompilerStateClass, getSwitch(showinsert $)
@@ -321,12 +321,10 @@ local
                raise rejected end
             else skip
             end
-            {GetDirectives Queries0 ?Directives ?Queries1}
-            CompilerEngine, FeedSub(Directives return)
             Queries = case CompilerStateClass, getSwitch(ozma $) then
-                         {JoinQueries Queries1 @reporter}
+                         {JoinQueries Queries0 @reporter}
                       elsecase CompilerStateClass, getSwitch(expression $) then
-                         case Queries1 of nil then Queries1
+                         case Queries0 of nil then Queries0
                          else V in
                             V = {New Core.variable
                                  init('`result`' putEnv unit)}
@@ -335,10 +333,10 @@ local
                             else
                                CompilerStateClass, enter(V _ false)
                             end
-                            {MakeExpressionQuery Queries1}
+                            {MakeExpressionQuery Queries0}
                          end
                       else
-                         Queries1
+                         Queries0
                       end
             CompilerEngine, FeedSub(Queries Return)
          finally
@@ -747,8 +745,11 @@ in
             [] getDefines(?Xs) then skip
             [] getSwitch(SwitchName ?B) then skip
             [] setSwitch(SwitchName B) then skip
-            [] pushSwitches() then skip
-            [] popSwitches() then skip
+%--** the old compiler cannot compile this correctly?!
+%--**       [] pushSwitches() then skip
+%--**       [] popSwitches() then skip
+            [] pushSwitches then skip
+            [] popSwitches then skip
             [] getMaxNumberOfErrors(?N) then skip
             [] setMaxNumberOfErrors(N) then skip
             [] addToEnv(PrintName Value) then skip

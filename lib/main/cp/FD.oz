@@ -28,8 +28,7 @@
 functor
 
 require
-   CpSupport(vectorToList:   VectorToList
-             vectorToType:   VectorToType
+   CpSupport(vectorToType:   VectorToType
              vectorToTuple:  VectorToTuple
              vectorMap:      VectorMap
 
@@ -420,98 +419,120 @@ define
          end
       end
 
-      local
-         %% Optimized and generic
-         SelVal = map(min:      FdReflect.min
-                      max:      FdReflect.max
-                      mid:      FdReflect.mid
-                      splitMin: fun {$ V}
-                                   0#{FdReflect.mid V}
-                                end
-                      splitMax: fun {$ V}
-                                   {FdReflect.mid V}+1#FdSup
-                                end)
+      %% Optimized and generic
+      SelVal = map(min:      FdReflect.min
+                   max:      FdReflect.max
+                   mid:      FdReflect.mid
+                   splitMin: fun {$ V}
+                                0#{FdReflect.mid V}
+                             end
+                   splitMax: fun {$ V}
+                                {FdReflect.mid V}+1#FdSup
+                             end)
 
-         %% Generic only
-         GenSelVar = map(naive:   fun {$ _ _}
-                                     false
-                                  end
-                         size:    fun {$ X Y}
-                                     {FdReflect.size X}<{FdReflect.size Y}
-                                  end
-                         width:   fun {$ X Y}
-                                     {FdReflect.width X}<{FdReflect.width Y}
-                                  end
-                         nbSusps: fun {$ X Y}
-                                     L1={FdReflect.nbSusps X}
-                                     L2={FdReflect.nbSusps Y}
-                                  in
-                                     L1>L2 orelse
-                                     (L1==L2 andthen
-                                      {FdReflect.size X}<{FdReflect.size Y})
-                                  end
-                         min:     fun {$ X Y}
-                                     {FdReflect.min X}<{FdReflect.min Y}
-                                  end
-                         max:     fun {$ X Y}
-                                     {FdReflect.max X}>{FdReflect.max Y}
-                                  end)
+      %% Generic only
+      GenSelVar = map(naive:   fun {$ _ _}
+                                  false
+                               end
+                      size:    fun {$ X Y}
+                                  {FdReflect.size X}<{FdReflect.size Y}
+                               end
+                      width:   fun {$ X Y}
+                                  {FdReflect.width X}<{FdReflect.width Y}
+                               end
+                      nbSusps: fun {$ X Y}
+                                  L1={FdReflect.nbSusps X}
+                                  L2={FdReflect.nbSusps Y}
+                               in
+                                  L1>L2 orelse
+                                  (L1==L2 andthen
+                                   {FdReflect.size X}<{FdReflect.size Y})
+                               end
+                      min:     fun {$ X Y}
+                                  {FdReflect.min X}<{FdReflect.min Y}
+                               end
+                      max:     fun {$ X Y}
+                                  {FdReflect.max X}>{FdReflect.max Y}
+                               end)
 
-         GenSelFil = map(undet:  fun {$ X}
-                                    {FdReflect.size X} > 1
-                                 end)
+      GenSelFil = map(undet:  fun {$ X}
+                                 {FdReflect.size X} > 1
+                              end)
 
-         GenSelPro = map(noProc: proc {$}
-                                    skip
-                                 end)
+      GenSelPro = map(noProc: proc {$}
+                                 skip
+                              end)
 
-         GenSelSel = map(id:     fun {$ X}
-                                    X
-                                 end)
+      GenSelSel = map(id:     fun {$ X}
+                                 X
+                              end)
 
-         fun {MapSelect Map AOP}
-            if {IsAtom AOP} then Map.AOP else AOP end
-         end
+      fun {MapSelect Map AOP}
+         if {IsAtom AOP} then Map.AOP else AOP end
+      end
 
+      fun {PreProcessSpec Spec}
+         FullSpec = {Adjoin
+                     generic(order:     size
+                             filter:    undet
+                             select:    id
+                             value:     min
+                             procedure: noProc)
+                     case Spec
+                     of naive then generic(order:naive)
+                     [] ff    then generic
+                     [] split then generic(value:splitMin)
+                     else Spec
+                     end}
+         IsOpt =    case FullSpec
+                    of generic(select:id filter:undet procedure:noProc
+                               order:OrdSpec value:ValSpec) then
+                       {IsAtom OrdSpec} andthen {IsAtom ValSpec}
+                    else false
+                    end
       in
-
-         fun {PreProcessSpec Spec}
-            FullSpec = {Adjoin
-                        generic(order:     size
-                                filter:    undet
-                                select:    id
-                                value:     min
-                                procedure: noProc)
-                        case Spec
-                        of naive then generic(order:naive)
-                        [] ff    then generic
-                        [] split then generic(value:splitMin)
-                        else Spec
-                        end}
-            IsOpt =    case FullSpec
-                       of generic(select:id filter:undet procedure:noProc
-                                  order:OrdSpec value:ValSpec) then
-                          {IsAtom OrdSpec} andthen {IsAtom ValSpec}
-                       else false
-                       end
-         in
-            if IsOpt then
-               opt(order: FullSpec.order
-                   value: FullSpec.value)
-            else
-               gen(order:     {MapSelect GenSelVar FullSpec.order}
-                   value:     {MapSelect SelVal FullSpec.value}
-                   select:    {MapSelect GenSelSel FullSpec.select}
-                   filter:    {MapSelect GenSelFil FullSpec.filter}
-                   procedure: {MapSelect GenSelPro FullSpec.procedure})
-            end
+         if IsOpt then
+            opt(order: FullSpec.order
+                value: FullSpec.value)
+         else
+            gen(order:     {MapSelect GenSelVar FullSpec.order}
+                value:     {MapSelect SelVal FullSpec.value}
+                select:    {MapSelect GenSelSel FullSpec.select}
+                filter:    {MapSelect GenSelFil FullSpec.filter}
+                procedure: {MapSelect GenSelPro FullSpec.procedure})
          end
       end
 
-      fun {Choose Xs Y Order}
-         case Xs of nil then Y
-         [] X|Xr then {Choose Xr if {Order X Y} then X else Y end Order}
-         end
+      fun {Choose V Order Filter}
+         FAll=if {VectorToType V}==list then List.forAll else Record.forAll end
+         NewOrder=fun{$ E1 E2}
+                     if E2==unit then true else {Order E1 E2} end
+                  end
+         Max={NewCell unit}
+      in
+         {FAll V proc {$ E}
+                    if {Filter E} andthen {NewOrder E {Access Max}} then {Assign Max E} end
+                 end}
+         {Access Max}
+      end
+
+      %% Same as Choose,  but returns the filtered list of vars
+      %% as well as the chosen variable.
+      fun {ChooseAndRetFiltVars V Order Filter}
+         FAll=if {VectorToType V}==list then List.forAll else Record.forAll end
+         NewOrder=fun{$ E1 E2}
+                     if E2==unit then true else {Order E1 E2} end
+                  end
+         Max={NewCell unit}
+         Fs={NewCell nil}
+      in
+         {FAll V proc {$ E}
+                    if {Filter E} then Old in
+                       {Exchange Fs Old E|Old}
+                       if {NewOrder E {Access Max}} then {Assign Max E} end
+                    end
+                 end}
+         {Access Max}#{Access Fs}
       end
 
 
@@ -528,8 +549,11 @@ define
                 procedure: Proc) then
             if {Width Vec}>0 then
                proc {Do Xs}
-                  case {Filter Xs Fil} of nil then skip elseof Xs=X|Xr then
-                     V={Select {Choose Xr X Order}}
+                  {Space.waitStable}
+                  E#Fs={ChooseAndRetFiltVars Vec Order Fil}
+               in
+                  if E\=unit then
+                     V={Select E}
                      D={SelVal V}
                   in
                      {Proc}
@@ -537,12 +561,11 @@ define
                      choice {FdInt D        V}
                      []     {FdInt compl(D) V}
                      end
-                     {Space.waitStable}
-                     {Do Xs}
+                     {Do Fs}
                   end
                end
             in
-               {Do {VectorToList Vec}}
+               {Do Vec}
             end
          end
       end
@@ -551,21 +574,17 @@ define
          {Space.waitStable}
          try
             case {PreProcessSpec RawSpec}
-            of opt(value:SelVal order:SelVar) then
-               V={SelVar {MakeDistrTuple Vec}}
-               D={SelVal V}
+            of opt(value:Value order:Order) then
+               V={Choose Vec GenSelVar.Order GenSelFil.undet}
+               if V==unit then raise ~1 end else D={SelVal.Value V} end
             [] gen(value:     SelVal
                    order:     Order
                    select:    Select
                    filter:    Fil
-                   procedure: _)
-            then
-               case {Filter {VectorToList Vec} Fil} of nil then
-                  raise ~1 end
-               [] X|Xr then
-                  V={Select {Choose Xr X Order}}
-                  D={SelVal V}
-               end
+                   procedure: _) then
+               E={Choose Vec Order Fil} in
+               if E==unit then raise ~1 end else V={Select E}end
+               D={SelVal V}
             end
          catch ~1 then
             {Exception.raiseError

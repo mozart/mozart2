@@ -16,17 +16,26 @@
 
 local FindChar1 in
    %%
-   AtomConcat = Atom.concat
+   fun {AtomConcat A1 A2}
+      {String.toAtom {Append {String.toAtom A1} {String.toAtom A2}}}
+   end
+
    VSLength = VirtualString.length
 
    %%  only for reflect.oz!!!
-   fun{AtomConcatAll L}
-      case L
-      of H|R then {AtomConcat {AtomConcatAll H}{AtomConcatAll R}}
-      [] nil then ''
-      else L
+   local
+      fun {All As}
+         case As of nil then nil
+         [] A|Ar then {Append {All A} {All Ar}}
+         else {Atom.toString As}
+         end
+      end
+   in
+      fun {AtomConcatAll As}
+         case {IsAtom As} then As else {String.toAtom {All As}} end
       end
    end
+
 
    %% 'S' is a string;
    %% 'C' is an ascii-code;

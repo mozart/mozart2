@@ -331,10 +331,7 @@ in
       end
 
       fun {Spaces N}
-         case {Property.get 'internal.debug'}
-         then [& ]
-         else {Repeat N & }
-         end
+         {Repeat N & }
       end
 
       proc {Lines Out Xs}

@@ -12,6 +12,16 @@ FDLOCAL = \
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 
+# Tests for finite domains
+FSLOCAL = \
+        crew \
+        hamming \
+        steiner \
+        knapsack \
+        misc
+
+FSOZC = $(FSLOCAL:%=./fs/%.ozc)
+
 # Tests for scheduling
 SCHEDLOCAL = \
         abz6
@@ -29,7 +39,7 @@ OTHEROZC = $(OTHER:%=./%.ozc)
 
 # All tests
 COMPONENTS = \
-        $(MODULES) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(OTHEROZC)
+        $(MODULES) $(SPACEOZC) $(FDOZC) $(FSOZC) $(SCHEDOZC) $(OTHEROZC)
 
 
 ####################################################

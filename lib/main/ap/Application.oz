@@ -260,12 +260,21 @@ prepare
                         end
                      else Occ0
                      end
-               X = if {HasFeature OneSpec default} then
-                      x(occ: Occ
-                        default: OneSpec.default)
+               X = if {HasFeature OneSpec validate} then
+                      if {HasFeature OneSpec default} then
+                         x(occ      : Occ
+                           validate : OneSpec.validate
+                           default  : OneSpec.default)
+                      else
+                         x(occ      : Occ
+                           validate : OneSpec.validate)
+                      end
+                   elseif {HasFeature OneSpec default} then
+                      x(occ         : Occ
+                        default     : OneSpec.default)
                    else
-                      x(occ: Occ
-                        required: {Not {CondSelect OneSpec optional true}})
+                      x(occ         : Occ
+                        required    : {Not {CondSelect OneSpec optional true}})
                    end
                {Label OneSpec}#X|{GetOptRecSpecSub Spec I + 1}
             end
@@ -571,7 +580,30 @@ prepare
         end}}
       {Record.forAllInd OptRecSpec
        proc {$ LongOpt X}
-          if {Dictionary.member Dict LongOpt} then skip
+          if {HasFeature X validate} then
+             case {Validate X.validate Dict}
+             of true then
+                if {Dictionary.member Dict LongOpt} then skip
+                elseif {HasFeature X default} then
+                   {Dictionary.put Dict LongOpt X.default}
+                else {Exception.raiseError
+                      ap(usage 'option `'#LongOpt
+                         #'\' required in this context')}
+                end
+             elseof false then
+                if {Dictionary.member Dict LongOpt} then
+                   {Exception.raiseError
+                    ap(usage 'option `'#LongOpt
+                       #'\' illegal in this context')}
+                end
+             elseof optional then
+                if {HasFeature X default} andthen
+                   {Not {Dictionary.member Dict LongOpt}}
+                then
+                   {Dictionary.put Dict LongOpt X.default}
+                end
+             end
+          elseif {Dictionary.member Dict LongOpt} then skip
           elseif {HasFeature X default} then
              {Dictionary.put Dict LongOpt X.default}
           elseif X.required then
@@ -580,6 +612,50 @@ prepare
           end
        end}
       {Dictionary.toRecord optRec Dict}
+   end
+
+   %%
+   %% E ::= true | false | optional | alt(A1 ... An)
+   %% A ::= when(C E)
+   %% C ::= true | false
+   %%     | conj(C1 ... Cn)
+   %%     | disj(C1 ... Cn)
+   %%     | nega(C)
+   %%     | <option name>
+   %%
+
+   fun {Validate E Dict}
+      try {ValidateExpr E Dict} optional
+      catch return(E) then E end
+   end
+
+   proc {ValidateExpr E Dict}
+      case E
+      of     true     then raise return(true)     end
+      elseof false    then raise return(false)    end
+      elseof optional then raise return(optional) end
+      elsecase {Label E} of alt then
+         {Record.forAll E
+          proc {$ Alt}
+             case Alt of when(C E) then
+                if {ValidateCond C Dict} then
+                   {ValidateExpr E Dict}
+                end
+             end
+          end}
+         raise return(optional) end
+      end
+   end
+
+   fun {ValidateCond C Dict}
+      case C of true then true
+      elseof false then false
+      elseif {IsAtom C} then {Dictionary.member Dict C}
+      elsecase C of nega(C) then {Not {ValidateCond C Dict}}
+      elsecase {Label C}
+      of     conj then {Record.all  C fun {$ C} {ValidateCond C Dict} end}
+      elseof disj then {Record.some C fun {$ C} {ValidateCond C Dict} end}
+      end
    end
 
 define

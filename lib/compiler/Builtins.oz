@@ -24,30 +24,29 @@
 
 %%
 %% This defines a function `GetBuiltinInfo' that returns information
-%% about the builtin with a given name A.  This information is either:
-%%
-%%    noInformation
-%%       if A does not denote a known builtin.
+%% about the builtin with a given name A.  Raises an exception if no
+%% builtin with A is known, else returns a record as follows:
 %%
 %%    builtin(types: [...] det: [...] imods: [bool] ...)
-%%       if A denotes a known builtin with argument types and determinancy
-%%       as given.  The following features may or may not be contained in
-%%       the record, as appropriate:
 %%
-%%          imods: [bool]
-%%             for each input argument for which this list has a `true',
-%%             no assumptions may be made about the contents of the
-%%             corresponding register after the builtin application.
-%%          test: B
-%%             if this feature is present and B is true, then this
-%%             builtin may be used as argument to the testBI instruction.
-%%          negated: A
-%%             if this feature is present then A is the name of a builtin
-%%             that returns the negated result from this builtin.
-%%          doesNotReturn: B
-%%             if this feature is present and B is true, then the
-%%             instructions following the call to A are never executed
-%%             unless branched to from elsewhere.
+%% meaning: A denotes a known builtin with argument types and determinancy
+%% as given.  The following features may or may not be contained in the
+%% record, as appropriate:
+%%
+%%    imods: [bool]
+%%       for each input argument for which this list has a `true',
+%%       no assumptions may be made about the contents of the
+%%       corresponding register after the builtin application.
+%%    test: B
+%%       if this feature is present and B is true, then this
+%%       builtin may be used as argument to the testBI instruction.
+%%    negated: A
+%%       if this feature is present then A is the name of a builtin
+%%       that returns the negated result from this builtin.
+%%    doesNotReturn: B
+%%       if this feature is present and B is true, then the
+%%       instructions following the call to A are never executed
+%%       unless branched to from elsewhere.
 %%
 
 functor
@@ -111,6 +110,10 @@ prepare
     end}
 
    fun {GetBuiltinInfo Name}
-      {CondSelect BuiltinTable Name noInformation}
+      try
+         BuiltinTable.Name
+      catch _ then
+         {Exception.raiseError compiler(internal unknownBuiltin Name)} unit
+      end
    end
 end

@@ -111,7 +111,7 @@ local
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
    '--execheader=STR              Use header STR for executables (default:\n'#
    '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
-   '-z N, --compress=N            Use compression level N for pickles.\n' #
+   '-z N, --compress=N            Use compression level N for pickles.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
    '-l FNCS, --environment=FNCS   Make functors FNCS (a comma-separated\n'#
@@ -264,9 +264,6 @@ in
                    {BatchCompiler enqueue(feedFile(X return))}
                    {BatchCompiler enqueue(popSwitches())}
                    {Wait {BatchCompiler enqueue(ping($))}}
-                   if {UI isActive($)} then
-                      {System.printError {UI getVS($)}}
-                   end
                    if {UI hasErrors($)} then
                       raise error end
                    end
@@ -363,9 +360,6 @@ in
                  enqueue(feedFile(Arg return(result: ?R)))}
                 {BatchCompiler enqueue(popSwitches())}
                 {Wait {BatchCompiler enqueue(ping($))}}
-                if {UI isActive($)} then
-                   {System.printError {UI getVS($)}}
-                end
                 if {UI hasErrors($)} then
                    raise error end
                 end

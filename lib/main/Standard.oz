@@ -111,8 +111,6 @@ export
    '`^`':                `^`
    '`tellRecordSize`':   `tellRecordSize`
    '`aritySublist`':     `aritySublist`
-   %% Chunk
-   '`NewChunk`':         `NewChunk`
    %% Object
    '`ooFreeFlag`':       `ooFreeFlag`
    '`ooDefaultVar`':     `ooDefaultVar`
@@ -319,6 +317,7 @@ export
    'Promise':            Promise
    %% Functor
    'Functor':            Functor
+   '`NewFunctor`':       `NewFunctor`
    %% BitArray
    'BitArray':           BitArray
 

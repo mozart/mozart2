@@ -108,6 +108,7 @@ define
       end
       {TestMisc.gcAll Managers}
       {TestMisc.listApply Managers close}
+%      {Show done}
    end
 
    proc {StartRemSite Manager InS OutP}
@@ -131,7 +132,7 @@ define
                                thread {Start InS OutP} end
                                %% kost@ : keep that idiot doing also GC;
                                thread P in
-                                  proc {P} {System.gcDo} {Delay 1} {P} end
+                                  proc {P} {System.gcDo} {Delay 500} {P} end
                                   {P}
                                end
                             end)}

@@ -27,6 +27,7 @@
 %%
 
 Value = value(wait:            Wait
+              waitQuiet:       Boot_Value.'waitQuiet'
               waitOr:          WaitOr
 
               '=<':            Boot_Value.'=<'
@@ -52,6 +53,7 @@ Value = value(wait:            Wait
 
               '!!':            Boot_Value.'!!'
               byNeed:          ByNeed
+              byNeedDot:       Boot_Value.'byNeedDot'
 
               toVirtualString: Boot_Value.toVirtualString
              )

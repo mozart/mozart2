@@ -181,6 +181,9 @@ in
             {Tk.returnInt winfo(screenwidth Window) RootXSize}
 
             %%
+            {Wait RootYSize}
+            {Wait RootXSize}
+            %%
             {Tk.batch
              [wm(maxsize Window (RootXSize) (RootYSize))
               %% wm(title Window ITitle)
@@ -284,9 +287,8 @@ in
                                                highlightthickness: 0)}
 
             %%  ... just ignore the result;
-            {Tk.returnInt
-             catch(q(BrowseWidget conf(cursor: ICursorName)))
-             _}
+            {Wait {Tk.returnInt
+                   catch(q(BrowseWidget conf(cursor: ICursorName)))}}
 
             %% Select the font from ITWFont?, and store it;
             %%
@@ -612,6 +614,9 @@ in
       %%
       meth tryFont(Font ?R)
          R = {Tk.returnInt catch(q(@TestTW conf(font: Font)))} == 0
+
+         %%
+         <<UrObject nil>>
       end
 
       %%
@@ -627,6 +632,7 @@ in
 
             %%
             {Wait XRes}
+            {Wait YRes}
 
             %%
             <<UrObject nil>>
@@ -670,7 +676,7 @@ in
 
             %%
             {Tk.return winfo(width self.browseWidget) TWWidthS}
-            TWWidth = {String.toInt TWWidthS}
+            TWWidth = {String.toInt TWWidthS}   % implicit sync;
 
             %%
             case Font.xRes == 0 then
@@ -715,7 +721,7 @@ in
                {Tk.return winfo(exists self.browseWidget) Sync}
 
                %%
-               {Wait {String.toAtom Sync}}
+               {Wait {String.is Sync}}
 
                %%
                <<UrObject nil>>
@@ -945,6 +951,11 @@ in
             local XSizeS YSizeS XSize YSize in
                {Tk.return winfo(height self.window) YSizeS}
                {Tk.return winfo(width self.window) XSizeS}
+
+               %%
+               {Wait {String.is YSizeS}}
+               {Wait {String.is XSizeS}}
+               %%
                {Tk.send wm(minsize self.window XMinSize YMinSize)}
 
                %%
@@ -1150,10 +1161,10 @@ in
             L = {Tk.return o(self.browseWidget index p(Tag first))}
 
             %%
-            <<UrObject nil>>
+            Col = {String.toInt {Tail L {FindChar L CharDot}+1}}
 
             %%
-            Col = {String.toInt {Tail L {FindChar L CharDot}+1}}
+            <<UrObject nil>>
          end
       end
 
@@ -1318,6 +1329,9 @@ in
 
             %%
             Tags = {GetStrs RS CharSpace nil}
+
+            %%
+            <<UrObject nil>>
          end
       end
 
@@ -1329,6 +1343,9 @@ in
 
             %%
             Tags = {GetStrs RS CharSpace nil}
+
+            %%
+            <<UrObject nil>>
          end
       end
 
@@ -2057,21 +2074,15 @@ in
             case LeaderWindow == InitValue then
                {Tk.batch [update wm(deiconify @window)]}
             else
-               MyScreen = {VirtualString.toString
-                           {Tk.return
-                            winfo(screen @window)}}
-               LWScreen = {VirtualString.toString
-                           {Tk.return
-                            winfo(screen LeaderWindow)}}
+               MyScreen = {Tk.return winfo(screen @window)}
+               LWScreen = {Tk.return winfo(screen LeaderWindow)}
 
                %%
                case {DiffStrs MyScreen LWScreen} then
                   {Tk.batch [update wm(deiconify @window)]}
                else
                   %%  the same screen;
-                  RealLWindow = {VirtualString.toString
-                                 {Tk.return
-                                  winfo(toplevel LeaderWindow)}}
+                  RealLWindow = {Tk.return winfo(toplevel LeaderWindow)}
 
                   %%
                   case {All RealLWindow IsValue} then

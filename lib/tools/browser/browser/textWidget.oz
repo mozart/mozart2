@@ -2900,7 +2900,7 @@ in
             else
                %%
                PrfxSize =
-               {VSLength <<genLitPrintName(@recFeatures.PNum $)>>} +
+               {VSLength <<genFeatPrintName(@recFeatures.PNum $)>>} +
                DDSpace
                %% <<getFeatDelSize($)>>
                %% ': ' is of size DDSpace
@@ -3161,7 +3161,7 @@ in
                   FName
                in
                   FName =
-                  <<genLitPrintName(@recFeatures.PNum $)>>
+                  <<genFeatPrintName(@recFeatures.PNum $)>>
 
                   %%
                   case {VirtualString.is FName} then
@@ -3201,7 +3201,7 @@ in
 
                   %%
                   FName =
-                  <<genLitPrintName(@recFeatures.PNum $)>>
+                  <<genFeatPrintName(@recFeatures.PNum $)>>
 
                   %%
                   case {VirtualString.is FName} then
@@ -3285,7 +3285,7 @@ in
                      %%  Note that 'size' is already in there;
                      %%
                      %%  Insert the prefix (feature name);
-                     FName = <<genLitPrintName(@recFeatures.N $)>>
+                     FName = <<genFeatPrintName(@recFeatures.N $)>>
 
                      %%
                      case {VirtualString.is FName} then
@@ -3325,7 +3325,7 @@ in
                end
 
                %%  Insert the prefix (feature name);
-               FName = <<genLitPrintName(@recFeatures.N $)>>
+               FName = <<genFeatPrintName(@recFeatures.N $)>>
                PrfxSize = {VSLength FName} + DDSpace
 
                %%

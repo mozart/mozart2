@@ -1241,8 +1241,9 @@ in
 
                   %%
                   case <<isProperOFS($)>> then
-                     {BrowserError
-                      ['ORecordGenericTermObject::extend: error #3!']}
+                     %%
+                     %%  nothing has changed in fact;
+                     true
                   else
                      case @width > 0 then
                         <<removeDots>>

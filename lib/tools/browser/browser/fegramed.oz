@@ -403,7 +403,7 @@ class FE_GenericRecord from FE_Generic
    meth fE_getSubRecords(Objs FeatureTuple ?X)
       X = {List.foldLInd Objs
            fun{$ I X Y}
-              ' ( ' # {self fE_getName({self genLitPrintName(FeatureTuple.I $)} $)} # ' ' # {Y fE_Term($)} #' ) '# X
+              ' ( ' # {self fE_getName({self genFeatPrintName(FeatureTuple.I $)} $)} # ' ' # {Y fE_Term($)} #' ) '# X
            end   ''   $  }
    end
 

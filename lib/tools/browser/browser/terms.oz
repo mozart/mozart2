@@ -904,6 +904,15 @@ in
       end
 
       %%
+      %%
+      meth genFeatPrintName(FN ?PName)
+         PName = case {IsAtom FN} then {GenAtomPrintName FN}
+                 elsecase {IsName FN} then {GenNamePrintName FN self.store}
+                 else FN
+                 end
+      end
+
+      %%
       %%  default 'areCommas' - there are no commas;
       meth areCommas(?AreCommas)
          AreCommas = False
@@ -1946,7 +1955,7 @@ in
 
                   %%
                   %%  it has got a record probably...
-                  {self initTypeWatching}
+                  {self extend}
                [] Cancel = True then true
                end
             end

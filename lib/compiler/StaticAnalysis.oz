@@ -305,7 +305,7 @@ prepare
          of nil then true
          elseof I|Sr then
             if {IsDet I} then
-               {IsChar I} andthen {IsStringNow Sr}
+               {IsChar I} andthen I>0 andthen {IsStringNow Sr}
             else unit end
          else false end
       else unit end

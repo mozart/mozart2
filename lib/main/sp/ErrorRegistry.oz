@@ -857,7 +857,7 @@ in
          T = 'Error: distributed programming'
       in
          case E
-         of dp(generic Id Msg Hints) then
+         of dp(generic _ Msg Hints) then
             {Error.format
              Msg
              unit

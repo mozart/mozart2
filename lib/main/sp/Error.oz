@@ -316,7 +316,7 @@ in
              case X
              of hint(l:L) then
                 {VSL {AlmostVSToVS L}} # X
-             [] hint(l:L m:M) then
+             [] hint(l:L m:_) then
                 {VSL {AlmostVSToVS L}} # X
              else
                 0 # X

@@ -381,8 +381,7 @@ in
                    File = {New Open.file init(name: stdout flags: [write])}
                    VS = (OFN#':'#
                          case {UI getInsertedFiles($)} of Ns=_|_ then
-                            {FoldL {UI getInsertedFiles($)}
-                             fun {$ In X} In#' \\\n\t'#X end ""}
+                            {FoldL Ns fun {$ In X} In#' \\\n\t'#X end ""}
                          [] nil then ""
                          end#'\n')
                    {File write(vs: VS)}

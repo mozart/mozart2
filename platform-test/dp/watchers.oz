@@ -166,13 +166,20 @@ define
                                           end
                                       c}
                               var:_
-                              ctrl:_) % Try to bind this to detect perm
+                              ctrl:{NewPort _}) % Try to send on this to
+                                                % detect perm
                       end $)}.my = E
       {S ping}
    end
 
-   proc{MakePerm E}
-      try E.ctrl=unit catch _ then skip end
+   proc{WaitPerm P}
+      try
+         {Send P hi}
+         {Delay 10}
+         {WaitPerm P}
+      catch system(dp(conditions:[permFail] ...) ...) then
+         skip
+      end
    end
 
    fun {GetLiveTest Try Entity}
@@ -181,10 +188,9 @@ define
          {StartServer S Deads}
          {WatchWat Deads Ans}
          {S close}
-         {MakePerm Deads}
-         {Delay 1000}
+         {WaitPerm Deads.ctrl}
          {Try Deads.Entity}
-         {Delay 1000}
+         {Delay 1000} % Context switch to allow watchers to execute
          {CheckWat Ans}
       end
    end
@@ -195,11 +201,10 @@ define
          S Deads Ans in
          {StartServer S Deads}
          {S close}
-         {MakePerm Deads}
+         {WaitPerm Deads.ctrl}
          {WatchWat Deads Ans}
-         {Delay 1000}
          {Try Deads.Entity}
-         {Delay 1000}
+         {Delay 1000} % Context switch
          {CheckWat Ans}
       end
    end
@@ -238,13 +243,11 @@ define
                                  {StartServer S Deads}
                                  {WatchWat Deads Ans}
                                  {S close}
-                                 {MakePerm Deads}
-                                 {Delay 1000}
+                                 {WaitPerm Deads.ctrl}
                                  {TryPort Deads.port}
                                  {TryVar Deads.var}
                                  {TryCell Deads.cell}
                                  {TryLock Deads.lokk}
-                                 {Delay 1000}
                                  {CheckWat Ans}
                               end
                               keys:[fault])
@@ -263,14 +266,13 @@ define
        fault_watcher_dead_all(proc {$}
                                  S Deads Ans in
                                  {StartServer S Deads}
-                                 {S close} {MakePerm Deads}
+                                 {S close} {WaitPerm Deads.ctrl}
                                  {WatchWat Deads Ans}
-                                 {Delay 1000}
                                  {TryPort Deads.port}
                                  {TryVar Deads.var}
                                  {TryCell Deads.cell}
                                  {TryLock Deads.lokk}
-                                 {Delay 1000}
+                                 {Delay 1000} % Context switch
                                  {CheckWat Ans}
                               end
                               keys:[fault])

@@ -7,9 +7,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchAll  = 'SearchAll'}
 
 export
    Return

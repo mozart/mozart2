@@ -6,9 +6,7 @@ import
 
    FS
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchAll  = 'SearchAll'}
 
    System.{Show = show}
 
@@ -161,30 +159,25 @@ body
               end}
 
              {MiscTest 13
-              fun {$} X Y in
+              fun {$} X in
                  X = {FS.var.new [1#5] [1#7]}
-                 Y = {FS.var.new [1#7] [1#7]}
-
                  if {FS.reflect.lowerBound X} = [1#5] then 1 else 0 end
               end}
 
              {MiscTest 14
-              fun {$} X Y in
+              fun {$} X in
                  X = {FS.var.new [1#5] [1#7]}
-                 Y = {FS.var.new [1#7] [1#7]}
                  if {FS.reflect.unknown X} = [6#7] then 1 else 0 end
               end}
 
              {MiscTest 15
-              fun {$} X Y in
-                 X = {FS.var.new [1#5] [1#7]}
+              fun {$} Y in
                  Y = {FS.var.new [1#7] [1#7]}
                  if {FS.reflect.unknown Y} = nil then 1 else 0 end
               end}
 
              {MiscTest 16
-              fun {$} X Y in
-                 X = {FS.var.new [1#5] [1#7]}
+              fun {$} Y in
                  Y = {FS.var.new [1#7] [1#7]}
                  if {FS.reflect.lowerBound Y} = [1#7] then 1 else 0 end
               end}

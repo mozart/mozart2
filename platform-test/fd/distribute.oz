@@ -382,12 +382,7 @@ in
    functor $ prop once
 
    import
-
       FD
-
-      Search.{SearchOne  = 'SearchOne'
-              SearchAll  = 'SearchAll'
-              SearchBest = 'SearchBest'}
 
    export
       Return

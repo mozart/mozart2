@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -35,7 +33,7 @@ body
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % queen with middle-out heuristcs
 
-   GetMin = FD.reflect.min GetMax = FD.reflect.max GetSize=FD.reflect.size
+   GetSize=FD.reflect.size
    GetMid = FD.reflect.mid
 
    fun {SkipDet Xs}

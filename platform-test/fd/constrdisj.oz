@@ -4,10 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'
-           allS}
+   Search.{allS}
 
 export
    Return
@@ -21,9 +18,6 @@ body
       L(equal(T 1) keys: [fd])
    end
 
-
-   CDSU = FD.cd.header
-   CD   = FD.cd.'body'
 
    SRD = 1
    SEA =
@@ -110,9 +104,7 @@ body
                     fun {$} CDProb S
                     in
                        proc {CDProb S}
-                          L
-                          [P1#P2#P3 B1#B2#B3 X#Y
-                           (XP1#YP1)#(XP2#YP2)#(XP3#YP3)] = L
+                          X Y
                        in
                           S = [X Y]
                           S = {FD.dom  0#20}
@@ -136,8 +128,8 @@ body
                    {MiscTest 6
                     fun {$} CDProb S in
                        proc {CDProb S}
-                          L [P1#P2 B1#B2 X#Y#Z
-                             (XP1#YP1#ZP1)#(XP2#YP2#ZP2)]=L in
+                          X Y Z
+                       in
                           S = [X Y Z]
                           S = {FD.dom 0#20}
 
@@ -160,7 +152,9 @@ body
                    %% or Y=1 [] Z=1 end und X=Y X=Z geht zu Y=X=Z=1
                    {MiscTest 7
                     fun {$}
-                       X Y Z Ls [P1#P2 B1#B2 (Y1#Z1)#(Y2#Z2)]=Ls in
+                       X Y Z
+                    in
+
                        condis Y=:1 [] Z=:1 end
 
                        [Y Z X] = {FD.dom  0#FD.sup}

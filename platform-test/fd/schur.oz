@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchAll  = 'SearchAll'}
 
 export
    Return
@@ -19,7 +17,6 @@ body
    Schur =
    proc {$  M N}
       local
-         Or = FD.disj
          And = FD.conj
          Not = FD.nega
       in

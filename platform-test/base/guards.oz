@@ -122,7 +122,7 @@ local X Sync in
 end
 {Final 2}
 
-if if Y in Y = 1 then skip else fail end then {Start 1} else fail end
+if if _ = 1 then skip else fail end then {Start 1} else fail end
 {Final 1}
 
 % -- deep
@@ -408,8 +408,8 @@ end
 
 local P in
    proc {P A B}
-      if Y in A = f(Y) then {Start 1}
-      [] Y in A = g(Y) then {Next 1 2}
+      if A = f(_) then {Start 1}
+      [] A = g(_) then {Next 1 2}
       else {Next 2 3}
       end
    end

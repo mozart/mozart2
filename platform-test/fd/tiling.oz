@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -21,8 +19,6 @@ body
 % Square tiling problem:
 % A list of squares of given sizes must fit exactly into a fixed square.
 
-
-   Off=1
 
    proc {StateConstraints Choice Xs Ys Ss SX SY}
       if Choice = 1 then   Ss=[3 2 2 1 1 1] SX=5 SY=4
@@ -54,7 +50,7 @@ body
       case XCoord#Sizes
       of (X|Xr)#(S|Sr)
       then
-         local B RestSum SS in
+         local B SS in
             B :: 0#1
             thread
                if X=<:Pos X>=:Pos-S+1 then B=1

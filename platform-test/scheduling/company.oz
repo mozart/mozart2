@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -59,7 +57,7 @@ body
       local proc{Help Steps Ind}
                case Steps of nil then skip
                [] S1|S2|S3|Tail
-               then local (D1#_)#(D2#_)#(D3#_)=StepsDur.Ind
+               then local (D1#_)#(D2#_)#(_#_)=StepsDur.Ind
                     in
                        S1+D1 =: S2
                        S2+D2 =: S3
@@ -152,21 +150,6 @@ body
                            0}
                           */
                        end}
-   end
-
-   proc {RedundantConstraints AllSteps Workers}
-      {List.forAllTail AllSteps proc{$ S#(D#P)|Sr}
-                                   {ForAll Sr proc{$ S1#(D1#P1)}
-                                                 case P+P1>Workers
-                                                 then thread
-                                                         dis S+D=<:S1
-                                                         []  S1+D1=<:S
-                                                         end
-                                                      end
-                                                 else skip
-                                                 end
-                                              end}
-                                end}
    end
 
    XYZSol = [[[1 7 13 19 25 31]

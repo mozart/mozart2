@@ -4,9 +4,8 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
+
 
 export
    Return
@@ -72,14 +71,14 @@ Return=
               end}
 
              {MiscTest 8
-              fun {$} X Y Z in
+              fun {$} X Y in
                  thread X :: 1#Y end
                  Y=9
                  thread if X :: [1#9] then 1 else 0 end end
               end}
 
              {MiscTest 9
-              fun {$}  X Y in [X Y]:::0#10
+              fun {$}  X in [X]:::0#10
                  thread if {FD.atMost X nil 3} then 1 else 0 end end
               end}
 
@@ -110,7 +109,7 @@ Return=
               end}
 
              {MiscTest 13
-              fun {$} X Y in X::0#10
+              fun {$} X in X::0#10
                  {FD.atLeast X '#' 2}
                  thread if X=0 then 1 else 0 end end
               end}
@@ -237,7 +236,7 @@ Return=
               end}
 
              {MiscTest 28
-              fun {$}  X Y Z in [X Y Z] ::: 0#10
+              fun {$}
                  thread if {FD.sum nil '<:' 3} then 1 else 0 end end
               end}
 
@@ -283,17 +282,17 @@ Return=
               end}
 
              {MiscTest 35
-              fun {$}  X Y in [X Y]:::0#10
+              fun {$}  X in [X]:::0#10
                  thread if {FD.distance X X '>:' 8} then 0 else 1 end end
               end}
 
              {MiscTest 36
-              fun {$}  X Y in [X Y]:::0#10
+              fun {$}  X in [X]:::0#10
                  thread if {FD.distance X X '=:' 0} then 1 else 0 end end
               end}
 
              {MiscTest 37
-              fun {$} X Y in [X Y]:::0#10
+              fun {$} X in [X]:::0#10
                  thread if {FD.distance X X '\\=:' 0} then 0 else 1 end end
               end}
 

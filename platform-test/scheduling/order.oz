@@ -9,8 +9,3 @@ proc {CanonicOrder Old New}
    Old.start.pe >: New.start.pe
    {Trace Old.start.pe}
 end
-
-proc {DecOrder Old New}
-   Old.start.pe-10 >: New.start.pe
-   {Trace Old.start.pe}
-end

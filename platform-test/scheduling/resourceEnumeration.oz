@@ -33,36 +33,6 @@ local
       end
    end
 
-   fun {DurationTasks Tasks Dur}
-      {FoldL Tasks fun{$ I T} I+Dur.T end 0}
-   end
-
-
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   %% Constraining tasks
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   proc {Before Task Tasks Start Dur}
-      {ForAll Tasks proc{$ T}
-                       case Task==T then skip
-                       else Start.Task+Dur.Task =<: Start.T
-                       end
-                    end}
-   end
-
-   proc {After Task Tasks Start Dur}
-      {ForAll Tasks proc{$ T}
-                       case Task==T then skip
-                       else Start.T+Dur.T =<: Start.Task
-                       end
-                    end}
-   end
-
-
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   %% Enumeration
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %% MaximalDurStat
 
@@ -176,63 +146,12 @@ in
       skip
    end
 
-   %% as in CHIP
-   %% resources with largest duration first, static order. Then distribute
-   %% tasks
-   proc {MaximalDurStat Start Dur ExclusiveTasks}
-      SortedExclusiveTasks =  % larger duration goes first
-      {Sort ExclusiveTasks
-       fun{$ Xs Ys}
-          {DurationTasks Xs Dur} > {DurationTasks Ys Dur}
-       end}
-   in
-      {LabelResources SortedExclusiveTasks Start Dur}
-   end
-
-
-   %% Consider all pairs of tasks on a resource. Choose the pair with minimal
-   %% slack according to the used ordering (Cheng/Smith).
-   proc {MinimalPairs Start Dur ExclusiveTasks}
-      choice
-         ControlledPairs = {FoldR ExclusiveTasks
-                            fun {$ Xs Ps}
-                               {FoldRTail Xs
-                                fun {$ Y|Ys Pss}
-                                   {FoldR Ys fun {$ Z Pss} Y#Z#_|Pss end Pss}
-                                end
-                                Ps}
-                            end
-                         nil}
-      in
-         %% Control each pair by a variable C. If C is determined, it needs
-         %% not to be enumerated.
-         {ForAll ControlledPairs proc{$ I#J#C}
-                                    {FD.disjointC Start.I Dur.I Start.J Dur.J C}
-                                 end}
-         {TaskPairEnum ControlledPairs ControlledPairs Start Dur}
-      end
-   end
-
-
-
    proc {TaskIntervalsProofNew Start Dur Tasks}
       {Schedule.taskIntervalsDistP Tasks Start Dur}
    end
 
    proc {TaskIntervalsOptNew Start Dur Tasks}
       {Schedule.taskIntervalsDistO Tasks Start Dur}
-   end
-
-   proc {MinimalSlackFirstsLasts Start Dur Tasks}
-      {Schedule.firstsLastsDist Tasks Start Dur}
-   end
-
-   proc {MinimalSlackFirsts Start Dur Tasks}
-      {Schedule.firstsDist Tasks Start Dur}
-   end
-
-   proc {MinimalSlackLasts Start Dur Tasks}
-      {Schedule.lastsDist Tasks Start Dur}
    end
 
 end

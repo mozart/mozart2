@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -17,8 +15,8 @@ body
 
    Change =
    {fun {$ BillAndCoins Amount}
-       Available    = {Record.map BillAndCoins fun {$ A#D} A end}
-       Denomination = {Record.map BillAndCoins fun {$ A#D} D end}
+       Available    = {Record.map BillAndCoins fun {$ A#_} A end}
+       Denomination = {Record.map BillAndCoins fun {$ _#D} D end}
        NbDenoms     = {Width Denomination}
     in
        proc {$ Change}

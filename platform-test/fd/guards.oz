@@ -4,10 +4,6 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
-
 export
    Return
 body
@@ -146,7 +142,7 @@ Return=
                 end}
 
                {MiscTest 14
-                fun {$} R X Y in
+                fun {$} X Y in
                    X::[1 2 10 19 20] Y::[5 6 15 25]
                    or X+3>:Y
                       Y+3>:X  then 0

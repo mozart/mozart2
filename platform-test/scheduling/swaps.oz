@@ -9,18 +9,6 @@ local
    GetMin = FD.reflect.min
    GetMax = FD.reflect.max
 
-   fun{MakeExclusiveTasks Resources TaskSpecs}
-      {FoldR Resources
-       fun {$ Resource Xs}
-          {FoldR TaskSpecs
-           fun {$ Task#_#_#ThisResource In}
-              case Resource==ThisResource then Task|In else In end
-           end
-           nil} | Xs
-       end
-       nil}
-   end
-
    fun {FindPaths o(Task UB Dur ResSuccs JobSuccs Path OccCrit#Paths)}
       JobS = JobSuccs.Task.1
       ResS = ResSuccs.Task.1
@@ -92,50 +80,6 @@ local
        end 1 _}
    end
 
-   fun {MakeTrySwap o(Task ResSuccs PertProblem SortedRes Tasks UB
-                      Spec FailureLimit ?Enum)}
-      %% Swap Task and its successor
-      Succ = ResSuccs.Task.1
-      TaskSpecs = Spec.taskSpec
-      %% Machines maps tasks to resource: r(a1:m1 a2:m3 ...)
-      Machines    = {Record.make machines Tasks}
-      {ForAll TaskSpecs proc {$ Task#_#_#Resource}
-                           Machines.Task = Resource
-                        end}
-      Resource = Machines.Task
-      ExclusiveTasks =  % list of lists of exclusive tasks
-      {MakeExclusiveTasks {Arity SortedRes} TaskSpecs}
-   in
-      {SolveDepth
-       proc{$ X}
-          {PertProblem.1 X}
-          Dur = X.dur
-          Start = X.start
-       in
-          %% try to find a better solution
-          X.start.pe <: UB
-          {Enum Start Dur ExclusiveTasks}
-          choice
-             {ForAllTail SortedRes.Resource
-              proc{$ T1|Ts}
-                 case Ts of nil then skip
-                 else
-                    T2=Ts.1
-                 in
-                    case T1==Task then
-                       Start.Succ+Dur.Succ =<: Start.Task
-                    elsecase T1==Succ then
-                       Start.Task+Dur.Task =<: Start.T2
-                    elsecase T2==Task then
-                       Start.T1+Dur.T1 =<: Start.Succ
-                    else
-                       Start.T1+Dur.T1 =<: Start.T2
-                    end
-                 end
-              end}
-          end
-          end FailureLimit}
-   end
 in
    fun {Paths o(Start Dur ResSuccs JobSuccs JobPreds Sorted Tasks)}
       %% critical paths are only those for which length = MakeSpan
@@ -171,7 +115,7 @@ in
                            end OccCrit#nil}
    end
 
-   fun {AnalyzeSwaps o(Occ Paths ResSuccs JobSuccs ResPreds
+   fun {AnalyzeSwaps o(Occ _ ResSuccs JobSuccs ResPreds
                        JobPreds Tasks Start Dur)}
       {FoldL Tasks
        fun{$ I Task}
@@ -179,7 +123,6 @@ in
           else
              U = ResSuccs.Task.1
           in
-%            case U\=pe andthen (Occ.Task.crit orelse Occ.U.crit)
              case U\=pe andthen (Occ.Task.crit andthen Occ.U.crit)
              then
                 S = ResPreds.Task.1
@@ -217,7 +160,7 @@ in
        end nil}
    end
 
-   fun {Repair o(Occ Paths Swaps PertProblem ResSuccs SortedRes
+   fun {Repair o(_ Paths Swaps PertProblem ResSuccs SortedRes
                  Tasks UB ?NewSol)}
       NumberOfCrits = {Length Paths}
       BestSwap = {FoldL Swaps fun{$ I Task#O#Gain}
@@ -237,31 +180,4 @@ in
       end
    end
 
-   fun {TrySwap o(Occ Paths Swaps PertProblem ResSuccs SortedRes
-                  Tasks UB Spec FailureLimit Enum ?NewSol)}
-      /*
-      BestSwap = {FoldL Swaps fun{$ I Task#O#Gain}
-                                 case O > I.2 then
-                                    Task#O#Gain
-                                 elsecase O==I.2 andthen Gain>I.3 then
-                                    Task#O#Gain
-                                 else I
-                                 end
-                              end noTask#0#0}
-   in
-      case BestSwap.1 of noTask then false
-      else
-         {Trace 'try swapping '#BestSwap.1#' and '#ResSuccs.(BestSwap.1).1}
-         Sol
-      in
-         {MakeTrySwap o(BestSwap.1 ResSuccs PertProblem SortedRes
-                        Tasks UB Spec FailureLimit Enum) ?Sol}
-         case Sol of nil then false
-         else NewSol = Sol
-            true
-         end
-      end
-      */
-      false
-   end
 end

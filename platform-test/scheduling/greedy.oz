@@ -8,7 +8,7 @@
 local
 
 
-   fun {Try o(Start Dur Machines Jobs Unscheduled Next)}
+   fun {Try o(Start Dur Machines _ Unscheduled Next)}
       Raise = {FD.reflect.min Start.Next}+Dur.Next
    in
       {ForAll Unscheduled.(Machines.Next)
@@ -42,21 +42,13 @@ local
       Tasks       = {Map TaskSpecs fun {$ T#_#_#_} T end}
       Dur         = {MakeRecord dur Tasks}
       {ForAll TaskSpecs proc {$ T#D#_#_} Dur.T = D end}
-      Resources = {FoldL TaskSpecs
-                   fun {$ In _#_#_#Resource}
-                      case Resource==noResource orelse {Member Resource In}
-                      then In else Resource|In end
-                   end
-                   nil}
-      ExclusiveTasks =  % list of lists of exclusive tasks
-      {MakeExclusiveTasks Resources TaskSpecs}
 
    in
       proc {$ Arg}
          a(start:Start
            dur:!Dur
-           next:Next
-           lb:LB) = !Arg
+           next:_
+           lb:_) = !Arg
       in
          Start = {FD.record start Tasks 0#MaxTime}
          %% impose precedences
@@ -72,102 +64,6 @@ local
       end
    end
 in
-
-      %% select first job
-   fun {FindNextFIFO Candidates Problem Machines Jobs Unscheduled}
-      (Candidates.1)#_#_
-   end
-   %% select task with earliest start time
-   fun {FindNextEST Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Min = {FD.reflect.min Start.C} in
-                            case Min < I.2 then C#Min
-                            else I
-                            end
-                         end _#FD.sup}.1)#_#_
-   end
-   %% select task with latest start time
-   fun {FindNextLST Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Max = {FD.reflect.max Start.C} in
-                            case Max > I.2 then C#Max
-                            else I
-                            end
-                         end _#0}.1)#_#_
-   end
-   %% select task with earliest finishing time
-   fun {FindNextEFT Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Min = {FD.reflect.min Start.C}+Dur.C in
-                            case Min < I.2 then C#Min
-                            else I
-                            end
-                         end _#FD.sup}.1)#_#_
-   end
-   %% select task with lastest finishing time
-   fun {FindNextLFT Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Max = {FD.reflect.max Start.C}+Dur.C in
-                            case Max > I.2 then C#Max
-                            else I
-                            end
-                        end _#0}.1)#_#_
-   end
-   %% select task with smallest duration
-   fun {FindNextSPT Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Min = Dur.C in
-                            case Min < I.2 then C#Min
-                            else I
-                            end
-                         end _#FD.sup}.1)#_#_
-   end
-   %% select task with longest duration
-   fun {FindNextLPT Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Max = Dur.C in
-                            case Max > I.2 then C#Max
-                            else I
-                            end
-                         end _#0}.1)#_#_
-   end
-   %% select task with most work remaining
-   fun {FindNextMWR Candidates Problem Machines Jobs Unscheduled}
-      X = {Problem.1}
-      Start = X.start
-      Dur = X.dur
-   in
-      ({FoldL Candidates fun{$ I C}
-                            Max = {FD.reflect.max Start.C} in
-                            case Max < I.2 then C#Max
-                            else I
-                            end
-                         end _#FD.sup}.1)#_#_
-   end
 
 
    fun {SearchGreedy Candidates Problem Machines Jobs Unscheduled}

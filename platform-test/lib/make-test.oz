@@ -60,7 +60,6 @@ local
       functor
 
       import
-         Application
          System
          Syslet.{Argv = args Exit = exit}
          Debug
@@ -70,6 +69,7 @@ local
          fun {X2V X}
             {System.valueToVirtualString X 100 100}
          end
+
 
          \insert 'engine.oz'
 
@@ -325,7 +325,6 @@ in
     import
        Application
        System
-       Open
        Syslet.{Argv = args Exit = exit}
        Module
        Pickle

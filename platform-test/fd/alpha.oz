@@ -5,8 +5,7 @@ import
    FD
 
    Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+           SearchAll  = 'SearchAll'}
 
 export
    Return
@@ -15,7 +14,7 @@ body
    local
 
    proc {Alpha Sol}
-      [A B C D E F G H I J K L M N O P Q R S T U V W X Y Z] = !Sol
+      [A B C _ E F G H I J K L M N O P Q R S T U V W X Y Z] = !Sol
    in
       Sol = {FD.dom 1#26}
       {FD.distinct Sol}

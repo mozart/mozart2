@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchBest = 'SearchBest'}
 
 export
    Return
@@ -85,7 +83,7 @@ body
    proc{DeclareVariables Jobs NamesToJobs}
       Jobs={FoldL [n430 n730 l430 e464 e564 h764 h864 d464 d780]
             fun{$ In JobName}
-               Machine Start Succ Dur Uebergang RealStart Pred in
+               Machine Start Dur Uebergang Pred in
                Machine :: 1#2
                Start :: 1#Limit
                Dur :: 3#15
@@ -96,26 +94,6 @@ body
             end nil}
       % mapping from names to jobs
       NamesToJobs = {FoldL Jobs fun{$ I J} {AdjoinAt I J.name J} end jobs}
-   end
-
-   % No jobs must overlap on a machine
-   local
-      proc {Disjunct Job1 Job2}
-         thread
-            or Job1.machine=Job2.machine
-               or Job1.start+Job1.dur+Job1.ueb =<: Job2.start
-               [] Job2.start+Job2.dur+Job2.ueb =<: Job1.start
-               end
-            [] Job1.machine\=:Job2.machine
-            end
-         end
-      end
-   in
-      proc {ResourceConstraints Jobs}
-         {List.forAllTail Jobs proc{$ Job|Jobs}
-                                  {ForAll Jobs proc{$ J} {Disjunct Job J} end}
-                               end}
-      end
    end
 
    % Duration of a job depends on its machine

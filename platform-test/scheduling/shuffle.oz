@@ -6,19 +6,9 @@
 %%%  Version: $Revision$
 
 local
-   WindowRatio = 15
-   MaxPasses = 10
+
+
    MaxBacktracks = 90
-%   MaxBacktracks = 810
-%   MaxBacktracks = 2430
-%   MaxBacktracks = 7290
-%      MaxBacktracks = 21870
-   Pow231 = {Pow 2 31}-1
-   fun {Rand Limit}
-      Div = Pow231 div Limit
-   in
-      {OS.rand} div Div
-   end
 
    proc {InitSets Entry Tasks Start Dur LowB UpB Set DurSet}
       Left = Entry.left
@@ -250,7 +240,7 @@ in
                  false
               end
          else
-            JumpSol CritSol TwoBasicSol
+            JumpSol CritSol
             EasyResources = {EasiestResources SortedRes Start Dur}
          in
             case {JumpBasic o(EasyResources SortedRes UB Leap FailureLimit Spec

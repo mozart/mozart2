@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -23,8 +21,6 @@ body
       Luxemburg
       Denmark
       Italy
-      England
-      Greece
    in
       map(germany:     Germany
           france:      France
@@ -35,8 +31,8 @@ body
           luxemburg:   Luxemburg
           denmark:     Denmark
           italy:       Italy
-          england:     England
-          greece:      Greece) = EC
+          england:     _
+          greece:      _) = EC
       {Record.forAll EC proc {$ Country} Country :: 0#3 end}
       Netherlands \=: Germany
       France   \=:    Germany

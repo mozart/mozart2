@@ -6,9 +6,7 @@ import
 
    Schedule
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchBest = 'SearchBest'}
 
 export
    Return

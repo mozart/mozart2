@@ -4,9 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -31,9 +29,6 @@ body
 
    end
 
-   T X3 Y3 Z3 X4 Y4 S
-
-   T = [X3 Y3 Z3 X4 Y4]
    S = {SearchOne ModDivProb}
    T = S.1
 

@@ -9,9 +9,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
 export
    Return
@@ -19,19 +17,17 @@ body
 
 
    proc {BuildHouse Sol}
-      local SA  SB  SC  SD  SE  SF  SG  SH  SI  SJ  SK  Send in
-         Sol = [SA  SB  SC  SD  SE  SF  SG  SH  SI  SJ  SK  Send]
-         Sol = {FD.dom 0#30}
-         {Precedence Sol}
-         {FD.distribute ff Sol}
-      end
+      Sol = [_ _ _ _ _ _ _ _ _ _ _ _]
+      Sol = {FD.dom 0#30}
+      {Precedence Sol}
+      {FD.distribute ff Sol}
    end
 
    proc {GeqOff X Y Off}
       X >=: Y + Off
    end
 
-   proc {Precedence [SA  SB  SC  SD  SE  SF  SG  SH  SI  SJ  SK  Send]}
+   proc {Precedence [SA  SB  SC  SD  SE  SF  SG  SH  _  SJ  SK  Send]}
       {GeqOff SB SA 7}
       {GeqOff SD SA 7}
       {GeqOff SC SB 3}

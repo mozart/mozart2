@@ -106,7 +106,7 @@ body
    Return=
 
    ofs([t1(equal(fun {$}
-                    X A T1 T2
+                    X T1 T2
                     R1 R2 R3 R4 R5 R6
                  in
                     X^foo=100 X^bar=200
@@ -124,7 +124,7 @@ body
            keys: [ofs record])
 
         t2(equal(fun {$}
-                    X A
+                    X
                     R1 R2
                  in
                     {TellRecord bingo X}
@@ -141,11 +141,11 @@ body
 
         t3(equal(fun {$}
                     R1 R2 R3 R4 R5 R6 R7 R8
-                    Y Y1 Y2
-                    Z Z1 Z2 T1 T2
+                    Y
+                    Z T1 T2
                  in
-                    Y^foo=100 Y^bar=Y2
-                    Z^foo=Z1 Y^bar=bonk
+                    Y^foo=100 Y^bar=_
+                    Z^foo=_ Y^bar=bonk
                     Y=Z
                     T1 = Z.foo R1={RFL T1} R2={RFL Z^foo}
                     T2 = Y.bar R3={RFL T2} R4={RFL Y^bar}
@@ -163,10 +163,10 @@ body
            keys: [ofs record])
 
         t4(equal(fun {$}
-                    A A1 B B1
+                    A B
                  in
-                    A=open(foo:10 bar:20 baz:30 zip:40 funk:50 all:A1)
-                    B^foo=B1 B^all=60 B^baz=30
+                    A=open(foo:10 bar:20 baz:30 zip:40 funk:50 all:_)
+                    B^foo=_ B^all=60 B^baz=30
                     A=B
                     [{RFL A} {RFL A.all} {RFL B.foo}]
                  end
@@ -216,7 +216,7 @@ body
            keys: [ofs record entailment])
 
         t9(entailed(proc {$}
-                       X R1 R2 R3
+                       X
                     in
                        X^foo=10
                        {EQF X open(foo:10 bar:20)}
@@ -439,7 +439,7 @@ body
             keys: [ofs record entailment])
 
         t27(entailed(proc {$}
-                        X F Y G
+                        X F G
                      in
                         thread X^F=2 end
                         thread X^G=6 end
@@ -455,7 +455,7 @@ body
             keys: [ofs record entailment])
 
         t28(entailed(proc {$}
-                        X F Y G
+                        X F G
                      in
                         thread X^F=2 end
                         thread X^G=6 end
@@ -529,7 +529,7 @@ body
             keys: [ofs record entailment])
 
         t33(entailed(proc {$}
-                        X Y Z
+                        X Y
                         proc {Feats N X}
                            case N of 0
                            then skip
@@ -810,7 +810,7 @@ body
             keys: [ofs record arity])
 
         t43(entailed(proc {$}
-                        A B C D I J K L M
+                        A B C D I J K L
                      in
                         A=foo(1:1 2:2 ...)
                         B=foo(2:2 3:3 ...)
@@ -930,7 +930,7 @@ body
             keys: [ofs record arity])
 
         t48(entailed(proc {$}
-                        X Y K A B K1 K2
+                        X Y A B K1 K2
                      in
                         {TellRecord foo X}
                         {TellRecord foo Y}
@@ -996,7 +996,7 @@ body
             keys: [ofs record name])
 
         t51(entailed(proc {$}
-                        X W B1 B2 B3 B4
+                        X W
                      in
                         W={FD.decl}
                         {TellRecord foo X}

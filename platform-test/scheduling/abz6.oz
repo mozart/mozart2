@@ -29,14 +29,7 @@ import
 
    Schedule
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'
-           one
-           all
-           object}
-
-   OS
+   Search.{one object}
 
 export
    Return
@@ -149,29 +142,29 @@ body
    schedule(equal(fun {$}
                      Solution1
                      Solution2
-                     UO = {New LocalSearchHeuristic
-                           start(spec:                 Pabz6Opt
-                                 compiler:             Compiler
-                                 resourceDistribution: TaskIntervalsOptNew
-                                 taskDistribution:     NoTE
-                                 resourceConstraints:  ResourceConstraintEF
-                                 label:                Dummy
-                                 order:                CanonicOrder
-                                 rcd:                  1
-                                 lb:                   0
-                                 solution:             Solution1)}
-                     FO = {New SearchBAB
-                           start(spec:                 Pabz6Proof
-                                 compiler:             Compiler
-                                 taskDistribution:     NoTE
-                                 resourceDistribution: TaskIntervalsProofNew
-                                 resourceConstraints:  ResourceConstraintEF
-                                 ub:                   1000
-                                 lb:                   0
-                                 label:                Dummy
-                                 order:                CanonicOrder
-                                 rcd:                  1
-                                 solution:             Solution2)}
+                     _ = {New LocalSearchHeuristic
+                          start(spec:                 Pabz6Opt
+                                compiler:             Compiler
+                                resourceDistribution: TaskIntervalsOptNew
+                                taskDistribution:     NoTE
+                                resourceConstraints:  ResourceConstraintEF
+                                label:                Dummy
+                                order:                CanonicOrder
+                                rcd:                  1
+                                lb:                   0
+                                solution:             Solution1)}
+                     _ = {New SearchBAB
+                          start(spec:                 Pabz6Proof
+                                compiler:             Compiler
+                                taskDistribution:     NoTE
+                                resourceDistribution: TaskIntervalsProofNew
+                                resourceConstraints:  ResourceConstraintEF
+                                ub:                   1000
+                                lb:                   0
+                                label:                Dummy
+                                order:                CanonicOrder
+                                rcd:                  1
+                                solution:             Solution2)}
                   in
 
                      {Solution1.1}.start.pe == 943

@@ -65,69 +65,9 @@ local
 
 in
 
-   fun {IsMyLocalSearch US}
-      US == LocalSearchHeuristic orelse
-      US == FIFOLocalSearchHeuristic orelse
-      US == ESTLocalSearchHeuristic orelse
-      US == LSTLocalSearchHeuristic orelse
-      US == EFTLocalSearchHeuristic orelse
-      US == LFTLocalSearchHeuristic orelse
-      US == SPTLocalSearchHeuristic orelse
-      US == LPTLocalSearchHeuristic orelse
-      US == MWRLocalSearchHeuristic
-   end
-
    class LocalSearchHeuristic from LocalSearch
       meth getHeuristic(X)
          X = SearchGreedy
-      end
-   end
-
-   class FIFOLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextFIFO
-      end
-   end
-
-   class ESTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextEST
-      end
-   end
-
-   class LSTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextLST
-      end
-   end
-
-   class EFTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextEFT
-      end
-   end
-
-   class LFTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextLFT
-      end
-   end
-
-   class SPTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextSPT
-      end
-   end
-
-   class LPTLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextLPT
-      end
-   end
-
-   class MWRLocalSearchHeuristic from LocalSearch
-      meth getHeuristic(X)
-         X = FindNextMWR
       end
    end
 
@@ -275,7 +215,7 @@ in
 
             %% Compute greedy solution. Result is a start record.
             GreedySol = {Greedy Spec Heuristic Machines Jobs Resources}
-            o(ResPreds ResSuccs SortedRes) = {GetResPredSucc Spec GreedySol Resources Tasks}
+            o(_ _ SortedRes) = {GetResPredSucc Spec GreedySol Resources Tasks}
 
             %% Compute the PERT space.
             PertProblem = {Search.one.depthP

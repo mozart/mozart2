@@ -6,9 +6,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
 
    System.{Show = show}
 
@@ -33,7 +31,6 @@ body
       {MakeEnumeration Es}
 
       Employees       = {Map Es fun {$ N#_} N end}
-      Empl2Names      = {List.toRecord r Es}
       Stewards        = {FS.value.new [Tom David Jeremy Ron Joe
                                        Bill Fred Bob Mario Ed]}
       Hostesses       = {FS.value.new [Carol Janet Tracy Marilyn

@@ -20,54 +20,6 @@
 %%% WARRANTIES.
 %%%
 
-local
-   CardDisjunction = Schedule.disjoint
-   CDDisjunction   = FD.disjoint
-
-   proc {Help Disjunction ExclusiveTasks Start Dur}
-      {ForAll ExclusiveTasks
-       proc{$ Tasks}
-          {ForAllTail Tasks
-           proc{$ T1|Tail}
-              {ForAll Tail
-               proc{$ T2}
-                  {Disjunction Start.T1 Dur.T1 Start.T2 Dur.T2}
-               end}
-           end}
-       end}
-   end
-
-in
-   proc {ResourceConstraintCard Start Dur ExclusiveTasks}
-      {Help CardDisjunction ExclusiveTasks Start Dur}
-   end
-
-   proc {ResourceConstraintCD Start Dur ExclusiveTasks}
-      {Help CDDisjunction ExclusiveTasks Start Dur}
-   end
-
-   proc {ResourceConstraintEF Start Dur ExclusiveTasks}
-      {Schedule.serialized ExclusiveTasks Start Dur}
-   end
-
-   proc {ResourceConstraintTI Start Dur ExclusiveTasks}
-      {Schedule.taskIntervals ExclusiveTasks Start Dur}
-   end
-
-   proc {ResourceConstraintDisj Start Dur ExclusiveTasks}
-      {Schedule.serializedDisj ExclusiveTasks Start Dur}
-   end
-
-   proc {ResourceConstraintCumDisj Start Dur ExclusiveTasks}
-      Use = {MakeRecord use {Arity Start}}
-      Capacity = {Map {MakeList {Length ExclusiveTasks}} fun{$ _} 1 end}
-   in
-      {Record.forAll Use proc{$ U} U=1 end}
-      {Schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
-   end
-
-   proc {ResourceConstraintCumMulti Start Dur Use Capacity ExclusiveTasks}
-      {Schedule.cumulativeEF ExclusiveTasks Start Dur Use Capacity}
-   end
-
+proc {ResourceConstraintEF Start Dur ExclusiveTasks}
+   {Schedule.serialized ExclusiveTasks Start Dur}
 end

@@ -5,7 +5,6 @@ import
    FD
 
    Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
            SearchBest = 'SearchBest'}
 
 export
@@ -58,7 +57,6 @@ body
                        chris#gary fred#mary fred#donald
                        paul#fred paul#donald]
       NbPersons     = {Length Persons}
-      NbPreferences = {Length Preferences}
       Alignment     = {FD.record alignment Persons 1#NbPersons}
       Satisfaction  = {FD.decl}
       proc {Satisfied P#Q S}

@@ -64,7 +64,7 @@ COMPONENTS = \
 ####################################################
 
 OZC = @OZC@
-OZFLAGS = --nowarnunused
+OZFLAGS =
 
 OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c

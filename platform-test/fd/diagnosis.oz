@@ -4,9 +4,8 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'
-           SearchBest = 'SearchBest'}
+   Search.{SearchOne  = 'SearchOne'}
+
 
 export
    Return
@@ -81,7 +80,6 @@ body
       Not = !FD.nega
       Xor = !FD.exor
       %
-      Implies = FD.impl
       Equiv = FD.equi
 
    in

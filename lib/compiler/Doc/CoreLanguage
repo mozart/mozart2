@@ -6,23 +6,20 @@ V  ::=  <Variable>
 O  ::=  <VariableOccurrence>
 
 % coordinates
-C  ::=  pos(atom int int)
-     |  pos(atom int int atom int int)
-     |  posNoDebug(atom int int)
-     |  unit
+C  ::=  ...   % same as in FSyntax
 
 % terms
 T  ::=  <ValueNode> | <Construction> | O
 
-% pattern terms
+% patterns
 P  ::=  <ValueNode>
      |  <RecordPattern> | <EquationPattern> | <PatternVariableOccurrence> | O
 
 % labels
-L  ::=  <AtomNode> | O
+L  ::=  <ValueNode> | O   % <ValueNode> must be an atom
 
 % features
-F  ::=  <AtomNode> | <IntNode> | O
+F  ::=  <ValueNode> | O   % <ValueNode> must be a feature
 
 % arities
 A  ::=  int | F+
@@ -287,30 +284,19 @@ S  ::=  <Statement>
      guardGlobalVars: V*   % those of statements only
 
 
-% (never instantiated)
+% value
 <ValueNode>
+     value: literal | number
      coord: C
-
-
-% value
-<AtomNode> from <ValueNode>
-     value: atom
-
-
-% value
-<IntNode> from <ValueNode>
-     value: int
-
-
-% value
-<FloatNode> from <ValueNode>
-     value: float
 
 
 % printName
 <Variable>
      coord:      C
      isToplevel: bool
+     lastValue:  unit |   % meaning: not initialized
+                 O | <ValueNode> | <RecordConstr> | <Token>
+
 
 % printName
 <UserVariable> from <Variable>
@@ -330,13 +316,17 @@ S  ::=  <Statement>
 % variable
 <VariableOccurrence>
      variable: V
-     position: 'first' | 'nonfirst'
      value:    O |   % may point to itself or directly to a representant
                      % of a set of aliased variables.  The value attribute
                      % of this representant points to the representant itself.
-               <IntNode> | <FloatNode> | <AtomNode> |
-               <Construction> |
-               <Token>
+               <ValueNode> | <RecordConstr> | <Token>
+
+
+<RecordConstr>
+     value:     record
+     lastValue: unit |   % meaning: not initialized
+                O | <ValueNode> | <RecordConstr> | <Token>
+     origin:    unit | <Construction> | <RecordPattern>
 
 
 % variable
@@ -345,45 +335,23 @@ S  ::=  <Statement>
 
 Remarks:
 
--- No run-time errors (`missing else') are represented in the core
-   language.  They are created by the code generator.
+-- Some core syntax expansions require shared references to the same
+   code, such as when optimizing boolean conditionals with andthen/orelse
+   in the guard, e.g.:
 
--- No special node type is required for optimizing object applications:
-   the `value' attribute provides sufficient information.  (If an
-   application has a single argument and this is a variable bound to
-   a record, then the optimized method call is used.)
+      if X orelse Y then S1 else S2 end
 
--- In boolean case conditionals only a variable O is allowed as arbiter
-   where previously (in the Tel version) a variable or an application
-   was allowed.  A piece of code like the following:
-
-      {P ... ?O}
-      case O then ...
-
-   will now be optimized if P is one of a number of special builtins
-   (e. g., IsInt):  both the allocation of the output variable O and
-   the error case can then be omitted.
-
--- The previous Core Language used label/goto constructs for sharing
-   code when optimizing boolean conditionals with andthen/orelse in
-   the guard, such as in
-
-      case X orelse Y then S1 else S2 end
-
-   This is now represented as
+   This is represented as
 
       proc {A} S1 end   % these are both instances of <ClauseBody>
       proc {B} S2 end   %
-      case X then {A}
+      if X then {A}
       else
-         case Y then {A}
+         if Y then {A}
          else {B}
          end
       end
 
    The code generator will behave differently for `Definition' and
-   `ClauseBody' and insert appropriate labels and branch instructions.
-
--- The globalVars attributes contain the non-local variables referenced
-   in the corresponding construct.  Note that while all non-local unquoted
-   variables must be present, some system variables may be missing.
+   `ClauseBody' and generate labels and branches instead of procedure
+   definitions and applications.

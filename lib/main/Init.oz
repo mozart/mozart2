@@ -82,10 +82,18 @@ in
          Module = {NewModule.apply 'import'('System': System
                                             'Pickle': Pickle
                                             'OS':     OS
-                                            'Boot':   Boot)}
+                                            'Boot':   Boot
+                                            'Property': Property
+                                            %% see below for explanation
+                                            'Foreign': Foreign)}
 
          %% The root module manager
          RM = Module.root
+
+         %% -- CIRCULARITY ALERT!
+         %% The root manager itself links one of its module's own imports
+         %% he he! logic variables are wonderful!
+         Foreign = {RM link(url:'x-oz://system/Foreign' $)}
 
          %% The real Module module
          RealModule = 'export'(manager: Module.manager)

@@ -91,10 +91,11 @@ local
                 unit#"realcore"#realcore(type: bool)
                 unit#"debugvalue"#debugvalue(type: bool)
                 unit#"debugtype"#debugtype(type: bool)
-                unit#"profile"#profile(type: bool)
+                &p#"profile"#profile(type: bool)
                 unit#"runwithdebugger"#runwithdebugger(type: bool)
                 unit#"debuginfocontrol"#debuginfocontrol(type: bool)
-                unit#"debuginfovarnames"#debuginfovarnames(type: bool)]}
+                unit#"debuginfovarnames"#debuginfovarnames(type: bool)
+                &g#"debuginfo"#debuginfo(type: bool)]}
 
    Usage =
    'Usage: ozbatch [options] [file] ...\n'#
@@ -136,10 +137,11 @@ local
    '--(no)realcore                Output the real non-fancy core syntax.\n'#
    '--(no)debugvalue              Annotate variable values in core output.\n'#
    '--(no)debugtype               Annotate variable types in core output.\n'#
-   '--(no)profile                 Include profiling information.\n'#
+   '-p, --(no)profile             Include profiling information.\n'#
    '--(no)runwithdebugger         Execute queries under debugger.\n'#
    '--(no)debuginfocontrol        Include control flow information.\n'#
-   '--(no)debuginfovarnames       Include variable information.\n'
+   '--(no)debuginfovarnames       Include variable information.\n'#
+   '-g, --(no)debuginfo           All three above.\n'
 in
    {Application.exec
     'ozbatch'
@@ -400,6 +402,10 @@ in
                        {Assign Mode X}
                     [] outputfile then
                        {Assign OutputFile X}
+                    [] debuginfo then
+                       {BatchCompiler enqueue(setSwitch(runwithdebugger X))}
+                       {BatchCompiler enqueue(setSwitch(debuginfocontrol X))}
+                       {BatchCompiler enqueue(setSwitch(debuginfovarnames X))}
                     elseof SwitchName then
                        {BatchCompiler enqueue(setSwitch(SwitchName X))}
                     end

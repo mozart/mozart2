@@ -60,6 +60,9 @@ prepare
 \ifdef DENYS_EVENTS
                    'Timer' 'Perdio'
 \endif
+\ifdef GTK_ENABLED
+                   'GTK' 'GTKSimpleBuilder'
+\endif
                   ]
       NatLibs   = ['Space' 'OsTime']
       Volatiles = ['Module'

@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1997-1999
+%%%   Leif Kornstaedt, 1997-2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -23,7 +23,51 @@
 %\define DEBUG_OPTIMIZER
 %\define DEBUG_SHARED
 
-local
+functor
+import
+   CompilerSupport(isCopyableName) at 'x-oz://boot/CompilerSupport'
+   FD(decl int distinct assign)
+   Space(new waitStable ask merge)
+   Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
+   Property(get)
+   Builtins(getInfo)
+export
+   'class': Emitter
+   Continuations
+prepare
+   Continuations = c(vDebugEntry: 4
+                     vDebugExit: 4
+                     vMakePermanent: 3
+                     vClear: 3
+                     vUnify: 4
+                     vEquateConstant: 4
+                     vEquateRecord: 6
+                     vGetVariable: 3
+                     vCallBuiltin: 5
+                     vCallGlobal: 5
+                     vCallMethod: 7
+                     vCall: 5
+                     vConsCall: 5
+                     vDeconsCall: 6
+                     vCallProcedureRef: 5
+                     vCallConstant: 5
+                     vInlineDot: 7
+                     vInlineAt: 4
+                     vInlineAssign: 4
+                     vGetSelf: 3
+                     vSetSelf: 3
+                     vDefinition: 7
+                     vDefinitionCopy: 8
+                     vShared: ~1
+                     vExHandler: 6
+                     vPopEx: 3
+                     vTestBool: 7
+                     vTestBuiltin: 6
+                     vTestConstant: 7
+                     vMatch: 6
+                     vLockThread: 4
+                     vLockEnd: 3)
+define
 \ifdef DEBUG_EMIT
    proc {ShowVInstr VInstr}   % for debugging
       L = {Label VInstr}
@@ -135,99 +179,6 @@ local
       {FilterNonlinearRegs {GetRegs VArgs $ nil}}
    end
 
-\ifdef OLD_OPTIMIZER
-
-   local
-      proc {Reserve Regs N W K}
-         if N =< W then Reg in
-            Reg = Regs.N
-            Reg :: K#N
-            {Reserve Regs N + 1 W K}
-         end
-      end
-
-\ifdef DEBUG_OPTIMIZER
-      proc {Send P M}
-         {System.show M}
-         {Port.send P M}
-      end
-\endif
-   in
-      class RegisterOptimizer
-         feat P S D
-         attr N: unit
-         meth init(NumberReserved) Ms in
-            self.P = {Port.new Ms}
-            self.S = {Space.new
-                      proc {$ X}
-                         D = {NewDictionary}
-                         proc {Loop Ms}
-                            case Ms of decl(Y)|Mr then
-                               {Dictionary.put D Y {FD.decl}}
-                               {Loop Mr}
-                            [] distinct(Ys)|Mr then
-                               {FD.distinct
-                                {Map Ys fun {$ Y} {Dictionary.get D Y} end}}
-                               {Loop Mr}
-                            [] eq(Y1 Y2)|Mr then
-                               {Dictionary.get D Y1} = {Dictionary.get D Y2}
-                               {Loop Mr}
-                            [] set(Y I)|Mr then
-                               {Dictionary.get D Y} = I
-                               {Loop Mr}
-                            [] optimize()|_ then
-                               X = {Dictionary.toRecord y D}
-                               {Reserve X 1 {Width X} NumberReserved}
-                               {FD.assign min X}
-                            end
-                         end
-                      in
-                         {Loop Ms}
-                      end}
-            self.D = {NewDictionary}
-            N <- 1
-         end
-         meth isEmpty($)
-            {Dictionary.isEmpty self.D}
-         end
-         meth decl(Is ?Y ?I)=M J in
-            I = @N
-            N <- I + 1
-            Y = y(J)
-            {Dictionary.put self.D I J}
-            {Send self.P decl(I)}
-            {Send self.P distinct(I|Is)}
-         end
-         meth eq(_ _)=M
-            {Send self.P M}
-         end
-         meth set(_ _)=M
-            {Send self.P M}
-         end
-         meth optimize(?NumberOfYs) T RaiseOnBlock in
-            {Send self.P optimize()}
-            T = {Thread.this}
-            RaiseOnBlock = {Debug.getRaiseOnBlock T}
-            {Debug.setRaiseOnBlock T false}
-            case {Space.ask self.S} of succeeded then C in
-               {Debug.setRaiseOnBlock T RaiseOnBlock}
-               C = {NewCell ~1}
-               {Record.forAllInd {Space.merge self.S}
-                proc {$ I J}
-                   if {Access C} < J then
-                      {Assign C J}
-                   end
-                   {Dictionary.get self.D I} = J
-                end}
-               NumberOfYs = {Access C} + 1
-            end
-         end
-      end
-   end
-
-\else
-
-
    local
       local
          proc {DoAssign L H D X N}
@@ -244,6 +195,7 @@ local
             {DoAssign {BitArray.low D} {BitArray.high D} D X 0}
          end
       end
+
       local
          proc {DoVector L H D X V I}
             if L=<H then
@@ -261,7 +213,6 @@ local
             {DoVector {BitArray.low D} {BitArray.high D} D X V 1}
             V
          end
-
       end
    in
       class RegisterOptimizer
@@ -384,13 +335,9 @@ local
                 {Max M J}
              end ~1}+1
          end
-
       end
    end
 
-\endif
-
-in
    fun {IsStep Coord}
       case {Label Coord} of pos then false
       [] unit then false
@@ -434,7 +381,7 @@ in
                   ?Code ?GRegs ?NLiveRegs) RS NewCodeTl NumberOfYs in
          Temporaries <- {NewDictionary}
          Permanents <- {NewDictionary}
-         CodeStore, makeRegSet(?RS)
+         {self makeRegSet(?RS)}
          LastAliveRS <- RS
          {ForAll FormalRegs proc {$ Reg} {BitArray.set RS Reg} end}
          ShortLivedTemps <- nil
@@ -443,11 +390,7 @@ in
          LowestFreeX <- 0
          HighestEverX <- ~1
          NamedYs <- {NewDictionary}
-\ifdef OLD_OPTIMIZER
-         RegOpt <- {New RegisterOptimizer init(NumberReserved)}
-\else
-         RegOpt <- {New RegisterOptimizer init}
-\endif
+         RegOpt <- {New RegisterOptimizer init()}
          HighestUsedG <- ~1
          LocalEnvSize <- _
          CodeHd <- allocateL(@LocalEnvSize)|NewCodeTl
@@ -507,15 +450,15 @@ in
 
       meth EmitAddr(Addr)
 \ifdef DEBUG_EMIT
-         {System.printInfo '\nInstruction:\n  '}
+         {System.printInfo 'Debug:\nDebug:Instruction:\nDebug:  '}
          {ShowVInstr Addr}
-         {System.printInfo 'Continuation stack:\n'}
+         {System.printInfo 'Debug:Continuation stack:\n'}
          case @continuations of nil then
-            {System.printInfo '  nil\n'}
+            {System.printInfo 'Debug:  nil\n'}
          elseof VInstrs then
             {ForAll VInstrs
              proc {$ VInstr}
-                {System.printInfo '  '}
+                {System.printInfo 'Debug:  '}
                 {ShowVInstr VInstr}
              end}
          end
@@ -863,13 +806,14 @@ in
                end
             end
          [] vGetVariable(_ Reg _) then
-            case Emitter, GetReg(Reg $) of none then
-               if Emitter, IsLast(Reg $) then
-                  Emitter, Emit(getVoid(1))
-               else R in
-                  Emitter, PredictReg(Reg ?R)
-                  Emitter, Emit(getVariable(R))
-               end
+            case Emitter, GetReg(Reg $) of none then skip
+            else Emitter, FreeReg(Reg)
+            end
+            if Emitter, IsLast(Reg $) then
+               Emitter, Emit(getVoid(1))
+            else R in
+               Emitter, PredictReg(Reg ?R)
+               Emitter, Emit(getVariable(R))
             end
          [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
             BIInfo NewCont2
@@ -972,6 +916,19 @@ in
                     else any
                     end
             Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
+         [] vConsCall(_ Reg Regs Coord _) then Instr R Arity Which in
+            Instr = consCall(R Arity)
+            Which = case @continuations of nil then non_y   % tailCall
+                    else any
+                    end
+            Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
+         [] vDeconsCall(_ Reg1 Reg2 Reg3 Coord _) then Instr R Which in
+            Instr = deconsCall(R)
+            Which = case @continuations of nil then non_y   % tailCall
+                    else any
+                    end
+            Emitter, GenericEmitCall(Which Reg1 [Reg2 Reg3]
+                                     Instr R _ Coord nil)
          [] vCallProcedureRef(_ ProcedureRef Regs Coord _) then Instr in
             Instr = callProcedureRef(ProcedureRef {Length Regs} * 2)
             Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
@@ -1976,11 +1933,7 @@ in
                Emitter, EmitAddr(Addr)
             end
             {@RegOpt optimize(?NumberOfYs)}
-\ifdef OLD_OPTIMIZER
-            RegOpt <- {New RegisterOptimizer init(0)}
-\else
-            RegOpt <- {New RegisterOptimizer init}
-\endif
+            RegOpt <- {New RegisterOptimizer init()}
             LocalEnvSize <- OldLocalEnvSize
          else OldLocalEnvsInhibited in
             OldLocalEnvsInhibited = @LocalEnvsInhibited
@@ -2295,6 +2248,10 @@ in
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vCall(_ Reg0 Regs _ Cont) then
             Emitter, PredictRegForCall(Reg Reg0 Regs Cont ?R)
+         [] vConsCall(_ Reg0 Regs _ Cont) then
+            Emitter, PredictRegForCall(Reg Reg0 Regs Cont ?R)
+         [] vDeconsCall(_ Reg0 Reg1 Reg2 _ Cont) then
+            Emitter, PredictRegForCall(Reg Reg0 [Reg1 Reg2] Cont ?R)
          [] vCallProcedureRef(_ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vCallConstant(_ _ Regs _ Cont) then
@@ -2456,6 +2413,7 @@ in
 
       meth Emit(Instr) NewCodeTl in
 \ifdef DEBUG_EMIT
+         {System.printInfo 'Debug:'}
          {System.show Instr}
 \endif
          @CodeTl = Instr|NewCodeTl

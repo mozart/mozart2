@@ -32,6 +32,7 @@ import
    PrintName(is)
    Unnester(makeExpressionQuery unnestQuery)
    Core(userVariable output)
+   CodeStore('class')
    Assembler(internalAssemble assemble)
 \ifndef NO_GUMP
    Gump(makeProductionTemplates)
@@ -43,6 +44,7 @@ export
    ParseOzFile
    ParseOzVirtualString
    Assemble
+   CodeStoreClass
    EvalExpression
    VirtualStringToValue
 define
@@ -56,5 +58,6 @@ define
       \insert Abstractions
       \insert Errors
    end
+   CodeStoreClass = CodeStore.'class'
    Assemble = Assembler.assemble
 end

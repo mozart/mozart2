@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1997-1999
+%%%   Leif Kornstaedt, 1997-2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -35,8 +35,7 @@
 functor
 import
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
-   CompilerSupport(isBuiltin featureLess isCopyableName)
-   at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
    Space(new ask merge)
    FD(decl distinct sumC reflect assign)
    System(show printName)
@@ -44,6 +43,7 @@ import
    Builtins(getInfo)
    Core
    RunTime(literals procValues)
+   CodeStore('class')
 export
    %% mixin classes for the abstract syntax:
    typeOf: CodeGenTypeOf
@@ -83,9 +83,6 @@ export
    token: CodeGenToken
    procedureToken: CodeGenProcedureToken
 define
-   \insert CodeEmitter
-   \insert CodeStore
-
    proc {CodeGenList Nodes CS VHd VTl}
       case Nodes of Node|Noder then VInter in
          {Node codeGen(CS VHd VInter)}
@@ -98,6 +95,13 @@ define
    fun {CoordNoDebug Coord}
       case {Label Coord} of pos then Coord
       else {Adjoin Coord pos}
+      end
+   end
+
+   fun {IsStep Coord}
+      case {Label Coord} of pos then false
+      [] unit then false
+      else true
       end
    end
 
@@ -671,7 +675,7 @@ define
          CS StartAddr GRegs BodyCode0 NLiveRegs
          BodyCode1 BodyCode2 BodyCode StartLabel EndLabel
       in
-         CS = {New CodeStore init(State Reporter)}
+         CS = {New CodeStore.'class' init(State Reporter)}
          {ForAll OldVs proc {$ V} {V setFreshReg(CS)} end}
          {ForAll NewVs proc {$ V} {V setFreshReg(CS)} end}
          {CS startDefinition()}

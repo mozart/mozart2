@@ -4,7 +4,8 @@
 %%%   Ralf Scheidhauer <scheidhr@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt and Ralf Scheidhauer, 1997
+%%%   Leif Kornstaedt, 1997-2001
+%%%   Ralf Scheidhauer, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -636,6 +637,16 @@ define
       [] testRecord(R '|' 2 L)|Rest then
          {Assembler append(testList(R L))}
          {Peephole Rest Assembler}
+      [] match(R ht(ElseL [onScalar(true TrueL) onScalar(false FalseL)]))|Rest
+         andthen {HasLabel Rest TrueL}
+      then
+         {Assembler append(testBool(R FalseL ElseL))}
+         {Peephole Rest Assembler}
+      [] match(R ht(ElseL [onScalar(false FalseL) onScalar(true TrueL)]))|Rest
+         andthen {HasLabel Rest TrueL}
+      then
+         {Assembler append(testBool(R FalseL ElseL))}
+         {Peephole Rest Assembler}
       [] match(R ht(ElseL [onScalar(X L)]))|Rest andthen {HasLabel Rest L} then
          if {IsNumber X} then
             {Assembler append(testNumber(R X ElseL))}
@@ -665,6 +676,24 @@ define
          else skip
          end
          {Peephole Rest1 Assembler}
+      [] deconsCall(R)|deAllocateL(I)|return|Rest then NewR in
+         case R of y(_) then
+            {Assembler append(move(R NewR=x(2)))}
+         else
+            NewR = R
+         end
+         {MakeDeAllocate I Assembler}
+         {Assembler append(tailDeconsCall(NewR))}
+         {EliminateDeadCode Rest Assembler}
+      [] consCall(R Arity)|deAllocateL(I)|return|Rest then NewR in
+         case R of y(_) then
+            {Assembler append(move(R NewR=x(Arity)))}
+         else
+            NewR = R
+         end
+         {MakeDeAllocate I Assembler}
+         {Assembler append(tailConsCall(NewR Arity))}
+         {EliminateDeadCode Rest Assembler}
       [] I1|Rest then
          {Assembler append(I1)}
          {Peephole Rest Assembler}
@@ -697,9 +726,10 @@ define
       end
    end
 
-   proc {Assemble Code Globals Switches ?P}
+   proc {Assemble Code Globals Switches ?P ?VS}
       Assembler = {InternalAssemble Code Switches}
    in
       {Assembler load(Globals ?P)}
+      VS = {ByNeed fun {$} {Assembler output($)} end}
    end
 end

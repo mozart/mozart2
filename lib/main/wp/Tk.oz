@@ -88,6 +88,8 @@ export
    image:         TkImage
    font:          TkFont
 
+   listener:      TkListener
+
    textTag:       TkTextTag
    textMark:      TkTextMark
    canvasTag:     TkCanvasTag
@@ -209,6 +211,9 @@ prepare
    end
 
    local
+      IsTkListener = {NewName}
+      ListenToThat = {NewName}
+
       proc {EnterMessageArgs As I T}
          case As of nil then skip
          [] A|Ar then T.I=A {EnterMessageArgs Ar I+1 T}
@@ -231,7 +236,32 @@ prepare
          [] A|Ar then J=I+1 in J#A|{NumberArgs Ar J}
          end
       end
+
+      proc {Hear OMs}
+         case OMs of nil then skip
+         [] OM|OMr then O#M=OMr in {O M} {Hear OMr}
+         end
+      end
+
    in
+      class TkListener
+         feat !IsTkListener:unit
+         attr Tail
+         meth tkInit
+            Stream = @Tail
+         in
+            thread {Hear Stream} end
+         end
+         meth !ListenToThat(Action)
+            NewTail
+         in
+            Action|NewTail = (Tail <- NewTail)
+         end
+         meth tkClose
+            Tail <- nil
+         end
+      end
+
       proc {InvokeAction Action Args NoArgs Thread}
          case Action
          of OP # M then SM in
@@ -243,9 +273,14 @@ prepare
             else
                SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
             end
-            if {IsPort OP} then {Send OP SM}
-            elseif Thread then thread {OP SM} end
-            else {OP SM}
+            if {IsPort OP} then
+               {Send OP SM}
+            elseif {IsObject OP} andthen {HasFeature OP IsTkListener} then
+               {OP ListenToThat(OP#SM)}
+            elseif Thread then
+               thread {OP SM} end
+            else
+               {OP SM}
             end
          else
             if NoArgs==0 then

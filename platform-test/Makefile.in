@@ -1,5 +1,8 @@
 ####################################################
 
+# Tests for exceptions
+EXCEPTOZC = except.ozc
+
 # Test for spaces
 SPACELOCAL = \
         basic nomosim queens
@@ -46,7 +49,7 @@ CORE = $(FCORE:%=./core/%.ozc)
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC)
+        $(CORE) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(EXCEPTOZC)
 
 
 ####################################################

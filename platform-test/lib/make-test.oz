@@ -66,11 +66,15 @@ local
 
          \insert 'engine.oz'
 
+
+
       in
 
          fun {$ Argv}
             case Argv.usage orelse Argv.help then
-               {Show 'NOT YET IMPLEMENTED'}
+               {System.printInfo \insert 'help-string.oz'
+               }
+               0
             else
                Keys =  case Argv.keys=="all" then AllKeys else
                           {Filter
@@ -297,7 +301,6 @@ in
 
           Tests = {AppendAll
                    {Map Argv.2 fun {$ C}
-                                  {Show {String.toAtom C}}
                                   S = {{Load C} IMPORT}
                                in
                                   {Map {GetAll S nil nil}
@@ -330,9 +333,7 @@ in
              {ForAll Tests proc {$ T}
                               {System.showInfo
                                ({X2V {Label T}} # ':\n' #
-                                '   keys:  ' # {X2V T.keys} # '\n' #
-                                '   url:   ' # T.url # '\n' #
-                                '   where: ' # '???')}
+                                '   keys:  ' # {X2V T.keys} # '\n')}
                            end}
              {System.showInfo '\n\nKEYS FOUND:'}
              {ForAll {ChunkUp Keys}
@@ -347,7 +348,7 @@ in
           end
 
           {Application.exec
-           './test'
+           './oztest'
            c('AP':eager 'CP':eager 'SP':eager 'OP':eager)
            {MakeTestEngine Keys Tests}
            TestOptions}

@@ -32,28 +32,31 @@ COMPONENTS = \
 
 RM      = @RM@ -f
 OZBATCH = @OZBATCH@
+OZFLAGS = --nowarnunused
 
-OZE = $(OZBATCH)
-OZC = $(OZBATCH) -c
+OZE = $(OZBATCH) $(OZFLAGS)
+OZC = $(OZE) -c
 
-all: test $(COMPONENTS)
+all: oztest
 
 
-make-test: ./lib/make-test.oz ./lib/engine.oz ./lib/passed.oz ./lib/failed.oz
+
+
+oztest: ./lib/make-test.oz ./lib/engine.oz \
+        ./lib/passed.oz ./lib/failed.oz ./lib/help-string.oz \
+        $(COMPONENTS)
         $(OZE) -l AP,SP ./lib/make-test.oz
-
-
-test: $(COMPONENTS) make-test
         ./make-test -verbose $(COMPONENTS)
+        $(RM) ./make-test
 
 
 clean:
         $(RM) *~ ./*/*~ ./*/*/*~
+        $(RM) $(COMPONENTS)
         $(RM) make-test
 
 veryclean: clean
-        $(RM) $(COMPONENTS)
-        $(RM) test
+        $(RM) oztest
 
 distclean: veryclean
         $(RM) config.cache config.log config.status

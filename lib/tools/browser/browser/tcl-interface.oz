@@ -643,7 +643,7 @@ in
          else skip
          end
 
-         %% reject all future messages;
+         %% reject all future messages; TODO ?
          Object.closable , close
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::close is finished'}

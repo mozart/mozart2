@@ -132,10 +132,10 @@ StoreBreak           = {NewName}
 StoreSeqNum          = {NewName}
 
 %%
-%% ypes of (record) filling:
+%% Types of (record) filling:
 Expanded             = {NewName}
 Filled               = {NewName}
-%% ypes of arity listing:
+%% Types of arity listing:
 AtomicArity          = {NewName}
 TrueArity            = {NewName}
 
@@ -316,8 +316,8 @@ IMWYOffset    = 50
 %%
 IDepth            = 15
 IWidth            = 50
-IFillStyle        = Expanded
-IArityType        = AtomicArity
+IFillStyle        = !Expanded
+IArityType        = !AtomicArity
 ISmallNames       = !True
 IAreVSs           = !False
 IDepthInc         = 1

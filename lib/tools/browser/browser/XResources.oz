@@ -77,13 +77,6 @@ in
       end
 
       %%
-      %%  ... though it's never used;
-      meth close
-         {self.Toplevel close}
-         Object.closable , close
-      end
-
-      %%
       %% Yields 'True' if the font exists, and updates the cache
       %% if needed;
       %%

@@ -76,10 +76,10 @@ in
    %% Note that a first stored term will be returned among all equal
    %% (suitable) which were stored;
    %%
-   %% Note
+   %% Note:
    %% It works properly under assumption that each term object has
-   %% a feature 'term', and that they are inherited from the
-   %% 'Object.closedFeature' class;
+   %% features 'term' and 'closed';
+   %%
 
    %%
    class TermsStoreClass from UrObject

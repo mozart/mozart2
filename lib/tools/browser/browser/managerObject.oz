@@ -80,7 +80,8 @@ in
          {Show 'BrowserManagerClass::ServeRequest ...'}
 \endif
          %%
-         local Req in
+         case Object.closable , isClosed($) then skip
+         else Req in
             %%
             case {self.Stream deq(Req $)} then
                %% Got one - process it.

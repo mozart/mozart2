@@ -192,12 +192,12 @@ local
       LESS =
       fun {$ X Y}
          case X#Y
-         of     MINELEM#MINELEM then false
-         elseof MINELEM#_       then true
-         elseof       _#MINELEM then false
-         elseof MAXELEM#MAXELEM then false
-         elseof MAXELEM#_       then false
-         elseof       _#MAXELEM then true
+         of     !MINELEM#!MINELEM then false
+         elseof !MINELEM#_       then true
+         elseof       _#!MINELEM then false
+         elseof !MAXELEM#!MAXELEM then false
+         elseof !MAXELEM#_       then false
+         elseof       _#!MAXELEM then true
          else X < Y
          end
       end
@@ -205,12 +205,12 @@ local
       GREATER =
       fun {$ X Y}
          case X#Y
-         of     MINELEM#MINELEM then false
-         elseof MINELEM#_       then false
-         elseof       _#MINELEM then true
-         elseof MAXELEM#MAXELEM then false
-         elseof MAXELEM#_       then true
-         elseof       _#MAXELEM then false
+         of     !MINELEM#!MINELEM then false
+         elseof !MINELEM#_       then false
+         elseof       _#!MINELEM then true
+         elseof !MAXELEM#!MAXELEM then false
+         elseof !MAXELEM#_       then true
+         elseof       _#!MAXELEM then false
          else X > Y
          end
       end
@@ -517,14 +517,14 @@ in
 \ifndef CONSTRAINT_N_NAIVE
             proc {$ Vs U}
                {FSP.unionN Vs U}
-               {FD.sum {Map Vs fun {$ V} {FS.card V} end}
+               {FD.sum {Map {VectorToList Vs} fun {$ V} {FS.card V} end}
                 '=:' {FS.card U}}
             end
 \else
             proc {$ Vs U} Xs = {VectorToList Vs}
             in
                U = {FoldR Xs FSUnion FSEmpty}
-               {FD.sum {Map Vs fun {$ V} {FS.card V} end}
+               {FD.sum {Map Xs fun {$ V} {FS.card V} end}
                 '=:' {FS.card U}}
             end
 \endif

@@ -79,163 +79,158 @@ local
    end
 
 
-in
+   {{`Builtin` 'CloseGate' 0}}
 
-   fun {NewConnection }
-      {{`Builtin` 'CloseGate' 0}}
+   ReqStream = {{`Builtin` 'OpenGate'  1}}
+   ProcId    = {{`Builtin` 'GateId'    1}}
+   ProcKey   = {IdToKey {Atom.toString ProcId}}
+   ProcSend  = {`Builtin` 'SendGate'  2}
 
-      ReqStream = {{`Builtin` 'OpenGate'  1}}
-      ProcId    = {{`Builtin` 'GateId'    1}}
-      ProcKey   = {IdToKey {Atom.toString ProcId}}
-      ProcSend  = {`Builtin` 'SendGate'  2}
+   KeyDict   = {Dictionary.new}
 
-      KeyDict   = {Dictionary.new}
-
-      local
-         IdCtr = {New class $
-                         prop final locking
-                         attr n:0
-                         meth get(N)
-                            lock N=@n n<-N+1 end
-                         end
-                      end get(_)}
-      in
-
-         proc {MakeTicket IsSingle ?Key ?Ticket}
-            Key    = {IdCtr get($)}
-            Ticket = {Append {VirtualString.toString ProcId}
-                      &@|{Append ProcKey
-                          case IsSingle then &s
-                          else &m end|{IntToKey Key}}}
-         end
-
-         proc {DeTicket Ticket ?ProcId ?IsSingle ?Key}
-            try
-               [PI R]           = {String.tokens Ticket &@}
-               PK1|PK2|PK3|IS|K = R
-            in
-               {IdToKey PI}=[PK1 PK2 PK3]
-               ProcId   = PI
-               IsSingle = case IS
-                          of &s then true
-                          [] &m then false
-                          end
-               Key      = {KeyToInt K}
-            catch _ then
-               raise ticket(illegal) end
-            end
-         end
-      end
-
-      thread
-         {ForAll ReqStream
-          proc {$ T#A}
-             try
-                IsSingle Key
-                {DeTicket {Atom.toString T} _ ?IsSingle ?Key}
-                Y = {Dictionary.get KeyDict Key}
-             in
-                case IsSingle then
-                   {Dictionary.remove KeyDict Key}
-                   A = yes(Y)
-                else Z in
-                   A = yes(Z) {Port.send Y Z}
-                end
-             catch _ then
-                A = no
-             end
-          end}
-      end
-
-
-      %%
-      %% Single connections
-      %%
-
-      fun {Offer X}
-         %% return ticket
-         Ticket Key
-      in
-         {MakeTicket true ?Key ?Ticket}
-         {Dictionary.put KeyDict Key X}
-         {String.toAtom Ticket}
-      end
-
-      proc {Take TicketV X}
-         Ticket = {VirtualString.toString TicketV}
-         ProcId IsSingle
-      in
-         {DeTicket Ticket ?ProcId ?IsSingle _}
-         case IsSingle then A in
-            {ProcSend ProcId {String.toAtom Ticket}#A}
-            case A
-            of no     then
-               raise ticket(refused) end
-            [] yes(Y) then
-               X=Y
-            end
-         else
-            raise ticket(illegal) end
-         end
-      end
-
-      %%
-      %% One to many connections
-      %%
-      class Gate
-         feat Ticket Key
-         attr Stream
-         meth init
-            ThisTicket ThisKey
-            P = {Port.new @Stream}
-         in
-            {MakeTicket false ?ThisKey ?ThisTicket}
-            {Dictionary.put KeyDict ThisKey P}
-            self.Key    = ThisKey
-            self.Ticket = ThisTicket
-         end
-         meth getTicket($)
-            {String.toAtom self.Ticket}
-         end
-         meth receive(X)
-            NS S
-         in
-            S = (Stream <- NS)
-            case S of Y|R then
-               NS=R X=Y
-            end
-         end
-         meth close
-            Stream <- _
-            {Dictionary.remove KeyDict self.Key}
-         end
-      end
-
-      proc {Send TicketV X}
-         Ticket = {VirtualString.toString TicketV}
-         ProcId IsSingle
-      in
-         {DeTicket Ticket ?ProcId ?IsSingle _}
-         case IsSingle then
-            raise ticket(illegal) end
-         else A in
-            {ProcSend ProcId {String.toAtom Ticket}#A}
-            case A
-            of no     then
-               raise ticket(refused) end
-            [] yes(Y) then
-               X=Y
-            end
-         end
-      end
-
+   local
+      IdCtr = {New class $
+                      prop final locking
+                      attr n:0
+                      meth get(N)
+                         lock N=@n n<-N+1 end
+                      end
+                   end get(_)}
    in
 
-      connection(offer: Offer
-                 take:  Take
-                 gate:  Gate
-                 send:  Send)
+      proc {MakeTicket IsSingle ?Key ?Ticket}
+         Key    = {IdCtr get($)}
+         Ticket = {Append {VirtualString.toString ProcId}
+                   &@|{Append ProcKey
+                       case IsSingle then &s
+                       else &m end|{IntToKey Key}}}
+      end
 
+      proc {DeTicket Ticket ?ProcId ?IsSingle ?Key}
+         try
+            [PI R]           = {String.tokens Ticket &@}
+            PK1|PK2|PK3|IS|K = R
+         in
+            {IdToKey PI}=[PK1 PK2 PK3]
+            ProcId   = PI
+            IsSingle = case IS
+                       of &s then true
+                       [] &m then false
+                       end
+            Key      = {KeyToInt K}
+         catch _ then
+            raise ticket(illegal) end
+         end
+      end
    end
+
+   thread
+      {ForAll ReqStream
+       proc {$ T#A}
+          try
+             IsSingle Key
+             {DeTicket {Atom.toString T} _ ?IsSingle ?Key}
+             Y = {Dictionary.get KeyDict Key}
+          in
+             case IsSingle then
+                {Dictionary.remove KeyDict Key}
+                A = yes(Y)
+             else Z in
+                A = yes(Z) {Port.send Y Z}
+             end
+          catch _ then
+             A = no
+          end
+       end}
+   end
+
+
+   %%
+   %% Single connections
+   %%
+
+   fun {Offer X}
+      %% return ticket
+      Ticket Key
+   in
+      {MakeTicket true ?Key ?Ticket}
+      {Dictionary.put KeyDict Key X}
+      {String.toAtom Ticket}
+   end
+
+   proc {Take TicketV X}
+      Ticket = {VirtualString.toString TicketV}
+      ProcId IsSingle
+   in
+      {DeTicket Ticket ?ProcId ?IsSingle _}
+      case IsSingle then A in
+         {ProcSend ProcId {String.toAtom Ticket}#A}
+         case A
+         of no     then
+            raise ticket(refused) end
+         [] yes(Y) then
+            X=Y
+         end
+      else
+         raise ticket(illegal) end
+      end
+   end
+
+   %%
+   %% One to many connections
+   %%
+   class Gate
+      feat Ticket Key
+      attr Stream
+      meth init
+         ThisTicket ThisKey
+         P = {Port.new @Stream}
+      in
+         {MakeTicket false ?ThisKey ?ThisTicket}
+         {Dictionary.put KeyDict ThisKey P}
+         self.Key    = ThisKey
+         self.Ticket = ThisTicket
+      end
+      meth getTicket($)
+         {String.toAtom self.Ticket}
+      end
+      meth receive(X)
+         NS S
+      in
+         S = (Stream <- NS)
+         case S of Y|R then
+            NS=R X=Y
+         end
+      end
+      meth close
+         Stream <- _
+         {Dictionary.remove KeyDict self.Key}
+      end
+   end
+
+   proc {Send TicketV X}
+      Ticket = {VirtualString.toString TicketV}
+      ProcId IsSingle
+   in
+      {DeTicket Ticket ?ProcId ?IsSingle _}
+      case IsSingle then
+         raise ticket(illegal) end
+      else A in
+         {ProcSend ProcId {String.toAtom Ticket}#A}
+         case A
+         of no     then
+            raise ticket(refused) end
+         [] yes(Y) then
+            X=Y
+         end
+      end
+   end
+
+in
+
+   Connection = connection(offer: Offer
+                           take:  Take
+                           gate:  Gate
+                           send:  Send)
 
 end

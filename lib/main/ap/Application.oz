@@ -718,7 +718,7 @@ local
       'AP':             ['SP' 'OP']
       'CP':             ['SP']
       'WP':             ['SP' 'OP']
-      'DP':             ['SP' 'OP' 'AP' 'WP']
+      'DP':             ['OP' 'AP']
       'Panel':          ['SP' 'OP' 'WP']
       'Browser':        ['SP' 'WP' 'CP']
       'Explorer':       ['SP' 'WP' 'Browser'#lazy]
@@ -730,7 +730,8 @@ local
       'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
       'Gump':           ['SP' 'OP']
       'GumpScanner':    ['SP']
-      'GumpParser':     ['SP'])
+      'GumpParser':     ['SP']
+      'Misc':           nil)
    %%
    %% we also want to export a useful collection of submodules
    %%
@@ -742,7 +743,7 @@ local
       'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
                          'FD' 'FS']
       'WP':             ['Tk' 'NewTk' 'TkTools' 'NewTkTools']
-      'DP':             ['Site' 'Server' 'NewServer' 'NewAgenda' 'Gate']
+      'DP':             ['Connection' 'Remote']
       'Panel':          nil
       'Browser':        ['Browse']
       'Explorer':       ['ExploreOne' 'ExploreAll' 'ExploreBest']
@@ -753,7 +754,8 @@ local
       'Profiler':       nil
       'Gump':           nil
       'GumpScanner':    nil
-      'GumpParser':     nil)
+      'GumpParser':     nil
+      'Misc':           nil)
    %%
    %% Create a new registry and record in it all the standard modules
    %% and submodules

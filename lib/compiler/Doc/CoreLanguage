@@ -74,7 +74,6 @@ S  ::=  <Statement>
      label:         L
      args:          (T|F#T)+   % all featureless subtrees in front
      isOpen:        bool
-     expansionOccs: record
 
 
 % 'proc' '{' designator formalArgs '}' statements 'end'
@@ -87,7 +86,6 @@ S  ::=  <Statement>
      procFlags:     [atom]
      toplevelNames: [name] | unit
      globalVars:    V*   % those of "local formalArgs in statements end"
-     expansionOccs: record
 
 
 % 'proc' '{' designator formalArgs '}' statements 'end'
@@ -103,7 +101,6 @@ S  ::=  <Statement>
      designator:    O
      actualArgs:    O*
      coord:         C
-     expansionOccs: record
 
 
 % 'case' arbiter 'then' consequent alternative 'end'
@@ -113,7 +110,6 @@ S  ::=  <Statement>
      alternative:   <AbstractElse>
      coord:         C
      globalVars:    V*   % those of all clauses (not arbiter)
-     expansionOccs: record
 
 
 % statements
@@ -145,7 +141,6 @@ S  ::=  <Statement>
      label:         L
      args:          (P|F#P)+   % all featureless subpatterns in front
      isOpen:        bool
-     expansionOccs: record
 
 
 % left '=' right
@@ -168,7 +163,6 @@ S  ::=  <Statement>
 % (empty)
 <NoElse> from <AbstractElse>
      coord:         C
-     expansionOccs: record
 
 
 % 'thread' statements 'end'
@@ -204,7 +198,6 @@ S  ::=  <Statement>
      methods:           ( <Method> | <MethodWithDesignator> )*
      coord:             C
      isVirtualToplevel: bool
-     expansionOccs:     record
 
 % 'meth' label '(' formalArgs ')' statements 'end'
 <Method>
@@ -213,7 +206,6 @@ S  ::=  <Statement>
      statements:    S+
      coord:         C
      globalVars:    V*   % only of "local vars in label feats statements end"
-     expansionOccs: record
 
 
 % 'meth' label '(' formalArgs [ '...' ] ')' '=' messageDesignator
@@ -242,7 +234,6 @@ S  ::=  <Statement>
 <ObjectLock> from <Statement>
      statements:    S+
      coord:         C
-     expansionOccs: record
 
 
 % destination '=' 'self'
@@ -449,11 +440,3 @@ Remarks:
 -- The globalVars attributes contain the non-local variables referenced
    in the corresponding construct.  Note that while all non-local unquoted
    variables must be present, some system variables may be missing.
-
--- Each expansionOccs feature contains a record whose features
-   are (system) variable print names and whose subtrees are either
-   corresponding variable occurrences or 'undeclared' if the variable
-   was unknown during unnesting.  These occurrences may be needed
-   during code generation to expand constructs that may not be
-   translated directly (such as record constructions with unknown
-   labels or features).

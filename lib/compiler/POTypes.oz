@@ -234,7 +234,6 @@ in
        bool   # name
        'unit' # name
        bitArray # chunk
-       promise # chunk
        array  # chunk
        dictionary # chunk
        'class'# chunk
@@ -344,7 +343,7 @@ in
             then {OzTypes.encode bitArray nil}
             else {OzTypes.encode chunk [array dictionary 'class'
                                         'object' 'lock' port
-                                        bitArray promise]}
+                                        bitArray]}
             end
          elsecase {IsSpace V}
          then {OzTypes.encode space nil}

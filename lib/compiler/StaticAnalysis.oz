@@ -286,7 +286,6 @@ local
         port:              IsPort
         space:             IsSpace
         'thread':          IsThread
-        promise:           Promise.is
         foreignPointer:    Foreign.pointer.is
         fset:              fun {$ X}
                               {FS.value.is X} orelse {FS.var.is X}

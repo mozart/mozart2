@@ -23,8 +23,8 @@
 functor $
 
 import
-   Remote
-   OS.uName
+   Remote(manager)
+   OS(uName)
 export
    Return
 
@@ -33,8 +33,16 @@ body
    dp([
        mini(
             proc {$}
-               S={New Remote.server init({OS.uName}.nodename)}
+               S={New Remote.manager init(host:{OS.uName}.nodename)}
             in
+               {S ping}
+               {S apply(url:'' functor
+                               export
+                                  Hallo
+                               define
+                                  Hallo=hallo
+                               end $)}.hallo=hallo
+               {S ping}
                {S close}
             end
             keys:[remote])

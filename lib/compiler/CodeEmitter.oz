@@ -270,16 +270,20 @@ in
                       {Dictionary.put @DelayedInitsDict I Instr}
                    end}
                   Emitter, DepthFirst()
-                  Temporaries <- Ts
+                  Temporaries <- {Dictionary.clone Ts}
                   {ForAll {Dictionary.entries Ps}
                    proc {$ Reg#YG}
                       case Emitter, GetPerm(Reg $) of none then
-                         Emitter, Emit(createVariable(YG))
-                      elseof YG2 then
-                         YG = YG2   %--** oops!
+                         case Emitter, GetTemp(Reg $) of none then
+                            Emitter, Emit(createVariable(YG))
+                         elseof X then
+                            Emitter, Emit(move(X YG))
+                         end
+                      elseof !YG then skip
                       end
                    end}
-                  Permanents <- Ps
+                  Permanents <- {Dictionary.clone Ps}
+                  %--** this breaks ReturnToFreeList!
                   FreeYs <- {SubtractYs @UsedYs {Dictionary.items Ps}}
                   Emitter, Emit(branch(Label))
                end

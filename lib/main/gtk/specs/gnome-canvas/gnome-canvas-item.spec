@@ -25,7 +25,7 @@ $class =
     (
      { name  => 'GnomeCanvasItem',
 
-       super => 'GtkObject',
+       super => 'BaseObject',
 
        inits => { 'gnome_canvas_item_new'                   => { in  => ['!GnomeCanvasGroup*',
                                                                          'GtkType',

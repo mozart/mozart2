@@ -113,7 +113,7 @@ local
 
 in
 
-   Loop=loop(for:            For
+   Loop=loop('for':          For
              forThread:      ForThread
              multiFor:       MultiFor
              multiForThread: MultiForThread)

@@ -264,7 +264,7 @@ define
          if {IsNative U} then
             {self Native(U $)}
          else
-            {self Pickle(Url U $)}
+            {self Pickle(U U $)}
          end
       end
 
@@ -307,7 +307,7 @@ define
             end
          [] contrib then
             {self trace('contrib module' Url)}
-            {self Pickle(Url $)}
+            {self Pickle(Url Url $)}
          else
             raise error(module(urlSyntax {UrlToAtom Url})) end
          end

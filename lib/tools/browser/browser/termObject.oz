@@ -18,6 +18,7 @@ local
    MetaTermObject
    MetaCompoundTermObject
    MetaTupleTermObject
+   MetaListTermObject
    MetaRecordTermObject
    I_MetaVariableTermObject
 
@@ -69,6 +70,11 @@ local
    RebrowseSubterm  = {NewName} %     --- / --- / ---
    GetWatchFun      = {NewName} %  variables only;
    SetWatchPoint    = {NewName} %  variables only;
+   ListInit         = {NewName} %  after MetaList"s;
+   GetLastElements  = {NewName} %     --- / --- / ---
+   CreateLTG        = {NewName} %     --- / --- / ---
+   HasLTG           = {NewName} %     --- / --- / ---
+   RemoveLTG        = {NewName} %     --- / --- / ---
 
    %%
    Elements         = {NewName}
@@ -611,10 +617,10 @@ in
    %%
    %% "||"
    DBarDP = fun {$ _ CP LS} DDSpace >= LS-CP end
-   DBarDesc = '>'('+'(current 2) line_size)
+   DBarDesc = '>'('+'(current DDSpace) line_size)
 
    %%
-   %% '...'
+   %% "..."
    EllipsesDP = !CommasDP
    EllipsesDesc = !CommasDesc
 
@@ -1416,19 +1422,10 @@ in
 
    %%
    %%
-   %% Lists;
+   %% List-like structures.
    %%
-   class ListTermObject from MetaTupleTermObject
+   class MetaListTermObject from MetaTupleTermObject
       %%
-      feat
-         type: T_List
-         delimiter:  DSpaceGlue
-      %% this indentation implies that there can be no glue in a first
-      %% group (otherwise, if the representation manager subobject
-      %% decides to make a compound glue, its size will infinity -
-      %% that's an error;);
-         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
-
       attr
       %%
       %% a "tail" list which is not yet seen. That's the whole list
@@ -1447,11 +1444,7 @@ in
       %%
 
       %%
-      %%
-      meth makeTerm
-\ifdef DEBUG_TO
-         {Show 'ListTermObject::makeTerm is applied' # self.term}
-\endif
+      meth !ListInit
          local EList in
             %%
             %% originally, there are no "seen" subterms, all of them
@@ -1463,22 +1456,6 @@ in
             %%
             TailElements <- EList
             TailList <- self.term
-
-            %%
-            CompoundRepManagerObject
-            , block(DLeadingBlock)
-            , putG_S(ln:DLSBraceGroup str:DLSBraceS)
-
-            %%
-            %% Expand the list "from scratch" :-)
-            ListTermObject , expand({self.store read(StoreWidth $)})
-
-            %%
-            CompoundRepManagerObject
-            , block(DTailBlock)
-            , putG_S(ln:DBraceGroup str:DRSBraceS)
-
-            %%
          end
       end
 
@@ -1487,7 +1464,7 @@ in
       %% in a "lazy" fashion;
       meth !GetElement
 \ifdef DEBUG_TO
-         {Show 'ListTermObject::makeTerm: GetElement'
+         {Show 'MetaListTermObject::makeTerm: GetElement'
           # @Elements # @NotShownElements # @ShownWidth
           # @TailElements # @TailList}
 \endif
@@ -1543,7 +1520,7 @@ in
                         %% up to the "cyclic" one. This must be done
                         %% since there are other cycles - over
                         %% all subsequent elements;
-                        ListTermObject , PullElements(NNonCyclic)
+                        MetaListTermObject , PullElements(NNonCyclic)
                      else
                         %% not the first element - a new list is
                         %% necessary;
@@ -1557,16 +1534,16 @@ in
                   else
                      %% there is no cycle going over this list
                      %% constructor.
-                     ListTermObject , PullElement
+                     MetaListTermObject , PullElement
                   end
                else
                   %% the (a) case;
-                  ListTermObject , PullElement
+                  MetaListTermObject , PullElement
                end
             else
                %% has got either a closed well-formed list, or a
                %% malformed one;
-               @TailElements = nil
+               @TailElements = self , GetLastElements(TL $)
             end
          else
             %%
@@ -1577,7 +1554,7 @@ in
 
          %%
 \ifdef DEBUG_TO
-         {Show 'ListTermObject::makeTerm: GetElement is finisehd'
+         {Show 'MetaListTermObject::makeTerm: GetElement is finisehd'
           # @Elements # @NotShownElements # @ShownWidth
           # @TailElements # @TailList}
 \endif
@@ -1602,7 +1579,7 @@ in
       %%
       meth PullElements(N)
          case N =< 0 then true
-         else ListTermObject , PullElement , PullElements(N-1)
+         else MetaListTermObject , PullElement , PullElements(N-1)
          end
       end
 
@@ -1626,21 +1603,8 @@ in
       end
 
       %%
-      meth HasLTG($)
-\ifdef DEBUG_TO
-         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
-         then true
-         else {BrowserError 'ListTermObject::HasLTG: wrong block!'}
-         end
-\endif
-         %%
-         CompoundRepManagerObject
-         , isGroup(b:DSpecialBlock ln:DLTGroup is:$)
-      end
-
-      %%
       %% It puts 'WidthInc' subterms, or as much as possible, and
-      %% after that it puts/removes tail groups ("||" and a tail
+      %% after that it puts/removes tail groups ("|" and a tail
       %% variable/term);
       %%
       %% Note that recursion must be handled with care: if no new
@@ -1651,7 +1615,7 @@ in
       %% (that's a local method;)
       meth expand(WidthInc)
 \ifdef DEBUG_TO
-         {Show 'ListTermObject::expand is applied' # self.term}
+         {Show 'MetaListTermObject::expand is applied' # self.term}
 \endif
          %%
          local CurrentSWidth NewSWidth RestInc in
@@ -1697,7 +1661,7 @@ in
             %%
             case
                MetaCompoundTermObject , hasCommas($) orelse
-               ListTermObject , IsWFList($)
+               MetaListTermObject , IsWFList($)
             then
                %%
                %% In addition to the case above, there is also a case
@@ -1714,15 +1678,15 @@ in
                   %% Iterate. This iteration terminates because at
                   %% every step at least one further subterm is
                   %% added;
-                  ListTermObject , expand(RestInc)
+                  MetaListTermObject , expand(RestInc)
                else
                   %%
                   %% in both cases (there is a ",,," group *or* the
                   %% list is a well-formed one) there can be no
                   %% 'ltg';
-                  case ListTermObject , HasLTG($) then
+                  case self , HasLTG($) then
                      %% i.e. it was an incomplete list before;
-                     ListTermObject , RemoveLTG
+                     self , RemoveLTG
                   else true
                   end
                end
@@ -1731,7 +1695,7 @@ in
             else                % has no commas *and* is not well-formed;
                %%
                %% otherwise, we have to place an 'ltg';
-               case ListTermObject, HasLTG($) then
+               case self , HasLTG($) then
                   %%
                   %% if it is still an incomplete list, we replace the
                   %% "tail" term object *unconditionally*. This can be
@@ -1742,7 +1706,7 @@ in
                else
                   %% i.e. it was either shown partially (with a ",,,"
                   %% group), or it has to be shown the first time;
-                  ListTermObject , CreateLTG
+                  self , CreateLTG(@TailList)
                end
                %%
                %% ***** 'LTG' is created/updated *****
@@ -1751,13 +1715,13 @@ in
                %% ... and now, if the list *became* meanwhile expandable
                %% or well-formed:
                case
-                  (ListTermObject , IsWFList($) orelse
+                  (MetaListTermObject , IsWFList($) orelse
                    MetaCompoundTermObject , CanBeExpanded($)) andthen
                   CompoundControlObject , mayContinue($)
                then
                   %%
                   %% ... just iterate again;
-                  ListTermObject , expand(RestInc)
+                  MetaListTermObject , expand(RestInc)
                else true
                end
             end
@@ -1767,40 +1731,27 @@ in
       end
 
       %%
-      %% Make a " || _" tail of an incomplete/malformed(cyclic) list;
-      meth CreateLTG
-         local TL DP Desc in
-            %%
-            TL = @TailList
-            DP = fun {$ _ CP LS} {LimitedTermSize TL CP LS} >= LS end
-            Desc = '>'('+'(current st_size(DSpecialBlock#DLTGroup))
-                       line_size)
-
-            %%
-            %% note that the insertion cursor is located at a right
-            %% position now;
-            CompoundRepManagerObject
-            , putG_SGS(ln:   DDBarGroup
-                       str:  DSpaceGlue
-                       dp:   DBarDP
-                       desc: DBarDesc
-                       str2: DDBar)
-            , putG_SGT(ln:       DLTGroup
-                       str:      DSpaceGlue
-                       dp:       DP
-                       desc:     Desc
-                       term:     TL)
-
-            %%
-         end
-      end
-
+      %% 'MetaListTermObject' expects that the special block consists
+      %% of these two groups - 'DDBarGroup' and 'DLTGroup';
       %%
-      meth RemoveLTG
+      meth !RemoveLTG
          %%
          CompoundRepManagerObject
          , removeG(ln: DLTGroup)
          , removeG(ln: DDBarGroup)
+      end
+
+      %%
+      meth !HasLTG($)
+\ifdef DEBUG_TO
+         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
+         then true
+         else {BrowserError 'MetaListTermObject::HasLTG: wrong block!'}
+         end
+\endif
+         %%
+         CompoundRepManagerObject
+         , isGroup(b:DSpecialBlock ln:DLTGroup is:$)
       end
 
       %%
@@ -1812,29 +1763,169 @@ in
       %% variable, and will be just rebrowsed;
       meth subtermChanged(N)
 \ifdef DEBUG_TO
-         {Show 'ListTermObject::subtermChanged, self.term&N '
+         {Show 'MetaListTermObject::subtermChanged, self.term&N '
           # self.term # N}
 \endif
          %%
-         local Term in
-            Term = CompoundRepManagerObject , getTermG(fn:N term:$)
+         case N == DSpecialBlock#DLTGroup then MaxWidth CurrentSWidth in
+            %%
+            %% presumably we face a growth of the list;
+            MaxWidth = {self.store read(StoreWidth $)}
+            CurrentSWidth = MetaCompoundTermObject , getShownWidth($)
 
             %%
-            case N == DSpecialBlock#DLTGroup then MaxWidth CurrentSWidth in
-               %%
-               %% presumably we face a growth of the list;
-               MaxWidth = {self.store read(StoreWidth $)}
-               CurrentSWidth = MetaCompoundTermObject , getShownWidth($)
+            %% either to draw new elements, or just replace 'ltg'
+            %% by an ',,,' group (the difference can be negative,
+            %% of course);
+            MetaListTermObject , expand(MaxWidth - CurrentSWidth)
+         else
+            %%  fallback;
+            MetaCompoundTermObject , subtermChanged(N)
+         end
+      end
 
-               %%
-               %% either to draw new elements, or just replace 'ltg'
-               %% by an ',,,' group (the difference can be negative,
-               %% of course);
-               ListTermObject , expand(MaxWidth - CurrentSWidth)
-            else
-               %%  fallback;
-               MetaCompoundTermObject , subtermChanged(N)
-            end
+      %%
+   end
+
+   %%
+   %%
+   %% Lists.
+   %%
+   %% These guys also support Prolog-notation (for "historical"
+   %% reasons), but whenever they are applied they are checked to be
+   %% well-formed (and complete).
+   %%
+   class ListTermObject from MetaListTermObject
+      %%
+      feat
+         type: T_List
+         delimiter:  DSpaceGlue
+      %% this indentation implies that there can be no glue in a first
+      %% group (otherwise, if the representation manager subobject
+      %% decides to make a compound glue, its size will be infinity -
+      %% that's an error;);
+         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::makeTerm is applied' # self.term}
+\endif
+         %%
+         MetaListTermObject , ListInit
+
+         %%
+         CompoundRepManagerObject
+         , block(DLeadingBlock)
+         , putG_S(ln:DLSBraceGroup str:DLSBraceS)
+
+         %%
+         %% Expand the list "from scratch" :-)
+         MetaListTermObject , expand({self.store read(StoreWidth $)})
+
+         %%
+         CompoundRepManagerObject
+         , block(DTailBlock)
+         , putG_S(ln:DBraceGroup str:DRSBraceS)
+
+         %%
+      end
+
+      %%
+      %% It must yield a last element to be shown when a non-cons is
+      %% found. Obviously, for well-formed lists there none;
+      meth !GetLastElements(TL $) nil end
+
+      %%
+      %% Make a " || _" tail of an incomplete/malformed(cyclic) list;
+      %%
+      %% Note (again): That's not used now;
+      %%
+      meth !CreateLTG(TL)
+         local DP Desc in
+            %%
+            DP = fun {$ _ CP LS} {LimitedTermSize TL CP LS} >= LS end
+            Desc = '>'('+'(current st_size(DSpecialBlock#DLTGroup))
+                       line_size)
+
+            %%
+            %% note that the insertion cursor is located at a right
+            %% position now;
+            CompoundRepManagerObject
+            , putG_SGS(ln:   DDBarGroup
+                       str:  self.delimiter
+                       dp:   DBarDP
+                       desc: DBarDesc
+                       str2: DDBar)
+            , putG_SGT(ln:   DLTGroup
+                       str:  self.delimiter
+                       dp:   DP
+                       desc: Desc
+                       term: TL)
+
+            %%
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% "Flat" cons cells.
+   %% (also referred as ill-formed lists).
+   %%
+   %% The code is basically "replicated" from lists;
+   %%
+   class FConsTermObject from MetaListTermObject
+      %%
+      feat
+         type: T_List
+         delimiter:  DVBarGlue
+         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'FConsTermObject::makeTerm is applied' # self.term}
+\endif
+         %%
+         MetaListTermObject , ListInit
+
+         %%
+         CompoundRepManagerObject , block(DLeadingBlock)
+
+         %%
+         FConsTermObject , expand({self.store read(StoreWidth $)})
+
+         %%
+         CompoundRepManagerObject , block(DTailBlock)
+
+         %%
+      end
+
+      %%
+      meth !GetLastElements(TL $) TL|nil end
+
+      %%
+      %% Make a "|{Var,Non-Var}" tail;
+      meth !CreateLTG(TL)
+         local DP Desc in
+            %%
+            DP = fun {$ _ CP LS} {LimitedTermSize TL CP LS} >= LS end
+            Desc = '>'('+'(current st_size(DSpecialBlock#DLTGroup))
+                       line_size)
+
+            %%
+            CompoundRepManagerObject
+            , putG_E(ln:     DDBarGroup)     % just empty;
+            , putG_SGT(ln:   DLTGroup
+                       str:  self.delimiter
+                       dp:   DP
+                       desc: Desc
+                       term: TL)
          end
       end
 
@@ -2116,10 +2207,10 @@ in
             RecordTermObject , SetWatchPoint
 
             %%
-            %% it is nicer to have a "job...end", but "thread...end"
-            %% is still correct (though less efficient - because
-            %% label will 'arrive' some time later);
-            job self.RLabel = {Label Term} end
+            %% it would be nicer to have "job...end", but
+            %% "thread...end" is still correct (though less efficient
+            %% - because label will 'arrive' some time later);
+            thread self.RLabel = {Label Term} end      % job
 
             %%
             %% a label;
@@ -2265,20 +2356,22 @@ in
                [] ObjClosed = True then true
                end
             end
+         else true              % nothing to do - it's a proper record;
+         end
+
+         %%
+         %% Now (TODO?) we always have to look for a label;
+         case @HasDetLabel then true
+         else ObjClosed GotLabel in
+            ObjClosed = self.closed
+            thread GotLabel = {Det self.RLabel} end
 
             %%
-            case @HasDetLabel then true
-            else GotLabel in
-               thread GotLabel = {Det self.RLabel} end
-
-               %%
-               thread
-                  if GotLabel = Unit then {self checkTermReq}
-                  [] ObjClosed = True then true
-                  end
+            thread
+               if GotLabel = Unit then {self checkTermReq}
+               [] ObjClosed = True then true
                end
             end
-         else true              % nothing to do - it's a proper record;
          end
       end
 

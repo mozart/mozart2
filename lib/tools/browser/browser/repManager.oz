@@ -1753,13 +1753,15 @@ in
                {Token setMark(Group.obj.TailMark)}
             [] sgs then
                %% glue mark;
-               {Token setMarkIncOffset(Group.mark Group.str2Size)}
+               {Token setMarkIncOffset(Group.mark
+                                       (Group.str2Size + Group.glueSize))}
             [] sgt then
                %% tail mark;
                {Token setMark(Group.obj.TailMark)}
             [] gs  then
                %% glue mark;
-               {Token setMarkIncOffset(Group.mark Group.strSize)}
+               {Token setMarkIncOffset(Group.mark
+                                       (Group.strSize + Group.glueSize))}
             [] gt  then
                %% tail mark;
                {Token setMark(Group.obj.TailMark)}

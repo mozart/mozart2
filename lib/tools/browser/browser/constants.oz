@@ -55,6 +55,7 @@ T_PrimClass     = {NewName}
 %%
 %% group #2: compound values;
 T_List          = {NewName}
+T_FCons         = {NewName}
 %%
 T_Tuple         = {NewName}
 %%
@@ -431,6 +432,7 @@ DReference      = 2
 %% glues; should be of the same length (DSpace);
 DSpaceGlue      = ' '           % DSpace;
 DHashGlue       = "#"           % note: it must be a string!
+DVBarGlue       = '|'
 
 %% symbols;
 DLRBraceS       = '('

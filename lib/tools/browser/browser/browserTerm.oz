@@ -29,6 +29,7 @@ local
 
    %%
    IsVirtualString
+   IsListDepth
 in
 
    %%
@@ -52,6 +53,23 @@ in
             end
          else False
          end
+      end
+   end
+
+   %%
+   %%  Note: that's not a function!
+   fun {IsListDepth L D}
+      case D > 0 then
+         %%
+         case {Value.status L}
+         of free      then False
+         [] kinded(_) then False
+         elsecase L
+         of _|Xr then {IsListDepth Xr (D-1)}
+         else L == nil
+         end
+      else
+         {Value.status L} == det(atom) andthen L == nil
       end
    end
 
@@ -81,7 +99,11 @@ in
          %%
          case {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
          then T_Atom
-         elsecase Term of _|_ then T_List
+         elsecase Term of _|_ then
+            case {IsListDepth Term ({Store read(StoreWidth $)} * 2)}
+            then T_List
+            else T_FCons
+            end
          elsecase
             case {Label Term}
             of '#' then TW in TW = {Width Term}
@@ -141,6 +163,7 @@ in
       [] !T_PrimClass    then PrimClassTermObject
       [] !T_CompClass    then CompClassTermObject
       [] !T_List         then ListTermObject
+      [] !T_FCons        then FConsTermObject
       [] !T_Tuple        then TupleTermObject
       [] !T_Record       then RecordTermObject
       [] !T_HashTuple    then HashTupleTermObject
@@ -179,6 +202,7 @@ in
       [] !T_PrimClass    then False
       [] !T_CompClass    then True
       [] !T_List         then True
+      [] !T_FCons        then True
          %% when changed, check the 'ListTermObject::GetElement';
       [] !T_Tuple        then True
       [] !T_Record       then True
@@ -218,6 +242,7 @@ in
       [] !T_PrimClass    then True
       [] !T_CompClass    then True
       [] !T_List         then True
+      [] !T_FCons        then True
          %% when changed, check the 'ListTermObject::GetElement';
       [] !T_Tuple        then True
       [] !T_Record       then True
@@ -235,34 +260,6 @@ in
 
    %%
    %%
-%    local SpaceTab HashTab EQTab Tab in
-%       SpaceTab = tab(DSpaceGlue: False
-%                      DHashGlue:  False
-%                      DEqualS:    False)
-%       HashTab =  tab(DSpaceGlue: False
-%                      DHashGlue:  True
-%                      DEqualS:    False)
-%       EQTab =    tab(DSpaceGlue: False
-%                      DHashGlue:  True
-%                      DEqualS:    True)
-%       %%
-%       Tab =  tab(DSpaceGlue: SpaceTab
-%                  DHashGlue:  HasTab
-%                  DEqualS:    EQTab)
-%
-%       %%
-%       fun {DelimiterLEQ Del1 Del2}
-%          Tab.Del1.Del2
-%       end
-%    end
-%%%
-%%% This works under the assumption that glues are atoms, but
-%%% 'DHashGlue' is a string (otherwise a lot of things must be
-%%% re-written in the Tcl/Tk interface);
-%%%
-
-   %%
-   %%
    fun {DelimiterLEQ Del1 Del2}
         %%
         case Del1
@@ -270,6 +267,12 @@ in
         [] !DHashGlue  then
            case Del2
            of !DHashGlue  then True
+           else False
+           end
+        [] !DVBarGlue  then
+           case Del2
+           of !DHashGlue  then True
+           [] !DVBarGlue  then True
            else False
            end
         [] !DEqualS    then

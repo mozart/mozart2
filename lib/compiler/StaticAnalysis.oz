@@ -1713,11 +1713,6 @@ local
          {InstallGlobalEnv Env}
       end
       meth applyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
          {@designator applyEnvSubst(Ctrl)}
       end
    end

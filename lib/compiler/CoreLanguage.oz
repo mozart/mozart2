@@ -255,10 +255,9 @@ in
             designator: unit formalArgs: unit statements: unit
             isStateUsing: unit procFlags: unit printName: '' toCopy: unit
             allVariables: nil
-         feat expansionOccs predicateRef
+         feat predicateRef
          meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
                    Coord)
-            self.expansionOccs = expansionOccs('`ooSetSelf`': _)
             designator <- Designator
             formalArgs <- FormalArgs
             statements <- {FlattenSequence Statements}

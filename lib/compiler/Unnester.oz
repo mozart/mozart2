@@ -609,7 +609,6 @@ local
                {GD setAllVariables({@BA getAllVariables($)})}
             else skip
             end
-            {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fFun(FE1 FEs FE2 ProcFlags C) then
             GFrontEq GVO OldStateUsed NewFEs ProcFlagAtoms IsLazy
@@ -637,7 +636,6 @@ local
                {GD setAllVariables({@BA getAllVariables($)})}
             else skip
             end
-            {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors FBody C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
@@ -1869,7 +1867,6 @@ local
       meth MakeClauseBody(Origin GBody C ?GS ?ApplyProc) GV in
          {@BA generate(Origin C ?GV)}
          GS = {New Core.clauseBody init({GV occ(C $)} nil GBody unit nil C)}
-         {SetExpansionOccs GS @BA}
          fun {ApplyProc}
             {New Core.application init({GV occ(C $)} nil C)}
          end

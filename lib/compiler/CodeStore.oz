@@ -37,6 +37,7 @@ Continuations = c(vStepPoint: 5
                   vInlineAt: 4
                   vInlineAssign: 4
                   vGetSelf: 3
+                  vSetSelf: 3
                   vDefinition: 7
                   vDefinitionCopy: 8
                   vShared: ~1
@@ -204,6 +205,8 @@ class CodeStore from Emitter
          [] vInlineAssign(_ _ Reg _) then
             CodeStore, RegOcc(Reg RS)
          [] vGetSelf(_ Reg _) then
+            CodeStore, RegOcc(Reg RS)
+         [] vSetSelf(_ Reg _) then
             CodeStore, RegOcc(Reg RS)
          [] vDefinition(_ Reg _ _ GRegs _ _) then
             CodeStore, RegOcc(Reg RS)
@@ -412,6 +415,7 @@ class CodeStore from Emitter
          [] vInlineAt(_ _ _ _) then skip
          [] vInlineAssign(_ _ _ _) then skip
          [] vGetSelf(_ _ _) then skip
+         [] vSetSelf(_ _ _) then skip
          [] vDefinition(_ _ _ _ _ _ _) then skip
          [] vDefinitionCopy(_ _ _ _ _ _ _ _) then skip
          [] vShared(_ Label _ Addr) then

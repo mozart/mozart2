@@ -992,18 +992,13 @@ local
                       end
             case StateReg of none then
                BodyVInstr = BodyVInter
-               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
-                                 ?OuterNLiveRegs)}
                VHd0 = VInter
-            else StateVO OOSetSelf in
-               StateVO = {New PseudoVariableOccurrence init(StateReg)}
-               OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
-               {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
-                BodyVInstr BodyVInter}
-               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
-                                 ?OuterNLiveRegs)}
+            else
+               BodyVInstr = vSetSelf(_ StateReg BodyVInter)
                VHd0 = vGetSelf(_ StateReg VInter)
             end
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+                              ?OuterNLiveRegs)}
             VInter = vDefinition(_ {V reg($)} PredId PredicateRef
                                  GRegs Code VTl0)
          else
@@ -1025,18 +1020,13 @@ local
                       end
             case StateReg of none then
                InnerBodyVInstr = InnerBodyVInter
-               {CS endDefinition(InnerBodyVInstr nil AllRegs
-                                 ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
                VHd0 = VInter
-            else StateVO OOSetSelf in
-               StateVO = {New PseudoVariableOccurrence init(StateReg)}
-               OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
-               {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
-                InnerBodyVInstr InnerBodyVInter}
-               {CS endDefinition(InnerBodyVInstr nil AllRegs
-                                 ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
+            else
+               InnerBodyVInstr = vSetSelf(_ StateReg InnerBodyVInter)
                VHd0 = vGetSelf(_ StateReg VInter)
             end
+            {CS endDefinition(InnerBodyVInstr nil AllRegs
+                              ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
                            pid({VirtualString.toAtom PrintName#'/body'} 0

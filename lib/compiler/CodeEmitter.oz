@@ -563,6 +563,9 @@ in
                Emitter, Emit(getSelf(X))
                Emitter, Emit(unify(X R))
             end
+         [] vSetSelf(_ Reg Cont) then X in
+            Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
+            Emitter, Emit(setSelf(X))
          [] vDefinition(_ Reg PredId PredicateRef GRegs Code Cont) then
             case Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
                andthen PredicateRef == unit

@@ -104,8 +104,7 @@ define
       meth error(coord: Coord <= unit
                  kind: Kind <= unit
                  msg: Msg <= unit
-                 items: Items <= nil
-                 abort: Abort <= true) NewCoord in
+                 items: Items <= nil) NewCoord in
          NewCoord = {NormalizeCoord Coord}
          {@Narrator
           tell(message(error(kind: Kind msg: Msg
@@ -116,7 +115,6 @@ define
          elseof N then
             ErrorCount <- N + 1
             if @MaxNumberOfErrors >= 0 andthen @ErrorCount > @MaxNumberOfErrors
-               andthen Abort
             then
                raise tooManyErrors end
             end

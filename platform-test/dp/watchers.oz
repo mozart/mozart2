@@ -21,6 +21,11 @@
 %%% WARRANTIES.
 %%%
 
+% These tests all start a server that creates a number of entities.
+% A local procedure installs watchers and hopes for them to be invoked
+% when the remote server is closed.
+% Live tests install watchers first and close the server after that,
+% Dead tests do it the opposite way around.
 functor
 
 import

@@ -49,10 +49,11 @@ in
             {CompilerReadEvalLoop}
          end
       in
-         proc {StartCompiler} Compiler OZRC in
-            {SystemInitialize}
+         proc {StartCompiler Env} Compiler OZRC in
+            {`ooSiteInit`}
 
             Compiler = {New CompilerInterfaceEmacs init()}
+            {Compiler mergeEnv(Env)}
             {SetOPICompiler Compiler}
 
             % Try to load some ozrc file:

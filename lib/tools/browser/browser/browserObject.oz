@@ -717,7 +717,7 @@ class FBrowserClass
                    {self.Store store(StoreArityType TrueArity)}
                 elseof false then
                    %%
-                   {self.Store store(StoreArityType AtomicArity)}
+                   {self.Store store(StoreArityType NoArity)}
                 else
                    {BrowserError
                     'Illegal value of browser\'s "privateChunkFields" option'}

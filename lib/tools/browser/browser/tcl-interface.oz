@@ -184,7 +184,7 @@ in
       [] !MinGraphRep      then 'tcl_minGraphRep'
       [] !Expanded         then 'tcl_Expanded'
       [] !Filled           then 'tcl_Filled'
-      [] !AtomicArity      then 'tcl_AtomicArity'
+      [] !NoArity          then 'tcl_NoArity'
       [] !TrueArity        then 'tcl_TrueArity'
       else
          {BrowserError 'Oz2Tcl: unknown value!'}
@@ -201,7 +201,7 @@ in
       [] 'tcl_minGraphRep' then MinGraphRep
       [] 'tcl_Expanded'    then Expanded
       [] 'tcl_Filled'      then Filled
-      [] 'tcl_AtomicArity' then AtomicArity
+      [] 'tcl_NoArity'     then NoArity
       [] 'tcl_TrueArity'   then TrueArity
       else
          {BrowserError 'Tcl2Oz: unknown value!'}
@@ -2515,7 +2515,7 @@ in
                           tkInit(parent:DetailFrame.inner var:ChunkVar
                                  text:'Chunks'
                                  onvalue:{Oz2Tcl TrueArity}
-                                 offvalue:{Oz2Tcl AtomicArity}
+                                 offvalue:{Oz2Tcl NoArity}
                                  anchor:w)}
                          {New Tk.checkbutton
                           tkInit(parent:DetailFrame.inner var:NameVar

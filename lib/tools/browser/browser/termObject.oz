@@ -2477,17 +2477,15 @@ in
 \ifdef DEBUG_TO
          {Show 'CompChunkTermObject::makeTerm is applied' # self.term}
 \endif
-         local Term Store AF FullArity in
+         local Term Store NF FullArity in
             %%
             Term = self.term
             Store = self.store
-            AF = {Store read(StoreArityType $)} == AtomicArity
+            NF = {Store read(StoreArityType $)} == NoArity
 
             %%
             FullArity = {ChunkArity Term}
-            Elements <- case AF then {AtomicFilter FullArity}
-                        else FullArity
-                        end
+            Elements <- case NF then nil else FullArity end
             NotShownElements <- @Elements
             ShownWidth <- 0
 
@@ -2510,9 +2508,9 @@ in
             CompoundRepManagerObject
             , putG_S(ln:  DBraceGroup
                      str: case
-                             AF andthen
+                             NF andthen
                              {Length @Elements} \= {Length FullArity}
-                          then DSpaceGlue#DUnshownPFs#DRRBraceS
+                          then DUnshownPFs#DRRBraceS
                           else DRRBraceS
                           end)
 

@@ -1,9 +1,9 @@
 %%%
-%%% Authors:
-%%%   Benjamin Lorenz (lorenz@ps.uni-sb.de)
+%%% Author:
+%%%   Benjamin Lorenz <lorenz@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Benjamin Lorenz, 1997
+%%%   Benjamin Lorenz, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -16,8 +16,7 @@
 %%% See the file "LICENSE" or
 %%%    http://mozart.ps.uni-sb.de/LICENSE.html
 %%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
+%%% of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 %%%
 
 local
@@ -103,6 +102,29 @@ in
                 option(add Pattern Value widgetDefault)
              end}}
 
+end
+
+
+class OptionsManager
+   attr Resources Window
+   meth init(Res Class<='OzTools')
+      Resources <- Res
+      Window <- {New TkToplevel tkInit(withdraw: true
+                                       'class':  Class)}
+   end
+   meth get(Name $)
+      Return # Class # Default = @Resources.Name
+   in
+      case {case Return
+            of return     then TkReturnString
+            [] returnAtom then TkReturnAtom
+            [] returnInt  then TkReturnInt
+            end option(get @Window Name Class)}
+      of nil       then Default
+      [] false     then Default
+      elseof Value then Value
+      end
+   end
 end
 
 

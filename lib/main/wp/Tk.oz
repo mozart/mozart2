@@ -113,11 +113,13 @@ in
 
       isColor:       IsColor
 
-      addYScrollbar: AddYScrollbar
-      addXScrollbar: AddXScrollbar
+      addYScrollbar:   AddYScrollbar
+      addXScrollbar:   AddXScrollbar
 
-      defineUserCmd: DefineUserCmd
-      localize:      TkLocalize
+      defineUserCmd:   DefineUserCmd
+      localize:        TkLocalize
+
+      optionsManager:  OptionsManager
 
    body
 

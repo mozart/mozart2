@@ -3428,7 +3428,7 @@ define
       meth getFullData(D IsData $)
          if IsData then @value
          elseif {IsVirtualString @value} then @value
-         else {Value.toVirtualString @value 0 0}
+         else {System.printName @value}
          end
       end
       meth getLastValue($)

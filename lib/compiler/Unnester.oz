@@ -47,11 +47,12 @@
 functor
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
-   FD(is)
 \ifndef NO_GUMP
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Gump(transformParser transformScanner)
 \endif
+   FD(is)
+   System(printName)
    PrintName(downcase)
    Core
    RunTime(procs)
@@ -1583,7 +1584,7 @@ define
                 Unnester, MakeLabelOrFeature(FF ?GF)
                 FE = FE0
                 NewGArgs = GF#GArg|GArgs
-                FeatPrintName = case FF of fAtom(X _) then X
+                FeatPrintName = case FF of fAtom(X _) then {System.printName X}
                                 [] fVar(PrintName C) then PrintName
                                 [] fInt(X C) then X
                                 end

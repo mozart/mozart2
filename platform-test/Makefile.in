@@ -56,7 +56,7 @@ BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
         url mini maxi equality table port cell cellAndLock variable object \
-        objectAndLock injectors watchers basicfault fault1
+        objectAndLock injectors watchers basicfault fault_state
 
 DP2=
 DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)

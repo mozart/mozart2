@@ -238,14 +238,14 @@ in
          case {self.ToEnqueue getSize($)} > 0 then L in
             L = {self.ToEnqueue getContent($)}
             {ForAll L proc {$ E} {E.discardAction} end}
-         else true
+         else skip
          end
 
          %%  ... deq"s?
          case {self.ToDequeue getSize($)} > 0 then L in
             L = {self.ToDequeue getContent($)}
             {ForAll L proc {$ E} {E.discardAction} end}
-         else true
+         else skip
          end
 
          %%
@@ -265,7 +265,7 @@ in
 
             %%
             BrowserBufferClass , CheckDequeue
-         else true
+         else skip
          end
       end
 
@@ -281,7 +281,7 @@ in
 
             %%
             BrowserBufferClass , CheckEnqueue
-         else true
+         else skip
          end
       end
 
@@ -349,9 +349,8 @@ in
             %%
             case NewMaxSize > CurrentMaxSize then
                BrowserBufferClass , CheckEnqueue
-            else
+            else skip
                %% no special action when getting smaller;
-               true
             end
          end
       end

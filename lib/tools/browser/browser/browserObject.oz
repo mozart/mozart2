@@ -219,7 +219,7 @@ class BrowserClass from Object.base
       %%  'DefaultBrowser' is an object from the 'Browser.oz';
       %% That's the only occurence of it in browser/*.oz !
       case self.IsDefaultBrowser then {DefaultBrowser removeBrowser}
-      else true
+      else skip
       end
 
       %% simply throw away everything else;
@@ -236,14 +236,14 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::createWindow is applied'}
 \endif
       %%
-      case {self.Store read(StoreIsWindow $)} then true
+      case {self.Store read(StoreIsWindow $)} then skip
       else
          {self.BrowserStream enq(createWindow)}
 
          %%
          case {self.Store read(StoreWithMenus $)} then
             BrowserClass , createMenus
-         else true
+         else skip
          end
       end
 
@@ -260,7 +260,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::createMenus is applied'}
 \endif
       %%
-      case {self.Store read(StoreAreMenus $)} then true
+      case {self.Store read(StoreAreMenus $)} then skip
       else
          {self.BrowserStream
           [enq(createMenus)
@@ -363,7 +363,7 @@ class BrowserClass from Object.base
             thread
                {self UndrawWait}
             end
-         else true              % just put a new one;
+         else skip              % just put a new one;
          end
 
          %%
@@ -390,7 +390,7 @@ class BrowserClass from Object.base
          %% can be closed already when it's applied);
          case {self.BrowserBuffer getSize($)} > 1 then
             {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
-         else true
+         else skip
          end
 
          %%
@@ -424,7 +424,7 @@ class BrowserClass from Object.base
          case NewSize < CurrentSize then
             %%
             BrowserClass , Undraw(CurrentSize - NewSize)
-         else true
+         else skip
          end
       else {BrowserError 'Illegal size of the browser buffer'}
       end
@@ -451,7 +451,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::createNewView is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else NewBrowser Selection in
          %%
          NewBrowser =
@@ -476,7 +476,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::rebrowse is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else Obj in
          Obj = @selected
 
@@ -500,7 +500,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::clear is applied'}
 \endif
       %%
-      case self.IsView then true
+      case self.IsView then skip
       else CurrentSize in
          CurrentSize = {self.BrowserBuffer getSize($)}
 
@@ -531,7 +531,7 @@ class BrowserClass from Object.base
          %%
          case CurrentSize > 1 then
             BrowserClass , Undraw(CurrentSize - 1)
-         else true
+         else skip
          end
 
          %%
@@ -584,19 +584,19 @@ class BrowserClass from Object.base
                     enq(entriesDisable([clear clearAllButLast]))}
          [] 1 then {self.BrowserStream
                     enq(entriesDisable([clearAllButLast]))}
-         else true
+         else skip
          end
 
          %%
          %% Unselect it if it was;
          case {GetRootTermObject @selected} == RootTermObj
          then BrowserClass , UnsetSelected
-         else true
+         else skip
          end
 
          %%
          BrowserClass , Undraw(N-1)
-      else true
+      else skip
       end
 
       %%
@@ -618,7 +618,7 @@ class BrowserClass from Object.base
             {self.BrowserBuffer getFirstEl(RootTermObj $)} andthen
             {GetRootTermObject @selected} == RootTermObj
          then {Wait @UnselectSync}
-         else true
+         else skip
          end
 
          %%
@@ -921,7 +921,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelExpand is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else
          %%
          {self.BrowserStream enq(expand(@selected))}
@@ -942,7 +942,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelShrink is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else
          %%
          {self.BrowserStream enq(shrink(@selected))}
@@ -963,7 +963,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelShow is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else {Show @selected.term}
 \ifdef DEBUG_RM
          {@selected debugShow}
@@ -984,7 +984,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::SelZoom is applied'}
 \endif
       %%
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else BrowserClass , browse(@selected.term)
       end
 
@@ -1000,7 +1000,7 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelDeref is applied'}
 \endif
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else
          %%
          {self.BrowserStream enq(deref(@selected))}
@@ -1022,7 +1022,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::equate is applied'#Term}
 \endif
       %%
-      case @selected == InitValue then true
+      case @selected == InitValue then skip
       else ArityType SelectedTerm in
          ArityType = {self.Store read(StoreArityType $)}
 

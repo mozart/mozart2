@@ -107,7 +107,7 @@ in
                   fails <- @fails + 1
                   TermsStoreClass , Check(Term R $)
                end
-            [] true then
+            [] true then        % TODO !!!
                %%  both - monotonic and non-monotonic;
                TermsStoreClass , Check(Term R $)
             end
@@ -137,7 +137,7 @@ in
                      fails <- @fails + 1
                      TermsStoreClass , Search(Self R $)
                   end
-               [] true then
+               [] true then     % TODO !!!
                   TermsStoreClass , Search(Self R $)
                end
             end
@@ -170,7 +170,7 @@ in
             list <- NewList
             length <- NewLength
             fails <- 0          %  per definition :-))
-         else true
+         else skip
          end
 
          %%
@@ -179,7 +179,7 @@ in
             @tail = Obj|NewTail   % transaction;
             tail <- NewTail
             length <- @length + 1
-         else true
+         else skip
          end
       end
 

@@ -343,7 +343,7 @@ TermsStoreGCRatio  = 5
 %%  ... The base for comparision, i.e. it looks like
 %% case Fails * TermsStoreGCRatio > Size + TermsStoreGCBase
 %% hen {DO_GC}
-%% else true
+%% else skip
 %% end
 TermsStoreGCBase    = 100
 %% How much a real size of a 'ResizableArray' can be bigger

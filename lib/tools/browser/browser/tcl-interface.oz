@@ -56,7 +56,7 @@ in
    %% This code has been stolen from the Explorer. Thanks to Christian!
    %%
    proc {ProcessEntries M Es W}
-      case Es of nil then true
+      case Es of nil then skip
       [] E|Er then {ProcessEntries M E W} {ProcessEntries M Er W}
       elsecase {IsAtom Es} then {M.Es W}
       else {ProcessEntries M.{Label Es} Es.1 W}
@@ -403,7 +403,7 @@ in
 
                      %%
                      case {GetTargetObj Pairs}
-                     of !InitValue then true
+                     of !InitValue then skip
                      [] TO then {SelfBWO.browserObj ScrollTo(TO Kind)}
                      end
                   [] m("scroll" N "units") then
@@ -533,7 +533,7 @@ in
 
                      %%
                      case {GetTargetObj Pairs}
-                     of !InitValue then true
+                     of !InitValue then skip
                      [] TO then
                         {StreamObj enq(processEvent(TO Handler Arg))}
                      end
@@ -544,7 +544,7 @@ in
                proc {ButtonClickAction B X Y}
                   %%
                   case B of '1' then thread {self setScrolling(X Y)} end
-                  else true
+                  else skip
                   end
 
                   %% middle button is still free;
@@ -641,7 +641,7 @@ in
          %%
          %% external window must be closed by provider;
          case self.standAlone then {self.Window close}
-         else true
+         else skip
          end
 
          %% reject all future messages;
@@ -658,7 +658,7 @@ in
          {Show 'BrowserWindowClass::expose'}
 \endif
          case self.standAlone then {Tk.send wm(deiconify self.Window)}
-         else true
+         else skip
          end
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::expose is finished'}
@@ -671,7 +671,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::focusIn'}
 \endif
-         true
+         skip
          %%
          %%  Tk 4.0 does not require any special action;
          %% {Tk.send focus(self.BrowseWidget)}
@@ -748,7 +748,7 @@ in
                                (TWWidth - 2*ITWPad - 2*IBigBorder)
                                XRes})}
                end
-            else true           % we cannot do anything anyway;
+            else skip           % we cannot do anything anyway;
             end
          end
 
@@ -787,7 +787,7 @@ in
                touch
             else {BrowserWarning 'Impossible window size wrt limits'}
             end
-         else true
+         else skip
          end
 
          %%
@@ -825,7 +825,7 @@ in
 
             %%
             touch
-         else true              %  may happen?
+         else skip              %  may happen?
          end
 
          %%
@@ -847,7 +847,7 @@ in
 
             %%
             menuBar <- InitValue
-         else true
+         else skip
          end
 
          %%
@@ -896,7 +896,7 @@ in
                {Tk.send wm(minsize self.Window XMinSize YMinSize)}
 
                %%
-               case XMinSize =< XSize andthen YMinSize =< YSize then true
+               case XMinSize =< XSize andthen YMinSize =< YSize then skip
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
                   {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}
 
@@ -914,7 +914,7 @@ in
                   BrowserWindowClass , resetTW
                end
             end
-         else true
+         else skip
          end
 
          %%
@@ -973,7 +973,7 @@ in
             %%
             %% use the default: right gravity;
             case Gravity \= right then {BW tk(m g MarkName Gravity)}
-            else true
+            else skip
             end
 
             %%
@@ -985,7 +985,7 @@ in
                %%
                case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
                then {BrowserError 'BrowserWindowClass::putMark: error!'}
-               else true
+               else skip
                end
             end
 \endif
@@ -1023,7 +1023,7 @@ in
                %%
                case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
                then {BrowserError 'BrowserWindowClass::putMark: error!'}
-               else true
+               else skip
                end
             end
 \endif
@@ -1057,7 +1057,7 @@ in
             %%
             case {Dictionary.condGet self.TclsMap Mark NN} == NN
             then {BrowserError 'BrowserWindowClass::unsetMark: error!'}
-            else true
+            else skip
             end
          end
 \endif
@@ -1219,7 +1219,7 @@ in
             %%
             {self.BrowseWidget tk(del C C#'+'#N#'c')}
             touch
-         else true
+         else skip
          end
       end
 
@@ -1235,7 +1235,7 @@ in
             %%
             {self.BrowseWidget tk(del C#'-'#N#'c' C)}
             touch
-         else true
+         else skip
          end
       end
 
@@ -1283,7 +1283,7 @@ in
          case N \= 0 then
             {self.BrowseWidget tk(m s self.Cursor self.Cursor#'+'#N#'c')}
             cursorCol <- @cursorCol + N
-         else true
+         else skip
          end
       end
 
@@ -1348,7 +1348,7 @@ in
 %        case {self.store read(StoreSmoothScrolling $)} then
 %           {self.BrowseWidget tk(see self.Cursor)}
 %           {Tk.send update(idletasks)}
-%        else true
+%        else skip
 %        end
       end
 
@@ -1405,7 +1405,7 @@ in
             %%
             thread
                case V then {self pickMark(Mark 'any')}
-               else true
+               else skip
                end
             end
          end
@@ -1502,7 +1502,7 @@ in
          {Show 'BrowserWindowClass::unHighlightRegion'}
 \endif
          %%
-         case @HighlightTag == InitValue then true
+         case @HighlightTag == InitValue then skip
          else Tag in
             Tag = @HighlightTag
 
@@ -1696,7 +1696,7 @@ in
             Action = {New Tk.action tkInit(parent: Menu
                                            action: ActionProc)}
             {Menu tk(conf postcommand:Action)}
-         else true              % no menus;
+         else skip              % no menus;
          end
 
          %%
@@ -1718,7 +1718,7 @@ in
 \endif
          %%
          case @menuBar == InitValue then
-            EntryProc = proc {$ _ _} true end
+            EntryProc = proc {$ _ _} skip end
          else Menu in
             %%
             %%  This can be also done by 'Tk.menuentry.radiobutton',
@@ -1756,7 +1756,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesEnable'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
          end
 
@@ -1772,7 +1772,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesDisable'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
          end
 
@@ -1792,7 +1792,7 @@ in
          {Show 'tcl/tk: pushButton:' # BD}
 \endif
          %%
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else Button in
             Button = {New Tk.button {Adjoin BD tkInit(parent: @menuBar)}}
 
@@ -1808,7 +1808,7 @@ in
       meth setWaitCursor
          case {X11ResourceCache tryCursor(ICursorClock $)}
          then {self.BrowseWidget tk(conf cursor: ICursorClock)}
-         else true
+         else skip
          end
       end
 
@@ -1816,7 +1816,7 @@ in
       meth setDefaultCursor
          case {X11ResourceCache tryCursor(ICursorName $)}
          then {self.BrowseWidget tk(conf cursor: ICursorName)}
-         else true
+         else skip
          end
       end
 
@@ -1825,7 +1825,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @buttons Arg tk(conf state:normal)}
          end
 
@@ -1841,7 +1841,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsDisable'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @buttons Arg tk(conf state:disabled)}
          end
 
@@ -1857,7 +1857,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOn'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
          end
 
@@ -1873,7 +1873,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
          end
 
@@ -1889,7 +1889,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::noTearOff'}
 \endif
-         case @menuBar == InitValue then true
+         case @menuBar == InitValue then skip
          else {ProcessEntries @menuBar Arg tk(conf tearoff:False)}
          end
 
@@ -2049,7 +2049,7 @@ in
       %%
       %%
       meth showIn(VS)
-         case @window == InitValue then true
+         case @window == InitValue then skip
          else MyScreen LWScreen LeaderWindow RealLWindow in
             {@messageWidget [tk(ins insert VS)
                              tk(ins insert '\n')
@@ -2093,7 +2093,7 @@ in
       %%
       %%
       meth clear
-         case @window == InitValue then true
+         case @window == InitValue then skip
          else {@messageWidget tk(del p(1 0) insert)}
          end
       end
@@ -2102,7 +2102,7 @@ in
       %% close the top level widnow;
       %%
       meth closeWindow
-         case @window == InitValue then true
+         case @window == InitValue then skip
          else
             {@window close}
 
@@ -2224,7 +2224,7 @@ in
       %%
       %%
       meth showIn(VS)
-         case @window == InitValue then true
+         case @window == InitValue then skip
          else {@messageWidget [tk(ins insert VS) tk(ins insert '\n')]}
                              % tk(yview 'insert-2lines')
          end
@@ -2233,7 +2233,7 @@ in
       %%
       %%
       meth close
-         case @window == InitValue then true
+         case @window == InitValue then skip
          else
             {@window close}
 

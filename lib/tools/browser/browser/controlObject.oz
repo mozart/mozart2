@@ -290,7 +290,7 @@ in
       %% For atomic term objects - ignore the message, that is,
       %% don't shrink even if it should be. This is of course not
       %% correct, but who cares?
-      meth !UpdateSize(_) true end
+      meth !UpdateSize(_) skip end
 
       %%
       meth !SetSelected
@@ -361,8 +361,8 @@ in
 
       %%
       %%  'Shrunken' and compound objects redefine this method;
-      meth !Expand true end
-      meth !Deref true end
+      meth !Expand skip end
+      meth !Deref skip end
 
       %%
       meth processOtherwise(Type Message)
@@ -522,7 +522,7 @@ in
                         'CompoundControlObject::putSubterm: error!'}
                   end
                end
-            else true
+            else skip
             end
          end
       end
@@ -559,7 +559,7 @@ in
 
                %%
                TDepth <- CurDepth
-            else true           % junk - ignore;
+            else skip           % junk - ignore;
             end
          end
       end
@@ -584,7 +584,7 @@ in
             then
                %%
                self , BeginUpdate , subtermChanged(FN) , EndUpdate
-            else true
+            else skip
             end
          end
       end
@@ -640,7 +640,7 @@ in
             case self , hasCommas($) andthen ActWidth < MaxWidth then
                {{self.store read(StoreStreamObj $)}
                 enq(expandWidth(self (MaxWidth-ActWidth)))}
-            else true
+            else skip
             end
 
             %% second phase: update depth of subterms;
@@ -796,8 +796,8 @@ in
       %%
       %% These are necessary for the representation manager - to
       %% terminate the recursion;
-      meth !BeginUpdateSubterm(_) true end
-      meth !EndUpdateSubterm(_) true end
+      meth !BeginUpdateSubterm(_) skip end
+      meth !EndUpdateSubterm(_) skip end
 
       %%
       meth !CheckLayoutReq
@@ -847,7 +847,7 @@ in
 
             %%
             %%  leave an underline in place;
-         else true
+         else skip
          end
       end
 
@@ -871,7 +871,7 @@ in
 
             %%
             TDepth <- CurDepth
-         else true
+         else skip
          end
       end
 
@@ -881,20 +881,18 @@ in
       %%
       %% Root objects don't collect sizes, so the size arguments
       %% are ignored. So, it is basically just noop;
-      meth !SubtermSizeChanged(Obj _ _)
+      meth !SubtermSizeChanged(_ _ _)
 \ifdef DEBUG_CO
          {Show 'RootTermTWObject::SubtermSizeChanged is applied'}
 \endif
          %%
-         case Obj == @termObj then true
-         else true
-         end
+         skip
       end
 
       %%
       %% empty event handlers.
-      meth !ButtonsHandler(_) true end
-      meth !DButtonsHandler(_) true end
+      meth !ButtonsHandler(_) skip end
+      meth !DButtonsHandler(_) skip end
 
       %%
       meth pickPlace(Where How)
@@ -938,8 +936,8 @@ in
       end
 
       %%
-      meth closeTerm true end
-      meth !Shrink true end
+      meth closeTerm skip end
+      meth !Shrink skip end
       meth hasCommas($) False end
 
       %%
@@ -952,7 +950,7 @@ in
             Master = @master
 
             %%
-            case Master == InitValue then true
+            case Master == InitValue then skip
                %% i.e. cannot yet deref - simply ignore it;
             else {Master [pickPlace('begin' 'any') SetSelected]}
             end
@@ -1014,7 +1012,7 @@ in
       end
 
       %%
-      meth closeTerm true end
+      meth closeTerm skip end
 
       %%
       %%
@@ -1035,7 +1033,7 @@ in
       end
 
       %%
-      meth !Shrink true end
+      meth !Shrink skip end
       meth hasCommas($) False end
 
       %%

@@ -31,7 +31,7 @@ local MessageWindowObject BrowserMessage in
                , createMessageWindow
                , pushButton(clear proc {$} {self clear} end _)
                , pushButton(close proc {$} {self closeWindow} end _)
-            else true
+            else skip
             end
 
             %%
@@ -52,7 +52,7 @@ local MessageWindowObject BrowserMessage in
          meth closedLeaderWindow(LW)
             case LW == @leaderWindow then
                leaderWindow <- InitValue
-            else true
+            else skip
             end
          end
       end
@@ -60,7 +60,7 @@ local MessageWindowObject BrowserMessage in
    %%
 
    %%
-   proc {BrowserMessagesInit _} true end
+   proc {BrowserMessagesInit _} skip end
 
    %%
    proc {BrowserMessagesExit W}

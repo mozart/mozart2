@@ -155,7 +155,7 @@ in
       %%
       proc {HashVS I V1 V2}
          V2.I={GenVS V1.I}
-         case I>1 then {HashVS I-1 V1 V2} else true end
+         case I>1 then {HashVS I-1 V1 V2} else skip end
       end
 
       %%
@@ -645,7 +645,7 @@ in
       %%  'makeTerm' methods are to be provided by specific
       %% erm objects (as one would expect);
       %%
-      meth closeTerm true end
+      meth closeTerm skip end
 
       %%
       %% ... whether there are more subterms than currently shown
@@ -1199,7 +1199,7 @@ in
       %% for 'GetElement', since all the subterms are got once (e.g.
       %% as by means of the 'Record.arity' for fixed records);
       %%
-      meth !GetElement true end
+      meth !GetElement skip end
 
       %%
       %% ... it just checks whether there is a (just one!) further
@@ -1290,7 +1290,7 @@ in
             %% class (it is recursive - that's the reason why it's
             %% here at all);
             MetaCompoundTermObject , DrawElementsLoop(N)
-         else true
+         else skip
          end
 
          %%
@@ -1304,7 +1304,7 @@ in
             %%
             %% there are still terms that can be shown, but probably
             %% there is still no ",,," group;
-            case MetaCompoundTermObject , hasCommas($) then true
+            case MetaCompoundTermObject , hasCommas($) then skip
             else
                CompoundRepManagerObject
                , putG_SGS(ln:   DCommasGroup
@@ -1318,7 +1318,7 @@ in
             %% ... and vice versa;
             case MetaCompoundTermObject , hasCommas($)
             then CompoundRepManagerObject , removeG(ln:DCommasGroup)
-            else true
+            else skip
             end
          end
 
@@ -1342,7 +1342,7 @@ in
 
             %%
             MetaCompoundTermObject , DrawElementsLoop(N - 1)
-         else true
+         else skip
          end
       end
 
@@ -1487,7 +1487,7 @@ in
             TL = @TailList
 
             %%
-            case {IsVar TL} then true
+            case {IsVar TL} then skip
                %% no new subterms (but they are still expected);
             elsecase TL
             of _|_ then
@@ -1524,10 +1524,9 @@ in
                         %% since there are other cycles - over
                         %% all subsequent elements;
                         MetaListTermObject , PullElements(NNonCyclic)
-                     else
+                     else skip
                         %% not the first element - a new list is
                         %% necessary;
-                        true
                      end
 
                      %%
@@ -1548,11 +1547,10 @@ in
                %% malformed one;
                @TailElements = self , GetLastElements(TL $)
             end
-         else
+         else skip
             %%
             %% Nothing to do.
             %% In particular, the 'TailList' keeps its value;
-            true
          end
 
          %%
@@ -1581,7 +1579,7 @@ in
 
       %%
       meth PullElements(N)
-         case N =< 0 then true
+         case N =< 0 then skip
          else MetaListTermObject , PullElement , PullElements(N-1)
          end
       end
@@ -1690,7 +1688,7 @@ in
                   case self , HasLTG($) then
                      %% i.e. it was an incomplete list before;
                      self , RemoveLTG
-                  else true
+                  else skip
                   end
                end
 
@@ -1725,7 +1723,7 @@ in
                   %%
                   %% ... just iterate again;
                   MetaListTermObject , expand(RestInc)
-               else true
+               else skip
                end
             end
 
@@ -1748,7 +1746,7 @@ in
       meth !HasLTG($)
 \ifdef DEBUG_TO
          case CompoundRepManagerObject , getBlock($) == DSpecialBlock
-         then true
+         then skip
          else {BrowserError 'MetaListTermObject::HasLTG: wrong block!'}
          end
 \endif
@@ -2258,7 +2256,7 @@ in
       meth HasEllipses($)
 \ifdef DEBUG_TO
          case CompoundRepManagerObject , getBlock($) == DSpecialBlock
-         then true
+         then skip
          else {BrowserError
                'MetaCompoundTermObject::hasEllipses: wrong block!'}
          end
@@ -2296,13 +2294,13 @@ in
             case RecordTermObject , HasEllipses($) then
                %%
                CompoundRepManagerObject , removeG(ln: DEllipsesGroup)
-            else true
+            else skip
             end
 
             %%
          else           % has no commas *and* is not yet closed;
             %%
-            case RecordTermObject , HasEllipses($) then true
+            case RecordTermObject , HasEllipses($) then skip
             else
                %%
                %% note that the insertion cursor is located at a
@@ -2355,12 +2353,12 @@ in
             %% Note that this conditional may not block the state;
             thread
                if ChVar = True then {self checkTermReq}
-               [] ObjClosed = True then true
+               [] ObjClosed = True then skip
                end
             end
 
             %%
-            case @HasDetLabel then true
+            case @HasDetLabel then skip
             else ObjClosed GotLabel in
                ObjClosed = self.closed
                thread GotLabel = {Det self.RLabel} end
@@ -2368,11 +2366,11 @@ in
                %%
                thread
                   if GotLabel = Unit then {self checkTermReq}
-                  [] ObjClosed = True then true
+                  [] ObjClosed = True then skip
                   end
                end
             end
-         else true              % nothing to do - it's a proper record;
+         else skip              % nothing to do - it's a proper record;
          end
       end
 
@@ -2392,7 +2390,7 @@ in
 
          %%
          %% First, check the label:
-         case @HasDetLabel orelse {IsVar self.RLabel} then true
+         case @HasDetLabel orelse {IsVar self.RLabel} then skip
          else
             CompoundRepManagerObject
             , block(DLeadingBlock)
@@ -2406,7 +2404,7 @@ in
          %% First, take a shortcut: if there is a ',,,' group,
          %% nothing must be done here (except setting up a new
          %% watchpoint, what is done in 'SetWatchPoint');
-         case MetaCompoundTermObject , hasCommas($) then true
+         case MetaCompoundTermObject , hasCommas($) then skip
          else
             %%
             %% The term could get coreferenced by some other term;
@@ -2604,7 +2602,7 @@ in
             %% Note that this conditional may not block the state;
             thread
                if ChVar = True then {self checkTermReq}
-               [] ObjClosed = True then true
+               [] ObjClosed = True then skip
                end
             end
 
@@ -2631,7 +2629,7 @@ in
 %                %%
 %                self , isCoreferenced($)
 %             then ControlObject , checkTermReq
-%             else true
+%             else skip
 %             end
          end
       end

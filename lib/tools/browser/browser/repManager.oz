@@ -169,7 +169,7 @@ in
          indent:    0           %
 
       %%
-      meth init true end
+      meth init skip end
 
       %%
       meth gotMark($) @mark \= InitValue end
@@ -365,7 +365,7 @@ in
 
             %%
             case IsEncRep then MetaRepManagerObject , PutOP
-            else true
+            else skip
             end
 
             %%
@@ -373,7 +373,7 @@ in
 
             %%
             case IsEncRep then MetaRepManagerObject , PutCP
-            else true
+            else skip
             end
 
             %%
@@ -520,7 +520,7 @@ in
          {Show 'MetaRepManagerObject::PutRefName is applied '}
          case @RefName \= '' then
             {BrowserError 'RepManagerObject::PutRefName: error!'}
-         else true
+         else skip
          end
 \endif
          %%
@@ -544,7 +544,7 @@ in
          {Show 'MetaRepManagerObject::PutEncRefName is applied'}
          case @RefName \= '' then
             {BrowserError 'RepManagerObject::PutEncRefName: error!'}
-         else true
+         else skip
          end
 \endif
          %%
@@ -580,7 +580,7 @@ in
 
       %%
       %% Forces subsequent 'CheckLayout' to perform the check;
-      meth !CheckLayoutReq true end
+      meth !CheckLayoutReq skip end
 
       %%
       meth !GetSize($) @Size end
@@ -594,7 +594,7 @@ in
          {Show 'RepManagerObject::PutOP is applied'}
          case @HaveBraces then
             {BrowserError 'RepManagerObject::PutOP: error!'}
-         else true
+         else skip
          end
 \endif
          %%
@@ -630,7 +630,7 @@ in
             %%
             case @HaveBraces then
                {WO advanceCursor(RNSize + DSpace)} % at least DSpace;
-            elsecase RNSize == 0 then true         % no parentheses;
+            elsecase RNSize == 0 then skip         % no parentheses;
             else {WO advanceCursor(RNSize)}
             end
          end
@@ -641,7 +641,7 @@ in
       meth !SkipAuxEnd
          %%
          case @HaveBraces then {self.WidgetObj advanceCursor(DSpace)}
-         else true              % no parentheses;
+         else skip              % no parentheses;
          end
       end
 
@@ -704,7 +704,7 @@ in
          %%
          %% Originally, nothing is put at all: we can place it every
          %% time later (but before 'MakeRep' completes, of course);
-         true
+         skip
       end
 
       %%
@@ -788,10 +788,10 @@ in
          case MetaRepManagerObject , GetAuxSize($) == @Size then
             {BrowserError
              'RepManagerObject: a primitive term cannot be empty!!!'}
-         else true
+         else skip
          end
 \endif
-         true
+         skip
       end
 
       %%
@@ -998,7 +998,7 @@ in
                   False
                end
             then {self.WidgetObj setMarkGravity(Group.mark Gravity)}
-            else true
+            else skip
             end
          end
       end
@@ -1039,7 +1039,7 @@ in
          %%     'AnchorGroup' method (see comments in the 'block'
          %%     method);
          %%
-         case @CurrentBlock == @MaxBlock then true
+         case @CurrentBlock == @MaxBlock then skip
          else B N in
             %%
             case CompoundRepManagerObject , GetLastGroup(b:B ln:N found:$)
@@ -1141,7 +1141,7 @@ in
             then
                {BrowserError
                 'CompoundRepManagerObject::block: out of order!'}
-            else true           % ok
+            else skip           % ok
             end
          end
 \endif
@@ -1151,14 +1151,13 @@ in
             Base = N * DInfinite
 
             %%
-            case N == PrevBlock then true
+            case N == PrevBlock then skip
                %% #1: stay at the place;
             elsecase N > @MaxBlock then          % N > 0;
                %% #2 & #3: a new block to be created;
                %%
-               case PrevBlock == N - 1 then
+               case PrevBlock == N - 1 then skip
                   %% #2': don't touch the cursor;
-                  true
                else PB in                         % N > 0;
                   %% #3': some other block - move cursor?
 
@@ -1207,7 +1206,7 @@ in
                case
                   PrevBlock == N - 1 andthen
                   {Dictionary.get self.Subterms Base} == 0
-               then true
+               then skip
                else PB in
                   %%
                   case
@@ -1275,7 +1274,7 @@ in
             elsecase CM + 1 \= LN then
                {BrowserError
                 'CompoundRepManagerObject::StoreNewGroup: out of order!'}
-            else true           % ok
+            else skip           % ok
             end
          end
 \endif
@@ -1310,7 +1309,7 @@ in
             elsecase LN < 1 orelse LN > CM then
                {BrowserError
                 'CompoundRepManagerObject::ReplaceGroup: no group!'}
-            else true           % ok
+            else skip           % ok
             end
          end
 \endif
@@ -1334,7 +1333,7 @@ in
             elsecase LN < 1 orelse LN > CM then
                {BrowserError
                 'CompoundRepManagerObject::GetGroup: no group!'}
-            else true           % ok
+            else skip           % ok
             end
          end
 \endif
@@ -1359,7 +1358,7 @@ in
             elsecase CM < 1 then
                {BrowserError
                 'CompoundRepManagerObject::RemoveLastGroup: no group!'}
-            else true           % ok
+            else skip           % ok
             end
          end
 \endif
@@ -1442,7 +1441,7 @@ in
          CompoundRepManagerObject
          , GetPrevBlock(sb:@MaxBlock b:B found:Found)
          case Found then N = {Dictionary.get self.Subterms B*DInfinite}
-         else true
+         else skip
          end
 \ifdef DEBUG_RM
          {Show 'CompoundRepManagerObject::GetLastGroup' # Found # (B#N)}
@@ -1607,7 +1606,7 @@ in
          then
             %% found a subterm object:
             {Group.obj Message}
-         else true
+         else skip
          end
 
          %%
@@ -1651,7 +1650,7 @@ in
          then
             %% found a mark:
             {self.WidgetObj unsetMark(Group.mark)}
-         else true
+         else skip
          end
 
          %%
@@ -1711,15 +1710,15 @@ in
             then
                %% is something still missing?
                %%
-               case {Token gotMark($)} then true
+               case {Token gotMark($)} then skip
                else {Token setMark(self.HeadMark)}
                end
 
                %%
-               case {Token gotIndent($)} then true
+               case {Token gotIndent($)} then skip
                else {Token setIndent(@UsedIndentIn)}
                end
-            else true           % both anchor and its offset are here;
+            else skip           % both anchor and its offset are here;
             end
 
             %%
@@ -1740,9 +1739,9 @@ in
             %% indentation;
 
             %%
-            case {Token gotMark($)} then true
+            case {Token gotMark($)} then skip
             elsecase GrType
-            of e   then true
+            of e   then skip
             [] t   then
                %% tail mark;
                {Token setMark(Group.obj.TailMark)}
@@ -1771,9 +1770,9 @@ in
             end
 
             %%
-            case {Token gotIndent($)} then true
+            case {Token gotIndent($)} then skip
             elsecase GrType
-            of e   then true
+            of e   then skip
             [] t   then
                %% fetch 'UsedIndentOut' - and that's all;
                {Token setIndent({Group.obj GetIndentOut($)})}
@@ -2049,7 +2048,7 @@ in
 \ifdef DEBUG_RM
                case ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}
-               else true
+               else skip
                end
 \endif
 
@@ -2072,7 +2071,7 @@ in
                %%
                case ReqGlueSize > 0 then
                   UsedIndentOut <- ReqIndent
-               else true
+               else skip
                end
             elsecase ReqGlueSize > 0 then NewGroup in
                %% expanded!;
@@ -2162,7 +2161,7 @@ in
                %%
                %% up to a root term object;
                ControlObject , SizeChanged(MyOldSize MyNewSize)
-            else true
+            else skip
             end
          end
 
@@ -2306,7 +2305,7 @@ in
 \ifdef DEBUG_RM
                case ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}
-               else true
+               else skip
                end
 \endif
 
@@ -2517,7 +2516,7 @@ in
                       'CompoundRepManagerObject::EvalDesc: group type??!'}
                      False
                   end
-               then true        % fine - there is an object;
+               then skip        % fine - there is an object;
                else
                   {BrowserError
                    'CompoundRepManagerObject::EvalDesc: no object in a group!'}
@@ -2588,7 +2587,7 @@ in
                       'CompoundRepManagerObject::EvalDesc: group type??!'}
                      False
                   end
-               then true        % fine - there is an object;
+               then skip        % fine - there is an object;
                else
                   {BrowserError
                    'CompoundRepManagerObject::EvalDesc: no object in a group!'}
@@ -2702,7 +2701,7 @@ in
 
             %%
             case SwapGravity then {WO setMarkGravity(OldGroup.mark left)}
-            else true
+            else skip
             end
 
             %%
@@ -2724,7 +2723,7 @@ in
 
             %%
             case SwapGravity then {WO setMarkGravity(OldGroup.mark right)}
-            else true
+            else skip
             end
 
             %%
@@ -2760,7 +2759,7 @@ in
          %%
          case
             LN == {Dictionary.get self.Subterms (@CurrentBlock*DInfinite)}
-         then true              % ok;
+         then skip              % ok;
          else
             {BrowserError
              'CompoundRepManagerObject::removeG: not the last group!!!'}

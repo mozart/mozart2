@@ -50,7 +50,7 @@ class StoreClass from UrObject
          case {Dictionary.condGet self.SDict What DefValue}
          of !DefValue then
             {BrowserError 'Attempt to read undefined parameter in store'}
-         else true
+         else skip
          end
       end
 \endif

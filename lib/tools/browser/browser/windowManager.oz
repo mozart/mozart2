@@ -142,7 +142,7 @@ class WindowManagerClass from UrObject
 
          %%
          {self.store store(StoreIsWindow True)}
-      else true
+      else skip
       end
 
       %%
@@ -195,7 +195,7 @@ class WindowManagerClass from UrObject
                              {Store store(StoreShowGraph TV)}
                              case TV then
                                 {ShowMinGraphVar tkSet({self.Oz2Tcl False})}
-                             else true
+                             else skip
                              end
                           end
                        end
@@ -211,7 +211,7 @@ class WindowManagerClass from UrObject
                              {Store store(StoreShowMinGraph TV)}
                              case TV then
                                 {ShowGraphVar tkSet({self.Oz2Tcl False})}
-                             else true
+                             else skip
                              end
                           end
                        end
@@ -264,7 +264,7 @@ class WindowManagerClass from UrObject
                                     Font.font == FN andthen
                                     StoredFN \= FN
                                  then {Window setTWFont(Font _)}
-                                 else true
+                                 else skip
                                  end
                               end}
                           end
@@ -728,7 +728,7 @@ class WindowManagerClass from UrObject
                                   FontVar Font.font CProc)}
 
                    %%
-                   case IsThere then true % font exists - ok;
+                   case IsThere then skip % font exists - ok;
                    else {CProc state disabled}
                    end
                 end
@@ -748,7 +748,7 @@ class WindowManagerClass from UrObject
                                   FontVar Font.font CProc)}
 
                    %%
-                   case IsThere then true % font exists - ok;
+                   case IsThere then skip % font exists - ok;
                    else {CProc state disabled}
                    end
                 end
@@ -758,13 +758,13 @@ class WindowManagerClass from UrObject
          end
 
          %%
-         case @window.standAlone then true
+         case @window.standAlone then skip
          else WindowManagerClass , entriesDisable([close])
          end
 
          %%
          {self.store store(StoreAreMenus True)}
-      else true                 % already;
+      else skip                 % already;
       end
 
       %%
@@ -781,7 +781,7 @@ class WindowManagerClass from UrObject
       {Show 'WindowManagerClass::resetWindowSize is applied'}
 \endif
       %%
-      case @window == InitValue then true
+      case @window == InitValue then skip
       else X Y in
          {@store [read(StoreXSize X) read(StoreYSize Y)]}
 
@@ -820,7 +820,7 @@ class WindowManagerClass from UrObject
          %%
          varDict <- InitValue
          {self.store store(StoreAreMenus False)}
-      else true
+      else skip
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::closeMenus is finished'}
@@ -834,7 +834,7 @@ class WindowManagerClass from UrObject
       {Show 'WindowManagerClass::closeWindow is applied'}
 \endif
       %%
-      case @window == InitValue then true
+      case @window == InitValue then skip
       else
          %%
          WindowManagerClass , closeMenus
@@ -868,7 +868,7 @@ class WindowManagerClass from UrObject
          %%
          case Arg of [break] then
             WindowManagerClass , WrapWindow(setWaitCursor)
-         else true
+         else skip
          end
       end
 \ifdef DEBUG_WM
@@ -893,7 +893,7 @@ class WindowManagerClass from UrObject
          %%
          case Arg of [break] then
             WindowManagerClass , WrapWindow(setDefaultCursor)
-         else true
+         else skip
          end
       end
 \ifdef DEBUG_WM
@@ -925,7 +925,7 @@ class WindowManagerClass from UrObject
          then {BrowserError 'WindowManagerClass:setVarValue: Unknown var!'}
          else {@window setTkVar(TclVar {self.Oz2Tcl Value})}
          end
-      else true
+      else skip
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::setVarValue is finished'}
@@ -940,7 +940,7 @@ class WindowManagerClass from UrObject
       case @window \= InitValue andthen @varDict \= InitValue then
          %%
          {@window setTkVar({Dictionary.get @varDict font} Font.font)}
-      else true
+      else skip
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::setFont is finished'}
@@ -963,7 +963,7 @@ class WindowManagerClass from UrObject
    %% Otherwise, the message ('Meth') is just ignored;
    meth WrapWindow(Meth)
       case @window \= InitValue then {@window Meth}
-      else true
+      else skip
       end
    end
 
@@ -971,7 +971,7 @@ class WindowManagerClass from UrObject
    meth WrapMenuBar(Meth)
       case @window \= InitValue andthen @varDict \= InitValue
       then {@window Meth}
-      else true
+      else skip
       end
    end
 

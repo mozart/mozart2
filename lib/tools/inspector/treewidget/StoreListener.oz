@@ -101,19 +101,14 @@ define
             [] nil  then true
             end
          end
-      in
          fun {IsFailedFut V}
             VS = {Value.toVirtualString V 0 0}
          in
             {IsPrefix "future byNeed: \'fail\'" {String.token VS &< _}}
          end
-      end
-
-
-      proc {WaitFuture F A}
-         if {IsFuture F} andthen {Not {IsFailedFut F}}
-         then {Delay 300} {WaitFuture F A}
-         else A = unit
+      in
+         fun {IsFailedFuture V}
+            {IsFuture V} andthen {IsFailedFut V}
          end
       end
 
@@ -149,7 +144,7 @@ define
             else {Wait {GetsBoundB CurValue}}
             end
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
-            if {IsDet CurValue}
+            if {IsDet CurValue} orelse {IsFailedFuture CurValue}
             then skip
             else StoreListener, listen(FutMode WidPort CurValue EntryObj)
             end

@@ -26,9 +26,9 @@
 functor
 
 import
-   DPB                      at 'x-oz://boot/DPB'
-   PID(get received toPort) at 'x-oz://boot/PID'
-   Distribution('export')   at 'x-oz://boot/Distribution'
+   DPB                             at 'x-oz://boot/DPB'
+   PID(get getCRC received toPort) at 'x-oz://boot/PID'
+   Distribution('export')          at 'x-oz://boot/Distribution'
 
    Error(dispatch format formatGeneric)
    ErrorRegistry(put)
@@ -84,61 +84,6 @@ prepare
       end
    end
 
-
-   %%
-   %% Creating and parsing ticket strings
-   %%
-   local
-      fun {App Xss Ys}
-         case Xss of nil then Ys
-         [] Xs|Xsr then {Append Xs {App Xsr Ys}}
-         end
-      end
-      fun {CheckSum Is N}
-         case Is of nil then N mod 997
-         [] I|Ir then {CheckSum Ir N * 13 + I}
-         end
-      end
-   in
-
-      fun {TicketToString T}
-         Stamp#Pid = T.time
-         S = {App ["x-ozticket://"
-                   T.host
-                   &:|{Int.toString T.port}
-                   &:|{IntToKey Stamp}
-                   &:|{IntToKey Pid}
-                   &/|{IntToKey T.key}
-                   [&: if T.single  then &s else &m end
-                    &: if T.minimal then &m else &f end]] nil}
-      in
-         {Append S &:|{IntToKey {CheckSum S 0}}}
-      end
-
-      fun {VsToTicket V}
-         try
-            %% Raises an exception if has wrong checksum or if
-            %% syntactically illegal
-            S={VirtualString.toString V}
-            [_ nil ProcPart KeyPart] = {String.tokens S &/}
-            [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
-            [KeyS SingS MinimalS _]  = {String.tokens KeyPart  &:}
-            Ticket = ticket(host:    HostS
-                            port:    {String.toInt PortS}
-                            time:    {KeyToInt Stamp}#{KeyToInt Pid}
-                            key:     {KeyToInt KeyS}
-                            single:  SingS=="s"
-                            minimal: MinimalS=="m")
-         in
-            S={TicketToString Ticket}
-            Ticket
-         catch _ then
-            {Exception.raiseError connection(illegalTicket V)} _
-         end
-      end
-   end
-
-
 define
 
    %%
@@ -170,6 +115,55 @@ define
          {Adjoin ThisPid ticket(single:  IsSingle
                                 key:     {KeyCtr get($)}
                                 minimal: {Property.get 'perdio.minimal'})}
+      end
+   end
+
+
+   %%
+   %% Creating and parsing ticket strings
+   %%
+   local
+      fun {App Xss Ys}
+         case Xss of nil then Ys
+         [] Xs|Xsr then {Append Xs {App Xsr Ys}}
+         end
+      end
+   in
+
+      fun {TicketToString T}
+         Stamp#Pid = T.time
+         S = {App ["x-ozticket://"
+                   T.host
+                   &:|{Int.toString T.port}
+                   &:|{IntToKey Stamp}
+                   &:|{IntToKey Pid}
+                   &/|{IntToKey T.key}
+                   [&: if T.single  then &s else &m end
+                    &: if T.minimal then &m else &f end]] nil}
+      in
+         {Append S &:|{IntToKey {PID.getCRC S}}}
+      end
+
+      fun {VsToTicket V}
+         try
+            %% Raises an exception if has wrong checksum or if
+            %% syntactically illegal
+            S={VirtualString.toString V}
+            [_ nil ProcPart KeyPart] = {String.tokens S &/}
+            [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
+            [KeyS SingS MinimalS _]  = {String.tokens KeyPart  &:}
+            Ticket = ticket(host:    HostS
+                            port:    {String.toInt PortS}
+                            time:    {KeyToInt Stamp}#{KeyToInt Pid}
+                            key:     {KeyToInt KeyS}
+                            single:  SingS=="s"
+                            minimal: MinimalS=="m")
+         in
+            S={TicketToString Ticket}
+            Ticket
+         catch _ then
+            {Exception.raiseError connection(illegalTicket V)} _
+         end
       end
    end
 

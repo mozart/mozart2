@@ -1852,9 +1852,10 @@ in
          T = 'error in OS module'
       in
          case E
-         of os(K N S) then
+         of os(K SysCall N S) then
 \ifdef TYPE_DEBUG
             {Type.ask.atom K}
+            {Type.ask.virtualString SysCall}
             {Type.ask.int N}
             {Type.ask.virtualString S}
 \endif
@@ -1863,13 +1864,17 @@ in
             of os then
                {FormatExc T
                 'Operating system error'
-                [hint(l:'Error number' m:N)
+                [
+                 hint(l:'System call' m:SysCall)
+                 hint(l:'Error number' m:N)
                  hint(l:'Description' m:S)]
                 Exc}
             [] host then
                {FormatExc T
                 'Network Error'
-                [hint(l:'Error number' m:N)
+                [
+                 hint(l:'System call' m:SysCall)
+                 hint(l:'Error number' m:N)
                  hint(l:'Description' m:S)]
                 Exc}
             else

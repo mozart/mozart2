@@ -447,7 +447,7 @@ define
          @treeNodes.pipeTupleGr
       end
       meth getFSVHelperNode($)
-         @treeNodes.fshelper
+         @treeNodes.fsHelper
       end
       meth setRelManager(RelMan)
          relMan <- RelMan

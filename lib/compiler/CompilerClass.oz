@@ -633,10 +633,13 @@ local
                      case CompilerStateClass, getSwitch(threadedqueries $) then
                         {@reporter
                          logSubPhase('executing in an independent thread ...')}
-                        case {{`Builtin` getOPICompiler 1}} == @wrapper then
-                           % this helps Ozcar detect queries from the OPI:
-                           {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
-                        else skip
+                        case {{`Builtin` getOPICompiler 1}} of unit then skip
+                        elseof OPI then
+                           case {OPI getCompiler($)} == @wrapper then
+                              % this helps Ozcar detect queries from the OPI:
+                              {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
+                           else skip
+                           end
                         end
                         thread {P} end
                      else

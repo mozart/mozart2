@@ -32,6 +32,7 @@ import
                    isBuiltin
                    isLocalDet) at 'x-oz://boot/CompilerSupport'
    System(eq printName)
+   RecordC(hasLabel tell reflectArity)
    Type(is)
    Core
    Builtins(getInfo)
@@ -153,20 +154,6 @@ prepare
    ImAValueNode          = {NewName}
    ImARecordConstr       = {NewName}
    ImAToken              = {NewName}
-
-   %%
-   %% kinded records
-
-   fun {CurrentArity R}
-      if {IsDet R} then {Arity R}
-      elseif {IsFree R} then nil
-      else {Record.reflectArity R}
-      end
-   end
-
-   fun {HasFeatureNow R F}
-      {Member F {CurrentArity R}}
-   end
 
    %% GetClassData: T -> <value>
    %% given a T node, assumes a class value and
@@ -358,7 +345,6 @@ prepare
             'Port.is'           : doCheckType(det IsPort)
             'Procedure.is'      : doCheckType(det IsProcedure)
             'Record.is'         : doCheckType(det IsRecord)
-            'Record.isC'        : doCheckType(kind IsRecordC)
             'String.is'         : doCheckType(rec IsStringNow)
             'Tuple.is'          : doCheckType(det IsTuple)
             'Unit.is'           : doCheckType(det IsUnit)
@@ -368,7 +354,6 @@ prepare
             'Procedure.arity'   : doProcedureArity
             'Value.\'=\''       : doEq
             'Value.\'.\''       : doDot
-            'Record.\'^\''      : doHat
             'Object.\',\''      : doComma
             'Object.\'<-\''     : doAssignAccess
             'Object.\'@\''      : doAssignAccess
@@ -380,6 +365,20 @@ prepare
 
 
 define
+
+   %%
+   %% kinded records
+
+   fun {CurrentArity R}
+      if {IsDet R} then {Arity R}
+      elseif {IsFree R} then nil
+      else {RecordC.reflectArity R}
+      end
+   end
+
+   fun {HasFeatureNow R F}
+      {Member F {CurrentArity R}}
+   end
 
    %%-----------------------------------------------------------------------
    %% this translation routine is here since it depends on FD and hence
@@ -1342,7 +1341,7 @@ define
             in
                if @isOpen then
                   if {DetTests.det @label} then
-                     Rec = {TellRecord LData}
+                     Rec = {RecordC.tell LData}
                   end
                   if {All Args DetTests.det} then
                      {ForAll FData proc {$ F#V} Rec^F=V end}
@@ -1957,43 +1956,6 @@ define
                       msg:   'illegal feature selection on chunk'
                       items: [hint(l:'Found' m:oz(F))])}
             end
-         else
-            skip
-         end
-      end
-
-      meth doHat(Ctrl)
-\ifdef DEBUGSA
-         {System.show hat(@actualArgs {Map @actualArgs GetData})}
-\endif
-         Rec = {GetData {Nth @actualArgs 1}}
-         Fea = {GetData {Nth @actualArgs 2}}
-      in
-\ifdef DEBUGSA
-         {System.show hat(Rec Fea)}
-\endif
-         if
-            {HasFeatureNow Rec Fea}
-         then
-            BndVO = {Nth @actualArgs 3}
-         in
-            {Ctrl setErrorMsg('feature selection (^) failed')}
-            {Ctrl setUnifier(BndVO Rec^Fea)}
-
-            {BndVO unify(Ctrl Rec^Fea)}
-
-            {Ctrl resetUnifier}
-            {Ctrl resetErrorMsg}
-         elseif
-            {IsDet Rec}
-         then
-            {Ctrl.rep
-             error(coord: @coord
-                   kind:  SAGenError
-                   msg:   'illegal feature selection from record'
-                   items: [hint(l:'Feature found' m:oz(Fea))
-                           hint(l:'Expected one of'
-                                m:{SetToVS {FormatArity Rec}})])}
          else
             skip
          end
@@ -3548,7 +3510,7 @@ define
          if {Width Val} =< AnalysisWidth.Depth then
             RecVal = {List.toRecord Lab RecConstrValArgs}
          else
-            RecVal = {TellRecord Lab}
+            RecVal = {RecordC.tell Lab}
             {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
          end
          {New RecordConstr init(RecVal unit)}
@@ -3722,7 +3684,7 @@ define
                   {O isOpen($)}
                then
                   if {IsDet LData} then
-                     Rec = {TellRecord LData}
+                     Rec = {RecordC.tell LData}
                   else skip end
                   {ForAll FData proc {$ F#V} Rec^F=V end}
                else
@@ -4053,7 +4015,7 @@ define
             then
                {TypeToVS @type}
             else
-               Lab = if {Record.hasLabel @value} then {Label @value} else _ end
+               Lab = if {RecordC.hasLabel @value} then {Label @value} else _ end
             in
                {ListToVS
                 '(' | {Map {CurrentArity @value}
@@ -4111,10 +4073,10 @@ define
                @value
             else
                Rec
-               Lab = if {Record.hasLabel @value} then {Label @value} else _ end
+               Lab = if {RecordC.hasLabel @value} then {Label @value} else _ end
             in
                if {IsDet Lab} then
-                  Rec = {TellRecord Lab}
+                  Rec = {RecordC.tell Lab}
                else skip end
                {ForAll {CurrentArity @value}
                 proc {$ F}

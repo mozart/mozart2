@@ -33,7 +33,7 @@ export
    ProcValues
    MakeVar
 require
-   BootRecord(tellRecordSize test testLabel testFeature aritySublist)
+   BootRecord(tellRecordSize test testLabel testFeature aritySublist '^')
    at 'x-oz://boot/Record'
 
    BootObject(ooGetLock ',' '@' '<-' ooExch)
@@ -65,7 +65,7 @@ prepare
                     '-': Number.'-'
                     '*': Number.'*'
                     '~': Number.'~'
-                    '^': Record.'^'
+                    '^': BootRecord.'^'
 
                     %% Value
                     'Value.byNeedDot': Value.byNeedDot

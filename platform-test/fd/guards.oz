@@ -2,7 +2,7 @@ functor
 
 import
 
-   FD
+   FD Space
 
 export
    Return
@@ -177,6 +177,22 @@ Return=
                    R = thread cond X = Y then 1 else 0 end end
                    X = Y
                    R
+                end}
+
+               {MiscTest 18
+                fun {$}
+                   X
+                   S={Space.new proc {$ Y}
+                                   Y={FD.decl}
+                                   X=Y
+                                end}
+                in
+                   {Space.inject S proc {$ Y}
+                                      Y::1#10
+                                   end}
+
+                   X::1#10
+                   1
                 end}
 
               ])

@@ -40,22 +40,19 @@ local
          end
       end
 
-      fun {TagBody I N Tag}
-         %% N must be greater than zero
-         if I<N then {Tag2Vs Tag.I}#{TagBody I+1 N Tag}
-         else {Tag2Vs Tag.N}
-         end
+      fun {TagBody I Tag}
+         if I>0 then {TagBody I-1 N Tag}#{Tag2Vs Tag.I} else '' end
       end
    in
       fun {Tag2Vs Tag}
          if {IsAtom Tag} then Tag
          elseif {IsTuple Tag} then L={Label Tag} in
             if {HtmlTable.isTag L} then
-               '<'#L#'>'#{TagBody 1 {Width Tag} Tag}#
+               '<'#L#'>'#{TagBody {Width Tag} Tag}#
                if {HtmlTable.isNonFinalTag L} then '' else
                   '</'#L#'>'
                end
-            elseif L=='#' then {TagBody 1 {Width Tag} Tag}
+            elseif L=='#' then {Record.map Tag Tag2Vs}
             else Tag
             end
          elseif {IsRecord Tag} then L={Label Tag} in
@@ -63,7 +60,7 @@ local
                N As={GetOptions {Arity Tag} 0 ?N}
             in
                '<'#L#{BuildOptions As Tag}#'>' #
-               {TagBody 1 N Tag} #
+               {TagBody N Tag} #
                if {HtmlTable.isNonFinalTag L} then '' else
                   '</'#L#'>'
                end

@@ -207,18 +207,11 @@ in
                      {AtomConcatAll [{System.getPrintName TermIn}
                                      '{' SubInts ' }']}
                   elsecase {IsMetaVar TermIn} then
-                     ThPrio = {Thread.getPriority} in
-
-                     %%  critical section!
-                     {Thread.setPriority high}
                      %%
                      TermOut = {AtomConcatAll [{System.getPrintName TermIn}
                                                '<' {MetaGetNameAsAtom TermIn}
                                                ':' {MetaGetDataAsAtom TermIn}
                                                '>']}
-                     %%
-                     {Thread.setPriority ThPrio}
-                     %%  end of critical section;
                   else
                      TermOut = {System.getPrintName TermIn }
                   end

@@ -2329,11 +2329,8 @@ in
 \ifdef DEBUG_TT
          {Show 'FDVariableTermTermObject::initTerm is applied'#self.term}
 \endif
-         local Term ThPrio SubIntsL SubInts Le DomComp Name in
+         local Term SubIntsL SubInts Le DomComp Name in
             Term = self.term
-
-            %%
-            ThPrio = {Thread.getPriority}
 
             %%
             %%  Since the watchpoint on an FD variable is set currently
@@ -2484,11 +2481,8 @@ in
 \ifdef DEBUG_TT
          {Show 'MetaVariableTermTermObject::initTerm is applied'#self.term}
 \endif
-         local Term ThPrio Data MetaName Name in
+         local Term Data MetaName Name in
             Term = self.term
-
-            %%
-            ThPrio = {Thread.getPriority}
 
             %%
             %%  Must go ahead ... see the comment for FD variables;

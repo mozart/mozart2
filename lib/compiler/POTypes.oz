@@ -256,11 +256,14 @@ in
                array  # chunk    dictionary # chunk
                'class'# chunk    'object'# chunk
                'lock'   # chunk  port   # chunk
-               'nullary procedure' # value
-               'unary procedure'   # value
-               'binary procedure'  # value
-               'ternary procedure' # value
-               'n-ary procedure'   # value
+               'procedure/0' # value
+               'procedure/1'   # value
+               'procedure/2'  # value
+               'procedure/3' # value
+               'procedure/4' # value
+               'procedure/5' # value
+               'procedure/6' # value
+               'procedure/>6'   # value
                pair # tuple
               ]
 
@@ -270,13 +273,17 @@ in
                def(recordCOrChunk    [recordC chunk])
                def(list              [nilAtom cons])
                def(string            [nilAtom cons])
-               def(procedure         ['nullary procedure'
-                                      'unary procedure'
-                                      'binary procedure'
-                                      'ternary procedure'
-                                      'n-ary procedure'])
+               def(procedure         ['procedure/0'
+                                      'procedure/1'
+                                      'procedure/2'
+                                      'procedure/3'
+                                      'procedure/4'
+                                      'procedure/5'
+                                      'procedure/6'
+                                      'procedure/>6'])
                def(virtualString     [number record])
                def(procedureOrObject [procedure object])
+               def(unaryProcOrObject ['procedure/1' object])
               ]}
 
    TypeConstants
@@ -293,11 +300,14 @@ in
         record:   {OzTypes.new record [tuple]}
         cons:     {OzTypes.new cons nil}
         pair:     {OzTypes.new pair nil}
-        'nullary procedure': {OzTypes.new 'nullary procedure' nil}
-        'unary procedure':   {OzTypes.new 'unary procedure' nil}
-        'binary procedure':  {OzTypes.new 'binary procedure' nil}
-        'ternary procedure': {OzTypes.new 'ternary procedure' nil}
-        'n-ary procedure':   {OzTypes.new 'n-ary procedure' nil}
+        'procedure/0': {OzTypes.new 'procedure/0' nil}
+        'procedure/1': {OzTypes.new 'procedure/1' nil}
+        'procedure/2': {OzTypes.new 'procedure/2' nil}
+        'procedure/3': {OzTypes.new 'procedure/3' nil}
+        'procedure/4': {OzTypes.new 'procedure/4' nil}
+        'procedure/5': {OzTypes.new 'procedure/5' nil}
+        'procedure/6': {OzTypes.new 'procedure/6' nil}
+        'procedure/>6':{OzTypes.new 'procedure/>6' nil}
         cell:     {OzTypes.new cell nil}
         'class':  {OzTypes.new 'class' nil}
         object:   {OzTypes.new object nil}
@@ -360,11 +370,14 @@ in
          elsecase {IsProcedure V}
          then
             case {ProcedureArity V}
-            of 0 then TypeConstants.'nullary procedure'
-            elseof 1 then TypeConstants.'unary procedure'
-            elseof 2 then TypeConstants.'binary procedure'
-            elseof 3 then TypeConstants.'ternary procedure'
-            else TypeConstants.'n-ary procedure'
+            of 0 then TypeConstants.'procedure/0'
+            elseof 1 then TypeConstants.'procedure/1'
+            elseof 2 then TypeConstants.'procedure/2'
+            elseof 3 then TypeConstants.'procedure/3'
+            elseof 4 then TypeConstants.'procedure/4'
+            elseof 5 then TypeConstants.'procedure/5'
+            elseof 6 then TypeConstants.'procedure/6'
+            else TypeConstants.'procedure/>6'
             end
          elsecase {IsCell V}
          then TypeConstants.cell

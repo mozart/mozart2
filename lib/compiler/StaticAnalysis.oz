@@ -39,10 +39,11 @@ local
 %-----------------------------------------------------------------------
 % Some constants and shorthands
 
-   SAGenError  = 'static analysis error'
-   SAGenWarn   = 'static analysis warning'
-   SATypeError = 'type error'
+   SAGenError    = 'static analysis error'
+   SAGenWarn     = 'static analysis warning'
+   SATypeError   = 'type error'
 
+   AnalysisDepth = 3
 
    DPut = Dictionary.put
    DGet = Dictionary.get
@@ -333,25 +334,37 @@ local
                               {TypeTests.procedure X}
                               orelse {TypeTests.object X}
                            end
-        'nullary procedure':fun {$ X}
+        'procedure/0':     fun {$ X}
                               {TypeTests.procedure X}
                               andthen {Procedure.arity X} == 0
                            end
-        'unary procedure': fun {$ X}
+        'procedure/1':     fun {$ X}
                               {TypeTests.procedure X}
                               andthen {Procedure.arity X} == 1
                            end
-        'binary procedure':fun {$ X}
+        'procedure/2':     fun {$ X}
                               {TypeTests.procedure X}
                               andthen {Procedure.arity X} == 2
                            end
-        'ternary procedure':fun {$ X}
+        'procedure/3':     fun {$ X}
                               {TypeTests.procedure X}
                               andthen {Procedure.arity X} == 3
-                            end
-        'n-ary procedure': fun {$ X}
+                           end
+        'procedure/4':     fun {$ X}
                               {TypeTests.procedure X}
-                              andthen {Procedure.arity X} > 3
+                              andthen {Procedure.arity X} == 4
+                           end
+        'procedure/5':     fun {$ X}
+                              {TypeTests.procedure X}
+                              andthen {Procedure.arity X} == 5
+                           end
+        'procedure/6':     fun {$ X}
+                              {TypeTests.procedure X}
+                              andthen {Procedure.arity X} == 6
+                           end
+        'procedure/>6':    fun {$ X}
+                              {TypeTests.procedure X}
+                              andthen {Procedure.arity X} > 6
                            end
         cell:              IsCell
         chunk:             IsChunk
@@ -841,7 +854,7 @@ local
       [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       else
-         unit
+         _ % weaker analysis for procedures with arity > 20
       end
    end
 
@@ -2476,19 +2489,22 @@ local
    class SAApplication
       from SABuiltinApplication
 
-      meth AssertArity(Ctrl $)
+      meth AssertArity(Ctrl)
          DesigType = {@designator getType($)}
          ProcType  = case {Length @actualArgs}
-                     of 0 then TypeConstants.'nullary procedure'
-                     [] 1 then {OzTypes.new procedureOrObject nil}
-                     [] 2 then TypeConstants.'binary procedure'
-                     [] 3 then TypeConstants.'ternary procedure'
-                     else TypeConstants.'n-ary procedure' end
+                     of 0 then TypeConstants.'procedure/0'
+                     [] 1 then {OzTypes.new unaryProcOrObject nil}
+                     [] 2 then TypeConstants.'procedure/2'
+                     [] 3 then TypeConstants.'procedure/3'
+                     [] 4 then TypeConstants.'procedure/4'
+                     [] 5 then TypeConstants.'procedure/5'
+                     [] 6 then TypeConstants.'procedure/6'
+                     else TypeConstants.'procedure/>6' end
       in
          case
             {TryUnifyTypes ProcType DesigType}
          then
-            true
+            skip
          else
             PN  = {@designator getPrintName($)}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
@@ -2505,7 +2521,6 @@ local
                                 m:{ApplToVS pn(PN)|PNs})
                            hint(l:'Application (values)'
                                 m:{ApplToVS pn(PN)|Vals})])}
-            false
          end
       end
 
@@ -2519,10 +2534,6 @@ local
          {ForAll @actualArgs proc {$ A} {A sa(Ctrl Top)} end}
 
          case
-            {Not SAApplication, AssertArity(Ctrl $)}
-         then
-            skip % do not continue on type error
-         elsecase
             SAApplication, checkDesignatorBuiltin($)
          then
             BIName = {GetBuiltinName {GetData @designator}}
@@ -2711,7 +2722,7 @@ local
                    kind:  SAGenError
                    msg:   'applying non-procedure and non-object ' # oz(Val))}
          else
-            skip
+            SAApplication, AssertArity(Ctrl)
          end
       end
 
@@ -2872,14 +2883,15 @@ local
 
    class SAPatternClause
       meth sa(Ctrl Top)
-% \ifdef DEBUGSA
+\ifdef DEBUGSA
          {Show patternClause(@body)}
-% \endif
+\endif
          {@pattern sa(Ctrl false)}
       end
       meth saDescendWith(Ctrl Top Arbiter)
          ArbV  = {Arbiter getVariable($)}
-         Env   = {GetGlobalEnv {Add ArbV @globalVars}} % also save arbiter !!
+         % also save arbiter !!
+         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
       in
          {@pattern sa(Ctrl Top)}
 
@@ -3004,7 +3016,8 @@ local
       end
       meth saDescendWith(Ctrl Top Arbiter)
          ArbV  = {Arbiter getVariable($)}
-         Env   = {GetGlobalEnv {Add ArbV @globalVars}} % also save arbiter !!
+         % also save arbiter !!
+         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
       in
          SAStatement, saBody(Ctrl false @body)
          {InstallGlobalEnv Env}
@@ -3917,18 +3930,24 @@ local
          end
       end
       meth valToSubst(Value)
-         {self ValToSubst(@printName nil Value)}
+         {self ValToSubst(@printName nil AnalysisDepth Value)}
       end
-      meth ValToSubst(PrintNameBase Seen Value)
+      meth ValToSubst(PrintNameBase Seen Depth Value)
          case
+            Depth =< 0
+         then
+\ifdef DEBUGSA
+            {Show valToSubstBreakDepth(Value)}
+\endif
+            SAVariable, setLastValue(unit) % stop analysis here
+
+         elsecase
             {IsDet Value}
          then
 
 \ifdef DEBUGSA
             {Show valToSubstInt(Value)}
 \endif
-
-            %--** procedures/class cannot have definition as value!!!
 
             case
                {IsInt Value}
@@ -3960,7 +3979,9 @@ local
                ConstrArgs ConstrValArgs Constr
             in
                {self recordValToArgs(RecArgs
-                                     (Value#self)|Seen PrintNameBase
+                                     (Value#self)|Seen
+                                     Depth
+                                     PrintNameBase
                                      ?ConstrArgs
                                      ?ConstrValArgs)}
 
@@ -4056,8 +4077,7 @@ local
             SAVariable, setLastValue(unit)
          end
       end
-      meth recordValToArgs(RecArgs Seen PrintNameBase
-                           ?ConstrArgs ?ConstrValArgs)
+      meth recordValToArgs(RecArgs Seen Depth PrintNameBase ?ConstrArgs ?ConstrValArgs)
 
          case RecArgs
          of (F#X) | RAs
@@ -4074,7 +4094,7 @@ local
                V = {New Core.variable init(PrintName generated unit)}
 
             in
-               {V ValToSubst(PrintName Seen X)}
+               {V ValToSubst(PrintName Seen Depth-1 X)}
                {V occ(unit ?VO)}
                {VO updateValue({V getLastValue($)})}
             else
@@ -4085,7 +4105,7 @@ local
             ConstrArgs = A#VO | CAr
             ConstrValArgs = F#VO | CVAr
 
-            {self recordValToArgs(RAs Seen PrintNameBase CAr CVAr)}
+            {self recordValToArgs(RAs Seen Depth PrintNameBase CAr CVAr)}
          elseof
             nil
          then

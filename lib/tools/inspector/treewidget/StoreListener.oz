@@ -150,6 +150,15 @@ define
             else {self update(RIs RIs.1)}
             end
          end
+         meth updateCell(Node)
+            StopVar RI
+         in
+            stopPVar <- StopVar
+            stopOVar <- StopVar
+            {self enableStop}
+            RI = {Node tell($)}
+            {self update([RI] RI)}
+         end
       end
    end
 end

@@ -40,7 +40,7 @@ import
 
    OS
 
-   URL
+   Resolve
 
 export
    resolver:   Resolver
@@ -62,7 +62,7 @@ body
    %% file (i.e. clean up).  The identity localizer always returns
    %% old(FILE) without checking if the FILE actually exists.
    %%
-   Resolver = {URL.makeResolver foreign
+   Resolver = {Resolve.makeResolver foreign
                vs({Property.get 'oz.search.dload'})}
 
    Localize = Resolver.localize

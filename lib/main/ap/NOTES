@@ -52,6 +52,9 @@ appropriately on each machine.
 * when the user changes an option, he should choose whether the setting
 is for the current session only or should be saved to the custom file.
 
+For example changing an option to enable tracing should probably
+not be saved.
+
 * overriding user/default settings using environment variables or
 command line options.
 ** --customfile=FILE
@@ -86,3 +89,12 @@ need to be installed.  We can do this either (1) by making groups objects
 that must be obtained from other modules rather than just symbols, or
 (2) by specifying an init procedure for a group: to be called when an
 option is registered with that group (but what about nested groups?).
+
+some settings have to take effect immediately, e.g. setting properties
+that affect the behaviour of the emulator.
+
+However, graphical settings should not causes Tk to get loaded.
+Or settings for the browser, should not cause it to get loaded either.
+
+** an optional can be given a setting before it is defined
+this happens when loading the user's custom file

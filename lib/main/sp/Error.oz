@@ -106,23 +106,13 @@ local
    Dashes = '%**' # {Repeat WIDTH - 3 &-} # '\n'
    NumStarsLeft = {VSL Stars}
 
-   local
-      DebugMode = {`Builtin` 'Debug.mode' 1}
-   in
-      fun {Spaces N}
-         case {DebugMode}
-         then [& ]
-         else {Repeat N & }
-         end
-      end
-   end
-
 in
 
    functor $ prop once
 
    import
       System.{get
+              property
               printName
               printError
               valueToVirtualString}
@@ -336,6 +326,13 @@ in
              end
              Format}
             {Output {Access VSCell}}
+         end
+      end
+
+      fun {Spaces N}
+         case {System.property.get 'internal.debug'}
+         then [& ]
+         else {Repeat N & }
          end
       end
 

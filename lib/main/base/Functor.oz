@@ -19,8 +19,26 @@
 %%% WARRANTIES.
 %%%
 
-declare Functor in
+declare Functor `NewFunctor` in
 local
+   local
+      NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+   in
+      `functorID` = {NewUniqueName 'functorID'}
+   end
+
+   fun {IsFunctor X}
+      {IsChunk X} andthen {HasFeature X `functorID`}
+   end
+
+   fun {NewFunctor Import Export Apply}
+      %--** assert that the arguments have the expected types
+      {NewChunk f(`functorID`: unit
+                  'import': Import
+                  'export': Export
+                  'apply': Apply)}
+   end
+
    proc {TypeCheck Info Value}
       case Info.type of Fs=_|_ then
          {Type.ask.recordC Value}
@@ -38,6 +56,10 @@ local
       end
    end
 in
-   Functor = 'functor'(typeCheck: TypeCheck
+   `NewFunctor` = NewFunctor
+
+   Functor = 'functor'(is: IsFunctor
+                       new: NewFunctor
+                       typeCheck: TypeCheck
                        getFeatures: GetFeatures)
 end

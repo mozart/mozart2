@@ -44,7 +44,7 @@ prepare
                      mode(single
                           type: atom(help core scode ecode execute
                                      dump executable)
-                          default: feedtoemulator)
+                          default: execute)
                      help(char: [&h &?] alias: mode#help)
                      core(char: &E alias: mode#core)
                      scode(char: &S alias: mode#scode)

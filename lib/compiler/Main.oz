@@ -2,6 +2,9 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
+%%% Contributor:
+%%%   Christian Schulte <schulte@dfki.de>
+%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1998
 %%%
@@ -19,7 +22,7 @@
 %%% WARRANTIES.
 %%%
 
-functor prop once
+functor
 import
    Debug                         at 'x-oz://boot/Debug'
    Parser                        at 'x-oz://boot/Parser'
@@ -35,10 +38,11 @@ import
    Core.variable
    Assembler   %--**(internalAssemble assemble)
    RunTime   %--**
-\ifndef NO_GUMP
+
+   %% The Gump dependent part
    Gump(makeProductionTemplates)
    ProductionTemplates(default)
-\endif
+
 export
    Engine
    ParseOzFile

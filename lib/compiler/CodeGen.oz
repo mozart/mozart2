@@ -991,40 +991,25 @@ local
                                       GRegs Code VTl)
          elseof Xs then
             fun {MakeCopyList Xs VHd VTl}
-               case Xs of X|Xr then
-                  ArgIn VInter1 PairReg ConsReg PairArg1 NewReg PairArg2
-                  VInter2 VInter3
-               in
+               case Xs of X|Xr then ArgIn VInter1 ConsReg ConsArg1 in
                   ArgIn = {MakeCopyList Xr VHd VInter1}
-                  {CS newReg(?PairReg)}
                   {CS newReg(?ConsReg)}
-                  PairArg1 = case {Foreign.pointer.is X} then predicateRef(X)
+                  ConsArg1 = case {Foreign.pointer.is X} then predicateRef(X)
                              elsecase {IsName X} then literal(X)
                              end
-                  {CS newReg(?NewReg)}
-                  PairArg2 = value(NewReg)
-                  case {IsName X} then
-                     VInter1 = vCallBuiltin(_ 'NewName' [NewReg] unit VInter2)
-                  elsecase {Foreign.pointer.is X} then FalseReg VInter4 in
-                     {CS newReg(?FalseReg)}
-                     VInter1 = vEquateLiteral(_ false FalseReg VInter4)
-                     VInter4 = vCallBuiltin(_ 'generateAbstractionTableID'
-                                            [FalseReg NewReg] unit VInter2)
-                  end
-                  VInter2 = vEquateRecord(_ '#' 2 PairReg [PairArg1 PairArg2]
-                                          VInter3)
-                  VInter3 = vEquateRecord(_ '|' 2 ConsReg
-                                          [value(PairReg) ArgIn] VTl)
+                  VInter1 = vEquateRecord(_ '|' 2 ConsReg [ConsArg1 ArgIn] VTl)
                   value(ConsReg)
                [] nil then
                   VHd = VTl
                   literal(nil)
                end
             end
-            Reg
+            Reg1 Reg2 VInter3
          in
-            value(Reg) = {MakeCopyList Xs VHd VInter1}
-            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
+            value(Reg1) = {MakeCopyList Xs VHd VInter1}
+            {CS newReg(?Reg2)}
+            VInter2 = vCallBuiltin(_ 'generateCopies' [Reg1 Reg2] unit VInter3)
+            VInter3 = vDefinitionCopy(_ Reg2 {V reg($)} PredId PredicateRef
                                       GRegs Code VTl)
          end
       end

@@ -554,7 +554,7 @@ in
             elseof R1 then
                case Emitter, GetReg(Reg2 $) of none then skip
                elseof R2 then
-                  Emitter, Emit(unify(R1 R2))
+                  Emitter, Unify(R1 R2)
                end
             end
             case Emitter, GetTemp(Reg1 $) of none then
@@ -631,7 +631,7 @@ in
                else R2 in
                   Emitter, AllocateShortLivedReg(?R2)
                   Emitter, Emit(putConstant(Constant R2))
-                  Emitter, Emit(unify(R R2))
+                  Emitter, Unify(R R2)
                end
             end
          [] vEquateRecord(_ Literal RecordArity Reg VArgs Cont) then
@@ -1116,6 +1116,18 @@ in
             Emitter,
             Emit(debugExit(FileName Line Column
                            {VirtualString.toAtom Comment#'/'#Kind}))
+         end
+      end
+
+      meth Unify(R1 R2)
+         case R1 of x(_) then
+            Emitter, Emit(unify(R1 R2))
+         elsecase R2 of x(_) then
+            Emitter, Emit(unify(R2 R1))
+         else X in
+            Emitter, AllocateShortLivedTemp(?X)
+            Emitter, Emit(move(R1 X))
+            Emitter, Emit(unify(X R2))
          end
       end
 

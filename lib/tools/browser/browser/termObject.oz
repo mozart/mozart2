@@ -1752,49 +1752,21 @@ in
 
    %%
    %%
-   %% Compare two lists and yield their different tail lists;
+   %%  Compare two lists and yield their different tail lists;
+   %%  Gert's version. And i'm so really stupid ...
    %%
    proc {DiffRest L1 L2 ?LOut1 ?LOut2}
-      local S1 S2 in
-         job S1 = {NoNumber.matchDefault L1 1 InitValue} end
-         job S2 = {NoNumber.matchDefault L2 1 InitValue} end
-
-         %%
-         case
-            case {IsVar S1} orelse {IsVar S2} then
-               %% can tweak this case:
-               {EQ S1 S2}
-
-               %% "canonical" version:
-               %% R
-               %%   in
-               %% job
-               %%   R = S1 == S2
-               %% end
-               %%
-               %% case {IsVar R} then False
-               %% else R
-               %% end
-            elsecase S1 == InitValue orelse S2 == InitValue then False
-            else R in
-               job
-                  R = S1 == S2
-               end
-               %%
-               case {IsVar R} then False
-               else R
-               end
-            end
-         then
-            {DiffRest L1.2 L2.2 LOut1 LOut2}
-         else
-            LOut1 = L1
-            LOut2 = L2
-         end
-      end
+      %%
+      if H R1 R2 in
+         L1 = H|R1
+         L2 = H|R2
+      then
+         {DiffRest R1 R2 LOut1 LOut2}
+      [] true then
+         LOut1 = L1
+         LOut2 = L2
+      fi
    end
-   %%
-   %%
 
 %%%
 %%%

@@ -434,13 +434,10 @@ in
             %%
             WindowLocal =
             {New MyToplevel case Screen == InitValue
-                            then tkInit(withdraw:true)
-                            else tkInit(withdraw:true screen:Screen)
+                            then tkInit(withdraw:true delete:BObj#close)
+                            else tkInit(withdraw:true delete:BObj#close
+                                        screen:Screen)
                             end}
-
-            %%
-            CloseAction = {New Tk.action tkInit(parent: WindowLocal
-                                                action: BObj#close)}
 
             %%
             {Tk.send update(idletasks)}
@@ -453,8 +450,7 @@ in
               wm(iconname WindowLocal IITitle)
               wm(iconbitmap WindowLocal '@'#IIBitmap)
               %% wm(iconmask WindowLocal '@'#IIBMask)
-              wm(geometry WindowLocal XSize#x#YSize)
-              wm(protocol WindowLocal 'WM_DELETE_WINDOW' CloseAction)]}
+              wm(geometry WindowLocal XSize#x#YSize)]}
 
             %%
             {Tk.send wm(title WindowLocal ITitle)}

@@ -44,6 +44,38 @@ local
    end
 \endif
 
+   local
+      fun {IsConstant VArg}
+         case VArg of constant(_) then true
+         else false
+         end
+      end
+
+      fun {GetConstant constant(X)} X end
+
+      fun {HoistVArg VArg}
+         case VArg of record(Atomname RecordArity VArgs) then NewVArgs in
+            NewVArgs = {Map VArgs HoistVArg}
+            if {All NewVArgs IsConstant} then Args X in
+               Args = {Map NewVArgs GetConstant}
+               X = if {IsInt RecordArity} then
+                      {List.toTuple Atomname Args}
+                   else
+                      {List.toRecord Atomname
+                       {List.zip RecordArity Args fun {$ F X} F#X end}}
+                   end
+               constant(X)
+            else record(Atomname RecordArity NewVArgs)
+            end
+         else VArg
+         end
+      end
+   in
+      fun {HoistRecord Atomname RecordArity VArgs}
+         {HoistVArg record(Atomname RecordArity VArgs)}
+      end
+   end
+
    fun {NextFreeIndex Used I}
       if {Dictionary.member Used I} then {NextFreeIndex Used I + 1}
       else I
@@ -1550,6 +1582,15 @@ in
       end
 
       meth EmitRecordWrite(Literal RecordArity R NonlinearRegs VArgs)
+         case {HoistRecord Literal RecordArity VArgs}
+         of constant(Constant) then
+            Emitter, Emit(putConstant(Constant R))
+         [] record(Literal RecordArity VArgs) then
+            Emitter, EmitRecordWriteSub(Literal RecordArity R
+                                        NonlinearRegs VArgs)
+         end
+      end
+      meth EmitRecordWriteSub(Literal RecordArity R NonlinearRegs VArgs)
          NewVArgs
       in
          %% Emit in write mode, i.e., bottom-up and using `set':
@@ -1560,8 +1601,8 @@ in
       meth EmitSubRecordWrites(VArgs NonlinearRegs $)
          case VArgs of VArg|VArgr then
             case VArg of record(Literal RecordArity VArgs) then R in
-               Emitter, EmitRecordWrite(Literal RecordArity R
-                                        NonlinearRegs VArgs)
+               Emitter, EmitRecordWriteSub(Literal RecordArity R
+                                           NonlinearRegs VArgs)
                reg(R)
             else VArg
             end|Emitter, EmitSubRecordWrites(VArgr NonlinearRegs $)
@@ -1596,6 +1637,8 @@ in
          end
       end
       meth EmitRecordRead(Literal RecordArity R NonlinearRegs VArgs)
+         %%--** if the record can be hoisted, is it better to
+         %% putConstant/unify it or to emit it in read mode?
          SubRecords
       in
          %% Emit in read mode, i.e., top-down and using `unify':

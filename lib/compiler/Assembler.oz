@@ -633,8 +633,6 @@ define
             {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
          [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
             {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
-         [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
-            {Assembler append(inlineUparrow(X1 X2 X3))}
          else
             {Assembler append(I1)}
          end

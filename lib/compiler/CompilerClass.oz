@@ -34,6 +34,7 @@ local
                             showcompiletime: false
                             showcompilememory: false
                             echoqueries: false
+                            showdeclares: true
                             watchdog: true
                             ozma: false
 
@@ -516,6 +517,20 @@ local
                end
                CompilerStateClass, getSwitch(warnunusedformals ?W)
                {ForAll GS proc {$ GS} {GS markFirst(W @reporter)} end}
+            else skip
+            end
+            case CompilerStateClass, getSwitch(showdeclares $)
+               andthen TopLevelGVs \= nil
+            then
+               {@reporter userInfo('Declared variables:\n')}
+               {ForAll {Sort TopLevelGVs
+                        fun {$ V W}
+                           {V getPrintName($)} < {W getPrintName($)}
+                        end}
+                proc {$ V}
+                   {@reporter userInfo('  '#{V getPrintName($)}#' = '#
+                                       {V outputDebugType($)}#'\n')}
+                end}
             else skip
             end
             case CompilerStateClass, getSwitch(core $) then R1 R2 FS in

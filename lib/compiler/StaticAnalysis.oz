@@ -44,7 +44,7 @@ import
                    newPredicateRef newCopyablePredicateRef
                    nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
 
-   System(eq printName show)
+   System(eq printName)
    Type(is)
    Core
    Builtins(getInfo)
@@ -388,9 +388,9 @@ define
          case S
          of nil then true
          elseof I|Sr then
-            {IsDet I}
-            andthen {IsChar I}
-            andthen {IsStringNow Sr}
+            if {IsDet I} then
+               {IsChar I} andthen {IsStringNow Sr}
+            else unit end
          else false end
       else unit end
    end
@@ -4266,9 +4266,8 @@ define
          end
       end
       meth makeVO(CS VHd VTl ?VO)
-         if @origin==unit
-         then {System.show 'SHOULD NOT HAPPEN'}
-         else {@origin makeVO(CS VHd VTl ?VO)}
+         case @origin==unit of false then
+            {@origin makeVO(CS VHd VTl ?VO)}
          end
       end
       meth getLastValue($)

@@ -21,7 +21,7 @@
 
 functor $
 import
-   System(show printName)
+   System(printName)
 export
    Nodes
 define
@@ -298,7 +298,6 @@ define
             (X + XDim)
          end
          meth makeDirty
-            {System.show 'MarkerNode::makeDirty called'}
             dirty <- true
          end
       end
@@ -981,7 +980,6 @@ define
             meth searchNode(XA YA X Y $)
                Node = @node
             in
-               {System.show 'Entered EmbracedNode::SearchNode:'#XA#YA#X#Y}
                if Y == YA andthen X >= XA andthen X < (XA + 1)
                then Node
                elsecase {Node getXYDim($)}

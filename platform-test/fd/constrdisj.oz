@@ -10,8 +10,8 @@ fun {$ IMPORT}
    end
 
 
-   CDSU = !`CDHeader`
-   CD = !`CDBody`
+   CDSU = FD.cd.header
+   CD   = FD.cd.'body'
 
    SRD = 1
    SEA =

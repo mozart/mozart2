@@ -45,8 +45,12 @@ fun {$ IMPORT}
 %8
       {FD.element Q.8 [2 3 4 5 6] SumAE}
 %9
-      {Assert 9 [ SumBCD::[2 3 5 7]  SumBCD::[1 2 6]     SumBCD::[0 1 4 9]
-                  SumBCD::[0 1 8]    SumBCD::[0 5 10] ]}
+      {Assert 9 [{FD.reified.int [2 3 5 7] SumBCD }
+                 {FD.reified.int [1 2 6] SumBCD }
+                 {FD.reified.int [0 1 4 9] SumBCD }
+                 {FD.reified.int [0 1 8] SumBCD }
+                 {FD.reified.int [0 5 10] SumBCD }
+                ]}
 %10
       skip
       {FD.distribute ff Q}

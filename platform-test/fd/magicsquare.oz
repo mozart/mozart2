@@ -14,7 +14,7 @@ fun {$ IMPORT}
       X = {MakeTuple x S}
    in
       {F X S N Square}
-      {`GenSum` X '=:' }
+      {FD.sum X '=:' }
    end
 
    Desc =
@@ -30,7 +30,7 @@ fun {$ IMPORT}
       X = {MakeTuple x S}
    in
       {F X S Square}
-      {`GenSum`  X '=:' }
+      {FD.sum  X '=:' }
    end
 
    MagicSquare =

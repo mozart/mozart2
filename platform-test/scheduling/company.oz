@@ -124,7 +124,7 @@ fun {$ IMPORT}
          case AllSteps of nil then Bs=nil Ps=nil
          [] A|Ar
          then S#(D#P)=!A Br Pr in
-            Bs= (S::{Tr Ind-D+1}#Ind)|Br
+            Bs= {FD.reified.int {Tr Ind-D+1}#Ind S }|Br
             Ps=P|Pr
             {SumUp Ind Ar Br Pr}
          end

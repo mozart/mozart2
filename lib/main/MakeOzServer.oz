@@ -20,33 +20,59 @@
 %%% WARRANTIES.
 %%%
 
-local
+{Application.syslet
+ 'ozserver'
+ functor $ prop once
 
-   \insert 'dp/RemoteServer.oz'
+ import
+    Connection.{take}
 
-in
+    Syslet.{args exit}
 
-   {Application.syslet
-    'ozserver'
-    functor $ prop once
+    LILO.{link}
 
-    import
-       Connection.{take}
-       Syslet.{args exit}
+ body
+    try
+       RunRet # CtrlRet = {Connection.take Syslet.args.ticket}
+       RunStr CtrlStr
+    in
+       {Port.send RunRet  {Port.new RunStr}}
+       {Port.send CtrlRet {Port.new CtrlStr}}
 
-    body
-       try
-          RunRet # CtrlRet = {Connection.take Syslet.args.ticket}
-       in
-          {RemoteServer RunRet CtrlRet proc {$}
-                                          {Syslet.exit 0}
-                                       end}
-       catch _ then
-          {Syslet.exit 1}
+       %% The server for running procedures and functors
+       thread
+          {ForAll RunStr
+           proc {$ What}
+              {Port.send RunRet
+               try
+                  X = case {Procedure.is What} then {What}
+                      elsecase {Chunk.is What} andthen
+                         {HasFeature What apply} then
+                         {LILO.link unit What '.'}
+                      end
+               in
+                  okay(X)
+               catch E then
+                  exception(E)
+               end}
+              end}
        end
+
+       %% The server for control messages
+       thread
+          {ForAll CtrlStr
+           proc {$ C}
+              {Port.send CtrlRet
+               okay(case C
+                    of ping  then unit
+                    [] close then {Syslet.exit 0} unit
+                    end)}
+           end}
+       end
+
+    catch _ then
+       {Syslet.exit 1}
     end
+ end
 
-    single(ticket(type:atom))
-   }
-
-end
+ single(ticket(type:atom))}

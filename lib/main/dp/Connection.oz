@@ -261,22 +261,22 @@ define
       case {Record.waitOr X#Alarm}
       of 1 then
          case X of no then
-            {Fault.deInstall P 'thread'(this) true}
-            {Fault.deInstallWatcher P Watch true}
+            {Fault.deInstall P 'thread'(this) _}
+            {Fault.deInstallWatcher P Watch _}
             {Exception.raiseError connection(refusedTicket V)}
          [] yes(A) then
-            {Fault.deInstall P 'thread'(this) true}
-            {Fault.deInstallWatcher P Watch true}
+            {Fault.deInstall P 'thread'(this) _}
+            {Fault.deInstallWatcher P Watch _}
             Entity=A
          end
       [] 2 then
          case{Record.waitOr Alarm} of 1 then
-            {Fault.deInstall P 'thread'(this) true}
-            {Fault.deInstallWatcher P Watch true}
+            {Fault.deInstall P 'thread'(this) _}
+            {Fault.deInstallWatcher P Watch _}
             {Exception.raiseError connection(ticketToDeadSite V)}
          [] 2 then
-            {Fault.deInstall P 'thread'(this) true}
-            {Fault.deInstallWatcher P Watch true}
+            {Fault.deInstall P 'thread'(this) _}
+            {Fault.deInstallWatcher P Watch _}
             {Exception.raiseError connection(ticketTakeTimeOut V)}
          end
       end

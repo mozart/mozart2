@@ -113,28 +113,36 @@ define
    proc{AcceptProc FD}
       Read InString
    in
-      {OS.readSelect FD}
-      {OS.read FD MaxRead ?InString nil ?Read}
+      try
+         {OS.readSelect FD}
+         {OS.read FD MaxRead ?InString nil ?Read}
 
-      if Read>0 then
-         case InString of "tcp" then
-            Grant = {DPMisc.getConnGrant accept tcp false}
-         in
-            case Grant of grant(...) then
-               _={OS.write FD "ok"}
-                {DPMisc.handover accept Grant settings(fd:FD)}
-            else % could be busy or no tcp, wait for anoter try
-               _={OS.write FD "no"}
-               {AcceptProc FD}
+         if Read>0 then
+            case InString of "tcp" then
+               Grant = {DPMisc.getConnGrant accept tcp false}
+            in
+               case Grant of grant(...) then
+                  _={OS.write FD "ok"}
+                  {DPMisc.handover accept Grant settings(fd:FD)}
+               else % could be busy or no tcp, wait for anoter try
+                  _={OS.write FD "no"}
+                  {AcceptProc FD}
+               end
+            [] "give_up" then
+               {OS.close FD}
+            else
+               {OS.close FD}
             end
-         [] "give_up" then
-            {OS.close FD}
          else
+            % AN! can this happen or will there allways be an exception?
             {OS.close FD}
          end
-      else
-         % Check errno, could be worth another try
-         {OS.close FD}
+      catch X then
+         case X of system(os(_ _ 11 _) ...) then % EAGAIN => try again
+            {AcceptProc FD}
+         else % Other fault conditions AN! should some others be treated?
+            {OS.close FD}
+         end
       end
    end
 end

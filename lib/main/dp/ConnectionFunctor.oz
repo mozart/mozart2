@@ -92,6 +92,9 @@ define
             Grant = {ConnectionWrapper.getConnGrant tcp true}
             ReadS
          in
+\ifdef DBG
+            {System.show grant_response(Grant)}
+\endif
             case Grant of grant(...) then
                try
                   {ConnectionWrapper.writeSelect FD}
@@ -108,8 +111,14 @@ define
                % If we catch an exception here it means the connection
                % was somehow corrupted. Report this as a temp error and let
                % the requestor try again.
+\ifdef DBG
+               catch X then
+                  {System.show connect_caught(X)}
+\else
                catch _ then
+\endif
                   Done=failed
+                  {ConnectionWrapper.freeConnGrant Grant}
                   {ConnectionWrapper.connFailed temp}
                end
             else
@@ -132,7 +141,7 @@ define
                {ConnectionWrapper.close FD}
             catch _ then skip end
 
-            {ConnectionWrapper.connFailed noTransport}
+            {ConnectionWrapper.connFailed 'No transport or not accepted'}
 \ifdef DBG
          elseif Done==connected then
             {System.show connectDone({Property.get 'time.total'} -T0)}

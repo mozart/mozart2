@@ -82,26 +82,38 @@ define
 
            proc{Handover Grant SetUpParameter}
               {Obj unregisterResource(Grant)}
-              {DPMisc.handover Obj.requestor Grant SetUpParameter}
+              if {Dictionary.member ReqDict
+                  {GetIdFromRequestor Obj.requestor}} then
+                 {DPMisc.handover Obj.requestor Grant SetUpParameter}
+              end
            end
 
            proc{ConnFailed Reason}
-              {DPMisc.connFailed Obj.requestor Reason}
+              if {Dictionary.member ReqDict
+                  {GetIdFromRequestor Obj.requestor}} then
+                 {DPMisc.connFailed Obj.requestor Reason}
+              end
            end
 
            proc{FreeConnGrant Grant}
               {Obj unregisterResource(Grant)}
-              {DPMisc.freeConnGrant Obj.requestor Grant}
+              if {Dictionary.member ReqDict
+                  {GetIdFromRequestor Obj.requestor}} then
+                 {DPMisc.freeConnGrant Obj.requestor Grant}
+              end
            end
 
+           % Could be a consistency problem if abort happens... AN!
+           % Add a Dictionary.member test?
            proc{GetLocalState State}
               {Obj getLocalState(State)}
            end
            proc{PutLocalState State}
               {Obj putLocalState(State)}
            end
+
            Socket=OS.socket
-%          Connect=OS.connectNonblocking
+%          Connect=OS.connectNonblocking % AN!
            Connect=OS.connect
            Write=OS.write
            Read=OS.read
@@ -182,11 +194,10 @@ define
          end
       end
    end
+   ReqDict
 in
-
    proc{InitConnection Stream}
       ReqDict = {NewDictionary}
-   in
       {ForAll Stream
        proc{$ Request}
           case Request of

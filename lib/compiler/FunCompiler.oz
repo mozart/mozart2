@@ -12,6 +12,8 @@ export
    CompilerClass
    GenericInterface
    QuietInterface
+   EvalExpression
+   VirtualStringToValue
 body
    \insert FormatStrings
    \insert Reporter
@@ -21,4 +23,5 @@ in
    \insert CompilerClass
    \insert GenericInterface
    \insert QuietInterface
+   \insert Abstractions
 end

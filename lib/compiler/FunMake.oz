@@ -75,7 +75,10 @@ in
 
          Compiler = compiler(compilerClass: CompilerF.compilerClass
                              genericInterface: CompilerF.genericInterface
-                             quietInterface: CompilerF.quietInterface)
+                             quietInterface: CompilerF.quietInterface
+                             evalExpression: CompilerF.evalExpression
+                             virtualStringToValue:
+                                CompilerF.virtualStringToValue)
       in
          \insert 'Compiler.env'
       end

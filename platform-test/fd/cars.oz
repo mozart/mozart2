@@ -117,13 +117,20 @@ fun {$ IMPORT}
    CarInfo = [1#1 2#1 3#2 4#2 5#2 6#2]    % number of cars of class
 in
 
-   fd([cars([one(equal(fun {$}
+   fd([cars([
+             one(equal(fun {$}
                           {SearchOne proc{$ Slots}
                                         {StateConstraints Slots 10 5 6
                                          OutOfInfo#OptionInfo CarInfo} end}
                        end
                        CarsSol)
                  keys: [fd])
+             one_entailed(entailed(proc {$}
+                          {SearchOne proc{$ Slots}
+                                        {StateConstraints Slots 10 5 6
+                                         OutOfInfo#OptionInfo CarInfo} end _}
+                       end)
+                 keys: [fd entailed])
             ])
       ])
 

@@ -101,8 +101,11 @@ fun {$ IMPORT}
               ]]
 in
 
-   fs([crew([one(equal(fun {$} {SearchOne {Crew Flights}} end CrewSol)
+   fs([crew([
+             one(equal(fun {$} {SearchOne {Crew Flights}} end CrewSol)
                  keys: [fs])
+             one_entailed(entailed(proc {$} {SearchOne {Crew Flights} _} end)
+                 keys: [fs entailed])
             ]
            )
       ]

@@ -68,10 +68,15 @@ ZebraSol =
 
 in
 
-   fd([zebra([
+   fd([
+       zebra([
               all(equal(fun {$} {SearchAll Zebra} end
                         ZebraSol)
                   keys: [fd])
+             ])
+       zebra_entailed([
+                       all(entailed(proc {$} {SearchAll Zebra _} end)
+                  keys: [fd entailed])
              ])
       ])
 end

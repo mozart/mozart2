@@ -43,11 +43,16 @@ fun {$ IMPORT}
     ]]
 in
 
-   fs([knapsack([one(equal(fun {$} {SearchOne {KnapSack Weights Capacity}} end
+   fs([knapsack([
+                 one(equal(fun {$} {SearchOne {KnapSack Weights Capacity}} end
                            KnapSackSol)
-                 keys: [fs])
-            ]
-           )
+                     keys: [fs])
+                 one_entailed(entailed(proc {$}
+                                          {SearchOne {KnapSack Weights Capacity} _}
+                                       end)
+                              keys: [fs entailed])
+                ]
+               )
       ]
      )
 

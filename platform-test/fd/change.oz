@@ -24,11 +24,16 @@ fun {$ IMPORT}
    [change(1 1 1 1 2)]
 in
 
-   fd([change([one(equal(fun {$}
+   fd([change([
+               one(equal(fun {$}
                             {SearchOne Change}
                          end
                          ChangeSol)
                    keys: [fd])
+               one_entailed(entailed(proc {$}
+                                        {SearchOne Change _}
+                                     end)
+                   keys: [fd entailed])
               ])
       ])
 

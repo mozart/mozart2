@@ -18,9 +18,12 @@ fun {$ IMPORT}
 
 in
 
-   fd([safe([all(equal(fun {$} {SearchAll Safe} end
+   fd([safe([
+             all(equal(fun {$} {SearchAll Safe} end
                        SafeSol)
                  keys: [fd])
+             all_entailed(entailed(proc {$} {SearchAll Safe _} end)
+                 keys: [fd entailed])
             ])
       ])
 

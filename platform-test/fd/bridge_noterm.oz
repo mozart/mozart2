@@ -359,6 +359,10 @@ in
                             end
                             BridgeNotermSol)
                       keys: [fd])
+               noterm_entailed(entailed(proc {$} {SearchBest {NoTermCompile BridgeNoterm}
+                                     proc{$ O N} N.pe <: O.pe end _}
+                            end)
+                      keys: [fd entailed])
               ])
       ])
 end

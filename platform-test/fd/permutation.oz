@@ -168,6 +168,14 @@ in
                               end
                               PermutationSol)
                         keys: [fd])
+                    all_entailed(entailed(proc {$}
+                                             {SearchAll
+                                              proc{$ X}
+                                                 {Permutation [1 1 0 1 0 1 0 1]
+                                                  [1 1 1 1 0 1 1 0] 9 X}
+                                              end _}
+                                          end)
+                                 keys: [fd entailed])
                    ])
       ])
 

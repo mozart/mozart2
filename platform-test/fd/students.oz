@@ -162,7 +162,8 @@ fun {$ IMPORT}
 in
 
    fd([
-       students([best1(equal(fun {$}
+       students([
+                 best1(equal(fun {$}
                                 {SearchBest {StudentsProblem 2 3 P4} Cmp}
                              end
                              StudentsSol1)
@@ -177,6 +178,18 @@ in
                              end
                              StudentsSol3)
                        keys: [fd])
+                 best1_entailed(entailed(proc {$}
+                                            {SearchBest {StudentsProblem 2 3 P4} Cmp _}
+                                         end)
+                       keys: [fd entailed])
+                 best2_entailed(entailed(proc {$}
+                                            {SearchBest {StudentsProblem 2 11 P5} Cmp _}
+                             end)
+                       keys: [fd entailed])
+                 best3_entailed(entailed(proc {$}
+                                            {SearchBest {StudentsProblem 2 5 P6} Cmp _}
+                                         end)
+                       keys: [fd entailed])
                 ])
       ])
 

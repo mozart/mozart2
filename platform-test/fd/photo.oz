@@ -87,6 +87,16 @@ in
                          end
                          PhotoSol)
                    keys: [fd])
+              primer_entailed(entailed(proc {$}
+                              {SearchOne PhotoPrimer _}
+                                       end)
+                              keys: [fd entailed])
+
+              best_entailed(entailed(proc {$}
+                                        {SearchBest Photo
+                                         proc{$ Old New} Old.2 <: New.2 end _}
+                                     end)
+                   keys: [fd entailed])
              ])
       ])
 

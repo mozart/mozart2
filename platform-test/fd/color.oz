@@ -55,11 +55,16 @@ fun {$ IMPORT}
         spain:0)]
 in
 
-   fd([color([one(equal(fun {$}
+   fd([color([
+              one(equal(fun {$}
                            {SearchOne Color}
                         end
                         ColorSol)
                   keys: [fd])
+              one_entailed(entailed(proc {$}
+                           {SearchOne Color _}
+                                    end)
+                  keys: [fd entailed])
              ])
       ])
 

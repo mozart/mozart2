@@ -62,13 +62,21 @@ fun {$ IMPORT}
          totalCost:383)]
 in
 
-   fd([warehouse([
+   fd([
+       warehouse([
                   best(equal(fun {$} {SearchBest WareHouse
                                       proc {$ Old New}
                                          Old.totalCost >: New.totalCost end}
                              end
                              WareHouseSol)
                        keys: [fd])
+                  best_entailed(entailed(proc {$}
+                                            {SearchBest WareHouse
+                                             proc {$ Old New}
+                                                Old.totalCost >: New.totalCost
+                                             end _}
+                                         end)
+                                keys: [fd scheduling])
                  ])
       ])
 

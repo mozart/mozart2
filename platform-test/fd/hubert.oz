@@ -39,12 +39,17 @@ HubertSol = [sol(a:9 b:1 c:2 d:5 e:3 f:4 g:7 h:6 i:8)]
 
 in
 
-   fd([hubert([one(equal(fun {$} {SearchOne Hubert} end
+   fd([hubert([
+               one(equal(fun {$} {SearchOne Hubert} end
                          HubertSol)
                    keys: [fd])
                all(equal(fun {$} {SearchAll Hubert} end
                         HubertSol)
                   keys: [fd])
+               one_entailed(entailed(proc {$} {SearchOne Hubert _} end)
+                   keys: [fd entailed])
+               all_entailed(entailed(proc {$} {SearchAll Hubert _} end)
+                  keys: [fd entailed])
               ])
       ])
 

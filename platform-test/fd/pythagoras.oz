@@ -23,9 +23,12 @@ fun {$ IMPORT}
 
 in
 
-   fd([pythagoras([one(equal(fun {$} {SearchOne Pythagoras} end
+   fd([pythagoras([
+                   one(equal(fun {$} {SearchOne Pythagoras} end
                              PythagorasSol)
                        keys: [fd])
+                   one_entailed(entailed(proc {$} {SearchOne Pythagoras _} end)
+                                keys: [fd entailed])
                   ])
       ])
 

@@ -59,10 +59,13 @@ fun {$ IMPORT}
      {FS.value.new [5#6 9]}
     ]]
 in
-   fs([steiner([one(equal(fun {$} {SearchOne {Steiner 9}} end SteinerSol)
-                 keys: [fs])
-            ]
-           )
+   fs([steiner([
+                one(equal(fun {$} {SearchOne {Steiner 9}} end SteinerSol)
+                    keys: [fs])
+                one_entailed(entailed(proc {$} {SearchOne {Steiner 9} _} end)
+                             keys: [fs entailed])
+               ]
+              )
       ]
      )
 end

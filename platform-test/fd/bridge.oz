@@ -197,7 +197,8 @@ fun {$ IMPORT}
 
 in
 
-   fd([bridge([nonglobal(equal(fun {$}
+   fd([bridge([
+               nonglobal(equal(fun {$}
                                 {SearchBest {Compile BridgeProb false}
                                  proc {$ Old New} Old.pe >: New.pe end}
                              end
@@ -209,6 +210,16 @@ in
                              end
                              BridgeSolGlobal)
                        keys: [fd])
+               nonglobal_entailed(entailed(proc {$}
+                                {SearchBest {Compile BridgeProb false}
+                                 proc {$ Old New} Old.pe >: New.pe end _}
+                             end)
+                         keys: [fd entailed])
+               global_entailed(entailed(proc {$}
+                                {SearchBest {Compile BridgeProb true}
+                                 proc {$ Old New} Old.pe >: New.pe end _}
+                             end)
+                       keys: [fd entailed])
                   ])
             ])
 

@@ -315,7 +315,8 @@ fun {$ IMPORT}
      jobb(dur:7 machine:2 name:n430 pred:10 start:1 ueb:0)]]
 in
 
-   schedule([product([best(equal(fun {$}
+   schedule([product([
+                      best(equal(fun {$}
                                     {SearchBest
                                      Product
                                      proc{$ Old New}
@@ -332,6 +333,22 @@ in
                                  end
                                  ProductSol)
                            keys: [fd scheduling])
+                      best_entailed(entailed(proc {$}
+                                                {SearchBest
+                                                 Product
+                                                 proc{$ Old New}
+                                                    local N O in
+                                                       N = {FoldL New
+                                                            fun{$ I J} {FD.plus I J.ueb}
+                                                            end 0}
+                                                       O = {FoldL Old
+                                                            fun{$ I J} {FD.plus I J.ueb}
+                                                            end 0}
+                                                       N <: O
+                                                    end
+                                                 end _}
+                                             end)
+                                    keys: [fd scheduling entailed])
                      ])
             ])
 

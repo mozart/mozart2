@@ -51,11 +51,16 @@ fun {$ IMPORT}
    [plan(1 2 3 1 2 2 3 4 1 3 4)]
 in
 
-   fd([conference([one(equal(fun {$}
+   fd([conference([
+                   one(equal(fun {$}
                                 {SearchOne Conference}
                              end
                              ConferenceSol)
                        keys: [fd])
+                   one_entailed(entailed(proc {$}
+                                            {SearchOne Conference _}
+                                         end)
+                       keys: [fd entailed])
                   ])
       ])
 end

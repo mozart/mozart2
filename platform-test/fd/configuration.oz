@@ -107,12 +107,17 @@ fun {$ IMPORT}
                   type:2)])]
 in
 
-   fd([configuration([best(equal(fun {$}
-                                 {SearchBest Configuration Order}
-                              end
-                              ConfigurationSol)
-                        keys: [fd])
-                  ])
+   fd([configuration([
+                      best(equal(fun {$}
+                                    {SearchBest Configuration Order}
+                                 end
+                                 ConfigurationSol)
+                           keys: [fd])
+                      best_entailed(entailed(proc {$}
+                                                {SearchBest Configuration Order _}
+                                             end)
+                           keys: [fd entailed])
+                     ])
       ])
 
 

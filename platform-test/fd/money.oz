@@ -42,13 +42,25 @@ fun {$ IMPORT}
    DonaldSol = [[5 2 6 4 8 1 9 7 3 0]]
 in
 
-   fd([money([one(equal(fun {$} {SearchOne Money} end MoneySol)
+   fd([money([
+              one(equal(fun {$} {SearchOne Money} end MoneySol)
                   keys: [fd])
               all(equal(fun {$} {SearchAll Money} end MoneySol)
-                  keys: [fd])])
-       donald([one(equal(fun {$} {SearchOne Donald} end DonaldSol)
                   keys: [fd])
-              all(equal(fun {$} {SearchAll Donald} end DonaldSol)
-                  keys: [fd])])
+              one_entailed(entailed(proc {$} {SearchOne Money _} end)
+                  keys: [fd entailed])
+              all_entailed(entailed(proc {$} {SearchAll Money _} end)
+                  keys: [fd entailed])
+             ])
+       donald([
+               one(equal(fun {$} {SearchOne Donald} end DonaldSol)
+                   keys: [fd])
+               all(equal(fun {$} {SearchAll Donald} end DonaldSol)
+                   keys: [fd])
+               one_entailed(entailed(proc {$} {SearchOne Donald _} end)
+                            keys: [fd entailed])
+               all_entailed(entailed(proc {$} {SearchAll Donald _} end)
+                            keys: [fd entailed])
+              ])
       ])
 end

@@ -107,6 +107,22 @@ in
                                  end
                                  MagicSquarePrimerSol)
                            keys: [fd])
+                    one_entailed(entailed(proc {$}
+                                             {SearchOne proc {$ Sol}
+                                                           Size Square
+                                                        in
+                                                           {MagicSquare 4
+                                                            Size Square}
+                                                           Sol = Size#Square
+                                                        end _}
+
+                                          end)
+                                 keys: [fd entailed])
+
+                    primer_entailed(entailed(proc {$}
+                                                {SearchOne MagicSquarePrimer _}
+                                             end)
+                                    keys: [fd entailed])
                    ])
       ])
 

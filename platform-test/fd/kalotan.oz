@@ -29,6 +29,8 @@ in
                 one(equal(fun {$} {SearchOne Kalotan} end
                           KalotanSol)
                     keys: [fd])
+                one_entailed(entailed(proc {$} {SearchOne Kalotan _} end)
+                    keys: [fd entailed])
                ])
       ])
 

@@ -27,14 +27,16 @@ fun {$ IMPORT}
    T = S.1
 
 in
-   fd([divmod([one(equal(fun {$}
+   fd([divmod([
+               one(equal(fun {$}
                             if {Map T fun {$ E} {FD.reflect.dom E} end}  =
                                [
                                 [3#93]
                                 [10] [3] [6#100]
                                 [3#35 37#50]
                                ]
-                            then 1  else 0 end                   end
+                            then 1  else 0 end
+                         end
                          1)
                    keys: [fd])
               ])

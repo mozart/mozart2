@@ -40,6 +40,8 @@ in
                all(equal(fun {$} {SearchAll Family} end
                          FamilySol)
                    keys: [fd])
+               all_entailed(entailed(proc {$} {SearchAll Family _} end)
+                   keys: [fd entailed])
               ])
       ])
 

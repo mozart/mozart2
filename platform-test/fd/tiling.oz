@@ -150,6 +150,23 @@ in
                            end
                            TilingSol2)
                      keys: [fd])
+               test1_entailed(entailed(proc {$} {SearchOne
+                                                 proc{$ X}
+                                                    local Xs#Ys#Ss = !X in
+                                                       {Square 2 Xs Ys Ss}
+                                                    end
+                                                 end _}
+                                       end)
+                              keys: [fd entailed])
+
+               test2_entailed(entailed(proc {$} {SearchOne
+                                                 proc{$ X}
+                                                    local Xs#Ys#Ss=!X in
+                                                       {Square 1 Xs Ys Ss}
+                                                    end
+                                                 end _}
+                                       end)
+                     keys: [fd entailed])
               ])
       ])
 

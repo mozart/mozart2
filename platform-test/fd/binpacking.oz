@@ -92,9 +92,12 @@ fun {$ IMPORT}
      b(copper:0 glass:0 plastic:1 steel:0 type:2 wood:2)
      b(copper:0 glass:0 plastic:2 steel:0 type:2 wood:2)]]
 in
-   fd([binpacking([one(equal(fun {$} {SearchOne BinPacking} end
+   fd([binpacking([
+                   one(equal(fun {$} {SearchOne BinPacking} end
                              BinPackingSol)
                        keys: [fd])
+                   one_entailed(entailed(proc {$} {SearchOne BinPacking _} end)
+                       keys: [fd entailed])
                   ])
             ])
 

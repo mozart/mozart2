@@ -38,16 +38,23 @@ in
        donald([all_one_equation(equal(fun {$}
                                          {SearchAll Donald}
                                       end
-
                                       DonaldSol)
                                 keys: [fd])
               ])
        money([all_one_equation(equal(fun {$}
                                         {SearchAll Money}
                                      end
-
                                      MoneySol)
                                keys: [fd])
+             ])
+       donald_entailed([all_one_equation(entailed(proc {$}
+                                         {SearchAll Donald _}
+                                      end)                              keys: [fd entailed])
+                       ])
+       money_entailed([all_one_equation(entailed(proc {$}
+                                                    {SearchAll Money _}
+                                                 end)
+                               keys: [fd entailed])
              ])
       ])
 

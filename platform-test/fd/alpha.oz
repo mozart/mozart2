@@ -43,6 +43,10 @@ in
               all(equal(fun {$} {SearchAll Alpha} end
                         AlphaSol)
                   keys: [fd])
+              one_entailed(entailed(proc {$} {SearchOne Alpha _} end)
+                  keys: [fd entailed])
+              all_entailed(entailed(proc {$} {SearchAll Alpha _} end)
+                  keys: [fd entailed])
              ])
       ])
 

@@ -53,6 +53,8 @@ in
                all(equal(fun {$} {SearchAll Houses} end
                          HousesSol)
                    keys: [fd])
+               all_entailed(entailed(proc {$} {SearchAll Houses _} end)
+                   keys: [fd entailed])
               ])
       ])
 

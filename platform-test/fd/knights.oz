@@ -81,6 +81,8 @@ in
                 one(equal(fun {$} {SearchOne {Knights 8}} end
                           KnightsSol)
                     keys: [fd])
+                one_entailed(entailed(proc {$} {SearchOne {Knights 8} _} end)
+                    keys: [fd entailed])
                ])
       ])
 

@@ -56,9 +56,12 @@ fun {$ IMPORT}
 
 in
 
-   fd([srat([all(equal(fun {$} {SearchAll SRAT} end
+   fd([srat([
+             all(equal(fun {$} {SearchAll SRAT} end
                        SRATSol)
                  keys: [fd])
+             all_entailed(entailed(proc {$} {SearchAll SRAT _} end)
+                 keys: [fd entailed])
             ])
       ])
 

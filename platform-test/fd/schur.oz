@@ -250,18 +250,16 @@ fun {$ IMPORT}
 
 in
 
-   fd([schur([all(equal(fun {$} {SearchAll proc{$ X} {Schur X 5} end} end
+   fd([schur([
+              all(equal(fun {$} {SearchAll proc{$ X} {Schur X 5} end} end
                         SchurSol)
 
 
                   keys: [fd])
-
-
+              all_entailed(entailed(proc {$}
+                                       {SearchAll proc{$ X} {Schur X 5} end _}
+                                    end)
+                  keys: [fd entailed])
              ])
-
-
       ])
-
-
-
 end

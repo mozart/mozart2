@@ -42,9 +42,12 @@ fun {$ IMPORT}
    BuildHouseSol =
    [[0 7 10 7 15 15 15 16 0 19 21 22]]
 in
-   fd([buildhouse([one(equal(fun {$} {SearchOne BuildHouse} end
+   fd([buildhouse([
+                   one(equal(fun {$} {SearchOne BuildHouse} end
                              BuildHouseSol)
                        keys: [fd])
+                   one_entailed(entailed(proc {$} {SearchOne BuildHouse _} end)
+                       keys: [fd entailed])
                   ])
       ])
 

@@ -25,9 +25,12 @@ fun {$ IMPORT}
 
 in
 
-   fd([grocery([one(equal(fun {$} {SearchOne Grocery} end
+   fd([grocery([
+                one(equal(fun {$} {SearchOne Grocery} end
                           GrocerySol)
                     keys: [fd])
+                one_entailed(entailed(proc {$} {SearchOne Grocery _} end)
+                    keys: [fd entailed])
                ])
       ])
 

@@ -52,11 +52,16 @@ fun {$ IMPORT}
 
 in
 
-   fd([mapcoloring([one(equal(fun {$}
+   fd([mapcoloring([
+                    one(equal(fun {$}
                                  {SearchOne MapColoring}
                               end
                               MapColoringSol)
                         keys: [fd])
+                    one_entailed(entailed(proc {$}
+                                             {SearchOne MapColoring _}
+                                          end)
+                        keys: [fd entailed])
                    ])
       ])
 

@@ -189,6 +189,42 @@ in
                             end
                             QueensPrimerSol)
                       keys: [fd])
+
+               std(equal(fun {$} {SearchOne proc {$ X} {Queens 14 X} end}
+                         end
+                         QueensSol)
+                   keys: [fd])
+
+               middle_out(equal(fun {$}
+                                   {SearchOne proc {$ X}
+                                                 {QueensMiddleOut 8 X}
+                                              end}
+                                end
+                                QueensMiddleOutSol)
+                          keys: [fd])
+
+               primer(equal(fun {$}
+                               {SearchOne {QueensPrimer 233}}
+                            end
+                            QueensPrimerSol)
+                      keys: [fd])
+
+               std_entailed(entailed(proc {$}
+                                        {SearchOne proc {$ X} {Queens 14 X} end _}
+                                     end)
+                            keys: [fd entailed])
+
+               middle_out_entailed(entailed(proc {$}
+                                               {SearchOne proc {$ X}
+                                                             {QueensMiddleOut 8 X}
+                                                          end _}
+                                            end)
+                                   keys: [fd entailed])
+
+               primer_entailed(entailed(proc {$}
+                                           {SearchOne {QueensPrimer 233} _}
+                                        end)
+                               keys: [fd entailed])
               ])
       ])
 

@@ -54,8 +54,13 @@ fun {$ IMPORT}
      {FS.value.new [1#2 7]}
     ]]
 in
-   fs([hamming([one(equal(fun {$} {SearchOne Hamming} end HammingSol)
+   fs([hamming([
+                one(equal(fun {$} {SearchOne Hamming} end HammingSol)
                     keys: [fs])
+                one_entailed(entailed(proc {$}
+                                         {SearchOne Hamming _}
+                                      end)
+                    keys: [fs entailed])
                ]
               )
       ]

@@ -30,6 +30,8 @@ in
                  all(equal(fun {$} {SearchAll Fraction} end
                            FractionSol)
                      keys: [fd])
+                 all_entailed(entailed(proc {$} {SearchAll Fraction _} end)
+                     keys: [fd scheduling])
                 ])
       ])
 

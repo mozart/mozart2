@@ -60,6 +60,17 @@ in
                                 end
                                 MagicSequenceSol)
                           keys: [fd])
+                      primer_entailed(entailed(proc {$}
+                                                  {SearchAll MagicSequencePrimer _}
+                                               end)
+                                      keys: [fd entailed])
+
+                      one_entailed(entailed(proc {$}
+                                               {SearchOne
+                                                proc{$ X} {MagicSequence 7 X}
+                                                end _}
+                                            end)
+                                   keys: [fd entailed])
                      ])
       ])
 

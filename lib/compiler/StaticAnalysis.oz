@@ -3948,7 +3948,9 @@ local
             {IsRecord @lastValue}
          then
             case @lastValue == unit then skip
-            else {Show @lastValue} {Show {GetData @lastValue}} skip end
+            else
+               {System.show @lastValue} {System.show {GetData @lastValue}}
+            end
             {TypeToVS @type}
          else
             {TypeToVS @type}

@@ -181,8 +181,6 @@ define
       end
 
    end
-
-
    %%
    %% Register error formatter
    %%

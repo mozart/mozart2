@@ -4519,7 +4519,7 @@ local
          @type
       end
       meth getPrintType(D $)
-         {VS2A {TypeToVS @type}}
+         {TypeToVS @type}
       end
       meth getData($)
          @value

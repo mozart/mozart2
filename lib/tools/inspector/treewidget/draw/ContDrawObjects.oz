@@ -745,7 +745,7 @@ in
          in
             if @horzMode
             then ContainerDrawObject, performDraw({@label drawX(NewX Y $)} Y)
-            else {@label drawX(NewX Y _)} ContainerDrawObject, performDraw((NewX + 3) (Y + 1))
+            else {@label drawX(NewX Y _)} ContainerDrawObject, performDraw((X + 3) (Y + 1))
             end
          end
          meth searchBody(XA YA X Y $)
@@ -756,7 +756,7 @@ in
             of nil then
                if @horzMode
                then ContainerDrawObject, searchNode((NewXA + {Label getXDim($)}) YA X Y $)
-               else ContainerDrawObject, searchNode((NewXA + 3) (YA + 1) X Y $)
+               else ContainerDrawObject, searchNode((XA + 3) (YA + 1) X Y $)
                end
             [] Res then Res
             end

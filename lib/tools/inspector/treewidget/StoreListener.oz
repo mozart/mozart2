@@ -94,6 +94,10 @@ define
             @Prev = self
             @Next = self
          end
+         meth resetAll
+            Prev <- self
+            Next <- self
+         end
          meth !Search(Value $)
             nil
          end

@@ -67,7 +67,7 @@ define
                 fsVar    # [fsVar fsVar fdInt]
 
                 %% Relation Mode Helper
-                atomRef # [atomRef atomRef atomRef]
+                variableRef # [variableRef variableRef variableRef]
 
                 %% Container Nodes (Relation Mode)
                 %% Record Variants

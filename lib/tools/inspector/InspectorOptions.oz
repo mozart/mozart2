@@ -38,10 +38,11 @@ define
    %% Inspector Global Settings
    %%
    InspectorDefaults = [
-                        inspectorWidth    # 600
-                        inspectorHeight   # 400
-                        inspectorLanguage # 'Oz'     %% Value shown as Prefix
-                        optionsRange      # 'active' %% 'active' or 'all'
+                        inspectorWidth         # 600
+                        inspectorHeight        # 400
+                        inspectorLanguage      # 'Oz'     %% Value shown as Prefix
+                        inspectorOptionsFilter # fun {$ Mode Type} true end %% No Filtering
+                        inspectorOptionsRange  # 'active' %% 'active' or 'all'
                        ]
 
    %%
@@ -181,7 +182,7 @@ define
                        intColor         # Color1
                        floatColor       # Color1
                        atomColor        # Color2
-                       atomrefColor     # Color3
+                       variablerefColor # Color3
                        refColor         # Color6
                        labelColor       # Color4
                        featureColor     # Color5
@@ -244,18 +245,18 @@ define
 
       %% Default Simple-Type Menus
       SimpleMenus = [
-                     intMenu        # nil
-                     floatMenu      # nil
-                     bytestringMenu # nil
-                     atomMenu       # nil
-                     atomrefMenu    # nil
-                     boolMenu       # nil
-                     unitMenu       # nil
-                     nameMenu       # nil
-                     procedureMenu  # nil
-                     lockMenu       # nil
-                     portMenu       # nil
-                     genericMenu    # nil
+                     intMenu         # nil
+                     floatMenu       # nil
+                     bytestringMenu  # nil
+                     atomMenu        # nil
+                     variablerefMenu # nil
+                     boolMenu        # nil
+                     unitMenu        # nil
+                     nameMenu        # nil
+                     procedureMenu   # nil
+                     lockMenu        # nil
+                     portMenu        # nil
+                     genericMenu     # nil
                     ]
 
       %% Default Container-Type Menus
@@ -634,7 +635,7 @@ define
                                          float        # 'Floating Point Number'
                                          port         # 'Port'
                                          atom         # 'Atom'
-                                         atomref      # 'Atomref' %% Don't now
+                                         variableref  # 'Relation Variable Ref'
                                          hashtuple    # 'Hashtuple'
                                          pipetuple    # 'Piped List'
                                          cell         # 'Cell'

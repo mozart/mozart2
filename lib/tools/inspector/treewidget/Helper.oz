@@ -268,8 +268,38 @@ define
                {Visual delete(@secTag)}
             end
          end
+         meth dirtyUndraw
+            LabelNode, undraw
+         end
          meth getSelectionNode($)
             @parent
+         end
+      end
+
+      class MarkerNode from LabelNode
+         meth layoutX($)
+            XDim = @xDim
+         in
+            if {IsFree XDim}
+            then XDim = ({VirtualString.length @value} + 1) end XDim
+         end
+         meth drawX(X Y $)
+            Visual  = @visual
+            XDim    = @xDim
+            StringX = (XDim - 1)
+         in
+            if @dirty
+            then
+               dirty <- false
+               {Visual printXY(X Y @value @tag ref)}
+               {Visual printXY((X + StringX) Y @limStr @secTag internal)}
+            else {Visual doublePlace(X Y StringX @tag @secTag)}
+            end
+            (X + XDim)
+         end
+         meth makeDirty
+            {System.show 'MarkerNode::makeDirty called'}
+            dirty <- true
          end
       end
 
@@ -1081,6 +1111,7 @@ define
                    convert      : ConvertAtom
                    atom         : AtomNode
                    label        : LabelNode
+                   marker       : MarkerNode
                    separator    : SeparatorNode
                    feature      : FeatureNode
                    featureInd   : FeatureIndNode

@@ -67,13 +67,17 @@ local
 
    class LabelModeShare
       meth handleMode(RefStr Visual)
-         @mode = {New Helper.atom create(RefStr self 0 Visual ref)}
+         PrintStr = {VirtualString.toString 'R'#RefStr}
+      in
+         @mode = {New Helper.marker create(PrintStr '=' self Visual)}
       end
    end
 
    class InfixModeShare
       meth handleMode(RefStr Visual)
-         @mode = {New Helper.atom create(RefStr self 0 Visual ref)}|
+         PrintStr = {VirtualString.toString 'R'#RefStr}
+      in
+         @mode = {New Helper.marker create(PrintStr '=' self Visual)}|
          {New Helper.atom create('(' self 0 Visual internal)}|
          {New Helper.atom create(')' self 0 Visual internal)}
       end
@@ -225,8 +229,8 @@ in
             @items  = {Dictionary.new}
             @entry  = Entry {Entry awake(self)}
             @rIndex = RIndex
-            InfixModeShare, handleMode({Entry getEqualStr($)} Visual)
-            PipeTupleGrCreateObject, performInsertion(Value 1 RIndex Width Stop)
+            {self handleMode({Entry getEqualStr($)} Visual)}
+            {self performInsertion(Value 1 RIndex Width Stop)}
          end
          meth performInsertion(Vs I RI Width Stop)
             Visual = @visual

@@ -96,11 +96,11 @@ in
    class FutureDrawObject from SimpleDrawObject end
    class FutureGrDrawObject from SimpleGrDrawObject end
 
-   class AtomRefDrawObject from SimpleDrawObject
+   class VariableRefDrawObject from SimpleDrawObject
       meth performDraw(X Y)
          Visual = @visual
       in
-         {Visual printXY(X Y @string @tag atomref)}
+         {Visual printXY(X Y @string @tag variableref)}
       end
       meth undraw
          if @dirty
@@ -119,6 +119,9 @@ in
          {@next atomicReplace(Value)}
       end
       meth getSelectionNode($)
+         self
+      end
+      meth getValueSelectionNode($)
          {@value getSelectionNode($)}
       end
    end

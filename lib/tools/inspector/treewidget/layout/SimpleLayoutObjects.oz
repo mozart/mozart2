@@ -159,7 +159,7 @@ in
       end
    end
 
-   class AtomRefLayoutObject from SimpleLayoutObject
+   class VariableRefLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          PrintStr  = {@value getStr($)}
          LengthStr = PrintStr

@@ -365,21 +365,27 @@ define
                fAscent <- {String.toInt {FontO tkReturnList(metrics $)}.2.1}
                {Tk.send v('proc '#@canvasPrint#'{X Y C S G} {upvar #0 '#@tagVar#' T;'#CanvasName#' cre text $X $Y -anchor nw -font '#FName#' -fill $C -text $S -tags [linsert $T 0 t$G]}')}
                {Tk.send v('proc '#@canvasCSp#'{X Y T} {'#CanvasName#' cre line 0 $Y $X $Y -fill black -stipple @'#Bitmap#' -tags t$T}')}
-               GraphicSupport, adjustFonts(1 0)
+               GraphicSupport, adjustFonts(1 nil)
             end
          end
-         meth adjustFonts(I Y)
+         meth adjustFonts(I Vs)
             if I =< @maxPtr
             then
-               Node = {Dictionary.get @nodes I}
+               Node  = {Dictionary.get @nodes I}
+               Value = {Node getValue($)}
             in
-               GraphicSupport, resetTags(I)
                {Node undraw}
-               case {Node drawY(0 Y $)}
-               of NewY then
-                  GraphicSupport, moveLine({Dictionary.get @lines I} NewY)
-                  GraphicSupport, adjustFonts((I + 1) NewY)
-               end
+               GraphicSupport, delete({Dictionary.get @lines I})
+               GraphicSupport, adjustFonts((I + 1) Value|Vs)
+            else
+               {self resetAll}
+               GraphicSupport, redisplay({Reverse Vs})
+            end
+         end
+         meth redisplay(Vs)
+            case Vs
+            of Value|Vr then {self display(Value)} GraphicSupport, redisplay(Vr)
+            [] nil      then skip
             end
          end
          meth initButtonHandler

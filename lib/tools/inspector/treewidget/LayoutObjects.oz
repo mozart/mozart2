@@ -53,7 +53,7 @@ export
    fsVarLayoutObject           : FSVarLayoutObject
    fsVarGrLayoutObject         : FSVarGrLayoutObject
    genericLayoutObject         : GenericLayoutObject
-   atomRefLayoutObject         : AtomRefLayoutObject
+   variableRefLayoutObject     : VariableRefLayoutObject
 define
    class LayoutObject
       attr

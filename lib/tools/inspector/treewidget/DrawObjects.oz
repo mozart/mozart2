@@ -51,7 +51,7 @@ export
    freeGrDrawObject            : FreeGrDrawObject
    fdIntDrawObject             : FDIntDrawObject
    fdIntGrDrawObject           : FDIntGrDrawObject
-   atomRefDrawObject           : AtomRefDrawObject
+   variableRefDrawObject       : VariableRefDrawObject
 define
    RecordCreateObject       = CreateObjects.recordCreateObject
    KindedRecordCreateObject = CreateObjects.kindedRecordCreateObject

@@ -21,7 +21,7 @@
 
 functor $
 import
-   System(eq show)
+   System(eq)
 export
    'class' : RelationManager
 define
@@ -49,7 +49,7 @@ define
          'R'#@key
       end
       meth getEqualStr($)
-         'R'#@key#'='
+         @key
       end
       meth getValue($)
          @value

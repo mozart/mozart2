@@ -60,7 +60,7 @@ export
    fsVarCreateObject             : FSVarCreateObject
    fsVarGrCreateObject           : FSVarGrCreateObject
    genericCreateObject           : GenericCreateObject
-   atomRefCreateObject           : AtomRefCreateObject
+   variableRefCreateObject       : VariableRefCreateObject
 define
    class CreateObject
       attr

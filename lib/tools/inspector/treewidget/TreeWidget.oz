@@ -109,6 +109,15 @@ define
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
       end
+      meth resetAll
+         curY   <- 0
+         maxX   <- 0
+         maxPtr <- 0
+         {Dictionary.removeAll @nodes}
+         {Dictionary.removeAll @relManDict}
+         {Dictionary.removeAll @lines}
+         StoreListener, resetAll
+      end
       meth setOptions(Options)
          ColDict    = {Dictionary.new}
          MapDict    = {Dictionary.new}
@@ -388,7 +397,7 @@ define
             Entry = {@curRelMan query(Val $)}
          in
             if {Entry isActive($)}
-            then {New @treeNodes.atomRef create(Entry Parent Index self Depth)}
+            then {New @treeNodes.variableRef create(Entry Parent Index self Depth)}
             else
                {New {Dictionary.condGet @relNodesDict {ValueToKey Val} @treeNodes.generic}
                 gcr(Entry Val Parent Index self Depth)}
@@ -405,7 +414,7 @@ define
             Entry = {@curRelMan query(Val $)}
          in
             if {Entry isActive($)}
-            then {New @treeNodes.atomRef create(Entry Parent Index self (Depth + 1))}
+            then {New @treeNodes.variableRef create(Entry Parent Index self (Depth + 1))}
             else {New @treeNodes.pipetupleGrS
                   create(Entry Val Parent Index RIndex self Depth Width Stop)}
             end
@@ -421,7 +430,7 @@ define
          end
       end
       meth getRefNode($)
-         @treeNodes.atomRef
+         @treeNodes.variableRef
       end
       meth listNode($)
          @treeNodes.pipetupleGr

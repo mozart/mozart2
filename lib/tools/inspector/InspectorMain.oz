@@ -157,11 +157,11 @@ define
                                                                    end
                                                           feature: about)
                                                   separator
-                                                  command(label: 'Add Pane'
+                                                  command(label: 'Add new Widget'
                                                           action: proc {$}
                                                                      {Port.send InspPort addPane}
                                                                   end)
-                                                  command(label:  'Delete Pane'
+                                                  command(label:  'Delete active Widget'
                                                           action: proc {$}
                                                                      {Port.send InspPort delPane}
                                                                   end)
@@ -200,14 +200,6 @@ define
                                                                  selectionHandler(shrink)}
                                                              end
                                                           feature: shrink)
-                                                  separator
-                                                  command(label:  'Deref'
-                                                          action:
-                                                             proc {$}
-                                                                {Port.send InspPort
-                                                                 selectionHandler(deref)}
-                                                             end
-                                                          feature: deref)
                                                   separator
                                                   command(label:  'Reinspect'
                                                           action:
@@ -248,7 +240,6 @@ define
                   {Menu.selection.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
                   {Menu.selection.expand tk(entryconf state:disabled)}
                   {Menu.selection.shrink tk(entryconf state:disabled)}
-                  {Menu.selection.deref tk(entryconf state:disabled)}
                   {Menu.selection.reinspect tk(entryconf state:disabled)}
                   {Menu.insoptions.menu
                    tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
@@ -300,7 +291,7 @@ define
             end
             meth setOptions(Options)
                options <- Options
-               case {Dictionary.get Options optionsRange}
+               case {Dictionary.get Options inspectorOptionsRange}
                of 'all' then InspectorClass, performSetOptions(1 Options)
                else {@widget setOptions(Options)}
                end
@@ -316,7 +307,7 @@ define
                Options = @options
             in
                {Dictionary.put Options O V}
-               case {Dictionary.get Options optionsRange}
+               case {Dictionary.get Options inspectorOptionsRange}
                of 'all' then InspectorClass, performConfigure(1 O V)
                else {@widget optionConfigure(O V)}
                end
@@ -503,7 +494,6 @@ define
                   selNode <- nil
                   {Menu.expand tk(entryconf state: disabled)}
                   {Menu.shrink tk(entryconf state: disabled)}
-                  {Menu.deref tk(entryconf state: disabled)}
                   {Menu.reinspect tk(entryconf state: disabled)}
                [] expand then
                   Node = @selNode
@@ -514,7 +504,6 @@ define
                   end
                [] shrink    then
                   {@widget selectionCall(@selNode changeDepth(~1))}
-               [] deref     then skip
                [] reinspect then {@widget selectionCall(@selNode reinspect)}
                [] Node      then
                   selNode <- Node
@@ -522,17 +511,18 @@ define
                   of depthbitmap then
                      {Menu.expand tk(entryconf state: normal)}
                      {Menu.shrink tk(entryconf state: disabled)}
-                     {Menu.deref tk(entryconf state: disabled)}
                      {Menu.reinspect tk(entryconf state: disabled)}
                   [] widthbitmap then
                      {Menu.expand tk(entryconf state: normal)}
                      {Menu.shrink tk(entryconf state: disabled)}
-                     {Menu.deref tk(entryconf state: disabled)}
+                     {Menu.reinspect tk(entryconf state: disabled)}
+                  [] variableref then
+                     {Menu.expand tk(entryconf state: disabled)}
+                     {Menu.shrink tk(entryconf state: disabled)}
                      {Menu.reinspect tk(entryconf state: disabled)}
                   else
                      {Menu.expand tk(entryconf state: disabled)}
                      {Menu.shrink tk(entryconf state: normal)}
-                     {Menu.deref tk(entryconf state: disabled)}
                      {Menu.reinspect tk(entryconf state: normal)}
                   end
                end

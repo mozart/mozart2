@@ -143,11 +143,11 @@ local
          MyBook   = @book
          MyNote   = {New TkTools.note
                      tkInit(parent: MyBook
-                            text:   'Global')}
+                            text:   'Range')}
          MyCanvas = {New Tk.canvas
                      tkInit(parent:             MyNote
                             width:              400
-                            height:             360 %% former 400
+                            height:             345 %% former 360
                             borderwidth:        0
                             highlightthickness: 0)}
          MyFrame  = {New Tk.frame
@@ -161,27 +161,27 @@ local
          local
             TextFrame  = {New TkTools.textframe
                           tkInit(parent: MyFrame
-                                 text:   'Options valid for')}
+                                 text:   'Apply Settings to')}
             InnerFrame = TextFrame.inner
             MyVar      = {New Tk.variable
-                          tkInit({Dictionary.get OpDict optionsRange})}
+                          tkInit({Dictionary.get OpDict inspectorOptionsRange})}
             SingleRad  = {New Tk.radiobutton
                           tkInit(parent:   InnerFrame
-                                 text:     'Active TreeWidget only'
+                                 text:     'Active Widget only'
                                  font:     MediumFont
                                  variable: MyVar
                                  value:    'active'
                                  anchor:   w)}
             AllRad     = {New Tk.radiobutton
                           tkInit(parent:   InnerFrame
-                                 text:     'All TreeWidgets'
+                                 text:     'All shown Widgets'
                                  font:     MediumFont
                                  variable: MyVar
                                  value:    'all'
                                  anchor:   w)}
             Canvas    = {New Tk.canvas
                          tkInit(parent:             InnerFrame
-                                width:              208 %% 210
+                                width:              233 %% 228
                                 height:             0
                                 borderwidth:        0
                                 highlightthickness: 0)}
@@ -195,7 +195,7 @@ local
          {Tk.send pack(MyCanvas anchor: nw padx: 0 pady: 0)}
       end
       meth collect
-         {Dictionary.put @opDict optionsRange {@globalVariable tkReturnAtom($)}}
+         {Dictionary.put @opDict inspectorOptionsRange {@globalVariable tkReturnAtom($)}}
       end
    end
 
@@ -234,11 +234,11 @@ local
             MyBook   = @book
             MyNote   = {New TkTools.note
                         tkInit(parent: MyBook
-                               text:   'Structure Settings')} %% Former Display Options
+                               text:   'Structure')}
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             360 %% former 400
+                               height:             345 %% former 360
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -367,7 +367,12 @@ local
                                   true
                                end
                TypesList     = {Map {Filter {Dictionary.keys OpDict} SubFilter} CutMap}
-               TypPrList     = {Sort {Map TypesList
+               FilRawFun     = {Dictionary.get OpDict inspectorOptionsFilter}
+               FilTypesList  = {Filter TypesList
+                                fun {$ Type}
+                                   {FilRawFun map Type}
+                                end}
+               TypPrList     = {Sort {Map FilTypesList
                                       fun {$ N}
                                          NA = {VirtualString.toAtom N}
                                       in
@@ -608,11 +613,11 @@ local
             MyBook   = @book
             MyNote   = {New TkTools.note
                         tkInit(parent: MyBook
-                               text:   'Visual Settings')}
+                               text:   'Appearance')}
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             360 %% former 400
+                               height:             345 %% former 360
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -655,7 +660,12 @@ local
                ColorKeys    = {Filter {Dictionary.keys OpDict} SubFilter}
                KnownColors  = VisualNote, ComputeColorList(OpDict ColorKeys nil $)
                ColorList    = {Map ColorKeys CutMap}
-               ColPrList    = {Sort {Map ColorList
+               FilRawFun    = {Dictionary.get OpDict inspectorOptionsFilter}
+               FilColList   = {Filter ColorList
+                               fun {$ Type}
+                                  {FilRawFun color Type}
+                               end}
+               ColPrList    = {Sort {Map FilColList
                                      fun {$ N}
                                         NA = {VirtualString.toAtom N}
                                      in
@@ -715,7 +725,7 @@ local
                GetColor     = {Dictionary.get OpDict {VirtualString.toAtom SelColN#'Color'}}
                RecordFrame  = {New TkTools.textframe
                                tkInit(parent: MyFrame
-                                      text:   'Record Alignment')}
+                                      text:   'Subtree Alignment')}
                RecordInner  = RecordFrame.inner
                RecordVar    = local
                                  Val    = {Dictionary.get OpDict widgetUseNodeSet}
@@ -941,21 +951,24 @@ in
          book
          winEntry
          opDict
-         printDict %% Readable Names Dictionary (N->P)
-         namesDict %% Option Names Dictonary (P->N)
+         cloneOpDict %% Clone-Dict (used for apply)
+         printDict   %% Readable Names Dictionary (N->P)
+         namesDict   %% Option Names Dictionary (P->N)
          colPannerWin : nil
+         usedApply : false
       prop
          final
       meth create(WinEntry Options)
          MyBook = @book
       in
-         Tk.toplevel, tkInit(title:    'Inspector Options'
+         Tk.toplevel, tkInit(title:    'Inspector Settings'
                              delete:   {SyncCall proc {$} {self handle(cancel)} end}
                              withdraw: true)
-         @winEntry  = WinEntry
-         @opDict    = Options
-         @printDict = {Dictionary.new}
-         @namesDict = {Dictionary.new}
+         @winEntry    = WinEntry
+         @opDict      = Options
+         @cloneOpDict = {Dictionary.clone Options}
+         @printDict   = {Dictionary.new}
+         @namesDict   = {Dictionary.new}
          InspectorGUIClass, fillConvDict({Dictionary.get @opDict typeConversion})
          local
             UpFrame    = {New Tk.frame
@@ -978,6 +991,12 @@ in
                                  width:       6
                                  borderwidth: 1
                                  action:      {SyncCall proc {$} {self handle(ok)} end})}
+            AppButton  = {New Tk.button
+                          tkInit(parent:      BtFrame
+                                 text:        'Apply'
+                                 width:       6
+                                 borderwidth: 1
+                                 action:      {SyncCall proc {$} {self handle(apply)} end})}
             ClButton   = {New Tk.button
                           tkInit(parent:      BtFrame
                                  text:        'Cancel'
@@ -986,20 +1005,21 @@ in
                                  action:      {SyncCall proc {$} {self handle(cancel)} end})}
             FillCanvas = {New Tk.canvas
                           tkInit(parent:             DnFrame
-                                 width:              250
+                                 width:              180 %% former 200
                                  height:             0
                                  borderwidth:        0
                                  highlightthickness: 0)}
          in
             MyBook = {New TkTools.notebook
                       tkInit(parent: UpFrame)}
-            GlobalNote, create
             DisplayNote, create
             VisualNote, create
+            GlobalNote, create
             {WinEntry tk(entryconf state:disabled)}
             {Tk.batch [pack(MyBook fill: both padx: 4 pady: 4)
                        grid(row: 0 column: 0 OkButton padx: 4 pady: 6 sticky: nw)
-                       grid(row: 0 column: 1 ClButton padx: 4 pady: 6 sticky: nw)
+                       grid(row: 0 column: 1 AppButton padx: 4 pady: 6 sticky: nw)
+                       grid(row: 0 column: 2 ClButton padx: 4 pady: 6 sticky: nw)
                        grid(row: 0 column: 0 FillCanvas padx: 0 pady: 0 sticky: nw)
                        grid(row: 0 column: 1 BtFrame padx: 0 pady: 0 sticky: nw)
                        grid(row: 0 column: 0 UpFrame padx: 0 pady: 0 sticky: we)
@@ -1030,7 +1050,14 @@ in
             Tk.toplevel, tkClose
             {Port.send InspPort setOptions(@opDict)}
             {@winEntry tk(entryconf state: normal)}
+         [] apply     then
+            usedApply <- true
+            GlobalNote, collect
+            DisplayNote, collect
+            VisualNote, collect
+            {Port.send InspPort setOptions(@opDict)}
          [] cancel    then
+            if @usedApply then {Port.send InspPort setOptions(@cloneOpDict)} end
             Tk.toplevel, tkClose
             {@winEntry tk(entryconf state: normal)}
          [] selCol(I) then

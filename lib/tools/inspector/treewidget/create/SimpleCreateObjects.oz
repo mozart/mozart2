@@ -30,6 +30,12 @@ local
       attr
          entry %% RelEntry Reference
          mode  %% Mode Variable
+
+      meth handleMode(RefStr Visual)
+         PrintStr = 'R'#RefStr
+      in
+         @mode = {New Helper.marker create(PrintStr '=' self Visual)}
+      end
    end
 in
    class IntCreateObject from SimpleCreateObject
@@ -79,7 +85,7 @@ in
       meth gcr(Entry Value Parent Index Visual Depth)
          @type  = free
          @entry = Entry
-         @mode  = {New Helper.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
+         {self handleMode({Entry getEqualStr($)} Visual)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)
          {Visual logVar(self Value false)}
@@ -98,7 +104,7 @@ in
       meth gcr(Entry Value Parent Index Visual Depth)
          @type  = future
          @entry = Entry
-         @mode  = {New Helper.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
+         {self handleMode({Entry getEqualStr($)} Visual)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)
          {Visual logVar(self Value true)}
@@ -119,12 +125,12 @@ in
       end
    end
 
-   class AtomRefCreateObject from SimpleCreateObject
+   class VariableRefCreateObject from SimpleCreateObject
       attr
          prev %% Previous Node
          next %% Next Node
       meth create(Value Parent Index Visual Depth)
-         @type = atomref
+         @type = variableref
          CreateObject, create(Value Parent Index Visual Depth)
          {Value addRef(self)} %% Value is Entry Object
       end

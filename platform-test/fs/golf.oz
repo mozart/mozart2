@@ -42,10 +42,10 @@ define
          Weeks = {MakeList NbOfWeeks}
 
          {ForAll Weeks
-          proc {$ Week} U = {FS.var.upperBound [1#NbOfPlayers]} in
+          proc {$ Week}
              Week = {FS.var.list.upperBound NbOfFourSomes [1#NbOfPlayers]}
              {ForAll Week proc {$ FourSome} {FS.card FourSome 4} end}
-             {FS.partition Week U}
+             {FS.partition Week {FS.value.new [1#NbOfPlayers]}}
           end}
 
          {ForAllTail Weeks

@@ -570,7 +570,7 @@ in
                'Record.label'   : doLabel
                'Record.width'   : doWidth
                'Procedure.arity'        : doProcedureArity
-               '=\'Value.\'=\'' : doEq
+               'Value.\'=\''    : doEq
                'Record.\'.\''   : doDot
                'Record.\'^\''   : doHat
                'Object.\',\''   : doComma

@@ -61,17 +61,18 @@ local
    end
 
    OptSpecs = {ConvertBooleanOpts
-               [&h#"help"#help(value: unit)
-                &E#"core"#mode(value: core)
+               [&E#"core"#mode(value: core)
                 &S#"outputcode"#mode(value: outputcode)
                 0#"ozma"#mode(value: ozma)
                 &e#"feedtoemulator"#mode(value: feedtoemulator)
                 &c#"dump"#mode(value: dump)
+                &h#"help"#help(value: unit)
                 &D#"define"#define(type: atom)
                 &U#"undefine"#undef(type: atom)
                 &v#"verbose"#verbose(value: true)
                 &q#"quiet"#verbose(value: false)
                 &o#"outputfile"#outputfile(type: string)
+                0#"environment"#environment(type: string)
                 0#"maxerrors"#maxerrors(type: int)
                 0#"compilerpasses"#compilerpasses(type: bool)
                 0#"showinsert"#showinsert(type: bool)
@@ -115,7 +116,10 @@ local
             '-q, --quiet                   Inhibit compiler messages\n'#
             '                              unless an error is encountered.\n'#
             '-o FILE, --outputfile=FILE    Specify an output file name\n'#
-            '                              (`-\' means stdout).\n')
+            '                              (`-\' means stdout).\n'#
+            '--environment=COMPONENT,...,COMPONENT\n'#
+            '                              Make the specified components\n'#
+            '                              available in the environment.\n')
 in
    {Application.exec
     'ozbatch'
@@ -294,6 +298,21 @@ in
           end
        end
 
+       proc {IncludeComponents S Compiler} Comp1 Rest Loader in
+          {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
+          try
+             X = {String.toAtom Comp1}
+          in
+             Loader = {Application.loader m(X: lazy)}
+          catch error(...) then
+             raise usage('unknown component `'#Comp1#'\' requested') end
+          end
+          {Compiler enqueue(mergeEnv({Record.foldL {Loader} Adjoin env()}))}
+          case Rest of _|S2 then {IncludeComponents S2 Compiler}
+          [] nil then skip
+          end
+       end
+
        fun {ChangeExtension X OldExt NewExt}
           case X == OldExt then NewExt
           elsecase X of C|Cr then
@@ -342,6 +361,8 @@ in
                        {BatchCompiler enqueue(macroUndef(X))}
                     [] maxerrors then
                        {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
+                    [] environment then
+                       {IncludeComponents X BatchCompiler}
                     [] verbose then
                        skip   % has already been set
                     [] mode then

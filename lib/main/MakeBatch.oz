@@ -114,7 +114,8 @@ local
             '-v, --verbose                 Display all compiler messages.\n'#
             '-q, --quiet                   Inhibit compiler messages\n'#
             '                              unless an error is encountered.\n'#
-            '-o FILE, --outputfile=FILE    Specify an output file name.\n')
+            '-o FILE, --outputfile=FILE    Specify an output file name\n'#
+            '                              (`-\' means stdout).\n')
 in
    {Application.exec
     'ozbatch'
@@ -333,7 +334,7 @@ in
                 {ForAll Opts
                  proc {$ Opt#X}
                     case Opt of help then
-                       {System.showInfo Usage}
+                       {System.printInfo Usage}
                        raise success end
                     [] define then
                        {BatchCompiler enqueue(macroDefine(X))}

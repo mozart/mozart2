@@ -1,9 +1,9 @@
 %%%
-%%% Authors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%% Author:
+%%%   Christian Schulte <schulte@dfki.de>
 %%%
-%%% Contributors:
-%%%   Benjamin Lorenz (lorenz@ps.uni-sb.de)
+%%% Contributor:
+%%%   Benjamin Lorenz <lorenz@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Christian Schulte, 1997
@@ -1216,6 +1216,19 @@ fun {NewTkTools Tk}
             @CurValue
          end
 
+      end
+   end
+
+   %% balloon help
+   local
+      F      = {System.get home} # '/lib/wish/tk/tools/BalloonHelp.tcl'
+      Exists = try {OS.stat F _} true
+               catch system(...) then false end
+   in
+      case Exists then
+         {Tk.send source(F)}
+      else
+         {System.showError 'TkTools: ' # F # ': can\'t read file'}
       end
    end
 

@@ -85,6 +85,7 @@ export
    '`>=`':               `>=`
    '`>`':                `>`
    '`hasFeature`':       `hasFeature`
+   '`byNeed`':           `byNeed`
    %% Unit
    '`unit`':             `unit`
    %% Bool

@@ -319,7 +319,19 @@ define
 
       GenSumR   = FdpSumR
       GenSumCR  = FdpSumCR
-      GenSumCNR = FdpSumCNR
+
+      %% was: GenSumCNR = FdpSumCNR, but the latter blocks until the
+      %% polynom becomes linear (bug fix)
+      proc {GenSumCNR IV DDV Rel D B}
+         NegRel = NegRelTable.Rel
+      in
+         {FdBool B}
+         thread
+            or B=1 {FdpSumCN IV DDV Rel    D}
+            [] B=0 {FdpSumCN IV DDV NegRel D}
+            end
+         end
+      end
 
       local
          proc {MapIntR N T TR Dom}
@@ -395,9 +407,7 @@ define
                           dom:        FdDomR
                           sum:        GenSumR
                           sumC:       GenSumCR
-                          sumCN:      proc {$ A B C D E}
-                                         thread {GenSumCNR A B C D E} end
-                                      end
+                          sumCN:      GenSumCNR
                           sumAC:      GenSumACR
                           sumACN:     GenSumACNR
                           distance:   DistanceR

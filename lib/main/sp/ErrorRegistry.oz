@@ -243,12 +243,13 @@ in
               pos(File Line unit)]
              Exc}
 
-         elseof kernel(boolCaseType File Line) then
+         elseof kernel(boolCaseType File Line A) then
 
             {Error.format
              'Error: boolean conditional failed'
              'Non-boolean value found'
-             [pos(File Line unit)]
+             [hint(l:'Value found' m:oz(A))
+              pos(File Line unit)]
              Exc}
 
             %%

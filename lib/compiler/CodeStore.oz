@@ -148,6 +148,10 @@ define
             vTestBool(OccsRS Reg CodeStore, Deref(Addr1 $)
                       CodeStore, Deref(Addr2 $) CodeStore, Deref(Addr3 $)
                       Coord CodeStore, Share(Cont $))
+         [] vTestConstant(OccsRS Reg NumOrLit Addr1 Addr2 Coord Cont) then
+            vTestConstant(OccsRS Reg NumOrLit CodeStore, Deref(Addr1 $)
+                          CodeStore, Deref(Addr2 $) Coord
+                          CodeStore, Share(Cont $))
          [] vMatch(OccsRS Reg Addr VHashTableEntries Coord Cont) then
             vMatch(OccsRS Reg CodeStore, Deref(Addr $)
                    {Map VHashTableEntries
@@ -278,6 +282,17 @@ define
                {BitArray.disj RS RS1}
                {BitArray.disj RS RS2}
                {BitArray.disj RS RS3}
+            [] vTestConstant(_ Reg _ Addr1 Addr2 _ Cont) then RS1 RS2 in
+               CodeStore, ComputeOccs(Addr1 ?RS1)
+               CodeStore, ComputeOccs(Addr2 ?RS2)
+               case Cont of vShared(_ InitsRS _ _) then
+                  InitsRS = {BitArray.clone RS1}
+                  {BitArray.disj InitsRS RS2}
+               [] nil then skip
+               end
+               CodeStore, RegOcc(Reg RS)
+               {BitArray.disj RS RS1}
+               {BitArray.disj RS RS2}
             [] vMatch(_ Reg Addr VHashTableEntries _ Cont) then RS0 InitsRS in
                CodeStore, ComputeOccs(Addr ?RS0)
                InitsRS = {BitArray.clone RS0}
@@ -387,6 +402,13 @@ define
                CodeStore, AddRegOccs(Addr1 AddRS2)
                CodeStore, AddRegOccs(Addr2 AddRS2)
                CodeStore, AddRegOccs(Addr3 AddRS2)
+               case Cont of vShared(_ InitsRS _ _) then
+                  {BitArray.conj InitsRS AddRS2}
+               [] nil then skip
+               end
+            [] vTestConstant(_ _ _ Addr1 Addr2 _ Cont) then
+               CodeStore, AddRegOccs(Addr1 AddRS2)
+               CodeStore, AddRegOccs(Addr2 AddRS2)
                case Cont of vShared(_ InitsRS _ _) then
                   {BitArray.conj InitsRS AddRS2}
                [] nil then skip

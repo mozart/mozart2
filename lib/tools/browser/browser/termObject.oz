@@ -410,10 +410,12 @@ in
                   '<P/' # {Procedure.arity Term} # ' ' # SN # '>'
                end
             end
-         else
+         else F L C in
+            {ProcLoc Term F L C}
             %%
             '<Procedure: ' # PN # '/' # {Procedure.arity Term} #
-            ' @ ' # {AddrOf Term} # '>'
+            ' @ ' # {AddrOf Term} #
+            '>(file:' # F # ', line:' # L # ', column:' # C # ')'
          end
       end
    end

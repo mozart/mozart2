@@ -61,7 +61,8 @@ import
                   getsBoundB
                   chunkArity
                   chunkWidth
-                  addr)
+                  addr
+                  procLoc)
    at 'x-oz://boot/Browser'
 
    Debug at 'x-oz://boot/Debug'
@@ -120,6 +121,7 @@ define
    ChunkArity     % yields chunk arity;
    ChunkHasFeatures % ... its width;
    AddrOf         %
+   ProcLoc        %
    OnToplevel     %
 
    %% reflectives for finite sets

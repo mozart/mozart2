@@ -81,6 +81,7 @@ end
 
 %%
 AddrOf = BrowserSupport.addr
+ProcLoc = BrowserSupport.procLoc
 
 %%
 OnToplevel = System.onToplevel

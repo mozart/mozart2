@@ -217,11 +217,11 @@ define
 
    local
       fun {GetParents C}
-         {List.toTuple class_parents {Class.parents C}}
+         nil
       end
 
       fun {GetMethods C}
-         {List.toTuple class_methods {Class.methodNames C}}
+         nil
       end
 
       Auto = false

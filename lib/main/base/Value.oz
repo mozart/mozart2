@@ -25,36 +25,42 @@
 %%
 %% Module
 %%
+local
+   ByNeedFail = Boot_Value.'byNeedFail'
+   fun lazy {ByNeedDot X F}
+      try X.F catch E then {ByNeedFail E} end
+   end
+in
+   Value = value(wait:            Wait
+                 waitQuiet:       Boot_Value.'waitQuiet'
+                 waitOr:          WaitOr
 
-Value = value(wait:            Wait
-              waitQuiet:       Boot_Value.'waitQuiet'
-              waitOr:          WaitOr
+                 '=<':            Boot_Value.'=<'
+                 '<':             Boot_Value.'<'
+                 '>=':            Boot_Value.'>='
+                 '>':             Boot_Value.'>'
+                 '==':            Boot_Value.'=='
+                 '=':             Boot_Value.'='
+                 '\\=':           Boot_Value.'\\='
+                 max:             Max
+                 min:             Min
 
-              '=<':            Boot_Value.'=<'
-              '<':             Boot_Value.'<'
-              '>=':            Boot_Value.'>='
-              '>':             Boot_Value.'>'
-              '==':            Boot_Value.'=='
-              '=':             Boot_Value.'='
-              '\\=':           Boot_Value.'\\='
-              max:             Max
-              min:             Min
+                 '.':             Boot_Value.'.'
+                 hasFeature:      HasFeature
+                 condSelect:      CondSelect
 
-              '.':             Boot_Value.'.'
-              hasFeature:      HasFeature
-              condSelect:      CondSelect
+                 isFree:          IsFree
+                 isKinded:        IsKinded
+                 isFuture:        IsFuture
+                 isDet:           IsDet
+                 status:          Boot_Value.status
+                 type:            Boot_Value.type
 
-              isFree:          IsFree
-              isKinded:        IsKinded
-              isFuture:        IsFuture
-              isDet:           IsDet
-              status:          Boot_Value.status
-              type:            Boot_Value.type
+                 '!!':            Boot_Value.'!!'
+                 byNeed:          ByNeed
+                 byNeedDot:       ByNeedDot
+                 byNeedFail:      Boot_Value.'byNeedFail'
 
-              '!!':            Boot_Value.'!!'
-              byNeed:          ByNeed
-              byNeedDot:       Boot_Value.'byNeedDot'
-              byNeedFail:      Boot_Value.'byNeedFail'
-
-              toVirtualString: Boot_Value.toVirtualString
-             )
+                 toVirtualString: Boot_Value.toVirtualString
+                )
+end

@@ -54,8 +54,8 @@ prepare
    import
       Debug(setRaiseOnBlock) at 'x-oz://boot/Debug'
       Property(put condGet)
-      System(onToplevel)
-      Application(exit)
+      System(onToplevel showError show)
+      Application(exit) at 'x-oz://boot/Application'
       Error(printException)
    define
       proc {ExitError}
@@ -66,10 +66,17 @@ prepare
          %% ignore thread termination exception
          case Exc of system(kernel(terminate) ...) then skip
          else
-            {Thread.setThisPriority high}
-            {Debug.setRaiseOnBlock {Thread.this} true}
-            {Error.printException Exc}
-            {Debug.setRaiseOnBlock {Thread.this} false}
+            try
+               {Thread.setThisPriority high}
+               {Debug.setRaiseOnBlock {Thread.this} true}
+               {Error.printException Exc}
+               {Debug.setRaiseOnBlock {Thread.this} false}
+            catch _ then
+               {System.showError
+                '*** error while reporting error ***\noriginal exception:'}
+               {System.show Exc}
+               {Application.exit 1}
+            end
             %% terminate local computation
             if {System.onToplevel} then
                {{Property.condGet 'errors.toplevel' ExitError}}

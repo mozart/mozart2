@@ -1505,7 +1505,7 @@ define
          optArgs <- OptArgs
          vInter <- VInter
       end
-      meth codeGenPattern(Mapping VHd VTl CS) VInter FormalVars in
+      meth codeGenPattern(Mapping VHd VTl CS)
          {ForAll @reqArgs
           proc {$ F#V}
              {V reg({PosToReg [F] Mapping})}   % set it
@@ -1513,10 +1513,7 @@ define
          {FoldL @optArgs
           proc {$ VHd Arg VTl}
              {Arg bindMethFormal(@messageVO CS VHd VTl)}
-          end VHd VInter}
-         FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
-                       {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
-         {MakePermanent FormalVars VInter @vInter _ _ CS}
+          end VHd @vInter}
          VTl = nil
       end
    end

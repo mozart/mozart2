@@ -1,4 +1,4 @@
-functor
+functor prop once
 import
    FD.is
    \insert Misc-new.env

@@ -1,4 +1,4 @@
-functor
+functor prop once
 export
    PrintNameToVirtualString
    IsPrintName

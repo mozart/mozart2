@@ -1,4 +1,4 @@
-functor
+functor prop once
 import
    System.{printName valueToVirtualString}
    Foreign.pointer

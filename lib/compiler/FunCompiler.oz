@@ -1,4 +1,4 @@
-functor
+functor prop once
 import
    System   %--**.{property get gcDo printError}
    Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}

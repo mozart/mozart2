@@ -1,4 +1,4 @@
-functor
+functor prop once
 import
    System.valueToVirtualString
    \insert Misc-new.env

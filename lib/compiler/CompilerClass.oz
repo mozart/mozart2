@@ -651,7 +651,7 @@ local
                         case OPI of false then skip
                         elsecase {OPI getCompiler($)} == @wrapper then
                            % this helps Ozcar detect queries from the OPI:
-                           {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
+                           {Thread.setId {Thread.this} 1}
                         else skip
                         end
                         thread {P} end
@@ -710,7 +710,7 @@ local
             elseof OPI then
                case {OPI getCompiler($)} == @wrapper then
                   % this helps Ozcar detect queries from the OPI:
-                  {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
+                  {Thread.setId {Thread.this} 1}
                else skip
                end
             end

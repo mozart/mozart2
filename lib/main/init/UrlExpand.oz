@@ -38,11 +38,19 @@ local
       if {CondSelect Base absolute false} andthen Path\=unit
       then
          N = {List.length Path}
+         D={CondSelect Base device unit}
+         RelB
       in
+         %% if a device is specified in Base it must be carried on to Rel
+         if D\=unit then
+            RelB={AdjoinAt Rel device D}
+         else
+            RelB=Rel
+         end
          %% this path should usually be non-empty
          if N==0 then
             %% if empty, then Base dir is just "/"
-            {AdjoinAt Rel absolute true}
+            {AdjoinAt RelB absolute true}
          else
             %% the last component of this path needs special treatment
             Front Last {List.takeDrop Path N-1 Front [Last]}
@@ -50,7 +58,7 @@ local
                     %% if Base ends with a slash: drop the empty component
                     if Last==nil then DIR else Last|DIR end}
          in
-            {Adjoin Rel url(absolute:true path:{UrlNormalizePath PATH})}
+            {Adjoin RelB url(absolute:true path:{URL.normalizePath PATH})}
          end
       else Rel end
    end

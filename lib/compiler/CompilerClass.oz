@@ -847,7 +847,21 @@ in
       %% Managing the query queue
       %%
 
-      meth enqueue(M ?Id <= _)
+      meth enqueue(Ms ?Ids <= _)
+         case Ms of _|Mr then
+            case {IsList Mr} then skip
+            else {Exception.raiseError compiler(invalidQuery Ms)}
+            end
+            lock self.QueueLock then
+               Ids = {Map Ms fun {$ M} CompilerEngine, Enqueue(M $) end}
+            end
+         [] nil then
+            Ids = nil
+         else
+            CompilerEngine, Enqueue(Ms ?Ids)
+         end
+      end
+      meth Enqueue(M ?Id)
          lock self.QueueLock then NewTl in
             case M of macroDefine(_) then
                {TypeCheck IsVirtualString M 1 'virtual string'}

@@ -148,7 +148,6 @@ define
             then {Value.waitQuiet CurValue}
             else {Wait {GetsBoundB CurValue}}
             end
-            %% Test
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
             if {IsDet CurValue}
             then skip

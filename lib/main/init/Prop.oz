@@ -80,6 +80,9 @@ USER_HOME       = case {Getenv 'HOME'} of false then
                      {{`Builtin` 'OS.getCWD' 1}}
                   elseof V then V end
 
+OZ_TRACE_LOAD   = case {Getenv 'OZ_TRACE_LOAD'} of false then false
+                  else true end
+
 %{SET 'os.name'         OS_NAME         }
 %{SET 'os.cpu'          OS_CPU          }
 {SET 'path.separator'   PATH_SEPARATOR  }
@@ -90,3 +93,4 @@ USER_HOME       = case {Getenv 'HOME'} of false then
 {SET 'oz.search.dload'  OZ_SEARCH_DLOAD }
 {SET 'user.home'        USER_HOME       }
 {SET 'platform'         OS_NAME#OS_CPU  }
+{SET 'oz.trace.load'    OZ_TRACE_LOAD   }

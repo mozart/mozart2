@@ -20,16 +20,10 @@
 %%%
 
 functor
-
-import RecordC
 export Return
-
 define
-
    Return =
-   instruction(nil
-/* TMP_NO_OFS
-               [testList(suspended(proc {$}
+   instruction([testList(suspended(proc {$}
                                       {proc {$ X}
                                           case X of '|'(_ _) then skip
                                           [] f then skip
@@ -46,6 +40,4 @@ define
                                 end '#'(...)}
                             end b)
                       keys: [instruction ofs])])
-*/
-)
 end

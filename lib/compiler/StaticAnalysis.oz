@@ -152,7 +152,7 @@ local
 % constructions may contain embedded T nodes
 
    fun {GetDataObject X}
-      {X getDataObject($)}
+      {X getData(true $)}
    end
 
 % GetData: T -> <value>
@@ -162,7 +162,7 @@ local
 % constructions may contain embedded T nodes
 
    fun {GetData X}
-      {X getData($)}
+      {X getData(false $)}
    end
 
 % GetFullData: T -> <oz-term>
@@ -172,7 +172,11 @@ local
 % constructions are expanded recursively up to limited depth
 
    fun {GetFullData X}
-      {X getFullData(PrintDepth $)}
+      {X getFullData(PrintDepth true $)}
+   end
+
+   fun {GetPrintData X}
+      {X getFullData(PrintDepth false $)}
    end
 
 %-----------------------------------------------------------------------
@@ -684,7 +688,7 @@ local
       then
          nil
       else
-         XD = {GetFullData X}
+         XD = {GetPrintData X}
       in
          case {X isVariableOccurrence($)}
          then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
@@ -711,8 +715,8 @@ local
                     andthen UnifRight \= unit
                  then
                     [hint(l:'Original assertion'
-                          m:oz({GetFullData UnifLeft}) # ' = ' #
-                          oz({GetFullData UnifRight}))]
+                          m:oz({GetPrintData UnifLeft}) # ' = ' #
+                          oz({GetPrintData UnifRight}))]
                  else nil end
                ]
       Items  = {FoldR Msgs Append nil}
@@ -755,8 +759,8 @@ local
               then
                  {Append Msgs
                   [hint(l:'Original assertion'
-                        m:oz({GetFullData UnifLeft}) # ' = '
-                        # oz({GetFullData UnifRight}))]}
+                        m:oz({GetPrintData UnifLeft}) # ' = '
+                        # oz({GetPrintData UnifRight}))]}
               else
                  Msgs
               end
@@ -1322,15 +1326,11 @@ local
       meth setType(T)
          type <- T
       end
-      meth getData($)
+      meth getData(IsObj $)
          {self deref(self)}
          @value
       end
-      meth getDataObject($)
-         {self deref(self)}
-         @value
-      end
-      meth getFullData(D $)
+      meth getFullData(D IsData $)
          case
             D =< 0
          then
@@ -1340,7 +1340,7 @@ local
             case
                {IsDet @value}
             then
-               {Record.map @value fun {$ X} {X getFullData(D-1 $)} end}
+               {Record.map @value fun {$ X} {X getFullData(D-1 IsData $)} end}
             elsecase
                {IsFree @value}
             then
@@ -1354,7 +1354,7 @@ local
                else skip end
                {ForAll {CurrentArity @value}
                 proc {$ F}
-                   Rec^F = {@value^F getFullData(D-1 $)}
+                   Rec^F = {@value^F getFullData(D-1 IsData $)}
                 end}
                Rec
             end
@@ -1742,7 +1742,7 @@ local
                else
                   PN  = pn({@designator getPrintName($)})
                   PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                  Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
+                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
                   Ts  = {Map @actualArgs fun {$ A} {TypeToVS {A getType($)}} end}
                in
                   {Ctrl.rep
@@ -1783,7 +1783,7 @@ local
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
          Msg     = {GetData MsgArg}
-         MsgData = {GetFullData MsgArg}
+         MsgData = {GetPrintData MsgArg}
 \ifdef DEBUG
          {Show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
@@ -1902,7 +1902,7 @@ local
                Pos
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
+               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
                Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
             in
                {Ctrl.rep error(coord: @coord
@@ -1917,7 +1917,7 @@ local
             end
          else
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
@@ -2467,7 +2467,7 @@ local
          else
             PN  = {@designator getPrintName($)}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -2541,7 +2541,7 @@ local
                GotA \= ExpA
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
+               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
             in
                {Ctrl.rep
                 error(coord: @coord
@@ -2587,7 +2587,7 @@ local
          elsecase
             {DetTests.det @designator}
          then
-            Val = {GetFullData @designator}
+            Val = {GetPrintData @designator}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -2732,7 +2732,7 @@ local
             {Arbiter unifyVal(Ctrl Val)}
          else
             PN  = {Arbiter getPrintName($)}
-            Val = {GetFullData Arbiter}
+            Val = {GetPrintData Arbiter}
          in
             {Ctrl.rep
              error(coord: {@statements.1 getCoord($)}
@@ -3126,7 +3126,7 @@ local
 \endif
 
          else
-            NoCls = {GetFullData {Nth @parents NrClass}}
+            NoCls = {GetPrintData {Nth @parents NrClass}}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -3720,13 +3720,10 @@ local
       meth getPrintType(D $)
          {TypeToVS @type}
       end
-      meth getData($)
+      meth getData(IsObj $)
          @value
       end
-      meth getDataObject($)
-         @value
-      end
-      meth getFullData(D $)
+      meth getFullData(D IsData $)
          @value
       end
    end
@@ -4291,15 +4288,11 @@ local
          {@variable getPrintType(D $)}
       end
 
-      meth getData($)
+      meth getData(IsObj $)
          {@variable deref(self)}
          {@value getValue($)}
       end
-      meth getDataObject($)
-         {@variable deref(self)}
-         {@value getValue($)}
-      end
-      meth getFullData(D $)
+      meth getFullData(D IsData $)
          case
             {HasFeature @value ImAVariableOccurrence}
          then
@@ -4308,7 +4301,7 @@ local
             {NameVariable X {self getPrintName($)}}
             X
          else
-            {@value getFullData(D $)}
+            {@value getFullData(D IsData $)}
          end
       end
 
@@ -4517,14 +4510,13 @@ local
       meth getPrintType(D $)
          {TypeToVS @type}
       end
-      meth getData($)
-         @value
+      meth getData(IsObj $)
+         case IsObj then self
+         else @value end
       end
-      meth getDataObject($)
-         self % here is the key different to method getData
-      end
-      meth getFullData(D $)
-         self
+      meth getFullData(D IsData $)
+         case IsData then self
+         else {self getValue($)} end
       end
    end
 in

@@ -25,8 +25,10 @@
 %% The following ensures that this file works with the `-g' command
 %% line option:  With debug information, an application of the unbound
 %% variable `=` would be generated; the thread would block.
+\ifndef OZM
 \pushSwitches
 \switch -debuginfocontrol
+\endif
 
 declare
    Value Wait WaitOr IsFree IsKinded IsDet Min Max CondSelect HasFeature
@@ -91,4 +93,6 @@ Value = value(wait:       Wait
               isDet:      IsDet
               status:     {`Builtin` 'Value.status' 2})
 
+\ifndef OZM
 \popSwitches
+\endif

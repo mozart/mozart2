@@ -96,7 +96,8 @@ local
                             %%
                             runwithdebugger: false
                             debuginfocontrol: false
-                            debuginfovarnames: false)
+                            debuginfovarnames: false
+                            debuginfonamevars: false)
          savedSwitches: nil
          localSwitches: unit
          maxNumberOfErrors: 17

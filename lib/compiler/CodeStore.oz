@@ -72,7 +72,7 @@ class CodeStore from Emitter
       nextLabel
       sharedDone
    feat
-      debugInfoControlSwitch debugInfoVarnamesSwitch
+      debugInfoControlSwitch debugInfoVarnamesSwitch debugInfoNameVarsSwitch
       switches reporter
    meth init(Switches Reporter)
       Emitter, init()
@@ -85,6 +85,8 @@ class CodeStore from Emitter
       {Switches getSwitch(debuginfocontrol $)}
       self.debugInfoVarnamesSwitch =
       {Switches getSwitch(debuginfovarnames $)}
+      self.debugInfoNameVarsSwitch =
+      {Switches getSwitch(debuginfonamevars $)}
       self.switches = Switches
       self.reporter = Reporter
    end

@@ -285,6 +285,15 @@ in
                       Emitter, AllocatePerm(Reg ?Y)
                       case Emitter, GetTemp(Reg $) of none then
                          Emitter, Emit(createVariable(Y))
+                         case self.debugInfoNameVarsSwitch then N X1 X2 in
+                            N = {Dictionary.get @regNames Reg}
+                            Emitter, AllocateShortLivedTemp(?X1)
+                            Emitter, AllocateShortLivedTemp(?X2)
+                            Emitter, Emit(move(Y X1))
+                            Emitter, Emit(putConstant(N X2))
+                            Emitter, Emit(callBI('nameVariable' [X1 X2]#nil))
+                         else skip
+                         end
                       elseof X then
                          Emitter, Emit(move(X Y))
                       end

@@ -62,7 +62,7 @@ VInstr = vMakePermanent(OccsRS Regs Cont)
        | vTestBuiltin(OccsRS Builtinname Regs Addr Addr Cont InitsRS)
        | vTestNumber(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
        | vTestLiteral(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
-       | vSwitchOnTerm(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
+       | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
        | vThread(OccsRS Addr Coord Cont InitsRS)
        | vLockThread(OccsRS Reg Coord Cont SharedData)
        | vLockEnd(OccsRS Coord Cont SharedData).
@@ -90,8 +90,7 @@ PredId = pid(Variablename Arity atom int).
 GRegs = [Reg].
 Count = cell.
 VClause = InitsRS#Addr#Addr.
-VHashTableEntry = onVar(Addr)
-                | onScalar(NumOrLit Addr)
+VHashTableEntry = onScalar(NumOrLit Addr)
                 | onRecord(Atomname RecordArity Addr).
 AllocatesRS = RegSet.
 InitsRS = RegSet.

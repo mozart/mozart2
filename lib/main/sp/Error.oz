@@ -1933,6 +1933,11 @@ in
               hint(l: 'At argument' m: I)
               hint(l: 'Expected type' m: A)]
              Exc}
+         elseof compiler(register P) then
+            {FormatExc T
+             'Trying to register a non-port'
+             [hint(l: 'Argument' m: oz(P))]
+             Exc}
          else
             {GenericFormatter T Exc}
          end

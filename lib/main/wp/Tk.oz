@@ -104,7 +104,7 @@ export
    addXScrollbar:   AddXScrollbar
 
    defineUserCmd:   DefineUserCmd
-   localize:        TkLocalize
+   localize:        TkFixedLocalize
 
    optionsManager:  OptionsManager
 
@@ -1319,6 +1319,10 @@ define
          of old(F) then F
          [] new(F) then {PathStore add(F)} F
          end
+      end
+
+      fun {TkFixedLocalize Url}
+         {TkLocalize ImRes Url}
       end
 
       class TkImage

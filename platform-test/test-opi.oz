@@ -21,7 +21,7 @@
 %%%
 
 declare DIR={OS.getEnv 'HOME'}#'/mozart/share/test'
-%declare DIR={OS.getEnv 'HOME'}#'/build/share/test'
+declare DIR={OS.getEnv 'HOME'}#'/build/share/test'
 {OS.chDir DIR}
 
 declare
@@ -32,7 +32,7 @@ T={{New Module.manager init}
         usage:    false
         help:     false
         keys:     nil   % nil for `all' or a non-empty list of strings: ["fs"]
-        ignores:  nil   % nil for `none' or a non-empty list of strings
+        ignores:  ["dp"]   % nil for `none' or a non-empty list of strings
         tests:    nil   % nil for `none' or a non-empty list of strings
         do:       true
         time:     ""

@@ -27,32 +27,7 @@ export
 
 define
    Return=
-   'thread'([
-             stopResume(proc {$}
-                        T X Y in
-                        thread
-                           T = {Thread.this}
-                           {Wait X}
-                           Y = unit
-                        end
-
-                        %% wait until T determined and stop it
-                        {Thread.suspend T}
-
-                        %% wakeup T, Note: T is scheduled
-                        X = unit
-
-                        %% ensure that T is removed from the runnable queue
-                        {Thread.preempt {Thread.this}}
-
-                        %% now resume T
-                        {Thread.resume T}
-
-                        %% wait until T is finished
-                        {Wait Y}
-                     end
-                     keys:['thread' 'resume' fixedBug])
-             resumeThis(proc {$}
+   'thread'([resumeThis(proc {$}
                            {Thread.resume {Thread.this}}
                         end
                         keys:['thread' 'resume' fixedBug])

@@ -88,7 +88,7 @@ define
 
    fun {ForkProcess Fork Host Ports Detach PORT IP FW}
       Cmd       = {Property.get 'oz.engine'}
-      Func      = 'x-oz://System/RemoteServer'
+      Func      = 'x-oz://system/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'
       PortArg   = '--port='#if PORT==default then 0 else PORT end

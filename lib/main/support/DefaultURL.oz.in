@@ -1,3 +1,4 @@
+%%% -*- oz -*-
 %%%
 %%% Author:
 %%%   Christian Schulte <schulte@dfki.de>
@@ -57,7 +58,7 @@ prepare
                    'DefaultURL']
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System']
-      Tools     = ['OPI' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
+      Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
                    'GumpParser' 'ProductionTemplates' 'Inspector']
    in

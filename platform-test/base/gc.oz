@@ -32,7 +32,7 @@ define
              {System.gcDo}
              {System.gcDo}
              MemoryBefore={Property.get 'gc.active'}
-             {Waker FirstGO 1000000}
+             {Waker FirstGO 100000}
              {System.gcDo}
              {System.gcDo}
              {System.gcDo}

@@ -189,7 +189,7 @@ in
          [] dictionary then T_Dictionary
          [] array then T_Array
          [] bitArray then T_BitArray
-         [] 'loc' then T_Lock
+         [] 'lock' then T_Lock
          [] port then T_Port
          [] bitString then T_BitString
          [] byteString then T_ByteString

@@ -1580,12 +1580,12 @@ local
          % prepare some feature values for the code generator:
          case {self isClauseBody($)} then
             @value.clauseBodyStatements = @body
-            ID = 0
+            ID = unit
          else
             case Top then
                ID = {GenerateAbstractionTableID {Ctrl isVirtualToplevel($)}}
             else
-               ID = 0
+               ID = unit
             end
          end
          self.abstractionTableID = ID

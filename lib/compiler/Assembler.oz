@@ -726,8 +726,7 @@ local
                {Peephole Rest Assembler}
             end
          [] marshalledFastCall(Abstraction ArityAndIsTail) then
-            case {IsDet Abstraction}
-               andthen ({IsInt Abstraction} orelse {IsProcedure Abstraction})
+            case {IsDet Abstraction} andthen {IsProcedure Abstraction}
                andthen (ArityAndIsTail mod 2 == 0)
             then
                case Rest of deAllocateL(I)|return|Rest then

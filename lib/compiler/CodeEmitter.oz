@@ -415,10 +415,10 @@ in
             Emitter, GenericEmitCall(Which Reg Regs Instr R Arity
                                      false Coord nil)
          [] vFastCall(_ PredicateRef Regs Coord _) then Instr in
-            case {IsDet PredicateRef} andthen {IsInt PredicateRef} then
-               Instr = genFastCall(PredicateRef 0)
-            else
+            case {IsProcedure PredicateRef} then
                Instr = marshalledFastCall(PredicateRef {Length Regs} * 2)
+            else
+               Instr = genFastCall(PredicateRef 0)
             end
             Emitter, GenericEmitCall(none ~1 Regs Instr _ _ false Coord nil)
          [] vApplMeth(_ Reg Literal RecordArity Regs Coord _) then
@@ -497,7 +497,7 @@ in
             end
          [] vDefinition(_ Reg PredId PredicateRef GRegs Code Cont) then
             case Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
-               andthen PredicateRef == 0
+               andthen PredicateRef == unit
             then skip
             else Rs X DoUnify StartLabel ContLabel Code1 Code2 in
                Rs = {Map GRegs

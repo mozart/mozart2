@@ -840,7 +840,7 @@ local
          EndLabel = {NewName}
          Code =
          lbl(StartLabel)|
-         definition(x(0) EndLabel pid('Toplevel abstraction' 0 '' 0 false) 0
+         definition(x(0) EndLabel pid('Toplevel abstraction' 0 '' 0 false) unit
                     {List.mapInd GRegs fun {$ I _} g(I - 1) end} BodyCode)|
          endDefinition(StartLabel)|
          {Append BodyCode2 [lbl(EndLabel) tailCall(x(0) 0)]}
@@ -954,7 +954,7 @@ local
 \endif
          PredicateRef = case {IsDet self.abstractionTableID} then
                            self.abstractionTableID
-                        else 0
+                        else unit
                         end
          case @isStateUsing then
             case CS.debugInfoVarnamesSwitch then
@@ -1490,7 +1490,7 @@ local
          X = unit
          AbstractionTableID = case IsToplevel then
                                  {GenerateAbstractionTableID IsVirtualToplevel}
-                              else 0
+                              else unit
                               end
       in
          local PairList Rec in
@@ -2285,7 +2285,7 @@ local
       feat ClauseBodyShared
       meth codeGenApplication(Designator ActualArgs CS VHd VTl) ID in
          ID = self.abstractionTableID
-         case {IsDet ID} andthen ID \= 0 then
+         case {IsDet ID} andthen ID \= unit then
             % ID may also be a real procedure
             VHd = vFastCall(_ ID {Map ActualArgs fun {$ A} {A reg($)} end}
                             {Designator getCoord($)} VTl)

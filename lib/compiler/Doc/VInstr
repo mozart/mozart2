@@ -39,14 +39,14 @@ VInstr = vMakePermanent(OccsRS Regs Cont)
        | vCallBuiltin(OccsRS Builtinname [Reg] Cont)
        | vGenCall(OccsRS Reg IsMethod Atomname RecordArity [Reg] Coord Cont)
        | vCall(OccsRS Reg [Reg] Coord Cont)
-       | vFastCall(OccsRS PredicateRef [Reg] Coord Cont)
+       | vFastCall(OccsRS PredicateRef2 [Reg] Coord Cont)
        | vApplMeth(OccsRS Reg Atomname RecordArity [Reg] Coord Cont)
        | vInlineDot(OccsRS Reg Feature Reg AlwaysSucceeds Coord Cont)
        | vInlineUparrow(OccsRS Reg Reg Reg Cont)
        | vInlineAt(OccsRS Atomname Reg Cont)
        | vInlineAssign(OccsRS Atomname Reg Cont)
        | vGetSelf(OccsRS Reg Cont)
-       | vDefinition(OccsRS Reg PredId PredicateRef GRegs Code Cont)
+       | vDefinition(OccsRS Reg PredId PredicateRef1 GRegs Code Cont)
        | vShared(OccsRS Label Count Addr)
        | vExHandler(OccsRS Addr Reg Addr Coord Cont InitsRS)
        | vPopEx(OccsRS Coord Cont)
@@ -83,7 +83,9 @@ Feature = atom
         | name
         | int.
 IsMethod = bool.
-PredicateRef = int.
+PredicateRef1 = foreignpointer.
+PredicateRef2 = foreignpointer
+              | procedure.
 PredId = pid(Variablename Arity atom int).
 GRegs = [Reg].
 Count = cell.

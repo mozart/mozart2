@@ -227,7 +227,7 @@ in
    functor prop once
 
    export
-      fromVs:   VsToUrl
+      make:     VsToUrl
       isAbsUrl: UrlIsAbs
       resolve:  UrlResolve
       toVs:     UrlToVs

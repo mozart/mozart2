@@ -23,8 +23,8 @@
 local
 
    local
-      BootUrl   = {URL.fromVs "x-oz://boot/DUMMY"}
-      SystemUrl = {URL.fromVs "x-oz://system/DUMMY"}
+      BootUrl   = {URL.make "x-oz://boot/DUMMY"}
+      SystemUrl = {URL.make "x-oz://system/DUMMY"}
    in
       OzScheme  = BootUrl.scheme = SystemUrl.scheme
       %% BootLoc   = BootUrl.netloc
@@ -48,7 +48,7 @@ local
 
    SystemModules = local
                       Functors = \insert '../../functor-defaults.oz'
-                      BaseUrl  = {URL.fromVs "x-oz://system/DUMMY"}
+                      BaseUrl  = {URL.make "x-oz://system/DUMMY"}
                    in
                       {List.toRecord map
                        {Map {Append Functors.volatile
@@ -56,7 +56,7 @@ local
                         fun {$ ModName}
                            ModName #
                            {URL.resolve BaseUrl
-                            {URL.fromVs ModName}}
+                            {URL.make ModName}}
                         end}}
                    end
 
@@ -66,7 +66,7 @@ local
       if {HasFeature SystemModules ModKey} then
          SystemModules.ModKey
       else
-         {URL.fromVs ModKey#FunExt}
+         {URL.make ModKey#FunExt}
       end
    end
 
@@ -74,7 +74,7 @@ local
 
    fun {NameOrUrlToUrl ModName UrlV}
       if UrlV==NONE then {ModNameToUrl ModName}
-      else {URL.fromVs UrlV}
+      else {URL.make UrlV}
       end
    end
 
@@ -117,7 +117,7 @@ local
          IM={Record.mapInd Func.'import'
              fun {$ ModName Info}
                 EmbedUrl = if {HasFeature Info 'from'} then
-                              {URL.fromVs Info.'from'}
+                              {URL.make Info.'from'}
                            else
                               {ModNameToUrl ModName}
                            end

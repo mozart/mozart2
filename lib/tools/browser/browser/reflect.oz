@@ -245,6 +245,13 @@ in
                TermOut =
                {AtomConcatAll ['<Cell @ ' {IntToAtom {AddrOf TermIn}} '>']}
                TmpList
+            [] port then
+               %%
+
+               %%
+               TermOut =
+               {AtomConcatAll ['<Port @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
             [] record then RArity RefRArity L LabelOf in
                RArity = {Arity TermIn}
                RefRArity = {Map RArity

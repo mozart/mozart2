@@ -77,11 +77,11 @@ local
    proc {Link File Spec Module Handle}
       case {Localize File}
       of     old(FILE) then
-         {DlOpen Handle}
+         {DlOpen FILE Handle}
          {LoadFromHandle Spec Handle Module}
       elseof new(FILE) then
          try
-            {DlOpen Handle}
+            {DlOpen FILE Handle}
             {LoadFromHandle Spec Handle Module}
          finally {Unlink FILE} end
       end

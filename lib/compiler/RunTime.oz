@@ -97,6 +97,7 @@ in
                     '.': Value.'.'
                     'hasFeature': Value.hasFeature
                     'byNeed': Value.byNeed
+                    '!!': {`Builtin` 'Future' 2}
                     '+': Number.'+'
                     '-': Number.'-'
                     '*': Number.'*'

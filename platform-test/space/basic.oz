@@ -47,7 +47,7 @@ define
           entailment(equal(fun {$}
                               S={Space.new proc {$ X} X = 1 end}
                            in
-                              [{Space.askVerbose S}
+                              [{DerefBlocked {Space.askVerbose S}}
                                {Space.merge {Space.clone S}}
                                {Space.merge {Space.clone S}}
                                {Space.merge {Space.clone S}}

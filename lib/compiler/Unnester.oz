@@ -402,11 +402,16 @@ define
       end
    end
 
+   fun {DotPrintName PrintName FeatPrintName}
+      {VirtualString.toAtom
+       PrintName#'.'#{Value.toVirtualString FeatPrintName 0 0}}
+   end
+
    proc {SetPrintName GBack0 PrintName FeatPrintName}
       case PrintName of unit then skip
       elsecase {GetLast GBack0} of nil then skip
       elseof GS then
-         {GS setPrintName({VirtualString.toAtom PrintName#'.'#FeatPrintName})}
+         {GS setPrintName({DotPrintName PrintName FeatPrintName})}
       end
    end
 
@@ -606,14 +611,21 @@ define
             Unnester, AddImport('x-oz://system/FD' ?FD)
             FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
-         [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
+         [] fFdIn(Op FE1 FE2 C) then FS in
             %% note: reverse arguments!
-            Feature = case Op of '::' then 'int'
-                      [] ':::' then 'dom'
-                      end
-            CND = {CoordNoDebug C}
-            FS = fApply(fOpApply('.' [fVar('FD' C) fAtom(Feature C)] CND)
-                        [FE2 FE1] C)
+            case Unnester, AddImport('x-oz://system/FD' $)
+            of unit then
+               FS = fOpApplyStatement(case Op of '::' then 'FD.int'
+                                      [] ':::' then 'FD.dom'
+                                      end [FE2 FE1] C)
+            elseof FE then Feature CND in
+               Feature = case Op of '::' then 'int'
+                         [] ':::' then 'dom'
+                         end
+               CND = {CoordNoDebug C}
+               FS = fApply(fOpApply('.' [FE fAtom(Feature C)] CND)
+                           [FE2 FE1] C)
+            end
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then
             if @Stateful then
@@ -1216,16 +1228,23 @@ define
             Unnester, AddImport('x-oz://system/FD' ?FD)
             FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C fOcc(ToGV) FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
-         [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
+         [] fFdIn(Op FE1 FE2 C) then FS in
             %% note: reverse arguments!
-            Feature = case Op of '::' then 'int'
-                      [] ':::' then 'dom'
-                      end
-            CND = {CoordNoDebug C}
-            FS = fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                    fAtom('reified' C)] C)
-                                      fAtom(Feature C)] CND)
-                        [FE2 FE1 fOcc(ToGV)] C)
+            case Unnester, AddImport('x-oz://system/FD' $)
+            of unit then
+               FS = fOpApplyStatement(case Op of '::' then 'FD.reified.int'
+                                      [] ':::' then 'FD.reified.dom'
+                                      end [FE2 FE1 fOcc(ToGV)] C)
+            elseof FE then Feature CND in
+               Feature = case Op of '::' then 'int'
+                         [] ':::' then 'dom'
+                         end
+               CND = {CoordNoDebug C}
+               FS = fApply(fOpApply('.' [fOpApply('.' [FE fAtom('reified' C)]
+                                                  C)
+                                         fAtom(Feature C)] CND)
+                           [FE2 FE1 fOcc(ToGV)] C)
+            end
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then NewFE2 in
             if @Stateful then
@@ -1658,14 +1677,14 @@ define
                 GFront#NewGArgs#(GFront0|GBack|GBack0)
              [] fRecord(Label Args) then NewPrintName GFront0 GBack0 in
                 NewPrintName = case PrintName of unit then unit
-                               else PrintName#'.'#FeatPrintName
+                               else {DotPrintName PrintName FeatPrintName}
                                end
                 Unnester, UnnestRecord(NewPrintName Label Args false
                                        ?GFront0 ?GArg ?GBack0)
                 (GFront|GFront0)#NewGArgs#(GBack|GBack0)
              [] fOpenRecord(Label Args) then NewPrintName GFront0 GBack0 in
                 NewPrintName = case PrintName of unit then unit
-                               else PrintName#'.'#FeatPrintName
+                               else {DotPrintName PrintName FeatPrintName}
                                end
                 Unnester, UnnestRecord(NewPrintName Label Args true
                                        ?GFront0 ?GArg ?GBack0)

@@ -29,7 +29,7 @@ import
    Combinator('not' 'cond' 'or' 'dis')
    Space('choose')
    RecordC('^' tellSize)
-   FD(sum sumC sumCN reified)
+   FD(int dom sum sumC sumCN reified)
 export
    Literals
    Tokens
@@ -173,6 +173,14 @@ define
       {Space.choose X Y}
    end
 
+   proc {FDInt A B}
+      {FD.int A B}
+   end
+
+   proc {FDDom A B}
+      {FD.dom A B}
+   end
+
    proc {FDSum X O D}
       {FD.sum X O D}
    end
@@ -183,6 +191,14 @@ define
 
    proc {FDSumCN A X O D}
       {FD.sumCN A X O D}
+   end
+
+   fun {FDReifiedInt A B}
+      {FD.reified.int A B}
+   end
+
+   fun {FDReifiedDom A B}
+      {FD.reified.dom A B}
    end
 
    fun {FDReifiedSum X O D}
@@ -215,9 +231,13 @@ define
                      'Space.choose': SpaceChoose
 
                      %% FD
+                     'FD.int': FDInt
+                     'FD.dom': FDDom
                      'FD.sum': FDSum
                      'FD.sumC': FDSumC
                      'FD.sumCN': FDSumCN
+                     'FD.reified.int': FDReifiedInt
+                     'FD.reified.dom': FDReifiedDom
                      'FD.reified.sum': FDReifiedSum
                      'FD.reified.sumC': FDReifiedSumC
                      'FD.reified.sumCN': FDReifiedSumCN)}

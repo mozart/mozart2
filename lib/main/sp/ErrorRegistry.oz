@@ -763,16 +763,6 @@ in
               line(BugReport)]
              Exc}
 
-         elseof system(reinstallFormatter Key) then
-
-         % expected Key: atom
-
-            {Error.format
-             T
-             'Registration of error formatter failed'
-             [hint(l:'Exception name already in use' m:Key)]
-             Exc}
-
          elseof system(getProperty Feature) then
 
             {Error.format
@@ -939,15 +929,10 @@ in
       ErrorFormatter = {NewDictionary}
 
       proc {NewFormatter Key P}
-
-         case {ExFormatter Key}
-         then {Exception.raiseError system(reinstallFormatter Key)}
-         else
-            {Dictionary.put
-             ErrorFormatter
-             Key
-             P}
-         end
+         {Dictionary.put
+          ErrorFormatter
+          Key
+          P}
       end
 
       fun {GetFormatter Key}

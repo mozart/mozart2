@@ -287,7 +287,7 @@ local
    fun {Zip As R1 R2 P}
       case As of nil then nil
       [] A|Ar then
-         if {HasFeature R1 A} then A#{P R1.A R2.A}|{Zip Ar R1 R2 P}
+         if {HasFeature R2 A} then A#{P R1.A R2.A}|{Zip Ar R1 R2 P}
          else {Zip Ar R1 R2 P}
          end
       end

@@ -22,16 +22,12 @@
 %%% WARRANTIES.
 %%%
 
-{ErrorRegistry.put
-
- compiler
-
+{ErrorRegistry.put compiler
  fun {$ Exc}
     E = {Error.dispatch Exc}
     T = 'compiler engine error'
  in
-    case E
-    of compiler(invalidQuery M) then
+    case E of compiler(invalidQuery M) then
        {Error.format T
         'Invalid query'
         [hint(l: 'Query' m: oz(M))]
@@ -47,6 +43,17 @@
        {Error.format T
         'Trying to register a non-port'
         [hint(l: 'Argument' m: oz(P))]
+        Exc}
+    elseof compiler(evalExpression VS Ms) then
+       {Error.format T
+        'Compiler.evalExpression applied to an erroneous query'
+        {Map Ms
+         fun {$ M}
+            case M of error(kind: Kind msg: Msg ...) then line(Kind#': '#Msg)
+            elseof warn(kind: Kind msg: Msg ...) then line(Kind#': '#Msg)
+            else unit
+            end
+         end}
         Exc}
     else
        {Error.formatGeneric T Exc}

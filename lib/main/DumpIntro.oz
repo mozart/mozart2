@@ -22,23 +22,22 @@
 %%% WARRANTIES.
 %%%
 
-declare
-Base Standard
-in
+%% The following ensures that this file works with the `-g' command
+%% line option:  With debug information, an application of the unbound
+%% variable `=` would be generated; the thread would block.
+\pushSwitches
+\switch -debuginfocontrol
 
 declare
-\insert 'Base.env'
-= Base
-in
-
-declare
-\insert 'Standard.env'
-= Standard
-in
-
 local
-   Load = {`Builtin` load 2}
-in
+   Load     = {`Builtin` load 2}
    Base     = {Load 'Base.ozc'}
    Standard = {Load 'Standard.ozc'}
+in
+   \insert 'Base.env'
+   = Base
+   \insert 'Standard.env'
+   = Standard
 end
+
+\popSwitches

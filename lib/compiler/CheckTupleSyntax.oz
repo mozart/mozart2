@@ -381,7 +381,7 @@ local
    end
 
    proc {SyntaxRule X}
-      case X of fSyntaxrule(G Fs E) then
+      case X of fSyntaxRule(G Fs E) then
          {GrammarSymbol G} {ForAll Fs SynFormal} {SynExpression E}
       end
    end

@@ -46,14 +46,18 @@ define
                   L = R
                end
             end
-            L R Hosts
+            L R Hosts ControllerThread
          in
             {TestMisc.getHostNames Hosts}
             {TestMisc.getRemoteManagers Sites Hosts Managers}
             thread {Loop Managers L R} end
-            thread {Controller L R 1} end
+            thread
+               {Thread.this ControllerThread}
+               {Controller L R 1}
+            end
             if L == R then
-               skip
+               % Controller mission completed
+               {Thread.terminate ControllerThread}
             else
                raise dp_variable_test_failed end
             end
@@ -68,21 +72,19 @@ define
    end
 
    proc {Controller L R PhaseNr}
-      thread
-         case L of H1|L1 then
-            case R of H2|R1 then
-               if H1 == H2 then
-                  H1 = done
-                  {Controller L1 R1 PhaseNr+1}
-               else
-                  raise dp_variable_test_failed end
-               end
+      case L of H1|L1 then
+         case R of H2|R1 then
+            if H1 == H2 then
+               H1 = done
+               {Controller L1 R1 PhaseNr+1}
             else
-               {Controller L R PhaseNr}
+               raise dp_variable_test_failed end
             end
          else
             {Controller L R PhaseNr}
          end
+      else
+         {Controller L R PhaseNr}
       end
    end
 

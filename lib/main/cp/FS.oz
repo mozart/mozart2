@@ -487,7 +487,7 @@ define
    proc {FSUnionN Vs U}
       {FSP.unionN Vs U}
       {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end}
-       '=:' {FSCard U}}
+       '>=:' {FSCard U}}
    end
 
    FSDisjointN = FSP.disjointN

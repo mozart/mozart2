@@ -65,6 +65,19 @@
 
 \ifndef OZM
 
+local
+   Export = {Dictionary.toRecord 'export' `runTimeDict`}
+in
+   {Pickle.save
+    {Functor.new
+     'import'()
+     {List.toRecord 'export' {Map {Arity Export} fun {$ X} X#value end}}
+     fun instantiate {$ _}
+        Export
+     end}
+    'RunTimeLibrary.ozf'}
+end
+
 {Pickle.save
 functor $ prop once
 

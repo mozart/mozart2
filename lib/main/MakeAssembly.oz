@@ -22,8 +22,12 @@
 \insert Standard
 
 declare
+RunTimeLibrary = {Dictionary.toRecord 'export' `runTimeDict`}
+
+declare
 NewErrorRegistry
 NewError
+NewDebug
 NewFS
 NewFD
 NewSearch
@@ -39,6 +43,9 @@ in
 
 \insert 'sp/ErrorRegistry.oz'
 = NewErrorRegistry
+
+\insert 'sp/Debug.oz'
+= NewDebug
 
 \insert 'cp/FD.oz'
 = NewFD
@@ -98,9 +105,13 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Property':      Property
              'System':        System
 
+             %% Constructed modules
+             'RunTimeLibrary': !RunTimeLibrary
+
              %% Plain functors
              'Error':         Error
              'ErrorRegistry': ErrorRegistry
+             'Debug':         Debug
              'FD':            FD
              'Open':          Open
              'Resolve':       'export'(open:unit)
@@ -128,6 +139,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
 
     {ForAll [ErrorRegistry # NewErrorRegistry
              Error         # NewError
+             Debug         # NewDebug
              FD            # NewFD
              FS            # NewFS
              Search        # NewSearch
@@ -156,6 +168,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Property'#     Property
              'ErrorRegistry'#ErrorRegistry
              'Error'#        Error
+             'Debug'#        Debug
              'FD'#           FD
              'FS'#           FS
              'Search'#       Search

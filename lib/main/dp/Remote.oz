@@ -26,9 +26,9 @@
 functor
 
 import
-   OS(exec wait)
+   OS(exec wait getEnv)
    Connection(offer)
-   Property(get)
+   Property(get condGet put)
    Module(link)
    Error(registerFormatter)
 
@@ -55,8 +55,16 @@ define
                        [unit]
                     end
 
+   if {Property.condGet 'oz.engine' unit}==unit then
+      {Property.put 'oz.engine'
+       case {OS.getEnv 'OZ_ENGINE'} of false then
+          case {OS.getEnv 'OZENGINE'} of false then 'ozengine'
+          elseof X then X end
+       elseof X then X end}
+   else skip end
+
    fun {ForkProcess Fork Host Ports Detach}
-      Cmd       = 'ozengine'
+      Cmd       = {Property.get 'oz.engine'}
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'

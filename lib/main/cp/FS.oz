@@ -615,7 +615,10 @@ define
    FSReified = reified(isIn:
                           FSIsInReif
                        areIn:
-                          proc {$ WList S BList}
+                          proc {$ W S BList}
+                             WList = {ExpandList
+                                      {FSGetGlb {FSB.'value.make' W}}}
+                          in
                              BList
                              = {FD.list {Length WList} 0#1}
                              = {Map WList fun {$ E} {FSIsInReif E S} end}

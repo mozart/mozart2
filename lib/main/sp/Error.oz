@@ -543,9 +543,9 @@ in
       {NewError}
 
       fun {DebugLoc Exc}
-         E = {System.get errors}
          D = {DebugField Exc}
-      in {CondSelect D loc unit}
+      in
+         {CondSelect D loc unit}
       end
 
       fun {DebugStack Exc}
@@ -730,13 +730,6 @@ in
          {IsRecord Exc}
          andthen {HasFeature Exc 1}
          andthen {IsRecord Exc.1}
-      end
-
-      fun {DebugInfo D}
-         case {IsRecord D}
-            andthen {HasFeature D info}
-         then D.info
-         else unit end
       end
 
       %%

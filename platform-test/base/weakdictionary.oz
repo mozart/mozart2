@@ -101,48 +101,81 @@ in
 
    define
       Return=
-      weakdictionary([dynamics(fun {$}
-                              D = {WeakDictionary.new _}
-                              {WeakDictionary.close D}
+      weakdictionary([dynamics(
+         fun {$}
+            S
+            D = {WeakDictionary.new S}
+            C = {Cell.new S}
 
-                              fun {Remove Is J}
-                                 case Is of nil then nil
-                                 [] I|Ir then
-                                    if I==J then Ir
-                                    else I|{Remove Ir J}
-                                    end
-                                 end
-                              end
+            fun {Remove Is J}
+               case Is of nil then nil
+               [] I|Ir then
+                  if I==J then Ir
+                  else I|{Remove Ir J}
+                  end
+               end
+            end
 
-                              fun {TestEntries Is D}
-                                 case Is of nil then true
-                                 [] I|Ir then
-                                    {WeakDictionary.condGet D I false}
-                                    andthen {TestEntries Ir D}
-                                 end
-                              end
+            fun {RestoreEntries L}
+               if {Value.isDet L} then
+                  case L of nil then
+                     raise
+                        'closed weak dictionary\' finalization stream??!'
+                     end
+                     nil
+                  [] K#V|Lr then
+                     {WeakDictionary.put D K V}
+                     {RestoreEntries Lr}
+                  else
+                     raise
+                        'invalid weak dictionary finalization stream??!'
+                     end
+                     nil
+                  end
+               else L
+               end
+            end
 
-                              fun {Check Ts Is}
-                                 if {TestEntries Is D} then
-                                    case Ts
-                                    of nil then true
-                                    [] T|Tr then
-                                       case T
-                                       of put(I) then
-                                          {WeakDictionary.put D I true}
-                                          {Check Tr I|Is}
-                                       [] remove(I) then
-                                          {WeakDictionary.remove D I}
-                                          {Check Tr {Remove Is I}}
-                                       end
-                                    end
-                                 else false
-                                 end
-                              end
-                           in
-                              {Check Ts nil}
-                           end
+            fun {TestEntries Is D}
+               case Is of nil then true
+               [] I|Ir then
+                  if {WeakDictionary.condGet D I false} then
+                     {TestEntries Ir D}
+                  else H T in
+                     {Cell.exchange C H T}
+                     if {Value.isDet H} then
+                        %% something in the stream - have to check it;
+                        T = {RestoreEntries H}
+                        {TestEntries Is D}      % fine unless too frequent GC
+                     else
+                        %% guaranteed a trouble
+                        H = T
+                        false
+                     end
+                  end
+               end
+            end
+
+            fun {Check Ts Is}
+               if {TestEntries Is D} then
+                  case Ts
+                  of nil then true
+                  [] T|Tr then
+                     case T
+                     of put(I) then
+                        {WeakDictionary.put D I true}
+                        {Check Tr I|Is}
+                     [] remove(I) then
+                        {WeakDictionary.remove D I}
+                        {Check Tr {Remove Is I}}
+                     end
+                  end
+               else false
+               end
+            end
+         in
+            {Check Ts nil}
+         end
                            keys: [dictionary])])
    end
-
 end

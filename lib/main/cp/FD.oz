@@ -685,7 +685,7 @@ define
             then
                case {Filter {VectorToList Vec} Fil} of nil then
                   raise ~1 end
-               elseof Xs=X|Xr then
+               [] X|Xr then
                   V={Select {Choose Xr X Order}}
                   D={SelVal V}
                end

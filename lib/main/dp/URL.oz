@@ -626,7 +626,7 @@ local
       case {CondSelect U path unit}
       of abs(_) then true
       [] rel(L) then
-         case L of H|T then
+         case L of H|_ then
             case H.1
             of &~|_ then true
             [] "."  then true

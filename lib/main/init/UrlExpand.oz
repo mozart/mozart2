@@ -65,7 +65,7 @@ in
          {HasFeature U device   }
       then U else
          case {CondSelect U path unit}
-         of rel((&~|USER)#Slash|DIR) then
+         of rel((&~|USER)#_|DIR) then
             {Expand
              {UrlMake
               if USER==nil then {GET 'user.home'}

@@ -237,9 +237,9 @@ prepare
          end
       end
 
-      proc {Hear OMs}
-         case OMs of nil then skip
-         [] OM|OMr then O#M=OM in {O M} {Hear OMr}
+      proc {Hear L Ms}
+         case Ms of nil then skip
+         [] M|Mr then {L M} {Hear L Mr}
          end
       end
 
@@ -250,12 +250,12 @@ prepare
          meth tkInit
             Stream = @Tail
          in
-            thread {Hear Stream} end
+            thread {Hear self Stream} end
          end
-         meth !ListenToThat(Action)
+         meth !ListenToThat(M)
             NewTail
          in
-            Action|NewTail = (Tail <- NewTail)
+            M|NewTail = (Tail <- NewTail)
          end
          meth tkServe(M)
             TkListener,ListenToThat(M)
@@ -279,7 +279,7 @@ prepare
             if {IsPort OP} then
                {Send OP SM}
             elseif {IsObject OP} andthen {HasFeature OP IsTkListener} then
-               {OP ListenToThat(OP#SM)}
+               {OP ListenToThat(SM)}
             elseif Thread then
                thread {OP SM} end
             else

@@ -22,7 +22,7 @@
 
 functor
 import
-   Application Open Remote
+   Open Remote
    SM at 'smallbuf.so{native}'
 export
    Return

@@ -88,7 +88,7 @@ define
                                         try
                                            {String.toFloat X _}
                                         catch
-                                           error(kernel(stringNoFloat X) ...)
+                                           error(kernel(stringNoFloat _) ...)
                                         then skip
                                         end
                                      end}

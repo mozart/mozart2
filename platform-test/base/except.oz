@@ -19,7 +19,7 @@ define
       in
          try
             {DebugSet Debug}
-            case TopLevel then {Fun Debug true}
+            if TopLevel then {Fun Debug true}
             elsecase {Space.askVerbose
                       {Space.new fun {$} {Fun Debug false} end}}
             of succeeded(entailed) then true else false end
@@ -56,7 +56,7 @@ define
    in
       try {Fail 3} false
       catch E then
-         case Debug then
+         if Debug then
             case E of failure(debug:d(info:_ loc:_ stack:_))
             then true else false end
          else
@@ -79,8 +79,8 @@ define
    fun {OPEN Debug TopLevel}
       try {New Open.file init(name:"NoSuchFile") _} false
       catch F then
-         case TopLevel then
-            case Debug then
+         if TopLevel then
+            if Debug then
                case F of system(_ debug:d(info:_ loc:_ stack:_))
                then true else false end
             else
@@ -126,28 +126,6 @@ define
       else false end
    end
 
-   % WITH1:     RAISE/WITH/END  (?debug ?toplevel)
-   fun {WITH1 Debug TopLevel}
-      try (raise t with foo end)
-      catch F then
-         case F of t then true else false end
-      end
-   end
-
-   % WITH2:     RAISE/WITH/END  (?debug ?toplevel)
-   fun {WITH2 Debug TopLevel}
-      try (raise t(debug:d(garg:_)) with foo end)
-      catch F then
-         case Debug then
-            case F of t(debug:d(info:foo loc:_ stack:_ garg:_))
-            then true else false end
-         else
-            case F of t(debug:d(garg:_))
-            then true else false end
-         end
-      end
-   end
-
    % DOT2:      type error for '.'      (+debug ?toplevel)
    fun {DOT2 Debug TopLevel}
       try a.{Id a(b)}
@@ -176,8 +154,6 @@ define
             dot1(     fun{$}{TEST DOT1    `?debug ?toplevel`}end)
             open(     fun{$}{TEST OPEN    `?debug ?toplevel`}end)
             'lock'(   fun{$}{TEST LOCK    `-debug +toplevel`}end)
-            with1(    fun{$}{TEST WITH1   `?debug ?toplevel`}end)
-            with2(    fun{$}{TEST WITH2   `?debug ?toplevel`}end)
             dot2(     fun{$}{TEST DOT2    `+debug ?toplevel`}end)
             'finally'(fun{$}{TEST FINALLY `-debug ?toplevel`}end)
            ]

@@ -32,5 +32,7 @@ bitArray(new:              {`Builtin` 'BitArray.new'              3}
          'or':             {`Builtin` 'BitArray.or'               2}
          and:              {`Builtin` 'BitArray.and'              2}
          nimpl:            {`Builtin` 'BitArray.nimpl'            2}
+         disjoint:         {`Builtin` 'BitArray.disjoint'         3}
+         card:             {`Builtin` 'BitArray.card'             2}
          toList:           {`Builtin` 'BitArray.toList'           2}
          complementToList: {`Builtin` 'BitArray.complementToList' 2})

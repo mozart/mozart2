@@ -1931,13 +1931,18 @@ define
                   end
                [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
                   {Arg2 getCodeGenValue(?Value)}
-                  if {IsDet Value} andthen {IsRecord Value} then
+                  if {IsDet Value} andthen {IsRecord Value}
+                     andthen {Record.all Value
+                              fun {$ Arg}
+                                 {HasFeature Arg Core.imAVariableOccurrence}
+                                 andthen {IsDet {Arg reg($)}}
+                              end}
+                  then
                      RecordArity ActualArgs Regs Cont1 in
                      RecordArity = if {IsTuple Value} then {Width Value}
                                    else {Arity Value}
                                    end
                      ActualArgs = {Record.toList Value}
-                     %--** all ActualArgs must have reg($) determined
                      {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
                      if {{Arg1 getVariable($)} isToplevel($)} then
                         Cont1 = vGenCall(_ {Arg1 reg($)} true

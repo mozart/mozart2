@@ -619,17 +619,8 @@ define
 
       else
          %% L is atomic: int, float, atom, token
-         %% has constant type
-         if {OzTypes.isMinimal T}
-         then env(var:V last:L)
-         else
-\ifdef DEBUGSA
-            {System.show weird(L T)}
-\endif
-            %% copy non-constant types
-            {V setType({OzTypes.clone T})}
-            env(var:V last:L type:T)
-         end
+         {OzTypes.isMinimal T true}   % must have constant type
+         env(var:V last:L)
       end
    end
 
@@ -1305,7 +1296,6 @@ define
    class SAConstructionOrPattern
       attr
          type: unit
-         lastValue : unit
          value
 
       meth init()
@@ -2685,23 +2675,18 @@ define
 \ifdef DEBUGSA
          {System.show patternClause}
 \endif
-         ArbV  = {Arbiter getVariable($)}
-         %% also save arbiter !!
-         Env   = {GetGlobalEnv {Add ArbV @globalVars}}
+         ArbV = {Arbiter getVariable($)}
+         %% also save arbiter:
+         Env  = {GetGlobalEnv {Add ArbV @globalVars}}
          T N PVal
       in
          {@pattern sa(Ctrl)}
-
-         %% the value of record patterns is
-         %% not the pattern itself, but stored in it
-         PVal = if {@pattern isConstruction($)}
-                then {@pattern getValue($)}
-                else @pattern end
 
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
 
          {Ctrl setErrorMsg('pattern never matches')}
+         {@pattern getPatternValue(?PVal)}
          {Ctrl setUnifier(Arbiter PVal)}
 
          {Arbiter unify(Ctrl PVal)}
@@ -2719,54 +2704,26 @@ define
    end
 
    class SASideCondition
-      meth getValue($)
-         {@pattern getValue($)}
+      meth getPatternValue($)
+         {@pattern getPatternValue($)}
       end
-      meth setValue(Val)
-         {@pattern setValue(Val)}
-      end
-      meth getLastValue($)
-         {@pattern getLastValue($)}
-      end
-      meth setLastValue(Val)
-         {@pattern setLastValue(Val)}
-      end
-      meth getLabel($)
-         {@pattern getLabel($)}
-      end
-      meth getArgs($)
-         {@pattern getArgs($)}
-      end
-      meth getType($)
-         {@pattern getType($)}
-      end
-      meth isOpen($)
-         {@pattern isOpen($)}
-      end
-      meth isRecordConstr($)
-         {@pattern isRecordConstr($)}
-      end
-
-      meth deref(VO)
-         {@pattern deref(VO)}
-      end
-
       meth sa(Ctrl)
          {@pattern sa(Ctrl)}
          SAStatement, saBody(Ctrl @statements)
       end
-
-      meth reachable(Vs $)
-         {@pattern reachable({@left reachable(Vs $)} $)}
-      end
-
       meth applyEnvSubst(Ctrl)
          {@pattern applyEnvSubst(Ctrl)}
+         {@arbiter applyEnvSubst(Ctrl)}
       end
    end
 
    class SARecordPattern
       from SAConstructionOrPattern
+      meth getPatternValue($)
+         %% the value of record patterns is
+         %% not the pattern itself, but stored in it
+         {self getValue($)}
+      end
    end
 
    %%
@@ -2795,6 +2752,9 @@ define
       end
       meth getType($)
          {@right getType($)}
+       end
+      meth getPatternValue($)
+         {@right getPatternValue($)}
       end
       meth isOpen($)
          {@right isOpen($)}
@@ -3418,6 +3378,9 @@ define
       meth init()
          type <- {OzValueToType @value}
       end
+      meth getPatternValue($)
+         self
+      end
       meth getType($)
          @type
       end
@@ -3554,46 +3517,36 @@ define
       end
       meth setLastValue(O)
          lastValue <- O
-         if O == unit then skip
-         else type <- {O getType($)} end
+         if O \= unit then
+            type <- {O getType($)}
+         end
       end
       meth deref(VO)
-         if
-            @lastValue == unit                        % is free
-         then
+         if @lastValue == unit then                   % is free
             SAVariable, setLastValue(VO)              % initialize with var-occ
 
-         elseif
-            {HasFeature @lastValue ImAVariableOccurrence}
-         then
+         elseif {HasFeature @lastValue ImAVariableOccurrence} then
             NewVal = {@lastValue getValue($)}         % getLastValue($) ?
          in
             SAVariable, setLastValue(NewVal)          % var path compression
-            if @lastValue == NewVal
-            then skip else
+            if @lastValue \= NewVal then
                SAVariable, deref(VO)                  % recur
             end
-         elseif
-            {@lastValue isRecordConstr($)}
-         then
+
+         elseif {@lastValue isRecordConstr($)} then
             NewVal = {@lastValue getLastValue($)}
          in
-            if
-               @lastValue == NewVal
-            then
+            if @lastValue == NewVal then
                skip                                   % self reference
-            elseif
-               NewVal == unit
-            then
+            elseif NewVal == unit then
                {@lastValue setLastValue(@lastValue)}  % non initialised
             else
                SAVariable, setLastValue(NewVal)       % constr path compression
-               if
-                  @lastValue == NewVal
-               then skip else
+               if @lastValue \= NewVal then
                   SAVariable, deref(VO)               % recur
                end
             end
+
          else
             %% number, atom, token (ground value)
             skip
@@ -3713,21 +3666,17 @@ define
          {New RecordConstr init(RecVal unit)}
       end
       meth RecordValToArgs(RecArgs Seen Depth Width ?ConstrValArgs)
-         if Width > 0 then
-            case RecArgs of (F#X)|RAs then V VO CVAr in
-               case {PLDotEQ X Seen} of unit then   % not seen
-                  V = {New Core.generatedVariable init('RecordArg' unit)}
-                  {V ValToSubst(Seen Depth - 1 X)}
-               elseof X then
-                  V = X
-               end
-               {V occ(unit ?VO)}
-               {VO updateValue}
-               ConstrValArgs = F#VO|CVAr
-               SAVariable, RecordValToArgs(RAs Seen Depth Width - 1 CVAr)
-            elseof nil then
-               ConstrValArgs = nil
+         case RecArgs of (F#X)|RAs andthen Width > 0 then V VO CVAr in
+            case {PLDotEQ X Seen} of unit then   % not seen
+               V = {New Core.generatedVariable init('RecordArg' unit)}
+               {V ValToSubst(Seen Depth - 1 X)}
+            elseof X then
+               V = X
             end
+            {V occ(unit ?VO)}
+            {VO updateValue()}
+            ConstrValArgs = F#VO|CVAr
+            SAVariable, RecordValToArgs(RAs Seen Depth Width - 1 CVAr)
          else
             ConstrValArgs = nil
          end
@@ -3761,7 +3710,7 @@ define
             V = {New Core.generatedVariable init('RecordType' unit)}
             {V TypeToSubst(Rec.F Depth - 1)}
             {V occ(unit ?VO)}
-            {VO updateValue}
+            {VO updateValue()}
             Args = F#VO|Argr
             RecArgs = RecFeat#VO|RecArgr
             SAVariable, RecordTypeToSubst(Fr Rec Depth ?Argr ?RecArgr)
@@ -3781,31 +3730,23 @@ define
          end
       end
       meth reachable(Vs $)
-         SAVariable, deref(@lastValue)
-
-         case
-            @lastValue
-         of
-            unit         % uninitialized variable
-         then
+         case @lastValue of unit then        % uninitialized variable
             {Add self Vs}
          else
             SAVariable, deref(@lastValue)
 
-            if
-               {HasFeature @lastValue ImAVariableOccurrence} % free variable
-            then
+            if {HasFeature @lastValue ImAVariableOccurrence} then
                %% save self + representant (might differ!)
                {Add self {Add {@lastValue getVariable($)} Vs}}
-            elseif
-               {@lastValue isRecordConstr($)}
-            then
+
+            elseif {@lastValue isRecordConstr($)} then
                %%
                %% if we do not implement ft unification fully
                %% but only on determined records, then
                %% we actually need not save self here.
                %%
                {@lastValue reachable({Add self Vs} $)}
+
             else
                Vs       % ground: int, float, atom, token
             end
@@ -3820,6 +3761,9 @@ define
          {Value.toVirtualString {GetData self} 10 10}
       end
 
+      meth getPatternValue($)
+         self
+      end
       meth getLastValue($)
          {@variable deref(self)}
          {@variable getLastValue($)}
@@ -4315,27 +4259,21 @@ define
          end
       end
       meth deref(VO)
-         if
-            @lastValue == unit                          % is "free"
-         then
+         if @lastValue == unit then                     % is "free"
             RecordConstr, setLastValue(VO)   % initialize with self
-         elseif
-            {@lastValue isRecordConstr($)}
-         then
+
+         elseif {@lastValue isRecordConstr($)} then
             NewVal = {@lastValue getLastValue($)}
          in
-            if
-               @lastValue == NewVal
-            then
+            if @lastValue == NewVal then
                skip                                     % self reference
-            elseif
-               NewVal == unit
-            then
+            elseif NewVal == unit then
                {@lastValue setLastValue(@lastValue)}    % non initialised
             else
                RecordConstr, setLastValue(NewVal) % constr path compr
                RecordConstr, deref(VO)
             end
+
          else
             skip % atom
          end

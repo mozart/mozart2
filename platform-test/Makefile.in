@@ -31,7 +31,11 @@ FSOZC = $(FSLOCAL:%=./fs/%.ozc)
 
 # Tests for scheduling
 SCHEDLOCAL = \
-        abz6
+        abz6 \
+        basf \
+        product \
+        mt10schedule
+
 SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 
 FCORE = \

@@ -71,7 +71,7 @@ FTOOLS = \
 TOOLS = $(FTOOLS:%=./tools/%.ozf)
 
 FNATIVES = \
-        base/smallbuf
+        base/smallbuf base/gcsusplist
 
 SONATIVES = $(FNATIVES:%=%.so-$(OZPLATFORM))
 
@@ -201,4 +201,5 @@ gump-examples:
 %.so-$(OZPLATFORM): %.o
         $(OZTOOL) ld $< -o $@
 %.o: %.cc
-        $(OZTOOL) c++ -I$(SRCTOP)/platform/emulator -c $< -o $@
+        $(OZTOOL) c++ -I$(SRCTOP)/platform/emulator \
+        -I$(BUILDTOP)/platform/emulator -c $< -o $@

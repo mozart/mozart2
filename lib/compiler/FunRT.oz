@@ -24,7 +24,6 @@ in
                    {New Core.nameToken
                     init({System.printName Value} Value true)}
                 end}
-      {Wait RunTimeLibrary}
       Procs = {Record.mapInd
                {AdjoinAt RunTimeLibrary 'ApplyFunctor' ApplyFunctor}
                proc {$ X Value ?V} PrintName in

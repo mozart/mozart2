@@ -107,7 +107,7 @@ local
 
             in
 
-               if Argv.do then
+               if Argv.'do' then
                   %% Start garbage collection thread, if requested
                   if Argv.gc > 0 then
                      proc {GcLoop}
@@ -221,7 +221,7 @@ local
    end
 
    TestOptions =
-   record(do(rightmost type: bool default: true)
+   record('do'(rightmost type: bool default: true)
           help(rightmost char: [&h &?] type: bool default: false)
           usage(alias: help)
           verbose(rightmost char: &v type: bool default: false)

@@ -236,6 +236,11 @@ define
                      {TExecTk M}
                   end
                end
+               meth blur
+                  lock
+                     {TExecTk focus('""')}
+                  end
+               end
                meth icursor(...)=M
                   lock
                      {TExecTk M}

@@ -199,8 +199,12 @@ in
                Emitter, DeallocateAndReturn()
             end
          [] vShared(_ Label Count Addr) then
-            case Addr == nil andthen @contLabels == nil then
-               Emitter, DeallocateAndReturn()
+            case Addr == nil then
+               case @contLabels of nil then
+                  Emitter, DeallocateAndReturn()
+               [] ContLabel|_ then
+                  Emitter, Emit(branch(ContLabel))
+               end
             elsecase {Dictionary.member @sharedDone Label} then
                Emitter, Emit(branch(Label))
             else
@@ -1701,8 +1705,12 @@ in
       end
       meth EmitAddrInLocalEnvShared(Addr)
          case Addr of vShared(_ Label _ Addr2) then
-            case Addr2 == nil andthen @contLabels == nil then
-               Emitter, DeallocateAndReturn()
+            case Addr2 == nil then
+               case @contLabels of nil then
+                  Emitter, DeallocateAndReturn()
+               [] ContLabel|_ then
+                  Emitter, Emit(branch(ContLabel))
+               end
             elsecase {Dictionary.member @sharedDone Label} then
                Emitter, Emit(branch(Label))
             else

@@ -131,7 +131,6 @@ prepare
    %% Some constants and shorthands
 
    SAGenError    = 'static analysis error'
-   SAFatalError  = 'static analysis fatal error'
    SAGenWarn     = 'static analysis warning'
    SATypeError   = 'type error'
 
@@ -149,11 +148,6 @@ prepare
    fun {FirstOrId X}
       case X of F#_ then F else X end
    end
-
-   fun {LabelToVS X}
-      if {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
-   end
-
 
    %% assumes privacy of the following feature names used in Core:
 
@@ -259,7 +253,7 @@ prepare
    end
 
    fun {GetPrintData X}
-      {X getFullData(PrintDepth false $)}
+      oz({X getFullData(PrintDepth false $)})
    end
 
    %%
@@ -718,12 +712,14 @@ define
    %%
 
    fun {ValueToErrorLine Text X}
-      if X==unit then
-         nil
-      else XD={GetPrintData X} in
-         if {HasFeature X ImAVariableOccurrence}
-         then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
-         else [hint(l:Text m:oz(XD))] end
+      if X == unit then nil
+      else XD in
+         XD = {GetPrintData X}
+         if {HasFeature X ImAVariableOccurrence} then
+            [hint(l:Text m:pn({X getPrintName($)})#' = '#XD)]
+         else
+            [hint(l:Text m:XD)]
+         end
       end
    end
 
@@ -742,18 +738,16 @@ define
       ErrMsg = {Ctrl getErrorMsg($)}
       {Ctrl getUnifier(UnifLeft UnifRight)}
 
-      Msgs   = [ [hint(l:'First type' m:{TypeToVS TX})
-                  hint(l:'Second type' m:{TypeToVS TY})]
-                 {ValueToErrorLine 'First value' X}
-                 {ValueToErrorLine 'Second value' Y}
-                 if UnifLeft \= unit
-                    andthen UnifRight \= unit
-                 then
-                    [hint(l:'Original assertion'
-                          m:oz({GetPrintData UnifLeft}) # ' = ' #
-                          oz({GetPrintData UnifRight}))]
-                 else nil end
-               ]
+      Msgs   = [[hint(l:'First type' m:{TypeToVS TX})
+                 hint(l:'Second type' m:{TypeToVS TY})]
+                {ValueToErrorLine 'First value' X}
+                {ValueToErrorLine 'Second value' Y}
+                if UnifLeft \= unit andthen UnifRight \= unit then
+                   [hint(l:'Original assertion'
+                         m:({GetPrintData UnifLeft}#' = '#
+                            {GetPrintData UnifRight}))]
+                else nil
+                end]
       Items  = {FoldR Msgs Append nil}
 
       if {Ctrl getNeeded($)} then
@@ -836,28 +830,31 @@ define
               then
                  {Append Msgs
                   [hint(l:'Original assertion'
-                        m:oz({GetPrintData UnifLeft}) # ' = '
-                        # oz({GetPrintData UnifRight}))]}
+                        m:({GetPrintData UnifLeft}#' = '#
+                           {GetPrintData UnifRight}))]}
               else
                  Msgs
               end
 
       Text2 = if Origin==Coord orelse Coord==unit then Text1
-              else {Append Text1 [Offend]} end
+              else {Append Text1 [Offend]}
+              end
 
       if {Ctrl getNeeded($)} then
          {Ctrl.rep error(coord: Origin
                          kind:  SAGenError
                          msg:   case ErrMsg of unit then
                                    'unification error in needed statement'
-                                else ErrMsg end
+                                else ErrMsg
+                                end
                          items: Text2)}
       else
          {Ctrl.rep warn(coord: Origin
                         kind:  SAGenWarn
                         msg:   case ErrMsg of unit then
                                   'unification error in possibly unneeded statement'
-                               else ErrMsg end
+                               else ErrMsg
+                               end
                         items: Text2)}
       end
    end
@@ -866,14 +863,9 @@ define
 % some formatting
 
    fun {ListToVS Xs L Sep R}
-      case Xs
-      of nil then
-         L # R
-      elseof X1|Xr then
-         L # X1 #
-         {FoldR Xr
-          fun {$ X In} Sep # X # In end
-          R}
+      case Xs of X1|Xr then
+         L#X1#{FoldR Xr fun {$ X In} Sep#X#In end R}
+      [] nil then L#R
       end
    end
 
@@ -889,18 +881,16 @@ define
       {ListToVS Xs '{' ' ' '}'}
    end
 
-   fun {FormatArity Xs}
-      {Ozify {CurrentArity Xs}}
+   fun {TypeToVS T}
+      {ListToVS {OzTypes.decode T} '' ' ++ ' ''}
    end
 
    fun {Ozify Xs}
       {Map Xs fun {$ X} oz(X) end}
    end
 
-   fun {TypeToVS T}
-      X = {ListToVS {OzTypes.decode T} '' ' ++ ' ''}
-   in
-      X
+   fun {FormatArity Xs}
+      {Ozify {CurrentArity Xs}}
    end
 
 %-----------------------------------------------------------------------
@@ -1379,7 +1369,7 @@ define
                                kind:  SAGenError
                                msg:   'illegal record feature'
                                items: [hint(l:'Feature found'
-                                            m:oz({GetPrintData IllFeat}))])}
+                                            m:{GetPrintData IllFeat})])}
             end
          else Coord in
             {@label getCoord(?Coord)}
@@ -1387,7 +1377,7 @@ define
                             kind:  SAGenError
                             msg:   'illegal record label'
                             items: [hint(l:'Label found'
-                                         m:oz({GetPrintData @label}))])}
+                                         m:{GetPrintData @label})])}
          end
       end
 
@@ -1471,61 +1461,25 @@ define
 
    class SABuiltinApplication from SAStatement
 
-      meth typeCheckN(Ctrl N VOs Ts $)
-         case VOs of nil then
-            if Ts\=nil then
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAFatalError
-                      msg:   'builtin arity does not match declaration')}
-               {Exception.raiseError compiler(internal typeCheckN)}
-            end
-            0
-         [] VO|VOr then
-            case Ts
-            of T|Tr then
-               if
-                  {DetTypeTest T VO}
-               then
-                  SABuiltinApplication, typeCheckN(Ctrl N+1 VOr Tr $)
-               else N end
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAFatalError
-                      msg:   'builtin arity does not match declaration')}
-               {Exception.raiseError compiler(internal typeCheckN)} unit
+      meth TypeCheckN(Ctrl N VOs Ts $)
+         case VOs#Ts of nil#nil then 0
+         [] (VO|VOr)#(T|Tr) then
+            if {DetTypeTest T VO} then
+               SABuiltinApplication, TypeCheckN(Ctrl N + 1 VOr Tr $)
+            else N
             end
          end
       end
 
       meth typeCheck(Ctrl VOs Ts $)
-         SABuiltinApplication, typeCheckN(Ctrl 1 VOs Ts $)
+         SABuiltinApplication, TypeCheckN(Ctrl 1 VOs Ts $)
       end
 
       meth detCheck(Ctrl VOs Ds $)
-         case VOs of nil then
-            if Ds\=nil then
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAFatalError
-                      msg:   'builtin arity does not match declaration')}
-               {Exception.raiseError compiler(internal detCheck)}
-            end
-            true
-         [] VO|VOr then
-            case Ds
-            of D|Dr then
-               {DetTests.{Label D} VO}
-               andthen
-               SAApplication, detCheck(Ctrl VOr Dr $)
-            else
-               {Ctrl.rep
-                error(coord: @coord
-                      kind:  SAFatalError
-                      msg:   'builtin arity does not match declaration')}
-               {Exception.raiseError compiler(internal detCheck)} unit
-            end
+         case VOs#Ds of nil#nil then true
+         [] (VO|VOr)#(D|Dr) then
+            {DetTests.{Label D} VO}
+            andthen SAApplication, detCheck(Ctrl VOr Dr $)
          end
       end
 
@@ -1551,7 +1505,7 @@ define
                else
                   PN  = pn({@designator getPrintName($)})
                   PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+                  Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
                   Ts  = {Map @actualArgs fun {$ A} {TypeToVS {A getType($)}} end}
                in
                   {Ctrl.rep
@@ -1560,7 +1514,8 @@ define
                          msg:   'ill-typed application'
                          items: [hint(l:'Procedure' m:PN)
                                  hint(l:'At argument' m:N)
-                                 hint(l:'Type found' m:{TypeToVS {A getType($)}})
+                                 hint(l:'Type found'
+                                      m:{TypeToVS {A getType($)}})
                                  hint(l:'Expected' m:oz(T))
                                  hint(l:'Application (names)'
                                       m:{ApplToVS PN|PNs})
@@ -1595,7 +1550,6 @@ define
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
          Msg     = {GetData MsgArg}
-         MsgData = {GetPrintData MsgArg}
 \ifdef DEBUG
          {System.show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
@@ -1612,9 +1566,6 @@ define
          elseof 'class' then
             What  = 'Class'
             Where = 'class application'
-         else
-            What  = '???'
-            Where = '???'
          end
 
          if Meth==unit
@@ -1642,7 +1593,7 @@ define
                              items: [hint(l:What m:pn(PN))
                                      hint(l:'Required feature' m:oz(R))
                                      hint(l:'Message found'
-                                          m:oz(MsgData))])}
+                                          m:{GetPrintData MsgArg})])}
                    end
                 end}
 
@@ -1664,7 +1615,7 @@ define
                                         hint(l:'Optional features'
                                              m:{SetToVS {Ozify Opt}})
                                         hint(l:'Message found'
-                                             m:oz(MsgData))])}
+                                             m:{GetPrintData MsgArg})])}
                       end
                    end}
                else skip end
@@ -1677,8 +1628,10 @@ define
                       kind:  SAGenError
                       msg:   'illegal message label in ' # Where
                       items: [hint(l:What m:pn(PN))
-                              hint(l:'Message found' m:oz(MsgData))
-                              hint(l:'Expected' m:{SetToVS {FormatArity Meth}})])}
+                              hint(l:'Message found'
+                                   m:{GetPrintData MsgArg})
+                              hint(l:'Expected'
+                                   m:{SetToVS {FormatArity Meth}})])}
             end
          else
             skip
@@ -1704,7 +1657,7 @@ define
          then
             Val = {GetPrintData @designator}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+            Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
          in
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
@@ -1730,24 +1683,27 @@ define
             elseof
                Pos
             then
+               PN  = pn(N)
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
-               Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
+               Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
             in
                {Ctrl.rep error(coord: @coord
                                kind:  SATypeError
-                               msg:   'ill-typed application'
-                               items: [hint(l:'Builtin' m:pn(N))
+                               msg:   'ill-typed builtin application'
+                               items: [hint(l:'Builtin' m:PN)
                                        hint(l:'At argument' m:Pos)
-                                       hint(l:'Expected types' m:{ProdToVS Ts})
-                                       hint(l:'Argument names' m:{ApplToVS pn(N)|PNs})
-                                       hint(l:'Argument values' m:{ApplToVS pn(N)|Vals})])}
+                                       hint(l:'Expected types'
+                                            m:{ProdToVS {Ozify BIInfo.types}})
+                                       hint(l:'Argument names'
+                                            m:{ApplToVS PN|PNs})
+                                       hint(l:'Argument values'
+                                            m:{ApplToVS PN|Vals})])}
                false
             end
          else
             Val = {GetPrintData @designator}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+            Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
          in
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
@@ -1915,7 +1871,8 @@ define
                          kind:  SAGenError
                          msg:   'illegal feature selection from object'
                          items: [hint(l:'Feature found' m:oz(F))
-                                 hint(l:'Expected one of' m:{SetToVS {Ozify Fs}})])}
+                                 hint(l:'Expected one of'
+                                      m:{SetToVS {Ozify Fs}})])}
                end
             end
 
@@ -1938,7 +1895,8 @@ define
                          kind:  SAGenError
                          msg:   'illegal feature selection from class'
                          items: [hint(l:'Feature found' m:oz(F))
-                                 hint(l:'Expected one of' m:{SetToVS {Ozify Fs}})])}
+                                 hint(l:'Expected one of'
+                                      m:{SetToVS {Ozify Fs}})])}
                end
             end
 
@@ -1964,7 +1922,8 @@ define
                       kind:  SAGenError
                       msg:   'illegal feature selection on record'
                       items: [hint(l:'Feature found' m:oz(F))
-                              hint(l:'Expected one of' m:{SetToVS {FormatArity RecOrCh}})])}
+                              hint(l:'Expected one of'
+                                   m:{SetToVS {FormatArity RecOrCh}})])}
             end
 
             %% dot selection from non-determined record
@@ -2044,7 +2003,8 @@ define
                    kind:  SAGenError
                    msg:   'illegal feature selection from record'
                    items: [hint(l:'Feature found' m:oz(Fea))
-                           hint(l:'Expected one of' m:{SetToVS {FormatArity Rec}})])}
+                           hint(l:'Expected one of'
+                                m:{SetToVS {FormatArity Rec}})])}
          else
             skip
          end
@@ -2344,20 +2304,20 @@ define
          then
             skip
          else
-            PN  = {@designator getPrintName($)}
+            PN  = pn({@designator getPrintName($)})
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+            Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
          in
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'wrong arity in application of ' # pn(PN)
+                   msg:   'wrong arity in application of '#PN
                    items: [hint(l:'Procedure type' m:{TypeToVS DesigType})
                            hint(l:'Application arity' m:{Length @actualArgs})
                            hint(l:'Application (names)'
-                                m:{ApplToVS pn(PN)|PNs})
+                                m:{ApplToVS PN|PNs})
                            hint(l:'Application (values)'
-                                m:{ApplToVS pn(PN)|Vals})])}
+                                m:{ApplToVS PN|Vals})])}
          end
       end
 
@@ -2416,16 +2376,16 @@ define
             SAApplication, checkDesignatorProcedure($)
          then
             DVal = {GetData @designator}
-            PN   = {@designator getPrintName($)}
             ExpA = {Procedure.arity DVal}
             GotA = {Length @actualArgs}
          in
             if
                GotA \= ExpA
             then
+               PN  = pn({@designator getPrintName($)})
                Val = {GetPrintData @designator}
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+               Vals= {Map @actualArgs fun {$ A} {GetPrintData A} end}
             in
                {Ctrl.rep
                 error(coord: @coord
@@ -2434,7 +2394,7 @@ define
                       items: [hint(l:'Arity found' m:GotA)
                               hint(l:'Expected' m:ExpA)
                               hint(l:'Application (names)'
-                                   m:{ApplToVS pn(PN)|PNs})
+                                   m:{ApplToVS PN|PNs})
                               hint(l:'Application (values)'
                                    m:{ApplToVS Val|Vals})])}
             end
@@ -2475,7 +2435,8 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SAGenError
-                   msg:   'applying non-procedure and non-object ' # oz(Val))}
+                   msg:   'applying non-procedure and non-object'
+                   items: [hint(l:'Value found' m:Val)])}
          else
             SAApplication, AssertArity(Ctrl)
          end
@@ -2566,16 +2527,16 @@ define
             {Ctrl setTopNeeded(T N)}
          else
             PN  = {@arbiter getPrintName($)}
-            Val = {GetPrintData @arbiter}
          in
             {Ctrl.rep
              error(coord: @coord
                    msg:   'Non-boolean arbiter in `if\' statement'
                    kind:  SATypeError
-                   items: hint(l:'Value' m:oz(Val))
-                   | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
-                   | if {IsFree Val} then nil
-                     else [hint(l:'Name' m:pn(PN))] end)}
+                   items: (hint(l:'Value' m:{GetPrintData @arbiter})|
+                           hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})|
+                           case PN of unit then nil
+                           else [hint(l:'Name' m:pn(PN))]
+                           end))}
          end
       end
       meth applyEnvSubst(Ctrl)
@@ -2923,7 +2884,8 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'inheriting from non-class ' # oz({GetPrintData IllClass}))}
+                   msg:   'inheriting from non-class'
+                   items: [hint(l:'Value found' m:{GetPrintData IllClass})])}
          end
 
          {Ctrl setErrorMsg('class definition failed')}
@@ -2947,18 +2909,17 @@ define
          {System.show properties(@properties)}
 \endif
 
-         {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
+         {AllUpTo @properties TypeTests.atom ?IllAtom ?TestAtom}
 
          %% type test
          if TestAtom then
             %% new determined properties
-            Pro  = {Filter {Map @properties GetData}
-                    TypeTests.atom}
+            Pro  = {Filter {Map @properties GetData} TypeTests.atom}
             %% properties of det parents
             PPro = {Map PTs fun {$ P}
-                               if {DetTests.det P}
-                               then {P getProperties($)}
-                               else unit end
+                               if {DetTests.det P} then {P getProperties($)}
+                               else unit
+                               end
                             end}
             NthFinal TestFinal
          in
@@ -2970,9 +2931,9 @@ define
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SATypeError
-                      msg:   'inheritance from final class '
-                      # pn({System.printName
-                            {{Nth PTs NthFinal} getValue($)}}))}
+                      msg:   ('inheritance from final class '#
+                              pn({System.printName
+                                  {{Nth PTs NthFinal} getValue($)}})))}
             else
                NonUnitPro = {Filter PPro fun {$ P} P\=unit end}
             in
@@ -2983,9 +2944,9 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'non-atomic class property '
-                   # pn({IllAtom getPrintName($)}))}
-
+                   msg:   'non-atomic class property'
+                   items: [hint(l:'Property found'
+                                m:{GetPrintData IllAtom})])}
          end
       end
       meth InheritAttributes(Value Ctrl PTs PsDet)
@@ -3035,8 +2996,9 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'illegal class attribute '
-                   items: [hint(l:'Attribute found' m:oz({GetPrintData IllFeat}))])}
+                   msg:   'illegal class attribute'
+                   items: [hint(l:'Attribute found'
+                                m:{GetPrintData IllFeat})])}
          end
       end
       meth InheritFeatures(Value Ctrl PTs PsDet)
@@ -3086,8 +3048,9 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'illegal class feature '
-                   items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
+                   msg:   'illegal class feature'
+                   items: [hint(l:'Feature found'
+                                m:{GetPrintData IllFeat})])}
          end
       end
       meth InheritMethods(Value Ctrl PTs PsDet)
@@ -3110,12 +3073,8 @@ define
          if
             TestLab
          then
-            if
-               TestReq
-            then
-               if
-                  TestOpt
-               then
+            if TestReq then
+               if TestOpt then
                   MData = {Map Met
                            fun {$ L#(R#O)}
                               {GetData L} #
@@ -3126,9 +3085,7 @@ define
                   MethNames = {Map MData fun {$ L#_} L end}
                in
                   %% distinct method names required
-                  if
-                     {AllDistinct MethNames}
-                  then
+                  if {AllDistinct MethNames} then
                      %% parents determined?
                      if PsDet then
                         PMet = {Map PTs fun {$ P} {P getMethods($)} end}
@@ -3143,11 +3100,9 @@ define
                            TotalMet = {ApproxInheritance PMet NewMet}
                         in
                            {Value setMethods(TotalMet)}
-                        else
-                           skip
                         end
                         %% complain about parents elsewhere
-                     else skip end
+                     end
                   else
                      {Ctrl.rep
                       error(coord: @coord
@@ -3164,8 +3119,8 @@ define
                    error(coord: @coord
                          kind:  SATypeError
                          msg:   'illegal feature in method definition'
-                         items: [hint(l:'Message label' m:oz({GetPrintData L}))
-                                 hint(l:'Illegal feature' m:oz(IllOpt))])}
+                         items: [hint(l:'Message label' m:{GetPrintData L})
+                                 hint(l:'Illegal feature' m:IllOpt)])}
                end
             else
                L#(R#_) = IllReqMeth
@@ -3175,8 +3130,8 @@ define
                 error(coord: @coord
                       kind:  SATypeError
                       msg:   'illegal feature in method definition'
-                      items: [hint(l:'Message found' m:oz({GetPrintData L}))
-                              hint(l:'Illegal feature' m:oz(IllReq))])}
+                      items: [hint(l:'Message found' m:{GetPrintData L})
+                              hint(l:'Illegal feature' m:IllReq)])}
             end
          else
             L#_ = IllLab
@@ -3184,8 +3139,8 @@ define
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'non-literal method label '
-                   items: [hint(l:'Label found' m:oz({GetPrintData L}))])}
+                   msg:   'non-literal method label'
+                   items: [hint(l:'Label found' m:{GetPrintData L})])}
          end
       end
       meth saDescend(Ctrl)
@@ -4142,7 +4097,7 @@ define
                   {ListToVS
                    '(' | {Map {Record.toList @value}
                           fun {$ X} {X getPrintType(D-1 $)} end}
-                   {LabelToVS {Label @value}} ' ' ' )'}
+                   {Value.toVirtualString {Label @value} 0 0} ' ' ' )'}
                else
                   {ListToVS
                    '(' | {Map {Record.toListInd @value}
@@ -4150,7 +4105,7 @@ define
                              {Value.toVirtualString F 0 0} # ': ' #
                              {X getPrintType(D-1 $)}
                           end}
-                   {LabelToVS {Label @value}} ' ' ' )'}
+                   {Value.toVirtualString {Label @value} 0 0} ' ' ' )'}
                end
             elseif
                {IsFree @value}
@@ -4165,7 +4120,7 @@ define
                           {Value.toVirtualString F 0 0} # ': ' #
                           {@value^F getPrintType(D-1 $)}
                        end}
-                {LabelToVS Lab}  ' ' '...)'}
+                {Value.toVirtualString Lab 0 0}  ' ' '...)'}
             end
          end
       end

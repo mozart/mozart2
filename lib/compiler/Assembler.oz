@@ -641,8 +641,9 @@ define
          {EliminateDeadCode Rest Assembler}
       [] (callBI(Builtinname Args)=I1)|Rest
          andthen {Not Assembler.debugInfoControl}
-      then BIInfo in
-         BIInfo = {Builtins.getInfo Builtinname}
+      then
+%--**    BIInfo = {Builtins.getInfo Builtinname}
+%--**      in
          case Builtinname of 'Int.\'+1\'' then [X1]#[X2] = Args in
             {Assembler append(inlinePlus1(X1 X2))}
          [] 'Int.\'-1\'' then [X1]#[X2] = Args in

@@ -71,8 +71,8 @@ define
                IsActive <- true
                OutputMessage = unit
             [] message(M1 _) then
+               IsActive <- true
                if {Label M1} == error then
-                  IsActive <- true
                   HasErrors <- true
                end
                OutputMessage = M

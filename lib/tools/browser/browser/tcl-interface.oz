@@ -639,7 +639,7 @@ in
 \endif
          %%
          %% external window must be closed by provider;
-         case self.standAlone then {self.Window close}
+         case self.standAlone then {self.Window tkClose}
          else skip
          end
 
@@ -842,7 +842,7 @@ in
          %%
          case @menuBar \= InitValue then
             %%
-            {@menuBar close}
+            {@menuBar tkClose}
 
             %%
             menuBar <- InitValue
@@ -2104,7 +2104,7 @@ in
       meth closeWindow
          case @window == InitValue then skip
          else
-            {@window close}
+            {@window tkClose}
 
             %%
             window <- InitValue
@@ -2237,7 +2237,7 @@ in
       meth close
          case @window == InitValue then skip
          else
-            {@window close}
+            {@window tkClose}
 
             %%
             Object.closable , close

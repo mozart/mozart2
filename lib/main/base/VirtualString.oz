@@ -27,7 +27,7 @@ declare
    IsVirtualString
 in
 
-IsVirtualString = {`Builtin` 'IsVirtualString' 2}
+IsVirtualString = {`Builtin` 'VirtualString.is' 2}
 
 local
 
@@ -106,7 +106,7 @@ local
       end
    end
 
-   BiLength = {`Builtin` 'virtualStringLength' 3}
+   BiLength = {`Builtin` 'VirtualString.length' 3}
 
 in
 

@@ -40,12 +40,12 @@ declare
    `ooFreeFeatR`         % Module Class
 in
 
-IsObject      = {`Builtin` 'IsObject'    2}
-New           = {`Builtin` 'New'         3}
+IsObject      = {`Builtin` 'Object.is'    2}
+New           = {`Builtin` 'Object.new'         3}
 
 
 local
-   NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
 in
    `ooMeth`           = {NewUniqueName 'ooMeth'}
    `ooAttr`           = {NewUniqueName 'ooAttr'}
@@ -65,7 +65,7 @@ end
 local
 
    local
-      NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+      NewUniqueName = {`Builtin` 'Name.newUnique' 2}
    in
       `ooNewAttr`        = {NewUniqueName 'ooNewAttr'}
       `ooNewFeat`        = {NewUniqueName 'ooNewFeat'}
@@ -95,7 +95,7 @@ local
       end
 
       local
-         NewObject = {`Builtin` newObject 2}
+         NewObject = {`Builtin` 'Object.newObject' 2}
       in
          fun {FbNew C Message}
             O={NewObject C} in {O Message} O
@@ -110,7 +110,7 @@ local
    %%
    %% Builtins needed for class creation
    %%
-   MakeClass = {`Builtin` makeClass 7}
+   MakeClass = {`Builtin` 'Object.makeClass' 7}
    MarkSafe  = {`Builtin` 'Dictionary.markSafe' 1}
 
    local
@@ -555,12 +555,12 @@ local
    %%
    %% Run time library
    %%
-   {`runTimePut` 'ooPrivate' {`Builtin` 'NewName' 1}}
-   {`runTimePut` '@' {`Builtin` '@' 2}}
-   {`runTimePut` '<-' {`Builtin` '<-' 2}}
-   {`runTimePut` 'ooExch' {`Builtin` 'ooExch' 3}}
-   {`runTimePut` ',' {`Builtin` ',' 2}}
-   {`runTimePut` 'ooGetLock' {`Builtin` 'ooGetLock' 1}}
+   {`runTimePut` 'ooPrivate' {`Builtin` 'Name.new' 1}}
+   {`runTimePut` '@' {`Builtin` 'Object.\'@\'' 2}}
+   {`runTimePut` '<-' {`Builtin` 'Object.\'<-\'' 2}}
+   {`runTimePut` 'ooExch' {`Builtin` 'Object.ooExch' 3}}
+   {`runTimePut` ',' {`Builtin` 'Object.\',\'' 2}}
+   {`runTimePut` 'ooGetLock' {`Builtin` 'Object.ooGetLock' 1}}
    {`runTimePut` 'class' `class`}
 
    %% %%%%%%%%%%%%%%%%%%%%
@@ -708,13 +708,13 @@ in
                  new:             New
                  base:            BaseObject
                  meta:            MetaObject
-                 ',':             {`Builtin` ','           2}
-                 '@':             {`Builtin` '@'           2}
-                 '<-':            {`Builtin` '<-'          2}
+                 ',':             {`Builtin` 'Object.\',\''           2}
+                 '@':             {`Builtin` 'Object.\'@\''           2}
+                 '<-':            {`Builtin` 'Object.\'<-\''          2}
                  'class':         `class`
 
                  %% only in module
-                 send:            {`Builtin` 'send' 3}
+                 send:            {`Builtin` 'Object.send' 3}
                  master:          MasterObject
                  slave:           SlaveObject
                 )

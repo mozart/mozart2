@@ -30,10 +30,10 @@ in
 %%
 %% Global
 %%
-IsString      = {`Builtin` 'IsString'      2}
-StringToAtom  = {`Builtin` 'StringToAtom'  2}
-StringToInt   = {`Builtin` 'StringToInt'   2}
-StringToFloat = {`Builtin` 'StringToFloat' 2}
+IsString      = {`Builtin` 'String.is'      2}
+StringToAtom  = {`Builtin` 'String.toAtom'  2}
+StringToInt   = {`Builtin` 'String.toInt'   2}
+StringToFloat = {`Builtin` 'String.toFloat' 2}
 
 
 %%

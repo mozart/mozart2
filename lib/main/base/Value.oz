@@ -31,32 +31,32 @@ in
 %%
 %% Global
 %%
-Wait       = {`Builtin` 'Wait'       1}
-WaitOr     = {`Builtin` 'WaitOr'     2}
-IsFree     = {`Builtin` 'IsFree'     2}
-IsKinded   = {`Builtin` 'IsKinded'   2}
-IsDet      = {`Builtin` 'IsDet'      2}
-Max        = {`Builtin` 'Max'        3}
-Min        = {`Builtin` 'Min'        3}
-CondSelect = {`Builtin` 'CondSelect' 4}
-HasFeature = {`Builtin` 'HasFeature' 3}
-ByNeed     = {`Builtin` 'ByNeed'     2}
+Wait       = {`Builtin` 'Value.wait'       1}
+WaitOr     = {`Builtin` 'Value.waitOr'     2}
+IsFree     = {`Builtin` 'Value.isFree'     2}
+IsKinded   = {`Builtin` 'Value.isKinded'   2}
+IsDet      = {`Builtin` 'Value.isDet'      2}
+Max        = {`Builtin` 'Value.max'        3}
+Min        = {`Builtin` 'Value.min'        3}
+CondSelect = {`Builtin` 'Value.condSelect' 4}
+HasFeature = {`Builtin` 'Value.hasFeature' 3}
+ByNeed     = {`Builtin` 'Value.byNeed'     2}
 
 
 %%
 %% Run time library
 %%
-{`runTimePut` '.' {`Builtin` '.'   3}}
-{`runTimePut` '==' {`Builtin` '=='  3}}
-{`runTimePut` '=' {`Builtin` '='   2}}
-{`runTimePut` '\\=' {`Builtin` '\\=' 3}}
-{`runTimePut` '<' {`Builtin` '<'   3}}
-{`runTimePut` '=<' {`Builtin` '=<'  3}}
-{`runTimePut` '>=' {`Builtin` '>='  3}}
-{`runTimePut` '>' {`Builtin` '>'   3}}
+{`runTimePut` '.' {`Builtin` 'Record.\'.\''   3}}
+{`runTimePut` '==' {`Builtin` 'Value.\'==\''  3}}
+{`runTimePut` '=' {`Builtin` 'Value.\'=\''   2}}
+{`runTimePut` '\\=' {`Builtin` 'Value.\'\\=\'' 3}}
+{`runTimePut` '<' {`Builtin` 'Value.\'<\''   3}}
+{`runTimePut` '=<' {`Builtin` 'Value.\'=<\''  3}}
+{`runTimePut` '>=' {`Builtin` 'Value.\'>=\''  3}}
+{`runTimePut` '>' {`Builtin` 'Value.\'>\''   3}}
 {`runTimePut` 'hasFeature' HasFeature}
 {`runTimePut` 'byNeed' ByNeed}
-{`runTimePut` '!!' {`Builtin` 'Future' 2}}
+{`runTimePut` '!!' {`Builtin` 'Value.future' 2}}
 
 %%
 %% Module
@@ -65,17 +65,17 @@ ByNeed     = {`Builtin` 'ByNeed'     2}
 Value = value(wait:       Wait
               waitOr:     WaitOr
 
-              '=<':       {`Builtin` '=<'  3}
-              '<':        {`Builtin` '<'   3}
-              '>=':       {`Builtin` '>='  3}
-              '>':        {`Builtin` '>'   3}
-              '==':       {`Builtin` '=='  3}
-              '=':        {`Builtin` '='   2}
-              '\\=':      {`Builtin` '\\=' 3}
+              '=<':       {`Builtin` 'Value.\'=<\''  3}
+              '<':        {`Builtin` 'Value.\'<\''   3}
+              '>=':       {`Builtin` 'Value.\'>=\''  3}
+              '>':        {`Builtin` 'Value.\'>\''   3}
+              '==':       {`Builtin` 'Value.\'==\''  3}
+              '=':        {`Builtin` 'Value.\'=\''   2}
+              '\\=':      {`Builtin` 'Value.\'\\=\'' 3}
               max:        Max
               min:        Min
 
-              '.':        {`Builtin` '.'   3}
+              '.':        {`Builtin` 'Record.\'.\''   3}
               hasFeature: HasFeature
               condSelect: CondSelect
 

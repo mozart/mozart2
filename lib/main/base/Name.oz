@@ -31,8 +31,8 @@ in
 %%
 %% Global
 %%
-IsName  = {`Builtin` 'IsName'  2}
-NewName = {`Builtin` 'NewName' 1}
+IsName  = {`Builtin` 'Name.is'  2}
+NewName = {`Builtin` 'Name.new' 1}
 
 
 %%

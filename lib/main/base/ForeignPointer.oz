@@ -28,7 +28,7 @@ in
 %%
 %% Global
 %%
-IsForeignPointer = {`Builtin` 'IsForeignPointer' 2}
+IsForeignPointer = {`Builtin` 'ForeignPointer.is' 2}
 
 %%
 %% Module

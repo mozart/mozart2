@@ -31,8 +31,8 @@ in
 %%
 %% Global
 %%
-IsProcedure    = {`Builtin` 'IsProcedure'    2}
-ProcedureArity = {`Builtin` 'ProcedureArity' 2}
+IsProcedure    = {`Builtin` 'Procedure.is'    2}
+ProcedureArity = {`Builtin` 'Procedure.arity' 2}
 
 
 %%

@@ -30,8 +30,8 @@ in
 %%
 %% Global
 %%
-IsLock  = {`Builtin` 'IsLock'  2}
-NewLock = {`Builtin` 'NewLock' 1}
+IsLock  = {`Builtin` 'Lock.is'  2}
+NewLock = {`Builtin` 'Lock.new' 1}
 
 %%
 %% Module

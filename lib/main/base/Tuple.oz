@@ -31,8 +31,8 @@ in
 %%
 %% Global
 %%
-IsTuple   = {`Builtin` 'IsTuple'   2}
-MakeTuple = {`Builtin` 'MakeTuple' 3}
+IsTuple   = {`Builtin` 'Tuple.is'   2}
+MakeTuple = {`Builtin` 'Tuple.make' 3}
 
 
 %%

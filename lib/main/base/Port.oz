@@ -30,9 +30,9 @@ in
 %%
 %% Global
 %%
-IsPort  = {`Builtin` 'IsPort'  2}
-NewPort = {`Builtin` 'NewPort' 2}
-Send    = {`Builtin` 'Send'    2}
+IsPort  = {`Builtin` 'Port.is'  2}
+NewPort = {`Builtin` 'Port.new' 2}
+Send    = {`Builtin` 'Port.send'    2}
 
 %%
 %% Module

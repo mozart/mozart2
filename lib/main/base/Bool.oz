@@ -33,7 +33,7 @@ in
 %% Compiler Expansion
 %%
 local
-   NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
 in
    `true`  = {NewUniqueName 'true'}
    `false` = {NewUniqueName 'false'}
@@ -42,10 +42,10 @@ end
 %%
 %% Global
 %%
-IsBool = {`Builtin` 'IsBool' 2}
-Not    = {`Builtin` 'Not'    2}
-And    = {`Builtin` 'And'    3}
-Or     = {`Builtin` 'Or'     3}
+IsBool = {`Builtin` 'Bool.is' 2}
+Not    = {`Builtin` 'Bool.not'    2}
+And    = {`Builtin` 'Bool.and'    3}
+Or     = {`Builtin` 'Bool.or'     3}
 
 
 %%

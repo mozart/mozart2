@@ -31,7 +31,7 @@ fun {IsClass X}
 end
 
 local
-   GetClass = {`Builtin` getClass 2}
+   GetClass = {`Builtin` 'Class.get' 2}
 
    proc {AssertClass C Op}
       case {IsClass C} then skip else

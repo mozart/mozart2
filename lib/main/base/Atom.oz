@@ -31,8 +31,8 @@ in
 %%
 %% Global
 %%
-IsAtom       = {`Builtin` 'IsAtom'       2}
-AtomToString = {`Builtin` 'AtomToString' 2}
+IsAtom       = {`Builtin` 'Atom.is'       2}
+AtomToString = {`Builtin` 'Atom.toString' 2}
 
 
 %%

@@ -86,7 +86,7 @@ end
 
 UrlDefaults = \insert '../url-defaults.oz'
 
-OuterBoot = {`Builtin` 'BootManager' 2}
+OuterBoot = {`Builtin` 'Boot.manager' 2}
 
 {{OuterBoot 'Pickle'}.save
  functor prop once body
@@ -123,7 +123,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Type':          Type)
     =IMPORT
 
-    BootManager = {`Builtin` 'BootManager'  2}
+    BootManager = {`Builtin` 'Boot.manager'  2}
 
     {ForAll ['Parser'#          Parser
              'FDB'#             FDB

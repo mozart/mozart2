@@ -35,7 +35,7 @@ in
 
 `Raise`      = {`Builtin` 'Exception.raise'      1}
 `RaiseError` = {`Builtin` 'Exception.raiseError' 1}
-`record`     = {`Builtin` 'record'     3}
+`record`     = {`Builtin` 'Record.record'     3}
 
 local
    DictionaryMember = {`Builtin` 'Dictionary.member' 3}

@@ -31,16 +31,16 @@ in
 %%
 %% Run time library
 %%
-{`runTimePut` 'div' {`Builtin` 'div' 3}}
-{`runTimePut` 'mod' {`Builtin` 'mod' 3}}
+{`runTimePut` 'div' {`Builtin` 'Int.div' 3}}
+{`runTimePut` 'mod' {`Builtin` 'Int.mod' 3}}
 
 
 %%
 %% Global
 %%
-IsInt       = {`Builtin` 'IsInt'       2}
-IntToFloat  = {`Builtin` 'IntToFloat'  2}
-IntToString = {`Builtin` 'IntToString' 2}
+IsInt       = {`Builtin` 'Int.is'       2}
+IntToFloat  = {`Builtin` 'Int.toFloat'  2}
+IntToString = {`Builtin` 'Int.toString' 2}
 fun {IsNat X}  0=<X         end
 fun {IsOdd X}  X mod 2 == 1 end
 fun {IsEven X} X mod 2 == 0 end
@@ -53,7 +53,7 @@ Int = int(is:       IsInt
           isNat:    IsNat
           isOdd:    IsOdd
           isEven:   IsEven
-          'div':    {`Builtin` 'div' 3}
-          'mod':    {`Builtin` 'mod' 3}
+          'div':    {`Builtin` 'Int.div' 3}
+          'mod':    {`Builtin` 'Int.mod' 3}
           toFloat:  IntToFloat
           toString: IntToString)

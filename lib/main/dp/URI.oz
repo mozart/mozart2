@@ -111,13 +111,25 @@
 %%% The draft standard is ambiguous: in a relative uri, the leading
 %%% segment is allowed to contain occurrences of ";".  Is the parameter
 %%% parsing semantics as usual or not?  This is not clear and I should
-%%% ask Roy Fielding for a clarification.
+%%% ask Roy Fielding for a clarification. ANSWER: its business as usual
+%%% the apparent difference was to emphacize that the parameter is to
+%%% be treated like the rest of the segment when resolving relative
+%%% uris... in my opinion, this makes things less clear rather than
+%%% clearer.
 %%% ==================================================================
 
-declare
+%declare
 local
    %% -- needed builtins and other functions
-   \insert init-defs.oz
+   CharToLower  = Char.toLower
+   StringToken  = String.token
+   StringTokens = String.tokens
+   VSToAtom     = VirtualString.toAtom
+   VSToString   = VirtualString.toString
+   ListToRecord = List.toRecord
+   StringToAtom = String.toAtom
+   RecordFoldRInd= Record.foldRInd
+   BitArrayTest = BitArray.test
 
    %% -- a URI instance is an opaque chunk with feature URI_
 
@@ -378,14 +390,21 @@ local
       end
    end
 
-   fun {LazyString U}
-      {ByNeed fun {$} {VSToString {URI_toVS U}} end}
+   %% -- its is really not clear whether lazy computations are
+   %% -- worth the trouble.  probably not. [PERFORM TESTS!!!]
+   proc {LazyStrings U Full NoInfo}
+      Pair = {ByNeed fun {$} {URI_toVS U} end}
+   in
+      Full   = {ByNeed fun {$} {VSToString Pair  } end}
+      NoInfo = {ByNeed fun {$} {VSToString Pair.1} end}
    end
 
    proc {URI_fromDict D U}
-      REC
+      REC FULL NOINFO
       %% -- add the normalized string (to be computed on demand)
-      {Dictionary.put D string {LazyString U}}
+      {LazyStrings U FULL NOINFO}
+      {Dictionary.put D string FULL}
+      {Dictionary.put D stringNoInfo NOINFO}
       %% -- add the record representation itself then compute it
       {Dictionary.put D URI_ REC}
       {Dictionary.toRecord uri D REC}
@@ -396,7 +415,8 @@ local
    proc {URI_fromRec R U}
       %% -- add the normalized string (to be computed on demand)
       %% -- and the record representation
-      REC = {Adjoin REC uri(string:{LazyString U} URI_:REC)}
+      FULL NOINFO {LazyStrings U FULL NOINFO}
+      REC = {Adjoin REC uri(string:FULL stringNoInfo:NOINFO URI_:REC)}
    in
       {NewChunk REC U}
    end
@@ -503,6 +523,9 @@ local
     proc {$ C} {BitArray.set CSOK C} end}
 
    %% -- converting a uri record to a virtual string
+   %% -- we actually return a pair: Main#Info
+   %% -- where Main is a virtual string that represents the main part
+   %% -- of the url and Info represents the Info part.
 
    fun {URI_toVS U}
       Scheme    = {CondSelect U scheme    unit}
@@ -519,7 +542,7 @@ local
                       #case L==unit then '}' else ' '#L end
                    end unit}
            end
-      S2 = case Fragment ==unit then S1 else "#"#Fragment #S1 end
+      S2 = case Fragment ==unit then nil else "#"#Fragment end
       S3 = case Query    ==unit then S2 else '?'#Query    #S2 end
       S4 = S3
       S5 = case Path of unit then S4 else
@@ -539,7 +562,7 @@ local
            end
       S8 = case Scheme==unit then S7 else Scheme#':'#S7 end
    in
-      S8
+      S8#S1
    end
 
    %% -- resolving en Relative uri with respect to a Base uri.
@@ -609,31 +632,31 @@ local
    %% -- has been normalized away: it is implicit in all relative paths
    %% -- that do not begin with "~...".
 
-   fun {URI_expand U}
-      case
-         {CondSelect U scheme    unit}==unit andthen
-         {CondSelect U authority unit}==unit andthen
-         {CondSelect U device    unit}==unit
-      then
-         try
-            case {CondSelect U path unit}
-            of rel(dir(&~|USER)|_) then
-               {URL_front true
-                case USER==nil then {GET 'user.home'}
-                else {Getpwnam USER}.dir end U}
-            elseof rel(_) then
-               {URL_front false {GetCWD} U}
-            else U end
-         catch _ then U end
-      else U end
-   end
+%%   fun {URI_expand U}
+%%      case
+%%       {CondSelect U scheme    unit}==unit andthen
+%%       {CondSelect U authority unit}==unit andthen
+%%       {CondSelect U device    unit}==unit
+%%      then
+%%       try
+%%          case {CondSelect U path unit}
+%%          of rel(dir(&~|USER)|_) then
+%%             {URL_front true
+%%              case USER==nil then {GET 'user.home'}
+%%              else {Getpwnam USER}.dir end U}
+%%          elseof rel(_) then
+%%             {URL_front false {GetCWD} U}
+%%          else U end
+%%       catch _ then U end
+%%      else U end
+%%   end
 
    %% -- if Skip1 is true, remove 1st segment of relative path in Rel.
    %% -- prepend parsed Path. return new parsed uri. Skip1==true is
    %% -- used to drop a leading ~USER component in the relative uri
    %% -- parsed as Rel.
 
-   fun {URL_front Skip1 Path Rel}
+   fun {URI_tweak Skip1 Path Rel}
       %% -- oh hum! we need to add a trailing slash so that the Path
       %% -- end with a directory component rather than a file
       %% -- component.  This should be enforced by normalization.
@@ -645,10 +668,16 @@ local
    end
 
 in
-   URI = uri(is         : URI_is
-             make       : URI_make
-             resolve    : URI_resolve
-             toString   : URI_toString
-             toAtom     : URI_toAtom
-             expand     : URI_expand)
+   URL =
+   uri(
+       is       : URI_is
+       make     : URI_make
+       resolve  : URI_resolve
+       toString : URI_toString
+       toAtom   : URI_toAtom
+       tweak    : URI_tweak
+       %% -- for current interface
+       fromVs   : URI_make
+       toVs     : URI_toString
+      )
 end

@@ -29,8 +29,8 @@ declare
    NewDictionary
 in
 
-NewDictionary = {`Builtin` 'NewDictionary' 1}
-IsDictionary  = {`Builtin` 'IsDictionary'  2}
+NewDictionary = {`Builtin` 'Dictionary.new' 1}
+IsDictionary  = {`Builtin` 'Dictionary.is'  2}
 
 local
    Entries = {`Builtin` 'Dictionary.entries'   2}

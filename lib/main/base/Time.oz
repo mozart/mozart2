@@ -30,8 +30,8 @@ declare
 
 in
 
-Alarm = {`Builtin` 'Alarm' 2}
-Delay = {`Builtin` 'Delay' 1}
+Alarm = {`Builtin` 'Time.alarm' 2}
+Delay = {`Builtin` 'Time.delay' 1}
 
 local
 

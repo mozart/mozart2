@@ -26,7 +26,7 @@ declare
    IsSpace
 in
 
-IsSpace = {`Builtin` 'IsSpace' 2}
+IsSpace = {`Builtin` 'Space.is' 2}
 
 Space = space(is:         IsSpace
               new:        {`Builtin` 'Space.new'        2}

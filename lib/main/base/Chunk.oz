@@ -31,8 +31,8 @@ in
 %%
 %% Global
 %%
-NewChunk = {`Builtin` 'NewChunk' 2}
-IsChunk  = {`Builtin` 'IsChunk'  2}
+NewChunk = {`Builtin` 'Chunk.new' 2}
+IsChunk  = {`Builtin` 'Chunk.is'  2}
 
 
 %%

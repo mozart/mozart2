@@ -30,11 +30,11 @@ in
 %%
 %% Global
 %%
-IsCell   = {`Builtin` 'IsCell'   2}
-NewCell  = {`Builtin` 'NewCell'  2}
-Exchange = {`Builtin` 'Exchange' 3}
-Assign   = {`Builtin` 'Assign'   2}
-Access   = {`Builtin` 'Access'   2}
+IsCell   = {`Builtin` 'Cell.is'   2}
+NewCell  = {`Builtin` 'Cell.new'  2}
+Exchange = {`Builtin` 'Cell.exchange' 3}
+Assign   = {`Builtin` 'Cell.assign'   2}
+Access   = {`Builtin` 'Cell.access'   2}
 
 %%
 %% Module

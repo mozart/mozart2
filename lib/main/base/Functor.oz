@@ -22,7 +22,7 @@
 declare Functor in
 local
    local
-      NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+      NewUniqueName = {`Builtin` 'Name.newUnique' 2}
    in
       FunctorID = {NewUniqueName functorID}
    end

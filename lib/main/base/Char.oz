@@ -29,7 +29,7 @@ in
 %%
 %% Global
 %%
-IsChar = {`Builtin` 'IsChar' 2}
+IsChar = {`Builtin` 'Char.is' 2}
 
 
 %%

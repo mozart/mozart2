@@ -25,10 +25,10 @@ declare
    Array NewArray IsArray Put Get
 in
 
-NewArray = {`Builtin` 'NewArray' 4}
-IsArray  = {`Builtin` 'IsArray'  2}
-Put      = {`Builtin` 'Put'      3}
-Get      = {`Builtin` 'Get'      3}
+NewArray = {`Builtin` 'Array.new' 4}
+IsArray  = {`Builtin` 'Array.is'  2}
+Put      = {`Builtin` 'Array.put'      3}
+Get      = {`Builtin` 'Array.get'      3}
 
 local
    proc {ArrayToRecord I A T}

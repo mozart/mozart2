@@ -31,16 +31,16 @@ in
 %%
 %% Global
 %%
-Arity      = {`Builtin` 'Arity'      2}
-IsRecord   = {`Builtin` 'IsRecord'   2}
-Label      = {`Builtin` 'Label'      2}
-Width      = {`Builtin` 'Width'      2}
-Adjoin     = {`Builtin` 'Adjoin'     3}
-AdjoinList = {`Builtin` 'AdjoinList' 3}
-AdjoinAt   = {`Builtin` 'AdjoinAt'   4}
-IsRecordC  = {`Builtin` 'IsRecordC'  2}
-WidthC     = {`Builtin` 'WidthC'     2}
-TellRecord = {`Builtin` 'TellRecord' 2}
+Arity      = {`Builtin` 'Record.arity'      2}
+IsRecord   = {`Builtin` 'Record.is'   2}
+Label      = {`Builtin` 'Record.label'      2}
+Width      = {`Builtin` 'Record.width'      2}
+Adjoin     = {`Builtin` 'Record.adjoin'     3}
+AdjoinList = {`Builtin` 'Record.adjoinList' 3}
+AdjoinAt   = {`Builtin` 'Record.adjoinAt'   4}
+IsRecordC  = {`Builtin` 'Record.isC'  2}
+WidthC     = {`Builtin` 'Record.widthC'     2}
+TellRecord = {`Builtin` 'Record.tellRecord' 2}
 local
    fun {MakeEmpty As}
       case As of nil then nil
@@ -75,8 +75,8 @@ local
    end
 in
    {`runTimePut` 'width' Width}
-   {`runTimePut` '^' {`Builtin` '^' 3}}
-   {`runTimePut` 'tellRecordSize' {`Builtin` 'tellRecordSize' 3}}
+   {`runTimePut` '^' {`Builtin` 'Record.\'^\'' 3}}
+   {`runTimePut` 'tellRecordSize' {`Builtin` 'Record.tellRecordSize' 3}}
    {`runTimePut` 'aritySublist' AritySublist}
 end
 
@@ -86,7 +86,7 @@ end
 %%
 local
    local
-      BIMonitorArity = {`Builtin` 'monitorArity' 3}
+      BIMonitorArity = {`Builtin` 'Record.monitorArity' 3}
    in
       proc {MonitorArity R P S}
          U in
@@ -394,11 +394,11 @@ in
 
                    isC:          IsRecordC
                    tell:         TellRecord
-                   '^':          {`Builtin` '^' 3}
+                   '^':          {`Builtin` 'Record.\'^\'' 3}
                    widthC:       WidthC
                    monitorArity: MonitorArity
                    reflectArity: ReflectArity
-                   hasLabel:     {`Builtin` 'hasLabel' 2}
+                   hasLabel:     {`Builtin` 'Record.hasLabel' 2}
 
                    arity:        Arity
                    adjoin:       Adjoin

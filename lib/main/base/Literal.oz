@@ -30,7 +30,7 @@ in
 %%
 %% Global
 %%
-IsLiteral = {`Builtin` 'IsLiteral' 2}
+IsLiteral = {`Builtin` 'Literal.is' 2}
 
 %%
 %% Module

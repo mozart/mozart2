@@ -31,7 +31,7 @@ in
 %% Compiler Expansion
 %%
 local
-   NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
 in
    `unit` = {NewUniqueName 'unit'}
 end
@@ -39,7 +39,7 @@ end
 %%
 %% Global
 %%
-IsUnit = {`Builtin` 'IsUnit'  2}
+IsUnit = {`Builtin` 'Unit.is'  2}
 
 
 %%

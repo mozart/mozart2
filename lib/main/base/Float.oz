@@ -32,34 +32,34 @@ in
 %%
 %% Run time library
 %%
-{`runTimePut` '/' {`Builtin` '/' 3}}
+{`runTimePut` '/' {`Builtin` 'Number.\'/\'' 3}}
 
 
 %%
 %% Global
 %%
-IsFloat       = {`Builtin` 'IsFloat'       2}
-Exp           = {`Builtin` 'Exp'           2}
-Log           = {`Builtin` 'Log'           2}
-Sqrt          = {`Builtin` 'Sqrt'          2}
-Ceil          = {`Builtin` 'Ceil'          2}
-Floor         = {`Builtin` 'Floor'         2}
-Sin           = {`Builtin` 'Sin'           2}
-Cos           = {`Builtin` 'Cos'           2}
-Tan           = {`Builtin` 'Tan'           2}
-Asin          = {`Builtin` 'Asin'          2}
-Acos          = {`Builtin` 'Acos'          2}
-Atan          = {`Builtin` 'Atan'          2}
-Atan2         = {`Builtin` 'Atan2'         3}
-Round         = {`Builtin` 'Round'         2}
-FloatToInt    = {`Builtin` 'FloatToInt'    2}
-FloatToString = {`Builtin` 'FloatToString' 2}
+IsFloat       = {`Builtin` 'Float.is'       2}
+Exp           = {`Builtin` 'Float.exp'           2}
+Log           = {`Builtin` 'Float.log'           2}
+Sqrt          = {`Builtin` 'Float.sqrt'          2}
+Ceil          = {`Builtin` 'Float.ceil'          2}
+Floor         = {`Builtin` 'Float.floor'         2}
+Sin           = {`Builtin` 'Float.sin'           2}
+Cos           = {`Builtin` 'Float.cos'           2}
+Tan           = {`Builtin` 'Float.tan'           2}
+Asin          = {`Builtin` 'Float.asin'          2}
+Acos          = {`Builtin` 'Float.acos'          2}
+Atan          = {`Builtin` 'Float.atan'          2}
+Atan2         = {`Builtin` 'Float.atan2'         3}
+Round         = {`Builtin` 'Float.round'         2}
+FloatToInt    = {`Builtin` 'Float.toInt'    2}
+FloatToString = {`Builtin` 'Float.toString' 2}
 
 %%
 %% Module
 %%
 Float = float(is:       IsFloat
-              '/':      {`Builtin` '/' 3}
+              '/':      {`Builtin` 'Number.\'/\'' 3}
               exp:      Exp
               log:      Log
               sqrt:     Sqrt

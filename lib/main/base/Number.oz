@@ -31,19 +31,19 @@ in
 %%
 %% Run time library
 %%
-{`runTimePut` '+' {`Builtin` '+' 3}}
-{`runTimePut` '-' {`Builtin` '-' 3}}
-{`runTimePut` '*' {`Builtin` '*' 3}}
-{`runTimePut` '~' {`Builtin` '~' 2}}
+{`runTimePut` '+' {`Builtin` 'Number.\'+\'' 3}}
+{`runTimePut` '-' {`Builtin` 'Number.\'-\'' 3}}
+{`runTimePut` '*' {`Builtin` 'Number.\'*\'' 3}}
+{`runTimePut` '~' {`Builtin` 'Number.\'~\'' 2}}
 
 
 %%
 %% Global
 %%
-IsNumber = {`Builtin` 'IsNumber' 2}
-Abs      = {`Builtin` 'Abs'      2}
+IsNumber = {`Builtin` 'Number.is' 2}
+Abs      = {`Builtin` 'Number.abs'      2}
 local
-   FloatPow = {`Builtin` 'fPow' 3}
+   FloatPow = {`Builtin` 'Float.fPow' 3}
    fun {IntPow X N A}
       case N==0 then A
       elsecase N mod 2==0 then {IntPow X*X (N div 2) A}
@@ -64,9 +64,9 @@ end
 %% Module
 %%
 Number = number(is:  IsNumber
-                '+': {`Builtin` '+' 3}
-                '-': {`Builtin` '-' 3}
-                '*': {`Builtin` '*' 3}
-                '~': {`Builtin` '~' 2}
+                '+': {`Builtin` 'Number.\'+\'' 3}
+                '-': {`Builtin` 'Number.\'-\'' 3}
+                '*': {`Builtin` 'Number.\'*\'' 3}
+                '~': {`Builtin` 'Number.\'~\'' 2}
                 pow: Pow
                 abs: Abs)

@@ -139,9 +139,7 @@ local
       proc {Reserve Regs N W K}
          if N =< W then Reg in
             Reg = Regs.N
-            if {IsKinded Reg} then
-               Reg >=: K
-            end
+            Reg :: K#N
             {Reserve Regs N + 1 W K}
          end
       end
@@ -175,10 +173,9 @@ local
                             [] set(Y I)|Mr then
                                {Dictionary.get D Y} = I
                                {Loop Mr}
-                            [] optimize()|_ then N in
+                            [] optimize()|_ then
                                X = {Dictionary.toRecord y D}
-                               N = {Width X}
-                               {Reserve X 1 N NumberReserved}
+                               {Reserve X 1 {Width X} NumberReserved}
                                {FD.assign min X}
                             end
                          end

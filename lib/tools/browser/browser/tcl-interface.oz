@@ -1633,7 +1633,9 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesEnable'}
 \endif
-         {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
+         end
 
          %%
 \ifdef DEBUG_TI
@@ -1647,7 +1649,9 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesDisable'}
 \endif
-         {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         end
 
          %%
 \ifdef DEBUG_TI
@@ -1661,7 +1665,9 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable'}
 \endif
-         {ProcessEntries @menuBar Arg tk(conf state:normal)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(conf state:normal)}
+         end
 
          %%
 \ifdef DEBUG_TI
@@ -1675,7 +1681,9 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsDisable'}
 \endif
-         {ProcessEntries @menuBar Arg tk(conf state:disabled)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(conf state:disabled)}
+         end
 
          %%
 \ifdef DEBUG_TI
@@ -1689,7 +1697,9 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOn'}
 \endif
-         {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
+         end
 
          %%
 \ifdef DEBUG_TI
@@ -1703,11 +1713,29 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff'}
 \endif
-         {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         end
 
          %%
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff is finished'}
+\endif
+         touch
+      end
+
+      %%
+      meth noTearOff(Arg)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::noTearOff'}
+\endif
+         case @menuBar == InitValue then true
+         else {ProcessEntries @menuBar Arg tk(conf tearoff:False)}
+         end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::noTearOff is finished'}
 \endif
          touch
       end

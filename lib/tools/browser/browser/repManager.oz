@@ -2027,9 +2027,6 @@ in
          local WO ReqNL ReqIndent ReqGlueSize in
             WO = self.WidgetObj
             ReqNL = CompoundRepManagerObject , EvalDesc(Group.desc $)
-\ifdef DEBUG_RM
-            {Show '...CheckGlue: '#(B#N)#ReqNL}
-\endif
 
             %%
             ReqGlueSize =
@@ -2040,7 +2037,9 @@ in
                %% requested to be expanded;
                %%
                ReqIndent = @UsedIndentIn +
-               CompoundRepManagerObject , EvalDesc(self.indentDesc $)
+               {Max
+                CompoundRepManagerObject , EvalDesc(self.indentDesc $)
+                0}       % it cannot be less than 0. Per definition :-)
 \ifdef DEBUG_RM
                case ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}
@@ -2057,6 +2056,9 @@ in
                end
             else 0
             end
+\ifdef DEBUG_RM
+            {Show '...CheckGlue: '#(B#N)#ReqNL#Group.glueSize#ReqGlueSize}
+\endif
 
             %%
             case ReqGlueSize == Group.glueSize then
@@ -2292,7 +2294,9 @@ in
 
                %%
                ReqIndent = @UsedIndentIn +
-               CompoundRepManagerObject , EvalDesc(self.indentDesc $)
+               {Max
+                CompoundRepManagerObject , EvalDesc(self.indentDesc $)
+                0}       % it cannot be less than 0. Per definition :-)
 \ifdef DEBUG_RM
                case ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}

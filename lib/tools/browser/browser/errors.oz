@@ -85,7 +85,6 @@ local MessageWindowObject BrowserMessage in
 
             %%
             Message = Type # Desc
-            {Show '!'#Message}
             {Show {String.toAtom {VirtualString.toString Message}}}
             {MW showIn(Message)}
          end

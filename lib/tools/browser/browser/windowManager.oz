@@ -295,7 +295,7 @@ class WindowManagerClass from UrObject
                      menu: [%%
                             command(label:   'Break'
                                     % key:     ctrl(c)
-                                    acc:     '       ctl-c'
+                                    acc:     '     C-c'
                                     action:  BO#break
                                     feature: break)
                             command(label:   'Unselect'
@@ -306,7 +306,7 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Toggle menus'
                                     % key:     ctrl(alt(m))
-                                    acc:     '   ctl-alt-m'
+                                    acc:     '   C-A-m'
                                     action:  BO#toggleMenus
                                     feature: toggleMenus)
                             separator
@@ -314,7 +314,7 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Help'
                                     % key:     ctrl(h)
-                                    acc:     '       ctl-h'
+                                    acc:     '     C-h'
                                     action:  BO#Help
                                     feature: help)
                             separator
@@ -322,7 +322,7 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Check layout'
                                     % key:     ctrl(l)
-                                    acc:     '       ctl-l'
+                                    acc:     '     C-l'
                                     action:  BO#checkLayout
                                     feature: checkLayout)
                             command(label:   'Reset'
@@ -333,7 +333,7 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Close'
                                     % key:     ctrl(x)
-                                    acc:     '       ctl-x'
+                                    acc:     '     C-x'
                                     action:  BO#close
                                     feature: close)]
                      feature: browser)
@@ -344,7 +344,7 @@ class WindowManagerClass from UrObject
                         [%%
                          command(label:   'Clear'
                                  % key:     ctrl(u)
-                                 acc:     '       ctl-u'
+                                 acc:     '     C-u'
                                  action:  BO#clear
                                  feature: clear)
                          command(label:   'Clear All But Last'
@@ -393,12 +393,12 @@ class WindowManagerClass from UrObject
                      menu: [%%
                             command(label:   'Expand'
                                     % key:     e
-                                    acc:     '           e'
+                                    acc:     '       e'
                                     action:  BO#SelExpand
                                     feature: expand)
                             command(label:   'Shrink'
                                     % key:     s
-                                    acc:     '           s'
+                                    acc:     '       s'
                                     action:  BO#SelShrink
                                     feature: shrink)
                             separator
@@ -406,7 +406,7 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Deref'
                                     % key:     d
-                                    acc:     '           d'
+                                    acc:     '       d'
                                     action:  BO#SelDeref
                                     feature: deref)
                             separator
@@ -414,22 +414,22 @@ class WindowManagerClass from UrObject
                             %%
                             command(label:   'Rebrowse'
                                     % key:     ctrl(b)
-                                    acc:     '       ctl-b'
+                                    acc:     '     C-b'
                                     action:  BO#rebrowse
                                     feature: rebrowse)
                             command(label:   'Zoom'
                                     % key:     z
-                                    acc:     '           z'
+                                    acc:     '       z'
                                     action:  BO#SelZoom
                                     feature: zoom)
                             command(label:   'Show in OPI'
                                       % key:     ctrl(s)
-                                      acc:     '       ctl-s'
+                                      acc:     '     C-s'
                                       action:  BO#SelShow
                                       feature: showOPI)
                             command(label:   'New view'
                                     % key:     ctrl(n)
-                                    acc:     '       ctl-n'
+                                    acc:     '     C-n'
                                     action:  BO#createNewView
                                     feature: newView)]
                      feature: navigate)
@@ -644,6 +644,18 @@ class WindowManagerClass from UrObject
          %%
          %%  everything else is done asynchronously;
          thread
+            %%
+            %% no "tear-off" menus;
+            {Window
+             noTearOff([browser(menu)
+                        buffer(menu) buffer(size(menu))
+                        navigate(menu)
+                        view(menu)
+                        view(depth(menu)) view(width(menu))
+                        view(depthInc(menu)) view(widthInc(menu))
+                        view(font(menu))
+                        view(font(misc(menu))) view(font(courier(menu)))])}
+
             %%
             %% Key bindings;
             {Window [bindKey(key: ctrl(c)      action: BO#break)

@@ -820,9 +820,10 @@ in
                Emitter, Emit(getSelf(X))
                Emitter, Emit(unify(X R))
             end
-         [] vSetSelf(_ Reg _) then X in
-            Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
-            Emitter, Emit(setSelf(X))
+         [] vSetSelf(_ Reg _) then
+            case Emitter, GetPerm(Reg $) of G=g(_) then
+               Emitter, Emit(setSelfG(G))
+            end
          [] vDefinition(_ Reg PredId ProcedureRef GRegs Code _) then
             if Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
                andthen ProcedureRef == unit

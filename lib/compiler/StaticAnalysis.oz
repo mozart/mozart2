@@ -32,8 +32,6 @@
 \define DEBUGPOS
 \define REMINDER
 \define DEBUG_SAVESUBST
-
-TODO: Output of types and quotes of atoms
 */
 
 local
@@ -62,6 +60,10 @@ local
 
    fun {FirstOrId X}
       case X of F#_ then F else X end
+   end
+
+   fun {LabelToVS X}
+      case X=='#' then "#" else X end
    end
 
    fun {OzValueToVS X}
@@ -494,6 +496,60 @@ local
          {DetCheck VOr Dr}
       end
    end
+
+%-----------------------------------------------------------------------
+
+   BINameToMethod
+   = bi(    'NewName'      : doNewName
+            'NewUniqueName': doNewUniqueName
+            'NewCell'      : doNewCell
+            'NewLock'      : doNewLock
+            'NewPort'      : doNewPort
+            'NewArray'     : doNewArray
+            'NewDictionary': doNewDictionary
+            'NewChunk'     : doNewChunk
+            'Space.new'    : doNewSpace
+            'New'          : doNew
+            'IsArray'      : doCheckType(det IsArray)
+            'IsAtom'       : doCheckType(det IsAtom)
+            'IsBool'       : doCheckType(det IsBool)
+            'IsCell'       : doCheckType(det IsCell)
+            'IsChar'       : doCheckType(det IsChar)
+            'IsChunk'      : doCheckType(det IsChunk)
+            'IsDet'        : doCheckType(det IsDet)
+            'IsDictionary' : doCheckType(det IsDictionary)
+            'IsFloat'      : doCheckType(det IsFloat)
+            'IsInt'        : doCheckType(det IsInt)
+            'IsList'       : doCheckType(rec IsList)
+            'IsLiteral'    : doCheckType(det IsLiteral)
+            'IsLock'       : doCheckType(det IsLock)
+            'IsName'       : doCheckType(det IsName)
+            'IsNumber'     : doCheckType(det IsNumber)
+            'IsObject'     : doCheckType(det IsObject)
+            'IsPort'       : doCheckType(det IsPort)
+            'IsProcedure'  : doCheckType(det IsProcedure)
+            'IsRecord'     : doCheckType(det IsRecord)
+            'IsRecordC'    : doCheckType(kind IsRecordC)
+            'IsSpace'      : doCheckType(det IsSpace)
+            'IsString'     : doCheckType(rec IsStringNow)
+            'IsTuple'      : doCheckType(det IsTuple)
+            'IsUnit'       : doCheckType(det IsUnit)
+            'IsVirtualString': doCheckType(rec IsVirtualStringNow)
+            'Label'        : doLabel
+            'Width'        : doWidth
+            'ProcedureArity': doProcedureArity
+            '.'            : doDot
+            '^'            : doHat
+            ','            : doComma
+            '<-'           : doAssignAccess
+            '@'            : doAssignAccess
+            'builtin'      : doBuiltin
+            'getTrue'      : doGetTrue
+            'getFalse'     : doGetFalse
+            'And'          : doAnd
+            'Or'           : doOr
+            'Not'          : doNot
+       )
 
 %-----------------------------------------------------------------------
 %
@@ -1234,35 +1290,24 @@ local
                   {ListToVS
                    '(' | {Map {Record.toList @value}
                           fun {$ X} {X getPrintType(D-1 $)} end}
-                   {Label @value} ' ' ' )'}
-%                 {Record.map @value fun {$ X} {X getPrintType(D-1 $)} end}
+                   {LabelToVS {Label @value}} ' ' ' )'}
                else
                   {ListToVS
                    '(' | {Map {Record.toListInd @value}
                           fun {$ X F} F # ': ' # {X getPrintType(D-1 $)} end}
-                   {Label @value} ' ' ' )'}
-%                 {Record.map @value fun {$ X} {X getPrintType(D-1 $)} end}
+                   {LabelToVS {Label @value}} ' ' ' )'}
                end
             elsecase
                {IsFree @value}
             then
                {TypeToVS @type}
             else
-%              Rec
                Lab = case {Record.hasLabel @value} then {Label @value} else _ end
             in
-%              case {IsDet Lab} then
-%                 Rec = {TellRecord Lab}
-%              else skip end
                {ListToVS
                 '(' | {Map {CurrentArity @value}
                        fun {$ F} F # ': ' # {@value^F getPrintType(D-1 $)} end}
-                Lab  ' ' '...)'}
-%              {ForAll {CurrentArity @value}
-%               proc {$ F}
-%                  Rec^F = {@value^F getPrintType(D-1 $)}
-%               end}
-%              Rec
+                {LabelToVS Lab}  ' ' '...)'}
             end
          end
       end
@@ -1823,11 +1868,12 @@ local
          end
       end
 
-      % Det: flag whether to check determination
+      % Det:     flag whether to check determination
       % Returns: success flag depending on whether
       %          the arguments have been tested
 
-      meth checkArguments(Ctrl N Det $)
+      meth checkArguments(Ctrl Det $)
+         N         = {GetBuiltinName {GetData @designator}}
          BIInfo    = {GetBuiltinInfo N}
          NumArgs   = {Length @actualArgs}
          BIData    = {GetData @designator}
@@ -1884,363 +1930,296 @@ local
          end
       end
 
-      meth doBuiltin(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'builtin' true B)
-
-         case B then
-            BIName = {GetData {Nth @actualArgs 1}}
-            BIArity= {GetData {Nth @actualArgs 2}}
-            BndVO  = {Nth @actualArgs 3}
+      meth doBuiltin(Ctrl)
+         BIName = {GetData {Nth @actualArgs 1}}
+         BIArity= {GetData {Nth @actualArgs 2}}
+         BndVO  = {Nth @actualArgs 3}
+      in
+\ifdef DEBUGSA
+         {Show newBuiltinDef(BIName BIArity)}
+\endif
+         try
+            Proc = {`Builtin` BIName BIArity}
+            BI = {New Core.builtinToken init(Proc)}
          in
 \ifdef DEBUGSA
-               {Show newBuiltinDef(BIName BIArity)}
+            {Show newBuiltin(Proc)}
 \endif
-            try
-               Proc = {`Builtin` BIName BIArity}
-               BI = {New Core.builtinToken init(Proc)}
-            in
-\ifdef DEBUGSA
-               {Show newBuiltin(Proc)}
-\endif
-               {BndVO unifyVal(Ctrl BI)}
+            {BndVO unifyVal(Ctrl BI)}
 
-            catch
-               error(system(K ...) ...) = Exc
-            then
+         catch
+            error(system(K ...) ...) = Exc
+         then
 \ifdef DEBUGSA
-               {Show '******' # Exc}
+            {Show '******' # Exc}
 \endif
-               case K of builtinUndefined then
-                  {Ctrl.rep
-                   warn(coord: @coord
-                        kind:  SAGenWarn
-                        msg:   'builtin undefined'
-                        body:  [hint(l:'Name' m:pn(BIName))
-                                hint(l:'Arity' m:BIArity)])}
-               [] builtinArity then
-                  {Ctrl.rep
-                   warn(coord: @coord
-                        kind:  SAGenWarn
-                        msg:   'builtin has wrong arity'
-                        body:  [hint(l:'Name' m:pn(BIName))
-                                hint(l:'Arity' m:BIArity)])}
-               end
+            case K of builtinUndefined then
+               {Ctrl.rep
+                warn(coord: @coord
+                     kind:  SAGenWarn
+                     msg:   'builtin undefined'
+                     body:  [hint(l:'Name' m:pn(BIName))
+                             hint(l:'Arity' m:BIArity)])}
+            [] builtinArity then
+               {Ctrl.rep
+                warn(coord: @coord
+                     kind:  SAGenWarn
+                     msg:   'builtin has wrong arity'
+                     body:  [hint(l:'Name' m:pn(BIName))
+                             hint(l:'Arity' m:BIArity)])}
             end
-
-         else skip end
-      end
-      meth doNewName(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewName' true B)
-
-         case B then
-            BndVO BndV PrintName TheName Top Token
-         in
-            BndVO = {Nth @actualArgs 1}
-            {BndVO getVariable(?BndV)}
-            {BndV getPrintName(?PrintName)}
-            case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
-               TheName = {NewNamedName PrintName}
-               {Ctrl declareToplevelName(TheName)}
-            else
-               TheName = {NewName}
-            end
-            Top = ({Ctrl getTop($)} andthen
-                   {Not {Ctrl.switches getSwitch(debuginfovarnames $)}})
-            Token = {New Core.nameToken init(PrintName TheName Top)}
-            {BndVO unifyVal(Ctrl Token)}
-            case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
-            else skip end
-         else skip end
-      end
-      meth doNewUniqueName(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewUniqueName' true B)
-
-         case B then
-            NName = {GetData {Nth @actualArgs 1}}
-            Value = {{`Builtin` 'NewUniqueName' 2} NName}   % always succeeds
-            Token = {New Core.nameToken init(NName Value true)}
-            BndVO = {Nth @actualArgs 2}
-         in
-\ifdef DEBUGSA
-            {Show newUniqueName(NName Token)}
-\endif
-            {BndVO unifyVal(Ctrl Token)}
-            self.codeGenMakeEquateLiteral = Value
-         else
-            skip
          end
       end
-      meth doNewLock(Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl 'NewLock' true B)
-
-         case B then
-            Token = {New Core.lockToken init({NewLock})}
-            BndVO = {Nth @actualArgs 1}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewPort(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewPort' true B)
-
-         case B then
-            Token = {New Core.portToken init({NewPort _})}
-            BndVO = {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewCell(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewCell' true B)
-
-         case B then
-            Token = {New Core.cellToken init({NewCell _})}
-            BndVO = {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewArray(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewArray' true B)
-
-         case B then
-            Low  = {GetData {Nth @actualArgs 1}}
-            High = {GetData {Nth @actualArgs 2}}
-            Token= {New Core.arrayToken init({Array.new Low High _})}
-            BndVO= {Nth @actualArgs 4}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewDictionary(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewDictionary' true B)
-
-         case B then
-            Token= {New Core.dictionaryToken init({Dictionary.new})}
-            BndVO= {Nth @actualArgs 1}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewChunk(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'NewChunk' true B)
-
-         case B then
-            Rec  = {GetData {Nth @actualArgs 1}}
-            Token= {New Core.chunkToken init({NewChunk Rec})}
-            BndVO= {Nth @actualArgs 2}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNewSpace(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'Space.new' true B)
-
-         case B then
-            Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
-            BndVO= {Nth @actualArgs 2}
-\ifdef DEBUGSA
-            Pred = {GetData {Nth @actualArgs 1}}
-            {Show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
-\endif
-         in
-            {BndVO unifyVal(Ctrl Token)}
-         else skip end
-      end
-      meth doNew(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'New' true B)
-
-         case B then
-            DummyObject = {New BaseObject noop}
-            Cls  = {GetClassData {Nth @actualArgs 1}}
-            Msg  = {Nth @actualArgs 2}
-            Token= {New Core.objectToken init(DummyObject Cls)}
-            BndVO= {Nth @actualArgs 3}
-            PN   = {BndVO getPrintName($)}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-
-            case Cls == unit
-            then skip else
-               Meth = {Cls getMethods($)}
-            in
-               SABuiltinApplication, checkMessage(Ctrl Msg Meth new PN)
-            end
+      meth doNewName(Ctrl)
+         BndVO BndV PrintName TheName Top Token
+      in
+         BndVO = {Nth @actualArgs 1}
+         {BndVO getVariable(?BndV)}
+         {BndV getPrintName(?PrintName)}
+         case {Ctrl getTop($)} andthen {BndV getOrigin($)} \= generated then
+            TheName = {NewNamedName PrintName}
+            {Ctrl declareToplevelName(TheName)}
          else
-            skip
+            TheName = {NewName}
+         end
+         Top = ({Ctrl getTop($)} andthen
+                {Not {Ctrl.switches getSwitch(debuginfovarnames $)}})
+         Token = {New Core.nameToken init(PrintName TheName Top)}
+         {BndVO unifyVal(Ctrl Token)}
+         case {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
+         else skip end
+      end
+
+      meth doNewUniqueName(Ctrl)
+         NName = {GetData {Nth @actualArgs 1}}
+         Value = {{`Builtin` 'NewUniqueName' 2} NName}   % always succeeds
+         Token = {New Core.nameToken init(NName Value true)}
+         BndVO = {Nth @actualArgs 2}
+      in
 \ifdef DEBUGSA
-            {Show noObjectCreation({{Nth @actualArgs 3} getPrintName($)})}
+         {Show newUniqueName(NName Token)}
 \endif
+         {BndVO unifyVal(Ctrl Token)}
+         self.codeGenMakeEquateLiteral = Value
+      end
+
+      meth doNewLock(Ctrl)
+         Token = {New Core.lockToken init({NewLock})}
+         BndVO = {Nth @actualArgs 1}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewPort(Ctrl)
+         Token = {New Core.portToken init({NewPort _})}
+         BndVO = {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewCell(Ctrl)
+         Token = {New Core.cellToken init({NewCell _})}
+         BndVO = {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewArray(Ctrl)
+         Low  = {GetData {Nth @actualArgs 1}}
+         High = {GetData {Nth @actualArgs 2}}
+         Token= {New Core.arrayToken init({Array.new Low High _})}
+         BndVO= {Nth @actualArgs 4}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewDictionary(Ctrl)
+         Token= {New Core.dictionaryToken init({Dictionary.new})}
+         BndVO= {Nth @actualArgs 1}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewChunk(Ctrl)
+         Rec  = {GetData {Nth @actualArgs 1}}
+         Token= {New Core.chunkToken init({NewChunk Rec})}
+         BndVO= {Nth @actualArgs 2}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNewSpace(Ctrl)
+         Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
+         BndVO= {Nth @actualArgs 2}
+\ifdef DEBUGSA
+         Pred = {GetData {Nth @actualArgs 1}}
+         {Show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
+\endif
+      in
+         {BndVO unifyVal(Ctrl Token)}
+      end
+
+      meth doNew(Ctrl)
+         DummyObject = {New BaseObject noop}
+         Cls  = {GetClassData {Nth @actualArgs 1}}
+         Msg  = {Nth @actualArgs 2}
+         Token= {New Core.objectToken init(DummyObject Cls)}
+         BndVO= {Nth @actualArgs 3}
+         PN   = {BndVO getPrintName($)}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+
+         case Cls == unit
+         then skip else
+            Meth = {Cls getMethods($)}
+         in
+            SABuiltinApplication, checkMessage(Ctrl Msg Meth new PN)
          end
       end
-      meth doDot(Ctrl B)
+
+      meth doDot(Ctrl)
 \ifdef DEBUGSA
          {Show dot(@actualArgs {Map @actualArgs GetData})}
 \endif
-
-
-         SABuiltinApplication, checkArguments(Ctrl '.' true B)
-
-         case B then
-            FirstArg = {Nth @actualArgs 1}
-            RecOrCh  = {GetData FirstArg}
-            F        = {GetData {Nth @actualArgs 2}}
-         in
+         FirstArg = {Nth @actualArgs 1}
+         RecOrCh  = {GetData FirstArg}
+         F        = {GetData {Nth @actualArgs 2}}
+      in
 \ifdef DEBUGSA
-            {Show dot(FirstArg RecOrCh F)}
+         {Show dot(FirstArg RecOrCh F)}
 \endif
-            case
-               {IsDet RecOrCh}
-               andthen {TypeTests.object RecOrCh}
-            then
+         case
+            {IsDet RecOrCh}
+            andthen {TypeTests.object RecOrCh}
+         then
 \ifdef DEBUGSA
-               {Show dotobj}
+            {Show dotobj}
 \endif
-               case {GetClassOfObjectData FirstArg}
-               of unit then
-                  skip
-               elseof Cls then
-                  Fs  = {Cls getFeatures($)}
-               in
-                  case
-                     Fs == unit orelse {Member F Fs}
-                  then
-                     skip
-                  else
-                     {Ctrl.rep
-                      error(coord: @coord
-                            kind:  SAGenError
-                            msg:   'illegal feature selection from object'
-                            body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:oz(F))])}
-                  end
-               end
-
-            elsecase
-               {IsDet RecOrCh}
-               andthen {TypeTests.'class' RecOrCh}
-            then
-               case {GetClassData FirstArg}
-               of unit then
-                  skip
-               elseof Cls then
-                  Fs  = {Cls getFeatures($)}
-               in
-                  case Fs == unit
-                     orelse {Member F Fs}
-                  then skip else
-                     {Ctrl.rep
-                      error(coord: @coord
-                            kind:  SAGenError
-                            msg:   'illegal feature selection from class'
-                            body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:oz(F))])}
-                  end
-               end
-
-            elsecase
-               {IsDet RecOrCh}
-               andthen {TypeTests.record RecOrCh}
-            then
-               case {HasFeature RecOrCh F}
+            case {GetClassOfObjectData FirstArg}
+            of unit then
+               skip
+            elseof Cls then
+               Fs  = {Cls getFeatures($)}
+            in
+               case
+                  Fs == unit orelse {Member F Fs}
                then
-                  BndVO = {Nth @actualArgs 3}
-               in
-                  {Ctrl setErrorMsg('feature selection (.) failed')}
-                  {Ctrl setUnifier(BndVO RecOrCh.F)}
-
-                  {BndVO unify(Ctrl RecOrCh.F)}
-
-                  {Ctrl resetUnifier}
-                  {Ctrl resetErrorMsg}
+                  skip
                else
                   {Ctrl.rep
                    error(coord: @coord
                          kind:  SAGenError
-                         msg:   'illegal feature selection from record'
-                         body:  [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
+                         msg:   'illegal feature selection from object'
+                         body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
                                  hint(l:'Found' m:oz(F))])}
                end
-            elsecase
-               {TypeTests.recordC RecOrCh}
-               andthen {HasFeatureNow RecOrCh F}
+            end
+
+         elsecase
+            {IsDet RecOrCh}
+            andthen {TypeTests.'class' RecOrCh}
+         then
+            case {GetClassData FirstArg}
+            of unit then
+               skip
+            elseof Cls then
+               Fs  = {Cls getFeatures($)}
+            in
+               case Fs == unit
+                  orelse {Member F Fs}
+               then skip else
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind:  SAGenError
+                         msg:   'illegal feature selection from class'
+                         body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
+                                 hint(l:'Found' m:oz(F))])}
+               end
+            end
+
+         elsecase
+            {IsDet RecOrCh}
+            andthen {TypeTests.record RecOrCh}
+         then
+            case {HasFeature RecOrCh F}
             then
                BndVO = {Nth @actualArgs 3}
             in
-               {Ctrl setErrorMsg('dot selection failed')}
+               {Ctrl setErrorMsg('feature selection (.) failed')}
                {Ctrl setUnifier(BndVO RecOrCh.F)}
 
-               {BndVO unify(Ctrl RecOrCh^F)}
+               {BndVO unify(Ctrl RecOrCh.F)}
 
                {Ctrl resetUnifier}
                {Ctrl resetErrorMsg}
             else
-               skip
-            end
-         else
-            skip
-         end
-      end
-      meth doHat(Ctrl B)
-\ifdef DEBUGSA
-         {Show hat(@actualArgs {Map @actualArgs GetData})}
-\endif
-
-         SABuiltinApplication, checkArguments(Ctrl '^' true B)
-
-         case B then
-            Rec = {GetData {Nth @actualArgs 1}}
-            Fea = {GetData {Nth @actualArgs 2}}
-         in
-\ifdef DEBUGSA
-            {Show hat(Rec Fea)}
-\endif
-            case
-               {HasFeatureNow Rec Fea}
-            then
-               BndVO = {Nth @actualArgs 3}
-            in
-               {Ctrl setErrorMsg('feature selection (^) failed')}
-               {Ctrl setUnifier(BndVO Rec^Fea)}
-
-               {BndVO unify(Ctrl Rec^Fea)}
-
-               {Ctrl resetUnifier}
-               {Ctrl resetErrorMsg}
-            elsecase
-               {IsDet Rec}
-            then
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal feature selection from record'
-                      body:  [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
-                              hint(l:'Found' m:oz(Fea))])}
-            else
-               skip
+                      body:  [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
+                              hint(l:'Found' m:oz(F))])}
             end
+         elsecase
+            {TypeTests.recordC RecOrCh}
+            andthen {HasFeatureNow RecOrCh F}
+         then
+            BndVO = {Nth @actualArgs 3}
+         in
+            {Ctrl setErrorMsg('dot selection failed')}
+            {Ctrl setUnifier(BndVO RecOrCh.F)}
+
+            {BndVO unify(Ctrl RecOrCh^F)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else
             skip
          end
       end
-      meth doComma(Ctrl B)
+
+      meth doHat(Ctrl)
+\ifdef DEBUGSA
+         {Show hat(@actualArgs {Map @actualArgs GetData})}
+\endif
+         Rec = {GetData {Nth @actualArgs 1}}
+         Fea = {GetData {Nth @actualArgs 2}}
+      in
+\ifdef DEBUGSA
+         {Show hat(Rec Fea)}
+\endif
+         case
+            {HasFeatureNow Rec Fea}
+         then
+            BndVO = {Nth @actualArgs 3}
+         in
+            {Ctrl setErrorMsg('feature selection (^) failed')}
+            {Ctrl setUnifier(BndVO Rec^Fea)}
+
+            {BndVO unify(Ctrl Rec^Fea)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
+         elsecase
+            {IsDet Rec}
+         then
+            {Ctrl.rep
+             error(coord: @coord
+                   kind:  SAGenError
+                   msg:   'illegal feature selection from record'
+                   body:  [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
+                           hint(l:'Found' m:oz(Fea))])}
+         else
+            skip
+         end
+      end
+
+      meth doComma(Ctrl)
          Cls  = {GetClassData {Nth @actualArgs 1}}
          Msg  = {Nth @actualArgs 2}
          PN   = {{Nth @actualArgs 1} getPrintName($)}
       in
-         B = true % this is a hack; should be passed to checkMessage
-
          case Cls == unit
          then skip else
             Meth = {Cls getMethods($)}
@@ -2248,247 +2227,231 @@ local
             SABuiltinApplication, checkMessage(Ctrl Msg Meth 'class' PN)
          end
       end
-      meth doAssignAccess(PName OpName Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl PName true B)
-
-         case B then
-            Self = {Ctrl getSelf($)}
-            Fea  = {GetData {Nth @actualArgs 1}}
-            CTok = {Self getValue($)}
-            Attrs= {CTok getAttributes($)}
-            Props= {CTok getProperties($)}
+      meth doAssignAccess(Ctrl)
+         Self = {Ctrl getSelf($)}
+         Fea  = {GetData {Nth @actualArgs 1}}
+         CTok = {Self getValue($)}
+         Attrs= {CTok getAttributes($)}
+         Props= {CTok getProperties($)}
+      in
+         case
+            Attrs==unit orelse {Member Fea Attrs}
+         then
+            skip
+         else
+            Val  = {GetData {Nth @actualArgs 2}}
+            Expr = case {GetBuiltinName {GetData @designator}}
+                   of '<-' then oz(Fea) # ' <- ' # oz(Val)
+                   elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
+                   end
+            Final = (Props\=unit andthen {Member final Props})
+            Hint = case Final
+                   then '(correct use requires method application)'
+                   else '(may be a correct forward declaration)'
+                   end
+            Cls  = case Final
+                   then 'In Final Class '
+                   else 'In Class '
+                   end
          in
             case
-               Attrs==unit orelse {Member Fea Attrs}
+               Final orelse
+               {Ctrl.switches getSwitch(warnforward $)}
             then
-               skip
-            else
-               Val  = {GetData {Nth @actualArgs 2}}
-               Expr = case PName
-                      of '<-' then oz(Fea) # ' <- ' # oz(Val)
-                      elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
-                      end
-               Final = (Props\=unit andthen {Member final Props})
-               Hint = case Final
-                      then '(correct use requires method application)'
-                      else '(may be a correct forward declaration)'
-                      end
-               Cls  = case Final
-                      then 'In Final Class '
-                      else 'In Class '
-                      end
-            in
-               case
-                  Final orelse
-                  {Ctrl.switches getSwitch(warnforward $)}
-               then
-                  {Ctrl.rep
-                   warn(coord: @coord
-                        kind:  SAGenWarn
-                        msg:   'applying ' # PName #
-                        ' to unavailable attribute'
-                        body:  [hint(l:'Expression' m:Expr)
-                                hint(l:Cls
-                                     m:pn({{Self getDesignator($)}
-                                           getPrintName($)}))
-                                hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
-                                line(Hint)])}
-               else skip end
-            end
-         else skip end
-      end
-      meth doGetTrue(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'getTrue' true B)
-
-         case B then
-            BndVO = {Nth @actualArgs 1}
-            Token = {New Core.nameToken
-                     init({BndVO getPrintName($)} `true` true)}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-            self.codeGenMakeEquateLiteral = {Token getValue($)}
-         else skip end
-      end
-      meth doGetFalse(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'getFalse' true B)
-
-         case B then
-            BndVO = {Nth @actualArgs 1}
-            Token = {New Core.nameToken
-                     init({BndVO getPrintName($)} `false` true)}
-         in
-            {BndVO unifyVal(Ctrl Token)}
-            self.codeGenMakeEquateLiteral = {Token getValue($)}
-         else skip end
-      end
-      meth doAndOr(PName Junctor Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl PName true B)
-
-         case B then
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            BVO3 = {Nth @actualArgs 3}
-            Val1 = {GetData BVO1}
-            Val2 = {GetData BVO2}
-         in
-            case
-               {IsDet Val1} andthen {IsDet Val2}
-            then
-               Result = {Junctor Val1 Val2}
-               PN = case Result then 'true' else 'false' end
-               Token = {New Core.nameToken init(PN Result true)}
-            in
-               {BVO3 unifyVal(Ctrl Token)}
-            else
-               skip
-            end
-         else skip end
-      end
-      meth doNot(Ctrl B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'Not' true B)
-
-         case B then
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            Val1 = {GetData BVO1}
-         in
-            case
-               {IsDet Val1}
-            then
-               Result = {Not Val1}
-               PN = case Result then 'true' else 'false' end
-               Token = {New Core.nameToken init(PN Result true)}
-            in
-               {BVO2 unifyVal(Ctrl Token)}
+               {Ctrl.rep
+                warn(coord: @coord
+                     kind:  SAGenWarn
+                     msg:   'applying ' #
+                     {GetBuiltinName {GetData @designator}} #
+                     ' to unavailable attribute'
+                     body:  [hint(l:'Expression' m:Expr)
+                             hint(l:Cls
+                                  m:pn({{Self getDesignator($)}
+                                        getPrintName($)}))
+                             hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
+                             line(Hint)])}
             else skip end
-         else skip end
+         end
       end
-      meth doLabel(Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl 'Label' true B)
+      meth doGetTrue(Ctrl)
+         BndVO = {Nth @actualArgs 1}
+         Token = {New Core.nameToken
+                  init({BndVO getPrintName($)} `true` true)}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+         self.codeGenMakeEquateLiteral = {Token getValue($)}
+      end
 
-         case B then
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            Val  = {BVO1 getValue($)}
+      meth doGetFalse(Ctrl)
+         BndVO = {Nth @actualArgs 1}
+         Token = {New Core.nameToken
+                  init({BndVO getPrintName($)} `false` true)}
+      in
+         {BndVO unifyVal(Ctrl Token)}
+         self.codeGenMakeEquateLiteral = {Token getValue($)}
+      end
+
+      meth doAnd(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         BVO3 = {Nth @actualArgs 3}
+         Val1 = {GetData BVO1}
+         Val2 = {GetData BVO2}
+      in
+         case
+            {IsDet Val1} andthen {IsDet Val2}
+         then
+            Result = {And Val1 Val2}
+            PN = case Result then 'true' else 'false' end
+            Token = {New Core.nameToken init(PN Result true)}
          in
-            case
-               {HasFeature Val ImAConstruction}
-            then
-               {BVO2 unify(Ctrl {Val getLabel($)})}
-            else skip end
-         else skip end
+            {BVO3 unifyVal(Ctrl Token)}
+         else
+            skip
+         end
       end
-      meth doWidth(Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl 'Width' true B)
-
-         case B then
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-            Data  = {GetData BVO1}
+      meth doOr(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         BVO3 = {Nth @actualArgs 3}
+         Val1 = {GetData BVO1}
+         Val2 = {GetData BVO2}
+      in
+         case
+            {IsDet Val1} andthen {IsDet Val2}
+         then
+            Result = {Or Val1 Val2}
+            PN = case Result then 'true' else 'false' end
+            Token = {New Core.nameToken init(PN Result true)}
          in
-            case
-               {IsDet Data}
-            then
-               IntVal= {New Core.intNode init({Width Data} @coord)}
-            in
-               {BVO2 unifyVal(Ctrl IntVal)}
-            else skip end
-         else skip end
+            {BVO3 unifyVal(Ctrl Token)}
+         else
+            skip
+         end
       end
-      meth doProcedureArity(Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl 'ProcedureArity' true B)
-
-         case B then
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-            Data  = {GetData BVO1}
+      meth doNot(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         Val1 = {GetData BVO1}
+      in
+         case
+            {IsDet Val1}
+         then
+            Result = {Not Val1}
+            PN = case Result then 'true' else 'false' end
+            Token = {New Core.nameToken init(PN Result true)}
          in
-            case
-               {IsDet Data}
-            then
-               IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
-            in
-               {BVO2 unifyVal(Ctrl IntVal)}
-            else skip end
+            {BVO2 unifyVal(Ctrl Token)}
          else skip end
       end
-      meth doDetType(PName Test Ctrl B)
+
+      meth doLabel(Ctrl)
+         BVO1 = {Nth @actualArgs 1}
+         BVO2 = {Nth @actualArgs 2}
+         Val  = {BVO1 getValue($)}
+      in
+         case
+            {HasFeature Val ImAConstruction}
+         then
+            {BVO2 unify(Ctrl {Val getLabel($)})}
+         else skip end
+      end
+
+      meth doWidth(Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+         Data  = {GetData BVO1}
+      in
+         case
+            {IsDet Data}
+         then
+            IntVal= {New Core.intNode init({Width Data} @coord)}
+         in
+            {BVO2 unifyVal(Ctrl IntVal)}
+         else skip end
+      end
+
+      meth doProcedureArity(Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+         Data  = {GetData BVO1}
+      in
+         case
+            {IsDet Data}
+         then
+            IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
+         in
+            {BVO2 unifyVal(Ctrl IntVal)}
+         else skip end
+      end
+
+      meth doCheckType(TestType Test Ctrl)
+         case TestType
+         of det  then SABuiltinApplication, DoDetType(Test Ctrl)
+         [] rec  then SABuiltinApplication, DoRecDetType(Test Ctrl)
+         [] kind then SABuiltinApplication, DoKindedType(Test Ctrl)
+         end
+      end
+
+      meth DoDetType(Test Ctrl)
 \ifdef DEBUGSA
-         {Show doDetType(PName Test)}
 \endif
-
-         SABuiltinApplication, checkArguments(Ctrl PName true B)
-
-         case B then
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-         in
-            case {DetTests.det BVO1} then
-               case {Test {GetPrintData BVO1}} then
-                  {BVO2 unifyVal(Ctrl
-                                 {New Core.nameToken
-                                  init('`true`' `true` true)})}
-               else
-                  {BVO2 unifyVal(Ctrl
-                                 {New Core.nameToken
-                                  init('`false`' `false` true)})}
-               end
-            else skip end
-         else skip end
-      end
-      meth doRecDetType(PName ThreeValuedTest Ctrl B)
-\ifdef DEBUGSA
-         {Show doDetType(PName ThreeValuedTest)}
-\endif
-
-         SABuiltinApplication, checkArguments(Ctrl PName true B)
-
-         case B then
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-         in
-            case {ThreeValuedTest {GetPrintData BVO1}}
-            of true then
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+      in
+         case {DetTests.det BVO1} then
+            case {Test {GetPrintData BVO1}} then
                {BVO2 unifyVal(Ctrl
                               {New Core.nameToken
                                init('`true`' `true` true)})}
-            elseof false then
+            else
                {BVO2 unifyVal(Ctrl
                               {New Core.nameToken
                                init('`false`' `false` true)})}
-            elseof unit then
-               skip
             end
          else skip end
       end
-      meth doKindedType(PName Test Ctrl B)
 
-         SABuiltinApplication, checkArguments(Ctrl PName true B)
+      meth DoRecDetType(ThreeValuedTest Ctrl)
+\ifdef DEBUGSA
+         {Show doDetType(ThreeValuedTest)}
+\endif
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+      in
+         case {ThreeValuedTest {GetPrintData BVO1}}
+         of true then
+            {BVO2 unifyVal(Ctrl
+                           {New Core.nameToken
+                            init('`true`' `true` true)})}
+         elseof false then
+            {BVO2 unifyVal(Ctrl
+                           {New Core.nameToken
+                            init('`false`' `false` true)})}
+         elseof unit then
+            skip
+         end
+      end
 
-         case B then
-            BVO1  = {Nth @actualArgs 1}
-            BVO2  = {Nth @actualArgs 2}
-            Data  = {GetData BVO1}
-         in
-            case {IsKinded Data} then
-               case {Test Data} then
-                  {BVO2 unifyVal(Ctrl
-                                 {New Core.nameToken
-                                  init('`true`' `true` true)})}
-               else
-                  {BVO2 unifyVal(Ctrl
-                                 {New Core.nameToken
-                                  init('`false`' `false` true)})}
-               end
-            else skip end
+      meth DoKindedType(Test Ctrl)
+         BVO1  = {Nth @actualArgs 1}
+         BVO2  = {Nth @actualArgs 2}
+         Data  = {GetData BVO1}
+      in
+         case {IsKinded Data} then
+            case {Test Data} then
+               {BVO2 unifyVal(Ctrl
+                              {New Core.nameToken
+                               init('`true`' `true` true)})}
+            else
+               {BVO2 unifyVal(Ctrl
+                              {New Core.nameToken
+                               init('`false`' `false` true)})}
+            end
          else skip end
       end
    end
@@ -2548,109 +2511,25 @@ local
 \ifdef DEBUGSA
             {Show applying(BIName)}
 \endif
-            case BIName
-            of 'NewName'        then
-               SABuiltinApplication, doNewName(Ctrl ArgsOk)
-            [] 'NewUniqueName'  then
-               SABuiltinApplication, doNewUniqueName(Ctrl ArgsOk)
-            [] 'NewCell'        then
-               SABuiltinApplication, doNewCell(Ctrl ArgsOk)
-            [] 'NewLock'        then
-               SABuiltinApplication, doNewLock(Ctrl ArgsOk)
-            [] 'NewPort'        then
-               SABuiltinApplication, doNewPort(Ctrl ArgsOk)
-            [] 'NewArray'       then
-               SABuiltinApplication, doNewArray(Ctrl ArgsOk)
-            [] 'NewDictionary'  then
-               SABuiltinApplication, doNewDictionary(Ctrl ArgsOk)
-            [] 'NewChunk'       then
-               SABuiltinApplication, doNewChunk(Ctrl ArgsOk)
-            [] 'Space.new'      then
-               SABuiltinApplication, doNewSpace(Ctrl ArgsOk)
-            [] 'New'            then
-               SABuiltinApplication, doNew(Ctrl ArgsOk)
-            [] 'IsArray'        then
-               SABuiltinApplication, doDetType('IsArray' IsCell Ctrl ArgsOk)
-            [] 'IsAtom'         then
-               SABuiltinApplication, doDetType('IsAtom' IsAtom Ctrl ArgsOk)
-            [] 'IsBool'         then
-               SABuiltinApplication, doDetType('IsBool' IsBool Ctrl ArgsOk)
-            [] 'IsCell'         then
-               SABuiltinApplication, doDetType('IsCell' IsCell Ctrl ArgsOk)
-            [] 'IsChar'         then
-               SABuiltinApplication, doDetType('IsChar' IsChar Ctrl ArgsOk)
-            [] 'IsChunk'        then
-               SABuiltinApplication, doDetType('IsChunk' IsChunk Ctrl ArgsOk)
-            [] 'IsDet'          then
-               SABuiltinApplication, doDetType('IsDet' IsDet Ctrl ArgsOk)
-            [] 'IsDictionary'   then
-               SABuiltinApplication, doDetType('IsDictionary' IsDictionary Ctrl ArgsOk)
-            [] 'IsFloat'        then
-               SABuiltinApplication, doDetType('IsFloat' IsFloat Ctrl ArgsOk)
-            [] 'IsInt'          then
-               SABuiltinApplication, doDetType('IsInt' IsInt Ctrl ArgsOk)
-            [] 'IsList'         then
-               SABuiltinApplication, doRecDetType('IsList' IsListNow Ctrl ArgsOk)
-            [] 'IsLiteral'      then
-               SABuiltinApplication, doDetType('IsLiteral' IsLiteral Ctrl ArgsOk)
-            [] 'IsLock'         then
-               SABuiltinApplication, doDetType('IsLock' IsLock Ctrl ArgsOk)
-            [] 'IsName'         then
-               SABuiltinApplication, doDetType('IsName' IsName Ctrl ArgsOk)
-            [] 'IsNumber'       then
-               SABuiltinApplication, doDetType('IsNumber' IsNumber Ctrl ArgsOk)
-            [] 'IsObject'       then
-               SABuiltinApplication, doDetType('IsObject' IsObject Ctrl ArgsOk)
-            [] 'IsPort'         then
-               SABuiltinApplication, doDetType('IsPort' IsPort Ctrl ArgsOk)
-            [] 'IsProcedure'    then
-               SABuiltinApplication, doDetType('IsDet' IsProcedure Ctrl ArgsOk)
-            [] 'IsRecord'       then
-               SABuiltinApplication, doDetType('IsRecord' IsRecord Ctrl ArgsOk)
-            [] 'IsRecordC'      then
-               SABuiltinApplication, doKindedType('IsRecordC' IsRecordC Ctrl ArgsOk)
-            [] 'IsSpace'        then
-               SABuiltinApplication, doDetType('IsSpace' IsSpace Ctrl ArgsOk)
-            [] 'IsString'       then
-               SABuiltinApplication,
-               doRecDetType('IsString' IsStringNow Ctrl ArgsOk)
-            [] 'IsTuple'        then
-               SABuiltinApplication, doDetType('IsTuple' IsTuple Ctrl ArgsOk)
-            [] 'IsUnit'         then
-               SABuiltinApplication, doDetType('IsUnit' IsUnit Ctrl ArgsOk)
-            [] 'IsVirtualString'then
-               SABuiltinApplication,
-               doRecDetType('IsVirtualString' IsVirtualStringNow Ctrl ArgsOk)
-            [] 'Label'          then
-               SABuiltinApplication, doLabel(Ctrl ArgsOk)
-            [] 'Width'          then
-               SABuiltinApplication, doWidth(Ctrl ArgsOk)
-            [] 'ProcedureArity' then
-               SABuiltinApplication, doProcedureArity(Ctrl ArgsOk)
-            [] '.'              then
-               SABuiltinApplication, doDot(Ctrl ArgsOk)
-            [] '^'              then
-               SABuiltinApplication, doHat(Ctrl ArgsOk)
-            [] ','              then
-               SABuiltinApplication, doComma(Ctrl ArgsOk)
-            [] '<-'             then
-               SABuiltinApplication, doAssignAccess('<-' 'Assignment' Ctrl ArgsOk)
-            [] '@'              then
-               SABuiltinApplication, doAssignAccess('@' 'Access' Ctrl ArgsOk)
-            [] 'builtin'        then
-               SABuiltinApplication, doBuiltin(Ctrl ArgsOk)
-            [] 'getTrue'        then
-               SABuiltinApplication, doGetTrue(Ctrl ArgsOk)
-            [] 'getFalse'       then
-               SABuiltinApplication, doGetFalse(Ctrl ArgsOk)
-            [] 'And'            then
-               SABuiltinApplication, doAndOr('And' And Ctrl ArgsOk)
-            [] 'Or'             then
-               SABuiltinApplication, doAndOr('Or' Or Ctrl ArgsOk)
-            [] 'Not'            then
-               SABuiltinApplication, doNot(Ctrl ArgsOk)
-            else
-               SABuiltinApplication, checkArguments(Ctrl BIName false ArgsOk)
+            case
+               {CondSelect BINameToMethod BIName unit}
+            of
+               unit
+            then
+               SABuiltinApplication, checkArguments(Ctrl false ArgsOk)
+            elseof
+               M
+            then
+               SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
+               case
+                  ArgsOk
+               then
+                  Msg = {AdjoinAt M {Width M}+1 Ctrl}
+               in
+                  SABuiltinApplication, Msg
+               else
+                  skip
+               end
             end
 
             %%

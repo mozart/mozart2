@@ -384,11 +384,11 @@ in
                 {BatchCompiler enqueue(setSwitch(core true))}
                 {BatchCompiler enqueue(setSwitch(codegen false))}
              [] scode then
-                {BatchCompiler enqueue(setSwitch(scode true))}
+                {BatchCompiler enqueue(setSwitch(outputcode true))}
                 {BatchCompiler
                  enqueue(setSwitch(feedtoemulator false))}
              [] ecode then
-                {BatchCompiler enqueue(setSwitch(scode true))}
+                {BatchCompiler enqueue(setSwitch(outputcode true))}
                 {BatchCompiler enqueue(setSwitch(expression true))}
                 {BatchCompiler
                  enqueue(setSwitch(feedtoemulator false))}

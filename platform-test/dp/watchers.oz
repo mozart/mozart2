@@ -63,19 +63,19 @@ define
          skip
       end
       try
-         E.cell = port
+         E.cell = cell
          {Assign CC true}
       catch _ then skip end
       try
-         E.var = port
+         E.var = var
          {Assign CC true}
       catch _ then skip end
       try
-         E.lokk = port
+         E.lokk = lokk
          {Assign CC true}
       catch _ then skip end
       try
-         E.object = port
+         E.object = object
          {Assign CC true}
       catch _ then skip end
       {Access CC false}

@@ -184,18 +184,15 @@ in
              else A end
       in
          '{' # pn(P) #
-         case Xs of nil then '' else list(Xs ' ') end #
-         ' ...<' # N # '>...' # '}'
+         case Xs of nil then '' else ' ' # list(Xs ' ') end #
+         case N==0 then ""
+         else {Loop.forThread 1 N 1
+               fun {$ In I} & |&_|In end nil} # '}'
+         end
       end
 
       fun {FormatAppl A Xs}
-         P = case {IsProcedure A}
-             then {System.printName A}
-             else A end
-      in
-         '{' # pn(P) #
-         case Xs of nil then '' else ist(Xs ' ') end #
-         '}'
+         {FormatPartialAppl A Xs 0}
       end
 
       local
@@ -278,53 +275,6 @@ in
          then D.stack else unit end
       end
 
-      %% parametrized output routines
-
-      proc {LineOutput ErrorMsg Format} VSCell in
-         %% We have to call output a single time and not once per line
-         %% so that the alarm character to raise the buffer if running
-         %% under Emacs is only output once.
-         case Format of none then skip
-         else
-            VSCell = {NewCell ""}
-            {ErrorMsg
-             proc {$ X}
-                {Assign VSCell {Access VSCell}#{AlmostVSToVS X}}
-             end
-             Format}
-            {Output {Access VSCell}}
-         end
-      end
-
-      proc {Lines Out Xs}
-         Ys    = {AttachLeftSizes Xs}
-         Align = {MaxLeftSize Ys} + SKIP
-      in
-         {ForAll Ys
-          proc {$ L#X}
-             case X
-             of unit then
-                {Out {StarLine ''}}
-             [] line(H) then
-                {Out {StarLine H}}
-             [] pos(F L C) then
-                {Out {StarLine 'in ' # {PosToVS F L C unit}}}
-             [] pos(F L C _ _ _) then
-                {Out {StarLine 'in ' # {PosToVS F L C unit}}}
-             [] hint then
-                {Out {StarLine ''}}
-             [] hint(l:Left) then
-                {Out {StarLine Left}}
-             [] hint(m:Mid) then
-                {Out {StarLine {Spaces Align - L + 2} # Mid}}
-             [] hint(l:Left m:Mid) then
-                {Out {StarLine Left # ':' # {Spaces Align - L + 1} # Mid}}
-             else
-                skip % more to be added
-             end
-          end}
-      end
-
       %%
       %% AlmostVSToVS: AlMostVS -> VS
       %%
@@ -382,6 +332,53 @@ in
                 {VSL {AlmostVSToVS L}} # X
              else
                 0 # X
+             end
+          end}
+      end
+
+      %% parametrized output routines
+
+      proc {LineOutput ErrorMsg Format} VSCell in
+         %% We have to call output a single time and not once per line
+         %% so that the alarm character to raise the buffer if running
+         %% under Emacs is only output once.
+         case Format of none then skip
+         else
+            VSCell = {NewCell ""}
+            {ErrorMsg
+             proc {$ X}
+                {Assign VSCell {Access VSCell}#{AlmostVSToVS X}}
+             end
+             Format}
+            {Output {Access VSCell}}
+         end
+      end
+
+      proc {Lines Out Xs}
+         Ys    = {AttachLeftSizes Xs}
+         Align = {MaxLeftSize Ys} + SKIP
+      in
+         {ForAll Ys
+          proc {$ L#X}
+             case X
+             of unit then
+                {Out {StarLine ''}}
+             [] line(H) then
+                {Out {StarLine H}}
+             [] pos(F L C) then
+                {Out {StarLine 'in ' # {PosToVS F L C unit}}}
+             [] pos(F L C _ _ _) then
+                {Out {StarLine 'in ' # {PosToVS F L C unit}}}
+             [] hint then
+                {Out {StarLine ''}}
+             [] hint(l:Left) then
+                {Out {StarLine Left}}
+             [] hint(m:Mid) then
+                {Out {StarLine {Spaces Align - L + 2} # Mid}}
+             [] hint(l:Left m:Mid) then
+                {Out {StarLine Left # ':' # {Spaces Align - L + 1} # Mid}}
+             else
+                skip % more to be added
              end
           end}
       end

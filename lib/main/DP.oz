@@ -20,23 +20,32 @@
 %%% WARRANTIES.
 %%%
 
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
-   \insert 'SP.env'
-       = IMPORT.'SP'
-   \insert 'OP.env'
-       = IMPORT.'OP'
-   \insert 'AP.env'
-   = IMPORT.'AP'
-   \insert 'WP.env'
-       = IMPORT.'WP'
+local
+
+   \insert 'DP/Connection.oz'
+
 in
-   local
-      \insert DP/Site
+
+   fun
+\ifdef NEWCOMPILER
+      instantiate
+\endif
+      {$ IMPORT}
+      \insert 'SP.env'
+      = IMPORT.'SP'
+      \insert 'OP.env'
+      = IMPORT.'OP'
+      \insert 'AP.env'
+      = IMPORT.'AP'
+      \insert 'WP.env'
+      = IMPORT.'WP'
    in
-      \insert 'DP.env'
+      local
+         Connection = {NewConnection}
+         \insert DP/Site
+      in
+         \insert 'DP.env'
+      end
    end
+
 end

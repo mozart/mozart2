@@ -51,6 +51,9 @@ prepare
                      verbose(rightmost char: &v type: bool default: auto)
                      quiet(rightmost char: &q alias: verbose#false)
                      makedepend(rightmost char: &M default: false)
+                     target(rightmost type:atom(unix windows) default:unit)
+                     unix(alias:target#unix)
+                     windows(alias:target#windows)
 
                      %% options for individual modes
                      outputfile(single char: &o type: string default: unit)
@@ -161,6 +164,8 @@ prepare
    '                               <ozhome>/bin/ozwrapper.bin).\n'#
    '--execwrapper=FILE            Use above header, with ozwrapper.bin\n'#
    '                              replaced by STR.\n'#
+   '--target=(unix|windows)       when creating an executable functor, do\n'#
+   '                              it for this platform (default current).\n'#
    '-z N, --compress=N            Use compression level N for pickles.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
@@ -203,10 +208,12 @@ define
    fun {MakeExecFile File}
       {Property.get 'oz.home'}#'/bin/'#File
    end
+   DefaultExecWindows = file({MakeExecFile 'ozwrapper.bin'})
+   DefaultExecUnix    = string({MakeExecHeader 'ozengine'})
    DefaultExec = case {Property.get 'platform.os'} of win32 then
-                    file({MakeExecFile 'ozwrapper.bin'})
+                    DefaultExecWindows
                  else
-                    string({MakeExecHeader 'ozengine'})
+                    DefaultExecUnix
                  end
 
    local
@@ -390,12 +397,14 @@ in
                    OFN = unit
                 [] dump then
                    OFN = {ChangeExtension Arg ".ozf"}
-                [] executable then
-                   case {Property.get 'platform.os'} of win32 then
-                      OFN = {ChangeExtension Arg ".exe"}
-                   else
-                      OFN = {ChangeExtension Arg ""}
-                   end
+                [] executable then EXT in
+                   case OptRec.target
+                   of unix then EXT=""
+                   [] windows then EXT=".exe"
+                   elsecase {Property.get 'platform.os'}
+                   of win32 then EXT=".exe"
+                   else EXT="" end
+                   OFN={ChangeExtension Arg EXT}
                 end
              elseof "-" then
                 if OptRec.mode == dump orelse OptRec.mode == executable
@@ -475,7 +484,10 @@ in
                                 of unit then
                                    case {CondSelect OptRec execwrapper unit}
                                    of unit then
-                                      DefaultExec
+                                      case OptRec.target
+                                      of unix then DefaultExecUnix
+                                      [] windows then DefaultExecWindows
+                                      else DefaultExec end
                                    elseof S then file({MakeExecFile S})
                                    end
                                 elseof S then file(S)

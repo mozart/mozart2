@@ -56,6 +56,9 @@ fun {Usage}
    '    (Windows default: <ozhome>/bin/ozwrapper.bin).\n' #
    '--execwrapper=FILE\n' #
    '    Use above header, with ozwrapper.bin replaced by STR.\n' #
+   '--target=(unix|windows)\n' #
+   '    When creating an executable functor,\n' #
+   '    do it for this platform (default current).\n'#
    '--compress=N, -z N (N: 0..9, default 0)\n' #
    '    Use compression level N for created pickle.\n'
 end

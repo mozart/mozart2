@@ -73,10 +73,12 @@ define
    fun {MakeExecFile File}
       {Property.get 'oz.home'}#'/bin/'#File
    end
+   DefaultExecWindows = file({MakeExecFile 'ozwrapper.bin'})
+   DefaultExecUnix    = string({MakeExecHeader 'ozengine'})
    DefaultExec = case {Property.get 'platform.os'} of win32 then
-                    file({MakeExecFile 'ozwrapper.bin'})
+                    DefaultExecWindows
                  else
-                    string({MakeExecHeader 'ozengine'})
+                    DefaultExecUnix
                  end
 
    proc {ReadFile File ?VS} F in
@@ -119,6 +121,10 @@ define
 
                     out(single char: &o type: string optional: true)
                     rewrite(multiple type: list(StringPair) default: nil)
+
+                    target(rightmost type:atom(unix windows) default:unit)
+                    unix(alias:target#unix)
+                    windows(alias:target#windows)
 
                     executable(rightmost char: &x type: bool default: false)
                     execheader(single type: string
@@ -191,7 +197,10 @@ define
                               of unit then
                                  case {CondSelect Args execwrapper unit}
                                  of unit then
-                                    DefaultExec
+                                    case Args.target
+                                    of unix then DefaultExecUnix
+                                    [] windows then DefaultExecWindows
+                                    else DefaultExec end
                                  elseof S then file({MakeExecFile S})
                                  end
                               elseof S then file(S)

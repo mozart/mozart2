@@ -358,6 +358,10 @@ prepare
             'Object.\',\''      : doComma
             'Object.\'<-\''     : doAssignAccess
             'Object.\'@\''      : doAssignAccess
+            'Value.catAssignOO' : doCatAssignAccessOO
+            'Value.catAccessOO' : doCatAssignAccessOO
+            'Value.catAssign'   : doCatAssignAccess
+            'Value.catAccess'   : doCatAssignAccess
             'Bool.and'          : doAnd
             'Bool.or'           : doOr
             'Bool.not'          : doNot
@@ -1986,6 +1990,138 @@ define
                              line(Hint)])}
             end
          end
+      end
+
+      meth doCatAssignAccess(Ctrl oo:OO<=false)
+         FeaV = {Nth @actualArgs 1}
+         Fea  = {GetData FeaV}
+         ValV = {Nth @actualArgs 2}
+      in
+         if {DetTests.det FeaV} then
+            PrintName = {System.printName {GetData @designator}}
+            FeaOz = {GetPrintData FeaV}
+            ValOz = {GetPrintData ValV}
+            Expr = case PrintName
+                   of 'Value.catAccess'   then '@'#FeaOz# ' = '#ValOz
+                   [] 'Value.catAccessOO' then '@'#FeaOz# ' = '#ValOz
+                   [] 'Value.catAssign'   then     FeaOz#' := '#ValOz
+                   [] 'Value.catAssignOO' then     FeaOz#' := '#ValOz
+                   end
+         in
+            if {IsLiteral Fea} then
+               if OO then
+                  Self = {Ctrl getSelf($)}
+                  Attrs = case Self of unit then unit
+                          else {Self getAttributes($)} end
+                  Props = case Self of unit then unit
+                          else {Self getProperties($)} end
+               in
+                  %%{Show 'self'(Self)}
+                  %%{Show attrs(Attrs)}
+                  %%{Show props(Props)}
+                  if Attrs==unit orelse {Member Fea Attrs} then skip else
+                     Final = (Props\=unit andthen {Member final Props})
+                  in
+                     if Final orelse {Ctrl.state getSwitch(warnforward $)} then
+                        {Ctrl.rep
+                         warn(coord: @coord
+                              kind : SAGenWarn
+                              msg  : case PrintName
+                                     of 'Value.catAccessOO' then 'access of'
+                                     [] 'Value.catAssignOO' then 'assignment to'
+                                     end#' undefined attribute'
+                              items:[hint(l:'Statement' m:Expr)
+                                     hint(l:if Final
+                                            then 'In final class'
+                                            else 'In class' end
+                                          m:pn({System.printName {Self getValue($)}}))
+                                     hint(l:'Expected one of' m:{SetToVS {Ozify Attrs}})
+                                     line(if Final
+                                          then '(correct use requires method application)'
+                                          else '(may be a correct forward declaration)' end)])}
+                     end
+                  end
+               else
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind : SAGenError
+                         msg  : case PrintName
+                                of 'Value.catAccess' then 'access of'
+                                [] 'Value.catAssign' then 'assignment to'
+                                end#' attribute outside of a class definition'
+                         items:[hint(l:'Statement' m:Expr)])}
+               end
+            elseif {IsCell Fea} then skip
+            elsecase Fea of D#K then
+               if {DetTests.det D} then
+                  Dict = {GetData D}
+               in
+                  %% First element of tuple is known
+                  if {Not {IsDictionary Dict} orelse {IsArray Dict}} then
+                     {Ctrl.rep
+                      error(coord: @coord
+                            kind : SAGenError
+                            msg  : 'expected dictionary or array as 1st argument of the hash tuple'
+                            items:[hint(l:'Statement' m:Expr)
+                                   hint(l:'Value' m:{GetPrintData D})
+                                   hint(l:'Type' m:oz({Value.type Dict}))])}
+                  end
+                  %% First element is array or dict. Check second element of tuple.
+                  if {DetTests.det K} then
+                     Key  = {GetData K}
+                  in
+                     %% Second element is known
+                     if {IsArray Dict} andthen {Not {IsInt Key}} then
+                        {Ctrl.rep
+                         error(coord: @coord
+                               kind : SAGenError
+                               msg  : 'expected an int as 2nd argument of array#int tuple'
+                               items:[hint(l:'Statement' m:Expr)
+                                      hint(l:'Value' m:{GetPrintData K})
+                                      hint(l:'Type' m:oz({Value.type Key}))])}
+                     end
+                     if {IsDictionary Dict} andthen {Not {IsLiteral Key} orelse {IsInt Key}} then
+                        {Ctrl.rep
+                         error(coord: @coord
+                               kind : SAGenError
+                               msg  : 'expected a feature as 2nd argument of dict#feat tuple'
+                               items:[hint(l:'Statement' m:Expr)
+                                      hint(l:'Value' m:{GetPrintData K})
+                                      hint(l:'Type' m:oz({Value.type Key}))])}
+                     end
+                  end
+               elseif {DetTests.det K} then
+                  Key  = {GetData K}
+               in
+                  %% First element unknowm, check second element is a feature
+                  if {Not {IsLiteral Key} orelse {IsInt Key}} then
+                     {Ctrl.rep
+                      error(coord: @coord
+                            kind : SAGenError
+                            msg  : 'expected a literal or int as 2nd argument of the hash tuple'
+                            items:[hint(l:'Statement' m:Expr)
+                                   hint(l:'Value' m:{GetPrintData K})
+                                   hint(l:'Type' m:oz({Value.type Key}))])}
+                  end
+               end
+            else
+               {Ctrl.rep
+                error(coord: @coord
+                      kind : SAGenError
+                      msg  : if OO then
+                                'expected a literal, cell, dictionary#literal or array#int'
+                             else
+                                'expected a cell, dictionary#literal or array#int'
+                             end
+                      items:[hint(l:'Statement' m:Expr)
+                             hint(l:'Value' m:FeaOz)
+                             hint(l:'Type' m:oz({Value.type Fea}))])}
+            end
+         end
+      end
+
+      meth doCatAssignAccessOO(Ctrl)
+         {self doCatAssignAccess(Ctrl oo:true)}
       end
 
       meth doAnd(Ctrl)

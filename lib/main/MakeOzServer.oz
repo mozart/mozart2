@@ -22,60 +22,93 @@
 
 local
 
-   fun {MakeServer Import Status}
-      CS CP={NewPort CS}
+   AllLoader = {Application.loader
+                c('SP':            eager
+                  'OP':            eager
+                  'DP':            eager
+                  'AP':            lazy
+                  'CP':            lazy
+                  'WP':            lazy
+                  'Panel':         lazy
+                  'Browser':       lazy
+                  'Explorer':      lazy
+                  'Compiler':      lazy
+                  'CompilerPanel': lazy
+                  'Emacs':         lazy
+                  'Ozcar':         lazy
+                  'Profiler':      lazy
+                  'Gump':          lazy
+                  'GumpScanner':   lazy
+                  'GumpParser':    lazy
+                  'Misc':          lazy)}
+
+
+   proc {RemoteServer RunRet CtrlRet Import Close}
+      RunStr CtrlStr
    in
+      {Port.send RunRet  {Port.new RunStr}}
+      {Port.send CtrlRet {Port.new CtrlStr}}
+
+      %% The server for running procedures
       thread
-         {ForAll CS
-          proc {$ Task}
-             case Task
-             of idle(Ack)  then Ack=unit
-             [] run(P Ack) then
-                Ack = try
-                         case {Procedure.arity P}
-                         of 0 then {P} okay
-                         [] 1 then {P Import} okay
-                         end
-                      catch E then exception(E)
-                      end
-             end
+         {ForAll RunStr
+          proc {$ P}
+             {Port.send RunRet
+              try
+                 X = case {Procedure.arity P}
+                     of 1 then {P}
+                     [] 2 then {P Import}
+                     end
+              in
+                 okay(X)
+              catch E then
+                 exception(E)
+              end}
           end}
       end
-      proc {$ Task}
-         case Task
-         of ping(Ack) then Ack=unit
-         [] close     then Status=0
-         [] idle(_)   then {Port.send CP Task}
-         [] run(_ _)  then {Port.send CP Task}
-         end
+
+      %% The server for control messages
+      thread
+         {ForAll CtrlStr
+          proc {$ C}
+             {Port.send CtrlRet
+              case C
+              of ping  then unit
+              [] close then {Close} unit
+              end}
+          end}
       end
+
    end
 
 in
 
    {Application.exec
     'ozserver'
-    c('AP':lazy 'SP':lazy 'OP':lazy
-      'DP':lazy 'CP':lazy 'WP':lazy)
+    c
 
-    fun {$ IMPORT}
-       \insert 'DP.env'
-       = IMPORT.'DP'
+    fun {$ _}
+       IMPORT = {AllLoader}
     in
-
        proc {$ Argv ?Status}
-          S P={Port.new S}
-       in
           try
-             {Connection.take Argv.ticket P}
-             thread
-                {ForAll S {MakeServer IMPORT Status}}
-             end
-          catch _ then Status=1
+             Show = {`Builtin` 'Show' 1}
+             {Show waiting(Argv.ticket)}
+             {Show waiting(IMPORT)}
+             RunRet # CtrlRet = {IMPORT.'DP'.'Connection'.take Argv.ticket}
+             {Show taken}
+          in
+             {RemoteServer RunRet CtrlRet IMPORT proc {$}
+                                                    Status = 0
+                                                 end}
+          catch _ then Status = 1
           end
           {Wait Status}
        end
 
     end
-    single(ticket(type:atom))}
+
+    single(ticket(type:atom))
+   }
+
 end

@@ -22,43 +22,76 @@
 
 local
 
-   proc {StartRemote Host Cmd Ticket}
+   proc {StartRemote Host Cmd}
       try
-         0={OS.system 'rsh '#Host#' '#Cmd#' --ticket='#Ticket#[&&]}
+         0={OS.system 'rsh '#Host#' '#Cmd#' '#[&&]}
       catch _ then
          raise error end
       end
    end
 
-   class ComputeServer
-      feat RP
-      meth init(Host ...) = M
-         Cmd = case {HasFeature M 2} then M.2
-               else {OS.getEnv 'OZHOME'}#'/bin/ozserver'
-               end
+   fun {Idle}
+      unit
+   end
+
+   class ComputeClient
+      feat
+         Run
+         Ctrl
+      attr
+         Run:  nil
+         Ctrl: nil
+
+      meth init(Host)
+         RunRet  RunPort ={Port.new RunRet}
+         CtrlRet CtrlPort={Port.new CtrlRet}
+         Ticket={Connection.offer RunPort#CtrlPort}
+         Show = {`Builtin` 'Show' 1}
       in
-         {StartRemote Host Cmd {Connection.offer self.RP}}
+         {StartRemote Host
+          {OS.getEnv 'HOME'}#'/Oz/lib/ozserver --ticket='#Ticket}
+         {Show started}
+         Run      <- RunRet.2
+         {Show run}
+         Ctrl     <- CtrlRet.2
+         {Show ctrl}
+         self.Run  = RunRet.1
+         self.Ctrl = CtrlRet.1
       end
-      meth Remote(M)
-         {Port.send self.RP M}
+
+      meth Send(Which What $)
+         OldS NewS Ret
+      in
+         {Port.send self.Which What}
+         OldS = (Which <- NewS)
+         {Wait OldS}
+         Ret|NewS = OldS
+         case Ret
+         of okay(A)      then A
+         [] exception(E) then raise E end
+         end
       end
-      meth idle(_) = M
-         ComputeServer,Remote(M)
+
+      %% Run methods
+      meth run(P $)
+         ComputeClient,Send(Run P $)
       end
-      meth ping(_) = M
-         ComputeServer,Remote(M)
+      meth idle($)
+         ComputeClient,Send(Run Idle $)
       end
-      meth run(P Ack<=_)
-         ComputeServer,Remote(run(P Ack))
+
+      %% Ctrl methods
+      meth ping($)
+         ComputeClient,Send(Ctrl ping  $)
       end
       meth close
-         ComputeServer,Remote(close)
+         ComputeClient,Send(Ctrl close _)
       end
    end
 
 in
 
-   Remote = remote(server: ComputeServer
+   Remote = remote(server: ComputeClient
                    farm:   unit)
 
 end

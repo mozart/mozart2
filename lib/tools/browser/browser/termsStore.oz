@@ -31,8 +31,7 @@ in
    %%  It is being used in 'Check' to perform check recursively;
    fun {CheckProc Term List}
       %%
-      case {IsVar List}
-      of !True then InitValue
+      case {IsVar List} then InitValue
       else
          Obj IsEQ R IsAway
       in
@@ -47,19 +46,17 @@ in
          %%> alternative, but only 'proper' coreferences (incl. cycles);
          %%> case {EQ Obj.term Term} then ...
          case
-            case {IsVar IsEQ}
-            of !True then False
+            case {IsVar IsEQ} then False
             else IsEQ
             end
-         of !True then
+         then
             %%
             job
                IsAway = {Object.closed Obj}
             end
 
             %%
-            case {IsVar IsAway}
-            of !True then Obj
+            case {IsVar IsAway} then Obj
             else {CheckProc Term R}
             end
          else {CheckProc Term R}  %  both - monotonic and non-monotonic;
@@ -71,8 +68,7 @@ in
    %%  Almost the same as above, but excluding 'self' (and it yields bool);
    fun {SearchProc Self List}
       %%
-      case {IsVar List}
-      of !True then False
+      case {IsVar List} then False
       else
          Obj R IsAway
       in
@@ -90,19 +86,17 @@ in
 
             %%
             case
-               case {IsVar IsEQ}
-               of !True then False
+               case {IsVar IsEQ} then False
                else IsEQ
                end
-            of !True then
+            then
                %%
                job
                   IsAway = {Object.closed}
                end
 
                %%
-               case {IsVar IsAway}
-               of !True then True
+               case {IsVar IsAway} then True
                else {SearchProc Self R}
                end
             else
@@ -130,8 +124,7 @@ in
 
          %%
          case
-            case {IsVar IsEQ}
-            of !True then False
+            case {IsVar IsEQ} then False
             else IsEQ
             end
          then
@@ -147,8 +140,7 @@ in
                end
 
                %%
-               case {IsVar IsAway}
-               of !True then SelfObject
+               case {IsVar IsAway} then SelfObject
                else
                   PO
                in
@@ -195,8 +187,7 @@ in
          end
 
          %%
-         case {IsVar IsAway}
-         of !True then
+         case {IsVar IsAway} then
             NewTail in
             %%
             NewList = Obj|NewTail
@@ -342,12 +333,10 @@ in
             %%
             RefObj = {CheckProc Term @list}
             case RefObj
-            of !InitValue then
-               local NewTail in
-                  @tail = Obj|NewTail   % transaction;
-                  tail <- NewTail
-                  length <- @length + 1
-               end
+            of !InitValue then NewTail in
+               @tail = Obj|NewTail   % transaction;
+               tail <- NewTail
+               length <- @length + 1
             else true
             end
          end
@@ -383,16 +372,15 @@ in
 
                   %%
                   %%  never zero in divide;
-                  case {`div` @length @pruned} < TermsStoreGCRatio
-                  of !True then
-                     local NewList NewLength in
-                        {GCProc @list 0 NewList NewLength}
+                  case {`div` @length @pruned} < TermsStoreGCRatio then
+                     NewList NewLength
+                  in
+                     {GCProc @list 0 NewList NewLength}
 
-                        %%
-                        list <- NewList
-                        length <- NewLength
-                        pruned <- 0
-                     end
+                     %%
+                     list <- NewList
+                     length <- NewLength
+                     pruned <- 0
                   else true
                   end
                end
@@ -431,8 +419,7 @@ in
             CurrentNumber = @currentNumber
 
             %%
-            case CurrentNumber < CurrentLimit
-            of !True then
+            case CurrentNumber < CurrentLimit then
                Permition = True
             else
                case CurrentNumber

@@ -105,15 +105,15 @@ in
       [] 29 then '                             '
       [] 30 then '                              '
       else
-         local H V in
-            H = {`div` N 2}
-            case H + H == N then
+         H V
+      in
+         H = {`div` N 2}
+         case H + H == N then
+            V = {CreateSpaces H}
+            V#V
+         else
                V = {CreateSpaces H}
-               V#V
-            else
-               V = {CreateSpaces H}
-               ' '#V#V
-            end
+            ' '#V#V
          end
       end
    end
@@ -692,6 +692,7 @@ in
             %%
             Tags = {self.widgetObj getTagsOnXY(X Y $)}
             NumOf = {Length Tags}
+            {Show '!'#{Map Tags String.toAtom}#NumOf#self.tag}
 
             %%
             case
@@ -701,7 +702,7 @@ in
                                 % this could be used in the future;
             else
                %%
-               %%  produce new thread - let other handler start;
+               %%  produce a new thread - let other handler start;
                thread
                   %%
                   {self keysHandler(KC)}
@@ -1263,80 +1264,80 @@ in
       %%
       meth checkLayout
          case @shown then
-            local ActualTWWidth StartOffset MetaSize in
-               ActualTWWidth = {self.store read(StoreTWWidth $)}
-               StartOffset = {self.widgetObj getTagFirst(self.tag $)}
-               MetaSize = @size
+            ActualTWWidth StartOffset MetaSize
+         in
+            ActualTWWidth = {self.store read(StoreTWWidth $)}
+            StartOffset = {self.widgetObj getTagFirst(self.tag $)}
+            MetaSize = @size
 
-               %%
-               %%  Attention!
-               %%  These conditions seem to be a ***reasonable***
-               %% approximation for a "term's layout need not to be
-               %% changed" test, but nothing more;
-               %%  This is obviously that corresponding contra-
-               %% examples can be constructed, but the *correct*
-               %% implementation needs complex control structures,
-               %% much more memory and execution time;
-               %%  Practically these conditions seem to be enough;
-               %%
+            %%
+            %%  Attention!
+            %%  These conditions seem to be a ***reasonable***
+            %% approximation for a "term's layout need not to be
+            %% changed" test, but nothing more;
+            %%  This is obviously that corresponding contra-
+            %% examples can be constructed, but the *correct*
+            %% implementation needs complex control structures,
+            %% much more memory and execution time;
+            %%  Practically these conditions seem to be enough;
+            %%
 \ifdef DEBUG_TW
-               job
-                  {Wait StartOffset}
-                  {Wait MetaSize}
-                  {Wait ActualTWWidth}
+            job
+               {Wait StartOffset}
+               {Wait MetaSize}
+               {Wait ActualTWWidth}
 
-                  %%
-                  {Show 'MetaTupleTWTermObject::checkLayout is applied '#
-                   self.term}
-                  {Show StartOffset#MetaSize#ActualTWWidth}
-               end
+               %%
+               {Show 'MetaTupleTWTermObject::checkLayout is applied '#
+                self.term}
+               {Show StartOffset#MetaSize#ActualTWWidth}
+            end
 \endif
-               case
-                  @shownStartOffset == StartOffset andthen
-                  @shownMetaSize == MetaSize andthen
-                  @shownTWWidth == ActualTWWidth
-               then
-                  <<nil>>
+            case
+               @shownStartOffset == StartOffset andthen
+               @shownMetaSize == MetaSize andthen
+               @shownTWWidth == ActualTWWidth
+            then
+               <<nil>>
+            else
+               StartSubOffset SubsOffset OutOffset
+            in
+               shownStartOffset <- StartOffset
+               shownMetaSize <- MetaSize
+               shownTWWidth <- ActualTWWidth
+
+               %%
+               case ActualTWWidth - StartOffset > MetaSize then
+                  %% in one row;
+                  StartSubOffset = ~1
+                  ReferenceGlue <- DSpaceGlue
+                  ReferenceGSize <- DSpace
+
+                  %%  we don't need resulting offset
+                  %% (actually, it should be the same!);
+                  <<adjustNameGlue((StartOffset + @FirstInc) _)>>
                else
-                  shownStartOffset <- StartOffset
-                  shownMetaSize <- MetaSize
-                  shownTWWidth <- ActualTWWidth
-
+                  %% in many rows;
                   %%
-                  local StartSubOffset SubsOffset OutOffset in
-                     case ActualTWWidth - StartOffset > MetaSize then
-                        %% in one row;
-                        StartSubOffset = ~1
-                        ReferenceGlue <- DSpaceGlue
-                        ReferenceGSize <- DSpace
+                  SubsOffset = StartOffset + {Min @FirstInc DOffset}
+                  ReferenceGlue <- {CreateGlue SubsOffset}
+                  ReferenceGSize <- SubsOffset + DSpace + 1
 
-                        %%  we don't need resulting offset
-                        %% (actually, it should be the same!);
-                        <<adjustNameGlue((StartOffset + @FirstInc) _)>>
-                     else
-                        %% in many rows;
-                        %%
-                        SubsOffset = StartOffset + {Min @FirstInc DOffset}
-                        ReferenceGlue <- {CreateGlue SubsOffset}
-                        ReferenceGSize <- SubsOffset + DSpace + 1
-
-                        %%  Note: 'adjustNameGlue' requires 'ReferenceGlue'
-                        %% and 'ReferenceGSize' attributes!
-                        StartSubOffset =
-                        <<adjustNameGlue((StartOffset + @FirstInc) $)>>
-                     end
-
-                     %%  Resulting offset (the third arg)
-                     %% is not actually interesting - only sync;
-                     <<mapObjIndArg(AdjustGlue StartSubOffset OutOffset)>>
-
-                     %%
-                     {Wait OutOffset}
-
-                     %%
-                     <<nil>>
-                  end
+                  %%  Note: 'adjustNameGlue' requires 'ReferenceGlue'
+                  %% and 'ReferenceGSize' attributes!
+                  StartSubOffset =
+                  <<adjustNameGlue((StartOffset + @FirstInc) $)>>
                end
+
+               %%  Resulting offset (the third arg)
+               %% is not actually interesting - only sync;
+               <<mapObjIndArg(AdjustGlue StartSubOffset OutOffset)>>
+
+               %%
+               {Wait OutOffset}
+
+               %%
+               <<nil>>
             end
          else
             true                % ignore;
@@ -1981,13 +1982,14 @@ in
 
             %%
             case <<areCommas($)>> then
+               Obj
+            in
                %%
                %% commas;
-               local Obj in
-                  Obj = {New PseudoTermTWCommas init(parentObj: self)}
-                  %%
-                  <<setCommasObj(Obj)>>
-               end
+               Obj = {New PseudoTermTWCommas init(parentObj: self)}
+
+               %%
+               <<setCommasObj(Obj)>>
             else true
             end
 
@@ -2605,13 +2607,14 @@ in
 
             %%
             case <<areCommas($)>> then
+               Obj
+            in
                %%
                %% commas;
-               local Obj in
-                  Obj = {New PseudoTermTWCommas init(parentObj: self)}
-                  %%
-                  <<setCommasObj(Obj)>>
-               end
+               Obj = {New PseudoTermTWCommas init(parentObj: self)}
+
+               %%
+               <<setCommasObj(Obj)>>
             else true
             end
 
@@ -2812,13 +2815,14 @@ in
 
             %%
             case <<areCommas($)>> then
+               Obj
+            in
                %%
                %% commas;
-               local Obj in
-                  Obj = {New PseudoTermTWCommas init(parentObj: self)}
-                  %%
-                  <<setCommasObj(Obj)>>
-               end
+               Obj = {New PseudoTermTWCommas init(parentObj: self)}
+
+               %%
+               <<setCommasObj(Obj)>>
             else true
             end
 
@@ -3179,13 +3183,13 @@ in
                       insertAfterMark(self.nameGlueMark 0
                                       DSpaceGlue#@ReferenceGlue)}
                   else
-                     local Spaces in
-                        Spaces = {CreateSpaces (ReferenceGlueSize - NameGlueSize)}
+                     Spaces
+                  in
+                     Spaces = {CreateSpaces (ReferenceGlueSize - NameGlueSize)}
 
-                        %%
-                        {self.widgetObj
-                         insertAfterMark(self.nameGlueMark NameGlueSize Spaces)}
-                     end
+                     %%
+                     {self.widgetObj
+                      insertAfterMark(self.nameGlueMark NameGlueSize Spaces)}
                   end
 
                   %%
@@ -3660,13 +3664,14 @@ in
 
             %%
             case <<areCommas($)>> then
+               Obj
+            in
                %%
                %% commas;
-               local Obj in
-                  Obj = {New PseudoTermTWCommas init(parentObj: self)}
-                  %%
-                  <<setCommasObj(Obj)>>
-               end
+               Obj = {New PseudoTermTWCommas init(parentObj: self)}
+
+               %%
+               <<setCommasObj(Obj)>>
             else true
             end
 
@@ -3861,13 +3866,14 @@ in
 
             %%
             case <<areCommas($)>> then
+               Obj
+            in
                %%
                %% commas;
-               local Obj in
-                  Obj = {New PseudoTermTWCommas init(parentObj: self)}
-                  %%
-                  <<setCommasObj(Obj)>>
-               end
+               Obj = {New PseudoTermTWCommas init(parentObj: self)}
+
+               %%
+               <<setCommasObj(Obj)>>
             else true
             end
 
@@ -4047,41 +4053,39 @@ in
          case @shown == False then
             {BrowserWarning ['ORecordTWTermObject::removeDots: not shown']}
          elsecase <<areSpecs($)>> then
-            local
-               TotalWidth SpecsOutInfo SpecsObj SpecsSize
-               PreOutInfo NewPreOutInfo OldSize NewSize
-            in
-               TotalWidth = <<getTotalWidth($)>>
-               OldSize = @size
+            TotalWidth SpecsOutInfo SpecsObj SpecsSize
+            PreOutInfo NewPreOutInfo OldSize NewSize
+         in
+            TotalWidth = <<getTotalWidth($)>>
+            OldSize = @size
 
-               %%
-               %%  Note: it should contain at least one visible feature;
-               <<getAnySubtermObjOutInfo(TotalWidth SpecsObj SpecsOutInfo)>>
-               <<getAnySubtermOutInfo((TotalWidth - 1) PreOutInfo)>>
+            %%
+            %%  Note: it should contain at least one visible feature;
+            <<getAnySubtermObjOutInfo(TotalWidth SpecsObj SpecsOutInfo)>>
+            <<getAnySubtermOutInfo((TotalWidth - 1) PreOutInfo)>>
 
-               %%
-               {SpecsObj [getSize(SpecsSize) undraw destroy]}
+            %%
+            {SpecsObj [getSize(SpecsSize) undraw destroy]}
 
-               %%
-               {self.widgetObj
-                [deleteBeforeMark(SpecsOutInfo.mark PreOutInfo.glueSize)
-                 unsetMark(SpecsOutInfo.mark)]}
+            %%
+            {self.widgetObj
+             [deleteBeforeMark(SpecsOutInfo.mark PreOutInfo.glueSize)
+              unsetMark(SpecsOutInfo.mark)]}
 
-               %%
-               NewPreOutInfo = {AdjoinAt PreOutInfo glueSize 0}
+            %%
+            NewPreOutInfo = {AdjoinAt PreOutInfo glueSize 0}
 
-               %%
-               <<setAnySubtermOutInfo((TotalWidth - 1) NewPreOutInfo)>>
-               <<removeSpecs>>
+            %%
+            <<setAnySubtermOutInfo((TotalWidth - 1) NewPreOutInfo)>>
+            <<removeSpecs>>
 
-               %%
-               NewSize = OldSize - SpecsSize - PreOutInfo.glueSize
-               size <- NewSize
+            %%
+            NewSize = OldSize - SpecsSize - PreOutInfo.glueSize
+            size <- NewSize
 
-               %%
-               job
-                  {self.parentObj checkSize(self OldSize NewSize)}
-               end
+            %%
+            job
+               {self.parentObj checkSize(self OldSize NewSize)}
             end
          else
             {BrowserError

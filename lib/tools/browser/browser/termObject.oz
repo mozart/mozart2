@@ -715,15 +715,15 @@ in
                OldSize = <<getSize($)>>
                %%  insert a slot for a new subterm;
                case {Length RestOf} == 1 then
-                  local CommasObj in
-                     <<makeLastSubterm(CommasObj)>>
+                  CommasObj
+               in
+                  <<makeLastSubterm(CommasObj)>>
 
-                     %%
-                     {CommasObj [undraw destroy]}
+                  %%
+                  {CommasObj [undraw destroy]}
 
-                     %%  create a subterm;
-                     <<createSubtermObjs(NewWidth NewWidth RestOf)>>
-                  end
+                  %%  create a subterm;
+                  <<createSubtermObjs(NewWidth NewWidth RestOf)>>
                else
                   <<addSubterm>>
 
@@ -1432,19 +1432,20 @@ in
          {Show 'VariableGenericTermObject::getRefVar: term '#self.term}
 \endif
          case @refVarName == '' then
-            local RefNumber Ref OldSize NeedBraces in
-               RefNumber = {NewRefNameGen gen($)}
-               Ref = self.termsStore.refType#RefNumber
-               refVarName <- Ref
-               %%
-               {Obj setRefVar(self Ref)}
-               %%
-               <<insertRefVar>>
-            end
+            RefNumber Ref OldSize NeedBraces
+         in
+            RefNumber = {NewRefNameGen gen($)}
+            Ref = self.termsStore.refType#RefNumber
+            refVarName <- Ref
+
+            %%
+            {Obj setRefVar(self Ref)}
+
+            %%
+            <<insertRefVar>>
          else
             {Obj setRefVar(self @refVarName)}
          end
-         %%
       end
 
       %%
@@ -1757,23 +1758,12 @@ in
          job S2 = {NoNumber.matchDefault L2 1 InitValue} end
 
          %%
-         case
-            case {IsVar S1}
-            of !True then {EQ S1 S2}
-            elsecase {IsVar S2}
-            of !True then {EQ S1 S2}
-            elsecase S1
-            of !InitValue then False
-            elsecase S2
-            of !InitValue then False
-            else S1 == S2
-            end
-         of !True then
+         if S1 = S2 then
             {DiffRest L1.2 L2.2 LOut1 LOut2}
-         else
+         [] true then
             LOut1 = L1
             LOut2 = L2
-         end
+         fi
       end
    end
    %%

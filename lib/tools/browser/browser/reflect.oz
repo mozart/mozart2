@@ -152,66 +152,61 @@ in
             case {IsVar TermIn} then
                %%
                %%
-               case {IsRecordCVar TermIn}
-               of !True then
+               case {IsRecordCVar TermIn} then
+                  Arity KnownArity RLabel L
+               in
                   %%
                   %%  convert an OFS to the proper record non-monotonically;
-                  local Arity KnownArity RLabel L in
-                     %%
-                     %%  'RLabel' will be determined later!
-                     Arity = {RecordC.monitorArity TermIn True}
-                     KnownArity = {GetWFList Arity}
+                  %%
+                  %%  'RLabel' will be determined later!
+                  Arity = {RecordC.monitorArity TermIn True}
+                  KnownArity = {GetWFList Arity}
 
-                     %%
-                     job
-                        L = {LabelC TermIn}
-                     end
-
-                     %%
-                     RLabel =
-                     case {IsVar L}
-                     of !True then '_...'
-                     else {String.toAtom {VirtualString.toString L#'...'}}
-                     end
-
-                     %%
-                     TermOut = {Record RLabel KnownArity}
-                     {RecordReflectLoop KnownArity TmpList
-                      proc {$ F ListIn ListOut}
-                         TermOut.F = {ReflectTerm
-                                      {SubtreeC TermIn F}
-                                      ListIn $ ListOut}
-                      end
-                      ListOut}
-                     %%
+                  %%
+                  %% TODO!!!
+                  job
+                     L = {LabelC TermIn}
                   end
+
+                  %%
+                  RLabel =
+                  case {IsVar L} then '_...'
+                  else {String.toAtom {VirtualString.toString L#'...'}}
+                  end
+
+                  %%
+                  TermOut = {Record RLabel KnownArity}
+                  {RecordReflectLoop KnownArity TmpList
+                   proc {$ F ListIn ListOut}
+                      TermOut.F = {ReflectTerm
+                                   {SubtreeC TermIn F}
+                                   ListIn $ ListOut}
+                   end
+                   ListOut}
+                  %%
                else
                   %%  a variable;
-                  case {IsFdVar TermIn}
-                  of !True then
-                     local SubInts in
-                        {Map
-                         {FD.reflect.dom TermIn}
-                         proc {$ Interval Atom}
-                            case Interval
-                            of L#H then
-                               Atom =
-                               {AtomConcatAll
-                                [' ' {IntToAtom L} '..' {IntToAtom H}]}
-                            else
-                               Atom =
-                               {AtomConcat ' ' {IntToAtom Interval}}
-                            end
-                         end
-                         SubInts}
+                  case {IsFdVar TermIn} then
+                     SubInts
+                  in
+                     {Map
+                      {FD.reflect.dom TermIn}
+                      proc {$ Interval Atom}
+                         Atom = case Interval
+                                of L#H then
+                                   {AtomConcatAll
+                                    [' ' {IntToAtom L} '..' {IntToAtom H}]}
+                                else
+                                   {AtomConcat ' ' {IntToAtom Interval}}
+                                end
+                      end
+                      SubInts}
 
-                        %%
-                        TermOut =
-                        {AtomConcatAll [{System.getPrintName TermIn}
-                                        '{' SubInts ' }']}
-                     end
-                  elsecase {IsMetaVar TermIn}
-                  of !True then
+                     %%
+                     TermOut =
+                     {AtomConcatAll [{System.getPrintName TermIn}
+                                     '{' SubInts ' }']}
+                  elsecase {IsMetaVar TermIn} then
                      ThPrio = {Thread.getPriority} in
 
                      %%  critical section!

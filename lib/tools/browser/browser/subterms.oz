@@ -925,32 +925,28 @@ in
 
                %%
                width <- Width + 1
-            [] 1 then
-               local AnyObj in
-                  <<RAGet(TotalWidth AnyObj)>>
-                  <<RAResize(1)>>
-                  <<RAPut((TotalWidth + 1) AnyObj)>>
-                  <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
+            [] 1 then AnyObj in
+               <<RAGet(TotalWidth AnyObj)>>
+               <<RAResize(1)>>
+               <<RAPut((TotalWidth + 1) AnyObj)>>
+               <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
 
-                  %%
-                  width <- Width + 1
-               end
-            [] 2 then
-               local CommasObj SpecsObj in
-                  <<RAGet(TotalWidth SpecsObj)>>
-                  <<RAGet((TotalWidth - 1) CommasObj)>>
+               %%
+               width <- Width + 1
+            [] 2 then CommasObj SpecsObj in
+               <<RAGet(TotalWidth SpecsObj)>>
+               <<RAGet((TotalWidth - 1) CommasObj)>>
 
-                  %%
-                  <<RAResize(1)>>
+               %%
+               <<RAResize(1)>>
 
-                  %%
-                  <<RAPut((TotalWidth + 1) SpecsObj)>>
-                  <<RAPut(TotalWidth CommasObj)>>
-                  <<RAPut((TotalWidth - 1) <<ZeroSubtermRec($)>>)>>
+               %%
+               <<RAPut((TotalWidth + 1) SpecsObj)>>
+               <<RAPut(TotalWidth CommasObj)>>
+               <<RAPut((TotalWidth - 1) <<ZeroSubtermRec($)>>)>>
 
-                  %%
-                  width <- Width + 1
-               end
+               %%
+               width <- Width + 1
             else
                {BrowserError ['RecordSubtermsStore::addSubterm: error']}
             end
@@ -978,36 +974,32 @@ in
 
                %%
                width <- Width + NumOf
-            [] 1 then
-               local AnyObj in
-                  <<RAGet(TotalWidth AnyObj)>>
-                  <<RAResize(NumOf)>>
-                  <<RAPut((TotalWidth + NumOf) AnyObj)>>
+            [] 1 then AnyObj in
+               <<RAGet(TotalWidth AnyObj)>>
+               <<RAResize(NumOf)>>
+               <<RAPut((TotalWidth + NumOf) AnyObj)>>
 
-                  %%
-                  <<ZeroSRecIndxs(TotalWidth (TotalWidth + NumOf - 1))>>
+               %%
+               <<ZeroSRecIndxs(TotalWidth (TotalWidth + NumOf - 1))>>
 
-                  %%
-                  width <- Width + NumOf
-               end
-            [] 2 then
-               local CommasObj SpecsObj in
-                  <<RAGet(TotalWidth SpecsObj)>>
-                  <<RAGet((TotalWidth - 1) CommasObj)>>
+               %%
+               width <- Width + NumOf
+            [] 2 then CommasObj SpecsObj in
+               <<RAGet(TotalWidth SpecsObj)>>
+               <<RAGet((TotalWidth - 1) CommasObj)>>
 
-                  %%
-                  <<RAResize(NumOf)>>
+               %%
+               <<RAResize(NumOf)>>
 
-                  %%
-                  <<RAPut((TotalWidth + 1) SpecsObj)>>
-                  <<RAPut(TotalWidth CommasObj)>>
+               %%
+               <<RAPut((TotalWidth + 1) SpecsObj)>>
+               <<RAPut(TotalWidth CommasObj)>>
 
-                  %%
-                  <<ZeroSRecIndxs((TotalWidth - 1) (TotalWidth + NumOf - 2))>>
+               %%
+               <<ZeroSRecIndxs((TotalWidth - 1) (TotalWidth + NumOf - 2))>>
 
-                  %%
-                  width <- Width + NumOf
-               end
+               %%
+               width <- Width + NumOf
             else
                {BrowserError ['RecordSubtermsStore::addSubterms: error']}
             end
@@ -1114,17 +1106,17 @@ in
                   {BrowserError
                    ['RecordTermObject::addCommasRec: error N1']}
                else
-                  local TotalWidth SpecsRec in
-                     TotalWidth = <<RASize($)>>
-                     SpecsRec = <<RAGet(TotalWidth $)>>
+                  TotalWidth SpecsRec
+               in
+                  TotalWidth = <<RASize($)>>
+                  SpecsRec = <<RAGet(TotalWidth $)>>
 
-                     %%
-                     <<RAResize(1)>>
+                  %%
+                  <<RAResize(1)>>
 
-                     %%
-                     <<RAPut((TotalWidth + 1) SpecsRec)>>
-                     <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
-                  end
+                  %%
+                  <<RAPut((TotalWidth + 1) SpecsRec)>>
+                  <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
                end
             [] 2 then
                {BrowserError ['RecordTermObject::addCommasRec: error N2']}
@@ -1142,14 +1134,14 @@ in
       %%
       meth setCommasObj(Obj)
          case <<areCommas($)>> then
-            local CommasRec NewCommasRec CommasRecNum in
-               CommasRecNum = <<getCommasNum($)>>
+            CommasRec NewCommasRec CommasRecNum
+         in
+            CommasRecNum = <<getCommasNum($)>>
 
-               %%
-               <<RAGet(CommasRecNum CommasRec)>>
-               NewCommasRec = {AdjoinAt CommasRec obj Obj}
-               <<RAPut(CommasRecNum NewCommasRec)>>
-            end
+            %%
+            <<RAGet(CommasRecNum CommasRec)>>
+            NewCommasRec = {AdjoinAt CommasRec obj Obj}
+            <<RAPut(CommasRecNum NewCommasRec)>>
          else
             {BrowserError
              ['TupleSubtermsStore::setCommasObj: not implemented']}
@@ -1160,14 +1152,14 @@ in
       %%
       meth setCommasOutInfo(OutInfo)
          case <<areCommas($)>> then
-            local CommasRec NewCommasRec CommasRecNum in
-               CommasRecNum = <<getCommasNum($)>>
+            CommasRec NewCommasRec CommasRecNum
+         in
+            CommasRecNum = <<getCommasNum($)>>
 
-               %%
-               <<RAGet(CommasRecNum CommasRec)>>
-               NewCommasRec = {AdjoinAt CommasRec outInfo OutInfo}
-               <<RAPut(CommasRecNum NewCommasRec)>>
-            end
+            %%
+            <<RAGet(CommasRecNum CommasRec)>>
+            NewCommasRec = {AdjoinAt CommasRec outInfo OutInfo}
+            <<RAPut(CommasRecNum NewCommasRec)>>
          else
             {BrowserError
              ['TupleSubtermsStore::setCommasOutInfo: not implemented']}
@@ -1258,12 +1250,10 @@ in
                   {BrowserError
                    ['RecordSubtermsStore::removeCommasRec: there are no commas?']}
                end
-            [] 2 then
-               local SpecsRec in
-                  <<RAGet(TotalWidth SpecsRec)>>
-                  <<RAPut((TotalWidth - 1) SpecsRec)>>
-                  <<RAShrink>>
-               end
+            [] 2 then SpecsRec in
+               <<RAGet(TotalWidth SpecsRec)>>
+               <<RAPut((TotalWidth - 1) SpecsRec)>>
+               <<RAShrink>>
             else
                {BrowserError
                 ['RecordSubtermsStore::removeCommasRec: error']}

@@ -542,7 +542,7 @@ in
             case {IsVar IsLD} then False
             else IsLD
             end
-         of !True then T_WFList
+         then T_WFList
          else
             AreFLists
          in
@@ -590,8 +590,7 @@ in
             %% more efficient in one flat guard;
             if Xr Yr in Xs=_|Xr Ys=_|_|Yr then
                %%
-               case {EQ Xr Yr}
-               of !True then True
+               case {EQ Xr Yr} then True
                else {DoInfList Xr Yr (Depth-1)}
                end
             else False
@@ -627,7 +626,7 @@ in
                   case {IsVar IsCLD} then False
                   else IsCLD
                   end
-               of !True then
+               then
                   {DoCyclicList List nil ?Subterms}
                   Var = InitValue
                else             % non-cyclic OR not yet instantiated;
@@ -643,7 +642,7 @@ in
          local LS in
             %%
             case {GetBaseList List Stack Stack LS}
-            of !True then Subterms = LS
+            then Subterms = LS
             else {DoCyclicList List.2 List|Stack ?Subterms}
             end
          end
@@ -677,8 +676,7 @@ in
          of nil then False
          else
             %%
-            case {EQ List {Subtree Stack 1}}
-            of !True then
+            case {EQ List {Subtree Stack 1}} then
                case Stack.2
                of nil then
                   %% i.e. the cycle begins from the first list constructor;
@@ -754,8 +752,7 @@ in
       end
    in
       fun {IsVirtualString X}
-         case {IsVar X}
-         of !True then False
+         case {IsVar X} then False
          elsecase {Value.type X}
          of atom then True
          [] int then True
@@ -800,12 +797,9 @@ in
                end
 
                %%
-               Type = case {IsRecordCVar Term}
-                      of !True then T_ORecord
-                      elsecase {IsFdVar Term}
-                      of !True then T_FDVariable
-                      elsecase {IsMetaVar Term}
-                      of !True then T_MetaVariable
+               Type = case {IsRecordCVar Term}  then T_ORecord
+                      elsecase {IsFdVar Term}   then T_FDVariable
+                      elsecase {IsMetaVar Term} then T_MetaVariable
                       else T_Variable
                       end
             else
@@ -814,36 +808,34 @@ in
                [] int     then Type = T_Int
                [] float   then Type = T_Float
                [] name    then Type = T_Name
-               [] tuple   then
-                  local AreVSs in
-                     AreVSs = {self.store read(StoreAreVSs $)}
+               [] tuple   then AreVSs in
+                  AreVSs = {self.store read(StoreAreVSs $)}
 
-                     %%
-                     case AreVSs == True andthen {IsVirtualString Term}
-                     then Type = T_Atom
-                     else
-                        case Term
-                        of _|_ then
-                           case self.type
-                           of !T_List then
-                              Type = case NumberOf
-                                     of 2 then T_List
-                                        %%  i.e. this is not-well-formed list;
-                                     else {GetListType Term self.store}
-                                     end
-                           else Type = {GetListType Term self.store}
-                           end
-                        else
-                           Type = case
-                                     case {Label Term}
-                                     of '#' then {Width Term} > 1
-                                     else False
-                                     end
-                                  of !True then T_HashTuple
-                                  else T_Tuple
+                  %%
+                  case AreVSs == True andthen {IsVirtualString Term}
+                  then Type = T_Atom
+                  else
+                     Type = case Term
+                            of _|_ then
+                               case self.type
+                               of !T_List then
+                                  case NumberOf
+                                  of 2 then T_List
+                                     %%  i.e. this is not-well-formed list;
+                                  else {GetListType Term self.store}
                                   end
-                        end
-                     end
+                               else {GetListType Term self.store}
+                               end
+                            else
+                               case
+                                  case {Label Term}
+                                  of '#' then {Width Term} > 1
+                                  else False
+                                  end
+                               then T_HashTuple
+                               else T_Tuple
+                               end
+                            end
                   end
 
                [] procedure then
@@ -2114,14 +2106,10 @@ in
             %%  There could happen just everything: gets a value or
             %% some other (derived) type of variables;
 
-            Is = case {IsVar Term}
-                 of !True then
-                    case {IsRecordCVar Term}
-                    of !True then False
-                    elsecase {IsFdVar Term}
-                    of !True then False
-                    elsecase {IsMetaVar Term}
-                    of !True then False
+            Is = case {IsVar Term} then
+                    case {IsRecordCVar Term} then False
+                    elsecase {IsFdVar Term} then False
+                    elsecase {IsMetaVar Term} then False
                     else True
                     end
                  else False

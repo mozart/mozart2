@@ -158,20 +158,21 @@ in
             YSize = {self.store read(StoreYSize $)}
 
             %%
-            CloseAction = {New Tk.action
-                           tkInit(proc {$}
-                                     case self.standAlone then
-                                        {self.browserObj close}
-                                     else true
-                                     end
-                                  end)}
-
-            %%
             case Screen == InitValue then
                Window = {New MyToplevel tkInit}
             else
                Window = {New MyToplevel tkInit(screen: Screen)}
             end
+
+            %%
+            CloseAction = {New Tk.action
+                           tkInit(parent: Window
+                                  action: proc {$}
+                                             case self.standAlone then
+                                                {self.browserObj close}
+                                             else true
+                                             end
+                                          end)}
 
             %%
             {Tk update(idletasks)}
@@ -1563,7 +1564,9 @@ in
             else
                MA ResStr
             in
-               MA = {New Tk.action tkInit(PostProc)}
+               %% set up parent to Menu button ...
+               MA = {New Tk.action tkInit(parent: MenuButton
+                                          action: PostProc)}
                Menu = {New Tk.menu tkInit(parent: MenuButton
                                           bd: ISmallBorder
                                           postcommand: MA)}
@@ -1614,7 +1617,9 @@ in
             else
                MA ResStr
             in
-               MA = {New Tk.action tkInit(PostProc)}
+               %%
+               MA = {New Tk.action tkInit(parent: ParentOf
+                                          action: PostProc)}
                Menu = {New Tk.menu tkInit(parent: ParentOf
                                           bd: ISmallBorder
                                           postcommand: MA)}
@@ -1654,11 +1659,15 @@ in
                L = {List.flatten [Label.1 "*"]}
                {Menu tk(add(command(label: Label.1
                                     accelerator: Label.2
-                                    command:{New Tk.action tkInit(Proc)})))}
+                                    command: {New Tk.action
+                                              tkInit(parent: Menu
+                                                     action: Proc)})))}
             else
                L = {List.flatten [Label "*"]}
                {Menu tk(add(command(label: Label
-                                    command:{New Tk.action tkInit(Proc)})))}
+                                    command: {New Tk.action
+                                              tkInit(parent: Menu
+                                                     action: Proc)})))}
             end
 
             %%
@@ -1721,12 +1730,14 @@ in
             TkVar = {New Tk.variable tkInit(FValue)}
 
             %%
-            A = {New Tk.action tkInit(proc{$ _ _ _}   % is not interesting;
-                                         local A in
-                                            A = {TkVar tkReturn($)}
-                                            {UpdateProc A}
-                                         end
-                                      end)}
+            A = {New Tk.action tkInit(parent: @window
+                                      action: proc{$ _ _ _}
+                                                 %% is not interesting;
+                                                 local A in
+                                                    A = {TkVar tkReturn($)}
+                                                    {UpdateProc A}
+                                                 end
+                                              end)}
 
             %%
             {Tk trace(variable TkVar w A)}
@@ -1906,10 +1917,13 @@ in
             fb <- FB
 
             %%
-            CloseAction = {New Tk.action tkInit(proc {$} {self closeWindow} end)}
+            Window = {New MyToplevel tkInit}
 
             %%
-            Window = {New MyToplevel tkInit}
+            CloseAction = {New Tk.action
+                           tkInit(parent: Window
+                                  action: proc {$} {self closeWindow} end)}
+
             {Tk.batch
              [wm(iconify Window)
               wm(title(Window IMTitle))
@@ -2125,14 +2139,16 @@ in
             messageWidget <- MessageWidget
 
             %%
-            CloseAction = {New Tk.action tkInit(proc {$} {self close} end)}
-
-            %%
             case Screen == InitValue then
                Window = {New MyToplevel tkInit}
             else
                Window = {New MyToplevel tkInit(screen: Screen)}
             end
+
+            %%
+            CloseAction = {New Tk.action
+                           tkInit(parent: Window
+                                  action: proc {$} {self close} end)}
 
             %%
             {Tk.batch

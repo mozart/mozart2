@@ -67,12 +67,12 @@ local FindChar1 in
          %%
          case Ind == ~1 then {Append ParRes [Str]}
          else
-         local HeadOf TailOf in
+            HeadOf TailOf
+         in
             HeadOf = {Head Str Ind-1}
             TailOf = {Tail Str Ind+1}
             %%
             {GetStrs TailOf Delim {Append ParRes [HeadOf]}}
-         end
          end
       end
    end

@@ -39,9 +39,25 @@ MakeTuple = {`Builtin` 'MakeTuple' 3}
 %%
 %% Module
 %%
-Tuple = tuple(make: MakeTuple
-              is:   IsTuple)
-
+local
+   proc {Copy N O T1 T2}
+      case N==0 then skip else T2.(N+O)=T1.N {Copy N-1 O T1 T2} end
+   end
+   proc {Append T1 T2 ?T3}
+      W1={Width T1} W2={Width T2}
+   in
+      case W1==0 then T3=T2
+      elsecase W2==0 then T3={Adjoin T1 T2}
+      else
+         T3={MakeTuple {Label T2} W1+W2}
+         {Copy W1 0 T1 T3} {Copy W2 W1 T2 T3}
+      end
+   end
+in
+   Tuple = tuple(make:   MakeTuple
+                 append: Append
+                 is:     IsTuple)
+end
 
 %%
 %% Compiler Expansions

@@ -272,6 +272,8 @@ define
       [] fDollar(_) then E
       [] fInt(_ _) then E
       [] fFloat(_ _) then E
+      [] fColon(F E) then fColon({FullMacroExpand F Env}
+                                 {FullMacroExpand E Env})
       [] fRecord(Lab L) then
          fRecord({FullMacroExpand Lab Env} {FullMacroExpandList L Env})
       [] fOpenRecord(Lab L) then

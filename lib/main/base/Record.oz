@@ -47,6 +47,7 @@ local
       end
    end
 
+
    fun {MakePairs As R}
       case As of nil then nil
       [] A|Ar then A#R.A|{MakePairs Ar R}
@@ -55,6 +56,27 @@ local
 
    fun {Subtract R F}
       {List.toRecord {Label R} {MakePairs {List.subtract {Arity R} F} R}}
+   end
+
+   local
+      proc {MemberDrop Xs Y ?Zs ?B}
+         case Xs of nil then Zs=nil B=false
+         [] X|Xr then
+            if X==Y then Zs=Xr B=true else Zs=X|{MemberDrop Xr Y $ ?B} end
+         end
+      end
+      fun {SubtractArity As Ss}
+         case As of nil then nil
+         [] A|Ar then Sr in
+            if {MemberDrop Ss A ?Sr} then {SubtractArity Ar Sr}
+            else A|{SubtractArity Ar Ss}
+            end
+         end
+      end
+   in
+      fun {SubtractList R Fs}
+         {List.toRecord {Label R} {MakePairs {SubtractArity {Arity R} Fs} R}}
+      end
    end
 
    %%
@@ -335,6 +357,7 @@ in
                    adjoinList:   AdjoinList
 
                    subtract:     Subtract
+                   subtractList: SubtractList
 
                    toList:
                       fun {$ R}

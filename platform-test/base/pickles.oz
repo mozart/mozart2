@@ -21,17 +21,30 @@
 
 functor
 import
-   Pickle(save load saveCompressed)
+   Pickle(save load saveCompressed pack unpack)
    OS(tmpnam unlink)
 export
    Return
 define
+
    fun {TrySave Val File}
       try
          {Pickle.save Val File}
          nil
-      catch error(dp(generic 'save:nogoods'   _ ('Resources'#X)|_) ...) then X
-      []    error(dp(generic 'save:resources' _ ('Resources'#X)|_) ...) then X
+      catch error(dp(generic 'pickle:nogoods'
+                     _ ('Resources'#X)|_) ...) then X
+      []    error(dp(generic 'pickle:resources'
+                     _ ('Resources'#X)|_) ...) then X
+      end
+   end
+
+   fun {TryPack Val}
+      try
+         {Pickle.pack Val _} nil
+      catch error(dp(generic 'pickle:nogoods'
+                     _ ('Resources'#X)|_) ...) then X
+      []    error(dp(generic 'pickle:resources'
+                     _ ('Resources'#X)|_) ...) then X
       end
    end
 
@@ -61,30 +74,50 @@ define
      ]
 
    Return =
-   pickles(proc {$}
-              Tmp = {OS.tmpnam} LoadedGoods
-           in
-              % check nogoods
-              {All Nogoods fun {$ X} {TrySave X Tmp}==[X] end}=true
+   pickles([file(proc {$}
+                    Tmp = {OS.tmpnam} LoadedGoods
+                 in
+                    %% check nogoods
+                    {All Nogoods fun {$ X} {TrySave X Tmp}==[X] end}=true
+                    %% check saving
+                    {TrySave Goods Tmp} = nil
+                    LoadedGoods = {Pickle.load Tmp}
+                    %%
+                    cond Goods = LoadedGoods
+                    then skip
+                    else
+                       raise
+                          base(pickles('loaded goods mismatched:'
+                                       #Goods#LoadedGoods))
+                       end
+                    end
 
-              % check saving
-              {TrySave Goods Tmp} = nil
-              LoadedGoods = {Pickle.load Tmp}
-              %
-              cond Goods = LoadedGoods
-              then skip
-              else
-                 raise
-                    base(pickles('loaded goods mismatched:'
-                                 #Goods#LoadedGoods))
+                    %% check compressed save
+                    {Pickle.saveCompressed Goods Tmp 9}
+                    {Pickle.load Tmp} = Goods
+
+                    {OS.unlink Tmp}
                  end
-              end
-
-              % check compressed save
-              {Pickle.saveCompressed Goods Tmp 9}
-              {Pickle.load Tmp} = Goods
-
-              {OS.unlink Tmp}
-           end
-           keys:[pickles])
+                 keys:[pickle])
+            pack(proc {$}
+                    LoadedGoods
+                    Tmp
+                 in
+                    %% check nogoods
+                    {All Nogoods fun {$ X} {TryPack X}==[X] end}=true
+                    %% check saving
+                    {TryPack Goods} = nil
+                    Tmp={Pickle.pack Goods}
+                    LoadedGoods = {Pickle.unpack Tmp}
+                    %%
+                    cond Goods = LoadedGoods
+                    then skip
+                    else
+                       raise
+                          base(pickles('packed goods mismatched:'
+                                       #Goods#LoadedGoods))
+                       end
+                    end
+                 end
+                 keys:[pickle])])
 end

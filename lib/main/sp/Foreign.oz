@@ -25,10 +25,10 @@
 
 
 local
-   DlOpen               = {`Builtin` dlOpen       2}
-   DlClose              = {`Builtin` dlClose      1}
-   FindFunction         = {`Builtin` findFunction 3}
-   Unlink               = {`Builtin` 'OS.unlink'  1}
+   DlOpen         = {`Builtin` dlOpen       2}
+   DlClose        = {`Builtin` dlClose      1}
+   FindFunction   = {`Builtin` findFunction 3}
+   Unlink         = {`Builtin` 'OS.unlink'  1}
    %%
    %% If the URL service is available, then use it to create a
    %% localizer parametrized by environment variable OZ_DL_LOAD,

@@ -84,14 +84,23 @@ local
       if {Int.toFloat I}>F then I-1 else I end
    end
 
-   fun {Average Sum N}
+   fun {Average Result}
+      N = {Width Result}
       NF = {Int.toFloat N}
+      Sum = {ForThread 1 {Width Result} 1
+             fun {$ Tmp I}
+                {VectorAdd Result.I Tmp}
+             end
+             {MakeRecordInit time {Arity Result.1} 0.0}}
    in
       {Record.map Sum fun {$ I} I/NF end}
    end
 
    fun {Sqr X} X*X end
 
+   %% The Variance of n measurements Xi is computed as
+   %% square root of the sum of (Xi-Xav)^2 divided by (n-1)
+   %% normalized to the average Xav
    fun {Variance Av Result}
       N = {Width Result}
       NF = {Int.toFloat N-1}
@@ -104,7 +113,21 @@ local
            end
            {MakeRecordInit time {Arity Av} 0.0}}
    in
-      {Record.map Sum fun {$ I} {Sqrt I/NF} end}
+      {Record.mapInd Sum fun {$ F I}
+                            if Av.F > 1.0 then
+                               {Sqrt I/NF}/Av.F
+                            else
+                               0.0
+                            end
+                         end}
+   end
+
+   % print float
+   fun {PF F}
+      I={Truncate F}
+      Mat = {Truncate 100.0*(F-{Int.toFloat I})}
+   in
+      I#'.'#Mat
    end
 
    fun {MakeTestEngine AllKeys AllTests}
@@ -187,11 +210,12 @@ local
                       {System.gcDo}
                       T0 = {Property.get time}
                       N={RunUntil T0 Argv.mintime T.script}
-                      T1 = {Property.get time}
+                      % results of first run discarded (lazy loading)
+                      %T1 = {Property.get time}
+                      %Result.1={DiffTime T0 T1 N}
                       {PV '(#'#N#')\n'}
-                      Result.1={DiffTime T0 T1 N}
                    in
-                      {For 2 Repeat 1
+                      {For 1 Repeat 1
                        proc {$ I}
                           {System.gcDo}
                           T0={Property.get time}
@@ -205,36 +229,16 @@ local
                    end
                    {PV '-------------------------\n'}
                    local
-                      fun {PF F}
-                         I={Truncate F}
-                         Mat = {Truncate 100.0*(F-{Int.toFloat I})}
-                      in
-%      {PV pf#' '#F#'='#I#'.'#Mat#'\n'}
-                         I#'.'#Mat
-                      end
-                      fun {SumUp Result}
-                         {ForThread 1 {Width Result} 1
-                          fun {$ Tmp I}
-                             {VectorAdd Result.I Tmp}
-                          end
-                          {MakeRecordInit time {Arity Result.1} 0.0}}
-                      end
-                      Sum = {SumUp Result}
-%                     {System.show Sum}
-                      Av = {Average Sum {Width Result}}
+                      Av = {Average Result}
 %                     {System.show Av}
                       Var={Variance Av Result}
 %                     {System.show Var}
                    in
                       {ForAll TimeMap
                        proc {$ C#F}
-                          S=if Av.F>1.0 then
-                               {Truncate (Var.F/Av.F)*100.0}
-                            else 0 end
-                       in
                           {PI ' '#[C]#':'#{PF Av.F}#'ms'}
-                          if S>10 then
-                             {PI ' ('#S#'%)'}
+                          if Var.F>0.1 then
+                             {PI ' ('#{Truncate Var.F*100.0}#'%)'}
                           end
                        end}
                       {PI '\n'}

@@ -558,6 +558,10 @@ local
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
                   init(GVO GFormals GS IsStateUsing ProcFlagAtoms C)}
+            case {@switches getSwitch(debuginfovarnames $)} then
+               {GD setAllVariables({@BA getAllVariables($)})}
+            else skip
+            end
             {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fClass(FE FDescriptors FMeths C) then

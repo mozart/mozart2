@@ -31,6 +31,7 @@ export
    Tokens
    Procs
    ProcValues
+   MakeVar
 require
    BootRecord(tellRecordSize test testLabel testFeature aritySublist)
    at 'x-oz://boot/Record'
@@ -122,13 +123,14 @@ define
                 {New Core.valueNode init(Value unit)}
              end}
 
-   Procs = {Record.mapInd
-            {AdjoinAt ProcValues 'ApplyFunctor' ApplyFunctor}
-            proc {$ X Value ?V} PrintName in
-               PrintName = {VirtualString.toAtom '`'#X#'`'}
-               V = {New Core.userVariable init(PrintName unit)}
-               {V valToSubst(Value)}
-               {V setUse(multiple)}
-               {V reg(~1)}
-            end}
+   proc {MakeVar X Value ?V} PrintName in
+      PrintName = {VirtualString.toAtom '`'#X#'`'}
+      V = {New Core.userVariable init(PrintName unit)}
+      {V valToSubst(Value)}
+      {V setUse(multiple)}
+      {V reg(~1)}
+   end
+
+   Procs = {Record.mapInd {AdjoinAt ProcValues 'ApplyFunctor' ApplyFunctor}
+            MakeVar}
 end

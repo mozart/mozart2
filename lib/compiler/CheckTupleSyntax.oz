@@ -54,9 +54,11 @@ local
       [] fOrElse(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fAndThen(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fOpApply(A Ps C) then
-         {Type.ask.atom A} {ForAll Ps Phrase} {Coord C}
+         if {IsProcedure A} then skip else {Type.ask.atom A} end
+         {ForAll Ps Phrase} {Coord C}
       [] fOpApplyStatement(A Ps C) then
-         {Type.ask.atom A} {ForAll Ps Phrase} {Coord C}
+         if {IsProcedure A} then skip else {Type.ask.atom A} end
+         {ForAll Ps Phrase} {Coord C}
       [] fObjApply(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fAt(P C) then {Phrase P} {Coord C}
       [] fAtom(A C) then {Type.ask.literal A} {Coord C}

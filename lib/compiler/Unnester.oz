@@ -53,7 +53,7 @@ import
    System(printName)
    PrintName(downcase)
    Core
-   RunTime(procs)
+   RunTime(procs makeVar)
 export
    MakeExpressionQuery
    UnnestQuery
@@ -571,7 +571,11 @@ define
          [] fOpApplyStatement(Op FEs C) then
             GVO GFrontEqs1 GFrontEqs2 GTs GS
          in
-            {RunTime.procs.Op occ(C ?GVO)}
+            if {IsAtom Op} then
+               {RunTime.procs.Op occ(C ?GVO)}
+            else
+               {{RunTime.makeVar {System.printName Op} Op} occ(C ?GVO)}
+            end
             Unnester, UnnestApplyArgs(FEs ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GS = {New Core.application init(GVO GTs C)}
             GFrontEqs1|GFrontEqs2|GS
@@ -1089,7 +1093,11 @@ define
             elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] C3) then
                Unnester, OptimizeImportFeature(ToGV C X C2 Y FI C3 $)
             else GVO GFrontEqs1 GFrontEqs2 GTs GS in
-               {RunTime.procs.Op occ(C ?GVO)}
+               if {IsAtom Op} then
+                  {RunTime.procs.Op occ(C ?GVO)}
+               else
+                  {{RunTime.makeVar {System.printName Op} Op} occ(C ?GVO)}
+               end
                Unnester, UnnestApplyArgs({Append FEs [fOcc(ToGV)]}
                                          ?GFrontEqs1 ?GFrontEqs2 ?GTs)
                GS = {New Core.application init(GVO GTs C)}

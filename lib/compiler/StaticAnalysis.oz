@@ -1485,7 +1485,8 @@ define
             Value.clauseBodyStatements = @statements
          else
             Value = {New Core.procedureToken init(DummyProc)}
-            if {Ctrl getTop($)} then PredicateRef in
+            if {Ctrl getTop($)} andthen {Not {Member 'dynamic' @procFlags}}
+            then PredicateRef in
                {Ctrl declareToplevelProcedure(?PredicateRef)}
                Value.predicateRef = PredicateRef
                predicateRef <- PredicateRef

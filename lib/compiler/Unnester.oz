@@ -1010,7 +1010,8 @@ define
             CND = {CoordNoDebug C}
             NewFS = fStepPoint(fOpApplyStatement('Thread.create'
                                                  [fProc(fDollar(CND) nil FS
-                                                        nil CND)]
+                                                        [fAtom('dynamic' unit)]
+                                                        CND)]
                                                  CND) 'thread' C)
             Unnester, UnnestStatement(NewFS $)
          [] fTry(_ FCatch _ _) then

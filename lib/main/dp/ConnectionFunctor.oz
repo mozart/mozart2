@@ -58,14 +58,14 @@ define
                   if FD==~1 then raise no_fd end end
                   {ConnectionWrapper.connect FD Address IPPort}
                catch X then
-                  case X of system(os(_ _ 111 _) ...) then
+                  case X of system(os(_ _ _ "Connection refused") ...) then
                      Done=failed
                      {ConnectionWrapper.close FD}
 \ifdef DBG
                      {System.show discovered_perm(FD Address IPPort)}
 \endif
                      {ConnectionWrapper.connFailed perm}
-                  [] system(os(_ _ 115 _) ...) then
+                  [] system(os(_ _ _ "In progress") ...) then
                      % only tells that the socket is in progress
                      skip
                   else
@@ -107,7 +107,7 @@ define
                   try
                      _={ConnectionWrapper.write FD "tcp"}
                   catch X then
-                     case X of system(os(_ _ 32 _) ...) then
+                     case X of system(os(_ _ _ "Broken pipe") ...) then
                         % This is EPIPE. It can be discussed wether this
                         % is perm or not, but in the old system, an EPIPE
                         % at this early stage was interpreted as such.

@@ -167,7 +167,7 @@ define
             {OS.close FD}
          end
       catch X then
-         case X of system(os(_ _ 11 _) ...) then % EAGAIN => try again
+         case X of system(os(_ _ _ "Try again") ...) then % EAGAIN => try again
             {AcceptProc FD}
          else % Other fault conditions AN! should some others be treated?
             {OS.close FD}

@@ -69,7 +69,7 @@ in
     in
        {Adjoin
         {Adjoin o(script: S
-                  repeat: 1
+                  repeat: Argv.repeat
                  )
          {Debug.procedureCoord
           if {IsProcedure S} then S else S.1 end}}

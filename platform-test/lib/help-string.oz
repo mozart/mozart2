@@ -11,6 +11,8 @@ The following options are supported:
         If non zero, run garbage collection each <int> milliseconds
 --threads=<int>         [default=1]
         Run <int> threads concurrently (for each test)
+--repeat=<int>          [default=1]
+        Each thread repeats the test <int> times
 --tests=<s1>,...,<sn>   [default=all]
         Run only those tests in which names at least one <si> occurs
 --keys=<s1>,...,<sn>    [default=all]

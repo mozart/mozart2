@@ -231,7 +231,8 @@ local
           keys(multiple type: list(string) default: nil)
           tests(multiple type: list(string) default: nil)
           time(single type: string default: "")
-          threads(rightmost type: int(min: 1) default: 1))
+          threads(rightmost type: int(min: 1) default: 1)
+          repeat(rightmost type: int(min: 1) default: 1))
 
 in
    functor

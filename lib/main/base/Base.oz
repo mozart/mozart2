@@ -58,7 +58,9 @@ require
    Boot_Time            at 'x-oz://boot/Time'
    Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
+\ifdef SITE_PROPERTY
    Boot_SiteProperty    at 'x-oz://boot/SiteProperty'
+\endif
 
 prepare
 
@@ -321,7 +323,9 @@ prepare
    \insert 'Functor.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
+\ifdef SITE_PROPERTY
    \insert 'SiteProperty'
+\endif
 
 export
    %% Value

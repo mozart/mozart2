@@ -34,12 +34,6 @@ prepare
    UsageError = 'command line option error'
    BatchCompilationError = 'batch compilation error'
 
-   fun {MakeExecHeader Path}
-      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
-   end
-   DefaultExecPath = 'ozengine'
-   DefaultExecHeader = {MakeExecHeader DefaultExecPath}
-
    OptSpecs = record(%% mode in which to run
                      mode(single
                           type: atom(help core scode ecode execute
@@ -61,9 +55,21 @@ prepare
                      %% options for individual modes
                      outputfile(single char: &o type: string default: unit)
                      execheader(single type: string
-                                validate: alt(when(execpath false)))
+                                validate:
+                                   alt(when(disj(execpath execfile execwrapper)
+                                            false)))
                      execpath(single type: string
-                              validate: alt(when(execheader false)))
+                              validate:
+                                 alt(when(disj(execheader execfile execwrapper)
+                                          false)))
+                     execfile(single type: string
+                              validate:
+                                 alt(when(disj(execheader execpath execwrapper)
+                                          false)))
+                     execwrapper(single type: string
+                                 validate:
+                                    alt(when(disj(execheader execpath execfile)
+                                             false)))
                      compress(rightmost char: &z
                               type: int(min: 0 max: 9) default: 0)
 
@@ -144,9 +150,16 @@ prepare
    '-M, --makedepend              Instead of executing, write a list\n'#
    '                              of dependencies to stdout.\n'#
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
-   '--execheader=STR              Use header STR for executables (default:\n'#
-   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
-   '--execpath=STR                Use path STR to ozengine in the above.\n'#
+   '--execheader=STR              Use header STR for executables\n'#
+   '                              (Unix default:\n'#
+   '                               "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
+   '--execpath=STR                Use above header, with ozengine\n'#
+   '                              replaced by STR.\n'#
+   '--execfile=FILE               Use contents of FILE as header\n'#
+   '                              (Windows default:\n'#
+   '                               <ozhome>/bin/ozwrapper.bin).\n'#
+   '--execwrapper=FILE            Use above header, with ozwrapper.bin\n'#
+   '                              replaced by STR.\n'#
    '-z N, --compress=N            Use compression level N for pickles.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
@@ -183,6 +196,18 @@ prepare
    '--baseurl=STRING              Set the base URL to resolve imports of\n'#
    '                              computed functors to STRING.\n'
 define
+   fun {MakeExecHeader Path}
+      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
+   end
+   fun {MakeExecFile File}
+      {Property.get 'oz.home'}#'/bin/'#File
+   end
+   DefaultExec = case {Property.get 'platform.os'} of win32 then
+                    file({MakeExecFile 'ozwrapper.bin'})
+                 else
+                    string({MakeExecHeader 'ozengine'})
+                 end
+
    local
       fun {IsIDChar C}
          {Char.isAlNum C} orelse C == &_
@@ -251,6 +276,12 @@ define
          {ChangeExtensionSub
           {Reverse {List.takeWhile {Reverse S} fun {$ C} C \= &/ end}} NewExt}
       end
+   end
+
+   proc {ReadFile File ?VS} F in
+      F = {New Open.file init(name: File flags: [read])}
+      {F read(list: ?VS size: all)}
+      {F close()}
    end
 
    proc {Report E}
@@ -355,7 +386,11 @@ in
                 [] dump then
                    OFN = {ChangeExtension Arg ".ozf"}
                 [] executable then
-                   OFN = {ChangeExtension Arg ""}
+                   case {Property.get 'platform.os'} of win32 then
+                      OFN = {ChangeExtension Arg ".exe"}
+                   else
+                      OFN = {ChangeExtension Arg ""}
+                   end
                 end
              elseof "-" then
                 if OptRec.mode == dump orelse OptRec.mode == executable
@@ -418,7 +453,7 @@ in
              else
                 case OptRec.mode of dump then
                    {Pickle.saveWithHeader R OFN '' OptRec.compress}
-                [] executable then
+                [] executable then Exec Exec2 in
                    if {Functor.is R} then skip
                    else
                       {Report
@@ -427,23 +462,33 @@ in
                              items: [hint(l: 'Value found'
                                           m: oz(R))])}
                    end
-                   {Pickle.saveWithHeader
-                    R % Value
-                    OFN % Filename
-                    case {CondSelect OptRec execheader unit} of unit then
-                       case {CondSelect OptRec execpath unit} of unit then
-                          DefaultExecHeader
-                       elseof S then {MakeExecHeader S}
-                       end
-                    elseof S then S
-                    end % Header
-                    OptRec.compress % Compression level
-                   }
-                   case {OS.system 'chmod +x '#OFN}
-                   of 0 then skip elseof N then
+                   Exec = case {CondSelect OptRec execheader unit}
+                          of unit then
+                             case {CondSelect OptRec execpath unit}
+                             of unit then
+                                case {CondSelect OptRec execfile unit}
+                                of unit then
+                                   case {CondSelect OptRec execwrapper unit}
+                                   of unit then
+                                      DefaultExec
+                                   elseof S then file({MakeExecFile S})
+                                   end
+                                elseof S then file(S)
+                                end
+                             elseof S then string({MakeExecHeader S})
+                             end
+                          elseof S then string(S)
+                          end
+                   Exec2 = case Exec of file(S) then {ReadFile S}
+                           [] string(S) then S
+                           end
+                   {Pickle.saveWithHeader R OFN Exec2 OptRec.compress}
+                   case {Property.get 'platform.os'} of win32 then skip
+                   elsecase {OS.system 'chmod +x '#OFN} of 0 then skip
+                   elseof N then
                       {Report
                        error(kind: BatchCompilationError
-                             msg: 'writing executable functor failed'
+                             msg: 'failed to make output file executable'
                              items: [hint(l: 'Error code' m: N)])}
                    end
                 [] execute then skip

@@ -77,7 +77,11 @@ import
 define
 
    %% The mechanism with which builtin modules can be accessed
-   BootManager = Boot.manager
+   ObtainNative = Boot.obtain
+
+   fun {BootManager Name}
+      {ObtainNative true Name}
+   end
 
    %% Retrieve modules needed to get things started
    BURL     = {BootManager 'URL'}
@@ -86,7 +90,6 @@ define
    Pickle   = {BootManager 'Pickle'}
    Property = {BootManager 'Property'}
    System   = {BootManager 'System'}
-   Native   = {BootManager 'Native'}
 
    %% Shortcuts
    Getenv = OS.getEnv
@@ -125,7 +128,8 @@ define
 
    in
       %% Register boot modules
-      {RM enter(url:'x-oz://boot/URL' BURL)}
+      {RM enter(url:'x-oz://boot/URL'  BURL)}
+      {RM enter(url:'x-oz://boot/Boot' Boot)}
 
       %% Register volatile system modules
       {RM enter(name:'OS'       OS)}

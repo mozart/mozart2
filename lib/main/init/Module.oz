@@ -226,8 +226,10 @@ in
                   case {CondSelect Url path unit}
                   of abs([Name#false]) then
                      %% drop the extension of any
-                     {Boot.manager {String.token Name &. $ _}}
-                  else raise badUrl end end
+                     {Boot.obtain true {String.token Name &. $ _}}
+                  else
+                     raise badUrl end
+                  end
                [] system then
                   {self trace('system module' Url)}
                   {self systemApply(system Url $)}
@@ -237,8 +239,6 @@ in
                else raise badUrl end end
             catch error(url(load _) ...) then
                raise module(systemNotFound {UrlToAtom Url}) end
-            [] error(system(unknownBootModule _) ...) then
-               raise module(bootNotFound {UrlToAtom Url}) end
             [] badUrl then
                raise module(urlSyntax {UrlToAtom Url}) end
             end

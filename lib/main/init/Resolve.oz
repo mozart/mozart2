@@ -50,7 +50,9 @@ local
    BURL_localize        = BURL.localize
    BURL_open            = BURL.open
    BURL_load            = BURL.load
-   Native_load          = Native.load
+   Native_load          = fun {$ FN}
+                             {ObtainNative false FN}
+                          end
    \insert UrlExpand.oz
 
    %% the default way of applying a method to a parsed URL: all system

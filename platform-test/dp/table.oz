@@ -41,7 +41,6 @@ define
                proc{Locker Nr D S Lim}
                   L = {NewLock} in
                   if(Nr mod Lim == 0) then
-                     {System.print l}
                      thread {Wait S} lock L then skip end
                      end
                   end
@@ -51,7 +50,6 @@ define
                proc{Celler Nr D S Lim}
                   L = {NewCell Nr} in
                   if(Nr mod Lim == 0) then
-                     {System.print l}
                      thread {Wait S} {Access L} = Nr end
                   end
                   {Send D store(L Nr)}
@@ -61,7 +59,6 @@ define
                proc{Variabler Nr D S Lim}
                   L in
                   if(Nr mod Lim == 0) then
-                     {System.print l}
                      thread {Wait S} L = Nr end
                   end
                   {Send D store(L Nr)}
@@ -70,7 +67,6 @@ define
                proc{Porter Nr D S Lim}
                   St P= {NewPort St}   in
                   if(Nr mod Lim == 0) then
-                     {System.print l}
                      thread {Wait S} {Send P Nr} St.1 = Nr end
                   end
                   {Send D store(P Nr)}
@@ -104,12 +100,8 @@ define
                                      case X of
                                         store(E Nr) then
                                         {Assign CC E|{Access CC}}
-                                        if(Nr == Lim) then
-                                           {System.print o}
-                                        else skip end
                                      elseof gc then
                                         {System.gcDo}
-                                        {System.print c}
                                      elseof gcR(A) then
                                         {Assign CC nil}
                                         {System.gcDo}

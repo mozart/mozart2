@@ -36,12 +36,13 @@ define
 
 
    proc{WatchWat S E}
-      Inj = proc{$ A B} B = proc{$ _ _} E.A = unit end end
+      Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
    in
-      {Fault.SiteWatcher S.port {Inj E.port}}
-      {Fault.SiteWatcher S.cell {Inj E.cell}}
-      {Fault.SiteWatcher S.lokk {Inj E.lokk}}
-      {Fault.SiteWatcher S.var  {Inj E.var}}
+      E = o(port:_ cell:_ lokk:_ var:_)
+      {Fault.siteWatcher S.port {Inj E.port}}
+      {Fault.siteWatcher S.cell {Inj E.cell}}
+      {Fault.siteWatcher S.lokk {Inj E.lokk}}
+      {Fault.siteWatcher S.var  {Inj E.var}}
    end
 
 
@@ -70,18 +71,18 @@ define
    end
 
    proc{TryCell C}
-      thread {Access C _} end
+      thread try {Access C _} catch _ then skip end end
    end
 
    proc{TryLock L}
-      thread lock L then skip end end
+      thread  try lock L then skip end catch _ then skip end end
    end
    proc{TryPort P}
-      thread {Send P apa} end
+      thread  try {Send P apa} catch _ then skip end end
    end
 
    proc{TryVar V}
-      thread V = apa end
+      thread try V = apa catch _ then skip end end
    end
 
    proc{StartServer S E}
@@ -106,116 +107,136 @@ define
    dp([
        fault_watcher_live_cell(
           proc {$}
-             S Deads in
+             S Deads Ans in
              {StartServer S Deads}
-             {WatchWat Deads}
+             {WatchWat Deads Ans}
              {S close}
-             {Delay 2000}
+             {Delay 1000}
              {TryCell Deads.cell}
+             {Delay 1000}
+             {CheckWat Ans}
           end
           keys:[fault])
 
-       fault_inject_live_var(
+       fault_watcher_live_var(
           proc {$}
-             S Deads in
+             S Deads Ans in
              {StartServer S Deads}
-             {WatchWat Deads}
+             {WatchWat Deads Ans}
              {S close}
              {Delay 1000}
              {TryVar Deads.var}
+             {Delay 1000}
+             {CheckWat Ans}
           end
           keys:[fault])
 
-       fault_inject_live_lokk(
+       fault_watcher_live_lokk(
           proc {$}
-             S Deads in
+             S Deads Ans in
              {StartServer S Deads}
-             {WatchWat Deads}
+             {WatchWat Deads Ans}
              {S close}
              {Delay 1000}
              {TryLock Deads.lokk}
+             {Delay 1000}
+             {CheckWat Ans}
           end
           keys:[fault])
 
-       fault_inject_live_port(
+       fault_watcher_live_port(
           proc {$}
-             S Deads in
+             S Deads Ans in
              {StartServer S Deads}
-             {WatchWat Deads}
+             {WatchWat Deads Ans}
              {S close}
              {Delay 1000}
              {TryPort Deads.port}
+             {Delay 1000}
+             {CheckWat Ans}
           end
           keys:[fault])
 
-       fault_inject_live_all(
+       fault_watcher_live_all(
           proc {$}
-             S Deads in
+             S Deads Ans in
              {StartServer S Deads}
-             {WatchWat Deads}
+             {WatchWat Deads Ans}
              {S close}
-             {Delay 1000}
-             {TryPort Deads.port}
-             {TryVar Deads.var}
-             {TryCell Deads.cell}
-             {TryLock Deads.lokk}
-          end
-          keys:[fault])
-
-       fault_inject_dead_cell(
-          proc {$}
-             S Deads in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads}
-             {Delay 1000}
-             {TryCell Deads.cell}
-          end
-          keys:[fault])
-
-       fault_inject_dead_var(
-          proc {$}
-             S Deads in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads}
-             {Delay 1000}
-             {TryVar Deads.var}
-          end
-          keys:[fault])
-
-       fault_inject_dead_lokk(
-          proc {$}
-             S Deads in
-             {StartServer S Deads}
-             {WatchWat Deads}
-             {S close}
-             {Delay 1000}
-             {TryLock Deads.lokk}
-          end
-          keys:[fault])
-       fault_inject_dead_port(
-          proc {$}
-             S Deads in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads}
-             {Delay 1000}
-             {TryPort Deads.port}
-          end
-          keys:[fault])
-
-       fault_inject_dead_all(
-          proc {$}
-             S Deads in
-             {StartServer S Deads}
-             {S close}
-             {WatchWat Deads}
              {Delay 1000}
              {TryPort Deads.port}
              {TryVar Deads.var}
              {TryCell Deads.cell}
              {TryLock Deads.lokk}
+             {Delay 1000}
+             {CheckWat Ans}
+          end
+          keys:[fault])
+
+       fault_watcher_dead_cell(
+          proc {$}
+             S Deads Ans in
+             {StartServer S Deads}
+             {S close}
+             {WatchWat Deads Ans}
+             {Delay 1000}
+             {TryCell Deads.cell}
+             {Delay 1000}
+             {CheckWat Ans}
+          end
+          keys:[fault])
+
+       fault_watcher_dead_var(
+          proc {$}
+             S Deads Ans in
+             {StartServer S Deads}
+             {S close}
+             {WatchWat Deads Ans}
+             {Delay 1000}
+             {TryVar Deads.var}
+             {Delay 1000}
+             {CheckWat Ans}
+          end
+          keys:[fault])
+
+       fault_watcher_dead_lokk(
+          proc {$}
+             S Deads Ans in
+             {StartServer S Deads}
+             {WatchWat Deads Ans}
+             {S close}
+             {Delay 1000}
+             {TryLock Deads.lokk}
+             {Delay 1000}
+             {CheckWat Ans}
+          end
+          keys:[fault])
+       fault_watcher_dead_port(
+          proc {$}
+             S Deads Ans in
+             {StartServer S Deads}
+             {S close}
+             {WatchWat Deads Ans}
+             {Delay 1000}
+             {TryPort Deads.port}
+             {Delay 1000}
+             {CheckWat Ans}
+          end
+          keys:[fault])
+
+       fault_watcher_dead_all(
+          proc {$}
+             S Deads Ans in
+             {StartServer S Deads}
+             {S close}
+             {WatchWat Deads Ans}
+             {Delay 1000}
+             {TryPort Deads.port}
+             {TryVar Deads.var}
+             {TryCell Deads.cell}
+             {TryLock Deads.lokk}
+             {Delay 1000}
+             {CheckWat Ans}
           end
           keys:[fault])
       ])

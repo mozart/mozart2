@@ -420,5 +420,64 @@ define
 
           end
           keys:[fault])
+
+       fault_detecting_managerLost_at_importing(
+          proc {$}
+             Po
+             Va
+             S1
+             S2={New Remote.manager init(host:TestMisc.localHost)}
+             Ans
+          in
+             {StartServer S1 o(port:Po cell:_ lokk:_ var:Va)}
+             {S1 close}
+             {Delay 1000}
+
+             try
+                {Send Po apa}
+                raise stop end
+             catch _ then
+                skip
+             end
+             {S2 ping}
+
+             {S2 apply(url:'' functor
+                              define
+                                 T in
+                                 try
+                                    {Send Po apa}
+                                       % if the send succeds => crash
+                                    Ans = crash
+                                 catch _ then
+                                    thread
+                                          try
+                                             Va = unit
+                                          catch _ then
+                                             T  = done
+                                          end
+                                    end
+                                    {Delay 500}
+                                       % if the binding suspends => crash
+                                    if{IsDet T} then
+                                       Ans = ok
+                                    else
+                                       Ans = crash
+                                    end
+                                 end
+                              end)}
+
+             thread
+                % A helper that will stop this test if
+                % the proxy suspends.
+                {Delay 10000}
+                try Ans = crash catch _ then skip end
+             end
+
+             if Ans == crash then
+                raise stop end
+             end
+             {S2 close}
+          end
+             keys:[fault])
       ])
 end

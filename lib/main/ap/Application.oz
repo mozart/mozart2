@@ -724,50 +724,11 @@ local
    %% The table of all Oz standard modules.  For simplicity, if M is listed
    %% as a dependency, it is also expected on import feature M.
    %%
-   StandardModules =
-   oz('SP':             nil
-      'OP':             ['SP']
-      'AP':             ['SP' 'OP']
-      'CP':             ['SP']
-      'WP':             ['SP' 'OP']
-      'DP':             ['OP' 'AP']
-      'Panel':          ['SP' 'OP' 'WP']
-      'Browser':        ['SP' 'WP' 'CP']
-      'Explorer':       ['SP' 'WP' 'Browser'#lazy]
-      'Compiler':       ['SP' 'CP' 'Gump'#lazy]
-      'CompilerPanel':  ['SP' 'CP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
-      'Emacs':          ['OP' 'SP']
-      'Ozcar':          ['SP' 'CP'#lazy 'WP' 'Browser'#lazy
-                         'Compiler' 'Emacs'#lazy]
-      'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
-      'Gump':           ['SP' 'OP']
-      'GumpScanner':    ['SP']
-      'GumpParser':     ['SP']
-      'Misc':           nil)
+   StandardModules    = \insert 'StandardModules.oz'
    %%
    %% we also want to export a useful collection of submodules
    %%
-   StandardSubModules =
-   oz('SP':             ['System' 'Exit' 'Print' 'Show' 'Foreign'
-                         'Debug' 'Error' 'Finalize']
-      'OP':             ['OS' 'Open' 'Component' 'Load' 'Save']
-      'AP':             ['Application']
-      'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
-                         'FD' 'FS']
-      'WP':             ['Tk' 'NewTk' 'TkTools' 'NewTkTools']
-      'DP':             ['Connection' 'Remote']
-      'Panel':          nil
-      'Browser':        ['Browse']
-      'Explorer':       ['ExploreOne' 'ExploreAll' 'ExploreBest']
-      'Compiler':       nil
-      'CompilerPanel':  nil
-      'Emacs':          nil
-      'Ozcar':          nil
-      'Profiler':       nil
-      'Gump':           nil
-      'GumpScanner':    nil
-      'GumpParser':     nil
-      'Misc':           nil)
+   StandardSubModules = \insert 'StandardSubModules.oz'
    %%
    %% Create a new registry and record in it all the standard modules
    %% and submodules

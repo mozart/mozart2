@@ -26,7 +26,7 @@
 
 local
    TimeMap = [&t#total &r#run &g#gc &c#copy
-              &p#propagate &l#load &s#system]
+              &p#propagate &s#system]
 
    fun {AppendAll Xss}
       case Xss of nil then nil
@@ -147,16 +147,12 @@ local
          \insert 'engine.oz'
          \insert 'compute-tests.oz'
 
-         fun {RunUntil T0 TMin Test}
+         fun {ComputeMinTime T0 TMin Test}
             {Test _}
             local
                T1={Property.get time}
             in
-               if T1.total - T0.total < TMin then
-                  1+{RunUntil T0 TMin Test}
-               else
-                  1
-               end
+               (TMin div (T1.total - T0.total)) + 1
             end
          end
 
@@ -215,7 +211,7 @@ local
                    local
                       {System.gcDo}
                       T0 = {Property.get time}
-                      N={RunUntil T0 Argv.mintime Test}
+                      N={ComputeMinTime T0 Argv.mintime Test}
                       % results of first run discarded (lazy loading)
                       %T1 = {Property.get time}
                       %Result.1={DiffTime T0 T1 N}
@@ -241,7 +237,7 @@ local
                       {ForAll TimeMap
                        proc {$ C#F}
                           {PI ' '#[C]#':'#{PF Av.F}#'ms'}
-                          if Var.F>0.1 then
+                          if Argv.variation orelse Var.F>0.1 then
                              {PI ' ('#{Truncate Var.F*100.0}#'%)'}
                           end
                        end}
@@ -266,6 +262,7 @@ local
       repeat(type:int optional:false default:5)
       mintime(type:int optional:false default:2000)
       verbose(type:bool optional:false default:false)
+      variation(type:bool optional:false default:false)
       )
 
 in

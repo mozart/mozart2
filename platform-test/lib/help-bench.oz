@@ -1,4 +1,6 @@
-'Usage: ozbench [options]
+% -*- Mode: text -*-
+'
+Usage: ./ozbench [options]
 
 ozbench runs benchmarks and prints the average times of <repeat>
 (default 5) runs in the form
@@ -22,7 +24,9 @@ The following options are supported:
         If non zero, run garbage collection each <int> milliseconds
 --mintime=<int>         [default=1500]
         Minimal time a benchmark should run
---repeat=<int>  [default=5]
+--[no]variation         [default=no]
+        Always print the standard variation
+--repeat=<int>          [default=5]
         Number of runs
 --tests=<s1>,...,<sn>   [default=all]
         Run only those tests in which names at least one <si> occurs

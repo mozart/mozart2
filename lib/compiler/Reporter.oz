@@ -158,9 +158,9 @@ in
                  body: Body <= nil) MaxNumberOfErrors in
          case @ErrorCount == 0 then
             {self.Wrapper notify(toTop())}
-            {self.Wrapper notify(unsuccessful())}
          else skip
          end
+         {self.Wrapper notify(unsuccessful())}
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -181,6 +181,7 @@ in
                 kind: Kind <= unit
                 msg: Msg <= unit
                 body: Body <= nil)
+         {self.Wrapper notify(unsuccessful())}
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -193,9 +194,9 @@ in
       meth addErrors(N)
          case @ErrorCount == 0 then
             {self.Wrapper notify(toTop())}
-            {self.Wrapper notify(unsuccessful())}
          else skip
          end
+         {self.Wrapper notify(unsuccessful())}
          ErrorCount <- @ErrorCount + N
       end
       meth hasSeenError($)

@@ -29,13 +29,10 @@ in
 Raise = `Raise`
 
 local
-   GetErrors = {`Builtin` 'SystemGetErrors' 1}
+   GetProp = {`Builtin` 'GetProperty' 2}
 in
    fun {`RaiseDebugCheck` T1}
-      R = errors('thread':_ location:_ hints:_ depth:_ width:_ debug:_)
-   in
-      {GetErrors R}
-      R.debug andthen
+      {GetProp 'errors.debug'} andthen
       {IsDet T1} andthen
       {IsRecord T1} andthen
       {HasFeature T1 debug} andthen
@@ -45,7 +42,7 @@ in
 end
 
 local
-   GetErrors       = {`Builtin` 'SystemGetErrors' 1}
+   GetProp         = {`Builtin` 'GetProperty' 2}
    ThreadThis      = {`Builtin` 'Thread.this' 1}
    ThreadTaskStack = {`Builtin` 'Thread.taskStack' 4}
    ThreadLocation  = {`Builtin` 'Thread.location' 2}
@@ -53,8 +50,7 @@ in
    proc {`RaiseDebugExtend` T1 T2}
       L        = {Label T1.debug}
       This     = {ThreadThis}
-      errors('thread':N location:_ hints:_ depth:_ width:_ debug:_)
-               = {GetErrors}
+      N        = {GetProp 'errors.thread'}
       Stack    = {ThreadTaskStack This N false}
       Location = {ThreadLocation This}
    in

@@ -638,7 +638,7 @@ local
    in
       proc {$}
          try
-            {SystemSet internal(applet:true)}
+            {{`Builtin` 'PutProperty' 2} 'internal.applet' true}
             Loaded    = {Loader}
             Applet    = Loaded.'WP'.'Tk'.applet
             Args      = case {SystemGet internal}.browser then

@@ -4,12 +4,14 @@
 %%%   Michael Mehl (mehl@dfki.de)
 %%%   Ralf Scheidhauer (scheidhr@dfki.de)
 %%%   Christian Schulte (schulte@dfki.de)
+%%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%
 %%% Copyright:
 %%%   Martin Henz, 1997
 %%%   Michael Mehl, 1997
 %%%   Ralf Scheidhauer, 1997
 %%%   Christian Schulte, 1997
+%%%   Denys Duchier, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -118,109 +120,120 @@ local
       end
    end
 
-   local
-      SetThreads    = {`Builtin` 'SystemSetThreads'    1}
-      SetTime       = {`Builtin` 'SystemSetTime'       1}
-      SetPriorities = {`Builtin` 'SystemSetPriorities' 1}
-      SetGC         = {`Builtin` 'SystemSetGC'         1}
-      SetPrint      = {`Builtin` 'SystemSetPrint'      1}
-      SetErrors     = {`Builtin` 'SystemSetErrors'     1}
-      SetMessages   = {`Builtin` 'SystemSetMessages'   1}
-      SetInternal   = {`Builtin` 'SystemSetInternal'   1}
-      SetFD         = {`Builtin` 'SystemSetFD'         1}
-   in
-      proc {SystemSet W}
-         case {Label W}
-         of threads    then {SetThreads W}
-         [] time       then {SetTime W}
-         [] priorities then {SetPriorities W}
-         [] gc         then {SetGC W}
-         [] print      then {SetPrint W}
-         [] errors     then {SetErrors W}
-         [] messages   then {SetMessages W}
-         [] internal   then {SetInternal W}
-         [] fd         then {SetFD W}
-         end
-      end
+   proc {SystemSet W}
+      {PutProperty {Label W} W}
    end
 
-   local
-      GetThreads    = {`Builtin` 'SystemGetThreads'    1}
-      GetPriorities = {`Builtin` 'SystemGetPriorities' 1}
-      GetTime       = {`Builtin` 'SystemGetTime'       1}
-      GetGC         = {`Builtin` 'SystemGetGC'         1}
-      GetPrint      = {`Builtin` 'SystemGetPrint'      1}
-      GetFD         = {`Builtin` 'SystemGetFD'         1}
-      GetSpaces     = {`Builtin` 'SystemGetSpaces'     1}
-      GetErrors     = {`Builtin` 'SystemGetErrors'     1}
-      GetMessages   = {`Builtin` 'SystemGetMessages'   1}
-      GetMemory     = {`Builtin` 'SystemGetMemory'     1}
-      GetLimits     = {`Builtin` 'SystemGetLimits'     1}
-      GetArgv       = {`Builtin` 'SystemGetArgv'       1}
-      GetStandalone = {`Builtin` 'SystemGetStandalone' 1}
-      GetInternal   = {`Builtin` 'SystemGetInternal'   1}
-      GetHome       = {`Builtin` 'SystemGetHome'       1}
-      GetPlatform   = {`Builtin` 'SystemGetPlatform'   1}
-   in
-      fun {SystemGet C}
-         case C
-         of threads    then
-            R = threads(created:_ runnable:_ min:_ max:_)
-         in
-            {GetThreads R} R
-         [] priorities then
-            R = priorities(high:_ medium:_)
-         in
-            {GetPriorities R} R
-         [] time       then
-            R = time(copy:_ gc:_ load:_ propagate:_ run:_
-                     system:_ user:_ total:_ detailed:_)
-         in
-            {GetTime R} R
-         [] gc         then
-            R = gc(min:_ max:_ free:_ tolerance:_ on:_
-                   threshold:_ size:_ active:_)
-         in
-            {GetGC R} R
-         [] print      then
-            R = print(depth:_ width:_)
-         in
-            {GetPrint R} R
-         [] fd         then
-            R = fd(variables:_ propagators:_ invoked:_ threshold:_)
-         in
-            {GetFD R} R
-         [] spaces     then
-            R = spaces(committed:_ cloned:_ created:_ failed:_ succeeded:_)
-         in
-            {GetSpaces R} R
-         [] errors     then
-            R = errors('thread':_ location:_ hints:_ depth:_ width:_ debug:_)
-         in
-            {GetErrors R} R
-         [] messages   then
-            R = messages(gc:_ idle:_ feed:_ foreign:_ load:_ cache:_)
-         in
-            {GetMessages R} R
-         [] memory     then
-            R = memory(atoms:_ names:_ builtins:_ freelist:_ code:_ heap:_)
-         in
-            {GetMemory R} R
-         [] limits     then
-            R = limits(int:_)
-         in
-            {GetLimits R} R
-         [] internal    then
-            R = internal(browser:_ applet:_)
-         in
-            {GetInternal R} R
-         [] argv       then {GetArgv}
-         [] standalone then {GetStandalone}
-         [] home       then {GetHome}
-         [] platform   then {GetPlatform}
-         end
+%   local
+%      SetThreads    = {`Builtin` 'SystemSetThreads'    1}
+%      SetTime       = {`Builtin` 'SystemSetTime'       1}
+%      SetPriorities = {`Builtin` 'SystemSetPriorities' 1}
+%      SetGC         = {`Builtin` 'SystemSetGC'         1}
+%      SetPrint      = {`Builtin` 'SystemSetPrint'      1}
+%      SetErrors     = {`Builtin` 'SystemSetErrors'     1}
+%      SetMessages   = {`Builtin` 'SystemSetMessages'   1}
+%      SetInternal   = {`Builtin` 'SystemSetInternal'   1}
+%      SetFD         = {`Builtin` 'SystemSetFD'         1}
+%   in
+%      proc {SystemSet W}
+%        case {Label W}
+%        of threads    then {SetThreads W}
+%        [] time       then {SetTime W}
+%        [] priorities then {SetPriorities W}
+%        [] gc         then {SetGC W}
+%        [] print      then {SetPrint W}
+%        [] errors     then {SetErrors W}
+%        [] messages   then {SetMessages W}
+%        [] internal   then {SetInternal W}
+%        [] fd         then {SetFD W}
+%        end
+%      end
+%   end
+
+   fun {SystemGet C}
+      case C
+      of     standalone then {GetProperty 'oz.standalone'}
+      elseof home       then {GetProperty 'oz.home'      }
+      else                   {GetProperty C              }
       end
    end
+%   local
+%      GetThreads    = {`Builtin` 'SystemGetThreads'    1}
+%      GetPriorities = {`Builtin` 'SystemGetPriorities' 1}
+%      GetTime       = {`Builtin` 'SystemGetTime'       1}
+%      GetGC         = {`Builtin` 'SystemGetGC'         1}
+%      GetPrint      = {`Builtin` 'SystemGetPrint'      1}
+%      GetFD         = {`Builtin` 'SystemGetFD'         1}
+%      GetSpaces     = {`Builtin` 'SystemGetSpaces'     1}
+%      GetErrors     = {`Builtin` 'SystemGetErrors'     1}
+%      GetMessages   = {`Builtin` 'SystemGetMessages'   1}
+%      GetMemory     = {`Builtin` 'SystemGetMemory'     1}
+%      GetLimits     = {`Builtin` 'SystemGetLimits'     1}
+%      GetArgv       = {`Builtin` 'SystemGetArgv'       1}
+%      GetStandalone = {`Builtin` 'SystemGetStandalone' 1}
+%      GetInternal   = {`Builtin` 'SystemGetInternal'   1}
+%      GetHome       = {`Builtin` 'SystemGetHome'       1}
+%      GetPlatform   = {`Builtin` 'SystemGetPlatform'   1}
+%   in
+%      fun {SystemGet C}
+%        case C
+%        of threads    then
+%           R = threads(created:_ runnable:_ min:_ max:_)
+%        in
+%           {GetThreads R} R
+%        [] priorities then
+%           R = priorities(high:_ medium:_)
+%        in
+%           {GetPriorities R} R
+%        [] time       then
+%           R = time(copy:_ gc:_ load:_ propagate:_ run:_
+%                    system:_ user:_ total:_ detailed:_)
+%        in
+%           {GetTime R} R
+%        [] gc         then
+%           R = gc(min:_ max:_ free:_ tolerance:_ on:_
+%                  threshold:_ size:_ active:_)
+%        in
+%           {GetGC R} R
+%        [] print      then
+%           R = print(depth:_ width:_)
+%        in
+%           {GetPrint R} R
+%        [] fd         then
+%           R = fd(variables:_ propagators:_ invoked:_ threshold:_)
+%        in
+%           {GetFD R} R
+%        [] spaces     then
+%           R = spaces(committed:_ cloned:_ created:_ failed:_ succeeded:_)
+%        in
+%           {GetSpaces R} R
+%        [] errors     then
+%           R = errors('thread':_ location:_ hints:_ depth:_ width:_ debug:_)
+%        in
+%           {GetErrors R} R
+%        [] messages   then
+%           R = messages(gc:_ idle:_ feed:_ foreign:_ load:_ cache:_)
+%        in
+%           {GetMessages R} R
+%        [] memory     then
+%           R = memory(atoms:_ names:_ builtins:_ freelist:_ code:_ heap:_)
+%        in
+%           {GetMemory R} R
+%        [] limits     then
+%           R = limits(int:_)
+%        in
+%           {GetLimits R} R
+%        [] internal    then
+%           R = internal(browser:_ applet:_)
+%        in
+%           {GetInternal R} R
+%        [] argv       then {GetArgv}
+%        [] standalone then {GetStandalone}
+%        [] home       then {GetHome}
+%        [] platform   then {GetPlatform}
+%        end
+%      end
+%   end
 
 in
 

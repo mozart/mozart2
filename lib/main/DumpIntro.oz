@@ -50,6 +50,7 @@ in
 
 local
    SmartSave = {`Builtin` smartSave 3}
+   PutProperty = {`Builtin` 'PutProperty' 2}
 
    proc {ALL Xs P}
       case Xs of X|Xr then {P X} {ALL Xr P}
@@ -59,8 +60,8 @@ local
    end
 in
    proc {Dump X Name}
-      {{`Builtin` 'SystemSetPrint'  1} print(depth: 100 width: 100)}
-      {{`Builtin` 'SystemSetErrors' 1} print(depth: 100 width: 100)}
+      {PutProperty print  print(depth: 100 width: 100)}
+      {PutProperty errors print(depth: 100 width: 100)}
 
       ExtPATH = Name # '.ozc'
    in

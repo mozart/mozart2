@@ -114,13 +114,10 @@ PrintError      = {`Builtin` 'System.printError' 1}
 Getpwnam        = {`Builtin` 'OS.getpwnam'       2}
 GetCWD          = {`Builtin` 'OS.getCWD'         1}
 
-Trace = {NewCell local
-                    R=internal(browser:_ applet:_)
-                 in
-                    {{`Builtin` 'SystemGetInternal' 1} R}
-                    case R.browser then false else true end
-                 end}
-
+Trace = {NewCell
+         case {GET 'internal.browser'} then false
+         elsecase {GET 'oz.standalone'} then true
+         else false end}
 
 proc {GetTrace B} {Access Trace B} end
 proc {SetTrace B} {Assign Trace B} end

@@ -85,3 +85,4 @@ USER_HOME       = case {Getenv 'HOME'} of false then
 {SET 'oz.search.load'   OZ_SEARCH_LOAD  }
 {SET 'oz.search.dload'  OZ_SEARCH_DLOAD }
 {SET 'user.home'        USER_HOME       }
+{SET 'platform'         OS_NAME#OS_CPU  }

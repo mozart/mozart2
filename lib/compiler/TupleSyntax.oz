@@ -60,6 +60,8 @@ fun {CoordinatesOf P}
    [] fFun(_ _ _ _ C) then C
    [] fFunctor(_ _ _ C) then C
    [] fClass(_ _ _ C) then C
+   [] fScanner(_ _ _ _ _ C) then C
+   [] fParser(_ _ _ _ _ _ C) then C
    [] fLocal(_ _ C) then C
    [] fBoolCase(_ _ _ C) then C
    [] fCase(_ _ _ C) then C

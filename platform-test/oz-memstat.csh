@@ -18,7 +18,7 @@ if $#argv == 0 then
   echo '   --memory=<oztest letters>   [default: 'vh' (virtual mem + active heap)]'
   echo '   --sort=<oztest memory key>  [default: do not sort at all]'
   echo '   --resort=<oztest memory key>'
-  echo '   --append'                   [default: truncate the output file first]'
+  echo '   --append                    [default: truncate the output file first]'
   exit
 endif
 

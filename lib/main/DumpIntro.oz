@@ -23,7 +23,8 @@ local
    Load = {`Builtin` load 2}
 in
    Base = {Load ComDIR#'Base'#ComEXT}
-   Dump = {Load ComDIR#'DUMP'#ComEXT}
 end
+
+\insert 'Dump.oz'
 
 \endif

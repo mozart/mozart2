@@ -8,7 +8,7 @@
 \insert 'Base.oz'
 
 local
-   \insert 'LoadDump.oz'
+   \insert 'Dump.oz'
 in
    local
       BASE = \insert 'Base.env'

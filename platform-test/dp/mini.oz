@@ -1,7 +1,6 @@
 %%%
 %%% Authors:
 %%%   Michael Mehl (mehl@dfki.de)
-%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
 %%%   Michael Mehl, 1998
@@ -38,9 +37,12 @@ define
             in
                {S ping}
                {S apply(url:'' functor
+                               import
+                                  Property(put)
                                export
                                   Hallo
                                define
+                                  {Property.put 'close.time' 1000}
                                   Hallo=hallo
                                end $)}.hallo=hallo
                {S ping}

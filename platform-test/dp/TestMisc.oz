@@ -25,7 +25,7 @@ import
    OS(uName)
    Remote(manager)
    System(gcDo)
-%   Fault(deinstall)
+   Fault(deinstall)
 export
    getHostNames:GetHostNames
    getRemoteManagers:GetRemoteManagers
@@ -33,8 +33,8 @@ export
    listApply:ListApply
    barrierSync:BarrierSync
    raiseError:RaiseError
-%   watcher:Watcher
-%   deinstallWatchers:DeinstallWatchers
+   watcher:Watcher
+   deinstallWatchers:DeinstallWatchers
 define
    proc {GetHostNames Hosts}
       Hosts = [{OS.uName}.nodename]
@@ -108,7 +108,7 @@ define
          skip
       end
    end
-/*
+
    proc {Watcher _ _}
       raise site_down end
    end
@@ -121,5 +121,5 @@ define
       [] nil then skip
       end
    end
-*/
+
 end

@@ -39,12 +39,11 @@ define
          local
             proc {Loop Ms L R}
                case Ms
-               of M|Mr then %W Wr in
-%                 Ws = W|Wr
-                  thread {StartSite M L R} end
-                  {Loop Mr L R}
+               of M|Mr then LR in
+                  thread {StartSite M L LR} end
+                  {Loop Mr LR R}
                [] nil then
-                  skip
+                  L = R
                end
             end
             L R Hosts
@@ -89,10 +88,10 @@ define
 
    proc {StartSite RMan L R} Error in
       {RMan apply(url:'' functor
+                         import
+                            Property(put)
                          define
-%                           Id = {NewPort _}
-%                           {Fault.install Id watcher('cond':permHome)
-%                            TestMisc.watcher}
+                            {Property.put 'close.time' 1000}
 
                             proc {Process L R PhaseNr NrLeftToFork
                                   NrOfPhases ForkingSpeed}

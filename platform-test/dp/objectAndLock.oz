@@ -89,7 +89,11 @@ define
 
    proc {StartSite RMan Ctr Lock} Error in
       {RMan apply(url:'' functor
+                         import
+                            Property(put)
                          define
+                            {Property.put 'close.time' 1000}
+
                             proc {StartThreads Ctr Lock}
                                List = {MakeList Threads}
                             in

@@ -60,7 +60,11 @@ define
 
    proc {StartSite RMan Ls Id} Error in
       {RMan apply(url:'' functor
+                         import
+                            Property(put)
                          define
+                            {Property.put 'close.time' 1000}
+
                             proc {Server Ls Id} L Lr in
                                L|Lr = Ls
                                case L

@@ -62,7 +62,7 @@ define
             msg <- SiteNr#ThreadNr
          end
          MsgHandler, updateDict(Old Dict Lock)
-         case Nr == Times then
+         if Nr == Times then
             skip
          else
             MsgHandler, updater(Nr+1 SiteNr ThreadNr Dict Lock)
@@ -145,7 +145,7 @@ define
    in
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
-                         case Sum \= Times then
+                         if Sum \= Times then
                             raise dp_object_test_failed(Sum Times) end
                          else
                             skip
@@ -157,7 +157,11 @@ define
       Error
    in
       {RMan apply(url:'' functor
+                         import
+                            Property(put)
                          define
+                            {Property.put 'close.time' 1000}
+
                             proc {StartThreads Object Lock SiteNr Statistics}
                                List = {MakeList Threads}
                                Dict = {NewDictionary}

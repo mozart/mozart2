@@ -100,7 +100,11 @@ define
 
    proc {StartSite Manager Cell SiteNr Statistics} Error in
       {Manager apply(url:'' functor
+                            import
+                               Property(put)
                             define
+                               {Property.put 'close.time' 1000}
+
                                fun {MakeKey I J}
                                   {StringToAtom
                                    {VirtualString.toString I#x#J}}

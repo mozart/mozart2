@@ -420,7 +420,7 @@ in
       %%
       meth setPar(Par Val)
          case @browserObj == InitValue then skip
-         else {@browserObj setParameter(Par Val)}
+         else {@browserObj setParameter(name:Par value:Val)}
          end
       end
 
@@ -428,7 +428,7 @@ in
       %%
       meth getPar(Par ?Val)
          case @browserObj == InitValue then skip
-         else {@browserObj getParameter(Par Val)}
+         else {@browserObj getParameter(name:Par value:Val)}
          end
       end
 

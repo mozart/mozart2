@@ -82,7 +82,7 @@ define
          {OS.exec CMD ARGS _}
       catch E then
          {OS.wait _ _}
-         raise error(E) end
+         raise E end
       end
    end
 

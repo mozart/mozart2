@@ -39,16 +39,19 @@ PATH_SEPARATOR  = case {Getenv 'OZ_PATH_SEPARATOR'} of [C] then C
 PATH_ESCAPE     = case {Getenv 'OZ_PATH_ESCAPE'} of [C] then C
                   elsecase PLATFORM_OS of win32 then unit else &\\ end
 
-OZ_HOME_        = case {Getenv 'OZ_HOME'} of false then
-                     case {Getenv 'OZHOME'} of false then
-                        {GET 'oz.configure.home'}
-                     elseof V then V end
-                  elseof V then V end
-OZ_HOME         = case {Reverse {VirtualString.toString OZ_HOME_}}
-                  of H|T then if H==&/ orelse H==&\\ then
-                                 {Reverse T}
-                              else OZ_HOME_ end
-                  else OZ_HOME_ end
+fun {SafePath P}
+   case {Reverse {VirtualString.toString P}}
+   of H|T then if H==&/ orelse H==&\\ then {Reverse T}
+               else P end
+   else P end
+end
+
+OZ_HOME         = {SafePath
+                   case {Getenv 'OZ_HOME'} of false then
+                      case {Getenv 'OZHOME'} of false then
+                         {GET 'oz.configure.home'}
+                      elseof V then V end
+                   elseof V then V end}
 
 OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
                      case {Getenv 'OZ_PATH'} of false then
@@ -58,10 +61,14 @@ OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
                      elseof V then V end
                   elseof V then V end
 
+OZ_DOTOZ        = case {Getenv 'OZ_DOTOZ'} of false then
+                     '~/.oz'
+                  elseof V then {SafePath V} end
+
 OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
                      case {Getenv 'OZ_LOAD'} of false then
                         case {Getenv 'OZLOAD'} of false then
-                           'cache=~/.oz/cache'#[PATH_SEPARATOR]#
+                           'cache='#OZ_DOTOZ#'/cache'#[PATH_SEPARATOR]#
                            'cache='#OZ_HOME#'/cache'
                         elseof V then V end
                      elseof V then V end
@@ -89,3 +96,4 @@ OZ_TRACE_LOAD   = case {Getenv 'OZ_TRACE_LOAD'} of false then false
 {SET 'oz.search.load'   OZ_SEARCH_LOAD  }
 {SET 'user.home'        USER_HOME       }
 {SET 'oz.trace.load'    OZ_TRACE_LOAD   }
+{SET 'oz.dotoz'         OZ_DOTOZ        }

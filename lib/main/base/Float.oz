@@ -41,5 +41,11 @@ Float = float(is:       IsFloat
               acos:     Acos
               atan:     Atan
               atan2:    Atan2
+              sinh:     Boot_Float.sinh
+              cosh:     Boot_Float.cosh
+              tanh:     Boot_Float.tanh
+              asinh:    Boot_Float.asinh
+              acosh:    Boot_Float.acosh
+              atanh:    Boot_Float.atanh
               toInt:    FloatToInt
               toString: FloatToString)

@@ -62,6 +62,9 @@ sub gtk2oz_meth_name {
 
     my $class_name = gtk2oz_class_name($$class{name});
     $name =~ s/^$class_name//is if $name =~ m/^$class_name/is ;
+
+    $name = 'Rais' if $name eq 'Raise'; # prevent name clash with Oz keyword
+
     return lcfirst($name);
 }
 

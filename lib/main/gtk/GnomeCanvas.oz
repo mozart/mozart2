@@ -32,13 +32,14 @@ export
 
 define
 
-   RegisterNativeObject = GTK.registerNativeObject
-   RegisterObject       = GTK.registerObject
-   UnRegisterObject     = GTK.unregisterObject
-   GetObject            = GTK.getObject
+   RegisterNativeObject   = GTK.registerNativeObject
+   RegisterObject         = GTK.registerObject
+   UnregisterObject       = GTK.unregisterObject
+   UnregisterNativeObject = GTK.unregisterNativeObject
+   GetObject              = GTK.getObject
 
    % References to GTK classes
-   Layout               = GTK.layout
+   Layout                 = GTK.layout
 
    \insert 'gnome-canvas-classes.oz'
 

@@ -1407,11 +1407,13 @@ define
              error(coord: {CoordinatesOf FE1} kind: SyntaxError
                    msg: ('scanner definition not allowed '#
                          'at expression position'))}
+            Unnester, UnnestStatement(FE1 $)
          [] fParser(FE1 _ _ _ _ _ _) then
             {@reporter
              error(coord: {CoordinatesOf FE1} kind: SyntaxError
                    msg: ('parser definition not allowed '#
                          'at expression position'))}
+            Unnester, UnnestStatement(FE1 $)
          [] fLocal(FS FE C) then PrintName NewFS FVs in
             {ToGV getPrintName(?PrintName)}
             {@BA openScope()}

@@ -311,11 +311,9 @@ in
          case NewOp of '=:' then
             fEq(fInt(Const C2) fInt(0 C) C)
          [] '=<:' then
-            fEq(fOpApply('==' [fInt(Const C2) fInt(0 C)] C)
-                fEscape(fVar('`true`' C) C) C)
+            fEq(fOpApply('==' [fInt(Const C2) fInt(0 C)] C) fAtom(true C) C)
          [] '\\=:' then
-            fEq(fOpApply('==' [fInt(Const C2) fInt(0 C)] C)
-                fEscape(fVar('`false`' C) C) C)
+            fEq(fOpApply('==' [fInt(Const C2) fInt(0 C)] C) fAtom(false C) C)
          end
       else
          if {AreLinearConstraints NewE} then Cs Vs in

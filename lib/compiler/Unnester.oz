@@ -1118,12 +1118,10 @@ define
             FApply = fOpApplyStatement('ooExch' [FE1 FE2 FV] C)
             Unnester, UnnestStatement(FApply $)
          [] fOrElse(FE1 FE2 C) then FS in
-            %--** `true`
-            FS = fBoolCase(FE1 fEq(FV fVar('`true`' C) C) fEq(FV FE2 C) C)
+            FS = fBoolCase(FE1 fEq(FV fAtom(true C) C) fEq(FV FE2 C) C)
             Unnester, UnnestStatement(FS $)
          [] fAndThen(FE1 FE2 C) then FS in
-            %--** `false`
-            FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fVar('`false`' C) C) C)
+            FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fAtom(false C) C) C)
             Unnester, UnnestStatement(FS $)
          [] fOpApply(Op FEs C) then
             if {DollarsInScope FEs 0} \= 0 then OpKind in
@@ -1440,10 +1438,10 @@ define
             end
          [] fRaise(_ C) then
             Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fVar('`unit`' C) FV $)   %--**
+            Unnester, UnnestExpression(fAtom(unit C) FV $)
          [] fRaiseWith(_ _ C) then
             Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fVar('`unit`' C) FV $)   %--**
+            Unnester, UnnestExpression(fAtom(unit C) FV $)
          [] fNot(FE C) then
             Unnester, UnnestStatement(fNot(fEq(FV FE C) C) $)
          [] fCond(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
@@ -2207,7 +2205,7 @@ define
             {@BA generate('Exception' C ?X)}
             FX = fVar({X getPrintName($)} C)
             FException = fRecord(fAtom('ex' C) [FX])
-            NewFS1 = fTry(fAnd(FS fEq(FV fVar('`unit`' C) CND))   %--**
+            NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) CND))
                           fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
                           fNoFinally C)
             NewFS2 = fCase(FV [[fCaseClause(FException

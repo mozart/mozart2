@@ -1149,25 +1149,11 @@ define
       meth occ(Coord ?VO)
          VO = {New VariableOccurrence init(self Coord)}
       end
-      meth output(R $) P = @printName in
-         if {CheckOutput R realcore} then pn(P)
-         else
-            case P of '`unit`' then 'unit'
-            [] '`true`' then 'true'
-            [] '`false`' then 'false'
-            else pn(P)
-            end
-         end
+      meth output(R $)
+         pn(@printName)
       end
-      meth outputEscaped(R $) P = @printName in
-         if {CheckOutput R realcore} then '!'#pn(P)
-         else
-            case P of '`unit`' then 'unit'
-            [] '`true`' then 'true'
-            [] '`false`' then 'false'
-            else '!'#pn(P)
-            end
-         end
+      meth outputEscaped(R $)
+         '!'#pn(@printName)
       end
       meth outputPattern(R Vs $) PrintName = @printName in
          if {Some Vs fun {$ V} {V getPrintName($)} == PrintName end} then

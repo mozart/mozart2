@@ -126,15 +126,12 @@ local
 
    NewUniqueName = Boot_Name.newUnique
 
-   LiteralValues = env('true': true
-                       'false': false
-                       'unit': unit
-                       'ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
+   LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
                        'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
                        'ooRequiredArg': {NewUniqueName 'ooRequiredArg'})
 
-   TokenValues = env('true': `true`
-                     'false': `false`)
+   TokenValues = env('true': true
+                     'false': false)
 in
    functor
    import

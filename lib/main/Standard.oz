@@ -60,8 +60,6 @@
 \insert 'standard/Exception.oz'
 \insert 'standard/Thread.oz'
 \insert 'standard/Time.oz'
-\insert 'standard/Lazy.oz'
-\insert 'standard/Promise.oz'
 \insert 'standard/Functor.oz'
 \insert 'standard/BitArray.oz'
 
@@ -123,9 +121,6 @@ export
    %% Exception
    '`RaiseDebugCheck`':  `RaiseDebugCheck`
    '`RaiseDebugExtend`': `RaiseDebugExtend`
-   %% Promise
-   '`!!`':               `!!`
-   '`:=`':               `:=`
 
    %% Value
    'Value':              Value
@@ -304,11 +299,6 @@ export
    %% Exception
    'Exception':          Exception
    'Raise':              Raise
-   %% Lazy
-   'Lazy':               Lazy
-   'IsLazy':             IsLazy
-   %% Promise
-   'Promise':            Promise
    %% Functor
    'Functor':            Functor
    '`NewFunctor`':       `NewFunctor`

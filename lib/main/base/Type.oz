@@ -126,7 +126,6 @@ local
    end
 
    IsBitArray = {`Builtin` 'BitArray.is' 2}
-   IsPromise  = {`Builtin` 'Promise.is'  2}
    IsThread   = {`Builtin` 'Thread.is'   2}
 
    Is = is(array:               IsArray
@@ -154,7 +153,6 @@ local
            pair:                IsPair
            port:                IsPort
            procedure:           IsProcedure
-           promise:             IsPromise
            propertyList:        IsPropList
            record:              IsRecord
            recordC:             IsRecordC
@@ -191,7 +189,6 @@ local
              pair:              {GenericAsk IsPair pair}
              port:              {GenericAsk IsPort port}
              procedure:         {GenericAsk IsProcedure procedure}
-             promise:           {GenericAsk IsPromise promise}
              propertyList:      {GenericAsk IsPropList propertyList}
              record:            {GenericAsk IsRecord record}
              recordC:           {GenericAsk IsRecordC recordC}

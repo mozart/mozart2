@@ -166,18 +166,36 @@ define
       {RRsend entity#{NewPort _ $}  Dist}
       %% proc
       {RRsend entity#proc{$ D } A = 2 in  D=A*2 end  Dist}
+      %% sited proc
+      {RRsend entity#proc sited{$ D } A = 2 in  D=A*2 end  Dist}
       %% object
       {RRsend entity#{New class $
                              feat a
                              meth init self.a = 6 end
                           end
-                      init}  Dist}
+                      init}
+       Dist}
+      %% sited object
+      {RRsend entity#{New class $
+                             prop sited
+                             meth init skip end
+                          end
+                      init}
+       Dist}
       %% class
       {RRsend entity#class $
                         feat a
                         meth init self.a = 6 end
                      end
        Dist}
+      %% sited class
+      {RRsend entity#class $
+                        prop sited
+                        meth init skip end
+                     end
+       Dist}
+      %% dictionaries
+      {RRsend entity#{Dictionary.new} Dist}
 
       %% close managers
       {For 2 4 1 proc{$ Nr}

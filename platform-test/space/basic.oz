@@ -111,7 +111,7 @@ define
                              in
                                 {IsFree A1 true}
                                 ({Label A2}==blocked) = true
-                                {IsFree A2.1 true}
+                                {Value.status A2.1}=future
                                 Z = 1
                                 {Thread.setThisPriority low}
                                 case A1 of succeeded then

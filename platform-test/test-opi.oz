@@ -20,11 +20,13 @@
 %%% WARRANTIES.
 %%%
 
-{OS.chDir {OS.getEnv 'HOME'}#'/mozart/share/test'}
+declare DIR={OS.getEnv 'HOME'}#'/mozart/share/test'
+%declare DIR={OS.getEnv 'HOME'}#'/build/share/test'
+{OS.chDir DIR}
 
 declare
 T={{New Module.manager init}
-   link(url:{OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf' $)}.run
+   link(url:DIR#'/te.ozf' $)}.run
 
 {T argv(verbose:  true
         usage:    false

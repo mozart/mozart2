@@ -52,6 +52,7 @@ in
                  isFree:          IsFree
                  isKinded:        IsKinded
                  isFuture:        IsFuture
+                 isFailed:        IsFailed
                  isDet:           IsDet
                  status:          Boot_Value.status
                  type:            Boot_Value.type

@@ -72,6 +72,7 @@ prepare
    IsFree       = Boot_Value.isFree
    IsKinded     = Boot_Value.isKinded
    IsFuture     = Boot_Value.isFuture
+   IsFailed     = Boot_Value.isFailed
    IsDet        = Boot_Value.isDet
    Max          = Boot_Value.max
    Min          = Boot_Value.min
@@ -336,6 +337,7 @@ export
    'IsFree'             : IsFree
    'IsKinded'           : IsKinded
    'IsFuture'           : IsFuture
+   'IsFailed'           : IsFailed
    'IsDet'              : IsDet
    'Min'                : Min
    'Max'                : Max

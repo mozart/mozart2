@@ -180,27 +180,27 @@ define
              Value FPToIntMap}#')'
          end
 
-         fun {MyValueToVirtualString Value FPToIntMap}
-            if {IsName Value} then
-               case Value of true then 'true'
+         fun {MyValueToVirtualString Val FPToIntMap}
+            if {IsName Val} then
+               case Val of true then 'true'
                [] false then 'false'
                [] unit then 'unit'
                else
-                  if {IsUniqueName Value} then
+                  if {IsUniqueName Val} then
                      %--** these only work if the name's print name is friendly
                      %--** and all names' print names are distinct
-                     '<U: '#{System.printName Value}#'>'
-                  elseif {IsCopyableName Value} then
-                     '<M: '#{System.printName Value}#'>'
+                     '<U: '#{System.printName Val}#'>'
+                  elseif {IsCopyableName Val} then
+                     '<M: '#{System.printName Val}#'>'
                   else
-                     '<N: '#{System.printName Value}#'>'
+                     '<N: '#{System.printName Val}#'>'
                   end
                end
-            elseif {IsAtom Value} then
+            elseif {IsAtom Val} then
                % the atom must not be mistaken for a token
-               if {HasFeature InstructionSizes Value} then '\''#Value#'\''
+               if {HasFeature InstructionSizes Val} then '\''#Val#'\''
                else
-                  case Value of lbl then '\'lbl\''
+                  case Val of lbl then '\'lbl\''
                   [] pid then '\'pid\''
                   [] ht then '\'ht\''
                   [] onScalar then '\'onScalar\''
@@ -209,16 +209,16 @@ define
                   [] ami then '\'ami\''
                   [] pos then '\'pos\''
                   else
-                     {Value.toVirtualString Value 0 0}
+                     {Value.toVirtualString Val 0 0}
                   end
                end
-            elseif {IsProcedure Value} then
-               {FindProc Value}
-            elseif {ForeignPointer.is Value} then I in
+            elseif {IsProcedure Val} then
+               {FindProc Val}
+            elseif {ForeignPointer.is Val} then I in
                % foreign pointers are assigned increasing integers
                % in order of appearance so that diffs are sensible
-               I = {ForeignPointer.toInt Value}
-               if {IsCopyablePredicateRef Value} then '<Q: '
+               I = {ForeignPointer.toInt Val}
+               if {IsCopyablePredicateRef Val} then '<Q: '
                else '<P: '
                end#
                case {Dictionary.condGet FPToIntMap I unit} of unit then N in
@@ -230,17 +230,17 @@ define
                   V
                end#'>'
             else
-               case Value of V1|Vr then
+               case Val of V1|Vr then
                   {ListToVirtualString Vr
                    '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
                [] V1#V2 then
                   {MyValueToVirtualString V1 FPToIntMap}#"#"#
                   {MyValueToVirtualString V2 FPToIntMap}
                else
-                  if {IsTuple Value} then
-                     {TupleToVirtualString Value FPToIntMap}
+                  if {IsTuple Val} then
+                     {TupleToVirtualString Val FPToIntMap}
                   else
-                     {Value.toVirtualString Value 1000 1000}
+                     {Value.toVirtualString Val 1000 1000}
                   end
                end
             end

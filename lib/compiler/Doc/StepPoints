@@ -1,0 +1,13 @@
+Granul ::= fine
+        |  coarse
+        |  unknown.
+
+Kind ::= 'definition'
+      |  'skip'
+      |  'fail'
+      |  'name generation'
+      |  'call'
+      |  'exception handler'
+      |  'conditional'
+      |  'thread'
+      |  'lock'.

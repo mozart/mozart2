@@ -1460,13 +1460,13 @@ define
                Unnester, UnnestStatement(FS $)
             end
          [] fRaise(_ C) then
-            Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fAtom(unit C) FV $)
+            Unnester, UnnestStatement(FE $)
          [] fRaiseWith(_ _ C) then
-            Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fAtom(unit C) FV $)
+            Unnester, UnnestStatement(FE $)
          [] fNot(FE C) then
             Unnester, UnnestStatement(fNot(fEq(FV FE C) C) $)
+         [] fFail(C) then
+            {New Core.failNode init(C)}
          [] fCond(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
             {FoldL FClauses
              fun {$ FVs fClause(FE _ _)}

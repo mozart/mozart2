@@ -136,7 +136,9 @@ in
                                                 end
                                              end
                                  toAtom:     fun {$ V}
-                                                if {IsAtom V} then V else
+                                                case V of nil then ''
+                                                [] '#' then ''
+                                                elseif {IsAtom V} then V else
                                                    {StringToAtom {ToString V}}
                                                 end
                                              end

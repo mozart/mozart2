@@ -28,8 +28,6 @@ functor $ prop once
 import
    Tk
 
-   System.{get}
-
 export
    error:       Error
    dialog:      Dialog
@@ -895,11 +893,40 @@ body
 
 
    local
-      IncStep    = 10
-      IncTime    = 100
-      IncWait    = 500
-      Border     = 1
-      BitMapDir  = '@'#{System.get home}#'/lib/images/'
+      proc {Select Url ?Base ?Ext}
+         S={Reverse {VirtualString.toString Url}} R
+      in
+         Ext  = {String.toAtom {Reverse {String.token S &. $ ?R}}}
+         Base = {String.toAtom {Reverse {String.token R &/ $ _}}}
+      end
+      fun {MkImg Url}
+         Ext Base
+      in
+         {Select Url Base Ext}
+         Base # case Ext==xbm then
+                   {New Tk.image tkInit(type:bitmap url:Url)}
+                else
+                   {New Tk.image tkInit(type:photo format:Ext url:Url)}
+                end
+      end
+   in
+      fun {LoadImages Vs}
+         {List.toRecord images {Map Vs MkImg}}
+      end
+   end
+
+
+
+   local
+      UrlDefaults = \insert '../../url-defaults.oz'
+      ImageDir    = UrlDefaults.home # 'lib/images/'
+      IncStep     = 10
+      IncTime     = 100
+      IncWait     = 500
+      Border      = 1
+      Images      = {LoadImages [ImageDir#'mini-inc.xbm'
+                                 ImageDir#'mini-dec.xbm']}
+
 
       fun {CoerceAdd X Y}
          FX={IsFloat X} FY={IsFloat Y}
@@ -943,12 +970,14 @@ body
                                               takefocus:          false
                                               highlightthickness: 0
                                               bd:                 1
-                                              bitmap:BitMapDir#'mini-inc.xbm')}
+                                              image:
+                                                 Images.'mini-inc')}
             DecButton = {New Tk.button tkInit(parent:             self
                                               takefocus:          false
                                               highlightthickness: 0
                                               bd:                 1
-                                              bitmap:BitMapDir#'mini-dec.xbm')}
+                                              image:
+                                                 Images.'mini-dec')}
          in
             {Tk.batch [grid(Entry     row:0 column:0 rowspan:2 sticky:ns)
                        grid(IncButton row:0 column:1           sticky:ns)
@@ -1227,29 +1256,6 @@ body
             @CurValue
          end
 
-      end
-   end
-
-   local
-      proc {Select Url ?Base ?Ext}
-         S={Reverse {VirtualString.toString Url}} R
-      in
-         Ext  = {String.toAtom {Reverse {String.token S &. $ ?R}}}
-         Base = {String.toAtom {Reverse {String.token R &/ $ _}}}
-      end
-      fun {MkImg Url}
-         Ext Base
-      in
-         {Select Url Base Ext}
-         Base # case Ext==xbm then
-                   {New Tk.image tkInit(type:bitmap url:Url)}
-                else
-                   {New Tk.image tkInit(type:photo format:Ext url:Url)}
-                end
-      end
-   in
-      fun {LoadImages Vs}
-         {List.toRecord images {Map Vs MkImg}}
       end
    end
 

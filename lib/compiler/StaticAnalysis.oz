@@ -2782,6 +2782,9 @@ in
          meth isOpen($)
             {@right isOpen($)}
          end
+         meth isRecordConstr($)
+            {@right isRecordConstr($)}
+         end
 
          meth deref(VO)
             {@right deref(VO)}

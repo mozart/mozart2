@@ -104,6 +104,7 @@ export
    %% Symbolic Propagators
    distinct:       FdpDistinct
    distinct2:      FdpDistinct2
+   distinctB:      FdpDistinctB
    distinctD:      FdpDistinctD
    distinctOffset: FdpDistinctOffset
    atMost:         FdpAtMost
@@ -194,6 +195,7 @@ define
    FdpDistinct = FDP.distinct
    FdpDistinct2 = FDP.distinct2
    FdpDistinctD = FDP.distinctD
+   FdpDistinctB = FDP.distinctB
    FdpDistinctOffset = FDP.distinctOffset
 
    FdpDisjoint = FDP.disjoint

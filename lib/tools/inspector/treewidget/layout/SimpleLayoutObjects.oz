@@ -28,10 +28,11 @@ local
       in
          if {IsFree XDim}
          then
+            String = @string
             LengthStr
          in
-            {self createRep(@string LengthStr)}
-            XDim = {VirtualString.length LengthStr}
+            {self createRep(String LengthStr)}
+            XDim = case String of 39|_ then {System.show 'adding two'} 2 else {System.show 'adding zero'} 0 end + {VirtualString.length LengthStr}
          end
       end
       meth layoutX($)
@@ -70,8 +71,7 @@ in
 
    class AtomLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         PrintStr  = {Helper.convert @value}
-         LengthStr = PrintStr
+         {Helper.convert @value PrintStr LengthStr}
       end
    end
 
@@ -83,7 +83,7 @@ in
                      of false then type <- bool   'false'
                      [] true  then type <- bool   'true'
                      [] unit  then type <- 'unit' 'unit'
-                     else '<N: '#{System.printName Value}#'>'
+                     else '<N:'#{System.printName Value}#'>'
                      end
          LengthStr = PrintStr
       end
@@ -97,7 +97,7 @@ in
                      of false then type <- bool   'false'
                      [] true  then type <- bool   'true'
                      [] unit  then type <- 'unit' '()'
-                     else '<N: '#{System.printName Value}#'>'
+                     else '<N:'#{System.printName Value}#'>'
                      end
          LengthStr = PrintStr
       end

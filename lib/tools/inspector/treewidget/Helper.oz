@@ -24,7 +24,7 @@ import
    System(show printName)
 export
    quoteString  : QuoteStr
-   convert      : ConvertAtom
+   convert      : ConvertAtomExternal
    atom         : AtomNode
    label        : LabelNode
    separator    : SeparatorNode
@@ -41,16 +41,16 @@ export
 define
    QuoteStr
    local
-      fun {OctStr I Ir}
-         ((I div 64) mod 8 + &0)|((I div 8)  mod 8 + &0)|(I mod 8 + &0)|Ir
-      end
-      fun {SkipQuoting As}
-         case As
-         of A|Ar then
-            {Char.type A} == lower andthen {IsAlphaNum Ar}
-         else true
-         end
-      end
+%       fun {OctStr I Ir}
+%        ((I div 64) mod 8 + &0)|((I div 8)  mod 8 + &0)|(I mod 8 + &0)|Ir
+%       end
+%       fun {SkipQuoting As}
+%        case As
+%        of A|Ar then
+%           {Char.type A} == lower andthen {IsAlphaNum Ar}
+%        else true
+%        end
+%       end
       fun {IsAlphaNum As}
          case As
          of nil  then true
@@ -66,24 +66,26 @@ define
          of nil  then nil
          [] I|Ir then
             case {Char.type I}
-            of space then
-               case I
-               of &\n then &\\|&n|{QuoteStr Ir}
-               [] &\f then &\\|&f|{QuoteStr Ir}
-               [] &\r then &\\|&r|{QuoteStr Ir}
-               [] &\t then &\\|&t|{QuoteStr Ir}
-               [] &\v then &\\|&v|{QuoteStr Ir}
-               else I|{QuoteStr Ir}
-               end
-            [] other then
-               case I
-               of &\a then &\\|&a|{QuoteStr Ir}
-               [] &\b then &\\|&b|{QuoteStr Ir}
-               else &\\|{OctStr I {QuoteStr Ir}}
-               end
-            [] punct then
+%           of space then
+%              case I
+%              of &\n then &\\|&n|{QuoteStr Ir}
+%              [] &\f then &\\|&f|{QuoteStr Ir}
+%              [] &\r then &\\|&r|{QuoteStr Ir}
+%              [] &\t then &\\|&t|{QuoteStr Ir}
+%              [] &\v then &\\|&v|{QuoteStr Ir}
+%              else I|{QuoteStr Ir}
+%              end
+%           [] other then
+%              case I
+%              of &\a then &\\|&a|{QuoteStr Ir}
+%              [] &\b then &\\|&b|{QuoteStr Ir}
+%              else &\\|{OctStr I {QuoteStr Ir}}
+%              end
+            of punct then
                case I
                of 34  then 92|34|{QuoteStr Ir}  %% '"'
+               [] 36  then 92|36|{QuoteStr Ir}  %% '$'
+               [] 39  then 92|39|{QuoteStr Ir}  %% '''
                [] 92  then 92|92|{QuoteStr Ir}  %% '\'
                [] 91  then 92|91|{QuoteStr Ir}  %% '['
                [] 93  then 92|93|{QuoteStr Ir}  %% ']'
@@ -95,14 +97,12 @@ define
             end
          end
       end
+      proc {ConvertAtomExternal V PrintStr LenStr}
+         LenStr   = {Value.toVirtualString V 0 0}
+         PrintStr = {QuoteStr LenStr}
+      end
       fun {ConvertAtom V}
-         case V
-         of '' then "\'\'"
-         else
-            QuoteV = {QuoteStr {Atom.toString V}}
-         in
-            if {SkipQuoting QuoteV} then QuoteV else '\''#QuoteV#'\'' end
-         end
+         {QuoteStr {Value.toVirtualString V 0 0}}
       end
    end
 
@@ -263,6 +263,7 @@ define
 
       class LabelNode from SharedValues SecondTags SharedProcs
          attr
+            value  %% Store Reference
             parent %% Parent Node
             limStr %% Limiter String
          prop
@@ -272,14 +273,7 @@ define
             @tag    = {Visual newTag($)}
             @secTag = {Visual newTag($)}
             @parent = Parent
-            @string = if {IsAtom LabVal}
-                      then
-                         case Limiter
-                         of '{' then {Atom.toString LabVal}
-                         else {ConvertAtom LabVal}
-                         end
-                      else '<N:'#{System.printName LabVal}#'>'
-                      end
+            @value  = LabVal
             @limStr = Limiter
          end
          meth getIndex($)
@@ -294,7 +288,12 @@ define
          meth layoutX($)
             XDim = @xDim
          in
-            if {IsFree XDim} then XDim = ({VirtualString.length @string} + 1) end
+            if {IsFree XDim}
+            then
+               PrintStr = @string
+            in
+               XDim = ({VirtualString.length {ConvertAtomExternal @value PrintStr}} + 1)
+            end
             XDim
          end
          meth drawX(X Y $)

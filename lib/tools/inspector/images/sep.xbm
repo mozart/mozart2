@@ -1,0 +1,4 @@
+#define sep_width 16
+#define sep_height 1
+static unsigned char sep_bits[] = {
+   0x11, 0x11};

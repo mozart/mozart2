@@ -41,6 +41,9 @@
 %%          test: B
 %%             if this feature is present and B is true, then this
 %%             builtin may be used as argument to the testBI instruction.
+%%          negated: A
+%%             if this feature is present then A is the name of a builtin
+%%             that returns the negated result from this builtin.
 %%          doesNotReturn: B
 %%             if this feature is present and B is true, then the
 %%             instructions following the call to A are never executed
@@ -79,6 +82,21 @@ in
        case {Not {HasFeature Entry test}} then skip
        elsecase {IsBool Entry.test} then skip
        else {E Name test}
+       end
+       case {HasFeature Entry negated} then NBI = Entry.negated in
+          case {IsAtom NBI} then
+             case {HasFeature Entry test} then
+                case {HasFeature BuiltinTable NBI} then
+                   case {HasFeature BuiltinTable.NBI test} then skip
+                   else {E Name negatedNotTest2}
+                   end
+                else {E Name undefinedNegatedBuiltin}
+                end
+             else {E Name negatedNotTest}
+             end
+          else {E Name negated}
+          end
+       else skip
        end
        case {Not {HasFeature Entry doesNotReturn}} then skip
        elsecase {IsBool Entry.doesNotReturn} then skip

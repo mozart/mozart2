@@ -306,7 +306,7 @@ local
             local
                Args = Applet.args
             in
-               {TkBatch Session
+               {TkBatch
                 case Args.width>0 andthen Args.height>0 then
                    [wm(title Applet Args.title)
                     wm(geometry  Applet Args.width#x#Args.height)
@@ -337,10 +337,8 @@ local
       {Stream flush(how:[send])}
    end
 
-   RetStream
-
-   Session = {{`Builtin` initTclSession 4}
-              {Stream getDesc(_ $)} TkDict RetStream}
+   RetStream = {{`Builtin` wifInit 3}
+                {Stream getDesc(_ $)} TkDict}
 
    local
       fun {GetArgs N Ps}
@@ -405,7 +403,7 @@ local
                end
                {TkReadLoop Rs}
             [] &s then
-               {TkSend Session
+               {TkSend
                 v('puts stdout {s end}; flush stdout; destroy .')}
                {Stream close}
             [] &w then
@@ -414,11 +412,6 @@ local
             else {TkReadLoop Rs}
             end
          [] false then
-            %% This must happen _before_ closing the session!
-            case Applet of unit then skip else
-               {Applet AppletClosed}
-            end
-            {{`Builtin` closeTclSession 1} Session}
             {Stream close}
          end
       end
@@ -455,24 +448,24 @@ local
    %%
    %% Sending tickles
    %%
-   TkSend         = {`Builtin` 'Tk.send'          2}
-   TkBatch        = {`Builtin` 'Tk.batch'         2}
-   TkReturn       = {`Builtin` tclWriteReturn     4}
-   TkReturnMess   = {`Builtin` tclWriteReturnMess 5}
-   TkSendTuple    = {`Builtin` tclWriteTuple      3}
-   TkSendTagTuple = {`Builtin` tclWriteTagTuple   4}
-   TkSendFilter   = {`Builtin` tclWriteFilter     6}
-   TkClose        = {`Builtin` tclClose           3}
-   TkCloseApplet  = {`Builtin` tclCloseWeb        2}
+   TkSend         = {`Builtin` wifWrite           1}
+   TkBatch        = {`Builtin` wifWriteBatch      1}
+   TkReturn       = {`Builtin` wifWriteReturn     3}
+   TkReturnMess   = {`Builtin` wifWriteReturnMess 4}
+   TkSendTuple    = {`Builtin` wifWriteTuple      2}
+   TkSendTagTuple = {`Builtin` wifWriteTagTuple   3}
+   TkSendFilter   = {`Builtin` wifWriteFilter     5}
+
+   TkClose        = {`Builtin` wifClose           2}
 
    %%
    %% Generation of Identifiers
    %%
-   GenTopName    = {`Builtin` genTopName    2}
-   GenWidgetName = {`Builtin` genWidgetName 3}
-   GenTagName    = {`Builtin` genTagName    2}
-   GenVarName    = {`Builtin` genVarName    2}
-   GenImageName  = {`Builtin` genImageName  2}
+   GenTopName    = {`Builtin` wifGenTopName    1}
+   GenWidgetName = {`Builtin` wifGenWidgetName 2}
+   GenTagName    = {`Builtin` wifGenTagName    1}
+   GenVarName    = {`Builtin` wifGenVarName    1}
+   GenImageName  = {`Builtin` wifGenImageName  1}
 
    %%
    %% Master slave mechanism for widgets
@@ -485,7 +478,7 @@ local
    TkWidget       = {NewName}
 
    TclSlaves TclSlaveEntry TclName
-   {{`Builtin` getTclNames 3} ?TclSlaves ?TclSlaveEntry ?TclName}
+   {{`Builtin` wifGetNames 3} ?TclSlaves ?TclSlaveEntry ?TclName}
 
    proc {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
       Fields = {GetFields Args}
@@ -552,35 +545,35 @@ local
    end
 
    fun {TkReturnString M}
-      {TkReturn Session M TkStringToString}
+      {TkReturn M TkStringToString}
    end
 
    fun {TkReturnAtom M}
-      {TkReturn Session M TkStringToAtom}
+      {TkReturn M TkStringToAtom}
    end
 
    fun {TkReturnInt M}
-      {TkReturn Session M TkStringToInt}
+      {TkReturn M TkStringToInt}
    end
 
    fun {TkReturnFloat M}
-      {TkReturn Session M TkStringToFloat}
+      {TkReturn M TkStringToFloat}
    end
 
    fun {TkReturnListString M}
-      {TkReturn Session M TkStringToListString}
+      {TkReturn M TkStringToListString}
    end
 
    fun {TkReturnListAtom M}
-      {TkReturn Session M TkStringToListAtom}
+      {TkReturn M TkStringToListAtom}
    end
 
    fun {TkReturnListInt M}
-      {TkReturn Session M TkStringToListInt}
+      {TkReturn M TkStringToListInt}
    end
 
    fun {TkReturnListFloat M}
-      {TkReturn Session M TkStringToListFloat}
+      {TkReturn M TkStringToListFloat}
    end
 
    class ReturnClass
@@ -636,22 +629,22 @@ local
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
-            {TkSend Session bind(self Event v(Command))}
+            {TkSend bind(self Event v(Command))}
          else
-            {TkSend Session bind(self Event '')}
+            {TkSend bind(self Event '')}
          end
       end
 
       meth !TkReturnMethod(M Cast)
-         {TkReturnMess Session self M unit Cast}
+         {TkReturnMess self M unit Cast}
       end
 
       meth tk(...) = M
-         {TkSendTuple Session self M}
+         {TkSendTuple self M}
       end
 
       meth tkClose
-         {TkClose Session destroy(self) self}
+         {TkClose destroy(self) self}
       end
 
    end
@@ -673,11 +666,11 @@ local
                {`RaiseError` tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
-               {GenWidgetName Session Parent.TclName}
+               {GenWidgetName Parent.TclName}
             end
          elsecase {IsVirtualString Parent} then
             self.TclSlaveEntry = nil
-            {GenWidgetName Session Parent}
+            {GenWidgetName Parent}
          else
             {`RaiseError` tk(wrongParent self Message)} _
          end
@@ -688,11 +681,11 @@ local
             {DefineCommand Message.action {CondSelect Message args nil}
              ?ActionId ?Command}
             self.TclSlaves = [nil ActionId]
-            {TkSendFilter Session self.TkClass NewTkName Message
+            {TkSendFilter self.TkClass NewTkName Message
              [action args parent] v('-command '#Command)}
          else
             self.TclSlaves = [nil]
-            {TkSendFilter Session self.TkClass NewTkName Message [parent] unit}
+            {TkSendFilter self.TkClass NewTkName Message [parent] unit}
          end
          ThisTclName = NewTkName
       end
@@ -701,8 +694,8 @@ local
          case {HasFeature Message action} then ActionId Command in
             {DefineCommand Action Args ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
-            {TkSend Session o(self configure command: v(Command))}
-         else {TkSend Session o(self configure command:'')}
+            {TkSend o(self configure command: v(Command))}
+         else {TkSend o(self configure command:'')}
          end
       end
 
@@ -725,17 +718,17 @@ local
                {`RaiseError` tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
-               {GenWidgetName Session Parent.TclName}
+               {GenWidgetName Parent.TclName}
             end
          elsecase {IsVirtualString Parent} then
             self.TclSlaveEntry = nil
-            {GenWidgetName Session Parent}
+            {GenWidgetName Parent}
          else
             {`RaiseError` tk(wrongParent self Message)} _
          end
       in
          self.TclSlaves = [nil]
-         {TkSendFilter Session self.TkClass NewTkName Message [parent] unit}
+         {TkSendFilter self.TkClass NewTkName Message [parent] unit}
          ThisTclName = NewTkName
       end
 
@@ -761,24 +754,24 @@ local
                   {`RaiseError` tk(wrongParent self Message)} _
                else
                   self.TclSlaveEntry = {AddSlave ParentSlaves self}
-                  {GenWidgetName Session Parent.TclName}
+                  {GenWidgetName Parent.TclName}
                end
             elsecase {IsVirtualString Parent} then
                self.TclSlaveEntry = nil
-               {GenWidgetName Session Parent}
+               {GenWidgetName Parent}
             else
                {`RaiseError` tk(wrongParent self Message)} _
             end
          else
             self.TclSlaveEntry = nil
-            {GenTopName Session}
+            {GenTopName}
          end
          CloseId  CloseCommand
       in
          {DefineCommand {CondSelect Message delete self#tkClose} nil
           ?CloseId ?CloseCommand}
          self.TclSlaves = [nil CloseId]
-         {TkSendFilter Session toplevel MyTkName Message
+         {TkSendFilter toplevel MyTkName Message
           [delete parent title withdraw]
           o(case {CondSelect Message withdraw false} then
                v('; wm withdraw '#MyTkName)
@@ -790,7 +783,7 @@ local
       end
 
       meth tkWM(...) = M
-         {TkSendTagTuple Session wm self M}
+         {TkSendTagTuple wm self M}
       end
 
    end
@@ -832,7 +825,6 @@ local
       end
 
       meth tkClose
-         {TkCloseApplet Session self}
          {System.exit 0}
       end
 
@@ -960,7 +952,7 @@ local
                              {Parent InsertEntry(self Before $)}
                           else {Parent AddEntry(self $)}
                           end
-               VarName  = {GenVarName Session}
+               VarName  = {GenVarName}
             in
                case MoveTcl of unit then skip else
                   self.TkWidget      = Parent
@@ -971,7 +963,7 @@ local
                   in
                      {DefineCommand Action Args ?ActionId ?Command}
                      self.TclSlaves = [nil ActionId]
-                     {TkSendFilter Session
+                     {TkSendFilter
                       o(Parent case IsInsert then insert(Before)
                                else add
                                end)
@@ -979,7 +971,7 @@ local
                       o(v('-command '#Command) b(MoveTcl))}
                   else
                      self.TclSlaves = [nil]
-                     {TkSendFilter Session
+                     {TkSendFilter
                       o(Parent case IsInsert then insert(Before)
                                else add
                                end)
@@ -995,7 +987,7 @@ local
             Parent = self.TkWidget
          in
             lock Parent.EntryLock then
-               {TkSendTagTuple Session Parent self M}
+               {TkSendTagTuple Parent self M}
             end
          end
 
@@ -1005,9 +997,9 @@ local
             lock Parent.EntryLock then
                case {Parent RemoveEntry(self $)} of unit then skip
                elseof MoveTcl then
-                  {TkClose Session o(Parent delete self v(';')
-                                     unset self.EntryVar       v(';')
-                                     b(MoveTcl)) self}
+                  {TkClose o(Parent delete self v(';')
+                             unset self.EntryVar       v(';')
+                             b(MoveTcl)) self}
                end
             end
          end
@@ -1076,7 +1068,7 @@ local
       feat !TclName
 
       meth tkInit(...) = Message
-         MyTclName   = {GenVarName Session}
+         MyTclName   = {GenVarName}
          ThisTclName = self.TclName
       in
          case {IsDet ThisTclName} then
@@ -1084,44 +1076,44 @@ local
          else skip end
          case {Width Message}
          of 0 then skip
-         [] 1 then {TkSend Session set(v(MyTclName) Message.1)}
+         [] 1 then {TkSend set(v(MyTclName) Message.1)}
          end
          ThisTclName = MyTclName
       end
 
       meth tkSet(X)
-         {TkSend Session set(self X)}
+         {TkSend set(self X)}
       end
 
       meth tkReturn($)
-         {TkReturn Session set(self) TkStringToString}
+         {TkReturn set(self) TkStringToString}
       end
       meth tkReturnString($)
-         {TkReturn Session set(self) TkStringToString}
+         {TkReturn set(self) TkStringToString}
       end
       meth tkReturnAtom($)
-         {TkReturn Session set(self) TkStringToAtom}
+         {TkReturn set(self) TkStringToAtom}
       end
       meth tkReturnInt($)
-         {TkReturn Session set(self) TkStringToInt}
+         {TkReturn set(self) TkStringToInt}
       end
       meth tkReturnFloat($)
-         {TkReturn Session set(self) TkStringToFloat}
+         {TkReturn set(self) TkStringToFloat}
       end
       meth tkReturnList($)
-         {TkReturn Session set(self) TkStringToListString}
+         {TkReturn set(self) TkStringToListString}
       end
       meth tkReturnListString($)
-         {TkReturn Session set(self) TkStringToListString}
+         {TkReturn set(self) TkStringToListString}
       end
       meth tkReturnListAtom($)
-         {TkReturn Session set(self) TkStringToListAtom}
+         {TkReturn set(self) TkStringToListAtom}
       end
       meth tkReturnListInt($)
-         {TkReturn Session set(self) TkStringToListInt}
+         {TkReturn set(self) TkStringToListInt}
       end
       meth tkReturnListFloat($)
-         {TkReturn Session set(self) TkStringToListFloat}
+         {TkReturn set(self) TkStringToListFloat}
       end
 
    end
@@ -1149,7 +1141,7 @@ local
          self.TclSlaves     = [nil]
          self.TclSlaveEntry = {AddSlave ParentSlaves self}
          self.TkWidget      = Parent
-         ThisTclName        = {GenTagName Session}
+         ThisTclName        = {GenTagName}
       end
 
    end
@@ -1159,15 +1151,15 @@ local
       from TkTagAndMark
 
       meth tk(...) = M
-         {TkSendTagTuple Session o(self.TkWidget mark) self M}
+         {TkSendTagTuple o(self.TkWidget mark) self M}
       end
 
       meth !TkReturnMethod(M Cast)
-         {TkReturnMess Session o(self.TkWidget mark) M self Cast}
+         {TkReturnMess o(self.TkWidget mark) M self Cast}
       end
 
       meth tkClose
-         {TkClose Session o(self.TkWidget mark delete self) self}
+         {TkClose o(self.TkWidget mark delete self) self}
       end
 
    end
@@ -1186,22 +1178,22 @@ local
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
-            {TkSend Session o(self.TkWidget bind self Event v(Command))}
+            {TkSend o(self.TkWidget bind self Event v(Command))}
          else
-            {TkSend Session o(self.TkWidget bind self Event '')}
+            {TkSend o(self.TkWidget bind self Event '')}
          end
       end
 
       meth tk(...) = M
-         {TkSendTagTuple Session self.TkWidget self M}
+         {TkSendTagTuple self.TkWidget self M}
       end
 
       meth !TkReturnMethod(M Cast)
-         {TkReturnMess Session self.TkWidget M self Cast}
+         {TkReturnMess self.TkWidget M self Cast}
       end
 
       meth tkClose
-         {TkClose Session o(self.TkWidget delete self) self}
+         {TkClose o(self.TkWidget delete self) self}
       end
 
    end
@@ -1220,22 +1212,22 @@ local
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
-            {TkSend Session o(self.TkWidget tag bind self Event v(Command))}
+            {TkSend o(self.TkWidget tag bind self Event v(Command))}
          else
-            {TkSend Session o(self.TkWidget tag bind self Event '')}
+            {TkSend o(self.TkWidget tag bind self Event '')}
          end
       end
 
       meth tk(...) = M
-         {TkSendTagTuple Session o(self.TkWidget tag) self M}
+         {TkSendTagTuple o(self.TkWidget tag) self M}
       end
 
       meth !TkReturnMethod(M Cast)
-         {TkReturnMess Session o(self.TkWidget tag) M self Cast}
+         {TkReturnMess o(self.TkWidget tag) M self Cast}
       end
 
       meth tkClose
-         {TkClose Session o(self.TkWidget tag delete self) self}
+         {TkClose o(self.TkWidget tag delete self) self}
       end
 
    end
@@ -1267,7 +1259,7 @@ local
             case {IsDet ThisTclName} then
                {`RaiseError` tk(alreadyInitialized self Message)}
             else skip end
-            NewTkName   = {GenImageName Session}
+            NewTkName   = {GenImageName}
             MessUrl = case {HasFeature Message url} then
                          {AdjoinAt Message file
                           TkImage,Resolve(Message.url $)}
@@ -1279,7 +1271,7 @@ local
                       else MessUrl
                       end
          in
-            {TkSendFilter Session v('image create '#Type) NewTkName
+            {TkSendFilter v('image create '#Type) NewTkName
              MessAll [maskurl type url] unit}
             ThisTclName = NewTkName
             /*
@@ -1290,43 +1282,43 @@ local
             ToUnlink <- nil
          end
          meth tk(...) = M
-            {TkSendTuple Session self M}
+            {TkSendTuple self M}
          end
          meth tkImage(...) = M
-            {TkSendTagTuple Session image self M}
+            {TkSendTagTuple image self M}
          end
          meth !TkReturnMethod(M Cast)
-            {TkReturnMess Session self M unit Cast}
+            {TkReturnMess self M unit Cast}
          end
          meth tkImageReturn(...) = M
-            {TkReturnMess Session image M self TkStringToString}
+            {TkReturnMess image M self TkStringToString}
          end
          meth tkImageReturnString(...) = M
-            {TkReturnMess Session image M self TkStringToString}
+            {TkReturnMess image M self TkStringToString}
          end
          meth tkImageReturnAtom(...) = M
-            {TkReturnMess Session image M self TkStringToAtom}
+            {TkReturnMess image M self TkStringToAtom}
          end
          meth tkImageReturnInt(...) = M
-            {TkReturnMess Session image M self TkStringToInt}
+            {TkReturnMess image M self TkStringToInt}
          end
          meth tkImageReturnFloat(...) = M
-            {TkReturnMess Session image M self TkStringToFloat}
+            {TkReturnMess image M self TkStringToFloat}
          end
          meth tkImageReturnList(...) = M
-            {TkReturnMess Session image M self TkStringToListString}
+            {TkReturnMess image M self TkStringToListString}
          end
          meth tkImageReturnListString(...) = M
-            {TkReturnMess Session image M self TkStringToListString}
+            {TkReturnMess image M self TkStringToListString}
          end
          meth tkImageReturnListAtom(...) = M
-            {TkReturnMess Session image M self TkStringToListAtom}
+            {TkReturnMess image M self TkStringToListAtom}
          end
          meth tkImageReturnListInt(...) = M
-            {TkReturnMess Session image M self TkStringToListInt}
+            {TkReturnMess image M self TkStringToListInt}
          end
          meth tkImageReturnListFloat(...) = M
-            {TkReturnMess Session image M self TkStringToListFloat}
+            {TkReturnMess image M self TkStringToListFloat}
          end
          meth tkClose
             {ForAll @ToUnlink OS.unlink}
@@ -1335,13 +1327,13 @@ local
    end
 
    proc {AddYScrollbar T S}
-      {TkBatch Session
+      {TkBatch
        [o(T configure yscrollcommand: s(S set))
         o(S configure command:        s(T yview))]}
    end
 
    proc {AddXScrollbar T S}
-      {TkBatch Session
+      {TkBatch
        [o(T configure xscrollcommand: s(S set))
         o(S configure command:        s(T xview))]}
    end
@@ -1359,19 +1351,19 @@ local
       {Dictionary.put TkDict ActionId case Action of O#M then O#M#Casts
                                       else Action#Casts
                                       end}
-      {TkSend Session v('proc '#TclCmd#' args {\n' #
-                        '   eval ozp '#ActionId#' '#'$args\n' #
-                        '}')}
+      {TkSend v('proc '#TclCmd#' args {\n' #
+                '   eval ozp '#ActionId#' '#'$args\n' #
+                '}')}
       proc {$}
-         {TkSend Session v('rename '#TclCmd#' ""')}
+         {TkSend v('rename '#TclCmd#' ""')}
          {Dictionary.remove TkDict ActionId}
       end
    end
 
 in
 
-   tk(send:          proc {$ Tcl} {TkSend Session Tcl}  end
-      batch:         proc {$ Tcl} {TkBatch Session Tcl} end
+   tk(send:          TkSend
+      batch:         TkBatch
 
       return:           TkReturnString
       returnString:     TkReturnString
@@ -1384,9 +1376,9 @@ in
       returnListInt:    TkReturnListInt
       returnListFloat:  TkReturnListFloat
 
-      getPrefix:     TkGetPrefix
-      getId:         TkGetId
-      getTclName:    TkGetTclName
+      getPrefix:        TkGetPrefix
+      getId:            TkGetId
+      getTclName:       TkGetTclName
 
       invoke:        InvokeAction
 

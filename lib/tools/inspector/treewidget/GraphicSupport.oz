@@ -337,6 +337,7 @@ define
             H      = {Tk.returnInt winfo(reqheight self)}
          in
             Tk.canvas, tk(conf background: Col)
+            curCX <- W
             if Font \= @font then GraphicSupport, ComputeFontDim(Font Bitmap) end
             GraphicSupport, GlobalCanvasHandler(adjust(W H))
          end

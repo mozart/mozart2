@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
    Data = [ belgium     # [france netherlands germany luxemburg]
             germany     # [austria france luxemburg netherlands]

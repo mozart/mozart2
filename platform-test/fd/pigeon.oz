@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 % N pigeons have to fit into M pigeon holes.
 % In each hole is at most one pigeon allowed.
 % Each pigeon must be in a hole.

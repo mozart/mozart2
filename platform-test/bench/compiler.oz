@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 import
    Compiler
 export
    Return
 
-body
+define
    Return = compiler([
                       simple(proc {$}
                                 E = {New Compiler.engine init()}

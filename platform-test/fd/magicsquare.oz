@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
    Line =
    proc {$ X S N Sq} {Loop.for 1 S 1 proc {$ I} X.I = {Nth Sq (N-1)*S+I} end}

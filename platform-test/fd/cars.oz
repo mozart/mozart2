@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
 
 % From Constraint Satisfaction using CLP, AI 58(1992), 113-159

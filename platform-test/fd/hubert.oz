@@ -9,7 +9,7 @@
 % Solution: 9/12 + 5/34 + 7/68 = 1
 % i.e. sol( a: 9 b: 1 c: 2 d: 5 e: 3 f: 4 g: 7 h: 6 i: 8 )
 
-functor $ prop once
+functor
 
 import
 
@@ -19,7 +19,7 @@ import
 
 export
    Return
-body
+define
 
 
 

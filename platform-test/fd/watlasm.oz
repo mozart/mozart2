@@ -1,14 +1,14 @@
-functor $ prop once
+functor
 
 import
 
    FD
 
-   System.{Show = show}
+   System(show: Show)
 
 export
    Return
-body
+define
 
    I = 10
    B = {FD.int 0#1}

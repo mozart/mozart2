@@ -19,11 +19,11 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 export Return
 
-body
+define
 
    Return =
    instruction([testList(suspended(proc {$}

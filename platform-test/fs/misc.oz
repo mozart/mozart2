@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,11 +8,11 @@ import
 
    Search
 
-   System.{Show = show}
+   System(show: Show)
 
 export
    Return
-body
+define
 
 
    MkFSetVar =

@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 import
-   Property.{get}
+   Property(get)
 export
    Return
 
-body
+define
 
    proc {Nrev L L1}
       case L of

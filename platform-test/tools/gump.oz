@@ -30,14 +30,14 @@ local
 in
    functor
    import
-      Compiler.evalExpression
+      Compiler(evalExpression)
       GumpScanner
       GumpParser
       System
       Module
    export
       Return
-   body
+   define
       fun {MakeScanner}
          {Compiler.evalExpression
           '\\switch +gump\n'#

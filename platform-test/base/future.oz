@@ -20,11 +20,11 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 export
    Return
 
-body
+define
    fun {RetA} a end
 
    Return =

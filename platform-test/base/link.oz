@@ -66,7 +66,7 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
       OS
@@ -77,7 +77,7 @@ in
    export
       Return
 
-   body
+   define
       Return=
 
       link(equal(local

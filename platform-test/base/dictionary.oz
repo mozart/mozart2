@@ -94,12 +94,12 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    export
       Return
 
-   body
+   define
       Return=
       dictionary([dynamics(fun {$}
                               D = {Dictionary.new}

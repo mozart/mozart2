@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 export
    Return
 import
    System
 
-body
+define
    Return =
 
    records(proc {$}

@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -10,7 +10,7 @@ import
 
 export
    Return
-body
+define
 
    Bits = 7     % maximal domain (7 bit, ie, 128 codes)
    Dist = 2     % minimal hamming distance

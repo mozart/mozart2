@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
    Search
 
 export
    Return
-body
+define
    Return=
    space([nomosim(equal(fun {$}
                            proc {SolveLine Ls Ps}

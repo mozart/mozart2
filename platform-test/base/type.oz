@@ -20,10 +20,10 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 export Return
-body
+define
    Return =
    type([basic(
                proc {$}

@@ -3,7 +3,7 @@
 % we have tasks A, B, C etc. with start dates SA, SB etc., durations and precedence relations.
 % Eg. task A with duration has to be scheduled before task B, thus SB >=' SA+'7
 
-functor $ prop once
+functor
 
 import
 
@@ -13,7 +13,7 @@ import
 
 export
    Return
-body
+define
 
 
    proc {BuildHouse Sol}

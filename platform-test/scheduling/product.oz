@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
 % Data divided by 10. No consideration of Uebergangsmengen.
 % Version with realtimes, uebergaenge are included.

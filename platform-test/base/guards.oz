@@ -24,11 +24,11 @@
 %%% TODO: every test should be a new procedure
 
 
-functor $ prop once
+functor
 
 export
    Return
-body
+define
    Initial={NewName}
    C={NewCell Initial}
    proc {Start V} {Exchange C Initial V} end

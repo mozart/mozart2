@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
    System
 
 export Return
 
-body
+define
    Return =
    exception([
               object(proc {$}

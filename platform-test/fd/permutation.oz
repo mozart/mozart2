@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 % See Hentenryck page 152
 % Vector = 458192637
 % VMon = 11010101     1 if f(i+1)>f(i)

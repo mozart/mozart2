@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
 
    BillAndCoins = r(6#100  8#25  10#10  1#5  5#1)

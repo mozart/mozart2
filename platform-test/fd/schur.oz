@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -8,7 +8,7 @@ import
 
 export
    Return
-body
+define
 
 % See Sidebottom page 60; Schur lemma problem
 % Integers 1..n to be colored with three colors. If x+y=Z, the three integers

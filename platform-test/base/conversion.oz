@@ -26,7 +26,7 @@ import
    System
 export
    Return
-body
+define
    Return=
    conversion([
 

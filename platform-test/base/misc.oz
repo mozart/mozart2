@@ -20,17 +20,17 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 import
    Search.base
-   System.{show apply}
-   Browser.{getsBoundB} from 'x-oz://boot/Browser'
+   System(show apply)
+   Browser(getsBoundB) at 'x-oz://boot/Browser'
    FD
 export
    Return
 
-body
+define
    fun {Id X} X end
 
    Return=

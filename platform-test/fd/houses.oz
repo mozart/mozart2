@@ -1,7 +1,7 @@
 % From Hentenryck page 132
 % In 5 houses live people from different nations with different professions...
 
-functor $ prop once
+functor
 
 import
 
@@ -11,7 +11,7 @@ import
 
 export
    Return
-body
+define
 
 
    Houses =

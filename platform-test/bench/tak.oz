@@ -20,12 +20,12 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 export
    Return
 
-body
+define
 
    fun {Tak X Y Z}
       case X=<Y then Z

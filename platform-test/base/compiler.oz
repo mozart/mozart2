@@ -22,7 +22,7 @@
 functor
 export
    Return
-body
+define
    Return =
    compiler([unnestEquationInRecord(equal(proc {$ B}
                                              Y

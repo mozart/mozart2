@@ -379,14 +379,14 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
       FD
 
    export
       Return
-   body
+   define
 
          local
             fun {AllSpaces Ss Ps}

@@ -20,11 +20,11 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 export
    Return
-body
+define
    Return =
 
    float(proc {$}

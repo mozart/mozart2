@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 import
    FD
 export
    Return
 
-body
+define
    Return = fd([
                 simple(proc {$}
                           X Y S in

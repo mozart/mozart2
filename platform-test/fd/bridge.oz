@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
 
@@ -10,7 +10,7 @@ import
 
 export
    Return
-body
+define
 
 
    BridgeProb =

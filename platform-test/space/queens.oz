@@ -20,7 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
    Search
@@ -28,7 +28,7 @@ import
 export
    Return
 
-body
+define
    Return=
    space([queens(equal(fun {$}
                           fun {Iterate Board N X Y DX DY}

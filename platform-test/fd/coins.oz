@@ -1,4 +1,4 @@
-functor $ prop once
+functor
 
 import
    FD
@@ -7,7 +7,7 @@ import
 export
    Return
 
-body
+define
 
    fun {CoinsTotal PocketCoins Total}
       Coins coins(1:P 2:Tw 5:Fv 10:Te 20:Twe 50:Ff) = Coins

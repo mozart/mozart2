@@ -20,7 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 import
    Remote(manager)
@@ -28,7 +28,7 @@ import
 export
    Return
 
-body
+define
    Return=
    dp([
        mini(

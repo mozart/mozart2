@@ -140,6 +140,24 @@ local
          IsCopyableName         = CompilerSupport.isCopyableName
          IsCopyablePredicateRef = CompilerSupport.isCopyablePredicateRef
 
+         local
+            fun {FindProcSub Xs P}
+               case Xs of X|Xr then
+                  case RunTimeLibrary.X == P then
+                     '<R: '#{System.valueToVirtualString X 0 0}#'>'
+                  else
+                     {FindProcSub Xr P}
+                  end
+               [] nil then
+                  {System.valueToVirtualString P 0 0}
+               end
+            end
+         in
+            fun {FindProc P}
+               {FindProcSub {Arity RunTimeLibrary} P}
+            end
+         end
+
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
                {ListToVirtualString Vr
@@ -191,6 +209,8 @@ local
                else
                   {System.valueToVirtualString Value 0 0}
                end
+            elsecase {IsProcedure Value} then
+               {FindProc Value}
             elsecase {ForeignPointer.is Value} then I in
                % foreign pointers are assigned increasing integers
                % in order of appearance so that diffs are sensible

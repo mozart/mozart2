@@ -13,6 +13,7 @@ import
    Gump
 \endif
    Debug
+   RunTimeLibrary
 export
    Engine
    ParseOzFile
@@ -64,7 +65,8 @@ body
                      'ImAToken':              ImAToken)}
       RT        = {FunRT.apply
                    c('System':                System
-                     'Core':                  Core)}
+                     'Core':                  Core
+                     'RunTimeLibrary':        RunTimeLibrary)}
       Unnest    = {FunUnnest.apply
                    c('FD':                    FD
                      'Misc':                  Misc
@@ -77,7 +79,8 @@ body
       Assembler = {FunAssembler.apply
                    c('System':                System
                      'CompilerSupport':       CompilerSupport
-                     'Builtins':              Builtins)}
+                     'Builtins':              Builtins
+                     'RunTimeLibrary':        RunTimeLibrary)}
       CompilerF = {FunCompiler.apply
                    c('System':                System
                      'Property':              Property

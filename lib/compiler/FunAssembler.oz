@@ -3,6 +3,7 @@ import
    System.{printName valueToVirtualString}
    CompilerSupport
    Builtins.getInfo
+   RunTimeLibrary
 export
    Assemble
    DoAssemble

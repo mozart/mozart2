@@ -315,7 +315,7 @@ S  ::=  <Statement>
 % printName
 <Variable>
      printName:  atom
-     origin:     putEnv | user | generated | error
+     origin:     runTimeLibrary | putEnv | user | generated | error
      coord:      C
      isToplevel: bool
      use:        unused | wildcard | linear | multiple

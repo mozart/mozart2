@@ -5,6 +5,7 @@ in
    import
       System.printName
       Core.{nameToken variable}
+      RunTimeLibrary
    export
       Literals
       Tokens
@@ -16,10 +17,10 @@ in
                    {New Core.nameToken
                     init({System.printName Value} Value true)}
                 end}
-      Procs = {Record.mapInd ProcValues
+      Procs = {Record.mapInd RunTimeLibrary
                proc {$ X Value ?V} PrintName in
                   PrintName = {VirtualString.toAtom '`'#X#'`'}
-                  V = {New Core.variable init(PrintName runTimeLib unit)}
+                  V = {New Core.variable init(PrintName runTimeLibrary unit)}
                   {V valToSubst(Value)}
                   {V setUse(multiple)}
                   {V reg(~1)}

@@ -398,7 +398,10 @@ local
                raise rejected end
             else skip
             end
-            Queries = case CompilerStateClass, getSwitch(ozma $) then
+            Queries = case CompilerStateClass, getSwitch(ozma $) then V in
+                         V = {New Core.variable
+                              init('`runTimeDict`' putEnv unit)}
+                         CompilerStateClass, enter(V {NewDictionary} false)
                          {Unnest.joinQueries Queries0 @reporter}
                       elsecase CompilerStateClass, getSwitch(expression $) then
                          case Queries0 of nil then Queries0
@@ -595,12 +598,12 @@ local
                                        verify: false
                                        peephole: true)}
                case CompilerStateClass, getSwitch(ozma $) then
-                  case GPNs of nil then VS in
+                  case GPNs == nil orelse GPNs == ['`runTimeDict`'] then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
                      {MyAssembler output(?VS)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
-                  [] GPN|GPNr then
+                  elsecase GPNs of GPN|GPNr then
                      {@reporter error(kind: 'Ozma error'
                                       msg: ('No free variables allowed '#
                                             'when compiling for Ozma')

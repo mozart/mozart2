@@ -279,7 +279,9 @@ in
          %%
          Name =
          case AreSmallNames then
-            case PN of '' then '<N>'
+            case PN
+            of '' then '<N>'
+            [] '_' then '<N>'
             else
                SPNS SSPNS
             in
@@ -332,7 +334,9 @@ in
          %%
          Name =
          case AreSmallNames then
-            case PN of '_' then '<O>'
+            case PN
+            of '' then '<O>'
+            [] '_' then '<O>'
             else
                PNS SN
             in
@@ -371,7 +375,9 @@ in
          %%
          Name =
          case AreSmallNames then
-            case PN of '_' then '<C>'
+            case PN
+            of '' then '<C>'
+            [] '_' then '<C>'
             else
                PNS SN
             in
@@ -410,7 +416,9 @@ in
          %%
          Name =
          case AreSmallNames then
-            case PN of '' then '<P/' # {Procedure.arity Term} # '>'
+            case PN
+            of '' then '<P/' # {Procedure.arity Term} # '>'
+            [] '_' then '<P/' # {Procedure.arity Term} # '>'
             else
                PNS SN
             in
@@ -449,7 +457,9 @@ in
          %%
          Name =
          case AreSmallNames then
-            case CN of '_' then Name = '<Cell>'
+            case CN
+            of '' then '<Cell>'
+            [] '_' then '<Cell>'
             else
                PNS SN
             in

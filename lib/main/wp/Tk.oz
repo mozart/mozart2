@@ -1315,7 +1315,7 @@ define
             ThisTclName = NewTkName
          end
          meth tk(...) = M
-            {TkSendTagTuple image self M}
+            {TkSendTuple self M}
          end
          meth !TkReturnMethod(M Cast)
             {TkReturnMess image M self Cast}

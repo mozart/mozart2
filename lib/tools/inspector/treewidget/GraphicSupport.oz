@@ -406,6 +406,22 @@ define
                               action: proc {$ W H}
                                          {Port.send WidPort GlobalCanvasHandler(adjust(W H))}
                                       end)
+            Tk.canvas, tkBind(event: '<KeyPress-Left>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollX(~1))}
+                                      end)
+            Tk.canvas, tkBind(event: '<KeyPress-Right>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollX(1))}
+                                      end)
+            Tk.canvas, tkBind(event: '<KeyPress-Up>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollY(~1))}
+                                      end)
+            Tk.canvas, tkBind(event: '<KeyPress-Down>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollY(1))}
+                                      end)
          end
          meth getDataNode(X Y $)
             CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
@@ -439,6 +455,10 @@ define
                offY  <- ({Max (@maxPtr - 1) 0} * 3)
                GraphicSupport, adjustLines(1 0)
                GraphicSupport, adjustCanvasView
+            [] scrollX(Delta) then
+               GraphicSupport, scrollCanvasX(Delta)
+            [] scrollY(Delta) then
+               GraphicSupport, scrollCanvasY(Delta)
             end
          end
          meth !SearchNode(I XA YA X CY $)
@@ -595,13 +615,23 @@ define
             {Tk.send v(@canvasMSp#@curCX#' '#((Y * @fontY) + @offY + 1)#' '#T)}
          end
          meth moveCanvasView
+            MaxX = (@maxX * @fontX)
             MaxY = ((@curY * @fontY) + @offY)
             NewY = MaxY div @curCY
          in
-            {Tk.send v(@canvasMCV#(@maxX * @fontX)#' '#MaxY#' '#NewY#';F0')}
+            {Tk.send v(@canvasMCV#MaxX#' '#MaxY#' '#NewY#';F0')}
          end
          meth adjustCanvasView
-            {Tk.send v(@canvasACV#(@maxX * @fontX)#' '#((@curY * @fontY) + @offY#';F0'))}
+            MaxX = (@maxX * @fontX)
+            MaxY = ((@curY * @fontY) + @offY)
+         in
+            {Tk.send v(@canvasACV#MaxX#' '#MaxY#';F0')}
+         end
+         meth scrollCanvasX(XScroll)
+            {Tk.send v(@canvasName#' xvi scroll '#XScroll#' units')}
+         end
+         meth scrollCanvasY(YScroll)
+            {Tk.send v(@canvasName#' yvi scroll '#YScroll#' units')}
          end
          meth adjustLines(I OldY)
             if I =< @maxPtr

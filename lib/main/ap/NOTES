@@ -1,0 +1,40 @@
+-*-outline-*-
+
+Design notes for the customization facility
+
+* registering a new group
+
+  {Custom.register group(NAME [doc:DOC] [group:GROUP] [label:LABEL])}
+
+** NAME is a symbol identifying the group.  The recommended convention
+is to use 'foo.bar.baz' for subgroup baz of subgroup baz of group foo.
+** DOC is a virtual string documenting the group
+** GROUP is either a symbol or a list of symbols denoting all the
+parent groups for this group
+** LABEL is a virtual string to use for displaying the group name.
+if it is omitted, NAME is used instead.
+
+* registering a new option
+
+  {Custom.register option(NAME [doc:DOC] [group:GROUP] [label:LABEL]
+                               [type:TYPE]
+                               [default:DEFAULT]
+                               [set:SET]
+                               [init:INIT])}
+
+** TYPE is the type of the option and determines which option editor
+widget to invoke for modifying this option
+** DEFAULT is the default value
+** SET is a procedure to be called whenever the option is changed
+it is called with 2 args: the option name and new value
+** INIT is similar to SET, but is called on the initial value
+
+* looking up the value of an option
+
+  {Custom.get +NAME ?VALUE}
+
+* exclusive access to custom module
+
+some operations may need exclusive access to the custom module.
+
+  lock Custom.lock then ... end

@@ -1136,11 +1136,11 @@ local
          skip
 \ifdef DEBUGSA_POS
          case @coord of pos(F L C) then
-            {System.showInfo {Error.formatPos F L C unit}}
+            {System.showError {Error.formatPos F L C unit}}
          [] pos(F L C _ _ _) then
-            {System.showInfo {Error.formatPos F L C unit}}
+            {System.showError {Error.formatPos F L C unit}}
          [] posNoDebug(F L C) then
-            {System.showInfo {Error.formatPos F L C unit}}
+            {System.showError {Error.formatPos F L C unit}}
          else skip
          end
 \endif

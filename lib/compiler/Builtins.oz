@@ -867,7 +867,7 @@ in
           else skip
           end
        catch bad(N) then
-          {System.showInfo 'bad ('#N#') BuiltinTable entry for \''#Name#'\''}
+          {System.showError 'bad ('#N#') BuiltinTable entry for \''#Name#'\''}
        end
     end}
 

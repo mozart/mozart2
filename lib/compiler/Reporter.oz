@@ -48,8 +48,8 @@ in
       meth ToTop(IsError)
          case @Raised then skip
          else
-            case IsError then {self.Wrapper notify(toTop())} else skip end
-            {self.Wrapper notify(unsuccessful())}
+            case IsError then {self.Wrapper notify(errorFound())} else skip end
+            {self.Wrapper notify(toTop())}
             Raised <- true
          end
       end
@@ -139,7 +139,7 @@ in
       meth logAbort()
          Reporter, ProfileEnd()
          {self.Wrapper notify(info('%** ------------------ aborted\n'))}
-         {self.Wrapper notify(unsuccessful())}
+         {self.Wrapper notify(errorFound())}
       end
       meth logCrash()
          Reporter, ProfileEnd()

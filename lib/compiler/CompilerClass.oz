@@ -737,8 +737,8 @@ in
       %%
       %%    info(VS Coord <= unit)
       %%    displaySource(TitleVS ExtVS VS)
+      %%    errorFound()
       %%    toTop()
-      %%    unsuccessful()
       %%
       %%    pong()
       %%

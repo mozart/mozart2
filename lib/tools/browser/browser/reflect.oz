@@ -271,27 +271,7 @@ in
 
                %%
                %%  convert the chunk to a record...
-               LabelOf =
-               case {IsObject TermIn} then
-                  {AtomConcatAll
-                   ['<Object: '
-                    {System.printName {Class.get TermIn}} ' @ '
-                    {IntToAtom {AddrOf TermIn}} '>']}
-               elsecase {IsClass TermIn} then
-                  {AtomConcatAll
-                   ['<Class: '
-                    {System.printName TermIn} ' @ '
-                    {IntToAtom {AddrOf TermIn}} '>']}
-               elsecase {IsArray TermIn} then
-                  {AtomConcatAll
-                   ['<Array: @ '
-                    {IntToAtom {AddrOf TermIn}} '>']}
-               elsecase {IsDictionary TermIn} then
-                  {AtomConcatAll
-                   ['<Dictionary: @ '
-                    {IntToAtom {AddrOf TermIn}} '>']}
-               else {System.printName TermIn}
-               end
+               LabelOf ={System.printName TermIn}
 
                %%
                TermOut = {Record.make LabelOf RefRArity}

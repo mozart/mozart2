@@ -52,12 +52,6 @@ local
       [hint(l:'In statement' m:oz(X) # ' ' # Op # ' ' # oz(Y) # ' = ' # oz(Z))]
    end
 
-   fun {IsBinaryProc P}
-      {IsProcedure P} andthen {Procedure.arity P}==2
-   end
-
-   AskBinaryProc = {Type.ask.generic IsBinaryProc 'binary procedure'}
-
 in
 
    functor $ prop once
@@ -878,9 +872,6 @@ in
       ErrorFormatter = {NewDictionary}
 
       proc {NewFormatter Key P}
-
-         {Type.ask.feature Key}
-         {AskBinaryProc P}
 
          case {ExFormatter Key}
          then {`RaiseError` system(reinstallFormatter Key)}

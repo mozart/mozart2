@@ -39,17 +39,6 @@ local
                   'apply': Apply)}
    end
 
-   proc {TypeCheck Info Value}
-      case Info.type of Fs=_|_ then
-         {Type.ask.recordC Value}
-         {ForAll Fs proc {$ F} Value.F = _ end}
-      [] nil then skip
-      [] value then skip
-      elseof T then
-         {Type.ask.T Value}
-      end
-   end
-
    fun {GetFeatures Info}
       case Info.type of Fs=_|_ then Fs
       else nil
@@ -58,8 +47,7 @@ local
 in
    `NewFunctor` = NewFunctor
 
-   Functor = 'functor'(is: IsFunctor
-                       new: NewFunctor
-                       typeCheck: TypeCheck
+   Functor = 'functor'(is:          IsFunctor
+                       new:         NewFunctor
                        getFeatures: GetFeatures)
 end

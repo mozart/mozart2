@@ -92,6 +92,7 @@ Value = value(wait:       Wait
               isKinded:   IsKinded
               isDet:      IsDet
               status:     {`Builtin` 'Value.status' 2}
+              type:       {`Builtin` 'Value.type'   2}
               byNeed:     ByNeed
              )
 

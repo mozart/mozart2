@@ -59,7 +59,6 @@
 \insert 'standard/BitArray.oz'
 \insert 'standard/ForeignPointer.oz'
 \insert 'standard/Thread.oz'
-\insert 'standard/Type.oz'
 \insert 'standard/Exception.oz'
 \insert 'standard/Time.oz'
 \insert 'standard/Functor.oz'
@@ -290,9 +289,6 @@ export
    %% Thread
    'Thread':             Thread
    'IsThread':           IsThread
-   %% Type
-   'Type':               Type
-   'IsFeature':          IsFeature
    %% Time
    'Time':               Time
    'Alarm':              Alarm

@@ -31,9 +31,6 @@ IsVirtualString = {`Builtin` 'IsVirtualString' 2}
 
 local
 
-   %% avoid cyclic module dependency
-   ValueType = {`Builtin` 'Type.ofValue' 2}
-
    local
       fun {AllToString I V S}
          case I>0 then {AllToString I-1 V {Append {ToString V.I} S}}
@@ -48,7 +45,7 @@ local
       end
    in
       fun {ToString V}
-         case {ValueType V}
+         case {Value.type V}
          of int then
             case V<0 then &-|{Int.toString {Abs V}}
             else {Int.toString V}
@@ -94,7 +91,7 @@ local
       end
    in
       fun {ChangeSign V S}
-         case {ValueType V}
+         case {Value.type V}
          of int then case V<0 then S#~V else V end
          [] float then {ChangeSignFloat {Float.toString V} S}
          [] atom then V

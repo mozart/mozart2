@@ -201,7 +201,6 @@ in
          end
 
          meth dOpen(RD WD)
-            {Type.ask.int RD} {Type.ask.int WD}
             DescClass, InitLocks(dOpen(RD WD))
             ReadDesc  <- RD
             WriteDesc <- WD
@@ -437,7 +436,6 @@ in
             feat !TimeOut
 
             meth init(type:T <=stream protocol:P <= nil time:Time <=~1) = M
-               {Type.ask.int Time}
                DescClass, InitLocks(M)
                D = {OS.socket 'PF_INET' case T
                                         of 'stream'   then 'SOCK_STREAM'

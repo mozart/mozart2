@@ -45,21 +45,6 @@ local
       end
    end
 
-   AskUnaryProc
-   = {Type.ask.generic
-      fun {$ X}
-         {IsProcedure X} andthen {Procedure.arity X}==1
-      end
-      'unary procedure'}
-
-   AskNullaryProcOrRecord
-   = {Type.ask.generic
-      fun {$ X}
-         ({IsProcedure X} andthen {Procedure.arity X}==0)
-         orelse {IsRecord X}
-      end
-      'nullary procedure'}
-
    %%%
    %%% default initialization
    %%%
@@ -130,29 +115,24 @@ local
       end
 
       meth setRepAction(A <= DefaultAction)
-         {AskNullaryProcOrRecord A}
          Action <- A
       end
 
       meth setRepFinal(F <= DefaultFinal)
-         {AskNullaryProcOrRecord F}
          Final <- F
       end
 
       meth setRepDelay(D <= DefaultDelay)
-         {Type.ask.int D}
          ActDelay <- D
          DelayFun <- proc{$ X} X=D end
       end
 
       meth setRepDelayFun(F <= DefaultFun)
-         {AskUnaryProc F}
          ActDelay <- ~1
          DelayFun <- F
       end
 
       meth setRepNum(N <= DefaultNum)
-         {Type.ask.int N}
          NumberA <- N
          NumReset <- N
       end

@@ -53,20 +53,16 @@ end
 
 local
    fun {FailureX D}
-      {Type.ask.record D}
       failure(debug:failure(info:D))
    end
 
    fun {PredefX E}
-      {Type.ask.record E}
       system(E debug:{Label E})
    end
 
    fun {PredefXD E D}
       K
    in
-      {Type.ask.record E}
-      {Type.ask.record D}
       K = {Label E}
       system(E debug:K(info:D))
    end
@@ -74,14 +70,11 @@ local
    fun {ErrorXD E D}
       K
    in
-      {Type.ask.record E}
-      {Type.ask.record D}
       K = {Label E}
       error(E debug:K(info:D))
    end
 
    fun {ErrorX E}
-      {Type.ask.record E}
       error(E debug:{Label E})
    end
 

@@ -164,7 +164,7 @@ export
 define
 
    fun {IsFDVector X}
-      if {IsTuple X} andthen {Width X}==2 andthen {Label X}=='|' then
+      case X of _|_ then
          {IsListOf X IsFDIntC}
       else
          {IsRecord X} andthen {Record.all X IsFDIntC}

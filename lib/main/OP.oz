@@ -20,24 +20,17 @@
 %%% WARRANTIES.
 %%%
 
-%%%
-%%% This file creates the Open Programming Functor
-%%%
-
-local
-   \insert OP/OS
-in
-   fun
+fun
 \ifdef NEWCOMPILER
-      instantiate
+   instantiate
 \endif
-      {$ IMPORT}
+   {$ IMPORT}
       \insert 'SP.env'
       = IMPORT.'SP'
 
-      \insert OP/Open
-      \insert OP/Component.oz
+      \insert 'OP/OS.oz'
+      \insert 'OP/Open.oz'
+      \insert 'OP/Component.oz'
    in
       \insert 'OP.env'
-   end
 end

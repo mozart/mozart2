@@ -451,6 +451,9 @@ define
                Platform = {Property.get 'platform.name'}
                PLTFRM = ({Property.get 'oz.home'} #
                          '/platform/'#Platform#'/')
+               TKEXE = case {Property.get 'platform.arch'}
+                       of 'darwin' then 'OzWish.app/Contents/MacOS/OzWish'
+                       else 'tk.exe' end
             in
                {OS.putEnv 'TCL_LIBRARY' PLTFRM#'wish/tcl'}
                {OS.putEnv 'TK_LIBRARY'  PLTFRM#'wish/tk'}
@@ -467,14 +470,14 @@ define
                                server(port: ?Port)}
                   end
                   {Wait Port}
-                  _ = {OS.exec PLTFRM#'tk.exe' [Port] true}
+                  _ = {OS.exec PLTFRM#TKEXE [Port] true}
                   {Wait Stream}
                   Stream
                else
                   {New class $ from Open.pipe Open.text
                           prop final
                        end
-                   init(cmd:PLTFRM#'tk.exe')}
+                   init(cmd:PLTFRM#TKEXE)}
                end
             end
 

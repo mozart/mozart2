@@ -31,7 +31,7 @@ IsMetaVar = {`Builtin` 'metaIsVarB' noHandler}
 
 %%
 %%  first argument is a FD variable, and second - reference cardinality;
-WatchDomain = {`Builtin` fdWatchDomB noHandler}
+WatchDomain = FD.watch.size
 
 %%
 %%  first argument is a meta variable, and second - reference strength;

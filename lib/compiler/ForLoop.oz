@@ -18,7 +18,10 @@ prepare
     "multiply"#multiply
     "collect" #collect
     "append"  #append
-    "prepend" #prepend]
+    "prepend" #prepend
+    "while"   #while
+    "until"   #until
+   ]
    ACCU_TYPE =
    ['return'    # ['return' 'default']
     'optimize'  # ['return' 'default' 'maximize' 'minimize']
@@ -26,7 +29,7 @@ prepare
     'multiply'  # ['return' 'default' 'multiply']
     'count'     # ['return' 'default' 'count']
     'list'      # ['return' 'collect' 'append' 'prepend']]
-   GENERAL_FEATURES = ['break' 'continue']
+   GENERAL_FEATURES = ['break' 'continue' 'while' 'until']
    fun {IsNotGeneral F} {Not {Member F GENERAL_FEATURES}} end
    fun {CoordNoDebug Coord}
       case {Label Coord} of pos then Coord
@@ -167,6 +170,7 @@ define
                                nil unit)
                             unit)}
       end
+      WHILE UNTIL
       {ForAll {Dictionary.entries D2}
        proc {$ F#E}
           case F
@@ -196,6 +200,10 @@ define
           in
              VarD.'default' := V
              {Push 'outers' fEq(V E unit)}
+          [] 'while' then
+             WHILE=E NeedBreak=unit
+          [] 'until' then
+             UNTIL=E NeedBreak=unit
           else
              X = {MakeVar 'V'}
           in
@@ -226,7 +234,13 @@ define
                          unit)
                       fNoFinally unit)
               else BODY end
-      Loop2 = fAnd(Loop1 fApply(LoopProc {Reverse D1.'nexts'} unit))
+      Loop1b = if {IsDet WHILE}
+               then fBoolCase(WHILE Loop1 fRaise(BreakExc unit) unit)
+               else Loop1 end
+      Loop1c = if {IsDet UNTIL}
+               then fAnd(Loop1b fBoolCase(UNTIL fRaise(BreakExc unit) fSkip(unit) unit))
+               else Loop1b end
+      Loop2 = fAnd(Loop1c fApply(LoopProc {Reverse D1.'nexts'} unit))
       Loop2b= case D1.'inners'
               of nil then Loop2
               [] H|T then

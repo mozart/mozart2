@@ -1,15 +1,15 @@
 % What it does:
 %
 % A manager creates a circle of workers knowing the port of its neighbour.
-% The manager then creates a cell and sends it out in the circle. This cell
-% then circulates a number of rounds.
+% The manager then creates a cell#variable#port#lock#object and sends it out
+% in the circle. This structure then circulates a number of rounds.
 %
 % Why:
 %
 % If the circle is big enough this should cause secondary credits to be
 % created and used.
 
-\define DBG
+%\define DBG
 functor
 import
    TestMisc
@@ -35,11 +35,15 @@ define
    proc {Show _} skip end
 \endif
 
+   class Obj
+      meth init skip end
+   end
+
    proc {Start}
       Managers
       InP InS={NewPort $ InP}
    in
-      try Hosts C={NewCell 0} in
+      try Hosts C={NewCell 0}#_#{NewPort _}#{NewLock}#{New Obj init} in
          {Show manager({GetPID})}
          {TestMisc.getHostNames Hosts}
          {TestMisc.getRemoteManagers Sites Hosts Managers}
@@ -69,13 +73,25 @@ define
                             import
                                OS(getPID:GetPID)
                             define
+                               proc {Check C#V#P#L#O}
+                                  if {Not {IsCell C}} then
+                                     raise no_cell(C) end
+                                  elseif {Not {IsFree V}} then
+                                     raise no_var(V) end
+                                  elseif {Not {IsPort P}} then
+                                     raise no_port(P) end
+                                  elseif {Not {IsLock L}} then
+                                     raise no_lock(L) end
+                                  elseif {Not {IsObject O}} then
+                                     raise no_object(O) end
+                                  end
+                               end
+
                                RP
                                proc {Run S Rounds}
                                   {Show running(I Rounds {GetPID})}
                                   if Rounds > 0 then
-                                     if {Not {IsCell S.1}} then
-                                        raise no_cell(S.1) end
-                                     end
+                                     {Check S.1}
                                      {Send RP S.1}
                                      {Run S.2 Rounds-1}
                                   else

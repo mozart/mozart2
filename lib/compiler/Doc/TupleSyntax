@@ -73,8 +73,9 @@ RecordArgument    = Phrase
 ProcFlag          = instantiate
                   | copy
                   | lazy.
-FunctorDescriptor = fImport([ImportDecl] Coord)
-                  | fExport([ExportDecl] Coord).
+FunctorDescriptor = fImport([ImportDecl] Coordinates)
+                  | fExport([ExportDecl] Coordinates)
+                  | fProp([Phrase] Coordinates).
 ImportDecl        = fImportItem(NakedVariable [FeatureNoVar] OptFrom).
 OptFrom           = fFrom(Atom)
                   | fNoFrom.

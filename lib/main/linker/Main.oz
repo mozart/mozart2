@@ -226,12 +226,12 @@ define
           U|Ur={Reverse Us}
        in
           {System.showError
-           'ERROR: Could not load functor: '#U#'.'}
+           'ERROR: Could not load functor '#U}
           if Ur\=nil then
-             {System.printError '       Included from: '}
+             {System.printError '   included from\n'}
              {ForAll Ur
               proc {$ A}
-                 {System.printError A#'\n                      '}
+                 {System.printError '      '#A#'\n'}
               end}
           end
           1

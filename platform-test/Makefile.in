@@ -65,6 +65,7 @@ COMPONENTS = \
 
 ####################################################
 
+OZE =
 OZC = @OZC@
 OZFLAGS =
 
@@ -72,26 +73,53 @@ OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c
 
 .PHONY: all bootstrap install check dirs clean veryclean distclean depend
+.PHONY: boot-check boot-all
 
-all: oztest
+all: dirs oztest
+
+boot-all:
+        BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
+        make all \
+        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=/=/:.:= \
+        OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
+        OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
+        OZE=$(SRCTOP)/share/lib/oze.sh
+
+BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
+CURDIRA   = $(BUILDTOPA)/share/test
+OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
+PREFIX    = @prefix@
+
+boot-check: boot-all
+        PATH=$(SRCTOP)/share/bin:$(PATH) \
+        BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
+        make check \
+        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/tools/:prefix=/=/:.:= \
+        OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
+        OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
+        OZE=$(SRCTOP)/share/lib/oze.sh \
+        OZTESTOPTS="$(OZTESTOPTS) --ignores=dp_mini"
 
 bootstrap:
 
 install:
 
+OZTESTOPTS = --verbose
+
 check: oztest
-        ./oztest --verbose
+        $(OZE) ./oztest $(OZTESTOPTS)
 
 dirs:
         @ds="$(DIRS)"; for d in $$ds; do if test ! -d $$d; then $(INSTALL_DIR) $$d; fi; done && touch $@
 
-$(COMPONENTS): dirs
+# what is this bullshit
+# $(COMPONENTS): dirs
 
 oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
-        ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
+        $(OZE) ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
         -rm -f ./make-test
 
 

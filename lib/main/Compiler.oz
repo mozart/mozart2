@@ -41,7 +41,7 @@ in
             prop final
             meth readQuery($) S in
                Open.text, getS(?S)
-               case S == false then ""
+               case S == false orelse S.1 == 4 then ""  % 4 == ^D
                else S#'\n'#TextFile, readQuery($)
                end
             end

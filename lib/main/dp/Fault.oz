@@ -55,7 +55,7 @@ define
       end
 
       proc{Except Entity Cond Op}
-         {Exception.raiseError
+         {Exception.'raise'
           system(dp(entity:Entity conditions:Cond op:Op))}
       end
 

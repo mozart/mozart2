@@ -89,6 +89,34 @@ define
          end
       end
 
+      %% Hack Alert
+      local
+         fun {IsPrefix P S}
+            case P
+            of P|Pr then
+               case S
+               of S|Sr then S == P andthen {IsPrefix Pr Sr}
+               [] _    then false
+               end
+            [] nil  then true
+            end
+         end
+      in
+         fun {IsFailedFut V}
+            VS = {Value.toVirtualString V 0 0}
+         in
+            {IsPrefix "future byNeed: \'fail\'" {String.token VS &< _}}
+         end
+      end
+
+
+      proc {WaitFuture F A}
+         if {IsFuture F} andthen {Not {IsFailedFut F}}
+         then {Delay 300} {WaitFuture F A}
+         else A = unit
+         end
+      end
+
       class StoreListener from ListNode
          meth create
             @Prev = self
@@ -117,13 +145,26 @@ define
          end
          meth listen(FutMode WidPort CurValue EntryObj)
             if FutMode
-            then {Value.waitQuiet CurValue}
-            else {Wait {GetsBoundB CurValue}}
-            end
-            {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
-            if {IsDet CurValue} %% Thats not really true but nothing stunning happens anyway
-            then skip
-            else StoreListener, listen(FutMode WidPort CurValue EntryObj)
+            then
+               %% Appropriate Solution (currently buggy)
+               %% {Value.waitQuiet CurValue}
+               if {Not {IsFuture CurValue}} orelse {IsFailedFut CurValue}
+               then skip
+               else
+                  Action
+               in
+                  thread {WaitFuture CurValue Action} end
+                  {Wait Action}
+                  {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
+                  StoreListener, listen(FutMode WidPort CurValue EntryObj)
+               end
+            else
+               {Wait {GetsBoundB CurValue}}
+               {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
+               if {IsDet CurValue}
+               then skip
+               else StoreListener, listen(FutMode WidPort CurValue EntryObj)
+               end
             end
          end
          meth notifyNodes(EntryObj)

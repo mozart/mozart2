@@ -43,7 +43,7 @@ define
 
    fun {NormalizeCoord Coord}
       case Coord of unit then Coord
-      else pos({CondSelect Coord 1 ''} Coord.2 {CondSelect Coord 2 ~1})
+      else pos({CondSelect Coord 1 ''} Coord.2 {CondSelect Coord 3 ~1})
       end
    end
 

@@ -43,7 +43,6 @@ local
       OptSpecs = {ConvertBooleanOpts
                   [&E#"core"#mode(value: core)
                    &S#"outputcode"#mode(value: outputcode)
-                   &s#"ozma"#mode(value: ozma)
                    &e#"feedtoemulator"#mode(value: feedtoemulator)
                    &c#"dump"#mode(value: dump)
                    &x#"syslet"#mode(value: syslet)
@@ -89,8 +88,6 @@ local
    '-E, --core                    Transform a statement into core language\n'#
    '                              (file extension: .ozi).\n'#
    '-S, --outputcode              Compile a statement to assembly code\n'#
-   '                              (file extension: .ozm).\n'#
-   '-s, --ozma                    Compile a statement to Ozma assembly code\n'#
    '                              (file extension: .ozm).\n'#
    '-e, --feedtoemulator          Compile and execute a statement.\n'#
    '                              This is the default mode.\n'#
@@ -504,8 +501,6 @@ in
                       OFN = {ChangeExtension Arg ".ozi"}
                    [] outputcode then
                       OFN = {ChangeExtension Arg ".ozm"}
-                   [] ozma then
-                      OFN = {ChangeExtension Arg ".ozm"}
                    [] feedtoemulator then
                       if {Access MakeDepend} then
                          {Report
@@ -548,8 +543,6 @@ in
                    {BatchCompiler enqueue(setSwitch(outputcode true))}
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator false))}
-                [] ozma then
-                   {BatchCompiler enqueue(setSwitch(ozma true))}
                 [] feedtoemulator then
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator true))}
@@ -624,7 +617,7 @@ in
                          {OS.unlink TmpFileName}
                       end
                    [] feedtoemulator then skip
-                   else File in   % core, outputcode, ozma
+                   else File in   % core, outputcode
                       File = {New Open.file
                               init(name: OFN
                                    flags: [write create truncate])}

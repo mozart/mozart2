@@ -2890,14 +2890,6 @@ local
 
    class SARecordPattern
       from SAConstructionOrPattern
-
-      meth makePatternScheme(?VarScheme ?NameScheme)
-         VLab NLab VArgs NArgs
-      in
-         % methods do not exist
-         {@label makePatternScheme(@globalVars ?VLab ?NLab)}
-         {@args makePatternScheme(@globalVars ?VArgs ?NArgs)}
-      end
    end
 
    %
@@ -3116,9 +3108,18 @@ local
             TestClass
          then
             PTs = {Map @parents fun {$ X} {X getValue($)} end}
-            NoDet PsDet
+\ifdef INHERITANCE
+            NoDet
+\endif
+            PsDet
          in
-            {AllUpTo @parents DetTests.det ?NoDet ?PsDet}
+            {AllUpTo @parents DetTests.det
+\ifdef INHERITANCE
+             ?NoDet
+\else
+             _
+\endif
+             ?PsDet}
 
             SAClassNode, inheritProperties(Ctrl PTs)
             SAClassNode, inheritAttributes(Ctrl PTs PsDet)
@@ -3724,11 +3725,6 @@ local
               hint(l:'Second value' oz({RHS getValue($)}))]}
          end
       end
-
-      meth makePatternScheme(GVs VL NL)
-         VL = @value
-         NL = @value
-      end
    end
 
    class SAIntNode
@@ -3779,11 +3775,6 @@ local
              ]}
          end
       end
-
-      meth makePatternScheme(GVs VL NL)
-         VL = @value
-         NL = @value
-      end
    end
 
    class SAFloatNode
@@ -3832,11 +3823,6 @@ local
               hint(l:'Second value' m:oz({RHS getValue($)}))
              ]}
          end
-      end
-
-      meth makePatternScheme(GVs VL NL)
-         VL = @value
-         NL = @value
       end
    end
 
@@ -4422,14 +4408,6 @@ local
                % LHS is ValueNode
                {LHS unify(Ctrl Top RHS)}
             end
-         end
-      end
-
-      meth makePatternScheme(GVs VL NL)
-         {Show makePatternSchemeVarOcc}
-         case {@value isVariableOccurrence($)}
-         then VL=_  NL=@variable
-         else {@value makePatternScheme(GVs VL NL)}  % take care of recursion
          end
       end
    end

@@ -27,7 +27,7 @@ use Getopt::Long;
 sub gtk2oz_class_name {
     my ($gtk_name) = @_;
 
-    $gtk_name =~ s/^G[dt]k//s;
+    $gtk_name =~ s/^(Gtk|Gdk|Gnome)//s;
     return $gtk_name;
 }
 
@@ -37,7 +37,7 @@ sub gtk2oz_name {
     my @substrings;
     my $string;
 
-    $gtk_name =~ s/^g[td]k_//is;
+    $gtk_name =~ s/^(gtk|gdk|gnome)_//is;
     @substrings = split /(\?)|_/, $gtk_name; # We allow '?' in names, ignore them
     foreach $string (@substrings) {
         $string = ucfirst $string;
@@ -90,7 +90,7 @@ sub write_oz_fields_wrappers {
         my $var = gtk2oz_name($field);
 
         my $native = "$$class{name}\Get". gtk2oz_meth_name($field);
-        $native =~ s/^G[dt]k//s;
+        $native =~ s/^(Gtk|Gdk|Gnome)//s;
         $native = lcfirst $native;
 
         print '   meth ' . $meth . "(\$)\n";

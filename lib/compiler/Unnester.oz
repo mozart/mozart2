@@ -1050,7 +1050,7 @@ define
             end
             NewFS = fStepPoint(CombinatorFS 'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fChoice(FSs C) then CND N NewFS in
+         [] fChoice(FSs C) then CND N CombinatorFE NewFS in
             %% choice S1 [] ... [] Sn end
             %% =>
             %% case {Space.choose n} of 1 then S1
@@ -1059,7 +1059,13 @@ define
             %% end
             CND = {CoordNoDebug C}
             N = {Length FSs}
-            NewFS = fStepPoint(fCase(fOpApply('Space.choose' [fInt(N C)] CND)
+            case Unnester, AddImport('x-oz://system/Space' $) of unit then
+               CombinatorFE = fOpApply('Space.choose' [fInt(N C)] CND)
+            elseof FE then
+               CombinatorFE = fApply(fOpApply('.' [FE fAtom('choose' CND)] CND)
+                                     [fInt(N C)] CND)
+            end
+            NewFS = fStepPoint(fCase(CombinatorFE
                                      {List.mapInd FSs
                                       fun {$ I FS}
                                          fCaseClause(fInt(I C) FS)

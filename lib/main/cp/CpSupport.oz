@@ -28,6 +28,8 @@ functor
 
 prepare
 
+   R2L = Record.toList
+
    %%
    %% Vector conversion
    %%
@@ -45,7 +47,7 @@ prepare
 
    fun {VectorToList V}
       if {VectorToType V}==list then V
-      else {Record.toList V}
+      else {R2L V}
       end
    end
 

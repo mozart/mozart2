@@ -1,12 +1,12 @@
 %%%
 %%% Authors:
-%%%   Joerg Wuertz (wuertz@dfki.de)
-%%%   Tobias Mueller (tmueller@ps.uni-sb.de)
+%%%   Jörg Würtz (wuertz@dfki.de)
+%%%   Tobias Müller (tmueller@ps.uni-sb.de)
 %%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
-%%%   Joerg Wuertz, 1997
-%%%   Tobias Mueller, 1997
+%%%   Jörg Würtz, 1997
+%%%   Tobias Müller, 1997
 %%%   Christian Schulte, 1997, 1998
 %%%
 %%% Last change:
@@ -31,11 +31,21 @@ require
 
              vectorsToLists: VectorsToLists
              vectorToTuple:  VectorToTuple
+             vectorToList:   VectorToList
 
              formatOrigin:   FormatOrigin)
 
 import
-   SCP at 'x-oz://boot/Schedule'
+   SCP(disjoint_card:      Disjoint
+       cpIterate:          SchedCpIterate
+       taskIntervals:      SchedTaskIntervals
+       disjunctive:        SchedDisjunctive
+       cpIterateCap:       SchedCpIterateCap
+       cumulativeTI:       SchedCumulativeTI
+       cpIterateCapUp:     SchedCpIterateCapUp
+       taskIntervalsProof: SchedTaskIntervalsProof
+       firstsLasts:        SchedFirstsLasts)
+   at 'x-oz://boot/Schedule'
 
    FD(bool
       is
@@ -52,45 +62,164 @@ import
          dispatch)
 
 export
-   serialized:            SchedCpIterate
-   serializedDisj:        SchedDisjunctive
-   disjoint:              SchedDisjointCard
-   taskIntervals:         SchedTaskIntervals
-   cumulative:            Cumulative
-   cumulativeEF:          CumulativeEF
-   cumulativeTI:          SchedCumulativeTI
-   cumulativeUp:          SchedCpIterateCapUp
+   %% Serialization propagators for unary propagators
+   Serialized
+   SerializedDisj
+   TaskIntervals
 
-   taskIntervalsDistP:    TaskIntervalsDistP
-   taskIntervalsDistO:    TaskIntervalsDistO
-   firstsLastsDist:       NewDistFL
-   firstsDist:            NewDistF
-   lastsDist:             NewDistL
+   %% Distribution for unary resources
+   TaskIntervalsDistP
+   TaskIntervalsDistO
+   FirstsLastsDist
+   FirstsDist
+   LastsDist
+
+   %% Propagators for cumulative scheduling
+   Cumulative
+   CumulativeEF
+   CumulativeTI
+   CumulativeUp
+
+   %% Misc propagators
+   Disjoint
+
+prepare
+
+   V2A = VirtualString.toAtom
+   L2R = List.toRecord
+
+   local
+      proc {TupleMapping I M}
+         if I>0 then
+            M.I={V2A I} {TupleMapping I-1 M}
+         end
+      end
+      fun {RecordMapping As I}
+         case As of nil then nil
+         [] A|Ar then
+            A # if {IsInt A} then {V2A A}
+                elseif {IsName A} then {V2A n#I}
+                else A
+                end|{RecordMapping Ar I+1}
+         end
+      end
+   in
+      fun {GetMapping V ?M}
+         if {IsTuple V} then N={Width V} in
+            M={MakeTuple '#' N} {TupleMapping N M} true
+         else As={Arity V} A|_=As in
+            if {IsInt A} orelse {IsName A} then
+               M={L2R '#' {RecordMapping As 0}} true
+            else false
+            end
+         end
+      end
+   end
+
+   local
+      fun {DoTuple N R M}
+         if N>0 then M.N#R.N|{DoTuple N-1 R M}
+         else nil
+         end
+      end
+      fun {DoRecord As R M}
+         case As of nil then nil
+         [] A|Ar then M.A#R.A|{DoRecord Ar R M}
+         end
+      end
+      fun {DoList Fs M}
+         case Fs of nil then nil
+         [] F|Fr then M.F|{DoList Fr M}
+         end
+      end
+   in
+      fun {MapRecord R M}
+         {L2R '#' if {IsTuple R} then {DoTuple {Width R} R M}
+                  else {DoRecord {Arity R} R M}
+                  end}
+      end
+      fun {MapVectors VV M}
+         {Map {VectorToList VV} fun {$ V}
+                                   {DoList {VectorToList V} M}
+                                end}
+      end
+   end
+
 
 define
 
-   %% Hack, needed for dynamic linking of *.so
 
+   %% Force linking of finite domain module
    {Wait FD.bool}
 
-   %% Propagators
-   SchedDisjointCard =       SCP.disjoint_card
-   SchedCpIterate =          SCP.cpIterate
-   SchedTaskIntervals =      SCP.taskIntervals
-   SchedDisjunctive =        SCP.disjunctive
-   SchedCpIterateCap =       SCP.cpIterateCap
-   SchedCumulativeTI =       SCP.cumulativeTI
-   SchedCpIterateCapUp =     SCP.cpIterateCapUp
-   SchedTaskIntervalsProof = SCP.taskIntervalsProof
-   SchedFirstsLasts =        SCP.firstsLasts
 
-
-   proc {Cumulative Tasks Start Dur Use Capacities}
-      {SchedCpIterateCap Tasks Start Dur Use Capacities 0}
+   %% Serialization propagators for unary resources
+   local
+      fun {NewSerializer Propagator}
+         proc {$ Tasks Start Dur}
+            M TasksM StartM DurM
+         in
+            if {GetMapping Start ?M} then
+               TasksM = {MapVectors Tasks M}
+               StartM = {MapRecord Start M}
+               DurM   = {MapRecord Dur M}
+            else
+               TasksM = Tasks
+               StartM = Start
+               DurM   = Dur
+            end
+            {Propagator TasksM StartM DurM}
+         end
+      end
+   in
+      Serialized     = {NewSerializer SchedCpIterate}
+      SerializedDisj = {NewSerializer SchedDisjunctive}
+      TaskIntervals  = {NewSerializer SchedTaskIntervals}
    end
 
-   proc {CumulativeEF Tasks Start Dur Use Capacities}
-      {SchedCpIterateCap Tasks Start Dur Use Capacities 1}
+
+   %% Propagators for cumulative scheduling
+   local
+      proc {MapCum Tasks Start Dur Use ?TasksM ?StartM ?DurM ?UseM}
+         M
+      in
+         if {GetMapping Start ?M} then
+            TasksM = {MapVectors Tasks M}
+            StartM = {MapRecord Start M}
+            DurM   = {MapRecord Dur M}
+            UseM   = {MapRecord Use M}
+         else
+            TasksM = Tasks
+            StartM = Start
+            DurM   = Dur
+            UseM   = Use
+         end
+      end
+   in
+      proc {Cumulative Tasks Start Dur Use Cap}
+         TasksM StartM DurM UseM
+      in
+         {MapCum Tasks Start Dur Use ?TasksM ?StartM ?DurM ?UseM}
+         {SchedCpIterateCap TasksM StartM DurM UseM Cap 0}
+      end
+      proc {CumulativeEF Tasks Start Dur Use Cap}
+         TasksM StartM DurM UseM
+      in
+         {MapCum Tasks Start Dur Use ?TasksM ?StartM ?DurM ?UseM}
+         {SchedCpIterateCap TasksM StartM DurM UseM Cap 1}
+      end
+      proc {CumulativeTI Tasks Start Dur Use Cap}
+         TasksM StartM DurM UseM
+      in
+         {MapCum Tasks Start Dur Use ?TasksM ?StartM ?DurM ?UseM}
+         {SchedCumulativeTI TasksM StartM DurM UseM Cap}
+      end
+      proc {CumulativeUp Tasks Start Dur Use Cap}
+         TasksM StartM DurM UseM
+      in
+         {MapCum Tasks Start Dur Use ?TasksM ?StartM ?DurM ?UseM}
+         {SchedCpIterateCapUp TasksM StartM DurM UseM Cap}
+      end
    end
 
 
@@ -98,9 +227,7 @@ define
 
    local
       proc {Check Tasks Start Dur}
-         if {IsList Tasks} andthen
-            {All Tasks fun {$ Ts}
-                          {IsList Ts} andthen
+         if {All Tasks fun {$ Ts}
                           {All Ts fun {$ T}
                                      {HasFeature Start T} andthen
                                      {HasFeature Dur T}
@@ -146,7 +273,7 @@ define
       end
 
 
-      fun {MakeTaskTuple Ts}
+      fun {ListsToTuples Ts}
          {VectorToTuple {Map Ts VectorToTuple}}
       end
 
@@ -286,35 +413,33 @@ define
          end
       end
 
-      proc {HelpDist Dist Enum Tasks Start Dur Flag}
-         Stream
-         Converted = {VectorsToLists Tasks}
-         TaskTuple = {MakeTaskTuple Converted}
-      in
-         {Check Converted Start Dur}
-         {Dist TaskTuple Start Dur Stream Flag}
-         {Enum TaskTuple Start Dur nil Stream}
+      fun {NewDist Dist Enum Flag}
+         proc {$ Tasks Start Dur}
+            Stream M TasksM StartM DurM
+            TaskLists TaskTuples
+         in
+            if {GetMapping Start ?M} then
+               TasksM = {MapVectors Tasks M}
+               StartM = {MapRecord Start M}
+               DurM   = {MapRecord Dur M}
+            else
+               TasksM = Tasks
+               StartM = Start
+               DurM   = Dur
+            end
+            TaskLists  = {VectorsToLists TasksM}
+            TaskTuples = {ListsToTuples TaskLists}
+            {Check TaskLists StartM DurM}
+            {Dist  TaskTuples StartM DurM Stream Flag}
+            {Enum  TaskTuples StartM DurM nil Stream}
+         end
       end
    in
-      proc {TaskIntervalsDistO Tasks Start Dur}
-         {HelpDist SchedTaskIntervalsProof EnumTI Tasks Start Dur 1}
-      end
-
-      proc {TaskIntervalsDistP Tasks Start Dur}
-         {HelpDist SchedTaskIntervalsProof EnumTI Tasks Start Dur 0}
-      end
-
-      proc {NewDistFL Tasks Start Dur}
-         {HelpDist SchedFirstsLasts EnumFL Tasks Start Dur 0}
-      end
-
-      proc {NewDistF Tasks Start Dur}
-         {HelpDist SchedFirstsLasts EnumFL Tasks Start Dur 1}
-      end
-
-      proc {NewDistL Tasks Start Dur}
-         {HelpDist SchedFirstsLasts EnumFL Tasks Start Dur 2}
-      end
+      TaskIntervalsDistO = {NewDist SchedTaskIntervalsProof EnumTI 1}
+      TaskIntervalsDistP = {NewDist SchedTaskIntervalsProof EnumTI 0}
+      FirstsLastsDist    = {NewDist SchedFirstsLasts EnumFL 0}
+      FirstsDist         = {NewDist SchedFirstsLasts EnumFL 1}
+      LastsDist          = {NewDist SchedFirstsLasts EnumFL 2}
    end
 
 

@@ -38,8 +38,6 @@ local
    StringToken   = String.token
    StringTokens  = String.tokens
 
-   SystemGet     = System.get
-
    %%
    %% Access to Serlvet parameters following CGI spec
    %%
@@ -84,7 +82,7 @@ local
    %% Access to commandline arguments
    %%
    fun {GetCmdArgs}
-      {Map {SystemGet argv} AtomToString}
+      {Map {{`Builtin` 'GetProperty' 2} argv} AtomToString}
    end
 
 

@@ -59,7 +59,10 @@ import
 
    Search.{SearchOne = 'SearchOne'}
 
+\ifndef OZM
    Gump
+\endif
+
 
 export
    engine:               CompilerEngine

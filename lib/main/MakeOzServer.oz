@@ -20,6 +20,41 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+local
+
+   \insert 'dp/RemoteServer.oz'
+
+in
+
+   {Application.syslet
+    'ozserver'
+    functor $ prop once
+
+    import
+       Connection.{take}
+       Syslet.{args exit}
+
+    body
+       try
+          RunRet # CtrlRet = {Connection.take Syslet.args.ticket}
+       in
+          {RemoteServer RunRet CtrlRet proc {$}
+                                          {Syslet.exit 0}
+                                       end}
+       catch _ then
+          {Syslet.exit 1}
+       end
+    end
+
+    single(ticket(type:atom))
+   }
+
+end
+
+\else
+
 local
 
    \insert 'dp/MakeAllLoader.oz'
@@ -53,3 +88,4 @@ in
    }
 
 end
+\end

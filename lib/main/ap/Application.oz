@@ -24,7 +24,7 @@
 
 local
 
-   \insert ../lilo/LILO.oz
+   \insert '../init/Module.oz'
 
 in
 
@@ -57,13 +57,14 @@ in
 
       local
          functor ErrorHandler prop once
-         import LILO.{loadEager}
+         import
+            Error
          body
             {{`Builtin` setDefaultExceptionHandler 1}
              proc {$ E}
                 %% cause Error to be instantiated, which installs
                 %% a new error handler as a side effect
-                {Wait {LILO.loadEager 'Error'}}
+                {Wait Error}
                 %% invoke this new error handler
                 {{{`Builtin` getDefaultExceptionHandler 1}} E}
                 %% this whole procedure is invoked at most once
@@ -90,13 +91,17 @@ in
             end
          end
 
-         fun {MakeBody Functor LetKey LetFunctor}
-            proc {$}
-               LILO = {NewLILO}
-            in
-               {LILO.link unit   ErrorHandler '.' _}
-               {LILO.link LetKey LetFunctor   '.' _}
-               {LILO.link unit   Functor      '.' _}
+         local
+            MozartUrl  = 'http://www.ps.uni-sb.de/ozhome/'
+         in
+            fun {MakeBody Functor LetKey LetFunctor}
+               proc {$}
+                  Module = {NewModule}
+               in
+                  {Module.link MozartUrl#'ErrorHandler.ozf' ErrorHandler _}
+                  {Module.link MozartUrl#'lib/'#LetKey#'.ozf'      LetFunctor   _}
+                  {Module.link MozartUrl#'Root.ozf'         Functor      _}
+               end
             end
          end
 

@@ -44,7 +44,7 @@ in
     import
        Open.{file}
        Syslet.{exit args}
-       LILO.{load}
+       Module.{load}
 
     body
 
@@ -59,7 +59,7 @@ in
        {O ''}
        {O 'env('}
 
-       A={LILO.load Syslet.args.'in'}
+       A={Module.load unit Syslet.args.'in' nil}
 
        {Wait A}
 

@@ -29,7 +29,7 @@
 
     Syslet.{args exit}
 
-    LILO.{link}
+    Module.{link}
 
  body
     try
@@ -48,7 +48,7 @@
                   X = case {Procedure.is What} then {What}
                       elsecase {Chunk.is What} andthen
                          {HasFeature What apply} then
-                         {LILO.link unit What '.'}
+                         {Module.link '' What}
                       end
                in
                   okay(X)

@@ -32,7 +32,7 @@ NewOS
 NewOpen
 NewComponent
 NewCompiler
-NewLILO
+NewModule
 in
 \insert 'sp/System.oz'
 = NewSystem
@@ -64,7 +64,7 @@ in
 \insert 'Compiler.oz'
 = NewCompiler
 
-\insert 'lilo/LILO.oz'
+\insert 'init/Module.oz'
 
 {{`Builtin` 'save' 2}
  proc instantiate {$}
@@ -97,7 +97,7 @@ in
                           'FD':      FD
                           'Search':  Search
                          )}
-    LILO = {NewLILO}
+    Module = {NewModule}
 
        \insert BatchCompile
  in

@@ -325,11 +325,11 @@ local
          end
       end
    in
-      proc {IncludeComponents S Compiler Load} Comp1 Atom1 Rest Export in
+      proc {IncludeComponents S Compiler} Comp1 Atom1 Rest Export in
          {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
          Atom1 = {String.toAtom Comp1}
          try
-            Export = {LILO.load Atom1}
+            Export = {Module.load Atom1 unit nil}
          catch error(...) then
             {Report error(kind: UsageError
                           msg: 'unknown component `'#Comp1#'\' requested'
@@ -343,7 +343,7 @@ local
          end
          {Compiler enqueue(mergeEnv({Record.filterInd Export
                                      fun {$ P _} {IsPrintName P} end}))}
-         case Rest of _|S2 then {IncludeComponents S2 Compiler Load}
+         case Rest of _|S2 then {IncludeComponents S2 Compiler}
          [] nil then skip
          end
       end
@@ -400,7 +400,7 @@ in
              [] maxerrors then
                 {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
              [] environment then
-                {IncludeComponents X BatchCompiler LILO.load}
+                {IncludeComponents X BatchCompiler}
              [] incdir then
                 {Assign IncDir X|{Access IncDir}}
              [] include then

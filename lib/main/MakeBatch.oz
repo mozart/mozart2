@@ -24,7 +24,7 @@
  functor
 
  import
-    LILO.{load}
+    Module.{load}
 
     System.{printInfo
             printError}

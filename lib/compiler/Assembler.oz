@@ -783,17 +783,17 @@ local
                {Assembler append(call(NewR Arity))}
                {Peephole Rest Assembler}
             end
-         [] genFastCall(PredicateRef IsTail) then
-            case IsTail \= 0 then
+         [] genFastCall(PredicateRef ArityAndIsTail) then
+            case ArityAndIsTail mod 2 == 1 then
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             elsecase Rest of deAllocateL(I)|return|Rest then
                {MakeDeAllocate I Assembler}
-               {Assembler append(genFastCall(PredicateRef 1))}
+               {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
                {EliminateDeadCode Rest Assembler}
             elseof lbl(_)|deAllocateL(I)|_ then
                {MakeDeAllocate I Assembler}
-               {Assembler append(genFastCall(PredicateRef 1))}
+               {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
                {Peephole Rest Assembler}
             else
                {Assembler append(I1)}

@@ -500,7 +500,7 @@ in
             case {IsProcedure PredicateRef} then
                Instr = marshalledFastCall(PredicateRef {Length Regs} * 2)
             else
-               Instr = genFastCall(PredicateRef 0)
+               Instr = genFastCall(PredicateRef {Length Regs} * 2)
             end
             Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
          [] vApplMeth(_ Reg Literal RecordArity Regs Coord _) then

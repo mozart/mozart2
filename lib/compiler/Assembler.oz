@@ -118,11 +118,11 @@ define
       end
 
       local
-         BIStoreGenCallInfo  = CompilerSupport.storeGenCallInfo
+         BIStoreCallMethodInfo  = CompilerSupport.storeCallMethodInfo
       in
-         proc {StoreGenCallInfo CodeBlock
+         proc {StoreCallMethodInfo CodeBlock
                gci(g(Index) IsMethod Name IsTail RecordArity)}
-            {BIStoreGenCallInfo
+            {BIStoreCallMethodInfo
              CodeBlock Index IsMethod Name IsTail RecordArity}
          end
       end

@@ -55,14 +55,10 @@ in
       GET    = Property.get
 
       %% usual system initialization
-      URL = local
-               \insert 'init/Prop.oz'
-               \insert 'init/URL.oz'
-            in
-               {SET url URL}
-               {SET load URL.load}
-               URL
-            end
+      \insert 'init/Prop.oz'
+      \insert 'init/Resolve.oz'
+
+      {SET load Resolve.load}
 
       %% execute application
 
@@ -77,12 +73,12 @@ in
 
          {Module.enter 'x-oz://boot/URL' BURL}
 
-         {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
-         {Module.enter MozartUrl#'lib/Property'#FunExt Property}
-         {Module.enter MozartUrl#'lib/Pickle'#FunExt   Pickle}
-         {Module.enter MozartUrl#'lib/System'#FunExt   System}
-         {Module.enter MozartUrl#'lib/Module'#FunExt   Module}
-         {Module.enter MozartUrl#'lib/URL'#FunExt      URL}
+         {Module.enter MozartUrl#'OS'#FunExt       OS}
+         {Module.enter MozartUrl#'Property'#FunExt Property}
+         {Module.enter MozartUrl#'Pickle'#FunExt   Pickle}
+         {Module.enter MozartUrl#'System'#FunExt   System}
+         {Module.enter MozartUrl#'Module'#FunExt   Module}
+         {Module.enter MozartUrl#'Resolve'#FunExt  Resolve}
 
          %% create and install ErrorHandler module
          functor ErrorHandler prop once

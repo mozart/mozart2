@@ -107,17 +107,17 @@
 
 local
 
-URL_localize    = BURL.localize
-URL_open        = BURL.open
-URL_load        = BURL.load
-PrintError      = System.printError
-Getpwnam        = OS.getpwnam
-GetCWD          = OS.getCWD
+   URL_localize = BURL.localize
+   URL_open     = BURL.open
+   URL_load     = BURL.load
+   PrintError   = System.printError
+   Getpwnam     = OS.getpwnam
+   GetCWD               = OS.getCWD
 
-Trace = {NewCell {GET 'oz.trace.load'}}
+   Trace = {NewCell {GET 'oz.trace.load'}}
 
-proc {GetTrace B} {Access Trace B} end
-proc {SetTrace B} {Assign Trace B} end
+   proc {GetTrace B} {Access Trace B} end
+   proc {SetTrace B} {Assign Trace B} end
 
 %%% {ParseURL +URL ?REP}
 %%%
@@ -415,18 +415,15 @@ end
 LoadResolver = {MakeResolver url vs(OZ_SEARCH_LOAD)}
 
 in
-   URL = {Adjoin
-          url(builtin  : builtin(localize : URL_localize
-                                 open     : URL_open
-                                 load     : URL_load)
-              getTrace : GetTrace
-              setTrace : SetTrace
-              handler  : handler(default:DefaultHandler
-                                 all    :MakeAllHandler
-                                 root   :MakeRootHandler
-                                 cache  :MakeCacheHandler
-                                 prefix :MakePrefixHandler)
-              makeResolver : MakeResolver
-              normalizePath: NormalizePath)
-          LoadResolver}
+   Resolve = {Adjoin
+              url(getTrace : GetTrace
+                  setTrace : SetTrace
+                  handler  : handler(default:DefaultHandler
+                                     all        :MakeAllHandler
+                                     root       :MakeRootHandler
+                                     cache      :MakeCacheHandler
+                                     prefix     :MakePrefixHandler)
+                  makeResolver : MakeResolver
+                  normalizePath: NormalizePath)
+              LoadResolver}
 end

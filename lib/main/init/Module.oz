@@ -48,7 +48,7 @@ local
       %% SystemLoc = SystemUrl.netloc
    end
 
-   local
+  local
       UrlDefaults = \insert '../../url-defaults.oz'
    in
       FunExt    = UrlDefaults.'functor'
@@ -74,23 +74,13 @@ local
                   BaseUrl  = {RURL.vsToUrl MozartUrl#"DUMMY"}
                in
                   {List.toRecord map
-                   {FoldL Functors.dirs
-                    fun {$ Urls Kind}
-                       {FoldL Functors.Kind
-                        fun {$ Urls ModName}
-                           ModName #
-                           {RURL.resolve BaseUrl
-                            {RURL.vsToUrl Kind#'/'#ModName#FunExt}}
-                           | Urls
-                        end Urls}
-                    end
-                    {FoldL Functors.volatile
-                     fun {$ Urls ModName}
-                        ModName #
-                        {RURL.resolve BaseUrl
-                         {RURL.vsToUrl 'lib/'#ModName#FunExt}}
-                        | Urls
-                     end nil}}}
+                   {Map {Append Functors.volatile
+                         {Append Functors.lib Functors.tools}}
+                    fun {$ ModName}
+                       ModName #
+                       {RURL.resolve BaseUrl
+                        {RURL.vsToUrl ModName#FunExt}}
+                    end}}
                end
 
 in

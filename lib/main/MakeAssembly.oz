@@ -97,7 +97,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'ErrorRegistry': ErrorRegistry
              'FD':            FD
              'Open':          Open
-             'URL':           'export'(open:unit)
+             'Resolve':       'export'(open:unit)
              'FS':            FS
              'Search':        Search)
     =IMPORT
@@ -158,7 +158,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'Pickle'#       Pickle
              'Compiler'#     Compiler]
      proc {$ A#M}
-        {Module.enter UrlDefaults.home#'lib/'#A#UrlDefaults.'functor' M}
+        {Module.enter UrlDefaults.home#A#UrlDefaults.'functor' M}
      end}
 
     \insert BatchCompile

@@ -60,7 +60,7 @@ in
        putEnv
        stat}
 
-   URL.{makeResolver}
+   Resolve.{makeResolver}
 
    export
       send:          TkSend
@@ -370,8 +370,8 @@ in
                          end
                CMD     = HOME # '/platform/'#OSS#'-'#CPU#'/'#WISH
             in
-               {OS.putEnv 'TCL_LIBRARY' HOME#'/lib/wish/tcl'}
-               {OS.putEnv 'TK_LIBRARY'  HOME#'/lib/wish/tk'}
+               {OS.putEnv 'TCL_LIBRARY' HOME#'/share/wish/tcl'}
+               {OS.putEnv 'TK_LIBRARY'  HOME#'/share/wish/tk'}
 
                {New class $ from Open.pipe Open.text
                        prop final
@@ -1219,7 +1219,7 @@ in
          Sep   = {Property.get 'path.separator'}
          Home  = {Property.get 'oz.home'}
       in
-         ImRes = {URL.makeResolver image
+         ImRes = {Resolve.makeResolver image
                   vs('all=.'#[Sep]#'cache='#Home#'/cache')}
       end
 

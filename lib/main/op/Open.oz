@@ -149,7 +149,7 @@ in
 
       ErrorRegistry.{put}
 
-      URL.{open}
+      Resolve.{open}
 
    export
       file:   File
@@ -301,7 +301,7 @@ in
                                   {`Raise` {Exception.system
                                             open(urlIsReadOnly self M)}}
                                   _
-                               else {URL.open Url}
+                               else {Resolve.open Url}
                                end
                             else
                                {OS.open Name OSFlagS OSModeS}

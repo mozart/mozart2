@@ -651,6 +651,7 @@ local
          [] fBoolCase(FE FS1 FS2 C) then Lbl = {Label FE} in
             case
                {Not {@switches getSwitch(debuginfovarnames $)}}
+               andthen {Not {@switches getSwitch(debuginfocontrol $)}}
                andthen ({@switches getSwitch(staticanalysis $)}
                         orelse {Not {@switches getSwitch(codegen $)}})
                % Note:

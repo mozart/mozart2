@@ -47,13 +47,21 @@ define
 
    HasVirtualSite = {Property.get 'distribution.virtualsites'}
 
-   [VirtualSite]  = if HasVirtualSite then
-                       %% Now we know that there is in fact virtual site
-                       %% support in our emulator, go and get it.
-                       {Module.link ['x-oz://boot/VirtualSite']}
-                    else
-                       [unit]
-                    end
+   [VirtualSite
+\ifdef DENYS_EVENTS
+    VirtualSiteAux
+\endif
+   ]  = if HasVirtualSite then
+           %% Now we know that there is in fact virtual site
+           %% support in our emulator, go and get it.
+           {Module.link ['x-oz://boot/VirtualSite'
+\ifdef DENYS_EVENTS
+                         'x-oz://system/VirtualSite'
+\endif
+                        ]}
+        else
+           [unit unit]
+        end
 
    if {Property.condGet 'oz.engine' unit}==unit then
       {Property.put 'oz.engine'
@@ -76,9 +84,13 @@ define
          CMD#ARGS = case Fork
                     of sh then
                        Cmd # [Func DetachArg TicketArg ModelArg]
-                    [] virtual then
+                    [] virtual then Key={VirtualSite.newMailbox} in
+\ifdef DENYS_EVENTS
+                       %% start VS threads
+                       {Wait VirtualSiteAux}
+\endif
                        Cmd # [Func TicketArg DetachArg ModelArg
-                              '--shmkey='#{VirtualSite.newMailbox}]
+                              '--shmkey='#Key]
                     else
                        Fork #
                        [Host ('exec '#Cmd#' '#Func#' '#

@@ -1,12 +1,11 @@
 %%%
 %%% Authors:
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
-%%%
-%%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Denys Duchier, 1997
+%%%   Christian Schulte, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -29,9 +28,35 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-\define CompileBase
+\insert 'Base.oz'
 
-\insert 'DumpIntro.oz'
+declare
+   Dump
+in
+
+local
+   SmartSave = {`Builtin` smartSave          3}
+
+   proc {ALL Xs P}
+      case Xs of X|Xr then {P X} {ALL Xr P}
+      [] nil then skip
+      else skip
+      end
+   end
+in
+   proc {Dump X Name}
+      {{`Builtin` 'SystemSetPrint'  1} print(depth: 100 width: 100)}
+      {{`Builtin` 'SystemSetErrors' 1} print(depth: 100 width: 100)}
+
+      ExtPATH = Name # '.ozc'
+   in
+      case {SmartSave X ExtPATH} of nil then skip
+      elseof Xs then
+         {ALL Xs {`Builtin` 'Wait' 1}}
+         {SmartSave X ExtPATH nil}
+      end
+   end
+end
 
 local
    BASE = \insert 'Base.env'
@@ -45,4 +70,10 @@ in
    {Dump STD 'Standard'}
 end
 
-\insert 'DumpHalt.oz'
+local
+   Delay = {`Builtin` 'Delay' 1}
+in
+   {Delay 1000}
+end
+
+{{`Builtin` 'shutdown' 1} 0}

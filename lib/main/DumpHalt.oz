@@ -29,14 +29,6 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-\ifndef NOHALT
-
-local
-   Delay = {`Builtin` 'Delay' 1}
-in
-   {Delay 1000}
-end
+{{`Builtin` 'Delay' 1} 1000}
 
 {{`Builtin` 'shutdown' 1} 0}
-
-\endif

@@ -19,12 +19,11 @@
 %%% WARRANTIES.
 %%%
 
-declare
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewCompiler IMPORT}
+   {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
    \insert 'CP.env'

@@ -26,12 +26,11 @@
 
 \insert 'OS.oz'
 
-declare
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewOP IMPORT}
+   {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
 

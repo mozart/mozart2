@@ -24,12 +24,11 @@
 %%% This file creates the System Programming Functor
 %%%
 
-declare
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewSP IMPORT}
+   {$ IMPORT}
    \insert 'Foreign.oz'
    \insert 'System.oz'
    \insert 'Debug.oz'

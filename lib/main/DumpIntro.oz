@@ -22,51 +22,35 @@
 %%% WARRANTIES.
 %%%
 
-\ifndef DumpIntroLoaded
-
-\switch -threadedqueries
-
-\define DumpIntroLoaded
-
-\ifdef CompileBase
-
-\insert 'Base.oz'
-
-\else
-
 declare
-  Base Standard
+Base Standard
 in
 
 declare
-   \insert 'Base.env'
-   = Base
+\insert 'Base.env'
+= Base
 in
 
 declare
-   \insert 'Standard.env'
-   = Standard
+\insert 'Standard.env'
+= Standard
 in
 
 local
-   \insert 'DumpSettings.oz'
    Load = {`Builtin` load 2}
 in
-   Base     = {Load ComDIR#'Base'#ComEXT}
-   Standard = {Load ComDIR#'Standard'#ComEXT}
+   Base     = {Load 'Base.ozc'}
+   Standard = {Load 'Standard.ozc'}
 end
 
-\endif
-
+\ifndef NEWCOMPILER
 declare
    Dump
 in
 
 local
-   \insert 'DumpSettings.oz'
-   SmartSave = {`Builtin` smartSave          3}
-   SPI       = {`Builtin` 'System.printInfo' 1}
-   `unit`    = {{`Builtin` 'NewUniqueName' 2} 'unit'}
+   SmartSave = {`Builtin` smartSave 3}
+
    proc {ALL Xs P}
       case Xs of X|Xr then {P X} {ALL Xr P}
       [] nil then skip
@@ -78,17 +62,13 @@ in
       {{`Builtin` 'SystemSetPrint'  1} print(depth: 100 width: 100)}
       {{`Builtin` 'SystemSetErrors' 1} print(depth: 100 width: 100)}
 
-      ExtNAME = Name   # ComEXT
-      ExtPATH = ComDIR # ExtNAME
-      ExtURL  = ComURL # ExtNAME
+      ExtPATH = Name # '.ozc'
    in
       case {SmartSave X ExtPATH} of nil then skip
       elseof Xs then
          {ALL Xs {`Builtin` 'Wait' 1}}
          {SmartSave X ExtPATH nil}
       end
-      {SPI 'Saved: '#ExtURL#'\n'}
    end
 end
-
 \endif

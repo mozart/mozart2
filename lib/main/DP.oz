@@ -20,14 +20,11 @@
 %%% WARRANTIES.
 %%%
 
-
-declare
-
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewDP IMPORT}
+   {$ IMPORT}
    \insert 'SP.env'
        = IMPORT.'SP'
    \insert 'OP.env'

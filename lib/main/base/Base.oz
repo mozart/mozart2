@@ -59,6 +59,7 @@ require
    Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
    Boot_InterFault      at 'x-oz://boot/InterFault'
+   Boot_Combinators     at 'x-oz://boot/Combinators'
 
 prepare
 

@@ -23,8 +23,8 @@
 %declare
 
 local
-   NewSpace = Space.new
-   WaitOr   = Boot_Dictionary.waitOr
+   NewSpace   = Space.new
+   DictWaitOr = Boot_Dictionary.waitOr
 %   [BS]={Module.link ['x-oz://boot/Space']}
 %   Ask      = BS.askUnsafe
    Ask      = Boot_Space.askUnsafe
@@ -110,7 +110,7 @@ local
          if N==0 then
             if B then {WUHFI} else {E} end
          else
-            I  = {WaitOr A}
+            I  = {DictWaitOr A}
             AI = {DerefCheck {Dictionary.get A I}}
          in
             if {IsDet AI} then
@@ -147,7 +147,7 @@ local
    local
       proc {WaitFailed G A N}
          if N>0 then
-            I  = {WaitOr A}
+            I  = {DictWaitOr A}
             AI = {DerefCheck {Dictionary.get A I}}
          in
             if {IsDet AI} then
@@ -165,7 +165,7 @@ local
       end
       proc {Resolve G A N}
          if N>1 then
-            I  = {WaitOr A}
+            I  = {DictWaitOr A}
             AI = {DerefCheck {Dictionary.get A I}}
          in
             if {IsDet AI} then
@@ -196,6 +196,7 @@ local
       end
    end
 
+   /*
    local
       skip
    in
@@ -217,6 +218,62 @@ local
             []  B in B={{Guardify C.2}} then {B}
             []  B in B={{Guardify C.3}} then {B}
             []  B in B={{Guardify C.4}} then {B}
+            end
+         end
+      end
+   end
+
+   */
+
+   local
+      proc {CommitOrDiscard G J I}
+         if I==J then {CommitGuard G} else {Space.discard G} end
+      end
+      Tell    = Boot_Combinators.tell
+      Reflect = Boot_Combinators.reflect
+      local
+         fun {ExpandPair L U Xs}
+            if L=<U then L|{ExpandPair L+1 U Xs} else Xs end
+         end
+      in
+         fun {Expand Xs}
+            case Xs of nil then nil
+            [] X|Xr then
+               case X of L#R then {ExpandPair L R {Expand Xr}}
+               else X|{Expand Xr}
+               end
+            end
+         end
+      end
+      proc {Control G A J I}
+         {WaitOr A I}
+         if {IsDet I} then {CommitOrDiscard G J I}
+         else DA={DerefCheck A} in
+            if {IsDet DA} then
+               case DA
+               of failed then {Tell compl(J) I}
+               [] merged then skip
+               else {CommitOrDiscard G J I}
+               end
+            else {Control G DA J I}
+            end
+         end
+      end
+   in
+      proc {Dis C}
+         case {Width C}
+         of 0 then fail
+         [] 1 then {{{Guardify C.1}}}
+         [] N then I in
+            {Tell 1#N I}
+            {For 1 N 1 proc {$ J}
+                          G={NewGuard C.J}
+                       in
+                          thread {Control G {Ask G} J I} end
+                       end}
+            {Space.waitStable}
+            if {IsDet I} then skip else
+               I={Space.register {List.toTuple '#' {Expand {Reflect I}}}}
             end
          end
       end

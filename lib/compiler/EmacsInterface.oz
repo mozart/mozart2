@@ -60,6 +60,7 @@ in
          lock D in
             case @CompilerPanel == unit orelse {IsDet @CompilerPanel.isClosed}
             then
+               Compiler.interface.tkRequest = unit
                CompilerPanel <- {New Compiler.interface.tk
                                  init(self.MyCompiler)}
                D = {NewDictionary}

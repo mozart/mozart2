@@ -27,25 +27,27 @@ $class =
 
        super => 'BaseObject',
 
-       inits => { 'gnome_canvas_item_new'                   => { in  => ['^GnomeCanvasGroup*',
-                                                                         'GtkType',
-                                                                         'const gchar*',
-                                                                         '...'],
-                                                                 out => 'GnomeCanvasItem*' },
+       inits => {
+#                 'gnome_canvas_item_new'                   => { in  => ['^GnomeCanvasGroup*',
+#                                                                        'GtkType',
+#                                                                        'const gchar*',
+#                                                                        '...'],
+#                                                                out => 'GnomeCanvasItem*' },
                   'gnome_canvas_item_newv'                  => { in  => ['^GnomeCanvasGroup*',
                                                                          'GtkType',
                                                                          'guint',
                                                                          'GtkArg*'],
                                                                  out => 'GnomeCanvasItem*' } },
-       meths => { 'gnome_canvas_item_set'                   => { in  => ['GnomeCanvasItem*',
-                                                                         'const gchar*',
-                                                                         '...'] },
+       meths => {
+#                  'gnome_canvas_item_set'                   => { in  => ['GnomeCanvasItem*',
+#                                                                        'const gchar*',
+#                                                                        'something'] },
                   'gnome_canvas_item_setv'                  => { in  => ['GnomeCanvasItem*',
                                                                          'guint',
                                                                          'GtkArg*'] },
-                  'gnome_canvas_item_set_valist'            => { in  => ['GnomeCanvasItem*',
-                                                                         'const gchar*',
-                                                                         'va_list'] },
+#                 'gnome_canvas_item_set_valist'            => { in  => ['GnomeCanvasItem*',
+#                                                                        'const gchar*',
+#                                                                        'va_list'] },
                   'gnome_canvas_item_move'                  => { in  => ['GnomeCanvasItem*',
                                                                          'double',
                                                                          'double'] },
@@ -53,7 +55,7 @@ $class =
                                                                          'const double[6]'] },
                   'gnome_canvas_item_affine_absolute'       => { in  => ['GnomeCanvasItem*',
                                                                          'const double[6]'] },
-# Because of some very strange reason these functions
+# Because of some very strange reason these two functions
 # are in the headers but not in the libs (I dunno why)
 #                 'gnome_canvas_item_scale'                 => { in  => ['GnomeCanvasItem*',
 #                                                                        'double',

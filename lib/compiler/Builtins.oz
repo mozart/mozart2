@@ -521,16 +521,19 @@ local
                                 det: [det any(det)])
 
          'Space.commit': builtin(types: [space value]
-                                 det: [det det])
+                                 det: [det det]
+                                 destroysArguments: true)
 
          'Space.inject': builtin(types: [space 'unary procedure']
-                                 det: [det det])
+                                 det: [det det]
+                                 destroysArguments: true)
 
          'Space.merge': builtin(types: [space value]
                                 det: [det any])
 
          'Space.new': builtin(types: ['unary procedure' space]
-                              det: [det any(det)])
+                              det: [det any(det)]
+                              destroysArguments: true)
 
          'Sqrt': builtin(types: [float float]
                          det: [det any(det)]

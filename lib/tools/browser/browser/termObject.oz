@@ -2805,13 +2805,20 @@ in
          type: T_Future
 
 
-      meth !GetName($) {System.printName self.term}#'<Future>' end
+      meth !GetName($)
+         {System.printName self.term}#
+         if {IsFailed self.term}
+         then '<Future (failed value)>'
+         else '<Future>' end
+      end
 
       meth !GetWatchFun($)
          proc {$ F ?U}
-            thread
-               {Value.waitQuiet F}
-               U=unit
+            if {IsFailed self.term} then skip else
+               thread
+                  {Value.waitQuiet F}
+                  U=unit
+               end
             end
          end
       end

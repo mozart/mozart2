@@ -87,6 +87,9 @@ define
             (Pos.P+1 =: Pos.Q) + (Pos.P-1 =: Pos.Q) =: 1
          end
 
+         Pre Satisfaction={FD.decl}
+      in
+         Pos = {FD.dom 1#7}
          Pre = preference({NextTo beatrice gerard}
                           {NextTo beatrice eliane}
                           {NextTo beatrice christian}
@@ -96,10 +99,7 @@ define
                           {NextTo alain daniel}
                           {NextTo gerard christian})
 
-
-         [Satisfaction = {FD.sum Pre '=:'}] = {FD.dom 0#FD.sup}
-      in
-         Pos = {FD.dom 1#7}
+         Satisfaction = {FD.sum Pre '=:'}
          {FD.distinct Pos}
          Solution = Pos#Satisfaction
          {FD.distribute ff Pos}

@@ -75,10 +75,11 @@ import
    TkTools
 
 export
-   'BrowserClass': BrowserClass
-   'Browser':      Browser
-   'Browse':       Browse
-   browse:       Browse
+   'class':  BrowserClass
+   'object': Browser
+
+   'browse': Browse
+   'close':  CloseBrowser
 
 body
 
@@ -240,7 +241,7 @@ body
 
    %%
 
-   Browse Browser BrowserClass
+   Browse Browser BrowserClass CloseBrowser
 
 in
 
@@ -530,5 +531,8 @@ in
    Browser = {New BrowserClass init}
    Browse = proc {$ X} {Browser browse(X)} end
 
+   proc {CloseBrowser}
+      {Browser close}
+   end
 
 end

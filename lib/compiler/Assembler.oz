@@ -29,10 +29,10 @@
 %% Notes:
 %% -- The code may contain no backward-only references to labels that
 %%    are not reached during a forward-scan through the code.
-%% -- The definition(...) instruction differs from the format expected
-%%    by the assembler proper:  An additional argument stores the code
-%%    for the definition's body.  This way, less garbage is produced
-%%    during code generation.
+%% -- The definition(...) and definitionCopy(...) instructions differ
+%%    from the format expected by the assembler proper:  An additional
+%%    argument stores the code for the definition's body.  This way,
+%%    less garbage is produced during code generation.
 %%
 
 local
@@ -248,8 +248,9 @@ local
             end
          end
          meth append(Instr) NewTl in
-            case Instr of definition(_ L _ _ _) then
-               AssemblerClass, declareLabel(L)
+            case Instr
+            of definition(_ L _ _ _) then AssemblerClass, declareLabel(L)
+            [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] endDefinition(L) then AssemblerClass, declareLabel(L)
             [] branch(L) then AssemblerClass, declareLabel(L)
             [] 'thread'(L) then AssemblerClass, declareLabel(L)
@@ -291,6 +292,11 @@ local
                   AssemblerClass, append(profileProc)
                else skip
                end
+            [] definitionCopy(_ _ _ _ _) then
+               case self.Profile then
+                  AssemblerClass, append(profileProc)
+               else skip
+               end
             else skip
             end
          end
@@ -311,8 +317,7 @@ local
          end
          meth OutputSub(Instrs AddrToLabelMap FPToIntMap Addr ?VS)
             case Instrs of Instr|Ir then LabelVS NewInstr VSRest NewAddr in
-               LabelVS = case {Dictionary.member AddrToLabelMap Addr}
-                         then
+               LabelVS = case {Dictionary.member AddrToLabelMap Addr} then
                             'lbl('#Addr#')'#
                             case Addr < 100 then '\t\t' else '\t' end
                          else '\t\t'
@@ -342,6 +347,9 @@ local
             case Instr of definition(X1 L X2 X3 X4) then A in
                A = {Dictionary.get @LabelDict L}
                definition(X1 A X2 X3 X4)
+            [] definitionCopy(X1 L X2 X3 X4) then A in
+               A = {Dictionary.get @LabelDict L}
+               definitionCopy(X1 A X2 X3 X4)
             [] endDefinition(L) then A in
                A = {Dictionary.get @LabelDict L}
                endDefinition(A)
@@ -548,6 +556,13 @@ local
          [] definition(Register Label PredId PredicateRef GRegRef Code) then
             {Assembler
              append(definition(Register Label PredId PredicateRef GRegRef))}
+            {Peephole Code Assembler}
+            {Peephole Rest Assembler}
+         [] definitionCopy(Register Label PredId PredicateRef GRegRef Code)
+         then
+            {Assembler
+             append(definitionCopy(Register Label PredId PredicateRef
+                                   GRegRef))}
             {Peephole Code Assembler}
             {Peephole Rest Assembler}
          [] clear(_) then Clears Rest in

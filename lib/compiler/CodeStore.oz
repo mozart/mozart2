@@ -39,6 +39,7 @@ Continuations = c(vMakePermanent: 3
                   vInlineAssign: 4
                   vGetSelf: 3
                   vDefinition: 7
+                  vDefinitionCopy: 8
                   vShared: ~1
                   vBranch: ~1
                   vExHandler: 6
@@ -204,6 +205,10 @@ class CodeStore from Emitter
             CodeStore, RegOcc(Reg RS)
          [] vDefinition(_ Reg _ _ GRegs _ _) then
             CodeStore, RegOcc(Reg RS)
+            CodeStore, RegOccs(GRegs RS)
+         [] vDefinitionCopy(_ Reg1 Reg2 _ _ GRegs _ _) then
+            CodeStore, RegOcc(Reg1 RS)
+            CodeStore, RegOcc(Reg2 RS)
             CodeStore, RegOccs(GRegs RS)
          [] vExHandler(_ Addr1 Reg Addr2 _ _ InitsRS) then
             RS1 RS2 TempRS
@@ -408,6 +413,7 @@ class CodeStore from Emitter
          [] vInlineAssign(_ _ _ _) then skip
          [] vGetSelf(_ _ _) then skip
          [] vDefinition(_ _ _ _ _ _ _) then skip
+         [] vDefinitionCopy(_ _ _ _ _ _ _ _) then skip
          [] vShared(_ Label _ Addr) then
             case {Dictionary.member @sharedDone Label} then skip
             else

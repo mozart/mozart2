@@ -516,6 +516,38 @@ in
                else skip
                end
             end
+         [] vDefinitionCopy(_ Reg1 Reg2 PredId PredicateRef GRegs Code Cont)
+         then
+            case Emitter, IsFirst(Reg2 $) andthen Emitter, IsLast(Reg2 $)
+               andthen PredicateRef == unit
+            then skip
+            else Rs X StartLabel ContLabel Code1 Code2 in
+               Rs = {Map GRegs
+                     proc {$ Reg ?R}
+                        case Emitter, GetReg(Reg $) of none then
+                           Emitter, PredictReg(Reg ?R)
+                           Emitter, Emit(createVariable(R))
+                        elseof XYG then R = XYG
+                        end
+                     end}
+               Emitter, GetTemp(Reg1 ?X=x(_))
+               Emitter, newLabel(?StartLabel)
+               Emitter, Emit(lbl(StartLabel))
+               Emitter, newLabel(?ContLabel)
+               Code = Code1#Code2
+               Emitter, Emit(definitionCopy(X ContLabel PredId
+                                            PredicateRef Rs Code1))
+               Emitter, Emit(endDefinition(StartLabel))
+               {ForAll Code2 proc {$ Instr} Emitter, Emit(Instr) end}
+               Emitter, Emit(lbl(ContLabel))
+               Emitter, FreeX(X.1)
+               {Dictionary.remove @Temporaries Reg1}
+               case Emitter, GetReg(Reg2 $) of none then
+                  Emitter, AllocateThisTemp(X.1 Reg2 _)
+               elseof R then
+                  Emitter, Emit(unify(X R))
+               end
+            end
          [] vExHandler(_ Addr1 Reg Addr2 Coord Cont InitsRS) then
             OldContLabels Label1 RegMap
          in

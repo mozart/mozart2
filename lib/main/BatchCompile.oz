@@ -511,8 +511,8 @@ in
                       case {Access MakeDepend} then
                          {Report
                           error(kind: UsageError
-                                msg: ('--makedepend may not be given '#
-                                      'with --feedtoemulator'))}
+                                msg: ('--makedepend with --feedtoemulator '#
+                                      'needs an --outputfile'))}
                       else skip
                       end
                       OFN = unit
@@ -531,7 +531,9 @@ in
                    else
                       OFN = stdout
                    end
-                elsecase {Access Mode} of feedtoemulator then
+                elsecase {Access Mode} == feedtoemulator
+                   andthen {Not {Access MakeDepend}}
+                then
                    {Report
                     error(kind: UsageError
                           msg: ('no output file name must be '#

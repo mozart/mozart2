@@ -334,15 +334,19 @@ define
                                          AlwaysSucceeds Coord VTl)
                      end
                   end
-               [] 'Object.\'@\'' then [Arg1 Arg2] = ActualArgs Atomname in
-                  {Arg1 getCodeGenValue(?Atomname)}
-                  if {IsDet Atomname} andthen {IsLiteral Atomname} then
-                     VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
+               [] 'Object.\'@\'' then [Arg1 Arg2] = ActualArgs Feature in
+                  {Arg1 getCodeGenValue(?Feature)}
+                  if {IsDet Feature}
+                     andthen ({IsInt Feature} orelse {IsLiteral Feature})
+                  then
+                     VHd = vInlineAt(_ Feature {Arg2 reg($)} VTl)
                   end
-               [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Atomname in
-                  {Arg1 getCodeGenValue(?Atomname)}
-                  if {IsDet Atomname} andthen {IsLiteral Atomname} then
-                     VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
+               [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Feature in
+                  {Arg1 getCodeGenValue(?Feature)}
+                  if {IsDet Feature}
+                     andthen ({IsInt Feature} orelse {IsLiteral Feature})
+                  then
+                     VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
                   end
                [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
                   {Arg2 getCodeGenValue(?Value)}

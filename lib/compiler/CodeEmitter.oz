@@ -784,18 +784,18 @@ in
                Emitter, Emit(inlineDot(X1 Feature X2 cache))
                Emitter, Emit(unify(X2 R))
             end
-         [] vInlineAt(_ Literal Reg _) then
+         [] vInlineAt(_ Feature Reg _) then
             case Emitter, GetReg(Reg $) of none then X in
                Emitter, PredictBuiltinOutput(Reg ?X)
-               Emitter, Emit(inlineAt(Literal X cache))
+               Emitter, Emit(inlineAt(Feature X cache))
             elseof R then X in
                Emitter, AllocateShortLivedTemp(?X)
-               Emitter, Emit(inlineAt(Literal X cache))
+               Emitter, Emit(inlineAt(Feature X cache))
                Emitter, Emit(unify(X R))
             end
-         [] vInlineAssign(_ Literal Reg _) then X in
+         [] vInlineAssign(_ Feature Reg _) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
-            Emitter, Emit(inlineAssign(Literal X cache))
+            Emitter, Emit(inlineAssign(Feature X cache))
          [] vGetSelf(_ Reg _) then
             case Emitter, GetReg(Reg $) of none then
                if Emitter, IsLast(Reg $) then skip

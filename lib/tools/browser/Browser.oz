@@ -27,11 +27,14 @@ fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
-   {NewBrowser
-     Standard
-     Search FD Tk TkTools}
-\insert 'Standard.env'
-   = Standard
+   {NewBrowser IMPORT}
+   \insert 'Standard.env'
+      = IMPORT.'Standard'
+   \insert 'CP.env'
+      = IMPORT.'CP'
+   \insert 'WP.env'
+      = IMPORT.'WP'
+
 in
 
 %%

@@ -335,7 +335,8 @@ end
 %% default handler
 
 proc {DefaultHandler REP Meth MethName MSG}
-   PATH = {NormalizePath REP.string}
+   PATH = case REP.type of file(_) then {NormalizePath REP.string}
+          else REP.string end
 in
    {MSG '...['#PATH#'] (default)'}
    {HApply PATH Meth}

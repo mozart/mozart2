@@ -221,11 +221,10 @@ local
                   else skip
                   end
 
+                  StartTime = {System.get time}
                   Results = {Map ToRun
                              fun {$ T}
-                                T0=case Argv.time \= nil then
-                                      {System.get time}
-                                   else unit end
+                                T0={System.get time}
                                 {PV {Label T} # ': '}
                                 Bs={Map {MakeList Argv.threads}
                                     fun {$ _}
@@ -266,6 +265,24 @@ local
                                               {Not T.result}
                                            end}
                in
+                  {Wait Goofed}
+                  case Argv.time \= nil then
+                     T1={System.get time}
+                     proc {PT C#F}
+                        case {Member C Argv.time} then
+                           {PV ' '#[C]#':'#T1.F-StartTime.F#' ms'}
+                        else skip
+                        end
+                     end
+                  in
+                     {PV 'Total time: '}
+                     {ForAll
+                      [&r#run &g#gc &s#system &c#copy
+                       &p#propagate &l#load &t#total]
+                      PT}
+                     {PV '\n'}
+                  else skip
+                  end
 
                   case Goofed==nil then
                      case Argv.verbose then
@@ -287,7 +304,6 @@ local
                      {PT Goofed}
                      1
                   end
-
                else
                   %% Only print tests to be performed
                   {System.showInfo 'TESTS FOUND:'}

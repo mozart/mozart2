@@ -587,7 +587,7 @@ local
       L = E.last
    in
 \ifdef DEBUGSA
-      {Show installing(E)}
+      {Showinstalling(E)}
       {Show install({V getPrintName($)} L {V getLastValue($)})}
 \endif
       {V setLastValue(L)}
@@ -855,24 +855,25 @@ local
    end
 
 % {SomeUpTo Xs P Ill} is defined like {Some Xs P}
-% but in addition, it returns the first element
-% Wit in Xs such that {P Wit} holds (if such an Wit exists)
+% but in addition, it returns the index Idx of the first
+% element Wit in Xs such that {P Wit} holds (if such a
+% Wit exists)
 
-     local
-      fun {SomeUpToAux Xs P N Wit}
+   local
+      fun {SomeUpToNAux Xs P N Idx}
          case Xs
          of nil then
-            Wit = N   % avoid free variables
+            Idx = N   % avoid free variables
             false
          [] X|Xr then
-            case {P X} then Wit = X true
-            else {SomeUpToAux Xr P N+1 Wit}
+            case {P X} then Idx = N true
+            else {SomeUpToNAux Xr P N+1 Idx}
             end
          end
       end
    in
-      fun {SomeUpTo Xs P ?Wit}
-         {SomeUpToAux Xs P 1 Wit}
+      fun {SomeUpToN Xs P ?Wit}
+         {SomeUpToNAux Xs P 1 Wit}
       end
    end
 
@@ -1956,7 +1957,7 @@ local
                0 % no type error
             then
 \ifdef DEBUGSA
-               {Show det(N {Map @actualArgs GetData})}
+               {Show det(N Det {Map @actualArgs GetData})}
 \endif
                {Not Det} orelse
                SABuiltinApplication, detCheck(Ctrl @actualArgs BIInfo.det $)
@@ -2129,6 +2130,9 @@ local
          Token= {New Core.objectToken init(DummyObject Cls)}
          BndVO= {Nth @actualArgs 3}
          PN   = {BndVO getPrintName($)}
+\ifdef DEBUGSA
+         {Show doNew(Token)}
+\endif
       in
          {BndVO unifyVal(Ctrl Token)}
 
@@ -2571,6 +2575,9 @@ local
             elseof
                M
             then
+\ifdef DEBUGSA
+               {Show applyingKnown(BIName)}
+\endif
                SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
                case
                   ArgsOk
@@ -2696,14 +2703,6 @@ local
       meth saDescend(Ctrl)
          % descend with global environment
          % will be saved and restored in clauses
-\ifdef DEBUGSA
-         {Show boolDescend}
-         {Show withData({GetData @arbiter})}
-         {Show isDet({DetTests.det @arbiter})}
-         {Show isBool({TypeTests.bool {GetData @arbiter}})}
-         {Show arbiterType({@arbiter getType($)})}
-         {Show newBool({OzTypes.encode bool nil})}
-\endif
          case {DetTests.det @arbiter}
             andthen {TypeTests.bool {GetData @arbiter}}
          then
@@ -3224,26 +3223,28 @@ local
             Pro  = {Filter {Map @properties GetData}
                     TypeTests.atom}
             % properties of det parents
-            PPro = {Filter {Map PTs fun {$ P}
-                                       case {DetTests.det P}
-                                       then {P getProperties($)}
-                                       else unit end
-                                    end}
-                    fun {$ X} X\=unit end}
-            IllFinal TestFinal
+            PPro = {Map PTs fun {$ P}
+                               case {DetTests.det P}
+                               then {P getProperties($)}
+                               else unit end
+                            end}
+            NthFinal TestFinal
          in
-            {SomeUpTo PPro
-             fun {$ P} {Member final P} end ?IllFinal ?TestFinal}
+            {SomeUpToN PPro
+             fun {$ P} P\=unit andthen {Member final P} end
+             ?NthFinal ?TestFinal}
 
             case TestFinal then
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SATypeError
                       msg:   'inheritance from final class '
-                      # pn({IllFinal getPrintName($)}))}
+                      # oz({Nth PTs NthFinal}))}
             else
+               NonUnitPro = {Filter PPro fun {$ P} P\=unit end}
+            in
                % type & det test
-               {@value setProperties({UnionAll Pro|PPro})}
+               {@value setProperties({UnionAll Pro|NonUnitPro})}
             end
          else
             {Ctrl.rep
@@ -4001,7 +4002,53 @@ local
       end
       meth outputDebugType($)
          case @lastValue == unit then {TypeToVS @type}
-         else {@lastValue getPrintType(AnalysisDepth $)} end
+         else {@lastValue getPrintType(AnalysisDepth $)}
+         end
+      end
+      meth outputDebugMeths($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then
+               case {@lastValue getMethods($)}
+               of unit then unit
+               elseof Ms then {Arity Ms} end
+            [] 'object' then
+               case {{@lastValue getClassNode($)} getMethods($)}
+               of unit then unit
+               elseof Ms then {Arity Ms} end
+            else unit end
+         else unit end
+      end
+      meth outputDebugAttrs($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getAttributes($)}
+            [] 'object' then {{@lastValue getClassNode($)} getAttributes($)}
+            else unit end
+         else unit end
+      end
+      meth outputDebugFeats($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getFeatures($)}
+            [] 'object' then {{@lastValue getClassNode($)} getFeatures($)}
+            else unit end
+         else unit end
+      end
+      meth outputDebugProps($)
+         case @lastValue \= unit
+            andthen {HasFeature @lastValue kind}
+         then
+            case @lastValue.kind
+            of 'class' then {@lastValue getProperties($)}
+            else unit end
+         else unit end
       end
       meth getLastValue($)
          @lastValue
@@ -4135,9 +4182,15 @@ local
             then
                Cls = {New Core.classToken init(Value)}
                Meths = {Record.make m {Class.methodNames Value}}
+               Attrs = {Class.attrNames Value}
+               Feats = {Class.featNames Value}
+               Props = {Class.propNames Value}
             in
                {Record.forAll Meths fun {$} nil#unit end}
                {Cls setMethods(Meths)}
+               {Cls setAttributes(Attrs)}
+               {Cls setFeatures(Feats)}
+               {Cls setProperties(Props)}
                SAVariable, setLastValue(Cls)
 
             elsecase
@@ -4145,10 +4198,16 @@ local
             then
                TheClass = {Class.get Value}
                Meths = {Record.make m {Class.methodNames TheClass}}
+               Attrs = {Class.attrNames TheClass}
+               Feats = {Class.featNames TheClass}
+               Props = {Class.propNames TheClass}
                Cls   = {New Core.classToken init(TheClass)}
             in
                {Record.forAll Meths fun {$} nil#unit end}
                {Cls setMethods(Meths)}
+               {Cls setAttributes(Attrs)}
+               {Cls setFeatures(Feats)}
+               {Cls setProperties(Props)}
                SAVariable, setLastValue({New Core.objectToken init(Value Cls)})
 
             elsecase

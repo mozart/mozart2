@@ -1161,7 +1161,29 @@ in
                NL#'% '#{@variable output(debug(realcore: true) $)}#': '#
                {@variable outputDebugType($)}
             else ""
+            end#
+%           case {CheckOutput R debugClass} then
+            local
+               Ms = {@variable outputDebugMeths($)}
+               As = {@variable outputDebugAttrs($)}
+               Fs = {@variable outputDebugFeats($)}
+               Ps = {@variable outputDebugProps($)}
+    in
+               case Ms\=unit then
+                  NL#'%   methods: '#{System.valueToVirtualString Ms 10 10}
+               else "" end#
+               case As\=unit then
+                  NL#'%   attributes: '#{System.valueToVirtualString As 10 10}
+               else "" end#
+               case Fs\=unit then
+                  NL#'%   features: '#{System.valueToVirtualString Fs 10 10}
+               else "" end#
+               case Ps\=unit then
+                  NL#'%   properties: '#{System.valueToVirtualString Ps 10 10}
+               else "" end
             end
+%           else ""
+%           end
          end
       end
 

@@ -1232,7 +1232,7 @@ define
       end
    end
 
-   class SATypeOf
+   class SATypeOf from SAStatement
       meth sa(Ctrl) T in
          {@arg reflectType(AnalysisDepth ?T)}
          value <- {OptimizeTypeRepr T}
@@ -1240,13 +1240,13 @@ define
       end
    end
 
-   class SAStepPoint
+   class SAStepPoint from SAStatement
       meth saDescend(Ctrl)
          SAStatement, saBody(Ctrl @statements)
       end
    end
 
-   class SADeclaration
+   class SADeclaration from SAStatement
       meth sa(Ctrl)
 \ifdef DEBUGSA
          {System.show declaration({Map @localVars
@@ -1263,7 +1263,7 @@ define
       end
    end
 
-   class SAEquation
+   class SAEquation from SAStatement
       meth sa(Ctrl)
 \ifdef DEBUGSA
          {System.show saEQ(@left @right)}
@@ -1416,7 +1416,7 @@ define
       from SAConstructionOrPattern
    end
 
-   class SADefinition
+   class SADefinition from SAStatement
       feat
          isComplex:false
       meth saSimple(Ctrl)
@@ -1457,7 +1457,7 @@ define
       end
    end
 
-   class SABuiltinApplication
+   class SABuiltinApplication from SAStatement
 
       meth typeCheckN(Ctrl N VOs Ts $)
          case VOs of nil then
@@ -2494,7 +2494,7 @@ define
 
    end
 
-   class SAIfNode
+   class SAIfNode from SAStatement
       meth saDescend(Ctrl)
          %% descend with global environment
          %% will be saved and restored in clauses
@@ -2608,7 +2608,7 @@ define
       end
    end
 
-   class SAPatternCase
+   class SAPatternCase from SAStatement
 \ifdef DEBUGSA
       meth sa(Ctrl)
          {System.show
@@ -2830,7 +2830,7 @@ define
       end
    end
 
-   class SATryNode
+   class SATryNode from SAStatement
       meth saDescend(Ctrl)
          Env1 Env2
          T N
@@ -2863,7 +2863,7 @@ define
       end
    end
 
-   class SALockNode
+   class SALockNode from SAStatement
       meth saDescend(Ctrl)
          T N in
          {Ctrl getTopNeeded(T N)}
@@ -2876,7 +2876,7 @@ define
       end
    end
 
-   class SAClassNode
+   class SAClassNode from SAStatement
       feat
          isComplex:false
 
@@ -3263,7 +3263,7 @@ define
          {@feature applyEnvSubst(Ctrl)}
       end
    end
-   class SAMethFormalOptional
+   class SAMethFormalOptional from SAMethFormal
       meth getFormal($)
          optional(@feature)
       end
@@ -3280,7 +3280,7 @@ define
       end
    end
 
-   class SAObjectLockNode
+   class SAObjectLockNode from SAStatement
       meth saDescend(Ctrl)
          %% descend with same environment
          T N in
@@ -3291,7 +3291,7 @@ define
       end
    end
 
-   class SAGetSelf
+   class SAGetSelf from SAStatement
       meth sa(Ctrl)
          skip   %--** do more here if +warnforward
       end
@@ -3300,7 +3300,7 @@ define
       end
    end
 
-   class SACondNode
+   class SACondNode from SAStatement
       meth saDescend(Ctrl)
          %% descend with global environment
          %% will be saved and restored in clauses
@@ -3316,7 +3316,7 @@ define
       end
    end
 
-   class SAChoicesAndDisjunctions
+   class SAChoicesAndDisjunctions from SAStatement
       meth saDescend(Ctrl)
          %% descend with global environment
          %% will be saved and restored in clauses

@@ -3,7 +3,8 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Contributors:
-%%%   Martin Mueller (mmueller@ps.uni-sb.de)
+%%%   Martin Mueller <mmueller@ps.uni-sb.de>
+%%%   Christian Schulte <schulte@dfki.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -73,7 +74,6 @@ export
    RecordPattern
    SideCondition
    EquationPattern
-   AbstractElse
    ElseNode
    NoElse
    TryNode
@@ -87,7 +87,6 @@ export
    GetSelf
    FailNode
    CondNode
-   ChoicesAndDisjunctions
    OrNode
    DisNode
    ChoiceNode
@@ -247,7 +246,6 @@ define
    ImAToken              = StaticAnalysis.imAToken
 
    class Statement
-      from Annotate.statement StaticAnalysis.statement CodeGen.statement
       attr next: unit coord: unit
       meth setPrintName(_)
          skip
@@ -311,7 +309,8 @@ define
    end
 
    class SkipNode
-      from Statement Annotate.skipNode CodeGen.skipNode
+      from Statement StaticAnalysis.statement Annotate.skipNode
+         CodeGen.skipNode
       prop final
       meth init(Coord)
          coord <- Coord
@@ -390,53 +389,58 @@ define
       end
    end
 
-   class Definition
-      from Statement Annotate.definition StaticAnalysis.definition
-         CodeGen.definition
-      attr
-         designator: unit formalArgs: unit statements: unit
-         isStateUsing: unit procFlags: unit printName: '' toCopy: unit
-         allVariables: nil predicateRef: unit
-      meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
-                Coord)
-         designator <- Designator
-         formalArgs <- FormalArgs
-         statements <- {FlattenSequence Statements}
-         isStateUsing <- IsStateUsing
-         procFlags <- ProcFlags
-         coord <- Coord
+   local
+      class DefinitionBase from Statement StaticAnalysis.definition
+         attr
+            designator: unit formalArgs: unit statements: unit
+            isStateUsing: unit procFlags: unit printName: '' toCopy: unit
+            allVariables: nil predicateRef: unit
+         meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
+                   Coord)
+            designator <- Designator
+            formalArgs <- FormalArgs
+            statements <- {FlattenSequence Statements}
+            isStateUsing <- IsStateUsing
+            procFlags <- ProcFlags
+            coord <- Coord
+         end
+         meth setAllVariables(Vs)
+            allVariables <- Vs
+         end
+         meth setPrintName(PrintName)
+            printName <- PrintName
+         end
+         meth output(R $) FS1 in
+            {FoldL @procFlags
+             fun {$ In A} In#{Value.toVirtualString A 0 0}#' ' end
+             'proc '}#
+            '{'#PU#{@designator output2(R $ ?FS1)}#
+            case @formalArgs of _|_ then GL#{LI @formalArgs GL R}
+            [] nil then ""
+            end#'}'#
+            if {self isClauseBody($)} then '   % clause body' else "" end#
+            PO#IN#FS1#NL#
+            {LI @statements NL R}#EX#NL#'end'
+         end
+         meth isClauseBody($)
+            false
+         end
       end
-      meth setAllVariables(Vs)
-         allVariables <- Vs
+   in
+      class Definition
+         prop final
+         from DefinitionBase Annotate.definition CodeGen.definition
       end
-      meth setPrintName(PrintName)
-         printName <- PrintName
+      class FunctionDefinition
+         from DefinitionBase Annotate.functionDefinition CodeGen.functionDefinition
+         prop final
       end
-      meth output(R $) FS1 in
-         {FoldL @procFlags
-          fun {$ In A} In#{Value.toVirtualString A 0 0}#' ' end
-          'proc '}#
-         '{'#PU#{@designator output2(R $ ?FS1)}#
-         case @formalArgs of _|_ then GL#{LI @formalArgs GL R}
-         [] nil then ""
-         end#'}'#
-         if {self isClauseBody($)} then '   % clause body' else "" end#
-         PO#IN#FS1#NL#
-         {LI @statements NL R}#EX#NL#'end'
-      end
-      meth isClauseBody($)
-         false
-      end
-   end
-   class FunctionDefinition
-      from Definition Annotate.functionDefinition
-      prop final
-   end
-   class ClauseBody
-      from Definition Annotate.clauseBody CodeGen.clauseBody
-      prop final
-      meth isClauseBody($)
-         true
+      class ClauseBody
+         from DefinitionBase Annotate.clauseBody CodeGen.clauseBody
+         prop final
+         meth isClauseBody($)
+            true
+         end
       end
    end
 
@@ -688,12 +692,8 @@ define
       end
    end
 
-   class AbstractElse
-      from Annotate.abstractElse CodeGen.abstractElse
-   end
    class ElseNode
-      from AbstractElse Annotate.elseNode StaticAnalysis.elseNode
-         CodeGen.elseNode
+      from Annotate.elseNode StaticAnalysis.elseNode CodeGen.elseNode
       prop final
       attr statements: unit
       meth init(Statements)
@@ -704,8 +704,9 @@ define
          {LI @statements NL R}#EX#NL
       end
    end
+
    class NoElse
-      from AbstractElse Annotate.noElse StaticAnalysis.noElse CodeGen.noElse
+      from Annotate.noElse StaticAnalysis.noElse CodeGen.noElse
       prop final
       attr coord: unit
       meth init(Coord)
@@ -860,59 +861,64 @@ define
       end
    end
 
-   class MethFormal
-      from Annotate.methFormal StaticAnalysis.methFormal CodeGen.methFormal
-      attr feature: unit arg: unit
-      meth init(Feature Arg)
-         feature <- Feature
-         arg <- Arg
+   local
+      class MethFormalBase
+         attr feature: unit arg: unit
+         meth init(Feature Arg)
+            feature <- Feature
+            arg <- Arg
+         end
+         meth getFeature($)
+            @feature
+         end
+         meth getVariable($)
+            @arg
+         end
+         meth hasDefault($)
+            false
+         end
+         meth output2(R $ ?FS)
+            {@feature output2(R $ ?FS)}#': '#{@arg output(R $)}
+         end
       end
-      meth getFeature($)
-         @feature
+   in
+      class MethFormal
+         prop final
+         from
+            MethFormalBase Annotate.methFormal
+            StaticAnalysis.methFormal CodeGen.methFormal
       end
-      meth getVariable($)
-         @arg
+      class MethFormalOptional
+         from
+            MethFormalBase Annotate.methFormalOptional
+            StaticAnalysis.methFormalOptional CodeGen.methFormalOptional
+         prop final
+         meth hasDefault($)
+            true
+         end
+         meth output2(R $ ?FS)
+            MethFormalBase, output2(R $ ?FS)#' <= _'
+         end
       end
-      meth hasDefault($)
-         false
-      end
-      meth output2(R $ ?FS)
-         {@feature output2(R $ ?FS)}#': '#{@arg output(R $)}
-      end
-   end
-   class MethFormalOptional
-      from
-         MethFormal
-         StaticAnalysis.methFormalOptional CodeGen.methFormalOptional
-      prop final
-      meth init(Feature Arg)
-         feature <- Feature
-         arg <- Arg
-      end
-      meth hasDefault($)
-         true
-      end
-      meth output2(R $ ?FS)
-         MethFormal, output2(R $ ?FS)#' <= _'
-      end
-   end
-   class MethFormalWithDefault
-      from MethFormal Annotate.methFormalWithDefault
-         StaticAnalysis.methFormalWithDefault CodeGen.methFormalWithDefault
-      prop final
-      attr default: unit
-      meth init(Feature Arg Default)
-         MethFormal, init(Feature Arg)
-         default <- Default
-      end
-      meth hasDefault($)
-         true
-      end
-      meth output2(R $ ?FS)
-         case @default of unit then
-            MethFormal, output2(R $ ?FS)#' <= _'
-         elseof VO then FS1#FS2 = FS in
-            MethFormal, output2(R $ ?FS1)#' <= '#{VO output2(R $ ?FS2)}
+      class MethFormalWithDefault
+         from
+            MethFormalBase Annotate.methFormalWithDefault
+            StaticAnalysis.methFormalWithDefault CodeGen.methFormalWithDefault
+         prop final
+         attr default: unit
+         meth init(Feature Arg Default)
+            MethFormalBase, init(Feature Arg)
+            default <- Default
+         end
+         meth hasDefault($)
+            true
+         end
+         meth output2(R $ ?FS)
+            case @default of unit then
+               MethFormalBase, output2(R $ ?FS)#' <= _'
+            elseof VO then FS1#FS2 = FS in
+               MethFormalBase, output2(R $ ?FS1)#' <= '#{VO output2(R $ ?FS2)}
+            end
          end
       end
    end
@@ -945,7 +951,8 @@ define
    end
 
    class FailNode
-      from Statement Annotate.failNode CodeGen.failNode
+      from Statement StaticAnalysis.statement
+         Annotate.failNode CodeGen.failNode
       prop final
       meth init(Coord)
          coord <- Coord
@@ -970,34 +977,37 @@ define
       end
    end
 
-   class ChoicesAndDisjunctions
-      from Statement Annotate.choicesAndDisjunctions
-         StaticAnalysis.choicesAndDisjunctions CodeGen.choicesAndDisjunctions
-      attr clauses: unit
-      meth init(Clauses Coord)
-         clauses <- Clauses
-         coord <- Coord
+   local
+      class ChoicesAndDisjunctions
+         from Statement Annotate.choicesAndDisjunctions
+            StaticAnalysis.choicesAndDisjunctions
+         attr clauses: unit
+         meth init(Clauses Coord)
+            clauses <- Clauses
+            coord <- Coord
+         end
       end
-   end
-   class OrNode
-      from ChoicesAndDisjunctions CodeGen.orNode
-      prop final
-      meth output(R $)
-         'or '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+   in
+      class OrNode
+         from ChoicesAndDisjunctions CodeGen.orNode
+         prop final
+         meth output(R $)
+            'or '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+         end
       end
-   end
-   class DisNode
-      from ChoicesAndDisjunctions CodeGen.disNode
-      prop final
-      meth output(R $)
-         'dis '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+      class DisNode
+         from ChoicesAndDisjunctions CodeGen.disNode
+         prop final
+         meth output(R $)
+            'dis '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+         end
       end
-   end
-   class ChoiceNode
-      from ChoicesAndDisjunctions CodeGen.choiceNode
-      prop final
-      meth output(R $)
-         'choice '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+      class ChoiceNode
+         from ChoicesAndDisjunctions CodeGen.choiceNode
+         prop final
+         meth output(R $)
+            'choice '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
+         end
       end
    end
 

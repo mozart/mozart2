@@ -2,6 +2,9 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
+%%% Contributor:
+%%%   Christian Schulte <schulte@dfki.de>
+%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
 %%%
@@ -131,9 +134,6 @@ local
       end
    end
 
-   class AnnotateStatement
-   end
-
    class AnnotateTypeOf
       meth annotateGlobalVars(Ls VsHd VsTl)
          {@res annotateGlobalVars(Ls VsHd VsTl)}
@@ -226,10 +226,6 @@ local
             {CheckUses @formalArgs 'formal parameter' Rep}
          end
       end
-   end
-   class AnnotateFunctionDefinition
-   end
-   class AnnotateClauseBody
    end
 
    class AnnotateApplication
@@ -404,8 +400,6 @@ local
       end
    end
 
-   class AnnotateAbstractElse
-   end
    class AnnotateElseNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) Vs in
@@ -781,16 +775,15 @@ local
       end
    end
 in
-   Annotate = annotate(statement: AnnotateStatement
-                       typeOf: AnnotateTypeOf
+   Annotate = annotate(typeOf: AnnotateTypeOf
                        stepPoint: AnnotateStepPoint
                        declaration: AnnotateDeclaration
                        skipNode: AnnotateSkipNode
                        equation: AnnotateEquation
                        construction: AnnotateConstruction
                        definition: AnnotateDefinition
-                       functionDefinition: AnnotateFunctionDefinition
-                       clauseBody: AnnotateClauseBody
+                       functionDefinition: AnnotateDefinition
+                       clauseBody: AnnotateDefinition
                        application: AnnotateApplication
                        ifNode: AnnotateIfNode
                        ifClause: AnnotateIfClause
@@ -799,7 +792,6 @@ in
                        sideCondition: AnnotateSideCondition
                        recordPattern: AnnotateRecordPattern
                        equationPattern: AnnotateEquationPattern
-                       abstractElse: AnnotateAbstractElse
                        elseNode: AnnotateElseNode
                        noElse: AnnotateNoElse
                        tryNode: AnnotateTryNode
@@ -807,6 +799,7 @@ in
                        classNode: AnnotateClassNode
                        method: AnnotateMethod
                        methFormal: AnnotateMethFormal
+                       methFormalOptional: AnnotateMethFormal
                        methFormalWithDefault: AnnotateMethFormalWithDefault
                        objectLockNode: AnnotateObjectLockNode
                        getSelf: AnnotateGetSelf

@@ -2,6 +2,9 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
+%%% Contributor:
+%%%   Christian Schulte <schulte@dfki.de>
+%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
 %%%
@@ -42,14 +45,14 @@ import
    RunTime(literals procValues)
 export
    %% mixin classes for the abstract syntax:
-   statement: CodeGenStatement
    typeOf: CodeGenTypeOf
    stepPoint: CodeGenStepPoint
    declaration: CodeGenDeclaration
    skipNode: CodeGenSkipNode
    equation: CodeGenEquation
    construction: CodeGenConstruction
-   definition: CodeGenDefinition
+   definition:         CodeGenDefinition
+   functionDefinition: CodeGenDefinition
    clauseBody: CodeGenClauseBody
    application: CodeGenApplication
    ifNode: CodeGenIfNode
@@ -59,7 +62,6 @@ export
    sideCondition: CodeGenSideCondition
    recordPattern: CodeGenRecordPattern
    equationPattern: CodeGenEquationPattern
-   abstractElse: CodeGenAbstractElse
    elseNode: CodeGenElseNode
    noElse: CodeGenNoElse
    tryNode: CodeGenTryNode
@@ -73,7 +75,6 @@ export
    getSelf: CodeGenGetSelf
    failNode: CodeGenFailNode
    condNode: CodeGenCondNode
-   choicesAndDisjunctions: CodeGenChoicesAndDisjunctions
    orNode: CodeGenOrNode
    disNode: CodeGenDisNode
    choiceNode: CodeGenChoiceNode
@@ -738,20 +739,20 @@ define
       end
    end
 
-   class CodeGenTypeOf
+   class CodeGenTypeOf from CodeGenStatement
       meth codeGen(CS VHd VTl)
          VHd = vEquateConstant(_ @value {@res reg($)} VTl)
       end
    end
 
-   class CodeGenStepPoint
+   class CodeGenStepPoint from CodeGenStatement
       meth codeGen(CS VHd VTl) VInter1 VInter2 in
          {CodeGenList @statements CS VInter1 VInter2}
          {StepPoint @coord @kind VHd VTl VInter1 VInter2}
       end
    end
 
-   class CodeGenDeclaration
+   class CodeGenDeclaration from CodeGenStatement
       meth codeGen(CS VHd VTl)
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
          if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
@@ -764,13 +765,13 @@ define
       end
    end
 
-   class CodeGenSkipNode
+   class CodeGenSkipNode from CodeGenStatement
       meth codeGen(CS VHd VTl) VInter in
          {StepPoint @coord 'skip' VHd VTl VInter VInter}
       end
    end
 
-   class CodeGenEquation
+   class CodeGenEquation from CodeGenStatement
       meth codeGen(CS VHd VTl)
          {@right makeEquation(CS @left VHd VTl)}
       end
@@ -826,7 +827,7 @@ define
       end
    end
 
-   class CodeGenDefinition
+   class CodeGenDefinition from CodeGenStatement
       meth codeGen(CS VHd VTl)
          VHd0 VTl0 V FileName Line Col PrintName PredId OuterNLiveRegs StateReg
       in
@@ -974,7 +975,7 @@ define
          end
       end
    end
-   class CodeGenClauseBody
+   class CodeGenClauseBody from CodeGenDefinition
       feat ClauseBodyShared
       meth codeGen(CS VHd VTl)
          %% code for the clause body is only generated when it is applied
@@ -992,7 +993,7 @@ define
       end
    end
 
-   class CodeGenApplication
+   class CodeGenApplication from CodeGenStatement
       meth codeGen(CS VHd VTl)
          if {IsDet self.codeGenMakeEquateLiteral} then VHd0 VTl0 in
             %% the application is either a toplevel application of NewName
@@ -1006,7 +1007,7 @@ define
       end
    end
 
-   class CodeGenIfNode
+   class CodeGenIfNode from CodeGenStatement
       meth codeGen(CS VHd VTl) Value in
          {@arbiter getCodeGenValue(?Value)}
          if {IsDet Value} andthen Value == true then
@@ -1034,7 +1035,7 @@ define
       end
    end
 
-   class CodeGenPatternCase
+   class CodeGenPatternCase from CodeGenStatement
       meth codeGen(CS VHd VTl)
          {OptimizePatterns {@arbiter reg($)}
           {Map @clauses
@@ -1211,31 +1212,34 @@ define
       end
    end
 
-   class CodeGenAbstractElse
-      meth codeGenPattern(Mapping VHd VTl CS) Reg VO in
-         Reg = {PosToReg nil Mapping}
-         VO = {New PseudoVariableOccurrence init(Reg)}
-         {self codeGenWithArbiter(CS VO VHd VTl)}
+   local
+      class CodeGenAbstractElse
+         meth codeGenPattern(Mapping VHd VTl CS) Reg VO in
+            Reg = {PosToReg nil Mapping}
+            VO = {New PseudoVariableOccurrence init(Reg)}
+            {self codeGenWithArbiter(CS VO VHd VTl)}
+         end
       end
-   end
-   class CodeGenElseNode
-      meth codeGen(CS VHd VTl)
-         {CodeGenList @statements CS VHd VTl}
+   in
+      class CodeGenElseNode from CodeGenAbstractElse
+         meth codeGen(CS VHd VTl)
+            {CodeGenList @statements CS VHd VTl}
+         end
+         meth codeGenWithArbiter(CS VO VHd VTl)
+            {CodeGenList @statements CS VHd VTl}
+         end
       end
-      meth codeGenWithArbiter(CS VO VHd VTl)
-         {CodeGenList @statements CS VHd VTl}
-      end
-   end
-   class CodeGenNoElse
-      meth codeGen(CS VHd VTl)
-         {MakeException noElse @coord nil CS VHd VTl}
-      end
-      meth codeGenWithArbiter(CS VO VHd VTl)
-         {MakeException noElse @coord [VO] CS VHd VTl}
+      class CodeGenNoElse from CodeGenAbstractElse
+         meth codeGen(CS VHd VTl)
+            {MakeException noElse @coord nil CS VHd VTl}
+         end
+         meth codeGenWithArbiter(CS VO VHd VTl)
+            {MakeException noElse @coord [VO] CS VHd VTl}
+         end
       end
    end
 
-   class CodeGenTryNode
+   class CodeGenTryNode from CodeGenStatement
       meth codeGen(CS VHd VTl) TryBodyVInstr CatchBodyVInstr in
          {CodeGenList @tryStatements CS TryBodyVInstr vPopEx(_ @coord nil)}
          {@exception setReg(CS)}
@@ -1251,14 +1255,14 @@ define
       end
    end
 
-   class CodeGenLockNode
+   class CodeGenLockNode from CodeGenStatement
       meth codeGen(CS VHd VTl) SharedData Cont1 in
          VHd = vLockThread(_ {@lockVar reg($)} @coord Cont1 SharedData)
          {CodeGenList @statements CS Cont1 vLockEnd(_ @coord VTl SharedData)}
       end
    end
 
-   class CodeGenClassNode
+   class CodeGenClassNode from CodeGenStatement
       meth codeGen(CS VHd VTl)
          VHd0 VTl0 From Attr Feat Prop PN Meth PrintName
          VInter1 VInter2 VInter3
@@ -1581,7 +1585,7 @@ define
       end
    end
 
-   class CodeGenObjectLockNode
+   class CodeGenObjectLockNode from CodeGenStatement
       meth codeGen(CS VHd VTl) Reg Arg SharedData Cont1 Cont2 in
          {CS newReg(?Reg)}
          Arg = {New PseudoVariableOccurrence init(Reg)}
@@ -1592,19 +1596,19 @@ define
       end
    end
 
-   class CodeGenGetSelf
+   class CodeGenGetSelf from CodeGenStatement
       meth codeGen(CS VHd VTl)
          VHd = vGetSelf(_ {@destination reg($)} VTl)
       end
    end
 
-   class CodeGenFailNode
+   class CodeGenFailNode from CodeGenStatement
       meth codeGen(CS VHd VTl) VInter in
          {StepPoint @coord 'fail' VHd VTl vFailure(_ VInter) VInter}
       end
    end
 
-   class CodeGenCondNode
+   class CodeGenCondNode from CodeGenStatement
       meth codeGen(CS VHd VTl) AllocatesRS VClauses AltVInstr in
          {CS makeRegSet(?AllocatesRS)}
          VClauses = {Map @clauses
@@ -1621,34 +1625,37 @@ define
       end
    end
 
-   class CodeGenChoicesAndDisjunctions
-      meth codeGen(Label CS VHd VTl) AllocatesRS VClauses in
-         {CS makeRegSet(?AllocatesRS)}
-         VClauses = {Map @clauses
-                     fun {$ Clause} GuardVInstr VTl Cont BodyVInstr in
-                        {CS enterVs({Clause getGuardGlobalVars($)}
-                                    AllocatesRS)}
-                        {Clause
-                         codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)}
-                        VTl = Cont
-                        _#GuardVInstr#BodyVInstr
-                     end}
-         VHd = Label(_ VClauses VTl @coord AllocatesRS _)
+   local
+      class CodeGenChoicesAndDisjunctions from CodeGenStatement
+         meth codeGen(Label CS VHd VTl) AllocatesRS VClauses in
+            {CS makeRegSet(?AllocatesRS)}
+            VClauses = {Map @clauses
+                        fun {$ Clause} GuardVInstr VTl Cont BodyVInstr in
+                           {CS enterVs({Clause getGuardGlobalVars($)}
+                                       AllocatesRS)}
+                           {Clause
+                            codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr)}
+                           VTl = Cont
+                           _#GuardVInstr#BodyVInstr
+                        end}
+            VHd = Label(_ VClauses VTl @coord AllocatesRS _)
+         end
       end
-   end
-   class CodeGenOrNode
-      meth codeGen(CS VHd VTl)
-         CodeGenChoicesAndDisjunctions, codeGen(vCreateOr CS VHd VTl)
+   in
+      class CodeGenOrNode from CodeGenChoicesAndDisjunctions
+         meth codeGen(CS VHd VTl)
+            CodeGenChoicesAndDisjunctions, codeGen(vCreateOr CS VHd VTl)
+         end
       end
-   end
-   class CodeGenDisNode
-      meth codeGen(CS VHd VTl)
-         CodeGenChoicesAndDisjunctions, codeGen(vCreateEnumOr CS VHd VTl)
+      class CodeGenDisNode from CodeGenChoicesAndDisjunctions
+         meth codeGen(CS VHd VTl)
+            CodeGenChoicesAndDisjunctions, codeGen(vCreateEnumOr CS VHd VTl)
+         end
       end
-   end
-   class CodeGenChoiceNode
-      meth codeGen(CS VHd VTl)
-         CodeGenChoicesAndDisjunctions, codeGen(vCreateChoice CS VHd VTl)
+      class CodeGenChoiceNode from CodeGenChoicesAndDisjunctions
+         meth codeGen(CS VHd VTl)
+            CodeGenChoicesAndDisjunctions, codeGen(vCreateChoice CS VHd VTl)
+         end
       end
    end
 

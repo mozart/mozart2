@@ -36,6 +36,7 @@
 
 functor prop once
 import
+   Boot         @ 'x-oz://boot/Boot'
    CompilerSupport(newNamedName newCopyableName isCopyableName
                    newPredicateRef newCopyablePredicateRef
                    nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
@@ -947,7 +948,7 @@ define
 %-----------------------------------------------------------------------
 %  global control information
 
-   NewUniqueName           = {`Builtin` 'Name.newUnique' 2}
+   NewUniqueName           = {Boot.builtin 'Name.newUnique' 2}
 
    class Control
       prop final
@@ -1988,7 +1989,7 @@ define
          {System.show newBuiltinDef(BIName BIArity)}
 \endif
          try
-            Proc = {`Builtin` BIName BIArity}
+            Proc = {Boot.builtin BIName BIArity}
             BI = {New Core.builtinToken init(Proc)}
          in
 \ifdef DEBUGSA

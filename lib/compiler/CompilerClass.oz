@@ -45,7 +45,6 @@ local
                             showcompiletime: false
                             showcompilememory: false
                             watchdog: true
-                            ozma: false
 
                             %% warnings:
                             %%
@@ -274,7 +273,7 @@ local
          {Dictionary.items self.variables}
       end
 
-\ifndef OZM
+\ifndef NO_GUMP
       meth addProductionTemplates(Ps)
          CompilerStateClass, InitProductionTemplates()
          {@productionTemplates add(Ps @reporter)}
@@ -309,8 +308,7 @@ local
       meth init(WrapperObject)
          wrapper <- WrapperObject
          CompilerStateClass, init({Adjoin StandardEnv
-                                   env('`Builtin`': {`Builtin` 'Boot.builtin' 3}
-                                       '`Compiler`': WrapperObject)})
+                                   env('`Compiler`': WrapperObject)})
          reporter <- {New Reporter init(self WrapperObject)}
          ParseFile <- ParseOzFile
          ParseVirtualString <- ParseOzVirtualString
@@ -322,16 +320,10 @@ local
       end
       meth notifyOne(P)
          OZVERSION = {Property.get 'oz.version'}
-\ifdef OZM
-      in
-         {Send P info('Mozart Compiler '#OZVERSION#
-                      ' playing Oz 3\n\n')}
-\else
          \insert compiler-Version
       in
          {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
                       ' playing Oz 3\n\n')}
-\endif
          {Send P switches(@switches)}
          {Send P maxNumberOfErrors(@maxNumberOfErrors)}
          {Send P env({Dictionary.toRecord env self.values})}
@@ -405,13 +397,7 @@ local
                raise rejected end
             end
             if CompilerInternal, getSwitch(unnest $) then Queries in
-               Queries = if CompilerStateClass, getSwitch(ozma $) then V in
-                            V = {New Core.variable
-                                 init('`runTimeDict`' putEnv unit)}
-                            CompilerStateClass, enter(V {NewDictionary} false)
-                            {Unnester.joinQueries Queries0 @reporter}
-                         elseif CompilerStateClass, getSwitch(expression $)
-                         then
+               Queries = if CompilerStateClass, getSwitch(expression $) then
                             case Queries0 of nil then Queries0
                             else V in
                                V = {New Core.variable
@@ -465,11 +451,11 @@ local
          [] dirPopSwitches then
             CompilerStateClass, popSwitches()
          [] fSynTopLevelProductionTemplates(Ps) then
-\ifndef OZM
-            CompilerStateClass, addProductionTemplates(Ps)
-\else
-            {@reporter error(kind: 'bootstrap compiler restriction'
+\ifdef NO_GUMP
+            {@reporter error(kind: 'compiler restriction'
                              msg: 'Gump definitions not supported')}
+\else
+            CompilerStateClass, addProductionTemplates(Ps)
 \endif
          else DeclaredGVs GS FreeGVs AnnotateGlobalVars in
             case Query of fDeclare(_ _ C) then
@@ -585,83 +571,57 @@ local
                                            getSwitch(debuginfocontrol $))
                                        verify: false
                                        peephole: true)}
-               if CompilerStateClass, getSwitch(ozma $) then
-                  if GPNs == nil orelse GPNs == ['`runTimeDict`'] then VS in
-                     {@reporter logSubPhase('displaying assembler code ...')}
-                     {MyAssembler output(?VS)}
-                     {@reporter
-                      displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
-                  else GPN|GPNr = GPNs in
-                     {@reporter error(kind: 'Ozma error'
-                                      msg: ('No free variables allowed '#
-                                            'when compiling for Ozma')
-                                      items: [hint(l: 'Found'
-                                                   m: {FoldR GPNr
-                                                       fun {$ GPN In}
-                                                          pn(GPN)#' '#In
-                                                       end pn(GPN)})])}
+               if CompilerStateClass, getSwitch(outputcode $) then VS in
+                  {@reporter logSubPhase('displaying assembler code ...')}
+                  VS = case GPNs of nil then '%% No Global Registers\n'
+                       else
+                          {List.foldLInd GPNs
+                           fun {$ I In PrintName}
+                              In#'%%    g('#I - 1#') = '#
+                              {FormatStringToVirtualString pn(PrintName)}#'\n'
+                           end '%% Assignment of Global Registers:\n'}
+                       end#{MyAssembler output($)}
+                  {@reporter
+                   displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
+               end
+               if CompilerStateClass, getSwitch(feedtoemulator $) then
+                  Globals Proc P0 P
+               in
+                  {@reporter logSubPhase('loading ...')}
+                  proc {Proc}
+                     case DeclaredGVs of nil then skip
+                     else
+                        CompilerStateClass, enterMultiple(DeclaredGVs)
+                     end
+                     Globals = {Map GPNs
+                                fun {$ PrintName}
+                                   CompilerStateClass,
+                                   lookupInEnv(PrintName $)
+                                end}
+                     {MyAssembler load(Globals ?P0)}
                   end
-               else
-                  if CompilerStateClass, getSwitch(outputcode $) then VS in
-                     {@reporter logSubPhase('displaying assembler code ...')}
-                     VS = case GPNs of nil then '%% No Global Registers\n'
-                          else
-                             {List.foldLInd GPNs
-                              fun {$ I In PrintName}
-                                 In#'%%    g('#I - 1#') = '#
-                                 {FormatStringToVirtualString pn(PrintName)}#
-                                 '\n'
-                              end '%% Assignment of Global Registers:\n'}
-                          end#{MyAssembler output($)}
-                     {@reporter
-                      displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
+                  CompilerInternal, ExecuteUninterruptible(Proc)
+                  if CompilerStateClass, getSwitch(runwithdebugger $) then
+                     proc {P} {Debug.breakpoint} {P0} end
+                  else
+                     P = P0
                   end
-                  if CompilerStateClass, getSwitch(feedtoemulator $) then
-\ifndef NO_ASSEMBLER
-                     Globals Proc P0 P
+                  if CompilerStateClass, getSwitch(threadedqueries $) then
+                     OPI = {Property.condGet 'opi.compiler' false}
                   in
-                     {@reporter logSubPhase('loading ...')}
-                     proc {Proc}
-                        case DeclaredGVs of nil then skip
-                        else
-                           CompilerStateClass, enterMultiple(DeclaredGVs)
-                        end
-                        Globals = {Map GPNs
-                                   fun {$ PrintName}
-                                      CompilerStateClass,
-                                      lookupInEnv(PrintName $)
-                                   end}
-                        {MyAssembler load(Globals ?P0)}
+                     {@reporter
+                      logSubPhase('executing in an independent thread ...')}
+                     if OPI \= false
+                        andthen {OPI getCompiler($)} == @wrapper
+                     then
+                        % this helps Ozcar detect queries from the OPI:
+                        {Debug.setId {Thread.this} 1}
                      end
-                     CompilerInternal, ExecuteUninterruptible(Proc)
-                     if CompilerStateClass, getSwitch(runwithdebugger $) then
-                        proc {P} {Debug.breakpoint} {P0} end
-                     else
-                        P = P0
-                     end
-                     if CompilerStateClass, getSwitch(threadedqueries $) then
-                        OPI = {Property.condGet 'opi.compiler' false}
-                     in
-                        {@reporter
-                         logSubPhase('executing in an independent thread ...')}
-                        if OPI \= false
-                           andthen {OPI getCompiler($)} == @wrapper
-                        then
-                           % this helps Ozcar detect queries from the OPI:
-                           {Debug.setId {Thread.this} 1}
-                        end
-                        thread {P} end
-                     else
-                        {@reporter
-                         logSubPhase('executing and waiting for '#
-                                     'completion ...')}
-                        CompilerInternal, ExecProtected(P false)
-                     end
-\else
-                     {@reporter error(kind: 'compiler restriction'
-                                      msg: ('Loading of code not supported '#
-                                            'by this compiler'))}
-\endif
+                     thread {P} end
+                  else
+                     {@reporter
+                      logSubPhase('executing and waiting for completion ...')}
+                     CompilerInternal, ExecProtected(P false)
                   end
                end
             else skip

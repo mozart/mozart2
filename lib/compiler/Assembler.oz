@@ -38,15 +38,15 @@
 functor prop once
 import
    System(printName valueToVirtualString)
-   CompilerSupport from 'x-oz://boot/CompilerSupport'
+   Boot         @ 'x-oz://boot/Boot'
+   CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
-   RunTimeLibrary
+   RunTime(procValues)
 export
    InternalAssemble
    Assemble
 define
    local
-\ifndef NO_ASSEMBLER
       GetInstructionSize = CompilerSupport.getInstructionSize
       GetOpcode          = CompilerSupport.getOpcode
       NewCodeBlock       = CompilerSupport.newCodeBlock
@@ -69,7 +69,7 @@ define
          BIStoreBuiltinname = CompilerSupport.storeBuiltinname
       in
          proc {StoreBuiltinname CodeBlock Builtin}
-            {BIStoreBuiltinname CodeBlock {`Builtin` Builtin ~1}}
+            {BIStoreBuiltinname CodeBlock {Boot.builtin Builtin ~1}}
          end
       end
 
@@ -140,7 +140,6 @@ define
             {BIStoreApplMethInfo CodeBlock Name RecordArity}
          end
       end
-\endif
 
       \insert compiler-Opcodes
 
@@ -152,7 +151,7 @@ define
          local
             fun {FindProcSub Xs P}
                case Xs of X|Xr then
-                  if RunTimeLibrary.X == P then
+                  if RunTime.procValues.X == P then
                      '<R: '#{System.valueToVirtualString X 0 0}#'>'
                   else
                      {FindProcSub Xr P}
@@ -163,7 +162,7 @@ define
             end
          in
             fun {FindProc P}
-               {FindProcSub {Arity RunTimeLibrary} P}
+               {FindProcSub {Arity RunTime.procValues} P}
             end
          end
 
@@ -389,7 +388,6 @@ define
                VS = ""
             end
          end
-\ifndef NO_ASSEMBLER
          meth load(Globals ?P) CodeBlock in
             AssemblerClass, MarkEnd()
             CodeBlock = {NewCodeBlock @Size}
@@ -397,7 +395,6 @@ define
              proc {$ Instr} {StoreInstr Instr CodeBlock @LabelDict} end}
             P = {MakeProc CodeBlock Globals}
          end
-\endif
          meth MarkEnd()
             @InstrsTl = nil
          end

@@ -48,7 +48,7 @@ functor prop once
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
    FD(is)
-\ifndef OZM
+\ifndef NO_GUMP
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Gump(transformParser transformScanner)
 \endif
@@ -56,7 +56,6 @@ import
    Core
    RunTime(procs)
 export
-   JoinQueries
    MakeExpressionQuery
    UnnestQuery
 define
@@ -109,7 +108,7 @@ define
       end
    end
 
-\ifndef OZM
+\ifndef NO_GUMP
    proc {MyWaitGump X}
       T = {Thread.this}
       RaiseOnBlock = {Debug.getRaiseOnBlock T}
@@ -833,7 +832,7 @@ define
             GClass = {New Core.classNode
                       init(GVO GParents GProps GAttrs GFeats GMeths C)}
             GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
-\ifndef OZM
+\ifndef NO_GUMP
          [] fScanner(T Ds Ms Rules Prefix C) then
             From Prop Attr Feat Flags FS
          in
@@ -2299,72 +2298,6 @@ define
       [] dirPushSwitches then true
       [] dirPopSwitches then true
       else false
-      end
-   end
-
-   local
-      fun {VariableMember PrintName Vs}
-         case Vs of fVar(PrintName0 _)|Vr then
-            PrintName == PrintName0 orelse {VariableMember PrintName Vr}
-         [] nil then false
-         end
-      end
-
-      fun {AreDisjointVariableLists Vs1 Vs2}
-         case Vs1 of fVar(PrintName _)|Vr then
-            if {VariableMember PrintName Vs2} then false
-            else {AreDisjointVariableLists Vr Vs2}
-            end
-         elseof nil then true
-         end
-      end
-
-      fun {JoinQueriesSub Queries}
-         case Queries of Q1|(Qr=Q2|Qrr) then
-            if {IsDirective Q1} then
-               Q1|{JoinQueriesSub Qr}
-            else
-               case Q1 of fDeclare(P11 P12 C1) then
-                  case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
-                     NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
-                     NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
-                     if {AreDisjointVariableLists Vs1 Vs2} then NewQ in
-                        NewQ = fDeclare({FoldR {Append Vs1 Vs2}
-                                         fun {$ V Rest} fAnd(V Rest) end
-                                         fSkip(C1)}
-                                        fAnd(NewP1 fAnd(P12
-                                                        fAnd(NewP2 P22))) C1)
-                        {JoinQueriesSub NewQ|Qrr}
-                     else
-                        Q1|{JoinQueriesSub Qr}
-                     end
-                  else
-                     {JoinQueriesSub fDeclare(P11 fAnd(P12 Q2) C1)|Qrr}
-                  end
-               else
-                  Q1|{JoinQueriesSub Qr}
-               end
-            end
-         else
-            Queries
-         end
-      end
-   in
-      fun {JoinQueries Queries Reporter} Directives OtherQueries NewQueries in
-         {List.takeDropWhile Queries IsDirective ?Directives ?OtherQueries}
-         {JoinQueriesSub OtherQueries ?NewQueries}
-         case NewQueries of [fDeclare(P1 P2 C)] then
-            {Append Directives [fLocal(P1 P2 C)]}
-         elseof [FE] then
-            {Append Directives NewQueries}
-         [] nil then
-            Directives
-         else
-            {Reporter error(kind: ExpansionError
-                            msg: ('Ozma only supports at most one query '#
-                                  'per input'))}
-            Directives
-         end
       end
    end
 

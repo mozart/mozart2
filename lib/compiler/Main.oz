@@ -34,11 +34,11 @@ in
       Type   %--**(ask)
       PrintName(is)
       Builtins   %--**
-      Unnester   %--**(joinQueries makeExpressionQuery unnestQuery)
+      Unnester   %--**(makeExpressionQuery unnestQuery)
       Core.variable
       Assembler   %--**(internalAssemble assemble)
       RunTime   %--**
-\ifndef OZM
+\ifndef NO_GUMP
       Gump(makeProductionTemplates)
       ProductionTemplates(default)
 \endif

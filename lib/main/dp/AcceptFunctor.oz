@@ -26,9 +26,9 @@ export
    Accept
 import
    OS
-%\ifdef DBG
+\ifdef DBG
    System
-%\endif
+\endif
    DPMisc
 define
    class ResourceHandler
@@ -74,6 +74,9 @@ define
    FDHandler = {New ResourceHandler init(5)}
    fun{BindSocket FD PortNum}
       try
+\ifdef DBG
+         {System.showInfo 'BindSocket '#FD#' '#PortNum}
+\endif
          {OS.bind FD PortNum}
          PortNum
       catch _ then
@@ -119,18 +122,28 @@ define
       {AcceptSelect FD}
    end
 
-   proc{Accept}
+   proc{Accept ListenPortNum}
 %      InAddress InIPPort
       FD
-      PortNum
+      CPortNum
    in
       /* Create socket */
       FD={OS.socket 'PF_INET' 'SOCK_STREAM' "tcp"}
-      PortNum = {BindSocket FD 9000}
-      {OS.listen FD 5}
-      {DPMisc.setListenPort PortNum {OS.uName}.nodename}
+      if ListenPortNum==default then
+         CPortNum = {BindSocket FD 9000}
+      else
+         try
+            {OS.bind FD ListenPortNum}
+            CPortNum=ListenPortNum
+         catch _ then raise unable_to_listen_to(ListenPortNum) end end
+      end
 \ifdef DBG
-      {System.showInfo 'Listening on port '#PortNum#' using fd '#FD#' '#{OS.getPID}}
+      {System.showInfo 'Bound '#CPortNum}
+\endif
+      {OS.listen FD 5}
+      {DPMisc.setListenPort CPortNum {OS.uName}.nodename}
+\ifdef DBG
+      {System.showInfo 'Listening on port '#CPortNum#' using fd '#FD#' '#{OS.getPID}}
 \endif
       thread
          {AcceptSelect FD}

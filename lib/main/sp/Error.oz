@@ -1827,17 +1827,19 @@ in
              [hint(l:'Filename'  m:Filename)
               hint(l:'Resources' m:oz(Resources))]
              Exc}
-         elseof dp(save nogoods NoGoods) then
+         elseof dp(save nogoods Value NoGoods) then
             {FormatExc
              'Non-distributables found during save'
              unit
-             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             [hint(l:'Value saved'        m:oz(Value))
+              hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
-         elseof dp('export' nogoods NoGoods) then
+         elseof dp('export' nogoods Value NoGoods) then
             {FormatExc
              'Non-distributables found during export'
              unit
-             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             [hint(l:'Value exported'     m:oz(Value))
+              hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
          elseof dp(load versionMismatch ComponentName VerExpected VerGot) then
             {FormatExc
@@ -1847,17 +1849,19 @@ in
               hint(l:'Version expected' m:VerExpected)
               hint(l:'Version got'      m:VerGot)]
              Exc}
-         elseof dp(send nogoods NoGoods) then
+         elseof dp(send nogoods Value NoGoods) then
             {FormatExc
              'Trying to send non-distributables to port'
              unit
-             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             [hint(l:'Value send'         m:oz(Value))
+              hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
-         elseof dp(unify nogoods NoGoods) then
+         elseof dp(unify nogoods Value NoGoods) then
             {FormatExc
              'Trying to unify distributed variable with non-distributables'
              unit
-             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             [hint(l:'RHS of equation'    m:oz(Value))
+              hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
          elseof dp(connection(illegalTicket V)) then
             {FormatExc

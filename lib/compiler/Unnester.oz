@@ -1422,7 +1422,7 @@ local
              in
                 Unnester, UnnestRecord(NewPrintName Label Args false
                                        ?GFront0 ?GArg ?GBack0)
-                NewGArgs#(GFront|GFront0)#(GBack|GBack0)
+                NewGArgs#(GFront0|GFront)#(GBack0|GBack)
              [] fOpenRecord(Label Args) then
                 NewPrintName = case PrintName == '' then ''
                                else PrintName#'.'#FeatPrintName
@@ -1431,7 +1431,7 @@ local
              in
                 Unnester, UnnestRecord(NewPrintName Label Args true
                                        ?GFront0 ?GArg ?GBack0)
-                NewGArgs#(GFront0|GFront)#(GBack0|GBack)
+                NewGArgs#(GFront|GFront0)#(GBack|GBack0)
              else GBack0 in
                 Unnester, UnnestToTerm(FE 'RecordArg' ?GBack0 ?GArg)
                 case PrintName == '' then skip
@@ -1440,7 +1440,7 @@ local
                    {GS setPrintName({VirtualString.toAtom
                                      PrintName#'.'#FeatPrintName})}
                 end
-                NewGArgs#GFront#(GBack0|GBack)
+                NewGArgs#GFront#(GBack|GBack0)
              end
           end nil#nil#nil}
          GRecord = {New Core.construction init(GLabel GArgs IsOpen)}

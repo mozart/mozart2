@@ -67,7 +67,7 @@ local
    local
       fun {FindMin CTaskPair CCost Start Dur TPs Acc Rest}
          case TPs of nil then Rest=Acc CTaskPair
-         [] TP|_ then
+         [] TP|TPr then
             if {IsKinded TP.3}
             then
                TCost = {TaskPairCost TP Start Dur}
@@ -90,8 +90,7 @@ local
 
       proc {TaskPairEnum All TaskPairs Start Dur}
          choice
-            case TaskPairs of nil then skip
-            [] TP|TPr then
+            if TaskPairs\=nil then
                Rest
                Minimum = {FindMin empty FloatFDSup Start Dur TaskPairs nil Rest}
             in

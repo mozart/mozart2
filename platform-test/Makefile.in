@@ -35,7 +35,7 @@ FDLOCAL = \
         srat students hubert pigeon permutation \
         kalotan knights houses warehouse bridge_noterm \
         queens mapcoloring magicsquare magicsequence \
-        photo coins train pel college
+        photo coins train pel college boundsdistinct
 
 # tiling removed
 
@@ -182,7 +182,7 @@ Makefile: Makefile.in ../config.status
 depend:
 
 base/smallbuf.so-$(OZPLATFORM): base/smallbuf.o
-        $(OZTOOL) ld $(LDFLAGS) @OZWSOCKLIB@ $< -o $@
+        $(OZTOOL) ld $(LDFLAGS) $< @OZWSOCKLIB@ -o $@
 
 %.so-$(OZPLATFORM): %.o
         $(OZTOOL) ld $(LDFLAGS) $< -o $@

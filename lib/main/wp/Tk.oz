@@ -279,11 +279,8 @@ local
          SI = {New TextFile init(name: stdin flags: [read])}
          {SI getS(Magic)}
          {ForThread 1 {String.toInt {SI getS($)}} 1
-          fun {$ AVs I}
-             A = {String.toAtom {SI getS($)}}
-             V = {SI getS($)}
-          in
-             A#V|AVs
+          fun {$ AVs _}
+             {SI getS($)}#{SI getS($)}|AVs
           end nil}
       finally
          {SI close()}
@@ -837,7 +834,9 @@ in
          end
 
          meth tkClose
+            {Show applet_close}
             {TkCloseApplet Session self}
+            {System.exit 0}
          end
 
       end

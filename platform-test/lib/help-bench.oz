@@ -5,15 +5,16 @@ Usage: ./ozbench [options]
 ozbench runs benchmarks and prints the average times of <repeat>
 (default 5) runs in the form
 
-<name>: t:<t>ms (<var>%) ...
+<name>:
+ times in ms: t:<t>  ...
 
-where <t> is the total time in milliseconds and <var> is the
-variation.  The variation is only printed if it is more than 10
-percent.  The other times shown are:
+where <t> is the total time in milliseconds.  The other times shown are:
 
- r:run, g:garbage collection, c:copying, p:propagators, l:loading, s:system.
+ r:run, g:garbage collection, c:copying, p:propagators, s:system.
 
 Every benchmark runs at least <mintime> (default 1500) milliseconds.
+A star (*) after the timings indicates that the variation is more than
+ten percent.
 
 The following options are supported:
 --[no]verbose           [default=no]
@@ -24,8 +25,8 @@ The following options are supported:
         If non zero, run garbage collection each <int> milliseconds
 --mintime=<int>         [default=1500]
         Minimal time a benchmark should run
---[no]variation         [default=no]
-        Always print the standard variation
+--[no]variance         [default=no]
+        Print the standard variance
 --repeat=<int>          [default=5]
         Number of runs
 --tests=<s1>,...,<sn>   [default=all]

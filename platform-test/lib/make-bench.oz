@@ -207,7 +207,7 @@ local
                        end}
                    end
                 in
-                   {PI {Label T} # ': '}
+                   {PI {Label T}#':\n'}
                    local
                       {System.gcDo}
                       T0 = {Property.get time}
@@ -234,16 +234,23 @@ local
                       Var={Variance Av Result}
 %                     {System.show Var}
                    in
+                      {PI ' times in ms:'}
                       {ForAll TimeMap
                        proc {$ C#F}
-                          {PI ' '#[C]#':'#{PF Av.F}#'ms'}
-                          if Argv.variation orelse Var.F>0.1 then
-                             {PI ' ('#{Truncate Var.F*100.0}#'%)'}
-                          end
+                          {PI ' '#[C]#':'#{PF Av.F}}
+                          if Var.F > 0.1 then {PI '*'} end
                        end}
                       {PI '\n'}
-                      {PV '=========================\n'}
+                      if Argv.variance then
+                         {PI '    var in %:'}
+                         {ForAll TimeMap
+                          proc {$ C#F}
+                             {PI ' '#[C]#':'#{Truncate Var.F*100.0}}
+                          end}
+                         {PI '\n'}
+                      end
                    end
+                   {PV '=========================\n'}
                 end}
                0
             end
@@ -262,7 +269,7 @@ local
       repeat(type:int optional:false default:5)
       mintime(type:int optional:false default:2000)
       verbose(type:bool optional:false default:false)
-      variation(type:bool optional:false default:false)
+      variance(type:bool optional:false default:false)
       )
 
 in

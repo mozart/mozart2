@@ -296,36 +296,37 @@ define
       end
 
       meth !SYSTEM(Url0 $)
+         Auth Url
+      in
          try
             Auth = {StringToAtom {CondSelect Url0 authority ""}}
             Url  = {self SystemResolve(Auth Url0 $)}
-         in
-            {self trace('system method' Url)}
-            if {IsNative Url} then {self Native(Url $)}
-            elsecase {StringToAtom {CondSelect Url authority ""}}
-            of boot then
-               %% a boot module may either be provided internally
-               %% (i.e. statically linked in) or as a DLL
-               {self trace('boot module' Url)}
-               try {self GetSystemBoot({self GetSystemName(Url true $)} $)}
-               catch _ then
-                  {self Native({UrlMake {UrlToAtom Url}#'.so{native}'} $)}
-               end
-            [] system then Name={self GetSystemName(Url false $)} in
-               {self trace('system module' Url)}
-               if Name \= unit andthen {IsNatSystemName Name} then
-                  RootManager,SYSTEM({UrlMake OzScheme#'://boot/'#Name} $)
-               else
-                  {self Pickle(Url Url $)}
-               end
-            [] contrib then
-               {self trace('contrib module' Url)}
-               {self Pickle(Url Url $)}
-            else
-               raise error(module(urlSyntax {UrlToAtom Url})) end
-            end
          catch _ then
             raise error(module(urlSyntax {UrlToAtom Url0})) end
+         end
+         {self trace('system method' Url)}
+         if {IsNative Url} then {self Native(Url $)}
+         elsecase {StringToAtom {CondSelect Url authority ""}}
+         of boot then
+            %% a boot module may either be provided internally
+            %% (i.e. statically linked in) or as a DLL
+            {self trace('boot module' Url)}
+            try {self GetSystemBoot({self GetSystemName(Url true $)} $)}
+            catch _ then
+               {self Native({UrlMake {UrlToAtom Url}#'.so{native}'} $)}
+            end
+         [] system then Name={self GetSystemName(Url false $)} in
+            {self trace('system module' Url)}
+            if Name \= unit andthen {IsNatSystemName Name} then
+               RootManager,SYSTEM({UrlMake OzScheme#'://boot/'#Name} $)
+            else
+               {self Pickle(Url Url $)}
+            end
+         [] contrib then
+            {self trace('contrib module' Url)}
+            {self Pickle(Url Url $)}
+         else
+            raise error(module(urlSyntax {UrlToAtom Url})) end
          end
       end
 

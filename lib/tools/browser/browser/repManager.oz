@@ -316,7 +316,7 @@ in
    %%
    %% Generic;
    %%
-   class MetaRepManagerObject from Object.base
+   class MetaRepManagerObject
       %%
       feat
          !WidgetObj             %

@@ -430,8 +430,7 @@ in
    %%
    %%  'Meta' object for compound term objects;
    %%
-   class CompoundControlObject
-      from ControlObject
+   class CompoundControlObject from ControlObject
       %%
       feat
          !IsPrimitive: false    % override the control object's value;

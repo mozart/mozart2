@@ -3,6 +3,8 @@ define(instruction,
                 numOfRegs($2,$3,$4),2,twoRegs($@),
                 noReg($@))')
 define(instructionsUnneededForNewCompiler,`divert(-1)')
+define(readArg,$1)
+define(writeArg,$1)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%

@@ -35,6 +35,10 @@ export
 
 define
 
+   fun {UnRoll N X Xr}
+      if N>0 then X|{UnRoll N-1 X Xr} else Xr end
+   end
+
    class Engine
       feat
          Hosts
@@ -47,28 +51,29 @@ define
          locking
       meth init(...) = M
          lock
-            NameDict = {Dictionary.new}
-            ProcDict = {Dictionary.new}
+            Spec = {List.toTuple '#'
+                    {Record.foldRInd M
+                     fun {$ F X Ps}
+                        H#N#M = if {IsInt F} then
+                                   X#1#automatic
+                                else
+                                   if {IsInt X}  then
+                                      F#X#automatic
+                                   elseif {IsAtom X} then
+                                      F#1#X
+                                   else
+                                      F#X.1#X.2
+                                   end
+                                end
+                     in
+                        {UnRoll N H#M Ps}
+                     end nil}}
          in
-            {Record.forAllInd M
-             proc {$ F X}
-                H#N = if {IsInt F} then X#1 else F#X end
-             in
-                {Dictionary.put NameDict H N+{Dictionary.condGet NameDict H 0}}
-             end}
-            {FoldL {Dictionary.keys NameDict}
-             fun {$ N K}
-                M = {Dictionary.get NameDict K}+N
-             in
-                {For N M-1 1
-                 proc {$ I}
-                    {Dictionary.put ProcDict I
-                     {New Process.worker init(name:K id:I)}}
-                 end}
-                M
-             end 1 _}
-            self.Hosts = {Dictionary.toRecord hosts ProcDict}
-            self.Names = {Record.map self.Hosts fun {$ H} H.name end}
+            self.Hosts = {Record.mapInd Spec
+                          fun {$ I H#M}
+                             {New Process.worker init(name:H fork:M id:I)}
+                          end}
+            self.Names = {Record.map Spec fun {$ H#_} H end}
          end
       end
       meth trace(OnOff <= unit)

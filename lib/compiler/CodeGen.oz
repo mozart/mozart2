@@ -1112,8 +1112,9 @@ define
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
                            pid({VirtualString.toAtom PrintName#'/body'} 0
-                               4: {Filter @procFlags
-                                   fun {$ F} F==once orelse F==native end}
+                               4: if {Member native @procFlags} then [native]
+                                  else nil
+                                  end
                                5: InnerNLiveRegs)}
             case @toCopy of nil then Reg OuterBodyVInter1 in
                {CS newReg(?Reg)}

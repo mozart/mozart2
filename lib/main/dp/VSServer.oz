@@ -99,7 +99,7 @@ local
           proc {$ T}
              thread
                 case {Procedure.is T} then {T}
-                elsecase {Chunk.is T} andthen {HasFeature T apply} then
+                elsecase {Functor.is T} then
                    {Module.link '' T _}
                 end
              end

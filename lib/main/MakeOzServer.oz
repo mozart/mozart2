@@ -45,8 +45,7 @@
                try
                   try
                      X = case {Procedure.is What} then {What}
-                         elsecase {Chunk.is What} andthen
-                            {HasFeature What apply} then
+                         elsecase {Functor.is What} then
                             {Module.link '' What}
                          end
                   in

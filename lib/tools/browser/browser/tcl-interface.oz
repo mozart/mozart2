@@ -2374,7 +2374,7 @@ in
       %%
       meth init(windowObj: WO)
          proc {Okay}
-            S = {NumberS2I {Size tkReturn(get $)}}
+            S = {Size tkGet($)}
          in
             case {IsInt S} then
                {WO.browserObj SetBufferSize(S)}
@@ -2387,9 +2387,7 @@ in
          end
 
          %%
-         proc {Enter S}
-            {Size tk(delete 0 'end')} {Size tk(insert 0 S)}
-         end
+         proc {Enter S} {Size tkSet(S)} end
 
          %%
          TkTools.dialog , tkInit(master:  WO.Window
@@ -2401,9 +2399,13 @@ in
          SizeFrame = {New TkTools.textframe tkInit(parent: self
                                                    text:   'Size')}
          Left = {New Tk.frame tkInit(parent: SizeFrame.inner)}
-         Size = {New Tk.entry tkInit(parent: Left
-                                     back:   IEntryColor
-                                     width:  ISEntryWidth)}
+         Size = {New TkTools.numberentry
+                 tkInit(parent: Left
+                        min: 1
+                        max: DInfinite
+                        val: {WO.store read(StoreBufferSize $)}
+                        % back: IEntryColor
+                        width: ISEntryWidth)}
          Right = {New Tk.frame tkInit(parent: SizeFrame.inner)}
          SepFrame  = {New TkTools.textframe tkInit(parent: self
                                                    text:   'Separator')}
@@ -2412,7 +2414,6 @@ in
       in
 
          %%
-         {Enter {NumberI2VS {WO.store read(StoreBufferSize $)}}}
          {Tk.batch [grid({New Tk.label tkInit(parent:Left
                                               text:  'Buffer Size:'
                                               anchor:w)}
@@ -2554,10 +2555,10 @@ in
       meth init(windowObj: WO)
          %%
          proc {Okay}
-            D  = {NumberS2I {Depth tkReturn(get $)}}
-            W  = {NumberS2I {Width tkReturn(get $)}}
-            DI = {NumberS2I {DepthInc tkReturn(get $)}}
-            WI = {NumberS2I {WidthInc tkReturn(get $)}}
+            D  = {Depth tkGet($)}
+            W  = {Width tkGet($)}
+            DI = {DepthInc tkGet($)}
+            WI = {WidthInc tkGet($)}
          in
             case {All [D W DI WI] IsInt} then
                {WO.browserObj SetDepth(D)}
@@ -2573,12 +2574,10 @@ in
 
          %%
          proc {EnterLimits D#W}
-            {Depth tk(delete 0 'end')} {Depth tk(insert 0 D)}
-            {Width tk(delete 0 'end')} {Width tk(insert 0 W)}
+            {Depth tkSet(D)} {Width tkSet(W)}
          end
          proc {EnterInc D#W}
-            {DepthInc tk(delete 0 'end')} {DepthInc tk(insert 0 D)}
-            {WidthInc tk(delete 0 'end')} {WidthInc tk(insert 0 W)}
+            {DepthInc tkSet(D)} {WidthInc tkSet(W)}
          end
 
          %%
@@ -2591,31 +2590,41 @@ in
          LimitsFrame = {New TkTools.textframe
                         tkInit(parent:self text:'Browse Limit')}
          LimitsLeft  = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
-         Depth       = {New Tk.entry tkInit(parent: LimitsLeft
-                                            back:   IEntryColor
-                                            width:  ISEntryWidth)}
-         Width       = {New Tk.entry tkInit(parent: LimitsLeft
-                                            back:   IEntryColor
-                                            width:  ISEntryWidth)}
+         Depth       = {New TkTools.numberentry
+                        tkInit(parent: LimitsLeft
+                               min: 1
+                               max: DInfinite
+                               val: {WO.store read(StoreDepth $)}
+                               % back:  IEntryColor
+                               width: ISEntryWidth)}
+         Width       = {New TkTools.numberentry
+                        tkInit(parent: LimitsLeft
+                               min: 1
+                               max: DInfinite
+                               val: {WO.store read(StoreWidth $)}
+                               % back: IEntryColor
+                               width: ISEntryWidth)}
          LimitsRight = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
 
          IncFrame = {New TkTools.textframe
                      tkInit(parent:self text:'Expansion Increment')}
          IncLeft  = {New Tk.frame tkInit(parent:IncFrame.inner)}
-         DepthInc = {New Tk.entry tkInit(parent: IncLeft
-                                         back:   IEntryColor
-                                         width:  ISEntryWidth)}
-         WidthInc = {New Tk.entry tkInit(parent: IncLeft
-                                         back:   IEntryColor
-                                         width:  ISEntryWidth)}
+         DepthInc = {New TkTools.numberentry
+                     tkInit(parent: IncLeft
+                            min: 1
+                            max: DInfinite
+                            val: {WO.store read(StoreDepthInc $)}
+                            % back: IEntryColor
+                            width: ISEntryWidth)}
+         WidthInc = {New TkTools.numberentry
+                     tkInit(parent: IncLeft
+                            min: 1
+                            max: DInfinite
+                            val: {WO.store read(StoreWidthInc $)}
+                            % back: IEntryColor
+                            width: ISEntryWidth)}
          IncRight = {New Tk.frame tkInit(parent:IncFrame.inner)}
       in
-         {EnterLimits
-          {NumberI2VS {WO.store read(StoreDepth $)}} #
-          {NumberI2VS {WO.store read(StoreWidth $)}}}
-         {EnterInc
-          {NumberI2VS {WO.store read(StoreDepthInc $)}} #
-          {NumberI2VS {WO.store read(StoreWidthInc $)}}}
          {Tk.batch [grid({New Tk.label tkInit(parent: LimitsLeft
                                               text:   'Depth:')}
                          row:0 column:0 sticky:w)

@@ -843,7 +843,7 @@ local
 
    fun {FormatArity Xs}
       {Map {Arity Xs}
-       fun {$ X} case {IsName X} then oz(X) else X end end}
+       fun {$ X} case {IsLiteral X} then oz(X) else X end end}
    end
 
    fun {Ozify Xs}

@@ -37,11 +37,7 @@
 %\define    DEBUG_OPEN
 \undef     DEBUG_OPEN
 
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
+fun instantiate {$ IMPORT}
    \insert 'SP.env'
       = IMPORT.'SP'
    \insert 'CP.env'

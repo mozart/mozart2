@@ -40,8 +40,8 @@ define
       {NewPort _}
       _
       {New BaseObject noop}
-      proc native {$} skip end
-      class $ prop native end
+      proc sited {$} skip end
+      class $ prop sited end
       Pickle.save
      ]
 

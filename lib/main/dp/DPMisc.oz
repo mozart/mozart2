@@ -29,7 +29,13 @@ import
 
 export
    initIPConnection:  InitIP
+   GetConnGrant
+   FreeConnGrant
+   Handover
    messageCounter:    MsgCntr
+   GetConnectWstream
+   SetListenPort
+   ConnFailed
 define
    %%
    %% Force linking of base library
@@ -54,5 +60,11 @@ define
                end
                {Misc.initIPConnection R}
             end
-   MsgCntr         = fun{$}{Misc.getMsgCntr}end
+   MsgCntr = fun{$}{Misc.getMsgCntr}end
+   GetConnGrant = Misc.getConnGrant
+   FreeConnGrant = Misc.freeConnGrant
+   Handover = Misc.handover
+   GetConnectWstream = Misc.getConnectWstream
+   SetListenPort = Misc.setListenPort
+   ConnFailed = Misc.connFailed
 end

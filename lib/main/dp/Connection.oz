@@ -32,7 +32,7 @@ import
    Error(registerFormatter)
    Fault(install installWatcher deInstall deInstallWatcher)
    Property(get)
-
+   DPinit
 export
    Offer OfferUnlimited Take Gate TakeWithTimer
 
@@ -85,13 +85,15 @@ define
    %% Force linking of base library
    %%
    {Wait DPB}
+   {DPinit.init}
+   %% ERIK
+   %% Har skall varan connect starter kora!!!
+   %%
 
    %%
    %% Base Process Identifier package
    %%
-
    ThisPid   = {PID.get}
-
    fun {ToPort T}
       {PID.toPort T.host T.port T.time.1 T.time.2}
    end

@@ -36,29 +36,6 @@ define
    %% Create All Nodes Export Record
    AllNodes = {Record.adjoinAt TreeNodes.all 'helper' Helper}
 
-   fun {ValueToKey V}
-      case {Value.status V}
-      of kinded(Type) then
-         case Type
-         of int    then fdint
-         [] fset   then fsvar
-         [] record then kindedrecord
-         else Type
-         end
-      [] det(Type) then
-         case Type
-         of tuple then
-            case {Label V}
-            of '#' then hashtuple
-            [] '|' then if ({Width V} == 1) then labeltuple else pipetuple end
-            else labeltuple
-            end
-         else Type
-         end
-      elseof Type then Type
-      end
-   end
-
    fun {HasSub Ss Sub}
       case Ss of _|Sr then Ss == Sub orelse {HasSub Sr Sub} else false end
    end
@@ -87,6 +64,7 @@ define
          of C|Vr then
             ({IsDet C} andthen {Char.is C}) andthen {IsOzString Vr (W - 1)}
          [] nil  then true
+         [] _    then false %% This case is need for isAtomic
          else false
          end
       else false
@@ -224,7 +202,13 @@ define
          dDepth     <- {Dictionary.get OpDict widgetTreeDepth}
          dMode      <- {Not {Dictionary.get OpDict widgetTreeDisplayMode}}
          showString <- {Dictionary.get OpDict widgetShowStrings}
-         isAtomic   <- {Dictionary.get OpDict widgetAtomicTest}
+         isAtomic   <- case {Dictionary.get OpDict widgetAtomicTest}
+                       of default then
+                          fun {$ V}
+                             TreeWidget, isAtomic(V $)
+                          end
+                       [] P then P
+                       end
          curDefRel  <-
          TreeWidget, searchDefRel({Dictionary.get OpDict widgetRelationList} $)
          GraphicSupport, queryDB
@@ -440,6 +424,17 @@ define
                else {New Helper.proxy create({New Helper.box create(Val)} Node Index self Depth)}
                end
             end
+         end
+      end
+      meth isAtomic(V $)
+         case {Value.status V}
+         of det(Type) then
+            case Type
+            of tuple  then (@showString andthen {IsOzString V @dWidth})
+            [] record then false
+            else true
+            end
+         else false
          end
       end
       meth graphCreate(Val Parent Index Depth $)

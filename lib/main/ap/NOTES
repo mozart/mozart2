@@ -98,3 +98,65 @@ Or settings for the browser, should not cause it to get loaded either.
 
 ** an optional can be given a setting before it is defined
 this happens when loading the user's custom file
+
+* options should be registered in bundles
+an agent registers a collection of option defs with the custom module
+and gets back a stream of customization events concerning these
+options.
+
+        {Custom.register +OPTIONS ?EVENTS}
+
+This way, each agent has its own stream.
+
+What if an option belonging to one bundle is also of interest to another
+agent?
+
+* one must distinguish between bundles and groups
+the former manage customization events and the latter partition
+customization options in a meaningful user-oriented fashion.
+
+bundle == custom manager
+
+an application (agent) may need options from several bundles.  Like
+any other values, bundles are obtained through imports from other
+modules.
+
+It may also be interested in customization events from these bundles.
+We cannot register the agent itself with the bundle because the agent
+maybe short-lived or there may be thousands of such agents.  Instead,
+we must opt for a event stream based architecture.
+
+bundles however live as long as the oz process.  For them, it makes
+sense to be registered with the custom module.
+
+However, if we directly invoke an operation on a bundle, e.g. to
+effect the setting of an option (1) we don't need a new thread
+(2) but we may block for a long time, (3) we must agree apriori
+on how to invoke the operation.  A stream-based architecture gives
+us more freedom and robustness.
+
+A customization `set' event might have the form:
+
+        set(OPTION VALUE SYNCH)
+
+where OPTION is the option to be set, VALUE is the new value, and
+SYNCH is a variable that the bundle manager should bind to true
+when the operation has successfully completed and to false or a term
+describing the problem when if has failed.  Thus SYNCH can be used
+to synchronize on completion.
+
+* kinds of customization events
+** for bundle managers
+*** user(OPTION VALUE)
+*** set(OPTION VALUE SYNCH)
+
+* performing a merge of N streams
+may be useful when interested in events from several bundles
+
+fun {Merge Streams}
+   L P={NewPort L}
+   proc {Forward V} {Send P V} end
+in
+   {ForAll Streams proc {$ L} thread {ForAll L Forward} end end}
+   L
+end

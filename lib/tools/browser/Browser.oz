@@ -431,7 +431,11 @@ in
       %%
       %%
       meth init(...)=M
-         case @InitMeth == InitValue then InitMeth <- M
+         case @InitMeth == InitValue then
+            InitMeth <- M
+            %% the first one *must* be created because of deep
+            %% browsing - that requires the presence of a cell;
+            {self Make}
          else {BrowserError 'Cannot init a browser object twice!'}
          end
       end

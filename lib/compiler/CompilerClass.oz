@@ -241,7 +241,7 @@ local
       meth getMaxNumberOfErrors($)
          @options.maxNumberOfErrors
       end
-      meth setBaseURL(X)
+      meth setBaseURL(X) A in
          A = case X of unit then X
              else {VirtualString.toAtom X}
              end

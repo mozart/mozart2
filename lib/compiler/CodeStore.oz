@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1997
+%%%   Leif Kornstaedt, 1997-1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -19,7 +19,8 @@
 %%% WARRANTIES.
 %%%
 
-Continuations = c(vStepPoint: 5
+Continuations = c(vDebugExit: 4
+                  vStepPoint: 5
                   vMakePermanent: 3
                   vClear: 3
                   vUnify: 4
@@ -60,13 +61,14 @@ Continuations = c(vStepPoint: 5
 class CodeStore from Emitter
    prop final
    attr
-      EmptyRS
-      regNames        % mapping Reg -> PrintName
-      NextReg
-      minReg          % smallest Reg index local to current def.
-      Saved           % saved minReg from enclosing definitions
-      nextLabel
-      sharedDone
+      regNames: unit   % mapping Reg -> PrintName
+      NextReg: unit
+      minReg: unit     % smallest Reg index local to current definition
+      NextYIndex: unit
+      Saved: unit      % saved minReg/NextYIndex from enclosing definitions
+      nextLabel: unit
+      sharedDone: unit
+      EmptyRS: unit
    feat
       controlFlowInfoSwitch staticVarnamesSwitch dynamicVarnamesSwitch
       state reporter
@@ -104,8 +106,9 @@ class CodeStore from Emitter
    end
 
    meth startDefinition()
-      Saved <- @minReg|@Saved
+      Saved <- @minReg#@NextYIndex|@Saved
       minReg <- @NextReg
+      NextYIndex <- 0
    end
    meth newReg(?Reg)
       Reg = @NextReg
@@ -126,31 +129,105 @@ class CodeStore from Emitter
          {Dictionary.put @regNames Reg PrintName}
       end
    end
-   meth assignRegName(Reg PrintName)
-      case PrintName of unit then skip
-      else {Dictionary.put @regNames Reg PrintName}
-      end
+   meth nextYIndex(?Index)
+      Index = @NextYIndex
+      NextYIndex <- Index + 1
    end
-   meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)
-      Saved0 = @Saved
-      OldMinReg|SavedRest = Saved0
+   meth endDefinition(StartAddr0 FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)
+      StartAddr N
    in
       EmptyRS <- CodeStore, makeRegSet($)
+      CodeStore, Deref(StartAddr0 ?StartAddr)
+      {Dictionary.removeAll @sharedDone}
       CodeStore, ComputeOccs(StartAddr _)
       CodeStore, AddRegOccs(StartAddr @EmptyRS)
       {Dictionary.removeAll @sharedDone}
-      Emitter, doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs ?NLiveRegs)
+      N = if self.staticVarnamesSwitch then @NextYIndex else 0 end
+      Emitter, doEmit(FormalRegs AllRegs StartAddr N ?Code ?GRegs ?NLiveRegs)
       {Dictionary.removeAll @sharedDone}
       %% restore enclosing definition's state:
       NextReg <- @minReg
-      minReg <- OldMinReg
-      Saved <- SavedRest
+      case @Saved of OldMinReg#OldNextYIndex|SavedRest then
+         minReg <- OldMinReg
+         NextYIndex <- OldNextYIndex
+         Saved <- SavedRest
+      end
    end
    meth getRegNames(GRegs ?GPNs)
       GPNs = {Map GRegs fun {$ Reg} {Dictionary.get @regNames Reg} end}
    end
-   meth getRegName(Reg $)
-      {Dictionary.condGet @regNames Reg unit}
+
+   meth Deref(Addr $)
+      case Addr of nil then nil
+      [] vStepPoint(OccsRS Addr Coord Kind Cont) then
+         vStepPoint(OccsRS CodeStore, Deref(Addr $) Coord Kind
+                    CodeStore, Deref(Cont $))
+      [] vShared(OccsRS InitsRS Label Addr) then
+         if {Dictionary.member @sharedDone Label} then
+            {Dictionary.get @sharedDone Label}
+         else NewVShared in
+            {Dictionary.put @sharedDone Label NewVShared}
+            NewVShared = case Addr of nil then nil
+                         [] vShared(_ _ _ _) then CodeStore, Deref(Addr $)
+                         else
+                            vShared(OccsRS InitsRS Label
+                                    CodeStore, Deref(Addr $))
+                         end
+            NewVShared
+         end
+      [] vExHandler(OccsRS Addr1 Reg Addr2 Coord Cont InitsRS) then
+         vExHandler(OccsRS CodeStore, Deref(Addr1 $) Reg
+                    CodeStore, Deref(Addr2 $) Coord CodeStore, Share(Cont $)
+                    InitsRS)
+      [] vCreateCond(OccsRS VClauses Addr Cont Coord AllocatesRS InitsRS) then
+         vCreateCond(OccsRS CodeStore, DerefVClauses(VClauses $)
+                     CodeStore, Deref(Addr $) CodeStore, Share(Cont $)
+                     Coord AllocatesRS InitsRS)
+      [] vCreateOr(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
+         vCreateOr(OccsRS CodeStore, DerefVClauses(VClauses $)
+                   CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
+      [] vCreateEnumOr(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
+         vCreateEnumOr(OccsRS CodeStore, DerefVClauses(VClauses $)
+                       CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
+      [] vCreateChoice(OccsRS VClauses Cont Coord AllocatesRS InitsRS) then
+         vCreateChoice(OccsRS CodeStore, DerefVClauses(VClauses $)
+                       CodeStore, Share(Cont $) Coord AllocatesRS InitsRS)
+      [] vTestBool(OccsRS Reg Addr1 Addr2 Addr3 Coord Cont) then
+         vTestBool(OccsRS Reg CodeStore, Deref(Addr1 $)
+                   CodeStore, Deref(Addr2 $) CodeStore, Deref(Addr3 $)
+                   Coord CodeStore, Share(Cont $))
+      [] vMatch(OccsRS Reg Addr VHashTableEntries Coord Cont) then
+         vMatch(OccsRS Reg CodeStore, Deref(Addr $)
+                {Map VHashTableEntries
+                 fun {$ VHashTableEntry}
+                    case VHashTableEntry of onScalar(NumOrLit Addr) then
+                       onScalar(NumOrLit CodeStore, Deref(Addr $))
+                    [] onRecord(Atomname RecordArity Addr) then
+                       onRecord(Atomname RecordArity CodeStore, Deref(Addr $))
+                    end
+                 end} Coord CodeStore, Share(Cont $))
+      [] vThread(OccsRS Addr Coord Cont InitsRS) then
+         vThread(OccsRS CodeStore, Deref(Addr $) Coord
+                 CodeStore, Deref(Cont $) InitsRS)
+      else I in
+         I = Continuations.{Label Addr}
+         {AdjoinAt Addr I CodeStore, Deref(Addr.I $)}
+      end
+   end
+   meth DerefVClauses(VClauses $)
+      case VClauses of InitsRS#Addr1#Addr2|VClauser then
+         InitsRS#CodeStore, Deref(Addr1 $)#CodeStore, Deref(Addr2 $)|
+         CodeStore, DerefVClauses(VClauser $)
+      [] nil then nil
+      end
+   end
+   meth Share(Cont $)
+      case Cont of vShared(_ _ _ _) then CodeStore, Deref(Cont $)
+      [] nil then nil
+      else Label in
+         CodeStore, newLabel(?Label)
+         vShared(_ _ Label CodeStore, Deref(Cont $))
+      end
    end
 
    meth GetOccs(Addr ?RS)
@@ -159,12 +236,9 @@ class CodeStore from Emitter
    meth ComputeOccs(Addr ?RS)
       case Addr of nil then
          RS = @EmptyRS
-      [] vShared(RS0 _ Count Addr1) then
-         {Assign Count {Access Count} + 1}
-         if {IsDet RS0} then skip
-         else RS1 in
-            CodeStore, ComputeOccs(Addr1 ?RS1)
-            RS0 = {BitArray.clone RS1}
+      [] vShared(RS0 _ _ Addr1) then
+         if {IsFree RS0} then
+            RS0 = {BitArray.clone CodeStore, ComputeOccs(Addr1 $)}
          end
          RS = RS0
       elseof VInstr then
@@ -177,8 +251,11 @@ class CodeStore from Emitter
          case VInstr of vStepPoint(_ Addr _ _ _) then RS1 in
             CodeStore, ComputeOccs(Addr ?RS1)
             {BitArray.disj RS RS1}
-         [] vMakePermanent(_ Regs _) then
-            CodeStore, RegOccs(Regs RS)
+         [] vMakePermanent(_ RegIndices _) then
+            {ForAll RegIndices
+             proc {$ Reg#_#_}
+                CodeStore, RegOcc(Reg RS)
+             end}
          [] vClear(_ Regs _) then
             CodeStore, RegOccs(Regs RS)
          [] vUnify(_ Reg1 Reg2 _) then
@@ -279,29 +356,22 @@ class CodeStore from Emitter
             skip
          [] vWaitTop(_ _) then
             skip
-         [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then RS1 RS2 RS3 in
+         [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ Cont) then RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
-            InitsRS = {BitArray.clone RS1}
-            {BitArray.disj InitsRS RS2}
-            {BitArray.disj InitsRS RS3}
-            {BitArray.conj InitsRS RS}
+            case Cont of vShared(_ InitsRS _ _) then
+               InitsRS = {BitArray.clone RS1}
+               {BitArray.disj InitsRS RS2}
+               {BitArray.disj InitsRS RS3}
+               {BitArray.conj InitsRS RS}
+            [] nil then skip
+            end
             CodeStore, RegOcc(Reg RS)
             {BitArray.disj RS RS1}
             {BitArray.disj RS RS2}
             {BitArray.disj RS RS3}
-         [] vTestBuiltin(_ _ Regs Addr1 Addr2 _ InitsRS) then RS1 RS2 in
-            CodeStore, ComputeOccs(Addr1 ?RS1)
-            CodeStore, ComputeOccs(Addr2 ?RS2)
-            InitsRS = {BitArray.clone RS1}
-            {BitArray.disj InitsRS RS2}
-            {BitArray.conj InitsRS RS}
-            CodeStore, RegOccs(Regs RS)
-            {BitArray.disj RS RS1}
-            {BitArray.disj RS RS2}
-         [] vMatch(_ Reg Addr VHashTableEntries _ _ InitsRS) then
-            RS0 in
+         [] vMatch(_ Reg Addr VHashTableEntries _ Cont) then RS0 InitsRS in
             CodeStore, ComputeOccs(Addr ?RS0)
             InitsRS = {BitArray.clone RS0}
             {ForAll VHashTableEntries
@@ -311,7 +381,11 @@ class CodeStore from Emitter
                 end
                 {BitArray.disj InitsRS CodeStore, ComputeOccs(Addr $)}
              end}
-            {BitArray.conj InitsRS RS}
+            case Cont of vShared(_ InitsRS0 _ _) then
+               {BitArray.conj InitsRS RS}
+               InitsRS0 = InitsRS
+            [] nil then skip
+            end
             CodeStore, RegOcc(Reg RS)
             {BitArray.disj RS RS0}
             {ForAll VHashTableEntries
@@ -417,7 +491,7 @@ class CodeStore from Emitter
          [] vSetSelf(_ _ _) then skip
          [] vDefinition(_ _ _ _ _ _ _) then skip
          [] vDefinitionCopy(_ _ _ _ _ _ _ _) then skip
-         [] vShared(_ Label _ Addr) then
+         [] vShared(_ _ Label Addr) then
             if {Dictionary.member @sharedDone Label} then skip
             else
                {Dictionary.put @sharedDone Label true}
@@ -442,14 +516,11 @@ class CodeStore from Emitter
          [] vAsk(_ _) then skip
          [] vWait(_ _) then skip
          [] vWaitTop(_ _) then skip
-         [] vTestBool(_ _ Addr1 Addr2 Addr3 _ _ _) then
+         [] vTestBool(_ _ Addr1 Addr2 Addr3 _ _) then
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
-         [] vTestBuiltin(_ _ _ Addr1 Addr2 _ _) then
-            CodeStore, AddRegOccs(Addr1 AddRS2)
-            CodeStore, AddRegOccs(Addr2 AddRS2)
-         [] vMatch(_ _ Addr VHashTableEntries _ _ _) then
+         [] vMatch(_ _ Addr VHashTableEntries _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in

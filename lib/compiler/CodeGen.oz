@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1997
+%%%   Leif Kornstaedt, 1997-1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -34,8 +34,10 @@
 
 functor
 import
+   Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
-   System(printName eq)
+   FD(decl distinct sumC reflect)
+   System(printName)
    Property(get)
    Builtins(getInfo)
    Core
@@ -122,20 +124,23 @@ define
    end
 
    proc {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
-      if CS.staticVarnamesSwitch orelse CS.dynamicVarnamesSwitch then Regs in
-         Regs = {FoldR Vs
-                 fun {$ V In} Reg in
-                    {V reg(?Reg)}
-                    case {CS getRegName(Reg $)} of unit then In
-                    else Reg|In
-                    end
-                 end nil}
-         case Regs of nil then
+      if CS.staticVarnamesSwitch orelse CS.dynamicVarnamesSwitch then
+         RegIndices = {FoldR Vs
+                       fun {$ V In} Reg in
+                          {V reg(?Reg)}
+                          case {V getPrintName($)} of unit then In
+                          elseof PN then Reg#_#PN|In
+                          end
+                       end nil}
+      in
+         case RegIndices of nil then
             VHd = Cont1
             Cont2 = VTl
          else
-            VHd = vMakePermanent(_ Regs Cont1)
-            if CS.staticVarnamesSwitch then
+            {ForAll RegIndices proc {$ _#I#_} {CS nextYIndex(?I)} end}
+            VHd = vMakePermanent(_ RegIndices Cont1)
+            if CS.staticVarnamesSwitch then Regs in
+               Regs = {Map RegIndices fun {$ Reg#_#_} Reg end}
                Cont2 = vClear(_ Regs VTl)
             else
                Cont2 = VTl
@@ -165,6 +170,9 @@ define
       end
       meth getVariable($)
          self
+      end
+      meth getPrintName($)
+         unit
       end
       meth isToplevel($)
          false
@@ -980,7 +988,7 @@ define
          VTl = nil
          if {IsFree VHd} then Label Addr in
             {CS newLabel(?Label)}
-            VHd = vShared(_ Label {NewCell 0} Addr)
+            VHd = vShared(_ _ Label Addr)
             {CodeGenList @statements CS Addr nil}
          end
       end
@@ -1013,7 +1021,7 @@ define
             {MakeException kernel boolCaseType @coord [@arbiter] CS
              ErrAddr nil}
             VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
-                            @coord VTl _)
+                            @coord VTl)
          end
       end
    end
@@ -1048,10 +1056,6 @@ define
          end
          @reached = true
          {@pattern assignRegs(nil Mapping)}
-         {ForAll @localVars
-          proc {$ V}
-             {CS assignRegName({V reg($)} {V getPrintName($)})}
-          end}
          {MakePermanent @localVars VHd VInter1 VInter2 VTl CS}
          {CodeGenList @statements CS VInter1 VInter2}
       end
@@ -1073,14 +1077,14 @@ define
          {@pattern assignRegs(Pos Mapping)}
       end
       meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)
-         VInter ErrVInstr VInter1 VInter2
+         ErrVInstr VInter1 VInter2 VInter3
       in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
-         {MakePermanent @localVars VHd VInter1 VInter2 VInter CS}
+         {MakePermanent @localVars VHd VInter1 VInter2 VInter3 CS}
          {CodeGenList @statements CS VInter1 VInter2}
          {MakeException kernel boolCaseType @coord [@arbiter] CS ErrVInstr nil}
-         VInter = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr ErrVInstr
-                            @coord VTl _)
+         VInter3 = vTestBool(_ {@arbiter reg($)} ThenVInstr ElseVInstr
+                             ErrVInstr @coord VTl)
       end
    end
 
@@ -1520,6 +1524,7 @@ define
             {CS newSelfReg(?StateReg)}
             {MakePermanent {New PseudoVariableOccurrence init(StateReg)}|Vs
              VHd Cont1 Cont3 VTl CS}
+            %--** would it not be better to get self before making permanent?
             Cont1 = vGetSelf(_ StateReg Cont2)
             {CodeGenList @statements CS Cont2 Cont3}
          else Cont1 Cont2 in
@@ -1536,7 +1541,7 @@ define
           [self.MessageVO self.MessagePatternVO ResultVO] CS VHd VInter}
          {MakeException kernel boolCaseType unit [ResultVO] CS ErrVInstr nil}
          VInter = vTestBool(_ {ResultVO reg($)} ThenVInstr ElseVInstr
-                            ErrVInstr unit VTl _)
+                            ErrVInstr unit VTl)
       end
       meth codeGenPattern(Mapping VHd VTl CS) SelfVO VInter in
          SelfVO = {NewPseudoVariableOccurrence CS}
@@ -1565,10 +1570,6 @@ define
           end VHd VInter}
          FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
                        {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
-         {ForAll FormalVars
-          proc {$ V}
-             {CS assignRegName({V reg($)} {V getPrintName($)})}
-          end}
          {MakePermanent FormalVars VInter @vInter _ _ CS}
          VTl = nil
       end
@@ -1608,7 +1609,7 @@ define
          {MakeRunTimeProcApplication 'Record.testFeature' CND
           [MessageVO FeatureVO ArbiterVO TempVO] CS Cont1 Cont2}
          Cont2 = vTestBool(_ ArbiterVO.reg ThenVInstr ElseVInstr ErrVInstr
-                           unit VTl _)
+                           unit VTl)
          {@arg reg(?ArgReg)}
          ThenVInstr = vUnify(_ ArgReg TempVO.reg nil)
          case @default of unit then ElseVInstr = nil

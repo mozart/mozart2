@@ -626,10 +626,14 @@ define
       [] failure|deAllocateL(I)|Rest then
          {MakeDeAllocate I Assembler}
          {Assembler append(failure)}
-         {EliminateDeadCode Rest Assembler}
+%--**    {EliminateDeadCode Rest Assembler}
+         {Peephole Rest Assembler}
       [] failure|Rest then
          {Assembler append(failure)}
-         {EliminateDeadCode Rest Assembler}
+%--** this may eliminate too much, e.g., in:
+%--** proc {_ A B} if {IsInt A} then fail else {B} end {B} end
+%--**    {EliminateDeadCode Rest Assembler}
+         {Peephole Rest Assembler}
       [] branch(L)|Rest then Rest1 in
          {Assembler declareLabel(L)}
          Rest1 = {SkipDeadCode Rest Assembler}

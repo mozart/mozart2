@@ -22,11 +22,11 @@
 %%
 
 Addr = VInstr
-     | nil.
-Cont = Addr.
-Label = int.
+     | nil
+Cont = Addr
+Label = int
 VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
-       | vMakePermanent(OccsRS Regs Cont)
+       | vMakePermanent(OccsRS [Reg#int#atom] Cont)
        | vClear(OccsRS Regs Cont)
        | vUnify(OccsRS Reg Reg Cont)
        | vFailure(OccsRS Cont)
@@ -45,7 +45,7 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vSetSelf(OccsRS Reg Cont)
        | vDefinition(OccsRS Reg PredId PredicateRef1 GRegs Code Cont)
        | vDefinitionCopy(OccsRS Reg Reg PredId PredicateRef1 GRegs Code Cont)
-       | vShared(OccsRS Label Count Addr)
+       | vShared(OccsRS InitsRS Label Addr)
        | vExHandler(OccsRS Addr Reg Addr Coord Cont InitsRS)
        | vPopEx(OccsRS Coord Cont)
        | vCreateCond(OccsRS [VClause] Addr Cont Coord AllocatesRS InitsRS)
@@ -55,43 +55,42 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vAsk(OccsRS Cont)
        | vWait(OccsRS Cont)
        | vWaitTop(OccsRS Cont)
-       | vTestBool(OccsRS Reg Addr Addr Addr Coord Cont InitsRS)
-       | vTestBuiltin(OccsRS Builtinname [Reg] Addr Addr Cont InitsRS)
-       | vTestConstant(OccsRS Reg NumOrLit Addr Addr Coord Cont InitsRS)
-       | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
+       | vTestBool(OccsRS Reg Addr Addr Addr Coord Cont)
+       | vTestBuiltin(OccsRS Builtinname [Reg] Addr Addr Cont)
+       | vTestConstant(OccsRS Reg NumOrLit Addr Addr Coord Cont)
+       | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont)
        | vLockThread(OccsRS Reg Coord Cont SharedData)
-       | vLockEnd(OccsRS Coord Cont SharedData).
+       | vLockEnd(OccsRS Coord Cont SharedData)
        | vThread(OccsRS Addr Coord Cont InitsRS)
 
-Reg = int.
-Variablename = atom.
-Integer = int.
-Constant = value.
+Reg = int
+Variablename = atom
+Integer = int
+Constant = value
 Atomname = atom
-         | name.
+         | name
 RecordArity = int
-            | [Feature].
+            | [Feature]
 VRecordArgument = constant(Constant)
                 | predicateRef(PredicateRef1)
                 | value(Reg)
-                | record(Atomname RecordArity [VRecordArgument]).
-Builtinname = atom.
+                | record(Atomname RecordArity [VRecordArgument])
+Builtinname = atom
 Feature = atom
         | name
-        | int.
-IsMethod = bool.
-PredicateRef1 = foreignpointer.
+        | int
+IsMethod = bool
+PredicateRef1 = foreignpointer
 PredicateRef2 = foreignpointer
-              | procedure.
-PredId = pid(Variablename Arity atom int).
-GRegs = [Reg].
-Count = cell.
-VClause = InitsRS#Addr#Addr.
+              | procedure
+PredId = pid(Variablename Arity atom int)
+GRegs = [Reg]
+VClause = InitsRS#Addr#Addr
 VHashTableEntry = onScalar(NumOrLit Addr)
-                | onRecord(Atomname RecordArity Addr).
-AllocatesRS = bitArray.
-InitsRS = bitArray.
-OccsRS = bitArray.
-Code = [Instr].   % "real" machine instructions
-AlwaysSucceeds = bool.
-SharedData = value.   % used for sharing data between vLockThread/End
+                | onRecord(Atomname RecordArity Addr)
+AllocatesRS = bitArray
+InitsRS = bitArray
+OccsRS = bitArray
+Code = [Instr]   % "real" machine instructions
+AlwaysSucceeds = bool
+SharedData = value   % used for sharing data between vLockThread/End

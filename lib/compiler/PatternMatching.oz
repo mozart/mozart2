@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1998
+%%%   Leif Kornstaedt, 1998-1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -47,7 +47,7 @@
 %% FeatureV = Feature | VariableOccurrence
 %%
 %% Tree = node(Pos Test Tree Tree Count Shared)
-%%      | leaf(Statement Shared)
+%%      | leaf(Statement Count Shared)
 %%      | default
 %% Count = cell
 %% Shared = VInstr   % vShared(...)
@@ -110,7 +110,7 @@ local
 
    fun {PatternToTree Pattern Then}
       case Pattern of nil then
-         leaf(Then _)
+         leaf(Then {NewCell 0} _)
       [] Pos#Test|Rest then
          node(Pos Test {PatternToTree Rest Then} default {NewCell 0} _)
       end
@@ -119,7 +119,7 @@ local
    proc {MergeSub Pattern Then Tree ?NewTree}
       case Pattern of nil then
          %% Tree is unreachable
-         NewTree = leaf(Then _)
+         NewTree = leaf(Then {NewCell 0} _)
       [] Pos#Test|Rest then
          case Tree of node(!Pos _ _ _ _ _) andthen Hole RestTree in
             {FindTest Tree Pos Test ?NewTree ?Hole ?RestTree}
@@ -143,7 +143,7 @@ local
          else
             Tree
          end
-      [] leaf(_ _) then
+      [] leaf(_ _ _) then
          Tree
       end
    end
@@ -171,12 +171,13 @@ local
          end
          NewThenTree = {PropagateElses ThenTree NewDefaultTree}
          node(Pos Test NewThenTree NewElseTree Count Shared)
-      [] leaf(_ _) then
+      [] leaf(_ _ _) then
          Tree
       [] default then
          case DefaultTree of node(_ _ _ _ Count _) then
             {Assign Count {Access Count} + 1}
-         else skip
+         [] leaf(_ Count _) then
+            {Assign Count {Access Count} + 1}
          end
          DefaultTree
       end
@@ -184,7 +185,7 @@ local
 in
    fun {BuildTree Clauses Else}
       {PropagateElses
-       {FoldR Clauses MergePatternIntoTree default} leaf(Else _)}
+       {FoldR Clauses MergePatternIntoTree default} leaf(Else {NewCell 0} _)}
    end
 end
 
@@ -257,7 +258,7 @@ local
       in
          VHashTableEntries = {MakeHTEntry Pos Test Mapping ThenTree CS}|Rest
          {MakeMatchSub ElseTree Mapping Pos0 CS ?Rest ?VElse}
-         VHd = vMatch(_ Reg VElse VHashTableEntries Coord VTl _)
+         VHd = vMatch(_ Reg VElse VHashTableEntries Coord VTl)
       end
    end
 
@@ -364,7 +365,7 @@ local
           TestVInter1 TestVInter2}
          {MakeException kernel boolCaseType unit [TestVOs.1] CS ElseVInstr nil}
          TestVInter2 = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
-                                 unit TestVInter3 _)
+                                 unit TestVInter3)
          {StepPoint Coord 'conditional' TestVInstr VTl TestVInter1 TestVInter3}
          if EmitGets then
             {FoldL Regs
@@ -394,18 +395,20 @@ local
             VTl = nil
             if {IsFree Shared} then Label VInstr in
                {CS newLabel(?Label)}
-               %% we put a `1' here because the value computed by
-               %% the register allocator would be incorrect:
-               Shared = vShared(_ Label {NewCell 1} VInstr)
+               Shared = vShared(_ _ Label VInstr)
                {CodeGenSub Tree Mapping VInstr nil Coord CS}
             end
          end
-      [] leaf(Statement Shared) then
-         VHd = Shared
-         if {IsFree Shared} then Label VInstr in
-            {CS newLabel(?Label)}
-            Shared = vShared(_ Label {NewCell 0} VInstr)
-            {Statement codeGenPattern(Mapping VInstr nil CS)}
+      [] leaf(Statement Count Shared) then
+         case {Access Count} of 0 then
+            {Statement codeGenPattern(Mapping VHd VTl CS)}
+         else
+            VHd = Shared
+            if {IsFree Shared} then Label VInstr in
+               {CS newLabel(?Label)}
+               Shared = vShared(_ _ Label VInstr)
+               {Statement codeGenPattern(Mapping VInstr nil CS)}
+            end
          end
       end
    end
@@ -414,7 +417,7 @@ in
       Tree = {BuildTree Clauses Else}
       Mapping = [nil#ArbiterReg]
    in
-      case Tree of leaf(Statement _) then
+      case Tree of leaf(Statement _ _) then
          {Statement codeGenPattern(Mapping VHd VTl CS)}
       else
          {CodeGenPattern Tree Mapping VHd VTl Coord CS}

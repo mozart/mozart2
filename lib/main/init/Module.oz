@@ -1,6 +1,6 @@
 %%%
 %%% Author:
-%%%   Christian Schulte <schulte@dfki.de>
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Contributor:
 %%%   Denys Duchier <duchier@ps.uni-sb.de>

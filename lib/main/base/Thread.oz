@@ -2,7 +2,7 @@
 %%% Authors:
 %%%   Michael Mehl (mehl@dfki.de)
 %%%   Martin Mueller (mmueller@ps.uni-sb.de)
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Michael Mehl, 1997

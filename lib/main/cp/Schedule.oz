@@ -2,7 +2,7 @@
 %%% Authors:
 %%%   Jörg Würtz (wuertz@dfki.de)
 %%%   Tobias Müller (tmueller@ps.uni-sb.de)
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Jörg Würtz, 1997

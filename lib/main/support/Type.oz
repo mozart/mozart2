@@ -2,7 +2,7 @@
 %%% Authors:
 %%%   Martin Henz (henz@iscs.nus.edu.sg)
 %%%   Martin Mueller (mmueller@ps.uni-sb.de)
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Martin Henz, 1997

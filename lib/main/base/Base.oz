@@ -336,6 +336,7 @@ export
    'WaitOr'             : WaitOr
    'IsFree'             : IsFree
    'IsKinded'           : IsKinded
+   'IsFuture'           : IsFuture
    'IsDet'              : IsDet
    'Min'                : Min
    'Max'                : Max

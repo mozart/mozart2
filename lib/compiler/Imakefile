@@ -1,0 +1,48 @@
+OZLIB = $(OZHOME)/lib
+COMPILER = $(OZLIB)/compiler
+
+SOURCES = InsertAll.oz Compiler.oz Misc.oz Reporter.oz ParseOz.oz \
+          FormatStrings.oz Builtins.oz CoreLanguage.oz Annotate.oz \
+          StaticAnalysis.oz POTypes.oz RegSet.oz CodeGen.oz CodeStore.oz \
+          CodeEmitter.oz BindingAnalysis.oz TupleSyntax.oz Unnester.oz \
+          UnnestFD.oz Assembler.oz Opcodes.m4oz Interface.oz \
+          EmacsInterface.oz TkInterface.oz QuietInterface.oz
+
+LIBSOURCES = $(SOURCES:%.oz=$(COMPILER)/%.oz} \
+             $(COMPILER)/Opcodes.oz $(COMPILER)/Version.oz
+
+all:: ../Compiler.oz
+
+../Compiler.oz:: $(SOURCES) Version.oz Opcodes.oz
+        touch ../Compiler.oz
+
+Version.oz: $(SOURCES)
+        (echo 'OZVERSION = '\'$(OZVERSION)\'; \
+        echo 'DATE = '\'`date '+%a %h, %d, 19%y (%T)'`\') > Version.oz
+
+Opcodes.oz: Opcodes.m4oz ../../include/instrDefs.m4
+        gm4 < Opcodes.m4oz > Opcodes.oz
+
+install:: $(COMPILER) $(LIBSOURCES)
+
+$(COMPILER):
+        $(INSTALL) -m 775 -d $@
+
+$(COMPILER)/%.oz: %.oz
+        $(INSTALL) -m 444 '$<' '$@'
+
+tags::
+        etags --language=none \
+        --regex='/[ \t]*proc\>[^{\n]*{!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
+        --regex='/[ \t]*fun\>[^{\n]*{!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
+        --regex='/[ \t]*class[ \t]+!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
+        --regex='/[ \t]*meth\([ \t]+\|[ \t]*![ \t]*\)\([A-Za-z0-9][A-Za-z0-9_]*\|`.+`|'\''.+'\''\)/\2/' \
+        $(SOURCES)
+
+clean::
+        rm -f TAGS OzScanner.l OzScanner.C OzParser.output OzParser.simplified
+        rm -f Makefile.bak
+
+veryclean::
+        rm -f OzScanner.oz OzScanner.o OzParser.oz ozc.o Opcodes.oz Version.oz
+        rm -f InsertAll.ozo InsertAll.ozs Compiler.ozc

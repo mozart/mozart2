@@ -1,0 +1,136 @@
+define(instruction,
+        `ifelse(numOfRegs($2,$3,$4),1,oneReg($@),
+                numOfRegs($2,$3,$4),2,twoRegs($@),
+                noReg($@))')
+define(instructionsUnneededForNewCompiler,`divert(-1)')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% InstructionSizes maps instr labels to integers
+%%
+
+define(noReg,'$1': {GetInstructionSize '$1'})
+define(oneReg,'$1': {GetInstructionSize '$1X'})
+define(twoRegs,'$1': {GetInstructionSize '$1XX'})
+
+InstructionSizes =
+instructionSizes(include(`../../include/instrDefs.m4'))
+
+undefine(`noReg')
+undefine(`oneReg')
+undefine(`twoRegs')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Opcodes maps instructions with implicit addressing modes to integers
+%%
+
+define(noReg,
+'$1': {GetOpcode '$1'})
+
+define(oneReg,
+'$1':
+   f(x: {GetOpcode '$1X'}
+     y: {GetOpcode '$1Y'}
+     g: {GetOpcode '$1G'}))
+
+define(twoRegs,
+'$1': f(x: f(x: {GetOpcode '$1XX'}
+             y: {GetOpcode '$1XY'}
+             g: {GetOpcode '$1XG'})
+        y: f(x: {GetOpcode '$1YX'}
+             y: {GetOpcode '$1YY'}
+             g: {GetOpcode '$1YG'})
+        g: f(x: {GetOpcode '$1GX'}
+             y: {GetOpcode '$1GY'}
+             g: {GetOpcode '$1GG'})))
+
+Opcodes =
+opcodes(include(`../../include/instrDefs.m4'))
+
+undefine(`noReg')
+undefine(`oneReg')
+undefine(`twoRegs')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% The `StoreInstr' Procedure
+%%
+
+undefine(`instruction')
+define(instruction,
+       `ifelse($1,debugEntry,,
+               numOfRegs($2,$3,$4),1,oneReg($@),
+               numOfRegs($2,$3,$4),2,twoRegs($@),
+               noReg($@))')
+
+define(RelBuiltinname,Builtinname)
+define(FunBuiltinname,Builtinname)
+define(Arity,Int)
+define(NLiveRegs,Int)
+define(Count,Int)
+define(IsTail,Int)
+define(ArityAndIsTail,Int)
+define(Dummy,Int)
+
+changequote([,])
+define(arglist, [ifelse($1,1,'$2',
+                        $1,2,'$2'(X1),
+                        $1,3,'$2'(X1 X2),
+                        $1,4,'$2'(X1 X2 X3),
+                        $1,5,'$2'(X1 X2 X3 X4),
+                        $1,6,'$2'(X1 X2 X3 X4 X5),
+                        $1,7,'$2'(X1 X2 X3 X4 X5 X6),
+                        `errprint(too many ($1) arguments for $2
+)')])
+
+changequote(`,')
+
+
+define(storeOperand,
+       `ifelse($1,Label,
+               `      {StoreLabel CodeBlock X$2 LabelDict}'
+,              $1,HashTableRef,
+               `      {StoreHashTableRef CodeBlock X$2 LabelDict}'
+,              $1,,,
+               `      {Store$1 CodeBlock X$2}'
+)')
+
+define(storeOperands,
+`storeOperand($2,1)dnl
+storeOperand($3,2)dnl
+storeOperand($4,3)dnl
+storeOperand($5,4)dnl
+storeOperand($6,5)dnl
+storeOperand($7,6)')
+
+define(noReg,`   [] arglist($#,$1) then
+      {StoreOpcode CodeBlock Opcodes.''$1'`}
+storeOperands($@)')
+
+define(oneReg,`   [] arglist($#,$1) then
+      Opcode = Opcodes.''$1'`.{Label ifelse(isReg($2),1,X1,isReg($3),1,X2,X3)}
+   in
+      {StoreOpcode CodeBlock Opcode}
+storeOperands($@)')
+
+define(twoRegs,`   [] arglist($#,$1) then
+      Opcode = Opcodes.''$1'`.ifelse(isReg($2),0,{Label X2}.{Label X3},
+                                     isReg($3),0,{Label X1}.{Label X3},
+                                     {Label X1}.{Label X2})
+   in
+      {StoreOpcode CodeBlock Opcode}
+storeOperands($@)')
+
+proc {StoreInstr Instr CodeBlock LabelDict}
+   case Instr of debugEntry(File Line Column Comment NLiveRegs) then
+      {AddDebugInfo CodeBlock File Line}
+      {StoreOpcode CodeBlock Opcodes.'debugEntry'}
+      {StoreLiteral CodeBlock File}
+      {StoreNumber CodeBlock Line}
+      {StoreNumber CodeBlock Column}
+      {StoreLiteral CodeBlock Comment}
+      {StoreInt CodeBlock NLiveRegs}
+include(`../../include/instrDefs.m4')
+   end
+end

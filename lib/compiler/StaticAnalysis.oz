@@ -82,112 +82,54 @@ prepare
    \insert POTypes
 
    FdSup = FD.sup
-define
 
-   %%-----------------------------------------------------------------------
-   %% this translation routine is here since it depends on FD and hence
-   %% refers to a resource. no other reason: logically, it belongs to POTypes
-
-   OzTypes = {MkOzPartialOrder}
-
-   local
-      OTE = OzTypes.encode
-   in
-      fun {OzValueToType V}
-         if {CompilerSupport.isLocalDet V} then
-            case {Value.status V}
-            of det(T) then
-               case T
-               of int then
-                  {OTE if {IsChar V} then char
-                       elseif V=<FdSup andthen V>=0 then fdIntC
-                       else int
-                       end nil}
-               [] float then
-                  {OTE float nil}
-               [] atom then
-                  {OTE if V==nil then nilAtom
-                       else atom
-                       end nil}
-               [] name then
-                  {OTE case V
-                       of true  then bool
-                       [] false then bool
-                       [] unit  then 'unit'
-                       else name
-                       end nil}
-               [] tuple then
-                  {OTE case V
-                       of _|_ then cons
-                       [] _#_ then pair
-                       else tuple
-                       end nil}
-               [] record then
-                  {OTE record nil}
-               [] procedure then
-                  {OTE case {ProcedureArity V}
-                       of 0 then 'procedure/0'
-                       [] 1 then 'procedure/1'
-                       [] 2 then 'procedure/2'
-                       [] 3 then 'procedure/3'
-                       [] 4 then 'procedure/4'
-                       [] 5 then 'procedure/5'
-                       [] 6 then 'procedure/6'
-                       else 'procedure/>6'
-                       end nil}
-               [] cell then
-                  {OTE cell nil}
-               [] space then
-                  {OTE space nil}
-               [] 'thread' then
-                  {OTE 'thread' nil}
-               [] bitString then
-                  {OTE bitString nil}
-               [] byteString then
-                  {OTE byteString nil}
-               [] array then
-                  {OTE array nil}
-               [] dictionary then
-                  {OTE dictionary nil}
-               [] 'class' then
-                  {OTE 'class' nil}
-               [] object then
-                  {OTE object nil}
-               [] 'lock' then
-                  {OTE 'lock' nil}
-               [] port then
-                  {OTE port nil}
-               [] bitArray then
-                  {OTE bitArray nil}
-               [] chunk then
-                  {OTE chunk [array dictionary 'class'
-                              'object' 'lock' port
-                              bitArray]}
-               else
-                  {OTE value [int float record procedure
-                              cell chunk space 'thread']}
-               end
-            [] kinded(T) then
-               case T
-               of int then
-                  {OTE fdIntC nil}
-               [] record then
-                  {OTE recordC nil}
-               else
-                  {OTE value [fdIntC recordC]}
-               end
-            [] free then
-               {OTE value nil}
-            [] future then
-               {OTE value nil}
-            end
-         else
-            {OTE value nil}
-         end
+   fun {MakeDummyProcedure N}
+      case N
+      of 0 then  proc {$} skip end
+      [] 1 then  proc {$ _} skip end
+      [] 2 then  proc {$ _ _} skip end
+      [] 3 then  proc {$ _ _ _} skip end
+      [] 4 then  proc {$ _ _ _ _} skip end
+      [] 5 then  proc {$ _ _ _ _ _} skip end
+      [] 6 then  proc {$ _ _ _ _ _ _} skip end
+      [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
+      [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
+      [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
+      [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      else
+         unit   % weaker analysis for procedures with arity > 20
       end
    end
 
-   %%-----------------------------------------------------------------------
+   local
+      proc {Noop noop}
+         skip
+      end
+   in
+      fun {MakeDummyObject PN}
+         DummyClass = {Object.'class' nil
+                       'meth'(noop#Noop) 'attr' 'feat' nil PN}
+      in
+         {New DummyClass noop()}
+      end
+
+      fun {MakeDummyClass PN}
+         {Object.'class' nil '#' 'attr' 'feat' nil PN}
+      end
+   end
+
+
+      %%-----------------------------------------------------------------------
    %% Some constants and shorthands
 
    SAGenError    = 'static analysis error'
@@ -214,9 +156,6 @@ define
       if {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
    end
 
-   fun {Bool2Token B}
-      if B then RunTime.tokens.'true' else RunTime.tokens.'false' end
-   end
 
    %% assumes privacy of the following feature names used in Core:
 
@@ -332,14 +271,6 @@ define
       {IsObject X} andthen {HasFeature X ImAToken}
    end
 
-   TypeTests = {AdjoinAt Type.is object
-                fun {$ X}
-                   {IsObject X} andthen
-                   {Not {HasFeature X ImARecordConstr}
-                    orelse {HasFeature X ImAValueNode}
-                    orelse {HasFeature X ImAToken}}
-                end}
-
    %%
    %% Determination predicates
 
@@ -404,6 +335,181 @@ define
          else false end
       else unit end
    end
+
+
+%-----------------------------------------------------------------------
+
+   BINameToMethod
+   = bi(    'Name.new'          : doNewName
+            'Name.newUnique'    : doNewUniqueName
+            'Cell.new'          : doNewCell
+            'Lock.new'          : doNewLock
+            'Port.new'          : doNewPort
+            'Array.new'         : doNewArray
+            'Dictionary.new'    : doNewDictionary
+            'Chunk.new'         : doNewChunk
+            'Space.new'         : doNewSpace
+            'Object.new'        : doNew
+            'Array.is'          : doCheckType(det IsArray)
+            'Atom.is'           : doCheckType(det IsAtom)
+            'Bool.is'           : doCheckType(det IsBool)
+            'Cell.is'           : doCheckType(det IsCell)
+            'Char.is'           : doCheckType(det IsChar)
+            'Chunk.is'          : doCheckType(det IsChunk)
+            'Value.isDet'       : doCheckType(det IsDet)
+            'Dictionary.is'     : doCheckType(det IsDictionary)
+            'Float.is'          : doCheckType(det IsFloat)
+            'Int.is'            : doCheckType(det IsInt)
+            'List.is'           : doCheckType(rec IsList)
+            'Literal.is'        : doCheckType(det IsLiteral)
+            'Lock.is'           : doCheckType(det IsLock)
+            'Name.is'           : doCheckType(det IsName)
+            'Number.is'         : doCheckType(det IsNumber)
+            'Object.is'         : doCheckType(det IsObject)
+            'Port.is'           : doCheckType(det IsPort)
+            'Procedure.is'      : doCheckType(det IsProcedure)
+            'Record.is'         : doCheckType(det IsRecord)
+            'Record.isC'        : doCheckType(kind IsRecordC)
+            'Space.is'          : doCheckType(det IsSpace)
+            'String.is'         : doCheckType(rec IsStringNow)
+            'Tuple.is'          : doCheckType(det IsTuple)
+            'Unit.is'           : doCheckType(det IsUnit)
+            'VirtualString.is'  : doCheckType(rec IsVirtualStringNow)
+            'Record.label'      : doLabel
+            'Record.width'      : doWidth
+            'Procedure.arity'   : doProcedureArity
+            'Value.\'=\''       : doEq
+            'Value.\'.\''       : doDot
+            'Record.\'^\''      : doHat
+            'Object.\',\''      : doComma
+            'Object.\'<-\''     : doAssignAccess
+            'Object.\'@\''      : doAssignAccess
+            'Bool.and'          : doAnd
+            'Bool.or'           : doOr
+            'Bool.not'          : doNot
+       )
+
+
+
+define
+
+   %%-----------------------------------------------------------------------
+   %% this translation routine is here since it depends on FD and hence
+   %% refers to a resource. no other reason: logically, it belongs to POTypes
+
+   OzTypes = {MkOzPartialOrder}
+
+   local
+      OTE = OzTypes.encode
+   in
+      fun {OzValueToType V}
+         if {CompilerSupport.isLocalDet V} then
+            case {Value.status V}
+            of det(T) then
+               case T
+               of int then
+                  {OTE if {IsChar V} then char
+                       elseif V=<FdSup andthen V>=0 then fdIntC
+                       else int
+                       end nil}
+               [] float then
+                  {OTE float nil}
+               [] atom then
+                  {OTE if V==nil then nilAtom
+                       else atom
+                       end nil}
+               [] name then
+                  {OTE case V
+                       of true  then bool
+                       [] false then bool
+                       [] unit  then 'unit'
+                       else name
+                       end nil}
+               [] tuple then
+                  {OTE case V
+                       of _|_ then cons
+                       [] _#_ then pair
+                       else tuple
+                       end nil}
+               [] record then
+                  {OTE record nil}
+               [] procedure then
+                  {OTE case {ProcedureArity V}
+                       of 0 then 'procedure/0'
+                       [] 1 then 'procedure/1'
+                       [] 2 then 'procedure/2'
+                       [] 3 then 'procedure/3'
+                       [] 4 then 'procedure/4'
+                       [] 5 then 'procedure/5'
+                       [] 6 then 'procedure/6'
+                       else 'procedure/>6'
+                       end nil}
+               [] cell then
+                  {OTE cell nil}
+               [] space then
+                  {OTE space nil}
+               [] 'thread' then
+                  {OTE 'thread' nil}
+               [] bitString then
+                  {OTE bitString nil}
+               [] byteString then
+                  {OTE byteString nil}
+               [] array then
+                  {OTE array nil}
+               [] dictionary then
+                  {OTE dictionary nil}
+               [] 'class' then
+                  {OTE 'class' nil}
+               [] object then
+                  {OTE object nil}
+               [] 'lock' then
+                  {OTE 'lock' nil}
+               [] port then
+                  {OTE port nil}
+               [] bitArray then
+                  {OTE bitArray nil}
+               [] chunk then
+                  {OTE chunk [array dictionary 'class'
+                              'object' 'lock' port
+                              bitArray]}
+               else
+                  {OTE value [int float record procedure
+                              cell chunk space 'thread']}
+               end
+            [] kinded(T) then
+               case T
+               of int then
+                  {OTE fdIntC nil}
+               [] record then
+                  {OTE recordC nil}
+               else
+                  {OTE value [fdIntC recordC]}
+               end
+            [] free then
+               {OTE value nil}
+            [] future then
+               {OTE value nil}
+            end
+         else
+            {OTE value nil}
+         end
+      end
+   end
+
+   %%-----------------------------------------------------------------------
+   %% Some constants and shorthands
+
+   fun {Bool2Token B}
+      if B then RunTime.tokens.'true' else RunTime.tokens.'false' end
+   end
+
+   TypeTests = {AdjoinAt Type.is object
+                fun {$ X}
+                   {IsObject X} andthen
+                   {Not {HasFeature X ImARecordConstr}
+                    orelse {HasFeature X ImAValueNode}
+                    orelse {HasFeature X ImAToken}}
+                end}
 
    %%-----------------------------------------------------------------------
    %% Determination & type predicates
@@ -514,58 +620,6 @@ define
    end
 
 %-----------------------------------------------------------------------
-
-   BINameToMethod
-   = bi(    'Name.new'          : doNewName
-            'Name.newUnique'    : doNewUniqueName
-            'Cell.new'          : doNewCell
-            'Lock.new'          : doNewLock
-            'Port.new'          : doNewPort
-            'Array.new'         : doNewArray
-            'Dictionary.new'    : doNewDictionary
-            'Chunk.new'         : doNewChunk
-            'Space.new'         : doNewSpace
-            'Object.new'        : doNew
-            'Array.is'          : doCheckType(det IsArray)
-            'Atom.is'           : doCheckType(det IsAtom)
-            'Bool.is'           : doCheckType(det IsBool)
-            'Cell.is'           : doCheckType(det IsCell)
-            'Char.is'           : doCheckType(det IsChar)
-            'Chunk.is'          : doCheckType(det IsChunk)
-            'Value.isDet'       : doCheckType(det IsDet)
-            'Dictionary.is'     : doCheckType(det IsDictionary)
-            'Float.is'          : doCheckType(det IsFloat)
-            'Int.is'            : doCheckType(det IsInt)
-            'List.is'           : doCheckType(rec IsList)
-            'Literal.is'        : doCheckType(det IsLiteral)
-            'Lock.is'           : doCheckType(det IsLock)
-            'Name.is'           : doCheckType(det IsName)
-            'Number.is'         : doCheckType(det IsNumber)
-            'Object.is'         : doCheckType(det IsObject)
-            'Port.is'           : doCheckType(det IsPort)
-            'Procedure.is'      : doCheckType(det IsProcedure)
-            'Record.is'         : doCheckType(det IsRecord)
-            'Record.isC'        : doCheckType(kind IsRecordC)
-            'Space.is'          : doCheckType(det IsSpace)
-            'String.is'         : doCheckType(rec IsStringNow)
-            'Tuple.is'          : doCheckType(det IsTuple)
-            'Unit.is'           : doCheckType(det IsUnit)
-            'VirtualString.is'  : doCheckType(rec IsVirtualStringNow)
-            'Record.label'      : doLabel
-            'Record.width'      : doWidth
-            'Procedure.arity'   : doProcedureArity
-            'Value.\'=\''       : doEq
-            'Value.\'.\''       : doDot
-            'Record.\'^\''      : doHat
-            'Object.\',\''      : doComma
-            'Object.\'<-\''     : doAssignAccess
-            'Object.\'@\''      : doAssignAccess
-            'Bool.and'          : doAnd
-            'Bool.or'           : doOr
-            'Bool.not'          : doNot
-       )
-
-%-----------------------------------------------------------------------
 %
 
    fun {GetReachable V}
@@ -660,19 +714,15 @@ define
       {ForAll Env InstallEntry}
    end
 
-%-----------------------------------------------------------------------
-%
-% ValueToErrorLine: VS x Oz-Value -> <error line>
-%
+   %%-----------------------------------------------------------------------
+   %%
+   %% ValueToErrorLine: VS x Oz-Value -> <error line>
+   %%
 
    fun {ValueToErrorLine Text X}
-      if
-         X == unit
-      then
+      if X==unit then
          nil
-      else
-         XD = {GetPrintData X}
-      in
+      else XD={GetPrintData X} in
          if {HasFeature X ImAVariableOccurrence}
          then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
          else [hint(l:Text m:oz(XD))] end
@@ -812,45 +862,6 @@ define
                                else ErrMsg end
                         items: Text2)}
       end
-   end
-
-%-----------------------------------------------------------------------
-%
-
-   fun {MakeDummyProcedure N}
-      case N
-      of 0 then  proc {$} skip end
-      [] 1 then  proc {$ _} skip end
-      [] 2 then  proc {$ _ _} skip end
-      [] 3 then  proc {$ _ _ _} skip end
-      [] 4 then  proc {$ _ _ _ _} skip end
-      [] 5 then  proc {$ _ _ _ _ _} skip end
-      [] 6 then  proc {$ _ _ _ _ _ _} skip end
-      [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
-      [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
-      [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
-      [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      else
-         unit   % weaker analysis for procedures with arity > 20
-      end
-   end
-
-   fun {MakeDummyObject PN}
-      {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop()}
-   end
-
-   fun {MakeDummyClass PN}
-      {Object.'class' nil '#' 'attr' 'feat' nil PN}
    end
 
 %-----------------------------------------------------------------------

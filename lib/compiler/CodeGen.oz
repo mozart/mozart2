@@ -336,6 +336,10 @@ define
       end
    end
 
+   proc {MakeThread VHd VTl VInstr Coord}
+      VHd = vThread(_ VInstr Coord VTl _)
+   end
+
    class SwitchHashTable
       prop final
       attr
@@ -472,7 +476,7 @@ define
                 {MakeGuard Subpatterns VOs GuardVHd GuardVTl}
                 if {GuardNeedsThread GuardVHd} then
                    GuardVTl = nil
-                   GuardVInstr = vThread(_ GuardVHd Coord Cont _)
+                   {MakeThread GuardVInstr Cont GuardVHd Coord}
                 else
                    GuardVTl = Cont
                    GuardVInstr = GuardVHd
@@ -1270,7 +1274,7 @@ define
          if {GuardNeedsThread GuardVHd} then Coord in
             {@pattern getCoord(?Coord)}
             GuardVTl = nil
-            GuardVInstr = vThread(_ GuardVHd Coord Cont _)
+            {MakeThread GuardVInstr Cont GuardVHd Coord}
          else
             GuardVTl = Cont
             GuardVInstr = GuardVHd
@@ -1964,7 +1968,7 @@ define
                            'clause with thread'))}
             end
             GuardVTl = nil
-            GuardVInstr = vThread(_ GuardVHd Coord VTl _)
+            {MakeThread GuardVInstr VTl GuardVHd Coord}
          else
             GuardVTl = VTl
             GuardVInstr = GuardVHd

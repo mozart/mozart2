@@ -727,7 +727,7 @@ define
          Code =
          lbl(StartLabel)|
          definition(x(0) EndLabel
-                    pid('Toplevel abstraction' 0 pos('' 1 0) [native]
+                    pid('Toplevel abstraction' 0 pos('' 1 0) [sited]
                         NLiveRegs)
                     unit {List.mapInd GRegs fun {$ I _} g(I - 1) end}
                     BodyCode)|
@@ -836,7 +836,7 @@ define
                      elseof PN then PN
                      end
          PredId = pid(PrintName {Length @formalArgs} pos(FileName Line Col)
-                      if {Member native @procFlags} then [native]
+                      if {Member sited @procFlags} then [sited]
                       else nil
                       end
                       OuterNLiveRegs)
@@ -913,7 +913,7 @@ define
                            pid(case PrintName of '' then ''
                                else {VirtualString.toAtom PrintName#'/body'}
                                end 0
-                               4: if {Member native @procFlags} then [native]
+                               4: if {Member sited @procFlags} then [sited]
                                   else nil
                                   end
                                5: InnerNLiveRegs)}

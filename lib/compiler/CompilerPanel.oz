@@ -1565,7 +1565,7 @@ in
                                    filetypes: q(q('Oz Cluster Files' q('.ozc'))
                                                 q('All Files' '*')))}
          case FileName == "" then skip
-         else {Save Value FileName 'file:/'#FileName}
+         else {Component.smartSave Value FileName _}
          end
       end
 

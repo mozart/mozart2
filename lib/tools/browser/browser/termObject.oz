@@ -101,33 +101,30 @@ in
       SubstTab     = {Tuple.make tab 256}
       ScanTab      = {Tuple.make tab 256}
 
-      %%
-      [ZeroChar] = "0"
-      %%
       fun {OctString I}
-         [(I div 64) mod 8 + ZeroChar
-          (I div 8)  mod 8 + ZeroChar
-          I mod 8 + ZeroChar]
+         [(I div 64) mod 8 + &0 (I div 8)  mod 8 + &0 I mod 8 + &0]
       end
 
       %%
       {Record.forAllInd SetTab
        fun {$ J} I=J-1 in
           case {Char.isCntrl I} then
-             subst(case [I] of "\a" then "\\a"
-                   elseof      "\b" then "\\b"
-                   elseof      "\f" then "\\f"
-                   elseof      "\n" then "\\n"
-                   elseof      "\r" then "\\r"
-                   elseof      "\t" then "\\t"
-                   elseof      "\v" then "\\v"
+             subst(case I
+                   of &\a then "\\a"
+                   [] &\b then "\\b"
+                   [] &\f then "\\f"
+                   [] &\n then "\\n"
+                   [] &\r then "\\r"
+                   [] &\t then "\\t"
+                   [] &\v then "\\v"
                    else {Append "\\" {OctString I}}
                    end)
           elsecase I =< 255 andthen 127 =< I then
              subst({Append "\\" {OctString I}})
           else
-             case [I] of "\"" then subst("\\\"")
-             elseof      "\\" then subst("\\\\")
+             case I
+             of &\" then subst("\\\"")
+             [] &\\ then subst("\\\\")
              else legal
              end
           end
@@ -740,7 +737,7 @@ in
             %%
             Name = case {self.store read(StoreAreVSs $)}
                    then {GenVSPrintName self.term}
-                   else {VirtualString.changeSign self.term "~"}
+                   else {VirtualString.changeSign self.term '~'}
                    end
 
             %%
@@ -774,7 +771,7 @@ in
             %%
             Name = case {self.store read(StoreAreVSs $)}
                    then {GenVSPrintName self.term}
-                   else {VirtualString.changeSign self.term "~"}
+                   else {VirtualString.changeSign self.term '~'}
                    end
 
             %%
@@ -810,7 +807,7 @@ in
             Term = self.term
             %%
             Name = case {Bool.is Term} then
-                      case Term then "<B: true>" else "<B: false>" end
+                      case Term then '<B: true>' else '<B: false>' end
                    else {GenNamePrintName Term self.store}
                    end
 

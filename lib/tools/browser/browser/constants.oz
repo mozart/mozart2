@@ -164,13 +164,13 @@ IMWidth     = 45
 IMHeight    = 5
 
 %%
-ITitle      = "Oz Browser"
-IVTitle     = "Oz Browser: View"
-IMTitle     = "Oz Browser: Messages"
+ITitle      = 'Oz Browser'
+IVTitle     = IVTitle#': View'
+IMTitle     = IVTitle#': Messages'
 
 %%
-IITitle     = "Oz Browser"
-IMITitle    = "Messages"
+IITitle     = ITitle
+IMITitle    = 'Messages'
 
 %%
 IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
@@ -446,7 +446,7 @@ DUnshownPFs     = '?'           % DSpace
 CNameDelimiter  = &:
 BQuote          = &`
 CharDot         = &.
-CharSpace       = " ".1         % so and only so!
+CharSpace       = &
 /* ` oz emacs modus problems; */
 %%
 

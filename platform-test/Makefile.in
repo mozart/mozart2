@@ -63,8 +63,8 @@ OZC = $(OZE) -c
 
 all: oztest
 
-
-
+check: oztest
+        $< --verbose
 
 oztest: ./lib/make-test.oz ./lib/engine.oz \
         ./lib/passed.oz ./lib/failed.oz ./lib/help-string.oz \

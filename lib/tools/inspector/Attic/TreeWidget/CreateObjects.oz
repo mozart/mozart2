@@ -55,6 +55,7 @@ define
    NullNode         = SupportNodes.nullNode
    BitmapTreeNode   = SupportNodes.bitmapTreeNode
    InternalAtomNode = SupportNodes.internalAtomNode
+   GenericNode      = SupportNodes.genericNode
 
    \insert 'Create/CreateProcs.oz'
 

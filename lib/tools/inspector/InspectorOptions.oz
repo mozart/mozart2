@@ -111,22 +111,22 @@ define
 
    %% Normal Tuple
 
-   {OpMan set(labelTuple [title('Tuple Actions')
-                          'Width +1'(expandWidth(1))
-                          'Width +2'(expandWidth(2))
-                          'Width +5'(expandWidth(5))
-                          separator
-                          'Width -1'(expandWidth(~1))
-                          'Width -2'(expandWidth(~2))
-                          'Width -5'(expandWidth(~5))
-                          separator
-                          'Depth +1'(expandDepth(1))
-                          'Depth +2'(expandDepth(2))
-                          'Depth +5'(expandDepth(5))
-                          separator
-                          'Depth -1'(expandDepth(~1))
-                          'Depth -2'(expandDepth(~2))
-                          'Depth -5'(expandDepth(~5))])}
+   {OpMan set(labelTuple false#_#[title('Tuple Actions')
+                                  'Width +1'(expandWidth(1))
+                                  'Width +2'(expandWidth(2))
+                                  'Width +5'(expandWidth(5))
+                                  separator
+                                  'Width -1'(expandWidth(~1))
+                                  'Width -2'(expandWidth(~2))
+                                  'Width -5'(expandWidth(~5))
+                                  separator
+                                  'Depth +1'(expandDepth(1))
+                                  'Depth +2'(expandDepth(2))
+                                  'Depth +5'(expandDepth(5))
+                                  separator
+                                  'Depth -1'(expandDepth(~1))
+                                  'Depth -2'(expandDepth(~2))
+                                  'Depth -5'(expandDepth(~5))])}
 
    %% Record und Feature Constraints
 
@@ -146,9 +146,10 @@ define
                    'Depth -1'(expandDepth(~1))
                    'Depth -2'(expandDepth(~2))
                    'Depth -5'(expandDepth(~5))]
+      Auto = false
    in
-      {OpMan set(record       title('Record Options')|RecShared)}
-      {OpMan set(kindedRecord title('Feature Options')|RecShared)}
+      {OpMan set(record       Auto#_#title('Record Options')|RecShared)}
+      {OpMan set(kindedRecord Auto#_#title('Feature Options')|RecShared)}
    end
 
    %% Array
@@ -179,9 +180,12 @@ define
             {FillRecord Low High NewVal V}
          end
       end
+
+      Auto = false
    in
-      {OpMan set(arrayChunk [title('Array Actions')
-                             'View Contents'(expand(CreateContents))])}
+      {OpMan set(array Auto#CreateContents
+                 #[title('Array Actions')
+                   'View Contents'(expand(CreateContents))])}
    end
 
    %% Dictionary
@@ -198,12 +202,15 @@ define
       fun {DictToRecord D}
          {Dictionary.toRecord 'converted_dict' D}
       end
+
+      Auto = false
    in
-      {OpMan set(dictionaryChunk [title('Dictionary Actions')
-                                  'View Keys'(expand(DictKeys))
-                                  'View Entries'(expand(DictEntries))
-                                  separator
-                                  'to Record'(expand(DictToRecord))])}
+      {OpMan set(dictionary Auto#DictToRecord
+                 #[title('Dictionary Actions')
+                   'View Keys'(expand(DictKeys))
+                   'View Entries'(expand(DictEntries))
+                   separator
+                   'to Record'(expand(DictToRecord))])}
    end
 
    %% Classes
@@ -216,32 +223,35 @@ define
       fun {GetMethods C}
          {List.toTuple class_methods {Class.methodNames C}}
       end
+
+      Auto = false
    in
-      {OpMan set(classChunk [title('Class Actions')
-                             'View Parents'(expand(GetParents))
-                             separator
-                             'View Methods'(expand(GetMethods))])}
+      {OpMan set('class' Auto#GetMethods
+                 #[title('Class Actions')
+                   'View Parents'(expand(GetParents))
+                   separator
+                   'View Methods'(expand(GetMethods))])}
    end
 
    %% Overall Width Expansion
 
-   {OpMan set(width [title('Width Expansion')
-                     'Width +1'(expandWidth(1))
-                     'Width +2'(expandWidth(2))
-                     'Width +5'(expandWidth(5))
-                     separator
-                     'Width -1'(expandWidth(~1))
-                     'Width -2'(expandWidth(~2))
-                     'Width -5'(expandWidth(~5))])}
+   {OpMan set(width false#_#[title('Width Expansion')
+                             'Width +1'(expandWidth(1))
+                             'Width +2'(expandWidth(2))
+                             'Width +5'(expandWidth(5))
+                             separator
+                             'Width -1'(expandWidth(~1))
+                             'Width -2'(expandWidth(~2))
+                             'Width -5'(expandWidth(~5))])}
 
    %% Overall Depth Expansion
 
-   {OpMan set(depth [title('Depth Expansion')
-                     'Depth +1'(expandDepth(1))
-                     'Depth +2'(expandDepth(2))
-                     'Depth +5'(expandDepth(5))
-                     separator
-                     'Depth -1'(expandDepth(~1))
-                     'Depth -2'(expandDepth(~2))
-                     'Depth -5'(expandDepth(~5))])}
+   {OpMan set(depth false#_#[title('Depth Expansion')
+                             'Depth +1'(expandDepth(1))
+                             'Depth +2'(expandDepth(2))
+                             'Depth +5'(expandDepth(5))
+                             separator
+                             'Depth -1'(expandDepth(~1))
+                             'Depth -2'(expandDepth(~2))
+                             'Depth -5'(expandDepth(~5))])}
 end

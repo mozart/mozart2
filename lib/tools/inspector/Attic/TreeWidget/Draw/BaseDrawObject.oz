@@ -69,7 +69,7 @@ local
       end
 
       meth getMenuData(MenuType Status $)
-         MenuData = {OpMan get(MenuType $)}
+         _#_#MenuData = {OpMan get(MenuType $)} %% _ is the auto flag
       in
          case Status
          of normal   then MenuData

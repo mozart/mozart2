@@ -128,7 +128,10 @@ class ProxyDrawObject
 
    meth draw(X Y)
       {@currentNode draw(X Y)}
-      {@currentNode setMenuStatus(expanded)}
+      case @expanded
+      then {@currentNode setMenuStatus(expanded)}
+      else {@currentNode setMenuStatus(normal)}
+      end
    end
 
    meth undraw
@@ -149,7 +152,10 @@ class ProxyDrawObject
 
    meth reDraw(X Y)
       {@currentNode reDraw(X Y)}
-      {@currentNode setMenuStatus(expanded)}
+      case @expanded
+      then {@currentNode setMenuStatus(expanded)}
+      else {@currentNode setMenuStatus(normal)}
+      end
    end
 
    meth searchNode(Coord $)
@@ -190,6 +196,12 @@ end
 class InternalAtomDrawObject
    from
       DrawObject
+
+   meth expand(F)
+      NewValue = {F @expValue}
+   in
+      {@parent link(@index NewValue)}
+   end
 end
 
 %% BitmapDrawObject
@@ -248,4 +260,11 @@ class BitmapDrawObject
    meth expandDepth(N)
       {@parent handleDepthExpansion(N @buffer @index)}
    end
+end
+
+%% GenericDrawObject
+
+class GenericDrawObject
+   from
+      ProxyDrawObject
 end

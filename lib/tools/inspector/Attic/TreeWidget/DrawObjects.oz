@@ -18,7 +18,7 @@ functor $
 
 import
    SupportNodes
-   CreateObjects(kindedRecordCreateObject kindedRecordCycleCreateObject)
+   CreateObjects(recordCreateObject kindedRecordCreateObject)
    TreeNodes
    Tk(canvasTag menu menuentry)
 
@@ -51,12 +51,13 @@ export
    fSSetDrawObject             : FSSetDrawObject
 
 define
-   OpMan                         = SupportNodes.options
-   ProxyNode                     = SupportNodes.proxyNode
-   BitmapTreeNode                = SupportNodes.bitmapTreeNode
-   InternalAtomNode              = SupportNodes.internalAtomNode
-   KindedRecordCreateObject      = CreateObjects.kindedRecordCreateObject
-   KindedRecordCycleCreateObject = CreateObjects.kindedRecordCycleCreateObject
+   OpMan                    = SupportNodes.options
+   ProxyNode                = SupportNodes.proxyNode
+   BitmapTreeNode           = SupportNodes.bitmapTreeNode
+   InternalAtomNode         = SupportNodes.internalAtomNode
+   GenericNode              = SupportNodes.genericNode
+   RecordCreateObject       = CreateObjects.recordCreateObject
+   KindedRecordCreateObject = CreateObjects.kindedRecordCreateObject
 
    \insert 'Create/CreateProcs.oz'
 

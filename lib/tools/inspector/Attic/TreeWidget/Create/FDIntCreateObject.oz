@@ -27,30 +27,40 @@ class FDIntCreateObject
       width     %% Item Index
       domain    %% FD Domain
 
-   meth create(Value Visual Depth)
-      PName  = {System.printName Value}
-      Domain = @domain
+   meth create(Value Parent Index Visual Depth)
+      PName     = {System.printName Value}
+      Domain    = @domain
+      StopValue = {Visual getStop($)}
    in
-      CreateObject, create(Value Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type      = fdInt
-      @varName   = {New InternalAtomNode create(PName Visual Depth)}
-      @separator = {New InternalAtomNode create('#' Visual Depth)}
-      @obrace    = {New InternalAtomNode create('{' Visual Depth)}
-      @cbrace    = {New InternalAtomNode create('}' Visual Depth)}
+      @varName   = {New InternalAtomNode
+                    create(PName Parent Index Visual Depth)}
+      @separator = {New InternalAtomNode
+                    create('#' Parent Index Visual Depth)}
+      @obrace    = {New InternalAtomNode
+                    create('{' Parent Index Visual Depth)}
+      @cbrace    = {New InternalAtomNode
+                    create('}' Parent Index Visual Depth)}
       @items     = {Dictionary.new}
       Domain     = {FD.reflect.dom Value}
-      FDIntCreateObject, performInsertion(1 Domain)
+      FDIntCreateObject, performInsertion(1 Domain StopValue)
    end
 
-   meth performInsertion(I Ds)
-      case Ds
-      of Entry|Dr then
-         Node = {Create Entry @visual @depth}
-      in
-         {Dictionary.put @items I Node}
-         FDIntCreateObject, performInsertion((I + 1) Dr)
-      [] nil      then
-         width <- (I - 1)
+   meth performInsertion(I Ds StopValue)
+      case {IsFree StopValue}
+      then
+         case Ds
+         of Entry|Dr then
+            Node = {Create Entry self I @visual @depth}
+         in
+            {Dictionary.put @items I Node}
+            FDIntCreateObject, performInsertion((I + 1) Dr StopValue)
+         [] nil      then
+            width <- (I - 1)
+         end
+      else
+         skip
       end
    end
 end

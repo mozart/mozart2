@@ -20,8 +20,8 @@ class ClassCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = classChunk
    end
 end
@@ -32,8 +32,8 @@ class ObjectCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = objectChunk
    end
 end
@@ -44,8 +44,8 @@ class ArrayCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = arrayChunk
    end
 end
@@ -56,8 +56,8 @@ class DictionaryCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = dictionaryChunk
    end
 end
@@ -68,8 +68,8 @@ class PortCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = portChunk
    end
 end
@@ -80,8 +80,8 @@ class SpaceCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = spaceChunk
    end
 end
@@ -92,8 +92,8 @@ class ChunkCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = genericChunk
    end
 end

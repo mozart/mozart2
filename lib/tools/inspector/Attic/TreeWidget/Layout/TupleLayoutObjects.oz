@@ -26,11 +26,15 @@ local
       meth layout
          case @dazzle
          then
+            StopValue = {@visual getStop($)}
+         in
             layoutMode <- horizontal
             TupleShareLayoutObject, performLayoutCheck(1)
             case @layoutMode
-            of horizontal then TupleShareLayoutObject, horizontalLayout(1 0)
-            [] vertical   then TupleShareLayoutObject, verticalLayout(1 0 0)
+            of horizontal then
+               TupleShareLayoutObject, horizontalLayout(1 0 StopValue)
+            [] vertical   then
+               TupleShareLayoutObject, verticalLayout(1 0 0 StopValue)
             end
             dazzle <- false
             dirty  <- true
@@ -52,7 +56,8 @@ local
             [] hashTuple    then
                case {Node pure($)}
                then
-                  NewNode = {New EmbraceNode create(Node @visual round)}
+                  NewNode = {New EmbraceNode
+                             create(Node self I @visual round)}
                in
                   {Dictionary.put Items I NewNode|Separator}
                else skip
@@ -61,7 +66,8 @@ local
             [] pipeTuple    then
                case {Node pure($)}
                then
-                  NewNode = {New EmbraceNode create(Node @visual round)}
+                  NewNode = {New EmbraceNode
+                             create(Node self I @visual round)}
                in
                   {Dictionary.put Items I NewNode|Separator}
                else skip
@@ -82,7 +88,8 @@ local
             [] hashTuple    then
                case {Node pure($)}
                then
-                  NewNode = {New EmbraceNode create(Node @visual round)}
+                  NewNode = {New EmbraceNode
+                             create(Node self I @visual round)}
                in
                   {Dictionary.put Items I NewNode}
                else skip
@@ -91,7 +98,8 @@ local
             [] pipeTuple    then
                case {Node pure($)}
                then
-                  NewNode = {New EmbraceNode create(Node @visual round)}
+                  NewNode = {New EmbraceNode
+                             create(Node self I @visual round)}
                in
                   {Dictionary.put Items I NewNode}
                else skip
@@ -104,54 +112,68 @@ local
          end
       end
 
-      meth horizontalLayout(I XDim)
-         case I < @width
+      meth horizontalLayout(I XDim StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            IXDim
-         in
-            {Node layout}
-            {Separator layout}
-            IXDim = {Node getXDim($)}
-            TupleShareLayoutObject, horizontalLayout((I + 1)
-                                                     (XDim + (IXDim + 1)))
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               IXDim
+            in
+               {Node layout}
+               {Separator layout}
+               IXDim = {Node getXDim($)}
+               TupleShareLayoutObject,
+               horizontalLayout((I + 1) (XDim + (IXDim + 1)) StopValue)
+            else
+               Node = {Dictionary.get @items I}
+               IXDim
+            in
+               {Node layout}
+               IXDim = {Node getXDim($)}
+               xDim     <- (XDim + IXDim)
+               yDim     <- 1
+               lastXDim <- @xDim
+            end
          else
-            Node = {Dictionary.get @items I}
-            IXDim
-         in
-            {Node layout}
-            IXDim = {Node getXDim($)}
-            xDim     <- (XDim + IXDim)
-            yDim     <- 1
-            lastXDim <- @xDim
+            xDim     <- 0
+            yDim     <- 0
+            lastXDim <- 0
          end
       end
 
-      meth verticalLayout(I XDim YDim)
-         case I < @width
+      meth verticalLayout(I XDim YDim StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            IXDim IYDim ILXDim TXDim NXDim
-         in
-            {Node layout}
-            {Separator layout}
-            IXDim|IYDim = {Node getXYDim($)}
-            ILXDim      = {Node getLastXDim($)}
-            TXDim       = (ILXDim + 1)
-            NXDim       = {Max TXDim IXDim}
-            TupleShareLayoutObject, verticalLayout((I + 1)
-                                                   {Max XDim NXDim}
-                                                   (YDim + IYDim))
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               IXDim IYDim ILXDim TXDim NXDim
+            in
+               {Node layout}
+               {Separator layout}
+               IXDim|IYDim = {Node getXYDim($)}
+               ILXDim      = {Node getLastXDim($)}
+               TXDim       = (ILXDim + 1)
+               NXDim       = {Max TXDim IXDim}
+               TupleShareLayoutObject,
+               verticalLayout((I + 1) {Max XDim NXDim}
+                              (YDim + IYDim) StopValue)
+            else
+               Node = {Dictionary.get @items I}
+               IXDim IYDim ILXDim
+            in
+               {Node layout}
+               IXDim|IYDim = {Node getXYDim($)}
+               ILXDim      = {Node getLastXDim($)}
+               xDim     <- {Max XDim IXDim}
+               yDim     <- (YDim + IYDim)
+               lastXDim <- ILXDim
+            end
          else
-            Node = {Dictionary.get @items I}
-            IXDim IYDim ILXDim
-         in
-            {Node layout}
-            IXDim|IYDim = {Node getXYDim($)}
-            ILXDim      = {Node getLastXDim($)}
-            xDim     <- {Max XDim IXDim}
-            yDim     <- (YDim + IYDim)
-            lastXDim <- ILXDim
+            xDim     <- 0
+            yDim     <- 0
+            lastXDim <- 0
          end
       end
 
@@ -188,14 +210,16 @@ in
       meth fastLayout
          case @dazzle
          then
+            StopValue = {@visual getStop($)}
+         in
             {@obrace layout}
             {@cbrace layout}
             PipeTupleLayoutObject, performFastLayoutCheck(1)
             case @layoutMode
             of horizontal then
-               PipeTupleLayoutObject, fastHorizontalLayout(1 1)
+               PipeTupleLayoutObject, fastHorizontalLayout(1 1 StopValue)
             [] vertical   then
-               PipeTupleLayoutObject, fastVerticalLayout(1 0 0)
+               PipeTupleLayoutObject, fastVerticalLayout(1 0 0 StopValue)
             end
             dazzle <- false
             dirty  <- true
@@ -214,49 +238,61 @@ in
          [] pipeTuple    then layoutMode <- vertical
          [] labelTuple   then layoutMode <- vertical
          [] list         then layoutMode <- vertical
-         else
-            case I < @width
-            then PipeTupleLayoutObject, performFastLayoutCheck((I + 1))
-            else layoutMode <- horizontal
-            end
+         elsecase I < @width
+         then PipeTupleLayoutObject, performFastLayoutCheck((I + 1))
+         else layoutMode <- horizontal
          end
       end
 
-      meth fastHorizontalLayout(I XDim)
+      meth fastHorizontalLayout(I XDim StopValue)
          Node = {Dictionary.get @items I}
          IXDim
       in
-         {Node layout}
-         IXDim = {Node getXDim($)}
-         case I < @width
+         case {IsFree StopValue}
          then
-            PipeTupleLayoutObject, fastHorizontalLayout((I + 1)
-                                                        (XDim + IXDim))
+            {Node layout}
+            IXDim = {Node getXDim($)}
+            case I < @width
+            then
+               PipeTupleLayoutObject,
+               fastHorizontalLayout((I + 1) (XDim + IXDim) StopValue)
+            else
+               xDim     <- (XDim + IXDim + I)
+               yDim     <- 1
+               lastXDim <- @xDim
+            end
          else
-            xDim     <- (XDim + IXDim + I)
-            yDim     <- 1
-            lastXDim <- @xDim
+            xDim     <- 0
+            yDim     <- 0
+            lastXDim <- 0
          end
       end
 
-      meth fastVerticalLayout(I XDim YDim)
+      meth fastVerticalLayout(I XDim YDim StopValue)
          Node = {Dictionary.get @items I}
          IXDim IYDim
       in
-         {Node layout}
-         IXDim|IYDim = {Node getXYDim($)}
-         case I < @width
+         case {IsFree StopValue}
          then
-            PipeTupleLayoutObject, fastVerticalLayout((I + 1)
-                                                      {Max XDim IXDim}
-                                                      (YDim + IYDim))
+            {Node layout}
+            IXDim|IYDim = {Node getXYDim($)}
+            case I < @width
+            then
+               PipeTupleLayoutObject,
+               fastVerticalLayout((I + 1) {Max XDim IXDim}
+                                 (YDim + IYDim) StopValue)
+            else
+               LXDim = ({Node getLastXDim($)} + 1)
+               NXDim = {Max LXDim IXDim}
+            in
+               xDim     <-  (1 + {Max XDim NXDim})
+               yDim     <- (YDim + IYDim)
+               lastXDim <- (LXDim + 1)
+            end
          else
-            LXDim = ({Node getLastXDim($)} + 1)
-            NXDim = {Max LXDim IXDim}
-         in
-            xDim     <-  (1 + {Max XDim NXDim})
-            yDim     <- (YDim + IYDim)
-            lastXDim <- (LXDim + 1)
+            xDim     <- 0
+            yDim     <- 0
+            lastXDim <- 0
          end
       end
    end

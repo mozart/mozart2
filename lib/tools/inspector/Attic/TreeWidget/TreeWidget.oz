@@ -22,15 +22,20 @@ import
    StoreListener
    CycleManager
    Tk(returnInt send)
+   Debug(breakpoint) at 'x-oz://boot/Debug.ozf'
 
 export
    treeWidget : TreeWidget
+   widgetCell : WidgetCell
 
 define
    OpMan            = SupportNodes.options
    ProxyNode        = SupportNodes.proxyNode
    BitmapTreeNode   = SupportNodes.bitmapTreeNode
    InternalAtomNode = SupportNodes.internalAtomNode
+   GenericNode      = SupportNodes.genericNode
+
+   WidgetCell = {NewCell _} %% necessary to access widget within TinyWinMan.oz
 
    \insert 'Create/CreateProcs.oz'
 
@@ -53,7 +58,7 @@ define
          fontY  %% Font Y Dimension
          fmaxX  %% Max X Dimension
          fmaxY  %% Max Y Dimension
-         rPhase %% Display Phase (needed for stop)
+         stopV  %% Stop Value
 
       meth create(Canvas DspWidth DspHeight)
          Font = {OpMan get(canvasFont $)}
@@ -70,7 +75,6 @@ define
          @fmaxX  = DspWidth div Font.xDim
          @fmaxY  = DspHeight div Font.yDim
          @canvas = Canvas
-         @rPhase = 0
 
          TreeWidget, queryDB
          TreeWidget, initButtonHandler
@@ -181,6 +185,16 @@ define
          dDepth <- Depth
       end
 
+      meth getStop($)
+         Value = {Access WidgetCell}
+      in
+         Value
+      end
+
+      meth setStop(Value)
+         @stopV = Value
+      end
+
       meth printXY(X Y String Tag Color)
          {@canvas
           tk(cre text (X * @fontX) (Y * @fontY)
@@ -202,51 +216,53 @@ define
       end
 
       meth display(Value)
-         try
-            Node MaxPtr YDim
+         MaxPtr = (@maxPtr + 1)
+         Nodes  = @nodes
+         Node RealNode YDim
+      in
+         {Debug.breakpoint}
+         Node = TreeWidget, performCreation(Value self MaxPtr 0 $)
+         maxPtr <- MaxPtr
+         {Node layout}
+         case {IsFree TreeWidget, getStop($)}
+         then {Dictionary.put Nodes MaxPtr Node}
+         else
+            Node = {New BitmapTreeNode
+                    create(depth self MaxPtr self 0)}
          in
-            rPhase <- 1
-            Node   = TreeWidget, performCreation(Value $)
-            MaxPtr = (@maxPtr + 1)
-            maxPtr <- MaxPtr
-            {Dictionary.put @nodes MaxPtr Node}
-            {Node setParentData(self MaxPtr)}
+            {Node setRescueValue(Value)}
             {Node layout}
-            YDim = {Node getYDim($)}
-            rPhase <- 2
-            {Node draw(1 @curY)}
-            curY <- (@curY + YDim)
-            TreeWidget, moveCanvasView
-            rPhase <- 0
-            %%   {Wait {Tk.return update(idletasks)}}
-         catch interrupted then
-            case @rPhase
-            of 0 then skip
-            [] 1 then skip
-            [] 2 then skip
-            end
+            {Dictionary.put Nodes MaxPtr Node}
+            {Assign WidgetCell _}
          end
+         RealNode = {Dictionary.get Nodes MaxPtr}
+         {RealNode draw(1 @curY)}
+         YDim = {RealNode getYDim($)}
+         curY <- (@curY + YDim)
+         TreeWidget, moveCanvasView
+         %% {Wait {Tk.return update(idletasks)}}
       end
 
       meth call(Obj Mesg)
          RI = {Obj getRootIndex(0 $)}
       in
+         {Debug.breakpoint}
          {Obj Mesg}
          TreeWidget, update(RI|nil)
       end
 
-      meth performCreation(Value $)
+      meth performCreation(Value Parent I Depth $)
          case @dMode
          of normal then
-            {Create Value self 0}
+            {Create Value Parent I self Depth}
          [] cycle  then
             CycleMan = {New CycleManager.cycleManager create}
          in
-            {CycleCreate Value self CycleMan 0}
+            {CycleCreate Value Parent I self CycleMan Depth}
          [] graph then
             CycleMan = {New BaseObject noop} %% Graph Manager
          in
-            {CycleCreate Value self CycleMan 0}
+            {CycleCreate Value Parent I self CycleMan Depth}
          end
       end
 
@@ -297,7 +313,7 @@ define
          Items   = @nodes
          OldNode = {Dictionary.get Items I}
          YDim    = {OldNode getYDim($)}
-         Node    = {self Call(OldNode Value $)}
+         Node    = {self Call(OldNode Value I $)}
       in
          {OldNode undraw}
          {Node setYDim(YDim)}
@@ -305,15 +321,14 @@ define
          then {OldNode alter(Node)}
          else {Dictionary.put Items I Node}
          end
-         {Node setParentData(self I)}
       end
 
-      meth replaceNormal(OldNode Value $)
-         TreeWidget, performCreation(Value $)
+      meth replaceNormal(OldNode Value I $)
+         TreeWidget, performCreation(Value self I 0 $)
       end
 
-      meth replaceDepth(OldNode Value $)
-         Node   = {New BitmapTreeNode create(depth self 0)}
+      meth replaceDepth(OldNode Value I $)
+         Node   = {New BitmapTreeNode create(depth self I self 0)}
          RValue = {OldNode getValue($)}
       in
          {Node setRescueValue(RValue)}
@@ -324,27 +339,35 @@ define
          Items   = @nodes
          OldNode = {Dictionary.get Items I}
          YDim    = {OldNode getYDim($)}
-         Node    = {New BitmapTreeNode create(depth self 0)}
          Value   = {OldNode getValue($)}
+         Node
       in
          {OldNode undraw}
+         case N > 0
+         then
+            DDepth = @dDepth
+         in
+            dDepth <- N
+            Node = TreeWidget, performCreation(Value self I 0 $)
+            dDepth <- DDepth
+         else
+            Node = {New BitmapTreeNode create(depth self I self 0)}
+            {Node setRescueValue(Value)}
+         end
          {Node setYDim(YDim)}
-         {Node setRescueValue(Value)}
          {Dictionary.put Items I Node}
-         {Node setParentData(self I)}
       end
 
       meth link(I Value)
          Items   = @nodes
          OldNode = {Dictionary.get Items I}
          YDim    = {OldNode getYDim($)}
-         Node    = TreeWidget, performCreation(Value $)
+         Node    = TreeWidget, performCreation(Value self I 0 $)
          Proxy   = {New ProxyNode create(OldNode Node)}
       in
          {OldNode undraw}
          {Node setYDim(YDim)}
          {Dictionary.put Items I Proxy}
-         {Node setParentData(self I)}
       end
 
       meth unlink(I)
@@ -382,12 +405,11 @@ define
             NewNode
          in
             dDepth <- (N - 1)
-            NewNode = TreeWidget, performCreation(Value $)
+            NewNode = TreeWidget, performCreation(Value self Index 0 $)
             dDepth <- OldDepth
             {Node undraw}
             {Dictionary.put Items Index NewNode}
             {NewNode setYDim(YDim)}
-            {NewNode setParentData(self Index)}
          end
       end
 

@@ -21,31 +21,39 @@ class FDIntDrawObject
    meth draw(X Y)
       case @dirty
       then
-         VarName = @varName
-         XDim    = {VarName getXDim($)}
-         DeltaX  = (X + XDim)
-         Server  = {@visual getServer($)}
+         VarName   = @varName
+         XDim      = {VarName getXDim($)}
+         DeltaX    = (X + XDim)
+         Visual    = @visual
+         Server    = {Visual getServer($)}
+         StopValue = {Visual getStop($)}
       in
          xAnchor <- X
          yAnchor <- Y
          {VarName draw(X Y)}
          {@separator draw(DeltaX Y)}
          {@obrace draw((DeltaX + 1) Y)}
-         FDIntDrawObject, performDraw(1 (DeltaX + 2) Y)
+         FDIntDrawObject, performDraw(1 (DeltaX + 2) Y StopValue)
          {Server logVar(self @value normal)}
          dirty <- false
       else skip
       end
    end
 
-   meth performDraw(I X Y)
+   meth performDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      {Node draw(X Y)}
-      case I < @width
-      then FDIntDrawObject, performDraw((I + 1) (X + (XDim + 1)) Y)
-      else {@cbrace draw((X + XDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Node draw(X Y)}
+         case I < @width
+         then FDIntDrawObject,
+            performDraw((I + 1) (X + (XDim + 1)) Y StopValue)
+         else {@cbrace draw((X + XDim) Y)}
+         end
+      else
+         skip
       end
    end
 
@@ -70,17 +78,19 @@ class FDIntDrawObject
    meth reDraw(X Y)
       case @dirty
       then
-         VarName = @varName
-         XDim    = {VarName getXDim($)}
-         DeltaX  = (X + XDim)
-         Server  = {@visual getServer($)}
+         VarName   = @varName
+         XDim      = {VarName getXDim($)}
+         DeltaX    = (X + XDim)
+         Visual    = @visual
+         Server    = {Visual getServer($)}
+         StopValue = {Visual getStop($)}
       in
          xAnchor <- X
          yAnchor <- Y
          {VarName reDraw(X Y)}
          {@separator reDraw(DeltaX Y)}
          {@obrace reDraw((DeltaX + 1) Y)}
-         FDIntDrawObject, performReDraw(1 (DeltaX + 2) Y)
+         FDIntDrawObject, performReDraw(1 (DeltaX + 2) Y StopValue)
          dirty <- false
          {Server logVar(self @value normal)}
       else
@@ -102,14 +112,20 @@ class FDIntDrawObject
       end
    end
 
-   meth performReDraw(I X Y)
+   meth performReDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      {Node reDraw(X Y)}
-      case I < @width
-      then FDIntDrawObject, performReDraw((I + 1) (X + (XDim + 1)) Y)
-      else {@cbrace reDraw((X + XDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Node reDraw(X Y)}
+         case I < @width
+         then FDIntDrawObject,
+            performReDraw((I + 1) (X + (XDim + 1)) Y StopValue)
+         else {@cbrace reDraw((X + XDim) Y)}
+         end
+      else
+         skip
       end
    end
 

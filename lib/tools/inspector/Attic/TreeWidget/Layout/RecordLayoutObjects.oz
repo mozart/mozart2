@@ -28,15 +28,18 @@ class RecordLayoutObject
    meth layout
       case @dazzle
       then
-         Label = @label
+         Label      = @label
+         StopValue  = {@visual getStop($)}
       in
          {Label layout}
          {@brace layout}
          labelXDim <- {Label getXDim($)}
          RecordLayoutObject, performLayoutCheck(1)
          case @layoutMode
-         of horizontal then RecordLayoutObject, horizontalLayout(1 @labelXDim)
-         [] vertical   then RecordLayoutObject, verticalLayout(1 0 0)
+         of horizontal then
+            RecordLayoutObject, horizontalLayout(1 @labelXDim StopValue)
+         [] vertical   then
+            RecordLayoutObject, verticalLayout(1 0 0 StopValue)
          end
          dazzle <- false
          dirty  <- true
@@ -63,45 +66,59 @@ class RecordLayoutObject
       end
    end
 
-   meth horizontalLayout(I XDim)
+   meth horizontalLayout(I XDim StopValue)
       Label|Node = {Dictionary.get @items I}
       LabelXDim NodeXDim
    in
-      {Label layout}
-      {Node layout}
-      LabelXDim = {Label getXDim($)}
-      NodeXDim  = {Node getXDim($)}
-      case I < @width
-      then RecordLayoutObject, horizontalLayout((I + 1)
-                                                (XDim + LabelXDim + NodeXDim))
+      case {IsFree StopValue}
+      then
+         {Label layout}
+         {Node layout}
+         LabelXDim = {Label getXDim($)}
+         NodeXDim  = {Node getXDim($)}
+         case I < @width
+         then RecordLayoutObject,
+            horizontalLayout((I + 1) (XDim + LabelXDim + NodeXDim) StopValue)
+         else
+            xDim     <- (XDim + LabelXDim + NodeXDim + I)
+            yDim     <- 1
+            lastXDim <- @xDim
+         end
       else
-         xDim     <- (XDim + LabelXDim + NodeXDim + I)
-         yDim     <- 1
-         lastXDim <- @xDim
+         xDim     <- 0
+         yDim     <- 0
+         lastXDim <- 0
       end
    end
 
-   meth verticalLayout(I XDim YDim)
+   meth verticalLayout(I XDim YDim StopValue)
       Label|Node  = {Dictionary.get @items I}
       IXDim IYDim LabelXDim
    in
-      {Label layout}
-      {Node layout}
-      IXDim|IYDim = {Node getXYDim($)}
-      LabelXDim   = {Label getXDim($)}
-      case I < @width
+      case {IsFree StopValue}
       then
-         RecordLayoutObject, verticalLayout((I + 1)
-                                            {Max XDim (LabelXDim + IXDim)}
-                                            (YDim + IYDim))
+         {Label layout}
+         {Node layout}
+         IXDim|IYDim = {Node getXYDim($)}
+         LabelXDim   = {Label getXDim($)}
+         case I < @width
+         then
+            RecordLayoutObject,
+            verticalLayout((I + 1) {Max XDim (LabelXDim + IXDim)}
+                           (YDim + IYDim) StopValue)
+         else
+            TXDim  = ({Node getLastXDim($)} + 1)
+            RLXDim = @labelXDim
+            NXDim  = {Max IXDim TXDim}
+         in
+            xDim     <- RLXDim + {Max XDim (LabelXDim + NXDim)}
+            yDim     <- (YDim + IYDim)
+            lastXDim <- (RLXDim + LabelXDim + TXDim)
+         end
       else
-         TXDim  = ({Node getLastXDim($)} + 1)
-         RLXDim = @labelXDim
-         NXDim  = {Max IXDim TXDim}
-      in
-         xDim     <- RLXDim + {Max XDim (LabelXDim + NXDim)}
-         yDim     <- (YDim + IYDim)
-         lastXDim <- (RLXDim + LabelXDim + TXDim)
+         xDim     <- 0
+         yDim     <- 0
+         lastXDim <- 0
       end
    end
 

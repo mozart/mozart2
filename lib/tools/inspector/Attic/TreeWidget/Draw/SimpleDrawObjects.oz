@@ -35,7 +35,10 @@ class AtomDrawObject
       DrawObject
 
    meth expandWidth(N)
-      {@parent handleWidthExpansion(N @index)}
+      case @index
+      of 0 then {@parent handleLabelWidthExpansion(N)}
+      else {@parent handleWidthExpansion(N @index)}
+      end
    end
 
    meth expandDepth(N)

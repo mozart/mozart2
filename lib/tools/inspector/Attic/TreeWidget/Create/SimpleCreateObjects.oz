@@ -20,8 +20,8 @@ class IntCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = int
    end
 end
@@ -32,8 +32,8 @@ class FloatCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = float
    end
 end
@@ -47,14 +47,14 @@ class AtomCreateObject
    attr
       buffer %% Rescue Value
 
-   meth create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
       MakeStr = AtomCreateObject, fixTKBug(Value $)
       AtomStr = {Atom.toString Value}
    in
       @type = atom
       case AtomCreateObject, skipQuoting(AtomStr $)
-      then CreateObject, create(MakeStr Visual Depth)
-      else CreateObject, create('\''#MakeStr#'\'' Visual Depth)
+      then CreateObject, create(MakeStr Parent Index Visual Depth)
+      else CreateObject, create('\''#MakeStr#'\'' Parent Index Visual Depth)
       end
    end
 
@@ -106,8 +106,8 @@ class BoolCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = bool
    end
 end
@@ -118,8 +118,8 @@ class NameCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = name
    end
 end
@@ -130,8 +130,8 @@ class ProcedureCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = procedure
    end
 end

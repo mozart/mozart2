@@ -15,10 +15,10 @@
 %%%
 
 local
-   fun {FCreate Value Visual Depth}
+   fun {FCreate Value Parent Index Visual Depth}
       case {IsAtom Value}
-      then {New TreeNodes.atomTreeNode create(Value Visual Depth)}
-      else {New TreeNodes.intTreeNode  create(Value Visual Depth)}
+      then {New TreeNodes.atomTreeNode create(Value Parent Index Visual Depth)}
+      else {New TreeNodes.intTreeNode  create(Value Parent Index Visual Depth)}
       end
    end
 in
@@ -39,54 +39,34 @@ in
          curWidth %% Current Width
          curDepth %% Current Depth
 
-
-      meth create(Value Visual Depth)
+      meth create(Value Parent Index Visual Depth)
          RecLabel  = {Label Value}
          Arity     = @arity
          RDepth    = (Depth + 1)
-         LabelNode = {FCreate RecLabel Visual RDepth}
+         LabelNode = {FCreate RecLabel self 0 Visual RDepth}
          CurWidth  = @curWidth
       in
-         CreateObject, create(Value Visual RDepth)
+         CreateObject, create(Value Parent Index Visual RDepth)
          @type       = record
          @label      = LabelNode
          {LabelNode initMenu(@type)}
          @items      = {Dictionary.new}
          Arity       = {Record.arity Value}
          @arityLen   = {Width Value}
-         @brace      = {New InternalAtomNode create(')' Visual Depth)}
+         @brace      = {New InternalAtomNode create(')' self 0 Visual Depth)}
          CurWidth    = {Visual getWidth($)}
          @curDepth   = {Visual getDepth($)}
          {LabelNode setLayoutType(tuple)}
-         {LabelNode setParentData(self 0)}
          {LabelNode setRescueValue(Value)}
          RecordCreateObject, adjustWidth(CurWidth 1)
       end
 
       meth adjustWidth(CurWidth I)
-         ArityLen = @arityLen
-         NewAs
+         NewAs     = RecordCreateObject, seekStartPos(I @arity $)
+         StopValue = {@visual getStop($)}
       in
-         case CurWidth < ArityLen
-         then
-            Visual   = @visual
-            Depth    = @depth
-            Bitmap   = {New BitmapTreeNode create(width Visual Depth)}
-            NullObj  = {New NullNode create(nil Visual Depth)}
-            NewWidth = (CurWidth + 1)
-         in
-            {Bitmap setParentData(self NewWidth)}
-            {Dictionary.put @items NewWidth NullObj|Bitmap}
-            width <- CurWidth
-            NewAs = RecordCreateObject, seekStartPos(I @arity $)
-            RecordCreateObject, performInsertion(I NewAs)
-            width <- NewWidth
-         else
-            width <- ArityLen
-            NewAs = RecordCreateObject, seekStartPos(I @arity $)
-            RecordCreateObject, performInsertion(I NewAs)
-         end
-         {@label setParentData(self @width)}
+         width <- {Min CurWidth @arityLen}
+         {self performInsertion(I NewAs StopValue)}
       end
 
       meth seekStartPos(I As $)
@@ -96,20 +76,35 @@ in
          end
       end
 
-      meth performInsertion(I As)
-         case I =< @width
+      meth performInsertion(I As StopValue)
+         Width = @width
+      in
+         case {IsFree StopValue}
          then
-            A|Ar   = As
-            Visual = @visual
-            Depth  = @depth
-            Label  = {FCreate A Visual Depth}
-            Node   = {Create @value.A Visual Depth}
-         in
-            {Label setLayoutType(record)}
-            {Node setParentData(self I)}
-            {Dictionary.put @items I Label|Node}
-            RecordCreateObject, performInsertion((I + 1) Ar)
-         else skip
+            case I =< Width
+            then
+               A|Ar   = As
+               Visual = @visual
+               Depth  = @depth
+               Label  = {FCreate A self I Visual Depth}
+               Node   = {Create @value.A self I Visual Depth}
+            in
+               {Label setLayoutType(record)}
+               {Dictionary.put @items I Label|Node}
+               RecordCreateObject, performInsertion((I + 1) Ar StopValue)
+            elsecase Width < @arityLen
+            then
+               Visual  = @visual
+               Depth   = @depth
+               Bitmap  = {New BitmapTreeNode create(width self I Visual Depth)}
+               NullObj = {New NullNode create(nil self I Visual Depth)}
+            in
+               {Dictionary.put @items I NullObj|Bitmap}
+               width <- I
+            else skip
+            end
+         else
+            skip
          end
       end
    end
@@ -121,84 +116,83 @@ in
          RecordCreateObject
 
       attr
-         maxWidth     %% Current Max Width
          monitorValue %% Monitor Value
 
-      meth create(Value Visual Depth)
-         Label    = {FCreate '_' Visual Depth}
+      meth create(Value Parent Index Visual Depth)
+         Label    = {FCreate '_' self 0 Visual Depth}
          Arity    = @arity
          CurWidth = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @type     = kindedRecord
          @label    = Label
          {Label initMenu(@type)}
          @items    = {Dictionary.new}
-         @brace    = {New InternalAtomNode create(')' Visual Depth)}
+         @brace    = {New InternalAtomNode create(')' self 0 Visual Depth)}
          CurWidth  = {Visual getWidth($)}
          @curDepth = {Visual getDepth($)}
          {Record.monitorArity Value _ Arity}
          {Label setLayoutType(tuple)}
-         {Label setParentData(self 0)}
          {Label setRescueValue(Value)}
-         KindedRecordCreateObject, adjustWidth(CurWidth 1)
+         KindedRecordCreateObject, computeArityLen(Arity 1)
+         RecordCreateObject, adjustWidth(CurWidth 1)
       end
 
-      meth adjustWidth(CurWidth I)
-         NewArity = KindedRecordCreateObject, seekStartPos(I @arity $)
-      in
-         maxWidth <- CurWidth
-         KindedRecordCreateObject, performInsertion(I NewArity)
-      end
-
-      meth seekStartPos(I As $)
-         case I
-         of 1 then As
-         else KindedRecordCreateObject, seekStartPos((I - 1) As.2 $)
+      meth computeArityLen(As I)
+         case {IsFree As}
+         then arityLen <- I
+         elsecase As
+         of nil then arityLen <- (I - 1)
+         else KindedRecordCreateObject, computeArityLen(As.2 (I + 1))
          end
       end
 
-      meth performInsertion(I As)
-         case I =< @maxWidth
+      meth performInsertion(I As StopValue)
+         Width = @width
+      in
+         case {IsFree StopValue}
          then
-            case {IsFree As}
+            case I =< Width
             then
-               Visual = @visual
-               Depth  = @depth
-               Label  = {New NullNode create(nil Visual Depth)}
-               Node   = {New InternalAtomNode create('...' Visual Depth)}
-            in
-               monitorValue <- As
-               width        <- I
-               {Node setParentData(self I)}
-               {Dictionary.put @items I Label|Node}
-            else
-               case As
+               case {IsFree As}
+               then
+                  Visual = @visual
+                  Depth  = @depth
+                  Label  = {New NullNode create(nil self I Visual Depth)}
+                  Node   = {New InternalAtomNode
+                            create('...' self I Visual Depth)}
+               in
+                  monitorValue <- As
+                  width        <- I
+                  {Dictionary.put @items I Label|Node}
+               elsecase As
                of A|Ar then
                   Visual = @visual
                   Depth  = @depth
-                  Label  = {FCreate A Visual Depth}
-                  Node   = {Create @value.A Visual Depth}
+                  Label  = {FCreate A self I Visual Depth}
+                  Node   = {Create @value.A self I Visual Depth}
                in
                   {Label setLayoutType(record)}
-                  {Node setParentData(self I)}
                   {Dictionary.put @items I Label|Node}
-                  KindedRecordCreateObject, performInsertion((I + 1) Ar)
+                  KindedRecordCreateObject,
+                  performInsertion((I + 1) Ar StopValue)
                [] nil then
                   width <- (I - 1)
                end
+            elsecase Width < @arityLen
+            then
+               Visual = @visual
+               Depth  = @depth
+               Label  = {New NullNode create(nil self I Visual Depth)}
+               Bitmap = {New BitmapTreeNode create(width self I Visual Depth)}
+            in
+               {Dictionary.put @items I Label|Bitmap}
+               width <- I
+            else skip
             end
          else
-            Visual = @visual
-            Depth  = @depth
-            Label  = {New NullNode create(nil Visual Depth)}
-            Bitmap = {New BitmapTreeNode create(width Visual Depth)}
-         in
-            {Bitmap setParentData(self I)}
-            {Dictionary.put @items I Label|Bitmap}
-            width <- I
+            skip
          end
-         {@label setParentData(self @width)}
       end
    end
 
@@ -213,77 +207,66 @@ in
          cycleNode %% Record Cycle Node
 
 
-      meth create(Value Visual CycleMan Depth)
+      meth create(Value Parent Index Visual CycleMan Depth)
          RecLabel  = {Label Value}
          Arity     = @arity
-         LabelNode = {FCreate RecLabel Visual Depth}
+         LabelNode = {FCreate RecLabel self 0 Visual Depth}
          CurWidth  = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @type      = record
          @label     = LabelNode
          {LabelNode initMenu(@type)}
          @items     = {Dictionary.new}
          Arity      = {Record.arity Value}
          @arityLen  = {Width Value}
-         @brace     = {New InternalAtomNode create(')' Visual Depth)}
+         @brace     = {New InternalAtomNode create(')' self 0 Visual Depth)}
          @cycleMan  = CycleMan
          @cycleNode = {New InternalAtomNode
                        create({CycleMan register(Value self $)}#'='
-                              Visual Depth)}
+                              self 0 Visual Depth)}
          CurWidth   = {Visual getWidth($)}
          @curDepth  = {Visual getDepth($)}
          {LabelNode setLayoutType(tuple)}
-         {LabelNode setParentData(self 0)}
          {LabelNode setRescueValue(Value)}
-         RecordCycleCreateObject, adjustWidth(CurWidth 1)
+         RecordCreateObject, adjustWidth(CurWidth 1)
       end
 
-      meth adjustWidth(CurWidth I)
-         ArityLen = @arityLen
-         NewAs
+      meth performInsertion(I As StopValue)
+         Width = @width
       in
-         case CurWidth < ArityLen
+         case {IsFree StopValue}
          then
-            Visual   = @visual
-            Depth    = @depth
-            Bitmap   = {New BitmapTreeNode create(width Visual Depth)}
-            NullObj  = {New NullNode create(nil Visual Depth)}
-            NewWidth = (CurWidth + 1)
-         in
-            {Bitmap setParentData(self I)}
-            {Dictionary.put @items NewWidth NullObj|Bitmap}
-            width <- CurWidth
-            NewAs = RecordCreateObject, seekStartPos(I @arity $)
-            RecordCycleCreateObject, performInsertion(I NewAs)
-            width <- NewWidth
+            case I =< Width
+            then
+               A|Ar     = As
+               Visual   = @visual
+               Depth    = @depth
+               Label    = {FCreate A self I Visual Depth}
+               CycleMan = @cycleMan
+               Node
+            in
+               {CycleMan push}
+               Node = {CycleCreate @value.A self I Visual CycleMan Depth}
+               {CycleMan pop}
+               {CycleMan getStack(Node)}
+               {Label setLayoutType(record)}
+               {Dictionary.put @items I Label|Node}
+               RecordCycleCreateObject,
+               performInsertion((I + 1) Ar StopValue)
+            elsecase Width < @arityLen
+            then
+               Visual  = @visual
+               Depth   = @depth
+               Bitmap  = {New BitmapTreeNode create(width self I Visual Depth)}
+               NullObj = {New NullNode create(nil self I Visual Depth)}
+            in
+               {Dictionary.put @items I NullObj|Bitmap}
+               width <- I
+            else skip
+            end
          else
-            width <- ArityLen
-            NewAs = RecordCreateObject, seekStartPos(I @arity $)
-            RecordCycleCreateObject, performInsertion(I NewAs)
-         end
-         {@label setParentData(self @width)}
-      end
-
-      meth performInsertion(I As)
-         case I =< @width
-         then
-            A|Ar     = As
-            Visual   = @visual
-            Depth    = @depth
-            Label    = {FCreate A Visual Depth}
-            CycleMan = @cycleMan
-            Node
-         in
-            {CycleMan push}
-            Node = {CycleCreate @value.A Visual CycleMan Depth}
-            {CycleMan pop}
-            {CycleMan getStack(Node)}
-            {Label setLayoutType(record)}
-            {Node setParentData(self I)}
-            {Dictionary.put @items I Label|Node}
-            RecordCycleCreateObject, performInsertion((I + 1) Ar)
-         else skip
+            skip
          end
       end
    end
@@ -298,85 +281,83 @@ in
          cycleMan  %% Record Cycle Manager
          cycleNode %% Record Cycle Node
 
-      meth create(Value Visual CycleMan Depth)
-         Label    = {FCreate '_' Visual Depth}
+      meth create(Value Parent Index Visual CycleMan Depth)
+         Label    = {FCreate '_' self 0 Visual Depth}
          Arity    = @arity
          CurWidth = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @type      = kindedRecord
          @label     = Label
          {Label initMenu(@type)}
          @items     = {Dictionary.new}
-         @brace     = {New InternalAtomNode create(')' Visual Depth)}
+         @brace     = {New InternalAtomNode create(')' self 0 Visual Depth)}
          @cycleMan  = CycleMan
          @cycleNode = {New InternalAtomNode
                        create({CycleMan register(Value self $)}#'='
-                              Visual Depth)}
+                              self 0 Visual Depth)}
          CurWidth   = {Visual getWidth($)}
          @curDepth  = {Visual getDepth($)}
          {Record.monitorArity Value _ Arity}
          {Label setLayoutType(tuple)}
-         {Label setParentData(self 0)}
          {Label setRescueValue(Value)}
-         KindedRecordCycleCreateObject, adjustWidth(CurWidth 1)
+         KindedRecordCreateObject, computeArityLen(Arity 1)
+         RecordCreateObject, adjustWidth(CurWidth 1)
       end
 
-      meth adjustWidth(CurWidth I)
-         NewArity = KindedRecordCreateObject, seekStartPos(I @arity $)
+      meth performInsertion(I As StopValue)
+         Width = @width
       in
-         maxWidth <- CurWidth
-         KindedRecordCycleCreateObject, performInsertion(I NewArity)
-      end
-
-      meth performInsertion(I As)
-         case I =< @maxWidth
+         case {IsFree StopValue}
          then
-            case {IsFree As}
+            case I =< Width
             then
-               Visual = @visual
-               Depth  = @depth
-               Label  = {New NullNode create(nil Visual Depth)}
-               Node   = {New InternalAtomNode create('...' Visual Depth)}
-            in
-               {@cycleMan getStack(Node)}
-               monitorValue <- As
-               width        <- I
-               {Node setParentData(self I)}
-               {Dictionary.put @items I Label|Node}
-            else
-               case As
+               case {IsFree As}
+               then
+                  Visual = @visual
+                  Depth  = @depth
+                  Label  = {New NullNode create(nil self I Visual Depth)}
+                  Node   = {New InternalAtomNode
+                            create('...' self I Visual Depth)}
+               in
+                  {@cycleMan getStack(Node)}
+                  monitorValue <- As
+                  width        <- I
+                  {Dictionary.put @items I Label|Node}
+               elsecase As
                of A|Ar then
                   Visual   = @visual
                   Depth    = @depth
-                  Label    = {FCreate A Visual Depth}
+                  Label    = {FCreate A self I Visual Depth}
                   CycleMan = @cycleMan
                   Node
                in
                   {CycleMan push}
-                  Node = {CycleCreate @value.A Visual CycleMan Depth}
+                  Node = {CycleCreate @value.A self I Visual CycleMan Depth}
                   {CycleMan pop}
                   {CycleMan getStack(Node)}
                   {Label setLayoutType(record)}
-                  {Node setParentData(self I)}
                   {Dictionary.put @items I Label|Node}
-                  KindedRecordCycleCreateObject, performInsertion((I + 1) Ar)
+                  KindedRecordCycleCreateObject,
+                  performInsertion((I + 1) Ar StopValue)
                [] nil then
                   width <- (I - 1)
                end
+            elsecase Width < @arityLen
+            then
+               Visual = @visual
+               Depth  = @depth
+               Label  = {New NullNode create(nil self I Visual Depth)}
+               Bitmap = {New BitmapTreeNode create(width self I Visual Depth)}
+            in
+               {@cycleMan getStack(Bitmap)}
+               {Dictionary.put @items I Label|Bitmap}
+               width <- I
+            else skip
             end
          else
-            Visual = @visual
-            Depth  = @depth
-            Label  = {New NullNode create(nil Visual Depth)}
-            Bitmap = {New BitmapTreeNode create(width Visual Depth)}
-         in
-            {Bitmap setParentData(self I)}
-            {@cycleMan getStack(Bitmap)}
-            {Dictionary.put @items I Label|Bitmap}
-            width <- I
+            skip
          end
-         {@label setParentData(self @width)}
       end
    end
 end

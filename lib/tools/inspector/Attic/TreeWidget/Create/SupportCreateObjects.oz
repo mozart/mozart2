@@ -25,15 +25,15 @@ class EmbraceCreateObject
       cbrace %% Closed Brace
       node   %% Embraced Node
 
-   meth create(Node Visual Type)
+   meth create(Node Parent Index Visual Type)
       @node = Node
       case Type
       of round  then
-         @obrace = {New InternalAtomNode create('(' Visual 0)}
-         @cbrace = {New InternalAtomNode create(')' Visual 0)}
+         @obrace = {New InternalAtomNode create('(' self 0 Visual 0)}
+         @cbrace = {New InternalAtomNode create(')' self 0 Visual 0)}
       [] braces then
-         @obrace = {New InternalAtomNode create('{' Visual 0)}
-         @cbrace = {New InternalAtomNode create('}' Visual 0)}
+         @obrace = {New InternalAtomNode create('{' self 0 Visual 0)}
+         @cbrace = {New InternalAtomNode create('}' self 0 Visual 0)}
       end
    end
 
@@ -86,10 +86,12 @@ class ProxyCreateObject
    attr
       securedNode %% Secured Node
       currentNode %% Active Node
+      expanded    %% Expansion Flag
 
    meth create(Passive Active)
       @securedNode = Passive
       @currentNode = Active
+      @expanded    = true
    end
 
    meth getCurrentNode($)
@@ -151,11 +153,18 @@ class InternalAtomCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
+   attr
+      expValue %% Value saved for the expansion
+
+   meth create(Value Parent Index Visual Depth)
       MakeStr = InternalAtomCreateObject, fixTKBug(Value $)
    in
-      CreateObject, create(MakeStr Visual Depth)
+      CreateObject, create(MakeStr Parent Index Visual Depth)
       @type = atom
+   end
+
+   meth setExpValue(Value)
+      @expValue = Value
    end
 
    meth fixTKBug(Value $)
@@ -178,10 +187,10 @@ class BitmapCreateObject
       bitmapMode %% Bitmap Mode
       buffer     %% Rescue Value
 
-   meth create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
       NewValue
    in
-      CreateObject, create(NewValue Visual Depth)
+      CreateObject, create(NewValue Parent Index Visual Depth)
       @bitmapMode = Value
       case Value
       of width then
@@ -199,5 +208,36 @@ class BitmapCreateObject
 
    meth getRescueValue($)
       @buffer
+   end
+end
+
+%% GenericCreateObject
+
+class GenericCreateObject
+   from
+      ProxyCreateObject
+
+   meth create(Value Parent Index Visual Depth Type)
+      NewValue = '<generic:'#Type#'>'
+      OldNode NewNode
+      Auto Fun
+   in
+      ProxyCreateObject, create(OldNode NewNode)
+      case {OpMan isKey(Type $)}
+      then Auto#Fun#_ = {OpMan get(Type $)}
+      else Auto = false
+      end
+      case Auto
+      then
+         NewNode = {Visual performCreation({Fun Value} Parent
+                                           Index Depth $)}
+      else
+         NewNode = OldNode
+         expanded <- false
+      end
+      OldNode = {New InternalAtomNode
+                 create(NewValue Parent Index Visual Depth)}
+      {OldNode initMenu(Type)}
+      {OldNode setExpValue(Value)}
    end
 end

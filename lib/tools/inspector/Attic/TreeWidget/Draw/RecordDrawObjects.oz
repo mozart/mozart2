@@ -23,47 +23,61 @@ class RecordDrawObject
    meth draw(X Y)
       case @dirty
       then
+         StopValue = {@visual getStop($)}
+      in
          xAnchor <- X
          yAnchor <- Y
          {@label draw(X Y)}
          case @layoutMode
          of horizontal then
-            RecordDrawObject, horizontalDraw(1 (X + @labelXDim) Y)
+            RecordDrawObject, horizontalDraw(1 (X + @labelXDim) Y StopValue)
          [] vertical   then
-            RecordDrawObject, verticalDraw(1 (X + @labelXDim) Y)
+            RecordDrawObject, verticalDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
       else skip
       end
    end
 
-   meth horizontalDraw(I X Y)
+   meth horizontalDraw(I X Y StopValue)
       Label|Node = {Dictionary.get @items I}
       LabelXDim  = {Label getXDim($)}
       NodeXDim   = {Node getXDim($)}
       DeltaX     = (X + LabelXDim)
    in
-      {Label draw(X Y)}
-      {Node draw(DeltaX Y)}
-      case I < @width
-      then RecordDrawObject, horizontalDraw((I + 1) (DeltaX + NodeXDim + 1) Y)
-      else {@brace draw((DeltaX + NodeXDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Label draw(X Y)}
+         {Node draw(DeltaX Y)}
+         case I < @width
+         then RecordDrawObject,
+            horizontalDraw((I + 1) (DeltaX + NodeXDim + 1) Y StopValue)
+         else {@brace draw((DeltaX + NodeXDim) Y)}
+         end
+      else
+         skip
       end
    end
 
-   meth verticalDraw(I X Y)
+   meth verticalDraw(I X Y StopValue)
       Label|Node = {Dictionary.get @items I}
       LabelXDim  = {Label getXDim($)}
       NodeYDim   = {Node getYDim($)}
    in
-      {Label draw(X Y)}
-      {Node draw((X + LabelXDim) Y)}
-      case I < @width
-      then RecordDrawObject, verticalDraw((I + 1) X (Y + NodeYDim))
+      case {IsFree StopValue}
+      then
+         {Label draw(X Y)}
+         {Node draw((X + LabelXDim) Y)}
+         case I < @width
+         then RecordDrawObject,
+            verticalDraw((I + 1) X (Y + NodeYDim) StopValue)
+         else
+            LXDim = {Node getLastXDim($)}
+         in
+            {@brace draw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
+         end
       else
-         LXDim = {Node getLastXDim($)}
-      in
-         {@brace draw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
+         skip
       end
    end
 
@@ -88,24 +102,23 @@ class RecordDrawObject
    meth replace(I Value Call)
       Items         = @items
       Label|OldNode = {Dictionary.get Items I}
-      Node          = {self Call(OldNode Value $)}
+      Node          = {self Call(OldNode Value I $)}
    in
       {OldNode undraw}
       case {OldNode isProxy($)}
       then {OldNode alter(Node)}
       else {Dictionary.put Items I Label|Node}
       end
-      {Node setParentData(self I)}
       RecordDrawObject, notify
    end
 
-   meth replaceNormal(OldNode Value $)
-      {Create Value @visual @depth}
+   meth replaceNormal(OldNode Value I $)
+      {Create Value self I @visual @depth}
    end
 
-   meth replaceDepth(OldNode Value $)
+   meth replaceDepth(OldNode Value I $)
       RValue = {OldNode getValue($)}
-      Node   = {New BitmapTreeNode create(depth @visual @depth)}
+      Node   = {New BitmapTreeNode create(depth self I @visual @depth)}
    in
       {Node setRescueValue(RValue)}
       Node
@@ -114,12 +127,11 @@ class RecordDrawObject
    meth link(I Value)
       Items = @items
       Label|OldNode = {Dictionary.get Items I}
-      Node          = {self replaceNormal(OldNode Value $)}
+      Node          = {self replaceNormal(OldNode Value I $)}
       Proxy         = {New ProxyNode create(OldNode Node)}
    in
       {OldNode undraw}
       {Dictionary.put Items I Label|Proxy}
-      {Node setParentData(self I)}
       RecordDrawObject, notify
    end
 
@@ -167,14 +179,16 @@ class RecordDrawObject
    meth reDraw(X Y)
       case @dirty
       then
+         StopValue = {@visual getStop($)}
+      in
          xAnchor <- X
          yAnchor <- Y
          {@label reDraw(X Y)}
          case @layoutMode
          of horizontal then
-            RecordDrawObject, horizontalReDraw(1 (X + @labelXDim) Y)
+            RecordDrawObject, horizontalReDraw(1 (X + @labelXDim) Y StopValue)
          [] vertical   then
-            RecordDrawObject, verticalReDraw(1 (X + @labelXDim) Y)
+            RecordDrawObject, verticalReDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
       else
@@ -196,35 +210,45 @@ class RecordDrawObject
       end
    end
 
-   meth horizontalReDraw(I X Y)
+   meth horizontalReDraw(I X Y StopValue)
       Label|Node = {Dictionary.get @items I}
       LabelXDim  = {Label getXDim($)}
       NodeXDim   = {Node getXDim($)}
       DeltaX     = (X + LabelXDim)
    in
-      {Label reDraw(X Y)}
-      {Node reDraw(DeltaX Y)}
-      case I < @width
-      then RecordDrawObject, horizontalReDraw((I + 1)
-                                              (DeltaX + NodeXDim + 1)
-                                              Y)
-      else {@brace reDraw((DeltaX + NodeXDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Label reDraw(X Y)}
+         {Node reDraw(DeltaX Y)}
+         case I < @width
+         then RecordDrawObject,
+            horizontalReDraw((I + 1) (DeltaX + NodeXDim + 1) Y StopValue)
+         else {@brace reDraw((DeltaX + NodeXDim) Y)}
+         end
+      else
+         skip
       end
    end
 
-   meth verticalReDraw(I X Y)
+   meth verticalReDraw(I X Y StopValue)
       Label|Node = {Dictionary.get @items I}
       LabelXDim  = {Label getXDim($)}
       NodeYDim   = {Node getYDim($)}
    in
-      {Label reDraw(X Y)}
-      {Node reDraw((X + LabelXDim) Y)}
-      case I < @width
-      then RecordDrawObject, verticalReDraw((I + 1) X (Y + NodeYDim))
+      case {IsFree StopValue}
+      then
+         {Label reDraw(X Y)}
+         {Node reDraw((X + LabelXDim) Y)}
+         case I < @width
+         then RecordDrawObject,
+            verticalReDraw((I + 1) X (Y + NodeYDim) StopValue)
+         else
+            LXDim = {Node getLastXDim($)}
+         in
+            {@brace reDraw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
+         end
       else
-         LXDim = {Node getLastXDim($)}
-      in
-         {@brace reDraw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
+         skip
       end
    end
 
@@ -302,6 +326,10 @@ class RecordDrawObject
       {Node setMenuStatus(Status)}
    end
 
+   meth handleLabelWidthExpansion(N)
+      RecordDrawObject, handleWidthExpansion(N @width)
+   end
+
    meth handleWidthExpansion(N Index)
       case N > 0
       then
@@ -362,6 +390,8 @@ class RecordDrawObject
          {@parent up((N + 1) @index)}
       elsecase N
       of 0 then skip
+      elsecase Index
+      of 0 then {@parent up(N @index)}
       else
          Items      = @items
          Visual     = @visual
@@ -371,11 +401,10 @@ class RecordDrawObject
          NewNode
       in
          {Visual setDepth(NewDepth)}
-         NewNode = {self replaceNormal(Node Value $)}
+         NewNode = {self replaceNormal(Node Value Index $)}
          {Visual setDepth(OldDepth)}
          {Node undraw}
          {Dictionary.put Items Index Label|NewNode}
-         {NewNode setParentData(self Index)}
          RecordDrawObject, notify
       end
    end
@@ -451,7 +480,8 @@ class KindedRecordDrawObject
       _|Node = {Dictionary.get @items I}
    in
       {Node undraw}
-      KindedRecordCreateObject, performInsertion(I @monitorValue)
+      KindedRecordCreateObject, computeArityLen(@arity 1)
+      RecordCreateObject, adjustWidth(@curWidth I)
       RecordDrawObject, notify
    end
 
@@ -460,14 +490,14 @@ class KindedRecordDrawObject
       Label
    in
       {OldLabel undraw}
-      label <- {New TreeNodes.atomTreeNode create(@labelVar @visual @depth)}
+      label <- {New TreeNodes.atomTreeNode
+                create(@labelVar self 0 @visual @depth)}
       Label = @label
       {Label setLayoutType(tuple)}
-      {Label setParentData(self @width)}
       {Label setRescueValue(@value)}
       {Label initMenu(@type)}
       haveLabel <- true
-       RecordDrawObject, notify
+      RecordDrawObject, notify
    end
 end
 
@@ -501,23 +531,23 @@ class RecordCycleDrawObject
       dirty <- true
    end
 
-   meth replaceNormal(OldNode Value $)
+   meth replaceNormal(OldNode Value I $)
       OldStack = {OldNode getStack($)}
       CycleMan = @cycleMan
       Node
    in
       {CycleMan setStack(OldStack)}
       {CycleMan push}
-      Node = {CycleCreate Value @visual CycleMan @depth}
+      Node = {CycleCreate Value self I @visual CycleMan @depth}
       {CycleMan pop}
       {CycleMan tellStack(Node)}
       Node
    end
 
-   meth replaceDepth(OldNode Value $)
+   meth replaceDepth(OldNode Value I $)
       RValue   = {OldNode getValue($)}
       OldStack = {OldNode getStack($)}
-      Node     = {New BitmapTreeNode create(depth @visual @depth)}
+      Node     = {New BitmapTreeNode create(depth self I @visual @depth)}
    in
       {Node setRescueValue(RValue)}
       {Node setStack(OldStack)}
@@ -599,13 +629,14 @@ class KindedRecordCycleDrawObject
    end
 
    meth tell
-      I        = @width
-      _|Node   = {Dictionary.get @items I}
-      OldStack = {Node getStack($)}
+      I         = @width
+      _|Node    = {Dictionary.get @items I}
+      OldStack  = {Node getStack($)}
    in
       {Node undraw}
       {@cycleMan setStack(OldStack)}
-      KindedRecordCycleCreateObject, performInsertion(I @monitorValue)
+      KindedRecordDrawObject, computeArityLen(@arity 1)
+      RecordCreateObject, adjustWidth(@curWidth I)
       RecordDrawObject, notify
    end
 

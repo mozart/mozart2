@@ -188,3 +188,10 @@ class BitmapLayoutObject
       end
    end
 end
+
+%% GenericLayoutObject
+
+class GenericLayoutObject
+   from
+      ProxyLayoutObject
+end

@@ -22,47 +22,63 @@ class FSSetCreateObject
       items  %% Items Dictionary
       maxPtr %% MaxPtr
 
-   meth create(Value Visual Depth)
-      PName = {System.printName Value}
-      Card  = {FS.reflect.card Value}
+   meth create(Value Parent Index Visual Depth)
+      PName     = {System.printName Value}
+      Card      = {FS.reflect.card Value}
+      StopValue = {Visual getStop($)}
    in
-      CreateObject, create(Value Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type   = fset
       @items  = {Dictionary.new}
       @maxPtr = 0
 
-      FSSetCreateObject, add({New InternalAtomNode create(PName Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('{' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('{' Visual Depth)} 0)
-      FSSetCreateObject, iterateList({FS.reflect.lowerBound Value})
-      FSSetCreateObject, add({New InternalAtomNode create('}' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('..' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('{' Visual Depth)} 0)
-      FSSetCreateObject, iterateList({FS.reflect.upperBound Value})
-      FSSetCreateObject, add({New InternalAtomNode create('}' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('}' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('#' Visual Depth)} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('{' Visual Depth)} 0)
-      FSSetCreateObject, add({Create Card Visual Depth} 0)
-      FSSetCreateObject, add({New InternalAtomNode create('}' Visual Depth)} 0)
+      FSSetCreateObject, internalAdd(PName 0)
+      FSSetCreateObject, internalAdd('{' 0)
+      FSSetCreateObject, internalAdd('{' 0)
+      FSSetCreateObject, iterateList({FS.reflect.lowerBound Value} StopValue)
+      FSSetCreateObject, internalAdd('}' 0)
+      FSSetCreateObject, internalAdd('..' 0)
+      FSSetCreateObject, internalAdd('{' 0)
+      FSSetCreateObject, iterateList({FS.reflect.upperBound Value} StopValue)
+      FSSetCreateObject, internalAdd('}' 0)
+      FSSetCreateObject, internalAdd('}' 0)
+      FSSetCreateObject, internalAdd('#' 0)
+      FSSetCreateObject, internalAdd('{' 0)
+      FSSetCreateObject, add(Card 0)
+      FSSetCreateObject, internalAdd('}' 0)
    end
 
-   meth iterateList(Ls)
-      case Ls
-      of Li|Lr then
-         FSSetCreateObject, add({Create Li @visual @depth} 1)
-         FSSetCreateObject, iterateList(Lr)
+   meth iterateList(Ls StopValue)
+      case {IsFree StopValue}
+      then
+         case Ls
+         of Li|Lr then
+            FSSetCreateObject, add(Li 1)
+            FSSetCreateObject, iterateList(Lr StopValue)
+         else
+            Items  = @items
+            MaxPtr = @maxPtr
+            Node|_ = {Dictionary.get Items MaxPtr}
+         in
+            {Dictionary.put Items MaxPtr Node|0}
+         end
       else
-         Items  = @items
-         MaxPtr = @maxPtr
-         Node|_ = {Dictionary.get Items MaxPtr}
-      in
-         {Dictionary.put Items MaxPtr Node|0}
+         skip
       end
    end
 
-   meth add(Node Add)
+   meth add(Value Add)
       MaxPtr = (@maxPtr + 1)
+      Node   = {Create Value self MaxPtr @visual @depth}
+   in
+      {Dictionary.put @items MaxPtr Node|Add}
+      maxPtr <- MaxPtr
+   end
+
+   meth internalAdd(Value Add)
+      MaxPtr = (@maxPtr + 1)
+      Node   = {New InternalAtomNode
+                create(Value self MaxPtr @visual @depth)}
    in
       {Dictionary.put @items MaxPtr Node|Add}
       maxPtr <- MaxPtr

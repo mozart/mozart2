@@ -30,11 +30,13 @@ class CreateObject
       yf        %% Font Size (Height)
       stack     %% Graph Stack
 
-   meth create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
       @value          = Value
       @visual         = Visual
       @depth          = Depth
       @canvas|@xf|@yf = {Visual getVisualData($)}
+      @parent         = Parent
+      @index          = Index
    end
 
    meth getRootIndex(I $)

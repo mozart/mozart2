@@ -418,8 +418,7 @@ class ButtonFrameNode
                        takefocus:   0
                        borderwidth: 1
                        action:      proc {$}
-                                       {Thread.injectException
-                                        {Access ThreadCell} interrupted}
+                                       {Access WidgetCell} = unit
                                     end)}
 
       MW     = {Tk.returnInt winfo(reqwidth @moreB)}

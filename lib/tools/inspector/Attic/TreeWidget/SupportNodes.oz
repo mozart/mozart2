@@ -26,6 +26,7 @@ export
    proxyNode        : ProxyNode
    bitmapTreeNode   : BitmapTreeNode
    internalAtomNode : InternalAtomNode
+   genericNode      : GenericNode
 
 define
    class OptionManager
@@ -121,6 +122,18 @@ define
          InternalAtomCreateObject
          InternalAtomLayoutObject
          InternalAtomDrawObject
+
+      prop
+         final
+   end
+
+   %% GenericNode
+
+   class GenericNode
+      from
+         GenericCreateObject
+         GenericLayoutObject
+         GenericDrawObject
 
       prop
          final

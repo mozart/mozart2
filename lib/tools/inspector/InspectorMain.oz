@@ -19,50 +19,41 @@ functor $
 import
    InspectorOptions
    SupportNodes('options')
-   TreeWidget('treeWidget')
+   TreeWidget('treeWidget' 'widgetCell')
    Tk
    TkTools
 
 export
-   'class'   : Inspector
-   'object'  : Server
-   'inspect' : Inspect
-   'close'   : CloseProc
+   'class'     : Inspector
+   'object'    : Server
+   'inspect'   : Inspect
+   'configure' : Configure
+   'auto'      : Auto
+   'close'     : Close
 
 define
    {InspectorOptions.configure}
 
    Server
-   ThreadCell = {NewCell _}
-
-   proc {CloseProc}
-      {Server close}
-   end
 
    fun {NewServer C I}
       S
       O = {New C I}
       P = {NewPort S}
       Id
-      proc {ServeProc}
-         try
-            {ForAll S O}
-         catch interrupted then
-            {ServeProc}
-         end
-      end
    in
       thread
          Id = {Thread.this}
-         {ServeProc}
+         {ForAll S O}
       end
       proc {$ M}
          {Port.send P M}
       end|Id
    end
 
-   OpMan    = SupportNodes.'options'
-   TrWidget = TreeWidget.treeWidget
+   OpMan      = SupportNodes.'options'
+   TrWidget   = TreeWidget.treeWidget
+   WidgetCell = TreeWidget.widgetCell
 
    \insert 'TinyWinMan.oz'
 
@@ -83,11 +74,11 @@ define
          UArea = @uArea
       in
          WinToplevel, create(XDim YDim 'Oz Inspector')
-         @mNode   = {New InspectorMenuNode create(self XDim 0)}
-         @bNode   = {New ButtonFrameNode create(self XDim 0 self)}
-         UArea    = ({@mNode getYDim($)} + {@bNode getYDim($)})
-         @cNode   = {New ScrollCanvasNode create(self XDim (YDim - UArea))}
-         {Assign ThreadCell {@cNode getThread($)}}
+         @mNode = {New InspectorMenuNode create(self XDim 0)}
+         @bNode = {New ButtonFrameNode create(self XDim 0 self)}
+         UArea  = ({@mNode getYDim($)} + {@bNode getYDim($)})
+         @cNode = {New ScrollCanvasNode create(self XDim (YDim - UArea))}
+         %% {Assign WidgetCell {@cNode getWidget($)}}
       end
 
       meth inspect(Value)
@@ -98,6 +89,16 @@ define
             visible <- true
          end
          {@cNode display(Value)}
+      end
+
+      meth configure(Option Value)
+         {OpMan set(Option Value)}
+      end
+
+      meth setauto(Option Value)
+         _#Fun#LsValue = {OpMan get(Option $)}
+      in
+         {OpMan set(Option Value#Fun#LsValue)}
       end
 
       meth getType($)
@@ -278,7 +279,7 @@ define
          {Tk.batch [focus(NCanvas)]}
          cNode <- NNode
          {NNode unfreeze}
-         {Assign ThreadCell {NNode getThread($)}}
+         %% {Assign WidgetCell {NNode getWidget($)}}
       end
 
       meth enterFocus
@@ -358,7 +359,7 @@ define
             {Pane undraw}
             cNode <- NNode
             {Tk.batch [focus(NCanvas)]}
-            {Assign ThreadCell {NNode getThread($)}}
+            %% {Assign WidgetCell {NNode getWidget($)}}
             WinToplevel, moveY((I + DeltaK) ~DeltaY)
             Inspector, adjustIndex((I + DeltaK))
             AddSpace = (DeltaY div @divCount)
@@ -392,5 +393,17 @@ define
 
    proc {Inspect Value}
       {Server inspect(Value)}
+   end
+
+   proc {Configure O V}
+      {Server configure(O V)}
+   end
+
+   proc {Auto O V}
+      {Server setauto(O V)}
+   end
+
+   proc {Close}
+      {Server close}
    end
 end

@@ -34,10 +34,10 @@ in
       from
          TupleShareCreateObject
 
-      meth create(Value Visual Depth)
+      meth create(Value Parent Index Visual Depth)
          CurWidth = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @type     = hashTuple
          @items    = {Dictionary.new}
          @widthLen = {Width Value}
@@ -47,48 +47,44 @@ in
       end
 
       meth adjustWidth(CurWidth I)
-         WidthLen = @widthLen
+         StopValue = {@visual getStop($)}
       in
-         case CurWidth < WidthLen
-         then
-            Items     = @items
-            Visual    = @visual
-            Depth     = @depth
-            Bitmap    = {New BitmapTreeNode create(width Visual Depth)}
-            Separator = {New InternalAtomNode create('#' Visual Depth)}
-            NewWidth  = (CurWidth + 1)
-            Node
-         in
-            width <- CurWidth
-            case CurWidth
-            of 0 then skip
-            else
-               HashTupleCreateObject, performInsertion(I)
-               Node = {Dictionary.get Items CurWidth}
-               {Dictionary.put Items CurWidth Node|Separator}
-            end
-            {Bitmap setParentData(self NewWidth)}
-            {Dictionary.put Items NewWidth Bitmap}
-            width <- NewWidth
-         else
-            width <- WidthLen
-            HashTupleCreateObject, performInsertion(I)
-         end
+         width <- {Min CurWidth @widthLen}
+         {self performInsertion(I StopValue)}
       end
 
-      meth performInsertion(I)
+      meth performInsertion(I StopValue)
          Visual = @visual
-         Node   = {Create @value.I Visual @depth}
+         Depth  = @depth
       in
-         {Node setParentData(self I)}
-         case I < @width
+         case {IsFree StopValue}
          then
-            Separator = {New InternalAtomNode create('#' Visual 0)}
-         in
-            {Dictionary.put @items I Node|Separator}
-            HashTupleCreateObject, performInsertion((I + 1))
+            case I < @width
+            then
+               Node      = {Create @value.I self I Visual Depth}
+               Separator = {New InternalAtomNode create('#' self I Visual Depth)}
+            in
+               {Dictionary.put @items I Node|Separator}
+               HashTupleCreateObject, performInsertion((I + 1) StopValue)
+            elsecase I == @widthLen
+            then
+               Node = {Create @value.I self I Visual Depth}
+            in
+               {Dictionary.put @items I Node}
+            else
+               Items     = @items
+               Node      = {Create @value.I self I Visual Depth}
+               Separator = {New InternalAtomNode create('#' self I Visual Depth)}
+               NewWidth  = (I + 1)
+               Bitmap    = {New BitmapTreeNode
+                            create(width self NewWidth Visual Depth)}
+            in
+               {Dictionary.put Items I Node|Separator}
+               {Dictionary.put Items NewWidth Bitmap}
+               width <- NewWidth
+            end
          else
-            {Dictionary.put @items I Node}
+            skip
          end
       end
    end
@@ -104,10 +100,10 @@ in
          obrace   %% Open Edge (List Mode)
          cbrace   %% Close Edge (List Mode)
 
-      meth create(Value Visual Depth)
+      meth create(Value Parent Index Visual Depth)
          CurWidth = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @items    = {Dictionary.new}
          CurWidth  = {Visual getWidth($)}
          @curDepth = {Visual getDepth($)}
@@ -115,10 +111,11 @@ in
       end
 
       meth adjustWidth(MaxWidth I)
-         NewValue = PipeTupleCreateObject, seekStartPos(I @value $)
+         NewValue  = PipeTupleCreateObject, seekStartPos(I @value $)
+         StopValue = {@visual getStop($)}
       in
          maxWidth <- MaxWidth
-         PipeTupleCreateObject, performInsertion(I NewValue)
+         {self performInsertion(I NewValue StopValue)}
       end
 
       meth seekStartPos(I Vs $)
@@ -128,53 +125,56 @@ in
          end
       end
 
-      meth performInsertion(I Vs)
-         case I =< @maxWidth
+      meth performInsertion(I Vs StopValue)
+         case {IsFree StopValue}
          then
-            case {IsFree Vs}
+            case I =< @maxWidth
             then
-               Node = {Create Vs @visual @depth}
-            in
-               {Node setParentData(self I)}
-               {Dictionary.put @items I Node}
-               type  <- pipeTuple
-               width <- I
-            else
-               case Vs
+               case {IsFree Vs}
+               then
+                  Node = {Create Vs self I @visual @depth}
+               in
+                  {Dictionary.put @items I Node}
+                  type  <- pipeTuple
+                  width <- I
+               elsecase Vs
                of V|Vr then
                   Visual    = @visual
                   Depth     = @depth
-                  Node      = {Create V Visual Depth}
-                  Separator = {New InternalAtomNode create('|' Visual Depth)}
+                  Node      = {Create V self I Visual Depth}
+                  Separator = {New InternalAtomNode
+                               create('|' self I Visual Depth)}
                in
-                  {Node setParentData(self I)}
                   {Dictionary.put @items I Node|Separator}
-                  PipeTupleCreateObject, performInsertion((I + 1) Vr)
+                  PipeTupleCreateObject,
+                  performInsertion((I + 1) Vr StopValue)
                [] nil  then
                   Visual = @visual
                   Depth  = @depth
                in
                   type  <- list
                   width <- (I - 1)
-                  @obrace = {New InternalAtomNode create('[' Visual Depth)}
-                  @cbrace = {New InternalAtomNode create(']' Visual Depth)}
+                  @obrace = {New InternalAtomNode
+                             create('[' self I Visual Depth)}
+                  @cbrace = {New InternalAtomNode
+                             create(']' self I Visual Depth)}
                   PipeTupleCreateObject, removeSeparators(1)
                else
-                  Node = {Create Vs @visual @depth}
+                  Node = {Create Vs self I @visual @depth}
                in
-                  {Node setParentData(self I)}
                   {Dictionary.put @items I Node}
                   type  <- pipeTuple
                   width <- I
                end
+            else
+               Node = {New BitmapTreeNode create(width self I @visual @depth)}
+            in
+               {Dictionary.put @items I Node}
+               width <- I
+               type  <- pipeTuple
             end
          else
-            Node = {New BitmapTreeNode create(width @visual @depth)}
-         in
-            {Node setParentData(self I)}
-            {Dictionary.put @items I Node}
-            width <- I
-            type  <- pipeTuple
+            skip
          end
       end
 
@@ -195,9 +195,9 @@ in
          then
             Items = @items
             Node  = {Dictionary.get Items I}
-            Separator
+            Separator = {New InternalAtomNode
+                         create('|' self I @visual @depth)}
          in
-            Separator = {New InternalAtomNode create('|' @visual @depth)}
             {Dictionary.put Items I Node|Separator}
             PipeTupleCreateObject, addSeparators(I - 1)
          else skip
@@ -217,73 +217,74 @@ in
          cobrace   %% HashTuple Cycle Open Brace
          ccbrace   %% HashTuple Cycle Close Brace
 
-      meth create(Value Visual CycleMan Depth)
+      meth create(Value Parent Index Visual CycleMan Depth)
          CurWidth = @curWidth
       in
-         CreateObject, create(Value Visual (Depth + 1))
+         CreateObject, create(Value Parent Index Visual (Depth + 1))
          @type      = hashTuple
          @items     = {Dictionary.new}
          @widthLen  = {Width Value}
          @cycleMan  = CycleMan
          @cycleNode = {New InternalAtomNode
                        create({CycleMan register(Value self $)}#'='
-                              Visual Depth)}
-         @cobrace   = {New InternalAtomNode create('(' Visual Depth)}
-         @ccbrace   = {New InternalAtomNode create(')' Visual Depth)}
+                              self 0 Visual Depth)}
+         @cobrace   = {New InternalAtomNode
+                       create('(' self 0 Visual Depth)}
+         @ccbrace   = {New InternalAtomNode
+                       create(')' self 0 Visual Depth)}
          CurWidth   = {Visual getWidth($)}
          @curDepth  = {Visual getDepth($)}
-         HashTupleCycleCreateObject, adjustWidth(CurWidth 1)
+         HashTupleCreateObject, adjustWidth(CurWidth 1)
       end
 
-      meth adjustWidth(CurWidth I)
-         WidthLen = @widthLen
-      in
-         case CurWidth < WidthLen
-         then
-            Items     = @items
-            Visual    = @visual
-            Depth     = @depth
-            Bitmap    = {New BitmapTreeNode create(width Visual Depth)}
-            Separator = {New InternalAtomNode create('#' Visual Depth)}
-            NewWidth  = (CurWidth + 1)
-            Node
-         in
-            width <- CurWidth
-            case CurWidth
-            of 0 then skip
-            else
-               HashTupleCycleCreateObject, performInsertion(I)
-               Node = {Dictionary.get Items CurWidth}
-               {Dictionary.put Items CurWidth Node|Separator}
-            end
-            {Bitmap setParentData(self NewWidth)}
-            {@cycleMan getStack(Bitmap)}
-            {Dictionary.put Items NewWidth Bitmap}
-            width <- NewWidth
-         else
-            width <- WidthLen
-            HashTupleCycleCreateObject, performInsertion(I)
-         end
-      end
-
-      meth performInsertion(I)
+      meth performInsertion(I StopValue)
          Visual   = @visual
+         Depth    = @depth
          CycleMan = @cycleMan
-         Node
       in
-         {CycleMan push}
-         Node = {CycleCreate @value.I Visual CycleMan @depth}
-         {CycleMan pop}
-         {CycleMan getStack(Node)}
-         {Node setParentData(self I)}
-         case I < @width
+         case {IsFree StopValue}
          then
-            Separator = {New InternalAtomNode create('#' Visual 0)}
-         in
-            {Dictionary.put @items I Node|Separator}
-            HashTupleCycleCreateObject, performInsertion((I + 1))
+            case I < @width
+            then
+               Separator = {New InternalAtomNode
+                            create('#' self I Visual Depth)}
+               Node
+            in
+               {CycleMan push}
+               Node = {CycleCreate @value.I self I Visual CycleMan Depth}
+               {CycleMan pop}
+               {CycleMan getStack(Node)}
+               {Dictionary.put @items I Node|Separator}
+               HashTupleCycleCreateObject,
+               performInsertion((I + 1) StopValue)
+            elsecase I == @widthLen
+            then
+               Node
+            in
+               {CycleMan push}
+               Node = {CycleCreate @value.I self I Visual CycleMan Depth}
+               {CycleMan pop}
+               {CycleMan getStack(Node)}
+               {Dictionary.put @items I Node}
+            else
+               Items     = @items
+               Separator = {New InternalAtomNode
+                            create('#' self I Visual Depth)}
+               Bitmap    = {New BitmapTreeNode create(width self I Visual Depth)}
+               NewWidth  = (I + 1)
+               Node
+            in
+               {CycleMan push}
+               Node = {CycleCreate @value.I self I Visual CycleMan Depth}
+               {CycleMan pop}
+               {CycleMan getStack(Node)}
+               {CycleMan getStack(Bitmap)}
+               {Dictionary.put Items I Node|Separator}
+               {Dictionary.put Items NewWidth Bitmap}
+               width <- NewWidth
+            end
          else
-            {Dictionary.put @items I Node}
+            skip
          end
       end
    end
@@ -301,112 +302,112 @@ in
          ccbrace   %% PipeTuple Cycle Close Brace
 
       meth create(Value Visual CycleMan Depth)
+         CurWidth = @curWidth
+      in
          CreateObject, create(Value Visual (Depth + 1))
          @items     = {Dictionary.new}
-         @maxWidth  = {Visual getWidth($)}
          @cycleMan  = CycleMan
          @cycleNode = {New InternalAtomNode
                        create({CycleMan register(Value self $)}#'='
-                              Visual Depth)}
-         @cobrace   = {New InternalAtomNode create('(' Visual Depth)}
-         @ccbrace   = {New InternalAtomNode create(')' Visual Depth)}
-         @curWidth  = {Visual getWidth($)}
+                              self 0 Visual Depth)}
+         @cobrace   = {New InternalAtomNode
+                       create('(' self 0 Visual Depth)}
+         @ccbrace   = {New InternalAtomNode
+                       create(')' self 0 Visual Depth)}
+         CurWidth   = {Visual getWidth($)}
          @curDepth  = {Visual getDepth($)}
-         PipeTupleCycleCreateObject, adjustWidth(1)
+         PipeTupleCreateObject, adjustWidth(CurWidth 1)
       end
 
-      meth adjustWidth(I)
-         NewValue = PipeTupleCreateObject, seekStartPos(I @value $)
-      in
-         PipeTupleCycleCreateObject, performInsertion(I NewValue)
-      end
-
-      meth performInsertion(I Vs)
-         case I =< @maxWidth
+      meth performInsertion(I Vs StopValue)
+         case {IsFree StopValue}
          then
-            case {IsFree Vs}
+            case I =< @maxWidth
             then
-               CycleMan = @cycleMan
-               Node
-            in
-               {CycleMan push}
-               Node = {CycleCreate Vs @visual CycleMan @depth}
-               {CycleMan pop}
-               {CycleMan getStack(Node)}
-               {Node setParentData(self I)}
-               {Dictionary.put @items I Node}
-               type  <- pipeTuple
-               width <- I
-            elsecase Vs
-            of V|Vr then
-               Visual    = @visual
-               Depth     = @depth
-               CycleMan  = @cycleMan
-               Separator = {New InternalAtomNode create('|' Visual Depth)}
-               Node
-            in
-               {CycleMan push}
-               Node = {CycleCreate V Visual CycleMan Depth}
-               {CycleMan pop}
-               {CycleMan getStack(Node)}
-               {Node setParentData(self I)}
-               {Dictionary.put @items I Node|Separator}
-               case {System.eq Vr @value}
-               then PipeTupleCycleCreateObject, endCycleInsertion((I + 1))
-               else PipeTupleCycleCreateObject, performInsertion((I + 1) Vr)
+               case {IsFree Vs}
+               then
+                  CycleMan = @cycleMan
+                  Node
+               in
+                  {CycleMan push}
+                  Node = {CycleCreate Vs self I @visual CycleMan @depth}
+                  {CycleMan pop}
+                  {CycleMan getStack(Node)}
+                  {Dictionary.put @items I Node}
+                  type  <- pipeTuple
+                  width <- I
+               elsecase Vs
+               of V|Vr then
+                  Visual    = @visual
+                  Depth     = @depth
+                  CycleMan  = @cycleMan
+                  Separator = {New InternalAtomNode
+                               create('|' self I Visual Depth)}
+                  Node
+               in
+                  {CycleMan push}
+                  Node = {CycleCreate V self I Visual CycleMan Depth}
+                  {CycleMan pop}
+                  {CycleMan getStack(Node)}
+                  {Dictionary.put @items I Node|Separator}
+                  case {System.eq Vr @value}
+                  then PipeTupleCycleCreateObject, endCycleInsertion((I + 1))
+                  else PipeTupleCycleCreateObject, performInsertion((I + 1) Vr)
+                  end
+               [] nil  then
+                  Visual = @visual
+                  Depth  = @depth
+               in
+                  type  <- list
+                  width <- (I - 1)
+                  @obrace = {New InternalAtomNode
+                             create('[' self I Visual Depth)}
+                  @cbrace = {New InternalAtomNode
+                             create(']' self I Visual Depth)}
+                  PipeTupleCreateObject, removeSeparators(1)
+               else
+                  CycleMan = @cycleMan
+                  Node
+               in
+                  {CycleMan push}
+                  Node = {CycleCreate Vs self I @visual CycleMan @depth}
+                  {CycleMan pop}
+                  {CycleMan getStack(Node)}
+                  {Dictionary.put @items I Node}
+                  type  <- pipeTuple
+                  width <- I
                end
-            [] nil  then
-               Visual = @visual
-               Depth  = @depth
-            in
-               type  <- list
-               width <- (I - 1)
-               @obrace = {New InternalAtomNode create('[' Visual Depth)}
-               @cbrace = {New InternalAtomNode create(']' Visual Depth)}
-               PipeTupleCreateObject, removeSeparators(1)
             else
-               CycleMan = @cycleMan
-               Node
+               Node = {New BitmapTreeNode create(width self I @visual @depth)}
             in
-               {CycleMan push}
-               Node = {CycleCreate Vs @visual CycleMan @depth}
-               {CycleMan pop}
-               {CycleMan getStack(Node)}
-               {Node setParentData(self I)}
+               {@cycleMan getStack(Node)}
                {Dictionary.put @items I Node}
-               type  <- pipeTuple
                width <- I
+               type  <- pipeTuple
             end
          else
-            Node = {New BitmapTreeNode create(width @visual @depth)}
-         in
-            {Node setParentData(self I)}
-            {@cycleMan getStack(Node)}
-            {Dictionary.put @items I Node}
-            width <- I
-            type  <- pipeTuple
+            skip
          end
       end
 
       meth endCycleInsertion(I)
+         CycleMan = @cycleMan
+      in
          case I =< @maxWidth
          then
-            CycleMan = @cycleMan
             Node
          in
             {CycleMan push}
-            Node = {CycleCreate @value @visual CycleMan @depth}
+            Node = {CycleCreate @value self I @visual CycleMan @depth}
             {CycleMan pop}
             {CycleMan getStack(Node)}
-            {Node setParentData(self I)}
             {Dictionary.put @items I Node}
             type  <- pipeTuple
             width <- I
          else
-            Node = {New BitmapTreeNode create(width @visual @depth)}
+            Node = {New BitmapTreeNode create(width self I @visual @depth)}
          in
-            {Node setParentData(self I)}
-            {@cycleMan getStack(Node)}
+            {CycleMan getStack(Node)}
             {Dictionary.put @items I Node}
             width <- I
             type  <- pipeTuple
@@ -431,56 +432,52 @@ class LabelTupleCreateObject
       curDepth %% Current Depth
 
 
-   meth create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
       TLabel = @label
    in
-      CreateObject, create(Value Visual (Depth + 1))
+      CreateObject, create(Value Parent Index Visual (Depth + 1))
       @type     = labelTuple
       TLabel    = {New TreeNodes.atomTreeNode
-                   create({Label Value} Visual Depth)}
+                   create({Label Value} self 0 Visual Depth)}
       {TLabel initMenu(@type)}
       @items    = {Dictionary.new}
       @widthLen = {Width Value}
-      @brace    = {New InternalAtomNode create(')' Visual Depth)}
+      @brace    = {New InternalAtomNode create(')' self 0 Visual Depth)}
       @curWidth = {Visual getWidth($)}
       @curDepth = {Visual getDepth($)}
       {TLabel setLayoutType(tuple)}
-      {TLabel setParentData(self 0)}
       {TLabel setRescueValue(Value)}
       LabelTupleCreateObject, adjustWidth(@curWidth 1)
    end
 
    meth adjustWidth(CurWidth I)
-      WidthLen = @widthLen
+      StopValue = {@visual getStop($)}
    in
-      case CurWidth < WidthLen
-      then
-         Bitmap   = {New BitmapTreeNode create(width @visual @depth)}
-         NewWidth = (CurWidth + 1)
-      in
-         width <- CurWidth
-         {Bitmap setParentData(self NewWidth)}
-         {Dictionary.put @items NewWidth Bitmap}
-         case CurWidth < I
-         then skip
-         else LabelTupleCreateObject, performInsertion(I)
-         end
-         width <- NewWidth
-      else
-         width <- WidthLen
-         LabelTupleCreateObject, performInsertion(I)
-      end
-      {@label setParentData(self @width)}
+      width <- {Min CurWidth @widthLen}
+      {self performInsertion(I StopValue)}
    end
 
-   meth performInsertion(I)
-      Node = {Create @value.I @visual @depth}
+   meth performInsertion(I StopValue)
+      Width = @width
    in
-      {Node setParentData(self I)}
-      {Dictionary.put @items I Node}
-      case I < @width
-      then LabelTupleCreateObject, performInsertion((I + 1))
-      else skip
+      case {IsFree StopValue}
+      then
+         case I =< Width
+         then
+            Node = {Create @value.I self I @visual @depth}
+         in
+            {Dictionary.put @items I Node}
+            LabelTupleCreateObject, performInsertion((I + 1) StopValue)
+         elsecase Width < @widthLen
+         then
+            Bitmap = {New BitmapTreeNode create(width self I @visual @depth)}
+         in
+            {Dictionary.put @items I Bitmap}
+            width <- I
+         else skip
+         end
+      else
+         skip
       end
    end
 end
@@ -514,46 +511,36 @@ class LabelTupleCycleCreateObject
                            Visual Depth)}
       {TLabel setLayoutType(tuple)}
       {TLabel setRescueValue(Value)}
-      LabelTupleCycleCreateObject, adjustWidth(@curWidth 1)
+      LabelTupleCreateObject, adjustWidth(@curWidth 1)
    end
 
-   meth adjustWidth(CurWidth I)
-      WidthLen = @widthLen
-   in
-      case CurWidth < WidthLen
-      then
-         Bitmap   = {New BitmapTreeNode create(width @visual @depth)}
-         NewWidth = (CurWidth + 1)
-      in
-         width <- CurWidth
-         {Bitmap setParentData(self NewWidth)}
-         {@cycleMan getStack(Bitmap)}
-         {Dictionary.put @items NewWidth Bitmap}
-         case CurWidth < I
-         then skip
-         else LabelTupleCycleCreateObject, performInsertion(I)
-         end
-         width <- NewWidth
-      else
-         width <- WidthLen
-         LabelTupleCycleCreateObject, performInsertion(I)
-      end
-      {@label setParentData(self @width)}
-   end
-
-   meth performInsertion(I)
+   meth performInsertion(I StopValue)
+      Width    = @width
       CycleMan = @cycleMan
-      Node
    in
-      {CycleMan push}
-      Node = {CycleCreate @value.I @visual CycleMan @depth}
-      {CycleMan pop}
-      {CycleMan getStack(Node)}
-      {Node setParentData(self I)}
-      {Dictionary.put @items I Node}
-      case I < @width
-      then LabelTupleCycleCreateObject, performInsertion((I + 1))
-      else skip
+      case {IsFree StopValue}
+      then
+         case I =< Width
+         then
+            Node
+         in
+            {CycleMan push}
+            Node = {CycleCreate @value.I self I @visual CycleMan @depth}
+            {CycleMan pop}
+            {CycleMan getStack(Node)}
+            {Dictionary.put @items I Node}
+            LabelTupleCycleCreateObject, performInsertion((I + 1) StopValue)
+         elsecase Width < @widthLen
+         then
+            Bitmap = {New BitmapTreeNode create(width @visual @depth)}
+         in
+            {CycleMan getStack(Bitmap)}
+            {Dictionary.put @items I Bitmap}
+            width <- I
+         else skip
+         end
+      else
+         skip
       end
    end
 end

@@ -21,25 +21,33 @@ class FSSetDrawObject
    meth draw(X Y)
       case @dirty
       then
-         Server = {@visual getServer($)}
+         Visual    = @visual
+         Server    = {Visual getServer($)}
+         StopValue = {Visual getStop($)}
       in
          xAnchor <- X
          yAnchor <- Y
-         FSSetDrawObject, performDraw(1 X Y)
+         FSSetDrawObject, performDraw(1 X Y StopValue)
          {Server logVar(self @value normal)}
          dirty <- false
       else skip
       end
    end
 
-   meth performDraw(I X Y)
+   meth performDraw(I X Y StopValue)
       Node|Add = {Dictionary.get @items I}
       XDim     = {Node getXDim($)}
    in
-      {Node draw(X Y)}
-      case I < @maxPtr
-      then FSSetDrawObject, performDraw((I + 1) (X + XDim + Add) Y)
-      else skip
+      case {IsFree StopValue}
+      then
+         {Node draw(X Y)}
+         case I < @maxPtr
+         then FSSetDrawObject,
+            performDraw((I + 1) (X + XDim + Add) Y StopValue)
+         else skip
+         end
+      else
+         skip
       end
    end
 
@@ -61,11 +69,13 @@ class FSSetDrawObject
    meth reDraw(X Y)
       case @dirty
       then
-         Server = {@visual getServer($)}
+         Visual    = @visual
+         Server    = {Visual getServer($)}
+         StopValue = {Visual getStop($)}
       in
          xAnchor <- X
          yAnchor <- Y
-         FSSetDrawObject, performReDraw(1 X Y)
+         FSSetDrawObject, performReDraw(1 X Y StopValue)
          dirty <- false
          {Server logVar(self @value normal)}
       else
@@ -87,14 +97,20 @@ class FSSetDrawObject
       end
    end
 
-   meth performReDraw(I X Y)
+   meth performReDraw(I X Y StopValue)
       Node|Add = {Dictionary.get @items I}
       XDim     = {Node getXDim($)}
    in
-      {Node reDraw(X Y)}
-      case I < @maxPtr
-      then FSSetDrawObject, performReDraw((I + 1) (X + XDim + Add) Y)
-      else skip
+      case {IsFree StopValue}
+      then
+         {Node reDraw(X Y)}
+         case I < @maxPtr
+         then FSSetDrawObject,
+            performReDraw((I + 1) (X + XDim + Add) Y StopValue)
+         else skip
+         end
+      else
+         skip
       end
    end
 

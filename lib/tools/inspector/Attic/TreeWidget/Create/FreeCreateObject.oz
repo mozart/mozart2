@@ -18,8 +18,8 @@ class FreeCreateObject
    from
       CreateObject
 
-   meth create(Value Visual Depth)
-      CreateObject, create(Value Visual Depth)
+   meth create(Value Parent Index Visual Depth)
+      CreateObject, create(Value Parent Index Visual Depth)
       @type = freeVar
    end
 end

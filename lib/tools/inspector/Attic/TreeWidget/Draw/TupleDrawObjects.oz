@@ -22,49 +22,65 @@ local
       meth draw(X Y)
          case @dirty
          then
+            StopValue = {@visual getStop($)}
+         in
             xAnchor <- X
             yAnchor <- Y
             case @layoutMode
-            of horizontal then TupleShareDrawObject, horizontalDraw(1 X Y)
-            [] vertical   then TupleShareDrawObject, verticalDraw(1 X Y)
+            of horizontal then
+               TupleShareDrawObject, horizontalDraw(1 X Y StopValue)
+            [] vertical   then
+               TupleShareDrawObject, verticalDraw(1 X Y StopValue)
             end
             dirty <- false
          else skip
          end
       end
 
-      meth horizontalDraw(I X Y)
-         case I < @width
+      meth horizontalDraw(I X Y StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            XDim           = {Node getXDim($)}
-            DeltaX         = (X + XDim)
-         in
-            {Node draw(X Y)}
-            {Separator draw(DeltaX Y)}
-            TupleShareDrawObject, horizontalDraw((I + 1) (DeltaX + 1) Y)
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               XDim           = {Node getXDim($)}
+               DeltaX         = (X + XDim)
+            in
+               {Node draw(X Y)}
+               {Separator draw(DeltaX Y)}
+               TupleShareDrawObject,
+               horizontalDraw((I + 1) (DeltaX + 1) Y StopValue)
+            else
+               Node = {Dictionary.get @items I}
+            in
+               {Node draw(X Y)}
+            end
          else
-            Node = {Dictionary.get @items I}
-         in
-            {Node draw(X Y)}
+            skip
          end
       end
 
-      meth verticalDraw(I X Y)
-         case I < @width
+      meth verticalDraw(I X Y StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            YDim           = {Node getYDim($)}
-            LXDim          = {Node getLastXDim($)}
-            DeltaY         = (Y + YDim)
-         in
-            {Node draw(X Y)}
-            {Separator draw((X + LXDim) (DeltaY - 1))}
-            TupleShareDrawObject, verticalDraw((I + 1) X DeltaY)
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               YDim           = {Node getYDim($)}
+               LXDim          = {Node getLastXDim($)}
+               DeltaY         = (Y + YDim)
+            in
+               {Node draw(X Y)}
+               {Separator draw((X + LXDim) (DeltaY - 1))}
+               TupleShareDrawObject,
+               verticalDraw((I + 1) X DeltaY StopValue)
+            else
+               Node = {Dictionary.get @items I}
+            in
+               {Node draw(X Y)}
+            end
          else
-            Node = {Dictionary.get @items I}
-         in
-            {Node draw(X Y)}
+            skip
          end
       end
 
@@ -101,7 +117,7 @@ local
             OldNode|Separator = {Dictionary.get @items I}
          in
             {OldNode undraw}
-            Node = {self Call(OldNode Value $)}
+            Node = {self Call(OldNode Value I $)}
             case {OldNode isProxy($)}
             then {OldNode alter(Node)}
             else {Dictionary.put Items I Node|Separator}
@@ -110,23 +126,23 @@ local
             OldNode = {Dictionary.get @items I}
          in
             {OldNode undraw}
-            Node = {self Call(OldNode Value $)}
+            Node = {self Call(OldNode Value I $)}
             case {OldNode isProxy($)}
             then {OldNode alter(Node)}
             else {Dictionary.put Items I Node}
             end
          end
-         {Node setParentData(self I)}
          TupleShareDrawObject, notify
       end
 
-      meth replaceNormal(OldNode Value $)
-         {Create Value @visual @depth}
+      meth replaceNormal(OldNode Value I $)
+         {Create Value self I @visual @depth}
       end
 
-      meth replaceDepth(OldNode Value $)
+      meth replaceDepth(OldNode Value I $)
          RValue = {OldNode getValue($)}
-         Node   = {New BitmapTreeNode create(depth @visual @depth)}
+         Node   = {New BitmapTreeNode
+                   create(depth self I @visual @depth)}
       in
          {Node setRescueValue(RValue)}
          Node
@@ -141,18 +157,17 @@ local
             OldNode|Separator = {Dictionary.get @items I}
             Proxy             = {New ProxyNode create(OldNode Node)}
          in
-            Node = {self replaceNormal(OldNode Value $)}
+            Node = {self replaceNormal(OldNode Value I $)}
             {OldNode undraw}
             {Dictionary.put Items I Proxy|Separator}
          else
             OldNode = {Dictionary.get @items I}
             Proxy   = {New ProxyNode create(OldNode Node)}
          in
-            Node = {self replaceNormal(OldNode Value $)}
+            Node = {self replaceNormal(OldNode Value I $)}
             {OldNode undraw}
             {Dictionary.put Items I Proxy}
          end
-         {Node setParentData(self I)}
          TupleShareDrawObject, notify
       end
 
@@ -226,11 +241,15 @@ local
       meth reDraw(X Y)
          case @dirty
          then
+            StopValue = {@visual getStop($)}
+         in
             xAnchor <- X
             yAnchor <- Y
             case @layoutMode
-            of horizontal then TupleShareDrawObject, horizontalReDraw(1 X Y)
-            [] vertical   then TupleShareDrawObject, verticalReDraw(1 X Y)
+            of horizontal then
+               TupleShareDrawObject, horizontalReDraw(1 X Y StopValue)
+            [] vertical   then
+               TupleShareDrawObject, verticalReDraw(1 X Y StopValue)
             end
             dirty <- false
          else
@@ -252,38 +271,50 @@ local
          end
       end
 
-      meth horizontalReDraw(I X Y)
-         case I < @width
+      meth horizontalReDraw(I X Y StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            XDim           = {Node getXDim($)}
-            DeltaX         = (X + XDim)
-         in
-            {Node reDraw(X Y)}
-            {Separator reDraw(DeltaX Y)}
-            TupleShareDrawObject, horizontalReDraw((I + 1) (DeltaX + 1) Y)
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               XDim           = {Node getXDim($)}
+               DeltaX         = (X + XDim)
+            in
+               {Node reDraw(X Y)}
+               {Separator reDraw(DeltaX Y)}
+               TupleShareDrawObject,
+               horizontalReDraw((I + 1) (DeltaX + 1) Y StopValue)
+            else
+               Node = {Dictionary.get @items I}
+            in
+               {Node reDraw(X Y)}
+            end
          else
-            Node = {Dictionary.get @items I}
-         in
-            {Node reDraw(X Y)}
+            skip
          end
       end
 
-      meth verticalReDraw(I X Y)
-         case I < @width
+      meth verticalReDraw(I X Y StopValue)
+         case {IsFree StopValue}
          then
-            Node|Separator = {Dictionary.get @items I}
-            YDim           = {Node getYDim($)}
-            LXDim          = {Node getLastXDim($)}
-            DeltaY         = (Y + YDim)
-         in
-            {Node reDraw(X Y)}
-            {Separator reDraw((X + LXDim) (DeltaY - 1))}
-            TupleShareDrawObject, verticalReDraw((I + 1) X DeltaY)
+            case I < @width
+            then
+               Node|Separator = {Dictionary.get @items I}
+               YDim           = {Node getYDim($)}
+               LXDim          = {Node getLastXDim($)}
+               DeltaY         = (Y + YDim)
+            in
+               {Node reDraw(X Y)}
+               {Separator reDraw((X + LXDim) (DeltaY - 1))}
+               TupleShareDrawObject,
+               verticalReDraw((I + 1) X DeltaY StopValue)
+            else
+               Node = {Dictionary.get @items I}
+            in
+               {Node reDraw(X Y)}
+            end
          else
-            Node = {Dictionary.get @items I}
-         in
-            {Node reDraw(X Y)}
+            skip
          end
       end
 
@@ -427,10 +458,9 @@ local
                {Dictionary.put Items Index NewNode}
             end
             {Visual setDepth(NewDepth)}
-            NewNode = {self replaceNormal(Node Value $)}
+            NewNode = {self replaceNormal(Node Value Index $)}
             {Visual setDepth(OldDepth)}
             {Node undraw}
-            {NewNode setParentData(self Index)}
             TupleShareDrawObject, notify
          end
       end
@@ -484,23 +514,24 @@ local
          {@cycleMan setStack(OldStack)}
       end
 
-      meth replaceNormal(OldNode Value $)
+      meth replaceNormal(OldNode Value I $)
          CycleMan = @cycleMan
          OldStack = {OldNode getStack($)}
          Node
       in
          {CycleMan setStack(OldStack)}
          {CycleMan push}
-         Node = {CycleCreate Value @visual CycleMan @depth}
+         Node = {CycleCreate Value self I @visual CycleMan @depth}
          {CycleMan pop}
          {CycleMan tellStack(Node)}
          Node
       end
 
-      meth replaceDepth(OldNode Value $)
+      meth replaceDepth(OldNode Value I $)
          RValue   = {OldNode getValue($)}
          OldStack = {OldNode getStack($)}
-         Node     = {New BitmapTreeNode create(depth @visual @depth)}
+         Node     = {New BitmapTreeNode
+                     create(depth self I @visual @depth)}
       in
          {Node setRescueValue(RValue)}
          {Node setStack(OldStack)}
@@ -586,44 +617,56 @@ in
       meth fastDraw(X Y)
          case @dirty
          then
+            StopValue = {@visual getStop($)}
+         in
             xAnchor <- X
             yAnchor <- Y
             {@obrace draw(X Y)}
             case @layoutMode
-            of horizontal then PipeTupleDrawObject, fastHorizontalDraw(1
-                                                                       (X + 1)
-                                                                       Y)
-            [] vertical   then PipeTupleDrawObject, fastVerticalDraw(1
-                                                                     (X + 1)
-                                                                     Y)
+            of horizontal then PipeTupleDrawObject,
+               fastHorizontalDraw(1 (X + 1) Y StopValue)
+            [] vertical   then PipeTupleDrawObject,
+               fastVerticalDraw(1 (X + 1) Y StopValue)
             end
             dirty <- false
          else skip
          end
       end
 
-      meth fastHorizontalDraw(I X Y)
+      meth fastHorizontalDraw(I X Y StopValue)
          Node = {Dictionary.get @items I}
          XDim = {Node getXDim($)}
       in
-         {Node draw(X Y)}
-         case I < @width
-         then PipeTupleDrawObject, fastHorizontalDraw((I + 1) (X + (XDim+1)) Y)
-         else {@cbrace draw((X + XDim) Y)}
+         case {IsFree StopValue}
+         then
+            {Node draw(X Y)}
+            case I < @width
+            then PipeTupleDrawObject,
+               fastHorizontalDraw((I + 1) (X + (XDim + 1)) Y StopValue)
+            else {@cbrace draw((X + XDim) Y)}
+            end
+         else
+            skip
          end
       end
 
-      meth fastVerticalDraw(I X Y)
+      meth fastVerticalDraw(I X Y StopValue)
          Node = {Dictionary.get @items I}
          YDim = {Node getYDim($)}
       in
-         {Node draw(X Y)}
-         case I < @width
-         then PipeTupleDrawObject, fastVerticalDraw((I + 1) X (Y + YDim))
+         case {IsFree StopValue}
+         then
+            {Node draw(X Y)}
+            case I < @width
+            then PipeTupleDrawObject,
+               fastVerticalDraw((I + 1) X (Y + YDim) StopValue)
+            else
+               LXDim = {Node getLastXDim($)}
+            in
+               {@cbrace draw((X + LXDim) (Y + (YDim - 1)))}
+            end
          else
-            LXDim = {Node getLastXDim($)}
-         in
-            {@cbrace draw((X + LXDim) (Y + (YDim - 1)))}
+            skip
          end
       end
 
@@ -683,17 +726,16 @@ in
          {OldNode undraw}
          case {OldNode isProxy($)}
          then TupleShareDrawObject, replace(I Value Call)
+         elsecase Call
+         of replaceNormal then
+            StopValue = {@visual getStop($)}
+         in
+            {self assignStack(OldNode)}
+            {self performInsertion(I Value StopValue)}
          else
-            case Call
-            of replaceNormal then
-               {self assignStack(OldNode)}
-               {self performInsertion(I Value)}
-            else
-               Node = {self replaceDepth(OldNode Value $)}
-            in
-               {Node setParentData(self I)}
-               {Dictionary.put Items I Node}
-            end
+            Node = {self replaceDepth(OldNode Value I $)}
+         in
+            {Dictionary.put Items I Node}
          end
          TupleShareDrawObject, notify
       end
@@ -701,10 +743,9 @@ in
       meth fastReplace(I Value Call)
          Items   = @items
          OldNode = {Dictionary.get Items I}
-         Node    = {self Call(OldNode Value $)}
+         Node    = {self Call(OldNode Value I $)}
       in
          {OldNode undraw}
-         {Node setParentData(self I)}
          case {OldNode isProxy($)}
          then {OldNode alter(Node)}
          else {Dictionary.put Items I Node}
@@ -715,10 +756,9 @@ in
       meth fastLink(I Value)
          Items   = @items
          OldNode = {Dictionary.get Items I}
-         Node    = {self replaceNormal(OldNode Value $)}
+         Node    = {self replaceNormal(OldNode Value I $)}
          Proxy   = {New ProxyNode create(OldNode Node)}
       in
-         {Node setParentData(self I)}
          {OldNode undraw}
          {Dictionary.put Items I Proxy}
          TupleShareDrawObject, notify
@@ -782,14 +822,18 @@ in
       meth fastReDraw(X Y)
          case @dirty
          then
+            StopValue = {@visual getStop($)}
+         in
             xAnchor <- X
             yAnchor <- Y
             {@obrace reDraw(X Y)}
             case @layoutMode
             of horizontal then
-               PipeTupleDrawObject, fastHorizontalReDraw(1 (X + 1) Y)
+               PipeTupleDrawObject,
+               fastHorizontalReDraw(1 (X + 1) Y StopValue)
             [] vertical   then
-               PipeTupleDrawObject, fastVerticalReDraw(1 (X + 1) Y)
+               PipeTupleDrawObject,
+               fastVerticalReDraw(1 (X + 1) Y StopValue)
             end
             dirty <- false
          else
@@ -811,30 +855,42 @@ in
          end
       end
 
-      meth fastHorizontalReDraw(I X Y)
+      meth fastHorizontalReDraw(I X Y StopValue)
          Node = {Dictionary.get @items I}
          XDim = {Node getXDim($)}
       in
-         {Node reDraw(X Y)}
-         case I < @width
+         case {IsFree StopValue}
          then
-            PipeTupleDrawObject, fastHorizontalReDraw((I + 1) (X + (XDim+1)) Y)
+            {Node reDraw(X Y)}
+            case I < @width
+            then
+               PipeTupleDrawObject,
+               fastHorizontalReDraw((I + 1) (X + (XDim + 1)) Y StopValue)
+            else
+               {@cbrace reDraw((X + XDim) Y)}
+            end
          else
-            {@cbrace reDraw((X + XDim) Y)}
+            skip
          end
       end
 
-      meth fastVerticalReDraw(I X Y)
+      meth fastVerticalReDraw(I X Y StopValue)
          Node = {Dictionary.get @items I}
          YDim = {Node getYDim($)}
       in
-         {Node reDraw(X Y)}
-         case I < @width
-         then PipeTupleDrawObject, fastVerticalReDraw((I + 1) X (Y + YDim))
+         case {IsFree StopValue}
+         then
+            {Node reDraw(X Y)}
+            case I < @width
+            then PipeTupleDrawObject,
+               fastVerticalReDraw((I + 1) X (Y + YDim) StopValue)
+            else
+               LXDim = {Node getLastXDim($)}
+            in
+               {@cbrace reDraw((X + LXDim) (Y + (YDim - 1)))}
+            end
          else
-            LXDim = {Node getLastXDim($)}
-         in
-            {@cbrace reDraw((X + LXDim) (Y + (YDim - 1)))}
+            skip
          end
       end
 
@@ -939,10 +995,9 @@ in
             NewNode
          in
             {Visual setDepth(NewDepth)}
-            NewNode = {self replaceNormal(Node Value $)}
+            NewNode = {self replaceNormal(Node Value Index $)}
             {Visual setDepth(OldDepth)}
             {Node undraw}
-            {NewNode setParentData(self Index)}
             {Dictionary.put Items Index NewNode}
             TupleShareDrawObject, notify
          end
@@ -1019,12 +1074,12 @@ in
          end
       end
 
-      meth replaceNormal(OldNode Value $)
-         TupleShareCycleDrawObject, replaceNormal(OldNode Value $)
+      meth replaceNormal(OldNode Value I $)
+         TupleShareCycleDrawObject, replaceNormal(OldNode Value I $)
       end
 
-      meth replaceDepth(OldNode Value $)
-         TupleShareCycleDrawObject, replaceDepth(OldNode Value $)
+      meth replaceDepth(OldNode Value I $)
+         TupleShareCycleDrawObject, replaceDepth(OldNode Value I $)
       end
 
       meth moveNodeXY(X XF Y YF)
@@ -1090,43 +1145,59 @@ class LabelTupleDrawObject
    meth draw(X Y)
       case @dirty
       then
+         StopValue = {@visual getStop($)}
+      in
          xAnchor <- X
          yAnchor <- Y
          {@label draw(X Y)}
          case @layoutMode
          of horizontal then
-            LabelTupleDrawObject, horizontalDraw(1 (X + @labelXDim) Y)
+            LabelTupleDrawObject,
+            horizontalDraw(1 (X + @labelXDim) Y StopValue)
          [] vertical   then
-            LabelTupleDrawObject, verticalDraw(1 (X + @labelXDim) Y)
+            LabelTupleDrawObject,
+            verticalDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
       else skip
       end
    end
 
-   meth horizontalDraw(I X Y)
+   meth horizontalDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      {Node draw(X Y)}
-      case I < @width
-      then LabelTupleDrawObject, horizontalDraw((I + 1) (X + XDim + 1) Y)
-      else {@brace draw((X + XDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Node draw(X Y)}
+         case I < @width
+         then LabelTupleDrawObject,
+            horizontalDraw((I + 1) (X + XDim + 1) Y StopValue)
+         else {@brace draw((X + XDim) Y)}
+         end
+      else
+         skip
       end
    end
 
-   meth verticalDraw(I X Y)
+   meth verticalDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       YDim = {Node getYDim($)}
    in
-      {Node draw(X Y)}
-      case I < @width
+      case {IsFree StopValue}
       then
-         LabelTupleDrawObject, verticalDraw((I + 1) X (Y + YDim))
+         {Node draw(X Y)}
+         case I < @width
+         then
+            LabelTupleDrawObject,
+            verticalDraw((I + 1) X (Y + YDim) StopValue)
+         else
+            LXDim = {Node getLastXDim($)}
+         in
+            {@brace draw((X + LXDim) ((Y + YDim) - 1))}
+         end
       else
-         LXDim = {Node getLastXDim($)}
-      in
-         {@brace draw((X + LXDim) ((Y + YDim) - 1))}
+         skip
       end
    end
 
@@ -1150,10 +1221,9 @@ class LabelTupleDrawObject
    meth replace(I Value Call)
       Items   = @items
       OldNode = {Dictionary.get Items I}
-      Node    = {self Call(OldNode Value $)}
+      Node    = {self Call(OldNode Value I $)}
    in
       {OldNode undraw}
-      {Node setParentData(self I)}
       case {OldNode isProxy($)}
       then {OldNode alter(Node)}
       else {Dictionary.put Items I Node}
@@ -1161,13 +1231,14 @@ class LabelTupleDrawObject
       LabelTupleDrawObject, notify
    end
 
-   meth replaceNormal(OldNode Value $)
-      {Create Value @visual @depth}
+   meth replaceNormal(OldNode Value I $)
+      {Create Value self I @visual @depth}
    end
 
-   meth replaceDepth(OldNode Value $)
+   meth replaceDepth(OldNode Value I $)
       RValue = {OldNode getValue($)}
-      Node   = {New BitmapTreeNode create(depth @visual @depth)}
+      Node   = {New BitmapTreeNode
+                create(depth self I @visual @depth)}
    in
       {Node setRescueValue(RValue)}
       Node
@@ -1176,11 +1247,10 @@ class LabelTupleDrawObject
    meth link(I Value)
       Items   = @items
       OldNode = {Dictionary.get Items I}
-      Node    = {self replaceNormal(OldNode Value $)}
+      Node    = {self replaceNormal(OldNode Value I $)}
       Proxy   = {New ProxyNode create(OldNode Node)}
    in
       {OldNode undraw}
-      {Node setParentData(self I)}
       {Dictionary.put Items I Proxy}
       LabelTupleDrawObject, notify
    end
@@ -1228,14 +1298,18 @@ class LabelTupleDrawObject
    meth reDraw(X Y)
       case @dirty
       then
+         StopValue = {@visual getStop($)}
+      in
          xAnchor <- X
          yAnchor <- Y
          {@label reDraw(X Y)}
          case @layoutMode
          of horizontal then
-            LabelTupleDrawObject, horizontalReDraw(1 (X + @labelXDim) Y)
+            LabelTupleDrawObject,
+            horizontalReDraw(1 (X + @labelXDim) Y StopValue)
          [] vertical   then
-            LabelTupleDrawObject, verticalReDraw(1 (X + @labelXDim) Y)
+            LabelTupleDrawObject,
+            verticalReDraw(1 (X + @labelXDim) Y StopValue)
          end
          dirty <- false
       else
@@ -1257,29 +1331,41 @@ class LabelTupleDrawObject
       end
    end
 
-   meth horizontalReDraw(I X Y)
+   meth horizontalReDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       XDim = {Node getXDim($)}
    in
-      {Node reDraw(X Y)}
-      case I < @width
-      then LabelTupleDrawObject, horizontalReDraw((I + 1) (X + XDim + 1) Y)
-      else {@brace reDraw((X + XDim) Y)}
+      case {IsFree StopValue}
+      then
+         {Node reDraw(X Y)}
+         case I < @width
+         then LabelTupleDrawObject,
+            horizontalReDraw((I + 1) (X + XDim + 1) Y StopValue)
+         else {@brace reDraw((X + XDim) Y)}
+         end
+      else
+         skip
       end
    end
 
-   meth verticalReDraw(I X Y)
+   meth verticalReDraw(I X Y StopValue)
       Node = {Dictionary.get @items I}
       YDim = {Node getYDim($)}
    in
-      {Node reDraw(X Y)}
-      case I < @width
+      case {IsFree StopValue}
       then
-         LabelTupleDrawObject, verticalReDraw((I + 1) X (Y + YDim))
+         {Node reDraw(X Y)}
+         case I < @width
+         then
+            LabelTupleDrawObject,
+            verticalReDraw((I + 1) X (Y + YDim) StopValue)
+         else
+            LXDim = {Node getLastXDim($)}
+         in
+            {@brace reDraw((X + LXDim) ((Y + YDim) - 1))}
+         end
       else
-         LXDim = {Node getLastXDim($)}
-      in
-         {@brace reDraw((X + LXDim) ((Y + YDim) - 1))}
+         skip
       end
    end
 
@@ -1355,6 +1441,10 @@ class LabelTupleDrawObject
       {Node setMenuStatus(Status)}
    end
 
+   meth handleLabelWidthExpansion(N)
+      LabelTupleDrawObject, handleWidthExpansion(N @width)
+   end
+
    meth handleWidthExpansion(N Index)
       case N > 0
       then
@@ -1375,7 +1465,7 @@ class LabelTupleDrawObject
       else
          WidthLen = @widthLen
          Width    = @width
-        Node      = {Dictionary.get @items Index}
+         Node     = {Dictionary.get @items Index}
          Type     = {Node getType($)}
          DelCount NewWidth NewIndex
       in
@@ -1413,6 +1503,8 @@ class LabelTupleDrawObject
       then {@parent up((N + 1) @index)}
       elsecase N
       of 0 then skip
+      elsecase Index
+      of 0 then {@parent up(N @index)}
       else
          Items    = @items
          Visual   = @visual
@@ -1422,11 +1514,10 @@ class LabelTupleDrawObject
          NewNode
       in
          {Visual setDepth(NewDepth)}
-         NewNode = {self replaceNormal(Node Value $)}
+         NewNode = {self replaceNormal(Node Value Index $)}
          {Visual setDepth(OldDepth)}
          {Node undraw}
          {Dictionary.put Items Index NewNode}
-         {NewNode setParentData(self Index)}
          LabelTupleDrawObject, notify
       end
    end
@@ -1469,23 +1560,24 @@ class LabelTupleCycleDrawObject
       dirty <- true
    end
 
-   meth replaceNormal(OldNode Value $)
+   meth replaceNormal(OldNode Value I $)
       OldStack = {OldNode getStack($)}
       CycleMan = @cycleMan
       Node
    in
       {CycleMan setStack(OldStack)}
       {CycleMan push}
-      Node = {CycleCreate Value @visual CycleMan @depth}
+      Node = {CycleCreate Value self I @visual CycleMan @depth}
       {CycleMan pop}
       {CycleMan tellStack(Node)}
       Node
    end
 
-   meth replaceDepth(OldNode Value $)
+   meth replaceDepth(OldNode Value I $)
       RValue   = {OldNode getValue($)}
       OldStack = {OldNode getStack($)}
-      Node     = {New BitmapTreeNode create(depth @visual @depth)}
+      Node     = {New BitmapTreeNode
+                  create(depth self I @visual @depth)}
    in
       {Node setRescueValue(RValue)}
       {Node setStack(OldStack)}

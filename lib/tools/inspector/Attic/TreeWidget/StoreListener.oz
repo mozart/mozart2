@@ -19,6 +19,7 @@ functor $
 import
    BrowserSupport(getsBoundB) at 'x-oz://boot/Browser'
    System(eq)
+   Debug(breakpoint) at 'x-oz://boot/Debug.ozf'
 
 export
    storeListener : StoreListener
@@ -106,6 +107,7 @@ define
          Value|Nodes = {Dictionary.get VarDict VarNum}
       in
          {Dictionary.put VarDict VarNum Value|nil}
+         {Debug.breakpoint}
          case Mode
          of normal then StoreListener, performNotifyNodes(nil Nodes)
          [] label  then StoreListener, performNotifyFeatureNodes(nil Nodes)

@@ -135,9 +135,31 @@ in
       end
 
       local
+         fun {IsPrefix P S}
+            case P
+            of P|Pr then
+               case S
+               of S|Sr then S == P andthen {IsPrefix Pr Sr}
+               [] _    then false
+               end
+            [] nil  then true
+            end
+         end
+
          class FutureRep
+            meth checkFutureType(V $)
+               ValS    = {Value.toVirtualString V 0 0}
+               SearchS = {String.token ValS &< _}
+            in
+               if {IsPrefix "future>" SearchS}                     then '<Fut>'
+               elseif {IsPrefix "future byNeed: \'fail\'" SearchS} then '<Failed>'
+               else '<ByNeed>'
+               end
+            end
             meth createRep(PrintStr LengthStr)
-               PrintStr  = {System.printName @value}#'<Fut>'
+               Value = @value
+            in
+               PrintStr  = {System.printName Value}#FutureRep, checkFutureType(Value $)
                LengthStr = PrintStr
             end
          end

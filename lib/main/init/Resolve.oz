@@ -64,8 +64,7 @@ local
       catch system(...) then     OK=false
       [] error(dp(generic 'Error in URL handler' _) ...)
       then                       OK=false
-      [] error(foreign(dlOpen _ _) ...)
-      then                       OK=false end
+      end
       if OK then raise found(V) end else skip end
    end
 

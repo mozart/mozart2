@@ -2676,7 +2676,7 @@ define
             fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {FS C})
          [] fParser(P1 Ds Ms T Ps X C) then
             fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {FS C})
-         [] fLoop(S C) then fLoop({EP S} {CS C})
+         [] fLoop(S C) then fLoop({EP S} {FS C})
          [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
          end
       end

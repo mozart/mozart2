@@ -78,9 +78,7 @@ local
    end
 
    proc {MapT I W X P Y}
-      case I=<W then {P X.I Y.I} {MapT I+1 W X P Y}
-      else skip
-      end
+      if I=<W then {P X.I Y.I} {MapT I+1 W X P Y} end
    end
 
    fun {FoldL As X P Z}
@@ -90,7 +88,7 @@ local
    end
 
    fun {FoldLT I W X P Z}
-      case I<W then {FoldLT I+1 W X P {P Z X.I}}
+      if I<W then {FoldLT I+1 W X P {P Z X.I}}
       else {P Z X.I}
       end
    end
@@ -102,7 +100,7 @@ local
    end
 
    fun {FoldRT I W X P Z}
-      case I<W then {P X.I {FoldRT I+1 W X P Z}}
+      if I<W then {P X.I {FoldRT I+1 W X P Z}}
       else {P X.I Z}
       end
    end
@@ -114,9 +112,7 @@ local
    end
 
    proc {ForAllT I W X P}
-      case I=<W then {P X.I} {ForAllT I+1 W X P}
-      else skip
-      end
+      if I=<W then {P X.I} {ForAllT I+1 W X P} end
    end
 
    fun {All As X P}
@@ -126,7 +122,7 @@ local
    end
 
    fun {AllT I W X P}
-      case I=<W then {P X.I} andthen {AllT I+1 W X P}
+      if I=<W then {P X.I} andthen {AllT I+1 W X P}
       else true
       end
    end
@@ -144,7 +140,7 @@ local
    fun {Filter As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P XA} then A#XA|{Filter Ar X P}
+         if {P XA} then A#XA|{Filter Ar X P}
          else {Filter Ar X P}
          end
       end
@@ -153,7 +149,7 @@ local
    proc {Part As X P ?Bs ?Cs}
       case As of nil then Bs=nil Cs=nil
       [] A|Ar then XA=X.A in
-         case {P XA} then Bs=A#XA|{Part Ar X P $ Cs}
+         if {P XA} then Bs=A#XA|{Part Ar X P $ Cs}
          else Cs=A#XA|{Part Ar X P Bs $}
          end
       end
@@ -162,21 +158,21 @@ local
    fun {Take As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P XA} then A#XA|{Take Ar X P} else nil end
+         if {P XA} then A#XA|{Take Ar X P} else nil end
       end
    end
 
    fun {Drop As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P XA} then nil else A#XA|{Drop Ar X P} end
+         if {P XA} then nil else A#XA|{Drop Ar X P} end
       end
    end
 
    proc {TakeDrop As X P ?Bs ?Cs}
       case As of nil then Bs=nil Cs=nil
       [] A|Ar then XA=X.A in
-         case {P XA} then Bs=A#XA|{TakeDrop Ar X P $ Cs}
+         if {P XA} then Bs=A#XA|{TakeDrop Ar X P $ Cs}
          else Bs=nil Cs={MakePairs As X}
          end
       end
@@ -192,9 +188,7 @@ local
    end
 
    proc {MapIndT I W X P Y}
-      case I=<W then {P I X.I Y.I} {MapIndT I+1 W X P Y}
-      else skip
-      end
+      if I=<W then {P I X.I Y.I} {MapIndT I+1 W X P Y} end
    end
 
    fun {FoldLInd As X P Z}
@@ -204,7 +198,7 @@ local
    end
 
    fun {FoldLIndT I W X P Z}
-      case I=<W then {FoldLIndT I+1 W X P {P I Z X.I}}
+      if I=<W then {FoldLIndT I+1 W X P {P I Z X.I}}
       else Z
       end
    end
@@ -216,7 +210,7 @@ local
    end
 
    fun {FoldRIndT I W X P Z}
-      case I=<W then {P I X.I {FoldRIndT I+1 W X P Z}}
+      if I=<W then {P I X.I {FoldRIndT I+1 W X P Z}}
       else Z
       end
    end
@@ -228,9 +222,7 @@ local
    end
 
    proc {ForAllIndT I W X P}
-      case I=<W then {P I X.I} {ForAllIndT I+1 W X P}
-      else skip
-      end
+      if I=<W then {P I X.I} {ForAllIndT I+1 W X P} end
    end
 
    fun {AllInd As X P}
@@ -240,7 +232,7 @@ local
    end
 
    fun {AllIndT I W X P}
-      case I=<W then {P I X.I} andthen {AllIndT I+1 W X P}
+      if I=<W then {P I X.I} andthen {AllIndT I+1 W X P}
       else true
       end
    end
@@ -258,7 +250,7 @@ local
    fun {FilterInd As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P A XA} then A#XA|{FilterInd Ar X P}
+         if {P A XA} then A#XA|{FilterInd Ar X P}
          else {FilterInd Ar X P}
          end
       end
@@ -267,7 +259,7 @@ local
    proc {PartInd As X P ?Bs ?Cs}
       case As of nil then Bs=nil Cs=nil
       [] A|Ar then XA=X.A in
-         case {P A XA} then Bs=A#XA|{PartInd Ar X P $ Cs}
+         if {P A XA} then Bs=A#XA|{PartInd Ar X P $ Cs}
          else Cs=A#XA|{PartInd Ar X P Bs $}
          end
       end
@@ -276,21 +268,21 @@ local
    fun {TakeInd As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P A XA} then A#XA|{TakeInd Ar X P} else nil end
+         if {P A XA} then A#XA|{TakeInd Ar X P} else nil end
       end
    end
 
    fun {DropInd As X P}
       case As of nil then nil
       [] A|Ar then XA=X.A in
-         case {P A XA} then nil else A#XA|{DropInd Ar X P} end
+         if {P A XA} then nil else A#XA|{DropInd Ar X P} end
       end
    end
 
    proc {TakeDropInd As X P ?Bs ?Cs}
       case As of nil then Bs=nil Cs=nil
       [] A|Ar then XA=X.A in
-         case {P A XA} then Bs=A#XA|{TakeDropInd Ar X P $ Cs}
+         if {P A XA} then Bs=A#XA|{TakeDropInd Ar X P $ Cs}
          else Bs=nil Cs={MakePairs As X}
          end
       end
@@ -299,15 +291,14 @@ local
    fun {Zip As R1 R2 P}
       case As of nil then nil
       [] A|Ar then
-         case {HasFeature R1 A} then A#{P R1.A R2.A}|{Zip Ar R1 R2 P}
+         if {HasFeature R1 A} then A#{P R1.A R2.A}|{Zip Ar R1 R2 P}
          else {Zip Ar R1 R2 P}
          end
       end
    end
 
    proc {ZipT I W T1 T2 P T3}
-      case I=<W then T3.I={P T1.I T2.I} {ZipT I+1 W T1 T2 P T3}
-      else skip end
+      if I=<W then T3.I={P T1.I T2.I} {ZipT I+1 W T1 T2 P T3} end
    end
 
    fun {ToList As R}
@@ -317,7 +308,7 @@ local
    end
 
    fun {ToListT I W T}
-      case I>W then nil else T.I|{ToListT I+1 W T} end
+      if I>W then nil else T.I|{ToListT I+1 W T} end
    end
 
    fun {ToListInd As R}
@@ -327,11 +318,11 @@ local
    end
 
    fun {ToListIndT I W T}
-      case I>W then nil else I#T.I|{ToListIndT I+1 W T} end
+      if I>W then nil else I#T.I|{ToListIndT I+1 W T} end
    end
 
    proc {TupleToDictionary N T D}
-      case N==0 then skip else
+      if N>0 then
          {Dictionary.put D N T.N} {TupleToDictionary N-1 T D}
       end
    end
@@ -368,20 +359,20 @@ in
 
                    toList:
                       fun {$ R}
-                         case {IsTuple R} then {ToListT 1 {Width R} R}
+                         if {IsTuple R} then {ToListT 1 {Width R} R}
                          else {ToList {Arity R} R}
                          end
                       end
                    toListInd:
                       fun {$ R}
-                         case {IsTuple R} then {ToListIndT 1 {Width R} R}
+                         if {IsTuple R} then {ToListIndT 1 {Width R} R}
                          else {ToListInd {Arity R} R}
                          end
                       end
 
                    map:
                       proc {$ R1 P R2}
-                         case {IsTuple R1} then
+                         if {IsTuple R1} then
                             W={Width R1}
                          in
                             {MakeTuple {Label R1} W R2}
@@ -392,8 +383,8 @@ in
                       end
                    foldL:
                       fun {$ R P Z}
-                         case {IsTuple R} then
-                            case {IsLiteral R} then Z
+                         if {IsTuple R} then
+                            if {IsLiteral R} then Z
                             else {FoldLT 1 {Width R} R P Z}
                             end
                          else {FoldL {Arity R} R P Z}
@@ -401,8 +392,8 @@ in
                       end
                    foldR:
                       fun {$ R P Z}
-                         case {IsTuple R} then
-                            case {IsLiteral R} then Z
+                         if {IsTuple R} then
+                            if {IsLiteral R} then Z
                             else {FoldRT 1 {Width R} R P Z}
                             end
                          else {FoldR {Arity R} R P Z}
@@ -410,19 +401,19 @@ in
                       end
                    forAll:
                       proc {$ R P}
-                        case {IsTuple R} then {ForAllT 1 {Width R} R P}
+                        if {IsTuple R} then {ForAllT 1 {Width R} R P}
                         else {ForAll {Arity R} R P}
                         end
                       end
                    all:
                       fun {$ R P}
-                        case {IsTuple R} then {AllT 1 {Width R} R P}
+                        if {IsTuple R} then {AllT 1 {Width R} R P}
                         else {All {Arity R} R P}
                         end
                       end
                    some:
                       fun {$ R P}
-                         case {IsTuple R} then {SomeT 1 {Width R} R P}
+                         if {IsTuple R} then {SomeT 1 {Width R} R P}
                          else {Some {Arity R} R P}
                          end
                       end
@@ -457,7 +448,7 @@ in
 
                    mapInd:
                       proc {$ R1 P ?R2}
-                         case {IsTuple R1} then
+                         if {IsTuple R1} then
                             W={Width R1}
                          in
                             {MakeTuple {Label R1} W ?R2}
@@ -469,8 +460,8 @@ in
                       end
                    foldLInd:
                       fun {$ R P Z}
-                         case {IsTuple R} then
-                            case {IsLiteral R} then Z
+                         if {IsTuple R} then
+                            if {IsLiteral R} then Z
                             else {FoldLIndT 1 {Width R} R P Z}
                             end
                          else {FoldLInd {Arity R} R P Z}
@@ -478,8 +469,8 @@ in
                       end
                    foldRInd:
                       fun {$ R P Z}
-                         case {IsTuple R} then
-                            case {IsLiteral R} then Z
+                         if {IsTuple R} then
+                            if {IsLiteral R} then Z
                             else {FoldRIndT 1 {Width R} R P Z}
                             end
                          else {FoldRInd {Arity R} R P Z}
@@ -487,19 +478,19 @@ in
                       end
                    forAllInd:
                       proc {$ R P}
-                         case {IsTuple R} then {ForAllIndT 1 {Width R} R P}
+                         if {IsTuple R} then {ForAllIndT 1 {Width R} R P}
                          else {ForAllInd {Arity R} R P}
                          end
                       end
                    allInd:
                       fun {$ R P}
-                         case {IsTuple R} then {AllIndT 1 {Width R} R P}
+                         if {IsTuple R} then {AllIndT 1 {Width R} R P}
                          else {AllInd {Arity R} R P}
                          end
                       end
                    someInd:
                       fun {$ R P}
-                         case {IsTuple R} then {SomeIndT 1 {Width R} R P}
+                         if {IsTuple R} then {SomeIndT 1 {Width R} R P}
                          else {SomeInd {Arity R} R P}
                          end
                       end
@@ -534,7 +525,7 @@ in
 
                    zip:
                       proc {$ R1 R2 P ?R3}
-                         case {IsTuple R1} andthen {IsTuple R2} then
+                         if {IsTuple R1} andthen {IsTuple R2} then
                             W={Min {Width R1} {Width R2}}
                          in
                             {MakeTuple {Label R1} W ?R3}
@@ -547,12 +538,14 @@ in
                    toDictionary:
                       proc {$ R ?D}
                          D={Dictionary.new}
-                         case {IsTuple R} then
+                         if {IsTuple R} then
                             {TupleToDictionary {Width R} R D}
                          else
                             {RecordToDictionary {Arity R} R D}
                          end
                       end
+
+                   waitOr: Boot_Record.waitOr
                   )
 
 end

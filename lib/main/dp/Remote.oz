@@ -3,9 +3,12 @@
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%   Konstantin Popov <kost@sics.se>
 %%%
+%%% Contributor:
+%%%   Andreas Franke <afranke@ags.uni-sb.de>
+%%%
 %%% Copyright:
-%%%   Christian Schulte, 1997, 1998
 %%%   Kostantin Popov, 1998
+%%%   Christian Schulte, 1997--2000
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -75,7 +78,7 @@ define
        elseof X then X end}
    else skip end
 
-   fun {ForkProcess Fork Host Ports Detach}
+   fun {ForkProcess Fork Host Ports Detach PORT}
       Cmd       = {Property.get 'oz.engine'}
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
@@ -83,22 +86,24 @@ define
       ModelArg  = '--'#if {Property.get 'perdio.minimal'} then ''
                        else 'no'
                        end#'minimal'
+      PortArg   = '--port='#if PORT\=unit then PORT else 0 end
    in
       try
          CMD#ARGS = case Fork
                     of sh then
-                       Cmd # [Func DetachArg TicketArg ModelArg]
+                       Cmd # [Func DetachArg TicketArg ModelArg PortArg]
                     [] virtual then Key={VirtualSite.newMailbox} in
 \ifdef DENYS_EVENTS
                        %% start VS threads
                        {Wait VirtualSiteAux}
 \endif
-                       Cmd # [Func TicketArg DetachArg ModelArg
+                       Cmd # [Func TicketArg DetachArg ModelArg PortArg
                               '--shmkey='#Key]
                     else
                        Fork #
                        [Host ('exec '#Cmd#' '#Func#' '#
-                              DetachArg#' '#TicketArg#' '#ModelArg)]
+                              DetachArg#' '#TicketArg#' '#ModelArg#
+                              ' '#PortArg)]
                     end
       in
          {OS.exec CMD ARGS {Not Detach}}
@@ -125,7 +130,8 @@ define
                 fork:    ForkIn  <= automatic
                 detach:  Detach  <= false
                 timeout: Timeout <= {Property.get 'perdio.timeout'}
-                pid:     PID     <= _)
+                pid:     PID     <= _
+                port:    PORT    <= unit)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
@@ -145,7 +151,7 @@ define
               [] sh then sh
               else Fork
               end
-              Host RunPort#CtrlPort Detach}
+              Host RunPort#CtrlPort Detach PORT}
 
          thread
             {Delay Timeout}

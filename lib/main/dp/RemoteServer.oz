@@ -3,9 +3,12 @@
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%   Konstantin Popov <kost@sics.se>
 %%%
+%%% Contributor:
+%%%   Andreas Franke <afranke@ags.uni-sb.de>
+%%%
 %%% Copyright:
-%%%   Christian Schulte, 1997, 1998
 %%%   Kostantin Popov, 1998
+%%%   Christian Schulte, 1997--2000
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -27,6 +30,7 @@ functor
 
 import
    Connection % Do not request!
+   DPMisc
 
    Application(exit getCmdArgs)
    Module(manager)
@@ -46,8 +50,8 @@ prepare
                     shmkey(single type:atom default:'NONE')
                     detached(single type:bool default:false)
                     minimal(single type:bool)
-                    test(single type:bool default:false))
-
+                    test(single type:bool default:false)
+                    port(single type:int default:0))
 
 define
 
@@ -61,6 +65,12 @@ define
 
    %% Set the appropriate distribution model
    {Property.put 'perdio.minimal' Args.minimal}
+
+   %% Use a fix port number if desired
+   case Args.port
+   of 0 then skip
+   [] P then {DPMisc.initIPConnection ipInfo(port:P) _}
+   end
 
    %%
    %% Force linking of base libraries

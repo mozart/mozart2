@@ -1213,8 +1213,13 @@ body
    end
 
    local
-      ImRes = {URL.makeResolver image
-               vs('all=.:cache='#{System.property.get 'oz.home'}#'/cache')}
+      local
+         Sep   = {System.property.get 'path.separator'}
+         Home  = {System.property.get 'oz.home'}
+      in
+         ImRes = {URL.makeResolver image
+                  vs('all=.'#[Sep]#'cache='#Home#'/cache')}
+      end
 
       PathStore = {New class $
                           prop final locking

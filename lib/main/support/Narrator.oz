@@ -91,10 +91,10 @@ define
             VS = '%** ------------------ aborted\n'
             {@Narrator tell([attention info(VS)])}
          [] crashed then VS in
-            VS = '%** ------------------ crashed'
+            VS = '%** ------------------ crashed\n'
             {@Narrator tell([attention info(VS)])}
          [] interrupted then
-            {@Narrator tell(info('% -------------------- interrupted'))}
+            {@Narrator tell(info('% -------------------- interrupted\n'))}
          end
          ErrorCount <- unit
       end

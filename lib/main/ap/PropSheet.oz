@@ -1,3 +1,24 @@
+%%%
+%%% Authors:
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%
+%%% Copyright:
+%%%   Denys Duchier, 1998
+%%%
+%%% Last change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+%%% This file is part of Mozart, an implementation of Oz 3:
+%%%    http://www.mozart-oz.org
+%%%
+%%% See the file "LICENSE" or
+%%%    http://www.mozart-oz.org/LICENSE.html
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
+
 declare
 
 Get = {NewName}
@@ -242,8 +263,8 @@ class PropLabel from Tk.label
    meth showState(S)
       {self tk(configure
                fg:case S of default then black
-                  elseof usr then blue
-                  elseof bad then red
+                  [] usr then blue
+                  [] bad then red
                   else green end)}
    end
 end
@@ -286,7 +307,7 @@ class PropObject
    meth decrRow {self setRow(@row-1)} end
    meth get($)
       case {self.editor get($)} of none then none
-      elseof some(V) then self.option#V end
+      [] some(V) then self.option#V end
    end
    meth showState(S)
       {self.text showState(S)}

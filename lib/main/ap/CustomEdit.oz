@@ -1,14 +1,37 @@
+%%%
+%%% Authors:
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%
+%%% Copyright:
+%%%   Denys Duchier, 1998
+%%%
+%%% Last change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+%%% This file is part of Mozart, an implementation of Oz 3:
+%%%    http://www.mozart-oz.org
+%%%
+%%% See the file "LICENSE" or
+%%%    http://www.mozart-oz.org/LICENSE.html
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
+
 functor
 import System(show)
    Tk TkTools(dialog error)
    CustomOption(get spec set)
 export
    Editor RegisterSimpleEditor EditOption
-define
+
+prepare
    Bad = {NewName}
-   %%
+
    fun {Identity V} V end
-   %%
+
+define
    class Editor from TkTools.dialog
       feat validate GET SET
       meth init(title    : Title    <='Customizer'
@@ -76,7 +99,7 @@ define
       fun {StringToBool S} R.{ToLowerAtom S} end
       fun {BoolToString B}
          case B of true then "true"
-         elseof false then "false"
+         [] false then "false"
          end
       end
    end

@@ -156,24 +156,24 @@ define
 
       fun {LESS X Y}
          case X#Y
-         of     !MINELEM#!MINELEM then false
-         elseof !MINELEM#_       then true
-         elseof       _#!MINELEM then false
-         elseof !MAXELEM#!MAXELEM then false
-         elseof !MAXELEM#_       then false
-         elseof       _#!MAXELEM then true
+         of !MINELEM#!MINELEM then false
+         [] !MINELEM#_        then true
+         []        _#!MINELEM then false
+         [] !MAXELEM#!MAXELEM then false
+         [] !MAXELEM#_        then false
+         []        _#!MAXELEM then true
          else X < Y
          end
       end
 
       fun {GREATER X Y}
          case X#Y
-         of     !MINELEM#!MINELEM then false
-         elseof !MINELEM#_       then false
-         elseof       _#!MINELEM then true
-         elseof !MAXELEM#!MAXELEM then false
-         elseof !MAXELEM#_       then true
-         elseof       _#!MAXELEM then false
+         of !MINELEM#!MINELEM then false
+         [] !MINELEM#_        then false
+         []        _#!MINELEM then true
+         [] !MAXELEM#!MAXELEM then false
+         [] !MAXELEM#_        then true
+         []        _#!MAXELEM then false
          else X > Y
          end
       end
@@ -440,15 +440,15 @@ define
          of (default#W)|T then
             {Dictionary.put WeightTable default W}
             {ScanWeightDescr T}
-         elseof ((E1#E2)#W)|T then
+         [] ((E1#E2)#W)|T then
             {Dictionary.put WeightTable E1 W}
             {ScanWeightDescr
              if E1 < E2 then (((E1+1)#E2)#W)|T
              else T end}
-         elseof (E#W)|T then
+         [] (E#W)|T then
             {Dictionary.put WeightTable E W}
             {ScanWeightDescr T}
-         elseof nil then skip
+         [] nil then skip
          end
       end
       Default

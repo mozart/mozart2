@@ -176,7 +176,7 @@ prepare
          Ls = case Chars of nil then Lr
               [] _|_ then
                  {FoldR Chars fun {$ C In} C#Option|In end Lr}
-              elseof Char then
+              [] Char then
                  Char#Option|Lr
               end
       end
@@ -185,7 +185,7 @@ prepare
          case {CondSelect Spec I unit} of unit then
             LongOptSpecs = nil
             CharSpecs = nil
-         elseof Option then LongOpt Chars Lr Cr in
+         [] Option then LongOpt Chars Lr Cr in
             LongOpt = {Label Option}
             Chars = {CondSelect Option char nil}
             case {CondSelect Option alias unit} of unit then
@@ -193,7 +193,7 @@ prepare
                   case {CondSelect Option type unit} of unit then
                      {AddOpt LongOpt(type: bool)
                       Chars LongOptSpecs Lr CharSpecs Cr}
-                  elseof Type then
+                  [] Type then
                      {AddOpt LongOpt(type: Type)
                       Chars LongOptSpecs Lr CharSpecs Cr}
                   end
@@ -207,12 +207,12 @@ prepare
                      NoLongOpt = {String.toAtom
                                   &n|&o|{AtomToString {Label Option}}}
                      {AddOpt NoLongOpt(alias: LongOpt#false) nil Li Lr Ci Cr}
-                  elseof Type then
+                  [] Type then
                      {AddOpt LongOpt(type: Type)
                       Chars LongOptSpecs Lr CharSpecs Cr}
                   end
                end
-            elseof A then
+            [] A then
                {AddOpt LongOpt(alias: A)
                 Chars LongOptSpecs Lr CharSpecs Cr}
             end
@@ -254,13 +254,13 @@ prepare
    local
       fun {GetOptRecSpecSub Spec I}
          case {CondSelect Spec I unit} of unit then nil
-         elseof OneSpec then
+         [] OneSpec then
             case {CondSelect OneSpec 1 unit} of unit then
                {GetOptRecSpecSub Spec I + 1}
-            elseof Occ0 then Occ X in
+            [] Occ0 then Occ X in
                Occ = case Occ0 of multiple then
                         case OneSpec.type of list(_) then multilist
-                        elseof list(_)#_ then multilist
+                        [] list(_)#_ then multilist
                         else multiple
                         end
                      else Occ0
@@ -310,14 +310,14 @@ prepare
 
       proc {MinMax Value Type LongOpt}
          case {CondSelect Type min unit} of unit then skip
-         elseof X then
+         [] X then
             if Value < X then
                {Exception.raiseError
                 ap(usage 'argument to option `'#LongOpt#'\' out of range')}
             end
          end
          case {CondSelect Type max unit} of unit then skip
-         elseof X then
+         [] X then
             if Value > X then
                {Exception.raiseError
                 ap(usage 'argument to option `'#LongOpt#'\' out of range')}
@@ -329,7 +329,7 @@ prepare
          case {CondSelect Type I unit} of unit then
             {Exception.raiseError
              ap(usage 'illegal argument to option `'#LongOpt#'\'')}
-         elseof T then
+         [] T then
             if Value == T then skip
             else {CheckTokens Type I + 1 Value LongOpt}
             end
@@ -367,7 +367,7 @@ prepare
             [] bool then   % (only used for CGI)
                case Arg of "yes" then
                   Value = true
-               elseof "no" then
+               [] "no" then
                   Value = false
                else
                   {Exception.raiseError
@@ -398,7 +398,7 @@ prepare
                {Exception.raiseError
                 ap(usage 'option `'#{Label Spec}#'\' expects an argument')}
             end
-         elseof A then
+         [] A then
             Opt = A
             Rest = Args
          end
@@ -427,7 +427,7 @@ prepare
                [] nil then skip
                end
                Spec = S.2
-            elseof nil then
+            [] nil then
                {Exception.raiseError
                 ap(usage 'unknown option `'#LongOpt#'\'')}
             end
@@ -449,7 +449,7 @@ prepare
             case {CondSelect CharSpecRec OptChar unit} of unit then
                {Exception.raiseError
                 ap(usage 'unknown option character `'#[OptChar]#'\'')} unit
-            elseof Spec then Spec
+            [] Spec then Spec
             end
          end
 
@@ -460,7 +460,7 @@ prepare
             else
                case {CondSelect Spec alias unit} of unit then
                   {ParseOptArg Spec Arg1r|Args ?Opt ?Rest}
-               elseof A then
+               [] A then
                   Opt = A
                   Rest = (&-|Arg1r)|Args
                end
@@ -483,9 +483,9 @@ prepare
                end
                Spec = S.2
                Value = case ArgRest of &=|S then S
-                       elseof nil then unit
+                       [] nil then unit
                        end
-            elseof nil then
+            [] nil then
                {Exception.raiseError ap(usage 'unknown option `'#LongOpt#'\'')}
             end
          end
@@ -520,7 +520,7 @@ prepare
                         {ParseLongOpt LongOpt Argr ?Opt1 ?NewArgr}
                         {CondAppend Opt1 {ParseOptions NewArgr}}
                      end
-                  elseof OptChar|Arg1r then Opt1 NewArgr in
+                  [] OptChar|Arg1r then Opt1 NewArgr in
                      {ParseOpt OptChar Arg1r Argr ?Opt1 ?NewArgr}
                      {CondAppend Opt1 {ParseOptions NewArgr}}
                   [] nil then
@@ -556,7 +556,7 @@ prepare
         fun {$ O}
            case O of LongOpt#Value then
               case {CondSelect OptRecSpec LongOpt unit} of unit then true
-              elseof X then
+              [] X then
                  case X.occ of single then
                     if {Dictionary.member Dict LongOpt} then
                        {Exception.raiseError
@@ -598,13 +598,13 @@ prepare
                       ap(usage 'option `'#LongOpt
                          #'\' required in this context')}
                 end
-             elseof false then
+             [] false then
                 if {Dictionary.member Dict LongOpt} then
                    {Exception.raiseError
                     ap(usage 'option `'#LongOpt
                        #'\' illegal in this context')}
                 end
-             elseof optional then
+             [] optional then
                 if {HasFeature X default} andthen
                    {Not {Dictionary.member Dict LongOpt}}
                 then
@@ -640,8 +640,8 @@ prepare
    proc {ValidateExpr E Dict}
       case E
       of     true     then raise return(true)     end
-      elseof false    then raise return(false)    end
-      elseof optional then raise return(optional) end
+      [] false    then raise return(false)    end
+      [] optional then raise return(optional) end
       elsecase {Label E} of alt then
          {Record.forAll E
           proc {$ Alt}
@@ -657,7 +657,7 @@ prepare
 
    fun {ValidateCond C Dict}
       case C of true then true
-      elseof false then false
+      [] false then false
       else
          if {IsAtom C} then {Dictionary.member Dict C}
          else
@@ -665,7 +665,7 @@ prepare
             elsecase {Label C}
             of     conj then
                {Record.all  C fun {$ C} {ValidateCond C Dict} end}
-            elseof disj then
+            [] disj then
                {Record.some C fun {$ C} {ValidateCond C Dict} end}
             end
          end
@@ -695,17 +695,17 @@ define
          fun {CgiRawGet}
             case {OS.getEnv 'REQUEST_METHOD'} of false then
                {Exception.raiseError ap(spec env 'REQUEST_METHOD')} unit
-            elseof S then
+            [] S then
                case {String.toAtom S}
                of 'GET'  then
                   case {OS.getEnv 'QUERY_STRING'} of false then
                      {Exception.raiseError ap(spec env 'QUERY_STRING')} unit
-                  elseof S then S
+                  [] S then S
                   end
                [] 'POST' then
                   case {OS.getEnv 'CONTENT_LENGTH'} of false then
                      {Exception.raiseError ap(spec env 'CONTENT_LENGTH')} unit
-                  elseof S then F in
+                  [] S then F in
                      F = {New StdIn init()}
                      {F get({String.toInt S} $)}
                      %% NEVER ATTEMPT TO CLOSE!
@@ -740,7 +740,7 @@ define
    fun {GetCmdArgs Spec} Argv in
       Argv = case {Property.condGet 'ozd.args' unit} of unit then
                 {Map {Property.get 'application.args'} AtomToString}
-             elseof X then X
+             [] X then X
              end
       case {Label Spec} of plain then Argv
       [] list then

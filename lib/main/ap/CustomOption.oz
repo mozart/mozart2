@@ -1,3 +1,24 @@
+%%%
+%%% Authors:
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%
+%%% Copyright:
+%%%   Denys Duchier, 1998
+%%%
+%%% Last change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+%%% This file is part of Mozart, an implementation of Oz 3:
+%%%    http://www.mozart-oz.org
+%%%
+%%% See the file "LICENSE" or
+%%%    http://www.mozart-oz.org/LICENSE.html
+%%% for information on usage and redistribution
+%%% of this file, and for a DISCLAIMER OF ALL
+%%% WARRANTIES.
+%%%
+
 functor
 import System(show)
    CustomGroup(registerMember)
@@ -71,8 +92,8 @@ define
       case {Property.condGet 'user.custom.file' unit} of unit then
          case {OS.getEnv 'MOZART_CUSTOM_FILE'} of false then
             '~/.oz/CUSTOM'
-         elseof X then X end
-      elseof X then X end
+         [] X then X end
+      [] X then X end
    end
 
    fun {UserDictionary}
@@ -86,8 +107,8 @@ define
       {ForAll {Dictionary.entries Changed}
        proc {$ Key#Change}
           case Change
-          of     set(V) then {Dictionary.put    D Key V}
-          elseof reset  then {Dictionary.remove D Key}
+          of set(V) then {Dictionary.put    D Key V}
+          [] reset  then {Dictionary.remove D Key}
           end
        end}
       {Dictionary.removeAll Changed}

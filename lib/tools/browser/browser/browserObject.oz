@@ -251,9 +251,23 @@ class FBrowserClass
          else
             {self.BrowserStream
              [enq(createMenus)
-              enq(entriesDisable([unselect break rebrowse
+              enq(entriesDisable([%%
+                                  unselect break rebrowse
                                   process clear clearAllButLast
-                                  checkLayout expand shrink deref]))]}
+                                  checkLayout expand shrink deref]))
+              enq(entriesEnable([%%
+                                 break
+                                 %% should be on since that's a
+                                 %% request itself;
+                                 case {self.BrowserBuffer getSize($)} > 0
+                                 then clear else InitValue
+                                 end
+                                 case {self.BrowserBuffer getSize($)} > 1
+                                 then clearAllButLast else InitValue
+                                 end
+                                 case {self.BrowserBuffer getSize($)} > 0
+                                 then checkLayout else InitValue
+                                 end]))]}
          end
 
          %%

@@ -204,15 +204,20 @@ in
 
          % expected P: procedure or object, Xs: list
 
-            {Error.format
-             'Error: illegal number of arguments'
-             unit
-             [hint(l:'In statement' m:{Error.formatAppl P Xs})
-              hint(l:'Expected'
-                   m:case {IsProcedure P} then {Procedure.arity P} else 1 end
-                   # ' argument(s)')
-              hint(l:'Found' m:{Length Xs})]
-             Exc}
+            local
+               N = case {IsProcedure P} then {Procedure.arity P} else 1 end
+               M = {Length Xs}
+            in
+               {Error.format
+                'Error: illegal number of arguments'
+                unit
+                [hint(l:'In statement' m:{Error.formatAppl P Xs})
+                 hint(l:'Expected'
+                      m: N # ' argument' # case N == 1 then '' else 's' end)
+                 hint(l:'Found'
+                      m: M # ' argument' # case M == 1 then '' else 's' end)]
+                Exc}
+            end
 
          elseof kernel(noElse Pos) then
 

@@ -3,7 +3,7 @@
 %%%   Martin Henz <henz@iscs.nus.edu.sg>
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%   Martin Mueller <mmueller@ps.uni-sb.de>
-%%%   Christian Schulte <schulte@dfki.de>
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997

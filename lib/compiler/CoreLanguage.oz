@@ -1399,7 +1399,9 @@ in
             SA.token, init()
          end
       end
+
    in
+
       Core = core(statement: Statement
                   declaration: Declaration
                   skipNode: SkipNode
@@ -1458,5 +1460,9 @@ in
                   portToken: PortToken
                   threadToken: ThreadToken
                   spaceToken: SpaceToken)
+
+      TrueToken = {New NameToken init('`true`' `true` true)}
+      FalseToken = {New NameToken init('`false`' `false` true)}
+
    end
 end

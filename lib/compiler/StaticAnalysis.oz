@@ -24,10 +24,9 @@
 
 \define ANALYSEINHERITANCE
 
-
 /*
-\define DEBUGSA
 \define LOOP
+\define DEBUGSA
 \define INHERITANCE
 \define DEBUGPOS
 \define REMINDER
@@ -63,6 +62,10 @@ local
 
    fun {LabelToVS X}
       case X=='#' then "#" else X end
+   end
+
+   fun {Bool2Token B}
+      case B then TrueToken else FalseToken end
    end
 
 % assumes privacy of the following feature names
@@ -719,11 +722,14 @@ local
 % equality assertions
 
    proc {IssueUnificationFailure Ctrl Coord Msgs}
-      Origin Offend UnifLeft UnifRight Text1 Text2
+      ErrMsg Origin Offend UnifLeft UnifRight Text1 Text2
    in
       Origin = {Ctrl getCoord($)}
+      ErrMsg = {Ctrl getErrorMsg($)}
+
       {Ctrl getUnifier(UnifLeft UnifRight)}
-      Offend = hint(l:'Offending term in' m:Coord)
+
+      Offend = hint(l:'Offending expression in' m:Coord)
 
       Text1 = case UnifLeft \= unit
                  andthen UnifRight \= unit
@@ -742,12 +748,16 @@ local
       case {Ctrl getNeeded($)} then
          {Ctrl.rep error(coord: Origin
                          kind:  SAGenError
-                         msg:   'unification error in needed statement'
+                         msg:   case ErrMsg of unit then
+                                   'unification error in needed statement'
+                                else ErrMsg end
                          items: Text2)}
       else
          {Ctrl.rep warn(coord: Origin
                         kind:  SAGenWarn
-                        msg:   'unification error in possibly unneeded statement'
+                        msg:   case ErrMsg of unit then
+                                  'unification error in possibly unneeded statement'
+                               else ErrMsg end
                         items: Text2)}
       end
    end
@@ -755,33 +765,49 @@ local
 %-----------------------------------------------------------------------
 %
 
-   fun {MakeDummyProcedure N}
+   proc {MakeDummyProcedure N PN P}
       case N
-      of 0 then  proc {$} skip end
-      [] 1 then  proc {$ _} skip end
-      [] 2 then  proc {$ _ _} skip end
-      [] 3 then  proc {$ _ _ _} skip end
-      [] 4 then  proc {$ _ _ _ _} skip end
-      [] 5 then  proc {$ _ _ _ _ _} skip end
-      [] 6 then  proc {$ _ _ _ _ _ _} skip end
-      [] 7 then  proc {$ _ _ _ _ _ _ _} skip end
-      [] 8 then  proc {$ _ _ _ _ _ _ _ _} skip end
-      [] 9 then  proc {$ _ _ _ _ _ _ _ _ _} skip end
-      [] 10 then proc {$ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 11 then proc {$ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 12 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 13 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 14 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 15 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 16 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 17 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 18 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
-      [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      of 0 then  proc {P} skip end
+      [] 1 then  proc {P _} skip end
+      [] 2 then  proc {P _ _} skip end
+      [] 3 then  proc {P _ _ _} skip end
+      [] 4 then  proc {P _ _ _ _} skip end
+      [] 5 then  proc {P _ _ _ _ _} skip end
+      [] 6 then  proc {P _ _ _ _ _ _} skip end
+      [] 7 then  proc {P _ _ _ _ _ _ _} skip end
+      [] 8 then  proc {P _ _ _ _ _ _ _ _} skip end
+      [] 9 then  proc {P _ _ _ _ _ _ _ _ _} skip end
+      [] 10 then proc {P _ _ _ _ _ _ _ _ _ _} skip end
+      [] 11 then proc {P _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 12 then proc {P _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 13 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 14 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 15 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 16 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 17 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 18 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 19 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
+      [] 20 then proc {P _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       else
-         _ % weaker analysis for procedures with arity > 20
+         skip % weaker analysis for procedures with arity > 20
       end
+      {NameVariable P PN}
    end
+
+   proc {MakeDummyObject PN P}
+      P = {New BaseObject noop}
+      {NameVariable P PN}
+   end
+
+   proc {MakeDummyClass PN P}
+      P = class $ end
+      {NameVariable P PN}
+   end
+
+%   proc {MakeDummyArray PN P}
+%      P = {New Core.arrayToken init(Value)}
+%      {NameVariable P PN}
+%   end
 
 %-----------------------------------------------------------------------
 % some formatting
@@ -1229,7 +1255,14 @@ local
          {Show saEQ(@left @right)}
 \endif
          {@right sa(Ctrl)}                            % analyse right hand side
+
+         {Ctrl setErrorMsg('equality constraint failed')}
+         {Ctrl setUnifier(@left @right)}
+
          {@left unify(Ctrl @right)}                   % l -> r
+
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
       end
       meth applyEnvSubst(Ctrl)
          {@left applyEnvSubst(Ctrl)}
@@ -1657,9 +1690,11 @@ local
       feat
          isComplex:false
       meth saSimple(Ctrl)
-         DummyProc PredicateRef
+         DummyProc = {MakeDummyProcedure
+                      {Length @formalArgs}
+                      {@designator getPrintName($)}}
+         PredicateRef
       in
-         DummyProc = {MakeDummyProcedure {Length @formalArgs}}
          value     <- {New Core.procedureToken init(DummyProc)}
 
          % prepare some feature values for the code generator:
@@ -2124,12 +2159,12 @@ local
       end
 
       meth doNew(Ctrl)
-         DummyObject = {New BaseObject noop}
-         Cls  = {GetClassData {Nth @actualArgs 1}}
-         Msg  = {Nth @actualArgs 2}
-         Token= {New Core.objectToken init(DummyObject Cls)}
-         BndVO= {Nth @actualArgs 3}
-         PN   = {BndVO getPrintName($)}
+         DummyObj = {MakeDummyObject {@designator getPrintName($)}}
+         Cls      = {GetClassData {Nth @actualArgs 1}}
+         Msg      = {Nth @actualArgs 2}
+         Token    = {New Core.objectToken init(DummyObj Cls)}
+         BndVO    = {Nth @actualArgs 3}
+         PN       = {BndVO getPrintName($)}
 \ifdef DEBUGSA
          {Show doNew(Token)}
 \endif
@@ -2148,7 +2183,13 @@ local
          BVO1 = {Nth @actualArgs 1}
          BVO2 = {Nth @actualArgs 2}
       in
+         {Ctrl setErrorMsg('equation failed')}
+         {Ctrl setUnifier(@left @right)}
+
          {BVO1 unify(Ctrl BVO2)}
+
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
       end
 
       meth doDot(Ctrl)
@@ -2240,7 +2281,7 @@ local
          then
             BndVO = {Nth @actualArgs 3}
          in
-            {Ctrl setErrorMsg('dot selection failed')}
+            {Ctrl setErrorMsg('feature selection (.) failed')}
             {Ctrl setUnifier(BndVO RecOrCh.F)}
 
             {BndVO unify(Ctrl RecOrCh^F)}
@@ -2358,11 +2399,15 @@ local
          case
             {IsDet Val1} andthen {IsDet Val2}
          then
-            Result = {And Val1 Val2}
-            PN = case Result then 'true' else 'false' end
-            Token = {New Core.nameToken init(PN Result true)}
+            Token = {Bool2Token {And Val1 Val2}}
          in
+            {Ctrl setErrorMsg('boolean and failed')}
+            {Ctrl setUnifier(BVO3 Token)}
+
             {BVO3 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else
             skip
          end
@@ -2378,11 +2423,15 @@ local
          case
             {IsDet Val1} andthen {IsDet Val2}
          then
-            Result = {Or Val1 Val2}
-            PN = case Result then 'true' else 'false' end
-            Token = {New Core.nameToken init(PN Result true)}
+            Token = {Bool2Token {Or Val1 Val2}}
          in
+            {Ctrl setErrorMsg('boolean and failed')}
+            {Ctrl setUnifier(BVO3 Token)}
+
             {BVO3 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else
             skip
          end
@@ -2396,11 +2445,15 @@ local
          case
             {IsDet Val1}
          then
-            Result = {Not Val1}
-            PN = case Result then 'true' else 'false' end
-            Token = {New Core.nameToken init(PN Result true)}
+            Token = {Bool2Token {Not Val1}}
          in
+            {Ctrl setErrorMsg('boolean not failed')}
+            {Ctrl setUnifier(BVO2 Token)}
+
             {BVO2 unifyVal(Ctrl Token)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else skip end
       end
 
@@ -2412,7 +2465,15 @@ local
          case
             {HasFeature Val ImAConstruction}
          then
-            {BVO2 unify(Ctrl {Val getLabel($)})}
+            Lab = {Val getLabel($)}
+         in
+            {Ctrl setErrorMsg('label assertion failed')}
+            {Ctrl setUnifier(BVO2 Lab)}
+
+            {BVO2 unify(Ctrl Lab)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else skip end
       end
 
@@ -2426,7 +2487,13 @@ local
          then
             IntVal= {New Core.intNode init({Width Data} @coord)}
          in
+            {Ctrl setErrorMsg('width assertion failed')}
+            {Ctrl setUnifier(BVO2 IntVal)}
+
             {BVO2 unifyVal(Ctrl IntVal)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else skip end
       end
 
@@ -2440,11 +2507,20 @@ local
          then
             IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
          in
+            {Ctrl setErrorMsg('assertion of procedure arity failed')}
+            {Ctrl setUnifier(BVO2 IntVal)}
+
             {BVO2 unifyVal(Ctrl IntVal)}
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else skip end
       end
 
       meth doCheckType(TestType Test Ctrl)
+\ifdef DEBUGSA
+         {Show doCheckType(TestType Test)}
+\endif
          case TestType
          of det  then SABuiltinApplication, DoDetType(Test Ctrl)
          [] rec  then SABuiltinApplication, DoRecDetType(Test Ctrl)
@@ -2460,54 +2536,64 @@ local
          BVO2  = {Nth @actualArgs 2}
       in
          case {DetTests.det BVO1} then
+            {Ctrl setErrorMsg('type test failed')}
+
             case {Test {GetData BVO1}} then
-               {BVO2 unifyVal(Ctrl
-                              {New Core.nameToken
-                               init('`true`' `true` true)})}
+               {Ctrl setUnifier(BVO2 TrueToken)}
+               {BVO2 unifyVal(Ctrl TrueToken)}
             else
-               {BVO2 unifyVal(Ctrl
-                              {New Core.nameToken
-                               init('`false`' `false` true)})}
+               {Ctrl setUnifier(BVO2 FalseToken)}
+               {BVO2 unifyVal(Ctrl FalseToken)}
             end
+
+            {Ctrl resetUnifier}
+            {Ctrl resetErrorMsg}
          else skip end
       end
 
       meth DoRecDetType(ThreeValuedTest Ctrl)
 \ifdef DEBUGSA
-         {Show doDetType(ThreeValuedTest)}
+         {Show doRecDetType(ThreeValuedTest)}
 \endif
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
+\ifdef DEBUGSA
+         {Show doRecDetType({GetFullData BVO1})}
+\endif
       in
+         {Ctrl setErrorMsg('type test failed')}
+
          case {ThreeValuedTest {GetFullData BVO1}}
          of true then
-            {BVO2 unifyVal(Ctrl
-                           {New Core.nameToken
-                            init('`true`' `true` true)})}
+            {Ctrl setUnifier(BVO2 TrueToken)}
+            {BVO2 unifyVal(Ctrl TrueToken)}
          elseof false then
-            {BVO2 unifyVal(Ctrl
-                           {New Core.nameToken
-                            init('`false`' `false` true)})}
+            {Ctrl setUnifier(BVO2 FalseToken)}
+            {BVO2 unifyVal(Ctrl FalseToken)}
          elseof unit then
             skip
          end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
       end
 
       meth DoKindedType(Test Ctrl)
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
       in
+         {Ctrl setErrorMsg('type test failed')}
+
          case {DetTests.detOrKinded BVO1} then
             case {Test {GetData BVO1}} then
-               {BVO2 unifyVal(Ctrl
-                              {New Core.nameToken
-                               init('`true`' `true` true)})}
+               {Ctrl setUnifier(BVO2 TrueToken)}
+               {BVO2 unifyVal(Ctrl TrueToken)}
             else
-               {BVO2 unifyVal(Ctrl
-                              {New Core.nameToken
-                               init('`false`' `false` true)})}
+               {Ctrl setUnifier(BVO2 FalseToken)}
+               {BVO2 unifyVal(Ctrl FalseToken)}
             end
          else skip end
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
       end
    end
 
@@ -2807,10 +2893,11 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
+
          {Arbiter unifyVal(Ctrl Val)}
          SAStatement, saBody(Ctrl @statements)
-         {Ctrl setTopNeeded(T N)}
 
+         {Ctrl setTopNeeded(T N)}
          {InstallGlobalEnv Env}
       end
       meth saDescend(Ctrl)
@@ -2820,9 +2907,10 @@ local
       in
          {Ctrl getTopNeeded(T N)}
          {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @statements)
-         {Ctrl setTopNeeded(T N)}
 
+         SAStatement, saBody(Ctrl @statements)
+
+         {Ctrl setTopNeeded(T N)}
          {InstallGlobalEnv Env}
       end
       meth saDescendAndCommit(Ctrl)
@@ -2836,7 +2924,6 @@ local
 \ifdef DEBUGSA
          {Show patternCase(@clauses {Map @globalVars fun {$ V} {V getPrintName($)} end})}
 \endif
-         skip
       end
       meth saDescend(Ctrl)
          % descend with global environment
@@ -2877,6 +2964,9 @@ local
          {Ctrl setTopNeeded(T N)}
       end
       meth saDescendWith(Ctrl Arbiter)
+\ifdef DEBUGSA
+         {Show patternClause}
+\endif
          ArbV  = {Arbiter getVariable($)}
          % also save arbiter !!
          Env   = {GetGlobalEnv {Add ArbV @globalVars}}
@@ -2891,7 +2981,6 @@ local
          {Ctrl setUnifier(Arbiter @pattern)}
 
          {Arbiter unify(Ctrl @pattern)}
-
          {Ctrl resetUnifier}
          {Ctrl resetErrorMsg}
 
@@ -3142,7 +3231,7 @@ local
       end
       meth saSimple(Ctrl)
          IllClass TestClass
-         DummyClass = class $ end
+         DummyClass = {MakeDummyClass {@designator getPrintName($)}}
       in
          value <- {New Core.classToken init(DummyClass)}
          isToplevel <- {Ctrl getTop($)}
@@ -3200,7 +3289,13 @@ local
 
 \endif
 
+         {Ctrl setErrorMsg('class definition failed')}
+         {Ctrl setUnifier(@designator @value)}
+
          {@designator unify(Ctrl @value)}
+
+         {Ctrl resetUnifier}
+         {Ctrl resetErrorMsg}
 
 \ifdef DEBUGSA
          {Show lookedAhead({@designator getPrintName($)} @value)}
@@ -4516,8 +4611,7 @@ local
                   skip
                else
                   {IssueUnificationFailure Ctrl @coord
-                   [line('incompatible tokens')
-                    hint(l:'First value' m:oz({LHS getValue($)}))
+                   [hint(l:'First value' m:oz({LHS getValue($)}))
                     hint(l:'Second value' m:oz({RHS getValue($)}))
                    ]}
                end
@@ -4635,8 +4729,7 @@ local
                      skip
                   else
                      {IssueUnificationFailure Ctrl @coord
-                      [line('incompatible tokens')
-                       hint(l:'First value' m:oz({LHS getValue($)}))
+                      [hint(l:'First value' m:oz({LHS getValue($)}))
                        hint(l:'Second value' m:oz({RHS getValue($)}))
                       ]}
                   end

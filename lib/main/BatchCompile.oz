@@ -64,6 +64,8 @@ local
                    unit#"echoqueries"#echoqueries(type: bool)
                    unit#"watchdog"#watchdog(type: bool)
                    unit#"warnredecl"#warnredecl(type: bool)
+                   unit#"warnunused"#warnunused(type: bool)
+                   unit#"warnunusedformals"#warnunused(type: bool)
                    unit#"warnforward"#warnforward(type: bool)
                    unit#"system"#system(type: bool)
                    unit#"gump"#gump(type: bool)
@@ -111,6 +113,8 @@ local
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#
    '--(no)compilerpasses          Show compiler passes.\n'#
    '--(no)warnredecl              Warn about top-level redeclarations.\n'#
+   '--(no)warnunused              Warn about unused variables.\n'#
+   '--(no)warnunusedformals       Warn about unused variables and formals.\n'#
    '--(no)warnforward             Warn about oo forward declarations.\n'#
    '--(no)system                  Allow use of system variables.\n'#
    '--(no)gump                    Allow Gump definitions.\n'#
@@ -342,6 +346,7 @@ in
          UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
          {BatchCompiler enqueue(mergeEnv(Env))}
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}
+         {BatchCompiler enqueue(setSwitch(warnunused true))}
          Mode = {NewCell feedtoemulator}
          OutputFile = {NewCell unit}
          {ForAll Opts
@@ -362,6 +367,15 @@ in
                 {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
                 {BatchCompiler enqueue(feedFile(X return))}
                 {BatchCompiler enqueue(popSwitches())}
+                {Wait {BatchCompiler enqueue(ping($))}}
+                case {UI successful($)} then skip
+                else
+                   {System.printError {UI getVS($)}}
+                   case {UI hasErrors($)} then
+                      raise error end
+                   else skip
+                   end
+                end
              [] verbose then
                 skip   % has already been set
              [] mode then
@@ -445,7 +459,10 @@ in
                 case {UI successful($)} then skip
                 else
                    {System.printError {UI getVS($)}}
-                   raise error end
+                   case {UI hasErrors($)} then
+                      raise error end
+                   else skip
+                   end
                 end
                 case {Access Mode} of dump then
                    case {Component.smartSave R OFN} of nil then skip

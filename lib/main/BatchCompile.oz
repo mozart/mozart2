@@ -55,6 +55,7 @@ local
                    &q#"quiet"#verbose(value: false)
                    &o#"outputfile"#outputfile(type: string)
                    &l#"environment"#environment(type: string)
+                   &I#"incdir"#incdir(type: string)
                    unit#"include"#include(type: string)
                    unit#"maxerrors"#maxerrors(type: int)
                    unit#"compilerpasses"#compilerpasses(type: bool)
@@ -105,6 +106,7 @@ local
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
    '-l COMPS, --environment=COMPS Make components COMPS (a comma-separated\n'#
    '                              list) available in the environment.\n'#
+   '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
    '\n'#
@@ -333,7 +335,7 @@ local
    end
 in
    proc {BatchCompile Argv ?Status}
-      try Opts FileNames Verbose BatchCompiler UI Mode OutputFile in
+      try Opts FileNames Verbose BatchCompiler UI Mode OutputFile IncDir in
          try
             {ParseArgs Argv ?Opts ?FileNames}
          catch usage(VS) then
@@ -352,6 +354,7 @@ in
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}
          Mode = {NewCell feedtoemulator}
          OutputFile = {NewCell unit}
+         IncDir = {NewCell nil}
          {ForAll Opts
           proc {$ Opt#X}
              case Opt of help then
@@ -365,6 +368,8 @@ in
                 {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
              [] environment then
                 {IncludeComponents X BatchCompiler}
+             [] incdir then
+                {Assign IncDir X|{Access IncDir}}
              [] include then
                 {BatchCompiler enqueue(pushSwitches())}
                 {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
@@ -393,6 +398,12 @@ in
                 {BatchCompiler enqueue(setSwitch(SwitchName X))}
              end
           end}
+         {OS.putEnv 'OZPATH'
+          {FoldL {Access IncDir}
+           fun {$ In S} {Append S &:|In} end
+           case {OS.getEnv 'OZPATH'} of false then "."
+           elseof S then S
+           end}}
          case FileNames of nil then
             {Report error(kind: UsageError
                           msg: 'no input files given'

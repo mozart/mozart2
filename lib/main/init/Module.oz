@@ -26,47 +26,6 @@
 
 local
 
-   BootUrl   = {UrlMake "x-oz://boot/DUMMY"}
-   SystemUrl = {UrlMake "x-oz://system/DUMMY"}
-   OzScheme  = BootUrl.scheme = SystemUrl.scheme
-
-   local
-      UrlDefaults = \insert '../../url-defaults.oz'
-   in
-      FunExt         = UrlDefaults.'functor'
-      MozartHome     = UrlDefaults.'home'
-      ContribHome    = UrlDefaults.'contrib'
-      SystemHomeUrl  = {UrlToBase MozartHome}
-      ContribHomeUrl = {UrlToBase ContribHome}
-   end
-
-   %%
-   %% Register System names
-   %%
-
-   SystemModules = local
-                      Functors = \insert '../../functor-defaults.oz'
-                   in
-                      {List.toRecord map
-                       {Map {Append Functors.volatile
-                             {Append Functors.lib Functors.tools}}
-                        fun {$ ModName}
-                           ModName #
-                           {UrlResolve SystemUrl
-                            {UrlMake ModName}}
-                        end}}
-                   end
-
-   fun {ModNameToUrl ModName}
-      ModKey = {VirtualString.toAtom ModName}
-   in
-      if {HasFeature SystemModules ModKey} then
-         SystemModules.ModKey
-      else
-         {UrlMake ModKey#FunExt}
-      end
-   end
-
    fun {IsNative Url}
       {HasFeature {CondSelect Url info info} 'native'}
    end
@@ -242,7 +201,7 @@ in
                 case L1 of (Last#Bool)|Prefix then
                    if {Member &. Last} then L
                    else {Reverse ({VirtualString.toString
-                                   Last#FunExt}#Bool)|Prefix} end
+                                   Last#FunctorExt}#Bool)|Prefix} end
                 else raise badUrl end end
              in
                 {Adjoin Url url(scheme:unit authority:unit

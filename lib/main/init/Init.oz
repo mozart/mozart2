@@ -37,7 +37,20 @@ require
        isRelative:    UrlIsRelative
        toVsExtended:  UrlToVsExtended)
 
+   at '../URL.ozf'
+
+   DefaultURL(ozScheme
+              functorExt:  FunctorExt
+              homeUrl:     MozartHome
+              contribUrl:  ContribHome
+              nameToUrl:   ModNameToUrl)
+   at '../DefaultURL.ozf'
+
 prepare
+
+   SystemHomeUrl  = {UrlToBase MozartHome}
+   ContribHomeUrl = {UrlToBase ContribHome}
+   OzScheme       = {VirtualString.toString DefaultURL.ozScheme}
 
    functor ErrorHandler
 

@@ -23,44 +23,6 @@
 local
 
    %%
-   %% Mapping module names to URLs
-   %%
-   local
-      local
-         UrlDefaults = \insert '../../url-defaults.oz'
-      in
-         FunExt     = UrlDefaults.'functor'
-      end
-
-      local
-         Functors = \insert '../../functor-defaults.oz'
-         BaseUrl  = {UrlMake "x-oz://system/DUMMY"}
-      in
-         SystemModules = {List.toRecord map
-                          {Map {Append Functors.volatile
-                                {Append Functors.lib Functors.tools}}
-                           fun {$ ModName}
-                              ModName #
-                              {UrlResolve BaseUrl
-                               {UrlMake ModName}}
-                           end}}
-      end
-   in
-
-      fun {ModNameToUrl ModName}
-         %% Maps module name to URL
-         ModKey = {VirtualString.toAtom ModName}
-      in
-         if {HasFeature SystemModules ModKey} then
-            SystemModules.ModKey
-         else
-            {UrlMake ModKey#FunExt}
-         end
-      end
-
-   end
-
-   %%
    %% Filtering of URLs
    %%
 

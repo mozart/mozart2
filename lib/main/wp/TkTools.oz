@@ -23,6 +23,16 @@
 
 functor
 
+require
+   DefaultURL(homeUrl)
+   at '../DefaultURL.ozf'
+   URL(make resolve toAtom)
+   at '../URL.ozf'
+
+prepare
+   ImageDir = {URL.toAtom {URL.resolve DefaultURL.homeUrl
+                           {URL.make 'images/'}}}
+
 import
    Tk
    Compiler(engine interface)
@@ -921,8 +931,6 @@ define
 
 
    local
-      UrlDefaults = \insert '../../url-defaults.oz'
-      ImageDir    = UrlDefaults.home # 'images/'
       IncStep     = 10
       IncTime     = 100
       IncWait     = 500

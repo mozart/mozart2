@@ -159,9 +159,10 @@ in
 
             %%
             case Screen == InitValue then
-               Window = {New MyToplevel tkInit}
+               Window = {New MyToplevel tkInit(withdraw: True)}
             else
-               Window = {New MyToplevel tkInit(screen: Screen)}
+               Window = {New MyToplevel tkInit(withdraw: True
+                                               screen: Screen)}
             end
 
             %%
@@ -578,6 +579,17 @@ in
          {Show 'tcl/tk: iconify'}
 \endif
          case self.standAlone then {Tk.send wm(iconify self.window)}
+         else true
+         end
+      end
+
+      %%
+      %%
+      meth expose
+\ifdef DEBUG_TI
+         {Show 'tcl/tk: iconify'}
+\endif
+         case self.standAlone then {Tk.send wm(deiconify self.window)}
          else true
          end
       end
@@ -1922,7 +1934,7 @@ in
             fb <- FB
 
             %%
-            Window = {New MyToplevel tkInit}
+            Window = {New MyToplevel tkInit(withdraw: True)}
 
             %%
             CloseAction = {New Tk.action
@@ -1930,7 +1942,7 @@ in
                                   action: proc {$} {self closeWindow} end)}
 
             {Tk.batch
-             [wm(iconify Window)
+             [%% wm(iconify Window)
               wm(title(Window IMTitle))
               wm(iconname(Window IMITitle))
               wm(iconbitmap(Window '@'#IMIBitmap))
@@ -2145,9 +2157,10 @@ in
 
             %%
             case Screen == InitValue then
-               Window = {New MyToplevel tkInit}
+               Window = {New MyToplevel tkInit(withdraw: True)}
             else
-               Window = {New MyToplevel tkInit(screen: Screen)}
+               Window = {New MyToplevel tkInit(withdraw: True
+                                               screen: Screen)}
             end
 
             %%
@@ -2213,6 +2226,8 @@ in
             {Wait Window}
             {Wait MessageWidget}
 
+            %%
+            {Tk.send wm(deiconify Window)}
             %%
             <<UrObject nil>>
          end

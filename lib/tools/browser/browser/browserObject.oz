@@ -59,6 +59,7 @@ class WindowPrimary from UrObject
 
          %%
          {@window setMinSize}
+         {@window expose}
          Sync = True
 
          %%

@@ -161,7 +161,6 @@ foreach $header (@headers) {
             my ($name, $body) = ($7, $4);
 
             if ($enum_prefix) {
-
                 next unless $name =~ m/^$enum_prefix/s
             }
 

@@ -107,7 +107,7 @@ define
          {Native.unref @nativeObject}
       end
 
-% Signal (made part of Object)
+% Signals (made part of Object)
 
       meth signalConnect(Name Handler ?Id)
          % TODO: support user data (maybe superfluous)

@@ -32,9 +32,9 @@ export
 
 define
 
-   RegisterNativeObject = GTK.registerObject
+   RegisterNativeObject = GTK.registerNativeObject
    RegisterObject       = GTK.registerObject
-   UnRegisterObject     = GTK.registerObject
+   UnRegisterObject     = GTK.unregisterObject
    GetObject            = GTK.getObject
 
 % -----------------------------------------------------------------------------

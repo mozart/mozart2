@@ -79,7 +79,7 @@ local
          % including the index of the sort (open world!)
          {ForAll Names
           proc {$ X}
-             SX = {FS.var.lub [1#N]}
+             SX = {FS.var.upperBound [1#N]}
           in
              N2S.X = SX
              {FS.include Name2Index.X SX}
@@ -97,7 +97,7 @@ local
              S = N2S.N
           in
              choice
-                S = {FS.value.new {FS.reflect.glb S}}
+                S = {FS.value.new {FS.reflect.lowerBound S}}
              end
           end}
       end
@@ -119,7 +119,7 @@ local
 
       {ForAll Names
        proc {$ X}
-          Name2Dom.X  = {FS.reflect.glb Name2Set.X}
+          Name2Dom.X  = {FS.reflect.lowerBound Name2Set.X}
        end}
 
       fun {AppendDom X Y}
@@ -169,7 +169,7 @@ local
          then
             [value]
          elsecase
-            {FS.reflect.lub S}
+            {FS.reflect.upperBound S}
          of nil then nil
          elseof (X#Y)|_ then
             N = Index2Name.X
@@ -195,7 +195,7 @@ local
              NSet = {Encode Ns nil}
           in
              Name2Set.N = NSet
-             Name2Dom.N = {FS.reflect.lub NSet}
+             Name2Dom.N = {FS.reflect.upperBound NSet}
           end
        end}
 
@@ -226,7 +226,7 @@ local
          name2dom: N2D
          top:      {FS.value.new [1#N]}
          decl:     proc {$ S}
-                      S = {FS.var.lub [1#N]}
+                      S = {FS.var.upperBound [1#N]}
                       S = {FS.cardRange 1 N} % exclude empty set
                    end
          new:      NewType

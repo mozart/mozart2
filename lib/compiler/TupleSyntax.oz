@@ -27,7 +27,8 @@
 fun {CoordinatesOf P}
    % Returns the coordinates of the outermost leftmost construct
    % in a given phrase P.
-   case P of fAnd(S _) then {CoordinatesOf S}
+   case P of fStepPoint(_ C) then C
+   [] fAnd(S _) then {CoordinatesOf S}
    [] fEq(E _ _) then {CoordinatesOf E}
    [] fAssign(E _ _) then {CoordinatesOf E}
    [] fOrElse(E _ _) then {CoordinatesOf E}
@@ -126,6 +127,8 @@ proc {GetPatternVariablesStatement S VsHd VsTl}
       {GetPatternVariablesStatement S1 ?Vs1 nil}
       {GetPatternVariablesStatement S2 ?Vs2 nil}
       {VarListSub Vs1 Vs2 VsHd VsTl}
+   [] fStepPoint(S _) then
+      {GetPatternVariablesStatement S VsHd VsTl}
    [] fAnd(S1 S2) then VsInter in
       {GetPatternVariablesStatement S1 VsHd VsInter}
       {GetPatternVariablesStatement S2 VsInter VsTl}
@@ -152,6 +155,8 @@ proc {GetPatternVariablesExpression E VsHd VsTl}
       {GetPatternVariablesExpression E2 VsInter VsTl}
    [] fLocal(_ _ _) then VsHd = VsTl
    [] fAnd(_ _) then VsHd = VsTl
+   [] fStepPoint(E _) then
+      {GetPatternVariablesExpression E VsHd VsTl}
    else
       {GetPatternVariablesStatement E VsHd VsTl}
    end

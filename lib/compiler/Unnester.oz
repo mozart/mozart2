@@ -175,7 +175,9 @@ local
       % compute its pattern variables and place them in the difference
       % list FVsHd-FVsTl.  Return the statement, from which single
       % variables occurring as statements have been removed.
-      case FS of fAnd(S1 S2) then FVsInter in
+      case FS of fStepPoint(S C) then
+         fStepPoint({MakeTrivialLocalPrefix S FVsHd FVsTl} C)
+      [] fAnd(S1 S2) then FVsInter in
          fAnd({MakeTrivialLocalPrefix S1 FVsHd FVsInter}
               {MakeTrivialLocalPrefix S2 FVsInter FVsTl})
       [] fVar(_ _) then   % remove single variable
@@ -481,7 +483,10 @@ local
       end
 
       meth UnnestStatement(FS $)
-         case FS of fAnd(FS1 FS2) then
+         case FS of fStepPoint(FS C) then GS in
+            Unnester, UnnestStatement(FS ?GS)
+            {New Core.stepPoint init(GS C)}
+         [] fAnd(FS1 FS2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestStatement(FS2 $)
          [] fEq(FE1 FE2 C) then GFront GBack in
@@ -896,7 +901,10 @@ local
       end
 
       meth UnnestExpression(FE FV $)
-         case FE of fAnd(FS1 FE2) then
+         case FE of fStepPoint(FE C) then GS in
+            Unnester, UnnestExpression(FE FV ?GS)
+            {New Core.stepPoint init(GS C)}
+         [] fAnd(FS1 FE2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestExpression(FE2 FV $)
          [] fEq(_ _ _) then GFront GBack in
@@ -2203,9 +2211,177 @@ in
       end
    end
 
-   proc {UnnestQuery TopLevel Reporter State Query ?GVs ?GS ?FreeGVs}
-      O = {New Unnester init(TopLevel Reporter State)}
+   local
+      fun {VsToFAnd Vs}
+         case Vs of V|Vr then
+            case Vr of nil then V
+            else fAnd(V {VsToFAnd Vr})
+            end
+         [] nil then fSkip(unit)
+         end
+      end
+
+      fun {NP P}
+         case P of fDeclare(P1 P2 C) then fDeclare({NP P1} {NP P2} C)
+         [] fAnd(P1 P2) then fAnd({NP P1} {NP P2})
+         [] fEq(P1 P2 C) then fEq({NP P1} {NP P2} C)
+         [] fAssign(P1 P2 C) then fAssign({NP P1} {NP P2} C)
+         [] fOrElse(P1 P2 C) then fOrElse({NP P1} {NP P2} C)
+         [] fAndThen(P1 P2 C) then fAndThen({NP P1} {NP P2} C)
+         [] fOpApply(X Ps C) then fOpApply(X {Map Ps NP} C)
+         [] fOpApplyStatement(X Ps C) then fOpApplyStatement(X {Map Ps NP} C)
+         [] fFdCompare(X P1 P2 C) then fFdCompare(X {NP P1} {NP P2} C)
+         [] fFdIn(X P1 P2 C) then fFdIn(X {NP P1} {NP P2} C)
+         [] fObjApply(P1 P2 C) then fObjApply({NP P1} {NP P2} C)
+         [] fAt(P C) then fAt({NP P} C)
+         [] fAtom(_ _) then P
+         [] fVar(_ _) then P
+         [] fEscape(_ _) then P
+         [] fWildcard(_) then P
+         [] fSelf(_) then P
+         [] fDollar(_) then P
+         [] fInt(_ _) then P
+         [] fFloat(_ _) then P
+         [] fRecord(L As) then fRecord(L {Map As NP})
+         [] fOpenRecord(L As) then fOpenRecord(L {Map As NP})
+         [] fColon(F P) then fColon(F {NP P})
+         [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} C)
+         [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs C)
+         [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs C)
+         [] fFunctor(P1 Ds P2 C) then fFunctor({NP P1} {Map Ds NP} {SP P2} C)
+         [] fImport(_ _) then P
+         [] fExport(_ _) then P
+         [] fClass(P Ds Ms C) then fClass({NP P} {Map Ds NP} {Map Ms SP} C)
+         [] fFrom(Ps C) then fFrom({Map Ps NP} C)
+         [] fProp(Ps C) then fProp({Map Ps NP} C)
+         [] fAttr(Ps C) then fAttr({Map Ps NP} C)
+         [] fFeat(Ps C) then fFeat({Map Ps NP} C)
+         [] P1#P2 then {NP P1}#{NP P2}
+         [] fMeth(X P C) then fMeth(X {SP P} C)
+         [] fLocal(P1 P2 C) then fLocal({NP P1} {NP P2} C)
+         [] fBoolCase(P1 P2 P3 C) then fBoolCase({NP P1} {NP P2} {NP P3} C)
+         [] fNoElse(_) then P
+         [] fCase(P1 Css P2 C) then
+            fCase({NP P1} {Map Css fun {$ Cs} {Map Cs NP} end} {NP P2} C)
+         [] fCaseClause(P1 P2) then fCaseClause({NP P1} {NP P2})
+         [] fLockThen(P1 P2 C) then fLockThen({NP P1} {NP P2} C)
+         [] fLock(P C) then fLock({NP P} C)
+         [] fThread(P C) then fThread({SP P} C)
+         [] fTry(P1 P2 P3 C) then fTry({NP P1} {NP P2} {NP P3} C)
+         [] fCatch(Cs C) then fCatch({Map Cs NP} C)
+         [] fNoCatch then P
+         [] fNoFinally then P
+         [] fRaise(P C) then fRaise({NP P} C)
+         [] fRaiseWith(P1 P2 C) then fRaiseWith({NP P1} {NP P2} C)
+         [] fSkip(_) then P
+         [] fFail(_) then P
+         [] fNot(P C) then fNot({NP P} C)
+         [] fIf(Cs P C) then fIf({Map Cs NP} {NP P} C)
+         [] fClause(P1 P2 P3) then fClause({NP P1} {NP P2} {NP P3})
+         [] fNoThen(_) then P
+         [] fOr(Cs X C) then fOr({Map Cs NP} X C)
+         [] fCondis(Pss C) then fCondis({Map Pss fun {$ Ps} {Map Ps NP} end} C)
+         [] fScanner(P1 Ds Ms Rs X C) then
+            fScanner({NP P1} {Map Ds NP} {Map Ms SP} {Map Rs SP} X C)
+         [] fParser(P1 Ds Ms T Ps X C) then
+            fParser({NP P1} {Map Ds NP} {Map Ms SP} T {Map Ps SP} X C)
+         end
+      end
+
+      fun {SP P}
+         case P of fDeclare(P1 P2 C) then NewP1 Vs in
+            NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
+            fDeclare({VsToFAnd Vs} {SP fAnd(NewP1 P2)} C)
+         [] fAnd(P1 P2) then fAnd({SP P1} {SP P2})
+         [] fEq(_ _ C) then fStepPoint({NP P} C)
+         [] fAssign(_ _ C) then fStepPoint({NP P} C)
+         [] fOrElse(_ _ C) then fStepPoint({NP P} C)
+         [] fAndThen(_ _ C) then fStepPoint({NP P} C)
+         [] fOpApply(_ _ C) then fStepPoint({NP P} C)
+         [] fOpApplyStatement(_ _ C) then fStepPoint({NP P} C)
+         [] fFdCompare(_ _ _ C) then fStepPoint({NP P} C)
+         [] fFdIn(_ _ _ C) then fStepPoint({NP P} C)
+         [] fObjApply(_ _ C) then fStepPoint({NP P} C)
+         [] fAt(_ C) then fStepPoint({NP P} C)
+         [] fAtom(_ C) then fStepPoint(P C)
+         [] fVar(_ C) then fStepPoint(P C)
+         [] fEscape(_ C) then fStepPoint(P C)
+         [] fWildcard(C) then fStepPoint(P C)
+         [] fSelf(C) then fStepPoint(P C)
+         [] fDollar(C) then fStepPoint(P C)
+         [] fInt(_ C) then fStepPoint(P C)
+         [] fFloat(_ C) then fStepPoint(P C)
+         [] fRecord(L _) then fStepPoint({NP P} {CoordinatesOf L})
+         [] fOpenRecord(L _) then fStepPoint({NP P} {CoordinatesOf L})
+         [] fApply(_ _ C) then fStepPoint({NP P} C)
+         [] fProc(P1 Ps P2 Fs C) then
+            fStepPoint(fProc({NP P1} Ps {SP P2} Fs C) C)
+         [] fFun(P1 Ps P2 Fs C) then
+            fStepPoint(fFun({NP P1} Ps {SP P2} Fs C) C)
+         [] fFunctor(P1 Ds P2 C) then
+            fStepPoint(fFunctor({NP P1} {Map Ds NP} {SP P2} C) C)
+         [] fClass(P Ds Ms C) then
+            fStepPoint(fClass({NP P} {Map Ds NP} {Map Ms SP} C) C)
+         [] fMeth(X P C) then fMeth(X {SP P} C)
+         [] fLocal(P1 P2 C) then NewP1 Vs in
+            NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
+            fLocal({VsToFAnd Vs} {SP fAnd(NewP1 P2)} C)
+         [] fBoolCase(P1 P2 P3 C) then
+            fStepPoint(fBoolCase({NP P1} {SP P2} {SP P3} C) C)
+         [] fNoElse(_) then P
+         [] fCase(P1 Css P2 C) then
+            fStepPoint(fCase({NP P1} {Map Css fun {$ Cs} {Map Cs SP} end}
+                             {SP P2} C) C)
+         [] fCaseClause(P1 P2) then fCaseClause({NP P1} {SP P2})
+         [] fLockThen(P1 P2 C) then fStepPoint(fLockThen({NP P1} {SP P2} C) C)
+         [] fLock(P C) then fStepPoint(fLock({SP P} C) C)
+         [] fThread(P C) then fStepPoint(fThread({SP P} C) C)
+         [] fTry(P1 P2 P3 C) then fStepPoint(fTry({SP P1} {SP P2} {SP P3} C) C)
+         [] fCatch(Cs C) then fCatch({Map Cs SP} C)
+         [] fNoCatch then P
+         [] fNoFinally then P
+         [] fRaise(_ C) then fStepPoint({NP P} C)
+         [] fRaiseWith(_ _ C) then fStepPoint({NP P} C)
+         [] fSkip(C) then fStepPoint(P C)
+         [] fFail(C) then fStepPoint(P C)
+         [] fNot(P C) then fStepPoint(fNot({SP P} C) C)
+         [] fIf(Cs P C) then fStepPoint(fIf({Map Cs SP} {SP P} C) C)
+         [] fClause(P1 P2 P3) then NewP1 Vs in
+            NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
+            fClause({VsToFAnd Vs} {SP fAnd(NewP1 P2)} {SP P3})
+         [] fNoThen(_) then P
+         [] fOr(Cs X C) then fStepPoint(fOr({Map Cs SP} X C) C)
+         [] fCondis(_ C) then fStepPoint(P C)
+         [] fScanner(P1 Ds Ms Rs X C) then
+            fStepPoint(fScanner({NP P1} {Map Ds NP} {Map Ms SP}
+                                {Map Rs SP} X C) C)
+         [] fMode(V Ms) then fMode(V {Map Ms SP})
+         [] fInheritedModes(_) then P
+         [] fLexicalAbbreviation(_ _) then P
+         [] fLexicalRule(R P) then fLexicalRule(R {SP P})
+         [] fParser(P1 Ds Ms T Ps X C) then
+            fStepPoint(fParser({NP P1} {Map Ds NP} {Map Ms SP} T
+                               {Map Ps SP} X C) C)
+         [] fProductionTemplate(K Ps Rs E R) then
+            fProductionTemplate(K Ps {Map Rs SP} {SP E} R)
+         [] fSyntaxRule(G Ds E) then fSyntaxRule(G Ds {SP E})
+         [] fSynApplication(_ _) then P
+         [] fSynAction(P) then fSynAction({SP P})
+         [] fSynSequence(Vs Es) then fSynSequence(Vs {Map Es SP})
+         [] fSynAlternative(Es) then fSynAlternative({Map Es SP})
+         [] fSynAssignment(V E) then fSynAssignment(V {SP E})
+         [] fSynTemplateInstantiation(K Es C) then
+            fSynTemplateInstantiation(K {Map Es SP} C)
+         end
+      end
    in
-      {O unnestQuery(Query ?GVs ?GS ?FreeGVs)}
+      proc {UnnestQuery TopLevel Reporter State Query ?GVs ?GS ?FreeGVs}
+         O = {New Unnester init(TopLevel Reporter State)}
+         Query0 = case {State getSwitch(debuginfostatements $)} then {SP Query}
+                  else Query
+                  end
+      in
+         {O unnestQuery(Query0 ?GVs ?GS ?FreeGVs)}
+      end
    end
 end

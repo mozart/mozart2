@@ -256,7 +256,13 @@ in
          end
       end
       meth EmitVInstr(ThisAddr)
-         case ThisAddr of vMakePermanent(_ Regs _) then
+         case ThisAddr of vStepPoint(_ Addr Coord Cont) then OldContLabels in
+            Emitter, PushContLabel(Cont ?OldContLabels)
+            Emitter, DebugEntry(Coord 'statement')
+            Emitter, EmitAddr(Addr)
+            Emitter, PopContLabel(OldContLabels)
+            Emitter, DebugExit(Coord 'statement')
+         [] vMakePermanent(_ Regs _) then
             {ForAll Regs
              proc {$ Reg}
                 case {Dictionary.member @regNames Reg} then
@@ -849,7 +855,9 @@ in
             Emitter, Emit(lockThread(Dest X @HighestUsedX + 1))
          [] vLockEnd(_ Coord Cont Dest) then ContLabel Dest0 in
             Emitter, Dereference(Cont ?ContLabel ?Dest0)
-            Dest = case self.debugInfoControlSwitch then ContLabel
+            Dest = case self.debugInfoControlSwitch
+                      orelse self.debugInfoStatementsSwitch
+                   then ContLabel
                    else Dest0
                    end
             Emitter, DoInits(nil Cont)
@@ -865,7 +873,9 @@ in
       %%
 
       meth DebugEntry(Coord Comment NLiveRegs <= ~1)
-         case self.debugInfoControlSwitch then
+         case self.debugInfoControlSwitch andthen Comment \= statement
+            orelse self.debugInfoStatementsSwitch andthen Comment == statement
+         then
             N = case NLiveRegs \= ~1 then NLiveRegs
                 else @HighestUsedX + 1
                 end
@@ -880,7 +890,9 @@ in
          end
       end
       meth DebugExit(Coord Comment NLiveRegs <= ~1)
-         case self.debugInfoControlSwitch then
+         case self.debugInfoControlSwitch andthen Comment \= statement
+            orelse self.debugInfoStatementsSwitch andthen Comment == statement
+         then
             N = case NLiveRegs \= ~1 then NLiveRegs
                 else @HighestUsedX + 1
                 end
@@ -1602,7 +1614,10 @@ in
       end
       meth PushContLabel(Cont ?OldContLabels)
          OldContLabels = @contLabels
-         case Cont \= nil orelse self.debugInfoControlSwitch then
+         case Cont \= nil
+            orelse self.debugInfoControlSwitch
+            orelse self.debugInfoStatementsSwitch
+         then
             contLabels <- Emitter, newLabel($)|OldContLabels
          else skip
          end
@@ -1644,6 +1659,7 @@ in
          elsecase B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
+            andthen {Not self.debugInfoStatementsSwitch}
          then
             % This means that in a conditional, local environments may be
             % allocated per branch instead of for the procedure as a whole.

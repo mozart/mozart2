@@ -19,7 +19,8 @@
 %%% WARRANTIES.
 %%%
 
-Continuations = c(vMakePermanent: 3
+Continuations = c(vStepPoint: 4
+                  vMakePermanent: 3
                   vClear: 3
                   vUnify: 4
                   vFailure: 2
@@ -69,7 +70,9 @@ class CodeStore from Emitter
       Saved           % saved minReg from enclosing definitions
       nextLabel
       sharedDone
-   feat debugInfoControlSwitch debugInfoVarnamesSwitch switches reporter
+   feat
+      debugInfoControlSwitch debugInfoStatementsSwitch debugInfoVarnamesSwitch
+      switches reporter
    meth init(Switches Reporter)
       Emitter, init()
       regNames <- {NewDictionary}
@@ -77,8 +80,12 @@ class CodeStore from Emitter
       Saved <- nil
       nextLabel <- 1
       sharedDone <- {NewDictionary}
-      self.debugInfoControlSwitch = {Switches getSwitch(debuginfocontrol $)}
-      self.debugInfoVarnamesSwitch = {Switches getSwitch(debuginfovarnames $)}
+      self.debugInfoControlSwitch =
+      {Switches getSwitch(debuginfocontrol $)}
+      self.debugInfoStatementsSwitch =
+      {Switches getSwitch(debuginfostatements $)}
+      self.debugInfoVarnamesSwitch =
+      {Switches getSwitch(debuginfovarnames $)}
       self.switches = Switches
       self.reporter = Reporter
    end
@@ -157,7 +164,10 @@ class CodeStore from Emitter
          elseof Cont then
             RS = {RegSet.copy CodeStore, ComputeOccs(Cont $)}
          end
-         case VInstr of vMakePermanent(_ Regs _) then
+         case VInstr of vStepPoint(_ Addr _ _) then RS1 in
+            CodeStore, ComputeOccs(Addr ?RS1)
+            {RegSet.union RS RS1}
+         [] vMakePermanent(_ Regs _) then
             CodeStore, RegOccs(Regs RS)
          [] vClear(_ Regs _) then
             CodeStore, RegOccs(Regs RS)
@@ -385,7 +395,9 @@ class CodeStore from Emitter
                CodeStore, GetOccs(Cont ?AddRS2)
             end
          end
-         case VInstr of vMakePermanent(_ _ _) then skip
+         case VInstr of vStepPoint(_ Addr _ _) then skip
+            CodeStore, AddRegOccs(Addr AddRS2)
+         [] vMakePermanent(_ _ _) then skip
          [] vClear(_ _ _) then skip
          [] vUnify(_ _ _ _) then skip
          [] vFailure(_ _) then skip

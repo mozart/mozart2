@@ -147,6 +147,19 @@ in
          end
       end
 
+      class StepPoint
+         from Statement Annotate.stepPoint SA.stepPoint CodeGen.stepPoint
+         prop final
+         attr statements: unit
+         meth init(Statements Coord)
+            statements <- {FlattenSequence Statements}
+            coord <- Coord
+         end
+         meth output(R $)
+            {LI @statements NL R}
+         end
+      end
+
       class Declaration
          from Statement Annotate.declaration SA.declaration CodeGen.declaration
          prop final
@@ -1380,6 +1393,7 @@ in
       end
    in
       Core = core(statement: Statement
+                  stepPoint: StepPoint
                   declaration: Declaration
                   skipNode: SkipNode
                   equation: Equation

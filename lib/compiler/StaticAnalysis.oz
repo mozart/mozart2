@@ -1221,6 +1221,18 @@ local
       end
    end
 
+   class SAStepPoint
+      meth sa(Ctrl)
+\ifdef DEBUGSA
+         {Show stepPoint}
+\endif
+         skip
+      end
+      meth saDescend(Ctrl)
+         SAStatement, saBody(Ctrl @statements)
+      end
+   end
+
    class SADeclaration
       meth sa(Ctrl)
 \ifdef DEBUGSA
@@ -4528,6 +4540,7 @@ local
    end
 in
    SA = sa(statement: SAStatement
+           stepPoint: SAStepPoint
            declaration: SADeclaration
            skipNode: SASkipNode
            equation: SAEquation

@@ -20,8 +20,6 @@
 %%% WARRANTIES.
 %%%
 
-
-
 declare
 T={Module.load '' {OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf' nil}.run
 

@@ -49,7 +49,7 @@ SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 
 FCORE = \
         conversion float record type exception guards misc \
-        link instruction except dictionary ofs
+        link instruction compiler except dictionary ofs
 
 
 CORE = $(FCORE:%=./core/%.ozc)

@@ -610,16 +610,17 @@ local
             GS = {New Core.application init(GVO GTs C)}
             GFrontEq|GFrontEqs1|GFrontEqs2|GS
          [] fProc(FE1 FEs FS ProcFlags C) then
-            GFrontEq GVO OldStateUsed ProcFlagAtoms IsLazy N
+            GFrontEq GVO OldStateUsed ProcFlagAtoms LazyFlags RestFlags N
             GS GFormals IsStateUsing GD
          in
             Unnester, UnnestToVar(FE1 'Proc' ?GFrontEq ?GVO)
             OldStateUsed = (StateUsed <- false)
             ProcFlagAtoms = {Map ProcFlags fun {$ fAtom(A _)} A end}
-            IsLazy = {Member 'lazy' ProcFlagAtoms}
+            {List.partition ProcFlagAtoms fun {$ A} A == 'lazy' end
+             ?LazyFlags ?RestFlags}
             {@BA openScope()}
             N = {DollarsInScope FEs 0}
-            case N \= 1 andthen IsLazy then
+            case N \= 1 andthen LazyFlags \= nil then
                {@reporter
                 error(coord: {CoordinatesOf FE1} kind: SyntaxError
                       msg: 'exactly one $ in head of lazy procedure required')}
@@ -629,25 +630,26 @@ local
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: 'at most one $ in procedure head allowed')}
             end
-            Unnester, UnnestProc(FEs FS IsLazy C ?GS)
+            Unnester, UnnestProc(FEs FS LazyFlags \= nil C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
-                  init(GVO GFormals GS IsStateUsing ProcFlagAtoms C)}
+                  init(GVO GFormals GS IsStateUsing RestFlags C)}
             case {@switches getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             else skip
             end
             GFrontEq|GD   % Definition node must always be second element!
          [] fFun(FE1 FEs FE2 ProcFlags C) then
-            GFrontEq GVO OldStateUsed NewFEs ProcFlagAtoms IsLazy
+            GFrontEq GVO OldStateUsed NewFEs ProcFlagAtoms LazyFlags RestFlags
             GS GFormals IsStateUsing GD
          in
             Unnester, UnnestToVar(FE1 'Fun' ?GFrontEq ?GVO)
             OldStateUsed = (StateUsed <- false)
             ProcFlagAtoms = {Map ProcFlags fun {$ fAtom(A _)} A end}
-            IsLazy = {Member 'lazy' ProcFlagAtoms}
+            {List.partition ProcFlagAtoms fun {$ A} A == 'lazy' end
+             ?LazyFlags ?RestFlags}
             {@BA openScope()}
             case {DollarsInScope FEs 0} == 0 then
                NewFEs = {Append FEs [fDollar(C)]}
@@ -656,12 +658,12 @@ local
                                 msg: 'no $ in function head allowed')}
                NewFEs = FEs
             end
-            Unnester, UnnestProc(NewFEs FE2 IsLazy C ?GS)
+            Unnester, UnnestProc(NewFEs FE2 LazyFlags \= nil C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
-                  init(GVO GFormals GS IsStateUsing ProcFlagAtoms C)}
+                  init(GVO GFormals GS IsStateUsing RestFlags C)}
             case {@switches getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             else skip
@@ -1507,37 +1509,33 @@ local
          % all unnested formal arguments must be pairwise distinct variables
          Unnester, UnnestProcFormals(FEs nil ?FGuards nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         NewFS = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS}
          case FGuards of FG1|FGr then FGuard FVs in
             FGuard = {FoldL FGr fun {$ FGuard FS} fAnd(FGuard FS) end FG1}
             % the local variables of the guard are all pattern variables
             % of the head minus the remaining formals:
             {VarListSub
              {Map {@BA getVars($)}   % the coordinates do not matter:
-              fun {$ GV} fVar({GV getPrintName($)} _) end}
+              fun {$ GV} fVar({GV getPrintName($)} unit) end}
              {FoldL FEs proc {$ FVsHd FE FVsTl}
                            {GetPatternVariablesExpression FE FVsHd FVsTl}
                         end $ nil}
              ?FVs nil}
             case FVs of FV1|FVr then FLocals in
                FLocals = {FoldL FVr fun {$ X Y} fAnd(X Y) end FV1}
-               FBody0 = fIf([fClause(FLocals FGuard NewFS)] fNoElse(C) C)
+               NewFS = fIf([fClause(FLocals FGuard FS)] fNoElse(C) C)
             [] nil then
-               FBody0 = fIf([fClause(fSkip(C) FGuard NewFS)] fNoElse(C) C)
+               NewFS = fIf([fClause(fSkip(C) FGuard FS)] fNoElse(C) C)
             end
          else
-            FBody0 = NewFS
+            NewFS = FS
          end
-         FBody = case IsLazy then
-                    case FResultVars of FV|_ then CND in
-                       CND = {CoordNoDebug C}
-                       fApply(fApply(fVar('`.`' C)
-                                     [fVar('Lazy' C) fAtom('new' C)] CND)
-                              [fFun(fDollar(C) nil FBody0 nil CND) FV] CND)
-                    [] nil then FBody0   % can only happen with illegal input
-                    end
-                 else FBody0
-                 end
+         FBody0 = case IsLazy then CND in
+                     CND = {CoordNoDebug C}
+                     fApply(fVar('`byNeed`' C)
+                            [fFun(fDollar(C) nil NewFS nil CND)] CND)
+                  else NewFS
+                  end
+         FBody = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FBody0}
          {@BA openScope()}
          Unnester, UnnestStatement(FBody ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}

@@ -932,8 +932,6 @@ in
          case {ExFormatter Key}
          then {`RaiseError` system(reinstallFormatter Key)}
          else
-            {Show registering(Key)}
-
             {Dictionary.put
              ErrorFormatter
              Key

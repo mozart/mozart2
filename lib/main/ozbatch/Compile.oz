@@ -78,7 +78,6 @@ local
                      realcore(type: bool)
                      debugvalue(type: bool)
                      debugtype(type: bool)
-                     functionalpatterns(type: bool)
                      profile(char: &p type: bool)
                      debuginfocontrol(type: bool)
                      debuginfovarnames(type: bool)
@@ -140,7 +139,6 @@ local
    '--(no)realcore                Output the real non-fancy core syntax.\n'#
    '--(no)debugvalue              Annotate variable values in core output.\n'#
    '--(no)debugtype               Annotate variable types in core output.\n'#
-   '--functionalpatterns          Use functional pattern-matching.\n'#
    '-p, --(no)profile             Include profiling information.\n'#
    '--(no)debuginfocontrol        Include control flow information.\n'#
    '--(no)debuginfovarnames       Include variable information.\n'#

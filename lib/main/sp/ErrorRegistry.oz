@@ -670,14 +670,7 @@ in
       in
 
          case E
-         of system(parameter P) then
-
-            {Error.format T
-             unit
-             [hint(l:'Illegal system parameter ' m:oz(P))]
-             Exc}
-
-         elseof system(limitInternal S) then
+         of system(limitInternal S) then
 
          % expected S: virtualString
 
@@ -778,6 +771,39 @@ in
              T
              'Registration of error formatter failed'
              [hint(l:'Exception name already in use' m:Key)]
+             Exc}
+
+         elseof system(getProperty Feature) then
+
+            {Error.format
+             T
+             'Undefined property or property not readable'
+             [hint(l:'Property' m:Feature)]
+             Exc}
+
+         elseof system(condGetProperty Feature) then
+
+            {Error.format
+             T
+             'Property not readable'
+             [hint(l:'Property' m:Feature)]
+             Exc}
+
+         elseof system(putProperty Feature) then
+
+            {Error.format
+             T
+             'Property not writable'
+             [hint(l:'Property' m:Feature)]
+             Exc}
+
+         elseof system(putProperty Feature Type) then
+
+            {Error.format
+             T
+             'Type error in property record'
+             [hint(l:'Record feature' m:Feature)
+              hint(l:'Expected type' m:Type)]
              Exc}
 
          else

@@ -27,7 +27,8 @@
 fun {CoordinatesOf P}
    % Returns the coordinates of the outermost leftmost construct
    % in a given phrase P.
-   case P of fAnd(S _) then {CoordinatesOf S}
+   case P
+   of fAnd(S _) then {CoordinatesOf S}
    [] fEq(E _ _) then {CoordinatesOf E}
    [] fAssign(E _ _) then {CoordinatesOf E}
    [] fOrElse(E _ _) then {CoordinatesOf E}
@@ -44,39 +45,9 @@ fun {CoordinatesOf P}
    [] fFdCompare(_ E _ _) then {CoordinatesOf E}
    [] fFdIn(_ E _ _) then {CoordinatesOf E}
    [] fObjApply(E _ _) then {CoordinatesOf E}
-   [] fAt(_ C) then C
-   [] fAtom(_ C) then C
-   [] fVar(_ C) then C
-   [] fWildcard(C) then C
-   [] fEscape(_ C) then C
-   [] fSelf(C) then C
-   [] fDollar(C) then C
-   [] fInt(_ C) then C
-   [] fFloat(_ C) then C
    [] fRecord(L _) then {CoordinatesOf L}
    [] fOpenRecord(L _) then {CoordinatesOf L}
-   [] fApply(_ _ C) then C
-   [] fProc(_ _ _ _ C) then C
-   [] fFun(_ _ _ _ C) then C
-   [] fFunctor(_ _ _ _ C) then C
-   [] fClass(_ _ _ C) then C
-   [] fScanner(_ _ _ _ _ C) then C
-   [] fParser(_ _ _ _ _ _ C) then C
-   [] fLocal(_ _ C) then C
-   [] fBoolCase(_ _ _ C) then C
-   [] fCase(_ _ _ C) then C
-   [] fLockThen(_ _ C) then C
-   [] fLock(_ C) then C
-   [] fThread(_ C) then C
-   [] fTry(_ _ _ C) then C
-   [] fRaise(_ C) then C
-   [] fRaiseWith(_ _ C) then C
-   [] fSkip(C) then C
-   [] fFail(C) then C
-   [] fNot(_ C) then C
-   [] fIf(_ _ C) then C
-   [] fOr(_ _ C) then C
-   [] fCondis(_ C) then C
+   else P.{Width P}
    end
 end
 

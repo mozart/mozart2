@@ -860,6 +860,11 @@ local
 %-----------------------------------------------------------------------
 % some set routines
 
+% {AllUpTo Xs P Ill} is defined like {All Xs P}
+% but in addition, it returns the first element
+% Ill in Xs such that {P Ill} does not hold
+% (if such an Ill exists)
+
    local
       fun {AllUpToAux Xs P N Ill}
          case Xs
@@ -869,7 +874,7 @@ local
          [] X|Xr then
             case {P X}
             then {AllUpToAux Xr P N+1 Ill}
-            else Ill = N false end
+            else Ill = X false end
          end
       end
    in
@@ -878,15 +883,19 @@ local
       end
    end
 
+% {SomeUpTo Xs P Ill} is defined like {Some Xs P}
+% but in addition, it returns the first element
+% Wit in Xs such that {P Wit} holds (if such an Wit exists)
+
    local
-      fun {SomeUpToAux Xs P N Ill}
+      fun {SomeUpToAux Xs P N Wit}
          case Xs
          of nil then
-            Ill = N   % avoid free variables
+            Wit = N   % avoid free variables
             false
          [] X|Xr then
-            case {P X} then Ill = N true
-            else {SomeUpToAux Xr P N+1 Ill}
+            case {P X} then Wit = X true
+            else {SomeUpToAux Xr P N+1 Wit}
             end
          end
       end
@@ -1414,50 +1423,62 @@ local
       in
          case
             {DetTypeTests.literal @label}
-            andthen
-            {All Args DetTypeTests.feature}
          then
-            LData = {GetData @label}
-            FData = {List.mapInd @args
-                     fun {$ I Arg}
-                        case Arg of F#T then {GetData F}#T else I#Arg end
-                     end}
-            Fields= {Map FData fun {$ F#_} F end}
+            IllFeat TestFeats
          in
-\ifdef DEBUGSA
-         {Show makeConstruction(LData FData Fields)}
-\endif
+            {AllUpTo Args DetTypeTests.feature ?IllFeat ?TestFeats}
+
             case
-               {AllDistinct Fields}
+               TestFeats
             then
+               LData = {GetData @label}
+               FData = {List.mapInd @args
+                        fun {$ I Arg}
+                           case Arg of F#T then {GetData F}#T else I#Arg end
+                        end}
+               Fields= {Map FData fun {$ F#_} F end}
+            in
+\ifdef DEBUGSA
+               {Show makeConstruction(LData FData Fields)}
+\endif
                case
-                  {All @label|Args DetTests.det}
+                  {AllDistinct Fields}
                then
                   case
-                     @isOpen
+                     {All @label|Args DetTests.det}
                   then
-                     value <- {TellRecord LData}
-                     {ForAll FData proc {$ F#V} @value^F=V end}
+                     case
+                        @isOpen
+                     then
+                        value <- {TellRecord LData}
+                        {ForAll FData proc {$ F#V} @value^F=V end}
+                     else
+                        value <- {List.toRecord LData FData}
+                     end
                   else
-                     value <- {List.toRecord LData FData}
+\ifdef DEBUGSA
+                     {Show noRecordConstructed}
+\endif
+                     value <- _ % no record constructed
                   end
                else
-\ifdef DEBUGSA
-                  {Show noRecordConstructed}
-\endif
-                  value <- _ % no record constructed
+                  {Ctrl.rep
+                   error(coord: Coord
+                         kind:  SAGenError
+                         msg:   'duplicate features in record construction'
+                         items: [hint(l:'Features found' m:{SetToVS Fields})])}
                end
             else
-               {Ctrl.rep
-                error(coord: Coord
-                      kind:  SAGenError
-                      msg:   'duplicate features in record construction'
-                      items: [hint(l:'Features found' m:{SetToVS Fields})])}
+               {Ctrl.rep error(coord: Coord
+                               kind:  SAGenError
+                               msg:   'illegal record feature '
+                               items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
             end
          else
             {Ctrl.rep error(coord: Coord
                             kind:  SAGenError
-                            msg:   'ill-typed construction')}
+                            msg:   'illegal record label '
+                            items: [hint(l:'Label found' m:oz({GetPrintData @label}))])}
          end
 \ifdef DEBUGSA
          {Show madeConstruction(@value)}
@@ -3075,7 +3096,7 @@ local
          @designator
       end
       meth saSimple(Ctrl)
-         TestClass NrClass
+         IllClass TestClass
          DummyClass = class $ end
       in
          value <- {New Core.classToken init(DummyClass)}
@@ -3084,7 +3105,7 @@ local
 \ifdef ANALYSEINHERITANCE
 
          {AllUpTo @parents
-          DetTypeTests.'class' ?NrClass ?TestClass} % do type test, return exc
+          DetTypeTests.'class' ?IllClass ?TestClass} % do type test, return exc
 
 \ifdef DEBUG
          {Show classNode({@designator getPrintName($)}
@@ -3126,12 +3147,10 @@ local
 \endif
 
          else
-            NoCls = {GetPrintData {Nth @parents NrClass}}
-         in
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'inheriting from non-class ' # oz(NoCls))}
+                   msg:   'inheriting from non-class ' # oz({GetPrintData IllClass}))}
          end
 
 \endif
@@ -3144,14 +3163,14 @@ local
       end
 
       meth inheritProperties(Ctrl PTs)
-         NrAtom TestAtom
+         IllAtom TestAtom
       in
 
 \ifdef DEBUGSA
          {Show properties(@properties)}
 \endif
 
-         {AllUpTo @properties DetTypeTests.atom ?NrAtom ?TestAtom}
+         {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
 
          % type test
          case TestAtom then
@@ -3165,44 +3184,42 @@ local
                                        else unit end
                                     end}
                     fun {$ X} X\=unit end}
-            TestFinal NrFinal
+            IllFinal TestFinal
          in
             {SomeUpTo PPro
-             fun {$ P} {Member final P} end ?NrFinal ?TestFinal}
+             fun {$ P} {Member final P} end ?IllFinal ?TestFinal}
 
             case TestFinal then
-               Cls = {Nth @parents NrFinal}
-            in
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SATypeError
                       msg:   'inheritance from final class '
-                      # pn({Cls getPrintName($)}))}
+                      # pn({IllFinal getPrintName($)}))}
             else
                % type & det test
                {@value setProperties({UnionAll Pro|PPro})}
             end
          else
-            Prop = {Nth @properties NrAtom}
-         in
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
                    msg:   'non-atomic class property '
-                   # pn({Prop getPrintName($)}))}
+                   # pn({IllAtom getPrintName($)}))}
 
          end
       end
       meth inheritAttributes(Ctrl PTs PsDet)
          Att  = {Map @attributes FirstOrId}
+         IllFeat TestFeat
       in
 \ifdef DEBUGSA
          {Show attributes(Att)}
 \endif
 
-         % type test
+         {AllUpTo Att DetTypeTests.feature ?IllFeat ?TestFeat}
+
          case
-            {All Att DetTypeTests.feature}
+            TestFeat
          then
             AData = {Map Att GetData}
          in
@@ -3246,19 +3263,22 @@ local
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'illegal class attribute specified')}
+                   msg:   'illegal class attribute '
+                   items: [hint(l:'Attribute found' m:oz({GetPrintData IllFeat}))])}
          end
       end
       meth inheritFeatures(Ctrl PTs PsDet)
          Fea = {Map @features FirstOrId}
+         IllFeat TestFeat
       in
 \ifdef DEBUGSA
          {Show features(Fea)}
 \endif
 
-         % type test
+         {AllUpTo Fea DetTypeTests.feature ?IllFeat ?TestFeat}
+
          case
-            {All Fea DetTypeTests.feature}
+            TestFeat
          then
             FData = {Map Fea GetData}
          in
@@ -3301,76 +3321,113 @@ local
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'illegal class feature specified')}
+                   msg:   'illegal class feature '
+                   items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
          end
       end
       meth inheritMethods(Ctrl PTs PsDet)
          Met  = {Map @methods fun {$ M} {M getPattern($)} end}
+         IllLab TestLab
+         IllReqMeth TestReq
+         IllOptMeth TestOpt
       in
 \ifdef DEBUGSA
          {Show methods(PTs PMet Met)}
 \endif
-         % type test
+
+         {AllUpTo Met
+          fun {$ L#_} {DetTypeTests.literal L} end ?IllLab ?TestLab}
+         {AllUpTo Met
+          fun {$ _#(R#_)} {All R DetTypeTests.feature} end ?IllReqMeth ?TestReq}
+         {AllUpTo Met
+          fun {$ _#(_#O)} O==unit orelse {All O DetTypeTests.feature} end ?IllOptMeth ?TestOpt}
+
          case
-            {All Met
-             fun {$ L#(R#O)}
-                {DetTypeTests.literal L}
-                andthen {All R DetTypeTests.feature}
-                andthen (O==unit orelse {All O DetTypeTests.feature})
-             end}
+            TestLab
          then
-            MData = {Map Met
-                     fun {$ L#(R#O)}
-                        {GetData L} #
-                        ({Map R GetData} #
-                         case O==unit then O
-                         else {Map O GetData} end)
-                     end}
-            MethNames = {Map MData fun {$ L#_} L end}
-         in
-            % distinct method names required
             case
-               {AllDistinct MethNames}
+               TestReq
             then
-               % parents determined?
-               case PsDet then
-                  PMet = {Map PTs fun {$ P} {P getMethods($)} end}
+               case
+                  TestOpt
+               then
+                  MData = {Map Met
+                           fun {$ L#(R#O)}
+                              {GetData L} #
+                              ({Map R GetData} #
+                               case O==unit then O
+                               else {Map O GetData} end)
+                           end}
+                  MethNames = {Map MData fun {$ L#_} L end}
                in
-                  % type & det test
+            % distinct method names required
                   case
-                     {All MethNames TypeTests.literal}
-                     andthen
-                     {Not {Member unit PMet}}
+                     {AllDistinct MethNames}
                   then
-                     NewMet   = {List.toRecord m MData}
-                     TotalMet = {ApproxInheritance PMet NewMet}
-                  in
-                     {@value setMethods(TotalMet)}
-                  else
+               % parents determined?
+                     case PsDet then
+                        PMet = {Map PTs fun {$ P} {P getMethods($)} end}
+                     in
+                  % type & det test
+                        case
+                           {All MethNames TypeTests.literal}
+                           andthen
+                           {Not {Member unit PMet}}
+                        then
+                           NewMet   = {List.toRecord m MData}
+                           TotalMet = {ApproxInheritance PMet NewMet}
+                        in
+                           {@value setMethods(TotalMet)}
+                        else
 \ifdef INHERITANCE
-                     {Ctrl.rep
-                      warn(coord: @coord
-                           kind:  SAGenWarn
-                           msg:   'insufficient information about method labels')}
+                           {Ctrl.rep
+                            warn(coord: @coord
+                                 kind:  SAGenWarn
+                                 msg:   'insufficient information about method labels')}
 \else
-                     skip
+                           skip
 \end
-                  end
+                        end
                % complain about parents elsewhere
-               else skip end
+                     else skip end
+                  else
+                     {Ctrl.rep
+                      error(coord: @coord
+                            kind:  SAGenError
+                            msg:   'duplicate method names in class definition'
+                            items: [hint(l:'Method names'
+                                         m:{SetToVS {Ozify MethNames}})])}
+                  end
+               else
+                  L#(_#O) = IllOptMeth
+                  IllOpt  = {GetPrintData {AllUpTo O DetTypeTests.feature $ _}}
+               in
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind:  SATypeError
+                         msg:   'illegal optional feature in method definition'
+                         items: [hint(l:'Message label' m:oz({GetPrintData L}))
+                                 hint(l:'Illegal feature' m:oz(IllOpt))])}
+               end
             else
+               L#(R#_) = IllReqMeth
+               IllReq  = {GetPrintData {AllUpTo R DetTypeTests.feature $ _}}
+            in
                {Ctrl.rep
                 error(coord: @coord
-                      kind:  SAGenError
-                      msg:   'duplicate method names in class definition'
-                      items: [hint(l:'Method names'
-                                   m:{SetToVS {Ozify MethNames}})])}
+                      kind:  SATypeError
+                      msg:   'illegal feature in method definition'
+                      items: [hint(l:'Message found' m:oz({GetPrintData L}))
+                              hint(l:'Illegal feature' m:oz(IllReq))])}
             end
          else
+            L#_ = IllLab
+         in
             {Ctrl.rep
              error(coord: @coord
                    kind:  SATypeError
-                   msg:   'non-literal method labels or features specified')}
+                   msg:   'non-literal method label '
+                   items: [hint(l:'Label found' m:oz({GetPrintData L}))])}
          end
       end
       meth sa(Ctrl)

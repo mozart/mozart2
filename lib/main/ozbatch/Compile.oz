@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1998
+%%%   Leif Kornstaedt, 1998-2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$

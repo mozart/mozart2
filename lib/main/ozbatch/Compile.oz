@@ -252,7 +252,6 @@ in
          BatchCompiler = {New Compiler.engine init()}
          UI = {New Compiler.interface init(BatchCompiler OptRec.verbose)}
          {BatchCompiler enqueue(setSwitch(showdeclares false))}
-         {BatchCompiler enqueue(setSwitch(warnunused true))}
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}
          IncDir = {NewCell nil}
          FileNames =

@@ -24,7 +24,7 @@
 functor
 
 import
-   GtkNative at 'GDK.so{native}'
+   GtkNative at 'GTK.so{native}'
    System
    GTK
 

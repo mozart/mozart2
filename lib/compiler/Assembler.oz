@@ -37,14 +37,13 @@
 
 functor
 import
-   System(printName show)
+   System(printName)
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
 export
    InternalAssemble
    Assemble
 define
-
    InstructionSizes = {CompilerSupport.getInstructionSizes}
 
    local

@@ -60,6 +60,7 @@ in
          GRegRef HighestUsedG
          LocalEnvSize LocalVarnames
          CodeHd CodeTl
+         InExceptionHandler
          continuations contLabels
 
          % These are only needed temporarily for call argument initialization:
@@ -88,6 +89,7 @@ in
          LocalEnvSize <- _
          CodeHd <- allocateL(@LocalEnvSize)|NewCodeTl
          CodeTl <- NewCodeTl
+         InExceptionHandler <- false
          continuations <- nil
          contLabels <- nil
          {List.forAllInd FormalRegs
@@ -492,6 +494,7 @@ in
          [] vExHandler(_ Addr1 Reg Addr2 Coord Cont InitsRS) then
             OldContLabels Label1 RegMap
          in
+            InExceptionHandler <- true
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, newLabel(?Label1)
             Emitter, DoInits(InitsRS ThisAddr)
@@ -1642,7 +1645,8 @@ in
          Emitter, Emit(return)
       end
       meth MayAllocateEnvLocally(Cont $)
-         case Cont == nil andthen @contLabels == nil
+         case @InExceptionHandler then false
+         elsecase Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
          then
             % This means that in a conditional, local environments may be

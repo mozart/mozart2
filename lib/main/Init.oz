@@ -22,7 +22,13 @@
 %%% WARRANTIES.
 %%%
 
-local
+
+functor
+
+require
+   URL
+
+prepare
 
    functor ErrorHandler
 
@@ -45,71 +51,69 @@ local
 
    \insert 'init/Module.oz'
 
-in
 
-   functor
-   import
-      Boot at 'x-oz://boot/Boot'
-   define
+import
+   Boot at 'x-oz://boot/Boot'
 
-      %% The mechanism with which builtin modules can be accessed
-      BootManager = Boot.manager
+define
 
-      %% Retrieve modules needed to get things started
-      BURL     = {BootManager 'URL'}
+   %% The mechanism with which builtin modules can be accessed
+   BootManager = Boot.manager
 
-      OS       = {BootManager 'OS'}
-      Pickle   = {BootManager 'Pickle'}
-      Property = {BootManager 'Property'}
-      System   = {BootManager 'System'}
-      Native   = {BootManager 'Native'}
+   %% Retrieve modules needed to get things started
+   BURL     = {BootManager 'URL'}
 
-      %% Shortcuts
-      Getenv = OS.getEnv
-      SET    = Property.put
-      GET    = Property.get
+   OS       = {BootManager 'OS'}
+   Pickle   = {BootManager 'Pickle'}
+   Property = {BootManager 'Property'}
+   System   = {BootManager 'System'}
+   Native   = {BootManager 'Native'}
 
-      %% usual system initialization
-      \insert 'init/Prop.oz'
-      \insert 'init/Resolve.oz'
+   %% Shortcuts
+   Getenv = OS.getEnv
+   SET    = Property.put
+   GET    = Property.get
 
-      {SET load Resolve.load}
+   %% usual system initialization
+   \insert 'init/Prop.oz'
+   \insert 'init/Resolve.oz'
 
-      %% execute application
+   {SET load Resolve.load}
 
-      local
+   %% execute application
 
-         %% create module manager
-         Module = {NewModule.apply 'import'('System'    : System
-                                            'OS'        : OS
-                                            'Boot'      : Boot
-                                            'Property'  : Property
-                                            'Resolve'   : Resolve)}
+   local
 
-         %% The root module manager
-         RM = Module.root
+      %% create module manager
+      Module = {NewModule.apply 'import'('System'       : System
+                                         'OS'   : OS
+                                         'Boot' : Boot
+                                         'Property'     : Property
+                                         'Resolve'      : Resolve)}
 
-         %% The real Module module
-         RealModule = 'export'(manager: Module.manager
-                               trace:   Module.trace)
-      in
-         %% Register boot modules
-         {RM enter(url:'x-oz://boot/URL' BURL)}
+      %% The root module manager
+      RM = Module.root
 
-         %% Register volatile system modules
-         {RM enter(name:'OS'       OS)}
-         {RM enter(name:'Property' Property)}
-         {RM enter(name:'Pickle'   Pickle)}
-         {RM enter(name:'System'   System)}
-         {RM enter(name:'Resolve'  Resolve)}
-         {RM enter(name:'Module'   RealModule)}
+      %% The real Module module
+      RealModule = 'export'(manager: Module.manager
+                            trace:   Module.trace)
+   in
+      %% Register boot modules
+      {RM enter(url:'x-oz://boot/URL' BURL)}
 
-         %% Execute error handler that will replace itself by real
-         %% error handler on need
-         {RM apply(url:'' ErrorHandler)}
+      %% Register volatile system modules
+      {RM enter(name:'OS'       OS)}
+      {RM enter(name:'Property' Property)}
+      {RM enter(name:'Pickle'   Pickle)}
+      {RM enter(name:'System'   System)}
+      {RM enter(name:'Resolve'  Resolve)}
+      {RM enter(name:'Module'   RealModule)}
 
-         %% Link root functor (i.e. application)
-         {RM link(url:{GET 'root.url'})}
-      end
+      %% Execute error handler that will replace itself by real
+      %% error handler on need
+      {RM apply(url:'' ErrorHandler)}
+
+      %% Link root functor (i.e. application)
+      {RM link(url:{GET 'root.url'})}
    end
 end

@@ -269,6 +269,20 @@ local
          end
       end
 
+      %%
+      %% Find parents that contribute definitions
+      %%
+      fun {FindDefs Cs What}
+         case Cs of nil then nil
+         [] C|Cr then
+            if {Dictionary.isEmpty C.What} then {FindDefs Cr What}
+            else C|{FindDefs Cr What}
+            end
+         end
+      end
+
+      EmptyDict = {Dictionary.new}
+      {MarkSafe EmptyDict}
    in
 
       %%
@@ -291,7 +305,7 @@ local
          NoNewMeth = {Width NewMeth}
          AsNewAttr = {Arity NewAttr}
          AsNewFeat = {Arity NewFeat}
-      in
+         %% Check for illegal property values
          if
             {All NewProp IsAtom} andthen
             {List.sub {Sort NewProp Value.'<'} [final locking sited]}
@@ -306,136 +320,160 @@ local
                                                    end
                                                 end nil})}
          end
-         case Parents
-         of nil then
-            %% Methods
-            Meth     = {Dictionary.new}
-            FastMeth = {Dictionary.new}
-            Defaults = {Dictionary.new}
-            {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
-            %% Attributes
-            Attr     = NewAttr
-            %% Features
-            Feat     = NewFeat
-            FreeFeat = {MakeFree Feat}
-            if IsFinal then skip else
-               MethSrc = {Dictionary.new}
-               AttrSrc = {Dictionary.new}
-               FeatSrc = {Dictionary.new}
-               {DefMeth NoNewMeth NewMeth MethSrc C}
-               {DefOther AsNewAttr AttrSrc C}
-               {DefOther AsNewFeat FeatSrc C}
-            end
-         [] [P] then
-            %% Methods
-            if NoNewMeth==0 then
-               Meth     = P.`ooMeth`
-               FastMeth = P.`ooFastMeth`
-               Defaults = P.`ooDefaults`
-               if IsFinal then skip else
-                  MethSrc  = P.`ooMethSrc`
-               end
-            else
-               Meth     = {Dictionary.clone P.`ooMeth`}
-               FastMeth = {Dictionary.clone P.`ooFastMeth`}
-               Defaults = {Dictionary.clone P.`ooDefaults`}
-               {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
-               if IsFinal then skip else
-                  MethSrc  = {Dictionary.clone P.`ooMethSrc`}
-                  {DefMeth NoNewMeth NewMeth MethSrc C}
-               end
-            end
-            %% Attributes
-            if AsNewAttr==nil then
-               Attr = P.`ooAttr`
-               if IsFinal then skip else
-                  AttrSrc = P.`ooAttrSrc`
-               end
-            else
-               Attr = {Adjoin P.`ooAttr` NewAttr}
-               if IsFinal then skip else
-                  AttrSrc = {Dictionary.clone P.`ooAttrSrc`}
-                  {DefOther AsNewAttr AttrSrc C}
-               end
-            end
-            %% Features
-            if AsNewFeat==nil then
-               Feat     = P.`ooFeat`
-               FreeFeat = P.`ooFreeFeat`
-               if IsFinal then skip else
-                  FeatSrc = P.`ooFeatSrc`
-               end
-            else
-               Feat     = {Adjoin P.`ooFeat` NewFeat}
-               FreeFeat = {MakeFree Feat}
-               if IsFinal then skip else
-                  FeatSrc = {Dictionary.clone P.`ooFeatSrc`}
-                  {DefOther AsNewFeat FeatSrc C}
-               end
-            end
-         else
-            MethConf = {Dictionary.new}
-            AttrConf = {Dictionary.new}
-            FeatConf = {Dictionary.new}
-         in
-            %% Perform conflict checks
-            MethSrc  = {Dictionary.new}
-            AttrSrc  = {Dictionary.new}
-            FeatSrc  = {Dictionary.new}
-            %% Collect conflicts and defining classes
-            {Inherit Parents MethSrc `ooMethSrc` MethConf}
-            {Inherit Parents AttrSrc `ooAttrSrc` AttrConf}
-            {Inherit Parents FeatSrc `ooFeatSrc` FeatConf}
-            %% Resolve conflicts by new definitions
-            {ClearMeth NoNewMeth NewMeth MethConf}
-            {ClearOther AsNewAttr AttrConf}
-            {ClearOther AsNewFeat FeatConf}
-            %% Check whether still conflicts remain
-            case
-               ({Dictionary.entries MethConf} #
-                {Dictionary.entries AttrConf} #
-                {Dictionary.entries FeatConf})
-            of nil#nil#nil then skip
-            [] MCs#ACs#FCs then
-               {`RaiseError` object(conflicts PrintName
-                                    'meth':MCs 'attr':ACs 'feat':FCs)}
-            end
-            %% Construct methods
-            Meth     = {Dictionary.new}
-            FastMeth = {Dictionary.new}
-            Defaults = {Dictionary.new}
-            {CollectMeth {Dictionary.keys MethSrc} MethSrc
-             Meth FastMeth Defaults}
-            {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
-            {DefMeth NoNewMeth NewMeth MethSrc C}
-            %% Construct attributes
-            local
-               TmpAttr={Dictionary.new}
-            in
-               {CollectOther {Dictionary.keys AttrSrc} AttrSrc
-                `ooAttr` TmpAttr}
-               {SetOther AsNewAttr NewAttr TmpAttr}
-               {DefOther AsNewAttr AttrSrc C}
-               Attr={Dictionary.toRecord 'attr' TmpAttr}
-            end
-            %% Construct features
-            local
-               TmpFeat={Dictionary.new}
-            in
-               {CollectOther {Dictionary.keys FeatSrc} FeatSrc
-                `ooFeat` TmpFeat}
-               {SetOther AsNewFeat NewFeat TmpFeat}
-               {DefOther AsNewFeat FeatSrc C}
-               Feat    ={Dictionary.toRecord 'feat' TmpFeat}
-               FreeFeat={MakeFree Feat}
-            end
+         %% Methods
+         MCs=case {FindDefs Parents `ooMethSrc`}
+             of nil then
+                if NoNewMeth==0 then
+                   Meth     = EmptyDict
+                   FastMeth = EmptyDict
+                   Defaults = EmptyDict
+                   MethSrc  = EmptyDict
+                else
+                   Meth     = {Dictionary.new}
+                   FastMeth = {Dictionary.new}
+                   Defaults = {Dictionary.new}
+                   {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+                   if IsFinal then skip else
+                      MethSrc = {Dictionary.new}
+                      {DefMeth NoNewMeth NewMeth MethSrc C}
+                   end
+                end
+                nil
+             [] [P] then
+                if NoNewMeth==0 then
+                   Meth     = P.`ooMeth`
+                   FastMeth = P.`ooFastMeth`
+                   Defaults = P.`ooDefaults`
+                   if IsFinal then skip else
+                      MethSrc  = P.`ooMethSrc`
+                   end
+                else
+                   Meth     = {Dictionary.clone P.`ooMeth`}
+                   FastMeth = {Dictionary.clone P.`ooFastMeth`}
+                   Defaults = {Dictionary.clone P.`ooDefaults`}
+                   {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+                   if IsFinal then skip else
+                      MethSrc  = {Dictionary.clone P.`ooMethSrc`}
+                      {DefMeth NoNewMeth NewMeth MethSrc C}
+                   end
+                end
+                nil
+             [] Ps then Conf={Dictionary.new} in
+                MethSrc = {Dictionary.new}
+                %% Collect conflicts and defining classes
+                {Inherit Ps MethSrc `ooMethSrc` Conf}
+                %% Resolve conflicts by new definitions
+                {ClearMeth NoNewMeth NewMeth Conf}
+                %% Construct methods
+                Meth     = {Dictionary.new}
+                FastMeth = {Dictionary.new}
+                Defaults = {Dictionary.new}
+                {CollectMeth {Dictionary.keys MethSrc} MethSrc
+                 Meth FastMeth Defaults}
+                {SetMeth NoNewMeth NewMeth Meth FastMeth Defaults}
+                {DefMeth NoNewMeth NewMeth MethSrc C}
+                {Dictionary.entries Conf}
+             end
+         %% Attributes
+         ACs=case {FindDefs Parents `ooAttrSrc`}
+             of nil then
+                Attr = NewAttr
+                if AsNewAttr==nil then
+                   AttrSrc = EmptyDict
+                elseif IsFinal then skip
+                else
+                   AttrSrc = {Dictionary.new}
+                   {DefOther AsNewAttr AttrSrc C}
+                end
+                nil
+             [] [P] then
+                if AsNewAttr==nil then
+                   Attr = P.`ooAttr`
+                   if IsFinal then skip else
+                      AttrSrc = P.`ooAttrSrc`
+                   end
+                else
+                   Attr = {Adjoin P.`ooAttr` NewAttr}
+                   if IsFinal then skip else
+                      AttrSrc = {Dictionary.clone P.`ooAttrSrc`}
+                      {DefOther AsNewAttr AttrSrc C}
+                   end
+                end
+                nil
+             [] Ps then Conf={Dictionary.new} in
+                %% Perform conflict checks
+                AttrSrc={Dictionary.new}
+                %% Collect conflicts and defining classes
+                {Inherit Ps AttrSrc `ooAttrSrc` Conf}
+                %% Resolve conflicts by new definitions
+                {ClearOther AsNewAttr Conf}
+                %% Construct attributes
+                Attr = local TmpAttr={Dictionary.new} in
+                          {CollectOther {Dictionary.keys AttrSrc} AttrSrc
+                           `ooAttr` TmpAttr}
+                          {SetOther AsNewAttr NewAttr TmpAttr}
+                          {DefOther AsNewAttr AttrSrc C}
+                          {Dictionary.toRecord 'attr' TmpAttr}
+                       end
+                {Dictionary.entries Conf}
+             end
+         %% Features
+         FCs=case {FindDefs Parents `ooFeatSrc`}
+             of nil then
+                Feat = NewFeat
+                if AsNewFeat==nil then
+                   FreeFeat = Feat
+                   FeatSrc  = EmptyDict
+                else
+                   FreeFeat = {MakeFree Feat}
+                   if IsFinal then skip else
+                      FeatSrc = {Dictionary.new}
+                      {DefOther AsNewFeat FeatSrc C}
+                   end
+                end
+                nil
+             [] [P] then
+                if AsNewFeat==nil then
+                   Feat     = P.`ooFeat`
+                   FreeFeat = P.`ooFreeFeat`
+                   if IsFinal then skip else
+                      FeatSrc = P.`ooFeatSrc`
+                   end
+                else
+                   Feat     = {Adjoin P.`ooFeat` NewFeat}
+                   FreeFeat = {MakeFree Feat}
+                   if IsFinal then skip else
+                      FeatSrc = {Dictionary.clone P.`ooFeatSrc`}
+                      {DefOther AsNewFeat FeatSrc C}
+                   end
+                end
+                nil
+             [] Ps then Conf={Dictionary.new} in
+                FeatSrc = {Dictionary.new}
+                %% Collect conflicts and defining classes
+                {Inherit Ps FeatSrc `ooFeatSrc` Conf}
+                %% Resolve conflicts by new definitions
+                {ClearOther AsNewFeat Conf}
+                %% Construct features
+                Feat = local TmpFeat={Dictionary.new} in
+                          {CollectOther {Dictionary.keys FeatSrc} FeatSrc
+                           `ooFeat` TmpFeat}
+                          {SetOther AsNewFeat NewFeat TmpFeat}
+                          {DefOther AsNewFeat FeatSrc C}
+                          {Dictionary.toRecord 'feat' TmpFeat}
+                       end
+                FreeFeat = {MakeFree Feat}
+                {Dictionary.entries Conf}
+             end
+      in
+         if MCs\=nil orelse ACs\=nil orelse FCs\=nil then
+            {`RaiseError` object(conflicts PrintName
+                                 'meth':MCs 'attr':ACs 'feat':FCs)}
          end
-
          %% Mark these dictionaries safe as it comes to marshalling
          {MarkSafe Meth}
          {MarkSafe FastMeth}
          {MarkSafe Defaults}
-
          %% Create the real class
          C = {BuildClass
               if IsFinal then

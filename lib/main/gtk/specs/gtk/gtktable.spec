@@ -36,7 +36,9 @@ $class =
        inits => { 'gtk_table_new'                 => { in  => ['guint',
                                                                'guint',
                                                                'gboolean'],
-                                                       out => 'GtkWidget*' },
+                                                       out => 'GtkWidget*' } },
+
+       meths => {
                   'gtk_table_resize'              => { in  => ['GtkTable*',
                                                                'guint',
                                                                'guint'] },

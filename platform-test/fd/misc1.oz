@@ -376,6 +376,13 @@ Return=
                fun {$}
                   cond {FD.int nil _} then 0 else 1 end
                end}
+
+              {MiscTest 53
+               fun {$}
+                  X in X = {FD.decl}
+                  {FD.exactly X [0 1 2] 0}
+                  X
+               end}
              ])
       ])
 

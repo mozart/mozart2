@@ -524,7 +524,8 @@ local
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: 'at most one $ in procedure head allowed')}
             end
-            Unnester, UnnestProc(FEs FS IsLazy C ?GS)
+            Unnester, UnnestProc(FEs FS IsLazy
+                                 {Member 'instantiate' ProcFlagAtoms} C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
@@ -552,7 +553,8 @@ local
                                 msg: 'no $ in function head allowed')}
                NewFEs = FEs
             end
-            Unnester, UnnestProc(NewFEs FE2 IsLazy C ?GS)
+            Unnester, UnnestProc(NewFEs FE2 IsLazy
+                                 {Member 'instantiate' ProcFlagAtoms} C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
@@ -1267,13 +1269,24 @@ local
          {SetExpansionOccs GRecord @BA}
       end
 
-      meth UnnestProc(FEs FS IsLazy C ?GS)
-         FGuards FResultVars NewFS FBody0 FBody GBody
+      meth UnnestProc(FEs FS IsLazy IsInstantiate C ?GS)
+         FGuards FResultVars NewFS0 NewFS FBody0 FBody GBody
       in
          % each formal argument in FEs must be a basic constraint;
          % all unnested formal arguments must be pairwise distinct variables
          Unnester, UnnestProcFormals(FEs nil ?FGuards nil ?FResultVars nil)
-         NewFS = {FoldL FResultVars fun {$ FS FV} fEq(FV FS FV.2) end FS}
+         NewFS0 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS FV.2) end FS}
+         case IsInstantiate then MakeGV MakeFV in
+            {@BA openScope()}
+            {@BA generate('FunctorBody' C ?MakeGV)}
+            MakeFV = fVar({MakeGV getPrintName($)} C)
+            NewFS = fLocal(MakeFV
+                           fAnd(fProc(MakeFV nil NewFS0 [fAtom('copy' C)] C)
+                                fApply(MakeFV nil unit)) C)
+            {@BA closeScope(_)}
+         else
+            NewFS = NewFS0
+         end
          case FGuards of FG1|FGr then FGuard FVs in
             FGuard = {FoldL FGr fun {$ FGuard FS} fAnd(FGuard FS) end FG1}
             % the local variables of the guard are all pattern variables

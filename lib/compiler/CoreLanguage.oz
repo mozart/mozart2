@@ -253,7 +253,7 @@ in
          from Statement Annotate.definition SA.definition CodeGen.definition
          attr
             designator: unit formalArgs: unit body: unit isStateUsing: unit
-            procFlags: unit printName: '' toplevelNames: unit
+            procFlags: unit printName: '' toCopy: unit
             allVariables: nil
          feat expansionOccs abstractionTableID
          meth init(Designator FormalArgs Body IsStateUsing ProcFlags Coord)
@@ -273,7 +273,10 @@ in
                           {VirtualString.toString PrintName#'.'#FeatPrintName}}
          end
          meth output(R $) FS1 in
-            'proc {'#PU#{@designator output2(R $ ?FS1)}#
+            {FoldL @procFlags
+             fun {$ In A} In#{System.valueToVirtualString A 0 0}#' ' end
+             'proc '}#
+            '{'#PU#{@designator output2(R $ ?FS1)}#
             case @formalArgs of _|_ then GL#{LI @formalArgs GL R}
             [] nil then ""
             end#'}'#

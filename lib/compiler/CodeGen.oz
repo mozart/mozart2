@@ -923,7 +923,8 @@ local
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
          V FileName Line PrintName PredId PredicateRef
-         StateReg FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code VTl0
+         StateReg FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code
+         VInter1 VInter2
       in
          {@designator getVariable(?V)}
          case @coord of unit then FileName = 'nofile' Line = 1
@@ -971,38 +972,60 @@ local
          case StateReg of none then
             BodyVInstr = BodyVInter
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-            VHd
-         else StateVO OOSetSelf VInter in
+            VInter1 = VInter2
+         else StateVO OOSetSelf in
             StateVO = {New PseudoVariableOccurrence init(StateReg)}
             OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
             {MakeApplication OOSetSelf [StateVO] CS BodyVInstr BodyVInter}
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-            VHd = vGetSelf(_ StateReg VInter)
-            VInter
-         end = vDefinition(_ {V reg($)} PredId PredicateRef GRegs Code VTl0)
-         case @toplevelNames == unit then
-            VTl0 = VTl
-         elsecase @toplevelNames of nil then Reg VTl1 in
+            VInter1 = vGetSelf(_ StateReg VInter2)
+         end
+         case @toCopy of unit then
+            VHd = VInter1
+            VInter2 = vDefinition(_ {V reg($)} PredId PredicateRef
+                                  GRegs Code VTl)
+         elseof nil then Reg in
             {CS newReg(?Reg)}
-            VTl0 = vEquateLiteral(_ nil Reg VTl1)
-            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] unit VTl)
-         [] _|_ then
-            fun {MakeNameList Names VHd VTl}
-               case Names of N|Nr then ArgIn VInter ConsReg NewArg in
-                  ArgIn = {MakeNameList Nr VHd VInter}
+            VHd = vEquateLiteral(_ nil Reg VInter1)
+            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
+                                      GRegs Code VTl)
+         elseof Xs then
+            fun {MakeCopyList Xs VHd VTl}
+               case Xs of X|Xr then
+                  ArgIn VInter1 PairReg ConsReg PairArg1 NewReg PairArg2
+                  VInter2 VInter3
+               in
+                  ArgIn = {MakeCopyList Xr VHd VInter1}
+                  {CS newReg(?PairReg)}
                   {CS newReg(?ConsReg)}
-                  NewArg = literal(N)
-                  VInter = vEquateRecord(_ '|' 2 ConsReg [NewArg ArgIn] VTl)
+                  PairArg1 = case {Foreign.pointer.is X} then predicateRef(X)
+                             elsecase {IsName X} then literal(X)
+                             end
+                  {CS newReg(?NewReg)}
+                  PairArg2 = value(NewReg)
+                  case {IsName X} then
+                     VInter1 = vCallBuiltin(_ 'NewName' [NewReg] unit VInter2)
+                  elsecase {Foreign.pointer.is X} then FalseReg VInter4 in
+                     {CS newReg(?FalseReg)}
+                     VInter1 = vEquateLiteral(_ false FalseReg VInter4)
+                     VInter4 = vCallBuiltin(_ 'generateAbstractionTableID'
+                                            [FalseReg NewReg] unit VInter2)
+                  end
+                  VInter2 = vEquateRecord(_ '#' 2 PairReg [PairArg1 PairArg2]
+                                          VInter3)
+                  VInter3 = vEquateRecord(_ '|' 2 ConsReg
+                                          [value(PairReg) ArgIn] VTl)
                   value(ConsReg)
                [] nil then
                   VHd = VTl
                   literal(nil)
                end
             end
-            Reg VTl1
+            Reg
          in
-            value(Reg) = {MakeNameList @toplevelNames VTl0 VTl1}
-            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] unit VTl)
+            value(Reg) = {MakeCopyList Xs VHd VInter1}
+            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
+                                      GRegs Code VTl)
          end
       end
    end

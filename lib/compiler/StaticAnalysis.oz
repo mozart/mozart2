@@ -986,10 +986,10 @@ local
          top: true           % top-level expression
                              % (immediate execution) yes/no?
                              % if no: static analysis branches
-         needed: true     % analysing needed expression
+         needed: true        % analysing needed expression
                              % (eventual execution) yes/no?
                              % if yes: more errors
-         toplevelNames: unit % list of names in a virtual toplevel
+         toCopy: unit        % list of things to copy in a virtual toplevel
          errorMsg: unit      % currently active error message
          unifierLeft: unit   % last unification requested
          unifierRight: unit  %
@@ -1001,7 +1001,7 @@ local
          coord         <- unit
          top           <- true
          needed        <- true
-         toplevelNames <- unit
+         toCopy        <- unit
          errorMsg      <- unit
          unifierLeft   <- unit
          unifierRight  <- unit
@@ -1060,8 +1060,8 @@ local
       end
 
       meth beginVirtualToplevel(Coord)
-         case @toplevelNames == unit then
-            toplevelNames <- nil
+         case @toCopy == unit then
+            toCopy <- nil
          else
             {self.rep
              error(coord: Coord
@@ -1070,16 +1070,19 @@ local
          end
       end
       meth declareToplevelName(N)
-         case @toplevelNames == unit then skip
-         else toplevelNames <- N|@toplevelNames
+         case @toCopy of unit then skip
+         elseof Xs then toCopy <- N|Xs
          end
       end
-      meth declareAbstrEntry($)
-         {GenerateAbstractionTableID @toplevelNames \= unit}
+      meth declareAbstrEntry(?PredicateRef)
+         PredicateRef = {GenerateAbstractionTableID @toCopy \= unit}
+         case @toCopy of unit then skip
+         elseof Xs then toCopy <- PredicateRef|Xs
+         end
       end
-      meth endVirtualToplevel(?Ns)
-         Ns = @toplevelNames
-         toplevelNames <- unit
+      meth endVirtualToplevel(?Xs)
+         Xs = @toCopy
+         toCopy <- unit
       end
 
       meth setErrorMsg(E)
@@ -1688,13 +1691,13 @@ local
       meth saDescend(Ctrl)
          Env = {GetGlobalEnv @globalVars}
       in
-         case {Member 'instantiate' @procFlags} then Top in
+         case {Member 'copy' @procFlags} then Top in
             {Ctrl beginVirtualToplevel(@coord)}
             {Ctrl getTop(?Top)}
             {Ctrl setTop(true)}
             SAStatement, saBody(Ctrl @body)
             {Ctrl setTop(Top)}
-            toplevelNames <- {Ctrl endVirtualToplevel($)}
+            toCopy <- {Ctrl endVirtualToplevel($)}
          else
             T N in
             {Ctrl getTopNeeded(T N)}

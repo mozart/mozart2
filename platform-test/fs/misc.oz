@@ -633,6 +633,56 @@ define
                  {FS.var.upperBound [6#10] S2}
                  R
               end}
+             {MiscTest 54
+              fun {$} Z Xs [X1 X2 X3 X4] = Xs R
+              in
+                 {ForAll Xs proc {$ E} {FS.var.upperBound 1#4 E} end}
+                 {FS.var.upperBound 1#4 Z}
+                 {FS.intersectN Xs Z}
+                 R = thread cond {FS.include 2 X4}
+                            then 0 else
+                               % entail FS.intersectN to make test succeed
+                               {FS.value.make 2 X1}
+                               {FS.value.make 2 X2}
+                               {FS.value.make 2 X3}
+                               {FS.value.make 1 X4}
+                               1
+                            end
+                     end
+                 {FS.include 2 X1}
+                 {FS.include 2 X2}
+                 {FS.include 2 X3}
+                 {FS.exclude 2 Z}
+                 R
+              end}
+             {MiscTest 55
+              fun {$} Z Xs [X1 X2 X3 X4] = Xs R
+              in
+                 {ForAll Xs proc {$ E} {FS.var.upperBound 1#4 E} end}
+                 {FS.intersectN Xs Z}
+                 R = thread cond Z = {FS.value.make nil} then 1 else 0 end end
+                 {FS.var.upperBound nil X2}
+                 R
+              end}
+             {MiscTest 56
+              fun {$} Z Xs [X1 X2 X3 X4] = Xs R
+              in
+                 {ForAll Xs proc {$ E} {FS.var.decl  E} end}
+                 {FS.intersectN Xs Z}
+                 R = thread cond
+                               X1 = {FS.value.make 1}
+                               X2 = FS.value.universal
+                               X3 = {FS.value.make 1}
+                               X4 = {FS.value.make 1}
+                               Z = {FS.value.make 1}
+                            then 1 else 0 end end
+                 FS.value.universal = X2
+                 X1 = X4
+                 {FS.include 1 Z}
+                 {FS.cardRange 1 1 X4}
+                 {FS.cardRange 1 1 X3}
+                 R
+              end}
             ])
       ])
 end

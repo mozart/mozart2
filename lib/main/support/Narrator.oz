@@ -21,11 +21,11 @@
 
 functor
 import
-   ErrorRegistry(put)
+   Error(registerFormatter)
 export
    'class': Narrator
 define
-   {ErrorRegistry.put narrator
+   {Error.registerFormatter narrator
     fun {$ E}
        T = 'narrator error'
     in

@@ -143,7 +143,7 @@ in
          wait
         )
 
-      ErrorRegistry(put)
+      Error(registerFormatter)
 
       Resolve(open)
 
@@ -762,7 +762,7 @@ in
       %% Error formatting
       %%
 
-      {ErrorRegistry.put open
+      {Error.registerFormatter open
        fun {$ E}
           T = 'error in Open module'
        in

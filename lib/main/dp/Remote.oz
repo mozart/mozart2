@@ -30,7 +30,7 @@ import
    Connection(offer)
    Property(get)
    Module(link)
-   ErrorRegistry(put)
+   Error(registerFormatter)
 
 export
    manager: ManagerProxy
@@ -203,7 +203,7 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put remote
+   {Error.registerFormatter remote
     fun {$ E}
        T = 'Error: remote module manager'
     in

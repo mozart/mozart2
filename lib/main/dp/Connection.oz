@@ -30,7 +30,7 @@ import
    PID(get getCRC received toPort) at 'x-oz://boot/PID'
    Distribution('export')          at 'x-oz://boot/Distribution'
 
-   ErrorRegistry(put)
+   Error(registerFormatter)
    Fault(injector removeInjector siteWatcher removeSiteWatcher)
    Property(get)
 
@@ -277,7 +277,7 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put connection
+   {Error.registerFormatter connection
     fun {$ E}
        T = 'Error: connections'
     in

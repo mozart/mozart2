@@ -31,7 +31,7 @@ import
 
    System(showError)
 
-   ErrorRegistry(put)
+   Error(registerFormatter)
 
    Open(pipe
         text)
@@ -363,7 +363,7 @@ define
    %% Error formatter
    %%
 
-   {ErrorRegistry.put tk
+   {Error.registerFormatter tk
     fun {$ E}
        T = 'Error: Tk module'
     in

@@ -52,7 +52,7 @@ import
       sum
       reflect)
 
-   ErrorRegistry(put)
+   Error(registerFormatter)
 
 export
    %% Serialization propagators for unary propagators
@@ -441,7 +441,7 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put schedule
+   {Error.registerFormatter schedule
     fun {$ E}
        T = 'error in scheduling'
     in

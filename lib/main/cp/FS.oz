@@ -48,7 +48,7 @@ import
 
    FD(decl list sum)
 
-   ErrorRegistry(put)
+   Error(registerFormatter)
 
 export
    include:      FSIsIncl
@@ -673,14 +673,14 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put fs
+   {Error.registerFormatter fs
     fun {$ E}
        T = 'error in finite set system'
     in
        case E
        of fs(unknownDistributionStrategy A Xs P) then
           error(kind: T
-                msg: 'Unknown distribution strategy encountered.'
+                msg: 'unknown distribution strategy'
                 items: [hint(l:'At argument' m:P)
                         hint(l:'In statement' m:apply(A Xs))])
        else

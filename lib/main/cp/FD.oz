@@ -61,7 +61,7 @@ import
    FDB at 'x-oz://boot/FDB'
    FDP at 'x-oz://boot/FDP'
 
-   ErrorRegistry(put)
+   Error(registerFormatter)
 
    System(nbSusps)
 
@@ -733,7 +733,7 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put fd
+   {Error.registerFormatter fd
     fun {$ E}
        T = 'error in finite domain system'
     in

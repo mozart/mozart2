@@ -111,8 +111,8 @@ boot-all:
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh
 
-#BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
-#CURDIRA   = $(BUILDTOPA)/share/test
+BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
+CURDIRA   = $(BUILDTOPA)/share/test
 #OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
 PREFIX    = @prefix@
 
@@ -148,14 +148,14 @@ dirs:
 TESTSRCS=make-test engine passed failed help-string compute-tests
 oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
-        $(OZE) ./make-test --verbose $(TESTCOMPONENTS)
+        $(OZE) ./make-test --verbose $(TESTCOMPONENTS:%=`pwd`/%)
         chmod +x oztest
         -rm -f ./make-test
 
 BENCHSRCS=make-bench engine compute-tests help-bench
 ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
-        $(OZE) ./make-bench --verbose $(BENCHCOMPONENTS)
+        $(OZE) ./make-bench --verbose $(BENCHCOMPONENTS:%=`pwd`/%)
         chmod +x ozbench
         -rm -f ./make-bench
 

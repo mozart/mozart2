@@ -224,6 +224,7 @@ define
       [] fMacro(_ _) then true
       [] fMacrolet(_ _) then true
       [] fDotAssign(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
+      [] fColonEquals(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
       end
    end
 
@@ -443,6 +444,9 @@ define
       [] fDotAssign(L R C) then
          fDotAssign({FullMacroExpand L Env}
                     {FullMacroExpand R Env} C)
+      [] fColonEquals(L R C) then
+         fColonEquals({FullMacroExpand L Env}
+                      {FullMacroExpand R Env} C)
       end
    end
 end

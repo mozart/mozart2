@@ -1143,20 +1143,39 @@ define
             Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fFOR(_ _ _) then
             Unnester, UnnestStatement({ForLoop.compile FS} $)
-         [] fDotAssign(Left Right C1) then
+         [] fDotAssign(Left Right C) then %% DotAssign is _._ := _
             case Left
-            of fOpApply('.' [DB Key] _) then
+            of fOpApply('.' [Table Key] _) then
                Unnester,UnnestStatement(fOpApplyStatement('dotAssign'
-                                                          [DB Key Right] C1)
+                                                          [Table Key Right] C)
                                         $)
             else GV in
-               {@reporter error(coord: C1 kind: SyntaxError
+               % Shouldn't happen since parser has checked the lhs already
+               {@reporter error(coord: C kind: SyntaxError
                                 msg: 'expected dot expression to the left of :=')}
-               {@BA generate('Error' C1 ?GV)}
+               {@BA generate('Error' C ?GV)}
                Unnester, UnnestExpression(Left GV _)
                Unnester, UnnestExpression(Right GV _)
-               {New Core.skipNode init(C1)}
+               {New Core.skipNode init(C)}
             end
+         [] fColonEquals(Left Right C) then   %% ColonEquals is a _ := _
+               % Left could be cell,  could be attribute, could be a
+               % table entry (D#I pair).
+            if @Stateful then
+               % We pessimistically assume its an attribute and set the StateUsed flag.
+               % An optimisation would be to delay setting the flag until after
+               % Static Analysis,  when we may know better if lhs is an attribute.
+               StateUsed <- true
+            end
+            % Here,  we set the operation to 'catAssign' a builtin
+            % which checks the type of lhs and calls Value.Assign,
+            % Object.'<-', or Dictionary.put appropriately.
+            % After the static analysis we will usually know the type of lhs.
+            % We then optimise this call statically during byte code generation.
+            % (not yet implemented)
+            %
+            Unnester, UnnestStatement(fOpApplyStatement('catAssign'
+                                                        [Left Right] C) $)
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
@@ -1302,14 +1321,12 @@ define
             Unnester, UnnestStatement(fOpApplyStatement('Object.\',\''
                                                         [FE1 NewFE2] C) $)
          [] fAt(FE C) then FS in
+            % FE may be either a cell, attribute, or table entry
             if @Stateful then
+               % We always set StateUsed see comment on UnnestStatement(fDotAssign(...))
                StateUsed <- true
-            else
-               {@reporter
-                error(coord: C kind: ExpansionError
-                      msg: 'attribute access used outside of method')}
             end
-            FS = fOpApplyStatement('Object.\'@\'' [FE fOcc(ToGV)] C)
+            FS = fOpApplyStatement('catAccess' [FE fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
          [] fAtom(_ _) then GFront GBack in
             Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
@@ -1567,6 +1584,29 @@ define
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fFOR(_ _ _) then
             Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)
+         [] fDotAssign(Left Right C) then FApply in
+            case Left
+            of fOpApply('.' [Table Key] _) then
+               FApply = fOpApplyStatement('dotExchange'
+                                          [Table Key Right fOcc(ToGV)] C)
+               Unnester, UnnestStatement(FApply $)
+            else GV in
+               % Shouldn't happen since parser has checked the lhs already
+               {@reporter error(coord: C kind: SyntaxError
+                                msg: 'expected dot expression to the left of :=')}
+               {@BA generate('Error' C ?GV)}
+               Unnester, UnnestExpression(Left GV _)
+               Unnester, UnnestExpression(Right GV _)
+               {New Core.skipNode init(C)}
+            end
+         [] fColonEquals(Left Right C) then FApply in
+            % Left is cell, attribute, or table entry
+            if @Stateful then
+               % See comments on UnnestStatement(fDotAssign(...))
+               StateUsed <- true
+            end
+            FApply = fOpApplyStatement('catExchange' [Left Right fOcc(ToGV)] C)
+            Unnester, UnnestStatement(FApply $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'statement at expression position')}

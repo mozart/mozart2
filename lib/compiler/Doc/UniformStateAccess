@@ -1,0 +1,117 @@
+The Uniform State syntax simplifies the manipulation of mutable
+entities in Oz. Mutable entities in Oz are cells, attributes,
+dictionary elements, and array elements.
+
+The motivation is to reconcile clean semantics, simple implementation,
+convenient notation, and additional syntactic support for calculating
+with mutable / immutable maps.
+
+In the following, we ignore arrays, the notes concerning dictionaries
+apply also to arrays.
+
+THE MODEL
+
+We add two new operators to the language, := and @. They operate on
+mutable entities, i.e. cells, object attributes, and dictionary/key
+pairs. A dictionary/key pair is just a tuple, e.g. D#k.
+
+@E1 takes a mutable entity (the result of E1) and returns its current
+value:
+
+@a         % attribute
+@C         % cell
+@(D#K)     % dict/key pair
+
+This extends @'s current behaviour on object attributes to all mutable
+entities.
+
+E1 := E2 takes a mutable entity (the result of E1) and replaces its
+contents with the result of E2:
+
+a := foo
+C := foo
+D#K := foo
+
+If E1 := E2 appears in an expression context then it provides atomic
+exchange. The current contents of a mutable entity (E1) are returned
+and replaced with the result of E2.
+
+State Exchange
+
+X = a := foo
+X = C := foo
+X = D#K := foo
+
+Note that we don't introduce a new type for a dict/key pair. It is
+just a tuple, so all tuple operations such as equality and selection
+are valid for D#K.
+
+SYNTACTIC EXTENSION FOR CALCULATING WITH MAPS
+
+Oz has a number of data structures which may be used to hold mappings:
+records, chunks, objects, and dictionaries (where the latter is a
+mutable mapping).
+
+* We extend the '.' operator to support mutable mappings. E1.E2
+  returns the value bound to key E2 in E1. This is the existing
+  behaviour (with Denys' extension to work for mutable mappings:
+  dictionaries and arrays).
+
+* We add a new multifix operator '. :=', E1 . E2 := E3 requires E1 to
+  be a mutable mapping. It replaces the value bound to E2 in E1 with
+  the value of E3. Note that (E1.E2) := E3 isn't operator '. :='
+  because of the parenthesis.  (E1.E2) := E3 is defined by the rules
+  for E1.E2 and then :=.
+
+Summarizing, D.K := V is equivalent to D#K := V and D.K is equivalent
+to @(D#K).
+
+(This behaves almost identically to the existing implementation of '.'
+support for Dictionarys. The only difference is that (D.K) := V is
+currently identical to D.K := V)
+
+This syntax also allows atomic exchange:
+
+X = D.K := foo
+
+SEMANTICS
+
+We assume that the syntactic abstractions D.K := V and D.K are
+translated to D#K := V and  @(D#K) respectively.
+
+Now we can define a translation of our extension to Oz.
+
+@ E == case E of
+            (D#K) then {Dictionary.get D K}
+           else if {IsCell E} then
+                     {Access E}
+                   else
+                     {Obj.access self E} % Equiv to current @E
+                   end
+           end
+
+Note, @ already works for object attributes, we have used a dummy
+routine Obj.access to describe the current behaviour of @.
+
+If E is not a mutable entity then the routine will return a suitable
+error.
+
+E1 := E2 == case E1 of
+                    (D#K) then {Dictionary.put D K E2}
+               else if {IsCell E} then
+                        {Assign E1 E2}
+                       else
+                        E1 <- E2
+                       end
+               end
+
+If E is not a mutable entity then the routine will return a suitable
+error.
+
+X = E1 := E2 == atomic
+                      X = @E1
+                      E1 := E2
+                    end
+
+where 'atomic ... end' is pseudo code indicating that the contents
+must be implemented atomically.

@@ -20,16 +20,27 @@
 \undef     DEBUG_OPEN
 
 declare
+\ifndef NEWSAVE
 BrowserClass
 Browser
 Browse
+\endif
 \ifdef SAVE
 NewBrowser
 \endif
 in
 
 \ifdef SAVE
-fun {NewBrowser Search FD Tk TkTools}
+fun {NewBrowser
+\ifdef NEWSAVE
+     Standard
+\endif
+     Search FD Tk TkTools}
+\endif
+\ifdef NEWSAVE
+\insert 'Standard.env'
+   = Standard
+in
 \endif
 
 %%

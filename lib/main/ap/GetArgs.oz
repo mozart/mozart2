@@ -192,7 +192,8 @@ body
                                   [] atom   then ''
                                   [] bool   then false
                                   else
-                                     {`RaiseError` argParser(type(TA.type))} _
+                                     {Exception.raiseError
+                                      argParser(type(TA.type))} _
                                   end) TA}
              end
       in
@@ -243,7 +244,7 @@ body
             [] string then S
             end
          catch _ then
-            {`RaiseError` argParser(value(O.real S))} _
+            {Exception.raiseError argParser(value(O.real S))} _
          end
       end
 

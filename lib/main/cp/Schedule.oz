@@ -35,7 +35,7 @@ local
       elsecase {IsTuple V}  then tuple
       elsecase {IsRecord V} then record
       else
-         {`RaiseError`
+         {Exception.raiseError
           kernel(type VectorToType [V] vector 1
                  'Vector as input argument expected.')} illegal
       end
@@ -167,7 +167,7 @@ in
                                      end}
                           end}
             then skip else
-               {`RaiseError`
+               {Exception.raiseError
                 fd(scheduling
                    'Check'
                    [Tasks Start Dur]
@@ -177,7 +177,7 @@ in
             end
 
             case {HasFeature Start pe} then skip else
-               {`RaiseError`
+               {Exception.raiseError
                 fd(scheduling
                    'Check'
                    [Tasks Start Dur]
@@ -187,7 +187,7 @@ in
             end
 
             case {Record.all Start FD.is} then skip else
-               {`RaiseError`
+               {Exception.raiseError
                 kernel(type
                        'Check'
                        [Tasks Start Dur]
@@ -197,7 +197,7 @@ in
             end
 
             case {Record.all Dur IsInt} then skip else
-               {`RaiseError`
+               {Exception.raiseError
                 kernel(type
                        'Check'
                        [Tasks Start Dur]

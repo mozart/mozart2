@@ -154,11 +154,11 @@ in
          fun {GenericAsk TypeTest TypeName}
             proc {$ X}
                case {TypeTest X} then skip else
-                  {`RaiseError` kernel(type {System.printName TypeTest}
-                                       [X]
-                                       TypeName
-                                       1
-                                       'Type.ask')}
+                  {Exception.raiseError kernel(type {System.printName TypeTest}
+                                               [X]
+                                               TypeName
+                                               1
+                                               'Type.ask')}
                end
             end
          end

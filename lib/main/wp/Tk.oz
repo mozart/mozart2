@@ -544,9 +544,9 @@ in
          GetTclName
       in
          case ParentSlaves==unit then
-            {`RaiseError` tk(wrongParent self M)}
+            {Exception.raiseError tk(wrongParent self M)}
          elsecase {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self M)}
+            {Exception.raiseError tk(alreadyInitialized self M)}
          else
             self.TclSlaveEntry = {AddSlave ParentSlaves self}
             {DefineCommand Action Args ?ThisActionId ?GetTclName}
@@ -681,14 +681,14 @@ in
       meth tkInit(parent:Parent ...) = Message
          ThisTclName = self.TclName
          case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self Message)}
+            {Exception.raiseError tk(alreadyInitialized self Message)}
          else skip end
          NewTkName  =
          case {IsObject Parent} then
             ParentSlaves = {CondSelect Parent TclSlaves unit}
          in
             case ParentSlaves==unit then
-               {`RaiseError` tk(wrongParent self Message)} _
+               {Exception.raiseError tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
@@ -697,7 +697,7 @@ in
             self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
-            {`RaiseError` tk(wrongParent self Message)} _
+            {Exception.raiseError tk(wrongParent self Message)} _
          end
       in
          case {HasFeature Message action} then
@@ -732,7 +732,7 @@ in
       meth tkInit(parent:Parent ...) = Message
          ThisTclName = self.TclName
          case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self Message)}
+            {Exception.raiseError tk(alreadyInitialized self Message)}
          else skip
          end
          NewTkName =
@@ -740,7 +740,7 @@ in
             ParentSlaves = {CondSelect Parent TclSlaves unit}
          in
             case ParentSlaves==unit then
-               {`RaiseError` tk(wrongParent self Message)} _
+               {Exception.raiseError tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
@@ -749,7 +749,7 @@ in
             self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
-            {`RaiseError` tk(wrongParent self Message)} _
+            {Exception.raiseError tk(wrongParent self Message)} _
          end
       in
          self.TclSlaves = [nil]
@@ -765,7 +765,7 @@ in
       meth tkInit(...) = Message
          ThisTclName = self.TclName
          case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self Message)}
+            {Exception.raiseError tk(alreadyInitialized self Message)}
          else skip end
          MyTitle  = {CondSelect Message title 'Oz Window'}
          MyTkName =
@@ -776,7 +776,7 @@ in
                ParentSlaves = {CondSelect Parent TclSlaves unit}
             in
                case ParentSlaves==unit then
-                  {`RaiseError` tk(wrongParent self Message)} _
+                  {Exception.raiseError tk(wrongParent self Message)} _
                else
                   self.TclSlaveEntry = {AddSlave ParentSlaves self}
                   {GenWidgetName Parent.TclName}
@@ -785,7 +785,7 @@ in
                self.TclSlaveEntry = nil
                {GenWidgetName Parent}
             else
-               {`RaiseError` tk(wrongParent self Message)} _
+               {Exception.raiseError tk(wrongParent self Message)} _
             end
          else
             self.TclSlaveEntry = nil
@@ -921,11 +921,11 @@ in
                      args:   Args   <= nil ...) = Message
             ThisTclName = self.TclName
             case {IsDet ThisTclName} then
-               {`RaiseError` tk(alreadyInitialized self Message)}
+               {Exception.raiseError tk(alreadyInitialized self Message)}
             else skip end
             ParentLock  = {CondSelect Parent EntryLock unit}
             case ParentLock==unit then
-               {`RaiseError` tk(wrongParent self Message)}
+               {Exception.raiseError tk(wrongParent self Message)}
             else skip end
          in
             lock ParentLock then
@@ -1054,7 +1054,7 @@ in
          ThisTclName = self.TclName
       in
          case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self Message)}
+            {Exception.raiseError tk(alreadyInitialized self Message)}
          else skip end
          case {Width Message}
          of 0 then skip
@@ -1115,10 +1115,10 @@ in
          ParentSlaves = {CondSelect Parent TclSlaves unit}
       in
          case ParentSlaves==unit then
-            {`RaiseError` tk(wrongParent self tkInit(parent:Parent))}
+            {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
          else skip end
          case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self tkInit(parent:Parent))}
+            {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
          else skip end
          self.TclSlaves     = [nil]
          self.TclSlaveEntry = {AddSlave ParentSlaves self}
@@ -1258,7 +1258,7 @@ in
          meth tkInit(type:Type ...) = Message
             ThisTclName = self.TclName
             case {IsDet ThisTclName} then
-               {`RaiseError` tk(alreadyInitialized self Message)}
+               {Exception.raiseError tk(alreadyInitialized self Message)}
             else skip end
             NewTkName   = {GenImageName}
             MessUrl = case {HasFeature Message url} then

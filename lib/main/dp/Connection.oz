@@ -110,7 +110,7 @@ local
             S={TicketToString Ticket}
             Ticket
          catch _ then
-            {`RaiseError` dp(connection(illegalTicket V))} _
+            {Exception.raiseError dp(connection(illegalTicket V))} _
          end
       end
    end
@@ -230,7 +230,7 @@ in
             Y=no
          end
          proc {Handle _ _}
-            {`RaiseError` dp(connection(ticketToDeadSite V))}
+            {Exception.raiseError dp(connection(ticketToDeadSite V))}
          end
       in
          {Fault.install P watcher(cond:permHome) Watch}
@@ -238,9 +238,9 @@ in
          {Send P T#X}
          case X#Y
          of no#_ then
-            {`RaiseError` dp(connection(refusedTicket V))}
+            {Exception.raiseError dp(connection(refusedTicket V))}
          [] _#no then
-            {`RaiseError` dp(connection(ticketToDeadSite V))}
+            {Exception.raiseError dp(connection(ticketToDeadSite V))}
          [] yes(A)#_ then
             Entity=A
          end

@@ -480,7 +480,7 @@ body
       case     {IsList Vector}   then Vector
       elsecase {IsRecord Vector} then {Record.toList Vector}
       else
-         {`RaiseError`
+         {Exception.raiseError
           kernel(type
                  'VectorToTuple'
                  [Vector]

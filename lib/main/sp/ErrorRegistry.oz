@@ -874,7 +874,7 @@ in
       proc {NewFormatter Key P}
 
          case {ExFormatter Key}
-         then {`RaiseError` system(reinstallFormatter Key)}
+         then {Exception.raiseError system(reinstallFormatter Key)}
          else
             {Dictionary.put
              ErrorFormatter

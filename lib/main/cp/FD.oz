@@ -35,7 +35,7 @@ local
       elsecase {IsTuple V}  then tuple
       elsecase {IsRecord V} then record
       else
-         {`RaiseError`
+         {Exception.raiseError
           kernel(type VectorToType [V] vector 1
                  'Vector as input argument expected.')} illegal
       end
@@ -589,7 +589,7 @@ in
                      {FdpCard {VectorToTuple Ds} Low Up B}
                   end
                else
-                  {`RaiseError`
+                  {Exception.raiseError
                    kernel(type
                           'FD.reified.card'
                           [Low Ds Up B]
@@ -711,7 +711,7 @@ in
                    else {VectorToTuple V}
                    end
                case {Record.all T FdIs} then skip else
-                  {`RaiseError`
+                  {Exception.raiseError
                    kernel(type 'MakeDistrTuple' [V T] list(fd) 1
                           'Distribution vector must contain finite domains.')}
                end
@@ -880,7 +880,7 @@ in
                   end
                end
             catch ~1 then
-               {`RaiseError`
+               {Exception.raiseError
                 fd(noChoice 'FD.choose' [RawSpec Vec V D] 2
                    'Vector must contain non-determined elements.')}
             end

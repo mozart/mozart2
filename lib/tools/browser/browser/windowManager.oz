@@ -249,11 +249,13 @@ class WindowManagerClass from MyClosableObject BatchObject
                   pushButton(break(%%
                                    % text:   'Break'
                                    action: BO#break
-                                   bitmap: IEjectBitmap
+                                   bitmap: IStopBitmap
                                    bd: 0
                                    anchor: center
-                                   width: IEjectWidth)
-                            "Terminate drawing ASAP")
+                                   width: IStopWidth
+                                   fg:    IStopFG
+                                   activeforeground:IStopAFG)
+                             "Terminate drawing ASAP")
                   createTkVar(1 % must be 0;
                               proc {$ V}
                                  Action = {Dictionary.get Actions

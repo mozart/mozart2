@@ -185,16 +185,11 @@ IMITitle    = 'Messages'
 IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
 IMIBitmap   = !OzHome # '/lib/bitmaps/browserMIcon.xbm'
 %%
-%IStopBitmap = '@' # !OzHome # '/lib/bitmaps/stop.xbm'
-IEjectBitmap= '@' # !OzHome # '/lib/bitmaps/eject.xbm'
-IPlayBitmap = '@' # !OzHome # '/lib/bitmaps/play.xbm'
-IPauseBitmap= '@' # !OzHome # '/lib/bitmaps/pause.xbm'
-%%
-%IStopWidth  = 30
-IEjectWidth  = 20
-IEFrameWidth = 20
-IPlayWidth   = 20
-IPauseWidth  = 20
+IStopBitmap = '@' # !OzHome # '/lib/bitmaps/stop.xbm'
+IStopWidth  = 20
+IStopFG     = firebrick3
+IStopAFG    = firebrick2
+
 %%
 %% offsets for a transient helper;
 IXTransDist  = 10

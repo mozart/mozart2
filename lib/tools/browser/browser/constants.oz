@@ -318,17 +318,17 @@ IDepth            = 15
 IWidth            = 50
 IFillStyle        = !Expanded
 IArityType        = !AtomicArity
-ISmallNames       = !True
-IAreVSs           = !False
+ISmallNames       = true
+IAreVSs           = false
 IDepthInc         = 1
 IWidthInc         = 1
-% ISmoothScrolling  = !False
-IShowGraph        = !False
-IShowMinGraph     = !False
+% ISmoothScrolling  = false
+IShowGraph        = false
+IShowMinGraph     = false
 %% ... only one of the previous two should be toggled one;
 IBufferSize       = 15
 %% would the menus frame come at start?
-IWithMenus        = !True
+IWithMenus        = true
 
 %%%
 %%%

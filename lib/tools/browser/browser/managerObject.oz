@@ -116,7 +116,7 @@ in
                %%
                %% new request;
                WindowManagerClass , entriesEnable([break])
-               {self.store store(StoreBreak False)}
+               {self.store store(StoreBreak false)}
             end
 
             %%

@@ -427,7 +427,7 @@ in
          case @browserObj == InitValue then Browser in
             Browser = {New BrowserClass
                        init(withMenus:        IWithMenus
-                            IsDefaultBrowser: True)}
+                            IsDefaultBrowser: true)}
 
             %%
             browserObj <- Browser

@@ -50,7 +50,7 @@ in
    %% Due to Denys;
    %%
    %% 'P' must a unary procedure doing something. If it blocks or
-   %% fails, 'False' is returned, and if it's entailed - 'True';
+   %% fails, 'false' is returned, and if it's entailed - 'true';
    fun {NMTest P}
       S={Space.new P}
       W
@@ -132,7 +132,7 @@ in
       %% (and it yields bool);
       meth Search(Self List $)
          %%
-         case {IsFree List} then False
+         case {IsFree List} then false
          else Obj R in
             %%
             List = Obj|R
@@ -145,7 +145,7 @@ in
                %%
                case {NMTest proc {$ _} Obj.term = Self.term end} then
                   %%
-                  case {IsFree Obj.closed} then True
+                  case {IsFree Obj.closed} then true
                   else
                      fails <- @fails + 1
                      TermsStoreClass , Search(Self R $)

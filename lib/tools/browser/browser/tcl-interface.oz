@@ -161,7 +161,7 @@ in
       %% given by creation;
          browserObj             %
          store                  % cache it directly;
-         standAlone             % 'True'/'False';
+         standAlone             % 'true'/'false';
 
       %%
       %% widgets;
@@ -201,7 +201,7 @@ in
       %% 'o'-tuple, and, after that - unset them in one shot:
          UnsetMarks
       %%
-         ScrollingOn:  True             % a boolean saying either
+         ScrollingOn:  true             % a boolean saying either
                                         % scrolling is enabled or not;
 
 %%%
@@ -227,15 +227,15 @@ in
          case WindowIn == InitValue then
             WindowLocal XSize YSize CloseAction RootXSize RootYSize
          in
-            self.standAlone = True
+            self.standAlone = true
             XSize = {self.store read(StoreXSize $)}
             YSize = {self.store read(StoreYSize $)}
 
             %%
             WindowLocal =
             {New MyToplevel case Screen == InitValue
-                            then tkInit(withdraw:True)
-                            else tkInit(withdraw:True screen:Screen)
+                            then tkInit(withdraw:true)
+                            else tkInit(withdraw:true screen:Screen)
                             end}
 
             %%
@@ -265,7 +265,7 @@ in
             %%
             self.Window = WindowLocal
          else
-            self.standAlone = False
+            self.standAlone = false
             self.Window = WindowIn
             %%  Note that there is no control for this window;
             %%  It means in particular, that the application
@@ -351,7 +351,7 @@ in
             %%
             %% Select a font from ITWFont?, and store it;
             {Wait
-             (self , FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont True $))}
+             (self , FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont true $))}
 
             %%
             %% scrollbars;
@@ -623,8 +623,8 @@ in
                    setParameter(BrowserFont IFont.name)}
                end
                %%
-               False
-            else True
+               false
+            else true
             end
          else Proceed
          end
@@ -678,7 +678,7 @@ in
       end
 
       %%
-      %% Yields 'True' if the font exists;
+      %% Yields 'true' if the font exists;
       meth tryFont(Font $)
          {X11ResourceCache tryFont(Font.font $)}
       end
@@ -691,7 +691,7 @@ in
       end
 
       %%
-      %% Yields 'True' if a try was successful;
+      %% Yields 'true' if a try was successful;
       meth setTWFont(NewFont $)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTWFont'#NewFont}
@@ -702,7 +702,7 @@ in
 
             %%
             case NewFont
-            of !Font then True  %  have it already;
+            of !Font then true  %  have it already;
             elsecase BrowserWindowClass , tryFont(NewFont $) then
                %%
                {self.BrowseWidget tk(conf font:NewFont.font)}
@@ -710,8 +710,8 @@ in
                BrowserWindowClass , resetTW
 
                %%
-               True
-            else False
+               true
+            else false
             end
          end
       end
@@ -1889,7 +1889,7 @@ in
          {Show 'BrowserWindowClass::noTearOff'}
 \endif
          case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(conf tearoff:False)}
+         else {ProcessEntries @menuBar Arg tk(conf tearoff:false)}
          end
 
          %%
@@ -1933,7 +1933,7 @@ in
             fb <- FB
 
             %%
-            Window = {New MyToplevel tkInit(withdraw: True)}
+            Window = {New MyToplevel tkInit(withdraw: true)}
 
             %%
             CloseAction = {New Tk.action
@@ -1970,11 +1970,11 @@ in
                    {X11ResourceCache tryFont(IFont.font $)}
                 then
                    {MessageWidget tk(conf font:IFont.font)}
-                   False
+                   false
                 else Proceed
                 end
              end
-             True _}
+             true _}
 
             %%
             VS = {New Tk.scrollbar tkInit(parent: Window
@@ -2034,11 +2034,11 @@ in
                    {X11ResourceCache tryFont(IFont $)}
                 then
                    {MessageWidget tk(conf font:IFont)}
-                   False
+                   false
                 else Proceed
                 end
              end
-             True _}
+             true _}
 
             %%
             {Tk.send pack(Button side: top fill: x padx: IPad pady: IPad)}
@@ -2143,8 +2143,8 @@ in
             %%
             Window =
             {New MyToplevel case Screen == InitValue
-                            then tkInit(withdraw:True)
-                            else tkInit(withdraw:True screen:Screen)
+                            then tkInit(withdraw:true)
+                            else tkInit(withdraw:true screen:Screen)
                             end}
 
             %%
@@ -2182,11 +2182,11 @@ in
                    {X11ResourceCache tryFont(IFont.font $)}
                 then
                    {MessageWidget tk(conf font:IFont.font)}
-                   False
+                   false
                 else Proceed
                 end
              end
-             True _}
+             true _}
 
             %%
             VS = {New Tk.scrollbar tkInit(parent: Window

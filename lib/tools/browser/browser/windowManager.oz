@@ -89,8 +89,8 @@ class WindowManagerClass from UrObject
       self.Oz2Tcl =
       fun {$ OzValue}
          case OzValue
-         of !True             then 'tcl_True'
-         [] !False            then 'tcl_False'
+         of true             then 'tcl_True'
+         [] false            then 'tcl_False'
          [] !Expanded         then 'tcl_Expanded'
          [] !Filled           then 'tcl_Filled'
          [] !AtomicArity      then 'tcl_AtomicArity'
@@ -105,15 +105,15 @@ class WindowManagerClass from UrObject
       self.Tcl2Oz =
       fun {$ TclValue}
          case TclValue
-         of 'tcl_True'        then True
-         [] 'tcl_False'       then False
+         of 'tcl_True'        then true
+         [] 'tcl_False'       then false
          [] 'tcl_Expanded'    then Expanded
          [] 'tcl_Filled'      then Filled
          [] 'tcl_AtomicArity' then AtomicArity
          [] 'tcl_TrueArity'   then TrueArity
          else
             {BrowserError 'WindowManagerClass.Tcl2Oz: unknown value!'}
-            False
+            false
          end
       end
    end
@@ -141,7 +141,7 @@ class WindowManagerClass from UrObject
          {BrowserMessagesInit @window}
 
          %%
-         {self.store store(StoreIsWindow True)}
+         {self.store store(StoreIsWindow true)}
       else skip
       end
 
@@ -169,8 +169,8 @@ class WindowManagerClass from UrObject
          Store = self.store
          BO = self.browserObj
          Window = @window
-         TclTrue = {self.Oz2Tcl True}
-         TclFalse = {self.Oz2Tcl False}
+         TclTrue = {self.Oz2Tcl true}
+         TclFalse = {self.Oz2Tcl false}
 
          %%
          VarDict = {Dictionary.new}
@@ -194,7 +194,7 @@ class WindowManagerClass from UrObject
                              %%
                              {Store store(StoreShowGraph TV)}
                              case TV then
-                                {ShowMinGraphVar tkSet({self.Oz2Tcl False})}
+                                {ShowMinGraphVar tkSet({self.Oz2Tcl false})}
                              else skip
                              end
                           end
@@ -210,7 +210,7 @@ class WindowManagerClass from UrObject
                              %%
                              {Store store(StoreShowMinGraph TV)}
                              case TV then
-                                {ShowGraphVar tkSet({self.Oz2Tcl False})}
+                                {ShowGraphVar tkSet({self.Oz2Tcl false})}
                              else skip
                              end
                           end
@@ -763,7 +763,7 @@ class WindowManagerClass from UrObject
          end
 
          %%
-         {self.store store(StoreAreMenus True)}
+         {self.store store(StoreAreMenus true)}
       else skip                 % already;
       end
 
@@ -819,7 +819,7 @@ class WindowManagerClass from UrObject
 
          %%
          varDict <- InitValue
-         {self.store store(StoreAreMenus False)}
+         {self.store store(StoreAreMenus false)}
       else skip
       end
 \ifdef DEBUG_WM
@@ -842,7 +842,7 @@ class WindowManagerClass from UrObject
          %%
          {@window close}
          window <- InitValue
-         {self.store store(StoreIsWindow False)}
+         {self.store store(StoreIsWindow false)}
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::closeWindow is finished'}

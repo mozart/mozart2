@@ -165,7 +165,7 @@ in
       attr
          mark:      InitValue   % none at the begin;
          offset:    0           % originallt - 0;
-         gotIndent: False       % ... originally;
+         gotIndent: false       % ... originally;
          indent:    0           %
 
       %%
@@ -191,7 +191,7 @@ in
       end
       meth setIndent(Inc)
          indent <- @indent + Inc
-         gotIndent <- True
+         gotIndent <- true
       end
 
       %%
@@ -266,7 +266,7 @@ in
             {Filter Objs
              fun {$ Obj}        % 'has no parent';
                 {Some Objs fun {$ CmpObj} Obj.ParentObj == CmpObj end}
-                == False
+                == false
              end}
          of nil then
             {BrowserError 'GetTargetObj: no outer-most object??!'}
@@ -288,7 +288,7 @@ in
             {Filter Objs
              fun {$ Obj}        % 'has no child(ren)';
                 {Some Objs fun {$ CmpObj} CmpObj.ParentObj == Obj end}
-                == False
+                == false
              end}
          of nil then
             {BrowserError 'GetTargetObj: no inner-most object??!'}
@@ -325,7 +325,7 @@ in
 
       %%
       attr
-         !HaveBraces:   False
+         !HaveBraces:   false
          !Size:         0
          !SavedSize:    0
          !UsedIndentIn: InitValue
@@ -507,7 +507,7 @@ in
 
       %%
       %% per definition;
-      meth !IsMultiLined($) False end
+      meth !IsMultiLined($) false end
 
       %%
       %%
@@ -606,7 +606,7 @@ in
          Size <- @Size + {self.WidgetObj insert(DLRBraceS $)}
 
          %%
-         HaveBraces <- True
+         HaveBraces <- true
 \ifdef DEBUG_RM
          {Show 'RepManagerObject::PutOP is finished'}
 \endif
@@ -990,17 +990,17 @@ in
             %%
             case
                case {Label Group}
-               of e   then False
-               [] t   then False
-               [] s   then False
-               [] st  then False
-               [] sgs then True
-               [] sgt then True
-               [] gs  then True
-               [] gt  then True
+               of e   then false
+               [] t   then false
+               [] s   then false
+               [] st  then false
+               [] sgs then true
+               [] sgt then true
+               [] gs  then true
+               [] gt  then true
                else
                   {BrowserError '...::*UpdateSubterm: group type??!'}
-                  False
+                  false
                end
             then {self.WidgetObj setMarkGravity(Group.mark Gravity)}
             else skip
@@ -1250,7 +1250,7 @@ in
       meth getBlock($) @CurrentBlock end
 
       %%
-      %% yields 'True' if there is a group 'FN';
+      %% yields 'true' if there is a group 'FN';
       meth isGroup(b:B ln:LN is:$)
 \ifdef DEBUG_RM
          {Show 'CompoundRepManagerObject::isGroup: ' # B#LN}
@@ -1408,22 +1408,22 @@ in
       %% 'Found' says whether it was found at all;
       %%
       meth GetNextBlock(sb:SB b:?B found:$)
-         case SB > @MaxBlock then False
+         case SB > @MaxBlock then false
          elsecase {Dictionary.get self.Subterms SB*DInfinite} > 0
          then
             B = SB
-            True
+            true
          else
             CompoundRepManagerObject
             , GetNextBlock(sb:(SB+1) b:?B found:$)
          end
       end
       meth GetPrevBlock(sb:SB b:?B found:$)
-         case SB < 0 then False
+         case SB < 0 then false
          elsecase {Dictionary.get self.Subterms SB*DInfinite} > 0
          then
             B = SB
-            True
+            true
          else
             CompoundRepManagerObject
             , GetPrevBlock(sb:(SB-1) b:?B found:$)
@@ -1465,14 +1465,14 @@ in
             %%
             case N > 1 then
                PB = B  PN = N-1
-               True
+               true
             elsecase
                B > 0 andthen
                CompoundRepManagerObject , GetPrevBlock(sb:(B-1) b:PB found:$)
             then
                PN = {Dictionary.get self.Subterms PB*DInfinite}
-               True
-            else False
+               true
+            else false
             end
 
             %%
@@ -1495,12 +1495,12 @@ in
                   , GetNextBlock(sb:(B+1) b:NB found:$)
                then
                   NN = 1
-                  True
-               else False
+                  true
+               else false
                end
             else
                NB = B  NN = N + 1
-               True
+               true
             end
 
             %%
@@ -1517,7 +1517,7 @@ in
       %%
       %% 'B' and 'N' are starting group numbers;
       %% 'NextMeth' is a method which search for a next group number,
-      %% and yields Found=False if there are none;
+      %% and yields Found=false if there are none;
       %%
       %% 'LM' is a rep' manager's method, which is applied as
       %%   LM(Group Arg ToContinue)
@@ -1544,9 +1544,9 @@ in
                   CompoundRepManagerObject
                   , ApplyGroups(b:NB ln:NN next:NextMeth
                                 lm:LM arg:Arg cont:$)
-               else True        % all done;
+               else true        % all done;
                end
-            else False
+            else false
             end
          end
 
@@ -1565,7 +1565,7 @@ in
             then
                CompoundRepManagerObject ,
                ApplyGroups(b:B ln:N next:IncNumber lm:LM arg:Arg cont:$)
-            else True
+            else true
             end
          end
       end
@@ -1575,7 +1575,7 @@ in
             then
                CompoundRepManagerObject ,
                ApplyGroups(b:B ln:N next:DecNumber lm:LM arg:Arg cont:$)
-            else True
+            else true
             end
          end
       end
@@ -1595,18 +1595,18 @@ in
          %%
          case
             case {Label Group}
-            of e   then False
-            [] t   then True
-            [] s   then False
-            [] st  then True
-            [] sgs then False
-            [] sgt then True
-            [] gs  then False
-            [] gt  then True
+            of e   then false
+            [] t   then true
+            [] s   then false
+            [] st  then true
+            [] sgs then false
+            [] sgt then true
+            [] gs  then false
+            [] gt  then true
             else
                {BrowserError
                 'CompoundRepManagerObject::ApplyObj: unkown group type!'}
-               False
+               false
             end
          then
             %% found a subterm object:
@@ -1615,7 +1615,7 @@ in
          end
 
          %%
-         True                   % always continue;
+         true                   % always continue;
       end
 
       %%
@@ -1639,18 +1639,18 @@ in
          %%
          case
             case {Label Group}
-            of e   then False
-            [] t   then False
-            [] s   then False
-            [] st  then False
-            [] sgs then True
-            [] sgt then True
-            [] gs  then True
-            [] gt  then True
+            of e   then false
+            [] t   then false
+            [] s   then false
+            [] st  then false
+            [] sgs then true
+            [] sgt then true
+            [] gs  then true
+            [] gt  then true
             else
                {BrowserError
                 'CompoundRepManagerObject::UnsetMark: unkown group type!'}
-               False
+               false
             end
          then
             %% found a mark:
@@ -1659,7 +1659,7 @@ in
          end
 
          %%
-         True                   % always continue;
+         true                   % always continue;
       end
 
       %%
@@ -1804,13 +1804,13 @@ in
             %% Now, if both the mark and indent came here, terminate
             %% the loop:
             case {Token gotMark($)} andthen {Token gotIndent($)}
-            then False else True
+            then false else true
             end
          end
       end
 
       %%
-      %% It yields 'True' if a line break in a group (within
+      %% It yields 'true' if a line break in a group (within
       %% the current block) would allow to surround some previous
       %% subterm's representation by a rectanlge.
       %%
@@ -1841,14 +1841,14 @@ in
             Needs =
             case
                CompoundRepManagerObject
-               , DecNumber(sb:B sln:N b:?PB ln:?PN found:$) == False orelse
+               , DecNumber(sb:B sln:N b:?PB ln:?PN found:$) == false orelse
                CompoundRepManagerObject
                , ApplyGroups(b:PB ln:PN next:DecNumber
                              lm:SearchMLSubterms arg:?LNeeds cont:$)
             then
                %% have not decided: searched through all available
                %% groups - case 3.
-               False
+               false
             else
                %% decided something - return that value;
                LNeeds
@@ -1872,47 +1872,47 @@ in
             %% first, check the case 1.
             case
                case GrType
-               of e   then False
-               [] t   then True
-               [] s   then False
-               [] st  then True
-               [] sgs then False
-               [] sgt then True
-               [] gs  then False
-               [] gt  then True
+               of e   then false
+               [] t   then true
+               [] s   then false
+               [] st  then true
+               [] sgs then false
+               [] sgt then true
+               [] gs  then false
+               [] gt  then true
                else
                   {BrowserError
                    'CompoundRepManagerObject::SarchMLSubterms: group type??!'}
-                  False
+                  false
                end
             then
                %% found a subterm:
                Needs = {Group.obj IsMultiLined($)}
-               False
+               false
 
                %%
                %% now, look at the case 2.:
             elsecase
                case GrType
-               of e   then False
-               [] t   then False
-               [] s   then False
-               [] st  then False
-               [] sgs then True
-               [] sgt then True
-               [] gs  then True
-               [] gt  then True
+               of e   then false
+               [] t   then false
+               [] s   then false
+               [] st  then false
+               [] sgs then true
+               [] sgt then true
+               [] gs  then true
+               [] gt  then true
                else
                   {BrowserError
                    'CompoundRepManagerObject::SarchMLSubterms: group type??!'}
-                  False
+                  false
                end
             then
                %% found a glue:
-               Needs = False
-               False
+               Needs = false
+               false
             else
-               True             % continue;
+               true             % continue;
             end
          end
       end
@@ -2027,7 +2027,7 @@ in
          end
 
          %%
-         True
+         true
       end
 
       %%
@@ -2509,18 +2509,18 @@ in
 \ifdef DEBUG_RM
                case
                   case {Label Group}
-                  of e   then False
-                  [] t   then True
-                  [] s   then False
-                  [] st  then True
-                  [] sgs then False
-                  [] sgt then True
-                  [] gs  then False
-                  [] gt  then True
+                  of e   then false
+                  [] t   then true
+                  [] s   then false
+                  [] st  then true
+                  [] sgs then false
+                  [] sgt then true
+                  [] gs  then false
+                  [] gt  then true
                   else
                      {BrowserError
                       'CompoundRepManagerObject::EvalDesc: group type??!'}
-                     False
+                     false
                   end
                then skip        % fine - there is an object;
                else
@@ -2582,18 +2582,18 @@ in
 \ifdef DEBUG_RM
                case
                   case {Label Group}
-                  of e   then False
-                  [] t   then True
-                  [] s   then False
-                  [] st  then True
-                  [] sgs then False
-                  [] sgt then True
-                  [] gs  then False
-                  [] gt  then True
+                  of e   then false
+                  [] t   then true
+                  [] s   then false
+                  [] st  then true
+                  [] sgs then false
+                  [] sgt then true
+                  [] gs  then false
+                  [] gt  then true
                   else
                      {BrowserError
                       'CompoundRepManagerObject::EvalDesc: group type??!'}
-                     False
+                     false
                   end
                then skip        % fine - there is an object;
                else
@@ -2692,18 +2692,18 @@ in
             %% the right gravity) can escape its location;
             SwapGravity =
             case {Label OldGroup}
-            of e   then False
-            [] t   then False
-            [] s   then False
-            [] st  then False
-            [] sgs then True
-            [] sgt then True
-            [] gs  then True
-            [] gt  then True
+            of e   then false
+            [] t   then false
+            [] s   then false
+            [] st  then false
+            [] sgs then true
+            [] sgt then true
+            [] gs  then true
+            [] gt  then true
             else
                {BrowserError
                 'CompoundRepManagerObject::ApplyObj: unkown group type!'}
-               False
+               false
             end
             andthen OldGroup.glueSize == 0
 

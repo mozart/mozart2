@@ -76,10 +76,10 @@ in
 
          %%
          NewList = ListOfSeen
-         True
+         true
       else
          NewList = Term#ReflectedTerm | ListOfSeen
-         False
+         false
       end
    end
 
@@ -152,7 +152,7 @@ in
                %%  convert an OFS to the proper record non-monotonically;
                %%
                %%  'RLabel' will be determined later!
-               RArity = {Record.monitorArity TermIn True}
+               RArity = {Record.monitorArity TermIn true}
                KnownRArity = {GetWFList RArity}
                KnownRefRArity = {Map KnownRArity
                                  fun {$ FN} {ReflectTerm FN nil $ _} end}

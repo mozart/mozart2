@@ -14,9 +14,9 @@
 %%% There are the following components:
 %%%   GetTermType:     term, store -> type
 %%%   GetObjClass:     type -> class
-%%%   CheckGraph:      (subterm) type -> {True, False}
-%%%   CheckMinGraph:   (subterm) type -> {True, False}
-%%%   DelimiterLEQ:    delimiter, delimiter -> {True, False}
+%%%   CheckGraph:      (subterm) type -> {true, false}
+%%%   CheckMinGraph:   (subterm) type -> {true, false}
+%%%   DelimiterLEQ:    delimiter, delimiter -> {true, false}
 %%%
 %%%
 
@@ -44,18 +44,18 @@ in
          case {Value.status X}
          of det(DT) then
             case DT
-            of atom  then True
-            [] int   then True
-            [] float then True
+            of atom  then true
+            [] int   then true
+            [] float then true
             [] tuple then
                case {Label X}
                of '#' then {IsAll {Width X} X}
                [] '|' then {IsString X}
-               else False
+               else false
                end
-            else False
+            else false
             end
-         else False
+         else false
          end
       end
    end
@@ -66,8 +66,8 @@ in
       case D > 0 then
          %%
          case {Value.status L}
-         of free      then False
-         [] kinded(_) then False
+         of free      then false
+         [] kinded(_) then false
          elsecase L
          of _|Xr then {IsListDepth Xr (D-1)}
          else L == nil
@@ -119,7 +119,7 @@ in
                of '#' then TW in TW = {Width Term}
                   %%  must fit into width constraint;
                   TW > 1 andthen TW =< {Store read(StoreWidth $)}
-               else False
+               else false
                end
             then T_HashTuple
             else T_Tuple
@@ -193,83 +193,83 @@ in
    end
 
    %%
-   %% Yields 'True' if a subterm of a given type ('STType')
+   %% Yields 'true' if a subterm of a given type ('STType')
    %% could already appear on a path from the tree's root upto 'self';
    %% Basically, it should mean whether a term is compound in the
    %% sense of Oz;
    fun {CheckGraph STType}
       %%
       case STType
-      of !T_Atom         then False
-      [] !T_Int          then False
-      [] !T_Float        then False
-      [] !T_Name         then False
-      [] !T_Procedure    then False
-      [] !T_Cell         then False
-      [] !T_PrimChunk    then False
-      [] !T_Dictionary   then False
-      [] !T_Array        then False
-      [] !T_Thread       then False
-      [] !T_Space        then False
-      [] !T_CompChunk    then True
-      [] !T_PrimObject   then False
-      [] !T_CompObject   then True
-      [] !T_PrimClass    then False
-      [] !T_CompClass    then True
-      [] !T_List         then True
-      [] !T_FCons        then True
+      of !T_Atom         then false
+      [] !T_Int          then false
+      [] !T_Float        then false
+      [] !T_Name         then false
+      [] !T_Procedure    then false
+      [] !T_Cell         then false
+      [] !T_PrimChunk    then false
+      [] !T_Dictionary   then false
+      [] !T_Array        then false
+      [] !T_Thread       then false
+      [] !T_Space        then false
+      [] !T_CompChunk    then true
+      [] !T_PrimObject   then false
+      [] !T_CompObject   then true
+      [] !T_PrimClass    then false
+      [] !T_CompClass    then true
+      [] !T_List         then true
+      [] !T_FCons        then true
          %% when changed, check the 'ListTermObject::GetElement';
-      [] !T_Tuple        then True
-      [] !T_Record       then True
-      [] !T_HashTuple    then True
-      [] !T_Variable     then False
-      [] !T_FDVariable   then False
-      [] !T_MetaVariable then False
-      [] !T_Unknown      then False
+      [] !T_Tuple        then true
+      [] !T_Record       then true
+      [] !T_HashTuple    then true
+      [] !T_Variable     then false
+      [] !T_FDVariable   then false
+      [] !T_MetaVariable then false
+      [] !T_Unknown      then false
       else
          {BrowserWarning
           'Unknown type in BrowserTerm.checkGraph' # STType}
-         False
+         false
       end
    end
 
    %%
-   %% Yields 'True' if equality between (sub)terms of a given type
+   %% Yields 'true' if equality between (sub)terms of a given type
    %% is necessary for the 'minimal graph' representation;
    %%
    fun {CheckMinGraph STType}
       %%
       case STType
-      of !T_Atom         then False
-      [] !T_Int          then False
-      [] !T_Float        then False
-      [] !T_Name         then True
-      [] !T_Procedure    then True
-      [] !T_Cell         then True
-      [] !T_PrimChunk    then True
-      [] !T_Dictionary   then True
-      [] !T_Array        then True
-      [] !T_Thread       then True
-      [] !T_Space        then True
-      [] !T_CompChunk    then True
-      [] !T_PrimObject   then True
-      [] !T_CompObject   then True
-      [] !T_PrimClass    then True
-      [] !T_CompClass    then True
-      [] !T_List         then True
-      [] !T_FCons        then True
+      of !T_Atom         then false
+      [] !T_Int          then false
+      [] !T_Float        then false
+      [] !T_Name         then true
+      [] !T_Procedure    then true
+      [] !T_Cell         then true
+      [] !T_PrimChunk    then true
+      [] !T_Dictionary   then true
+      [] !T_Array        then true
+      [] !T_Thread       then true
+      [] !T_Space        then true
+      [] !T_CompChunk    then true
+      [] !T_PrimObject   then true
+      [] !T_CompObject   then true
+      [] !T_PrimClass    then true
+      [] !T_CompClass    then true
+      [] !T_List         then true
+      [] !T_FCons        then true
          %% when changed, check the 'ListTermObject::GetElement';
-      [] !T_Tuple        then True
-      [] !T_Record       then True
-      [] !T_HashTuple    then True
-      [] !T_Variable     then True
-      [] !T_FDVariable   then True
-      [] !T_MetaVariable then True
-      [] !T_Unknown      then False
+      [] !T_Tuple        then true
+      [] !T_Record       then true
+      [] !T_HashTuple    then true
+      [] !T_Variable     then true
+      [] !T_FDVariable   then true
+      [] !T_MetaVariable then true
+      [] !T_Unknown      then false
       else
          {BrowserWarning
           'Unknown type in BrowserTerm.checkMinGraph' # STType}
-         False
+         false
       end
    end
 
@@ -278,19 +278,19 @@ in
    fun {DelimiterLEQ Del1 Del2}
         %%
         case Del1
-        of !DSpaceGlue then False
+        of !DSpaceGlue then false
         [] !DVBarGlue  then
-           case Del2 of !DHashGlue then True
-           elseof       !DVBarGlue then True
-           else False
+           case Del2 of !DHashGlue then true
+           elseof       !DVBarGlue then true
+           else false
            end
         [] !DEqualS    then
            case Del2
-           of !DSpaceGlue then False
-           else True            % but 'Del2' should not be '=';
+           of !DSpaceGlue then false
+           else true            % but 'Del2' should not be '=';
            end
         elseof !DHashGlue  then Del2 == DHashGlue
-        else {BrowserError 'Unknown delimiter!'} False
+        else {BrowserError 'Unknown delimiter!'} false
         end
    end
 

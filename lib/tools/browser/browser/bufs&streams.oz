@@ -149,8 +149,8 @@ in
       meth enq(El $)
          case LimitedBufferClass , hasPlace($) then
             NumBufferClass , enq(El)
-            True
-         else False
+            true
+         else false
          end
       end
 
@@ -158,8 +158,8 @@ in
       meth getFirstEl(?El $)
          case LimitedBufferClass , isNotEmpty($) then
             CoreBufferClass , getFirstEl(El)
-            True
-         else False
+            true
+         else false
          end
       end
 
@@ -169,8 +169,8 @@ in
       meth deq(?El $)
          case LimitedBufferClass , isNotEmpty($) then
             NumBufferClass , deq(El)
-            True
-         else False
+            true
+         else false
          end
       end
 
@@ -199,10 +199,10 @@ in
       meth deq(?Req $)
          case NumBufferClass , getSize($) > 0 then
             NumBufferClass , deq(Req)
-            True
+            true
          else
             Req = InitValue
-            False
+            false
          end
       end
 

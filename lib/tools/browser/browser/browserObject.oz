@@ -45,11 +45,11 @@ class BrowserClass from Object.base
    %%
    %%
    %%
-   meth init(withMenus:        WithMenus          <= True
+   meth init(withMenus:        WithMenus          <= true
              origWindow:       OrigWindow         <= InitValue
              screen:           Screen             <= InitValue
-             IsDefaultBrowser: IsIsDefaultBrowser <= False
-             IsView:           IsIsView           <= False)
+             IsDefaultBrowser: IsIsDefaultBrowser <= false
+             IsView:           IsIsView           <= false)
 \ifdef DEBUG_BO
       {Show 'BrowserClass::init is applied'}
 \endif
@@ -80,16 +80,16 @@ class BrowserClass from Object.base
         store(StoreShowMinGraph IShowMinGraph)
         store(StoreTWFont ITWFontUnknown)     % first approximation;
         store(StoreBufferSize IBufferSize)
-        store(StoreWithMenus case WithMenus == True
-                             then True else False
+        store(StoreWithMenus case WithMenus == true
+                             then true else false
                              end)
-        store(StoreIsWindow False)
-        store(StoreAreMenus False)
+        store(StoreIsWindow false)
+        store(StoreAreMenus false)
         store(StoreBrowserObj self)
         store(StoreStreamObj self.BrowserStream)
         store(StoreOrigWindow OrigWindow)
         store(StoreScreen Screen)
-        store(StoreBreak False)
+        store(StoreBreak false)
         store(StoreSeqNum 0)]}
 
       %%
@@ -133,7 +133,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::break is applied'}
 \endif
       %%
-      {self.Store store(StoreBreak True)}
+      {self.Store store(StoreBreak true)}
    end
 
    %%
@@ -457,7 +457,7 @@ class BrowserClass from Object.base
          NewBrowser =
          {New BrowserClass
           init(withMenus:  {self.Store read(StoreWithMenus $)}
-               IsView:     True)}       % protected feature;
+               IsView:     true)}       % protected feature;
 
          %%
          {NewBrowser browse(@selected.term)}
@@ -679,50 +679,50 @@ class BrowserClass from Object.base
          BrowserClass , SetWInc(ValueOf)
 
 %      [] !BrowserSmoothScrolling        then
-%        case ValueOf of !True then
-%           {self.Store store(StoreSmoothScrolling True)}
-%           {self.BrowserStream enq(setVarValue(smoothScrolling True))}
-%        elseof !False then
-%           {self.Store store(StoreSmoothScrolling False)}
-%           {self.BrowserStream enq(setVarValue(smoothScrolling False))}
+%        case ValueOf of true then
+%           {self.Store store(StoreSmoothScrolling true)}
+%           {self.BrowserStream enq(setVarValue(smoothScrolling true))}
+%        elseof false then
+%           {self.Store store(StoreSmoothScrolling false)}
+%           {self.BrowserStream enq(setVarValue(smoothScrolling false))}
 %        else
 %           {BrowserError
 %            'Illegal value of parameter BrowserSmoothScrolling'}
 %        end
 
       [] !BrowserShowGraph              then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
-            {self.Store store(StoreShowGraph True)}
-            {self.BrowserStream enq(setVarValue(showGraph True))}
-         elseof !False then
+            {self.Store store(StoreShowGraph true)}
+            {self.BrowserStream enq(setVarValue(showGraph true))}
+         elseof false then
             %%
-            {self.Store store(StoreShowGraph False)}
-            {self.BrowserStream enq(setVarValue(showGraph False))}
+            {self.Store store(StoreShowGraph false)}
+            {self.BrowserStream enq(setVarValue(showGraph false))}
          else
             {BrowserError
              'Illegal value of parameter BrowserCoreferences'}
          end
 
       [] !BrowserShowMinGraph           then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
-            {self.Store store(StoreShowMinGraph True)}
-            {self.BrowserStream enq(setVarValue(showMinGraph True))}
-         elseof !False then
+            {self.Store store(StoreShowMinGraph true)}
+            {self.BrowserStream enq(setVarValue(showMinGraph true))}
+         elseof false then
             %%
-            {self.Store store(StoreShowMinGraph False)}
-            {self.BrowserStream enq(setVarValue(showMinGraph False))}
+            {self.Store store(StoreShowMinGraph false)}
+            {self.BrowserStream enq(setVarValue(showMinGraph false))}
          else
             {BrowserError 'Illegal value of parameter BrowserCycles'}
          end
 
       [] !BrowserChunkFields            then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
             {self.Store store(StoreArityType TrueArity)}
             {self.BrowserStream enq(setVarValue(arityType TrueArity))}
-         elseof !False then
+         elseof false then
             %%
             {self.Store store(StoreArityType AtomicArity)}
             {self.BrowserStream enq(setVarValue(arityType AtomicArity))}
@@ -732,25 +732,25 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserVirtualStrings         then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
-            {self.Store store(StoreAreVSs True)}
-            {self.BrowserStream enq(setVarValue(areVSs True))}
-         elseof !False then
+            {self.Store store(StoreAreVSs true)}
+            {self.BrowserStream enq(setVarValue(areVSs true))}
+         elseof false then
             %%
-            {self.Store store(StoreAreVSs False)}
-            {self.BrowserStream enq(setVarValue(areVSs False))}
+            {self.Store store(StoreAreVSs false)}
+            {self.BrowserStream enq(setVarValue(areVSs false))}
          else
             {BrowserError
              'Illegal value of parameter BrowserVirtualStrings'}
          end
 
       [] !BrowserRecordFieldsAligned    then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
             {self.Store store(StoreFillStyle Expanded)}
             {self.BrowserStream enq(setVarValue(fillStyle Expanded))}
-         elseof !False then
+         elseof false then
             %%
             {self.Store store(StoreFillStyle Filled)}
             {self.BrowserStream enq(setVarValue(fillStyle Filled))}
@@ -760,14 +760,14 @@ class BrowserClass from Object.base
          end
 
       [] !BrowserNamesAndProcsShort     then
-         case ValueOf of !True then
+         case ValueOf of true then
             %%
-            {self.Store store(StoreSmallNames True)}
-            {self.BrowserStream enq(setVarValue(smallNams True))}
-         elseof !False then
+            {self.Store store(StoreSmallNames true)}
+            {self.BrowserStream enq(setVarValue(smallNams true))}
+         elseof false then
             %%
-            {self.Store store(StoreSmallNames False)}
-            {self.BrowserStream enq(setVarValue(smallNames False))}
+            {self.Store store(StoreSmallNames false)}
+            {self.BrowserStream enq(setVarValue(smallNames false))}
          else
             {BrowserError
              'Illegal value of parameter BrowserNamesAndProcsShort'}

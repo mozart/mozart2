@@ -16,7 +16,7 @@
 %%%
 
 %%
-%% Values for boolean parameters are 'True' and 'False';
+%% Values for boolean parameters are 'true' and 'false';
 %%
 
 %%

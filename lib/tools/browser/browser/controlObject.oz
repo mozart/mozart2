@@ -87,7 +87,7 @@ in
          store                  % a global store;
          !TermsStore            % a 'terms' store (co-references);
          !ParentObj             %
-         !IsPrimitive: True     %
+         !IsPrimitive: true     %
       %% the type field is added to particular objects (e.g.
       %% AtomObject);
 
@@ -121,7 +121,7 @@ in
 
          %%
          %% either with parentheses or not;
-         self , MakeRep(isEnc:  case self.IsPrimitive then False
+         self , MakeRep(isEnc:  case self.IsPrimitive then false
                                 else {BrowserTerm.delimiterLEQ
                                       self.delimiter ParentObjIn.delimiter}
                                 end)
@@ -268,7 +268,7 @@ in
                %%
                self
                , BeginUpdate
-               , case (self , IsEnc(are:$)) orelse NeedBraces == False
+               , case (self , IsEnc(are:$)) orelse NeedBraces == false
                  then PutRefName(refName: RefName)
                  else PutEncRefName(refName: RefName)
                  end
@@ -401,7 +401,7 @@ in
       from ControlObject
       %%
       feat
-         !IsPrimitive: False    % override the control object's value;
+         !IsPrimitive: false    % override the control object's value;
 
       %%
       %%
@@ -434,10 +434,10 @@ in
       end
 
       %%
-      %% Yields 'True' if a new subterm may be fully (with
+      %% Yields 'true' if a new subterm may be fully (with
       %% depth/width constraints) exposed;
       meth mayContinue($)
-         {self.store read(StoreBreak $)} == False
+         {self.store read(StoreBreak $)} == false
       end
 
       %%
@@ -938,7 +938,7 @@ in
       %%
       meth closeTerm skip end
       meth !Shrink skip end
-      meth hasCommas($) False end
+      meth hasCommas($) false end
 
       %%
       %% Jump to a master's representation;
@@ -1034,7 +1034,7 @@ in
 
       %%
       meth !Shrink skip end
-      meth hasCommas($) False end
+      meth hasCommas($) false end
 
       %%
       %%

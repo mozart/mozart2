@@ -604,7 +604,7 @@ in
          %%
          %% suspends until either ...
          {WaitOr ChMetaVar GotTouched}
-         True
+         true
       end
    end
 
@@ -648,7 +648,7 @@ in
       %%
       %% ... whether there are more subterms than currently shown
       %% (that is false for primitive terms);
-      meth !CanBeExpanded($) False end
+      meth !CanBeExpanded($) false end
 
       %%
       %% ... whether it has been "width" - restrained, that is,
@@ -659,7 +659,7 @@ in
       %% object uses 'hasCommas' in order to tell the browser manager
       %% about whether a term object has the 'expand' operation
       %% defined on;
-      meth hasCommas($) False end
+      meth hasCommas($) false end
 
       %%
       %% The default action - just rebrowse myself (though for some
@@ -1216,7 +1216,7 @@ in
                NotShownElementsHereAgain = @NotShownElements
 
                %%
-               case {IsVar NotShownElementsHereAgain} then False
+               case {IsVar NotShownElementsHereAgain} then false
                else NotShownElementsHereAgain \= nil
                end
             else
@@ -1585,8 +1585,8 @@ in
       %%
       %% Approximates the "is a well-formed list" property. That is,
       %% if the (term object's) list is wel-formed and completely
-      %% scanned ("got") then it yields 'True'; if it is not or not
-      %% yet - then it yields 'False';
+      %% scanned ("got") then it yields 'true'; if it is not or not
+      %% yet - then it yields 'false';
       %%
       %% (that's a local method;)
       meth IsWFList($)
@@ -1595,7 +1595,7 @@ in
             TL = @TailList
 
             %%
-            case {IsVar TL} then False
+            case {IsVar TL} then false
             else TL == nil
             end
          end
@@ -2092,11 +2092,11 @@ in
             %%
             case
                case {Store read(StoreFillStyle $)}
-               of !Expanded then True
-               [] !Filled then False
+               of !Expanded then true
+               [] !Filled then false
                else
                   {BrowserError 'invalid fill style!'}
-                  False
+                  false
                end
             then                % expanded (the default);
                %%
@@ -2161,7 +2161,7 @@ in
 
       %%
       attr
-         HasDetLabel: False
+         HasDetLabel: false
 
       %%
       %% this is the "simplest" case - no transformations;
@@ -2174,7 +2174,7 @@ in
             %% reflect it non-monotonically;
             case {IsVar L} then {System.printName L}
             else
-               HasDetLabel <- True
+               HasDetLabel <- true
                {GenLitPrintName L self.store}
             end
          end
@@ -2247,7 +2247,7 @@ in
       %% 'ListTermObject::IsWFList');
       meth IsClosedRecord($)
          %%
-         case {IsVar @NotShownElements} then False
+         case {IsVar @NotShownElements} then false
          else @NotShownElements == nil
          end
       end
@@ -2648,7 +2648,7 @@ in
          type: T_Variable
 
       %%
-      %% Yields 'True' if it is still an (unconstrained!) variable;
+      %% Yields 'true' if it is still an (unconstrained!) variable;
       %% It is not necessary any longer since the 'SetWatchPoint'
       %% does not perform any "post-checks";
       %%
@@ -2660,12 +2660,12 @@ in
 %             %% some other (derived) type of variables;
 %
 %             case {IsVar Term} then
-%                case {IsRecordCVar Term} then False
-%                elsecase {IsFdVar Term} then False
-%                elsecase {IsMetaVar Term} then False
-%                else True
+%                case {IsRecordCVar Term} then false
+%                elsecase {IsFdVar Term} then false
+%                elsecase {IsMetaVar Term} then false
+%                else true
 %                end
-%             else False
+%             else false
 %             end
 %          end
 %       end
@@ -2697,7 +2697,7 @@ in
          type: T_FDVariable
 
       %%
-      %% Yields 'True' if it is still a FD variable;
+      %% Yields 'true' if it is still a FD variable;
       %%
 %       meth !CheckIsVar(?Is)
 %          %%
@@ -2761,7 +2761,7 @@ in
          type: T_MetaVariable
 
       %%
-      %% Yields 'True' if it is still a metavariable;
+      %% Yields 'true' if it is still a metavariable;
       %%
 %       meth !CheckIsVar(?Is)
 %          %%

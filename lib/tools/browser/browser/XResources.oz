@@ -42,7 +42,7 @@ in
       feat
          Toplevel               %  toplevel frame wich is withdrawn;
          TestTW                 %  a test text widget used for checks;
-      %% This one keeps a mapping between X11 fonts and {True,False};
+      %% This one keeps a mapping between X11 fonts and {true,false};
       %% If a given is not (yet) there, it will be checked and the
       %% result is cached in;
          FontsCache
@@ -65,7 +65,7 @@ in
          smallestFont <- InitValue
 
          %%
-         self.Toplevel = {New Tk.toplevel tkInit(withdraw: True)}
+         self.Toplevel = {New Tk.toplevel tkInit(withdraw: true)}
          %%
          %% Parameters are essential since they influence figuring
          %% out a font's resolution;
@@ -77,15 +77,15 @@ in
       end
 
       %%
-      %% Yields 'True' if the font exists, and updates the cache
+      %% Yields 'true' if the font exists, and updates the cache
       %% if needed;
       %%
       %% 'Font' must be an atom;
       %%
       meth tryFont(Font $)
          case {Dictionary.condGet self.FontsCache Font InitValue}
-         of !True        then True
-         [] !False       then False
+         of true        then true
+         [] false       then false
          [] !InitValue   then R in
             R = {Tk.returnInt 'catch'(q(self.TestTW conf(font: Font)))} == 0
 
@@ -99,7 +99,7 @@ in
             {Show '*******************************************************'}
             {Show 'X11ResourceCacheClass::tryFont: error!'}
             {Show '*******************************************************'}
-            False
+            false
          end
       end
 
@@ -166,8 +166,8 @@ in
       %%
       meth tryCursor(CName $)
          case {Dictionary.condGet self.CursorsCache CName InitValue}
-         of !True        then True
-         [] !False       then False
+         of true        then true
+         [] false       then false
          [] !InitValue   then R in
             R =
             {Tk.returnInt 'catch'(q(self.TestTW conf(cursor: CName)))} == 0
@@ -182,7 +182,7 @@ in
             {Show '*******************************************************'}
             {Show 'X11ResourceCacheClass::tryCursor: error!'}
             {Show '*******************************************************'}
-            False
+            false
          end
       end
 

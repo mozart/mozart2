@@ -23,14 +23,14 @@ IntToAtom = {`Builtin` 'intToAtom'
 %% These are non-monotonic tests, that is, they never suspend.
 %% Since we don't have job...end anymore, they actually must present
 %% somewhere and somehow in Oz Kernel(?);
-IsVar =        fun {$ X} {Value.isDet X} == False end
+IsVar =        fun {$ X} {Value.isDet X} == false end
 IsFdVar =      {`Builtin` 'fdIsVarB' noHandler}
 IsRecordCVar = {`Builtin` 'recordCIsVarB' noHandler}
 IsMetaVar =    {`Builtin` 'metaIsVarB' noHandler}
 
 %%
 %% The first argument is a meta variable, and the second -
-%% reference strength. Binds 'True' to the second argument when
+%% reference strength. Binds 'true' to the second argument when
 %% *something* ("reference strength"?) changes. *It never suspends*.
 %%
 %% Ask Tobias (Mueller) for further details - that's his child. I
@@ -53,7 +53,7 @@ MetaGetNameAsAtom = {`Builtin` metaGetNameAsAtom noHandler}
 MetaGetStrength = {`Builtin` metaGetStrength noHandler}
 
 %%
-%% Yields 'True' if a record given has a label already. Never
+%% Yields 'true' if a record given has a label already. Never
 %% suspends;
 HasLabel = {`Builtin` hasLabel noHandler}
 
@@ -67,7 +67,7 @@ EQ = !System.eq
 TermSize = {`Builtin` 'getTermSize' noHandler}
 
 %%
-%% Its argument is a term. It bounds its second argument to 'True'
+%% Its argument is a term. It bounds its second argument to 'true'
 %% when the first one gets ever touched. *It never suspends*.
 %% It is useful for three purposes:
 %% a) subsumes 'Det'

@@ -64,6 +64,7 @@ class FBrowserClass
            store(StoreSmallNames ISmallNames)
            store(StoreAreStrings IAreStrings)
            store(StoreAreVSs IAreVSs)
+           store(StoreIsISO IIsISO)
            store(StoreDepthInc IDepthInc)
            store(StoreWidthInc IWidthInc)
            store(StoreAreSeparators ISeparators)
@@ -602,7 +603,11 @@ class FBrowserClass
             %%
             %% state is free already;
             {self Undraw(1)}
-         else {BrowserError 'FBrowserClass::UndrawWait: no terms??!'}
+         else
+            %% No errors since it could happen when e.g. user issues
+            %% "clear" and new browse requests, so that "clear" has
+            %% not become processed before browse requests;
+            skip
          end
 
          %%
@@ -753,6 +758,17 @@ class FBrowserClass
                 else
                    {BrowserError
                     'Illegal value of parameter BrowserVirtualStrings'}
+                end
+
+             [] !BrowserISO                    then
+                case M.F of true then
+                   %%
+                   {self.Store store(StoreIsISO true)}
+                elseof false then
+                   %%
+                   {self.Store store(StoreIsISO false)}
+                else
+                   {BrowserError 'Illegal value of parameter BrowserISO'}
                 end
 
              else {BrowserError 'Unknown "representation" option: ' #

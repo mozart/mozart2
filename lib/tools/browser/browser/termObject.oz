@@ -97,65 +97,131 @@ in
    %%
    %%
    local
-      SetTab       = {Tuple.make tab 256}
-      SubstTab     = {Tuple.make tab 256}
-      ScanTab      = {Tuple.make tab 256}
-
       fun {OctString I}
          [(I div 64) mod 8 + &0 (I div 8)  mod 8 + &0 I mod 8 + &0]
       end
-
       %%
-      {Record.forAllInd SetTab
-       fun {$ J} I=J-1 in
-          case {Char.isCntrl I} then
-             subst(case I
-                   of &\a then "\\a"
-                   [] &\b then "\\b"
-                   [] &\f then "\\f"
-                   [] &\n then "\\n"
-                   [] &\r then "\\r"
-                   [] &\t then "\\t"
-                   [] &\v then "\\v"
-                   else {Append "\\" {OctString I}}
+      QuoteStringASCII
+      QuoteStringISO
+      QuoteString
+      GenVS
+      HashVS
+   in
+      %%
+      local
+         SetTabASCII   = {Tuple.make tab 256}
+         SubstTabASCII = {Tuple.make tab 256}
+         ScanTabASCII  = {Tuple.make tab 256}
+      in
+         %%
+         {Record.forAllInd SetTabASCII
+          fun {$ J} I=J-1 in
+             case {Char.isCntrl I} then
+                subst(case I
+                      of &\a then "\\a"
+                      [] &\b then "\\b"
+                      [] &\f then "\\f"
+                      [] &\n then "\\n"
+                      [] &\r then "\\r"
+                      [] &\t then "\\t"
+                      [] &\v then "\\v"
+                      else {Append "\\" {OctString I}}
                    end)
-          elsecase I =< 255 andthen 127 =< I then
-             subst({Append "\\" {OctString I}})
-          else
-             case I
-             of &\" then subst("\\\"")
-             [] &\\ then subst("\\\\")
-             else legal
+             elsecase I =< 255 andthen 127 =< I then
+                subst({Append "\\" {OctString I}})
+             else
+                case I
+                of &\" then subst("\\\"")
+                [] &\\ then subst("\\\\")
+                else legal
+                end
              end
-          end
-       end}
+          end}
 
-      %%
-      ScanTab  = {Record.map SetTab fun {$ T} {Label T} end}
-      SubstTab = {Record.map SetTab
-                  fun {$ T}
-                     case {IsAtom T} then "" else T.1 end
-                  end}
+         %%
+         ScanTabASCII  = {Record.map SetTabASCII fun {$ T} {Label T} end}
+         SubstTabASCII = {Record.map SetTabASCII
+                          fun {$ T}
+                             case {IsAtom T} then "" else T.1 end
+                          end}
 
-      %%
-      fun {QuoteString Is}
-         case Is of nil then nil
-         [] I|Ir then J=I+1 in
-            case ScanTab.J
-            of legal   then I|{QuoteString Ir}
-            [] subst   then {Append SubstTab.J {QuoteString Ir}}
+         %%
+         fun {QuoteStringASCII Is}
+            case Is of nil then nil
+            [] I|Ir then J=I+1 in
+               case ScanTabASCII.J
+               of legal   then I|{QuoteStringASCII Ir}
+               [] subst   then {Append SubstTabASCII.J {QuoteStringASCII Ir}}
+               end
             end
          end
       end
 
       %%
-      proc {HashVS I V1 V2}
-         V2.I={GenVS V1.I}
-         case I>1 then {HashVS I-1 V1 V2} else skip end
+      local
+         SetTabISO     = {Tuple.make tab 256}
+         SubstTabISO   = {Tuple.make tab 256}
+         ScanTabISO    = {Tuple.make tab 256}
+      in
+         %%
+         {Record.forAllInd SetTabISO
+          fun {$ J} I=J-1 in
+             case {Char.isCntrl I} then
+                subst(case I
+                      of &\a then "\\a"
+                      [] &\b then "\\b"
+                      [] &\f then "\\f"
+                      [] &\n then "\\n"
+                      [] &\r then "\\r"
+                      [] &\t then "\\t"
+                      [] &\v then "\\v"
+                      else {Append "\\" {OctString I}}
+                      end)
+             elsecase I =< 159 andthen 127 =< I then
+                subst({Append "\\" {OctString I}})
+             else
+                case I
+                of &\" then subst("\\\"")
+                [] &\\ then subst("\\\\")
+                else legal
+                end
+             end
+          end}
+
+         %%
+         ScanTabISO  = {Record.map SetTabISO fun {$ T} {Label T} end}
+         SubstTabISO = {Record.map SetTabISO
+                        fun {$ T}
+                           case {IsAtom T} then "" else T.1 end
+                        end}
+
+         %%
+         fun {QuoteStringISO Is}
+            case Is of nil then nil
+            [] I|Ir then J=I+1 in
+               case ScanTabISO.J
+               of legal   then I|{QuoteStringISO Ir}
+               [] subst   then {Append SubstTabISO.J {QuoteStringISO Ir}}
+               end
+            end
+         end
       end
 
       %%
-      fun {GenVS V}
+      fun {QuoteString Store Is}
+         case {Store read(StoreIsISO $)} then {QuoteStringISO Is}
+         else {QuoteStringASCII Is}
+         end
+      end
+
+      %%
+      proc {HashVS Store I V1 V2}
+         V2.I={GenVS Store V1.I}
+         case I>1 then {HashVS Store I-1 V1 V2} else skip end
+      end
+
+      %%
+      fun {GenVS Store V}
          case {Type.ofValue V}
          of int then V
          [] float then V
@@ -164,20 +230,20 @@ in
             of nil then ''
             [] '#' then ''
             [] '' then ''
-            else {QuoteString {AtomToString V}}
+            else {QuoteString Store {AtomToString V}}
             end
          [] tuple then
             case {Label V}
-            of '|' then {QuoteString V}
+            of '|' then {QuoteString Store V}
             [] '#' then W={Width V} V2={Tuple.make '#' W} in
-               {HashVS W V V2} V2
+               {HashVS Store W V V2} V2
             end
          end
       end
-   in
+
       %%
-      fun {GenVSPrintName V}
-         '"'#{GenVS V}#'"'
+      fun {GenVSPrintName Store V}
+         '"'#{GenVS Store V}#'"'
       end
    end
 
@@ -705,7 +771,7 @@ in
                       {self.store read(StoreAreVSs $)} orelse
                       ({self.store read(StoreAreStrings $)} andthen
                        {Value.status self.term} == det(tuple))
-                   then {GenVSPrintName self.term}
+                   then {GenVSPrintName self.store self.term}
                    else {GenAtomPrintName self.term}
                    end
 
@@ -741,7 +807,7 @@ in
          local Name in
             %%
             Name = case {self.store read(StoreAreVSs $)}
-                   then {GenVSPrintName self.term}
+                   then {GenVSPrintName self.store self.term}
                    else {VirtualString.changeSign self.term '~'}
                    end
 
@@ -775,7 +841,7 @@ in
          local Name in
             %%
             Name = case {self.store read(StoreAreVSs $)}
-                   then {GenVSPrintName self.term}
+                   then {GenVSPrintName self.store self.term}
                    else {VirtualString.changeSign self.term '~'}
                    end
 

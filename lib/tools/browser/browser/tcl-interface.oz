@@ -2468,6 +2468,8 @@ in
                             {Tcl2Oz {StringsVar tkReturnAtom($)}})}
             {WO.store store(StoreAreVSs
                             {Tcl2Oz {VSsVar tkReturnAtom($)}})}
+            {WO.store store(StoreIsISO
+                            {Tcl2Oz {ISOVar tkReturnAtom($)}})}
             {self tkClose}
             {self close}
          end
@@ -2495,6 +2497,8 @@ in
                        tkInit({Oz2Tcl {WO.store read(StoreAreStrings $)}})}
          VSsVar = {New Tk.variable
                    tkInit({Oz2Tcl {WO.store read(StoreAreVSs $)}})}
+         ISOVar = {New Tk.variable
+                   tkInit({Oz2Tcl {WO.store read(StoreIsISO $)}})}
       in
 
          %%
@@ -2539,6 +2543,13 @@ in
                     pack({New Tk.checkbutton
                           tkInit(parent:VSsFrame.inner var:VSsVar
                                  text:'Virtual Strings'
+                                 onvalue:{Oz2Tcl true}
+                                 offvalue:{Oz2Tcl false}
+                                 anchor:w)}
+                         fill:x)
+                    pack({New Tk.checkbutton
+                          tkInit(parent:VSsFrame.inner var:ISOVar
+                                 text:'ISO encoding'
                                  onvalue:{Oz2Tcl true}
                                  offvalue:{Oz2Tcl false}
                                  anchor:w)}

@@ -41,8 +41,6 @@ in
              breakpoint
              displayDef
              displayCode
-             print
-             printLong
              procedureCode
              procedureCoord
             }
@@ -55,8 +53,6 @@ in
       breakpoint:     Breakpoint
       displayDef:     DisplayDef
       displayCode:    DisplayCode
-      print:          Print
-      printLong:      PrintLong
       procedureCode:  ProcedureCode
       procedureCoord: ProcedureCoord
 

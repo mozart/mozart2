@@ -30,18 +30,14 @@ local
       {HasFeature {CondSelect Url info info} 'native'}
    end
 
-   NONE = {NewName}
+   NONE  = {NewName}
+   LINK  = {NewName}
+   APPLY = {NewName}
+   ENTER = {NewName}
 
-   fun {NameOrUrlToUrl ModName UrlV}
-      if UrlV==NONE then {ModNameToUrl ModName}
-      else {UrlMake UrlV}
-      end
+   proc {TraceOFF _ _}
+      skip
    end
-
-   Link  = {NewName}
-   Apply = {NewName}
-
-   proc {TraceOFF _ _} skip end
 
    class UnsitedBaseManager
       prop locking
@@ -51,7 +47,7 @@ local
          self.ModuleMap = {Dictionary.new}
       end
 
-      meth !Link(Url ?Module)
+      meth !LINK(Url ?Module)
          %% Return module from "Url"
          lock Key={UrlToAtom Url} ModMap=self.ModuleMap in
             if {Dictionary.member ModMap Key} then
@@ -73,7 +69,7 @@ local
          end
       end
 
-      meth !Apply(Url Func $)
+      meth !APPLY(Url Func $)
          {self trace('apply' Url)}
          %% Applies a functor and returns a module
          IM={Record.mapInd Func.'import'
@@ -84,13 +80,13 @@ local
                               {ModNameToUrl ModName}
                            end
              in
-                UnsitedBaseManager,Link({UrlResolve Url EmbedUrl} $)
+                UnsitedBaseManager,LINK({UrlResolve Url EmbedUrl} $)
              end}
       in
          {Func.apply IM}
       end
 
-      meth Enter(Url Module)
+      meth !ENTER(Url Module)
          {self trace('enter' Url)}
          %% Stores "Module" under "Url"
          lock Key={UrlToAtom Url} in
@@ -100,29 +96,6 @@ local
                {Dictionary.put self.ModuleMap Key Module}
             end
          end
-      end
-
-      %%
-      %% Methods that are usable
-      %%
-
-      meth link(name: ModName <= NONE
-                url:  UrlV    <= NONE
-                ?Module       <= _) = Message
-         Url = {NameOrUrlToUrl ModName UrlV}
-      in
-         Module = UnsitedBaseManager,Link(Url $)
-         if {Not {HasFeature Message 1}} then
-            thread {Wait Module} end
-         end
-      end
-
-      meth enter(name: ModName <= NONE
-                 url:  UrlV    <= NONE
-                 Module)
-         Url = {NameOrUrlToUrl ModName UrlV}
-      in
-         UnsitedBaseManager,Enter(Url Module)
       end
 
    end
@@ -141,7 +114,35 @@ in
 
    define
 
-      class BaseManager from UnsitedBaseManager
+      fun {NameOrUrlToUrl ModName UrlV}
+         {Resolve.expand
+          if UrlV==NONE then {ModNameToUrl ModName}
+          else {UrlMake UrlV}
+          end}
+      end
+
+      class BaseManager
+         from UnsitedBaseManager
+
+         meth link(name: ModName <= NONE
+                   url:  UrlV    <= NONE
+                   ?Module       <= _) = Message
+            Url = {NameOrUrlToUrl ModName UrlV}
+         in
+            Module = UnsitedBaseManager,LINK(Url $)
+            if {Not {HasFeature Message 1}} then
+               thread {Wait Module} end
+            end
+         end
+
+         meth enter(name: ModName <= NONE
+                    url:  UrlV    <= NONE
+                    Module)
+            Url = {NameOrUrlToUrl ModName UrlV}
+         in
+            UnsitedBaseManager,ENTER(Url Module)
+         end
+
          meth apply(name: ModName <= NONE
                     url:  UrlV    <= NONE
                     Func
@@ -152,11 +153,12 @@ in
                      {NameOrUrlToUrl ModName UrlV}
                   end
          in
-            Module = UnsitedBaseManager,Apply(Url Func $)
+            Module = UnsitedBaseManager,APPLY(Url Func $)
             if {Not {HasFeature Message 2}} then
                thread {Wait Module} end
             end
          end
+
       end
 
       proc {TraceON X1 X2}
@@ -213,7 +215,7 @@ in
             catch error(url(O _) ...) then
                raise system(module(notFound O {UrlToAtom Url})) end
             end
-            {self Apply(Url Fun $)}
+            {self APPLY(Url Fun $)}
          end
 
          meth systemResolve(Auth Url $)
@@ -289,7 +291,7 @@ in
          prop sited
 
          meth system(Url $)
-            {RM Link(Url $)}
+            {RM LINK(Url $)}
          end
 
       end

@@ -1009,9 +1009,9 @@ define
                               else FElse
                               end nil CND)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinators' $)
+            case Unnester, AddImport('x-oz://system/Combinator' $)
             of unit then
-               CombinatorFS = fOpApplyStatement('Combinators.\'cond\''
+               CombinatorFS = fOpApplyStatement('Combinator.\'cond\''
                                                 [fRecord(fAtom('#' C)
                                                          FClauseProcs)
                                                  FElseProc] CND)
@@ -1025,9 +1025,9 @@ define
          [] fOr(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinators' $)
+            case Unnester, AddImport('x-oz://system/Combinator' $)
             of unit then
-               CombinatorFS = fOpApplyStatement('Combinators.\'or\''
+               CombinatorFS = fOpApplyStatement('Combinator.\'or\''
                                                 [fRecord(fAtom('#' C)
                                                          FClauseProcs)] CND)
             elseof FE then
@@ -1039,9 +1039,9 @@ define
          [] fDis(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            case Unnester, AddImport('x-oz://system/Combinators' $)
+            case Unnester, AddImport('x-oz://system/Combinator' $)
             of unit then
-               CombinatorFS = fOpApplyStatement('Combinators.\'dis\''
+               CombinatorFS = fOpApplyStatement('Combinator.\'dis\''
                                                 [fRecord(fAtom('#' C)
                                                          FClauseProcs)] CND)
             elseof FE then

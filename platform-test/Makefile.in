@@ -52,7 +52,7 @@ FBASE = \
 BASE = $(FBASE:%=./base/%.ozf)
 
 FBENCH = \
-        nrev tak fd compiler
+        nrev tak fd compiler diff
 
 BENCH = $(FBENCH:%=./bench/%.ozf)
 

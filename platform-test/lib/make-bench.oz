@@ -180,7 +180,7 @@ local
                end
                %% Go for it
 
-               {Property.put 'time.detailed' true}
+%              {Property.put 'time.detailed' true}
 
                % StartTime = {Property.get time}
             in
@@ -203,6 +203,9 @@ local
                    in
                       {For 1 Repeat 1
                        proc {$ I}
+                          {System.gcDo}
+                          {System.gcDo}
+                          {System.gcDo}
                           {System.gcDo}
                           T0={Property.get time}
                           {For 1 N 1 Test}

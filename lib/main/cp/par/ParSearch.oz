@@ -27,7 +27,7 @@ require
 
 import
    Process at 'ParProcess.ozf'
-   Logging at 'ParLogging.ozf'
+   Logging at 'x-oz://system/ParLogging.ozf'
    Manager at 'ParManager.ozf'
 
 export

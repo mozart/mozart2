@@ -84,7 +84,8 @@ prepare
                   ]
       Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
                    'EvalDialog'
-                   'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
+                   'Emacs' 'Ozcar' 'OzcarClient'
+                   'Profiler' 'Gump' 'GumpScanner'
                    'GumpParser' 'ProductionTemplates'
                    'Inspector' 'OPIServer' 'DistributionPanel'
                   ]

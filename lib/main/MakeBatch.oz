@@ -25,9 +25,9 @@ import
    Property(get)
    System(printInfo printError)
    Error(msg formatLine printExc)
-   OS(putEnv getEnv system unlink tmpnam)
+   OS(putEnv getEnv system)
    Open(file)
-   Pickle(save)
+   Pickle(saveWithHeader)
    Compiler(engine quietInterface)
    Syslet(spec args exit)
 define

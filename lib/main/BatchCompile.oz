@@ -576,12 +576,12 @@ in
                 else
                    case {Access Mode} of dump then
                       try
-                         {Pickle.save R OFN}
+                         {Pickle.saveWithHeader R OFN '' 0}
                       catch E then
                          {Error.printExc E}
                          raise error end
                       end
-                   [] syslet then TmpFileName in
+                   [] syslet then
                       if {Functor.is R} then skip
                       else
                          {Report
@@ -590,23 +590,18 @@ in
                                 items: [hint(l: 'Value found'
                                              m: oz(R))])}
                       end
-                      TmpFileName = {OS.tmpnam}
-                      try File VS in
-                         File = {New Open.file
-                                 init(name: OFN
-                                      flags: [write create truncate])}
-                         VS = case {Access SysletPrefix} of unit then
-                                 DefaultSysletPrefix
-                              elseof S then S
-                              end
-                         {File write(vs: VS)}
-                         {File close()}
-                         {Pickle.save R TmpFileName}
-                         case {OS.system
-                               'cat '#TmpFileName#' >> '#OFN#'; '#
-                               'chmod +x '#OFN}
-                         of 0 then skip
-                         elseof N then
+                      try
+                         {Pickle.saveWithHeader
+                          R % Value
+                          OFN % Filename
+                          case {Access SysletPrefix} of unit then
+                             DefaultSysletPrefix
+                          elseof S then S
+                          end % Header
+                          0 % Compression level
+                         }
+                         case {OS.system 'chmod +x '#OFN}
+                         of 0 then skip elseof N then
                             {Report
                              error(kind: BatchCompilationError
                                    msg: 'writing syslet failed'
@@ -615,8 +610,6 @@ in
                       catch E then
                          {Error.printExc E}
                          raise error end
-                      finally
-                         {OS.unlink TmpFileName}
                       end
                    [] feedtoemulator then skip
                    else File in   % core, outputcode

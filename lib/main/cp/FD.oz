@@ -135,6 +135,7 @@ export
    max:            FdpMaximum
    min:            FdpMinimum
    distance:       FdpDistance
+   tasksOverlap:   FdpTasksOverlap
    less:           FdLess
    greater:        FdGreater
    lesseq:         FdLesseq
@@ -188,6 +189,7 @@ define
    FdpDisjoint = FDP.disjoint
    FdpDisjointC = FDP.disjointC
    FdpDistance = FDP.distance
+   FdpTasksOverlap = FDP.tasksOverlap
 
    FdpSum = FDP.sum
    FdpSumC = FDP.sumC

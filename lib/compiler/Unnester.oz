@@ -1168,7 +1168,7 @@ define
             fVar(X C) = FV2 LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
          in
             {@BA referUnchecked(X C ?LeftGVO)}
-            {RunTime.procs.'.' occ(C ?DotGVO)}
+            {RunTime.procs.'byNeedDot' occ(C ?DotGVO)}
             Unnester, UnnestApplyArgs([FT FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}

@@ -87,6 +87,7 @@ prepare
 
    ProcValues = env(%% Value
                     '.': Value.'.'
+                    'byNeedDot': Value.byNeedDot
                     '==': Value.'=='
                     '=': Value.'='
                     '\\=': Value.'\\='

@@ -309,6 +309,8 @@ define
        [VO] CS VInter VTl}
    end
 
+   \insert PatternMatching
+
    fun {GuardNeedsThread VInstr}
       if {IsFree VInstr} then false
       else
@@ -1205,7 +1207,11 @@ define
 
    class CodeGenPatternCase
       meth codeGen(CS VHd VTl)
-         if {All @clauses fun {$ Clause} {Clause isSwitchable($)} end} then
+         if {CS.switches getSwitch(functionalpatterns $)} then
+            {OptimizePatterns {@arbiter reg($)}
+             {Map @clauses fun {$ Clause} {Clause makePattern(CS $)} end}
+             @alternative VHd VTl CS}
+         elseif {All @clauses fun {$ Clause} {Clause isSwitchable($)} end} then
             TestReg SHT
          in
             {@arbiter reg(?TestReg)}
@@ -1235,6 +1241,19 @@ define
    end
 
    class CodeGenPatternClause
+      meth makePattern(CS $)
+         {@pattern makePattern(nil $ nil {NewDictionary} CS)}#self
+      end
+      meth codeGenPattern(Mapping ?VInstr CS)
+         {@pattern assignRegs(nil Mapping)}
+         if CS.debugInfoVarnamesSwitch then Regs VInter1 VInter2 in
+            {MakePermanent @localVars ?Regs VInstr VInter1}
+            {CodeGenList @statements CS VInter1 VInter2}
+            {Clear Regs VInter2 nil}
+         else
+            {CodeGenList @statements CS VInstr nil}
+         end
+      end
       meth isSwitchable($)
          {@pattern isSwitchable($)}
       end
@@ -1278,6 +1297,86 @@ define
       feat reg
       meth reg($)
          self.reg
+      end
+      meth makePattern(Pos Hd Tl Seen CS)
+         Label IsNonBasic LabelV PairList Inter
+      in
+         {@label getCodeGenValue(?Label)}
+         LabelV = if {IsDet Label} then Label
+                  else
+                     IsNonBasic = true
+                     v(@label)
+                  end
+         PairList = {List.mapInd @args
+                     fun {$ I Arg}
+                        case Arg of F#P then Feature in
+                           {F getCodeGenValue(?Feature)}
+                           if {IsDet Feature} then Feature#P
+                           else
+                              IsNonBasic = true
+                              v(F)#P
+                           end
+                        else I#Arg
+                        end
+                     end}
+         if @isOpen then
+            Hd = Pos#label(LabelV)|{FoldL PairList
+                                    proc {$ Hd F#_ Tl}
+                                       Hd = Pos#feature(F)|Tl
+                                    end $ Inter}
+         elseif {IsDet IsNonBasic} then ArityV in
+            %% We sort the arity to improve the approximation for
+            %% comparing partially known arities.  Variables are
+            %% sorted to the back and by printname.
+            ArityV = {Sort {Map PairList fun {$ F#_} F end}
+                      fun {$ F1 F2}
+                         case F1 of v(P1) then
+                            case F2 of v(P2) then P1 < P2
+                            else false
+                            end
+                         else
+                            case F2 of v(P2) then true
+                            else F1 < F2
+                            end
+                         end
+                      end}
+            Hd = Pos#nonbasic(LabelV ArityV)|Inter
+         else Rec RecordArity in
+            try
+               Rec = {List.toRecord Label PairList}
+            catch failure(...) then Coord in
+               {@label getCoord(?Coord)}
+               {CS.reporter
+                error(coord: Coord kind: 'code generation error'
+                      msg: 'duplicate feature in record construction')}
+               Rec = {AdjoinList Label() PairList}
+            end
+            RecordArity = if {IsTuple Rec} then {Width Rec}
+                          else {Arity Rec}
+                          end
+            if RecordArity == 0 then
+               Hd = Pos#scalar(Label)|Inter
+            else
+               Hd = Pos#record(Label RecordArity)|Inter
+            end
+         end
+         {FoldL PairList
+          proc {$ Hd F#S Tl}
+             {S makePattern({Append Pos [F]} Hd Tl Seen CS)}
+          end Inter Tl}
+      end
+      meth assignRegs(Pos Mapping)
+         {List.forAllInd @args
+          proc {$ I Arg}
+             case Arg of F#P then Value FV in
+                {F getCodeGenValue(?Value)}
+                FV = if {IsDet Value} then Value
+                     else v(F)
+                     end
+                {P assignRegs({Append Pos [FV]} Mapping)}
+             else {Arg assignRegs({Append Pos [I]} Mapping)}
+             end
+          end}
       end
       meth isSwitchable($)
          {Not @isOpen}
@@ -1359,6 +1458,14 @@ define
       meth reg($)
          {@right reg($)}
       end
+      meth makePattern(Pos Hd Tl Seen CS) Inter in
+         {@right makePattern(Pos Hd Inter Seen CS)}
+         {@left makePattern(Pos Inter Tl Seen CS)}
+      end
+      meth assignRegs(Pos Mapping)
+         {@left assignRegs(Pos Mapping)}
+         {@right assignRegs(Pos Mapping)}
+      end
       meth isSwitchable($)
          {@right isSwitchable($)}
       end
@@ -1402,6 +1509,11 @@ define
 
    class CodeGenAbstractElse
       feat shared
+      meth codeGenPattern(Mapping ?VInstr CS) Reg VO in
+         Reg = {PosToReg nil Mapping}
+         VO = {New PseudoVariableOccurrence init(Reg)}
+         {self codeGenWithArbiterShared(CS VO VInstr nil)}
+      end
    end
    class CodeGenElseNode
       attr localVars
@@ -1973,6 +2085,12 @@ define
       meth getCodeGenValue($)
          @value
       end
+      meth makePattern(Pos Hd Tl Seen CS)
+         Hd = Pos#scalar(@value)|Tl
+      end
+      meth assignRegs(Pos Mapping)
+         skip
+      end
       meth isSwitchable($)
          true
       end
@@ -2132,6 +2250,12 @@ define
          VHd = VTl
          VO = self
       end
+      meth makePattern(Pos Hd Tl Seen CS)
+         Hd = Pos#constant(self)|Tl
+      end
+      meth assignRegs(Pos Mapping)
+         skip
+      end
       meth isSwitchable($) Value in
          CodeGenVariableOccurrence, getCodeGenValue(?Value)
          {IsDet Value} andthen ({IsNumber Value} orelse {IsLiteral Value})
@@ -2158,6 +2282,21 @@ define
    end
 
    class CodeGenPatternVariableOccurrence
+      meth makePattern(Pos Hd Tl Seen CS) PrintName in
+         {@variable getPrintName(?PrintName)}
+         case {Dictionary.condGet Seen PrintName unit} of unit then
+            {Dictionary.put Seen PrintName Pos}
+            Hd = Tl
+         elseof FirstPos then
+            Hd = Pos#equal(FirstPos)|Tl
+         end
+      end
+      meth assignRegs(Pos Mapping) Reg in
+         {self reg(?Reg)}
+         if {IsFree Reg} then
+            Reg = {PosToReg Pos Mapping}
+         end
+      end
       meth isSwitchable($)
          false
       end

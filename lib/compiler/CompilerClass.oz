@@ -87,6 +87,7 @@ local
                               %%
                               codegen: true
                               outputcode: false
+                              functionalpatterns: false
 
                               %% feeding to the emulator:
                               %%

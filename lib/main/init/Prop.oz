@@ -41,11 +41,16 @@ PATH_SEPARATOR  = case {Getenv 'OZ_PATH_SEPARATOR'} of [C] then C
 PATH_ESCAPE     = case {Getenv 'OZ_PATH_ESCAPE'} of [C] then C
                   elsecase OS_NAME of win32 then unit else &\\ end
 
-OZ_HOME         = case {Getenv 'OZ_HOME'} of false then
+OZ_HOME_        = case {Getenv 'OZ_HOME'} of false then
                      case {Getenv 'OZHOME'} of false then
                         {GET 'oz.conf.home'}
                      elseof V then V end
                   elseof V then V end
+OZ_HOME         = case {Reverse {VirtualString.toString OZ_HOME_}}
+                  of H|T then case H==&/ orelse H==&\\ then
+                                 {Reverse T}
+                              else OZ_HOME_ end
+                  else OZ_HOME_ end
 
 OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
                      case {Getenv 'OZ_PATH'} of false then

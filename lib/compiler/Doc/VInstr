@@ -30,8 +30,7 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vClear(OccsRS Regs Cont)
        | vUnify(OccsRS Reg Reg Cont)
        | vFailure(OccsRS Cont)
-       | vEquateNumber(OccsRS Integer Reg Cont)
-       | vEquateLiteral(OccsRS Atomname Reg Cont)
+       | vEquateConstant(OccsRS Constant Reg Cont)
        | vEquateRecord(OccsRS Atomname RecordArity Reg [VRecordArgument] Cont)
        | vGetVariable(OccsRS Reg Cont)
        | vGetValue(OccsRS Reg Cont)
@@ -61,8 +60,7 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vWaitTop(OccsRS Cont)
        | vTestBool(OccsRS Reg Addr Addr Addr Coord Cont InitsRS)
        | vTestBuiltin(OccsRS Builtinname Regs Addr Addr Cont InitsRS)
-       | vTestNumber(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
-       | vTestLiteral(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
+       | vTestConstant(OccsRS Reg NumOrLit Addr Addr Coord Cont InitsRS)
        | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
        | vLockThread(OccsRS Reg Coord Cont SharedData)
        | vLockEnd(OccsRS Coord Cont SharedData).
@@ -70,12 +68,12 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
 Reg = int.
 Variablename = atom.
 Integer = int.
+Constant = value.
 Atomname = atom
          | name.
 RecordArity = int
             | [Feature].
-VRecordArgument = number(Integer)
-                | literal(Atomname)
+VRecordArgument = constant(Constant)
                 | predicateRef(PredicateRef1)
                 | value(Reg)
                 | record(Atomname RecordArity [VRecordArgument]).

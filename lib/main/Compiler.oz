@@ -24,13 +24,11 @@ local
 in
    functor prop once
    import
-      Property
-      System   %.{gcDo printName valueToVirtualString get property
-               %  printError eq}
-      Foreign   %.{pointer staticLoad}
-      Error   %.{formatExc formatPos formatLine formatGeneric format
-              %  dispatch msg}
-      ErrorRegistry   %.put
+      Property.{get condGet}
+      System   %--**.{gcDo printName valueToVirtualString get printError eq}
+      Foreign   %--**.{pointer staticLoad}
+      Error   %--**.{formatExc formatPos formatLine formatGeneric format dispatch msg}
+      ErrorRegistry.put
       FS.{include var subset value reflect isIn}
       FD.{int is less distinct distribute}
       Search.{SearchOne = 'SearchOne'}

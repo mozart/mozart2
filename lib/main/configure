@@ -1032,13 +1032,13 @@ fi
     fi
 
 
-echo $ac_n "checking for oz.emulator.bin""... $ac_c" 1>&6
-echo "configure:1037: checking for oz.emulator.bin" >&5
+echo $ac_n "checking for oz.emulator.bin and ozma.so""... $ac_c" 1>&6
+echo "configure:1037: checking for oz.emulator.bin and ozma.so" >&5
 if test -z "$OZ_EMULATOR_DIR"
 then
-    OZ_EMULATOR_DIR=not_found
-    for d in $TOPDIR/Emulator $TOPDIR/Emulator/`$OZPLATFORM` \
-            /usr/local/oz/platform/`$OZPLATFORM`
+    OZ_EMULATOR_DIR=$TOPDIR/Emulator
+    for d in $TOPDIR/Emulator/`$OZPLATFORM` \
+             /usr/local/oz/platform/`$OZPLATFORM`
     do
         if test -r $d/ozma.so && test -x $d/oz.emulator.bin
         then

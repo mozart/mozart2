@@ -26,8 +26,6 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-dnl mm2: Known Problems and Bugs
-
 dnl *****************************************************************
 dnl INITIALIZE
 dnl *****************************************************************
@@ -35,12 +33,7 @@ dnl *****************************************************************
 dnl This will check that we are in the Oz directory and initiate
 AC_INIT(Standard.oz)
 
-AC_CANONICAL_HOST
-
-if test -n "$oz_default_prefix" && test -d $oz_default_prefix
-then
-  ac_default_prefix=$oz_default_prefix
-fi
+OZ_INIT
 
 dnl *****************************************************************
 dnl set TOPDIR
@@ -48,12 +41,6 @@ dnl *****************************************************************
 
 srcdira=`(cd $srcdir; pwd)`
 AC_SUBST(srcdira)
-
-TOPDIR=$srcdir/..
-AC_SUBST(TOPDIR)
-
-TOPDIRA=`(cd $srcdir; cd ..; pwd)`
-AC_SUBST(TOPDIRA)
 
 dnl *****************************************************************
 dnl Checks for programs.
@@ -72,15 +59,34 @@ AC_CHECK_PROGS(TRUE, true)
 SRCPATH=.:$srcdir
 AC_PATH_PROG(ENV2TYPE, env2type, , $SRCPATH)
 
-OZPATH=$PATH:$TOPDIRA/bin:$TOPDIR:$prefix/bin
-AC_PATH_PROG(INSTALLSRC, ozinstallsrc, , $OZPATH)
-AC_SUBST(INSTALLSRC)
+OZ_PATH_PROG(INSTALLSRC, ozinstallsrc)
+OZ_PATH_PROG(OZPLATFORM, ozplatform)
+OZ_PATH_PROG(OZBATCH, ozbatch, OZBATCH=./ozbatch)
 
-AC_PATH_PROG(OZBATCH, ozbatch, , $OZPATH)
-AC_SUBST(OZBATCH)
+AC_MSG_CHECKING(for oz.emulator.bin and ozma.so)
+if test -z "$OZ_EMULATOR_DIR"
+then
+    OZ_EMULATOR_DIR=$TOPDIR/Emulator
+    for d in $TOPDIR/Emulator/`$OZPLATFORM` \
+             /usr/local/oz/platform/`$OZPLATFORM`
+    do
+        if test -r $d/ozma.so && test -x $d/oz.emulator.bin
+        then
+            OZ_EMULATOR_DIR=$d
+            break
+        fi
+    done
+fi
+AC_SUBST(OZ_EMULATOR_DIR)
+AC_MSG_RESULT($OZ_EMULATOR_DIR)
 
 dnl *****************************************************************
 dnl FINALIZE
 dnl *****************************************************************
 
 AC_OUTPUT(Makefile)
+
+errprint(ifdef([OZ_INIT],
+ [],
+ [autoconf failed: use 'autoconf -l ..' to include ../aclocal.m4.
+]))

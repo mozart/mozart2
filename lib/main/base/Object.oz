@@ -552,6 +552,17 @@ local
        Feat Defaults Locking Native}
    end
 
+   %%
+   %% Run time library
+   %%
+   {`runTimePut` 'ooPrivate' {`Builtin` 'NewName' 1}}
+   {`runTimePut` '@' {`Builtin` '@' 2}}
+   {`runTimePut` '<-' {`Builtin` '<-' 2}}
+   {`runTimePut` 'ooExch' {`Builtin` 'ooExch' 3}}
+   {`runTimePut` ',' {`Builtin` ',' 2}}
+   {`runTimePut` 'ooGetLock' {`Builtin` 'ooGetLock' 1}}
+   {`runTimePut` 'class' `class`}
+
    %% %%%%%%%%%%%%%%%%%%%%
    %% The Class BaseObject
    %% %%%%%%%%%%%%%%%%%%%%

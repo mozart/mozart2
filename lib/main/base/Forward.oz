@@ -26,8 +26,31 @@ declare
    `Raise` `RaiseError`
    %% Record construction
    `record`
+   %% Run time library construction
+   `runTimePut`
+\ifndef OZM
+   `runTimeDict` = {NewDictionary}
+\endif
 in
 
 `Raise`      = {`Builtin` 'raise'      1}
 `RaiseError` = {`Builtin` 'raiseError' 1}
 `record`     = {`Builtin` 'record'     3}
+
+local
+   DictionaryMember = {`Builtin` 'Dictionary.member' 3}
+   DictionaryGet = {`Builtin` 'Dictionary.get' 3}
+   DictionaryPut = {`Builtin` 'Dictionary.put' 3}
+in
+   proc {`runTimePut` X V}
+      case {DictionaryMember `runTimeDict` X} then
+         {DictionaryGet `runTimeDict` X V}
+      else
+         {DictionaryPut `runTimeDict` X V}
+      end
+   end
+end
+
+{`runTimePut` 'Raise' `Raise`}
+{`runTimePut` 'RaiseError' `RaiseError`}
+{`runTimePut` 'record' `record`}

@@ -44,6 +44,21 @@ ByNeed     = {`Builtin` 'ByNeed'     2}
 
 
 %%
+%% Run time library
+%%
+{`runTimePut` '.' {`Builtin` '.'   3}}
+{`runTimePut` '==' {`Builtin` '=='  3}}
+{`runTimePut` '=' {`Builtin` '='   2}}
+{`runTimePut` '\\=' {`Builtin` '\\=' 3}}
+{`runTimePut` '<' {`Builtin` '<'   3}}
+{`runTimePut` '=<' {`Builtin` '=<'  3}}
+{`runTimePut` '>=' {`Builtin` '>='  3}}
+{`runTimePut` '>' {`Builtin` '>'   3}}
+{`runTimePut` 'hasFeature' HasFeature}
+{`runTimePut` 'byNeed' ByNeed}
+{`runTimePut` '!!' {`Builtin` 'Future' 2}}
+
+%%
 %% Module
 %%
 

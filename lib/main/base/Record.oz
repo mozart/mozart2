@@ -55,6 +55,33 @@ end
 
 
 %%
+%% Run time library
+%%
+local
+   proc {DescendArity Ls1 Ls2}
+      case Ls1 of nil then skip
+      [] L1|Lr1 then
+         case Ls2 of L2|Lr2 then
+            case L1==L2 then {DescendArity Lr1 Lr2}
+            else {DescendArity Ls1 Lr2}
+            end
+         else {Exception.raiseError object(arityMismatchDefaultMethod L1)}
+         end
+      end
+   end
+
+   proc {AritySublist R1 R2}
+      {DescendArity {Arity R1} {Arity R2}}
+   end
+in
+   {`runTimePut` 'width' Width}
+   {`runTimePut` '^' {`Builtin` '^' 3}}
+   {`runTimePut` 'tellRecordSize' {`Builtin` 'tellRecordSize' 3}}
+   {`runTimePut` 'aritySublist' AritySublist}
+end
+
+
+%%
 %% Module
 %%
 local

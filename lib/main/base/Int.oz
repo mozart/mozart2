@@ -29,6 +29,13 @@ in
 
 
 %%
+%% Run time library
+%%
+{`runTimePut` 'div' {`Builtin` 'div' 3}}
+{`runTimePut` 'mod' {`Builtin` 'mod' 3}}
+
+
+%%
 %% Global
 %%
 IsInt       = {`Builtin` 'IsInt'       2}

@@ -39,6 +39,8 @@ local
                   'apply': Apply)}
    end
 
+   {`runTimePut` 'NewFunctor' NewFunctor}
+
    fun {GetFeatures Info}
       case Info.type of Fs=_|_ then Fs
       else nil

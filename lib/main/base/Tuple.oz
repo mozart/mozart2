@@ -69,3 +69,21 @@ in
                              A
                           end)
 end
+
+
+%%
+%% Run time library
+%%
+local
+   proc {Match Xs I T}
+      case Xs of nil then skip
+      [] X|Xr then T.I=X {Match Xr I+1 T}
+      end
+   end
+
+   proc {DoTuple L Xs I T}
+      T={MakeTuple L I} {Match Xs 1 T}
+   end
+in
+   {`runTimePut` 'tuple' DoTuple}
+end

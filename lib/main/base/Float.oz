@@ -30,6 +30,12 @@ in
 
 
 %%
+%% Run time library
+%%
+{`runTimePut` '/' {`Builtin` '/' 3}}
+
+
+%%
 %% Global
 %%
 IsFloat       = {`Builtin` 'IsFloat'       2}

@@ -24,7 +24,36 @@ declare
    Exception Raise
 in
 
+%%
+%% Run time library
+%%
+local
+   RaiseDebugCheck = {`Builtin` 'Exception.raiseDebugCheck' 2}
 
+   ThreadTaskStack = {`Builtin` 'Thread.taskStackError' 3}
+   ThreadLocation  = {`Builtin` 'Thread.location'       2}
+
+   proc {RaiseDebugExtend T1 T2}
+      L        = {Label T1.debug}
+      This     = {Thread.this}
+      Stack    = {ThreadTaskStack This false}
+      Location = {ThreadLocation This}
+   in
+      {Raise {AdjoinAt
+              T1
+              debug
+              {Adjoin T1.debug
+               L(stack:Stack loc:Location info:T2)}}}
+   end
+in
+   {`runTimePut` 'RaiseDebugCheck' RaiseDebugCheck}
+   {`runTimePut` 'RaiseDebugExtend' RaiseDebugExtend}
+end
+
+
+%%
+%% Global
+%%
 Raise = `Raise`
 
 local

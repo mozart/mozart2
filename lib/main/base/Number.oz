@@ -29,6 +29,15 @@ in
 
 
 %%
+%% Run time library
+%%
+{`runTimePut` '+' {`Builtin` '+' 3}}
+{`runTimePut` '-' {`Builtin` '-' 3}}
+{`runTimePut` '*' {`Builtin` '*' 3}}
+{`runTimePut` '~' {`Builtin` '~' 2}}
+
+
+%%
 %% Global
 %%
 IsNumber = {`Builtin` 'IsNumber' 2}

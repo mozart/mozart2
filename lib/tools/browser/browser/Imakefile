@@ -4,7 +4,7 @@ BrowserLib = $(OzLib)/browser
 LOCALMODULES =  XResources.oz browserObject.oz browserTerm.oz \
                 bufs&streams.oz constants.oz controlObject.oz core.oz \
                 errors.oz managerObject.oz reflect.oz repManager.oz \
-                setParameter.oz store.oz tcl-interface.oz termObject.oz \
+                store.oz tcl-interface.oz termObject.oz \
                 termsStore.oz undefs.oz windowManager.oz
 
 AUXFILES =

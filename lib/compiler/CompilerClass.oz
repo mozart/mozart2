@@ -701,7 +701,6 @@ local
                %--** the raiseOnBlock feature also raises exceptions
                %--** when blocking on lazy variables or futures:
                {Wait System}
-               {Wait Foreign}
                {Wait Error}
                {Thread.setRaiseOnBlock {Thread.this} true}
             else skip

@@ -4,7 +4,7 @@ import
    System   %--**.{gcDo printError}
    Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}
    ErrorRegistry.put
-   Foreign   %--**.staticLoad
+   Parser
    \insert Misc-new.env
    Core
    JoinQueries

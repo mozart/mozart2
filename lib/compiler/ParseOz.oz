@@ -20,9 +20,8 @@
 %%%
 
 local
-   ParserLib = {Foreign.staticLoad 'libParser.so'}
-   ParseFile          = ParserLib.'Parser.parseFile'
-   ParseVirtualString = ParserLib.'Parser.parseVirtualString'
+   ParseFile          = Parser.'file'
+   ParseVirtualString = Parser.'virtualString'
 in
    fun {ParseOzFile FileName Reporter GetSwitch Defines}
       Res#Messages = {ParseFile FileName

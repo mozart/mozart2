@@ -10,6 +10,7 @@ local
 in
    functor prop once
    import
+      Parser from 'x-oz-boot:Parser'
       Property
       System   %.{gcDo printName valueToVirtualString get property
                %  printError eq}
@@ -95,7 +96,7 @@ in
                         'Property':              Property
                         'Error':                 Error
                         'ErrorRegistry':         ErrorRegistry
-                        'Foreign':               Foreign
+                        'Parser':                Parser
                         'Misc':                  Misc
                         'Core':                  Core.core
                         'JoinQueries':           Unnest.joinQueries

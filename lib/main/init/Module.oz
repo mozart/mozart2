@@ -70,10 +70,8 @@ local
    %%
 
    SystemMap = local
-                  Functors = \insert '../functor-defaults.oz'
-                  ProtoUrl = {RURL.vsToUrl MozartUrl#"DUMMY"}
-                  ShareUrl = url(netloc: ProtoUrl.netloc
-                                 scheme: ProtoUrl.scheme)
+                  Functors = \insert '../../functor-defaults.oz'
+                  BaseUrl  = {RURL.vsToUrl MozartUrl#"DUMMY"}
                in
                   {List.toRecord map
                    {FoldL Functors.dirs
@@ -81,17 +79,17 @@ local
                        {FoldL Functors.Kind
                         fun {$ Urls ModName}
                            ModName #
-                           {Adjoin
-                            {RURL.vsToUrl MozartUrl#Kind#'/'#ModName#FunExt}
-                            ShareUrl} | Urls
+                           {RURL.resolve BaseUrl
+                            {RURL.vsToUrl Kind#'/'#ModName#FunExt}}
+                           | Urls
                         end Urls}
                     end
                     {FoldL Functors.volatile
                      fun {$ Urls ModName}
                         ModName #
-                        {Adjoin
-                         {RURL.vsToUrl MozartUrl#'lib/'#ModName#FunExt}
-                         ShareUrl} | Urls
+                        {RURL.resolve BaseUrl
+                         {RURL.vsToUrl 'lib/'#ModName#FunExt}}
+                        | Urls
                      end nil}}}
                end
 

@@ -1777,8 +1777,10 @@ local
                    FVMsg = fVar({GVMsg getPrintName($)} C)
                 else skip
                 end
-                FS0 = fBoolCase(fApply(fVar('`hasFeature`' C) [FVMsg FF] C)
-                                fEq(FV fOpApply('.' [FVMsg FF] C) C) FS C)
+                FS0 = fBoolCase(fApply(fVar('`hasFeature`' {CoordNoDebug C})
+                                       [FVMsg FF] C)
+                                fEq(FV fOpApply('.' [FVMsg FF] C) C) FS
+                                {CoordNoDebug C})
                 Unnester, UnnestStatement(FS0 ?GS0)
                 (GFormal|GFormals)#(GS0|GS)
              else

@@ -1062,10 +1062,12 @@ local
             Unnester, UnnestStatement(fLock(fEq(FV FE C) C) $)
          [] fThread(FE C) then
             Unnester, UnnestStatement(fThread(fEq(FV FE C) C) $)
-         [] fTry(FE FCatch FFinally C) then
+         [] fTry(FE FCatch FFinally C) then GV2 FV2 TryFS in
+            {@BA generate('TryResult' C ?GV2)}
+            FV2 = fVar({GV2 getPrintName($)} C)
+            TryFS = fAnd(fEq(FV2 FE C) fEq(FV FV2 C))
             case FCatch of fNoCatch then
-               Unnester, UnnestStatement(fTry(fEq(FV FE C)
-                                              FCatch FFinally C) $)
+               Unnester, UnnestStatement(fTry(TryFS fNoCatch FFinally C) $)
             [] fCatch(FCaseClauses C2) then FVs PrintName NewFV FS NewFCatch in
                {FoldL FCaseClauses
                 fun {$ FVs fCaseClause(FE _)}
@@ -1075,12 +1077,12 @@ local
                case {Some FVs fun {$ fVar(X _)} X == PrintName end} then GV in
                   Unnester, GenerateNewVar(PrintName FVs C ?GV)
                   NewFV = fVar({GV getPrintName($)} C)
-                  FS = fAnd(fEq(FV NewFV C) fTry(fEq(NewFV FE C)
+                  FS = fAnd(fEq(FV NewFV C) fTry(TryFS
                                                  fCatch(NewFCatch C2)
                                                  FFinally C))
                else
                   NewFV = FV
-                  FS = fTry(fEq(FV FE C) fCatch(NewFCatch C2) FFinally C)
+                  FS = fTry(TryFS fCatch(NewFCatch C2) FFinally C)
                end
                NewFCatch = {Map FCaseClauses
                             fun {$ fCaseClause(FE1 FE2)}

@@ -1586,8 +1586,10 @@ define
           proc {$ VHd Arg VTl}
              {Arg bindMethFormal(@messageVO CS VHd VTl)}
           end VHd VInter}
-         if CS.debugInfoVarnamesSwitch then
-            {MakePermanent @localVars _ VInter @vInter}
+         if CS.debugInfoVarnamesSwitch then FormalVars in
+            FormalVars = {FoldR @reqArgs fun {$ _#V In} V|In end
+                          {Map @optArgs fun {$ Arg} {Arg getVariable($)} end}}
+            {MakePermanent FormalVars _ VInter @vInter}
          else
             VInter = @vInter
          end

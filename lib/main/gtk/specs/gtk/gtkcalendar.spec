@@ -45,9 +45,9 @@ $class =
                   'gtk_calendar_display_options'  => { in  => ['GtkCalendar*',
                                                                '%GtkCalendarDisplayOptions'] },
                   'gtk_calendar_get_date'         => { in  => ['GtkCalendar*',
-                                                               'guint*',
-                                                               'guint*',
-                                                               'guint*'] },
+                                                               '+guint*',
+                                                               '+guint*',
+                                                               '+guint*'] },
                   'gtk_calendar_freeze'           => { in  => ['GtkCalendar*'] },
                   'gtk_calendar_thaw'             => { in  => ['GtkCalendar*'] } }}
      );

@@ -72,7 +72,7 @@ FunctorDescriptor = fRequire([ImportDecl] Coordinates)
                   | fImport([ImportDecl] Coordinates)
                   | fExport([ExportDecl] Coordinates)
                   | fProp([Phrase] Coordinates)
-                  | fBody(Phrase Phrase Coordinates).
+                  | fDefine(Phrase Phrase Coordinates).
 ImportDecl        = fImportItem(NakedVariable [AliasedFeature] OptImportAt).
 AliasedFeature    = FeatureNoVar
                   | NakedVariable#FeatureNoVar.

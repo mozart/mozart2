@@ -53,9 +53,13 @@ MetaGetNameAsAtom = {`Builtin` metaGetNameAsAtom noHandler}
 MetaGetStrength = {`Builtin` metaGetStrength noHandler}
 
 %%
+%% Yields 'True' if a record given has a label already. Never
+%% suspends;
+HasLabel = {`Builtin` hasLabel noHandler}
+
+%%
 %% Equality on terms using their physical location (pointers);
 EQ = !System.eq
-
 
 %%
 %% it takes three arguments - a term, depth and width has to be

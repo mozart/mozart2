@@ -38,21 +38,6 @@ in
          %% We could use also the logical equality between terms
          %% (in order to find "shortest" cycles), but it would not
          %% reflect the constraint store contents;
-%        %%
-%        %% parallel, flat conditionals:
-%        case
-%           if Obj.term = Term then True
-%           [] true then False
-%           end
-%        then
-%        %%
-%        %% job...end and simple "cases";
-%        job IsEQ = Obj.term == Term end
-%        case
-%           case {IsFree IsEQ} then False
-%           else IsEQ
-%           end
-%        then
 
          %%
          case {EQ Obj.term Term} then

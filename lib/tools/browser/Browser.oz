@@ -54,6 +54,7 @@ local
    MetaGetDataAsAtom % get the constraint data of the meta variable
    MetaGetNameAsAtom % get the name of the constraint system of a meta var
    MetaGetStrength   % get some measure of the informartion of meta var
+   HasLabel       % non-monotonic test;
    EQ             % pointers equality;
    TermSize       % size of a term's representation;
    GetsTouched    % fires iff its argument is ever touched;

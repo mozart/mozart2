@@ -552,7 +552,10 @@ in
                %% performed later. Anyway, 'LimitedTermSize' can only
                %% *approximate* a size of a term's representation;
                RArity = {Record.monitorArity Term Unit}
-               job RLabel = {Label Term} end
+               case {HasLabel Term}
+               then RLabel = {Label Term}
+               else skip
+               end
 
                %%
                %% <label> '(' <subterms> ' ...', where <subterms> due to
@@ -2207,10 +2210,9 @@ in
             RecordTermObject , SetWatchPoint
 
             %%
-            %% it would be nicer to have "job...end", but
-            %% "thread...end" is still correct (though less efficient
-            %% - because label will 'arrive' some time later);
-            thread self.RLabel = {Label Term} end      % job
+            self.RLabel = case {HasLabel Term} then {Label Term}
+                          else thread {Label Term} end
+                          end
 
             %%
             %% a label;
@@ -2356,22 +2358,21 @@ in
                [] ObjClosed = True then true
                end
             end
-         else true              % nothing to do - it's a proper record;
-         end
-
-         %%
-         %% Now (TODO?) we always have to look for a label;
-         case @HasDetLabel then true
-         else ObjClosed GotLabel in
-            ObjClosed = self.closed
-            thread GotLabel = {Det self.RLabel} end
 
             %%
-            thread
-               if GotLabel = Unit then {self checkTermReq}
-               [] ObjClosed = True then true
+            case @HasDetLabel then true
+            else ObjClosed GotLabel in
+               ObjClosed = self.closed
+               thread GotLabel = {Det self.RLabel} end
+
+               %%
+               thread
+                  if GotLabel = Unit then {self checkTermReq}
+                  [] ObjClosed = True then true
+                  end
                end
             end
+         else true              % nothing to do - it's a proper record;
          end
       end
 

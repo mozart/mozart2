@@ -64,27 +64,15 @@ in
    fun {IsSeen Term ReflectedTerm ListOfSeen ?NewList}
       %%
       %% ReflectedTerm is in/out both;
-      case
-         {Some ListOfSeen fun {$ X}
-                             {EQ X.1 Term}
-                             %%
-                             %%< if X.1 = Term then True
-                             %%< [] true then False
-                             %%< fi
-                          end}
-      then
+      case {Some ListOfSeen fun {$ X} {EQ X.1 Term} end} then
          %%
 
          %%
          {ForAll ListOfSeen
           proc {$ X}
              case {EQ X.1 Term} then X.2 = ReflectedTerm
-             else true
+             else skip
              end
-             %%
-             %%< if X.1 = Term then X.2 = ReflectedTerm
-             %%< [] true then true
-             %%< fi
           end}
 
          %%
@@ -171,7 +159,10 @@ in
                %% primitive saying whether an OFS has a label
                %% already, or - even better? - a non-monotonic
                %% version of 'Label' which never suspends;
-               job L = {Label TermIn} end
+               case {HasLabel TermIn}
+               then L = {Label TermIn}
+               else skip
+               end
 
                %%
                RLabel =

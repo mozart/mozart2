@@ -23,7 +23,7 @@
 %  the Université catholique de Louvain.
 
 
-%\define DEBUG
+\define DEBUG
 
 functor
 

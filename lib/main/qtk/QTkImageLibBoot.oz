@@ -32,6 +32,8 @@ import
 export
    NewImageLibrary
    SaveImageLibrary
+   ImageLibraryToBuilder
+   MakeImageLibraryBuilder
 define
 
    CArray={NewArray 0 63 0}
@@ -40,20 +42,17 @@ define
        {Array.put CArray I-1 C}
     end}
 
-   fun{Encode File}
-      Handler Dump
+   fun {EncodeFile File}
+      {Encode {Insert File}}
+   end
+   fun{Encode Data}
+      Dump
    in
-      Handler={New Open.file init(url:File
-                                  flags:[read])}
-      local T in
-         T={Handler read(list:$ size:all)}
-         case ({Length T} mod 3)
-         of 0 then Dump=T
-         [] 1 then Dump={List.append T [255 255]}
-         [] 2 then Dump={List.append T [255]}
-         end
+      case ({Length Data} mod 3)
+      of 0 then Dump=Data
+      [] 1 then Dump={List.append Data [255 255]}
+      [] 2 then Dump={List.append Data [255]}
       end
-      {Handler close}
       local
          proc{ByteToBit B B0 B1 B2 B3 B4 B5 B6 B7}
             fun {GetBit V B}
@@ -104,14 +103,14 @@ define
       R1=if {HasFeature M file} then
             {Record.adjoin r(name:{CondSelect M name
                                    {VirtualString.toAtom M.file}}
-                             data:if M.type==photo then {Encode M.file}
+                             data:if M.type==photo then {EncodeFile M.file}
                                   else {Insert M.file} end
                             )
              {Record.subtract M file}}
          elseif {HasFeature M url} then
             {Record.adjoin r(name:{CondSelect M name
                                    {VirtualString.toAtom M.url}}
-                             data:if M.type==photo then {Encode M.file}
+                             data:if M.type==photo then {EncodeFile M.file}
                                   else {Insert M.file} end
                             )
              {Record.subtract M url}}
@@ -124,10 +123,10 @@ define
    in
       if {HasFeature M maskfile} then
          {Record.adjoinAt {Record.subtract R1 maskfile}
-          maskdata {Encode M.maskfile}}
+          maskdata {EncodeFile M.maskfile}}
       elseif {HasFeature M maskurl} then
          {Record.adjoinAt {Record.subtract R1 maskurl}
-          maskdata {Encode M.maskurl}}
+          maskdata {EncodeFile M.maskurl}}
       else R1 end
    end
 
@@ -187,6 +186,34 @@ define
 
    fun{NewImageLibrary}
       {New QTkImageLibrary init}
+   end
+
+   fun {ImageLibraryToBuilder L}
+      PrepList={List.map {L getNames($)}
+                fun{$ Name}
+                   Name#{L get(name:Name data:$)}
+                end}
+      fun {BuildLibrary QTkImageLibrary}
+         Library={New QTkImageLibrary init}
+         {ForAll PrepList
+          proc{$ R}
+             Data
+          in
+             _#Data=R
+             {Library Data}
+          end}
+      in
+         Library
+      end
+   in
+      BuildLibrary
+   end
+
+   fun {MakeImageLibraryBuilder L}
+      I = {NewImageLibrary}
+   in
+      for M in L do {I M} end
+      {ImageLibraryToBuilder I}
    end
 
    proc{SaveImageLibrary L File}

@@ -42,17 +42,13 @@ require
 
    DefaultURL(ozScheme
               functorExt:   FunctorExt
-              homeUrl:      MozartHome
-              contribUrl:   ContribHome
               nameToUrl:    ModNameToUrl
               isNatLibName: IsNatSystemName)
 
 prepare
 
-   DotUrl         = {UrlMake './'}
-   SystemHomeUrl  = {UrlToBase MozartHome}
-   ContribHomeUrl = {UrlToBase ContribHome}
-   OzScheme       = {VirtualString.toString DefaultURL.ozScheme}
+   DotUrl   = {UrlMake './'}
+   OzScheme = {VirtualString.toString DefaultURL.ozScheme}
 
    functor ErrorHandler
    import

@@ -99,7 +99,7 @@ in
                                            ' 2>/dev/null')}
                              0={OS.system ('ozdynld -o '#File#'.so '#
                                            File#'.o -lc')}
-                             Goodies = {Foreign.require
+                             Goodies = {Foreign.'require'
                                         File#'.so'
                                         goodies(getenv: 2)}
                              _={Goodies.getenv 'SHELL'}

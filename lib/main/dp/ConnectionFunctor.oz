@@ -29,7 +29,7 @@ define
    export
       Connect
    import
-      ConnectionWrapper
+      ConnectionWrapper at 'x-oz://connection/ConnectionWrapper.ozf'
 \ifdef DBG
       System(show:Show showInfo showError)
       Property

@@ -152,8 +152,9 @@ define
                raise malishiousFunctor end
             end
             self.moduleManager ={New Module.manager init}
-            {self.moduleManager enter(url:'./ConnectionWrapper.ozf'
-                                      {GetConnectionWrapper self})}
+            {self.moduleManager
+             enter(url:'x-oz://connection/ConnectionWrapper.ozf'
+                   {GetConnectionWrapper self})}
             {self.moduleManager apply(ConnectionFunctor ConnectModule)}
             localState <- LocalOzState.localState
             {ConnectModule.connect DistOzState.parameter}

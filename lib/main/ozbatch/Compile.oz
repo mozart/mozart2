@@ -260,12 +260,12 @@ in
                    {ForAll X proc {$ S} {IncludeFunctor S BatchCompiler} end}
                 [] incdir then
                    {Assign IncDir X|{Access IncDir}}
-                [] include then
+                [] include then Id in
                    {BatchCompiler enqueue(pushSwitches())}
                    {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
-                   {BatchCompiler enqueue(feedFile(X return))}
+                   {BatchCompiler enqueue(feedFile(X return) ?Id)}
                    {BatchCompiler enqueue(popSwitches())}
-                   {Wait {BatchCompiler enqueue(ping($))}}
+                   {UI wait(Id)}
                    if {UI hasErrors($)} then
                       raise error end
                    end
@@ -300,7 +300,7 @@ in
                                 'an output file name is given'))}
          else
             {ForAll FileNames
-             proc {$ Arg} OFN R in
+             proc {$ Arg} OFN R Id in
                 {UI reset()}
                 case OptRec.outputfile of unit then
                    case OptRec.mode of core then
@@ -359,9 +359,9 @@ in
                     enqueue(setSwitch(feedtoemulator true))}
                 end
                 {BatchCompiler
-                 enqueue(feedFile(Arg return(result: ?R)))}
+                 enqueue(feedFile(Arg return(result: ?R)) ?Id)}
                 {BatchCompiler enqueue(popSwitches())}
-                {Wait {BatchCompiler enqueue(ping($))}}
+                {UI wait(Id)}
                 if {UI hasErrors($)} then
                    raise error end
                 end

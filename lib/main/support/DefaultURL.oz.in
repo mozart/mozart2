@@ -53,7 +53,7 @@ prepare
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL' 'DPMisc'
                    'Discovery'
                    'Open'
-                   'Tk' 'TkTools'
+                   'Tk' 'TkTools' 'Tix'
                    'Compiler' 'Macro'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'

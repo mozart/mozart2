@@ -103,6 +103,7 @@ in
                     [] !T_Int        then IntTermObject
                     [] !T_Float      then FloatTermObject
                     [] !T_Name       then NameTermObject
+                    [] !T_Thread     then ThreadTermObject
                     [] !T_Procedure  then ProcedureTermObject
                     [] !T_Cell       then CellTermObject
                     [] !T_Chunk      then ChunkTermObject
@@ -490,6 +491,76 @@ in
       %%
    end
 
+   %%
+   %%  First-Class threads;
+   %%
+   class ThreadGenericTermObject
+      from MetaGenericTermObject
+      %%
+      feat
+         type: T_Thread
+
+      %%
+      attr
+         refVarName:   ''       % prefix;
+
+      %%
+      %%  Send to the 'Obj' a name of a reference (refVar);
+      %%  If none is yet defined, generate one via the NewRefNameGen;
+      %%
+      meth getRefVar(Obj)
+\ifdef DEBUG_TO
+         {Show 'ThreadGenericTermObject::getRefVar: term '#self.term}
+\endif
+         case @refVarName == '' then
+            RefNumber Ref OldSize NeedBraces
+         in
+            RefNumber = {NewRefNameGen gen($)}
+            Ref = self.termsStore.refType#RefNumber
+            refVarName <- Ref
+
+            %%
+            {Obj setRefVar(self Ref)}
+
+            %%
+            <<insertRefVar>>
+         else
+            {Obj setRefVar(self @refVarName)}
+         end
+         %%
+      end
+
+      %%
+      %%  perform 'retract' in addition;
+      meth destroy
+         %%
+         <<MetaGenericTermObject destroy>>
+
+         %%  Note: proper 'destroy' should go first, since
+         %% now the object (self) must be already closed;
+         <<retract>>
+      end
+
+      %%
+      %%
+      meth retract
+\ifdef DEBUG_TO
+         {Show
+          'ThreadGenericObject::retract method for the term '#self.term}
+\endif
+         {self.termsStore retract(self)}
+
+         %%
+         refVarName <- ''
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         <<processOtherwise('ThreadObject::' Message)>>
+      end
+      %%
+   end
 
    %%
    %%
@@ -1888,6 +1959,15 @@ in
          NameGenericTermObject NameTermTermObject NameTWTermObject
 \ifdef FEGRAMED
          FE_NameObject
+\endif
+   end
+
+   %%
+   class ThreadTermObject
+      from
+         ThreadGenericTermObject ThreadTermTermObject ThreadTWTermObject
+\ifdef FEGRAMED
+         FE_ThreadObject
 \endif
    end
 

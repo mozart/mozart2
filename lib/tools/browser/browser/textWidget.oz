@@ -1026,6 +1026,15 @@ in
 
    %%
    %%
+   %%  Threads;
+   %%
+   class ThreadTWTermObject
+      from NameTWTermObject
+      %%
+   end
+
+   %%
+   %%
    %%  Procedures;
    %%
    class ProcedureTWTermObject

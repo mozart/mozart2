@@ -146,6 +146,7 @@ local
    IntGenericTermObject
    FloatGenericTermObject
    NameGenericTermObject
+   ThreadGenericTermObject
    ProcedureGenericTermObject
    CellGenericTermObject
    ChunkGenericTermObject
@@ -170,6 +171,7 @@ local
    IntTermTermObject
    FloatTermTermObject
    NameTermTermObject
+   ThreadTermTermObject
    ProcedureTermTermObject
    CellTermTermObject
    ChunkTermTermObject
@@ -194,6 +196,7 @@ local
    IntTWTermObject
    FloatTWTermObject
    NameTWTermObject
+   ThreadTWTermObject
    ProcedureTWTermObject
    CellTWTermObject
    ChunkTWTermObject
@@ -219,6 +222,7 @@ local
    IntTermObject
    FloatTermObject
    NameTermObject
+   ThreadTermObject
    ProcedureTermObject
    CellTermObject
    ChunkTermObject

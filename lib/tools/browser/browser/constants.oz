@@ -46,6 +46,7 @@ T_Atom          = {NewName}
 T_Int           = {NewName}
 T_Float         = {NewName}
 T_Name          = {NewName}
+T_Thread        = {NewName}
 %%
 T_Procedure     = {NewName}
 T_Cell          = {NewName}

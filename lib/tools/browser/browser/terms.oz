@@ -22,6 +22,9 @@ local
    MetaChunkTermTermObject
 
    %%
+   NameUnit = {{`Builtin` getUnit noHandler}}
+
+   %%
    GetListType
 
    %%
@@ -33,6 +36,7 @@ local
    GenVSPrintName
    GenAtomPrintName
    GenNamePrintName
+   GenThreadPrintName
    GenVarPrintName
    GenChunkPrintName
    GenObjPrintName
@@ -304,6 +308,33 @@ in
                '<Name @ ' # {AddrOf Term} # '>'
             else
                '<Name: ' # PN # ' @ ' # {AddrOf Term} # '>'
+            end
+         end
+      end
+   end
+
+   %%
+   %%  Generate a printname for a name;
+   proc {GenThreadPrintName Term Store ?Name}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         %%  currently only '_';
+         PN = {System.getPrintName Term}
+
+         %%
+         Name =
+         case AreSmallNames then
+            case PN
+            of '' then '<Thr>'
+            [] '_' then '<Thr>'
+            else '<Thr: ' # PN # '>'
+            end
+         else
+            %%
+            case PN
+            of '' then '<Thread @ ' # {AddrOf Term} # '>'
+            [] '_' then '<Thread @ ' # {AddrOf Term} # '>'
+            else '<Thread: ' # PN # ' @ ' # {AddrOf Term} # '>'
             end
          end
       end
@@ -847,6 +878,8 @@ in
                   else T_Chunk  % TODO! arrays and dictionaries;
                   end
 
+               [] 'thread' then T_Thread
+
                else
                   {BrowserWarning ['Oz Term of unknown type: ' Term]}
                   T_Unknown
@@ -870,6 +903,7 @@ in
                  [] !T_Int        then False
                  [] !T_Float      then False
                  [] !T_Name       then False
+                 [] !T_Thread     then False
                  [] !T_Procedure  then False
                  [] !T_Cell       then False
                  [] !T_Chunk      then False
@@ -1103,11 +1137,40 @@ in
             %%
             Name = case {Bool.is Term} then
                       case Term then "<B: true>" else "<B: false>" end
+                   elsecase Term == NameUnit then "<N: unit>"
                    else {GenNamePrintName Term self.store}
                    end
 
             %%
             % {Wait Name}
+            %%
+            self.name = Name
+            <<UrObject nil>>
+         end
+      end
+   end
+
+   %%
+   %%
+   %%  Threads;
+   %%
+   class ThreadTermTermObject
+      from MetaTermTermObject
+      %%
+      feat
+         name                   % print name;
+
+      %%
+      %%
+      meth initTerm
+\ifdef DEBUG_TT
+         {Show 'ThreadTermTermObject::initTerm is applied'#self.term}
+\endif
+         local Term Name in
+            Term = self.term
+            %%
+            Name = {GenThreadPrintName Term self.store}
+
             %%
             self.name = Name
             <<UrObject nil>>

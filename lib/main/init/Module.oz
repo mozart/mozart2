@@ -95,7 +95,7 @@ local
          %% Stores "Module" under "Url"
          lock Key={UrlToAtom Url} in
             if {Dictionary.member self.ModuleMap Key} then
-               raise module(alreadyInstalled Key) end
+               raise system(module(alreadyInstalled Key)) end
             else
                {Dictionary.put self.ModuleMap Key Module}
             end
@@ -183,19 +183,11 @@ in
          meth load(Url $)
             %% Takes a URL and returns a module
             %% check if URL is annotated as denoting a `native functor'
-            try
-               if {IsNative Url} then
-                  %% if yes, use the Foreign loader
-                  {self Native(Url $)}
-               else
-                  {self Apply(Url {Resolve.pickle.load Url} $)}
-               end
-            catch error(url(O _) ...) then
-               raise system(module(notFound O {UrlToAtom Url})) end
-            [] system(foreign(dlOpen _) ...) then
-               raise system(module(notFound native {UrlToAtom Url})) end
-            [] badUrl then
-               raise error(module(urlSyntax {UrlToAtom Url})) end
+            if {IsNative Url} then
+               %% if yes, use the Foreign loader
+               {self Native(Url $)}
+            else
+               {self Pickle(Url Url $)}
             end
          end
 
@@ -204,28 +196,49 @@ in
             %% note that this method will not attempt to
             %% localize. A derived class could redefine it
             %% to attempt localization.
-            {Resolve.native.native {UrlToVs Url}#'-'#PLATFORM}
+            try
+               {Resolve.native.native {UrlToVs Url}#'-'#PLATFORM}
+            catch system(foreign(dlOpen _) ...) then
+               raise system(module(notFound native {UrlToAtom Url})) end
+            [] error(url(_ _) ...) then
+               raise system(module(notFound native {UrlToAtom Url})) end
+            end
+         end
+
+         meth Pickle(Url ResUrl $)
+            Fun
+         in
+            try
+               Fun={Resolve.pickle.load ResUrl}
+            catch error(url(O _) ...) then
+               raise system(module(notFound O {UrlToAtom Url})) end
+            end
+            {self Apply(Url Fun $)}
          end
 
          meth systemResolve(Auth Url $)
-            {UrlResolve
-             case Auth
-             of system  then SystemHomeUrl
-             [] contrib then ContribHomeUrl
-             else raise badUrl end end
-             case {CondSelect Url path unit}
-             of abs(L) then
-                L1 = {Reverse L}
-                L2 =
-                case L1 of (Last#Bool)|Prefix then
-                   if {Member &. Last} then L
-                   else {Reverse ({VirtualString.toString
-                                   Last#FunctorExt}#Bool)|Prefix} end
+            try
+               {UrlResolve
+                case Auth
+                of system  then SystemHomeUrl
+                [] contrib then ContribHomeUrl
                 else raise badUrl end end
-             in
-                {Adjoin Url url(scheme:unit authority:unit
-                                path:rel(L2))}
-             else raise badUrl end end}
+                case {CondSelect Url path unit}
+                of abs(L) then
+                   L1 = {Reverse L}
+                   L2 =
+                   case L1 of (Last#Bool)|Prefix then
+                      if {Member &. Last} then L
+                      else {Reverse ({VirtualString.toString
+                                      Last#FunctorExt}#Bool)|Prefix} end
+                   else raise badUrl end end
+                in
+                   {Adjoin Url url(scheme:unit authority:unit
+                                   path:rel(L2))}
+                else raise badUrl end end}
+            catch badUrl then
+               raise error(module(urlSyntax {UrlToAtom Url})) end
+            end
          end
 
          meth systemApply(Auth Url $)
@@ -234,16 +247,16 @@ in
             if {IsNative U} then
                {self Native(U $)}
             else
-               {self Apply(Url {Resolve.pickle.load U} $)}
+               {self Pickle(Url U $)}
             end
          end
 
          meth system(Url $)
             {self trace('system method' Url)}
-            try
-               case {StringToAtom {CondSelect Url authority ""}}
-               of boot then
-                  {self trace('boot module' Url)}
+            case {StringToAtom {CondSelect Url authority ""}}
+            of boot then
+               {self trace('boot module' Url)}
+               try
                   case {CondSelect Url path unit}
                   of abs([Name#false]) then
                      %% drop the extension of any
@@ -251,20 +264,18 @@ in
                   else
                      raise badUrl end
                   end
-               [] system then
-                  {self trace('system module' Url)}
-                  {self systemApply(system Url $)}
-               [] contrib then
-                  {self trace('contrib module' Url)}
-                  {self systemApply(contrib Url $)}
-               else
-                  raise badUrl end
+               catch system(foreign(dlOpen _) ...) then
+                  raise system(module(notFound system {UrlToAtom Url})) end
+               [] badUrl then
+                  raise error(module(urlSyntax {UrlToAtom Url})) end
                end
-            catch error(url(load _) ...) then
-               raise system(module(notFound system {UrlToAtom Url})) end
-            [] system(foreign(dlOpen _) ...) then
-               raise system(module(notFound system {UrlToAtom Url})) end
-            [] badUrl then
+            [] system then
+               {self trace('system module' Url)}
+               {self systemApply(system Url $)}
+            [] contrib then
+               {self trace('contrib module' Url)}
+               {self systemApply(contrib Url $)}
+            else
                raise error(module(urlSyntax {UrlToAtom Url})) end
             end
          end

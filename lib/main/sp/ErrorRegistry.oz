@@ -478,8 +478,6 @@ in
       %% objects
       %%
 
-\ifdef NEWINHERITANCE
-
       local
          fun {FormatConf FCs}
             case FCs of nil then nil
@@ -490,7 +488,7 @@ in
       in
          fun {ObjectFormatter Exc}
             E = {Error.dispatch Exc}
-            T = 'error in object system'
+            T = 'Error: object system'
          in
 
             case E
@@ -600,116 +598,6 @@ in
       end
 
 
-\else
-      fun {ObjectFormatter Exc}
-         E = {Error.dispatch Exc}
-         T = 'error in object system'
-      in
-
-         case E
-         of object('<-' O A V) then
-            {Error.format
-             T 'Assignment to unavailable attribute'
-             [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
-              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
-             Exc}
-         elseof object('@' O A) then
-            {Error.format
-             T 'Access of unavailable attribute'
-             [hint(l:'In statement' m:'_ = @' # oz(A))
-              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
-             Exc}
-         elseof object(ooExch O A V) then
-            {Error.format
-             T 'Exchange of unavailable attribute'
-             [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
-              hint(l:'Attribute' m:oz(A))
-              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
-             Exc}
-         elseof object(sharing C1 C2 A L) then
-            {Error.format T
-             'Classes not ordered by inheritance'
-             [hint(l:'Classes' m:C1 # ' and ' # C2)
-              hint(l:'Shared ' # A m:oz(L) # ' (is not redefined)')]
-             Exc}
-         elseof object(order (A#B)|Xr) then
-            fun {Rel A B} A # ' < ' # B end
-         in
-            {Error.format T
-             'Classes cannot be ordered'
-             hint(l:'Relation found' m:{Rel A B})
-             | {Map Xr fun {$ A#B} hint(m:{Rel A B}) end}
-             Exc}
-         elseof object(lookup C R) then
-            L1 = hint(l:'Class'   m:oz(C))
-            L2 = hint(l:'Message' m:oz(R))
-            H  = {Error.formatHint 'Method undefined and no otherwise method given'}
-         in
-            {Error.format T
-             'Method lookup in message sending'
-             L1|L2|H
-             Exc}
-         elseof object(final CParent CChild) then
-            L2 = hint(l:'Final class used as parent' m:CParent)
-            L3 = hint(l:'Class to be created' m:CChild)
-            H  = {Error.formatHint 'remove prop final from parent class or change inheritance relation'}
-         in
-            {Error.format T
-             'Inheritance from final class'
-             L2|L3|H
-             Exc}
-         elseof object(inheritanceFromNonClass
-                       CParent CChild) then
-            {Error.format T
-             'Inheritance from non-class'
-             [hint(l:'Non-class used as parent' m:oz(CParent))
-              hint(l:'Class to be created' m:CChild)]
-             Exc}
-
-         elseof object(arityMismatchDefaultMethod L)
-         then
-            {Error.format T
-             'Arity mismatch for method with defaults'
-             [hint(l:'Unexpected feature' m:oz(L))]
-             Exc}
-
-         elseof object(slaveNotFree)
-         then
-
-            {Error.format T
-             'Method becomeSlave'
-             [hint(l:'Slave is not free')]
-             Exc}
-
-         elseof object(slaveAlreadyFree) then
-
-            {Error.format T
-             'Method free'
-             [hint(l:'Slave is already free')]
-             Exc}
-
-         elseof object(locking O) then
-            {Error.format T
-             'Attempt to lock unlockable object'
-             [hint(l:'Object' m:oz(O))]
-             Exc}
-
-         elseof object(fromFinalClass C O) then
-            {Error.format T 'Final class not allowed'
-             [hint(l:'Final class' m:C)
-              hint(l:'Operation'   m:O)]
-             Exc}
-
-         elseof object(nonLiteralMethod L) then
-            {Error.format T 'Method label is not a literal'
-             [hint(l:'Method' m:L)]
-             Exc}
-
-         else
-            {Error.formatGeneric T Exc}
-         end
-      end
-\endif
       %%
       %% failure
       %%

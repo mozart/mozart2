@@ -51,12 +51,12 @@ prepare
                      verbose(rightmost char: &v type: bool default: auto)
                      quiet(rightmost char: &q alias: verbose#false)
                      makedepend(rightmost char: &M default: false)
-                     target(rightmost type:atom(unix windows) default:unit)
-                     unix(alias:target#unix)
-                     windows(alias:target#windows)
 
                      %% options for individual modes
                      outputfile(single char: &o type: string default: unit)
+                     target(rightmost type: atom(unix windows) default: unit)
+                     unix(alias: target#unix)
+                     windows(alias: target#windows)
                      execheader(single type: string
                                 validate:
                                    alt(when(disj(execpath execfile execwrapper)
@@ -199,7 +199,9 @@ prepare
    'The following compiler options can be set:\n'#
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#
    '--baseurl=STRING              Set the base URL to resolve imports of\n'#
-   '                              computed functors to STRING.\n'
+   '                              computed functors to STRING.\n'#
+   '--gumpdirectory=STRING        Set the directory where Gump will create\n'#
+   '                              its output files to STRING.\n'
 define
    Platform = {Property.get 'platform.os'}
 

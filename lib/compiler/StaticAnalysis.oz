@@ -4296,10 +4296,16 @@ local
          {@value getValue($)}
       end
       meth getFullData(D $)
-         X % Leif's hack: dummy variable with right print name
-      in
-         {NameVariable X {self getPrintName($)}}
-         X
+         case
+            {HasFeature @value ImAVariableOccurrence}
+         then
+            X % Leif's hack: dummy variable with right print name
+         in
+            {NameVariable X {self getPrintName($)}}
+            X
+         else
+            {@value getFullData(D $)}
+         end
       end
 
       meth getPrintName($)

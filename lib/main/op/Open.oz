@@ -207,11 +207,13 @@ in
       end
 
       fun {DoReadAll Desc ?Xs Xt N}
-         Xr
+         Ys Xr
       in
-         case {OS.read Desc ReadSizeAll Xs Xr}
+         case {OS.read Desc ReadSizeAll Ys Xr}
          of 0 then Xr=Xt N
-         elseof M then {DoReadAll Desc Xr Xt N+M}
+         elseof M then
+            Xs = Ys
+            {DoReadAll Desc Xr Xt N+M}
          end
       end
 
@@ -331,10 +333,13 @@ in
             lock self.ReadLock then IsL NL in
                lock self.WriteLock then D=@ReadDesc in
                   if {IsInt D} then
-                     NL = case Size of all then {DoReadAll D ?IsL It 0}
-                          else {OS.read D Size ?IsL It}
+                     NL = case Size of all then
+                             Is = IsL
+                             {DoReadAll D ?IsL It 0}
+                          else
+                             {OS.read D Size ?IsL It}
+                             Is = IsL
                           end
-                     Is = IsL
                      N = NL
                   else
                      {RaiseClosed self
@@ -396,10 +401,13 @@ in
                    tail: Tail <= nil)
             lock self.ReadLock then D=@ReadDesc ListL LenL in
                if {IsInt D} then
-                  LenL = case Size of all then {DoReadAll D ?ListL Tail 0}
-                         else {OS.read D Size ?ListL Tail}
+                  LenL = case Size of all then
+                            ListL = List
+                            {DoReadAll D ?ListL Tail 0}
+                         else
+                            {OS.read D Size ?ListL Tail}
+                            List = ListL
                          end
-                  List = ListL
                   Len = LenL
                else {RaiseClosed self
                      read(size:Size len:Len list:List tail:Tail)}

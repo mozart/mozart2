@@ -43,6 +43,7 @@ require
    Boot_Tuple           at 'x-oz://boot/Tuple'
    Boot_List            at 'x-oz://boot/List'
    Boot_Procedure       at 'x-oz://boot/Procedure'
+   Boot_WeakDictionary  at 'x-oz://boot/WeakDictionary'
    Boot_Dictionary      at 'x-oz://boot/Dictionary'
    Boot_Record          at 'x-oz://boot/Record'
    Boot_Chunk           at 'x-oz://boot/Chunk'
@@ -190,6 +191,12 @@ prepare
    ProcedureArity       = Boot_Procedure.arity
 
    %%
+   %% Weak Dictionary
+   %%
+   IsWeakDictionary     = Boot_WeakDictionary.is
+   NewWeakDictionary    = Boot_WeakDictionary.new
+
+   %%
    %% Dictionary
    %%
    IsDictionary = Boot_Dictionary.is
@@ -299,6 +306,7 @@ prepare
    \insert 'List.oz'
    \insert 'Procedure.oz'
    \insert 'Loop.oz'
+   \insert 'WeakDictionary.oz'
    \insert 'Dictionary.oz'
    \insert 'Record.oz'
    \insert 'Chunk.oz'
@@ -455,6 +463,10 @@ export
    %% VirtualString
    'VirtualString'      : VirtualString
    'IsVirtualString'    : IsVirtualString
+   %% WeakDictionary
+   'WeakDictionary'     : WeakDictionary
+   'IsWeakDictionary'   : IsWeakDictionary
+   'NewWeakDictionary'  : NewWeakDictionary
    %% Dictionary
    'Dictionary'         : Dictionary
    'IsDictionary'       : IsDictionary

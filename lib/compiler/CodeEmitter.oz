@@ -3,7 +3,7 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1997
+%%%   Leif Kornstaedt, 1997-1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -78,7 +78,8 @@ in
          LocalEnvsInhibited
          continuations contLabels
 
-         %% These are only needed temporarily for call argument initialization:
+         %% These are only needed temporarily for call argument initialization
+         %% and for fulfilling prerequisites for entering a shared code region:
          AdjDict DelayedInitsDict DoneDict CurrentID Stack Arity
       meth init()
          GRegRef <- {NewDictionary}
@@ -202,6 +203,68 @@ in
                   Emitter, Emit(branch(ContLabel))
                end
             else
+\ifdef NEW_VSHARED
+               case {Dictionary.condGet @sharedDone Label unit} of unit then
+                  if {Access Count} > 1 then OldContLabels in
+                     %% Make sure all delayed initializations are performed:
+                     OldContLabels = @contLabels
+                     contLabels <- Addr|OldContLabels
+                     {ForAll {Dictionary.keys @Permanents}
+                      proc {$ Reg} Emitter, GetReg(Reg _) end}
+                     contLabels <- OldContLabels
+                     {Dictionary.put @sharedDone Label
+                      {Dictionary.clone @Temporaries}#
+                      {Dictionary.clone @Permanents}}
+                  end
+                  Emitter, Emit(lbl(Label))
+                  Emitter, EmitAddr(Addr)
+               [] Ts#Ps then
+                  Arity <- 0
+                  {ForAll {Dictionary.entries Ts}
+                   proc {$ Reg#(X=x(I))} Instr in
+                      if I >= @Arity then
+                         Arity <- I + 1
+                      end
+                      case {Dictionary.condGet @Temporaries Reg none}
+                      of none then
+                         case Emitter, GetPerm(Reg $) of none then
+                            createVariable(X)
+                         elseof YG then
+                            move(YG X)
+                         end
+                      [] vEquateConstant(_ Constant _ _) then   % 1)
+                         {Dictionary.remove @Temporaries Reg}
+                         {Dictionary.remove @Permanents Reg}
+                         putConstant(Constant x(I))
+                      [] vGetSelf(_ _ _) then   % 1)
+                         {Dictionary.remove @Temporaries Reg}
+                         {Dictionary.remove @Permanents Reg}
+                         getSelf(x(I))
+                      [] x(!I) then
+                         %% Optimize the special case that the register
+                         %% already is located in its destination.
+                         'skip'
+                      elseof X2=x(J) then
+                         {Dictionary.put @AdjDict J
+                          I|{Dictionary.condGet @AdjDict J nil}}
+                         move(X2 X)
+                      end = Instr
+                      {Dictionary.put @DelayedInitsDict I Instr}
+                   end}
+                  Emitter, DepthFirst()
+                  Temporaries <- Ts
+                  {ForAll {Dictionary.entries Ps}
+                   proc {$ Reg#YG}
+                      case Emitter, GetPerm(Reg $) of none then
+                         Emitter, Emit(createVariable(YG))
+                      elseof YG2 then
+                         YG = YG2   %--** oops!
+                      end
+                   end}
+                  Permanents <- Ps
+                  Emitter, Emit(branch(Label))
+               end
+\else
                if {Dictionary.member @sharedDone Label} then
                   Emitter, Emit(branch(Label))
                else
@@ -212,6 +275,7 @@ in
                   end
                   Emitter, EmitAddr(Addr)
                end
+\endif
             end
          elseof VInstr then
             Emitter, FlushShortLivedRegs()
@@ -376,7 +440,6 @@ in
                                                      nil Cont $)
                then skip
                else
-                  {Dictionary.put @Temporaries Reg ThisAddr}
                   {Dictionary.put @Permanents Reg ThisAddr}
                end
             elseof R then
@@ -443,14 +506,14 @@ in
                      case Builtinname of 'Value.\'==\'' then
                         [Reg1 Reg2 _] = Regs
                      in
-                        case {Dictionary.condGet @Temporaries Reg1 none}
+                        case {Dictionary.condGet @Permanents Reg1 none}
                         of vEquateConstant(_ Constant _ _)
                            andthen ({IsNumber Constant} orelse
                                     {IsLiteral Constant})
                         then
                            vTestConstant(OccsRS Reg2 Constant Addr1 Addr2
                                          Coord NewCont InitsRS)
-                        elsecase {Dictionary.condGet @Temporaries Reg2 none}
+                        elsecase {Dictionary.condGet @Permanents Reg2 none}
                         of vEquateConstant(_ Constant _ _)
                            andthen ({IsNumber Constant} orelse
                                     {IsLiteral Constant})
@@ -460,14 +523,14 @@ in
                         else ~1
                         end
                      [] 'Value.\'\\=\'' then [Reg1 Reg2 _] = Regs in
-                        case {Dictionary.condGet @Temporaries Reg1 none}
+                        case {Dictionary.condGet @Permanents Reg1 none}
                         of vEquateConstant(_ Constant _ _)
                            andthen ({IsNumber Constant} orelse
                                     {IsLiteral Constant})
                         then
                            vTestConstant(OccsRS Reg2 Constant Addr2 Addr1
                                          Coord NewCont InitsRS)
-                        elsecase {Dictionary.condGet @Temporaries Reg2 none}
+                        elsecase {Dictionary.condGet @Permanents Reg2 none}
                         of vEquateConstant(_ Constant _ _)
                            andthen ({IsNumber Constant} orelse
                                     {IsLiteral Constant})
@@ -582,7 +645,6 @@ in
             case Emitter, GetReg(Reg $) of none then
                if Emitter, IsLast(Reg $) then skip
                else
-                  {Dictionary.put @Temporaries Reg ThisAddr}
                   {Dictionary.put @Permanents Reg ThisAddr}
                end
             elseof R then X in
@@ -1082,19 +1144,13 @@ in
             %% 5) it has a delayed initialization and is not an argument
             %%    => delay it until after the call
             {ForAll {BitArray.toList Cont.1}
-             proc {$ Reg} Result in
+             proc {$ Reg}
                 %% We have to be careful not to emit any delayed initialization
-                %% too soon, so we do not use GetTemp here:
-                Result = {Dictionary.condGet @Temporaries Reg none}
-                case Result of none then skip   % 1)
-                [] x(_) then
-                   case Emitter, GetPerm(Reg $) of none then Y in   % 2)
-                      Emitter, AllocatePerm(Reg ?Y)
-                      Emitter, Emit(move(Result Y))
-                   else skip   % 3)
-                   end
-                else
-                   if {Member Reg Regs} then   % 4)
+                %% too soon, so we do not use GetTemp/GetPerm here:
+                case {Dictionary.condGet @Temporaries Reg none} of none then
+                   case {Dictionary.condGet @Permanents Reg none} of none then
+                      skip   % 1)
+                   elseif {Member Reg Regs} then   % 4)
                       %% try to emit the delayed initialization into a
                       %% permanent (does not work for vGetSelf!):
                       case Emitter, GetPerm(Reg $) of none then X Y in
@@ -1105,6 +1161,12 @@ in
                       else skip
                       end
                    else skip   % 5)
+                   end
+                [] X=x(_) then
+                   case Emitter, GetPerm(Reg $) of none then Y in   % 2)
+                      Emitter, AllocatePerm(Reg ?Y)
+                      Emitter, Emit(move(X Y))
+                   else skip   % 3)
                    end
                 end
              end}
@@ -1123,7 +1185,7 @@ in
          %% it is required in; make it permanent if needed:
          %%
          case WhichReg of none then
-            % The abstraction is not referenced by a register.
+            %% The abstraction is not referenced by a register.
             R0 = none
          else
             case Emitter, GetReg(Reg $) of none then
@@ -1227,12 +1289,14 @@ in
          Emitter, DebugEntry(Coord 'call')
          Emitter, Emit(Instr)
          Emitter, DebugExit(Coord 'call')
+         Emitter, KillAllTemporaries()
+         %--** here we should let unused registers die
       end
       meth SetArguments(TheArity ArgInits Regs)
          %%
          %% Regs is the list of argument registers to a call instruction.
          %% This method issues move instructions that place these registers
-         %% into x(0), ..., x(Arity - 1).
+         %% into x(0), ..., x(TheArity - 1).
          %%
          %% Each Reg is one of the following sources:
          %% 1) a nonallocated temporary register with delayed initialization
@@ -1249,7 +1313,7 @@ in
          %%    => write a move instruction into DelayedInitsDict
          %%
          %% The resulting graph is sorted via a depth-first search
-         %% and corresponding moves are emitted (for each cycle).
+         %% and corresponding moves are emitted (respecting cycles).
          %%
          Emitter, EnterDelayedInits(ArgInits)
          Arity <- TheArity
@@ -1259,69 +1323,65 @@ in
                 if Reg >= 0 then
                    {BitArray.set @LastAliveRS Reg}
                 end
-             else
-                case {Dictionary.condGet @Temporaries Reg none}
+             else Instr in
+                case {Dictionary.condGet @Permanents Reg none}
                 of vEquateConstant(_ Constant _ _) then   % 1)
-                   {Dictionary.remove @Temporaries Reg}
                    {Dictionary.remove @Permanents Reg}
-                   {Dictionary.put @DelayedInitsDict I
-                    putConstant(Constant x(I))}
+                   putConstant(Constant x(I))
                 [] vGetSelf(_ _ _) then   % 1)
-                   {Dictionary.remove @Temporaries Reg}
                    {Dictionary.remove @Permanents Reg}
-                   {Dictionary.put @DelayedInitsDict I
-                    getSelf(x(I))}
-                else X Instr in
-                   Emitter, GetTemp(Reg ?X)
-                   if X == x(I) then
-                      %% Optimize the special case that the register
-                      %% already is located in its destination.
-                      'skip'
-                   else
-                      case Emitter, GetPerm(Reg $) of none then
-                         case X of none then
-                            {BitArray.set @LastAliveRS Reg}
-                            if {Member Reg Regr} then NewX in
-                               %% special handling for nonlinearities
-                               Emitter, Emit(createVariable(NewX))
-                               if Emitter, IsLast(Reg $) then skip
-                               else Y in
-                                  Emitter, AllocatePerm(Reg ?Y)
-                                  Emitter, Emit(move(NewX Y))
-                               end
-                               if {Dictionary.member @UsedX I} then J in
-                                  Emitter, AllocateAnyTemp(Reg ?NewX)
-                                  NewX = x(J)
-                                  {Dictionary.put @AdjDict J
-                                   I|{Dictionary.condGet @AdjDict J nil}}
-                                  move(NewX x(I))
-                               else
-                                  Emitter, AllocateThisTemp(I Reg ?NewX)
-                                  {Dictionary.put @AdjDict I
-                                   I|{Dictionary.condGet @AdjDict I nil}}
-                                  'skip'
-                               end
-                            elseif Emitter, IsLast(Reg $) then   % 2)
-                               createVariable(x(I))
-                            else   % 3)
-                               delayedCreateVariableMove(Reg x(I))
+                   getSelf(x(I))
+                elsecase Emitter, GetTemp(Reg $) of x(!I) then
+                   %% Optimize the special case that the register
+                   %% already is located in its destination.
+                   'skip'
+                elseof X then
+                   case Emitter, GetPerm(Reg $) of none then
+                      case X of none then
+                         {BitArray.set @LastAliveRS Reg}
+                         if {Member Reg Regr} then NewX in
+                            %% special handling for nonlinearities
+                            Emitter, Emit(createVariable(NewX))
+                            if Emitter, IsLast(Reg $) then skip
+                            else Y in
+                               Emitter, AllocatePerm(Reg ?Y)
+                               Emitter, Emit(move(NewX Y))
                             end
-                         [] x(J) then   % 4)
-                            {Dictionary.put @AdjDict J
-                             I|{Dictionary.condGet @AdjDict J nil}}
-                            move(X x(I))
+                            if {Dictionary.member @UsedX I} then J in
+                               Emitter, AllocateAnyTemp(Reg ?NewX)
+                               NewX = x(J)
+                               {Dictionary.put @AdjDict J
+                                I|{Dictionary.condGet @AdjDict J nil}}
+                               move(NewX x(I))
+                            else
+                               Emitter, AllocateThisTemp(I Reg ?NewX)
+                               {Dictionary.put @AdjDict I
+                                I|{Dictionary.condGet @AdjDict I nil}}
+                               'skip'
+                            end
+                         elseif Emitter, IsLast(Reg $) then   % 2)
+                            createVariable(x(I))
+                         else   % 3)
+                            delayedCreateVariableMove(Reg x(I))
                          end
-                      elseof YG then   % 5)
-                         move(YG x(I))
+                      [] x(J) then   % 4)
+                         {Dictionary.put @AdjDict J
+                          I|{Dictionary.condGet @AdjDict J nil}}
+                         move(X x(I))
                       end
-                   end = Instr
-                   {Dictionary.put @DelayedInitsDict I Instr}
-                end
+                   elseof YG then   % 5)
+                      move(YG x(I))
+                   end
+                end = Instr
+                {Dictionary.put @DelayedInitsDict I Instr}
              end
           end}
          %%
          %% Perform the depth-first search of the graph:
          %%
+         Emitter, DepthFirst()
+      end
+      meth DepthFirst()
          CurrentID <- 0
          Stack <- nil
          {For 0 @Arity - 1 1
@@ -1330,11 +1390,10 @@ in
              else Emitter, OrderMoves(I _)
              end
           end}
-         Emitter, KillAllTemporaries()
-         %--** here we should let unused registers die
          {For 0 @Arity - 1 1
           proc {$ I}
-             case {Dictionary.get @DelayedInitsDict I} of move(_ _) then skip
+             case {Dictionary.condGet @DelayedInitsDict I 'skip'}
+             of move(_ _) then skip
              [] 'skip' then skip
              [] delayedCreateVariableMove(Reg X) then Y in
                 Emitter, AllocatePerm(Reg ?Y)
@@ -1367,7 +1426,7 @@ in
                   end ID}
          if MinID == ID then
             case Emitter, GetCycle(@Stack I $) of [I] then Instr in
-               Instr = {Dictionary.get @DelayedInitsDict I}
+               Instr = {Dictionary.condGet @DelayedInitsDict I 'skip'}
                case Instr of move(_ _) then
                   Emitter, Emit(Instr)
                else
@@ -1394,7 +1453,6 @@ in
             Cycle = J|Emitter, GetCycle(Jr I $)
          end
       end
-
 
       meth CreateNonlinearRegs(VArgs Regs $)
          case VArgs of VArg|VArgr then
@@ -1755,12 +1813,11 @@ in
          end
       end
 
-      meth GetReg(Reg ?R) Result in
+      meth GetReg(Reg ?R)
          %% Return Reg's permanent, if it has one; else return Reg's temporary
          %% or 'none'.  If it has a delayed initialization, emit this, deciding
          %% from the continuation which register to allocate it to.
-         Result = {Dictionary.condGet @Permanents Reg none}
-         case Result of none then
+         case {Dictionary.condGet @Permanents Reg none} of none then
             if Reg < @minReg then I in
                I = @HighestUsedG + 1
                HighestUsedG <- I
@@ -1769,10 +1826,9 @@ in
             else
                R = {Dictionary.condGet @Temporaries Reg none}
             end
-         [] y(_) then R = Result
-         [] g(_) then R = Result
-         else
-            {Dictionary.remove @Temporaries Reg}
+         [] Y=y(_) then R = Y
+         [] G=g(_) then R = G
+         elseof Result then
             {Dictionary.remove @Permanents Reg}
             case Result of vGetSelf(_ _ _) then
                Emitter, PredictTemp(Reg ?R)
@@ -1782,12 +1838,11 @@ in
             Emitter, EmitInitialization(Result R)
          end
       end
-      meth GetPerm(Reg ?YG) Result in
+      meth GetPerm(Reg ?YG)
          %% Return Reg's permanent, if it has one, or 'none'.  If it has a
          %% delayed initialization that can have a permanent as destination,
          %% emit this, allocating a permanent for it.
-         Result = {Dictionary.condGet @Permanents Reg none}
-         case Result of none then
+         case {Dictionary.condGet @Permanents Reg none} of none then
             if Reg < @minReg then I in
                I = @HighestUsedG + 1
                HighestUsedG <- I
@@ -1795,24 +1850,25 @@ in
                {Dictionary.put @Permanents Reg YG=g(I)}
             else YG = none
             end
-         [] y(_) then YG = Result
-         [] g(_) then YG = Result
-         elsecase Result of vGetSelf(_ _ _) then YG = none
-         else
-            {Dictionary.remove @Temporaries Reg}
+         [] Y=y(_) then YG = Y
+         [] G=g(_) then YG = G
+         [] vGetSelf(_ _ _) then YG = none
+         elseof Result then
             {Dictionary.remove @Permanents Reg}
             Emitter, AllocatePerm(Reg ?YG)
             Emitter, EmitInitialization(Result YG)
          end
       end
-      meth GetTemp(Reg ?X) Result in
+      meth GetTemp(Reg ?X)
          %% Return Reg's temporary, if it has one, or 'none'.  If it has a
          %% delayed initialization, emit this, allocating a temporary for it.
-         Result = {Dictionary.condGet @Temporaries Reg none}
-         case Result of none then X = none
-         [] x(_) then X = Result
-         else
-            {Dictionary.remove @Temporaries Reg}
+         case {Dictionary.condGet @Permanents Reg none} of none then
+            X = {Dictionary.condGet @Temporaries Reg none}
+         [] y(_) then
+            X = {Dictionary.condGet @Temporaries Reg none}
+         [] g(_) then
+            X = {Dictionary.condGet @Temporaries Reg none}
+         elseof Result then
             {Dictionary.remove @Permanents Reg}
             Emitter, PredictTemp(Reg ?X)
             Emitter, EmitInitialization(Result X)
@@ -1933,7 +1989,7 @@ in
          case {Dictionary.condGet @Temporaries Reg none} of x(I) then
             {Dictionary.remove @Temporaries Reg}
             Emitter, FreeX(I)
-         else skip
+         [] none then skip
          end
          case {Dictionary.condGet @Permanents Reg none} of Y=y(_) then
             {Dictionary.remove @Permanents Reg}
@@ -2164,12 +2220,12 @@ in
 
       meth SaveRegisterMapping($)
          Emitter, FlushShortLivedRegs()
-         {Dictionary.clone @Permanents}#@FreeYs#
+         {Dictionary.clone @Permanents}#@UsedYs#@FreeYs#
          {BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreRegisterMapping(RegisterMapping)
          case RegisterMapping of
-            OldPermanents#OldFreeYs#
+            OldPermanents#OldUsedYs#OldFreeYs#
             OldLastAliveRS#OldHighestUsedG
          then
             LastAliveRS <- OldLastAliveRS
@@ -2178,20 +2234,22 @@ in
              proc {$ I}
                 {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
              end}
-            FreeYs <- OldFreeYs
+            FreeYs <- Emitter, ReturnToFreeList(@UsedYs OldUsedYs $ OldFreeYs)
             Emitter, KillAllTemporaries()
          end
       end
       meth SaveAllRegisterMappings($)
          Emitter, FlushShortLivedRegs()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
-         {Dictionary.clone @Permanents}#
-         @LowestFreeX#@FreeYs#{BitArray.clone @LastAliveRS}#@HighestUsedG
+         @LowestFreeX#
+         {Dictionary.clone @Permanents}#@UsedYs#@FreeYs#
+         {BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreAllRegisterMappings(RegisterMapping)
          case RegisterMapping of
-            OldTemporaries#OldUsedX#OldPermanents#
-            OldLowestFreeX#OldFreeYs#OldLastAliveRS#OldHighestUsedG
+            OldTemporaries#OldUsedX#OldLowestFreeX#
+            OldPermanents#OldUsedYs#OldFreeYs#
+            OldLastAliveRS#OldHighestUsedG
          then
             LastAliveRS <- OldLastAliveRS
             {Dictionary.removeAll @Temporaries}
@@ -2205,17 +2263,20 @@ in
                 {Dictionary.put @Permanents {Dictionary.get @GRegRef I} g(I)}
              end}
             LowestFreeX <- OldLowestFreeX
-            FreeYs <- OldFreeYs
+            FreeYs <- Emitter, ReturnToFreeList(@UsedYs OldUsedYs $ OldFreeYs)
             ShortLivedRegs <- nil
          end
       end
-      meth KillAllTemporaries() D = @Temporaries in
-         {ForAll {Dictionary.keys D}
-          proc {$ Reg}
-             case {Dictionary.get D Reg} of x(_) then {Dictionary.remove D Reg}
-             else skip   % do not forget delayed initializations
-             end
-          end}
+      meth ReturnToFreeList(New Old Hd Tl)
+         if {System.eq New Old} then
+            Hd = Tl
+         elsecase New of Y1|Yr then Inter in
+            Hd = Y1|Inter
+            Emitter, ReturnToFreeList(Yr Old Inter Tl)
+         end
+      end
+      meth KillAllTemporaries()
+         {Dictionary.removeAll @Temporaries}
          {Dictionary.removeAll @UsedX}
          LowestFreeX <- 0
          ShortLivedRegs <- nil

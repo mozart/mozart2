@@ -28,7 +28,7 @@ $(BrowserLib):
         install -m 775 -d $@
 
 $(BrowserLib)/%.oz: %.oz
-        install -m 444 '$<' '$@'
+        $(INSTALLSRC) '$<' '$@'
 
 $(BrowserLib)/%.txt: %.txt
         install -m 444 '$<' '$@'

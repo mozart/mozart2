@@ -168,6 +168,7 @@ in
          send
          sendTo
          receiveFrom
+         receiveFromAnon
          getSockName
          acceptSelect
          deSelect
@@ -574,10 +575,23 @@ in
 
             meth receive(list:List  tail:Tail <= nil  len:Len<=_
                          size:Size<=ReadSize
-                         host:Host<=_ port:Port<=_ )
+                         host:Host<=Missing port:Port<=Missing)
                lock self.ReadLock then D=@ReadDesc in
                   if {IsInt D} then
-                     Len={OS.receiveFrom D Size nil List Tail Host Port}
+                     if {IsDet Host} andthen Host==Missing andthen
+                        {IsDet Port} andthen Port==Missing then
+                        Len={OS.receiveFromAnon D Size nil List Tail}
+                     else
+                        RealHost = if {IsDet Host} andthen Host==Missing then _
+                                   else Host
+                                   end
+                        RealPort = if {IsDet Port} andthen Port==Missing then _
+                                   else Port
+                                   end
+                     in
+                        Len={OS.receiveFrom D Size nil List Tail
+                                            RealHost RealPort}
+                     end
                   else {RaiseClosed self
                         receive(list:List tail:Tail len:Len
                                 size:Size host:Host port:Port)}

@@ -170,7 +170,6 @@ local
    %%
    %%  non-public attributes and features of a browser object;
    IsDefaultBrowser = {NewName}
-   IsView = {NewName}
 
    %%
    %%  (local) sub-classes for BrowserClass - from 'browserObject.oz';
@@ -282,9 +281,9 @@ in
       %% browser object - hidden methods, to be used by Browser's
       %% window manager and tcl/tk interface;
       [Reset SetBufferSize ChangeBufferSize SetSelected UnsetSelected
-       Pause Continue SelExpand SelShrink Process SelZoom SelDeref About
-       SetDepth SetWidth ChangeWidth SetDInc ChangeDInc SetWInc
-       ChangeWInc UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
+       SelExpand SelShrink Process SelDeref About SetDepth
+       SetWidth ChangeWidth SetDInc ChangeDInc SetWInc ChangeWInc
+       UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
 
       %%
    in

@@ -65,8 +65,11 @@ in
       meth enq(El)
          local NewTail in
             lock
-               @Tail = El|NewTail
-               Tail <- NewTail
+               case MyClosableObject , isClosed($) then skip
+               else
+                  @Tail = El|NewTail
+                  Tail <- NewTail
+               end
             end
          end
       end

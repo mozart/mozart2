@@ -54,9 +54,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          [] shrink            then selection(shrink)
          [] deref             then selection(deref)
          [] rebrowse          then selection(rebrowse)
-         [] zoom              then selection(zoom)
          [] process           then selection(process)
-         [] newView           then selection(newView)
          else InitValue
          end
       end
@@ -66,8 +64,6 @@ class WindowManagerClass from MyClosableObject BatchObject
       fun {$ Button}
          case Button
          of break             then break
-         [] continue          then continue
-         [] pause             then pause
          else InitValue
          end
       end
@@ -133,12 +129,13 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     feature: about)
                             separator
 
+                            %%
                             command(label:   'Break'
                                     % key:     ctrl(c)
                                     acc:     '     C-c'
                                     action:  BO#break
                                     feature: break)
-                            command(label:   'Unselect'
+                            command(label:   'Deselect'
                                     action:  BO#UnsetSelected
                                     feature: unselect)
                             separator
@@ -158,6 +155,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     action:  BO#clear
                                     feature: clear)
                             command(label:   'Clear All But Last'
+                                    acc:     '     C-w'
                                     action:  BO#clearAllButLast
                                     feature: clearAllButLast)
                             separator
@@ -169,11 +167,11 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     action:  BO#checkLayout
                                     feature: checkLayout)
                             command(label:   'Reset'
+                                    acc:     '     C-r'
                                     action:  BO#Reset
                                     feature: reset)
                             separator
 
-                            %%
                             %%
                             command(label:   'Close'
                                     % key:     ctrl(x)
@@ -211,23 +209,13 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     acc:     '     C-b'
                                     action:  BO#rebrowse
                                     feature: rebrowse)
-                            command(label:   'Zoom'
-                                    % key:     z
-                                    acc:     '       z'
-                                    action:  BO#SelZoom
-                                    feature: zoom)
-                            command(label:   'New View'
-                                    % key:     ctrl(n)
-                                    acc:     '     C-n'
-                                    action:  BO#createNewView
-                                    feature: newView)
                             separator
 
                             %%
-                            cascade(label:   'Process Action'
+                            cascade(label:   'Action'
                                     menu:    nil
                                     feature: action)
-                            command(label:   'Process'
+                            command(label:   'Call Action'
                                     % key:     ctrl(p)
                                     acc:     '     C-p'
                                     action:  BO#Process
@@ -238,16 +226,16 @@ class WindowManagerClass from MyClosableObject BatchObject
           menubutton(text: 'Options'
                      menu:
                         [%%
-                         command(label:'Buffer'
+                         command(label:'Buffer...'
                                  action: self #
                                  guiOptions(buffer))
-                         command(label:'Representation'
+                         command(label:'Representation...'
                                  action: self #
                                  guiOptions(representation))
-                         command(label:'Display Parameters'
+                         command(label:'Display Parameters...'
                                  action: self #
                                  guiOptions(display))
-                         command(label:'Layout'
+                         command(label:'Layout...'
                                  action: self #
                                  guiOptions(layout))]
                      feature: options)
@@ -263,23 +251,10 @@ class WindowManagerClass from MyClosableObject BatchObject
                                    action: BO#break
                                    bitmap: IEjectBitmap
                                    bd: 0
-                                   anchor: 'e'
-                                   width: IEjectWidth))
-                  pushButton(continue(%%
-                                      % text:   'Continue'
-                                      action: BO#Continue
-                                      bitmap: IPlayBitmap
-                                      bd: 0
-                                      anchor: 'e'
-                                      width: IPlayWidth))
-                  pushButton(pause(%%
-                                   % text:   'Pause'
-                                   action: BO#Pause
-                                   bitmap: IPauseBitmap
-                                   bd: 0
-                                   anchor: 'e'
-                                   width: IPauseWidth))
-                  createTkVar(0 % must be 0;
+                                   anchor: center
+                                   width: IEjectWidth)
+                            "Terminate drawing ASAP")
+                  createTkVar(1 % must be 0;
                               proc {$ V}
                                  Action = {Dictionary.get Actions
                                            {String.toInt V}}.action
@@ -290,7 +265,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                               ActionVar)
                   exposeMenuBar]}
          actionVar <- ActionVar
-         nextANumber <- 1
+         nextANumber <- 2       % two pre-defined actions;
 
          %%
          %%  everything else is done asynchronously;
@@ -305,15 +280,15 @@ class WindowManagerClass from MyClosableObject BatchObject
             %%
             %% Key bindings;
             {Window [bindKey(key: ctrl(c)      action: BO#break)
+                     bindKey(key: ctrl(r)      action: BO#Reset)
                      bindKey(key: ctrl(b)      action: BO#rebrowse)
                      bindKey(key: ctrl(p)      action: BO#Process)
-                     bindKey(key: ctrl(n)      action: BO#createNewView)
                      bindKey(key: ctrl(l)      action: BO#checkLayout)
                      bindKey(key: ctrl(alt(m)) action: BO#toggleMenus)
                      bindKey(key: ctrl(h)      action: BO#About)
                      bindKey(key: ctrl(x)      action: BO#close)
                      bindKey(key: ctrl(u)      action: BO#clear)
-                     bindKey(key: z            action: BO#SelZoom)
+                     bindKey(key: ctrl(w)      action: BO#clearAllButLast)
                      bindKey(key: d            action: BO#SelDeref)
                      bindKey(key: e            action: BO#SelExpand)
                      bindKey(key: s            action: BO#SelShrink)]}
@@ -321,7 +296,10 @@ class WindowManagerClass from MyClosableObject BatchObject
             %%
             {Window addRadioEntry(selection(action(menu))
                                   'Show' ActionVar 0)}
-            {Dictionary.put Actions 0 r(action:Show number:0)} % must be 0s;
+            {Window addRadioEntry(selection(action(menu))
+                                  'Browse' ActionVar 1)}
+            {Dictionary.put Actions 0 r(action:Show number:0)} % must be 0;
+            {Dictionary.put Actions 1 r(action:Browse number:1)} % must be 1;
             {Store store(StoreProcessAction Show)}
 
             %%
@@ -537,7 +515,7 @@ class WindowManagerClass from MyClosableObject BatchObject
               [] kinded(_) then false
               else
                  {Dictionary.get Actions K}.action == Action orelse
-                 (Action == 'all' andthen K \= 0)
+                 (Action == 'all' andthen K \= 0 andthen K\= 1)
               end
            end}
           proc {$ N}

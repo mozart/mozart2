@@ -29,7 +29,6 @@ class BrowserClass
    feat
    %% some constants;
       !IsDefaultBrowser         %
-      !IsView                   %  tcl-interface.oz;
    %%
    %% some (internal) objects;
       Store                     %  parameters store;
@@ -41,7 +40,6 @@ class BrowserClass
    %%
    attr
       selected: InitValue       %  selected term's object;
-      ContinueSync: unit        %
 
    %%
    %%
@@ -49,8 +47,7 @@ class BrowserClass
    meth init(withMenus:        WithMenus          <= true
              origWindow:       OrigWindow         <= InitValue
              screen:           Screen             <= InitValue
-             IsDefaultBrowser: IsIsDefaultBrowser <= false
-             IsView:           IsIsView           <= false)
+             IsDefaultBrowser: IsIsDefaultBrowser <= false)
 \ifdef DEBUG_BO
       {Show 'BrowserClass::init is applied'}
 \endif
@@ -58,7 +55,6 @@ class BrowserClass
          %%
          %% additional security because fools (like me);
          self.IsDefaultBrowser = IsIsDefaultBrowser
-         self.IsView = IsIsView
 
          %%
          self.Store =
@@ -270,9 +266,9 @@ class BrowserClass
          else
             {self.BrowserStream
              [enq(createMenus)
-              enq(entriesDisable([unselect continue pause break rebrowse
-                                  process newView clear clearAllButLast
-                                  expand shrink zoom deref]))]}
+              enq(entriesDisable([unselect break rebrowse
+                                  process clear clearAllButLast
+                                  checkLayout expand shrink deref]))]}
          end
 
          %%
@@ -353,15 +349,10 @@ class BrowserClass
 \ifdef DEBUG_BO
       {Show 'BrowserClass::browse is applied'#Term}
 \endif
-      local RootTermObj Sync ProceedProc DiscardProc ToEnable in
+      local RootTermObj Sync ProceedProc DiscardProc in
          lock
             %%
             BrowserClass , createWindow    % check it;
-
-            %%
-            ToEnable = case self.IsView then noop
-                       else enq(entriesEnable([clear]))
-                       end
 
             %%
             case
@@ -370,7 +361,6 @@ class BrowserClass
             then
                %% Startup a thread which eventually cleans up some place
                %% in the buffer;
-               {self.BrowserStream [enq(entriesEnable([pause]))]}
                thread
                   {self UndrawWait}
                end
@@ -380,7 +370,8 @@ class BrowserClass
             %%
             proc {ProceedProc}
                %%  spawns drawing work;
-               {self.BrowserStream [enq(browse(Term RootTermObj)) ToEnable]}
+               {self.BrowserStream [enq(browse(Term RootTermObj))
+                                    enq(entriesEnable([clear checkLayout]))]}
 
                %%
                Sync = unit
@@ -400,7 +391,8 @@ class BrowserClass
             %% inside the "touched" region (since e.g. 'BrowserBuffer'
             %% can be closed already when it's applied);
             case {self.BrowserBuffer getSize($)} > 1 then
-               {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
+               {self.BrowserStream
+                enq(entriesEnable([clearAllButLast checkLayout]))}
             else skip
             end
 
@@ -459,33 +451,6 @@ class BrowserClass
 
    %%
    %%
-   meth createNewView
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::createNewView is applied'}
-\endif
-      %%
-      lock
-         case @selected == InitValue then skip
-         else NewBrowser Selection in
-            %%
-            NewBrowser =
-            {New BrowserClass
-             init(withMenus:  {self.Store read(StoreWithMenus $)}
-                  IsView:     true)}       % protected feature;
-
-            %%
-            {NewBrowser browse(@selected.term)}
-         end
-
-         %%
-\ifdef DEBUG_BO
-         {Show 'BrowserClass::createNewView is finished'}
-\endif
-      end
-   end
-
-   %%
-   %%
    meth rebrowse
 \ifdef DEBUG_BO
       {Show 'BrowserClass::rebrowse is applied'}
@@ -517,15 +482,15 @@ class BrowserClass
 \endif
       %%
       lock
-         case self.IsView then skip
-         else CurrentSize in
+         local CurrentSize in
             CurrentSize = {self.BrowserBuffer getSize($)}
 
             %%
             BrowserClass , Undraw(CurrentSize)
 
             %%
-            {self.BrowserStream enq(entriesDisable([clear clearAllButLast]))}
+            {self.BrowserStream
+             enq(entriesDisable([clear clearAllButLast checkLayout]))}
          end
 
          %%
@@ -600,7 +565,8 @@ class BrowserClass
             %% becomes empty...
             case {self.BrowserBuffer getSize($)}
             of 0 then {self.BrowserStream
-                       enq(entriesDisable([clear clearAllButLast]))}
+                       enq(entriesDisable([clear clearAllButLast
+                                           checkLayout]))}
             [] 1 then {self.BrowserStream
                        enq(entriesDisable([clearAllButLast]))}
             else skip
@@ -634,9 +600,6 @@ class BrowserClass
       %%
       lock
          case {self.BrowserBuffer getSize($)} > 0 then RootTermObj in
-            %%
-            {Wait @ContinueSync}
-
             %%
             %% state is free already;
             {self Undraw(1)}
@@ -912,7 +875,7 @@ class BrowserClass
 
          %%
          {self.BrowserStream
-          enq(entriesEnable([unselect rebrowse process newView zoom]))}
+          enq(entriesEnable([unselect rebrowse process]))}
 
          %%
          case Obj.type of !T_Shrunken then
@@ -948,25 +911,14 @@ class BrowserClass
          %%
          {self.BrowserStream
           [enq(unHighlightTerm)
-           enq(entriesDisable([unselect rebrowse process newView
-                               expand shrink zoom deref]))]}
+           enq(entriesDisable([unselect rebrowse process
+                               expand shrink deref]))]}
 
          %%
 \ifdef DEBUG_BO
          {Show 'BrowserClass::UnsetSelected is finished'}
 \endif
       end
-   end
-
-   %%
-   meth !Pause
-      ContinueSync <- _
-      {self.BrowserStream
-       [enq(entriesDisable([pause])) enq(entriesEnable([continue]))]}
-   end
-   meth !Continue
-      @ContinueSync = unit
-      {self.BrowserStream enq(entriesDisable([continue]))}
    end
 
    %%
@@ -1048,26 +1000,6 @@ class BrowserClass
          %%
 \ifdef DEBUG_BO
          {Show 'BrowserClass::Process is finished'}
-\endif
-      end
-   end
-
-   %%
-   %% Zoom, i.e. browse a selection as were browsed by the 'Browse';
-   %%
-   meth !SelZoom
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::SelZoom is applied'}
-\endif
-      %%
-      lock
-         case @selected == InitValue then skip
-         else BrowserClass , browse(@selected.term)
-         end
-
-         %%
-\ifdef DEBUG_BO
-         {Show 'BrowserClass::SelZoom is finished'}
 \endif
       end
    end

@@ -82,7 +82,7 @@ in
       from Object.base
       feat closed
       meth close
-         self.closed = true
+         self.closed = unit
       end
       meth isClosed($)
          {IsDet self.closed}
@@ -313,6 +313,12 @@ in
       end
 
       %%
+      meth !Process
+         ControlObject , SetSelected
+         {{self.store read(StoreBrowserObj $)} Process}
+      end
+
+      %%
       %% General comment: event processing should be done sequentially
       %% with all other actions on terms, i.e. it has to be controlloed
       %% by a manager object too.
@@ -322,7 +328,7 @@ in
          %%
          {self  case Button
                 of '1' then SetSelected
-                [] '2' then noop
+                [] '2' then Process
                 [] '3' then noop   % 'UnsetSelected';
                 end}
       end

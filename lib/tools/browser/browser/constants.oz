@@ -169,7 +169,6 @@ IMHeight    = 5
 
 %%
 ITitle      = 'Oz Browser'
-IVTitle     = ITitle#': View'
 IMTitle     = ITitle#': Messages'
 IATitle     = ITitle#': About'
 IBOTitle    = ITitle#': Buffer Options'
@@ -191,9 +190,14 @@ IPlayBitmap = '@' # !OzHome # '/lib/bitmaps/play.xbm'
 IPauseBitmap= '@' # !OzHome # '/lib/bitmaps/pause.xbm'
 %%
 %IStopWidth  = 30
-IEjectWidth = 40
-IPlayWidth  = 20
-IPauseWidth = 20
+IEjectWidth  = 20
+IEFrameWidth = 20
+IPlayWidth   = 20
+IPauseWidth  = 20
+%%
+%% offsets for a transient helper;
+IXTransDist  = 10
+IYTransDist  = 5
 
 %% curosr name (see include file X11/cursorfont.h);
 ICursorName    = 'hand2'

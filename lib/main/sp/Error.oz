@@ -117,8 +117,9 @@ in
 
       System(printName
              printError
-             onToplevel
-             exit)
+             onToplevel)
+
+      Application(exit)
 
       ErrorRegistry(get
                     exists)
@@ -149,7 +150,7 @@ in
       Output = System.printError
 
       proc {ExitError}
-         {System.exit 1}
+         {Application.exit 1}
       end
 
       %% some formatting routines

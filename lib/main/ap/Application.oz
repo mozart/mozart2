@@ -88,7 +88,7 @@
 
 functor
 import
-   System(exit)
+   BootApplication(exit: Exit) at 'x-oz://boot/Application'
    OS(getEnv)
    Open(file)
    Property(get condGet)
@@ -582,8 +582,6 @@ prepare
    end
 
 define
-
-   Exit = System.exit
 
    %%
    %% Access to Servlet parameters following CGI spec

@@ -383,7 +383,7 @@ in
               Engine
               TestOptions}
 
-             {Component.save Engine './te.ozc' './te.ozc'}
+             {Component.save Engine './te.ozc'}
           end
 
           0

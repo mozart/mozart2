@@ -7,35 +7,15 @@ SPACEOZC = $(SPACELOCAL:%=./space/%.ozc)
 
 # Tests for finite domains
 FDLOCAL = \
-        distribute \
-        alpha \
-        money \
-        misc1 \
-        misc2 \
-        watlasm \
-        dsum \
-        sumabs \
-        constrdisj \
-        binpacking \
-        bridge \
-        buildhouse \
-        cars \
-        change \
-        color \
-        conference \
-        configuration \
-        diagnosis \
-        divmod \
-        donald \
-        equations \
-        family \
-        fraction \
-        guards \
-        zebra \
-        grocery \
-        pythagoras \
-        safe \
-        schur
+        distribute alpha money misc1 misc2 \
+        watlasm dsum sumabs constrdisj binpacking \
+        bridge buildhouse cars change color \
+        conference configuration diagnosis divmod \
+        donald equations family fraction guards \
+        zebra grocery pythagoras safe schur multiply \
+        tiling srat students hubert pigeon permutation \
+        kalotan knights houses warehouse bridge_noterm \
+        queens
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

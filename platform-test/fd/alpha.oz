@@ -36,11 +36,14 @@ fun {$ IMPORT}
 
 in
 
-   fd([alpha([one(equal(fun {$} {SearchOne Alpha} end
+   fd([alpha([
+              one(equal(fun {$} {SearchOne Alpha} end
                         AlphaSol)
                   keys: [fd])
               all(equal(fun {$} {SearchAll Alpha} end
                         AlphaSol)
-                  keys: [fd])])])
+                  keys: [fd])
+             ])
+      ])
 
 end

@@ -44,7 +44,7 @@ prepare
                             {URL.make 'images/'}}}
 
 import
-   Space
+   Space RecordC
 
    CTB(isB getConstraintAsAtom getNameAsAtom) at 'x-oz://boot/CTB'
 

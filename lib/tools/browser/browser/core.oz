@@ -46,7 +46,7 @@ IsRecordCVar = BrowserSupport.recordCIsVarB
 %%
 %% Yields 'true' if a record given has a label already. Never
 %% suspends;
-HasLabel = Record.hasLabel
+HasLabel = RecordC.hasLabel
 
 
 EQ = {fun {$ X} X end System.eq}

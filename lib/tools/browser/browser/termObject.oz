@@ -528,7 +528,7 @@ in
                %% representation: the later can be bigger because it's
                %% performed later. Anyway, 'LimitedTermSize' can only
                %% *approximate* a size of a term's representation;
-               RArity = {Record.monitorArity Term KillP}
+               RArity = {RecordC.monitorArity Term KillP}
                {KillP}
                if {HasLabel Term}
                then RLabel = {Label Term}
@@ -2373,7 +2373,7 @@ in
             %% closed;
             local KillP
             in
-               Elements <- {Record.monitorArity Term KillP}
+               Elements <- {RecordC.monitorArity Term KillP}
                thread {Wait self.closed} {KillP} end
             end
             NotShownElements <- @Elements

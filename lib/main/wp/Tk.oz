@@ -108,7 +108,7 @@ export
 
    optionsManager:  OptionsManager
 
-
+   newWidgetClass:  NewWidgetClass
 
 prepare
 
@@ -1430,5 +1430,17 @@ define
 
    \insert 'TkOptions.oz'
 
+
+   fun {NewWidgetClass Mode Name}
+      From = case Mode
+             of widget    then Widget
+             [] command   then CommandWidget
+             [] noCommand then NoCommandWidget
+             end
+   in
+      class $ from From
+         feat !TkClass:Name
+      end
+   end
 
 end

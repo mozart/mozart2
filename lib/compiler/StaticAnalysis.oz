@@ -472,6 +472,8 @@ define
                   {OTE chunk [array dictionary 'class'
                               'object' 'lock' port
                               bitArray]}
+               [] fset then
+                  {OTE fset nil}
                else
                   {OTE value [int float record procedure
                               cell chunk space 'thread']}

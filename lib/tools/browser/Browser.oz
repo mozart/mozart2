@@ -466,6 +466,8 @@ in
    %%
    class BrowserClass
       from Object.base
+      prop
+         locking
       attr
          BrowserStream: InitValue % used for "deep" browsing;
          BrowserPort:   InitValue % ...
@@ -476,38 +478,40 @@ in
       %%
       %% A real make which does the work;
       meth Make
-         if @RealBrowser == InitValue then
-            BS RB InternalBrowserLoop
-         in
-            BrowserStream <- BS
-            BrowserPort   <- {NewPort @BrowserStream}
-            RB = {New FBrowserClass @InitMeth}
-            {List.forAll @Options proc {$ M} {RB M} end}
-            RealBrowser <- RB
+         lock
+            if @RealBrowser == InitValue then
+               BS RB InternalBrowserLoop
+            in
+               BrowserStream <- BS
+               BrowserPort   <- {NewPort @BrowserStream}
+               RB = {New FBrowserClass @InitMeth}
+               {List.forAll @Options proc {$ M} {RB M} end}
+               RealBrowser <- RB
 
-            %%
-            %% Spawn off the internal browsing loop picking up browser
-            %% commands issued in local computation spaces;
-            proc {InternalBrowserLoop S}
-               case S
-               of Cmd|Tail then
-                  {self CheckAndDo(Cmd)}
-                  {InternalBrowserLoop Tail}
-               else {BrowserError 'Browser channel is closed???'}
+               %%
+               %% Spawn off the internal browsing loop picking up browser
+               %% commands issued in local computation spaces;
+               proc {InternalBrowserLoop S}
+                  case S
+                  of Cmd|Tail then
+                     {self CheckAndDo(Cmd)}
+                     {InternalBrowserLoop Tail}
+                  else {BrowserError 'Browser channel is closed???'}
+                  end
                end
-            end
-            thread
-               {InternalBrowserLoop BS}
-            end
+               thread
+                  {InternalBrowserLoop BS}
+               end
 
-            %%
-            %% Watch the real object - and drop it.
-            %% Actually, some requests can fall out - but apparently
-            %% we cannot do anything here;
-            thread
-               {Wait RB.closed}
-               Options <- {RB saveOptions($)}
-               RealBrowser <- InitValue
+               %%
+               %% Watch the real object - and drop it.
+               %% Actually, some requests can fall out - but apparently
+               %% we cannot do anything here;
+               thread
+                  {Wait RB.closed}
+                  Options <- {RB saveOptions($)}
+                  RealBrowser <- InitValue
+               end
             end
          end
       end

@@ -25,64 +25,66 @@ local
 
    DefaultExecHeader = '#!/bin/sh\nexec ozengine $0 "$@"\n'
 
-   local
-      fun {ConvertBooleanOpts OptSpecs}
-         case OptSpecs of OptSpec|OptSpecr then C#S#Spec = OptSpec in
-            case {CondSelect Spec type unit} of bool then
-               C#S#{AdjoinAt Spec value true}|
-               unit#(&n|&o|S)#{AdjoinAt Spec value false}|
-               {ConvertBooleanOpts OptSpecr}
-            else
-               OptSpec|{ConvertBooleanOpts OptSpecr}
-            end
-         [] nil then
-            nil
-         end
-      end
-   in
-      OptSpecs = {ConvertBooleanOpts
-                  [&E#"core"#mode(value: core)
-                   &S#"outputcode"#mode(value: outputcode)
-                   &e#"feedtoemulator"#mode(value: feedtoemulator)
-                   &c#"dump"#mode(value: dump)
-                   &x#"executable"#mode(value: executable)
-                   &M#"makedepend"#makedepend(type: bool)
-                   &h#"help"#help(value: unit) &?#unit#help(value: unit)
-                   &D#"define"#'define'(type: atom)
-                   &U#"undefine"#undef(type: atom)
-                   &v#"verbose"#verbose(value: true)
-                   &q#"quiet"#verbose(value: false)
-                   &o#"outputfile"#outputfile(type: string)
-                   &l#"environment"#environment(type: string)
-                   &I#"incdir"#incdir(type: string)
-                   &z#"compress"#compress(type:int)
-                   unit#"include"#include(type: string)
-                   unit#"execheader"#execheader(type: string)
-                   unit#"maxerrors"#maxerrors(type: int)
-                   unit#"compilerpasses"#compilerpasses(type: bool)
-                   unit#"showinsert"#showinsert(type: bool)
-                   unit#"echoqueries"#echoqueries(type: bool)
-                   unit#"showdeclares"#showdeclares(type: bool)
-                   unit#"showcompiletime"#showcompiletime(type: bool)
-                   unit#"showcompilememory"#showcompilememory(type: bool)
-                   unit#"watchdog"#watchdog(type: bool)
-                   unit#"warnredecl"#warnredecl(type: bool)
-                   unit#"warnunused"#warnunused(type: bool)
-                   unit#"warnunusedformals"#warnunused(type: bool)
-                   unit#"warnforward"#warnforward(type: bool)
-                   unit#"warnopt"#warnopt(type: bool)
-                   unit#"expression"#expression(type: bool)
-                   unit#"allowdeprecated"#allowdeprecated(type: bool)
-                   unit#"gump"#gump(type: bool)
-                   unit#"staticanalysis"#staticanalysis(type: bool)
-                   unit#"realcore"#realcore(type: bool)
-                   unit#"debugvalue"#debugvalue(type: bool)
-                   unit#"debugtype"#debugtype(type: bool)
-                   &p#"profile"#profile(type: bool)
-                   unit#"debuginfocontrol"#debuginfocontrol(type: bool)
-                   unit#"debuginfovarnames"#debuginfovarnames(type: bool)
-                   &g#"debuginfo"#debuginfo(type: bool)]}
-   end
+   OptSpecs = record(%% mode in which to run
+                     mode(single
+                          type: atom(help core outputcode
+                                     feedtoemulator dump executable)
+                          default: feedtoemulator)
+                     help(char: [&h &?] alias: mode#help)
+                     core(char: &E alias: mode#core)
+                     outputcode(char: &S alias: mode#outputcode)
+                     feedtoemulator(char: &e alias: mode#feedtoemulator)
+                     dump(char: &c alias: mode#dump)
+                     executable(char: &x alias: mode#executable)
+
+                     %% options valid in all modes
+                     verbose(rightmost char: &v type: bool default: auto)
+                     quiet(rightmost char: &q alias: verbose#false)
+                     makedepend(rightmost char: &M default: false)
+
+                     %% options for individual modes
+                     outputfile(single char: &o type: string default: unit)
+                     execheader(single type: string default: DefaultExecHeader)
+                     compress(rightmost char: &z
+                              type: int(min: 0 max: 9) default: 0)
+
+                     %%
+                     %% between all of the following, order is important
+                     %%
+
+                     %% preparing the compiler state
+                     'define'(char: &D type: list(atom))
+                     undefine(char: &U type: list(atom))
+                     environment(char: &l type: list(string))
+                     incdir(char: &I type: string)
+                     include(type: string)
+
+                     %% compiler switches
+                     maxerrors(type: int)
+                     compilerpasses(type: bool)
+                     showinsert(type: bool)
+                     echoqueries(type: bool)
+                     showdeclares(type: bool)
+                     showcompiletime(type: bool)
+                     showcompilememory(type: bool)
+                     watchdog(type: bool)
+                     warnredecl(type: bool)
+                     warnunused(type: bool)
+                     warnforward(type: bool)
+                     warnopt(type: bool)
+                     expression(type: bool)
+                     allowdeprecated(type: bool)
+                     gump(type: bool)
+                     staticanalysis(type: bool)
+                     realcore(type: bool)
+                     debugvalue(type: bool)
+                     debugtype(type: bool)
+                     profile(char: &p type: bool)
+                     debuginfocontrol(type: bool)
+                     debuginfovarnames(type: bool)
+                     debuginfo(char: &g
+                               alias: [debuginfocontrol#true
+                                       debuginfovarnames#true]))
 
    Usage =
    'You have to choose one of the following modes of operation:\n'#
@@ -101,23 +103,23 @@ local
    '                              (file extension: none).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
-   '-M, --makedepend              Instead of executing, write a list\n'#
-   '                              of dependencies to stdout.\n'#
-   '-D NAME, --define=NAME        Define macro name NAME.\n'#
-   '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
    '-v, --verbose                 Display all compiler messages.\n'#
    '-q, --quiet                   Inhibit compiler messages\n'#
    '                              unless an error is encountered.\n'#
+   '-M, --makedepend              Instead of executing, write a list\n'#
+   '                              of dependencies to stdout.\n'#
    '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
+   '--execheader=STR              Use header STR for executables (default:\n'#
+   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
+   '-z N, --compress=N            Use compression level N for pickles.\n' #
+   '-D NAME, --define=NAME        Define macro name NAME.\n'#
+   '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
    '-l FNCS, --environment=FNCS   Make functors FNCS (a comma-separated\n'#
    '                              pair list VAR=URL) available in the\n'#
    '                              environment.\n'#
    '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
-   '--execheader=STR              Use header STR for executables (default:\n'#
-   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").\n'#
-   '-z N, --compress=N            Use compression level N for pickles.\n' #
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
    %% Note that the remaining options are not documented here on purpose.
@@ -139,223 +141,58 @@ local
    '--(no)debuginfocontrol        Include control flow information.\n'#
    '--(no)debuginfovarnames       Include variable information.\n'#
    '-g, --(no)debuginfo           Both of the above.\n'
-
-   local
-      fun {SignConvert S}
-         {Map S fun {$ C} if C == &- then &~ else C end end}
-      end
-
-      proc {ParseOptArg Spec Args ?Opt ?Rest} Value in
-         if {HasFeature Spec value} then
-            Value = Spec.value
-            Rest = Args
-         else
-            case Args of Arg1|Argr then
-               case Spec.type of string then
-                  Value = Arg1
-               [] atom then
-                  Value = {String.toAtom Arg1}
-               [] int then S = {SignConvert Arg1} in
-                  if {String.isInt S} then
-                     Value = {String.toInt S}
-                  else
-                     raise usage('integer argument expected') end
-                  end
-               [] float then S = {SignConvert Arg1} in
-                  if {String.isFloat S} then
-                     Value = {String.toFloat S}
-                  else
-                     raise usage('float argument expected') end
-                  end
-               end
-               Rest = Argr
-            [] nil then
-               raise usage('missing argument') end
-            end
+in
+   functor
+   import
+      Module
+      Property(get)
+      System(printInfo printError)
+      Error(msg formatLine printExc)
+      OS(putEnv getEnv system)
+      Open(file)
+      Pickle(saveWithHeader)
+      Compiler(engine quietInterface)
+      Application(getCmdArgs exit)
+   define
+      local
+         fun {IsIDChar C}
+            {Char.isAlNum C} orelse C == &_
          end
-         Opt = {Label Spec}#Value
-      end
 
-      fun {GetOptSpec OptSpecs OptChar}
-         case OptSpecs of OptSpec|OptSpecr then C#_#Spec = OptSpec in
-            if C == OptChar then Spec
-            else {GetOptSpec OptSpecr OptChar}
-            end
-         [] nil then unit
-         end
-      end
-
-      proc {ParseOpt OptChar Arg1r Args ?Opt ?Rest}
-         case {GetOptSpec OptSpecs OptChar} of unit then
-            raise usage('unknown option `-'#[OptChar]#'\'') end
-         elseof Spec then
-            case Arg1r of nil then
-               {ParseOptArg Spec Args ?Opt ?Rest}
-            else
-               if {HasFeature Spec value} then
-                  Opt = {Label Spec}#Spec.value
-                  Rest = (&-|Arg1r)|Args
-               else
-                  {ParseOptArg Spec Arg1r|Args ?Opt ?Rest}
-               end
-            end
-         end
-      end
-
-      fun {IsPrefix S1 S2 ?Exact ?Value}
-         case S1 of nil then
-            Exact = S2 == nil
-            Value = unit
-            true
-         [] C1|Cr1 then
-            case C1 of &= then
-               Exact = S2 == nil
-               Value = Cr1
-               true
-            elsecase S2 of nil then false
-            [] C2|Cr2 then
-               C1 == C2 andthen {IsPrefix Cr1 Cr2 ?Exact ?Value}
-            end
-         end
-      end
-
-      fun {GetLongOptSpec OptSpecs LongOpt ?Exact ?Value}
-         case OptSpecs of OptSpec|OptSpecr then
-            S Spec1 Exact1 Value1
-         in
-            _#S#Spec1 = OptSpec
-            if S \= unit andthen {IsPrefix LongOpt S ?Exact1 ?Value1} then
-               if Exact1 then
-                  Exact = true
-                  Value = Value1
-                  Spec1
-               else Spec2 Exact2 Value2 in
-                  Spec2 = {GetLongOptSpec OptSpecr LongOpt ?Exact2 ?Value2}
-                  if Spec2 == unit then
-                     Exact = false
-                     Value = Value1
-                     Spec1
-                  elseif Exact2 then
-                     Exact = true
-                     Value = Value2
-                     Spec2
-                  else
-                     raise
-                        usage('ambiguous option prefix `'#LongOpt#'\'')
-                     end
-                  end
-               end
-            else
-               {GetLongOptSpec OptSpecr LongOpt ?Exact ?Value}
-            end
-         [] nil then
-            unit
-         end
-      end
-
-      proc {ParseLongOpt LongOpt Args ?Opt ?Rest} Value in
-         case {GetLongOptSpec OptSpecs LongOpt _ ?Value} of unit then
-            raise usage('unknown option `--'#LongOpt#'\'') end
-         elseof Spec then NewArgs in
-            case Value of unit then
-               if {HasFeature Spec value} then
-                  NewArgs = Args
-               else
-                  raise
-                     usage('option `--'#LongOpt#'\' expects an argument')
-                  end
-               end
-            else
-               if {HasFeature Spec value} then
-                  raise
-                     usage('option `--'#LongOpt#
-                           '\' does not expect an argument')
-                  end
-               else
-                  NewArgs = Value|Args
-               end
-            end
-            {ParseOptArg Spec NewArgs ?Opt ?Rest}
-         end
-      end
-   in
-      proc {ParseArgs Args ?Opts ?Rest}
-         case Args of Arg1|Argr then
-            case Arg1 of &-|Opt then Opt1 Optr NewArgr in
-               case Opt of &-|LongOpt then
-                  {ParseLongOpt LongOpt Argr ?Opt1 ?NewArgr}
-               elseof OptChar|Arg1r then
-                  {ParseOpt OptChar Arg1r Argr ?Opt1 ?NewArgr}
-               [] nil then
-                  raise usage('bad option syntax `-\'') end
-               end
-               Opts = Opt1|Optr
-               {ParseArgs NewArgr ?Optr ?Rest}
-            else NewRest in
-               Rest = Arg1|NewRest
-               {ParseArgs Argr ?Opts ?NewRest}
-            end
-         [] nil then
-            Opts = nil
-            Rest = nil
-         end
-      end
-   end
-
-   fun {GetVerbose Args}
-      case Args of verbose#B|Argr then
-         case {GetVerbose Argr} of auto then B
-         elseof NewB then NewB
-         end
-      elseof _|Argr then
-         {GetVerbose Argr}
-      [] nil then
-         auto
-      end
-   end
-
-   local
-      fun {IsIDChar C}
-         {Char.isAlNum C} orelse C == &_
-      end
-
-      fun {IsQuotedVariable S}
-         case S of C1|Cr then
-            if C1 == &` andthen Cr == nil then true
-            elseif C1 == 0 then false
-            else {IsQuotedVariable Cr}
-            end
-         [] nil then false
-         end
-      end
-
-      fun {IsPrintName X}
-         {IsAtom X} andthen
-         local
-            S = {Atom.toString X}
-         in
-            case S of C|Cr then
-               case C of &` then
-                  {IsQuotedVariable Cr}
-               else
-                  {Char.isUpper C} andthen {All Cr IsIDChar}
+         fun {IsQuotedVariable S}
+            case S of C1|Cr then
+               if C1 == &` andthen Cr == nil then true
+               elseif C1 == 0 then false
+               else {IsQuotedVariable Cr}
                end
             [] nil then false
             end
          end
-      end
 
-      ModMan = {New Module.manager init}
+         fun {IsPrintName X}
+            {IsAtom X} andthen
+            local
+               S = {Atom.toString X}
+            in
+               case S of C|Cr then
+                  case C of &` then
+                     {IsQuotedVariable Cr}
+                  else
+                     {Char.isUpper C} andthen {All Cr IsIDChar}
+                  end
+               [] nil then false
+               end
+            end
+         end
 
-   in
-      proc {IncludeFunctors S Compiler}
-         case S of _|_ then Var VarAtom URL Rest Export in
-            {String.token {String.token S &, $ ?Rest} &= ?Var ?URL}
+         ModMan = {New Module.manager init()}
+      in
+         proc {IncludeFunctor S Compiler} Var URL VarAtom Export in
+            {String.token S &= ?Var ?URL}
             VarAtom = {String.toAtom Var}
-            Export  = if URL==nil then {ModMan link(name:Var $)}
-                      else {ModMan link(url:URL $)}
-                      end
-
+            Export = case URL of nil then {ModMan link(name: Var $)}
+                     else {ModMan link(url: URL $)}
+                     end
             if {IsPrintName VarAtom} then
                {Compiler enqueue(mergeEnv(env(VarAtom: Export)))}
             else
@@ -368,35 +205,28 @@ local
             end
             {Compiler enqueue(mergeEnv({Record.filterInd Export
                                         fun {$ P _} {IsPrintName P} end}))}
-            {IncludeFunctors Rest Compiler}
-         [] nil then skip
          end
       end
-   end
 
-   fun {ChangeExtension X NewExt}
-      case X of ".oz" then NewExt
-      elsecase X of C|Cr then
-         C|{ChangeExtension Cr NewExt}
-      [] nil then NewExt
+      fun {ChangeExtension X NewExt}
+         case X of ".oz" then NewExt
+         elsecase X of C|Cr then
+            C|{ChangeExtension Cr NewExt}
+         [] nil then NewExt
+         end
       end
-   end
 
-   proc {Report E}
-      {Error.msg
-       proc {$ X}
-          {System.printError {Error.formatLine X}}
-       end E}
-      raise error end
-   end
-in
-   proc {BatchCompile Argv ?Status}
-      try
-         Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
-         MakeDepend IncDir ExecHeader CompLevel
-      in
+      proc {Report E}
+         {Error.msg
+          proc {$ X}
+             {System.printError {Error.formatLine X}}
+          end E}
+         raise error end
+      end
+   in
+      try OptRec BatchCompiler UI IncDir FileNames in
          try
-            {ParseArgs Argv ?Opts ?FileNames}
+            OptRec = {Application.getCmdArgs OptSpecs}
          catch usage(VS) then
             {Report error(kind: UsageError
                           msg: VS
@@ -404,80 +234,50 @@ in
                                        m: ('Use --help to obtain '#
                                            'usage information'))])}
          end
-         Verbose = {GetVerbose Opts}
+         case OptRec.mode of help then X in
+            X = {Property.get 'root.url'}
+            {System.printInfo 'Usage: '#X#' { [option] | [file] }\n'#Usage}
+            raise success end
+         else skip
+         end
          BatchCompiler = {New Compiler.engine init()}
-         UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
+         UI = {New Compiler.quietInterface init(BatchCompiler OptRec.verbose)}
          {BatchCompiler enqueue(setSwitch(showdeclares false))}
          {BatchCompiler enqueue(setSwitch(warnunused true))}
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}
-         Mode = {NewCell feedtoemulator}
-         OutputFile = {NewCell unit}
-         MakeDepend = {NewCell false}
          IncDir = {NewCell nil}
-         ExecHeader = {NewCell unit}
-         CompLevel = {NewCell 0}
-         {ForAll Opts
-          proc {$ Opt#X}
-             case Opt of help then X in
-                X = {Property.get 'root.url'}
-                {System.printInfo 'Usage: '#X#' [options] [file] ...\n'#Usage}
-                raise success end
-             [] 'define' then
-                {BatchCompiler enqueue(macroDefine(X))}
-             [] undef then
-                {BatchCompiler enqueue(macroUndef(X))}
-             [] maxerrors then
-                {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
-             [] environment then
-                {IncludeFunctors X BatchCompiler}
-             [] incdir then
-                {Assign IncDir X|{Access IncDir}}
-             [] include then
-                {BatchCompiler enqueue(pushSwitches())}
-                {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
-                {BatchCompiler enqueue(feedFile(X return))}
-                {BatchCompiler enqueue(popSwitches())}
-                {Wait {BatchCompiler enqueue(ping($))}}
-                if {UI isActive($)} then
-                   {System.printError {UI getVS($)}}
+         FileNames =
+         {Filter OptRec.1
+          fun {$ Y}
+             case Y of Opt#X then
+                case Opt of 'define' then
+                   {BatchCompiler enqueue(macroDefine(X))}
+                [] undefine then
+                   {BatchCompiler enqueue(macroUndef(X))}
+                [] environment then
+                   {ForAll X proc {$ S} {IncludeFunctor S BatchCompiler} end}
+                [] incdir then
+                   {Assign IncDir X|{Access IncDir}}
+                [] include then
+                   {BatchCompiler enqueue(pushSwitches())}
+                   {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
+                   {BatchCompiler enqueue(feedFile(X return))}
+                   {BatchCompiler enqueue(popSwitches())}
+                   {Wait {BatchCompiler enqueue(ping($))}}
+                   if {UI isActive($)} then
+                      {System.printError {UI getVS($)}}
+                   end
+                   if {UI hasErrors($)} then
+                      raise error end
+                   end
+                [] maxerrors then
+                   {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
+                elseof SwitchName then
+                   {BatchCompiler enqueue(setSwitch(SwitchName X))}
                 end
-                if {UI hasErrors($)} then
-                   raise error end
-                end
-             [] execheader then
-                case {Access ExecHeader} of unit then
-                   {Assign ExecHeader X}
-                else
-                   {Report error(kind: UsageError
-                                 msg: 'exec header may only be given once'
-                                 items: [hint(l: 'Hint'
-                                              m: ('Use --help to obtain '#
-                                                  'usage information'))])}
-                end
-             [] compress then
-                {Assign CompLevel X}
-             [] verbose then
-                skip   % has already been set
-             [] mode then
-                if {IsDet ModeGiven} then
-                   {Report error(kind: UsageError
-                                 msg: 'mode specified multiply on command line'
-                                 items: [hint(l: 'Hint'
-                                              m: ('Use --help to obtain '#
-                                                  'usage information'))])}
-                else
-                   {Assign Mode X}
-                   ModeGiven = true
-                end
-             [] makedepend then
-                {Assign MakeDepend X}
-             [] outputfile then
-                {Assign OutputFile X}
-             [] debuginfo then
-                {BatchCompiler enqueue(setSwitch(debuginfocontrol X))}
-                {BatchCompiler enqueue(setSwitch(debuginfovarnames X))}
-             elseof SwitchName then
-                {BatchCompiler enqueue(setSwitch(SwitchName X))}
+                false
+             else
+                true
              end
           end}
          {OS.putEnv 'OZPATH'
@@ -492,8 +292,8 @@ in
                           items: [hint(l: 'Hint'
                                        m: ('Use --help to obtain '#
                                            'usage information'))])}
-         elseif {Access OutputFile} \= "-"
-            andthen {Access OutputFile} \= unit
+         elseif OptRec.outputfile \= "-"
+            andthen OptRec.outputfile \= unit
             andthen {Length FileNames} > 1
          then
             {Report error(kind: UsageError
@@ -503,13 +303,13 @@ in
             {ForAll FileNames
              proc {$ Arg} OFN R in
                 {UI reset()}
-                if {Access OutputFile} == unit then
-                   case {Access Mode} of core then
+                case OptRec.outputfile of unit then
+                   case OptRec.mode of core then
                       OFN = {ChangeExtension Arg ".ozi"}
                    [] outputcode then
                       OFN = {ChangeExtension Arg ".ozm"}
                    [] feedtoemulator then
-                      if {Access MakeDepend} then
+                      if OptRec.makedepend then
                          {Report
                           error(kind: UsageError
                                 msg: ('--makedepend with --feedtoemulator '#
@@ -521,29 +321,30 @@ in
                    [] executable then
                       OFN = {ChangeExtension Arg ""}
                    end
-                elseif {Access OutputFile} == "-" then
-                   if {Access Mode} == dump orelse {Access Mode} == executable then
+                elseof "-" then
+                   if OptRec.mode == dump orelse OptRec.mode == executable
+                   then
                       {Report
                        error(kind: UsageError
                              msg: 'dumping to stdout is not possible')}
                    else
                       OFN = stdout
                    end
-                elseif {Access Mode} == feedtoemulator
-                   andthen {Not {Access MakeDepend}}
+                elseif OptRec.mode == feedtoemulator
+                   andthen {Not OptRec.makedepend}
                 then
                    {Report
                     error(kind: UsageError
                           msg: ('no output file name must be '#
                                 'specified for --feedtoemulator'))}
                 else
-                   OFN = {Access OutputFile}
+                   OFN = OptRec.outputfile
                 end
                 {BatchCompiler enqueue(pushSwitches())}
-                if {Access MakeDepend} then
+                if OptRec.makedepend then
                    {BatchCompiler enqueue(setSwitch(unnest false))}
                 end
-                case {Access Mode} of core then
+                case OptRec.mode of core then
                    {BatchCompiler enqueue(setSwitch(core true))}
                    {BatchCompiler enqueue(setSwitch(codegen false))}
                 [] outputcode then
@@ -568,7 +369,7 @@ in
                 if {UI hasErrors($)} then
                    raise error end
                 end
-                if {Access MakeDepend} then File VS in
+                if OptRec.makedepend then File VS in
                    File = {New Open.file init(name: stdout flags: [write])}
                    VS = (OFN#':'#
                          case {UI getInsertedFiles($)} of Ns=_|_ then
@@ -579,9 +380,9 @@ in
                    {File write(vs: VS)}
                    {File close()}
                 else
-                   case {Access Mode} of dump then
+                   case OptRec.mode of dump then
                       try
-                         {Pickle.saveWithHeader R OFN '' {Access CompLevel}}
+                         {Pickle.saveWithHeader R OFN '' OptRec.compress}
                       catch E then
                          {Error.printExc E}
                          raise error end
@@ -599,11 +400,8 @@ in
                          {Pickle.saveWithHeader
                           R % Value
                           OFN % Filename
-                          case {Access ExecHeader} of unit then
-                             DefaultExecHeader
-                          elseof S then S
-                          end % Header
-                          {Access CompLevel} % Compression level
+                          OptRec.execheader % Header
+                          OptRec.compress % Compression level
                          }
                          case {OS.system 'chmod +x '#OFN}
                          of 0 then skip elseof N then
@@ -629,9 +427,9 @@ in
          end
          raise success end
       catch error then
-         Status = 1
+         {Application.exit 1}
       [] success then
-         Status = 0
+         {Application.exit 0}
       end
    end
 end

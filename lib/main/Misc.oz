@@ -22,8 +22,8 @@
 
 fun instantiate {$ IMPORT}
 
-   \insert 'Misc/Server.oz'
-   \insert 'Misc/Agenda.oz'
+   \insert 'misc/Server.oz'
+   \insert 'misc/Agenda.oz'
 
    Misc = misc(agenda: NewAgenda
                server: NewServer)

@@ -24,42 +24,42 @@
 %%%
 %%% Necessary Forward Declarations
 %%%
-\insert Standard/Forward.oz
+\insert 'standard/Forward.oz'
 
 
 %%%
 %%% Basic Setup
 %%%
-\insert Standard/Value
-\insert Standard/Literal
-\insert Standard/Unit
-\insert Standard/Lock
-\insert Standard/Cell
-\insert Standard/Port
-\insert Standard/Atom
-\insert Standard/Name
-\insert Standard/Bool
-\insert Standard/String
-\insert Standard/Char
-\insert Standard/Int
-\insert Standard/Float
-\insert Standard/Number
-\insert Standard/Tuple
-\insert Standard/List
-\insert Standard/Procedure
-\insert Standard/Loop
-\insert Standard/Dictionary
-\insert Standard/Record
-\insert Standard/Chunk
-\insert Standard/VirtualString
-\insert Standard/Array
-\insert Standard/Space
-\insert Standard/Object
-\insert Standard/Class
-\insert Standard/Type
-\insert Standard/Exception
-\insert Standard/Match
-\insert Standard/Thread
-\insert Standard/Time
-\insert Standard/Lazy
-\insert Standard/Promise
+\insert 'standard/Value.oz'
+\insert 'standard/Literal.oz'
+\insert 'standard/Unit.oz'
+\insert 'standard/Lock.oz'
+\insert 'standard/Cell.oz'
+\insert 'standard/Port.oz'
+\insert 'standard/Atom.oz'
+\insert 'standard/Name.oz'
+\insert 'standard/Bool.oz'
+\insert 'standard/String.oz'
+\insert 'standard/Char.oz'
+\insert 'standard/Int.oz'
+\insert 'standard/Float.oz'
+\insert 'standard/Number.oz'
+\insert 'standard/Tuple.oz'
+\insert 'standard/List.oz'
+\insert 'standard/Procedure.oz'
+\insert 'standard/Loop.oz'
+\insert 'standard/Dictionary.oz'
+\insert 'standard/Record.oz'
+\insert 'standard/Chunk.oz'
+\insert 'standard/VirtualString.oz'
+\insert 'standard/Array.oz'
+\insert 'standard/Space.oz'
+\insert 'standard/Object.oz'
+\insert 'standard/Class.oz'
+\insert 'standard/Type.oz'
+\insert 'standard/Exception.oz'
+\insert 'standard/Match.oz'
+\insert 'standard/Thread.oz'
+\insert 'standard/Time.oz'
+\insert 'standard/Lazy.oz'
+\insert 'standard/Promise.oz'

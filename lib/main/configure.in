@@ -91,5 +91,5 @@ AC_OUTPUT(Makefile)
 
 errprint(ifdef([OZ_INIT],
  [],
- [autoconf failed: use 'autoconf -l ..' to include ../aclocal.m4.
+ [autoconf failed: use 'autoconf -l ../..' to include ../../aclocal.m4.
 ]))

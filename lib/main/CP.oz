@@ -25,9 +25,9 @@ fun instantiate {$ IMPORT}
        = IMPORT.'SP'
 in
    local
-      \insert cp/Search
-      \insert cp/FD
-      \insert cp/FS
+      \insert 'cp/Search.oz'
+      \insert 'cp/FD.oz'
+      \insert 'cp/FS.oz'
    in
       \insert 'CP.env'
    end

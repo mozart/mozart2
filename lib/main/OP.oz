@@ -24,13 +24,13 @@ fun instantiate {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
 
-   \insert 'OP/OS.oz'
+   \insert 'op/OS.oz'
 
    URL = {System.property.condGet url unit}
 
-   \insert 'OP/Open.oz'
+   \insert 'op/Open.oz'
 
-   \insert 'OP/Component.oz'
+   \insert 'op/Component.oz'
 
 in
 

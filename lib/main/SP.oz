@@ -25,14 +25,22 @@
 %%%
 
 fun instantiate {$ IMPORT}
-   \insert SP/System
-   \insert SP/Foreign
-   \insert SP/Debug
-   \insert SP/Error
+
+   \insert 'sp/System.oz'
+
+   \insert 'sp/Foreign.oz'
+
+   \insert 'sp/Debug.oz'
+
+   \insert 'sp/Error.oz'
+
 \ifndef NOFINALIZATION
-   \insert SP/Finalize
+   \insert 'sp/Finalize.oz'
 \endif
+
    Error   = {NewError}
 in
+
    \insert 'SP.env'
+
 end

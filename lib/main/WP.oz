@@ -25,9 +25,13 @@ fun instantiate {$ IMPORT}
        = IMPORT.'OP'
    \insert 'SP.env'
        = IMPORT.'SP'
-   Tk      = \insert 'WP/Tk.oz'
-             \insert 'WP/TkOptions.oz'
-   TkTools = \insert 'WP/TkTools.oz'
+
+   Tk      = \insert 'wp/Tk.oz'
+
+   \insert 'wp/TkOptions.oz'
+
+   TkTools = \insert 'wp/TkTools.oz'
+
 in
    \insert 'WP.env'
 end

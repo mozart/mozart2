@@ -31,6 +31,7 @@ import
 export
    register:   Register
    setHandler: SetHandler
+   everyGC:    EveryGC
 
 body
 
@@ -47,4 +48,11 @@ body
    in
       {SetHandler FinalizeHandler}
    end
+
+   proc {EveryGC P}
+      proc {DO _}
+         {P}
+         {Register DO DO}
+      end
+   in {Register DO DO} end
 end

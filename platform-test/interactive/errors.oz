@@ -4,7 +4,7 @@
 
 thread {Raise _} end
 
-\sw -optimize
+\switch -optimize
 thread {Show a b} end
 
 thread
@@ -17,7 +17,7 @@ end
 
 % no_else
 
-\sw +optimize
+\switch +optimize
 thread
    proc {P X}
       case X of a then {Show ok} end
@@ -54,14 +54,14 @@ declare X Y in
 thread X=Y end
 X=1 Y=2
 
-\sw -optimize
+\switch -optimize
 thread
    proc {P X} X=1 end
 in
    {P b}
 end
 
-\sw +optimize
+\switch +optimize
 thread
    proc {P X} X=a end
 in
@@ -106,7 +106,7 @@ thread {proc {$ X} {X "hallo"} end nil} end
 
 thread {f(nil) a} end
 
-\sw -optimize
+\switch -optimize
 thread {17 a(1) 1 _} end
 
 %% field selection
@@ -213,10 +213,10 @@ thread _ = {`Builtin` gargel 2} end
 
 thread X={`Builtin` a 0} in {Show X} end
 
-\sw -optimize
+\switch -optimize
 thread {{`Builtin` 'Max' 3} 4 5} end
 
-\sw +optimize
+\switch +optimize
 thread
    _ = {Space.new proc {$ _} {{`Builtin` 'Max' 2} _ _} end}
 end

@@ -67,12 +67,16 @@ local
       end
    end
 
-   proc {MyWait X}
+   proc {MyWaitGump X}
       T = {Thread.this}
       RaiseOnBlock = {Thread.getRaiseOnBlock T}
    in
       {Thread.setRaiseOnBlock T false}
-      {Wait X}
+      case X of transformScanner then
+         {Wait Gump.transformScanner}
+      [] transformParser then
+         {Wait Gump.transformParser}
+      end
       {Thread.setRaiseOnBlock T RaiseOnBlock}
    end
 
@@ -698,7 +702,7 @@ local
                              {@switches getSwitch(gumpscannerperfreport $)}
                           statistics:
                              {@switches getSwitch(gumpscannerstatistics $)})
-            {MyWait Gump.transformScanner}
+            {MyWaitGump transformScanner}
             FS = {Gump.transformScanner
                   T From Prop Attr Feat Ms Rules C Flags @reporter}
             Unnester, UnnestStatement(FS $)
@@ -712,7 +716,7 @@ local
                               getSwitch(gumpparseroutputsimplified $)}
                           verbose:
                              {@switches getSwitch(gumpparserverbose $)})
-            {MyWait Gump.transformParser}
+            {MyWaitGump transformParser}
             FS = {Gump.transformParser
                   T From Prop Attr Feat Ms Tokens Rules C Flags
                   {@switches getProductionTemplates($)}

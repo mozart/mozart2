@@ -22,9 +22,16 @@
 
 local
 
+   proc {SuckUp P}
+      {P read(list:$)}=_ {SuckUp P}
+   end
+
    proc {StartRemote Host Cmd}
       try
-         0={OS.system 'rsh '#Host#' '#Cmd#' '#[&&]}
+         P={New Open.pipe init(cmd:'rsh'
+                               args: [Host Cmd])}
+      in
+         thread {SuckUp P} end
       catch _ then
          raise error end
       end

@@ -29,7 +29,7 @@ oz('SP':             nil
    'AP':             ['SP' 'OP']
    'CP':             ['SP']
    'WP':             ['SP' 'OP']
-   'DP':             ['OP' 'AP']
+   'DP':             ['OP' 'SP' 'AP']
    'Panel':          ['SP' 'OP' 'WP']
    'Browser':        ['SP' 'WP' 'CP']
    'Explorer':       ['SP' 'WP' 'Browser'#lazy]

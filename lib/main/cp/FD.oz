@@ -121,6 +121,9 @@ export
    plus:           FdpPlus
    minus:          FdpMinus
    times:          FdpTimes
+   plusD:          FdpPlusD
+   minusD:         FdpMinusD
+   timesD:         FdpTimesD
    power:          FdpPower
    divI:           FdpDivI
    divD:           FdpDivD
@@ -153,6 +156,9 @@ define
    FdpPlus = FDP.plus
    FdpMinus = FDP.minus
    FdpTimes = FDP.times
+   FdpPlusD = FDP.plusD
+   FdpMinusD = FDP.minusD
+   FdpTimesD = FDP.timesD
    FdpPower = FDP.power
    FdpDivD = FDP.divD
    FdpDivI = FDP.divI

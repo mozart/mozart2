@@ -59,7 +59,7 @@ local
    fun {Meth_localize U} {BURL_localize {UrlToVs U}} end
    fun {Meth_open     U} {BURL_open     {UrlToVs U}} end
    fun {Meth_load     U} {BURL_load     {UrlToVs U}} end
-   fun {Meth_native_usual U} {ObtainNative false {UrlToVs U}} end
+   fun {Meth_native_usual U} {GetNative {UrlToVs U}} end
    fun {Meth_native_win32 U}
       %% on windows we also try the non-encoded version since
       %% some filenames may contain spaces.  we really need
@@ -67,9 +67,9 @@ local
       %% time being.  The general solution should not involve
       %% possible manipulations on the C++ side.  In fact there
       %% should be no C++ side.  It should all be done in Oz.
-      try {ObtainNative false {UrlToVs U}}
+      try {GetNative {UrlToVs U}}
       catch system(...) then
-         {ObtainNative false {UrlToVsExtended U o(raw:true)}}
+         {GetNative {UrlToVsExtended U o(raw:true)}}
       end
    end
    Meth_native = if PLATFORM_OS==win32

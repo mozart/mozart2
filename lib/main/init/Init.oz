@@ -175,19 +175,15 @@ import
 define
 
    %% The mechanism with which builtin modules can be accessed
-   ObtainNative = Boot.obtain
-
-   fun {BootManager Name}
-      {ObtainNative true Name}
-   end
+   GetInternal = Boot.getInternal
+   GetNative = Boot.getNative
 
    %% Retrieve modules needed to get things started
-   BURL     = {BootManager 'URL'}
-
-   OS       = {BootManager 'OS'}
-   Pickle   = {BootManager 'Pickle'}
-   Property = {BootManager 'Property'}
-   System   = {BootManager 'System'}
+   BURL     = {GetInternal 'URL'}
+   OS       = {GetInternal 'OS'}
+   Pickle   = {GetInternal 'Pickle'}
+   Property = {GetInternal 'Property'}
+   System   = {GetInternal 'System'}
 
    %% Shortcuts
    Getenv = OS.getEnv
@@ -230,12 +226,12 @@ define
       {RM enter(url:'x-oz://boot/Boot' Boot)}
 
       %% Register volatile system modules
-      {RM enter(name:'OS'       OS)}
-      {RM enter(name:'Property' Property)}
-      {RM enter(name:'Pickle'   Pickle)}
-      {RM enter(name:'System'   System)}
-      {RM enter(name:'Resolve'  Resolve)}
-      {RM enter(name:'Module'   RealModule)}
+      {RM enter(url:'x-oz://system/OS.ozf'       OS)}
+      {RM enter(url:'x-oz://system/Property.ozf' Property)}
+      {RM enter(url:'x-oz://system/Pickle.ozf'   Pickle)}
+      {RM enter(url:'x-oz://system/System.ozf'   System)}
+      {RM enter(url:'x-oz://system/Resolve.ozf'  Resolve)}
+      {RM enter(url:'x-oz://system/Module.ozf'   RealModule)}
 
       %% Install error handler
       {RM apply(ErrorHandler)}

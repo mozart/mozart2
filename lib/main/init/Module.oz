@@ -248,30 +248,13 @@ define
       end
 
       meth SystemResolve(Auth Url $)
-         try
-            {UrlResolve
-             case Auth
-             of system  then SystemHomeUrl
-             [] contrib then ContribHomeUrl
-             else raise badUrl end end
-             case {CondSelect Url path nil}
-             of (_|_)=L then
-                L1 = {Reverse L}
-                L2 =
-                case L1 of H|T then
-                   if {Member &. H} then L
-                   else {Reverse {VirtualString.toString
-                                  H#FunctorExt}|T} end
-                else raise badUrl end end
-             in
-                {Adjoin Url url(scheme    : unit
-                                authority : unit
-                                device    : unit
-                                absolute  : false
-                                path      : L2)}
-             else raise badUrl end end}
-         catch badUrl then
-            raise error(module(urlSyntax {UrlToAtom Url})) end
+         if Auth==boot orelse {IsNative Url} then Url
+         elsecase {Reverse {CondSelect Url path nil}}
+         of H|T then
+            if {Member &. H} then Url
+            else {AdjoinAt Url path
+                  {Reverse {VirtualString.toString H#FunctorExt}|T}}
+            end
          end
       end
 
@@ -297,28 +280,34 @@ define
 
       meth GetSystemBoot(Name $)
          {self trace('boot module' Name)}
-         try
-            {Boot.obtain true Name}#NOTYPE
-         catch system(foreign(dlOpen _) ...) then
-            raise system(module(notFound system {UrlToAtom Name})) end
-         end
+         {Boot.getInternal Name}#NOTYPE
       end
 
-      meth !SYSTEM(Url $)
+      meth !SYSTEM(Url0 $)
+         Auth = {StringToAtom {CondSelect Url0 authority ""}}
+         Url  = {self SystemResolve(Auth Url0 $)}
+      in
          {self trace('system method' Url)}
-         case {StringToAtom {CondSelect Url authority ""}}
+         if {IsNative Url} then {self Native(Url $)}
+         elsecase {StringToAtom {CondSelect Url authority ""}}
          of boot then
-            {self GetSystemBoot({self GetSystemName(Url $)} $)}
+            %% a boot module may either be provided internally
+            %% (i.e. statically linked in) or as a DLL
+            {self trace('boot module' Url)}
+            try {self GetSystemBoot({self GetSystemName(Url $)} $)}
+            catch _ then
+               {self Native({UrlMake {UrlToAtom Url}#'.so{native}'} $)}
+            end
          [] system then Name={self GetSystemName(Url $)} in
             {self trace('system module' Url)}
             if {IsNatSystemName Name} then
-               {self GetSystemBoot(Name $)}
+               RootManager,SYSTEM({UrlMake OzScheme#'://boot/'#Name} $)
             else
-               {self SystemApply(system Url $)}
+               {self Pickle(Url Url $)}
             end
          [] contrib then
             {self trace('contrib module' Url)}
-            {self SystemApply(contrib Url $)}
+            {self Pickle(Url $)}
          else
             raise error(module(urlSyntax {UrlToAtom Url})) end
          end

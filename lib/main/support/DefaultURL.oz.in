@@ -32,9 +32,10 @@ prepare
    PickleExt   = '.ozp'
    FunctorExt  = '.ozf'
    OzScheme    = 'x-oz'
+   OzVersion   = '@OZVERSION@'
 
-   HomeUrl    = {UrlMake '@HOMEURL@/share/'}
-   ContribUrl = {UrlMake '@HOMEURL@/contrib/'}
+   HomeUrl    = {UrlMake 'x-oz://system'}%{UrlMake '@HOMEURL@/share/'}
+   ContribUrl = {UrlMake 'x-oz://contrib'}%{UrlMake '@HOMEURL@/contrib/'}
    SystemUrl  = {UrlMake OzScheme#'://system/'}
    BootUrl    = {UrlMake OzScheme#'://system/'}
 
@@ -132,6 +133,7 @@ export
    BootUrl
 
    OzScheme
+   OzVersion
 
    PickleExt
    FunctorExt

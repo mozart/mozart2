@@ -59,6 +59,7 @@ define
                        labeltuple#labelTuple
                        record#record kindedrecord#kindedRecord fdint#fdInt
                        fset#fsVal fsvar#fsVar free#free future#future
+                       failed#failed
                        string#string byteString#byteString]
    RelationNodes    = [int#int float#float atom#atom name#name
                        procedure#procedure
@@ -66,6 +67,7 @@ define
                        labeltuple#labelTupleGr record#recordGr
                        kindedrecord#kindedRecordGr fdint#fdIntGr
                        fset#fsValGr fsvar#fsVarGr free#freeGr future#futureGr
+                       failed#failed
                        string#string byteString#byteString]
    NormalIndNodes   = [int#int float#float atom#atom name#name
                        procedure#procedure
@@ -74,6 +76,7 @@ define
                        record#recordInd kindedrecord#kindedRecordInd
                        fdint#fdInt
                        fset#fsVal fsvar#fsVar free#free future#future
+                       failed#failed
                        string#string byteString#byteString]
    RelationIndNodes = [int#int float#float atom#atom name#name
                        procedure#procedure
@@ -81,6 +84,7 @@ define
                        labeltuple#labelTupleGrInd record#recordGrInd
                        kindedrecord#kindedRecordGrInd fdint#fdIntGr
                        fset#fsValGr fsvar#fsVarGr free#freeGr future#futureGr
+                       failed#failed
                        string#string byteString#byteString]
 
    local
@@ -239,6 +243,7 @@ define
                        nameColor        # Color3
                        procedureColor   # Color3
                        futureColor      # Color8
+                       failedColor      # Color3
                        bytestringColor  # Color4
                        freeColor        # Color8
                        fdintColor       # Color7
@@ -507,14 +512,12 @@ define
 
       %% Default Variable-Type Menus
       local
-         %% Future Specific Functions
-         proc {Force V}
-            {Wait V}
-         end
+         %% Variable/Future Specific Functions
+         Force = Value.makeNeeded
       in
          VariableMenus = [
-                          futureMenu # menu(nil nil nil ['Force Evaluation'(Force)])
-                          freeMenu   # nil
+                          futureMenu # menu(nil nil nil ['Make Needed'(Force)])
+                          freeMenu   # menu(nil nil nil ['Make Needed'(Force)])
                           fdintMenu  # menu(WidthList
                                             DepthList
                                             nil
@@ -645,6 +648,14 @@ define
                CellContent({Access V})
             end
          end
+         %% Failed Value Specific Functions
+         local
+            Failed = {NewName}
+         in
+            fun {MapFailed V W D}
+               Failed(try {Wait V} unit catch E then E end)
+            end
+         end
       in
          AbstractMenus = [
                           arrayMenu     # menu(nil
@@ -680,6 +691,10 @@ define
                                                 nil
                                                 ['Show Contents'(ShowCellCont)]
                                                 nil)
+                          failedMenu     # menu(nil
+                                                nil
+                                                ['Show Exception'(MapFailed)]
+                                                nil)
                          ]
       end
    in
@@ -693,6 +708,7 @@ define
    [typeConversion # [ procedure    # 'Procedure'
                        future       # 'Future'
                        free         # 'Logic Variable'
+                       failed       # 'Failed Value'
                        fdint        # 'Finite Domain Integer'
                        fset         # 'Finite Sets'
                        array        # 'Array'

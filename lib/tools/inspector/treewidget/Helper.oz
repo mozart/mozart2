@@ -733,7 +733,8 @@ define
             Val      = @value
             NewValue = try {F Val}
                        catch X then
-                          mapping_failed(ex:{Value.byNeed fun {$} X end} val:Val)
+                          mapping_failed(ex:{Value.byNeedFuture fun {$} X end}
+                                         val:Val)
                        end
          in
             {@parent link(@index NewValue)}

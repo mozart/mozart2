@@ -105,6 +105,8 @@ in
    class FutureDrawObject from SimpleDrawObject end
    class FutureGrDrawObject from SimpleGrDrawObject end
 
+   class FailedDrawObject from SimpleDrawObject end
+
    class VariableRefDrawObject from SimpleDrawObject
       meth performDraw(X Y)
          Visual = @visual

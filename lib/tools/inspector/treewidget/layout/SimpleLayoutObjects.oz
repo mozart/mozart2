@@ -131,7 +131,9 @@ in
       local
          class FreeRep
             meth createRep(PrintStr LengthStr)
-               PrintStr  = {System.printName @value}
+               Suffix = if {IsNeeded @value} then '<Needed>' else '' end
+            in
+               PrintStr  = {System.printName @value}#Suffix
                LengthStr = PrintStr
             end
          end
@@ -141,37 +143,29 @@ in
       end
 
       local
-         fun {IsPrefix P S}
-            case P
-            of P|Pr then
-               case S
-               of S|Sr then S == P andthen {IsPrefix Pr Sr}
-               [] _    then false
-               end
-            [] nil  then true
-            end
-         end
-
          class FutureRep
-            meth checkFutureType(V $)
-               ValS    = {Value.toVirtualString V 0 0}
-               SearchS = {String.token ValS &< _}
-            in
-               if {IsPrefix "future>" SearchS}                     then '<Fut>'
-               elseif {IsPrefix "future byNeed: \'fail\'" SearchS} then '<Failed>'
-               else '<ByNeed>'
-               end
-            end
             meth createRep(PrintStr LengthStr)
-               Value = @value
+               Suffix = if {IsNeeded @value} then
+                           '<Future Needed>' else '<Future>' end
             in
-               PrintStr  = {System.printName Value}#FutureRep, checkFutureType(Value $)
+               PrintStr  = {System.printName @value}#Suffix
                LengthStr = PrintStr
             end
          end
       in
          class FutureLayoutObject from SimpleLayoutObject FutureRep end
          class FutureGrLayoutObject from SimpleGrLayoutObject FutureRep end
+      end
+
+      local
+         class FailedRep
+            meth createRep(PrintStr LengthStr)
+               PrintStr  = '<Failed Value>'
+               LengthStr = PrintStr
+            end
+         end
+      in
+         class FailedLayoutObject from SimpleLayoutObject FailedRep end
       end
    end
 

@@ -62,6 +62,7 @@ define
                 %% Logic-, Future- and Constraint-Variables
                 free     # [free free free]
                 future   # [future future future]
+                failed   # [failed failed failed]
                 fdInt    # [fdInt fdInt fdInt]
                 fsVal    # [fsVal fdInt fdInt]
                 fsHelper # [fsHelper fdInt fdInt]

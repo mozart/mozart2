@@ -116,10 +116,7 @@ define
             end
          end
          meth listen(FutMode WidPort CurValue EntryObj)
-            if FutMode
-            then {Value.waitQuiet CurValue}
-            else {Wait {GetsBoundB CurValue}}
-            end
+            {Wait {GetsBoundB CurValue}}
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
             if {IsDet CurValue} orelse {IsFailed CurValue}
             then skip
@@ -151,7 +148,7 @@ define
             end
          end
          meth updateCell(Node)
-            StopVar RI
+            StopVar
          in
             stopPVar <- StopVar
             stopOVar <- StopVar

@@ -45,6 +45,7 @@ export
    labelTupleGrIndLayoutObject : LabelTupleGrIndLayoutObject
    futureLayoutObject          : FutureLayoutObject
    futureGrLayoutObject        : FutureGrLayoutObject
+   failedLayoutObject          : FailedLayoutObject
    stringLayoutObject          : StringLayoutObject
    byteStringLayoutObject      : ByteStringLayoutObject
    freeLayoutObject            : FreeLayoutObject

@@ -114,6 +114,13 @@ in
       end
    end
 
+   class FailedCreateObject from SimpleCreateObject
+      meth create(Value Parent Index Visual Depth)
+         @type = failed
+         CreateObject, create(Value Parent Index Visual Depth)
+      end
+   end
+
    class StringCreateObject from SimpleCreateObject
       meth create(Value Parent Index Visual Depth)
          @type = string

@@ -790,7 +790,7 @@ define
             elseof F then
                MaxW = @dWidth
                NVal = try {F Val MaxW MaxDepth} catch X then
-                         map_failed(ex:{Value.byNeed fun {$} X end}) end
+                         map_failed(ex:{Value.byNeedFuture fun {$} X end}) end
                Node = if @dMode
                       then TreeWidget, graphCreate(NVal Parent Index Depth $)
                       else

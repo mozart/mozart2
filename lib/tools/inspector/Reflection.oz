@@ -83,9 +83,7 @@ define
    %%
    local
       proc {WaitTouched X}
-         if {IsFuture X}
-         then {Value.waitQuiet X}
-         elseif {IsDet X}
+         if {IsDet X}
          then skip
          else {Wait {BrowserSupport.getsBoundB X}}
          end
@@ -259,6 +257,14 @@ define
                Wrapper(Id)
             end
          end
+         %% Failed Reflection
+         fun {ReflFailed X InRs NewRs}
+            NewRs = InRs
+            if {IsTop X}
+            then X
+            else '<Failed Value>'
+            end
+         end
          %% FD Reflection
          fun {ReflFD X InRs NewRs}
             NewRs = InRs
@@ -305,6 +311,7 @@ define
                RX   = case Status
                       of free      then {ReflVar X InRs NewRs}
                       [] future    then {ReflFut X InRs NewRs}
+                      [] failed    then {ReflFailed X InRs NewRs}
                       [] det(Type) then
                          case Type
                          of byteString then {ReflBS X InRs NewRs}

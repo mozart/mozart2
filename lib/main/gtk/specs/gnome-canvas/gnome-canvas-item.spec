@@ -27,12 +27,12 @@ $class =
 
        super => 'BaseObject',
 
-       inits => { 'gnome_canvas_item_new'                   => { in  => ['!GnomeCanvasGroup*',
+       inits => { 'gnome_canvas_item_new'                   => { in  => ['^GnomeCanvasGroup*',
                                                                          'GtkType',
                                                                          'const gchar*',
                                                                          '...'],
                                                                  out => 'GnomeCanvasItem*' },
-                  'gnome_canvas_item_newv'                  => { in  => ['!GnomeCanvasGroup*',
+                  'gnome_canvas_item_newv'                  => { in  => ['^GnomeCanvasGroup*',
                                                                          'GtkType',
                                                                          'guint',
                                                                          'GtkArg*'],

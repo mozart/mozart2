@@ -27,8 +27,7 @@
 functor $ prop once
 
 import
-   System.{get
-           property}
+   System.{property}
 
 export
    pointer:    ForeignPointer
@@ -36,7 +35,7 @@ export
    require:    Require
    resolver:   Resolver
    load:       ForeignLoad
-   staticLoad: ForeignStaticLoad
+   staticLoad: DlStaticLoad
    loadBI:     ForeignLoadBI
 
 body
@@ -122,20 +121,6 @@ body
    fun {ForeignLoad File}
       _#Module = {ForeignLoadBI File}
    in Module
-   end
-
-   fun {ForeignStaticLoad Base}
-      Static = {DlStaticLoad Base}
-   in
-      case Static==unit then
-         %% Not available in the emulator, go and load it
-         %% DENYS: this all needs improvement! CS
-         HOME    = {System.get home}
-         OS#ARCH = {System.get platform}
-      in
-         {ForeignLoad HOME#'/platform/'#OS#'-'#ARCH#'/'#Base}
-      else Static
-      end
    end
 
    ForeignPointer = foreignPointer(is: {`Builtin` 'isForeignPointer' 2})

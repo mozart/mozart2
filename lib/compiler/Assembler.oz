@@ -575,9 +575,10 @@ define
          {SetVoids Rest I ?OutI ?Rest1}
          {Assembler append(setVoid(OutI))}
          {Peephole Rest1 Assembler}
-      [] getRecord('|' 2 X1=x(_))|unifyValue(R)|unifyVariable(X2=x(_))|Rest
+      [] getRecord('|' 2 X1=x(_))|
+         unifyValue(X2=x(_))|unifyVariable(X3=x(_))|Rest
       then
-         {Assembler append(getListValVar(X1 R X2))}
+         {Assembler append(getListValVar(X1 X2 X3))}
          {Peephole Rest Assembler}
       [] getRecord('|' 2 R)|Rest then
          {Assembler append(getList(R))}

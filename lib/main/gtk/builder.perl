@@ -145,7 +145,7 @@ sub write_oz_init_methods {
 
         ### Method invocation: Arguments
 
-        for (my $i = 0; $i < length @$in; $i++) {
+        for (my $i = 0; $i < @$in; $i++) {
             if ($$in[$i] =~ m/^\!/s) {
                 print ' {Arg' . ($i+1) . ' getNative($)}';
             } else {
@@ -196,7 +196,7 @@ sub write_oz_meth_wrappers {
 
         ### Method invocation: Arguments
 
-        for (my $i = 0; $i < length @$in; $i++) {
+        for (my $i = 0; $i < @$in; $i++) {
             if ($$in[$i] =~ m/^\!/s) {
                 print ' {Arg' . ($i+1) . ' getNative($)}';
             } else {

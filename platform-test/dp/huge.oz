@@ -10,6 +10,7 @@ functor
 import
    TestMisc
    Compiler
+   Fault
 %   System(show:Show)
 export
    Return
@@ -63,6 +64,9 @@ define
                  tuple#Tup record#Rec /*array#A*/ procedure#Proc
                  'class'#Cl object#Obj bytestring#ByteS]
 
+   {Fault.defaultDisable _}
+   {Fault.defaultEnable [permFail] _}
+
    proc {Start}
       Managers
       InP InSCell={NewCell {NewPort $ InP}}
@@ -111,7 +115,10 @@ define
                             import
                                Property(put)
                                System(gcDo)
+                               Fault
                             define
+                               {Fault.defaultDisable _}
+                               {Fault.defaultEnable [permFail] _}
                                {Property.put 'close.time' 1000}
 
                                proc {Start InS OutP}

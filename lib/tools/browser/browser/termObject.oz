@@ -197,7 +197,7 @@ in
    %% Extract a 'meaningful' part out of a temporary name;
    local ParseFun in
       fun {ParseFun I CI E}
-         case E of !CNameDelimiter then I else CI end
+         case E of &: then I else CI end
       end
 
       %%
@@ -216,9 +216,9 @@ in
    %%
    fun {StripBQuotes IStr}
       case IStr of nil then nil
-      else
-         case IStr.1 of !BQuote then {StripBQuotes IStr.2}
-         else IStr.1|{StripBQuotes IStr.2}
+      [] I1|I2 then
+         case I1==&` then {StripBQuotes I2}
+         else I1|{StripBQuotes I2}
          end
       end
    end
@@ -241,7 +241,7 @@ in
 
                %%
                SSPNS =
-               {StripName case SPNS.1 of !BQuote then {StripBQuotes SPNS}
+               {StripName case SPNS.1 of &` then {StripBQuotes SPNS}
                           else SPNS
                           end}
 
@@ -349,7 +349,7 @@ in
                %%  I don't know what could here be at all.
                %%  And i'm not keen on it, to be honest.
                SN =
-               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+               {StripName case PNS.1 of &` then {StripBQuotes PNS}
                           else PNS
                           end}
 
@@ -385,7 +385,7 @@ in
 
                %%
                SN =
-               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+               {StripName case PNS.1 of &` then {StripBQuotes PNS}
                           else PNS
                           end}
 
@@ -421,7 +421,7 @@ in
 
                %%
                SN =
-               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+               {StripName case PNS.1 of &` then {StripBQuotes PNS}
                           else PNS
                           end}
 
@@ -458,7 +458,7 @@ in
 
                %%
                SN =
-               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+               {StripName case PNS.1 of &` then {StripBQuotes PNS}
                           else PNS
                           end}
 

@@ -488,13 +488,6 @@ DDblPeriod      = '..'          % DDSpace;
 DDBar           = '||'          % DDSpace;
 DUnshownPFs     = '?'           % DSpace
 
-%% char values;
-CNameDelimiter  = &:
-BQuote          = &`
-CharSpace       = &
-/* ` oz emacs modus problems; */
-%%
-
 %%
 DRootGroup      = 0#1
 

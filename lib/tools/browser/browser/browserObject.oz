@@ -110,7 +110,7 @@ class FBrowserClass
          %%
          %% 'ManagerObject' is not directly accessible - but it can be
          %% closed by means of queuing of 'close' message;
-         local Stream ManagerObject in
+         local Stream in
             %%
             %% only 'getContent' functionality is delegated to the
             %% manager object. A list of term objects is necessary in
@@ -121,7 +121,7 @@ class FBrowserClass
             Stream = self.BrowserStream = {New BrowserStreamClass init}
 
             %%
-            ManagerObject =
+            _ =
             {New BrowserManagerClass init(store:          self.Store
                                           getTermObjsFun: self.GetTermObjs)}
          end

@@ -57,7 +57,6 @@ local
 
    %%
    GetRepMarks
-   GetStrs
 
    %%
    CanvasFeat   = {NewName}     %
@@ -150,40 +149,6 @@ in
          else M|{GetRepMarks BW M RefIndex}
          end
       end
-   end
-
-   %%
-   %% 'GetsStrs' extracts substrings delimited by 'Delim' out of 'Str';
-   local FindChar FindChar1 in
-      fun {FindChar S C} {FindChar1 S C 1} end
-      fun {FindChar1 S C N}
-         case S of H|R then
-            case H of !C then N
-            else {FindChar1 R C N+1}
-            end
-         else ~1
-         end
-      end
-
-      %%
-      %% Its input argument 'Str' may not be the empty list (because
-      %% of 'List.take');
-      fun {GetStrs Str Delim ParRes}
-         local Ind in
-            Ind = {FindChar Str Delim}
-            %%
-            case Ind == ~1 then {Append ParRes [Str]}
-            else HeadOf TailOf in
-               HeadOf = {List.take Str Ind-1}
-               TailOf = {List.drop Str Ind}
-
-               %%
-               {GetStrs TailOf Delim {Append ParRes [HeadOf]}}
-            end
-         end
-      end
-
-      %%
    end
 
    %%
@@ -572,16 +537,8 @@ in
                      case N of &-|_ then 'backward' else 'forward' end
 
                      %%
-                     Last = {Tk.returnInt o(BW index 'end')}
-                     [FT FB] =
-                     {Map
-                      {GetStrs {Tk.return o(BW yview)} CharSpace nil}
-                      fun {$ E}
-                         case E of "0" then 0.
-                         elseof    "1" then 1.
-                         else {String.toFloat E}
-                         end
-                      end}
+                     Last    = {Tk.returnInt o(BW index 'end')}
+                     [FT FB] = {Tk.returnListFloat o(BW yview)}
 
                      %%
                      %% that's the line just before the top one in
@@ -1831,14 +1788,7 @@ in
                end
             end
 
-            %%
-            local S1 S2 in      % job
-               [S1 S2] = {GetStrs {Tk.return o(BW xview)} CharSpace nil}
-
-               %%
-               F1 = case S1 of "0" then 0. else {String.toFloat S1} end
-               F2 = case S2 of "1" then 1. else {String.toFloat S2} end
-            end
+            [F1 F2] = {Tk.returnListFloat o(BW xview)}
 
             %%
             %%  In fact, this is not the same as we could want (?):

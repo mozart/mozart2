@@ -410,7 +410,7 @@ in
          %%
          Name =
          case AreSmallNames then
-            case PN of '_' then '<P/' # {Procedure.arity Term} # '>'
+            case PN of '' then '<P/' # {Procedure.arity Term} # '>'
             else
                PNS SN
             in

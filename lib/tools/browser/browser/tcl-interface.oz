@@ -20,6 +20,7 @@
 local
    %%  synchronizing?
    TkNewName
+   NullAction
 
    %%
    %% TagsListLoop   % not used now;
@@ -46,6 +47,12 @@ in
          NewVal = Val + 1
          browser#Val
       end
+   end
+
+   %%
+   %%
+   proc {NullAction}
+      true
    end
 
    /*
@@ -431,34 +438,40 @@ in
               bind(BrowseWidget '<KeyPress>' myNullProc)
 
               %%
+              bind(BrowseWidget '<Shift-1>'
+                   "myTkTextButton1 %W %x %y; %W tag remove sel 0.0 end"
+                   %% "tkTextButton1 %W %x %y; %W tag remove sel 0.0 end"
+                  )
+              bind(BrowseWidget '<Shift-B1-Motion>'
+                   "tkTextSelectTo %W %x %y"
+                  )
+              bind(BrowseWidget '<Shift-3>'
+                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
+                  )
+              bind(BrowseWidget '<Shift-B3-Motion>'
+                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
+                  )
+
+              %%
               %%  x11 selection - shift-buttons[move];
               %% actually, they are not Motif-like, but somethings like
               %% to the 'xterm';
               %%
               %%  exclude '$w mark set insert @$x,$y';
-              o(pr#oc
-                myTkTextButton1
-                q(w x y)
-                q('global' 'tkPriv;'
-                  'set' 'tkPriv(selectMode)' 'char;'
-                  'set' 'tkPriv(mouseMoved)' '0;'
-                  'set' 'tkPriv(pressX)' '$x;'
-                  '$w' 'mark' 'set' 'anchor' '@$x,$y;'
-                  'if' '{[$w' 'cget' '-state]' '==' '"normal"}' '{focus' '$w};'))
-
-              %%
-              bind(BrowseWidget '<Shift-ButtonPress-1>'
-                   "myTkTextButton1 %W %x %y; %W tag remove sel 0.0 end"
-                  )
-              bind(BrowseWidget '<Shift-Button1-Motion>'
-                   "tkTextSelectTo %W %x %y"
-                  )
-              bind(BrowseWidget '<Shift-ButtonPress-3>'
-                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
-                  )
-              bind(BrowseWidget '<Shift-Button3-Motion>'
-                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
-                  )
+              o(pr#oc myTkTextButton1 q(w x y)
+                q(
+                   %% 'y0 \n'
+                   'global' 'tkPriv; \n\n'
+                   'y1 \n'
+                   'set' 'tkPriv(selectMode)' 'char \n'
+                   'set' 'tkPriv(mouseMoved)' '0 \n'
+                   'set' 'tkPriv(pressX)' '$x \n'
+                   '$w' 'mark' 'set' 'insert' '@$x,$y \n'
+                   '$w' 'mark' 'set' 'anchor' 'insert \n'
+                   'if' '{[$w' 'cget' '-state]' '==' '"normal"}'
+                       '{focus' '$w} \n'
+                 )
+                )
 
               %%
               focus(BrowseWidget)
@@ -1895,9 +1908,7 @@ in
          %%
          %% discard effects of window-specific bindings (cut&paste);
          <<[tkBind(event: '<Shift-ButtonPress>'
-                   args: ['b']
-                   break: True
-                   action: self#ButtonsHandler)
+                   action: NullAction)
             tkBind(event: '<ButtonPress>'
                    args: ['b']
                    break: True
@@ -1912,10 +1923,12 @@ in
          {Show 'TermTag::dButtonsBind:'#self.term}
 \endif
          %%
-         <<tkBind(event: '<Double-ButtonPress>'
-                  args: ['b']
-                  break: True
-                  action: self#DButtonsHandler)>>
+         <<[tkBind(event: '<Shift-Double-ButtonPress>'
+                   action: NullAction)
+            tkBind(event: '<Double-ButtonPress>'
+                   args: ['b']
+                   break: True
+                   action: self#DButtonsHandler)]>>
       end
 
       %%

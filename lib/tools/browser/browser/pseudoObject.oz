@@ -50,44 +50,39 @@ class PseudoTermGenericObject
       {Show 'PTO::init: is applied: '#Term}
 \endif
       %%
-      case
-         {IsValue RepType} andthen
-         {IsValue WidgetObj} andthen
-         {IsValue Depth} andthen
-         {IsValue Store} andthen
-         {IsValue TermsStore} andthen
-         {IsValue BrowserObj}
-      then
-         %%
+      {Wait RepType}
+      {Wait WidgetObj}
+      {Wait Depth}
+      {Wait Store}
+      {Wait TermsStore}
+      {Wait BrowserObj}
 
-         %%  These values must be already instantiated!
-         %%  We avoid this way such checking in term object's methods;
-         self.repType = RepType
-         %%
-         self.term = Term
-         self.numberOf = InitValue
-         self.parentObj = InitValue
-         self.widgetObj = WidgetObj
-         self.store = Store
-         self.termsStore = TermsStore
-         self.browserObj = BrowserObj
+      %%  These values must be already instantiated!
+      %%  We avoid this way such checking in term object's methods;
+      self.repType = RepType
 
-         %%
-         shown <- False
-         depth <- Depth + 1     % meta-depth;
+      %%
+      self.term = Term
+      self.numberOf = InitValue
+      self.parentObj = InitValue
+      self.widgetObj = WidgetObj
+      self.store = Store
+      self.termsStore = TermsStore
+      self.browserObj = BrowserObj
 
-         %%
-         <<InitObj(repType: RepType
-                   widgetObj: WidgetObj
-                   depth: Depth
-                   term: Term
-                   store: Store
-                   termsStore: TermsStore
-                   browserObj: BrowserObj)>>
-         %%
-      else
-         {BrowserError ['PseudoTermObject::init: not In_Text_Widget?']}
-      end
+      %%
+      shown <- False
+      depth <- Depth + 1        % meta-depth;
+
+      %%
+      <<InitObj(repType: RepType
+                widgetObj: WidgetObj
+                depth: Depth
+                term: Term
+                store: Store
+                termsStore: TermsStore
+                browserObj: BrowserObj)>>
+      %%
    end
 
    %%
@@ -284,13 +279,13 @@ class PseudoTermGenericObject
          %%
          %%  new '@termObj';
          case WasShown then
-            case {IsValue {@termObj draw(@mark $)}} then
-               %%
-               IsScrolling = {self.store read(StoreScrolling $)}
-               case IsScrolling then
-                  <<scrollToTag(@termObj.tag)>>
-               else true
-               end
+            {Wait {@termObj draw(@mark $)}}
+
+            %%
+            IsScrolling = {self.store read(StoreScrolling $)}
+            case IsScrolling then
+               <<scrollToTag(@termObj.tag)>>
+            else true
             end
          else true
          end

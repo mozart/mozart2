@@ -621,19 +621,18 @@ in
             OldSize = OutInfo.size
             %%
             case Obj == StoredObj then
-               case
-                  {IsValue {Obj [isShown(WasShown)
-                                  getSize(NewSize)
-                                  undraw($)]}}
-               then
-                  case WasShown then
-                     <<drawSubterm(N)>>
-                  else true
-                  end
-                  %%
-                  <<checkSize(Obj OldSize NewSize)>>
-                  %%
+               {Wait {Obj [isShown(WasShown)
+                           getSize(NewSize)
+                           undraw($)]}}
+
+               %%
+               case WasShown then
+                  <<drawSubterm(N)>>
+               else true
                end
+
+               %%
+               <<checkSize(Obj OldSize NewSize)>>
             else true           % ignore - 'garbage' message;
             end
          end

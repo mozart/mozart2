@@ -18,13 +18,14 @@
 local
    ResizableArray               % low-level primitives; used instead of
                                 % DataStructure.automaticArray;
+
    %%
    EmptySubtermRec = subterm(obj:     !InitValue
                              outInfo: !InitValue)
-   %%
+
    %%
    MetaSubtermsStore            % meta class;
-   %%
+
    %%
    RAInit           = {NewName}
    RAInitFixed      = {NewName}
@@ -35,12 +36,13 @@ local
    RAResize         = {NewName}
    RAInsert         = {NewName}
    RAShrink         = {NewName}
+
    %%
    GetSubtermRec    = {NewName}
    GetAnySubtermRec = {NewName}
    SetAnySubtermRec = {NewName}
    SetSubtermRec    = {NewName}
-   %%
+
    %%
    %%  Example: how to replace '+' from the Oz Prelude;
    %% `+` = proc {$ X Y Z}
@@ -51,7 +53,7 @@ local
    %%          Z = 0
    %%       end
    %%    end
-   %%
+
 in
    %%
    %%  Local 'resizable' array;
@@ -70,48 +72,58 @@ in
    %%  - RAShrink
    %%
    class ResizableArray
+      %%
       attr
          Array                  % tuple of width '@High';
          TotalWidth             % "visible" width
          High                   % real width (>= TotalWidth);
-      %%
+
       %%
       meth !RAInit(Width)
          %%
          %%  Array must be there, since we apply
          %% destructive modificator (GenericSet)!
-         case {IsValue Width} then
-            TotalWidth <- Width
-            High <- Width + {`div` (Width * RArrayRRatio) 100}
-            %%
-            Array <- {Tuple array @High}
-         end
+         {Wait Width}
+
+         %%
+         TotalWidth <- Width
+         High <- Width + {`div` (Width * RArrayRRatio) 100}
+
+         %%
+         Array <- {Tuple array @High}
       end
+
       %%
       %%
       meth !RAInitFixed(Width)
-         case {IsValue Width} then
-            TotalWidth <- Width
-            High <- Width
-            %%
-            Array <- {Tuple array Width}
-         end
+         {Wait Width}
+
+         %%
+         TotalWidth <- Width
+         High <- Width
+
+         %%
+         Array <- {Tuple array Width}
       end
+
       %%
       %%
       meth !RASize(H)
          H = @TotalWidth
       end
+
       %%
       %%
       meth getTotalWidth(H)
          H = @TotalWidth
       end
+
       %%
       %%
       meth removeAllSubterms
          TotalWidth <- 0
       end
+
       %%
       %%
       meth !RAGet(I X)
@@ -121,60 +133,70 @@ in
             {BrowserError ['ResizableArray::RAGet: invalid index']}
          end
       end
+
+      %%
       %%
       meth !RAPut(I X)
-         %% \ifdef DEBUG_TT
-         %% {Show '...:RAPut is applied.'#self.term#I}
-         %% \endif
          case I >= 1 andthen I =< @TotalWidth then
-            %%
             {GenericSet @Array I X}
          else
             {BrowserError ['ResizableArray::RAPut: invalid index']}
          end
       end
+
       %%
       %%
       meth !RAForAll(Method)
          <<ForIndxs(1 @High Method)>>
       end
+
+      %%
       %%
       meth ForIndxs(N Max Method)
          case N =< Max then
             <<Method(@Array.N)>>
+
             %%
             <<ForIndxs((N + 1) Max Method)>>
          else true
          end
       end
+
       %%
       %%  Add 'Inc' undefined elements at the end;
       meth !RAResize(Inc)
          local Width RWidth in
             Width = @TotalWidth
             RWidth = @High
+
             %%
             case RWidth >= Width + Inc then true
             else
-               local OldArray NewArray NewRWidth in
-                  OldArray = @Array
-                  %%
-                  NewRWidth =
-                  RWidth + Inc + {`div` (RWidth * RArrayRRatio) 100}
-                  High <- NewRWidth
-                  %%
-                  NewArray = {Tuple array NewRWidth}
-                  %%
-                  {Loop.for 1 Width 1
-                   proc {$ N} NewArray.N = OldArray.N end}
-                  %%
-                  Array <- NewArray
-               end
+               OldArray NewArray NewRWidth
+            in
+               OldArray = @Array
+
+               %%
+               NewRWidth =
+               RWidth + Inc + {`div` (RWidth * RArrayRRatio) 100}
+               High <- NewRWidth
+
+               %%
+               NewArray = {Tuple array NewRWidth}
+
+               %%
+               {Loop.for 1 Width 1
+                proc {$ N} NewArray.N = OldArray.N end}
+
+               %%
+               Array <- NewArray
             end
+
             %%
             TotalWidth <- Width + Inc
          end
       end
+
       %%
       %%  Insert one undefined element at the first position;
       meth !RAInsert
@@ -182,159 +204,189 @@ in
             Width = @TotalWidth
             RWidth = @High
             OldArray = @Array
+
             %%
             %%
             NewRWidth = RWidth + 1 + {`div` (RWidth * RArrayRRatio) 100}
             High <- NewRWidth
+
             %%
             NewArray = {Tuple array NewRWidth}
+
             %%
             {Loop.for 1 Width 1 proc {$ N} NewArray.(N+1) = OldArray.N end}
+
             %%
             Array <- NewArray
+
             %%
             TotalWidth <- Width + 1
          end
       end
+
       %%
       %%  Remove one element at the last position;
       meth !RAShrink
          TotalWidth <- @TotalWidth - 1
       end
+
       %%
       %%
       meth debugGetArray(?A)
          A = @Array
       end
+
       %%
    end
+
    %%
    %%
    %%
    %%  'Meta' subterms store;
    %%  Common methods;
    %%
-   class MetaSubtermsStore
-      from ResizableArray
+   class MetaSubtermsStore from ResizableArray
       %%
       attr
          width                  % number of proper subterms;
+
+      %%
       %%
       meth setSubtermObj(Number Obj)
          local SRec NewSRec in
             <<GetSubtermRec(Number SRec)>>
+
             %%
             NewSRec = {AdjoinAt SRec obj Obj}
             <<SetSubtermRec(Number NewSRec)>>
          end
       end
+
       %%
       %%
       meth getSubtermObj(Number ?Obj)
          local SRec in
             <<GetSubtermRec(Number SRec)>>
+
             %%
             Obj = SRec.obj
          end
       end
+
       %%
       %%
       meth getObjsList(?List)
          <<GetObjsList(1 @width List)>>
       end
+
+      %%
       %%
       meth GetObjsList(Low High List)
          case Low =< High then
-            local Obj NList in
-               Obj = <<getSubtermObj(Low $)>>
-               List = Obj|NList
-               %%
-               <<GetObjsList((Low + 1) High NList)>>
-            end
+            Obj NList
+         in
+            Obj = <<getSubtermObj(Low $)>>
+            List = Obj|NList
+
+            %%
+            <<GetObjsList((Low + 1) High NList)>>
          else List = nil
          end
       end
+
       %%
       %%
       meth setSubtermOutInfo(Number OutInfo)
          local SRec NewSRec in
             <<GetSubtermRec(Number SRec)>>
+
             %%
             NewSRec = {AdjoinAt SRec outInfo OutInfo}
             <<SetSubtermRec(Number NewSRec)>>
          end
       end
+
       %%
       %%
       meth setAnySubtermOutInfo(Number OutInfo)
          local SRec NewSRec in
             <<GetAnySubtermRec(Number SRec)>>
+
             %%
             NewSRec = {AdjoinAt SRec outInfo OutInfo}
             <<SetAnySubtermRec(Number NewSRec)>>
          end
       end
+
       %%
       %%
       meth getSubtermOutInfo(Number ?OutInfo)
          local SRec in
             <<GetSubtermRec(Number SRec)>>
+
             %%
             OutInfo = SRec.outInfo
          end
       end
+
       %%
       %%
       meth getAnySubtermObj(Number ?Obj)
-         %%
          local SRec in
             <<GetAnySubtermRec(Number SRec)>>
+
             %%
             Obj = SRec.obj
          end
       end
+
       %%
       %%
       meth getAnySubtermOutInfo(Number ?OutInfo)
          local SRec in
             <<GetAnySubtermRec(Number SRec)>>
+
             %%
             OutInfo = SRec.outInfo
          end
       end
+
       %%
       %%
       meth getSubtermObjOutInfo(Number ?Obj ?OutInfo)
          local SRec in
             <<GetSubtermRec(Number SRec)>>
+
             %%
             Obj = SRec.obj
             OutInfo = SRec.outInfo
          end
       end
+
       %%
       %%
       meth getAnySubtermObjOutInfo(Number ?Obj ?OutInfo)
          local SRec in
             <<GetAnySubtermRec(Number SRec)>>
+
             %%
             Obj = SRec.obj
             OutInfo = SRec.outInfo
          end
       end
+
       %%
       %%
       meth isFirstAny(Number ?IsFirst)
-         IsFirst = case Number == 1 then True
-                   else False
-                   end
+         IsFirst = Number == 1
       end
+
+      %%
       %%
       meth isLastAny(Number ?IsLast)
-         IsLast = case Number == <<RASize($)>> then True
-                  else False
-                  end
+         IsLast = Number == <<RASize($)>>
       end
+
       %%
       %%
       %%  Send a message 'Message' to all subterms;
@@ -342,24 +394,27 @@ in
       meth sendMessages(Message)
          <<MetaSubtermsStore ForAllSend(1 <<RASize($)>> Message)>>
       end
+
       %%
       %%
       meth ForAllSend(Low High Message)
          case Low =< High then
-            local SRec in
-               <<RAGet(Low SRec)>>
-               %%
-               case SRec == EmptySubtermRec then
-                  {BrowserError ['MetaSubtermsStore::ForAllSend: error?']}
-               else {SRec.obj Message}
-               end
-               %%
-               <<MetaSubtermsStore ForAllSend(Low+1 High Message)>>
+            SRec
+         in
+            <<RAGet(Low SRec)>>
+
+            %%
+            case SRec == EmptySubtermRec then
+               {BrowserError ['MetaSubtermsStore::ForAllSend: error?']}
+            else {SRec.obj Message}
             end
+
+            %%
+            <<MetaSubtermsStore ForAllSend(Low+1 High Message)>>
          else true
          end
       end
-      %%
+
       %%
       %%  Apply method 'Message' to all subterms;
       %%  Message format is 'Message(OutInfo N SObj)';
@@ -367,23 +422,27 @@ in
       meth applyMessage(Message)
          <<MetaSubtermsStore ForAllApply(1 <<RASize($)>> Message)>>
       end
+
       %%
       %%
       meth ForAllApply(Low High Message)
          case Low =< High then
-            local SRec in
-               <<RAGet(Low SRec)>>
-               %%
-               case SRec == EmptySubtermRec then
-                  {BrowserError ['MetaSubtermsStore::ForAllAply: error?']}
-               else <<Message(SRec.outInfo Low SRec.obj)>>
-               end
-               %%
-               <<MetaSubtermsStore ForAllApply(Low+1 High Message)>>
+            SRec
+         in
+            <<RAGet(Low SRec)>>
+
+            %%
+            case SRec == EmptySubtermRec then
+               {BrowserError ['MetaSubtermsStore::ForAllAply: error?']}
+            else <<Message(SRec.outInfo Low SRec.obj)>>
             end
+
+            %%
+            <<MetaSubtermsStore ForAllApply(Low+1 High Message)>>
          else true
          end
       end
+
       %%
       %%  Send a message 'Message(Arg)' to all subterms and
       %% collect 'Arg's in the 'List';
@@ -392,27 +451,31 @@ in
       meth sendMessagesArg(Message ?List)
          <<MetaSubtermsStore FoldLSend(1 <<RASize($)>> nil List Message)>>
       end
+
       %%
       %%
       meth FoldLSend(Low High LIn LOut Message)
          case Low =< High then
-            local SRec Method Arg NewLIn in
-               <<RAGet(Low SRec)>>
-               %%
-               case SRec == EmptySubtermRec then
-                  {BrowserError ['MetaSubtermsStore::FoldLSend: error?']}
-                  Arg = InitValue
-               else
-                  Method = Message(Arg)
-                  {SRec.obj Method}
-               end
-               %%
-               NewLIn = Arg|LIn
-               <<MetaSubtermsStore FoldLSend(Low+1 High NewLIn LOut Message)>>
+            SRec Method Arg NewLIn
+         in
+            <<RAGet(Low SRec)>>
+
+            %%
+            case SRec == EmptySubtermRec then
+               {BrowserError ['MetaSubtermsStore::FoldLSend: error?']}
+               Arg = InitValue
+            else
+               Method = Message(Arg)
+               {SRec.obj Method}
             end
+
+            %%
+            NewLIn = Arg|LIn
+            <<MetaSubtermsStore FoldLSend(Low+1 High NewLIn LOut Message)>>
          else LIn = LOut
          end
       end
+
       %%
       %%  Apply the message 'Message'/4 to all subterm objects;
       %%  Message format is 'Message(OutInfoIn N SubtermObj ?OutInfoOut)';
@@ -422,70 +485,84 @@ in
       meth mapObjInd(Message)
          <<MetaSubtermsStore MapInd(1 <<RASize($)>> Message)>>
       end
+
       %%
       %%
       meth MapInd(Low High Message)
          case Low =< High then
-            local SRec Method NewOutInfo NewSRec in
-               <<RAGet(Low SRec)>>
+            SRec Method NewOutInfo NewSRec
+         in
+            <<RAGet(Low SRec)>>
+
+            %%
+            case SRec == EmptySubtermRec then
                %%
-               case SRec == EmptySubtermRec then
-                  %%
-                  {BrowserError ['MetaSubtermsStore::MapInd: error?']}
-               else
-                  Method = Message(SRec.outInfo Low SRec.obj NewOutInfo)
-                  %%
-                  <<Method>>
-                  %%
-                  case {IsValue NewOutInfo} then
-                     NewSRec = {AdjoinAt SRec outInfo NewOutInfo}
-                     <<RAPut(Low NewSRec)>>
-                  end
-               end
+               {BrowserError ['MetaSubtermsStore::MapInd: error?']}
+            else
+               Method = Message(SRec.outInfo Low SRec.obj NewOutInfo)
+
                %%
-               <<MetaSubtermsStore MapInd(Low+1 High Message)>>
+               <<Method>>
+
+               %%
+               {Wait NewOutInfo}
+
+               %%
+               NewSRec = {AdjoinAt SRec outInfo NewOutInfo}
+               <<RAPut(Low NewSRec)>>
             end
+
+            %%
+            <<MetaSubtermsStore MapInd(Low+1 High Message)>>
          else true
          end
       end
+
       %%
       %%  ... almost the same as above, but the message format is
       %%  'Message(OutInfoIn N SubtermObj ArgIn ?ArgOut ?OutInfoOut)';
       %%
       meth mapObjIndArg(Message ArgIn ?ArgOut)
-         <<MetaSubtermsStore MapIndArg(1 <<RASize($)>> ArgIn ArgOut Message)>>
+         <<MetaSubtermsStore
+         MapIndArg(1 <<RASize($)>> ArgIn ArgOut Message)>>
       end
+
       %%
       %%
       meth MapIndArg(Low High ArgIn ArgOut Message)
          case Low =< High then
-            local SRec Method NewOutInfo NewSRec NewArgIn in
-               <<RAGet(Low SRec)>>
+            SRec Method NewOutInfo NewSRec NewArgIn
+         in
+            <<RAGet(Low SRec)>>
+
+            %%
+            case SRec == EmptySubtermRec then
+               {BrowserError ['MetaSubtermsStore::MapIndArg: error?']}
+            else
+               Method = Message(SRec.outInfo Low SRec.obj ArgIn
+                                NewArgIn NewOutInfo)
+
                %%
-               case SRec == EmptySubtermRec then
-                  %%
-                  {BrowserError ['MetaSubtermsStore::MapIndArg: error?']}
-               else
-                  Method = Message(SRec.outInfo Low SRec.obj ArgIn
-                                   NewArgIn NewOutInfo)
-                  %%
-                  <<Method>>
-                  %%
-                  case {IsValue NewOutInfo} then
-                     NewSRec = {AdjoinAt SRec outInfo NewOutInfo}
-                     <<RAPut(Low NewSRec)>>
-                  end
-               end
+               <<Method>>
+
                %%
-               <<MetaSubtermsStore
-               MapIndArg(Low+1 High NewArgIn ArgOut Message)>>
+               {Wait NewOutInfo}
+
+               %%
+               NewSRec = {AdjoinAt SRec outInfo NewOutInfo}
+               <<RAPut(Low NewSRec)>>
             end
+
+            %%
+            <<MetaSubtermsStore
+            MapIndArg(Low+1 High NewArgIn ArgOut Message)>>
          else ArgIn = ArgOut
          end
       end
-      %%
+
       %%
    end
+
    %%
    %%
    %%  Array of subterms for compound terms (but not records with
@@ -501,10 +578,7 @@ in
    %%
    %%  Note that different access methods use different indexes;
    %%
-   class TupleSubtermsStore
-      from MetaSubtermsStore
-      %%
-      %%
+   class TupleSubtermsStore from MetaSubtermsStore
       %%
       %%
       meth subtermsStoreInit(Width AreCommas)
@@ -517,23 +591,26 @@ in
          else
             <<RAInitFixed(Width)>>
          end
+
          %%
          width <- Width
+
          %%
          <<RAForAll(ZeroSubtermRec)>>
       end
+
       %%
       %%  auxiliary - from subtermsStoreInit;
       meth ZeroSubtermRec(E)
          E = EmptySubtermRec
       end
+
       %%
       %%
       meth areCommas(?AreCommas)
-         AreCommas = case @width == <<RASize($)>> then False
-                     else True
-                     end
+         AreCommas = @width \= <<RASize($)>>
       end
+
       %%
       %%  (internal) replacement of proper ones;
       meth !SetSubtermRec(Number SRec)
@@ -545,6 +622,7 @@ in
             <<RAPut(Number SRec)>>
          end
       end
+
       %%
       %%  Every 'set' for a new subterm must be preceded with
       %% 'addSubterm';
@@ -555,22 +633,25 @@ in
          local Width TotalWidth in
             Width = @width
             TotalWidth = <<RASize($)>>
+
             %%
             case Width == TotalWidth then
                <<RAResize(1)>>
                <<RAPut((Width + 1) <<ZeroSubtermRec($)>>)>>
             else
-               local CommasObj in
-                  <<RAGet(TotalWidth CommasObj)>>
-                  <<RAResize(1)>>
-                  <<RAPut((TotalWidth + 1) CommasObj)>>
-                  <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
-               end
+               CommasObj
+            in
+               <<RAGet(TotalWidth CommasObj)>>
+               <<RAResize(1)>>
+               <<RAPut((TotalWidth + 1) CommasObj)>>
+               <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
+
             end
             %%
             width <- Width + 1
          end
       end
+
       %%
       %%  ... is used actually by 'extend' in flat list objects;
       meth addSubterms(NumOf)
@@ -580,56 +661,65 @@ in
          local Width TotalWidth in
             Width = @width
             TotalWidth = <<RASize($)>>
+
             %%
             case Width == TotalWidth then
                <<RAResize(NumOf)>>
                %%
                <<ZeroSRecIndxs((Width + 1) (Width + NumOf))>>
             else
-               local CommasObj in
-                  <<RAGet(TotalWidth CommasObj)>>
-                  <<RAResize(NumOf)>>
-                  <<RAPut((TotalWidth + NumOf) CommasObj)>>
-                  %%
-                  <<ZeroSRecIndxs(TotalWidth (TotalWidth + NumOf - 1))>>
-               end
+               CommasObj
+            in
+               <<RAGet(TotalWidth CommasObj)>>
+               <<RAResize(NumOf)>>
+               <<RAPut((TotalWidth + NumOf) CommasObj)>>
+
+               %%
+               <<ZeroSRecIndxs(TotalWidth (TotalWidth + NumOf - 1))>>
             end
+
             %%
             width <- Width + NumOf
          end
       end
+
       %%
       %%  local method;
       meth ZeroSRecIndxs(Low High)
          case Low =< High then
             <<RAPut(Low <<ZeroSubtermRec($)>>)>>
+
             %%
             <<ZeroSRecIndxs((Low + 1) High)>>
          else true
          end
       end
+
       %%
       %%  replace commas with a (last) subterm;
       meth makeLastSubterm(?CommasObj)
          local TotalWidth in
             TotalWidth = <<RASize($)>>
+
             %%
             case @width == TotalWidth then
                {BrowserError ['TupleSubtermsStore::makeLastSubterm: error']}
+
                %%
                CommasObj = InitValue
             else
                %% 'outInfo' is preserved;
                width <- TotalWidth
+
                %%
                CommasObj = <<RAGet(TotalWidth $)>>.obj
             end
          end
       end
+
       %%
       %%  proper ones;
       meth !GetSubtermRec(Number ?SRec)
-         %%
          case Number > @width then
             {BrowserError
              ['TupleSubtermsStore::getSubtermObj: invalid subterm']}
@@ -637,12 +727,13 @@ in
             <<RAGet(Number SRec)>>
          end
       end
+
       %%
       %%
       meth !GetAnySubtermRec(Number ?SRec)
-         %%
          <<RAGet(Number SRec)>>
       end
+
       %%
       %%
       meth addCommasRec
@@ -650,59 +741,67 @@ in
             {BrowserError ['TupleSubtermsStore::addCommasRec: error']}
          else
             <<RAResize(1)>>
+
             %%
             <<RAPut(<<RASize($)>> <<ZeroSubtermRec($)>>)>>
          end
       end
+
       %%
       %%
       meth getCommasNum(?Num)
          Num = <<RASize($)>>
       end
+
       %%
       %%
       meth setCommasObj(Obj)
          local Width TotalWidth in
             Width = @width
             TotalWidth = <<RASize($)>>
+
             %%
             case Width == TotalWidth then
                {BrowserError
                 ['TupleSubtermsStore::setCommasObj: not implemented']}
             else
-               local CommasRec NewCommasRec in
-                  <<RAGet(TotalWidth CommasRec)>>
-                  NewCommasRec = {AdjoinAt CommasRec obj Obj}
-                  <<RAPut(TotalWidth NewCommasRec)>>
-               end
+               CommasRec NewCommasRec
+            in
+               <<RAGet(TotalWidth CommasRec)>>
+               NewCommasRec = {AdjoinAt CommasRec obj Obj}
+               <<RAPut(TotalWidth NewCommasRec)>>
             end
          end
       end
+
       %%
       %%
       meth setCommasOutInfo(OutInfo)
          local Width TotalWidth in
             Width = @width
             TotalWidth = <<RASize($)>>
+
             %%
             case Width == TotalWidth then
                {BrowserError
                 ['TupleSubtermsStore::setCommasOutInfo: not implemented']}
             else
-               local CommasRec NewCommasRec in
-                  <<RAGet(TotalWidth CommasRec)>>
-                  NewCommasRec = {AdjoinAt CommasRec outInfo OutInfo}
-                  <<RAPut(TotalWidth NewCommasRec)>>
-               end
+               CommasRec NewCommasRec
+            in
+               <<RAGet(TotalWidth CommasRec)>>
+               NewCommasRec = {AdjoinAt CommasRec outInfo OutInfo}
+               <<RAPut(TotalWidth NewCommasRec)>>
             end
          end
       end
+
       %%
       %%  Bogus?
       meth removeCommasRec
          local TotalWidth Width in
             TotalWidth = <<RASize($)>>
             Width = @width
+
             %%
             case Width == TotalWidth then
                {BrowserError
@@ -712,7 +811,10 @@ in
             end
          end
       end
+
+      %%
    end
+
    %%
    %%
    %%  Array of subterms for RecordTermObject;
@@ -724,6 +826,7 @@ in
       attr
          AreSpecs               % is 'True' if there is '?' or '...'
                                 % or '... ?' at the tail;
+
       %%
       %%
       %%
@@ -737,30 +840,35 @@ in
             TotalWidth = Width +
             case AreCommas then 1 else 0 end +
             case AreThereSpecs then 1 else 0 end
+
             %%
             width <- Width
             AreSpecs <- AreThereSpecs
+
             %%
             case AreCommas then
                <<RAInit(TotalWidth)>>
             else
                <<RAInitFixed(TotalWidth)>>
             end
+
             %%
             <<RAForAll(ZeroSubtermRec)>>
-            %%
          end
       end
+
       %%
       %%  auxiliary - from subtermsStoreInit;
       meth ZeroSubtermRec(E)
          E = EmptySubtermRec
       end
+
       %%
       %%
       meth areCommas(?AreCommas)
          local Diff in
             Diff = <<RASize($)>> - @width
+
             %%
             AreCommas = case Diff
                         of 0 then False
@@ -776,24 +884,25 @@ in
                         end
          end
       end
+
       %%
       %%
       meth areSpecs(?Are)
          Are = @AreSpecs
       end
+
       %%
       %%  Yields a number of proper subterm on a number of "any" one,
       %% and zero if 'NIn' is not a number of proper subterm;
       meth getProperNum(NIn ?NOut)
-         %%
          NOut = case NIn =< @width then NIn
                 else 0
                 end
       end
+
       %%
       %%  (internal) replacement of proper ones;
       meth !SetSubtermRec(Number SRec)
-         %%
          case Number > @width then
             {BrowserError
              ['RecordSubtermsStore::SetSubtermRec: invalid subterm']}
@@ -801,6 +910,7 @@ in
             <<RAPut(Number SRec)>>
          end
       end
+
       %%
       %%
       meth addSubterm
@@ -811,11 +921,13 @@ in
             Width = @width
             TotalWidth = <<RASize($)>>
             Diff = TotalWidth - Width
+
             %%
             case Diff
             of 0 then
                <<RAResize(1)>>
                <<RAPut((Width + 1) <<ZeroSubtermRec($)>>)>>
+
                %%
                width <- Width + 1
             [] 1 then
@@ -824,6 +936,7 @@ in
                   <<RAResize(1)>>
                   <<RAPut((TotalWidth + 1) AnyObj)>>
                   <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
+
                   %%
                   width <- Width + 1
                end
@@ -831,12 +944,15 @@ in
                local CommasObj SpecsObj in
                   <<RAGet(TotalWidth SpecsObj)>>
                   <<RAGet((TotalWidth - 1) CommasObj)>>
+
                   %%
                   <<RAResize(1)>>
+
                   %%
                   <<RAPut((TotalWidth + 1) SpecsObj)>>
                   <<RAPut(TotalWidth CommasObj)>>
                   <<RAPut((TotalWidth - 1) <<ZeroSubtermRec($)>>)>>
+
                   %%
                   width <- Width + 1
                end
@@ -845,6 +961,7 @@ in
             end
          end
       end
+
       %%
       %%  ... is used actually by 'extend' in open feature structures;
       meth addSubterms(NumOf)
@@ -855,12 +972,15 @@ in
             Width = @width
             TotalWidth = <<RASize($)>>
             Diff = TotalWidth - Width
+
             %%
             case Diff
             of 0 then
                <<RAResize(NumOf)>>
+
                %%
                <<ZeroSRecIndxs((Width + 1) (Width + NumOf))>>
+
                %%
                width <- Width + NumOf
             [] 1 then
@@ -868,8 +988,10 @@ in
                   <<RAGet(TotalWidth AnyObj)>>
                   <<RAResize(NumOf)>>
                   <<RAPut((TotalWidth + NumOf) AnyObj)>>
+
                   %%
                   <<ZeroSRecIndxs(TotalWidth (TotalWidth + NumOf - 1))>>
+
                   %%
                   width <- Width + NumOf
                end
@@ -877,13 +999,17 @@ in
                local CommasObj SpecsObj in
                   <<RAGet(TotalWidth SpecsObj)>>
                   <<RAGet((TotalWidth - 1) CommasObj)>>
+
                   %%
                   <<RAResize(NumOf)>>
+
                   %%
                   <<RAPut((TotalWidth + 1) SpecsObj)>>
                   <<RAPut(TotalWidth CommasObj)>>
+
                   %%
                   <<ZeroSRecIndxs((TotalWidth - 1) (TotalWidth + NumOf - 2))>>
+
                   %%
                   width <- Width + NumOf
                end
@@ -892,16 +1018,19 @@ in
             end
          end
       end
+
       %%
       %%  local method;
       meth ZeroSRecIndxs(Low High)
          case Low =< High then
             <<RAPut(Low <<ZeroSubtermRec($)>>)>>
+
             %%
             <<ZeroSRecIndxs((Low + 1) High)>>
          else true
          end
       end
+
       %%
       %%
       meth makeLastSubterm(?CommasObj)
@@ -909,40 +1038,46 @@ in
             Width = @width
             TotalWidth = <<RASize($)>>
             Diff = TotalWidth - Width
+
             %%
             case Diff
             of 0 then
                {BrowserError ['RecordSubtermsStore::makeLastSubterm: error']}
+
                %%
                CommasObj = InitValue
             [] 1 then
                case <<areCommas($)>> then
                   %% 'outInfo' is preserved;
                   width <- Width + 1
+
                   %%
                   CommasObj = <<RAGet(TotalWidth $)>>.obj
                else
                   {BrowserError
                    ['RecordSubtermsStore::makeLastSubterm: error N2']}
+
                   %%
                   CommasObj = InitValue
                end
             [] 2 then
                %% 'outInfo' is preserved;
                width <- Width + 1
+
                %%
                CommasObj = <<RAGet((TotalWidth - 1) $)>>.obj
             else
                {BrowserError ['RecordSubtermsStore::makeLastSubterm: error N3']}
+
                %%
                CommasObj = InitValue
             end
          end
       end
+
       %%
       %%  proper ones;
       meth !GetSubtermRec(Number ?SRec)
-         %%
          case Number > @width then
             {BrowserError
              ['RecordSubtermsStore::getSubtermRec: invalid subterm']}
@@ -950,18 +1085,19 @@ in
             <<RAGet(Number SRec)>>
          end
       end
+
       %%
       %%
       meth !GetAnySubtermRec(Number ?SRec)
-         %%
          <<RAGet(Number SRec)>>
       end
+
       %%
       %%
       meth !SetAnySubtermRec(Number ?SRec)
-         %%
          <<RAPut(Number SRec)>>
       end
+
       %%
       %%
       meth addCommasRec
@@ -969,11 +1105,13 @@ in
             Width = @width
             TotalWidth = <<RASize($)>>
             Diff = TotalWidth - Width
+
             %%
             case Diff
             of 0 then
                %% neither commas nor specials;
                <<RAResize(1)>>
+
                %%
                <<RAPut(<<RASize($)>> <<ZeroSubtermRec($)>>)>>
             [] 1 then
@@ -984,8 +1122,10 @@ in
                   local TotalWidth SpecsRec in
                      TotalWidth = <<RASize($)>>
                      SpecsRec = <<RAGet(TotalWidth $)>>
+
                      %%
                      <<RAResize(1)>>
+
                      %%
                      <<RAPut((TotalWidth + 1) SpecsRec)>>
                      <<RAPut(TotalWidth <<ZeroSubtermRec($)>>)>>
@@ -996,17 +1136,20 @@ in
             end
          end
       end
+
       %%
       %%
       meth getCommasNum(?Num)
          Num = <<RASize($)>> - case <<areSpecs($)>> then 1 else 0 end
       end
+
       %%
       %%
       meth setCommasObj(Obj)
          case <<areCommas($)>> then
             local CommasRec NewCommasRec CommasRecNum in
                CommasRecNum = <<getCommasNum($)>>
+
                %%
                <<RAGet(CommasRecNum CommasRec)>>
                NewCommasRec = {AdjoinAt CommasRec obj Obj}
@@ -1017,12 +1160,14 @@ in
              ['TupleSubtermsStore::setCommasObj: not implemented']}
          end
       end
+
       %%
       %%
       meth setCommasOutInfo(OutInfo)
          case <<areCommas($)>> then
             local CommasRec NewCommasRec CommasRecNum in
                CommasRecNum = <<getCommasNum($)>>
+
                %%
                <<RAGet(CommasRecNum CommasRec)>>
                NewCommasRec = {AdjoinAt CommasRec outInfo OutInfo}
@@ -1033,6 +1178,7 @@ in
              ['TupleSubtermsStore::setCommasOutInfo: not implemented']}
          end
       end
+
       %%
       %%
       meth addSpecs
@@ -1040,44 +1186,51 @@ in
             {BrowserError ['RecordSubtermStore::addSpecs: error']}
          else
             <<RAResize(1)>>
+
             %%
             <<RAPut(<<RASize($)>> <<ZeroSubtermRec($)>>)>>
             AreSpecs <- True
          end
       end
+
       %%
       %%
       meth getSpecsObjOutInfo(?Obj ?OutInfo)
          case <<areSpecs($)>> then
-            local SpecsRec NewSpecsRec TotalWidth in
-               TotalWidth = <<RASize($)>>
-               %%
-               <<RAGet(TotalWidth SpecsRec)>>
-               %%
-               Obj = SpecsRec.obj
-               OutInfo = SpecsRec.outInfo
-            end
+            SpecsRec NewSpecsRec TotalWidth
+         in
+            TotalWidth = <<RASize($)>>
+
+            %%
+            <<RAGet(TotalWidth SpecsRec)>>
+
+            %%
+            Obj = SpecsRec.obj
+            OutInfo = SpecsRec.outInfo
          else
             {BrowserError
              ['RecordSubtermsStore::getSpecsObjOutInfo: not implemented']}
          end
       end
+
       %%
       %%
       meth setSpecsObj(Obj)
          case <<areSpecs($)>> then
-            local SpecsRec NewSpecsRec TotalWidth in
-               TotalWidth = <<RASize($)>>
-               %%
-               <<RAGet(TotalWidth SpecsRec)>>
-               NewSpecsRec = {AdjoinAt SpecsRec obj Obj}
-               <<RAPut(TotalWidth NewSpecsRec)>>
-            end
+            SpecsRec NewSpecsRec TotalWidth
+         in
+            TotalWidth = <<RASize($)>>
+
+            %%
+            <<RAGet(TotalWidth SpecsRec)>>
+            NewSpecsRec = {AdjoinAt SpecsRec obj Obj}
+            <<RAPut(TotalWidth NewSpecsRec)>>
          else
             {BrowserError
              ['RecordSubtermsStore::setSpecsObj: not implemented']}
          end
       end
+
       %%
       %%
       meth removeSpecs
@@ -1089,6 +1242,7 @@ in
              ['RecordSubtermsStore::removeSpecs: there were no specs']}
          end
       end
+
       %%
       %%
       %%  Bogus?
@@ -1096,6 +1250,7 @@ in
          local TotalWidth Diff in
             TotalWidth = <<RASize($)>>
             Diff = TotalWidth - @width
+
             %%
             case Diff
             of 0 then
@@ -1120,8 +1275,9 @@ in
             end
          end
       end
+
       %%
    end
-   %%
+
    %%
 end

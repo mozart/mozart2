@@ -215,10 +215,11 @@ in
                    else {GenAtomPrintName self.term}
                    end
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
       %%
@@ -250,10 +251,11 @@ in
                    else {VirtualString.changeSign self.term "~"}
                    end
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
    end
@@ -278,10 +280,11 @@ in
                         else {VirtualString.changeSign self.term "~"}
                         end
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
    end
@@ -307,10 +310,11 @@ in
                    else {GenNamePrintName Term self.store}
                    end
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
    end
@@ -640,11 +644,9 @@ in
          <<MetaTupleTermTermObject
          initMoreSubterms(StartNum NumReuse SubsList EndNum)>>
          %%
-         case {IsValue <<sync($)>>} then
-            %%
-            <<setTailVarNum(EndNum)>>
-         end
+         <<setTailVarNum(EndNum)>>
       end
+
       %%
       %%  Sets 'tailVarNum' properly;
       meth setTailVarNum(OccNum)
@@ -926,36 +928,39 @@ in
                end
             else true
             end
+
             %%
-            case {IsValue AF} then
-               case AF then
-                  %%  This *must* be a job, and *not* a thread!
-                  job
-                     self.recArity = {AtomicFilter RecArity}
-                  end
+            {Wait AF}
+
+            %%
+            case AF then
+               %%  This *must* be a job, and *not* a thread!
+               job
+                  self.recArity = {AtomicFilter RecArity}
+               end
                else self.recArity = RecArity
-               end
-               %%
-               <<reGetSubterms(Subterms)>>
-               %%
-               TWidth = {Width @recFeatures}
-               SWidth = {Store read(StoreWidth $)}
-               %%
-               %%
-               AreSpecs = <<isProperOFS($)>>
-               %%
-               case SWidth < TWidth then
-                  <<subtermsStoreInit(SWidth True AreSpecs)>>
-                  %%
-                  <<createSubtermObjs(1 SWidth Subterms)>>
-               else
-                  <<subtermsStoreInit(TWidth False AreSpecs)>>
-                  %%
-                  <<createSubtermObjs(1 TWidth Subterms)>>
-               end
-               %%
             end
+
             %%
+            <<reGetSubterms(Subterms)>>
+
+            %%
+            TWidth = {Width @recFeatures}
+            SWidth = {Store read(StoreWidth $)}
+
+            %%
+            AreSpecs = <<isProperOFS($)>>
+
+            %%
+            case SWidth < TWidth then
+               <<subtermsStoreInit(SWidth True AreSpecs)>>
+               %%
+               <<createSubtermObjs(1 SWidth Subterms)>>
+            else
+               <<subtermsStoreInit(TWidth False AreSpecs)>>
+               %%
+               <<createSubtermObjs(1 TWidth Subterms)>>
+            end
          end
       end
       %%
@@ -1254,11 +1259,13 @@ in
          local Name in
             %%
             Name = <<getVarName($)>>
+
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
       %%
@@ -1388,11 +1395,13 @@ in
             %%  first subterm in hash-tuple must be a variable name!
             %% (see beneath in :initTypeWatching;)
             Name = <<getVarName($)>>#DLCBraceS#SubInts#DRCBraceS
+
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
          end
       end
       %%
@@ -1509,11 +1518,15 @@ in
             {Show ['Data'#Data 'MetaName'#MetaName
                    'self.strength'#self.strength 'Name'#Name]}
 \endif
+
             %%
-            case {IsValue Name} then
-               self.name = Name
-               <<nil>>
-            end
+            {Wait Name}
+
+            %%
+            self.name = Name
+            <<nil>>
+
+            %%
 \ifdef DEBUG_METAVAR
             {Show 'self.name'#self.name}
 \endif

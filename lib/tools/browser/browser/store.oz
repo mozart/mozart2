@@ -24,12 +24,15 @@ class ProtoStore from UrObject
    %%
    attr
       store: store
-   %%
+
    %%
    %%  Add (or replace) some value to store;
    %%
    meth store(What Value)
-      local Store = @store in
+      local Store in
+         Store = @store
+
+         %%
          store <- {AdjoinAt Store What Value}
       end
    end
@@ -41,7 +44,8 @@ class ProtoStore from UrObject
       Store
    in
       Store = @store
-      %%
+
+      %% relational!
       if V in V = Store.What then Value = V
       else {BrowserError
             ['Attempt to read undefined parameter in store: ' What]}
@@ -55,7 +59,8 @@ class ProtoStore from UrObject
       Store
    in
       Store = @store
-      %%
+
+      %% relational!
       if _ = Store.What then Result = True
       else Result = False
       fi
@@ -67,13 +72,23 @@ class ProtoStore from UrObject
    meth dShow(What)
       Store
    in
+      Store = @store
+
+      %% replational!
       if V in V = Store.What then {Show V}
       else {Show '*** undefined parameter ***'}
       fi
    end
+
+   %%
    meth dShowAll
-      local Store = @store in
+      local Store in
+         Store = @store
+
+         %%
          {ForAll {Arity Store} proc {$ Feature} {Show Store.Feature} end}
       end
    end
+
+   %%
 end

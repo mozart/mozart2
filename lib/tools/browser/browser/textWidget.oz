@@ -88,10 +88,11 @@ in
       %%
       %%  scroll to tag;
       meth scrollToTag(Tag)
-         case {IsValue Tag} then
-            {self.widgetObj pickTagLast(Tag)}
-            <<nil>>
-         end
+         {Wait Tag}
+
+         %%
+         {self.widgetObj pickTagLast(Tag)}
+         <<nil>>
       end
       %%
       %%  delete '\n' and its mark;
@@ -714,12 +715,14 @@ in
                     else InitValue
                     end
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
          end
       end
       %%
@@ -766,12 +769,14 @@ in
                     else InitValue
                     end
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
          end
       end
       %%
@@ -816,12 +821,14 @@ in
                     else InitValue
                     end
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
          end
       end
       %%
@@ -866,18 +873,20 @@ in
                     else InitValue
                     end
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-               %%
-               case @refVarName == '' then true
-               else
-                  size <- @size + DSpace + {VSLength @refVarName} +
-                  case <<needsBracesRef($)>> then DDSpace else 0 end
-               end
-               %%
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
+
+            %%
+            case @refVarName == '' then true
+            else
+               size <- @size + DSpace + {VSLength @refVarName} +
+               case <<needsBracesRef($)>> then DDSpace else 0 end
             end
          end
       end
@@ -1090,11 +1099,12 @@ in
                %%  Practically these conditions seem to be enough;
                %%
 \ifdef DEBUG_TW
-               case
-                  {IsValue StartOffset} andthen
-                  {IsValue MetaSize} andthen
-                  {IsValue ActualTWWidth}
-               then
+               job
+                  {Wait StartOffset}
+                  {Wait MetaSize}
+                  {Wait ActualTWWidth}
+
+                  %%
                   {Show 'MetaTupleTWTermObject::checkLayout is applied '#
                    self.term}
                   {Show StartOffset#MetaSize#ActualTWWidth}
@@ -1138,10 +1148,10 @@ in
                      %% is not actually interesting - only sync;
                      <<mapObjIndArg(AdjustGlue StartSubOffset OutOffset)>>
                      %%
-                     case {IsValue OutOffset}
-                     then
-                        <<nil>>
-                     end
+                     {Wait OutOffset}
+
+                     %%
+                     <<nil>>
                   end
                end
             end
@@ -1337,15 +1347,15 @@ in
                %%
                {self.widgetObj [genTkName(TmpTag) duplicateTag(Tag TmpTag)]}
                %%
-               case
-                  {IsValue TmpTag} andthen {IsValue <<setUndrawn($)>>}
-               then
-                  {self.widgetObj [delete(TmpTag) deleteTag(TmpTag)]}
-                  %%
-                  <<nil>>
-                  %%
-                  Sync = True
-               end
+               {Wait TmpTag}
+               {Wait <<setUndrawn($)>>}
+
+               %%
+               {self.widgetObj [delete(TmpTag) deleteTag(TmpTag)]}
+
+               %%
+               <<nil>>
+               Sync = True
             end
          else
             Sync = True
@@ -1394,7 +1404,10 @@ in
             %%
             <<DrawSubterm(OutInfo N Obj nil Syncs _)>>
             %%
-            case {IsValue Syncs.1} then <<nil>> end
+            {Wait Syncs.1}
+
+            %%
+            <<nil>>
          end
       end
       %%
@@ -1467,12 +1480,12 @@ in
                         %%
                         %%
                         %%  The 'checkLayout' method should be applied later;
-                        case {IsValue {Obj draw(OldMark $)}} then
-                           %%
-                           %%  'meta' size of the subterm just added should
-                           %% be already there (by 'InitOutInfoRec');
-                           size <- @size + DSpace
-                        end
+                        {Wait {Obj draw(OldMark $)}}
+
+                        %%
+                        %%  'meta' size of the subterm just added should
+                        %% be already there (by 'InitOutInfoRec');
+                        size <- @size + DSpace
                      end
                   end
                end
@@ -1484,18 +1497,20 @@ in
                   %% (and, actually, destroyed) already;
                   %%
                   ObjSize = {Obj getSize($)}
-                  case {IsValue ObjSize} then
-                     %%
-                     NewOutInfo = {AdjoinAt OutInfo size ObjSize}
-                     <<setSubtermOutInfo(N NewOutInfo)>>
-                     %%
-                     case {IsValue {Obj draw(OutInfo.mark $)}} then
-                        %%
-                        %%  subtract old subterm's 'meta' size and add
-                        %% it from the new one;
-                        size <- @size - OutInfo.size + ObjSize
-                     end
-                  end
+                  %%
+                  {Wait ObjSize}
+
+                  %%
+                  NewOutInfo = {AdjoinAt OutInfo size ObjSize}
+                  <<setSubtermOutInfo(N NewOutInfo)>>
+
+                  %%
+                  {Wait {Obj draw(OutInfo.mark $)}}
+
+                  %%
+                  %%  subtract old subterm's 'meta' size and add
+                  %% it from the new one;
+                  size <- @size - OutInfo.size + ObjSize
                end
             end
          end
@@ -1573,12 +1588,16 @@ in
             TagId = {self.widgetObj initBindings(self $)}
             %%
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               %%
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -1652,34 +1671,35 @@ in
                   %% '=', '[' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -1733,19 +1753,20 @@ in
             NameGlueMark = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
+            {Wait Tag}
+            {Wait NameGlueMark}
+            {Wait TagId}
+
             %%
-            case
-               {IsValue Tag} andthen
-               {IsValue NameGlueMark} andthen
-               {IsValue TagId}
-            then
-               self.tag = Tag
-               self.tagId = TagId
-               self.nameGlueMark = NameGlueMark
-               %%
-               shown <- False
-            end
+            self.tag = Tag
+            self.tagId = TagId
+            self.nameGlueMark = NameGlueMark
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -1826,33 +1847,35 @@ in
                   %% '=', 'self.name', '(' and '@refVarName' itself;
                end
             end
-            %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
-               %%
-               <<checkLayout>>
 
-               %%  Draw the subterms;
+            %%
+            {Wait TmpMark}
+
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
+
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -2134,15 +2157,19 @@ in
             TagId = {self.widgetObj initBindings(self $)}
             %%
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               %%
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
             %%
+            self.tag = Tag
+            self.tagId = TagId
+
+            %%
+            shown <- False
+
             %%  single '|';
             size <- DSpace
+
             %%
             case @refVarName == '' then
                %%
@@ -2245,34 +2272,35 @@ in
                   %% '=', '(' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -2327,14 +2355,18 @@ in
             Tag = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
+            {Wait Tag}
+            {Wait TagId}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               %%
-               shown <- False
-            end
+            self.tag = Tag
+            self.tagId = TagId
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -2443,34 +2475,35 @@ in
                   %% '=', '(' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -2525,14 +2558,18 @@ in
             Tag = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
+            {Wait Tag}
+            {Wait TagId}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               %%
-               shown <- False
-            end
+            self.tag = Tag
+            self.tagId = TagId
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -2647,34 +2684,35 @@ in
                   %% '=', '(' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -2706,16 +2744,20 @@ in
                                 twInfo(mark:     NewMark
                                        glueSize: DSpace)}
             <<setSubtermOutInfo(Width NewLastSTOutInfo)>>
+
             %%
-            case {IsValue {Obj draw(OldMark $)}} then
-               NewOutInfo = {Adjoin OutInfo
+            {Wait {Obj draw(OldMark $)}}
+
+            %%
+            NewOutInfo = {Adjoin OutInfo
                              twInfo(glueSize: LastSTOutInfo.glueSize
                                     mark:     OldMark)}
-               %%
-               <<setCommasOutInfo(NewOutInfo)>>
-               %%
-               size <- @size + DSpace   % new simple glue;
-            end
+
+            %%
+            <<setCommasOutInfo(NewOutInfo)>>
+
+            %%
+            size <- @size + DSpace   % new simple glue;
          end
       end
       %%
@@ -3162,12 +3204,12 @@ in
                            <<setSubtermOutInfo(N NewOutInfo)>>
                            %%
                         end
+
                         %%
+                        {Wait {Obj draw(OldMark $)}}
+
                         %%
-                        case {IsValue {Obj draw(OldMark $)}} then
-                           %%
-                           size <- @size + DSpace
-                        end
+                        size <- @size + DSpace
                      end
                   end
                end
@@ -3196,33 +3238,30 @@ in
                      %%
                      LSync = True
                   end
-                  %%
+
                   %%  there were a subterm before;
                   %%  Note that that subterm should be undrawn
                   %% (and, actually, destroyed) already;
-                  case
-                     {IsValue LSync} andthen
-                     {IsValue {Obj [getSize(ObjSize) draw(Mark $)]}}
-                  then
-                     %%
+                  {Wait LSync}
+                  {Wait {Obj [getSize(ObjSize) draw(Mark $)]}}
+
+                  %%
 \ifdef DEBUG_TW
-                     case OutInfo.prfxSize \= 0 then
-                        {BrowserError
-                         ['MetaRecordTWTermObj::drawNewSubterm: error']}
-                     else true
-                     end
-\endif
-                     %%
-                     %%  Preserve the 'glueSize' fields' value!
-                     NewOutInfo = {Adjoin OutInfo
-                                   twInfo(size: ObjSize
-                                          prfxSize: PrfxSize)}
-                     <<setSubtermOutInfo(N NewOutInfo)>>
-                     %%
-                     %%  subtract old subterm's 'meta' size and add
-                     %% it from the new one;
-                     size <- @size - OutInfo.size + ObjSize + PrfxSize
+                  case OutInfo.prfxSize \= 0 then
+                     {BrowserError
+                      ['MetaRecordTWTermObj::drawNewSubterm: error']}
+                  else true
                   end
+\endif
+                  %%  Preserve the 'glueSize' fields' value!
+                  NewOutInfo = {Adjoin OutInfo
+                                twInfo(size: ObjSize
+                                       prfxSize: PrfxSize)}
+                  <<setSubtermOutInfo(N NewOutInfo)>>
+
+                  %%  subtract old subterm's 'meta' size and add
+                  %% it from the new one;
+                  size <- @size - OutInfo.size + ObjSize + PrfxSize
                end
             end
          end
@@ -3265,18 +3304,21 @@ in
                                 twInfo(mark:     NewMark
                                        glueSize: DSpace)}
             <<setSubtermOutInfo(Width NewLastSTOutInfo)>>
+
             %%
-            case {IsValue {Obj draw(OldMark $)}} then
-               NewOutInfo = {Adjoin OutInfo
-                             twInfo(glueSize: LastSTOutInfo.glueSize
-                                    mark:     OldMark
-                                    prfxSize: 0)}
-               %%
-               <<setCommasOutInfo(NewOutInfo)>>
-               %%
-               size <- @size + DSpace
-               %%
-            end
+            {Wait {Obj draw(OldMark $)}}
+
+            %%
+            NewOutInfo = {Adjoin OutInfo
+                          twInfo(glueSize: LastSTOutInfo.glueSize
+                                 mark:     OldMark
+                                 prfxSize: 0)}
+
+            %%
+            <<setCommasOutInfo(NewOutInfo)>>
+
+            %%
+            size <- @size + DSpace
          end
       end
       %%
@@ -3307,19 +3349,20 @@ in
             NameGlueMark = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
+            {Wait Tag}
+            {Wait NameGlueMark}
+            {Wait TagId}
+
             %%
-            case
-               {IsValue Tag} andthen
-               {IsValue NameGlueMark} andthen
-               {IsValue TagId}
-            then
-               self.tag = Tag
-               self.tagId = TagId
-               self.nameGlueMark = NameGlueMark
-               %%
-               shown <- False
-            end
+            self.tag = Tag
+            self.tagId = TagId
+            self.nameGlueMark = NameGlueMark
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -3414,34 +3457,35 @@ in
                   %% '=', 'self.name', '(' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
-               %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -3497,19 +3541,20 @@ in
             NameGlueMark = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
+            {Wait Tag}
+            {Wait NameGlueMark}
+            {Wait TagId}
+
             %%
-            case
-               {IsValue Tag} andthen
-               {IsValue NameGlueMark} andthen
-               {IsValue TagId}
-            then
-               self.tag = Tag
-               self.tagId = TagId
-               self.nameGlueMark = NameGlueMark
-               %%
-               shown <- False
-            end
+            self.tag = Tag
+            self.tagId = TagId
+            self.nameGlueMark = NameGlueMark
+
+            %%
+            shown <- False
+
             %%
             case <<areCommas($)>> then
                %%
@@ -3609,36 +3654,37 @@ in
                   %% '=', 'self.name', '(' and '@refVarName' itself;
                end
             end
+
             %%
-            case {IsValue TmpMark} then
-               %%  Resulting mark is consumed ('_' for third arg);
-               <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
-               %%
-               shown <- True
+            {Wait TmpMark}
 
-               %%
-               <<checkLayout>>
+            %%  Resulting mark is consumed ('_' for third arg);
+            <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
+            %%
+            shown <- True
 
-               %%  Draw the subterms;
+            %%
+            <<checkLayout>>
+
+            %%  Draw the subterms;
+            %%
+            %%  NOTE
+            %%  All the subterms are drawn concurrently, but after
+            %% finishing the 'checkLayout' for the term itself.
+            %% It means that some 'checkLayout' of subterms may use
+            %% invalid actual subterm offset (because its
+            %% predecessor is not yet drawn completely), but this is
+            %% not a problem: if there is more than one subterm in a
+            %% row, they fit altogether in this line (and, in turn,
+            %% all their glues are simple).
+            %%
+            <<mapObjIndArg(DrawSubterm nil SyncList)>>
+            case {All SyncList IsValue} then
+               Sync = True
                %%
-               %%  NOTE
-               %%  All the subterms are drawn concurrently, but after
-               %% finishing the 'checkLayout' for the term itself.
-               %% It means that some 'checkLayout' of subterms may use
-               %% invalid actual subterm offset (because its
-               %% predecessor is not yet drawn completely), but this is
-               %% not a problem: if there is more than one subterm in a
-               %% row, they fit altogether in this line (and, in turn,
-               %% all their glues are simple).
+               <<initTypeWatching>>
                %%
-               <<mapObjIndArg(DrawSubterm nil SyncList)>>
-               case {All SyncList IsValue} then
-                  Sync = True
-                  %%
-                  <<initTypeWatching>>
-                  %%
-                  <<initBindings>>
-               end
+               <<initBindings>>
             end
          end
       end
@@ -3924,23 +3970,26 @@ in
             Tag = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-               %%
-               case {self.store read(StoreHeavyVars $)} then
-                  size <- DInfinite   % heavy enough ;)))))
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
+
+            %%
+            case {self.store read(StoreHeavyVars $)} then
+               size <- DInfinite   % heavy enough ;)))))
+            else
+               case @refVarName == '' then true
                else
-                  case @refVarName == '' then true
-                  else
-                     size <- @size + DSpace + {VSLength @refVarName} +
-                     case <<needsBracesRef($)>> then DDSpace else 0 end
-                  end
+                  size <- @size + DSpace + {VSLength @refVarName} +
+                  case <<needsBracesRef($)>> then DDSpace else 0 end
                end
-               %%
             end
          end
       end
@@ -4085,13 +4134,16 @@ in
             Tag = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength @name}
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength @name}
+            shown <- False
          end
       end
       %%
@@ -4132,13 +4184,16 @@ in
             Tag = {self.widgetObj genTkName($)}
             %%
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- DTSpace
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- DTSpace
+            shown <- False
          end
       end
       %%
@@ -4180,13 +4235,16 @@ in
             %%
             %%  ... are always active (to be able to 'Show' them);
             TagId = {self.widgetObj initBindings(self $)}
+
             %%
-            case {IsValue Tag} andthen {IsValue TagId} then
-               self.tag = Tag
-               self.tagId = TagId
-               size <- {VSLength self.name}
-               shown <- False
-            end
+            {Wait Tag}
+            {Wait TagId}
+
+            %%
+            self.tag = Tag
+            self.tagId = TagId
+            size <- {VSLength self.name}
+            shown <- False
          end
       end
       %%

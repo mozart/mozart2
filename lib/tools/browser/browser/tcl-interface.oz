@@ -252,8 +252,10 @@ in
                 end
              end
              True FSSync}
+
             %%
-            case {IsValue FSSync} then <<nil>> end
+            {Wait FSSync}
+
             %%
             VS = {New Tk.scrollbar tkInit(parent: Window
                                           relief: IFrameRelief
@@ -558,8 +560,12 @@ in
             %%
             YRes = {Tk.returnInt winfo(reqheight @TestTW)}
             XRes = {Tk.returnInt winfo(reqwidth @TestTW)}
+
             %%
-            case {IsValue XRes} then <<nil>> end
+            {Wait XRes}
+
+            %%
+            <<nil>>
          else
             %%
             YRes = XRes = 0
@@ -643,10 +649,12 @@ in
                   {Tk update(idletasks)}
                   %%
                   {Tk.return winfo(exists @browseWidget) Sync}
+
                   %%
-                  case {IsValue {String.toAtom Sync}} then
-                     <<nil>>
-                  end
+                  {Wait {String.toAtom Sync}}
+
+                  %%
+                  <<nil>>
                else
                   {BrowserWarning ['Impossible window size wrt limits']}
                end
@@ -866,39 +874,39 @@ in
                      XMinSize = 2*IPad + 2*ISmallBorder + MFWidth
                   end
                end
+
                %%
-               %%
-               case {IsValue XMinSize} andthen {IsValue YMinSize} then
+               {Wait XMinSize}
+               {Wait YMinSize}
+
+               %% force the minsize of the window;
+               local XSizeS YSizeS XSize YSize in
+                  {Tk.return winfo(height @window) YSizeS}
+                  {Tk.return winfo(width @window) XSizeS}
+                  {Tk wm(minsize @window XMinSize YMinSize)}
+
                   %%
-                  %% force the minsize of the window;
-                  local XSizeS YSizeS XSize YSize in
-                     {Tk.return winfo(height @window) YSizeS}
-                     {Tk.return winfo(width @window) XSizeS}
-                     {Tk wm(minsize @window XMinSize YMinSize)}
+                  XSize = {String.toInt XSizeS}
+                  YSize = {String.toInt YSizeS}
+
+                  %%
+                  %% relational;
+                  case XMinSize =< XSize andthen YMinSize =< YSize
+                  then true
+                  elsecase XSize < XMinSize andthen YMinSize =< YSize then
+                     {Tk wm(geometry @window XMinSize#'x'#YSizeS)}
                      %%
                      %%
-                     XSize = {String.toInt XSizeS}
-                     YSize = {String.toInt YSizeS}
+                     <<resetTW>>
+                  elsecase YSize < YMinSize andthen XMinSize =< XSize then
+                     {Tk wm(geometry @window XSizeS#'x'#YMinSize)}
+                     %%
+                     <<resetTW>>
+                  else
+                     {Tk wm(geometry @window XMinSize#'x'#YMinSize)}
                      %%
                      %%
-                     %% relational;
-                     case XMinSize =< XSize andthen YMinSize =< YSize
-                     then true
-                     elsecase XSize < XMinSize andthen YMinSize =< YSize then
-                        {Tk wm(geometry @window XMinSize#'x'#YSizeS)}
-                        %%
-                        %%
-                        <<resetTW>>
-                     elsecase YSize < YMinSize andthen XMinSize =< XSize then
-                        {Tk wm(geometry @window XSizeS#'x'#YMinSize)}
-                        %%
-                        <<resetTW>>
-                     else
-                        {Tk wm(geometry @window XMinSize#'x'#YMinSize)}
-                        %%
-                        %%
-                        <<resetTW>>
-                     end
+                     <<resetTW>>
                   end
                end
             end
@@ -943,16 +951,11 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: insert:'#Mark}
 \endif
-         local BrowseWidget in
-            BrowseWidget = @browseWidget
-            %% suspensions don't works: the sequence of corresponding wakeup's
-            %% isn't defined!
-            %% if {IsValue Mark} {IsValue Atom} then
-            %%
-            {BrowseWidget tk(insert(Mark VS))}
-            <<nil>>
-            %% fi
-         end
+         %%
+         {@browseWidget tk(insert(Mark VS))}
+
+         %%
+         <<nil>>
       end
       %%
       %%
@@ -2344,11 +2347,13 @@ in
             %%
             %% {Window tkBind(event:'<Destroy>'
             %%             action: proc {$} {self destroyClose} end)}
-            %%
+
             %% sync;
-            case {IsValue Window} andthen {IsValue MessageWidget} then
-               <<nil>>
-            end
+            {Wait Window}
+            {Wait MessageWidget}
+
+            %%
+            <<nil>>
          end
       end
       %%

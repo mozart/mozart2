@@ -27,6 +27,7 @@ local
    ReflectTerm
 in
    %%
+
    %%
    %%  Aux: check whether the actual blackboard is a deep one;
    %%
@@ -34,14 +35,14 @@ in
       local RootCluster CurrentCluster in
          RootCluster = {System.getValue 0 root}
          CurrentCluster = {System.getValue 0 currentBlackboard}
-         %%
+
          %%
          case RootCluster == CurrentCluster then False
          else True
          end
       end
    end
-   %%
+
    %%
    %%  Check whether the given term (Term) was already seen.
    %%  Otherwise insert it list of seen terms;
@@ -49,27 +50,31 @@ in
    proc {IsSeen Term ReflectedTerm ListOfSeen ?NewList ?Status}
       %% ReflectedTerm is in/out both;
       %% relational;
-      case {Some
-          ListOfSeen
-          fun {$ X}
-             %%
-             %% relational!
-             %%< if X.1 = Term then true
-             %%< [] true then False
-             %%< fi
-             case {EQ X.1 Term} then True else False end
-          end} then
+      case {Some ListOfSeen
+            fun {$ X}
+               {EQ X.1 Term}
+
+               %%
+               %%< relational!
+               %%< if X.1 = Term then true
+               %%< [] true then False
+               %%< fi
+            end}
+      then
          {ForAll ListOfSeen
           proc {$ X}
+             case {EQ X.1 Term} then X.2 = ReflectedTerm
+             else true
+             end
+
              %%
              %% relational!
              %%< if X.1 = Term then X.2 = ReflectedTerm
              %%< [] true then true
              %%< fi
-             case {EQ X.1 Term} then X.2 = ReflectedTerm
-             else true
-             end
           end}
+
+         %%
          Status = True
          NewList = ListOfSeen
       else
@@ -77,6 +82,7 @@ in
          NewList = (Term#ReflectedTerm)|ListOfSeen
       end
    end
+
    %%
    %%
    %%
@@ -92,7 +98,7 @@ in
          ListOf
       end
    end
-   %%
+
    %%
    %%
    %%  HO: run over the tuple subterms with a list of already seen subterms;
@@ -107,7 +113,7 @@ in
          ListOut = ListIn
       fi
    end
-   %%
+
    %%
    %%  HO: ... for records;
    %%
@@ -121,6 +127,7 @@ in
          ListOut = ListIn
       fi
    end
+
    %%
    %%  Convert an incomplete list to the wf-list (non-monotonically);
    fun {GetWFList LIn}
@@ -131,7 +138,7 @@ in
       [] _ then nil
       end
    end
-   %%
+
    %%
    %%  The reflect function itself;
    %%
@@ -143,7 +150,7 @@ in
          else
             case {IsVar TermIn} then
                %%
-               %% relational;
+               %%
                if {IsRecordCVar TermIn} then
                   %%
                   %%  convert an OFS to the proper record non-monotonically;
@@ -152,11 +159,12 @@ in
                      %%  'RLabel' will be determined later!
                      Arity = {RecordC.monitorArity TermIn True}
                      KnownArity = {GetWFList Arity}
-                     %%
+
                      %% relational;
                      if L in {LabelC TermIn L} then RLabel = L
                      [] true then RLabel = '_'
                      fi
+
                      %%
                      TermOut = {Record RLabel KnownArity}
                      {RecordReflectLoop KnownArity TmpList
@@ -185,11 +193,15 @@ in
                             fi
                          end
                          SubInts}
+
+                        %%
                         TermOut =
                         {AtomConcatAll [{System.getPrintName TermIn}
                                         '{' SubInts ' }']}
                      end
-                  elseif {IsMetaVar TermIn} then ThPrio = {Thread.getPriority} in
+                  elseif {IsMetaVar TermIn} then
+                     ThPrio = {Thread.getPriority} in
+
                      %%  critical section!
                      {Thread.setHighIntPri}
                      %%
@@ -203,6 +215,7 @@ in
                   else
                      TermOut = {System.getPrintName TermIn }
                   end
+
                   %%
                   ListOut = TmpList
                end
@@ -222,8 +235,12 @@ in
                                 ['<Name: ' {System.getPrintName TermIn } ' @ '
                                  {IntToAtom {System.getValue TermIn addr}} '>']}
                   end
+
+                  %%
                   ListOut = TmpList
-               elsecase {IsRecord TermIn} then Arity LabelOf in
+               elsecase {IsRecord TermIn} then
+                  Arity LabelOf
+               in
                   Arity = {RealArity TermIn}
                   case {IsProcedure TermIn} then
                      case {IsObject TermIn} then
@@ -243,28 +260,34 @@ in
                                 ['<Cell: ' {System.getPrintName TermIn } ' @ '
                                  {IntToAtom {System.getValue TermIn cellName}} '>']}
                   else
-                     local L in
-                        L = {Label TermIn}
-                        case {IsName L} then
-                           LabelOf = {AtomConcatAll
-                                      ['<Name: '
-                                       {System.getPrintName L } ' @ '
-                                       {IntToAtom {System.getValue L addr}} '>']}
-                        else
-                           LabelOf = L
-                        end
+                     L
+                  in
+                     L = {Label TermIn}
+
+                     %%
+                     case {IsName L} then
+                        LabelOf = {AtomConcatAll
+                                   ['<Name: '
+                                    {System.getPrintName L } ' @ '
+                                    {IntToAtom {System.getValue L addr}} '>']}
+                     else
+                        LabelOf = L
                      end
                   end
 
-                  %
+                  %%
                   TermOut = {Record LabelOf Arity}
                   {RecordReflectLoop Arity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
                    end
                   ListOut}
-               elsecase {IsTuple TermIn} then  Subterms in
+               elsecase {IsTuple TermIn} then
+                  Subterms
+               in
                   Subterms = {TupleSubterms TermIn}
+
+                  %%
                   TermOut = {Tuple {Label TermIn} {Length Subterms}}
                   {TupleReflectLoop Subterms 1 TmpList
                    fun {$ Num ST ListIn ListOut}
@@ -287,10 +310,13 @@ in
    fun {Reflect Term}
       local IsDeep S ReflectedTerm in
          IsDeep = {IsDeepGuard}
+
+         %%
          case IsDeep then
             {ReflectTerm Term nil ReflectedTerm _}
             S = {SolveCombinator proc {$ X} X = ReflectedTerm end}
-            % relational;
+
+            %% relational;
             case S of solved(P) then {P}
             else 'error by the reflection'
             end

@@ -2344,14 +2344,15 @@ local
 
       meth doAssignAccess(Ctrl)
          Self = {Ctrl getSelf($)}
-         Fea  = {GetData {Nth @actualArgs 1}}
+         FeaV = {Nth @actualArgs 1}
+         Fea  = {GetData FeaV}
          CTok = {Self getValue($)}
          Attrs= {CTok getAttributes($)}
          Props= {CTok getProperties($)}
       in
          case
             Attrs==unit
-            orelse {Not {DetTests.det Fea}}
+            orelse {Not {DetTests.det FeaV}}
             orelse {Member Fea Attrs}
          then
             skip

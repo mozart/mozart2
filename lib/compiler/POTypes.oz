@@ -247,6 +247,7 @@ in
                nilAtom # atom     cons   # tuple
                bool   # name     'unit' # name
                array  # chunk    dictionary # chunk
+               bitArray # chunk
                'class'# chunk    'object'# chunk
                'lock'   # chunk  port   # chunk
                'procedure/0' # value
@@ -306,6 +307,7 @@ in
         object:   {OzTypes.new object nil}
         array:    {OzTypes.new array nil}
         dict:     {OzTypes.new dictionary nil}
+        bitArray: {OzTypes.new bitArray nil}
         port:     {OzTypes.new port nil}
         'lock':   {OzTypes.new 'lock' nil}
         space:    {OzTypes.new space nil}
@@ -390,8 +392,10 @@ in
             then TypeConstants.'lock'
             elsecase {IsPort V}
             then TypeConstants.port
+            elsecase {BitArray.is V}
+            then TypeConstants.bitArray
             else {OzTypes.new chunk [array dictionary 'class'
-                                     'object' 'lock' port]}
+                                     'object' 'lock' port bitArray]}
             end
          elsecase {IsSpace V}
          then TypeConstants.space

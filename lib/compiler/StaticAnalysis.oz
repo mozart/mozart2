@@ -264,6 +264,7 @@ local
         chunk:             IsChunk
         array:             IsArray
         dictionary:        IsDictionary
+        bitArray:          BitArray.is
         'class':           IsClass
         object:            fun {$ X}
                               {IsObject X} andthen

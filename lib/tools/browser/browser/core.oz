@@ -24,7 +24,7 @@ IntToAtom = {`Builtin` 'intToAtom'
 
 %%
 %%  (of course, non-monotonic operations;)
-IsVar = {`Builtin` 'isVarB' noHandler}
+IsVar = {`Builtin` 'isVar' noHandler}
 IsFdVar = {`Builtin` 'fdIsVarB' noHandler}
 IsRecordCVar = {`Builtin` 'recordCIsVarB' noHandler}
 IsMetaVar = {`Builtin` 'metaIsVarB' noHandler}

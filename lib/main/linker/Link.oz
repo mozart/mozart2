@@ -85,6 +85,7 @@ local
    local
       proc {DoFind Url ToInclude InclMap ExclMap FuncMap}
          UrlKey = {UrlToAtom Url}
+         {System.show url(UrlKey)}
       in
          try
             if {Dictionary.member InclMap UrlKey}

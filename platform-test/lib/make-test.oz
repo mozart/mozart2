@@ -320,18 +320,18 @@ local
           threads(type:int optional:false default:1))
 
 in
-   {Application.syslet
-    './make-test'
     functor $
 
     import
        Application
        System
-       Syslet.{Argv = args Exit = exit}
+       Syslet.{Argv=args Exit=exit spec}
        Module
        Pickle
 
     body
+       Syslet.spec = single(verbose(type:bool default:false))
+
        fun {X2V X}
           {System.valueToVirtualString X 100 100}
        end
@@ -401,16 +401,15 @@ in
        local
           Engine = {MakeTestEngine Keys Tests}
        in
-          {Application.syslet
+          {Application.save
            './oztest'
 
            functor $ prop once
            import Module Syslet
            body
+              Syslet.spec = TestOptions
               {Syslet.exit {{Module.link '' Engine}.run Syslet.args}}
-           end
-
-           TestOptions}
+           end}
 
           {Pickle.save
            Engine
@@ -420,7 +419,5 @@ in
        {Exit 0}
 
     end
-    single(verbose(type:bool default:false))
-   }
 
 end

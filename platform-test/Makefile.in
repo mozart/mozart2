@@ -90,7 +90,7 @@ $(COMPONENTS): dirs
 oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
-        $(OZEE) -l Application lib/make-test.oz
+        $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
         ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
         -rm -f ./make-test
 

@@ -232,7 +232,7 @@ IFrameRelief  = sunken
 IButtonRelief = raised
 
 %% width (or height) of scrollbars (pixels);
-ISWidth       = 15
+ISWidth       = 13
 
 %%
 %% default font for text widgets, 'x' and 'y' resolutions for it;

@@ -33,6 +33,7 @@ NewOpen
 NewPickle
 NewCompiler
 NewModule
+UrlDefaults
 in
 \insert 'sp/System.oz'
 = NewSystem
@@ -65,6 +66,8 @@ in
 = NewCompiler
 
 \insert 'init/Module.oz'
+
+UrlDefaults = \insert '../url-defaults.oz'
 
 {{`Builtin` 'save' 2}
  proc instantiate {$}
@@ -109,12 +112,12 @@ in
              'Pickle'  # Pickle
              'Compiler'# Compiler]
      proc {$ A#M}
-        {Module.enter 'http://www.ps.uni-sb.de/ozhome/lib/'#A#'.ozf' M}
+        {Module.enter UrlDefaults.home#'lib/'#A#UrlDefaults.'functor' M}
      end}
 
     \insert BatchCompile
  in
     {System.exit {BatchCompile {Map {System.get argv} Atom.toString}}}
- end 'ozc.ozp'}
+ end 'ozc'#UrlDefaults.pickle}
 
 {{`Builtin` 'shutdown' 1} 0}

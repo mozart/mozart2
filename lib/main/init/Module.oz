@@ -37,8 +37,12 @@
 
 local
 
-   MozartUrl  = 'http://www.ps.uni-sb.de/ozhome/'
-   FunExt     = '.ozf'
+   local
+      UrlDefaults = \insert '../../url-defaults.oz'
+   in
+      FunExt    = UrlDefaults.'functor'
+      MozartUrl = UrlDefaults.'home'
+   end
 
 \ifndef OZM
    local
@@ -236,6 +240,7 @@ in
                          end
                       enter:
                          proc {$ UrlV Module}
+                            {Trace '[Module] Enter: '#UrlV#'\n'}
                             Url={RURL.vsToUrl UrlV}
                          in
                             {ModuleMap.put {RURL.urlToKey Url}
@@ -245,6 +250,7 @@ in
                          end
                       system:
                          proc {$ ModName UrlV}
+                            {Trace '[Module] System Map: '#ModName#':='#UrlV#'\n'}
                             {SystemMap.put ModName {RURL.vsToUrl UrlV}}
                          end)
 

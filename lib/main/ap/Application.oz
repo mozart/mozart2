@@ -92,15 +92,20 @@ in
          end
 
          local
-            MozartUrl  = 'http://www.ps.uni-sb.de/ozhome/'
+            UrlDefaults = \insert '../../url-defaults.oz'
+            FunExt      = UrlDefaults.'functor'
+            MozartUrl   = UrlDefaults.'home'
          in
             fun {MakeBody Functor LetKey LetFunctor}
                proc {$}
                   Module = {NewModule}
                in
-                  {Module.link MozartUrl#'ErrorHandler.ozf' ErrorHandler _}
-                  {Module.link MozartUrl#'lib/'#LetKey#'.ozf'      LetFunctor   _}
-                  {Module.link MozartUrl#'Root.ozf'         Functor      _}
+                  {Module.link MozartUrl#'ErrorHandler'#FunExt
+                   ErrorHandler _}
+                  {Module.link MozartUrl#'lib/'#LetKey#FunExt
+                   LetFunctor   _}
+                  {Module.link MozartUrl#'Root'#FunExt
+                   Functor      _}
                end
             end
          end

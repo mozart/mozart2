@@ -35,8 +35,7 @@ body
                            a(b:a)#a#b#{ByNeed RetA}]
                     in
                        {ForAll Ts proc {$ R#A1#A2#A3}
-                                     if {AdjoinAt A1 A2 A3} == R then skip
-                                     end
+                                     true = {AdjoinAt A1 A2 A3} == R
                                   end}
                     end
                     keys:[future byNeed adjoin adjoinAt])
@@ -47,8 +46,7 @@ body
                             ]
                       in
                          {ForAll Ts proc {$ R#A1#A2}
-                                       if {AdjoinList A1 A2} == R then skip
-                                       end
+                                       true = {AdjoinList A1 A2} == R
                                     end}
                       end
                       keys:[future byNeed adjoin adjoinList])
@@ -59,8 +57,7 @@ body
                        ]
                  in
                     {ForAll Ts proc {$ R#A}
-                                  if {Arity A} == R then skip
-                                  end
+                                  true = {Arity A} == R
                                end}
                  end
                  keys:[future byNeed arity])

@@ -30,6 +30,8 @@ import
    PID(get received toPort) at 'x-oz://boot/PID'
    Distribution('export')   at 'x-oz://boot/Distribution'
 
+   Error(dispatch format formatGeneric)
+   ErrorRegistry(put)
    Fault(install deinstall)
    Property(get)
 
@@ -130,12 +132,8 @@ prepare
          in
             S={TicketToString Ticket}
             Ticket
-         catch E then
-            {Exception.raiseError dp(connection(if E==wrongModel then
-                                                   E
-                                                else
-                                                   illegalTicket
-                                                end V))} _
+         catch _ then
+            {Exception.raiseError connection(illegalTicket V)} _
          end
       end
    end
@@ -242,11 +240,11 @@ define
          Y=no
       end
       proc {Handle _ _}
-         {Exception.raiseError dp(connection(ticketToDeadSite V))}
+         {Exception.raiseError connection(ticketToDeadSite V)}
       end
    in
       if T.minimal\={Property.get 'perdio.minimal'} then
-         {Exception.raiseError dp(connection(wrongModel V))}
+         {Exception.raiseError connection(wrongModel V)}
       end
 
       {Fault.install P watcher('cond':permHome) Watch}
@@ -258,16 +256,44 @@ define
       of no#_ then
          {Fault.deinstall P watcher('cond':permHome) Watch}
          {Fault.deinstall P handler('cond':perm)     Handle}
-         {Exception.raiseError dp(connection(refusedTicket V))}
+         {Exception.raiseError connection(refusedTicket V)}
       [] _#no then
          {Fault.deinstall P watcher('cond':permHome) Watch}
          {Fault.deinstall P handler('cond':perm)     Handle}
-         {Exception.raiseError dp(connection(ticketToDeadSite V))}
+         {Exception.raiseError connection(ticketToDeadSite V)}
       [] yes(A)#_ then
          {Fault.deinstall P watcher('cond':permHome) Watch}
          {Fault.deinstall P handler('cond':perm)     Handle}
          Entity=A
       end
    end
+
+
+   %%
+   %% Register error formatter
+   %%
+
+   {ErrorRegistry.put connection
+    fun {$ Exc}
+       E = {Error.dispatch Exc}
+       T = 'Error: connections'
+    in
+       case E
+       of connection(illegalTicket V) then
+          {Error.format 'Illegal ticket for connection' unit
+           [hint(l:'Ticket' m:V)] Exc}
+       [] connection(refusedTicket V) then
+          {Error.format 'Ticket refused by offering site' unit
+           [hint(l:'Ticket' m:V)] Exc}
+       [] connection(ticketToDeadSite V) then
+          {Error.format 'Ticket refused: refers to dead site' unit
+           [hint(l:'Ticket' m:V)] Exc}
+       [] connection(wrongModel V) then
+          {Error.format 'Ticket presupposes wrong distribution model' unit
+           [hint(l:'Ticket' m:V)] Exc}
+       else
+          {Error.formatGeneric T Exc}
+       end
+    end}
 
 end

@@ -131,12 +131,15 @@ define
             inspPort          %% Inspector Port Variable
          prop
             final
-         meth create(InspPort)
+         meth create(InspPort NewOptions)
             Options = InspectorOptions.options
-            Width   = {Dictionary.get Options inspectorWidth}
-            Height  = {Dictionary.get Options inspectorHeight}
-            Frame ManagerFrame
+            Width Height Frame ManagerFrame
          in
+            {Record.forAllInd NewOptions proc {$ F V}
+                                            {Dictionary.put Options F V}
+                                         end}
+            Width     = {Dictionary.get Options inspectorWidth}
+            Height    = {Dictionary.get Options inspectorHeight}
             @inspPort = InspPort
             Tk.toplevel, tkInit(title: {Dictionary.get Options inspectorLanguage}#' Inspector'
                                 delete:   proc {$} {Port.send InspPort close} end
@@ -570,11 +573,11 @@ define
    %% Object Creation Function
    %%
    Reflect = Reflection.reflect
-   fun {NewInspector}
+   fun {NewInspector Options}
       InspectorPort InspectorObject
    in
       InspectorPort   = {NewServer InspectorObject}
-      InspectorObject = {New InspectorClass create(InspectorPort)}
+      InspectorObject = {New InspectorClass create(InspectorPort Options)}
       proc {$ M}
          {Port.send InspectorPort {Reflect M}}
       end
@@ -583,7 +586,7 @@ define
    %%
    %% Create System Inspector and its access wrappers
    %%
-   InspectorObj = {NewInspector}
+   InspectorObj = {NewInspector unit}
 
    proc {Inspect Value}
       {InspectorObj inspect(Value)}

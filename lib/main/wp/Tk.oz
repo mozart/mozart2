@@ -108,8 +108,6 @@ export
 
 prepare
 
-   Void = {NewName}
-
    class Counter
       prop locking final
       attr n:0
@@ -525,7 +523,7 @@ define
                Id     = {S2I {Stok Irr  & $ ?Irr1}}
                NoArgs = {S2I {Stok Irr1 & $ _}}
             in
-               case {Dictionary.condGet TkDict Id Void}
+               case {Dictionary.condGet TkDict Id unit}
                of O # M # Ps then
                   {InvokeAction O#M {GetArgs NoArgs Ps} NoArgs true}
                [] P # Ps then
@@ -727,7 +725,7 @@ define
          !TclName        % widget name
 
       meth tkBind(event:  Event
-                  action: Action  <= _
+                  action: Action  <= unit
                   args:   Args    <= nil
                   append: AddIt   <= false
                   break:  BreakIt <= false) = Message
@@ -797,7 +795,7 @@ define
          ThisTclName = NewTkName
       end
 
-      meth tkAction(action:Action<=_ args:Args <= nil) = Message
+      meth tkAction(action:Action<=unit args:Args <= nil) = Message
          if {HasFeature Message action} then ActionId Command in
             {DefineCommand Action Args ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
@@ -998,8 +996,8 @@ define
             !TkWidget
 
          meth tkInit(parent: Parent
-                     before: Before <= _
-                     action: Action <= _
+                     before: Before <= unit
+                     action: Action <= unit
                      args:   Args   <= nil ...) = Message
             ThisTclName = self.TclName
             if {IsDet ThisTclName} then
@@ -1131,14 +1129,14 @@ define
       prop sited
       feat !TclName
 
-      meth tkInit(InitValue <= Void)
+      meth tkInit(InitValue <= unit)
          MyTclName   = {GenVarName}
          ThisTclName = self.TclName
       in
          if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self tkInit)}
          end
-         if InitValue\=Void then
+         if InitValue\=unit then
             {TkSend set(v(MyTclName) InitValue)}
          end
          ThisTclName = MyTclName
@@ -1197,7 +1195,7 @@ define
 
       class TkTag from TkTagAndMark
          meth tkBind(event:  Event
-                     action: Action  <= _
+                     action: Action  <= unit
                      args:   Args    <= nil
                      append: AddIt   <= false
                      break:  BreakIt <= false) = Message
@@ -1317,43 +1315,10 @@ define
             ThisTclName = NewTkName
          end
          meth tk(...) = M
-            {TkSendTuple self M}
-         end
-         meth tkImage(...) = M
             {TkSendTagTuple image self M}
          end
          meth !TkReturnMethod(M Cast)
-            {TkReturnMess self M unit Cast}
-         end
-         meth tkImageReturn(...) = M
-            {TkReturnMess image M self TkStringToString}
-         end
-         meth tkImageReturnString(...) = M
-            {TkReturnMess image M self TkStringToString}
-         end
-         meth tkImageReturnAtom(...) = M
-            {TkReturnMess image M self TkStringToAtom}
-         end
-         meth tkImageReturnInt(...) = M
-            {TkReturnMess image M self TkStringToInt}
-         end
-         meth tkImageReturnFloat(...) = M
-            {TkReturnMess image M self TkStringToFloat}
-         end
-         meth tkImageReturnList(...) = M
-            {TkReturnMess image M self TkStringToListString}
-         end
-         meth tkImageReturnListString(...) = M
-            {TkReturnMess image M self TkStringToListString}
-         end
-         meth tkImageReturnListAtom(...) = M
-            {TkReturnMess image M self TkStringToListAtom}
-         end
-         meth tkImageReturnListInt(...) = M
-            {TkReturnMess image M self TkStringToListInt}
-         end
-         meth tkImageReturnListFloat(...) = M
-            {TkReturnMess image M self TkStringToListFloat}
+            {TkReturnMess image M self Cast}
          end
          meth tkClose
             skip

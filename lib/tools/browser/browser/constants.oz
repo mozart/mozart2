@@ -203,7 +203,7 @@ IITitle     = ITitle
 %%
 local
    UrlDefaults = \insert '../../url-defaults.oz'
-   Images = UrlDefaults.home # 'tools/images/'
+   Images = UrlDefaults.home # 'images/'
 in
    IIBitmap    = {Tk.localize Images#'browserIcon.xbm'}
    IStopBitmap = '@' # {Tk.localize Images#'stop.xbm'}

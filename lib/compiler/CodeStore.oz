@@ -51,7 +51,6 @@ Continuations = c(vStepPoint: 5
                   vAsk: 2
                   vWait: 2
                   vWaitTop: 2
-                  vShallowGuard: 6
                   vTestBool: 7
                   vTestBuiltin: 6
                   vTestNumber: 7
@@ -275,23 +274,6 @@ class CodeStore from Emitter
             skip
          [] vWaitTop(_ _) then
             skip
-         [] vShallowGuard(_ Addr1 Addr2 Addr3 _ _ AllocatesRS InitsRS) then
-            RS1 RS2 RS3 in
-            CodeStore, ComputeOccs(Addr1 ?RS1)
-            CodeStore, ComputeOccs(Addr2 ?RS2)
-            CodeStore, ComputeOccs(Addr3 ?RS3)
-            InitsRS = {BitArray.clone RS1}
-            {BitArray.disj InitsRS RS2}
-            {BitArray.disj InitsRS RS3}
-            {BitArray.conj InitsRS RS}
-            case AllocatesRS of nil then skip
-            else
-               {ForAll {BitArray.toList AllocatesRS}
-                proc {$ Reg} {BitArray.set InitsRS Reg} end}
-            end
-            {BitArray.disj RS RS1}
-            {BitArray.disj RS RS2}
-            {BitArray.disj RS RS3}
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
@@ -456,14 +438,6 @@ class CodeStore from Emitter
          [] vAsk(_ _) then skip
          [] vWait(_ _) then skip
          [] vWaitTop(_ _) then skip
-         [] vShallowGuard(_ Addr1 Addr2 Addr3 _ _ _ _) then AddRS3 in
-            AddRS3 = {BitArray.clone AddRS2}
-            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr1 $)}
-            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr2 $)}
-            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr3 $)}
-            CodeStore, AddRegOccs(Addr1 AddRS3)
-            CodeStore, AddRegOccs(Addr2 AddRS2)
-            CodeStore, AddRegOccs(Addr3 AddRS2)
          [] vTestBool(_ _ Addr1 Addr2 Addr3 _ _ _) then
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)

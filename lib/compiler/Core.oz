@@ -363,9 +363,6 @@ define
          else ""
          end#')'#PO
       end
-      meth isVariableOccurrence($)
-         false
-      end
       meth isConstruction($)
          true
       end
@@ -644,9 +641,6 @@ define
          else ""
          end#')'#PO
       end
-      meth isVariableOccurrence($)
-         false
-      end
       meth isConstruction($)
          true
       end
@@ -673,9 +667,6 @@ define
          FS = FS1#FS2
          {@left outputPattern2(R Vs $ ?FS1)}#'='#
          {@right outputPattern2(R Vs $ ?FS2)}
-      end
-      meth isVariableOccurrence($)
-         false
       end
       meth isConstruction($)
          {@right isConstruction($)}
@@ -1039,9 +1030,6 @@ define
       meth getValue($)
          @value
       end
-      meth isVariableOccurrence($)
-         false
-      end
       meth isConstruction($)
          false
       end
@@ -1204,9 +1192,6 @@ define
       meth setValue(Value)
          value <- Value
       end
-      meth isVariableOccurrence($)
-         true
-      end
       meth isConstruction($)
          false
       end
@@ -1281,13 +1266,7 @@ define
       meth getValue($)
          @value
       end
-      meth isVariableOccurrence($)
-         false
-      end
       meth isConstruction($)
-         false
-      end
-      meth isChunk($)
          false
       end
    end

@@ -87,7 +87,6 @@ local
                               %%
                               codegen: true
                               outputcode: false
-                              functionalpatterns: false
 
                               %% feeding to the emulator:
                               %%
@@ -689,15 +688,6 @@ local
             if IsCompilerThread
                andthen CompilerStateClass, getSwitch(watchdog $)
             then
-               %--** the following lines are needed because sadly
-               %--** the raiseOnBlock feature also raises exceptions
-               %--** when blocking on lazy variables or futures:
-               {Wait Error}
-               {Wait Type}
-               {Wait Builtins}
-               {Wait Unnester}
-               {Wait Assembler}
-               {Wait RunTime}
                {Debug.setRaiseOnBlock {Thread.this} true}
             end
             OPI = {Property.condGet 'opi.compiler' false}

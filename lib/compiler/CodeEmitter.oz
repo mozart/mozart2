@@ -733,27 +733,6 @@ in
             Emitter, DoInits(nil Cont)
             Emitter, Emit(waitTop)
             Emitter, KillAllTemporaries()
-         [] vShallowGuard(_ Addr1 Addr2 Addr3 Coord Cont _ InitsRS) then
-            OldContLabels Label3 Dest3 RegMap1 RegMap2 LocalEnv1 HasLocalEnv
-         in
-            Emitter, DoInits(InitsRS Cont)
-            Emitter, PushContLabel(Cont ?OldContLabels)
-            Emitter, Dereference(Addr3 ?Label3 ?Dest3)
-            Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(shallowGuard(Dest3))
-            Emitter, SaveAllRegisterMappings(?RegMap1)
-            Emitter, EmitGuard(Addr1)
-            Emitter, Emit(shallowThen)
-            Emitter, PrepareShared(Addr3 ?LocalEnv1)
-            Emitter, MayAllocateEnvLocally(Cont LocalEnv1 ?HasLocalEnv)
-            Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
-            Emitter, RestoreAllRegisterMappings(RegMap1)
-            Emitter, Emit(lbl(Label3))
-            Emitter, SaveRegisterMapping(?RegMap2)
-            Emitter, EmitAddrInLocalEnv(Addr3 HasLocalEnv)
-            Emitter, RestoreRegisterMapping(RegMap2)
-            Emitter, PopContLabel(OldContLabels)
-            Emitter, DebugExit(Coord 'conditional')
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord Cont InitsRS) then
             LocalEnv1 LocalEnv2 LocalEnv3
             HasLocalEnv R OldContLabels Label2 Dest2 Label3 Dest3
@@ -2088,9 +2067,6 @@ in
             Emitter, PredictPermReg(Reg Cont ?R)
          [] vWaitTop(_ Cont) then
             Emitter, PredictPermReg(Reg Cont ?R)
-         [] vShallowGuard(_ Addr1 Addr2 Addr3 _ Cont _ InitsRS) then Addrs in
-            Addrs = [Addr1 Addr2 Addr3 Cont]
-            Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
          [] vTestBool(_ _ Addr1 Addr2 Addr3 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Addr3 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)

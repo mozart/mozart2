@@ -28,17 +28,15 @@ import
    Parser                        at 'x-oz://boot/Parser'
    CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
    Property(get condGet)
-   Error   %--**(formatPos formatExc dispatch format formatGeneric)
+   Error(formatPos formatExc dispatch format formatGeneric)
    ErrorRegistry(put)
-   Type   %--**(ask)
+   Type(ask)
    Narrator('class')
    ErrorListener('class')
    PrintName(is)
-   Builtins   %--**(getInfo)
-   Unnester   %--**(makeExpressionQuery unnestQuery)
+   Unnester(makeExpressionQuery unnestQuery)
    Core(variable)
-   Assembler   %--**(internalAssemble assemble)
-   RunTime   %--**
+   Assembler(internalAssemble assemble)
 
 \ifndef NO_GUMP
    Gump(makeProductionTemplates)

@@ -73,12 +73,9 @@ in
                         'Gump':                  Gump
                         'Assemble':              Assembler.assemble)}
 
-         GetOPI = {`Builtin` 'getOPICompiler' 1}
-
          Compiler = compiler(compilerClass: CompilerF.compilerClass
                              genericInterface: CompilerF.genericInterface
-                             quietInterface: CompilerF.quietInterface
-                             getOPI: GetOPI)
+                             quietInterface: CompilerF.quietInterface)
       in
          \insert 'Compiler.env'
       end

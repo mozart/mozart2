@@ -32,7 +32,7 @@
 
 %\define DEBUG_DEFS
 
-functor prop once
+functor
 import
    CompilerSupport(isBuiltin) at 'x-oz://boot/CompilerSupport'
    System(printName)

@@ -19,7 +19,7 @@
 %%% WARRANTIES.
 %%%
 
-functor prop once
+functor
 export
    is: IsPrintName
    downcase: DowncasePrintName

@@ -44,7 +44,7 @@
 %%    G   graph representation (see Doc/CoreLanguage)
 %%
 
-functor prop once
+functor
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
    FD(is)

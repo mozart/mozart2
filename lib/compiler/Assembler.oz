@@ -35,7 +35,7 @@
 %%    less garbage is produced during code generation.
 %%
 
-functor prop once
+functor
 import
    System(printName valueToVirtualString)
    CompilerSupport at 'x-oz://boot/CompilerSupport'

@@ -38,7 +38,7 @@ import
    PrintName(is)
    Builtins   %--**(getInfo)
    Unnester   %--**(makeExpressionQuery unnestQuery)
-   Core.variable
+   Core(variable)
    Assembler   %--**(internalAssemble assemble)
    RunTime   %--**
 

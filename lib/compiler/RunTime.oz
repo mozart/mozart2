@@ -136,7 +136,7 @@ local
    TokenValues = env('true': `true`
                      'false': `false`)
 in
-   functor prop once
+   functor
    import
       Module(manager)
       Core(nameToken variable)

@@ -104,7 +104,7 @@ local
        end
     end}
 in
-   functor prop once
+   functor
    export
       getInfo: GetBuiltinInfo
    define

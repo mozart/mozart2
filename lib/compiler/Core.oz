@@ -39,7 +39,7 @@
 %%    to insert after the current statement.
 %%
 
-functor prop once
+functor
 import
    System(valueToVirtualString)
    StaticAnalysis

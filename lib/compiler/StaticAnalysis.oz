@@ -31,7 +31,7 @@ local
    \insert POTypes
 in
 
-   functor prop once
+   functor
    import
       BootName at 'x-oz://boot/Name'
       CompilerSupport(newNamedName newCopyableName isCopyableName

@@ -76,6 +76,7 @@ RecordArity = int
             | [Feature].
 VRecordArgument = number(Integer)
                 | literal(Atomname)
+                | predicateRef(PredicateRef1)
                 | value(Reg)
                 | record(Atomname RecordArity [VRecordArgument]).
 Builtinname = atom.

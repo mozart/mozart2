@@ -19,33 +19,33 @@
 %%% WARRANTIES.
 %%%
 
-\insert Base.oz
+\insert Standard
 
 declare
 NewSP NewOP NewCP NewCompiler
 in
-\insert SP.oz
+\insert SP
 = NewSP
-\insert OP.oz
+\insert OP
 = NewOP
-\insert CP.oz
+\insert CP
 = NewCP
-\insert Compiler.oz
+\insert Compiler
 = NewCompiler
 
 local
-   Env = m('SP':       \insert 'SP.env'
-           'CP':       \insert 'CP.env'
-           'OP':       \insert 'OP.env'
-           'Compiler': \insert 'Compiler.env'
+   Env = m('SP':       \insert SP.env
+           'CP':       \insert CP.env
+           'OP':       \insert OP.env
+           'Compiler': \insert Compiler.env
           )
-   \insert 'SP.env'
+   \insert SP.env
    = {NewSP Env}
-   \insert 'CP.env'
+   \insert CP.env
    = {NewCP Env}
-   \insert 'OP.env'
+   \insert OP.env
    = {NewOP Env}
-   \insert 'Compiler.env'
+   \insert Compiler.env
    = {NewCompiler Env}
 
    \insert StartOPI
@@ -53,7 +53,7 @@ in
    {StartOPI
     {Record.foldL Env Adjoin
      {Adjoin
-      \insert 'Base.env'
-      \insert 'Standard.env'
+      \insert Base.env
+      \insert Standard.env
      }}}
 end

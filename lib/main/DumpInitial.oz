@@ -28,7 +28,7 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-\insert 'Base.oz'
+\insert 'Standard.oz'
 
 declare
    Dump

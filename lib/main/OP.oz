@@ -24,18 +24,8 @@
 %%% This file creates the Open Programming Functor
 %%%
 
-\ifdef HELPSTART
-\s +catchall
-\endif
+\insert OP/OS
 
-\insert 'OS.oz'
-\ifndef HELPSTART
-\s +catchall
-\endif
-
-\ifdef HELPSTART
-declare NewOP =
-\endif
 fun
 \ifdef NEWCOMPILER
    instantiate
@@ -44,10 +34,9 @@ fun
    \insert 'SP.env'
    = IMPORT.'SP'
 
-   \insert 'Open.oz'
-   \insert 'Component.oz'
-   \insert 'NewApplication.oz'
-
+   \insert OP/Open
+   \insert OP/Component.oz
+   \insert OP/Application.oz
 in
    \insert 'OP.env'
 end

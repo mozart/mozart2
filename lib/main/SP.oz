@@ -29,12 +29,12 @@ fun
    instantiate
 \endif
    {$ IMPORT}
-   \insert 'Foreign.oz'
-   \insert 'System.oz'
-   \insert 'Debug.oz'
-   \insert 'Error.oz'
+   \insert SP/Foreign
+   \insert SP/System
+   \insert SP/Debug
+   \insert SP/Error
 \ifndef NOFINALIZATION
-   \insert 'Finalize.oz'
+   \insert SP/Finalize
    Finalize= {NewFinalize}
 \endif
    Foreign = {NewForeign}

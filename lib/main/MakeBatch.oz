@@ -19,8 +19,6 @@
 %%% WARRANTIES.
 %%%
 
-\feed DumpIntro
-
 declare
 local
    Load = {`Builtin` load 2}
@@ -360,6 +358,7 @@ in
        proc {$ Argv ?Status}
           thread
              try Opts FileNames Verbose BatchCompiler UI Mode OutputFile in
+{System.set errors(width: 20 depth: 20)}
                 try
                    {ParseArgs Argv ?Opts ?FileNames}
                 catch usage(VS) then

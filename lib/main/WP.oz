@@ -29,12 +29,12 @@ fun
        = IMPORT.'OP'
    \insert 'SP.env'
        = IMPORT.'SP'
-   \insert 'Tk.oz'
+   \insert WP/Tk
    Tk      = {NewTk Open}
 
-   \insert 'TkOptions.oz'
+   \insert WP/TkOptions
 
-   \insert 'TkTools.oz'
+   \insert WP/TkTools
    TkTools = {NewTkTools Tk}
 in
    \insert 'WP.env'

@@ -33,7 +33,7 @@ dnl INITIALIZE
 dnl *****************************************************************
 
 dnl This will check that we are in the Oz directory and initiate
-AC_INIT(Value.oz)
+AC_INIT(Standard.oz)
 
 AC_CANONICAL_HOST
 
@@ -91,4 +91,4 @@ dnl *****************************************************************
 dnl FINALIZE
 dnl *****************************************************************
 
-AC_OUTPUT(Makefile Makefile.vars browser/Makefile compiler/Makefile explorer/Makefile ozcar/Makefile panel/Makefile perdio/Makefile profiler/Makefile)
+AC_OUTPUT(Makefile Makefile.vars)

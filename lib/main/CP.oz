@@ -29,9 +29,9 @@ fun
        = IMPORT.'SP'
 in
    local
-      \insert 'Search.oz'
-      \insert 'FD.oz'
-      \insert 'FS.oz'
+      \insert CP/Search
+      \insert CP/FD
+      \insert CP/FS
    in
       \insert 'CP.env'
    end

@@ -33,7 +33,7 @@ fun
        = IMPORT.'WP'
 in
    local
-      \insert 'Site.oz'
+      \insert DP/Site
    in
       \insert 'DP.env'
    end

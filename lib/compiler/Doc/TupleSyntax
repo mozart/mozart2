@@ -1,7 +1,7 @@
 Tuple Syntax used by the New Oz Compiler:
 -----------------------------------------
 
-File              = parseErrors(int)
+File              = parseError
                   | fileNotFound
                   | [Query].
 Query             = Phrase
@@ -121,7 +121,7 @@ OptThen           = fNoThen(Position)
                   | Phrase.
 OptElse           = Phrase
                   | fNoElse(Coordinates).
-Coordinates       = pos(atom int int)   % atom is 'nofile' for parsing VSs
+Coordinates       = pos(atom int int)   % atom is '' for parsing VSs
                   | pos(atom int int atom int int)
                   | fineStep(atom int int)
                   | fineStep(atom int int atom int int)

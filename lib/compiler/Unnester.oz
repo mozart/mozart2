@@ -776,15 +776,15 @@ define
                Unnester, UnnestStatement(FS2 $)
             end
          [] fDoImport(_ GV ImportGV) then
-            C DotGVO ImportGVO GFrontEqs FeatureGVO ResGVO CND
+            C DotGVO ImportGVO CND GFrontEqs FeatureGVO ResGVO
          in
             {ImportGV getCoord(?C)}
             {RunTime.procs.'.' occ(C ?DotGVO)}
             {ImportGV occ(C ?ImportGVO)}
-            Unnester, UnnestToVar(fAtom({GV getPrintName($)} C) 'Feature'
+            CND = {CoordNoDebug C}
+            Unnester, UnnestToVar(fAtom({GV getPrintName($)} CND) 'Feature'
                                   ?GFrontEqs ?FeatureGVO)
             {GV occ(C ?ResGVO)}
-            CND = {CoordNoDebug C}
             GFrontEqs|{New Core.application
                        init(DotGVO [ImportGVO FeatureGVO ResGVO] CND)}
          [] fClass(FE FDescriptors FMeths C) then

@@ -154,6 +154,15 @@ body
       end
    end
 
+   local
+      FSEqualR = FSP.equalR
+   in
+      proc {FSEqualReif S1 S2 B}
+         {FD.bool B}
+         {FSEqualR S1 S2 B}
+      end
+   end
+
    FSSetValue   = {`Builtin` fsSetValue 2}
    FSSet        = {`Builtin` fsSet 3}
    FSDisjoint   = FSP.disjoint
@@ -728,7 +737,7 @@ body
                      bounds:   FSP.bounds
                      boundsN:  FSP.boundsN
                      partition: FSP.partitionReified
-                     equal:     FSP.equalR
+                     equal:     FSEqualReif
                     )
 
 

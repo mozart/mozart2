@@ -111,11 +111,12 @@ in
    functor
 
    import
-      Property(get put)
+      Property(get put condGet)
 
       System(printName
              printError
-             onToplevel)
+             onToplevel
+             exit)
 
       ErrorRegistry(get
                     exists)
@@ -144,6 +145,10 @@ in
       %% current output: strings into emulator window
 
       Output = System.printError
+
+      proc {ExitError}
+         {System.exit 1}
+      end
 
       %% some formatting routines
 
@@ -686,7 +691,11 @@ in
                {LineOutput ErrorMsgDebug {FormatReRaiseExc Exc X}}
             end
             %% terminate local computation
-            case {System.onToplevel} then skip else fail end
+            if {System.onToplevel} then
+               {{Property.condGet 'errors.toplevel' ExitError}}
+            elseif {Label Exc}==failure then fail else
+               {{Property.condGet 'errors.subordinate' ExitError}}
+            end
          end
       in
          {Property.put 'errors.handler' DefExHdl}

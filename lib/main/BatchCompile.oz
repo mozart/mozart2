@@ -70,6 +70,7 @@ local
                    unit#"warnunusedformals"#warnunused(type: bool)
                    unit#"warnforward"#warnforward(type: bool)
                    unit#"warnopt"#warnopt(type: bool)
+                   unit#"expression"#expression(type: bool)
                    unit#"allowdeprecated"#allowdeprecated(type: bool)
                    unit#"gump"#gump(type: bool)
                    unit#"staticanalysis"#staticanalysis(type: bool)
@@ -125,6 +126,7 @@ local
    '--(no)warnunusedformals       Warn about unused variables and formals.\n'#
    '--(no)warnforward             Warn about oo forward declarations.\n'#
    '--(no)warnopt                 Warn about missed optimizations.\n'#
+   '--(no)expression              Expect expressions, not statements.\n'#
    '--(no)allowdeprecated         Allow use of deprecated syntax.\n'#
    '--(no)gump                    Allow Gump definitions.\n'#
    '--(no)staticanalysis          Run static analysis.\n'#

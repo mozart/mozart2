@@ -74,6 +74,6 @@ $class =
                                                                 'GdkWindowHints'] },
                   'gtk_window_set_position'        => { in  => ['GtkWindow*',
                                                                 'GtkWindowPosition'] },
-                  'gtk_window_set_transient_for '  => { in  => ['GtkWindow*',
+                  'gtk_window_set_transient_for'   => { in  => ['GtkWindow*',
                                                                 '!GtkWindow*'] } }}
      );

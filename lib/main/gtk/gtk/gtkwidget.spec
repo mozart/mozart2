@@ -25,7 +25,7 @@ $class =
     (
      { name  => 'GtkWidget',
 
-       super => 'BaseWidget',
+       super => 'GtkObject',
 
        meths => { 'gtk_widget_ref'                => { in => ['GtkWidget*'] },
                   'gtk_widget_unref'              => { in => ['GtkWidget*'] },

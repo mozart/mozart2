@@ -53,6 +53,8 @@ in
                  listThreads:  ListThreads
                  breakpointAt: {`Builtin` 'Debug.breakpointAt' 4}
                  breakpoint:   {`Builtin` 'Debug.breakpoint'   0}
-                 displayCode:  {`Builtin` 'Debug.displayCode'  2})
-
+                 displayCode:  {`Builtin` 'Debug.displayCode'  2}
+                 print:        {`Builtin` 'Debug.print'        2}
+                 printLong:    {`Builtin` 'Debug.printLong'    2}
+                 )
 end

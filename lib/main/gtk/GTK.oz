@@ -74,6 +74,10 @@ define
    class Object
       attr nativeObject
 
+      % For building Oz object from native objects
+      meth newWrapper(NativeObj)
+         nativeObject <- NativeObj
+      end
       meth getNative($) % get native GTK object from an Oz object
          @nativeObject
       end

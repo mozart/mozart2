@@ -83,25 +83,49 @@ sub write_oz_class_header {
 sub write_oz_fields_wrappers {
     return unless $$class{fields};
 
-    print "   % Accessors for class fields\n";
-
     my %fields;
     $fields = $$class{fields};
+
+   ### Accessors
+
+    print "   % Accessors for class fields\n";
 
     foreach my $field (keys %$fields) {
         my $meth = gtk2oz_meth_name("get_$field");
         my $var = gtk2oz_name($field);
 
-        my $native = "$$class{name}\Get". gtk2oz_name($field);
-        $native =~ s/^Gtk//s;
+        my $native = "$$class{name}\Get". gtk2oz_meth_name($field);
+        $native =~ s/^G[dt]k//s;
         $native = lcfirst $native;
 
-        print '   meth ' . $meth . "(\?$var)\n";
-        print '      ' . $var . " = {GtkNative." . $native . " \@nativeObject}\n";
+        print '   meth ' . $meth . "(\$)\n";
+        print '      {GtkNative.' . $native . " \@nativeObject}\n";
         print "   end\n";
     }
 
-    # TODO: Mutator
+    ### Mutators
+
+    print "   % Mutators for class fields\n";
+
+    foreach my $field (keys %$fields) {
+        my $meth = gtk2oz_meth_name("set_$field");
+        my $var = gtk2oz_name($field);
+
+        my $native = "$$class{name}\Set". gtk2oz_meth_name($field);
+        $native =~ s/^G[td]k//s;
+        $native = lcfirst $native;
+
+        print '   meth ' . $meth . "(Arg)\n";
+        print '      {GtkNative.' . $native . ' @nativeObject';
+        if ($$in[$i] =~ m/^\!/s) {
+            print ' {Arg getNative($)}';
+        } else {
+            print ' Arg';
+        }
+        print "}\n";
+        print "   end\n";
+    }
+
 }
 
 sub write_oz_init_methods {

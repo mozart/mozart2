@@ -32,9 +32,9 @@ define
                  ])
 
    proc {Write1}
-      RemoteReady Port Got
+      RemoteReady Port Got Done
       functor Slurp
-      import Application Open
+      import Open
       define
          Sock = {New Open.socket init}
          !Port = {Sock bind(port:$)}
@@ -42,7 +42,7 @@ define
          !RemoteReady=unit
          {Sock accept}
          !Got = {Length {Sock read(list:$ size:all)}}
-         {Application.exit 0}
+         !Done=unit
       end
       T = {ByteString.make
            local L={List.make 5000} in
@@ -70,6 +70,8 @@ define
       if Got\={ByteString.width T} then
          raise bad(wrongSize) end
       end
+      {Wait Done}
+      {R close}
    in
       skip
    end

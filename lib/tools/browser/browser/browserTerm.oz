@@ -45,8 +45,11 @@ in
          [] tuple then
             case X
             of E|T then
-               {IsInt E} andthen E >= 0 andthen E =< 255 andthen
-               {LocalIsString T}
+               case {Value.status E}
+               of det(int) then
+                  E >= 0 andthen E =< 255 andthen {LocalIsString T}
+               else false
+               end
             else false
             end
          else false

@@ -28,6 +28,6 @@ $class =
        super => 'GtkToggleButton',
 
        inits => { 'gtk_check_button_new'            => { out => 'GtkWidget*' },
-                  'gtk_check_button_new_with_label' => { in  => 'const gchar*',
+                  'gtk_check_button_new_with_label' => { in  => ['const gchar*'],
                                                          out => 'GtkWidget*' }}}
      );

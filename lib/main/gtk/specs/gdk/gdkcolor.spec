@@ -32,7 +32,7 @@ $class =
                    'green'                         => 'gushort',
                    'blue'                          => 'gushort' },
 
-       inits => { 'gtk_window_new'                 => { in  => ['gushort',
+       inits => { 'gdk_window_new'                 => { in  => ['gushort',
                                                                 'gushort',
                                                                 'gushort'] } }}
      );

@@ -1820,13 +1820,26 @@ in
               hint(l:'At 3rd argument' m:Call.2.2.2.1)
               hint(l:'Expected' m:'virtual string or record')]
              Exc}
-         elseof connection(illegalTicket V) then
+         elseof dp(save nogoods NoGoods) then
+            {FormatExc
+             'Non-distributables found during save'
+             unit
+             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             Exc}
+         elseof dp(portSend nogoods Port NoGoods) then
+            {FormatExc
+             'Trying to send non-distributables to port'
+             unit
+             [hint(l:'Port'    m:oz(Port))
+              hint(l:'Non-distributables' m:oz(NoGoods))]
+             Exc}
+         elseof dp(connection(illegalTicket V)) then
             {FormatExc
              'Illegal ticket for connection'
              unit
              [hint(l:'Ticket' m:V)]
              Exc}
-         elseof connection(refusedTicket V) then
+         elseof dp(connection(refusedTicket V)) then
             {FormatExc
              'Ticket refused for connection'
              unit

@@ -26,6 +26,9 @@ functor
 import
    Module(manager)
    Core(valueNode userVariable)
+   Combinator('cond' 'or' 'dis')
+   Space('choose')
+   RecordC('^' tellSize)
 export
    Literals
    Tokens
@@ -33,7 +36,7 @@ export
    ProcValues
    MakeVar
 require
-   BootRecord(tellRecordSize test testLabel testFeature aritySublist '^')
+   BootRecord(test testLabel testFeature aritySublist)
    at 'x-oz://boot/Record'
 
    BootObject(ooGetLock ',' '@' '<-' ooExch)
@@ -48,64 +51,62 @@ require
    BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
 prepare
-   ProcValues = env(%% Operators
-                    '.': Value.'.'
-                    '==': Value.'=='
-                    '=': Value.'='
-                    '\\=': Value.'\\='
-                    '<': Value.'<'
-                    '=<': Value.'=<'
-                    '>=': Value.'>='
-                    '>': Value.'>'
-                    '!!': Value.'!!'
-                    'div': Int.'div'
-                    'mod': Int.'mod'
-                    '/': Float.'/'
-                    '+': Number.'+'
-                    '-': Number.'-'
-                    '*': Number.'*'
-                    '~': Number.'~'
-                    '^': BootRecord.'^'
+   ProcValues0 = env(%% Operators
+                     '.': Value.'.'
+                     '==': Value.'=='
+                     '=': Value.'='
+                     '\\=': Value.'\\='
+                     '<': Value.'<'
+                     '=<': Value.'=<'
+                     '>=': Value.'>='
+                     '>': Value.'>'
+                     '!!': Value.'!!'
+                     'div': Int.'div'
+                     'mod': Int.'mod'
+                     '/': Float.'/'
+                     '+': Number.'+'
+                     '-': Number.'-'
+                     '*': Number.'*'
+                     '~': Number.'~'
 
-                    %% Value
-                    'Value.byNeedDot': Value.byNeedDot
-                    'Value.byNeed': Value.byNeed
+                     %% Value
+                     'Value.byNeedDot': Value.byNeedDot
+                     'Value.byNeed': Value.byNeed
 
-                    %% Name
-                    'Name.new': Name.new
+                     %% Name
+                     'Name.new': Name.new
 
-                    %% List
-                    'List.toTuple': List.toTuple
-                    'List.toRecord': List.toRecord
+                     %% List
+                     'List.toTuple': List.toTuple
+                     'List.toRecord': List.toRecord
 
-                    %% Record
-                    'Record.width': Record.width
-                    'Record.test': BootRecord.test
-                    'Record.testLabel': BootRecord.testLabel
-                    'Record.testFeature': BootRecord.testFeature
+                     %% Record
+                     'Record.width': Record.width
+                     'Record.test': BootRecord.test
+                     'Record.testLabel': BootRecord.testLabel
+                     'Record.testFeature': BootRecord.testFeature
 
-                    %% Object
-                    'Object.\'@\'': BootObject.'@'
-                    'Object.\'<-\'': BootObject.'<-'
-                    'Object.exchange': BootObject.ooExch
-                    'Object.\',\'': BootObject.','
-                    'Object.\'class\'': OoExtensions.'class'
+                     %% Object
+                     'Object.\'@\'': BootObject.'@'
+                     'Object.\'<-\'': BootObject.'<-'
+                     'Object.exchange': BootObject.ooExch
+                     'Object.\',\'': BootObject.','
+                     'Object.\'class\'': OoExtensions.'class'
 
-                    %% Thread
+                     %% Thread
 
-                    %% Exception
-                    'Exception.\'raise\'': Exception.'raise'
-                    'Exception.raiseError': Exception.raiseError
-                    'Exception.\'fail\'': BootException.'fail'
+                     %% Exception
+                     'Exception.\'raise\'': Exception.'raise'
+                     'Exception.raiseError': Exception.raiseError
+                     'Exception.\'fail\'': BootException.'fail'
 
-                    %% Functor
-                    'Functor.new': Functor.new
+                     %% Functor
+                     'Functor.new': Functor.new
 
-                    %% Internal
-                    'tellRecordSize': BootRecord.tellRecordSize
-                    'ooGetLock': BootObject.ooGetLock
-                    'aritySublist': BootRecord.aritySublist
-                    'Thread.create': BootThread.create)
+                     %% Internal
+                     'ooGetLock': BootObject.ooGetLock
+                     'aritySublist': BootRecord.aritySublist
+                     'Thread.create': BootThread.create)
 
    LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
                        'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
@@ -135,6 +136,26 @@ define
       {V reg(~1)}
    end
 
-   Procs = {Record.mapInd {AdjoinAt ProcValues 'ApplyFunctor' ApplyFunctor}
-            MakeVar}
+   proc {SpaceChoose X Y}
+      {Space.choose X Y}
+   end
+
+   ProcValues = {Adjoin ProcValues0
+                 env(%% Operators
+                     '^': RecordC.'^'
+                     'RecordC.tellSize': RecordC.tellSize
+
+                     %% Functor
+                     'ApplyFunctor': ApplyFunctor
+
+                     %% Combinators
+                     'Combinator.\'cond\'': Combinator.'cond'
+                     'Combinator.\'or\'': Combinator.'or'
+                     'Combinator.\'dis\'': Combinator.'dis'
+
+                     %% Space
+                     %'Space.choose': Space.choose   %--** doesn't work!
+                     'Space.choose': SpaceChoose)}
+
+   Procs = {Record.mapInd ProcValues MakeVar}
 end

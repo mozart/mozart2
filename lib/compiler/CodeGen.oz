@@ -515,7 +515,7 @@ define
          C CND WidthReg WidthVO Cont1 Cont2
       in
          %% translate the construction as:
-         %%    {`tellRecordSize` Label Width ?VO}
+         %%    {`RecordC.tellSize` Label Width ?VO}
          %%    {`^` VO Feat1 Subtree1} ... {`^` VO Featn Subtreen}
          {TheLabel getCoord(?C)}
          CND = {CoordNoDebug C}
@@ -523,14 +523,14 @@ define
          WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
          VHd = vEquateConstant(_ {Length Args} WidthReg Cont1)
          if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication 'tellRecordSize' CND
+            {MakeRunTimeProcApplication 'RecordC.tellSize' CND
              [TheLabel WidthVO VO] CS Cont1 Cont2}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {TheLabel getCodeGenValue(?LabelValue)}
             Cont1 = vEquateConstant(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication 'tellRecordSize' CND
+            {MakeRunTimeProcApplication 'RecordC.tellSize' CND
              [LabelVO WidthVO VO] CS Inter Cont2}
          end
          {List.foldLInd Args

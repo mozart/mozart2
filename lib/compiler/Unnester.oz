@@ -1002,7 +1002,7 @@ define
                                'fail' C)
             Unnester, UnnestStatement(NewFS $)
          [] fNot(FS C) then CND CombinatorFS NewFS in
-            CND = {CoordNoDebug FS}
+            CND = {CoordNoDebug C}
             case Unnester, AddImport('x-oz://system/Combinator' $)
             of unit then
                CombinatorFS = fOpApplyStatement('Combinator.\'not\''

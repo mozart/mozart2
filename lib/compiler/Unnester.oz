@@ -999,7 +999,9 @@ define
             Unnester, UnnestStatement(NewFS $)
          [] fException(C) then
             {New Core.exceptionNode init(C)}
-         [] fCond(FClauses FElse C) then FClauseProcs FElseProc CND NewFS in
+         [] fCond(FClauses FElse C) then
+            FClauseProcs FElseProc CND CombinatorFS NewFS
+         in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             FElseProc = fProc(fDollar(C) nil
                               case FElse of fNoElse(C) then
@@ -1007,27 +1009,46 @@ define
                               else FElse
                               end nil CND)
             CND = {CoordNoDebug C}
-            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'cond\''
-                                                 [fRecord(fAtom('#' C)
-                                                          FClauseProcs)
-                                                  FElseProc] CND)
-                               'combinator' C)
+            case Unnester, AddImport('x-oz://system/Combinators' $)
+            of unit then
+               CombinatorFS = fOpApplyStatement('Combinators.\'cond\''
+                                                [fRecord(fAtom('#' C)
+                                                         FClauseProcs)
+                                                 FElseProc] CND)
+            elseof FE then
+               CombinatorFS = fApply(fOpApply('.' [FE fAtom('cond' CND)] CND)
+                                     [fRecord(fAtom('#' C) FClauseProcs)
+                                      FElseProc] CND)
+            end
+            NewFS = fStepPoint(CombinatorFS 'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fOr(FClauses C) then FClauseProcs CND NewFS in
+         [] fOr(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'or\''
-                                                 [fRecord(fAtom('#' C)
-                                                          FClauseProcs)]
-                                                 CND) 'combinator' C)
+            case Unnester, AddImport('x-oz://system/Combinators' $)
+            of unit then
+               CombinatorFS = fOpApplyStatement('Combinators.\'or\''
+                                                [fRecord(fAtom('#' C)
+                                                         FClauseProcs)] CND)
+            elseof FE then
+               CombinatorFS = fApply(fOpApply('.' [FE fAtom('or' CND)] CND)
+                                     [fRecord(fAtom('#' C) FClauseProcs)] CND)
+            end
+            NewFS = fStepPoint(CombinatorFS 'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fDis(FClauses C) then FClauseProcs CND NewFS in
+         [] fDis(FClauses C) then FClauseProcs CND CombinatorFS NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
-            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'dis\''
-                                                 [fRecord(fAtom('#' C)
-                                                          FClauseProcs)]
-                                                 CND) 'combinator' C)
+            case Unnester, AddImport('x-oz://system/Combinators' $)
+            of unit then
+               CombinatorFS = fOpApplyStatement('Combinators.\'dis\''
+                                                [fRecord(fAtom('#' C)
+                                                         FClauseProcs)] CND)
+            elseof FE then
+               CombinatorFS = fApply(fOpApply('.' [FE fAtom('dis' CND)] CND)
+                                     [fRecord(fAtom('#' C) FClauseProcs)] CND)
+            end
+            NewFS = fStepPoint(CombinatorFS 'combinator' C)
             Unnester, UnnestStatement(NewFS $)
          [] fChoice(FSs C) then CND N NewFS in
             %% choice S1 [] ... [] Sn end
@@ -1696,6 +1717,21 @@ define
          [] nil then
             RtHd = RtTl
             nil
+         end
+      end
+
+      meth AddImport(From $)
+         case @CurrentImportFV of unit then unit
+         elseof ImportFV then Feature in
+            Unnester, AddImportSub(@AdditionalImports From Feature)
+            fOpApply('.' [ImportFV fAtom(Feature unit)] unit)
+         end
+      end
+      meth AddImportSub(Imports From Feature)
+         case Imports of F#!From|_ then Feature = F
+         [] _|Rest then Unnester, AddImportSub(Rest From Feature)
+         [] nil then
+            AdditionalImports <- {Append @AdditionalImports [Feature#From]}
          end
       end
 

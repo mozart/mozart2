@@ -78,15 +78,14 @@ install:
 check: oztest
         ./oztest --verbose
 
-.PHONY: dirs
-
 dirs:
-        ds="$(DIRS)"; for d in $$ds; do if test ! -d $$d; then $(INSTALL_DIR) $$d; fi; done
+        @ds="$(DIRS)"; for d in $$ds; do if test ! -d $$d; then $(INSTALL_DIR) $$d; fi; done && touch $@
+
+$(COMPONENTS): dirs
 
 oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
-        $(MAKE) dirs
         $(OZE) -l AP,SP lib/make-test.oz
         ./make-test -verbose $(COMPONENTS)
         -rm -f ./make-test
@@ -102,8 +101,10 @@ veryclean: clean
         -rm -f oztest
 
 distclean: veryclean
-        -rm -f Makefile
+        -rmdir $(DIRS)
+        -rm -f Makefile dirs
 
+.SUFFIXES:
 .SUFFIXES: $SUFFIXES .ozc .oz
 
 .oz.ozc:

@@ -44,6 +44,8 @@ prepare
                             {URL.make 'images/'}}}
 
 import
+   Space
+
    CTB(isB getConstraintAsAtom getNameAsAtom) at 'x-oz://boot/CTB'
 
    FDB(isVarB) at 'x-oz://boot/FDB'

@@ -44,6 +44,7 @@ define
          of int    then fdint
          [] fset   then fsvar
          [] record then kindedrecord
+         else Type
          end
       [] det(Type) then
          case Type

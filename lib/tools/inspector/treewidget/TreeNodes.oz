@@ -36,7 +36,7 @@ define
                             'tree'   : Nodes)
 
                 %% Generic Node
-                generic # [generic generic base]
+                generic # [generic generic generic]
 
                 %% Atomic Nodes
                 int        # [int int base]

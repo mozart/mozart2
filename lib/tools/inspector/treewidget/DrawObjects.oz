@@ -28,6 +28,7 @@ import
    HelperComponent('nodes' : Helper) at 'Helper.ozf'
 export
    drawObject                  : DrawObject
+   genericDrawObject           : GenericDrawObject
    recordDrawObject            : RecordDrawObject
    recordIndDrawObject         : RecordIndDrawObject
    recordGrDrawObject          : RecordGrDrawObject

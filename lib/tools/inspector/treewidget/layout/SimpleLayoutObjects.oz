@@ -177,11 +177,12 @@ in
 
    class GenericLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         Type = {Value.status @value}.1
+         Val    = @value
+         Type   = {Value.status Val}.1
+         ValStr = {String.toAtom {Value.toVirtualString Val 1 1}}
       in
          type <- Type
-         PrintStr  = '<'#Type#'>'
-         LengthStr = PrintStr
+         {Helper.convert ValStr PrintStr LengthStr}
       end
    end
 

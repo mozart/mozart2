@@ -97,6 +97,8 @@ local
       end
    end
 in
+   class GenericDrawObject from SimpleDrawObject end
+
    class FreeDrawObject from SimpleDrawObject end
    class FreeGrDrawObject from SimpleGrDrawObject end
 

@@ -122,9 +122,12 @@ in
    end
 
    class GenericCreateObject from SimpleCreateObject
-      meth create(Value Parent Index Visual Depth)
+      meth create(Val Parent Index Visual Depth)
          @type = generic
-         CreateObject, create(Value Parent Index Visual Depth)
+         if {Value.isKinded Val}
+         then {Visual logVar(self Val false)}
+         end
+         CreateObject, create(Val Parent Index Visual Depth)
       end
    end
 

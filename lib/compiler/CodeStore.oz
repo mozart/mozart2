@@ -110,6 +110,7 @@ class CodeStore from Emitter
    meth newReg(?Reg)
       Reg = @NextReg
       NextReg <- Reg + 1
+      {Dictionary.remove @regNames Reg}
    end
    meth newSelfReg(?Reg)
       Reg = @NextReg

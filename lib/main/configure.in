@@ -69,15 +69,15 @@ OZ_PATH_PROG(OZBATCH, ozbatch, OZBATCH=./ozbatch)
 
 AC_MSG_CHECKING(for --enable-fun)
 AC_ARG_ENABLE(fun,
-  [--enable-fun  build the functorial compiler (default=no)])
-if test "${enable_fun}" = yes; then
-    AC_MSG_RESULT(yes)
-    COMPILER_FUN=Compiler.ozc
-    COMPILER_BIG=Compiler.big
-else
+  [--enable-fun   build the functorial compiler (default=yes)])
+if test "${enable_fun}" = no; then
     AC_MSG_RESULT(no)
     COMPILER_FUN=Compiler.fun
     COMPILER_BIG=Compiler.ozc
+else
+    AC_MSG_RESULT(yes)
+    COMPILER_FUN=Compiler.ozc
+    COMPILER_BIG=Compiler.big
 fi
 AC_SUBST(COMPILER_FUN)
 AC_SUBST(COMPILER_BIG)

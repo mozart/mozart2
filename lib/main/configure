@@ -13,7 +13,7 @@ ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_default_prefix=/usr/local/oz
 ac_help="$ac_help
---enable-fun  build the functorial compiler (default=no)"
+--enable-fun   build the functorial compiler (default=yes)"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -1147,14 +1147,14 @@ if test "${enable_fun+set}" = set; then
   :
 fi
 
-if test "${enable_fun}" = yes; then
-    echo "$ac_t""yes" 1>&6
-    COMPILER_FUN=Compiler.ozc
-    COMPILER_BIG=Compiler.big
-else
+if test "${enable_fun}" = no; then
     echo "$ac_t""no" 1>&6
     COMPILER_FUN=Compiler.fun
     COMPILER_BIG=Compiler.ozc
+else
+    echo "$ac_t""yes" 1>&6
+    COMPILER_FUN=Compiler.ozc
+    COMPILER_BIG=Compiler.big
 fi
 
 

@@ -27,6 +27,8 @@ body
 
    OS       = {BootManager 'OS'}
    Property = {BootManager 'Property'}
+   Pickle   = {BootManager 'Pickle'}
+   BURL     = {BootManager 'URL'}
 
    Getenv = OS.getEnv
    SET    = Property.put
@@ -37,8 +39,8 @@ body
       \insert 'init/URL.oz'
    in
       {SET url URL}
-            {SET load URL.load}
-            URL
+      {SET load URL.load}
+      URL
    end
    %% execute application
    local
@@ -52,11 +54,14 @@ body
       FunExt      = UrlDefaults.'functor'
       MozartUrl   = UrlDefaults.'home'
 
-      {Module.enter 'x-oz-boot:OS' OS}
-      {Module.enter MozartUrl#'lib/OS'#FunExt OS}
-
+      {Module.enter 'x-oz-boot:OS'       OS}
       {Module.enter 'x-oz-boot:Property' OS}
+      {Module.enter 'x-oz-boot:URL'      BURL}
+      {Module.enter 'x-oz-boot:Pickle'   Pickle}
+
+      {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
       {Module.enter MozartUrl#'lib/Property'#FunExt Property}
+      {Module.enter MozartUrl#'lib/Pickle'#FunExt   Pickle}
 
       {Module.enter MozartUrl#'lib/Module'#FunExt Module}
       {Module.enter MozartUrl#'lib/URL'#FunExt    URL}

@@ -107,9 +107,9 @@
 
 local
 
-URL_localize    = {`Builtin` 'URL.localize'      2}
-URL_open        = {`Builtin` 'URL.open'          2}
-URL_load        = {`Builtin` 'URL.load'          2}
+URL_localize    = BURL.localize
+URL_open        = BURL.open
+URL_load        = BURL.load
 PrintError      = {`Builtin` 'System.printError' 1}
 Getpwnam        = OS.getpwnam
 GetCWD          = OS.getCWD

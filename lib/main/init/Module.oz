@@ -85,7 +85,7 @@ in
 
    fun {NewModule}
 
-      Load  = {`Builtin` load 2}
+      Load  = Pickle.load
 
       Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then
                  proc {$ _} skip end

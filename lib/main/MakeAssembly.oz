@@ -30,7 +30,6 @@ NewFS
 NewFD
 NewSearch
 NewOpen
-NewPickle
 NewCompiler
 UrlDefaults
 in
@@ -58,9 +57,6 @@ in
 \insert 'op/Open.oz'
 = NewOpen
 
-\insert 'op/Pickle.oz'
-= NewPickle
-
 \insert 'Compiler.oz'
 = NewCompiler
 
@@ -76,10 +72,13 @@ UrlDefaults = \insert '../url-defaults.oz'
     'import'(%% Boot modules
              'Parser':        Parser
              'FDP':           FDP
+             'FDB':           FDB
              'FSP':           FSP
+             'FSB':           FSB
 
              %% Volatile modules
              'OS':            OS
+             'Pickle':        Pickle
              'Property':      Property
 
              %% Plain functors
@@ -91,16 +90,18 @@ UrlDefaults = \insert '../url-defaults.oz'
              'Open':          Open
              'URL':           'export'(open:unit)
              'FS':            FS
-             'Pickle':        Pickle
              'Search':        Search)
     =IMPORT
 
     BootManager = {`Builtin` 'BootManager'  2}
 
     {ForAll ['Parser'#   Parser
+             'FDB'#      FDB
+             'FSB'#      FSB
              'FDP'#      FDP
              'FSP'#      FSP
              'OS'#       OS
+             'Pickle'#   Pickle
              'Property'# Property]
      proc {$ A#M}
         M={BootManager A}
@@ -116,7 +117,6 @@ UrlDefaults = \insert '../url-defaults.oz'
              FS            # NewFS
              Search        # NewSearch
              Open          # NewOpen
-             Pickle        # NewPickle
              Compiler      # NewCompiler]
      proc {$ V#F}
         thread {F.apply IMPORT}=V end
@@ -126,9 +126,14 @@ UrlDefaults = \insert '../url-defaults.oz'
 
     Module = {NewModule}
 
-    {ForAll ['Parser'# Parser
-             'FDP'#    FDP
-             'FSP'#    FSP]
+    {ForAll ['Parser'#   Parser
+             'FDB'#      FDB
+             'FSB'#      FSB
+             'FDP'#      FDP
+             'FSP'#      FSP
+             'OS'#       OS
+             'Pickle'#   Pickle
+             'Property'# Property]
      proc {$ A#M}
         {Module.enter 'x-oz-boot:'#A M}
      end}

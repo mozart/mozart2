@@ -127,7 +127,9 @@ class CodeStore from Emitter
       end
    end
    meth assignRegName(Reg PrintName)
-      {Dictionary.put @regNames Reg PrintName}
+      case PrintName of unit then skip
+      else {Dictionary.put @regNames Reg PrintName}
+      end
    end
    meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)
       Saved0 = @Saved

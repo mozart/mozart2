@@ -266,24 +266,30 @@ local
       %
       % Now we compute the modes for all the required modules.
       % Each module Name in Spec is associated with a Mode.
-      % For each recursive dependency X of Name (which we have already
-      % computed in DepsMap) we update X's mode with Mode.  This
-      % update is effected by combination where the strongest mode
-      % wins: include > eager > lazy > lazyTop
+      % If PARENT depends on CHILD, then the mode of CHILD must be
+      % greater than the mode of PARENT: include > eager > lazy > lazyTop
+      % We will start with modules that don't have parents and will
+      % proceed towards the beginning of the sorted list.
+      %
+      % First we initialize the requested modules with their
+      % requested mode
       %
       {Record.forAll Spec
-       proc {$ Name#Mode}
-          {Dictionary.put ModeMap Name
-           {ModeCombine Mode
-            % if Name appeared in the dependency of an earlier
-            % module of Spec, it would already have a
-            % recorded mode: we need to look it up
-            {Dictionary.condGet ModeMap Name 'lazyTop'}}}
-          {ForAll {Dictionary.get DepsMap Name}
-           proc {$ Arg}
-              {Dictionary.put ModeMap Arg
+       proc {$ Name#Mode} {Dictionary.put ModeMap Name Mode} end}
+      %
+      % now we propagate starting at the end of the sorted list
+      % by the time we get to a module it will have acquired the
+      % strongest mode necessary.
+      %
+      {ForAll {Reverse ArgsLstSorted}
+       proc {$ Parent}
+          Mode = {Dictionary.get ModeMap Parent}%must already be in
+       in
+          {Record.forAll {RegistryGetArgs R Parent}
+           proc {$ Child}
+              {Dictionary.put ModeMap Child
                {ModeCombine Mode
-                {Dictionary.condGet ModeMap Arg 'lazyTop'}}}
+                {Dictionary.condGet ModeMap Child 'lazyTop'}}}
            end}
        end}
       %

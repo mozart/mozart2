@@ -1271,8 +1271,9 @@ define
             {MakeAttrFeat 'attr' @attributes CS Cont2 Cont3 ?Attr}
             {MakeAttrFeat 'feat' @features CS Cont3 VInter1 ?Feat}
          end
-         PN = case @printName of '' then
-                 {{@designator getVariable($)} getPrintName($)}
+         PN = case @printName of '' then X in
+                 {{@designator getVariable($)} getPrintName(X)}
+                 case X of unit then '_' else X end
               else @printName
               end
          Meth = {NewPseudoVariableOccurrence CS}

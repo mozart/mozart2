@@ -88,23 +88,30 @@ prepare
                %% future if Entry is determined.
                Module = {Value.byNeedDot Entry 1}
             else
-               Module = {ByNeed
-                         fun {$}
-                            try
-                               case Entry of Module#ActualType then
-                                  case ExpectedType of !NOTYPE then Module
-                                  elsecase ActualType of !NOTYPE then Module
-                                  elseif {self.TypeCheckProc ActualType ExpectedType}
-                                  then Module
-                                  else
-                                     raise
-                                        system(module(typeMismatch Key
-                                                      ActualType ExpectedType))
-                                     end
-                                  end
-                               end
-                            catch E then {Value.byNeedFail E} end
-                         end}
+               Module =
+               {ByNeed
+                fun {$}
+                   try
+                      case Entry of Module#ActualType then
+                         case ExpectedType of !NOTYPE then Module
+                         elsecase ActualType of !NOTYPE then Module
+                         elsecase {Procedure.arity self.TypeCheckProc}
+                         of 3 andthen
+                            {self.TypeCheckProc ActualType ExpectedType}
+                         then Module
+                         [] 4 andthen
+                            {self.TypeCheckProc
+                             ActualType ExpectedType o(url: Url)}
+                         then Module
+                         else
+                            raise
+                               system(module(typeMismatch Key
+                                             ActualType ExpectedType))
+                            end
+                         end
+                      end
+                   catch E then {Value.byNeedFail E} end
+                end}
             end
          end
       end

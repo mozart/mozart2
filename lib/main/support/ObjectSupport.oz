@@ -138,7 +138,7 @@ prepare
             end
          end
 
-         meth frmChunk(Ch)
+         meth fromChunk(Ch)
             o('class':C 'attr':A 'feat':F) = Ch.PRIVATE
          in
             C={GetClass self}

@@ -279,7 +279,7 @@ in
                    end
                   ListOut}
                [] chunk then RArity LabelOf in
-                  RArity = {Map {`ChunkArity` TermIn} % all features;
+                  RArity = {Map {ChunkArity TermIn} % all features;
                             fun {$ FN} {ReflectTerm FN nil $ _} end}
 
                   %%

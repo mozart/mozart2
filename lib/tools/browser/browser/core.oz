@@ -79,3 +79,6 @@ GenericSet = {`Builtin`
               proc {$ X Y Z}
                  case {Det X} andthen {Det Y} then {GenericSet X Y Z} end
               end}
+
+%%
+ChunkArity = {`Builtin` 'chunkArity' noHandler}

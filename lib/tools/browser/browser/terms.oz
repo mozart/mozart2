@@ -1638,7 +1638,7 @@ in
             RecArity = case {Chunk.is Term} then
                           TmpArity
                        in
-                          TmpArity = {`ChunkArity` Term}
+                          TmpArity = {ChunkArity Term}
                           %%
                           case AF then {AtomicFilter TmpArity}
                           else TmpArity
@@ -1666,7 +1666,7 @@ in
             AreSpecs = case {Chunk.is Term} then
                           case AF then
                              %% suboptimal - get the arity again...
-                             TWidth \= {Length {`ChunkArity` Term}}
+                             TWidth \= {Length {ChunkArity Term}}
                              %% only atomic features;
                           else False
                           end
@@ -2006,7 +2006,7 @@ in
 \ifdef DEBUG_TT
          {Show 'MetaChunkTermTermObject::initTerm is applied'#self.term}
 \endif
-         case {Length {`ChunkArity` self.term}} == 0 then
+         case {Length {ChunkArity self.term}} == 0 then
             self.isCompound = False
             <<AtomTermTermObject initTerm>>
          else

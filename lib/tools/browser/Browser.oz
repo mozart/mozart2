@@ -70,6 +70,7 @@ local
    GetsBound      %  fires iff its argument is bound to something;
    DeepFeed       %  'feed', but also from local computation spaces;
    GenericSet     %  destructive {tuple,record} modification;
+   ChunkArity     %
 
    %%
    %%  from 'atoms&strings.oz';

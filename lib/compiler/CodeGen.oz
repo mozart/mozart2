@@ -1351,11 +1351,7 @@ define
 \ifdef DEBUG_DEFS
          {System.show PredId}
 \endif
-         if {Not @isOpen} andthen HasDefaults then
-            CodeGenMethod, MakeArityCheckInit(HasDefaults CS VHd Cont1)
-         else
-            VHd = Cont1
-         end
+         CodeGenMethod, MakeArityCheckInit(HasDefaults CS VHd Cont1)
          {CS startDefinition()}
          case @messageDesignator of unit then
             {CS newReg(?MessageReg)}

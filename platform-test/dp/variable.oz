@@ -1,19 +1,13 @@
 functor
 import
-   Remote(manager)
-   Module(manager)
 %   Fault(install)
-   OS(uName)
+   TestMisc
 export
    Return
 define
    NrOfPhases = 3
    ForkingSpeed = 3
    Sites = 3
-
-   \insert TestMisc.oz
-   MM = {New Module.manager init}
-   TestMisc = {MM apply(url:'' FTestMisc $)}
 
    proc {StartController}
       Managers

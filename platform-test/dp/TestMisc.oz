@@ -1,5 +1,7 @@
-functor FTestMisc
+functor
 import
+   OS(uName)
+   Remote(manager)
    System(gcDo)
 %   Fault(deinstall)
 export

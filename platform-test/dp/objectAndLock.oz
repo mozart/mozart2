@@ -1,18 +1,12 @@
 functor
 import
-   Remote(manager)
-   Module(manager)
-   OS(uName)
+   TestMisc
 export
    Return
 define
    Threads = 30
    Times = 50
    Sites = 3
-
-   \insert TestMisc.oz
-   MM = {New Module.manager init}
-   TestMisc = {MM apply(url:'' FTestMisc $)}
 
    class Counter
       attr ctr

@@ -54,8 +54,10 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        mini #url equality port cell cellAndLock variable object objectAndLock
-DP=     $(DP1:%=./dp/%.ozf)
+        mini url port cell cellAndLock variable objectAndLock
+# not yet proper tests, but include anyway:
+DP2=    equality object
+DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)
 
 FTOOLS = \
         gump
@@ -68,7 +70,7 @@ DIRS = core space fd fs scheduling dp tools bench
 COMPONENTS = \
         $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS) \
         $(BENCH)
-
+OTHERS= dp/TestMisc.ozf
 
 ####################################################
 
@@ -129,14 +131,14 @@ dirs:
 # $(COMPONENTS): dirs
 
 TESTSRCS=make-test engine passed failed help-string compute-tests
-oztest: $(TESTSRCS:%=./lib/%.oz) $(COMPONENTS)
+oztest: $(TESTSRCS:%=./lib/%.oz) $(COMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
         $(OZE) ./make-test --verbose $(COMPONENTS:%=`pwd`/%)
         chmod +x oztest
         -rm -f ./make-test
 
 BENCHSRCS=make-bench engine compute-tests help-bench
-ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS)
+ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
         $(OZE) ./make-bench --verbose $(COMPONENTS:%=`pwd`/%)
         chmod +x ozbench
@@ -145,7 +147,7 @@ ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS)
 
 clean:
         -rm -f *~ ./*/*~ ./*/*/*~
-        -rm -f $(COMPONENTS)
+        -rm -f $(COMPONENTS) $(OTHERS)
         -rm -f LambdaScanner.* LambdaParser.*
         -rm -f make-test
         -rm -f te.ozf

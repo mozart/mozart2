@@ -226,14 +226,6 @@ local
       {MakeApplication RaiseError [VO] CS VInter VTl}
    end
 
-   fun {GuardOnlyGetsVariables VInstr}
-      case {IsFree VInstr} then true
-      elsecase VInstr of vGetVariable(_ _ Cont) then
-         {GuardOnlyGetsVariables Cont}
-      else false
-      end
-   end
-
    fun {GuardNeedsThread VInstr}
       case {IsFree VInstr} then false
       elsecase VInstr of nil then false
@@ -252,9 +244,6 @@ local
       [] vEquateNumber(_ _ _ Cont) then {GuardIsShallow Cont}
       [] vEquateLiteral(_ _ _ Cont) then {GuardIsShallow Cont}
       [] vEquateRecord(_ _ _ _ _ Cont) then {GuardIsShallow Cont}
-      [] vGetVariable(_ _ Cont) then {GuardIsShallow Cont}
-      [] vGetNumber(_ _ Cont) then {GuardIsShallow Cont}
-      [] vGetLiteral(_ _ Cont) then {GuardIsShallow Cont}
       [] vUnify(_ _ _ Cont) then {GuardIsShallow Cont}
       else false
       end
@@ -316,17 +305,19 @@ local
          VHd = vMatch(_ self.Reg AltAddr NonvarTests @coord VTl _)
       end
       meth CodeGenRecord(Rec Clauses ?VHashTableEntry)
-         CS = self.cs CondVInstr in
+         CS = self.cs CondVInstr
+      in
          case Clauses of [LocalVars#Subpatterns#_#Body] then
             % Generating unnecessary vShallowGuard instructions precludes
             % making good decisions during register allocation.  If the
             % subpatterns only consist of linear pattern variable occurrences,
             % then we can do without.
             proc {MakeGuard Patterns V1Hd V1Tl V2Hd V2Tl PatternVs}
-               % V1Hd-V1Tl stores the vGet... instructions;
+               % V1Hd-V1Tl stores the vGetVariable instructions;
                % V2Hd-V2Tl stores the instructions to descend into patterns
                case Patterns of Pattern|Rest then
-                  V1Inter V2Inter NewPatternVs in
+                  V1Inter V2Inter NewPatternVs
+               in
                   {Pattern makeGetArg(CS PatternVs V1Hd V1Inter V2Hd V2Inter
                                       ?NewPatternVs)}
                   {MakeGuard Rest V1Inter V1Tl V2Inter V2Tl NewPatternVs}
@@ -335,10 +326,10 @@ local
                   V2Hd = V2Tl
                end
             end
-            GuardVHd GuardVInter GuardVTl BodyVInstr
+            GetVariablesTl GuardVHd GuardVTl BodyVInstr
          in
             {MakeGuard Subpatterns
-             GuardVHd GuardVInter GuardVInter GuardVTl nil}
+             CondVInstr GetVariablesTl GuardVHd GuardVTl nil}
             case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
                {MakePermanent LocalVars ?Regs BodyVInstr Cont1}
                {CodeGenList Body CS Cont1 Cont2}
@@ -346,23 +337,22 @@ local
             else
                {CodeGenList Body CS BodyVInstr nil}
             end
-            case {GuardOnlyGetsVariables GuardVHd} then
+            case {IsFree GuardVHd} then
                % we need no vShallowGuard instruction since the guard
                % cannot fail.
-               CondVInstr = GuardVHd
-               GuardVTl = BodyVInstr
+               GetVariablesTl = BodyVInstr
             elsecase {GuardIsShallow GuardVHd} then AltVInstr AllocatesRS in
                GuardVTl = nil
                {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
                {CS makeRegSet(?AllocatesRS)}
                {CS enterVs([@Arbiter] AllocatesRS)}
-               CondVInstr = vShallowGuard(_ GuardVHd BodyVInstr AltVInstr
-                                          @coord nil AllocatesRS _)
+               GetVariablesTl = vShallowGuard(_ GuardVHd BodyVInstr AltVInstr
+                                              @coord nil AllocatesRS _)
             else AltVInstr in
                GuardVTl = vAsk(_ nil)
                {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
-               CondVInstr = vCreateCond(_ [_#GuardVHd#BodyVInstr]
-                                        AltVInstr nil @coord nil _)
+               GetVariablesTl = vCreateCond(_ [_#GuardVHd#BodyVInstr]
+                                            AltVInstr nil @coord nil _)
             end
          else
             proc {MakeGuard Patterns VOs VHd VTl}
@@ -373,14 +363,14 @@ local
                   VHd = VTl
                end
             end
-            VOs GetsTl VClauses AltVInstr
+            VOs GetVariablesTl VClauses AltVInstr
          in
             VOs = {Map {Arity Rec}
                    fun {$ _} {NewPseudoVariableOccurrence CS} end}
             {FoldL VOs
              proc {$ VHd VO VTl}
                 VHd = vGetVariable(_ {VO reg($)} VTl)
-             end CondVInstr GetsTl}
+             end CondVInstr GetVariablesTl}
             VClauses =
             {FoldL Clauses
              fun {$ In LocalVars#Subpatterns#Coord#Body}
@@ -405,7 +395,7 @@ local
                 _#GuardVInstr#BodyVInstr|In
              end nil}
             {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
-            GetsTl = vCreateCond(_ VClauses AltVInstr nil @coord nil _)
+            GetVariablesTl = vCreateCond(_ VClauses AltVInstr nil @coord nil _)
          end
          case {IsTuple Rec} then
             VHashTableEntry = onRecord({Label Rec} {Width Rec} CondVInstr)
@@ -1094,36 +1084,9 @@ local
 
    class CodeGenPatternCase
       meth codeGen(CS VHd VTl)
-         case @clauses of [Clause] then
-            GuardVHd GuardVTl ThenVHd ThenVTl
+         case {All @clauses fun {$ Clause} {Clause isSwitchable($)} end} then
+            TestReg SHT
          in
-            {Clause makeShallowGuard(CS @arbiter GuardVHd GuardVTl
-                                     ThenVHd ThenVTl)}
-            case {IsFree GuardVHd} then   % pattern was only a wildcard
-               VHd = ThenVHd
-               ThenVTl = VTl
-            elsecase {GuardIsShallow GuardVHd} then AltVInstr AllocatesRS in
-               GuardVTl = nil
-               ThenVTl = nil
-               {@alternative
-                codeGenWithArbiterNoShared(CS @arbiter AltVInstr nil)}
-               {CS makeRegSet(?AllocatesRS)}
-               {CS enterVs(@arbiter|{Clause getPatternGlobalVars($)}
-                           AllocatesRS)}
-               VHd = vShallowGuard(_ GuardVHd ThenVHd AltVInstr @coord VTl
-                                   AllocatesRS _)
-            else AltVInstr AllocatesRS in
-               GuardVTl = vAsk(_ nil)
-               ThenVTl = nil
-               {@alternative
-                codeGenWithArbiterNoShared(CS @arbiter AltVInstr nil)}
-               {CS makeRegSet(?AllocatesRS)}
-               {CS enterVs({Clause getPatternGlobalVars($)} AllocatesRS)}
-               VHd = vCreateCond(_ [_#GuardVHd#ThenVHd] AltVInstr VTl
-                                 @coord AllocatesRS _)
-            end
-         elsecase {All @clauses fun {$ Clause} {Clause isSwitchable($)} end}
-         then TestReg SHT in
             {@arbiter reg(?TestReg)}
             SHT = {New SwitchHashTable
                    init(@coord TestReg @alternative @arbiter CS)}
@@ -1159,17 +1122,6 @@ local
              end
           end}
          {SHT Msg}
-      end
-      meth makeShallowGuard(CS VO GuardVHd GuardVTl ThenVHd ThenVTl)
-         {ForAll @localVars proc {$ V} {V setReg(CS)} end}
-         {@pattern makeEquation(CS VO GuardVHd GuardVTl)}
-         case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
-            {MakePermanent @localVars ?Regs ThenVHd Cont1}
-            {CodeGenList @statements CS Cont1 Cont2}
-            {Clear Regs Cont2 ThenVTl}
-         else
-            {CodeGenList @statements CS ThenVHd ThenVTl}
-         end
       end
       meth makeCondClause(CS VO $)
          GuardVHd GuardVTl GuardVInstr Cont BodyVInstr
@@ -1290,7 +1242,8 @@ local
          {@right makeSwitchable(Reg LocalVars Body CS $)}
       end
       meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs)
-         V Reg VO in
+         V Reg VO
+      in
          {@left getVariable(?V)}
          {@left reg(?Reg)}
          V1Hd = vGetVariable(_ Reg V1Tl)
@@ -1915,16 +1868,11 @@ local
       meth makeSwitchable(Reg LocalVars Body CS $)
          addScalar({self getCodeGenValue($)} LocalVars Body)
       end
-      meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs) Value in
-         {self getCodeGenValue(?Value)}
-         case {IsNumber Value} then
-            V1Hd = vGetNumber(_ Value V1Tl)
-         elsecase {IsLiteral Value} then
-            V1Hd = vGetLiteral(_ Value V1Tl)
-         else
-            V1Hd = vGetVariable(_ {self reg($)} V1Tl)
-         end
-         V2Hd = V2Tl
+      meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs) Reg VO in
+         {CS newReg(?Reg)}
+         V1Hd = vGetVariable(_ Reg V1Tl)
+         VO = {New PseudoVariableOccurrence init(Reg)}
+         {self makeEquation(CS VO V2Hd V2Tl)}
          NewPatternVs = PatternVs
       end
       meth addPatternVs(PatternVs ?NewPatternVs)
@@ -2082,9 +2030,11 @@ local
       meth makeSwitchable(Reg LocalVars Body CS $)
          addScalar({self getCodeGenValue($)} LocalVars Body)
       end
-      meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs)
-         V1Hd = vGetVariable(_ {self reg($)} V1Tl)
-         V2Hd = V2Tl
+      meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs) Reg VO in
+         {CS newReg(?Reg)}
+         V1Hd = vGetVariable(_ Reg V1Tl)
+         VO = {New PseudoVariableOccurrence init(Reg)}
+         {self makeEquation(CS VO V2Hd V2Tl)}
          NewPatternVs = PatternVs
       end
       meth methPrintName($)

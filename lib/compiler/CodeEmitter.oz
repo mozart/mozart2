@@ -383,10 +383,6 @@ in
             elseof R then
                Emitter, Emit(unifyValue(R))
             end
-         [] vGetNumber(_ Number _) then
-            Emitter, Emit(unifyNumber(Number))
-         [] vGetLiteral(_ Literal _) then
-            Emitter, Emit(unifyLiteral(Literal))
          [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
             BIInfo NewCont2
          in

@@ -151,6 +151,18 @@ define
       {Combinator.'not' P}
    end
 
+   proc {CombinatorCond A B}
+      {Combinator.'cond' A B}
+   end
+
+   proc {CombinatorOr A}
+      {Combinator.'or' A}
+   end
+
+   proc {CombinatorDis A}
+      {Combinator.'dis' A}
+   end
+
    proc {SpaceChoose X Y}
       {Space.choose X Y}
    end
@@ -165,9 +177,9 @@ define
 
                      %% Combinators
                      'Combinator.\'not\'': CombinatorNot
-                     'Combinator.\'cond\'': Combinator.'cond'
-                     'Combinator.\'or\'': Combinator.'or'
-                     'Combinator.\'dis\'': Combinator.'dis'
+                     'Combinator.\'cond\'': CombinatorCond
+                     'Combinator.\'or\'': CombinatorOr
+                     'Combinator.\'dis\'': CombinatorDis
 
                      %% Space
                      'Space.choose': SpaceChoose)}

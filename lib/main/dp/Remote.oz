@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Konstantin Popov <kost@sics.se>
+%%%   Christian Schulte <schulte@dfki.de>
 %%%
 %%% Copyright:
-%%%   Christian Schulte, 1997
+%%%   Kostantin Popov, 1998
+%%%   Christian Schulte, 1997, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -20,68 +22,111 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+
+functor
 
 import
-   OS.{getEnv}
-   Open.{pipe}
-   Connection.{offer}
-   System.{showInfo}
+   Open(pipe)
+
+   OS(getEnv)
+
+   System(showInfo)
+
+   Connection(offer)
+
+   Property(get)
+
+   Module(manager)
 
 export
-   server: ComputeClient
-   farm:   Farm
+   manager: ManagerProxy
 
-body
+define
 
-   Farm = unit
+   HasVirtualSite = {Property.get 'distribution.virtualsites'}
 
-   proc {SuckUp P}
-      S={P read(list:$)}
-   in
-      case S==nil then skip else
-         {System.showInfo S} {SuckUp P}
-      end
-   end
+   VirtualSite = if HasVirtualSite then
+                    %% Now we know that there is in fact virtual site
+                    %% support in our emulator, go and get it.
+                    {{New Module.manager init}
+                     link(name: 'x-oz://boot/VirtualSite' $)}
+                 else
+                    unit
+                 end
 
-   proc {StartRemote Host Cmd}
-      try
-         P={New Open.pipe init(cmd:'rsh'
-                               args: [Host Cmd])}
+   local
+      proc {SuckUp Pipe}
+         S={Pipe read(list:$)}
       in
-         thread {SuckUp P} end
-      catch _ then
-         raise error end
+         if S\=nil then
+            {System.showInfo S} {SuckUp Pipe}
+         end
+      end
+   in
+      fun {CreatePipe Fork Host Ports Detach}
+         Cmd       = {OS.getEnv 'OZHOME'}#'/bin/ozremote'
+         TicketArg = '--ticket='#{Connection.offer Ports}
+         DetachArg = '--'#if Detach then '' else 'no' end#'detached'
+      in
+         try
+            Pipe = {New Open.pipe
+                    case Fork
+                    of rsh then
+                       init(cmd:  'rsh'
+                            args: [Host
+                                   'exec '#Cmd#' '#DetachArg#' '#TicketArg])
+                    [] virtual then
+                       init(cmd:  Cmd
+                            args: [TicketArg
+                                   DetachArg
+                                   '--shmkey='#{VirtualSite.newMailbox}])
+                    end}
+         in
+            thread {SuckUp Pipe} end
+            Pipe
+         catch E then
+            raise error(E) end
+         end
       end
    end
 
-   class ComputeClient
-      prop
-         locking
+
+   class ManagerProxy
+      prop locking
+
       feat
          Run
          Ctrl
-         Host
+         Pipe
+
       attr
          Run:  nil
          Ctrl: nil
 
-      meth init(H)
-         RunRet  RunPort ={Port.new RunRet}
-         CtrlRet CtrlPort={Port.new CtrlRet}
-         Ticket={Connection.offer RunPort#CtrlPort}
+      meth init(host:   HostIn <= localhost
+                fork:   ForkIn <= automatic
+                detach: Detach <= false)
+
+         RunRet  RunPort  = {Port.new RunRet}
+         CtrlRet CtrlPort = {Port.new CtrlRet}
+
+         Host = {VirtualString.toAtom HostIn}
+         Fork = {VirtualString.toAtom ForkIn}
       in
-         self.Host = H
-         {StartRemote H
-          {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
+         self.Pipe = {CreatePipe
+                      if
+                         Host==localhost andthen
+                         Fork==automatic andthen
+                         HasVirtualSite
+                      then virtual
+                      else rsh
+                      end
+                      Host RunPort#CtrlPort Detach}
+
          Run      <- RunRet.2
          Ctrl     <- CtrlRet.2
          self.Run  = RunRet.1
          self.Ctrl = CtrlRet.1
-      end
-
-      meth getHost($)
-         self.Host
       end
 
       meth AsyncSend(Which What ?Ret)
@@ -94,9 +139,9 @@ body
          Ret|NewS = OldS
       end
 
-      meth Send(Which What $)
+      meth SyncSend(Which What)
          case {self AsyncSend(Which What $)}
-         of okay(A)      then A
+         of okay         then skip
          [] exception(E) then
             raise E end
          [] failed       then
@@ -104,19 +149,30 @@ body
          end
       end
 
-      %% Run methods
-      meth run(P $)
-         ComputeClient,Send(Run P $)
+      %% Manager methods
+      meth link(...) = Message
+         ManagerProxy,SyncSend(Run Message)
+      end
+
+      meth apply(...) = Message
+         ManagerProxy,SyncSend(Run Message)
+      end
+
+      meth enter(...) = Message
+         ManagerProxy,SyncSend(Run Message)
       end
 
       %% Ctrl methods
-      meth ping($)
-         ComputeClient,Send(Ctrl ping $)
+      meth ping
+         ManagerProxy,SyncSend(Ctrl ping)
       end
 
       meth close
-         ComputeClient,AsyncSend(Ctrl close _)
+         ManagerProxy,AsyncSend(Ctrl close _)
+         {self.Pipe close}
       end
+
    end
+
 
 end

@@ -36,15 +36,15 @@ class ProtoStore from UrObject
    %%
    %%  Extract some value from store;
    %%
-   meth read(What Value)
+   meth read(What ?OutValue)
       local DefValue in
          DefValue = {NewName}
 
          %%
-         Value = {NoNumber.matchDefault @store What DefValue}
+         OutValue = {Value.matchDefault @store What DefValue}
 
          %%
-         case Value
+         case OutValue
          of !DefValue then
             {BrowserError
              ['Attempt to read undefined parameter in store']}
@@ -57,7 +57,7 @@ class ProtoStore from UrObject
    %%  Is there such parameter?
    %%
    meth test(What ?Result)
-      Result = {NoNumber.hasSubtreeAt @tore What}
+      Result = {Value.hasSubtreeAt @tore What}
    end
 
    %%

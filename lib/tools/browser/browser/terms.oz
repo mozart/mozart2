@@ -34,6 +34,7 @@ local
    GenAtomPrintName
    GenNamePrintName
    GenVarPrintName
+   GenChunkPrintName
    GenObjPrintName
    GenClassPrintName
    GenProcPrintName
@@ -42,7 +43,6 @@ local
    %%
    SelSubTerms
    IsListDepth
-   LArity
 
    %%
    TestVarFun
@@ -277,8 +277,9 @@ in
          PN = {System.getPrintName Term}
 
          %%
+         Name =
          case AreSmallNames then
-            case PN of '' then Name = "<N>"
+            case PN of '' then '<N>'
             else
                SPNS SSPNS
             in
@@ -289,20 +290,34 @@ in
                   SSPNS = {StripName {StripBQuotes SPNS}}
 
                   %%
-                  case SSPNS of nil then Name = "<N>"
-                  else Name = '#'("<N: `" SSPNS "`>")
+                  case SSPNS of nil then '<N>'
+                  else '<N: `' # SSPNS # '`>'
                   end
-               else Name = '#'("<N: " SPNS ">")
+               else '<N: ' # SPNS # '>'
                end
             end
          else
             %%
             case PN of '' then
-               Name = '#'("<Name @ " {System.getValue Term addr} ">")
+               '<Name @ ' # {System.getValue Term addr} # '>'
             else
-               Name = '#'("<Name: " PN " @ " {System.getValue Term addr} ">")
+               '<Name: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
             end
          end
+      end
+   end
+
+   %%
+   %%
+   %%  Generate a chunk's print name;
+   proc {GenChunkPrintName Term Store ?Name}
+      local AreSmallNames in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+
+         %%
+         Name = case AreSmallNames then '<Ch>'
+                else '<' # {System.getPrintName Term} # '>'
+                end
       end
    end
 
@@ -315,8 +330,9 @@ in
          PN = {Class.printName {Class.get Term}}
 
          %%
+         Name =
          case AreSmallNames then
-            case PN of '_' then Name = "<O>"
+            case PN of '_' then '<O>'
             else
                PNS SN
             in
@@ -327,18 +343,18 @@ in
                   SN = {StripName {StripBQuotes PNS}}
 
                   %%
-                  case SN of nil then Name = "<O>"
-                  else Name = '#'("<O: `" SN "`>")
+                  case SN of nil then '<O>'
+                  else '<O: `' # SN # '`>'
                   end
-               else Name = '#'("<O: " PN ">")
+               else '<O: ' # PN # '>'
                end
             end
          else
             %%
             case PN of '_' then
-               Name = '#'("<Object @ " {System.getValue Term addr} ">")
+               '<Object @ ' # {System.getValue Term addr} # '>'
             else
-               Name = '#'("<Object: " PN " @ " {System.getValue Term addr} ">")
+               '<Object: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
             end
          end
       end
@@ -351,9 +367,11 @@ in
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
          PN = {Class.printName Term}
+
          %%
+         Name =
          case AreSmallNames then
-            case PN of '_' then Name = "<C>"
+            case PN of '_' then '<C>'
             else
                PNS SN
             in
@@ -364,18 +382,18 @@ in
                   SN = {StripName {StripBQuotes PNS}}
 
                   %%
-                  case SN of nil then Name = "<C>"
-                  else Name = '#'("<C: `" SN "`>")
+                  case SN of nil then '<C>'
+                  else '<C: `' # SN # '`>'
                   end
-               else Name = '#'("<C: " PN ">")
+               else '<C: ' # PN # '>'
                end
             end
          else
             %%
             case PN of '_' then
-               Name = '#'("<Class @ " {System.getValue Term addr} ">")
+               '<Class @ ' # {System.getValue Term addr} # '>'
             else
-               Name = '#'("<Class: " PN " @ " {System.getValue Term addr} ">")
+               '<Class: ' # PN # ' @ ' # {System.getValue Term addr} # '>'
             end
          end
       end
@@ -387,10 +405,12 @@ in
    proc {GenProcPrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.getPrintName Term}
+         PN = {Procedure.printName Term}
+
          %%
+         Name =
          case AreSmallNames then
-            case PN of '_' then Name = '#'("<P/" {System.getValue Term arity} ">")
+            case PN of '_' then '<P/' # {Procedure.arity Term} # '>'
             else
                PNS SN
             in
@@ -402,18 +422,18 @@ in
 
                   %%
                   case SN of nil then
-                     Name = '#'("<P/" {System.getValue Term arity} ">")
+                     '<P/' # {Procedure.arity Term} # '>'
                   else
-                     Name = '#'("<P/" {System.getValue Term arity} " `" SN "`>")
+                     '<P/' # {Procedure.arity Term} # ' `' # SN # '`>'
                   end
                else
-                  Name = '#'("<P/" {System.getValue Term arity} " " PN ">")
+                  '<P/' # {Procedure.arity Term} # ' ' # PN # '>'
                end
             end
          else
             %%
-            Name = '#'("<Procedure: " PN "/" {System.getValue Term arity} " @ "
-                       {System.getValue Term addr} ">")
+            '<Procedure: ' # PN # '/' # {Procedure.arity Term} #
+            ' @ ' # {System.getValue Term addr} # '>'
          end
       end
    end
@@ -425,9 +445,11 @@ in
       local AreSmallNames CN in
          AreSmallNames = {Store read(StoreSmallNames $)}
          CN = {System.getPrintName Term}
+
          %%
+         Name =
          case AreSmallNames then
-            case CN of '_' then Name = "<Cell>"
+            case CN of '_' then Name = '<Cell>'
             else
                PNS SN
             in
@@ -438,15 +460,15 @@ in
                   SN = {StripName {StripBQuotes PNS}}
 
                   %%
-                  case SN of nil then Name = "<C>"
-                  else Name = '#'("<Cell: `" SN "`>")
+                  case SN of nil then '<C>'
+                  else '<Cell: `' # SN # '`>'
                   end
-               else Name = '#'("<Cell: " CN ">")
+               else '<Cell: ' # CN # '>'
                end
             end
          else
             %%
-            Name = '#'("<Cell: " {System.getValue Term name} ">")
+            '<Cell: ' # {System.getValue Term name} # '>'
          end
       end
    end
@@ -494,15 +516,6 @@ in
          if ChMetaVar = True then True
          [] GotBound = True then True
          fi
-      end
-   end
-
-   %%
-   %%
-   fun {LArity R AF}
-      %%
-      case AF then {RealArity R}
-      else {Arity R}
       end
    end
 
@@ -705,7 +718,7 @@ in
    end
 
    %%
-   %%  Filter for 'RecordC.monitorArity';
+   %%  Filter for chunks arity;
    fun {AtomicFilter In}
       case In
       of E|R then
@@ -769,6 +782,7 @@ in
 \ifdef DEBUG_TT
          {Show 'MetaTermTermObject::getTermType: ...'}
 \endif
+         Type =
          case
             @depth > 1 andthen {self.termsStore canCreateObject($)}
          then
@@ -781,64 +795,64 @@ in
                end
 
                %%
-               Type = case {IsRecordCVar Term}  then T_ORecord
-                      elsecase {IsFdVar Term}   then T_FDVariable
-                      elsecase {IsMetaVar Term} then T_MetaVariable
-                      else T_Variable
-                      end
+               case {IsRecordCVar Term}  then T_ORecord
+               elsecase {IsFdVar Term}   then T_FDVariable
+               elsecase {IsMetaVar Term} then T_MetaVariable
+               else T_Variable
+               end
             else
                case {Value.type Term}
-               of atom    then Type = T_Atom
-               [] int     then Type = T_Int
-               [] float   then Type = T_Float
-               [] name    then Type = T_Name
+               of atom    then T_Atom
+               [] int     then T_Int
+               [] float   then T_Float
+               [] name    then T_Name
                [] tuple   then AreVSs in
                   AreVSs = {self.store read(StoreAreVSs $)}
 
                   %%
                   case AreVSs == True andthen {IsVirtualString Term}
-                  then Type = T_Atom
+                  then T_Atom
                   else
-                     Type = case Term
-                            of _|_ then
-                               case self.type
-                               of !T_List then
-                                  case NumberOf
-                                  of 2 then T_List
-                                     %%  i.e. this is not-well-formed list;
-                                  else {GetListType Term self.store}
-                                  end
-                               else {GetListType Term self.store}
-                               end
-                            else
-                               case
-                                  case {Label Term}
-                                  of '#' then {Width Term} > 1
-                                  else False
-                                  end
-                               then T_HashTuple
-                               else T_Tuple
-                               end
-                            end
+                     case Term
+                     of _|_ then
+                        case self.type
+                        of !T_List then
+                           case NumberOf
+                           of 2 then T_List
+                              %%  i.e. this is not-well-formed list;
+                           else {GetListType Term self.store}
+                           end
+                        else {GetListType Term self.store}
+                        end
+                     else
+                        case
+                           case {Label Term}
+                           of '#' then {Width Term} > 1
+                           else False
+                           end
+                        then T_HashTuple
+                        else T_Tuple
+                        end
+                     end
                   end
 
-               [] procedure then
-                  Type = case {Object.is Term} then T_Object
-                         else T_Procedure
-                         end
+               [] procedure then T_Procedure
+               [] cell then T_Cell
+               [] record then T_Record
 
-               [] cell then Type = T_Cell
-               [] record then
-                  Type = case {Class.is Term} then T_Class
-                         else T_Record
-                         end
+               [] chunk then
+                  case {Object.is Term} then T_Object
+                  elsecase {Class.is Term} then T_Class
+                  else T_Chunk  % TODO! arrays and dictionaries;
+                  end
+
                else
                   {BrowserWarning ['Oz Term of unknown type: ' Term]}
-                  Type = T_Unknown
+                  T_Unknown
                end
             end
          else
-            Type = T_Shrunken
+            T_Shrunken
          end
       end
 
@@ -857,6 +871,7 @@ in
                  [] !T_Name       then False
                  [] !T_Procedure  then False
                  [] !T_Cell       then False
+                 [] !T_Chunk      then False
                  [] !T_Object     then False
                  [] !T_Class      then False
                  [] !T_WFList     then False
@@ -923,7 +938,7 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -935,6 +950,62 @@ in
 \endif
          <<setName>>
       end
+   end
+
+   %%
+   %%
+   %%  Procedures;
+   %%
+   class ProcedureTermTermObject
+      from MetaTermTermObject
+      %%
+      feat
+         name                   % print name;
+
+      %%
+      %%
+      meth setName
+         self.name = {GenProcPrintName self.term self.store}
+      end
+
+      %%
+      %%
+      meth initTerm
+\ifdef DEBUG_TT
+         {Show 'ProcedureTermTermObject::initTerm is applied'#self.term}
+\endif
+         <<setName>>
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%  Cells;
+   %%
+   class CellTermTermObject
+      from MetaTermTermObject
+      %%
+      feat
+         name                   % print name;
+
+      %%
+      %%
+      meth setName
+         self.name = {GenCellPrintName self.term self.store}
+      end
+
+      %%
+      %%
+      meth initTerm
+\ifdef DEBUG_TT
+         {Show 'CellTermTermObject::initTerm is applied'#self.term}
+\endif
+         <<setName>>
+      end
+
+      %%
    end
 
    %%
@@ -964,11 +1035,12 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
    end
 
+   %%
    %%
    %%  Floats;
    %%
@@ -995,11 +1067,12 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
    end
 
+   %%
    %%
    %%  Names;
    %%
@@ -1027,7 +1100,7 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
    end
@@ -1531,7 +1604,8 @@ in
          {Show 'RecordTermTermObject::initTerm is applied'#self.term}
 \endif
          local
-            AF AreSpecs Term Subterms Store RecArity RecFeatures SWidth TWidth
+            AF AreSpecs Term Subterms Store RecArity
+            RecFeatures SWidth TWidth
          in
             %%
             Store = self.store
@@ -1551,8 +1625,15 @@ in
             <<setName>>
 
             %%
-            RecArity = case AF then {Arity Term}
-                       else {RealArity Term}
+            RecArity = case {Chunk.is Term} then
+                          TmpArity
+                       in
+                          TmpArity = {`ChunkArity` Term}
+                          %%
+                          case AF then {AtomicFilter TmpArity}
+                          else TmpArity
+                          end
+                       else {Arity Term}
                        end
             self.recArity = RecArity
 
@@ -1572,8 +1653,13 @@ in
             SWidth = {Store read(StoreWidth $)}
 
             %%
-            AreSpecs = case AF then TWidth \= {Width Term}
-                          %% only atomic features;
+            AreSpecs = case {Chunk.is Term} then
+                          case AF then
+                             %% suboptimal - get the arity again...
+                             TWidth \= {Length {`ChunkArity` Term}}
+                             %% only atomic features;
+                          else False
+                          end
                        else False
                        end
 
@@ -1635,22 +1721,12 @@ in
          {Show 'ORecordTermTermObject::initTerm is applied'#self.term}
 \endif
          local
-            AF RecArity Term OFSLab Subterms Store SWidth TWidth AreSpecs
+            RecArity Term OFSLab Subterms Store SWidth TWidth AreSpecs
             SelfClosed
          in
             %%
             Store = self.store
             Term = self.term
-
-            %%
-            AF = case {Store read(StoreArityType $)}
-                 of !AtomicArity then True
-                 [] !TrueArity then False
-                 else
-                    {BrowserError
-                     ['RecordTermTermObject::initTerm: invalid type of ArityType']}
-                    False
-                 end
 
             %%
             %%  This *must* be a job, and *not* a thread!
@@ -1718,36 +1794,7 @@ in
             PrivateFeature <- False
 
             %%
-            case AF then
-               %%
-               %% relational;
-               thread
-                  GotNameFt GotClosed
-               in
-                  job
-                     GotNameFt = {IsThereAName RecArity}
-                  end
-                  %%
-                  job
-                     GotClosed = {IsValue SelfClosed}
-                  end
-
-                  %%
-                  if GotNameFt = True then {self setHiddenPFs}
-                  [] GotClosed = True then true
-                  fi
-               end
-            else true
-            end
-
-            %%
-            case AF then
-               %%  This *must* be a job, and *not* a thread!
-               job
-                  self.recArity = {AtomicFilter RecArity}
-               end
-               else self.recArity = RecArity
-            end
+            self.recArity = RecArity
 
             %%
             <<reGetSubterms(Subterms)>>
@@ -1930,78 +1977,23 @@ in
    %%  Generic chunks (not only, though) objects;
    %%
    class MetaChunkTermTermObject
-      from AtomTermTermObject RecordTermTermObject
+      from RecordTermTermObject
       %%
-      feat
-         isCompound             % 'True' if there are any subterms;
-                                % (in another words, "{Width Term} \= 0");
-      %%
-      %%   Note that we have redefined 'Width' so that
-      %%  {Width X} == {Length {RealArity X}}  !!!
-
-      %%
-      %%
-      meth initTerm
-\ifdef DEBUG_TT
-         {Show 'MetaChunkTermTermObject::initTerm is applied'#self.term}
-\endif
-         case {Width self.term}
-         of 0 then
-            self.isCompound = False
-            <<AtomTermTermObject initTerm>>
-         else
-            self.isCompound = True
-            <<RecordTermTermObject initTerm>>
-         end
-      end
-
-      %%
-      %%
-      meth getSubterms(?Subterms)
-         case self.isCompound then
-            <<RecordTermTermObject getSubterms(Subterms)>>
-         else
-            %% should produce an error message;
-            <<AtomTermTermObject getSubterms(Subterms)>>
-         end
-      end
-
-      %%
-      %%
-      meth reGetSubterms(?Subterms)
-         case self.isCompound then
-            <<RecordTermTermObject reGetSubterms(Subterms)>>
-         else
-            %% should produce an error message;
-            <<AtomTermTermObject reGetSubterms(Subterms)>>
-         end
-      end
-
-      %%
-      %%
-      meth areCommas(?Are)
-         case self.isCompound then
-            <<RecordTermTermObject areCommas(Are)>>
-         else
-            <<AtomTermTermObject areCommas(Are)>>
-         end
-      end
 
       %%
    end
 
    %%
    %%
-   %%  Procedures;
+   %%  Generic Chunks;
    %%
-   class ProcedureTermTermObject
+   class ChunkTermTermObject
       from MetaChunkTermTermObject
       %%
 
       %%
-      %%
       meth setName
-         self.name = {GenProcPrintName self.term self.store}
+         self.name = {GenChunkPrintName self.term self.store}
       end
 
       %%
@@ -2024,24 +2016,6 @@ in
       %%
    end
 
-   %%
-   %%
-   %%  Cells;
-   %%
-   class CellTermTermObject
-      from MetaChunkTermTermObject
-      %%
-
-      %%
-      %%
-      meth setName
-         self.name = {GenCellPrintName self.term self.store}
-      end
-
-      %%
-   end
-
-   %%
    %%
    %%  Classes;
    %%
@@ -2115,7 +2089,7 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -2272,7 +2246,7 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -2413,7 +2387,7 @@ in
             % {Wait Name}
             %%
             self.name = Name
-            <<nil>>
+            <<UrObject nil>>
 
             %%
 \ifdef DEBUG_METAVAR

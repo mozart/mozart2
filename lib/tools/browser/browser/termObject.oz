@@ -94,7 +94,6 @@ in
 
       %%
       %%
-      %%  STATELESS METHOD;
       meth getObjClass(Type ?ObjClass)
 \ifdef DEBUG_TO
          {Show 'MetaGenericTermObject::getObjClass is applied: '#Type}
@@ -106,6 +105,7 @@ in
                     [] !T_Name       then NameTermObject
                     [] !T_Procedure  then ProcedureTermObject
                     [] !T_Cell       then CellTermObject
+                    [] !T_Chunk      then ChunkTermObject
                     [] !T_Object     then ObjectTermObject
                     [] !T_Class      then ClassTermObject
                     [] !T_WFList     then WFListTermObject
@@ -314,6 +314,32 @@ in
       end
       %%
 
+      meth processOtherwise(Type Message)
+         local PM in
+            PM = case {Value.type Message}
+                 of atom then Message
+                 [] Name then {System.getPrintName Message}
+                 [] tuple then L in
+                    L = {Label Message}
+                    case {IsAtom L} then L
+                    else {System.getPrintName L}
+                    end
+                 [] record then L in
+                    L = {Label Message}
+                    case {IsAtom L} then L
+                    else {System.getPrintName L}
+                    end
+                 else
+                    {BrowserError ['MetaGenericTermObject::processOtherwise?']}
+                    '???'
+                 end
+
+            %%
+            {BrowserError [Type PM '???']}
+         end
+      end
+
+      %%
    end
 
    %%
@@ -333,8 +359,9 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['AtomObject::' Message '???']}
+         <<processOtherwise('AtomObject::' Message)>>
       end
+
       %%
    end
 
@@ -350,7 +377,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['IntObject::' Message '???']}
+         <<processOtherwise('IntObject::' Message)>>
       end
 
       %%
@@ -373,7 +400,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['FloatObject::' Message '???']}
+         <<processOtherwise('FloatObject::' Message)>>
       end
       %%
    end
@@ -444,11 +471,49 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['NameObject::' Message '???']}
+         <<processOtherwise('NameObject::' Message)>>
       end
       %%
    end
 
+
+   %%
+   %%
+   %%  Procedures;
+   %%
+   class ProcedureGenericTermObject
+      from NameGenericTermObject
+      %%
+      feat
+         type: T_Procedure
+
+      %%
+      %%
+      meth otherwise(Message)
+         <<processOtherwise('ProcedureObject::' Message)>>
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%  Cells;
+   %%
+   class CellGenericTermObject
+      from NameGenericTermObject
+      %%
+      feat
+         type: T_Cell
+
+      %%
+      %%
+      meth otherwise(Message)
+         <<processOtherwise('CellObject::' Message)>>
+      end
+
+      %%
+   end
    %%
    %%
    %%  'Meta' object for compound (tuple-like) term objects;
@@ -810,7 +875,7 @@ in
                 end}
 
                %%
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -829,7 +894,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['WFListObject::' Message ' ???']}
+         <<processOtherwise('WFListObject::' Message)>>
       end
       %%
    end
@@ -846,7 +911,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['TupleObject::' Message '???']}
+         <<processOtherwise('TupleObject::' Message)>>
       end
       %%
       %%
@@ -864,7 +929,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ListObject::' Message '???']}
+         <<processOtherwise('ListObject::' Message)>>
       end
       %%
       %%
@@ -882,7 +947,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['HashTupleObject::' Message '???']}
+         <<processOtherwise('HashTupleObject::' Message)>>
       end
       %%
       %%
@@ -1065,7 +1130,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['FListObject::' Message '???']}
+         <<processOtherwise('FListObject::' Message)>>
       end
 
       %%
@@ -1102,7 +1167,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['RecordObject::' Message '???']}
+         <<processOtherwise('RecordObject::' Message)>>
       end
       %%
       %%
@@ -1265,7 +1330,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ORecordObject::' Message '???']}
+         <<processOtherwise('ORecordObject::' Message)>>
       end
       %%
    end
@@ -1276,103 +1341,51 @@ in
    %%
    %%
    class MetaChunkGenericTermObject
-      from NameGenericTermObject RecordGenericTermObject
+      from RecordGenericTermObject
+      %%
+
       %%
       %%  'getObjClass' from MetaGenericTermObject;
       %%  'init' ...
       %%  'isShown' ...
-
       %%
-      meth destroy
-         case self.isCompound then
-            <<RecordGenericTermObject destroy>>
-         else
-            <<NameGenericTermObject destroy>>
-         end
-      end
-
+      %%  'destroy' ...
       %%
-      meth retract
-         case self.isCompound then
-            <<RecordGenericTermObject retract>>
-         else
-            <<NameGenericTermObject retract>>
-         end
-      end
-
+      %%  'retract' ...
       %%
-      %%
-      meth updateSizes(Depth)
-         case self.isCompound then
-            <<RecordGenericTermObject updateSizes(Depth)>>
-         else
-            <<NameGenericTermObject updateSizes(Depth)>>
-         end
-      end
-
+      %%  'updateSizes' ...
       %%
       %%  event handlers from 'MetaGenericTermObject';
       %%  'show' ...
       %%
-      meth expand
-         case self.isCompound then
-            <<RecordGenericTermObject expand>>
-         else
-            <<NameGenericTermObject expand>>
-         end
-      end
+      %%  'expand' ...
       %%
       %%  'shrink' from 'MetaGenericTermObject';
       %%  'deref' ...
       %%
-      meth getRefVar(Obj)
-         case self.isCompound then
-            <<RecordGenericTermObject getRefVar(Obj)>>
-         else
-            <<NameGenericTermObject getRefVar(Obj)>>
-         end
-      end
+      %%  'getRefVar' ...
       %%
    end
+
    %%
    %%
+   %%  Chunks;
    %%
-   %%  Procedures;
-   %%
-   class ProcedureGenericTermObject
+   class ChunkGenericTermObject
       from MetaChunkGenericTermObject
       %%
       feat
-         type: T_Procedure
-      %%
-      %%
-      %%
-      meth otherwise(Message)
-         {BrowserError ['ProcedureObject::' Message '???']}
-      end
-      %%
-      %%
-   end
-   %%
-   %%
-   %%
-   %%  Cells;
-   %%
-   class CellGenericTermObject
-      from MetaChunkGenericTermObject
-      %%
-      feat
-         type: T_Cell
-      %%
+         type: T_Chunk
+
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['CellObject::' Message '???']}
+         <<processOtherwise('ChunkObject::' Message)>>
       end
-      %%
+
       %%
    end
-   %%
+
    %%
    %%
    %%  Objects;
@@ -1382,16 +1395,16 @@ in
       %%
       feat
          type: T_Object
-      %%
+
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ObjectObject::' Message '???']}
+         <<processOtherwise('ObjectObject::' Message)>>
       end
-      %%
+
       %%
    end
-   %%
+
    %%
    %%
    %%  Classes;
@@ -1401,16 +1414,16 @@ in
       %%
       feat
          type: T_Class
-      %%
+
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ClassObject::' Message '???']}
+         <<processOtherwise('ClassObject::' Message)>>
       end
-      %%
+
       %%
    end
-   %%
+
    %%
    %%
    %%  Various special term objects;
@@ -1475,7 +1488,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['VariableObject::' Message '???']}
+         <<processOtherwise('VariableObject::' Message)>>
       end
 
       %%
@@ -1543,7 +1556,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['FDVariableObject::' Message '???']}
+         <<processOtherwise('FDVariableObject::' Message)>>
       end
 
       %%
@@ -1612,7 +1625,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['MetaVariableObject::' Message '???']}
+         <<processOtherwise('MetaVariableObject::' Message)>>
       end
       %%
    end
@@ -1680,7 +1693,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ReferenceObject::' Message ' ???']}
+         <<processOtherwise('ReferenceObject::' Message)>>
       end
 
       %%
@@ -1727,7 +1740,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['ShrunkenObject::' Message '???']}
+         <<processOtherwise('ShrunkenObject::' Message)>>
       end
       %%
    end
@@ -1745,7 +1758,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         {BrowserError ['UnknownObject::' Message '???']}
+         <<processOtherwise('UnknownObject::' Message)>>
       end
       %%
    end
@@ -1823,6 +1836,15 @@ in
          CellGenericTermObject CellTermTermObject CellTWTermObject
 \ifdef FEGRAMED
          FE_CellObject
+\endif
+   end
+
+   %%
+   class ChunkTermObject
+      from
+         ChunkGenericTermObject ChunkTermTermObject ChunkTWTermObject
+\ifdef FEGRAMED
+         FE_ChunkObject
 \endif
    end
 

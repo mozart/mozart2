@@ -133,6 +133,11 @@ in
    class PseudoTermTWObject
       from UrObject
       %%
+      feat
+         isEnclosed: fun {$ Self} True end
+         !GetTags: fun {$ Self} nil end
+
+      %%
       attr
          shown: InitValue
 
@@ -153,7 +158,7 @@ in
 
          %%
          {self.widgetObj pickTagLast(Tag)}
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -171,12 +176,6 @@ in
 
       %%
       %%
-      meth !GetTags(?Tags)
-         Tags = nil
-      end
-
-      %%
-      %%
       meth checkSize(Obj _ _)
 \ifdef DEBUG_TW
          {Show 'PseudoTermTWObject::checkSize is applied'}
@@ -185,17 +184,10 @@ in
             {@termObj checkLayout}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          else true              % ignore irrelevant message;
          end
       end
-
-      %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = True
-      end
-      %%
    end
 
    %%
@@ -413,6 +405,9 @@ in
          term: InitValue        % unique value;
          name: DNameUnshown
          size: {VSLength DOpenFS}
+         !GetTags: fun {$ Self}
+                      Self|{Self.parentObj.GetTags Self.parentObj}
+                   end
 
       %%
       %%
@@ -449,9 +444,10 @@ in
          %%  Note: In this case (',,,') it's possible that commas don't get
          %% tagged by all necessary tags. So, we have to stretch them
          %% explicitly.
-         local IsEnclosed in
+         local ParentObj IsEnclosed in
             %%
-            {CallMethod self.parentObj isEnclosed(IsEnclosed)}
+            ParentObj = self.parentObj
+            IsEnclosed = {ParentObj.isEnclosed ParentObj}
             case IsEnclosed then
                %% no problems;
                {self.widgetObj insertWithTag(Mark self.name [self])}
@@ -462,7 +458,7 @@ in
                Tags
             in
                %%
-               {CallMethod self GetTags(Tags)}
+               Tags = {self.GetTags self}
 
                %%
                {self.widgetObj insertWithTag(Mark self.name Tags)}
@@ -476,14 +472,6 @@ in
                buttonsBind(buttonsHandlerPC)
                dButtonsBind(dButtonsHandlerPC)]>>
          end
-      end
-
-      %%
-      %%  STATELESS METHOD;
-      %%  Yields a list of parents tags in descending order
-      %% (i.e. the tag of a top-level term is the last one);
-      meth !GetTags(?Tags)
-         Tags = self|{CallMethod self.parentObj GetTags($)}
       end
 
       %%
@@ -555,6 +543,12 @@ in
    class MetaTWTermObject
       from UrObject TermTag
       %%
+      feat
+         !GetTags: fun {$ Self}
+                      Self|{Self.parentObj.GetTags Self.parentObj}
+                   end
+
+      %%
       attr
          shown: InitValue
          size:  InitValue
@@ -607,25 +601,22 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      %%  Yields a list of parents tags in descending order
-      %% (i.e. the tag of a top-level term is the last one);
-      meth !GetTags(?Tags)
-         Tags = self|{CallMethod self.parentObj GetTags($)}
-      end
-
-      %%
       %%  Idea:
       %%  If the 'PseudoTag' is of then form '[Tag]', then characters
       %% inserted by e.g. 'insertWithTag' are added to 'Tag'; otherwise
       %% it's assumed that the 'PseudoTag' is a complete list of all
       %% necessary tags;
       meth getTagInfo(?PseudoTag)
-         PseudoTag = case {CallMethod self.parentObj isEnclosed($)} then
-                        [self]
-                     else
-                        <<GetTags($)>>
-                     end
+         local ParentObj in
+            ParentObj = self.parentObj
+
+            %%
+            PseudoTag = case {ParentObj.isEnclosed ParentObj} then
+                           [self]
+                        else
+                           {self.GetTags self}
+                        end
+         end
       end
 
       %%
@@ -910,7 +901,7 @@ in
             Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            <<GetTags(Tags)>>
+            Tags = {self.GetTags self}
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
             Size = @size
@@ -972,6 +963,24 @@ in
 
       %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
+      %%
+   end
+
+   %%
+   %%
+   %%  Procedures;
+   %%
+   class ProcedureTWTermObject
+      from NameTWTermObject
+      %%
+   end
+
+   %%
+   %%
+   %%  Cells;
+   %%
+   class CellTWTermObject
+      from NameTWTermObject
       %%
    end
 
@@ -1108,7 +1117,7 @@ in
                @shownMetaSize == MetaSize andthen
                @shownTWWidth == ActualTWWidth
             then
-               <<nil>>
+               <<UrObject nil>>
             else
                StartSubOffset SubsOffset OutOffset
             in
@@ -1147,7 +1156,7 @@ in
                {Wait OutOffset}
 
                %%
-               <<nil>>
+               <<UrObject nil>>
             end
          else
             true                % ignore;
@@ -1286,7 +1295,7 @@ in
             Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            <<GetTags(Tags)>>
+            Tags = {self.GetTags self}
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
             Size = @size
@@ -1365,7 +1374,7 @@ in
                              closeTag(TmpTag)]}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          else true
          end
       end
@@ -1417,7 +1426,7 @@ in
             {Wait Syncs.1}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -1600,6 +1609,9 @@ in
    class WFListTWTermObject
       from MetaTupleTWTermObject
       %%
+      feat
+         isEnclosed: fun {$ Self} True end
+
       %%
       meth initOut
 \ifdef DEBUG_TW
@@ -1717,7 +1729,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -1736,12 +1748,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = True
-      end
-
-      %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
       %%
    end
@@ -1757,6 +1763,7 @@ in
       %%
       feat
          nameGlueMark           % mark after "<label>(' with left gravity;
+         isEnclosed: fun {$ Self} True end
 
       %%
       attr
@@ -1884,7 +1891,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -1989,12 +1996,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = True
-      end
-
-      %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
       %%
    end
@@ -2019,7 +2020,7 @@ in
             Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            <<GetTags(Tags)>>
+            Tags = {self.GetTags self}
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
             Size = @size
@@ -2061,7 +2062,7 @@ in
                      SfxSize = DDSpace
 
                      %%
-                     <<nil>>
+                     <<UrObject nil>>
                   end
                end
             else
@@ -2094,7 +2095,7 @@ in
                      SfxSize = DSpace
 
                      %%
-                     <<nil>>
+                     <<UrObject nil>>
                   end
                end
             end
@@ -2153,7 +2154,7 @@ in
       %%
       %%
       meth !GetRightMostMarks(?Marks)
-         case <<isEnclosed($)>> then
+         case {self.isEnclosed self} then
             %%  that's all - it behaves as an enclosed structure;
             Marks = nil
          else
@@ -2179,6 +2180,23 @@ in
    class ListTWTermObject
       from MetaListTWTermObject
       %%
+      feat
+         isEnclosed: fun {$ Self} {Self.needsBracesGen Self} end
+         needsBracesGen: fun {$ Self}
+                            %%
+                            case Self.parentObj.type
+                            of !T_List then
+                               case Self.numberOf == 1 then True
+                                  %%  i.e. something like (1|2|3)|c;
+                               else False
+                               end
+                            [] !T_FList then True
+                               %%  all lists in flat lists are enclosed;
+                            [] !T_HashTuple then True
+                            else False
+                            end
+                         end
+
       %%
       meth initOut
 \ifdef DEBUG_TW
@@ -2209,23 +2227,12 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
       %%  Yields 'True' if 'self' should be always enclosed in braces;
       %%  Note that two pairs of them could be produced - one 'generic',
       %% and the second - because reference name tag ('RN=');
-      meth needsBracesGen(?Needs)
+      meth needsBracesGen($)
          %%
-         Needs = case self.parentObj.type
-                 of !T_List then
-                    case self.numberOf == 1 then True
-                       %%  i.e. something like (1|2|3)|c;
-                    else False
-                    end
-                 [] !T_FList then True
-                    %%  all lists in flat lists are enclosed;
-                 [] !T_HashTuple then True
-                 else False
-                 end
+         {self.needsBracesGen self}
       end
 
       %%
@@ -2316,7 +2323,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -2348,12 +2355,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = <<needsBracesGen($)>>
-      end
-
-      %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
       %%
    end
@@ -2365,6 +2366,17 @@ in
    class HashTupleTWTermObject
       from MetaListTWTermObject
       %%
+      feat
+         isEnclosed: fun {$ Self} {Self.needsBracesGen Self} end
+         needsBracesGen: fun {$ Self}
+                            %%
+                            case Self.parentObj.type
+                            of !T_HashTuple then True
+                               %%  nested hash tuples are enclosed;
+                            else False
+                            end
+                         end
+
       %%
       meth initOut
 \ifdef DEBUG_TW
@@ -2408,17 +2420,12 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
       %%  Yields 'True' if 'self' should be always enclosed in braces;
       %%  Note that two pairs of them could be produced - one 'generic',
       %% and the second - because reference name tag ('RN=');
-      meth needsBracesGen(?Needs)
+      meth needsBracesGen($)
          %%
-         Needs = case self.parentObj.type
-                 of !T_HashTuple then True
-                    %%  nested hash tuples are enclosed;
-                 else False
-                 end
+         {self.needsBracesGen self}
       end
 
       %%
@@ -2507,7 +2514,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -2539,12 +2546,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = <<needsBracesGen($)>>
-      end
-
-      %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
       %%
    end
@@ -2556,6 +2557,23 @@ in
    class FListTWTermObject
       from MetaListTWTermObject
       %%
+      feat
+         isEnclosed: fun {$ Self} {Self.needsBracesGen Self} end
+         needsBracesGen: fun {$ Self}
+                            %%
+                            case Self.parentObj.type
+                            of !T_List then
+                               case Self.numberOf == 1 then True
+                               else False
+                               end
+                            [] !T_FList then True
+                               %%  always, though at the last position
+                               %% they could ommitted;
+                            [] !T_HashTuple then True
+                            else False
+                            end
+                         end
+
       %%
       meth initOut
 \ifdef DEBUG_TW
@@ -2599,23 +2617,12 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
       %%  Yields 'True' if 'self' should be always enclosed in braces;
       %%  Note that two pairs of them could be produced - one 'generic',
       %% and the second - because reference name tag ('RN=');
-      meth needsBracesGen(?Needs)
+      meth needsBracesGen($)
          %%
-         Needs = case self.parentObj.type
-                 of !T_List then
-                    case self.numberOf == 1 then True
-                    else False
-                    end
-                 [] !T_FList then True
-                    %%  always, though at the last position they could
-                    %% ommitted;
-                 [] !T_HashTuple then True
-                 else False
-                 end
+         {self.needsBracesGen self}
       end
 
       %%
@@ -2705,7 +2712,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -2786,12 +2793,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = <<needsBracesGen($)>>
-      end
-
-      %%
       %%  No 'otherwise' method, since it's defined in 'generic' class;
       %%
    end
@@ -2814,6 +2815,7 @@ in
       %%
       feat
          nameGlueMark           % becomes common for records;
+         isEnclosed: fun {$ Self} True end
 
       %%
       attr
@@ -3110,7 +3112,7 @@ in
                      %% insert(TmpMark FName#<<getFeatDel($)>>)}
 
                      %%
-                     <<nil>>
+                     <<UrObject nil>>
                   end
                end
 
@@ -3150,7 +3152,7 @@ in
                      %% insert(Mark FName#<<getFeatDel($)>>)}
 
                      %%
-                     <<nil>>
+                     <<UrObject nil>>
                   end
                end
 
@@ -3365,12 +3367,6 @@ in
       end
 
       %%
-      %%  STATELESS METHOD;
-      meth isEnclosed(?Is)
-         Is = True
-      end
-
-      %%
    end
 
    %%
@@ -3519,7 +3515,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -3897,85 +3893,30 @@ in
    %%
    %%
    class MetaChunkTWTermObject
-      from NameTWTermObject RecordTWTermObject
+      from RecordTWTermObject
       %%
 
       %%
       %%  'getSize' ...
-
-      %%
-      meth checkLayout
-         case self.isCompound then
-            <<RecordTWTermObject checkLayout>>
-         else
-            <<NameTWTermObject checkLayout>>
-         end
-      end
+      %%  'checkLayout' ...
       %%
       %%  'pickPlace' ...
-
-      meth isActive($)
-         case self.isCompound then
-            <<RecordTWTermObject isActive($)>>
-         else
-            <<NameTWTermObject isActive($)>>
-         end
-      end
-
+      %%  'isActive' ...
+      %%
       %%  'initBindings' ... (and all the 'TW' handlers;)
       %%  'getTags' ...
       %%  'getTagInfo' ...
       %%  'closeOut' ...
-
+      %%  'undraw' ...
       %%
-      meth undraw
-         case self.isCompound then
-            <<RecordTWTermObject undraw>>
-         else
-            <<NameTWTermObject undraw>>
-         end
-      end
-
+      %%  'setUndrawn' ...
       %%
-      %%
-      meth setUndrawn
-         case self.isCompound then
-            <<RecordTWTermObject setUndrawn>>
-         else
-            <<NameTWTermObject setUndrawn>>
-         end
-      end
-
-      %%
+      %%  'initOut' ...
       %%  'GetRightMostMarks' from from records;
       %%
-      meth initOut
-         case self.isCompound then
-            <<RecordTWTermObject initOut>>
-         else
-            <<NameTWTermObject initOut>>
-         end
-      end
-
+      %%  'draw' ...
       %%
-      %%
-      meth draw(Mark ?Sync)
-         case self.isCompound then
-            <<RecordTWTermObject draw(Mark Sync)>>
-         else
-            <<NameTWTermObject draw(Mark Sync)>>
-         end
-      end
-
-      %%
-      %%
-      meth insertRefVar
-         case self.isCompound then
-            <<RecordTWTermObject insertRefVar>>
-         else
-            <<NameTWTermObject insertRefVar>>
-         end
-      end
+      %%  'insertRefVar' ...
       %%
       %%  'NewOutInfo' from MetaRecordTWTermObject;
       %%  'AdjustGlue' ...
@@ -3985,21 +3926,13 @@ in
 
    %%
    %%
-   %%  Procedures;
+   %%  Chunks;
    %%
-   class ProcedureTWTermObject
+   class ChunkTWTermObject
       from MetaChunkTWTermObject
       %%
    end
 
-   %%
-   %%
-   %%  Cells;
-   %%
-   class CellTWTermObject
-      from MetaChunkTWTermObject
-      %%
-   end
 
    %%
    %%
@@ -4103,7 +4036,7 @@ in
             Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            <<GetTags(Tags)>>
+            Tags = {self.GetTags self}
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
             Size = @size

@@ -223,7 +223,7 @@ class PseudoTermGenericObject
          {@termObj updateSizes(Depth)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       else
          {BrowserError ['PseudoObject::updateSizes: unknown representation type']}
       end
@@ -241,7 +241,7 @@ class PseudoTermGenericObject
          {@termObj checkLayout}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       else
          {BrowserError ['PseudoObject::checkLayout: unknown representation type']}
       end

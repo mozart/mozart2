@@ -23,9 +23,6 @@ IntToAtom = {`Builtin` 'intToAtom'
              end}
 
 %%
-RealArity = {`Builtin` trueArity noHandler}
-
-%%
 %%  (of course, non-monotonic operations;)
 IsVar = {`Builtin` 'isVarB' noHandler}
 IsFdVar = {`Builtin` 'fdIsVarB' noHandler}
@@ -82,21 +79,3 @@ GenericSet = {`Builtin`
               proc {$ X Y Z}
                  case {Det X} andthen {Det Y} then {GenericSet X Y Z} end
               end}
-
-%%
-local
-   ProperWidth ProcZeroWidth CellZeroWidth
-in
-   ProperWidth = {`Builtin` 'width'         noHandler}
-   %%
-   ProcZeroWidth = {ProperWidth proc{$} true end}
-   CellZeroWidth = {ProperWidth {NewCell _ $}}
-   %%
-   Width = fun {$ X}
-              {ProperWidth X} - case {Value.type X}
-                                of procedure then ProcZeroWidth
-                                [] cell then CellZeroWidth
-                                else 0
-                                end
-           end
-end

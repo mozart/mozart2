@@ -76,7 +76,7 @@ in
       meth ShowCurrentInFegramed
          local PseudoObject in
             PseudoObject =
-            {NoNumber.matchDefault @current termObject InitValue}
+            {Value.matchDefault @current termObject InitValue}
 
             %%
             case PseudoObject

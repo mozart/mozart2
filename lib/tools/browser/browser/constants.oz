@@ -47,9 +47,11 @@ T_Int           = {NewName}
 T_Float         = {NewName}
 T_Name          = {NewName}
 %%
-%%  group #2: chunks;
 T_Procedure     = {NewName}
 T_Cell          = {NewName}
+%%
+%%  group #2: chunks;
+T_Chunk         = {NewName}
 T_Object        = {NewName}
 T_Class         = {NewName}
 %%

@@ -261,9 +261,9 @@ in
             self.store = Store
 
             %%
-            case OnlyCycles then self.refType = 'C'
-            else self.refType = 'R'
-            end
+            self.refType = case OnlyCycles then 'C'
+                           else 'R'
+                           end
 
             %%
             tail <- List
@@ -280,38 +280,43 @@ in
 \ifdef DEBUG_TO
          {Show 'TermsStore::needsCheck method is applied'#Type}
 \endif
+         %%
+         Needs =
          case self.isChecking then
             case Type
-            of !T_Atom       then Needs = False
-            [] !T_Int        then Needs = False
-            [] !T_Float      then Needs = False
-            [] !T_Name       then Needs = True
-            [] !T_Procedure  then Needs = True
-            [] !T_Cell       then Needs = True
-            [] !T_Object     then Needs = True
-            [] !T_Class      then Needs = True
-            [] !T_WFList     then Needs = True
-            [] !T_Tuple      then Needs = True
-            [] !T_Record     then Needs = True
-            [] !T_ORecord    then Needs = True
-            [] !T_List       then Needs = True
-            [] !T_FList      then Needs = True
-            [] !T_HashTuple  then Needs = True
-            [] !T_Variable   then Needs = True
-            [] !T_FDVariable then Needs = True
-            [] !T_MetaVariable then Needs = True
-            [] !T_Shrunken   then Needs = False
+            of !T_Atom       then False
+            [] !T_Int        then False
+            [] !T_Float      then False
+            [] !T_Name       then True
+            [] !T_Procedure  then True
+            [] !T_Cell       then True
+            [] !T_Chunk      then True
+            [] !T_Object     then True
+            [] !T_Class      then True
+            [] !T_WFList     then True
+            [] !T_Tuple      then True
+            [] !T_Record     then True
+            [] !T_ORecord    then True
+            [] !T_List       then True
+            [] !T_FList      then True
+            [] !T_HashTuple  then True
+            [] !T_Variable   then True
+            [] !T_FDVariable then True
+            [] !T_MetaVariable then True
+            [] !T_Shrunken   then False
                %%  never search for equal shrunken subterms :)))
-            [] !T_Reference  then Needs = False
+            [] !T_Reference  then
                {BrowserWarning
                 ['Reference type is met in TermsStore::needsCheck']}
-            [] !T_Unknown    then Needs = False
+               False
+            [] !T_Unknown    then False
             else
                {BrowserWarning
                 ['Unknown type is met in TermsStore::needsCheck: ' Type]}
+                False
             end
          else
-            Needs = False
+            False
          end
       end
 

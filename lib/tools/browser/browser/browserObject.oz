@@ -566,7 +566,7 @@ class WindowPrimary from UrObject
               end
            end
                        ArityTypeVar)
-           addCheckEntry(ViewMenu " Private fields " ArityTypeVar
+           addCheckEntry(ViewMenu " Private Chunk fields " ArityTypeVar
                          TclTrueArity TclAtomicArity _)
            createTkVar(case {Store read(StoreAreVSs $)} then TclTrue
                        else TclFalse
@@ -1460,7 +1460,7 @@ class WindowPrimary from UrObject
             Current TermObject
          in
             Current = @current
-            TermObject = {NoNumber.matchDefault Current termObject InitValue}
+            TermObject = {Value.matchDefault Current termObject InitValue}
 
             %%
             case TermObject
@@ -1471,7 +1471,7 @@ class WindowPrimary from UrObject
             end
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          else
             %%
             {ForAll @current|@backward    % reverse order;
@@ -1479,7 +1479,7 @@ class WindowPrimary from UrObject
                 local TermObject in
                    %%
                    TermObject =
-                   {NoNumber.matchDefault TermRec termObject InitValue}
+                   {Value.matchDefault TermRec termObject InitValue}
 
                    %%
                    case TermObject
@@ -1493,7 +1493,7 @@ class WindowPrimary from UrObject
              end}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
    end
@@ -1522,7 +1522,7 @@ class WindowPrimary from UrObject
             Current TermObject
          in
             Current = @current
-            TermObject = {NoNumber.matchDefault Current termObject InitValue}
+            TermObject = {Value.matchDefault Current termObject InitValue}
 
             %%
             case TermObject
@@ -1533,7 +1533,7 @@ class WindowPrimary from UrObject
             end
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          else
             ListOf
          in
@@ -1545,7 +1545,7 @@ class WindowPrimary from UrObject
                 proc {$ TermRec}
                    local Obj in
                       Obj =
-                      {NoNumber.matchDefault TermRec termObject InitValue}
+                      {Value.matchDefault TermRec termObject InitValue}
 
                       %%
                       case Obj
@@ -1558,13 +1558,13 @@ class WindowPrimary from UrObject
 
                %%
                %% relational;
-               <<nil>>
+               <<UrObject nil>>
             else
                Current TermObject
             in
                Current = @current
                TermObject =
-               {NoNumber.matchDefault Current termObject InitValue}
+               {Value.matchDefault Current termObject InitValue}
 
                %%
                case TermObject
@@ -1576,7 +1576,7 @@ class WindowPrimary from UrObject
                end
 
                %%
-               <<nil>>
+               <<UrObject nil>>
             end
          end
       end
@@ -1676,7 +1676,7 @@ class BasicBrowser from UrObject
          TermObject NewTermObject Tag
       in
          <<createWindow(_)>>
-         TermObject = {NoNumber.matchDefault TermRec termObject InitValue}
+         TermObject = {Value.matchDefault TermRec termObject InitValue}
 
          %%
          case TermObject
@@ -1711,7 +1711,7 @@ class BasicBrowser from UrObject
             NewTermRec = termRec(term: TermRec.term
                                  termObject: NewTermObject
                                  termsStore: TermsStore)
-            <<nil>>
+            <<UrObject nil>>
          else
             %%
             %% simply draw;
@@ -1721,7 +1721,7 @@ class BasicBrowser from UrObject
             NewTermRec = termRec(term: TermRec.term
                                  termObject: TermRec.termObject
                                  termsStore: TermRec.termsStore)
-            <<nil>>
+            <<UrObject nil>>
          end
       end
    end
@@ -1734,7 +1734,7 @@ class BasicBrowser from UrObject
       {Show 'BasicBrowser::Undraw is applied'#TermRec.term}
 \endif
       local TermObject in
-         TermObject = {NoNumber.matchDefault TermRec termObject InitValue}
+         TermObject = {Value.matchDefault TermRec termObject InitValue}
 
          %%
          case TermObject
@@ -1743,7 +1743,7 @@ class BasicBrowser from UrObject
          end
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
    end
 
@@ -1922,7 +1922,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars scrolling InitValue}
+            V = {Value.matchDefault TclVars scrolling InitValue}
 
             %%
             {@store store(StoreScrolling True)}
@@ -1937,7 +1937,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars scrolling InitValue}
+               V = {Value.matchDefault TclVars scrolling InitValue}
                %%
                {@store store(StoreScrolling False)}
 
@@ -1957,7 +1957,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars cycleCheck InitValue}
+            V = {Value.matchDefault TclVars cycleCheck InitValue}
             %%
             {@store store(StoreCheckStyle True)}
 
@@ -1971,7 +1971,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars cycleCheck InitValue}
+               V = {Value.matchDefault TclVars cycleCheck InitValue}
                %%
                {@store store(StoreCheckStyle False)}
 
@@ -1991,7 +1991,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars onlyCycles InitValue}
+            V = {Value.matchDefault TclVars onlyCycles InitValue}
             %%
             {@store store(StoreOnlyCycles True)}
 
@@ -2005,7 +2005,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars onlyCycles InitValue}
+               V = {Value.matchDefault TclVars onlyCycles InitValue}
                %%
                {@store store(StoreOnlyCycles False)}
 
@@ -2024,7 +2024,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars arityType InitValue}
+            V = {Value.matchDefault TclVars arityType InitValue}
             %%
             {@store store(StoreArityType TrueArity)}
 
@@ -2038,7 +2038,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars arityType InitValue}
+               V = {Value.matchDefault TclVars arityType InitValue}
                %%
                {@store store(StoreArityType AtomicArity)}
 
@@ -2058,7 +2058,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars vss InitValue}
+            V = {Value.matchDefault TclVars vss InitValue}
             %%
             {@store store(StoreAreVSs True)}
 
@@ -2072,7 +2072,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars vss InitValue}
+               V = {Value.matchDefault TclVars vss InitValue}
                %%
                {@store store(StoreAreVSs False)}
 
@@ -2092,7 +2092,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars heavyVars InitValue}
+            V = {Value.matchDefault TclVars heavyVars InitValue}
             %%
             {@store store(StoreHeavyVars True)}
 
@@ -2106,7 +2106,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars heavyVars InitValue}
+               V = {Value.matchDefault TclVars heavyVars InitValue}
                %%
                {@store store(StoreHeavyVars False)}
 
@@ -2126,7 +2126,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars fillStyle InitValue}
+            V = {Value.matchDefault TclVars fillStyle InitValue}
             %%
             {@store store(StoreFillStyle Expanded)}
 
@@ -2140,7 +2140,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars fillStyle InitValue}
+               V = {Value.matchDefault TclVars fillStyle InitValue}
                %%
                {@store store(StoreFillStyle Filled)}
 
@@ -2160,7 +2160,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars flatLists InitValue}
+            V = {Value.matchDefault TclVars flatLists InitValue}
             %%
             {@store store(StoreFlatLists True)}
 
@@ -2174,7 +2174,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars flatLists InitValue}
+               V = {Value.matchDefault TclVars flatLists InitValue}
                %%
                {@store store(StoreFlatLists False)}
 
@@ -2193,7 +2193,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars smallNames InitValue}
+            V = {Value.matchDefault TclVars smallNames InitValue}
             %%
             {@store store(StoreSmallNames True)}
 
@@ -2207,7 +2207,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars smallNames InitValue}
+               V = {Value.matchDefault TclVars smallNames InitValue}
                %%
                {@store store(StoreSmallNames False)}
 
@@ -2227,7 +2227,7 @@ class BrowserClass
             TclVars V
          in
             TclVars = @tclVars
-            V = {NoNumber.matchDefault TclVars areInactive InitValue}
+            V = {Value.matchDefault TclVars areInactive InitValue}
             %%
             {@store store(StoreAreInactive False)}
 
@@ -2241,7 +2241,7 @@ class BrowserClass
                TclVars V
             in
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars areInactive InitValue}
+               V = {Value.matchDefault TclVars areInactive InitValue}
                %%
                {@store store(StoreAreInactive True)}
 
@@ -2268,7 +2268,7 @@ class BrowserClass
             case Fonts
             of [Font] then
                TclVars = @tclVars
-               V = {NoNumber.matchDefault TclVars font InitValue}
+               V = {Value.matchDefault TclVars font InitValue}
 
                %%
                case V
@@ -3237,8 +3237,8 @@ class BrowserClass
                AllButton AllEntry
             in
                showAll <- False
-               AllButton = {NoNumber.matchDefault Buttons all InitValue}
-               AllEntry = {NoNumber.matchDefault Entries all InitValue}
+               AllButton = {Value.matchDefault Buttons all InitValue}
+               AllEntry = {Value.matchDefault Entries all InitValue}
 
                %%
                case AllButton
@@ -3396,8 +3396,8 @@ class BrowserClass
                AllButton AllEntry
             in
                showAll <- False
-               AllButton = {NoNumber.matchDefault Buttons all InitValue}
-               AllEntry = {NoNumber.matchDefault Entries all InitValue}
+               AllButton = {Value.matchDefault Buttons all InitValue}
+               AllEntry = {Value.matchDefault Entries all InitValue}
 
                %%
                case AllButton
@@ -3946,10 +3946,10 @@ class BrowserClass
                NextE LastE NextB LastB
             in
                %%
-               NextE = {NoNumber.matchDefault Entries next InitValue}
-               LastE = {NoNumber.matchDefault Entries last InitValue}
-               NextB = {NoNumber.matchDefault Buttons next InitValue}
-               LastB = {NoNumber.matchDefault Buttons last InitValue}
+               NextE = {Value.matchDefault Entries next InitValue}
+               LastE = {Value.matchDefault Entries last InitValue}
+               NextB = {Value.matchDefault Buttons next InitValue}
+               LastB = {Value.matchDefault Buttons last InitValue}
 
                %%
                case NextE
@@ -3976,10 +3976,10 @@ class BrowserClass
                NextE LastE NextB LastB
             in
                %%
-               NextE = {NoNumber.matchDefault Entries next InitValue}
-               LastE = {NoNumber.matchDefault Entries last InitValue}
-               NextB = {NoNumber.matchDefault Buttons next InitValue}
-               LastB = {NoNumber.matchDefault Buttons last InitValue}
+               NextE = {Value.matchDefault Entries next InitValue}
+               LastE = {Value.matchDefault Entries last InitValue}
+               NextB = {Value.matchDefault Buttons next InitValue}
+               LastB = {Value.matchDefault Buttons last InitValue}
 
                %%
                case NextE
@@ -4009,10 +4009,10 @@ class BrowserClass
                PreviousE FirstE PreviousB FirstB
             in
                %%
-               PreviousE = {NoNumber.matchDefault Entries previous InitValue}
-               FirstE = {NoNumber.matchDefault Entries first InitValue}
-               PreviousB = {NoNumber.matchDefault Buttons previous InitValue}
-               FirstB = {NoNumber.matchDefault Buttons first InitValue}
+               PreviousE = {Value.matchDefault Entries previous InitValue}
+               FirstE = {Value.matchDefault Entries first InitValue}
+               PreviousB = {Value.matchDefault Buttons previous InitValue}
+               FirstB = {Value.matchDefault Buttons first InitValue}
 
                %%
                case PreviousE
@@ -4039,10 +4039,10 @@ class BrowserClass
                PreviousE FirstE PreviousB FirstB
             in
                %%
-               PreviousE = {NoNumber.matchDefault Entries previous InitValue}
-               FirstE = {NoNumber.matchDefault Entries first InitValue}
-               PreviousB = {NoNumber.matchDefault Buttons previous InitValue}
-               FirstB = {NoNumber.matchDefault Buttons first InitValue}
+               PreviousE = {Value.matchDefault Entries previous InitValue}
+               FirstE = {Value.matchDefault Entries first InitValue}
+               PreviousB = {Value.matchDefault Buttons previous InitValue}
+               FirstB = {Value.matchDefault Buttons first InitValue}
 
                %%
                case PreviousE

@@ -617,7 +617,7 @@ in
             {Wait XRes}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          else
             %%
             YRes = XRes = 0
@@ -706,7 +706,7 @@ in
                {Wait {String.toAtom Sync}}
 
                %%
-               <<nil>>
+               <<UrObject nil>>
             else
                {BrowserWarning ['Impossible window size wrt limits']}
             end
@@ -993,10 +993,10 @@ in
          {Show 'tcl/tk: insert:'#Mark}
 \endif
          %%
-         {self.browseWidget tk(insert(Mark VS))}
+         {self.browseWidget tk(insert Mark VS)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1007,9 +1007,9 @@ in
 \ifdef DEBUG_TI
          {Show  'tcl/tk: insertBeforeTag:'#Tag#VS}
 \endif
-         {self.browseWidget tk(insert p(Tag first) VS s(b(Tags)))}
+         {self.browseWidget tk(insert p(Tag first) VS q(b(Tags)))}
 
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1020,10 +1020,10 @@ in
          {Show  'tcl/tk: insertAfterMark:'#Mark#Offset#VS}
 \endif
          %%
-         {self.browseWidget tk(insert(q(Mark '+' Offset 'chars') VS))}
+         {self.browseWidget tk(insert q(Mark '+' Offset 'chars') VS)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1033,10 +1033,10 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: insertJustAfterTag:'#Tag#VS}
 \endif
-         {self.browseWidget tk(insert p(Tag last) VS s(b(Tags)))}
+         {self.browseWidget tk(insert p(Tag last) VS q(b(Tags)))}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1053,11 +1053,11 @@ in
 
             %%
             {self.browseWidget
-             [tk(insert(Mark VS))
-              tk(mark(set NewMark q(Mark '-' SLength 'chars')))]}
+             [tk(insert Mark VS)
+              tk(mark set NewMark q(Mark '-' SLength 'chars'))]}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -1075,14 +1075,14 @@ in
          case PTag of [Tag] then
             %%
             {self.browseWidget
-             [tk(insert(Mark VS))
+             [tk(insert Mark VS)
               tk(tag add Tag q(Mark '-' {VSLength VS}
                                'chars') Mark)]}
          else
-            {self.browseWidget tk(insert(Mark VS s(b(PTag))))}
+            {self.browseWidget tk(insert Mark VS s(b(PTag)))}
          end
             %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1102,9 +1102,9 @@ in
                StrT = q(Mark '-' LengthVS 'chars')
                %%
                {self.browseWidget
-                [tk(insert(Mark VS))
-                 tk(mark(set NewMark StrT))
-                 tk(tag(add PTag.1 StrT Mark))]}
+                [tk(insert Mark VS)
+                 tk(mark set NewMark StrT)
+                 tk(tag add PTag.1 StrT Mark)]}
             else
                %%
                StrT = {MakeTuple s NumOf}
@@ -1112,12 +1112,12 @@ in
 
                %%
                {self.browseWidget
-                [tk(insert(Mark VS StrT))
-                 tk(mark(set NewMark q(Mark '-' LengthVS 'chars')))]}
+                [tk(insert Mark VS StrT)
+                 tk(mark set NewMark q(Mark '-' LengthVS 'chars'))]}
             end
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -1135,10 +1135,10 @@ in
 \endif
          local L in
             %%
-            L = {self.browseWidget tkReturn(index(p(Tag first)) $)}
+            L = {Tk.return o(self.browseWidget index p(Tag first))}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
 
             %%
             Col = {String.toInt {Tail L {FindChar L CharDot}+1}}
@@ -1153,10 +1153,10 @@ in
          {Show 'tcl/tk: delete:'#Tag}
 \endif
          %%
-         {self.browseWidget tk(delete(p(Tag first) p(Tag last)))}
+         {self.browseWidget tk(delete p(Tag first) p(Tag last))}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1168,11 +1168,12 @@ in
          {Show 'tcl/tk: deleteAfterMark:'#Mark#Offset#N}
 \endif
          %%
-         {self.browseWidget tk(delete(q(Mark '+' Offset 'chars')
-                                  q(Mark '+' (Offset + N) 'chars')))}
+         {self.browseWidget tk(delete
+                               q(Mark '+' Offset 'chars')
+                               q(Mark '+' (Offset + N) 'chars'))}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1183,10 +1184,10 @@ in
          {Show 'tcl/tk: deleteBeforeMark:'#Mark#N}
 \endif
          %%
-         {self.browseWidget tk(delete(q(Mark '-' N 'chars') Mark))}
+         {self.browseWidget tk(delete q(Mark '-' N 'chars') Mark)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1197,10 +1198,10 @@ in
          {Show 'tcl/tk: deleteTag:'#Tag}
 \endif
          %%
-         {self.browseWidget tk(tag(delete Tag))}
+         {self.browseWidget tk(tag delete Tag)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1211,10 +1212,10 @@ in
          {Show 'tcl/tk: unsetMark:'#Mark}
 \endif
          %%
-         {self.browseWidget tk(mark(unset Mark))}
+         {self.browseWidget tk(mark unset Mark)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1225,10 +1226,10 @@ in
          {Show 'tcl/tk: duplicateMark:'#Mark}
 \endif
          %%
-         {self.browseWidget tk(mark(set NewMark Mark))}
+         {self.browseWidget tk(mark set NewMark Mark)}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1239,11 +1240,11 @@ in
          {Show 'tcl/tk: duplicateMarkLG:'#Mark}
 \endif
          %%
-         {self.browseWidget [tk(mark(set NewMark Mark))
-                             tk(mark(gravity NewMark left))]}
+         {self.browseWidget [tk(mark set NewMark Mark)
+                             tk(mark gravity NewMark left)]}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1254,7 +1255,7 @@ in
 \endif
          case Marks
          of Mark|RestMarks then
-            {self.browseWidget tk(mark(gravity Mark Gravity))}
+            {self.browseWidget tk(mark gravity Mark Gravity)}
 
             %%
             <<setMarksGravity(RestMarks Gravity)>>
@@ -1273,10 +1274,10 @@ in
          {Show 'tcl/tk: duplicateTag:'#Tag}
 \endif
          %%
-         {self.browseWidget tk(tag(add NewTag p(Tag first) p(Tag last)))}
+         {self.browseWidget tk(tag add NewTag p(Tag first) p(Tag last))}
 
          %%
-         <<nil>>
+         <<UrObject nil>>
       end
 
       %%
@@ -1324,12 +1325,12 @@ in
             <<[genTkName(HighlightTag) duplicateTag(Tag HighlightTag)]>>
             %%
             {self.browseWidget
-             tk(tag(config HighlightTag
-                    o(background:black foreground:white)))}
+             tk(tag config HighlightTag
+                    o(background:black foreground:white))}
             highlightTag <- HighlightTag
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -1959,7 +1960,7 @@ in
              ]}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 
@@ -2185,7 +2186,7 @@ in
             {Wait MessageWidget}
 
             %%
-            <<nil>>
+            <<UrObject nil>>
          end
       end
 

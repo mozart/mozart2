@@ -25,6 +25,7 @@
 
 declare
 Browse
+BrowserModule
 in
 
 \endif % NODECLARE
@@ -55,7 +56,6 @@ local
    %%
    %%  from 'core.oz';
    IntToAtom      %
-   RealArity      %  'real' record arity;
    IsVar          %
    IsFdVar        %  is a FD variable?
    IsRecordCVar   %  is an OFS?
@@ -70,7 +70,6 @@ local
    GetsBound      %  fires iff its argument is bound to something;
    DeepFeed       %  'feed', but also from local computation spaces;
    GenericSet     %  destructive {tuple,record} modification;
-   Width          %  special 'Width': {Width X} == {Length {RealArity X}};
 
    %%
    %%  from 'atoms&strings.oz';
@@ -146,6 +145,7 @@ local
    NameGenericTermObject
    ProcedureGenericTermObject
    CellGenericTermObject
+   ChunkGenericTermObject
    ObjectGenericTermObject
    ClassGenericTermObject
    WFListGenericTermObject
@@ -169,6 +169,7 @@ local
    NameTermTermObject
    ProcedureTermTermObject
    CellTermTermObject
+   ChunkTermTermObject
    ObjectTermTermObject
    ClassTermTermObject
    WFListTermTermObject
@@ -192,6 +193,7 @@ local
    NameTWTermObject
    ProcedureTWTermObject
    CellTWTermObject
+   ChunkTWTermObject
    ObjectTWTermObject
    ClassTWTermObject
    WFListTWTermObject
@@ -216,6 +218,7 @@ local
    NameTermObject
    ProcedureTermObject
    CellTermObject
+   ChunkTermObject
    ObjectTermObject
    ClassTermObject
    WFListTermObject
@@ -293,7 +296,6 @@ local
    %%
    BrowserClass
    %%
-   DoBrowse
    DoEquate
    DoSetParameter
    DoGetParameter
@@ -501,7 +503,7 @@ in
    %%
    %%
    %% pre-defined 'Browse' procedure;
-   proc {DoBrowse Term}
+   proc {Browse Term}
       {DeepFeed BrowserCell
        browse(case {IsDeepGuard} then {Reflect Term} else Term end)}
    end
@@ -553,14 +555,13 @@ in
 
    %%
    %% 'Browse' module;
-   Browse = {Adjoin browse(equate:       DoEquate
-                           setParameter: DoSetParameter
-                           getParameter: DoGetParameter
-                           createWindow: DoCreateWindow
-                           browserClass: BrowserClass
-                           throwBrowser: DoThrowBrowser
-                           browse:       DoBrowse)
-            DoBrowse}
+   BrowserModule = browse(equate:       DoEquate
+                          setParameter: DoSetParameter
+                          getParameter: DoGetParameter
+                          createWindow: DoCreateWindow
+                          browserClass: BrowserClass
+                          throwBrowser: DoThrowBrowser
+                          browse:       Browse)
 
    %%
    %%

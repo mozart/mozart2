@@ -116,10 +116,10 @@ in
    %%
    %%  HO: ... for records;
    %%
-   proc {RecordReflectLoop Arity ListIn RProc ?ListOut}
+   proc {RecordReflectLoop RArity ListIn RProc ?ListOut}
       %%
       %% relational;
-      case Arity
+      case RArity
       of F|R then
          TmpList in
          {RProc F ListIn TmpList}
@@ -153,14 +153,14 @@ in
                %%
                %%
                case {IsRecordCVar TermIn} then
-                  Arity KnownArity RLabel L
+                  RArity KnownRArity RLabel L
                in
                   %%
                   %%  convert an OFS to the proper record non-monotonically;
                   %%
                   %%  'RLabel' will be determined later!
-                  Arity = {RecordC.monitorArity TermIn True}
-                  KnownArity = {GetWFList Arity}
+                  RArity = {RecordC.monitorArity TermIn True}
+                  KnownRArity = {GetWFList RArity}
 
                   %%
                   %% TODO!!!
@@ -175,8 +175,8 @@ in
                   end
 
                   %%
-                  TermOut = {MakeRecord RLabel KnownArity}
-                  {RecordReflectLoop KnownArity TmpList
+                  TermOut = {MakeRecord RLabel KnownRArity}
+                  {RecordReflectLoop KnownRArity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm
                                    {SubtreeC TermIn F}
@@ -227,70 +227,93 @@ in
                   ListOut = TmpList
                end
             else
-               case {IsAtom TermIn} then
-                  TermOut = TermIn
-                  ListOut = TmpList
-               elsecase {IsName TermIn} then
+               case {Value.type TermIn}
+               of name then
+                  TermOut =
                   case {IsBool TermIn} then
-                     case TermIn then
-                        TermOut = '<Bool: true>'
-                     else
-                        TermOut = '<Bool: false>'
+                     case TermIn then '<Bool: true>'
+                     else '<Bool: false>'
                      end
                   else
-                     TermOut = {AtomConcatAll
-                                ['<Name: ' {System.getPrintName TermIn } ' @ '
-                                 {IntToAtom {System.getValue TermIn addr}} '>']}
+                     {AtomConcatAll
+                      ['<Name: ' {System.getPrintName TermIn } ' @ '
+                       {IntToAtom {System.getValue TermIn addr}} '>']}
                   end
 
                   %%
                   ListOut = TmpList
-               elsecase {IsRecord TermIn} then
-                  Arity LabelOf
-               in
-                  Arity = {RealArity TermIn}
-                  case {IsProcedure TermIn} then
-                     case {IsObject TermIn} then
-                        LabelOf = {AtomConcatAll
-                                   ['<Object: '
-                                    {Class.printName {Class.get TermIn}} ' @ '
-                                    {IntToAtom {System.getValue TermIn addr}} '>']}
-                     else
-                        LabelOf = {AtomConcatAll
-                                   ['<Procedure: '
-                                    {System.getPrintName TermIn } '/'
-                                    {IntToAtom {Procedure.arity TermIn}} ' @ '
-                                    {IntToAtom {System.getValue TermIn addr}} '>']}
-                     end
-                  elsecase {IsCell TermIn} then
-                     LabelOf = {AtomConcatAll
-                                ['<Cell: ' {System.getValue TermIn name} '>']}
-                  else
-                     L
-                  in
-                     L = {Label TermIn}
+               [] procedure then
+                  %%
 
-                     %%
-                     case {IsName L} then
-                        LabelOf = {AtomConcatAll
-                                   ['<Name: '
-                                    {System.getPrintName L } ' @ '
-                                    {IntToAtom {System.getValue L addr}} '>']}
+                  %%
+                  TermOut = {AtomConcatAll
+                             ['<Procedure: '
+                              {System.getPrintName TermIn } '/'
+                              {IntToAtom {Procedure.arity TermIn}} ' @ '
+                              {IntToAtom {System.getValue TermIn addr}} '>']}
+                   ListOut = TmpList
+               [] cell then
+                  %%
+
+                  %%
+                  TermOut = {AtomConcatAll
+                             ['<Cell: ' {System.getValue TermIn name} '>']}
+                  ListOut = TmpList
+               [] record then RArity L LabelOf in
+                  RArity = {Arity TermIn}
+
+                  %%
+                  L = {Label TermIn}
+                  LabelOf =
+                  case {IsName L} then
+                     case {IsBool TermIn} then
+                        case TermIn then '<Bool: true>'
+                        else '<Bool: false>'
+                        end
                      else
-                        LabelOf = L
+                        {AtomConcatAll
+                         ['<Name: ' {System.getPrintName TermIn } ' @ '
+                          {IntToAtom {System.getValue TermIn addr}} '>']}
                      end
+                  else L
                   end
 
                   %%
-                  TermOut = {MakeRecord LabelOf Arity}
-                  {RecordReflectLoop Arity TmpList
+                  %%
+                  TermOut = {MakeRecord LabelOf RArity}
+                  {RecordReflectLoop RArity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
                    end
                   ListOut}
-               elsecase {IsTuple TermIn} then
-                  Subterms
-               in
+               [] chunk then RArity LabelOf in
+                  RArity = {`ChunkArity` TermIn} % all features;
+
+                  %%
+                  %%  convert the chunk to a record...
+                  LabelOf =
+                  case {IsObject TermIn} then
+                     {AtomConcatAll
+                      ['<Object: '
+                       {Class.printName {Class.get TermIn}} ' @ '
+                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                  elsecase {IsClass TermIn} then
+                     {AtomConcatAll
+                      ['<Class: '
+                       {Class.printName TermIn} ' @ '
+                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                  else
+                     {System.getPrintName TermIn} % TODO: arrays, dicts
+                  end
+
+                  %%
+                  TermOut = {MakeRecord LabelOf RArity}
+                  {RecordReflectLoop RArity TmpList
+                   proc {$ F ListIn ListOut}
+                      TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
+                   end
+                  ListOut}
+               [] tuple then Subterms in
                   Subterms = {TupleSubterms TermIn}
 
                   %%

@@ -226,6 +226,10 @@ S  ::=  <Statement>
 <FailNode> from <Statement>
 
 
+% 'raise kernel(noElse ...) end'
+<ExceptionNode> from <Statement>
+
+
 % 'cond' ( clause // '[]' ) alternative 'end'
 <CondNode> from <Statement>
      clauses:     <Clause>+

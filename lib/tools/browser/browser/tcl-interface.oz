@@ -2555,10 +2555,10 @@ in
       meth init(windowObj: WO)
          %%
          proc {Okay} D W DI WI in
-            {D enter}
-            {W enter}
-            {DI enter}
-            {WI enter}
+            {Depth enter}
+            {Width enter}
+            {DepthInc enter}
+            {WidthInc enter}
             D  = {Depth tkGet($)}
             W  = {Width tkGet($)}
             DI = {DepthInc tkGet($)}

@@ -272,7 +272,7 @@ local
       prop final
    end
 
-   fun {AppletGetArgs}
+   fun {BrowserAppletGetArgs}
       SI
    in
       try
@@ -314,11 +314,10 @@ in
                            %% Connect to already running plugin
                            {CreateSocket} #
                            thread
-%                             Args = {List.toRecord args {AppletGetArgs}}
-                              skip
+                              App  = {New BrowserAppletToplevel tkInit}
                            in
-%                             {Show Args}
-                              {New AppletToplevel tkInit}
+                              App.rawArgs = {BrowserAppletGetArgs}
+                              App
                            end
                         else
                            S={New class $ from Open.pipe Open.text
@@ -331,7 +330,7 @@ in
                         in
                            S # case SGI.applet then
                                   thread
-                                     {New TkToplevel
+                                     {New AppletToplevel
                                       tkInit(title:'Oz Applet')}
                                   end
                                else unit
@@ -808,9 +807,15 @@ in
       end
 
 
-      class AppletToplevel from Widget
-         attr Action
+      class AppletToplevel from TkToplevel
+         prop final
+         feat rawArgs
+      end
 
+      class BrowserAppletToplevel from Widget
+         prop final
+         attr Action
+         feat rawArgs
          meth tkInit
             ThisTclName = self.TclName
             case {IsDet ThisTclName} then

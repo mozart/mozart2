@@ -140,5 +140,6 @@ in
       \insert CompilerClass
       \insert GenericInterface
       \insert QuietInterface
+      \insert Abstractions
    end
 end

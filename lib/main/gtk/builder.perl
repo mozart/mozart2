@@ -111,6 +111,8 @@ sub write_oz_fields_wrappers {
         print '      {Native.' . $native . ' @nativeObject';
         if ($$in[$i] =~ m/^\!/s) {
             print ' {Arg getNative($)}';
+        } elsif ($$in[$i] =~ m/^\^/s) {
+            print ' {GetNativeOrUnit Arg}';
         } else {
             print ' Arg';
         }
@@ -160,6 +162,8 @@ sub write_oz_init_methods {
         for (my $i = 0; $i < @$in; $i++) {
             if ($$in[$i] =~ m/^\!/s) {
                 print ' {Arg' . ($i+1) . ' getNative($)}';
+            } elsif ($$in[$i] =~ m/^\^/s) {
+                print ' {GetNativeOrUnit Arg' .  ($i+1) . '}';
             } else {
                 print ' Arg' . ($i+1);
             }
@@ -229,6 +233,8 @@ sub write_oz_meth_wrappers {
         for (my $i = 0; $i < @$in; $i++) {
             if ($$in[$i] =~ m/^\!/s) {
                 print ' {Arg' . ($i+1) . ' getNative($)}';
+            } elsif ($$in[$i] =~ m/^\^/s) {
+                print ' {GetNativeOrUnit Arg' .  ($i+1) . '}';
             } else {
                 print ' Arg' . ($i+1);
             }

@@ -33,6 +33,7 @@
 %%            |  LongOpt(['char': Char] alias: Alias)
 %%    LongOpt ::= atom
 %%    Occ ::= single | multiple | leftmost | rightmost
+%%         |  accumulate(procedure/2)
 %%    Type ::= 'bool'
 %%          |  PrimType
 %%          |  list(PrimType)
@@ -572,6 +573,8 @@ prepare
                     end
                  [] rightmost then
                     {Dictionary.put Dict LongOpt Value}
+                 [] accumulate(P) then
+                    {P LongOpt Value}
                  end
                  false
               end

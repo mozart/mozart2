@@ -231,12 +231,19 @@ define
       end
    end
 
-   fun {ChangeExtension X NewExt}
-      case X of ".oz" then NewExt
-      elseof ".ozg" then NewExt
-      elseof C|Cr then
-         C|{ChangeExtension Cr NewExt}
-      [] nil then NewExt
+   local
+      fun {ChangeExtensionSub S NewExt}
+         case S of ".oz" then NewExt
+         elseof ".ozg" then NewExt
+         elseof C|Cr then
+            C|{ChangeExtensionSub Cr NewExt}
+         [] nil then NewExt
+         end
+      end
+   in
+      fun {ChangeExtension S NewExt}
+         {ChangeExtensionSub
+          {Reverse {List.takeWhile {Reverse S} fun {$ C} C \= &/ end}} NewExt}
       end
    end
 

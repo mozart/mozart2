@@ -128,6 +128,11 @@ class WindowManagerClass from MyClosableObject BatchObject
          Menus =
          [menubutton(text: 'Browser'
                      menu: [%%
+                            command(label:   'About'
+                                    action:  BO#About
+                                    feature: about)
+                            separator
+
                             command(label:   'Break'
                                     % key:     ctrl(c)
                                     acc:     '     C-c'
@@ -169,11 +174,6 @@ class WindowManagerClass from MyClosableObject BatchObject
                             separator
 
                             %%
-                            command(label:   'About'
-                                    action:  BO#About
-                                    feature: about)
-                            separator
-
                             %%
                             command(label:   'Close'
                                     % key:     ctrl(x)

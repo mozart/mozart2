@@ -89,7 +89,7 @@ define
                                       end
                                in
                                   case {AskVerbose S}
-                                  of succeeded(suspended) then
+                                  of succeeded(stuck) then
                                      thread {Space.merge S 1} end
                                      %% Ho!
                                      {Thread.setThisPriority low}

@@ -126,7 +126,7 @@ define
          end}
    in
       case (thread {AskVerbose S} end)
-      of succeeded(suspended) then
+      of succeeded(stuck) then
          {Space.inject S
           proc {$ _#Synch} Synch=unit end}
          case (thread {AskVerbose S} end)

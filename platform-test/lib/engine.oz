@@ -72,7 +72,7 @@ in
              {Ask S}
           end
           fun {$ X} X==failed end}
-      [] suspended(P0) then
+      [] stuck(P0) then
          {RawTest
           fun {$}
              S={Space.new proc {$ _}
@@ -83,7 +83,7 @@ in
           in
              {Ask S}
           end
-          fun {$ X} X==succeeded(suspended) end}
+          fun {$ X} X==succeeded(stuck) end}
       elsecase {Procedure.arity T}
       of 0 then
          {RawTest fun {$} {T} true end fun {$ X} X end}

@@ -23,7 +23,7 @@ functor
 export Return
 define
    Return =
-   instruction([testList(suspended(proc {$}
+   instruction([testList(stuck(proc {$}
                                       {proc {$ X}
                                           case X of '|'(_ _) then skip
                                           [] f then skip

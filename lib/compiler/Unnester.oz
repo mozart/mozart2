@@ -2563,7 +2563,7 @@ define
          [] fSyntaxRule(G Ds E) then fSyntaxRule(G Ds {SP E})
          [] fSynApplication(_ _) then P
          [] fSynAction(P) then fSynAction({SP P})
-         [] fSynSequence(Vs Es) then fSynSequence(Vs {Map Es SP})
+         [] fSynSequence(Vs Es C) then fSynSequence(Vs {Map Es SP} C)
          [] fSynAlternative(Es) then fSynAlternative({Map Es SP})
          [] fSynAssignment(V E) then fSynAssignment(V {SP E})
          [] fSynTemplateInstantiation(K Es C) then

@@ -427,6 +427,14 @@ define
                               action: proc {$}
                                          {Port.send WidPort GlobalCanvasHandler(scrollY(1))}
                                       end)
+            Tk.canvas, tkBind(event: '<KeyPress-Next>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollYP(1))}
+                                      end)
+            Tk.canvas, tkBind(event: '<KeyPress-Prior>'
+                              action: proc {$}
+                                         {Port.send WidPort GlobalCanvasHandler(scrollYP(~1))}
+                                      end)
          end
          meth getDataNode(X Y $)
             CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
@@ -469,6 +477,8 @@ define
                GraphicSupport, scrollCanvasX(Delta)
             [] scrollY(Delta) then
                GraphicSupport, scrollCanvasY(Delta)
+            [] scrollYP(Delta) then
+               GraphicSupport, scrollCanvasYP(Delta)
             end
          end
          meth !SearchNode(I XA YA X CY $)
@@ -642,6 +652,9 @@ define
          end
          meth scrollCanvasY(YScroll)
             {Tk.send v(@canvasName#' yvi scroll '#YScroll#' units')}
+         end
+         meth scrollCanvasYP(YScroll)
+            {Tk.send v(@canvasName#' yvi scroll '#YScroll#' pages')}
          end
          meth adjustLines(I OldY)
             if I =< @maxPtr

@@ -60,7 +60,7 @@ local
       % of the form c*v (i.e., with a single variable).
       case E of fOpApply('+' [E1 E2] _) then
          {AreLinearConstraints E1} andthen {AreLinearConstraints E2}
-      [] fOpApply('*' [_ E2] _) then
+      elseof fOpApply('*' [_ E2] _) then
          % since all applications of '*' are right-associative,
          % this simple test suffices:
          case E2 of fVar(_ _) then true
@@ -79,7 +79,7 @@ local
       case E of fOpApply('+' [E1 E2] _) then CsInter VsInter in
          {MakeTuples E1 CsHd CsInter VsHd VsInter}
          {MakeTuples E2 CsInter CsTl VsInter VsTl}
-      [] fOpApply('*' [E1 E2] _) then   % E1 = fInt(...), E2 = fVar(...)
+      elseof fOpApply('*' [E1 E2] _) then   % E1 = fInt(...), E2 = fVar(...)
          CsHd = E1|CsTl
          VsHd = E2|VsTl
       end
@@ -107,7 +107,7 @@ local
          case E of fOpApply('+' [E1 E2] _) then CsInter VsInter in
             {MakeTupleTuples E1 CsHd CsInter VsHd VsInter}
             {MakeTupleTuples E2 CsInter CsTl VsInter VsTl}
-         [] fOpApply('*' [E1 E2] _) then   % E1 = fInt(...)
+         elseof fOpApply('*' [E1 E2] _) then   % E1 = fInt(...)
             CsHd = E1|CsTl
             VsHd = fRecord(fAtom('#' E1.2) {ProductToVariableList E2})|VsTl
          end
@@ -123,7 +123,7 @@ local
          case E of fOpApply('+' [E1 E2] C2) then
             % ~(E1 + E2) => ~E1 + ~E2
             fOpApply('+' [{NegDNF E1 C} {NegDNF E2 C}] C2)
-         [] fOpApply('*' [E1 E2] C2) then
+         elseof fOpApply('*' [E1 E2] C2) then
             % ~(E1 * E2) => ~E1 * E2
             fOpApply('*' [{NegDNF E1 C} E2] C2)
          [] fInt(I C2) then
@@ -158,11 +158,11 @@ local
          % Precondition: E must be the result of an UnnestFDExpression.
          case E of fOpApply('+' [E1 E2] C) then
             fOpApply('+' [{MakeDNF E1} {MakeDNF E2}] C)
-         [] fOpApply('-' [E1 E2] C) then
+         elseof fOpApply('-' [E1 E2] C) then
             fOpApply('+' [{MakeDNF E1} {MakeDNF fOpApply('~' [E2] C)}] C)
-         [] fOpApply('~' [E] C) then
+         elseof fOpApply('~' [E] C) then
             {NegDNF {MakeDNF E} C}
-         [] fOpApply('*' [E1 E2] C) then
+         elseof fOpApply('*' [E1 E2] C) then
             {MulDNF {MakeDNF E1} {MakeDNF E2} C}
          [] fInt(_ _) then E
          [] fVar(_ _) then E
@@ -227,7 +227,7 @@ local
             else
                NewE = fOpApply('+' [NewE1 NewE2] C)
             end
-         [] fOpApply('*' _ C) then C0 NewE0 in
+         elseof fOpApply('*' _ C) then C0 NewE0 in
             {NormalizeProduct E ?C0 ?NewE0}
             case NewE0 of fOne then
                Const = C0
@@ -262,7 +262,7 @@ local
                   NewE = fOpApply('+' [E1 NewE2] C)
                end
             end
-         [] fOpApply('*' [fInt(N _) fVar(!V _)] C) then
+         elseof fOpApply('*' [fInt(N _) fVar(!V _)] C) then
             M = N
             NewE = fZero(C)
          else
@@ -412,7 +412,7 @@ in
             case E of fOpApply('+' [E1 E2] _) then VsInter in
                {GetVarsFromFdCompare E1 VsHd VsInter}
                {GetVarsFromFdCompare E2 VsInter VsTl}
-            [] fOpApply('*' [E1 E2] _) then VsInter in
+            elseof fOpApply('*' [E1 E2] _) then VsInter in
                {GetVarsFromFdCompare E1 VsHd VsInter}
                {GetVarsFromFdCompare E2 VsInter VsTl}
             [] fInt(_ _) then
@@ -479,7 +479,7 @@ in
                NewE = fOpApply('+' [NewE1 NewE2] C)
                {RenameFdCompare E1 D ?NewE1}
                {RenameFdCompare E2 D ?NewE2}
-            [] fOpApply('*' [E1 E2] C) then NewE1 NewE2 in
+            elseof fOpApply('*' [E1 E2] C) then NewE1 NewE2 in
                NewE = fOpApply('*' [NewE1 NewE2] C)
                {RenameFdCompare E1 D ?NewE1}
                {RenameFdCompare E2 D ?NewE2}

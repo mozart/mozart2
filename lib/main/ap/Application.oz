@@ -190,21 +190,79 @@ local
        proc {$ Name#Mode} {RegistryGetAllDeps R Name ArgsMap} end}
       ArgsLst = {Dictionary.keys ArgsMap}
       %
-      % for each one, compute the set of modules it recursively
-      % depends on and record them in DepsMap
+      % for each one record the list of modules that directly
+      % depend on it
       %
       {ForAll ArgsLst
-       proc {$ Name}
-          {Dictionary.put DepsMap Name {RegistryDependsOn R Name}}
+       proc {$ Name} {Dictionary.put DepsMap Name nil} end}
+      {ForAll ArgsLst
+       proc {$ Parent}
+          {Record.forAll {RegistryGetArgs R Parent}
+           proc {$ Child}
+              {Dictionary.put DepsMap Child
+               Parent|{Dictionary.get DepsMap Child}}
+           end}
        end}
       %
-      % sort according to dependencies: a modules should appear
-      % after the argument modules it depends on.
-      %         [it is possible to improve the complexity here
-      %          but I don't think it is worth the bother]
-      ArgsLstSorted =
-      {Sort ArgsLst
-       fun {$ M1 M2} {Not {Member M2 {Dictionary.get DepsMap M1}}} end}
+      % we are going to incrementally construct the dependency
+      % sorted list of modules.  first we start with the modules
+      % that take no args and we enter them in the list.  then
+      % we proceed with the modules whose args are already all
+      % in the list, etc.  We do this by associating a counter
+      % with each module that keeps track of the number of its
+      % args that still need to be inserted in the list.
+      %
+      local
+         % L is the sorted list of modules (in reverse order)
+         % Q is the list of modules whose counter has just fallen to 0
+         L = {NewCell nil} proc {PushL H} T in {Exchange L T H|T} end
+         Q = {NewCell nil} proc {PushQ H} T in {Exchange Q T H|T} end
+         %
+         % we iterate until no more modules make it into Q
+         %
+         proc {Loop}
+            LL = {Exchange Q $ nil}
+         in
+            case LL of nil then skip else
+               {ForAll LL Process}
+               {Loop}
+            end
+         end
+         %
+         % for each module in Q, we enter it in L and then decrease
+         % the counter for every module that directly depends on it
+         %
+         proc {Process Child}
+            {PushL Child}
+            {ForAll {Dictionary.get DepsMap Child} Decr}
+         end
+         %
+         % here we perform the actual decrement and check if the
+         % counter falls to 0, in which case the module must be
+         % entered in Q
+         %
+         proc {Decr Parent}
+            N = {Dictionary.get ArgsMap Parent}
+         in
+            {Dictionary.put ArgsMap Parent N-1}
+            case N of 0 then {CircularDependency Parent}
+            elseof 1 then {PushQ Parent}
+            else skip end
+         end
+      in
+         % we initialize the counters and directly enter into
+         % into Q those modules that take no args
+         %
+         {ForAll ArgsLst
+          proc {$ Name}
+             N = {Width {RegistryGetArgs R Name}}
+          in
+             {Dictionary.put ArgsMap Name N}
+             case N==0 then {PushQ Name} else skip end
+          end}
+         {Loop}
+         ArgsLstSorted = {Reverse {Access L}}
+      end
       %
       % Now we compute the modes for all the required modules.
       % Each module Name in Spec is associated with a Mode.
@@ -745,7 +803,7 @@ local
       end
    end
 in
-   {Error.formatter.put registry RegistryFormatter}
+%   {Error.formatter.put registry RegistryFormatter}
    Application = application(
                              register   :DefaultRegister
                              loader     :DefaultGetLoader

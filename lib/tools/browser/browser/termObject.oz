@@ -78,9 +78,6 @@ local
    LimitedTermSize
 
    %%
-   TestMetaVarFun
-
-   %%
    %% various "description procedures" and "descriptions;
    CommasDP
    CommasDesc
@@ -627,21 +624,6 @@ in
             %% Sizes of primitive values are taken as they are;
             SIn + {FullTermSize Term}
          end
-      end
-   end
-
-   %%
-   %%
-   fun {TestMetaVarFun MV}
-      local ChMetaVar GotTouched in
-         %%
-         ChMetaVar = {WatchMetaVar MV {MetaGetStrength MV}}
-         GotTouched = {GetsTouched MV}
-
-         %%
-         %% suspends until either ...
-         {WaitOr ChMetaVar GotTouched}
-         true
       end
    end
 
@@ -3122,67 +3104,6 @@ in
             RepManagerObject , insert(str: Name)
          end
       end
-      %%
-   end
-
-   %%
-   %%
-   %% Meta variables;
-   %%
-   class MetaVariableTermObject from I_MetaVariableTermObject
-                                   %%
-      feat
-         type: T_MetaVariable
-
-         %%
-         %% Yields 'true' if it is still a metavariable;
-         %%
-%       meth !CheckIsVar(?Is)
-%          %%
-%          %%  There could happen only one thing: it can get a value;
-%          %%
-%          IsVar = {IsVar self.term}
-%       end
-
-         %%
-         %% We still use here the "prehistoric" watching method,
-         %% including both 'GetsTouched' as well as 'WatchMetaVar'. This
-         %% is because it is not clear to me right now whether it's
-         %% enough just to use 'GetsTouched';
-         %%
-      meth !GetWatchFun($)
-         TestMetaVarFun
-      end
-
-      %%
-      %%
-      meth makeTerm
-\ifdef DEBUG_TO
-         {Show 'MetaVariableTermObject::makeTerm is applied' # self.term}
-\endif
-         %%
-         local Term Data MetaName Name in
-            Term = self.term
-
-            %%
-            I_MetaVariableTermObject , SetWatchPoint
-
-            %%
-            Data = {MetaGetDataAsAtom Term}
-
-            %%
-            MetaName = {MetaGetNameAsAtom Term}
-
-            %%
-            Name =
-            {self GetName($)} #
-            DLABraceS # MetaName # DColonS # Data # DRABraceS
-
-            %%
-            RepManagerObject , insert(str: Name)
-         end
-      end
-
       %%
    end
 

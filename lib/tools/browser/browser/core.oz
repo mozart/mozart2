@@ -51,31 +51,6 @@ end
 IsVar =        fun {$ X} {Value.isDet X} == false end
 IsFdVar =      {`Builtin` 'fdIsVarB'      2}
 IsRecordCVar = {`Builtin` 'recordCIsVarB' 2}
-IsMetaVar =    {`Builtin` 'metaIsVarB'    2}
-
-%%
-%% The first argument is a meta variable, and the second -
-%% reference strength. Binds 'true' to the second argument when
-%% *something* ("reference strength"?) changes. *It never suspends*.
-%%
-%% Ask Tobias (Mueller) for further details - that's his child. I
-%% don't event know whether it's subsumed by 'GetsTouched'!
-WatchMetaVar = {`Builtin` metaWatchVarB 3}
-
-%%
-%% The first argument is a meta variable, and the second -
-%% constraint data;
-MetaGetDataAsAtom = {`Builtin` metaGetDataAsAtom 2}
-
-%%
-%% The first argument is a meta variable, and the second -
-%% name of constraint system;
-MetaGetNameAsAtom = {`Builtin` metaGetNameAsAtom 2}
-
-%%
-%% The first argument is a meta variable, and the second -
-%% strength of current cnstr;
-MetaGetStrength = {`Builtin` metaGetStrength 2}
 
 %%
 %% Yields 'true' if a record given has a label already. Never

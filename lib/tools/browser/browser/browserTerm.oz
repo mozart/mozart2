@@ -142,7 +142,6 @@ in
          [] fset    then T_FSet
          [] other   then
             case {IsCtVar Term} then T_CtVariable % TODO TMUELLER
-            elsecase {IsMetaVar Term} then T_MetaVariable % TODO
             else T_Variable     % don't know;
             end
          else T_Unknown
@@ -250,7 +249,6 @@ in
       [] !T_FDVariable     then FDVariableTermObject
       [] !T_FSet           then FSetTermObject
       [] !T_CtVariable     then CtVariableTermObject
-      [] !T_MetaVariable   then MetaVariableTermObject
       [] !T_Unknown        then UnknownTermObject
       else
          {BrowserError 'Unknown type in BrowserTerm.getObjClass: '}
@@ -295,8 +293,7 @@ in
       [] !T_Variable       then false
       [] !T_FDVariable     then false
       [] !T_FSet           then false
-      [] !T_MetaVariable   then false
-      [] !T_CtVariable   then false
+      [] !T_CtVariable     then false
       [] !T_Unknown        then false
       else
          {BrowserWarning
@@ -341,8 +338,7 @@ in
       [] !T_Variable       then true
       [] !T_FDVariable     then true
       [] !T_FSet           then true
-      [] !T_CtVariable   then true
-      [] !T_MetaVariable   then true
+      [] !T_CtVariable     then true
       [] !T_Unknown        then false
       else
          {BrowserWarning

@@ -218,12 +218,6 @@ in
                               '<' {GetCtVarNameAsAtom TermIn}
                               ':' {GetCtVarConstraintAsAtom TermIn}
                               '>']}
-               elsecase {IsMetaVar TermIn} then
-                  %%
-                  TermOut = {AtomConcatAll [{System.printName TermIn}
-                                            '<' {MetaGetNameAsAtom TermIn}
-                                            ':' {MetaGetDataAsAtom TermIn}
-                                            '>']}
                else TermOut = {System.printName TermIn }
                end
 

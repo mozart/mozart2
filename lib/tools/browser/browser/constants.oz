@@ -111,8 +111,6 @@ T_Space         = {NewName}
 T_Variable      = {NewName}
 %%  ... and FD variable;
 T_FDVariable    = {NewName}
-%%  ... and Meta variable;
-T_MetaVariable  = {NewName}
 %%  ... and generic constraint variable;
 T_CtVariable  = {NewName}
 %%  ... and finite set variable resp. finite set value;

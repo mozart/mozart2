@@ -524,7 +524,11 @@ in
                   case Mess of m("moveto" F) then
                       %% "moveto Fraction" - just feed it further;
                      {BW tk(yview 'moveto' F)}
-                  elseof       m("scroll" N "pages") then
+                  elseof       m("scroll" N Units) andthen case Units
+                                                           of "page"  then true
+                                                           [] "pages" then true
+                                                           else false end
+                  then
                      Last FT FB Current Kind NewMark Pairs
                   in
                      %% "scroll N Type" - filter the 'pages' case;

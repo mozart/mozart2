@@ -148,7 +148,7 @@ in
          Reporter, ProfileEnd()
          {self.Wrapper
           notify(info('%** ------------------ compiler crashed\n'))}
-         {self.Wrapper notify(errorFound())}
+         Reporter, ToTop(true)
       end
       meth logHalt()
          Reporter, ProfileEnd()

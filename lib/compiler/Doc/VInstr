@@ -91,9 +91,9 @@ Count = cell.
 VClause = InitsRS#Addr#Addr.
 VHashTableEntry = onScalar(NumOrLit Addr)
                 | onRecord(Atomname RecordArity Addr).
-AllocatesRS = RegSet.
-InitsRS = RegSet.
-OccsRS = RegSet.
+AllocatesRS = bitArray.
+InitsRS = bitArray.
+OccsRS = bitArray.
 Code = [Instr].   % "real" machine instructions
 AlwaysSucceeds = bool.
 SharedData = value.   % used for sharing data between vLockThread/End

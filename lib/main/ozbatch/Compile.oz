@@ -79,11 +79,11 @@ local
                      debugvalue(type: bool)
                      debugtype(type: bool)
                      profile(char: &p type: bool)
-                     debuginfocontrol(type: bool)
-                     debuginfovarnames(type: bool)
+                     controlflowinfo(type: bool)
+                     staticvarnames(type: bool)
                      debuginfo(char: &g
-                               alias: [debuginfocontrol#true
-                                       debuginfovarnames#true])
+                               alias: [controlflowinfo#true
+                                       staticvarnames#true])
 
                      %% compiler options
                      maxerrors(type: int)
@@ -140,9 +140,9 @@ local
    '--(no)debugvalue              Annotate variable values in core output.\n'#
    '--(no)debugtype               Annotate variable types in core output.\n'#
    '-p, --(no)profile             Include profiling information.\n'#
-   '--(no)debuginfocontrol        Include control flow information.\n'#
-   '--(no)debuginfovarnames       Include variable information.\n'#
-   '-g, --(no)debuginfo           Both of the above.\n'#
+   '--(no)controlflowinfo         Include control flow information.\n'#
+   '--(no)staticvarnames          Include static variable name information.\n'#
+   '-g, --(no)debuginfo           The two switches above.\n'#
    '\n'#
    'The following compiler options can be set:\n'#
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#

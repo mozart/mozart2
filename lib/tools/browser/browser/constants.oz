@@ -102,6 +102,8 @@ T_Space         = {NewName}
 %% Of course, such operation is not monotonic, but we need it in browser.
 T_Variable      = {NewName}
 T_Future        = {NewName}
+%%  ... and failed values
+T_Failed        = {NewName}
 %%  ... and FD variable;
 T_FDVariable    = {NewName}
 %%  ... and generic constraint variable;

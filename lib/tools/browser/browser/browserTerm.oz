@@ -200,6 +200,7 @@ in
             T_Unknown
          end
       [] future then T_Future
+      [] failed then T_Failed
       else T_Unknown
       end
    end
@@ -239,6 +240,7 @@ in
       [] !T_FSet           then FSetTermObject
       [] !T_CtVariable     then CtVariableTermObject
       [] !T_Future         then FutureTermObject
+      [] !T_Failed         then FailedTermObject
       [] !T_Unknown        then UnknownTermObject
       [] !T_BitString      then BitStringTermObject
       [] !T_ByteString     then ByteStringTermObject
@@ -302,6 +304,7 @@ in
       [] !T_FSet           then true
       [] !T_CtVariable     then true
       [] !T_Future         then false
+      [] !T_Failed         then false
       [] !T_BitString      then true
       [] !T_ByteString     then true
       else

@@ -2806,19 +2806,14 @@ in
 
 
       meth !GetName($)
-         {System.printName self.term}#
-         if {IsFailed self.term}
-         then '<Future (failed value)>'
-         else '<Future>' end
+         {System.printName self.term}#'<Future>'
       end
 
       meth !GetWatchFun($)
          proc {$ F ?U}
-            if {IsFailed self.term} then skip else
-               thread
-                  {Value.waitQuiet F}
-                  U=unit
-               end
+            thread
+               {Value.waitQuiet F}
+               U=unit
             end
          end
       end
@@ -2830,6 +2825,32 @@ in
          %%
          %% *First*, set a watchpoint;
          I_MetaVariableTermObject , SetWatchPoint
+
+         %%
+         RepManagerObject , insert(str: {self GetName($)})
+      end
+
+      %%
+   end
+
+   %%
+   %% Failed values
+   %%
+   class FailedTermObject from I_MetaVariableTermObject
+                               %%
+      feat
+         type: T_Failed
+
+
+      meth !GetName($)
+         {System.printName self.term}#'<Failed value>'
+      end
+
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'FailedTermObject::makeTerm is applied' # self.term}
+\endif
+         %% raph: no watchpoint needed here
 
          %%
          RepManagerObject , insert(str: {self GetName($)})

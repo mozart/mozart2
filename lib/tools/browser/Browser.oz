@@ -227,6 +227,7 @@ define
    CompClassTermObject
    VariableTermObject
    FutureTermObject
+   FailedTermObject
    FDVariableTermObject
    FSetTermObject
    CtVariableTermObject

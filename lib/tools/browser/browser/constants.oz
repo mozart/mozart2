@@ -77,7 +77,6 @@ T_PrimObject    = {NewName}
 T_PrimClass     = {NewName}
 %%
 T_ForeignPointer= {NewName}
-T_Promise       = {NewName}
 
 %%
 %% group #2: compound values;

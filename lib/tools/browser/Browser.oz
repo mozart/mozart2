@@ -179,7 +179,6 @@ body
    FloatTermObject
    NameTermObject
    ForeignPointerTermObject
-   PromiseTermObject
    ProcedureTermObject
    CellTermObject
    PrimChunkTermObject

@@ -53,7 +53,6 @@ local
    GenAtomPrintName
    GenNamePrintName
    GenForeignPointerPrintName
-   GenPromisePrintName
    GenLitPrintName
    GenChunkPrintName
    GenDictionaryPrintName
@@ -266,15 +265,6 @@ in
       else
          '<Foreign Pointer: ' # {ForeignPointerToInt Term} # ' @ ' #
          {AddrOf Term} # '>'
-      end
-   end
-
-   %%
-   fun {GenPromisePrintName Term Store}
-      case {Store read(StoreSmallNames $)} then
-         '<Promise>'
-      else
-         '<Promise @ ' # {AddrOf Term} # '>'
       end
    end
 
@@ -878,38 +868,6 @@ in
       %%
       meth otherwise(Message)
          ControlObject , processOtherwise('ForeignPointerObject::' Message)
-      end
-
-      %%
-   end
-
-   %%
-   %%
-   %% Promises;
-   %%
-   class PromiseTermObject from MetaTermObject
-                              %%
-      feat
-         type: T_Promise
-
-         %%
-         %%
-      meth makeTerm
-\ifdef DEBUG_TO
-         {Show 'PromiseTermObject::makeTerm is applied'#self.term}
-\endif
-         local Name in
-            Name = {GenPromisePrintName self.term self.store}
-
-            %%
-            RepManagerObject , insert(str: Name)
-         end
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         ControlObject , processOtherwise('PromiseObject::' Message)
       end
 
       %%

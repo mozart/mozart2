@@ -155,7 +155,6 @@ in
          [] float           then T_Float
          [] name            then T_Name
          [] foreign_pointer then T_ForeignPointer
-         [] promise         then T_Promise
 
          [] tuple      then
             %%
@@ -224,7 +223,6 @@ in
       [] !T_Float          then FloatTermObject
       [] !T_Name           then NameTermObject
       [] !T_ForeignPointer then ForeignPointerTermObject
-      [] !T_Promise        then PromiseTermObject
       [] !T_Procedure      then ProcedureTermObject
       [] !T_Cell           then CellTermObject
       [] !T_PrimChunk      then PrimChunkTermObject
@@ -269,7 +267,6 @@ in
       [] !T_Float          then false
       [] !T_Name           then false
       [] !T_ForeignPointer then false
-      [] !T_Promise        then false
       [] !T_Procedure      then false
       [] !T_Cell           then false
       [] !T_PrimChunk      then false
@@ -314,7 +311,6 @@ in
       [] !T_Float          then false
       [] !T_Name           then true
       [] !T_ForeignPointer then true
-      [] !T_Promise        then true
       [] !T_Procedure      then true
       [] !T_Cell           then true
       [] !T_PrimChunk      then true

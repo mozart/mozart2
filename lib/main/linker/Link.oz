@@ -169,6 +169,7 @@ local
    in
 
       fun {TypeCheck Info}
+         {Debug 'Type Checking'}
          %%
          %% Check for export -> import matches
          %% Collect external import types
@@ -236,6 +237,7 @@ local
    %%
 
    fun {Schedule RootUrl Info}
+      {Debug 'Scheduling'}
       %% Map URLs to integers
       %% Assumptions: Exclude functors come first.
       %%              Then included.
@@ -329,6 +331,7 @@ local
    in
 
       fun {Assemble RootUrl BodiesSeq Info Types UrlToIntSpec}
+         {Debug 'Assembling'}
          RootUrlKey = {UrlToAtom RootUrl}
          RootPrefix = {VirtualString.toString
                        {UrlToVs {UrlResolve RootUrl nil}}}

@@ -1009,6 +1009,13 @@ in
          ParsingLabel = {New Tk.label tkInit(parent: ParsingFrame
                                              text: 'I. Parsing and Expanding'
                                              font: SwitchGroupFont)}
+         Expression = {New Tk.variable tkInit(true)}
+         ExpressionSw = {New Tk.checkbutton
+                         tkInit(parent: ParsingFrame
+                                text: 'Expect expressions, not statements'
+                                font: SwitchFont
+                                variable: Expression
+                                action: {MkAction Switch(expression)})}
          System = {New Tk.variable tkInit(true)}
          SystemSw = {New Tk.checkbutton
                      tkInit(parent: ParsingFrame
@@ -1217,7 +1224,8 @@ in
                          side: left anchor: w)
                     pack(ParsingFrame SAFrame CoreFrame
                          padx: 24 pady: 8 anchor: w)
-                    pack(ParsingLabel SystemSw CatchAllSw anchor: w)
+                    pack(ParsingLabel ExpressionSw SystemSw CatchAllSw
+                         anchor: w)
                     pack(SALabel StaticAnalysisSw anchor: w)
                     pack(CoreLabel CoreSw RealCoreSw DebugValueSw DebugTypeSw
                          anchor: w)
@@ -1259,6 +1267,7 @@ in
                                    warnredecl: WarnRedecl
                                    warnunused: WarnUnused
                                    warnforward: WarnForward
+                                   expression: Expression
                                    system: System
                                    catchall: CatchAll
                                    staticanalysis: StaticAnalysis
@@ -1278,8 +1287,8 @@ in
                         self.MaxNumberOfErrors.inc self.MaxNumberOfErrors.dec
                         self.MaxNumberOfErrors.entry DoMaxErrors
                         CompilerPassesSw ShowInsertSw EchoQueriesSw
-                        WarnRedeclSw WarnUnusedSw WarnForwardSw SystemSw
-                        CatchAllSw StaticAnalysisSw CoreSw RealCoreSw
+                        WarnRedeclSw WarnUnusedSw WarnForwardSw ExpressionSw
+                        SystemSw CatchAllSw StaticAnalysisSw CoreSw RealCoreSw
                         DebugValueSw DebugTypeSw CodeGenSw OutputCodeSw
                         FeedToEmulatorSw ThreadedQueriesSw ProfileSw
                         RunWithDebuggerSw DebugInfoControlSw

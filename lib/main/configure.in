@@ -64,6 +64,21 @@ OZ_PATH_PROG(INSTALLSRC, ozinstallsrc)
 OZ_PATH_PROG(OZPLATFORM, ozplatform)
 OZ_PATH_PROG(OZBATCH, ozbatch, OZBATCH=./ozbatch)
 
+AC_MSG_CHECKING(for --enable-fun)
+AC_ARG_ENABLE(fun,
+  [--enable-fun  build the functorial compiler (default=no)])
+if test "${enable_fun}" = yes; then
+    AC_MSG_RESULT(yes)
+    COMPILER_FUN=Compiler.ozc
+    COMPILER_BIG=Compiler.big
+else
+    AC_MSG_RESULT(no)
+    COMPILER_FUN=Compiler.fun
+    COMPILER_BIG=Compiler.ozc
+fi
+AC_SUBST(COMPILER_FUN)
+AC_SUBST(COMPILER_BIG)
+
 AC_MSG_CHECKING(for oz.emulator.bin and ozma.so)
 if test -z "$OZ_EMULATOR_DIR"
 then

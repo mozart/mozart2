@@ -53,16 +53,13 @@ local
 
    Start = {VirtualString.toAtom {Space Ident}}
 
-   fun {Break Vs=V|Vr N}
+   fun {Break V|Vr N}
       L={VirtualString.length V}
    in
       if L+N+2>Width-Ident then
-         '\n'#Start#if L+2>Width-Ident then
-                       V # if Vr==nil then '.\n'
-                           else  ',\n' # Start # {Break Vr Ident}
-                           end
-                    else {Break Vs Ident}
-                    end
+         '\n'#Start#V#if Vr==nil then '.\n'
+                      else  ',\n' # Start # {Break Vr Ident}
+                      end
       else
          V#if Vr==nil then '.'
            else ', '#{Break Vr N+L+2}

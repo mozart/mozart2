@@ -76,7 +76,7 @@ prepare
 import
    Pickle(load saveWithHeader)
    Application(exit getCmdArgs)
-   System(printError showError show)
+   System(printError showError)
    FD(record distinct distribute sumC)
    Search(base)
    OS(system getCWD)

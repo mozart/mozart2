@@ -560,7 +560,11 @@ in
                            {SelfBWO.browserObj ScrollTo(TO Kind)}
                         end
                      end
-                  elseof       m("scroll" N "units") then
+                  elseof       m("scroll" N Units) andthen case Units
+                                                           of "unit" then true
+                                                           [] "units" then true
+                                                           else false end
+                  then
                      %% basically, there is only 'units' type left;
                      {BW tk(yview 'scroll' N 'units')}
                   else {BrowserError 'Unknown type of scrollbar operation!'}

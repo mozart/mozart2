@@ -82,7 +82,7 @@ local
    fun {GetLast X}
       case X of S1|S2 then Last in
          Last = {GetLast S2}
-         case Last == nil then {GetLast S1}
+         if Last == nil then {GetLast S1}
          else Last
          end
       [] nil then nil
@@ -144,13 +144,13 @@ local
          C
       [] fRecord(_ As) then
          {FoldL As fun {$ In A}
-                      case In == unit then {DollarCoord A}
+                      case In of unit then {DollarCoord A}
                       else In
                       end
                    end unit}
       [] fOpenRecord(_ As) then
          {FoldL As fun {$ In A}
-                      case In == unit then {DollarCoord A}
+                      case In of unit then {DollarCoord A}
                       else In
                       end
                    end unit}
@@ -162,7 +162,7 @@ local
          {DollarCoord E}
       [] _|_ then
          {FoldL FE fun {$ In E}
-                      case In == unit then {DollarCoord E}
+                      case In of unit then {DollarCoord E}
                       else In
                       end
                    end unit}
@@ -341,21 +341,21 @@ local
    proc {SortFunctorDescriptors FDescriptors Rep ?FImport ?FExport ?FProp}
       case FDescriptors of D|Dr then
          case D of fImport(Ds C) then
-            case {IsFree FImport} then FImport = Ds
+            if {IsFree FImport} then FImport = Ds
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `import\' descriptor '#
                                 'in functor definition'))}
             end
          [] fExport(Ds C) then
-            case {IsFree FExport} then FExport = Ds
+            if {IsFree FExport} then FExport = Ds
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `export\' descriptor '#
                                 'in functor definition'))}
             end
          [] fProp(Ps C) then
-            case {IsFree FProp} then FProp = Ps
+            if {IsFree FProp} then FProp = Ps
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `prop\' descriptor '#
@@ -364,37 +364,37 @@ local
          end
          {SortFunctorDescriptors Dr Rep ?FImport ?FExport ?FProp}
       [] nil then
-         case {IsFree FImport} then FImport = nil else skip end
-         case {IsFree FExport} then FExport = nil else skip end
-         case {IsFree FProp} then FProp = nil else skip end
+         if {IsFree FImport} then FImport = nil end
+         if {IsFree FExport} then FExport = nil end
+         if {IsFree FProp} then FProp = nil end
       end
    end
 
    proc {SortClassDescriptors FDescriptors Rep ?FFrom ?FProp ?FAttr ?FFeat}
       case FDescriptors of D|Dr then
          case D of fFrom(Fs C) then
-            case {IsFree FFrom} then FFrom = Fs
+            if {IsFree FFrom} then FFrom = Fs
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `from\' descriptor '#
                                 'in class definition'))}
             end
          [] fProp(Ps C) then
-            case {IsFree FProp} then FProp = Ps
+            if {IsFree FProp} then FProp = Ps
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `prop\' descriptor '#
                                 'in class definition'))}
             end
          [] fAttr(As C) then
-            case {IsFree FAttr} then FAttr = As
+            if {IsFree FAttr} then FAttr = As
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `attr\' descriptor '#
                                 'in class definition'))}
             end
          [] fFeat(Fs C) then
-            case {IsFree FFeat} then FFeat = Fs
+            if {IsFree FFeat} then FFeat = Fs
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `feat\' descriptor '#
@@ -403,10 +403,10 @@ local
          end
          {SortClassDescriptors Dr Rep ?FFrom ?FProp ?FAttr ?FFeat}
       [] nil then
-         case {IsFree FFrom} then FFrom = nil else skip end
-         case {IsFree FProp} then FProp = nil else skip end
-         case {IsFree FAttr} then FAttr = nil else skip end
-         case {IsFree FFeat} then FFeat = nil else skip end
+         if {IsFree FFrom} then FFrom = nil end
+         if {IsFree FProp} then FProp = nil end
+         if {IsFree FAttr} then FAttr = nil end
+         if {IsFree FFeat} then FFeat = nil end
       end
    end
 
@@ -515,7 +515,7 @@ local
       meth UnnestStatement(FS $)
          case FS of fStepPoint(FS Kind C) then GS in
             Unnester, UnnestStatement(FS ?GS)
-            case {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -523,7 +523,7 @@ local
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestStatement(FS2 $)
          [] fEq(FE1 FE2 C) then
-            case {IsStep C} andthen
+            if {IsStep C} andthen
                {IsConstraint FE1} andthen {IsConstraint FE2}
             then GV1 FV1 GV2 FV2 GFront1 GBack1 GFront2 GBack2 Equation in
                {@BA generate('Left' C ?GV1)}
@@ -552,7 +552,7 @@ local
                GFront|GBack
             end
          [] fAssign(FE1 FE2 C) then
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter
@@ -583,7 +583,7 @@ local
                         [FE2 FE1] C)
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
                case FE1 of fSelf(C) then
                   {@reporter
@@ -620,11 +620,11 @@ local
              ?LazyFlags ?RestFlags}
             {@BA openScope()}
             N = {DollarsInScope FEs 0}
-            case N \= 1 andthen LazyFlags \= nil then
+            if N \= 1 andthen LazyFlags \= nil then
                {@reporter
                 error(coord: {CoordinatesOf FE1} kind: SyntaxError
                       msg: 'exactly one $ in head of lazy procedure required')}
-            elsecase N =< 1 then skip
+            elseif N =< 1 then skip
             else
                {@reporter
                 error(coord: {DollarCoord FEs} kind: SyntaxError
@@ -636,9 +636,8 @@ local
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            case {@switches getSwitch(debuginfovarnames $)} then
+            if {@switches getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
-            else skip
             end
             GFrontEq|GD   % Definition node must always be second element!
          [] fFun(FE1 FEs FE2 ProcFlags C) then
@@ -651,7 +650,7 @@ local
             {List.partition ProcFlagAtoms fun {$ A} A == 'lazy' end
              ?LazyFlags ?RestFlags}
             {@BA openScope()}
-            case {DollarsInScope FEs 0} == 0 then
+            if {DollarsInScope FEs 0} == 0 then
                NewFEs = {Append FEs [fDollar(C)]}
             else
                {@reporter error(coord: {DollarCoord FEs} kind: SyntaxError
@@ -664,9 +663,8 @@ local
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            case {@switches getSwitch(debuginfovarnames $)} then
+            if {@switches getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
-            else skip
             end
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
@@ -813,7 +811,7 @@ local
                   Unnester, UnnestStatement(FS2 $))
             {MakeDeclaration {@BA closeScope($)} GS C}
          [] fBoolCase(FE FS1 FS2 C) then Lbl = {Label FE} in
-            case {Not {@switches getSwitch(debuginfovarnames $)}}
+            if {Not {@switches getSwitch(debuginfovarnames $)}}
                andthen {Not {@switches getSwitch(debuginfocontrol $)}}
                andthen ({@switches getSwitch(staticanalysis $)}
                         orelse {Not {@switches getSwitch(codegen $)}})
@@ -868,7 +866,7 @@ local
             Unnester, UnnestStatement(FS ?GS)
             GFrontEq|{New Core.lockNode init(GVO GS C)}
          [] fLock(FS C) then GS in
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter error(coord: C kind: ExpansionError
@@ -965,7 +963,7 @@ local
       meth UnnestExpression(FE FV $) C = {CoordinatesOf FE} in
          case FE of fStepPoint(FE Kind C) then GS in
             Unnester, UnnestExpression(FE FV ?GS)
-            case {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -976,7 +974,7 @@ local
             Unnester, UnnestConstraint(FE FV ?GFront ?GBack)
             GFront|GBack
          [] fAssign(FE1 FE2 C) then FApply in
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter
@@ -994,8 +992,7 @@ local
             FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fVar('`false`' C) C) C)
             Unnester, UnnestStatement(FS $)
          [] fOpApply(Op FEs C) then
-            case {DollarsInScope FEs 0} == 0 then skip
-            else OpKind in
+            if {DollarsInScope FEs 0} \= 0 then OpKind in
                OpKind = case FEs of [_] then 'prefix' else 'infix' end
                {@reporter
                 error(coord: {DollarCoord FEs} kind: SyntaxError
@@ -1038,9 +1035,9 @@ local
                         [FE2 FE1 FV] C)
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then NewFE2 in
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
-               case {DollarsInScope FE2 0} == 1 then
+               if {DollarsInScope FE2 0} == 1 then
                   case FE1 of fSelf(C) then
                      {@reporter
                       error(coord: C kind: ExpansionError
@@ -1064,7 +1061,7 @@ local
             NewFE2 = {ReplaceDollar FE2 FV}
             Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 NewFE2] C) $)
          [] fAt(FE C) then
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter
@@ -1084,7 +1081,7 @@ local
          [] fEscape(FV2 _) then
             Unnester, UnnestExpression(FV2 FV $)
          [] fSelf(C) then fVar(PrintName VC) = FV in
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter error(coord: C kind: ExpansionError
@@ -1106,7 +1103,7 @@ local
          in
             {@BA refer(PrintName C ?GVO)}
             {GVO getVariable(?GV)}
-            RecordPrintName = case {GV getOrigin($)} == generated then ''
+            RecordPrintName = case {GV getOrigin($)} of generated then ''
                               else PrintName
                               end
             Unnester, UnnestRecord(RecordPrintName Label Args false
@@ -1117,7 +1114,7 @@ local
          in
             {@BA refer(PrintName C ?GVO)}
             {GVO getVariable(?GV)}
-            RecordPrintName = case {GV getOrigin($)} == generated then ''
+            RecordPrintName = case {GV getOrigin($)} of generated then ''
                               else PrintName
                               end
             Unnester, UnnestRecord(RecordPrintName Label Args true
@@ -1126,13 +1123,13 @@ local
          [] fApply(FE1 FEs C) then N1 N2 in
             N1 = {DollarsInScope FE1 0}
             N2 = {DollarsInScope FEs 0}
-            case N1 == 0 andthen N2 == 0 then NewFEs in
+            if N1 == 0 andthen N2 == 0 then NewFEs in
                NewFEs = {Append FEs [FV]}
                Unnester, UnnestStatement(fApply(FE1 NewFEs C) $)
-            elsecase N1 == 0 andthen N2 == 1 then NewFEs in
+            elseif N1 == 0 andthen N2 == 1 then NewFEs in
                NewFEs = {ReplaceDollar FEs FV}
                Unnester, UnnestStatement(fApply(FE1 NewFEs C) $)
-            elsecase N1 == 1 andthen N2 == 0 then NewFE1 NewFEs in
+            elseif N1 == 1 andthen N2 == 0 then NewFE1 NewFEs in
                NewFE1 = {ReplaceDollar FE1 FV}
                NewFEs = {Append FEs [FV]}
                Unnester, UnnestStatement(fApply(NewFE1 NewFEs C) $)
@@ -1201,7 +1198,7 @@ local
             {@BA refer(PrintName VC ?GVO)}
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FS FVs nil}
-            case   % is a new temporary needed to avoid name clashes?
+            if   % is a new temporary needed to avoid name clashes?
                {FoldL FVs fun {$ In FV}
                              case FV of fVar(X C) then
                                 {@BA bind(X C _)}
@@ -1246,7 +1243,7 @@ local
                       fun {$ FVs fCaseClause(FE _)}
                          {GetPatternVariablesExpression FE FVs $}
                       end FVs nil}
-                     case {Some FVs fun {$ fVar(X _)} X == PrintName end} then
+                     if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                         NewGV NewFV in
                         % use a temporary to avoid name clash
                         Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
@@ -1272,7 +1269,7 @@ local
          [] fLockThen(FE1 FE2 C) then
             Unnester, UnnestStatement(fLockThen(FE1 fEq(FV FE2 C) C) $)
          [] fLock(FE C) then
-            case @Stateful then
+            if @Stateful then
                StateUsed <- true
             else
                {@reporter error(coord: C kind: ExpansionError
@@ -1294,7 +1291,7 @@ local
                    {GetPatternVariablesExpression FE FVs $}
                 end FVs nil}
                PrintName = FV.1
-               case {Some FVs fun {$ fVar(X _)} X == PrintName end} then GV in
+               if {Some FVs fun {$ fVar(X _)} X == PrintName end} then GV in
                   Unnester, GenerateNewVar(PrintName FVs C ?GV)
                   NewFV = fVar({GV getPrintName($)} C)
                   FS = fAnd(fEq(FV NewFV C) fTry(TryFS
@@ -1330,7 +1327,7 @@ local
                        case FE of fNoElse(_) then FE
                        else fEq(NewFV FE C)
                        end C)
-            case {Some FVs fun {$ fVar(X _)} X == PrintName end} then
+            if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                NewGV NewFV in
                % use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
@@ -1357,7 +1354,7 @@ local
                             fClause(FLocals FGuard fEq(NewFV FBody C))
                          end
                       end} Kind C)
-            case {Some FVs fun {$ fVar(X _)} X == PrintName end} then
+            if {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                NewGV NewFV in
                % use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
@@ -1472,7 +1469,7 @@ local
                 Unnester, UnnestConstraint(FE FV ?GFront0 ?GBack0)
                 NewGArgs#(GFront0|GBack|GBack0)
              [] fRecord(Label Args) then
-                NewPrintName = case PrintName == '' then ''
+                NewPrintName = case PrintName of '' then ''
                                else PrintName#'.'#FeatPrintName
                                end
                 GBack0
@@ -1481,7 +1478,7 @@ local
                                        ?GArg ?GBack0)
                 NewGArgs#(GBack|GBack0)
              [] fOpenRecord(Label Args) then
-                NewPrintName = case PrintName == '' then ''
+                NewPrintName = case PrintName of '' then ''
                                else PrintName#'.'#FeatPrintName
                                end
                 GBack0
@@ -1491,7 +1488,7 @@ local
                 NewGArgs#(GBack|GBack0)
              else GBack0 in
                 Unnester, UnnestToTerm(FE 'RecordArg' ?GBack0 ?GArg)
-                case PrintName == '' then skip
+                case PrintName of '' then skip
                 elsecase {GetLast GBack0} of nil then skip
                 elseof GS then
                    {GS setPrintName({VirtualString.toAtom
@@ -1531,7 +1528,7 @@ local
          else
             NewFS = FS
          end
-         FBody0 = case IsLazy then CND in
+         FBody0 = if IsLazy then CND in
                      CND = {CoordNoDebug C}
                      fOpApply('byNeed'
                               [fFun(fDollar(C) nil NewFS nil CND)] CND)
@@ -1553,7 +1550,7 @@ local
       end
       meth UnnestProcFormal(FE Occs ?NewOccs GdHd GdTl RtHd RtTl)
          case FE of fVar(PrintName C) then
-            case {Member PrintName Occs} then GV in
+            if {Member PrintName Occs} then GV in
                NewOccs = Occs
                {@BA generate('Formal' C ?GV)}
                GdHd = fEq(fVar({GV getPrintName($)} C) FE C)|GdTl
@@ -1576,7 +1573,7 @@ local
             RtHd = fVar({GV getPrintName($)} C)|RtTl
          else C GV in
             C = {CoordinatesOf FE}
-            case {IsPattern FE} then skip
+            if {IsPattern FE} then skip
             else
                {@reporter error(coord: C kind: SyntaxError
                                 msg: 'only patterns in proc/fun head allowed')}
@@ -1644,7 +1641,7 @@ local
       end
       meth OptimizeImportFeature(FV C X C2 Y FF $) IsImport LeftGVO in
          {@BA referImport(X C2 Y ?IsImport ?LeftGVO)}
-         case {Not IsImport}
+         if {Not IsImport}
             orelse {{LeftGVO getVariable($)} isRestricted($)}
          then DotGVO GFrontEqs1 GFrontEqs2 GTs in
             {RunTime.procs.'.' occ(C ?DotGVO)}
@@ -1725,7 +1722,7 @@ local
          Unnester, UnnestMethFormals1(FFormals GVMsg)
          N = {DollarsInScope FFormals 0}
          ArgCounter <- 1
-         case N == 0 then GFormals0 GS1 GS2 in
+         if N == 0 then GFormals0 GS1 GS2 in
             Unnester, UnnestMethFormals2(FFormals nil ?GFormals0)
             {@BA openScope()}
             Unnester, UnnestStatement(FP ?GS1)
@@ -1733,8 +1730,7 @@ local
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          else DollarC GV FV NewFFormals GFormals0 GS1 GS2 in
             DollarC = {DollarCoord FFormals}
-            case N == 1 then skip
-            else
+            if N > 1 then
                {@reporter error(coord: DollarC kind: SyntaxError
                                 msg: 'at most one $ in method head allowed')}
             end
@@ -1747,21 +1743,19 @@ local
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          end
-         case {@switches getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
+         if {@switches getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
          then
             {@BA generate('Message' C ?GVMsg)}
-         else skip
          end
          {@BA closeScope(_)}
-         case {IsFree GVMsg} then
+         if {IsFree GVMsg} then
             GMeth = {New Core.method init(GLabel GFormals GBody C)}
          else
             GMeth = {New Core.methodWithDesignator
                      init(GLabel GFormals IsOpen GVMsg GBody C)}
          end
-         case {@switches getSwitch(debuginfovarnames $)} then
+         if {@switches getSwitch(debuginfovarnames $)} then
             {GMeth setAllVariables({@BA getAllVariables($)})}
-         else skip
          end
       end
       meth UnnestMethHead(FHead GVMsg ?GLabel ?FFormals ?IsOpen)
@@ -1783,8 +1777,8 @@ local
             IsOpen = false
          [] fOpenRecord(FLabel FArgs) then C in
             C = {CoordinatesOf FLabel}
-            case {IsFree GVMsg} then {@BA generate('Message' C ?GVMsg)}
-            else skip
+            if {IsFree GVMsg} then
+               {@BA generate('Message' C ?GVMsg)}
             end
             Unnester, UnnestMethHead(FLabel GVMsg ?GLabel _ _)
             FFormals = FArgs
@@ -1804,8 +1798,8 @@ local
                 end
              [] fMethColonArg(FF FV _) then
                 case FF of fVar(_ C) then
-                   case {IsFree GVMsg} then {@BA generate('Message' C ?GVMsg)}
-                   else skip
+                   if {IsFree GVMsg} then
+                      {@BA generate('Message' C ?GVMsg)}
                    end
                 else skip
                 end
@@ -1848,7 +1842,7 @@ local
          end
          Unnester, MakeLabelOrFeature(FF ?GF)
          PrintName = {GV getPrintName($)}
-         case {Member PrintName Occs} then
+         if {Member PrintName Occs} then
             {@reporter error(coord: {GV getCoord($)} kind: SyntaxError
                              msg: ('argument variables in method head '#
                                    'must be distinct'))}
@@ -1861,30 +1855,30 @@ local
          [] fDefault(FE C) then
             case FE of fWildcard(_) then
                GFormal = {New Core.methFormalOptional init(GF GV false)}
-            elsecase {IsGround FE} then Val in
-               Val = {GroundToOzValue FE self}
-               GFormal = {New Core.methFormalWithDefault init(GF GV Val)}
-            else FV in
-               FV = fVar({GV getPrintName($)} C)
-               GFormal = ({New Core.methFormalOptional init(GF GV true)}#
-                          FF#FV#fEq(FV FE C))
+            else
+               if {IsGround FE} then Val in
+                  Val = {GroundToOzValue FE self}
+                  GFormal = {New Core.methFormalWithDefault init(GF GV Val)}
+               else FV in
+                  FV = fVar({GV getPrintName($)} C)
+                  GFormal = ({New Core.methFormalOptional init(GF GV true)}#
+                             FF#FV#fEq(FV FE C))
+               end
             end
          end
       end
       meth UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2) FVMsg in
-         case {IsDet GVMsg} then
+         if {IsDet GVMsg} then
             FVMsg = fVar({GVMsg getPrintName($)} {GVMsg getCoord($)})
-         else skip
          end
          GFormals#GS2 =
          {FoldR GFormals0
           fun {$ GFormal0 GFormals#GS}
              case GFormal0 of GFormal#FF#FV#FS then C FS0 GS0 in
                 C = {CoordinatesOf FF}
-                case {IsFree GVMsg} then
+                if {IsFree GVMsg} then
                    {@BA generateForOuterScope('Message' C ?GVMsg)}
                    FVMsg = fVar({GVMsg getPrintName($)} C)
-                else skip
                 end
                 FS0 = fBoolCase(fOpApply('hasFeature' [FVMsg FF] C)
                                 fEq(FV fOpApply('.' [FVMsg FF] C) C) FS C)
@@ -1944,15 +1938,14 @@ local
             %    case Arbiter of X then S1 {elseof ... then Si} [else Sn] end
             % =>
             %    local X in X = Arbiter S1 end
-            case FCsr \= nil then
+            if FCsr \= nil then
                {@reporter
                 warn(coord: C kind: ExpansionWarning
                      msg: 'ignoring clauses following catch-all pattern')}
-            elsecase {Label FElse} \= fNoElse then
+            elseif {Label FElse} \= fNoElse then
                {@reporter
                 warn(coord: C kind: ExpansionWarning
                      msg: 'ignoring else clause following catch-all pattern')}
-            else skip
             end
             FV = fVar({GV getPrintName($)} {GV getCoord($)})
             NewFS = fLocal(FX fAnd(fEq(FX FV {CoordNoDebug C}) FS) C)
@@ -1978,7 +1971,7 @@ local
       end
       meth UnnestCaseClauses(FCs ?GCs)
          case FCs of FC|FCr then fCaseClause(FPattern FS) = FC GCr in
-            case {IsPattern FPattern} then PatternPNs GPattern GS0 GS GVs in
+            if {IsPattern FPattern} then PatternPNs GPattern GS0 GS GVs in
                {@BA openScope()}
                PatternPNs = {Map {GetPatternVariablesExpression FPattern $ nil}
                              fun {$ fVar(PrintName C)}
@@ -2028,7 +2021,7 @@ local
          [] fAtom(X C) then
             {New Core.atomNode init(X C)}
          [] fVar(PrintName C) then
-            case {Member PrintName PatternPNs} then
+            if {Member PrintName PatternPNs} then
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence($)}
             else
@@ -2038,7 +2031,7 @@ local
             {@BA generate('Wildcard' C ?GV)}
             {{GV occ(C $)} makeIntoPatternVariableOccurrence($)}
          [] fEscape(FV _) then fVar(PrintName C) = FV in
-            case {Member PrintName PatternPNs} then
+            if {Member PrintName PatternPNs} then
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence($)}
             else
@@ -2146,7 +2139,7 @@ local
                K = waitTop
                GBody = {New Core.skipNode init(C)}
             else GS C = {CoordinatesOf FBody} in
-               K = case Kind == fif then ask else wait end
+               K = case Kind of fif then ask else wait end
                {@BA openScope()}
                Unnester, UnnestStatement(FBody ?GS)
                GBody = {MakeDeclaration {@BA closeScope($)} GS C}
@@ -2163,14 +2156,14 @@ local
          % only '+', '-', '*' and '~' may remain as operators;
          % only variables and integers may remain as operands.
          case FE of fOpApply(Op FEs C) then
-            case Op == '+' orelse Op == '-' orelse Op == '*' then
+            if Op == '+' orelse Op == '-' orelse Op == '*' then
                GFrontEqs1 NewFE1 GFrontEqs2 NewFE2
                [FE1 FE2] = FEs in
                Unnester, UnnestFDExpression(FE1 ?GFrontEqs1 ?NewFE1)
                Unnester, UnnestFDExpression(FE2 ?GFrontEqs2 ?NewFE2)
                GFrontEqs = GFrontEqs1|GFrontEqs2
                NewFE = fOpApply(Op [NewFE1 NewFE2] C)
-            elsecase Op == '~' then [FE1] = FEs NewFE1 in
+            elseif Op == '~' then [FE1] = FEs NewFE1 in
                Unnester, UnnestFDExpression(FE1 ?GFrontEqs ?NewFE1)
                NewFE = fOpApply('~' [NewFE1] C)
             else GV in
@@ -2231,7 +2224,7 @@ in
 
       fun {AreDisjointVariableLists Vs1 Vs2}
          case Vs1 of fVar(PrintName _)|Vr then
-            case {VariableMember PrintName Vs2} then false
+            if {VariableMember PrintName Vs2} then false
             else {AreDisjointVariableLists Vr Vs2}
             end
          elseof nil then true
@@ -2240,26 +2233,29 @@ in
 
       fun {JoinQueriesSub Queries}
          case Queries of Q1|(Qr=Q2|Qrr) then
-            case {IsDirective Q1} then
+            if {IsDirective Q1} then
                Q1|{JoinQueriesSub Qr}
-            elsecase Q1 of fDeclare(P11 P12 C1) then
-               case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
-                  NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
-                  NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
-                  case {AreDisjointVariableLists Vs1 Vs2} then NewQ in
-                     NewQ = fDeclare({FoldR {Append Vs1 Vs2}
-                                      fun {$ V Rest} fAnd(V Rest) end
-                                      fSkip(C1)}
-                                     fAnd(NewP1 fAnd(P12 fAnd(NewP2 P22))) C1)
-                     {JoinQueriesSub NewQ|Qrr}
+            else
+               case Q1 of fDeclare(P11 P12 C1) then
+                  case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
+                     NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
+                     NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
+                     if {AreDisjointVariableLists Vs1 Vs2} then NewQ in
+                        NewQ = fDeclare({FoldR {Append Vs1 Vs2}
+                                         fun {$ V Rest} fAnd(V Rest) end
+                                         fSkip(C1)}
+                                        fAnd(NewP1 fAnd(P12
+                                                        fAnd(NewP2 P22))) C1)
+                        {JoinQueriesSub NewQ|Qrr}
+                     else
+                        Q1|{JoinQueriesSub Qr}
+                     end
                   else
-                     Q1|{JoinQueriesSub Qr}
+                     {JoinQueriesSub fDeclare(P11 fAnd(P12 Q2) C1)|Qrr}
                   end
                else
-                  {JoinQueriesSub fDeclare(P11 fAnd(P12 Q2) C1)|Qrr}
+                  Q1|{JoinQueriesSub Qr}
                end
-            else
-               Q1|{JoinQueriesSub Qr}
             end
          else
             Queries
@@ -2288,20 +2284,22 @@ in
       proc {MakeExpressionQuerySub Qs ?NewQs ?Found}
          case Qs of Q1|Qr then NewQr Found0 in
             {MakeExpressionQuerySub Qr ?NewQr ?Found0}
-            case Found0 then
+            if Found0 then
                NewQs = Q1|NewQr
                Found = true
-            elsecase {IsDirective Q1} then
+            elseif {IsDirective Q1} then
                NewQs = Qs
                Found = false
-            elsecase Q1 of fDeclare(FS FE C) then
-               %--** `result`
-               NewQs = fDeclare(FS fEq(fVar('`result`' unit) FE unit) C)|Qr
-               Found = true
             else
-               %--** `result`
-               NewQs = fEq(fVar('`result`' unit) Q1 unit)|Qr
-               Found = true
+               case Q1 of fDeclare(FS FE C) then
+                  %--** `result`
+                  NewQs = fDeclare(FS fEq(fVar('`result`' unit) FE unit) C)|Qr
+                  Found = true
+               else
+                  %--** `result`
+                  NewQs = fEq(fVar('`result`' unit) Q1 unit)|Qr
+                  Found = true
+               end
             end
          [] nil then
             NewQs = nil
@@ -2488,7 +2486,7 @@ in
    in
       proc {UnnestQuery TopLevel Reporter State Query ?GVs ?GS ?FreeGVs}
          O = {New Unnester init(TopLevel Reporter State)}
-         Query0 = case {State getSwitch(debuginfocontrol $)} then {SP Query}
+         Query0 = if {State getSwitch(debuginfocontrol $)} then {SP Query}
                   else Query
                   end
       in

@@ -47,7 +47,7 @@ local
       % Adjoins all variables of Vs to Ws.  Specifically, if Ws is nil,
       % then this function returns Vs with all duplicates removed.
       case Vs of V|Vr then
-         case {Member V Ws} then {VariableUnion Vr Ws}
+         if {Member V Ws} then {VariableUnion Vr Ws}
          else {VariableUnion Vr V|Ws}
          end
       [] nil then Ws
@@ -85,9 +85,7 @@ local
    proc {SetUninitVars GlobalVars}
       {ForAll GlobalVars
        proc {$ V}
-          case {V getUse($)} == unused then {V setUse(wildcard)}
-          else skip
-          end
+          if {V getUse($)} == unused then {V setUse(wildcard)} end
        end}
    end
 
@@ -205,7 +203,7 @@ local
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsInter VsTl}
@@ -215,9 +213,8 @@ local
          {@designator markFirst(WarnFormals Rep)}
          {ForAll @formalArgs proc {$ V} {V setUse(wildcard)} end}
          {MarkFirstList @statements WarnFormals Rep}
-         case WarnFormals then
+         if WarnFormals then
             {CheckUses @formalArgs 'formal parameter' Rep}
-         else skip
          end
       end
    end
@@ -266,7 +263,7 @@ local
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -317,7 +314,7 @@ local
          globalVars <- {VariableUnion Vs PatternVs}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -385,7 +382,7 @@ local
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -419,7 +416,7 @@ local
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -438,7 +435,7 @@ local
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -538,7 +535,7 @@ local
          globalVars <- Vs1
          {FoldL Vs1
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -566,7 +563,7 @@ local
          globalVars <- Vs1
          {FoldL Vs1
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -579,9 +576,8 @@ local
          {@label markFirst(WarnFormals Rep)}
          {MarkFirstList @formalArgs WarnFormals Rep}
          {MarkFirstList @statements WarnFormals Rep}
-         case WarnFormals then
+         if WarnFormals then
             {@messageDesignator checkUse('message designator' Rep)}
-         else skip
          end
       end
    end
@@ -679,7 +675,7 @@ local
          globalVars <- {VariableUnion Vs @guardGlobalVars}
          {FoldL Vs
           proc {$ VsHd V VsTl}
-             case {Member V Ls} then VsHd = VsTl
+             if {Member V Ls} then VsHd = VsTl
              else VsHd = V|VsTl
              end
           end VsHd VsTl}
@@ -721,14 +717,15 @@ local
          @use
       end
       meth checkUse(Kind Rep)
-         case @origin \= user then skip
-         elsecase @use of unused then
-            {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                      msg: 'unused '#Kind#' '#pn(@printName))}
-         [] wildcard then
-            {Rep warn(coord: @coord kind: BindingAnalysisWarning
-                      msg: Kind#' '#pn(@printName)#' used only once')}
-         else skip
+         if @origin == user then
+            case @use of unused then
+               {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                         msg: 'unused '#Kind#' '#pn(@printName))}
+            [] wildcard then
+               {Rep warn(coord: @coord kind: BindingAnalysisWarning
+                         msg: Kind#' '#pn(@printName)#' used only once')}
+            else skip
+            end
          end
       end
    end
@@ -748,8 +745,7 @@ local
       meth CheckUse(Fs Rep)
          case Fs of X|Fr then
             case X of F#C#B then
-               case {IsDet B} then skip
-               else
+               if {IsFree B} then
                   {Rep warn(coord: C kind: BindingAnalysisWarning
                             msg: ('feature '#pn(@printName)#'.'#oz(F)#
                                   ' imported but never used'))}
@@ -764,7 +760,7 @@ local
 
    class AnnotateVariableOccurrence
       meth annotateGlobalVars(Ls VsHd VsTl) V = @variable in
-         case {Member V Ls} then VsHd = VsTl
+         if {Member V Ls} then VsHd = VsTl
          else VsHd = V|VsTl
          end
       end

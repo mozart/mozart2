@@ -97,17 +97,19 @@ in
             {FlattenSequenceSub S2 Inter Tl}
          [] nil then
             Hd = Tl
-         elsecase {X isRedundant($)} then
-            Hd = Tl
          else
-            Hd = X|Tl
+            if {X isRedundant($)} then
+               Hd = Tl
+            else
+               Hd = X|Tl
+            end
          end
       end
 
       fun {GetFirst X}
          case X of S1|S2 then First in
             First = {GetFirst S1}
-            case First == nil then {GetFirst S2}
+            case First of nil then {GetFirst S2}
             else First
             end
          [] nil then nil
@@ -127,7 +129,7 @@ in
    in
       proc {FlattenSequence X ?Res} Hd in
          {FlattenSequenceSub X Hd nil}
-         Res = case Hd == nil then First in
+         Res = case Hd of nil then First in
                   First = {GetFirst X}
                   case First of nil then [{New SkipNode init(unit)}]
                   else [First]
@@ -260,7 +262,7 @@ in
             FS2 = ""
             ""
          end#
-         case @isOpen then
+         if @isOpen then
             case @args of nil then '...' else GL#'...' end
          else ""
          end#')'#PO
@@ -297,7 +299,7 @@ in
          case @formalArgs of _|_ then GL#{LI @formalArgs GL R}
          [] nil then ""
          end#'}'#
-         case {self isClauseBody($)} then '   % clause body' else "" end#
+         if {self isClauseBody($)} then '   % clause body' else "" end#
          PO#IN#FS1#NL#
          {LI @statements NL R}#EX#NL#'end'
       end
@@ -329,7 +331,7 @@ in
          coord <- Coord
       end
       meth output(R $)
-         case {CheckOutput R realcore} then
+         if {CheckOutput R realcore} then
             Application, OutputApplication(R $)
          else P = {{@designator getVariable($)} getPrintName($)} in
             case P of '`ooExch`' then Attr New Old FS1 FS2 FS3 in
@@ -506,7 +508,7 @@ in
             Args = ""
          end
          {@label output2(R $ ?FS1)}#'('#PU#Args#
-         case @isOpen then
+         if @isOpen then
             case Args of nil then '...' else GL#'...' end
          else ""
          end#')'#PO
@@ -539,7 +541,7 @@ in
             Args = ""
          end
          {@label output2(R $ ?FS1)}#'('#PU#Args#
-         case @isOpen then
+         if @isOpen then
             case Args of nil then '...' else GL#'...' end
          else ""
          end#')'#PO
@@ -674,7 +676,7 @@ in
       end
       meth output(R $) FS1 in
          'class '#{@designator output2(R $ ?FS1)}#IN#FS1#
-         case @parents \= nil
+         if @parents \= nil
             orelse @properties \= nil
             orelse @attributes \= nil
             orelse @features \= nil
@@ -684,7 +686,7 @@ in
          end#
          case @parents of _|_ then FS2 in
             PU#'from'#GL#{LI2 @parents GL R ?FS2}#PO#FS2#
-            case @properties \= nil
+            if @properties \= nil
                orelse @attributes \= nil
                orelse @features \= nil
                orelse @methods \= nil
@@ -695,7 +697,7 @@ in
          end#
          case @properties of _|_ then FS3 in
             PU#'prop'#GL#{LI2 @properties GL R ?FS3}#PO#FS3#
-            case @attributes \= nil
+            if @attributes \= nil
                orelse @features \= nil
                orelse @methods \= nil
             then NL
@@ -710,7 +712,7 @@ in
                           ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                        end [FS1]#FS0}
             PU#'attr'#GL#list({Reverse FSs} GL)#PO#FS4#
-            case @features \= nil orelse @methods \= nil then NL else "" end
+            if @features \= nil orelse @methods \= nil then NL else "" end
          else ""
          end#
          case @features of F1|Fr then FS0 FS1 FSs FS5 in
@@ -720,7 +722,7 @@ in
                           ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                        end [FS1]#FS0}
             PU#'feat'#GL#list({Reverse FSs} GL)#PO#FS5#
-            case @methods \= nil then NL else "" end
+            if @methods \= nil then NL else "" end
          else ""
          end#{LI @methods NL R}#EX#NL#'end'
       end
@@ -762,7 +764,7 @@ in
       meth output(R $) FS1 FS2 in
          'meth '#{@label outputEscaped2(R $ ?FS1)}#'('#PU#
          {LI2 @formalArgs GL R ?FS2}#
-         case @isOpen then
+         if @isOpen then
             case @formalArgs of nil then '...' else GL#'...' end
          else ""
          end#') = '#{@messageDesignator output(R $)}#PO#IN#FS1#FS2#NL#
@@ -926,7 +928,7 @@ in
             {LI @localVars GL R}#EX#GL#'in'#IN#NL
          [] nil then ""
          end#{LI @guard NL R}#EX#NL#'then'#IN#NL#
-         case @kind == waitTop then 'skip   % top commit'
+         case @kind of waitTop then 'skip   % top commit'
          else {LI @statements NL R}
          end
       end
@@ -976,11 +978,11 @@ in
       prop final
       meth output2(_ $ ?FS)
          FS = ""
-         case @value < 0 then '~'#~@value else @value end
+         if @value < 0 then '~'#~@value else @value end
       end
       meth outputPattern2(_ _ $ ?FS)
          FS = ""
-         case @value < 0 then '~'#~@value else @value end
+         if @value < 0 then '~'#~@value else @value end
       end
    end
 
@@ -989,11 +991,11 @@ in
       prop final
       meth output2(_ $ ?FS)
          FS = ""
-         case @value < 0.0 then '~'#~@value else @value end
+         if @value < 0.0 then '~'#~@value else @value end
       end
       meth outputPattern2(_ _ $ ?FS)
          FS = ""
-         case @value < 0.0 then '~'#~@value else @value end
+         if @value < 0.0 then '~'#~@value else @value end
       end
    end
 
@@ -1032,23 +1034,27 @@ in
          VO = {New VariableOccurrence init(self Coord)}
       end
       meth output(R $) P = @printName in
-         case {CheckOutput R realcore} then pn(P)
-         elsecase P of '`unit`' then 'unit'
-         [] '`true`' then 'true'
-         [] '`false`' then 'false'
-         else pn(P)
+         if {CheckOutput R realcore} then pn(P)
+         else
+            case P of '`unit`' then 'unit'
+            [] '`true`' then 'true'
+            [] '`false`' then 'false'
+            else pn(P)
+            end
          end
       end
       meth outputEscaped(R $) P = @printName in
-         case {CheckOutput R realcore} then '!'#pn(P)
-         elsecase P of '`unit`' then 'unit'
-         [] '`true`' then 'true'
-         [] '`false`' then 'false'
-         else '!'#pn(P)
+         if {CheckOutput R realcore} then '!'#pn(P)
+         else
+            case P of '`unit`' then 'unit'
+            [] '`true`' then 'true'
+            [] '`false`' then 'false'
+            else '!'#pn(P)
+            end
          end
       end
       meth outputPattern(R Vs $) PrintName = @printName in
-         case {Some Vs fun {$ V} {V getPrintName($)} == PrintName end} then
+         if {Some Vs fun {$ V} {V getPrintName($)} == PrintName end} then
             Variable, output(R $)
          else
             Variable, outputEscaped(R $)
@@ -1077,7 +1083,7 @@ in
       end
       meth IsDenied(Fs Feature ?GV $)
          case Fs of X|Fr then
-            case Feature == X.1 then
+            if Feature == X.1 then
                X.3 = true
                GV = case X of _#_#_#GV0 then GV0
                     else unit
@@ -1139,11 +1145,11 @@ in
       meth OutputValue(R $)
          DebugOutputs =
          {FilterUnitsToVS
-          case {CheckOutput R debugValue} then
+          if {CheckOutput R debugValue} then
              NL#'%    value: '#SA.variableOccurrence, outputDebugValue($)
           else unit
           end|
-          case {CheckOutput R debugType} then
+          if {CheckOutput R debugType} then
              [NL#'%    type: '#{@variable outputDebugType($)}
               case {@variable outputDebugProps($)} of unit then unit
               elseof Ps then

@@ -23,20 +23,20 @@
 
 local
    fun {NextFreeIndex Used I}
-      case {Dictionary.member Used I} then {NextFreeIndex Used I + 1}
+      if {Dictionary.member Used I} then {NextFreeIndex Used I + 1}
       else I
       end
    end
 
    fun {NextFreeIndexWithoutPrintName Used Varnames I}
-      case {Dictionary.member Used I} orelse {Dictionary.member Varnames I}
+      if {Dictionary.member Used I} orelse {Dictionary.member Varnames I}
       then {NextFreeIndexWithoutPrintName Used Varnames I + 1}
       else I
       end
    end
 
    fun {NextFreeIndexWithEmptyPrintName Used Varnames I}
-      case {Dictionary.member Used I}
+      if {Dictionary.member Used I}
          orelse {Dictionary.condGet Varnames I ''} \= ''
       then {NextFreeIndexWithEmptyPrintName Used Varnames I + 1}
       else I
@@ -44,8 +44,8 @@ local
    end
 
    fun {LastUsedIndex Used I}
-      case {Dictionary.member Used I} then I
-      elsecase I =< 0 then ~1
+      if {Dictionary.member Used I} then I
+      elseif I =< 0 then ~1
       else {LastUsedIndex Used I - 1}
       end
    end
@@ -127,8 +127,8 @@ in
                   fun {$ In I} {Dictionary.get @GRegRef I}|In end nil}
          @LocalEnvSize = @HighestEverY + 1
          @CodeTl = nil
-         case self.debugInfoVarnamesSwitch then
-            case @HighestEverY == ~1 andthen GRegs == nil then
+         if self.debugInfoVarnamesSwitch then
+            if @HighestEverY == ~1 andthen GRegs == nil then
                % Emitting at least one `...Varname' instruction
                % flags this procedure as having been compiled with
                % the switch +debuginfovarnames:
@@ -180,9 +180,9 @@ in
             in
                {For 1 N 1
                 proc {$ I} X = VInstr.I in
-                   case {IsFree X} then X
-                   elsecase {BitArray.is X} then {BitArray.toList X}
-                   elsecase {IsRecord X}
+                   if {IsFree X} then X
+                   elseif {BitArray.is X} then {BitArray.toList X}
+                   elseif {IsRecord X}
                       andthen {HasFeature Continuations {Label X}}
                    then {Label X}
                    else X
@@ -201,22 +201,23 @@ in
                Emitter, DeallocateAndReturn()
             end
          [] vShared(_ Label Count Addr) then
-            case Addr == nil then
+            case Addr of nil then
                case @contLabels of nil then
                   Emitter, DeallocateAndReturn()
                [] ContLabel|_ then
                   Emitter, Emit(branch(ContLabel))
                end
-            elsecase {Dictionary.member @sharedDone Label} then
-               Emitter, Emit(branch(Label))
             else
-               {Dictionary.put @sharedDone Label true}
-               Emitter, Emit(lbl(Label))
-               case {Access Count} > 1 then
-                  Emitter, KillAllTemporaries()
-               else skip
+               if {Dictionary.member @sharedDone Label} then
+                  Emitter, Emit(branch(Label))
+               else
+                  {Dictionary.put @sharedDone Label true}
+                  Emitter, Emit(lbl(Label))
+                  if {Access Count} > 1 then
+                     Emitter, KillAllTemporaries()
+                  end
+                  Emitter, EmitAddr(Addr)
                end
-               Emitter, EmitAddr(Addr)
             end
          elseof VInstr then
             Emitter, FlushShortLivedTemps()
@@ -245,8 +246,7 @@ in
       end
       meth LetDie(AliveRS) RS = @LastAliveRS in
          % Let all registers die that do not occur in AliveRS.
-         case RS == AliveRS then skip
-         else
+         if RS \= AliveRS then
             LastAliveRS <- AliveRS
             {BitArray.nimpl RS AliveRS}
             Emitter, LetDieSub({BitArray.toList RS})
@@ -280,36 +280,33 @@ in
          [] vMakePermanent(_ Regs _) then
             {ForAll Regs
              proc {$ Reg}
-                case {Dictionary.member @regNames Reg} then
+                if {Dictionary.member @regNames Reg} then
                    case Emitter, GetPerm(Reg $) of none then Y in
                       Emitter, AllocatePerm(Reg ?Y)
                       case Emitter, GetTemp(Reg $) of none then
                          Emitter, Emit(createVariable(Y))
-                         case self.debugInfoNameVarsSwitch then N X1 X2 in
+                         if self.debugInfoNameVarsSwitch then N X1 X2 in
                             N = {Dictionary.get @regNames Reg}
                             Emitter, AllocateShortLivedTemp(?X1)
                             Emitter, AllocateShortLivedTemp(?X2)
                             Emitter, Emit(move(Y X1))
                             Emitter, Emit(putConstant(N X2))
                             Emitter, Emit(callBI('nameVariable' [X1 X2]#nil))
-                         else skip
                          end
                       elseof X then
                          Emitter, Emit(move(X Y))
                       end
                    else skip
                    end
-                else skip
                 end
              end}
          [] vClear(_ Regs _) then
-            case @continuations == nil then skip
-            else
+            if @continuations \= nil then
                {ForAll Regs
                 proc {$ Reg}
                    case Emitter, GetPerm(Reg $) of none then skip
                    elseof Y=y(_) then
-                      case Emitter, IsLast(Reg $) then skip
+                      if Emitter, IsLast(Reg $) then skip
                       else Y2 in
                          Emitter, FreeReg(Reg)
                          Emitter, AllocateUnnamedPerm(Reg ?Y2)
@@ -322,13 +319,13 @@ in
          [] vUnify(_ Reg1 Reg2 _) then R1 R2 in
             Emitter, GetReg(Reg1 ?R1)
             Emitter, GetReg(Reg2 ?R2)
-            case R1 == none then
-               case R2 == none then R1 in
+            case R1 of none then
+               case R2 of none then R1 in
                   Emitter, PredictReg(Reg1 ?R1)
                   Emitter, Emit(createVariable(R1))
                else skip
                end
-            elsecase R2 == none then skip
+            elsecase R2 of none then skip
             else Emitter, Emit(unify(R1 R2))
             end
             % If either register has no temporary, assign to it the other's
@@ -359,7 +356,7 @@ in
             Emitter, Emit(failure)
          [] vEquateNumber(_ Number Reg _) then
             case Emitter, GetReg(Reg $) of none then
-               case Emitter, IsLast(Reg $) then skip
+               if Emitter, IsLast(Reg $) then skip
                else
                   {Dictionary.put @Temporaries Reg ThisAddr}
                   {Dictionary.put @Permanents Reg ThisAddr}
@@ -369,13 +366,13 @@ in
             end
          [] vEquateLiteral(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
-               case self.debugInfoControlSwitch then R in
+               if self.debugInfoControlSwitch then R in
                   % This is needed for 'name generation' step points:
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(putConstant(Literal R))
-               elsecase Emitter, IsLast(Reg $) then skip
-               elsecase Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal 0
-                                                   nil Cont $)
+               elseif Emitter, IsLast(Reg $) then skip
+               elseif Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal 0
+                                                 nil Cont $)
                then skip
                else
                   {Dictionary.put @Temporaries Reg ThisAddr}
@@ -385,30 +382,29 @@ in
                Emitter, Emit(getLiteral(Literal R))
             end
          [] vEquateRecord(_ Literal RecordArity Reg VArgs Cont) then
-            case Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity
-                                            VArgs Cont $)
+            if Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity
+                                          VArgs Cont $)
             then skip
             else
                Emitter, CreateNonlinearRegs(VArgs [Reg] _)
                case Emitter, GetReg(Reg $) of none then
-                  case Emitter, IsLast(Reg $) then skip
+                  if Emitter, IsLast(Reg $) then skip
                   else R in
                      Emitter, PredictReg(Reg ?R)
                      Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
                   end
                elseof R then
-                  case Emitter, IsLast(Reg $) then
-                     case {OccursInVArgs VArgs Reg} then skip
+                  if Emitter, IsLast(Reg $) then
+                     if {OccursInVArgs VArgs Reg} then skip
                      else Emitter, FreeReg(Reg)
                      end
-                  else skip
                   end
                   Emitter, EmitRecordRead(Literal RecordArity R VArgs)
                end
             end
          [] vGetVariable(_ Reg _) then
             case Emitter, GetReg(Reg $) of none then
-               case Emitter, IsLast(Reg $) then
+               if Emitter, IsLast(Reg $) then
                   Emitter, Emit(getVoid(1))
                else R in
                   Emitter, PredictReg(Reg ?R)
@@ -422,12 +418,12 @@ in
          in
             BIInfo = {Builtins.getInfo Builtinname}
             NewCont2 =
-            case {CondSelect BIInfo test false} then
+            if {CondSelect BIInfo test false} then
                Reg = {List.last Regs}
             in
                case Cont
                of vTestBool(_ !Reg Addr1 Addr2 _ Coord NewCont InitsRS) then
-                  case {Not self.debugInfoControlSwitch}
+                  if {Not self.debugInfoControlSwitch}
                      andthen Emitter, IsFirst(Reg $)
                      andthen Emitter, DoesNotOccurIn(Reg Addr1 $)
                      andthen Emitter, DoesNotOccurIn(Reg Addr2 $)
@@ -471,7 +467,7 @@ in
                      else ~1
                      end
                   in
-                     case TestCont \= ~1 then TestCont
+                     if TestCont \= ~1 then TestCont
                      else
                         vTestBuiltin(OccsRS Builtinname Regs Addr1 Addr2
                                      NewCont InitsRS)
@@ -482,50 +478,56 @@ in
                end
             else ~1
             end
-            case NewCont2 \= ~1 then
+            if NewCont2 \= ~1 then
                continuations <- NewCont2|@continuations.2
-            elsecase Builtinname of 'getReturn' then [Reg] = Regs in
-               case Emitter, GetReg(Reg $) of none then R in
-                  Emitter, PredictReg(Reg ?R)
-                  Emitter, Emit(getReturn(R))
-               elseof R then X in
-                  Emitter, AllocateShortLivedTemp(?X)
-                  Emitter, Emit(getReturn(X))
-                  Emitter, Emit(unify(R X))
+            else
+               case Builtinname of 'getReturn' then [Reg] = Regs in
+                  case Emitter, GetReg(Reg $) of none then R in
+                     Emitter, PredictReg(Reg ?R)
+                     Emitter, Emit(getReturn(R))
+                  elseof R then X in
+                     Emitter, AllocateShortLivedTemp(?X)
+                     Emitter, Emit(getReturn(X))
+                     Emitter, Emit(unify(R X))
+                  end
+               else XsIn XsOut Unifies in
+                  Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
+                                               false ?XsOut ?Unifies)
+                  Emitter, DebugEntry(Coord 'call')
+                  Emitter, Emit(callBI(Builtinname XsIn#XsOut))
+                  Emitter, EmitUnifies(Unifies)
+                  Emitter, DebugExit(Coord 'call')
                end
-            else XsIn XsOut Unifies in
-               Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
-                                            false ?XsOut ?Unifies)
-               Emitter, DebugEntry(Coord 'call')
-               Emitter, Emit(callBI(Builtinname XsIn#XsOut))
-               Emitter, EmitUnifies(Unifies)
-               Emitter, DebugExit(Coord 'call')
             end
          [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
                Instr = genCall(gci(R IsMethod Literal false RecordArity) 0)
                Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
-            elsecase IsMethod then Instr R Which in
-               Instr = applMeth(ami(Literal RecordArity) R)
-               Which = case @continuations == nil then non_y   % tailApplMeth
-                       else any
-                       end
-               Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
-            else Instr R Arity Which in
-               Instr = call(R Arity)
-               Which = case @continuations == nil then non_y   % tailCall
-                       else any
-                       end
-               Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
+            else
+               if IsMethod then Instr R Which in
+                  Instr = applMeth(ami(Literal RecordArity) R)
+                  Which = case @continuations of nil then
+                             non_y   % tailApplMeth
+                          else any
+                          end
+                  Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
+               else Instr R Arity Which in
+                  Instr = call(R Arity)
+                  Which = case @continuations of nil then non_y   % tailCall
+                          else any
+                          end
+                  Emitter,
+                  GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
+               end
             end
          [] vCall(_ Reg Regs Coord _) then Instr R Arity Which in
             Instr = call(R Arity)
-            Which = case @continuations == nil then non_y   % tailCall
+            Which = case @continuations of nil then non_y   % tailCall
                     else any
                     end
             Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
          [] vFastCall(_ PredicateRef Regs Coord _) then Instr in
-            case {IsProcedure PredicateRef} then
+            if {IsProcedure PredicateRef} then
                Instr = marshalledFastCall(PredicateRef {Length Regs} * 2)
             else
                Instr = genFastCall(PredicateRef {Length Regs} * 2)
@@ -534,21 +536,20 @@ in
          [] vApplMeth(_ Reg Literal RecordArity Regs Coord _) then
             Instr R Which in
             Instr = applMeth(ami(Literal RecordArity) R)
-            Which = case @continuations == nil then non_y   % tailApplMeth
+            Which = case @continuations of nil then non_y   % tailApplMeth
                     else any
                     end
             Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
          [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord Cont) then
-            case AlwaysSucceeds then skip
-            elsecase Emitter, IsFirst(Reg1 $) then
+            if AlwaysSucceeds then skip
+            elseif Emitter, IsFirst(Reg1 $) then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: ('dot access on undetermined variable suspends '#
                            'forever'))}
-            else skip
             end
             case Emitter, GetReg(Reg2 $) of none then
-               case AlwaysSucceeds andthen Emitter, IsLast(Reg2 $) then skip
+               if AlwaysSucceeds andthen Emitter, IsLast(Reg2 $) then skip
                else X1 X2 in
                   Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
                   Emitter, PredictBuiltinOutput(Reg2 ?X2)
@@ -574,7 +575,7 @@ in
             Emitter, Emit(inlineAssign(Literal X cache))
          [] vGetSelf(_ Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
-               case Emitter, IsLast(Reg $) then skip
+               if Emitter, IsLast(Reg $) then skip
                else
                   {Dictionary.put @Temporaries Reg ThisAddr}
                   {Dictionary.put @Permanents Reg ThisAddr}
@@ -588,7 +589,7 @@ in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, Emit(setSelf(X))
          [] vDefinition(_ Reg PredId PredicateRef GRegs Code Cont) then
-            case Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
+            if Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
                andthen PredicateRef == unit
             then skip
             else Rs X DoUnify StartLabel ContLabel Code1 Code2 in
@@ -600,7 +601,7 @@ in
                         elseof XYG then R = XYG
                         end
                      end}
-               case Emitter, IsFirst(Reg $) then
+               if Emitter, IsFirst(Reg $) then
                   Emitter, PredictTemp(Reg ?X)
                   DoUnify = false
                else
@@ -616,14 +617,13 @@ in
                Emitter, Emit(endDefinition(StartLabel))
                {ForAll Code2 proc {$ Instr} Emitter, Emit(Instr) end}
                Emitter, Emit(lbl(ContLabel))
-               case DoUnify then
+               if DoUnify then
                   Emitter, Emit(unify(X Emitter, GetReg(Reg $)))
-               else skip
                end
             end
          [] vDefinitionCopy(_ Reg1 Reg2 PredId PredicateRef GRegs Code Cont)
          then
-            case Emitter, IsFirst(Reg2 $) andthen Emitter, IsLast(Reg2 $)
+            if Emitter, IsFirst(Reg2 $) andthen Emitter, IsLast(Reg2 $)
                andthen PredicateRef == unit
             then skip
             else Rs X StartLabel ContLabel Code1 Code2 in
@@ -875,7 +875,7 @@ in
             OldContLabels = @contLabels
             contLabels <- nil
             OldLocalEnvsInhibited = @LocalEnvsInhibited
-            case HasLocalEnv then skip
+            if HasLocalEnv then skip
             else
                LocalEnvsInhibited <- true
             end
@@ -886,20 +886,19 @@ in
             Emitter, Emit(lbl(ContLabel))
             Emitter, DebugExit(Coord 'thread')
          [] vLockThread(_ Reg Coord Cont Dest) then X in
-            case Emitter, IsFirst(Reg $) then
+            if Emitter, IsFirst(Reg $) then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'lock suspends forever'
                      items: [hint(l: 'Hint'
                                   m: 'undetermined variable used as lock')])}
-            else skip
             end
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, DebugEntry(Coord 'lock')
             Emitter, Emit(lockThread(Dest X))
          [] vLockEnd(_ Coord Cont Dest) then ContLabel Dest0 in
             Emitter, Dereference(Cont ?ContLabel ?Dest0)
-            Dest = case self.debugInfoControlSwitch then ContLabel
+            Dest = if self.debugInfoControlSwitch then ContLabel
                    else Dest0
                    end
             Emitter, DoInits(nil Cont)
@@ -915,7 +914,7 @@ in
       %%
 
       meth DebugEntry(Coord Comment)
-         case {IsStep Coord} then FileName Line Column Kind in
+         if {IsStep Coord} then FileName Line Column Kind in
             case Coord of fineStep(F L C) then
                FileName = F Line = L Column = C Kind = 'f'
             [] fineStep(F L C _ _ _) then
@@ -928,11 +927,10 @@ in
             Emitter,
             Emit(debugEntry(FileName Line Column
                             {VirtualString.toAtom Comment#'/'#Kind}))
-         else skip
          end
       end
       meth DebugExit(Coord Comment)
-         case {IsStep Coord} then FileName Line Column Kind in
+         if {IsStep Coord} then FileName Line Column Kind in
             case Coord of fineStep(F L C) then
                FileName = F Line = L Column = C Kind = 'f'
             [] fineStep(_ _ _ F L C) then
@@ -945,7 +943,6 @@ in
             Emitter,
             Emit(debugExit(FileName Line Column
                            {VirtualString.toAtom Comment#'/'#Kind}))
-         else skip
          end
       end
 
@@ -954,17 +951,17 @@ in
          % followed by a unary vCall instruction with the same register as
          % argument and this register is linear, we emit a sendMsg instruction
          % for the sequence.
-         case self.debugInfoControlSwitch then false
-         elsecase Emitter, IsFirst(Reg $) then
+         if self.debugInfoControlSwitch then false
+         elseif Emitter, IsFirst(Reg $) then
             case Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
-               case Emitter, DoesNotOccurIn(Reg Cont2 $) then
+               if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)
                   true
                else false
                end
             elseof vGenCall(_ ObjReg false _ _ [!Reg] Coord Cont2) then
-               case Emitter, DoesNotOccurIn(Reg Cont2 $) then
+               if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)
                   true
@@ -972,7 +969,7 @@ in
                end
             elseof vCallBuiltin(_ 'New' [ClassReg !Reg ObjReg] Coord Cont2)
             then
-               case Emitter, DoesNotOccurIn(Reg Cont2 $) then
+               if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   X1 X2
                in
                   Emitter, AllocateAndInitializeAnyTemp(ClassReg ?X1)
@@ -993,7 +990,7 @@ in
          Instr Arity R Regs ArgInits OldContinuations
       in
          Instr = sendMsg(Literal R RecordArity cache)
-         Arity = case {IsInt RecordArity} then RecordArity
+         Arity = if {IsInt RecordArity} then RecordArity
                  else {Length RecordArity}
                  end
          Emitter, ReserveTemps(Arity + 1)
@@ -1007,7 +1004,7 @@ in
              [] value(Reg) then
                 (Reg|Regs)#ArgInits
              [] record(Literal RecordArity VArgs) then
-                case {Dictionary.member @UsedX I - 1} then X in
+                if {Dictionary.member @UsedX I - 1} then X in
                    Emitter, AllocateShortLivedTemp(?X)
                    Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
                    (~I|Regs)#((I - 1)#move(X x(I - 1))|ArgInits)
@@ -1072,17 +1069,19 @@ in
                       Emitter, Emit(move(Result Y))
                    else skip   % 3)
                    end
-                elsecase {Member Reg Regs} then   % 4)
-                   % try to emit the delayed initialization into a permanent
-                   % (does not work for vGetSelf!):
-                   case Emitter, GetPerm(Reg $) of none then X Y in
-                      % the initialization needs a temporary as destination:
-                      Emitter, GetTemp(Reg ?X)   % ... emitting it
-                      Emitter, AllocatePerm(Reg ?Y)
-                      Emitter, Emit(move(X Y))
-                   else skip
+                else
+                   if {Member Reg Regs} then   % 4)
+                      % try to emit the delayed initialization into a permanent
+                      % (does not work for vGetSelf!):
+                      case Emitter, GetPerm(Reg $) of none then X Y in
+                         % the initialization needs a temporary as destination:
+                         Emitter, GetTemp(Reg ?X)   % ... emitting it
+                         Emitter, AllocatePerm(Reg ?Y)
+                         Emitter, Emit(move(X Y))
+                      else skip
+                      end
+                   else skip   % 5)
                    end
-                else skip   % 5)
                 end
              end}
          [] nil then skip
@@ -1112,50 +1111,52 @@ in
                      items: [hint(l: 'Hint'
                                   m: ('undetermined variable called '#
                                       'as procedure'))])}
-               case Emitter, IsLast(Reg $) orelse WhichReg == non_y then
+               if Emitter, IsLast(Reg $) orelse WhichReg == non_y then
                   Emitter, AllocateAnyTemp(Reg ?R0)
                else
                   Emitter, AllocatePerm(Reg ?R0)
                end
                Emitter, Emit(createVariable(R0))
-            elsecase Emitter, IsLast(Reg $) then
-               % Here we know: Reg has been allocated and is not needed
-               % any longer after the call instruction.  Thus, either a
-               % permanent or a temporary register is fine.
-               % If it is a temporary however, it must not collide with
-               % an argument index.
-               case Emitter, GetPerm(Reg $) of none then X in
-                  Emitter, GetTemp(Reg ?X)
-                  case X.1 < Arity then NewX in
-                     Emitter, FreeReg(Reg)
-                     Emitter, ReserveTemps(Arity)
-                     Emitter, AllocateAnyTemp(Reg ?NewX)
-                     Emitter, Emit(move(X NewX))
-                  else skip
-                  end
-               elsecase WhichReg == non_y then
-                  case Emitter, GetTemp(Reg $) of X=x(I) then
-                     case I < Arity then NewX in
+            else
+               if Emitter, IsLast(Reg $) then
+                  % Here we know: Reg has been allocated and is not needed
+                  % any longer after the call instruction.  Thus, either a
+                  % permanent or a temporary register is fine.
+                  % If it is a temporary however, it must not collide with
+                  % an argument index.
+                  case Emitter, GetPerm(Reg $) of none then X in
+                     Emitter, GetTemp(Reg ?X)
+                     if X.1 < Arity then NewX in
                         Emitter, FreeReg(Reg)
                         Emitter, ReserveTemps(Arity)
                         Emitter, AllocateAnyTemp(Reg ?NewX)
                         Emitter, Emit(move(X NewX))
+                     end
+                  elsecase WhichReg of non_y then
+                     case Emitter, GetTemp(Reg $) of X=x(I) then
+                        if I < Arity then NewX in
+                           Emitter, FreeReg(Reg)
+                           Emitter, ReserveTemps(Arity)
+                           Emitter, AllocateAnyTemp(Reg ?NewX)
+                           Emitter, Emit(move(X NewX))
+                        end
                      else skip
                      end
                   else skip
                   end
-               else skip
+               else
+                  case Emitter, GetPerm(Reg $) of none then X Y in
+                     % Here we know: Reg has only been allocated as a temporary
+                     % but is still needed after the call instruction.  Thus,
+                     % we have to make it permanent.
+                     Emitter, GetTemp(Reg ?X)
+                     Emitter, AllocatePerm(Reg ?Y)
+                     Emitter, Emit(move(X Y))
+                  else
+                     % Reg is already permanent.
+                     skip
+                  end
                end
-            elsecase Emitter, GetPerm(Reg $) of none then X Y in
-               % Here we know: Reg has only been allocated as a temporary
-               % but is still needed after the call instruction.  Thus, we
-               % have to make it permanent.
-               Emitter, GetTemp(Reg ?X)
-               Emitter, AllocatePerm(Reg ?Y)
-               Emitter, Emit(move(X Y))
-            else
-               % Reg is already permanent.
-               skip
             end
             case WhichReg of non_y then
                % The instruction requires Reg not to reside in a Y register:
@@ -1180,12 +1181,12 @@ in
          % emit the call instruction.
          %
          Emitter, SetArguments(Arity ArgInits Regs)
-         case self.debugInfoControlSwitch then
+         if self.debugInfoControlSwitch then
             case R0 of x(I) then
                % this test is needed to ensure correctness, since
                % the emulator does not save X registers with
                % indices > Arity:
-               case I > Arity then
+               if I > Arity then
                   Emitter, Emit(move(R0 R=x(Arity)))
                else
                   R = R0
@@ -1230,65 +1231,69 @@ in
          Arity <- TheArity
          {List.forAllTailInd Regs
           proc {$ Position Reg|Regr} I = Position - 1 in
-             case {Dictionary.member @DelayedInitsDict I} then
-                case Reg < 0 then skip
-                else {BitArray.set @LastAliveRS Reg}
+             if {Dictionary.member @DelayedInitsDict I} then
+                if Reg >= 0 then
+                   {BitArray.set @LastAliveRS Reg}
                 end
-             elsecase {Dictionary.condGet @Temporaries Reg none}
-             of vEquateNumber(_ Number _ _) then   % 1)
-                {Dictionary.remove @Temporaries Reg}
-                {Dictionary.remove @Permanents Reg}
-                {Dictionary.put @DelayedInitsDict I
-                 putConstant(Number x(I))}
-             [] vEquateLiteral(_ Literal _ _) then   % 1)
-                {Dictionary.remove @Temporaries Reg}
-                {Dictionary.remove @Permanents Reg}
-                {Dictionary.put @DelayedInitsDict I
-                 putConstant(Literal x(I))}
-             [] vGetSelf(_ _ _) then   % 1)
-                {Dictionary.remove @Temporaries Reg}
-                {Dictionary.remove @Permanents Reg}
-                {Dictionary.put @DelayedInitsDict I
-                 getSelf(x(I))}
-             else X Instr in
-                Emitter, GetTemp(Reg ?X)
-                case X == x(I) then
-                   % Optimize the special case that the register
-                   % already is located in its destination.
-                   'skip'
-                elsecase Emitter, GetPerm(Reg $) of none then
-                   case X of none then
-                      {BitArray.set @LastAliveRS Reg}
-                      case {Member Reg Regr} then
-                         % special handling for nonlinearities:
-                         case {Dictionary.member @UsedX I} then NewX J in
-                            Emitter, AllocateAnyTemp(Reg ?NewX)
-                            Emitter, Emit(createVariable(NewX))
-                            NewX = x(J)
+             else
+                case {Dictionary.condGet @Temporaries Reg none}
+                of vEquateNumber(_ Number _ _) then   % 1)
+                   {Dictionary.remove @Temporaries Reg}
+                   {Dictionary.remove @Permanents Reg}
+                   {Dictionary.put @DelayedInitsDict I
+                    putConstant(Number x(I))}
+                [] vEquateLiteral(_ Literal _ _) then   % 1)
+                   {Dictionary.remove @Temporaries Reg}
+                   {Dictionary.remove @Permanents Reg}
+                   {Dictionary.put @DelayedInitsDict I
+                    putConstant(Literal x(I))}
+                [] vGetSelf(_ _ _) then   % 1)
+                   {Dictionary.remove @Temporaries Reg}
+                   {Dictionary.remove @Permanents Reg}
+                   {Dictionary.put @DelayedInitsDict I
+                    getSelf(x(I))}
+                else X Instr in
+                   Emitter, GetTemp(Reg ?X)
+                   if X == x(I) then
+                      % Optimize the special case that the register
+                      % already is located in its destination.
+                      'skip'
+                   else
+                      case Emitter, GetPerm(Reg $) of none then
+                         case X of none then
+                            {BitArray.set @LastAliveRS Reg}
+                            if {Member Reg Regr} then
+                               % special handling for nonlinearities:
+                               if {Dictionary.member @UsedX I} then NewX J in
+                                  Emitter, AllocateAnyTemp(Reg ?NewX)
+                                  Emitter, Emit(createVariable(NewX))
+                                  NewX = x(J)
+                                  {Dictionary.put @AdjDict J
+                                   I|{Dictionary.condGet @AdjDict J nil}}
+                                  move(NewX x(I))
+                               else NewX in
+                                  Emitter, AllocateThisTemp(I Reg ?NewX)
+                                  Emitter, Emit(createVariable(NewX))
+                                  {Dictionary.put @AdjDict I
+                                   I|{Dictionary.condGet @AdjDict I nil}}
+                                  'skip'
+                               end
+                            elseif Emitter, IsLast(Reg $) then   % 2)
+                               createVariable(x(I))
+                            else   % 3)
+                               delayedCreateVariableMove(Reg x(I))
+                            end
+                         [] x(J) then   % 4)
                             {Dictionary.put @AdjDict J
                              I|{Dictionary.condGet @AdjDict J nil}}
-                            move(NewX x(I))
-                         else NewX in
-                            Emitter, AllocateThisTemp(I Reg ?NewX)
-                            Emitter, Emit(createVariable(NewX))
-                            {Dictionary.put @AdjDict I
-                             I|{Dictionary.condGet @AdjDict I nil}}
-                            'skip'
+                            move(X x(I))
                          end
-                      elsecase Emitter, IsLast(Reg $) then   % 2)
-                         createVariable(x(I))
-                      else   % 3)
-                         delayedCreateVariableMove(Reg x(I))
+                      elseof YG then   % 5)
+                         move(YG x(I))
                       end
-                   [] x(J) then   % 4)
-                      {Dictionary.put @AdjDict J
-                       I|{Dictionary.condGet @AdjDict J nil}}
-                      move(X x(I))
-                   end
-                elseof YG then   % 5)
-                   move(YG x(I))
-                end = Instr
-                {Dictionary.put @DelayedInitsDict I Instr}
+                   end = Instr
+                   {Dictionary.put @DelayedInitsDict I Instr}
+                end
              end
           end}
          %
@@ -1298,7 +1303,7 @@ in
          Stack <- nil
          {For 0 @Arity - 1 1
           proc {$ I}
-             case {Dictionary.member @DoneDict I} then skip
+             if {Dictionary.member @DoneDict I} then skip
              else Emitter, OrderMoves(I _)
              end
           end}
@@ -1337,7 +1342,7 @@ in
                       elseof M then M
                       end}
                   end ID}
-         case MinID == ID then
+         if MinID == ID then
             case Emitter, GetCycle(@Stack I $) of [I] then Instr in
                Instr = {Dictionary.get @DelayedInitsDict I}
                case Instr of move(_ _) then
@@ -1353,12 +1358,11 @@ in
                      fun {$ J I} Emitter, Emit(move(x(I) x(J))) I end I1}
                Emitter, Emit(move(X x(In)))
             end
-         else skip
          end
       end
       meth GetCycle(Js I ?Cycle) J|Jr = Js in
          {Dictionary.put @DoneDict I @Arity}
-         case J == I then
+         if J == I then
             Cycle = [I]
             Stack <- Jr
          else
@@ -1371,7 +1375,7 @@ in
          case VArgs of VArg|VArgr then
             case VArg of value(Reg) then
                case Emitter, GetReg(Reg $) of none then
-                  case {Member Reg Regs} then R in
+                  if {Member Reg Regs} then R in
                      Emitter, PredictReg(Reg ?R)
                      Emitter, Emit(createVariable(R))
                      Emitter, CreateNonlinearRegs(VArgr Regs $)
@@ -1408,7 +1412,7 @@ in
                IHd = setPredicateRef(PredicateRef)|IInter
             [] value(Reg) then
                case Emitter, GetReg(Reg $) of none then
-                  case Emitter, IsLast(Reg $) then
+                  if Emitter, IsLast(Reg $) then
                      IHd = setVoid(1)|IInter
                   else R in
                      Emitter, PredictReg(Reg ?R)
@@ -1449,7 +1453,7 @@ in
             [] value(Reg) then
                SHd = SInter
                case Emitter, GetReg(Reg $) of none then
-                  case Emitter, IsLast(Reg $) then
+                  if Emitter, IsLast(Reg $) then
                      Emitter, Emit(unifyVoid(1))
                   else R in
                      Emitter, PredictReg(Reg ?R)
@@ -1473,7 +1477,7 @@ in
             Reg|Regr = Regs
             X|Xr = XsIn
          in
-            case IMod then
+            if IMod then
                Emitter, AllocateShortLivedTemp(?X)
                case Emitter, GetReg(Reg $) of none then R in
                   Emitter, PredictReg(Reg ?R)
@@ -1494,16 +1498,18 @@ in
       end
       meth AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
          case Regs of Reg|Regr then X|Xr = XsOut Ur in
-            case IsTestBuiltin then
+            if IsTestBuiltin then
                Emitter, AllocateShortLivedTemp(?X)
                Unifies = Ur
-            elsecase Emitter, GetReg(Reg $) of none then
-               %--** here it would be nicer to PredictBuiltinOutput
-               Emitter, PredictTemp(Reg ?X)
-               Unifies = Ur
-            elseof R then
-               Emitter, AllocateShortLivedTemp(?X)
-               Unifies = X#R|Ur
+            else
+               case Emitter, GetReg(Reg $) of none then
+                  %--** here it would be nicer to PredictBuiltinOutput
+                  Emitter, PredictTemp(Reg ?X)
+                  Unifies = Ur
+               elseof R then
+                  Emitter, AllocateShortLivedTemp(?X)
+                  Unifies = X#R|Ur
+               end
             end
             Emitter, AllocateBuiltinOutputs(Regr IsTestBuiltin ?Xr ?Ur)
          [] nil then
@@ -1620,17 +1626,16 @@ in
          else
             {ForAll {BitArray.toList InitsRS}
              proc {$ Reg}
-                case Emitter, IsFirst(Reg $) then Y in
+                if Emitter, IsFirst(Reg $) then Y in
                    Emitter, AllocatePerm(Reg ?Y)
                    Emitter, Emit(createVariable(Y))
-                else skip
                 end
              end}
          end
       end
       meth PrepareShared(Addr ?LocalEnv)
          case Addr of vShared(_ _ Count Addr2) then
-            case {Access Count} > 1 then
+            if {Access Count} > 1 then
                LocalEnv = false
                Emitter, DoInits(nil Addr)
             else
@@ -1642,15 +1647,16 @@ in
       end
       meth PushContLabel(Cont ?OldContLabels)
          OldContLabels = @contLabels
-         case Cont \= nil orelse self.debugInfoControlSwitch then
+         if Cont \= nil orelse self.debugInfoControlSwitch then
             contLabels <- Emitter, newLabel($)|OldContLabels
-         else skip
          end
       end
       meth PopContLabel(OldContLabels)
-         case @contLabels == OldContLabels then skip
-         elsecase @contLabels of ContLabel|_ then
-            Emitter, Emit(lbl(ContLabel))
+         if @contLabels == OldContLabels then skip
+         else
+            case @contLabels of ContLabel|_ then
+               Emitter, Emit(lbl(ContLabel))
+            end
          end
          contLabels <- OldContLabels
       end
@@ -1666,7 +1672,7 @@ in
                DestLabel = DeclLabel
             end
          [] vShared(_ Label2 _ Addr2) then
-            case Addr2 == nil andthen @contLabels == nil then
+            if Addr2 == nil andthen @contLabels == nil then
                DestLabel = DeclLabel
             else
                Emitter, DereferenceSub(Addr2 Label2 ?DestLabel)
@@ -1680,8 +1686,8 @@ in
          Emitter, Emit(return)
       end
       meth MayAllocateEnvLocally(Cont B $)
-         case @LocalEnvsInhibited then false
-         elsecase B andthen Cont == nil andthen @contLabels == nil
+         if @LocalEnvsInhibited then false
+         elseif B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
          then
@@ -1698,7 +1704,7 @@ in
          % either RestoreRegisterMapping or RestoreAllRegisterMappings;
          % else the attributes Permanents, UsedY and LowestFreeY do not
          % contain correct values.
-         case HasLocalEnv then
+         if HasLocalEnv then
             case Addr of vShared(_ _ _ _) then
                Emitter, EmitAddrInLocalEnvShared(Addr)
             else
@@ -1714,18 +1720,20 @@ in
       end
       meth EmitAddrInLocalEnvShared(Addr)
          case Addr of vShared(_ Label _ Addr2) then
-            case Addr2 == nil then
+            case Addr2 of nil then
                case @contLabels of nil then
                   Emitter, DeallocateAndReturn()
                [] ContLabel|_ then
                   Emitter, Emit(branch(ContLabel))
                end
-            elsecase {Dictionary.member @sharedDone Label} then
-               Emitter, Emit(branch(Label))
             else
-               {Dictionary.put @sharedDone Label true}
-               Emitter, Emit(lbl(Label))
-               Emitter, EmitAddrInLocalEnvShared(Addr2)
+               if {Dictionary.member @sharedDone Label} then
+                  Emitter, Emit(branch(Label))
+               else
+                  {Dictionary.put @sharedDone Label true}
+                  Emitter, Emit(lbl(Label))
+                  Emitter, EmitAddrInLocalEnvShared(Addr2)
+               end
             end
          else
             Emitter, Emit(allocateL(@LocalEnvSize))
@@ -1741,16 +1749,20 @@ in
          Emitter, GetReg(Reg $) == none
       end
       meth IsLast(Reg $)
-         case Reg < @minReg then false
-         elsecase @continuations of Cont|_ then
-            {Not {BitArray.test Cont.1 Reg}}
-         else true
+         if Reg < @minReg then false
+         else
+            case @continuations of Cont|_ then
+               {Not {BitArray.test Cont.1 Reg}}
+            else true
+            end
          end
       end
       meth DoesNotOccurIn(Reg Cont $)
-         case Reg < @minReg then false
-         elsecase Cont of nil then true
-         else {Not {BitArray.test Cont.1 Reg}}
+         if Reg < @minReg then false
+         else
+            case Cont of nil then true
+            else {Not {BitArray.test Cont.1 Reg}}
+            end
          end
       end
 
@@ -1770,7 +1782,7 @@ in
          % from the continuation which register to allocate it to.
          Result = {Dictionary.condGet @Permanents Reg none}
          case Result of none then
-            case Reg < @minReg then I in
+            if Reg < @minReg then I in
                I = @HighestUsedG + 1
                HighestUsedG <- I
                {Dictionary.put @GRegRef I Reg}
@@ -1797,7 +1809,7 @@ in
          % emit this, allocating a permanent for it.
          Result = {Dictionary.condGet @Permanents Reg none}
          case Result of none then
-            case Reg < @minReg then I in
+            if Reg < @minReg then I in
                I = @HighestUsedG + 1
                HighestUsedG <- I
                {Dictionary.put @GRegRef I Reg}
@@ -1831,10 +1843,9 @@ in
          % All temporaries lower than Index are reserved; i.e., LowestFreeX
          % and HighestEverX are set such that AllocateAnyTemp will not
          % choose any conflicting index.
-         case @HighestEverX >= Index then
-            case @LowestFreeX < Index then
+         if @HighestEverX >= Index then
+            if @LowestFreeX < Index then
                LowestFreeX <- {NextFreeIndex @UsedX Index}
-            else skip
             end
          else
             HighestEverX <- Index - 1
@@ -1845,7 +1856,7 @@ in
          case Emitter, GetTemp(Reg $) of none then I in
             I = @LowestFreeX
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-            case @HighestEverX >= I then skip
+            if @HighestEverX >= I then skip
             else HighestEverX <- I
             end
             {Dictionary.put @Temporaries Reg X=x(I)}
@@ -1855,11 +1866,10 @@ in
       end
       meth AllocateThisTemp(I Reg ?X)
          % Precondition: X register index I is free
-         case @LowestFreeX == I then
+         if @LowestFreeX == I then
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-         else skip
          end
-         case @HighestEverX >= I then skip
+         if @HighestEverX >= I then skip
          else HighestEverX <- I
          end
          {Dictionary.put @Temporaries Reg X=x(I)}
@@ -1870,12 +1880,11 @@ in
       end
       meth AllocateThisShortLivedTemp(I ?X)
          % Precondition: X register index I is free
-         case @LowestFreeX == I then
+         if @LowestFreeX == I then
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-         else skip
          end
-         case @HighestEverX >= I then skip
-         else HighestEverX <- I
+         if I > @HighestEverX then
+            HighestEverX <- I
          end
          {Dictionary.put @UsedX I 1}
          X = x(I)
@@ -1897,8 +1906,8 @@ in
             I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
                  @LowestFreeY}
             {Dictionary.put @LocalVarnames I ''}
-            case @HighestEverY >= I then skip
-            else HighestEverY <- I
+            if I > @HighestEverY then
+               HighestEverY <- I
             end
             {Dictionary.put @Permanents Reg Y=y(I)}
             {Dictionary.put @UsedY I 1}
@@ -1907,7 +1916,7 @@ in
       end
       meth AllocatePerm(Reg ?Y)
          case Emitter, GetPerm(Reg $) of none then I in
-            case self.debugInfoVarnamesSwitch then
+            if self.debugInfoVarnamesSwitch then
                case {Dictionary.condGet @regNames Reg ''} of '' then
                   I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
                        @LowestFreeY}
@@ -1917,16 +1926,15 @@ in
                        @LowestFreeY}
                   {Dictionary.put @LocalVarnames I PrintName}
                end
-               case I == @LowestFreeY then
+               if I == @LowestFreeY then
                   LowestFreeY <- {NextFreeIndex @UsedY I + 1}
-               else skip
                end
             else
                I = @LowestFreeY
                LowestFreeY <- {NextFreeIndex @UsedY I + 1}
             end
-            case @HighestEverY >= I then skip
-            else HighestEverY <- I
+            if I > @HighestEverY then
+               HighestEverY <- I
             end
             {Dictionary.put @Permanents Reg Y=y(I)}
             {Dictionary.put @UsedY I 1}
@@ -1960,8 +1968,8 @@ in
          case {Dictionary.condGet @UsedX I 0} of 0 then skip
          [] 1 then
             {Dictionary.remove @UsedX I}
-            case @LowestFreeX < I then skip
-            else LowestFreeX <- I
+            if I < @LowestFreeX then
+               LowestFreeX <- I
             end
          elseof N then
             {Dictionary.put @UsedX I N - 1}
@@ -1971,8 +1979,8 @@ in
          case {Dictionary.condGet @UsedY I 0} of 0 then skip
          [] 1 then
             {Dictionary.remove @UsedY I}
-            case @LowestFreeY < I then skip
-            else LowestFreeY <- I
+            if I < @LowestFreeY then
+               LowestFreeY <- I
             end
          elseof N then
             {Dictionary.put @UsedY I N - 1}
@@ -2021,7 +2029,7 @@ in
          case Cont of nil then
             Emitter, AllocateAnyTemp(Reg ?R)
          [] vMakePermanent(_ Regs Cont2) then
-            case {Member Reg Regs} then R = anyperm
+            if {Member Reg Regs} then R = anyperm
             else Emitter, PredictRegSub(Reg Cont2 ?R)
             end
          [] vEquateLiteral(_ _ MessageReg Cont2) then
@@ -2047,7 +2055,7 @@ in
                Emitter, PredictRegSub(Reg Cont2 ?R)
             end
          [] vCallBuiltin(_ _ Regs _ Cont) then
-            case {Member Reg Regs} then
+            if {Member Reg Regs} then
                Emitter, AllocateAnyTemp(Reg ?R)
             else
                Emitter, PredictRegSub(Reg Cont ?R)
@@ -2102,7 +2110,7 @@ in
          [] vThread(_ _ _ Cont InitsRS) then
             Emitter, PredictRegForInits(Reg InitsRS [Cont] ?R)
          [] vLockThread(_ Reg0 _ Cont _) then
-            case Reg == Reg0 then
+            if Reg == Reg0 then
                Emitter, AllocateAnyTemp(Reg ?R)
             else
                Emitter, PredictRegSub(Reg Cont ?R)
@@ -2118,8 +2126,8 @@ in
       end
       meth PredictArgReg(Reg Regs I Cont ?R)
          case Regs of RegI|RegRest then
-            case RegI == Reg orelse RegI == value(Reg) then
-               case {Dictionary.member @UsedX I} then
+            if RegI == Reg orelse RegI == value(Reg) then
+               if {Dictionary.member @UsedX I} then
                   Emitter, PredictArgReg(Reg RegRest I + 1 Cont ?R)
                else
                   Emitter, AllocateThisTemp(I Reg ?R)
@@ -2128,7 +2136,7 @@ in
                Emitter, PredictArgReg(Reg RegRest I + 1 Cont ?R)
             end
          [] nil then
-            case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
+            if Cont \= nil andthen {BitArray.test Cont.1 Reg} then
                R = anyperm
             else J in
                J = {NextFreeIndex @UsedX I}
@@ -2137,9 +2145,9 @@ in
          end
       end
       meth PredictRegForCall(Reg Reg0 Regs Cont ?R)
-         case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
+         if Cont \= nil andthen {BitArray.test Cont.1 Reg} then
             R = anyperm
-         elsecase Reg == Reg0 then I in
+         elseif Reg == Reg0 then I in
             I = {NextFreeIndex @UsedX {Length Regs}}
             Emitter, AllocateThisTemp(I Reg ?R)
          else
@@ -2147,7 +2155,7 @@ in
          end
       end
       meth PredictRegForInits(Reg InitsRS Addrs ?R)
-         case {BitArray.test InitsRS Reg} then
+         if {BitArray.test InitsRS Reg} then
             R = anyperm
          else
             Emitter, PredictRegForBranches(Addrs Reg ?R)
@@ -2155,7 +2163,7 @@ in
       end
       meth PredictRegForBranches(Addrs Reg ?R)
          case Addrs of Addr1|Addrr then
-            case Addr1 \= nil andthen {BitArray.test Addr1.1 Reg} then
+            if Addr1 \= nil andthen {BitArray.test Addr1.1 Reg} then
                Emitter, PredictRegSub(Reg Addr1 ?R)
             else
                Emitter, PredictRegForBranches(Addrr Reg ?R)
@@ -2165,7 +2173,7 @@ in
          end
       end
       meth PredictPermReg(Reg Cont ?R)
-         case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
+         if Cont \= nil andthen {BitArray.test Cont.1 Reg} then
             R = anyperm
          else
             Emitter, AllocateAnyTemp(Reg ?R)
@@ -2245,10 +2253,9 @@ in
       meth EmitMultiple(Instrs NewCodeTl)
 \ifdef DEBUG_EMIT
          proc {ShowAll Instrs}
-            case {IsDet Instrs} then I|Ir = Instrs in
+            if {IsDet Instrs} then I|Ir = Instrs in
                {System.show I}
                {ShowAll Ir}
-            else skip
             end
          end
       in

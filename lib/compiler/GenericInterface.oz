@@ -36,7 +36,7 @@ class GenericInterface
    end
    meth exit()
       lock
-         case @Compiler == unit then skip
+         case @Compiler of unit then skip
          else
             {Thread.terminate @ServerThread}
             {@Compiler unregister(@Port)}

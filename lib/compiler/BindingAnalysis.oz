@@ -33,7 +33,7 @@ local
 
    fun {Generate Env TopLevel Origin N} PrintName in
       PrintName = {ConcatenateAtomAndInt Origin N}
-      case {IsDeclared Env PrintName}
+      if {IsDeclared Env PrintName}
          orelse {TopLevel lookupVariableInEnv(PrintName $)} \= undeclared
       then
          {Generate Env TopLevel Origin N + 1}
@@ -79,7 +79,7 @@ in
       end
       meth bind(PrintName Coord ?V) X Env = @env (D#G#Hd#Tl)|Dr = Env in
          X = {Dictionary.condGet D PrintName undeclared}
-         case X == undeclared then NewTl in
+         case X of undeclared then NewTl in
             V = {New Core.variable init(PrintName user Coord)}
             {Dictionary.put D PrintName V}
             Tl = V|NewTl
@@ -92,7 +92,7 @@ in
          X Env = @env (D#G#Hd#Tl)|Dr = Env
       in
          X = {Dictionary.condGet D PrintName undeclared}
-         case X == undeclared then NewTl in
+         case X of undeclared then NewTl in
             V = {New Core.restrictedVariable init(PrintName Features Coord)}
             {Dictionary.put D PrintName V}
             Tl = V|NewTl
@@ -108,7 +108,7 @@ in
          X Env = @env (D#G#Hd#Tl)|Dr = Env
       in
          X = {Dictionary.condGet D PrintName undeclared}
-         case X == undeclared then NewTl in
+         case X of undeclared then NewTl in
             V = {New Core.variable init(PrintName user Coord)}
             {Dictionary.put D PrintName V}
             Tl = V|NewTl
@@ -128,11 +128,10 @@ in
                    msg: 'variable '#pn(PrintName)#' not introduced')}
             {BindingAnalysis, bind(PrintName Coord $) occ(Coord ?VO)}
          else
-            case {V isRestricted($)} then
+            if {V isRestricted($)} then
                {self.MyReporter
                 error(coord: Coord kind: BindingAnalysisError
                       msg: 'illegal use of imported variable '#pn(PrintName))}
-            else skip
             end
             {V occ(Coord ?VO)}
          end
@@ -147,14 +146,13 @@ in
             {BindingAnalysis, bind(PrintName Coord $) occ(Coord ?VO)}
          else GV in
             {V isRestricted(?IsImport)}
-            case {V isDenied(Feature ?GV $)} then
+            if {V isDenied(Feature ?GV $)} then
                {self.MyReporter
                 error(coord: Coord kind: BindingAnalysisError
                       msg: 'illegal use of imported variable '#pn(PrintName)
                       items: [hint(l: 'Unknown feature' m: oz(Feature))])}
-            else skip
             end
-            case GV \= unit then
+            if GV \= unit then
                {GV occ(Coord ?VO)}
             else
                {V occ(Coord ?VO)}
@@ -176,7 +174,7 @@ in
       meth Refer(PrintName Coord Env ?V)
          case Env of E|Er then X D#_#_#_ = E in
             X = {Dictionary.condGet D PrintName undeclared}
-            case X == undeclared then
+            case X of undeclared then
                BindingAnalysis, Refer(PrintName Coord Er ?V)
             else
                V = X

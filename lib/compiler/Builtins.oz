@@ -65,29 +65,29 @@ in
 
    {Record.forAllInd BuiltinTable
     proc {$ Name Entry}
-       case {HasFeature Entry types} andthen {IsList Entry.types} then skip
+       if {HasFeature Entry types} andthen {IsList Entry.types} then skip
        else {E Name types}
        end
-       case {HasFeature Entry det} andthen {IsList Entry.det} then skip
+       if {HasFeature Entry det} andthen {IsList Entry.det} then skip
        else {E Name det}
        end
-       case {Length Entry.types} == {Length Entry.det} then skip
+       if {Length Entry.types} == {Length Entry.det} then skip
        else {E Name typesdet}
        end
-       case {Not {HasFeature Entry imods}} then skip
-       elsecase {IsList Entry.imods} then skip
-       elsecase {Length Entry.imods} =< Entry.iarity then skip
+       if {Not {HasFeature Entry imods}} then skip
+       elseif {IsList Entry.imods} then skip
+       elseif {Length Entry.imods} =< Entry.iarity then skip
        else {E Name imods}
        end
-       case {Not {HasFeature Entry test}} then skip
-       elsecase {IsBool Entry.test} then skip
+       if {Not {HasFeature Entry test}} then skip
+       elseif {IsBool Entry.test} then skip
        else {E Name test}
        end
-       case {HasFeature Entry negated} then NBI = Entry.negated in
-          case {IsAtom NBI} then
-             case {HasFeature Entry test} then
-                case {HasFeature BuiltinTable NBI} then
-                   case {HasFeature BuiltinTable.NBI test} then skip
+       if {HasFeature Entry negated} then NBI = Entry.negated in
+          if {IsAtom NBI} then
+             if {HasFeature Entry test} then
+                if {HasFeature BuiltinTable NBI} then
+                   if {HasFeature BuiltinTable.NBI test} then skip
                    else {E Name negatedNotTest2}
                    end
                 else {E Name undefinedNegatedBuiltin}
@@ -98,8 +98,8 @@ in
           end
        else skip
        end
-       case {Not {HasFeature Entry doesNotReturn}} then skip
-       elsecase {IsBool Entry.doesNotReturn} then skip
+       if {Not {HasFeature Entry doesNotReturn}} then skip
+       elseif {IsBool Entry.doesNotReturn} then skip
        else {E Name doesNotReturn}
        end
     end}

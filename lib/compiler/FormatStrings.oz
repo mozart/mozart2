@@ -28,12 +28,12 @@
 local
    local
       proc {EscapeVariableChar Hd C|Cr Tl}
-         case Cr of nil then Hd = C|Tl   % terminating quote
-         elsecase C == &` orelse C == &\\ then Hd = &\\|C|Tl
-         elsecase C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
-         elsecase C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
-         elsecase C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
-         elsecase C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
+         if Cr == nil then Hd = C|Tl   % terminating quote
+         elseif C == &` orelse C == &\\ then Hd = &\\|C|Tl
+         elseif C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
+         elseif C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
+         elseif C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
+         elseif C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
          else Hd = C|Tl
          end
       end
@@ -48,8 +48,8 @@ local
 
    local
       fun {IndentSub N VS}
-         case N >= 8 then {IndentSub N - 8 VS#'\t'}
-         elsecase N > 0 then {IndentSub N - 1 VS#' '}
+         if N >= 8 then {IndentSub N - 8 VS#'\t'}
+         elseif N > 0 then {IndentSub N - 1 VS#' '}
          else VS
          end
       end
@@ -107,39 +107,43 @@ local
          [] _|_ then
             Len <- @Len + {VirtualString.length FS}
             Line <- @Line#FS
-         elsecase {IsAtom FS} orelse {IsNumber FS} then
-            Len <- @Len + {VirtualString.length FS}
-            Line <- @Line#FS
-         elsecase {IsTuple FS} andthen {Label FS} == '#' then
-            Formatter, AppendTuple(FS 1 {Width FS})
-         elsecase FS of pn(PrintName) then
-            Formatter, append({PrintNameToVirtualString PrintName})
-         [] oz(X) then
-            Formatter, append({System.valueToVirtualString X
-                               @PrintDepth @PrintWidth})
-         [] list(Elems Sep) then
-            Formatter, AppendSeparated(Elems Sep)
-         [] format(X) then
-            case X of break then I in
-               Formatter, FormatLine()
-               I = @Stack.1
-               VS <- @VS#'\n'#{Indent I}
-               Col <- I
-            [] glue(X) then
-               Formatter, FormatLine()
-               GlueItem <- X
-            [] indent then Tl in
-               @StackOpsTl = indent|Tl
-               StackOpsTl <- Tl
-            [] exdent then Tl in
-               @StackOpsTl = exdent|Tl
-               StackOpsTl <- Tl
-            [] push then Tl in
-               @StackOpsTl = push(@Len)|Tl
-               StackOpsTl <- Tl
-            [] pop then Tl in
-               @StackOpsTl = pop|Tl
-               StackOpsTl <- Tl
+         else
+            if {IsAtom FS} orelse {IsNumber FS} then
+               Len <- @Len + {VirtualString.length FS}
+               Line <- @Line#FS
+            elseif {IsTuple FS} andthen {Label FS} == '#' then
+               Formatter, AppendTuple(FS 1 {Width FS})
+            else
+               case FS of pn(PrintName) then
+                  Formatter, append({PrintNameToVirtualString PrintName})
+               [] oz(X) then
+                  Formatter, append({System.valueToVirtualString X
+                                     @PrintDepth @PrintWidth})
+               [] list(Elems Sep) then
+                  Formatter, AppendSeparated(Elems Sep)
+               [] format(X) then
+                  case X of break then I in
+                     Formatter, FormatLine()
+                     I = @Stack.1
+                     VS <- @VS#'\n'#{Indent I}
+                     Col <- I
+                  [] glue(X) then
+                     Formatter, FormatLine()
+                     GlueItem <- X
+                  [] indent then Tl in
+                     @StackOpsTl = indent|Tl
+                     StackOpsTl <- Tl
+                  [] exdent then Tl in
+                     @StackOpsTl = exdent|Tl
+                     StackOpsTl <- Tl
+                  [] push then Tl in
+                     @StackOpsTl = push(@Len)|Tl
+                     StackOpsTl <- Tl
+                  [] pop then Tl in
+                     @StackOpsTl = pop|Tl
+                     StackOpsTl <- Tl
+                  end
+               end
             end
          end
       end
@@ -149,10 +153,9 @@ local
          ResVS = (VS <- "")
       end
       meth AppendTuple(T I N)
-         case I =< N then
+         if I =< N then
             Formatter, append(T.I)
             Formatter, AppendTuple(T I + 1 N)
-         else skip
          end
       end
       meth AppendSeparated(Xs Sep)
@@ -168,7 +171,7 @@ local
       end
       meth FormatLine() N X in
          N = {Length @GlueItem}
-         case @Col + N + @Len =< @MaxWidth orelse @Col =< @GlueIndent then
+         if @Col + N + @Len =< @MaxWidth orelse @Col =< @GlueIndent then
             VS <- @VS#@GlueItem#@Line
             Col <- @Col + N
          else

@@ -143,7 +143,7 @@ local
          local
             fun {FindProcSub Xs P}
                case Xs of X|Xr then
-                  case RunTimeLibrary.X == P then
+                  if RunTimeLibrary.X == P then
                      '<R: '#{System.valueToVirtualString X 0 0}#'>'
                   else
                      {FindProcSub Xr P}
@@ -167,7 +167,7 @@ local
          end
 
          fun {TupleSub I N In Value FPToIntMap}
-            case I =< N then
+            if I =< N then
                {TupleSub I + 1 N
                 In#' '#{MyValueToVirtualString Value.I FPToIntMap}
                 Value FPToIntMap}
@@ -182,40 +182,44 @@ local
          end
 
          fun {MyValueToVirtualString Value FPToIntMap}
-            case {IsName Value} then
+            if {IsName Value} then
                case Value of true then 'true'
                [] false then 'false'
                [] unit then 'unit'
-               elsecase {IsUniqueName Value} then
-                  %--** these only work if the name's print name is friendly
-                  %--** and all names' print names are distinct
-                  '<U: '#{System.printName Value}#'>'
-               elsecase {IsCopyableName Value} then
-                  '<M: '#{System.printName Value}#'>'
                else
-                  '<N: '#{System.printName Value}#'>'
+                  if {IsUniqueName Value} then
+                     %--** these only work if the name's print name is friendly
+                     %--** and all names' print names are distinct
+                     '<U: '#{System.printName Value}#'>'
+                  elseif {IsCopyableName Value} then
+                     '<M: '#{System.printName Value}#'>'
+                  else
+                     '<N: '#{System.printName Value}#'>'
+                  end
                end
-            elsecase {IsAtom Value} then
+            elseif {IsAtom Value} then
                % the atom must not be mistaken for a token
-               case {HasFeature InstructionSizes Value} then '\''#Value#'\''
-               elsecase Value of lbl then '\'lbl\''
-               [] pid then '\'pid\''
-               [] ht then '\'ht\''
-               [] onScalar then '\'onScalar\''
-               [] onRecord then '\'onRecord\''
-               [] gci then '\'gci\''
-               [] ami then '\'ami\''
-               [] pos then '\'pos\''
+               if {HasFeature InstructionSizes Value} then '\''#Value#'\''
                else
-                  {System.valueToVirtualString Value 0 0}
+                  case Value of lbl then '\'lbl\''
+                  [] pid then '\'pid\''
+                  [] ht then '\'ht\''
+                  [] onScalar then '\'onScalar\''
+                  [] onRecord then '\'onRecord\''
+                  [] gci then '\'gci\''
+                  [] ami then '\'ami\''
+                  [] pos then '\'pos\''
+                  else
+                     {System.valueToVirtualString Value 0 0}
+                  end
                end
-            elsecase {IsProcedure Value} then
+            elseif {IsProcedure Value} then
                {FindProc Value}
-            elsecase {ForeignPointer.is Value} then I in
+            elseif {ForeignPointer.is Value} then I in
                % foreign pointers are assigned increasing integers
                % in order of appearance so that diffs are sensible
                I = {ForeignPointer.toInt Value}
-               case {IsCopyablePredicateRef Value} then '<Q: '
+               if {IsCopyablePredicateRef Value} then '<Q: '
                else '<P: '
                end#
                case {Dictionary.condGet FPToIntMap I unit} of unit then N in
@@ -226,21 +230,25 @@ local
                elseof V then
                   V
                end#'>'
-            elsecase Value of V1|Vr then
-               {ListToVirtualString Vr
-                '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
-            [] V1#V2 then
-               {MyValueToVirtualString V1 FPToIntMap}#"#"#
-               {MyValueToVirtualString V2 FPToIntMap}
-            elsecase {IsTuple Value} then
-               {TupleToVirtualString Value FPToIntMap}
             else
-               {System.valueToVirtualString Value 1000 1000}
+               case Value of V1|Vr then
+                  {ListToVirtualString Vr
+                   '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
+               [] V1#V2 then
+                  {MyValueToVirtualString V1 FPToIntMap}#"#"#
+                  {MyValueToVirtualString V2 FPToIntMap}
+               else
+                  if {IsTuple Value} then
+                     {TupleToVirtualString Value FPToIntMap}
+                  else
+                     {System.valueToVirtualString Value 1000 1000}
+                  end
+               end
             end
          end
       in
          fun {InstrToVirtualString Instr FPToIntMap}
-            case {IsAtom Instr} then
+            if {IsAtom Instr} then
                Instr
             else
                {TupleToVirtualString Instr FPToIntMap}
@@ -266,7 +274,7 @@ local
             {Dictionary.put @LabelDict L _}
          end
          meth declareLabel(L)
-            case {Dictionary.member @LabelDict L} then skip
+            if {Dictionary.member @LabelDict L} then skip
             else {Dictionary.put @LabelDict L _}
             end
          end
@@ -274,7 +282,7 @@ local
             {Dictionary.member @LabelDict I}
          end
          meth setLabel(L)
-            case {Dictionary.member @LabelDict L} then
+            if {Dictionary.member @LabelDict L} then
                {Dictionary.get @LabelDict L} = @Size
             else
                {Dictionary.put @LabelDict L @Size}
@@ -283,8 +291,7 @@ local
          meth checkLabels()
             {ForAll {Dictionary.entries @LabelDict}
              proc {$ L#V}
-                case {IsDet V} then skip
-                else
+                if {IsFree V} then
                    {Exception.raiseError compiler(assembler undeclaredLabel L)}
                 end
              end}
@@ -332,14 +339,12 @@ local
             InstrsTl <- NewTl
             Size <- @Size + InstructionSizes.{Label Instr}
             case Instr of definition(_ _ _ _ _) then
-               case self.Profile then
+               if self.Profile then
                   AssemblerClass, append(profileProc)
-               else skip
                end
             [] definitionCopy(_ _ _ _ _) then
-               case self.Profile then
+               if self.Profile then
                   AssemblerClass, append(profileProc)
-               else skip
                end
             else skip
             end
@@ -351,9 +356,8 @@ local
             {Dictionary.put FPToIntMap 0 0}
             {ForAll {Dictionary.entries @LabelDict}
              proc {$ Label#Addr}
-                case {IsDet Addr} then
+                if {IsDet Addr} then
                    {Dictionary.put AddrToLabelMap Addr Label}
-                else skip
                 end
              end}
             '%% Code Size:\n'#@Size#' % words\n'#
@@ -361,9 +365,9 @@ local
          end
          meth OutputSub(Instrs AddrToLabelMap FPToIntMap Addr ?VS)
             case Instrs of Instr|Ir then LabelVS NewInstr VSRest NewAddr in
-               LabelVS = case {Dictionary.member AddrToLabelMap Addr} then
+               LabelVS = if {Dictionary.member AddrToLabelMap Addr} then
                             'lbl('#Addr#')'#
-                            case Addr < 100 then '\t\t' else '\t' end
+                            if Addr < 100 then '\t\t' else '\t' end
                          else '\t\t'
                          end
                AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
@@ -466,7 +470,7 @@ local
    end
 
    fun {RecordArityWidth RecordArity}
-      case {IsInt RecordArity} then RecordArity
+      if {IsInt RecordArity} then RecordArity
       else {Length RecordArity}
       end
    end
@@ -547,11 +551,11 @@ local
    fun {SkipDeadCode Instrs Assembler}
       case Instrs of I1|Rest then
          case I1 of lbl(I) then
-            case {Assembler isLabelUsed(I $)} then Instrs
+            if {Assembler isLabelUsed(I $)} then Instrs
             else {SkipDeadCode Rest Assembler}
             end
          [] endDefinition(I) then
-            case {Assembler isLabelUsed(I $)} then Instrs
+            if {Assembler isLabelUsed(I $)} then Instrs
             else {SkipDeadCode Rest Assembler}
             end
          [] globalVarname(_) then Instrs
@@ -625,7 +629,7 @@ local
                {Peephole Rest Assembler}
             end
          [] putRecord(L A R) then
-            case L == '|' andthen A == 2 then
+            if L == '|' andthen A == 2 then
                {Assembler append(putList(R))}
             else
                {Assembler append(I1)}
@@ -636,7 +640,7 @@ local
             {Assembler append(setVoid(OutI))}
             {Peephole Rest1 Assembler}
          [] getRecord(L A R) then
-            case L == '|' andthen A == 2 then
+            if L == '|' andthen A == 2 then
                case R of X1=x(_) then
                   case Rest of unifyValue(R)|unifyVariable(X2=x(_))|Rest then
                      {Assembler append(getListValVar(X1 R X2))}
@@ -712,40 +716,42 @@ local
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}
          [] callBI(Builtinname Args) then
-            case Assembler.debugInfoControl then
+            if Assembler.debugInfoControl then
                {Assembler append(I1)}
                {Peephole Rest Assembler}
-            elsecase Builtinname of 'funReturn' then [X1]#nil = Args in
-               case Rest of deAllocateL(N)|NewRest then
-                  {Peephole deAllocateL(N)|funReturn(X1)|NewRest Assembler}
-               else
-                  {Peephole funReturn(X1)|Rest Assembler}
-               end
-            else BIInfo in
-               BIInfo = {Builtins.getInfo Builtinname}
-               case Builtinname of '+1' then [X1]#[X2] = Args in
-                  {Assembler append(inlinePlus1(X1 X2))}
-               [] '-1' then [X1]#[X2] = Args in
-                  {Assembler append(inlineMinus1(X1 X2))}
-               [] '+' then [X1 X2]#[X3] = Args in
-                  {Assembler append(inlinePlus(X1 X2 X3))}
-               [] '-' then [X1 X2]#[X3] = Args in
-                  {Assembler append(inlineMinus(X1 X2 X3))}
-               [] '>' then [X1 X2]#Out = Args in
-                  {Assembler append(callBI('<' [X2 X1]#Out))}
-               [] '>=' then [X1 X2]#Out = Args in
-                  {Assembler append(callBI('=<' [X2 X1]#Out))}
-               [] '^' then [X1 X2]#[X3] = Args in
-                  {Assembler append(inlineUparrow(X1 X2 X3))}
-               [] 'getReturn' then nil#[X1] = Args in
-                  {Assembler append(getReturn(X1))}
-               else
-                  {Assembler append(I1)}
-               end
-               case {CondSelect BIInfo doesNotReturn false} then
-                  {EliminateDeadCode Rest Assembler}
-               else
-                  {Peephole Rest Assembler}
+            else
+               case Builtinname of 'funReturn' then [X1]#nil = Args in
+                  case Rest of deAllocateL(N)|NewRest then
+                     {Peephole deAllocateL(N)|funReturn(X1)|NewRest Assembler}
+                  else
+                     {Peephole funReturn(X1)|Rest Assembler}
+                  end
+               else BIInfo in
+                  BIInfo = {Builtins.getInfo Builtinname}
+                  case Builtinname of '+1' then [X1]#[X2] = Args in
+                     {Assembler append(inlinePlus1(X1 X2))}
+                  [] '-1' then [X1]#[X2] = Args in
+                     {Assembler append(inlineMinus1(X1 X2))}
+                  [] '+' then [X1 X2]#[X3] = Args in
+                     {Assembler append(inlinePlus(X1 X2 X3))}
+                  [] '-' then [X1 X2]#[X3] = Args in
+                     {Assembler append(inlineMinus(X1 X2 X3))}
+                  [] '>' then [X1 X2]#Out = Args in
+                     {Assembler append(callBI('<' [X2 X1]#Out))}
+                  [] '>=' then [X1 X2]#Out = Args in
+                     {Assembler append(callBI('=<' [X2 X1]#Out))}
+                  [] '^' then [X1 X2]#[X3] = Args in
+                     {Assembler append(inlineUparrow(X1 X2 X3))}
+                  [] 'getReturn' then nil#[X1] = Args in
+                     {Assembler append(getReturn(X1))}
+                  else
+                     {Assembler append(I1)}
+                  end
+                  if {CondSelect BIInfo doesNotReturn false} then
+                     {EliminateDeadCode Rest Assembler}
+                  else
+                     {Peephole Rest Assembler}
+                  end
                end
             end
          [] genCall(GCI Arity) then
@@ -786,23 +792,27 @@ local
                {Peephole Rest Assembler}
             end
          [] genFastCall(PredicateRef ArityAndIsTail) then
-            case ArityAndIsTail mod 2 == 1 then
+            if ArityAndIsTail mod 2 == 1 then
                {Assembler append(I1)}
-               {Peephole Rest Assembler}
-            elsecase Rest of deAllocateL(I)|return|Rest then
-               {MakeDeAllocate I Assembler}
-               {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
-               {EliminateDeadCode Rest Assembler}
-            elseof lbl(_)|deAllocateL(I)|_ then
-               {MakeDeAllocate I Assembler}
-               {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
                {Peephole Rest Assembler}
             else
-               {Assembler append(I1)}
-               {Peephole Rest Assembler}
+               case Rest of deAllocateL(I)|return|Rest then
+                  {MakeDeAllocate I Assembler}
+                  {Assembler
+                   append(genFastCall(PredicateRef ArityAndIsTail + 1))}
+                  {EliminateDeadCode Rest Assembler}
+               elseof lbl(_)|deAllocateL(I)|_ then
+                  {MakeDeAllocate I Assembler}
+                  {Assembler
+                   append(genFastCall(PredicateRef ArityAndIsTail + 1))}
+                  {Peephole Rest Assembler}
+               else
+                  {Assembler append(I1)}
+                  {Peephole Rest Assembler}
+               end
             end
          [] marshalledFastCall(Abstraction ArityAndIsTail) then
-            case {IsDet Abstraction} andthen {IsProcedure Abstraction}
+            if {IsDet Abstraction} andthen {IsProcedure Abstraction}
                andthen (ArityAndIsTail mod 2 == 0)
             then
                case Rest of deAllocateL(I)|return|Rest then
@@ -905,7 +915,7 @@ local
                end
             else skip
             end
-            case {IsDet NewInstrs} then
+            if {IsDet NewInstrs} then
                {Peephole NewInstrs Assembler}
             else
                case Builtinname of '<' then [X1 X2]#[X3] = Args in
@@ -922,7 +932,7 @@ local
                {Peephole Rest Assembler}
             end
          [] testRecord(R Literal Arity L) then
-            case Literal == '|' andthen Arity == 2 then
+            if Literal == '|' andthen Arity == 2 then
                {Assembler append(testList(R L))}
             else
                {Assembler append(I1)}
@@ -931,9 +941,9 @@ local
          [] match(R HT) then ht(ElseL Cases) = HT in
             case Cases of [onScalar(X L)] then
                case Rest of lbl(!L)|_ then
-                  case {IsNumber X} then
+                  if {IsNumber X} then
                      {Assembler append(testNumber(R X ElseL))}
-                  elsecase {IsLiteral X} then
+                  elseif {IsLiteral X} then
                      {Assembler append(testLiteral(R X ElseL))}
                   end
                   {Peephole Rest Assembler}
@@ -943,7 +953,7 @@ local
                end
             elseof [onRecord(Label RecordArity L)] then
                case Rest of lbl(!L)|_ then
-                  case Label == '|' andthen RecordArity == 2 then
+                  if Label == '|' andthen RecordArity == 2 then
                      {Assembler append(testList(R ElseL))}
                   else
                      {Assembler append(testRecord(R Label RecordArity ElseL))}
@@ -988,7 +998,7 @@ in
    in
       Assembler = {New AssemblerClass
                    init(ProfileSwitch DebugInfoControlSwitch)}
-      case DoPeephole then
+      if DoPeephole then
          {Peephole Code Assembler}
       else
          {ForAll Code
@@ -1000,9 +1010,8 @@ in
              end
           end}
       end
-      case Verify then
+      if Verify then
          {Assembler checkLabels()}
-      else skip
       end
    end
 

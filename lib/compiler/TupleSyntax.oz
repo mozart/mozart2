@@ -55,7 +55,7 @@ proc {VarListSub Vs1 Vs2 VsHd VsTl}
    % Place those elements from Vs2 that are not containted in Vs1
    % in the difference list VsHd-VsTl (i. e. Vs2 \setminus Vs1).
    case Vs2 of V|Vr then fVar(X _) = V VsInter in
-      case {Some Vs1 fun {$ fVar(Y _)} X == Y end} then VsHd = VsInter
+      if {Some Vs1 fun {$ fVar(Y _)} X == Y end} then VsHd = VsInter
       else VsHd = V|VsInter
       end
       {VarListSub Vs1 Vr VsInter VsTl}
@@ -141,7 +141,7 @@ local
 in
    fun {UniqueVariables Vs}
       case Vs of V|Vr then fVar(X _) = V in
-         case {Contains Vr X} then {UniqueVariables Vr}
+         if {Contains Vr X} then {UniqueVariables Vr}
          else V|{UniqueVariables Vr}
          end
       [] nil then nil

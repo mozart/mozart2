@@ -95,7 +95,7 @@ class CodeStore from Emitter
       L = @minReg
       H = @NextReg - 1
    in
-      case L =< H then
+      if L =< H then
          {BitArray.new L H}
       else
          {BitArray.new L L}
@@ -104,9 +104,7 @@ class CodeStore from Emitter
    meth enterVs(Vs RS)
       case Vs of V|Vr then Reg in
          {V reg(?Reg)}
-         case Reg >= @minReg then {BitArray.set RS Reg}
-         else skip
-         end
+         if Reg >= @minReg then {BitArray.set RS Reg} end
          CodeStore, enterVs(Vr RS)
       [] nil then skip
       end
@@ -128,10 +126,10 @@ class CodeStore from Emitter
    meth newVariableReg(V ?Reg)
       Reg = @NextReg
       NextReg <- Reg + 1
-      case {V getOrigin($)} \= generated then
-         {Dictionary.put @regNames Reg {V getPrintName($)}}
-      else
+      case {V getOrigin($)} of generated then
          {Dictionary.remove @regNames Reg}
+      else
+         {Dictionary.put @regNames Reg {V getPrintName($)}}
       end
    end
    meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code ?NLiveRegs)
@@ -161,7 +159,7 @@ class CodeStore from Emitter
          RS = @EmptyRS
       [] vShared(RS0 Label Count Addr1) then
          {Assign Count {Access Count} + 1}
-         case {IsDet RS0} then skip
+         if {IsDet RS0} then skip
          else CodeStore, ComputeOccs(Addr1 ?RS0)
          end
          RS = RS0
@@ -368,13 +366,13 @@ class CodeStore from Emitter
        end}
    end
    meth RegOcc(Reg RS)
-      case Reg < @minReg then skip   % it's a global
+      if Reg < @minReg then skip   % it's a global
       else {BitArray.set RS Reg}
       end
    end
    meth RegOccs(Regs RS)
       case Regs of Reg|Regr then
-         case Reg < @minReg then skip   % it's a global
+         if Reg < @minReg then skip   % it's a global
          else {BitArray.set RS Reg}
          end
          CodeStore, RegOccs(Regr RS)
@@ -430,7 +428,7 @@ class CodeStore from Emitter
          [] vDefinition(_ _ _ _ _ _ _) then skip
          [] vDefinitionCopy(_ _ _ _ _ _ _ _) then skip
          [] vShared(_ Label _ Addr) then
-            case {Dictionary.member @sharedDone Label} then skip
+            if {Dictionary.member @sharedDone Label} then skip
             else
                {Dictionary.put @sharedDone Label true}
                CodeStore, AddRegOccs(Addr AddRS2)

@@ -30,8 +30,8 @@ local
 
    fun {IsQuotedVariable S}
       case S of C1|Cr then
-         case C1 == &` andthen Cr == nil then true
-         elsecase C1 == 0 then false
+         if C1 == &` andthen Cr == nil then true
+         elseif C1 == 0 then false
          else {IsQuotedVariable Cr}
          end
       [] nil then false
@@ -58,8 +58,9 @@ end
 fun {DowncasePrintName X} S in
    S = {Atom.toString X}
    case S of C|Cr then
-      case {Char.isUpper C} then {String.toAtom {Char.toLower C}|Cr}
-      elsecase C == &` then X
+      if {Char.isUpper C} then {String.toAtom {Char.toLower C}|Cr}
+      else
+         case C of &` then X end
       end
    [] nil then X
    end

@@ -91,11 +91,10 @@ in
                {System.printError {MessageToVS OutputMessage}}
             [] auto then
                History <- OutputMessage|@History
-               case @HasBeenTopped then
+               if @HasBeenTopped then
                   {System.printError {HistoryToVS @History}}
                   History <- nil
                   Verbose <- true
-               else skip
                end
             else
                History <- OutputMessage|@History

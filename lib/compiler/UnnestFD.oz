@@ -317,43 +317,45 @@ in
             fEq(fOpApply('==' [fInt(Const C2) fInt(0 C)] C)
                 fEscape(fVar('`false`' C) C) C)
          end
-      elsecase {AreLinearConstraints NewE} then Cs Vs in
-         {MakeTuples NewE ?Cs nil ?Vs nil}
-         case {FD.is ~Const} then X O D in
-            X = fRecord(fAtom('#' C) Vs)
-            O = fAtom(NewOp C)
-            D = fInt(~Const C)
-            case {All Cs fun {$ fInt(I _)} I == 1 end} then
-               fApply(fOpApply('.' [fVar('FD' C) fAtom('sum' C)] C)
-                      [X O D] C)
-            else A in
-               A = fRecord(fAtom('#' C) Cs)
+      else
+         if {AreLinearConstraints NewE} then Cs Vs in
+            {MakeTuples NewE ?Cs nil ?Vs nil}
+            if {FD.is ~Const} then X O D in
+               X = fRecord(fAtom('#' C) Vs)
+               O = fAtom(NewOp C)
+               D = fInt(~Const C)
+               if {All Cs fun {$ fInt(I _)} I == 1 end} then
+                  fApply(fOpApply('.' [fVar('FD' C) fAtom('sum' C)] C)
+                         [X O D] C)
+               else A in
+                  A = fRecord(fAtom('#' C) Cs)
+                  fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
+                         [A X O D] C)
+               end
+            else A X O D in
+               A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
+               X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
+               O = fAtom(NewOp C)
+               D = fInt(0 C)
                fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
                       [A X O D] C)
             end
-         else A X O D in
-            A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
-            X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
-            O = fAtom(NewOp C)
-            D = fInt(0 C)
-            fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
+         else Cs Vs A X O D in
+            {MakeTupleTuples NewE ?Cs nil ?Vs nil}
+            if {FD.is ~Const} then
+               A = fRecord(fAtom('#' C) Cs)
+               X = fRecord(fAtom('#' C) Vs)
+               O = fAtom(NewOp C)
+               D = fInt(~Const C)
+            else
+               A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
+               X = fRecord(fAtom('#' C) fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
+               O = fAtom(NewOp C)
+               D = fInt(0 C)
+            end
+            fApply(fOpApply('.' [fVar('FD' C) fAtom('sumCN' C)] C)
                    [A X O D] C)
          end
-      else Cs Vs A X O D in
-         {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-         case {FD.is ~Const} then
-            A = fRecord(fAtom('#' C) Cs)
-            X = fRecord(fAtom('#' C) Vs)
-            O = fAtom(NewOp C)
-            D = fInt(~Const C)
-         else
-            A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
-            X = fRecord(fAtom('#' C) fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
-            O = fAtom(NewOp C)
-            D = fInt(0 C)
-         end
-         fApply(fOpApply('.' [fVar('FD' C) fAtom('sumCN' C)] C)
-                [A X O D] C)
       end
    end
 
@@ -373,51 +375,53 @@ in
          fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C) fAtom('reified' C)] C)
                               fAtom('sum' C)] C)
                 [X O D V] C)
-      elsecase {AreLinearConstraints NewE} then Cs Vs in
-         {MakeTuples NewE ?Cs nil ?Vs nil}
-         case {FD.is ~Const} then X O D in
-            X = fRecord(fAtom('#' C) Vs)
-            O = fAtom(NewOp C)
-            D = fInt(~Const C)
-            case {All Cs fun {$ fInt(I _)} I == 1 end} then
-               fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                  fAtom('reified' C)] C)
-                                    fAtom('sum' C)] C)
-                      [X O D V] C)
-            else A in
-               A = fRecord(fAtom('#' C) Cs)
+      else
+         if {AreLinearConstraints NewE} then Cs Vs in
+            {MakeTuples NewE ?Cs nil ?Vs nil}
+            if {FD.is ~Const} then X O D in
+               X = fRecord(fAtom('#' C) Vs)
+               O = fAtom(NewOp C)
+               D = fInt(~Const C)
+               if {All Cs fun {$ fInt(I _)} I == 1 end} then
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('reified' C)] C)
+                                       fAtom('sum' C)] C)
+                         [X O D V] C)
+               else A in
+                  A = fRecord(fAtom('#' C) Cs)
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('reified' C)] C)
+                                       fAtom('sumC' C)] C)
+                         [A X O D V] C)
+               end
+            else A X O D in
+               A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
+               X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
+               O = fAtom(NewOp C)
+               D = fInt(0 C)
                fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
                                                   fAtom('reified' C)] C)
                                     fAtom('sumC' C)] C)
                       [A X O D V] C)
             end
-         else A X O D in
-            A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
-            X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
-            O = fAtom(NewOp C)
-            D = fInt(0 C)
+         else Cs Vs A X O D in
+            {MakeTupleTuples NewE ?Cs nil ?Vs nil}
+            if {FD.is ~Const} then
+               A = fRecord(fAtom('#' C) Cs)
+               X = fRecord(fAtom('#' C) Vs)
+               O = fAtom(NewOp C)
+               D = fInt(~Const C)
+            else
+               A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
+               X = fRecord(fAtom('#' C) fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
+               O = fAtom(NewOp C)
+               D = fInt(0 C)
+            end
             fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
                                                fAtom('reified' C)] C)
-                                 fAtom('sumC' C)] C)
+                                 fAtom('sumCN' C)] C)
                    [A X O D V] C)
          end
-      else Cs Vs A X O D in
-         {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-         case {FD.is ~Const} then
-            A = fRecord(fAtom('#' C) Cs)
-            X = fRecord(fAtom('#' C) Vs)
-            O = fAtom(NewOp C)
-            D = fInt(~Const C)
-         else
-            A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
-            X = fRecord(fAtom('#' C) fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
-            O = fAtom(NewOp C)
-            D = fInt(0 C)
-         end
-         fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                            fAtom('reified' C)] C)
-                              fAtom('sumCN' C)] C)
-                [A X O D V] C)
       end
    end
 
@@ -536,52 +540,54 @@ in
                                                      fAtom('cd' C)] C)
                                        fAtom('sumC' C)] C)
                          [A X O D B] C)
-               elsecase {AreLinearConstraints NewE} then Cs Vs in
-                  {MakeTuples NewE ?Cs nil ?Vs nil}
-                  case {FD.is Const} then X O D in
-                     X = fRecord(fAtom('#' C) Vs)
-                     O = fAtom(Op C)
-                     D = fInt(Const C)
-                     case {All Cs fun {$ fInt(I _)} I == 1 end} then
-                        fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                           fAtom('cd' C)] C)
-                                             fAtom('sum' C)] C)
-                               [X O D B] C)
-                     else A in
-                        A = fRecord(fAtom('#' C) Cs)
+               else
+                  if {AreLinearConstraints NewE} then Cs Vs in
+                     {MakeTuples NewE ?Cs nil ?Vs nil}
+                     if {FD.is Const} then X O D in
+                        X = fRecord(fAtom('#' C) Vs)
+                        O = fAtom(Op C)
+                        D = fInt(Const C)
+                        if {All Cs fun {$ fInt(I _)} I == 1 end} then
+                           fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                              fAtom('cd' C)] C)
+                                                fAtom('sum' C)] C)
+                                  [X O D B] C)
+                        else A in
+                           A = fRecord(fAtom('#' C) Cs)
+                           fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                              fAtom('cd' C)] C)
+                                                fAtom('sumC' C)] C)
+                                  [A X O D B] C)
+                        end
+                     else A X O D in
+                        A = fRecord(fAtom('#' C) fInt(~Const C)|Cs)
+                        X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
+                        O = fAtom(Op C)
+                        D = fInt(0 C)
                         fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
                                                            fAtom('cd' C)] C)
                                              fAtom('sumC' C)] C)
                                [A X O D B] C)
                      end
-                  else A X O D in
-                     A = fRecord(fAtom('#' C) fInt(~Const C)|Cs)
-                     X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
-                     O = fAtom(Op C)
-                     D = fInt(0 C)
+                  else Cs Vs A X O D in
+                     {MakeTupleTuples NewE ?Cs nil ?Vs nil}
+                     if {FD.is Const} then
+                        A = fRecord(fAtom('#' C) Cs)
+                        X = fRecord(fAtom('#' C) Vs)
+                        O = fAtom(Op C)
+                        D = fInt(Const C)
+                     else
+                        A = fRecord(fAtom('#' C) fInt(~Const C)|Cs)
+                        X = fRecord(fAtom('#' C)
+                                    fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
+                        O = fAtom(Op C)
+                        D = fInt(0 C)
+                     end
                      fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
                                                         fAtom('cd' C)] C)
-                                          fAtom('sumC' C)] C)
+                                          fAtom('sumCN' C)] C)
                             [A X O D B] C)
                   end
-               else Cs Vs A X O D in
-                  {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-                  case {FD.is Const} then
-                     A = fRecord(fAtom('#' C) Cs)
-                     X = fRecord(fAtom('#' C) Vs)
-                     O = fAtom(Op C)
-                     D = fInt(Const C)
-                  else
-                     A = fRecord(fAtom('#' C) fInt(~Const C)|Cs)
-                     X = fRecord(fAtom('#' C)
-                                 fRecord(fAtom('#' C) [fInt(1 C)])|Vs)
-                     O = fAtom(Op C)
-                     D = fInt(0 C)
-                  end
-                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                     fAtom('cd' C)] C)
-                                       fAtom('sumCN' C)] C)
-                         [A X O D B] C)
                end
             [] fFdIn(Op E1 E2 C) then NewE1 in
                case Op of '::' then fVar(X C) = E1 in
@@ -624,7 +630,7 @@ in
             D = {NewDictionary}
             FreshCVs = {Map AllVs
                         fun {$ V} fVar(X C) = V in
-                           case {OccursVar CVs X} then GV PrintName in
+                           if {OccursVar CVs X} then GV PrintName in
                               {BA generate('CDVar' C ?GV)}
                               PrintName = {GV getPrintName($)}
                               {Dictionary.put D X PrintName}
@@ -650,7 +656,7 @@ in
             % Even if a variable occurs multiple times in Vs, it is only
             % added once to Ws.
             case Vs of V1|Vr then fVar(X _) = V1 in
-               case {OccursIn X Ws} then {VariableUnion Vr Ws}
+               if {OccursIn X Ws} then {VariableUnion Vr Ws}
                else {VariableUnion Vr V1|Ws}
                end
             [] nil then Ws

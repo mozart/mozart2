@@ -110,7 +110,7 @@ local
          defines <- {EnumerateVersionNumbers
                      {Map {Atom.toString {Property.get 'oz.version'}}
                       fun {$ C}
-                         case C == &. then &_ else C end
+                         case C of &. then &_ else C end
                       end} "Oz_"}
          self.variables = {NewDictionary}
          self.values = {NewDictionary}
@@ -119,7 +119,7 @@ local
 
       meth macroDefine(X) A in
          A = {String.toAtom {VirtualString.toString X}}
-         case {Member A @defines} then skip
+         if {Member A @defines} then skip
          else defines <- A|@defines
          end
       end
@@ -150,20 +150,22 @@ local
             {@wrapper notify(switch(runwithdebugger B))}
             {@wrapper notify(switch(debuginfocontrol B))}
             {@wrapper notify(switch(debuginfovarnames B))}
-         elsecase {HasFeature @switches SwitchName} then
-            switches <- {AdjoinAt @switches SwitchName B}
-            {@wrapper notify(switch(SwitchName B))}
-         elsecase C == unit then
-            {@reporter error(coord: C kind: 'compiler engine error'
-                             msg: 'unknown switch `'#SwitchName#'\''
-                             items: [hint(l: 'Query'
-                                          m: oz(setSwitch(SwitchName B)))]
-                             abort: false)}
-            {@reporter logReject()}
          else
-            {@reporter error(coord: C kind: 'compiler directive error'
-                             msg: 'unknown switch `'#SwitchName#'\''
-                             abort: false)}
+            if {HasFeature @switches SwitchName} then
+               switches <- {AdjoinAt @switches SwitchName B}
+               {@wrapper notify(switch(SwitchName B))}
+            elseif C == unit then
+               {@reporter error(coord: C kind: 'compiler engine error'
+                                msg: 'unknown switch `'#SwitchName#'\''
+                                items: [hint(l: 'Query'
+                                             m: oz(setSwitch(SwitchName B)))]
+                                abort: false)}
+               {@reporter logReject()}
+            else
+               {@reporter error(coord: C kind: 'compiler directive error'
+                                msg: 'unknown switch `'#SwitchName#'\''
+                                abort: false)}
+            end
          end
       end
       meth getSwitch(SwitchName $)
@@ -215,9 +217,8 @@ local
          {V getPrintName(?PrintName)}
          {Dictionary.put self.variables PrintName V}
          {Dictionary.put self.values PrintName X}
-         case {Not {IsDet X}} andthen NameIt then
+         if {Not {IsDet X}} andthen NameIt then
             {Misc.nameVariable X PrintName}
-         else skip
          end
          {V setUse(multiple)}
          {V setToplevel(true)}
@@ -254,7 +255,7 @@ local
          {Dictionary.condGet self.variables PrintName undeclared}
       end
       meth lookupInEnv(PrintName ?X)=M
-         case {Dictionary.member self.values PrintName} then
+         if {Dictionary.member self.values PrintName} then
             X = {Dictionary.get self.values PrintName}
          else
             {@reporter error(kind: 'compiler engine error'
@@ -354,7 +355,7 @@ local
       meth feedVirtualString(VS Return <= return)
          CompilerInternal,
          CatchResult(proc {$}
-                        case CompilerStateClass, getSwitch(echoqueries $) then
+                        if CompilerStateClass, getSwitch(echoqueries $) then
                            {@reporter userInfo(VS)}
                         else
                            {@reporter userInfo('%%% feeding virtual string\n')}
@@ -388,7 +389,7 @@ local
                            fun {$ S} CompilerStateClass, getSwitch(S $) end
                            CompilerStateClass, getDefines($)}
             end
-            case ParseProc == ParseOzFile
+            if ParseProc == ParseOzFile
                orelse ParseProc == ParseOzVirtualString
             then
                {DoParse}
@@ -396,17 +397,16 @@ local
                CompilerInternal, ExecProtected(DoParse false)
                %--** do a consistency check on the resulting structure
             end
-            case {@reporter hasSeenError($)} then
+            if {@reporter hasSeenError($)} then
                raise rejected end
-            else skip
             end
-            case CompilerInternal, getSwitch(unnest $) then Queries in
-               Queries = case CompilerStateClass, getSwitch(ozma $) then V in
+            if CompilerInternal, getSwitch(unnest $) then Queries in
+               Queries = if CompilerStateClass, getSwitch(ozma $) then V in
                             V = {New Core.variable
                                  init('`runTimeDict`' putEnv unit)}
                             CompilerStateClass, enter(V {NewDictionary} false)
                             {Unnest.joinQueries Queries0 @reporter}
-                         elsecase CompilerStateClass, getSwitch(expression $)
+                         elseif CompilerStateClass, getSwitch(expression $)
                          then
                             case Queries0 of nil then Queries0
                             else V in
@@ -420,7 +420,6 @@ local
                             Queries0
                          end
                CompilerInternal, FeedSub(Queries Return)
-            else skip
             end
          finally
             ExecutingThread <- unit
@@ -448,9 +447,8 @@ local
                              CompilerStateClass, unlocalSwitches()
                           end
                        end true)
-         case {@reporter hasSeenError($)} then
+         if {@reporter hasSeenError($)} then
             raise rejected end
-         else skip
          end
       end
       meth CompileQuery(Query)
@@ -479,17 +477,16 @@ local
              ?DeclaredGVs ?GS ?FreeGVs}
             local Done in
                proc {AnnotateGlobalVars}
-                  case {IsFree Done} then
+                  if {IsFree Done} then
                      {@reporter
                       logSubPhase('determining nonlocal variables ...')}
                      {ForAll GS
                       proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
                      Done = unit
-                  else skip
                   end
                end
             end
-            case CompilerStateClass, getSwitch(warnredecl $) then
+            if CompilerStateClass, getSwitch(warnredecl $) then
                {ForAll DeclaredGVs
                 proc {$ GV} PrintName = {GV getPrintName($)} in
                    case CompilerStateClass, lookupVariableInEnv(PrintName $)
@@ -500,7 +497,7 @@ local
                        warn(kind: 'warning'
                             msg: ('redeclaring top-level variable '#
                                   pn(PrintName))
-                            items: case C == unit then
+                            items: if C == unit then
                                       [line('previously declared via putEnv')
                                        {GV getCoord($)}]
                                    else
@@ -509,13 +506,11 @@ local
                                    end)}
                    end
                 end}
-            else skip
             end
-            case {@reporter hasSeenError($)} then
+            if {@reporter hasSeenError($)} then
                raise rejected end
-            else skip
             end
-            case CompilerStateClass, getSwitch(staticanalysis $) then
+            if CompilerStateClass, getSwitch(staticanalysis $) then
                {@reporter logPhase('static analysis ...')}
                CompilerStateClass, annotateEnv(FreeGVs)
                {AnnotateGlobalVars}
@@ -523,20 +518,17 @@ local
                case GS of GS|GSr then
                   {GS staticAnalysis(@reporter self GSr)}
                end
-            else skip
             end
-            case {@reporter hasSeenError($)} then
+            if {@reporter hasSeenError($)} then
                raise rejected end
-            else skip
             end
-            case CompilerStateClass, getSwitch(warnunused $) then W in
+            if CompilerStateClass, getSwitch(warnunused $) then W in
                {@reporter logPhase('classifying variable occurrences ...')}
                {AnnotateGlobalVars}
                CompilerStateClass, getSwitch(warnunusedformals ?W)
                {ForAll GS proc {$ GS} {GS markFirst(W @reporter)} end}
-            else skip
             end
-            case CompilerStateClass, getSwitch(showdeclares $)
+            if CompilerStateClass, getSwitch(showdeclares $)
                andthen DeclaredGVs \= nil
             then
                {@reporter userInfo('Declared variables:\n')}
@@ -548,9 +540,8 @@ local
                    {@reporter userInfo('  '#{V getPrintName($)}#': '#
                                        {V outputDebugType($)}#'\n')}
                 end}
-            else skip
             end
-            case CompilerStateClass, getSwitch(core $) then R1 R2 FS in
+            if CompilerStateClass, getSwitch(core $) then R1 R2 FS in
                {@reporter logPhase('writing core representation ...')}
                R1 = debug(realcore:
                              CompilerStateClass, getSwitch(realcore $)
@@ -571,9 +562,8 @@ local
                          format(break))
                {@reporter displaySource('Oz Compiler: Core Output' '.ozi'
                                         {FormatStringToVirtualString FS}#'\n')}
-            else skip
             end
-            case CompilerStateClass, getSwitch(codegen $) then
+            if CompilerStateClass, getSwitch(codegen $) then
                GPNs Code MyAssembler
             in
                {@reporter logPhase('generating code ...')}
@@ -591,13 +581,13 @@ local
                                            getSwitch(debuginfocontrol $))
                                        verify: false
                                        peephole: true)}
-               case CompilerStateClass, getSwitch(ozma $) then
-                  case GPNs == nil orelse GPNs == ['`runTimeDict`'] then VS in
+               if CompilerStateClass, getSwitch(ozma $) then
+                  if GPNs == nil orelse GPNs == ['`runTimeDict`'] then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
                      {MyAssembler output(?VS)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
-                  elsecase GPNs of GPN|GPNr then
+                  else GPN|GPNr = GPNs in
                      {@reporter error(kind: 'Ozma error'
                                       msg: ('No free variables allowed '#
                                             'when compiling for Ozma')
@@ -608,7 +598,7 @@ local
                                                        end pn(GPN)})])}
                   end
                else
-                  case CompilerStateClass, getSwitch(outputcode $) then VS in
+                  if CompilerStateClass, getSwitch(outputcode $) then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
                      VS = case GPNs of nil then '%% No Global Registers\n'
                           else
@@ -621,9 +611,8 @@ local
                           end#{MyAssembler output($)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
-                  else skip
                   end
-                  case CompilerStateClass, getSwitch(feedtoemulator $) then
+                  if CompilerStateClass, getSwitch(feedtoemulator $) then
 \ifndef NO_ASSEMBLER
                      Globals Proc P0 P
                   in
@@ -641,21 +630,21 @@ local
                         {MyAssembler load(Globals ?P0)}
                      end
                      CompilerInternal, ExecuteUninterruptible(Proc)
-                     case CompilerStateClass, getSwitch(runwithdebugger $) then
+                     if CompilerStateClass, getSwitch(runwithdebugger $) then
                         proc {P} {Debug.breakpoint} {P0} end
                      else
                         P = P0
                      end
-                     case CompilerStateClass, getSwitch(threadedqueries $) then
+                     if CompilerStateClass, getSwitch(threadedqueries $) then
                         OPI = {Property.condGet 'opi.compiler' false}
                      in
                         {@reporter
                          logSubPhase('executing in an independent thread ...')}
-                        case OPI of false then skip
-                        elsecase {OPI getCompiler($)} == @wrapper then
+                        if OPI \= false
+                           andthen {OPI getCompiler($)} == @wrapper
+                        then
                            % this helps Ozcar detect queries from the OPI:
                            {Thread.setId {Thread.this} 1}
-                        else skip
                         end
                         thread {P} end
                      else
@@ -669,7 +658,6 @@ local
                                       msg: ('Loading of code not supported '#
                                             'by this compiler'))}
 \endif
-                  else skip
                   end
                end
             else skip
@@ -696,9 +684,9 @@ local
          T Completed Exceptionless RaiseOnBlock
       in
          T = {Thread.this}
-         thread
+         thread OPI in
             ExecutingThread <- {Thread.this}
-            case IsCompilerThread
+            if IsCompilerThread
                andthen CompilerStateClass, getSwitch(watchdog $)
             then
                %--** the following lines are needed because sadly
@@ -707,15 +695,11 @@ local
                {Wait System}
                {Wait Error}
                {Thread.setRaiseOnBlock {Thread.this} true}
-            else skip
             end
-            case {Property.condGet 'opi.compiler' false} of false then skip
-            elseof OPI then
-               case {OPI getCompiler($)} == @wrapper then
-                  % this helps Ozcar detect queries from the OPI:
-                  {Thread.setId {Thread.this} 1}
-               else skip
-               end
+            OPI = {Property.condGet 'opi.compiler' false}
+            if OPI \= false andthen {OPI getCompiler($)} == @wrapper then
+               % this helps Ozcar detect queries from the OPI:
+               {Thread.setId {Thread.this} 1}
             end
             try
                {P}
@@ -731,17 +715,14 @@ local
          {Thread.setRaiseOnBlock T false}
          {Wait Completed}
          {Thread.setRaiseOnBlock T RaiseOnBlock}
-         case {IsDet Exceptionless} then skip
-         elsecase IsCompilerThread then
-            raise crashed end
-         else
-            raise aborted end
+         if {IsFree Exceptionless} then
+            raise if IsCompilerThread then crashed else aborted end end
          end
       end
    end
 
    proc {TypeCheck P M I A}
-      case {P M.I} then skip
+      if {P M.I} then skip
       else {Exception.raiseError compiler(invalidQuery M I A)}
       end
    end
@@ -774,7 +755,7 @@ in
       %%
 
       meth register(P)
-         case {IsPort P} then skip
+         if {IsPort P} then skip
          else {Exception.raiseError compiler(register P)}
          end
          lock self.RegistrationLock then
@@ -792,10 +773,9 @@ in
          end
       end
       meth NotifyQueue(Qs P)
-         case {IsDet Qs} then Id#M|Qr = Qs in
+         if {IsDet Qs} then Id#M|Qr = Qs in
             {Send P newQuery(Id M)}
             CompilerEngine, NotifyQueue(Qr P)
-         else skip
          end
       end
       meth unregister(P)
@@ -815,7 +795,7 @@ in
 
       meth enqueue(Ms ?Ids <= _)
          case Ms of _|Mr then
-            case {IsList Mr} then skip
+            if {IsList Mr} then skip
             else {Exception.raiseError compiler(invalidQuery Ms)}
             end
             lock self.QueueLock then
@@ -893,7 +873,7 @@ in
          end
       end
       meth ClearQueue(Qs)
-         case {IsDet Qs} then Id#_|Qr = Qs in
+         if {IsDet Qs} then Id#_|Qr = Qs in
             CompilerEngine, notify(removeQuery(Id))
             CompilerEngine, ClearQueue(Qr)
          else
@@ -901,8 +881,8 @@ in
          end
       end
       meth Dequeue(Qs Id ?NewQs)
-         case {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
-            case Id == Id0 then
+         if {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
+            if Id == Id0 then
                NewQs = Qr
                CompilerEngine, notify(removeQuery(Id))
             else NewQr in
@@ -917,19 +897,17 @@ in
       end
 
       meth RunQueue()
-         case {IsFree @QueriesHd} then
+         if {IsFree @QueriesHd} then
             CompilerEngine, notify(idle())
             {Wait @QueriesHd}
             CompilerEngine, notify(busy())
-         else skip
          end
          try
             lock self.QueueLock then Qs in
                Qs = @QueriesHd
-               case {IsDet Qs} then Id#M|Qr = Qs in
+               if {IsDet Qs} then Id#M|Qr = Qs in
                   QueriesHd <- Qr
                   raise query(Id M) end   % unlock the QueueLock
-               else skip
                end
             end
          catch query(Id M) then

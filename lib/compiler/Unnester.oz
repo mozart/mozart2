@@ -556,7 +556,8 @@ in
             end
             Unnester, UnnestProc(FEs FS C ?GS)
             {@BA closeScope(?GFormals)}
-            IsStateUsing = (StateUsed <- OldStateUsed)
+            IsStateUsing = @StateUsed
+            StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing
                        {Map ProcFlags fun {$ fAtom(A _)} A end} C)}
@@ -577,7 +578,8 @@ in
             end
             Unnester, UnnestProc(NewFEs FE2 C ?GS)
             {@BA closeScope(?GFormals)}
-            IsStateUsing = (StateUsed <- OldStateUsed)
+            IsStateUsing = @StateUsed
+            StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
                   init(GVO GFormals GS IsStateUsing
                        {Map ProcFlags fun {$ fAtom(A _)} A end} C)}

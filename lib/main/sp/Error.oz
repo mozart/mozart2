@@ -191,11 +191,11 @@ define
       in
          fun {PrintNameToVS PrintName}
             case PrintName of unit then '_'
-            elsecase {Atom.toString PrintName} of &`|Sr then
+            elsecase {Atom.toString {System.printName PrintName}} of &`|Sr then
                &`|{FoldLTail Sr EscapeVariableChar $ nil}
             elsecase PrintName of nil then "nil"
             [] '#' then "#"
-            else PrintName
+            else {System.printName PrintName}
             end
          end
       end

@@ -182,6 +182,8 @@ in
             [] '#' then W={Width V} V2={Tuple.make '#' W} in
                {HashVS W V V2} V2
             end
+         [] byteString then
+            {QuoteString {ByteString.toString V}}
          end
       end
    in
@@ -283,67 +285,34 @@ in
    %%
    %%
    %% Generate a chunk's print name;
-   fun {GenChunkPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Ch>'
-      else '<Chunk>'
-      end
-   end
-
    %%
-   fun {GenDictionaryPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Dict>'
-      else '<Dict>'
-      end
-   end
 
-   %%
-   fun {GenArrayPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Array>'
-      else '<Array>'
-      end
-   end
-
-   %%
-   fun {GenBitArrayPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Bit Array>'
-      else '<Bit Array>'
-      end
-   end
-
-   %%
-   fun {GenPortPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Port>'
-      else '<Port>'
-      end
-   end
-
-   %%
-   fun {GenLockPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Lock>'
-      else '<Lock>'
-      end
-   end
-
-   %%
    fun {GenThreadPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Thr>'
+      if {Store read(StoreSmallNames $)} then '<Thr>'
       else '<Thread: ' # {Debug.getId Term} # '>'
       end
    end
 
-   %%
-   fun {GenSpacePrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Space>'
-      else '<Space>'
+   local
+      fun {GenGenName TypeName}
+         ShortName = {VirtualString.toAtom '<'#TypeName#'>'}
+         LongName  = {VirtualString.toAtom '<'#TypeName#' @ '}
+      in
+         fun {$ Term Store}
+            if {Store read(StoreSmallNames $)} then ShortName
+            else LongName#{AddrOf Term}#'>'
+            end
+         end
       end
+   in
+      GenChunkPrintName      = {GenGenName 'Chunk'}
+      GenDictionaryPrintName = {GenGenName 'Dict'}
+      GenArrayPrintName      = {GenGenName 'Array'}
+      GenBitArrayPrintName   = {GenGenName 'BitArray'}
+      GenPortPrintName       = {GenGenName 'Port'}
+      GenLockPrintName       = {GenGenName 'Lock'}
+      GenSpacePrintName      = {GenGenName 'Space'}
+      GenCellPrintName       = {GenGenName 'Cell'}
    end
 
    %%
@@ -454,16 +423,6 @@ in
             '<Procedure: ' # PN # '/' # {Procedure.arity Term} #
             ' @ ' # {AddrOf Term} # '>'
          end
-      end
-   end
-
-   %%
-   %%
-   %% Generate a cell's print name;
-   fun {GenCellPrintName Term Store}
-      %%
-      case {Store read(StoreSmallNames $)} then '<Cell>'
-      else '<Cell @ ' # {AddrOf Term} # '>'
       end
    end
 
@@ -725,12 +684,53 @@ in
          end
       end
 
-      %%
       meth otherwise(Message)
          ControlObject , processOtherwise('AtomObject::' Message)
       end
 
-      %%
+   end
+
+   %%
+   %%
+   %% ByteString
+   %%
+   class ByteStringTermObject from MetaTermObject
+
+      feat
+         type: T_ByteString
+
+      meth makeTerm
+         Name = if {self.store read(StoreAreVSs $)} then
+                   {GenVSPrintName self.term}
+                else
+                   {Value.toVirtualString self.term 1 1}
+                end
+      in
+         RepManagerObject , insert(str: Name)
+      end
+
+      meth otherwise(Message)
+         ControlObject , processOtherwise('ByteStringObject::' Message)
+      end
+
+   end
+
+   %%
+   %%
+   %% BitString
+   %%
+   class BitStringTermObject from MetaTermObject
+      feat
+         type: T_BitString
+
+      meth makeTerm
+         RepManagerObject ,insert(str:{Value.toVirtualString self.term 1 1})
+      end
+
+      meth otherwise(Message)
+         ControlObject , processOtherwise('BitStringObject::' Message)
+      end
+
    end
 
    %%
@@ -2767,31 +2767,6 @@ in
                end
             end
 
-            %%
-            %% ... Otherwise, when a watchpoint is NOT installed
-            %% right at the beginning, we should check whether
-            %% something has happend with a variable *meanwhile*.
-            %% This could be done as follows (in addition, the
-            %% VariableTermObject must keep track of a print name;)
-            %%
-%             case
-%                %%
-%                %% Check #1: is it still a variable at all??
-%                {self CheckIsVar($)} orelse
-%                %%
-%                %% Check #2: the printname (for the case when one
-%                %% variable is bound to another one);
-%                {VirtualString.toString self.name} ==
-%                {VirtualString.toString {self GetName($)}} orelse
-%                %%
-%                %% Check #3: have we got coreferences between shown
-%                %% variables? Note that this case is not covered in
-%                %% general by the check #2;
-%                %%
-%                {self  isCoreferenced($)}
-%             then ControlObject , checkTermReq
-%             else skip
-%             end
          end
       end
 
@@ -2807,33 +2782,33 @@ in
          type: T_Variable
 
          %%
-         %% Yields 'true' if it is still an (unconstrained!) variable;
-         %% It is not necessary any longer since the 'SetWatchPoint'
-         %% does not perform any "post-checks";
-         %%
-%       meth !CheckIsVar($)
-%          local Term in
-%             Term = self.term
-%             %%
-%             %%  There could happen just everything: gets a value or
-%             %% some other (derived) type of variables;
-%
-%             case {IsVar Term} then
-%                case {IsRecordCVar Term} then false
-%                elsecase {IsFdVar Term} then false
-%                elsecase {IsMetaVar Term} then false
-%                else true
-%                end
-%             else false
-%             end
-%          end
-%       end
-
-         %%
-         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'VariableTermObject::makeTerm is applied' # self.term}
+\endif
+         %%
+         %% *First*, set a watchpoint;
+         I_MetaVariableTermObject , SetWatchPoint
+
+         %%
+         RepManagerObject , insert(str: {self GetName($)})
+      end
+
+      %%
+   end
+
+   %%
+   %% Futures
+   %%
+   class FutureTermObject from I_MetaVariableTermObject
+                               %%
+      feat
+         type: T_Future
+
+
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'FutureTermObject::makeTerm is applied' # self.term}
 \endif
          %%
          %% *First*, set a watchpoint;
@@ -2854,16 +2829,6 @@ in
                                  %%
       feat
          type: T_FDVariable
-
-         %%
-         %% Yields 'true' if it is still a FD variable;
-         %%
-%       meth !CheckIsVar(?Is)
-%          %%
-%          %%  There could happen only one thing: it can get a value;
-%          %%
-%          Is = {IsVar self.term}
-%       end
 
          %%
          %%

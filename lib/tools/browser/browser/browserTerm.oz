@@ -187,21 +187,23 @@ in
          [] 'space'   then T_Space
 
          % everything else is a chunk
-         else CW in
-            CW = {ChunkWidth Term}
-            case {Object.is Term} then
-               case CW of 0 then T_PrimObject else T_CompObject end
-            elsecase {Class.is Term} then
-               case CW of 0 then T_PrimClass else T_CompClass end
-            elsecase {Dictionary.is Term} then T_Dictionary
-            elsecase {Array.is Term} then T_Array
-            elsecase {Port.is Term} then T_Port
-            elsecase {Lock.is Term} then T_Lock
-            elsecase {BitArray.is Term} then T_BitArray
-            elsecase CW of 0 then T_PrimChunk else T_CompChunk
-            end
-
+         [] object  then
+            if {ChunkWidth Term}==0 then T_PrimObject else T_CompObject end
+         [] 'class' then
+            if {ChunkWidth Term}==0 then T_PrimClass else T_CompClass end
+         [] dictionary then T_Dictionary
+         [] array then T_Array
+         [] bitArray then T_BitArray
+         [] 'loc' then T_Lock
+         [] port then T_Port
+         [] bitString then T_BitString
+         [] byteString then T_ByteString
+         [] chunk then
+            if {ChunkWidth Term}==0 then T_PrimChunk else T_CompChunk end
+         else
+            T_Unknown
          end
+      [] future then T_Future
       else T_Unknown
       end
    end
@@ -240,9 +242,11 @@ in
       [] !T_FDVariable     then FDVariableTermObject
       [] !T_FSet           then FSetTermObject
       [] !T_CtVariable     then CtVariableTermObject
+      [] !T_Future         then FutureTermObject
       [] !T_Unknown        then UnknownTermObject
+      [] !T_BitString      then BitStringTermObject
+      [] !T_ByteString     then ByteStringTermObject
       else
-         {BrowserError 'Unknown type in BrowserTerm.getObjClass: '}
          UnknownTermObject
       end
    end
@@ -255,24 +259,8 @@ in
    fun {CheckGraph STType}
       %%
       case STType
-      of !T_Atom           then false
-      [] !T_Int            then false
-      [] !T_Float          then false
-      [] !T_Name           then false
-      [] !T_ForeignPointer then false
-      [] !T_Procedure      then false
-      [] !T_Cell           then false
-      [] !T_PrimChunk      then false
-      [] !T_Dictionary     then false
-      [] !T_Array          then false
-      [] !T_BitArray       then false
-      [] !T_Lock           then false
-      [] !T_Thread         then false
-      [] !T_Space          then false
-      [] !T_CompChunk      then true
-      [] !T_PrimObject     then false
+      of !T_CompChunk      then true
       [] !T_CompObject     then true
-      [] !T_PrimClass      then false
       [] !T_CompClass      then true
       [] !T_List           then true
       [] !T_FCons          then true
@@ -280,14 +268,7 @@ in
       [] !T_Tuple          then true
       [] !T_Record         then true
       [] !T_HashTuple      then true
-      [] !T_Variable       then false
-      [] !T_FDVariable     then false
-      [] !T_FSet           then false
-      [] !T_CtVariable     then false
-      [] !T_Unknown        then false
       else
-         {BrowserWarning
-          'Unknown type in BrowserTerm.checkGraph' # STType}
          false
       end
    end
@@ -299,10 +280,7 @@ in
    fun {CheckMinGraph STType}
       %%
       case STType
-      of !T_Atom           then false
-      [] !T_Int            then false
-      [] !T_Float          then false
-      [] !T_Name           then true
+      of !T_Name           then true
       [] !T_ForeignPointer then true
       [] !T_Procedure      then true
       [] !T_Cell           then true
@@ -320,7 +298,6 @@ in
       [] !T_CompClass      then true
       [] !T_List           then true
       [] !T_FCons          then true
-         %% when changed, check the 'ListTermObject::GetElement';
       [] !T_Tuple          then true
       [] !T_Record         then true
       [] !T_HashTuple      then true
@@ -328,10 +305,10 @@ in
       [] !T_FDVariable     then true
       [] !T_FSet           then true
       [] !T_CtVariable     then true
-      [] !T_Unknown        then false
+      [] !T_Future         then true
+      [] !T_BitString      then true
+      [] !T_ByteString     then true
       else
-         {BrowserWarning
-          'Unknown type in BrowserTerm.checkMinGraph' # STType}
          false
       end
    end

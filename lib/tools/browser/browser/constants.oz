@@ -77,6 +77,8 @@ T_PrimObject    = {NewName}
 T_PrimClass     = {NewName}
 %%
 T_ForeignPointer= {NewName}
+T_BitString     = {NewName}
+T_ByteString    = {NewName}
 
 %%
 %% group #2: compound values;
@@ -108,6 +110,7 @@ T_Space         = {NewName}
 %% we say that this is *something* of the type T_Variable;
 %% Of course, such operation is not monotonic, but we need it in browser.
 T_Variable      = {NewName}
+T_Future        = {NewName}
 %%  ... and FD variable;
 T_FDVariable    = {NewName}
 %%  ... and generic constraint variable;

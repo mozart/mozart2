@@ -193,6 +193,8 @@ define
    PrimChunkTermObject
    DictionaryTermObject
    ArrayTermObject
+   BitStringTermObject
+   ByteStringTermObject
    BitArrayTermObject
    PortTermObject
    LockTermObject
@@ -209,6 +211,7 @@ define
    CompObjectTermObject
    CompClassTermObject
    VariableTermObject
+   FutureTermObject
    FDVariableTermObject
    FSetTermObject
    CtVariableTermObject

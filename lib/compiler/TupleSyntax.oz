@@ -32,8 +32,12 @@ fun {CoordinatesOf P}
    [] fAssign(E _ _) then {CoordinatesOf E}
    [] fOrElse(E _ _) then {CoordinatesOf E}
    [] fAndThen(E _ _) then {CoordinatesOf E}
-   [] fOpApply(Op Es C) then
-      case Op of '~' then C   % prefix operator
+   [] fOpApplyStatement(_ Es C) then
+      case Es of [_] then C   % prefix operator
+      else {CoordinatesOf Es.1}   % infix operator
+      end
+   [] fOpApply(_ Es C) then
+      case Es of [_] then C   % prefix operator
       else {CoordinatesOf Es.1}   % infix operator
       end
    [] fFdCompare(_ E _ _) then {CoordinatesOf E}

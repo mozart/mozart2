@@ -110,7 +110,7 @@ QuietInterface.oz
    messages internally and provides methods for asking for the
    presence of errors and for retrieving the compiler's messages.
 
-CompilerPanel.oz
+CompilerPanelClass.oz
    compiler panel using Tcl/Tk.
 
 Doc/TupleSyntax

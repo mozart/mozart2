@@ -62,7 +62,7 @@ local
    proc {Do_Method M U} V OK in
       try {M {UrlToString U} V} OK=true
       catch system(...) then     OK=false
-      [] error(dp(generic 'Error in URL handler' _) ...)
+      [] error(dp(generic 'URLhandler' _ _) ...)
       then                       OK=false
       end
       if OK then raise found(V) end else skip end

@@ -156,7 +156,7 @@ local
                                    {PV ' ('}
                                    {ForAll
                                     [&r#run &g#gc &s#system &c#copy
-                                     &p#propagate &l#load &t#total]
+                                     &p#propagate &t#total]
                                     PT}
                                    {PV ' )'}
                                 else skip
@@ -181,7 +181,7 @@ local
                      {PV 'Total time: '}
                      {ForAll
                       [&r#run &g#gc &s#system &c#copy
-                       &p#propagate &l#load &t#total]
+                       &p#propagate &t#total]
                       PT}
                      {PV '\n'}
                   else skip

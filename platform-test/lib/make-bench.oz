@@ -180,7 +180,7 @@ local
                end
                %% Go for it
 
-%              {Property.put 'time.detailed' true}
+               {Property.put 'time.detailed' Argv.detailed}
 
                % StartTime = {Property.get time}
             in
@@ -196,6 +196,9 @@ local
                 in
                    {PI {Label T}#':\n'}
                    local
+                      {System.gcDo}
+                      {System.gcDo}
+                      {System.gcDo}
                       {System.gcDo}
                       T0 = {Property.get time}
                       N={ComputeMinTime T0 Argv.mintime Test}
@@ -247,6 +250,7 @@ local
    record(
       help(rightmost char: [&h &?] type: bool default: false)
       usage(alias: help)
+      detailed(rightmost type:bool default:false)
       gc(rightmost type: int(min: 0) default: 0)
       ignores(multiple type: list(string) default: nil)
       keys(multiple type: list(string) default: nil)

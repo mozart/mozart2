@@ -52,7 +52,7 @@ FBASE = \
 BASE = $(FBASE:%=./base/%.ozf)
 
 FBENCH = \
-        nrev tak fd compiler diff
+        nrev tak fd compiler diff knights bridge
 
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
@@ -77,8 +77,9 @@ SONATIVES = $(FNATIVES:%=%.so-$(OZPLATFORM))
 DIRS = base space fd fs scheduling dp tools bench dp-bench
 
 # All tests
-COMPONENTS = \
-        $(BASE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS) \
+TESTCOMPONENTS = \
+        $(BASE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS)
+BENCHCOMPONENTS = \
         $(BENCH)
 OTHERS= dp/TestMisc.ozf
 
@@ -143,16 +144,16 @@ dirs:
 # $(COMPONENTS): dirs
 
 TESTSRCS=make-test engine passed failed help-string compute-tests
-oztest: $(TESTSRCS:%=./lib/%.oz) $(COMPONENTS) $(OTHERS)
+oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
-        $(OZE) ./make-test --verbose $(COMPONENTS:%=`pwd`/%)
+        $(OZE) ./make-test --verbose $(TESTCOMPONENTS:%=`pwd`/%)
         chmod +x oztest
         -rm -f ./make-test
 
 BENCHSRCS=make-bench engine compute-tests help-bench
-ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS) $(OTHERS)
+ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
-        $(OZE) ./make-bench --verbose $(COMPONENTS:%=`pwd`/%)
+        $(OZE) ./make-bench --verbose $(BENCHCOMPONENTS:%=`pwd`/%)
         chmod +x ozbench
         -rm -f ./make-bench
 

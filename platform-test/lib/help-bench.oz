@@ -19,6 +19,8 @@ ten percent.
 The following options are supported:
 --[no]verbose, -v       [default=no]
         Print verbose output
+--[no]detailed,         [default=no]
+        Print detailed timings
 --usage, --help, -h, -?
         Print this text
 --gc=<int>              [default=0]

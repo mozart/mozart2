@@ -54,17 +54,6 @@
 %%
 
 local
-   fun {PosSmaller Pos1 Pos2}
-      case Pos1 of I|Ir then
-         case Pos2 of J|Jr then
-            {CompilerSupport.featureLess I J} orelse
-            I == J andthen {PosSmaller Ir Jr}
-         [] nil then false
-         end
-      [] nil then true
-      end
-   end
-
    fun {MayMoveOver Test1 Test2}
       case Test1 of scalar(L1) then
          case Test2 of scalar(L2) then L1 \= L2
@@ -100,27 +89,6 @@ local
       end
    end
 
-   fun {FindPos Tree Pos0 ?NewTree ?Hole ?RestTree}
-      case Tree of node(Pos Test ThenTree ElseTree Count Shared) then
-         if Pos == Pos0 then
-            NewTree = Hole
-            RestTree = Tree
-            true
-         elseif {PosSmaller Pos Pos0} then NewElseTree in
-            NewTree = node(Pos Test ThenTree NewElseTree Count Shared)
-            {FindPos ElseTree Pos0 ?NewElseTree ?Hole ?RestTree}
-         else
-            NewTree = Hole
-            RestTree = Tree
-            false
-         end
-      else
-         NewTree = Hole
-         RestTree = Tree
-         false
-      end
-   end
-
    fun {FindTest Tree Pos0 Test0 ?NewTree ?Hole ?RestTree}
       case Tree of node(Pos Test ThenTree ElseTree Count Shared) then
          if Pos \= Pos0 then false
@@ -152,14 +120,14 @@ local
       case Pattern of nil then
          %% Tree is unreachable
          NewTree = leaf(Then _)
-      [] Pos#Test|Rest then Hole1 RestTree1 Hole RestTree in
-         if {FindPos Tree Pos ?NewTree ?Hole1 ?RestTree1}
-            andthen {FindTest RestTree1 Pos Test ?Hole1 ?Hole ?RestTree}
+      [] Pos#Test|Rest then
+         case Tree of node(!Pos _ _ _ _ _) andthen Hole RestTree in
+            {FindTest Tree Pos Test ?NewTree ?Hole ?RestTree}
          then
             Hole = {MergeSub Rest Then RestTree}
          else ThenTree in
             ThenTree = {PatternToTree Rest Then}
-            Hole1 = node(Pos Test ThenTree RestTree1 {NewCell 0} _)
+            NewTree = node(Pos Test ThenTree Tree {NewCell 0} _)
          end
       end
    end

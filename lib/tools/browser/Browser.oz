@@ -21,14 +21,14 @@
 
 %\define FEGRAMED
 
-\ifndef NODECLARE
+
 
 declare
 Browse
 BrowserModule
 in
 
-\endif % NODECLARE
+
 
 %%
 \ifdef DEBUG_OPEN

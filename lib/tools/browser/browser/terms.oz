@@ -496,7 +496,7 @@ in
          %%
          if ChFDDom = True then True
          [] GotBound = True then True
-         fi
+         end
       end
    end
 
@@ -515,7 +515,7 @@ in
          %%
          if ChMetaVar = True then True
          [] GotBound = True then True
-         fi
+         end
       end
    end
 
@@ -591,7 +591,7 @@ in
                else {DoInfList Xr Yr (Depth-1)}
                end
             else False
-            fi
+            end
          else False
          end
       end
@@ -1758,7 +1758,7 @@ in
                   if GotLabel = True then {self replaceLabel}
                   [] GotClosed = True then true
                      %% cancel watching;
-                  fi
+                  end
                end
             else true
             end
@@ -1855,7 +1855,7 @@ in
                 if Vp in {SubtreeC Term E _} then
                    I = E|Vp Vp
                 [] true then I
-                fi
+                end
              end
 %  The following doesn't work because 'TestC' fails if
 % the record is determined (why ??!);
@@ -1933,7 +1933,7 @@ in
                      {self initTypeWatching}
                   end
                [] Cancel = True then true
-               fi
+               end
             end
          else true              % nothing to do - it's a proper record;
          end
@@ -2121,7 +2121,7 @@ in
                if ChVar = True then
                   {self.parentObj renewNum(self Depth)}
                [] Cancel = True then true
-               fi
+               end
             end
 
             %%  Check #1: is it still an (unconstrained) variable at all??
@@ -2278,7 +2278,7 @@ in
                if ChFDVar = True then
                   {self.parentObj renewNum(self Depth)}
                [] Cancel = True then true
-               fi
+               end
             end
 
             %%  Check #1: is it still a FD variable at all??
@@ -2424,7 +2424,7 @@ in
                if ChMetaVar = True then
                   {self.parentObj renewNum(self Depth)}
                [] Cancel = True then true
-               fi
+               end
             end
 
             %%  Check #1: is it still a FD variable at all??

@@ -16,7 +16,7 @@ Switch            = on(SwitchName Coordinates)
                   | off(SwitchName Coordinates).
 SwitchName        = atom.
 
-Phrase            = fStepPoint(Phrase Coordinates)
+Phrase            = fStepPoint(Phrase atom Coordinates)
                   | fAnd(Phrase Phrase)
                   | fEq(Phrase Phrase Coordinates)
                   | fAssign(Phrase Phrase Coordinates)

@@ -1,0 +1,222 @@
+
+                Welcome to Oz Browser!
+
+
+0. About This Info.
+
+   This help note is written for the first reading of a
+novice Oz Browser User, although it can be used sometimes
+as reference material. More precise and complete
+information about Oz Browser can be found in the "DFKI Oz
+User's Manual".
+
+1. Getting Help.
+
+   This brief description can be invoked via the 'ctl-h'
+keyboard accelerator or via the 'Help' entry in the
+'Browser' menu.
+
+2. What is Oz Browser?
+
+   Oz Browser is a an output tool for displaying possibly
+partial information about the values of variables. Oz
+Browser
+
+o is simple: You do not need to learn much to use it.
+o is concurrent: Incrementally imposed constraints are
+     automatically visualized;
+o is flexible: The user can select from a variety  of
+     formats and options for convenient and efficient
+     use;
+o produces pretty output: Browser automatically
+     chooses a concise and elegant representation of
+     constraints;
+o can be customized via the procedure 'setParameter',
+     which is a member of the 'Browse' module;
+o can be used as an embedded viewing tool in any Oz
+     application.
+
+3. What is browsed by Oz Browser?
+
+   Oz Browser displays the current information about
+values of variables. This information is stated by means
+of constraints stored in constraint stores, called also
+blackboards. Constraint which describes a value of a
+variable is converted by Browser to a directed graph
+which is shown in textual form.
+
+   In the scope of the Oz Browser documentation, these
+graphs are called 'terms', and their components are
+called 'subterms'.
+
+   Additionally, certain kinds of constraints are treated
+specially; most essential of them are listed here:
+
+o  Fixed length lists are considered by Oz Browser as
+   compound values, for instance [1 2 3];
+o  Chunks (i.e. objects, procedures and cells) are
+   considered by Oz Browser as records with a special
+   representation. They have appropriate labels, for
+   instance <P/1 Test>. These records can be proper or
+   not depending on whether they have adjoined components
+   or not;
+o  Oz Classes are records with special labels, like
+   <C: UrObject>;
+o  Finite domain variables have a special representation.
+   For instance, if a FD variable is constrainted with
+   the domain {1,2,3,7,8,9}, then it is shown as
+   '_{ 1..3 7..10 }'.
+
+   Generally, Oz Browser tries to represent information
+browsed by it in the form syntactically acceptable by the
+Oz Compiler. See the Reference Manual for complete
+treatment of this topic.
+
+4. Invoking Oz Browser.
+
+   Browser can be invoked via the predefined procedure
+'Browse/1', for instance
+
+   {Browse 'Oz Browser is the right tool!'}
+
+   Browser should be used normally in the top-level
+computation space. Otherwise, browsing is not concurrent,
+and there is a number of restrictions on its
+functionality.
+
+5. The Buffering mechanism.
+
+   Every browsed term is stored in an internal FIFO
+buffer.  The size of this buffer is bounded and can be
+set via the 'Size' submenu of the 'Buffer' menu.
+
+   By default, all terms from the buffer are shown
+simultaneously in the text widget. This can be switched
+off via the 'last' or 'first' entries of the 'Navigate'
+menu, and switched back via the 'all' entry.
+
+6. Redraw and Rebrowse.
+
+   Browsed terms can be 'redraw'n or 'rebrowse'ed. The
+difference between these operations is that in the first
+case an internal representation of a term remains
+unchanged, whereas in the second one Browser acts as
+if new 'browse' commands were issued.
+
+   The 'rebrowse' command should be used if a wrong
+layout of the term was produced (due to a Browser or X11
+server problem), and the 'redraw' command practically in
+all other cases.
+
+7. The Output Format.
+
+   A subterm can be browsed completely, partially or it
+can be shown in the form '...' ('shrunken'), depending on
+the size of the term being browsed and the values of the
+'Depth', 'Width' and 'Nodes' parameters. Values of these
+parameters can be changed via the submenus of the 'View'
+menu.
+
+   The meaning of the 'Depth' and 'Width' parameters is
+obvious; 'Nodes' limits the total number of subtrees in a
+browsed term.
+
+   Note that increasing of the 'Depth' or 'Width'
+parameters automatically affects all actually shown
+terms.
+
+8. Stopping to browse.
+
+   Browsing of a term can be stopped via the 'ctl-s'
+keyboard accelerator or the 'Stop' entry of the 'Browser'
+menu. It does nothing else as sets the 'Nodes' parameter
+(from the 'View' menu) to zero, and means that every
+subterm which is currently not yet shown comes out in the
+shrunken form.
+
+   Note that 'ctl-s' breaks generation of an internal
+representation; the already produced part of it will be
+used for viewing, that takes certain amount of time.
+
+9. Navigating.
+
+   Every (sub)term except primitive ones can be
+'selected'.  This is achieved by clicking the left
+button.  Unselection is performed by clicking the right
+button. The last six operations from 'Navigate' menu can
+be applied to suitable selected (sub)terms.
+
+   The operations mentioned above can be invoked via
+keyboard accelerators, which are shown on the right side
+in the menus. Note that in this case a subterm does not
+need to be selected. You only have to move the mouse
+cursor to a term and hit the key.
+
+   Additionally, the 'expand' command can be invoked via
+a double-click of the left mouse button, and 'shrink' via
+a double-click of the right one.
+
+10. Coreferences and Cycles.
+
+   Browser can find and specially represent common
+subterms or cycles in a given term. In the first case, for
+every new subterm to be shown, an equal one is searched
+among already shown ones. If one was found, the new
+subterm is represented in the form 'R<number>', meaning
+'Reference number <number>'.  Simultaneously the 'old'
+(found) one gets the prefix 'R<number>=' in its
+representation.  Note that cycles are detected in this
+case too.
+
+   Searching for cycles is alike, but cycle names have
+the form 'C<number>'. Of course, searching for cycles has
+the lower computational complexity and should be
+preferred if possible.
+
+   Every reference can be 'dereferenced' via the 'deref'
+command: Browser will make a term with the corresponding
+prefix visible and select it.
+
+   The 'deref' command can be also invoked via a
+double-click of the middle mouse button.
+
+11. The Output Options.
+
+   There is also a number of modes which are controlled
+via the 'View' menu. Some of them are probably not quite
+obvious:
+
+'Scrolling' controls the position of the visible fragment
+   of the text widget. If this switch is on, then the
+   last browsed term is always visible;
+
+'Private fields' controls browsing of record subtrees
+   under feature names which are (Oz) names. If this
+   switch is off, a question mark is shown instead of
+   these subtrees;
+
+'Virtual strings' forces browsing of (Oz) virtual strings
+   in their textual representation;
+
+'Variables aligned' disables the placement of variables
+   in one row; instead, they are shown in one column;
+
+'Lists flat' switches on the special internal
+   representation of cyclic and incomplete lists. This is
+   much more efficient than a 'deep' one, but list
+   constructors cannot be selected separately;
+
+'Primitive terms active' enables selection of primitive
+   subterms;
+
+'Width inc' and 'Depth inc' stand for width and depth
+   increments correspondingly, and determine how many
+   subtrees are added to a term's representation when
+   the 'expand' command is called;
+
+12. Copy and Paste.
+
+   X11 selecting works in Browser too, but you have to
+click mouse buttons while pressing the 'shift' key. For
+instance, 'shift-button1' means setting the selection
+mark.

@@ -45,10 +45,10 @@ in
          ErrorCount <- 0
          Raised <- false
       end
-      meth ToTop()
+      meth ToTop(IsError)
          case @Raised then skip
          else
-            {self.Wrapper notify(toTop())}
+            case IsError then {self.Wrapper notify(toTop())} else skip end
             {self.Wrapper notify(unsuccessful())}
             Raised <- true
          end
@@ -165,7 +165,7 @@ in
                  kind: Kind <= unit
                  msg: Msg <= unit
                  body: Body <= nil) MaxNumberOfErrors in
-         Reporter, ToTop()
+         Reporter, ToTop(true)
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -186,7 +186,7 @@ in
                 kind: Kind <= unit
                 msg: Msg <= unit
                 body: Body <= nil)
-         Reporter, ToTop()
+         Reporter, ToTop(false)
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -197,7 +197,7 @@ in
                      end)}
       end
       meth addErrors(N)
-         Reporter, ToTop()
+         Reporter, ToTop(true)
          ErrorCount <- @ErrorCount + N
       end
       meth hasSeenError($)

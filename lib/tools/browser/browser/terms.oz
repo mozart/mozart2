@@ -1894,18 +1894,19 @@ in
          %%  Note that it covers also the case when 'tailVar' gets bound
          %% meanwhile;
          case <<isProperOFS($)>> then
-            Term Depth TailVar CancelVar
+            Term Depth TailVar CancelVar SpecsObj
          in
             %%
             Term = self.term
             Depth = @depth
             TailVar = @tailVar
             CancelReq <- CancelVar
+            SpecsObj = <<getSpecsObjOutInfo($ _)>>
 
-            %% Note that this conditional may not block the state;
+            %% Note that this conditional should not block the state;
             %% relational;
             thread
-               GotValue ChVar Cancel
+               GotValue ChVar Cancel OFSWidth ChWidth
             in
                job
                   GotValue = {IsValue TailVar}
@@ -1918,8 +1919,16 @@ in
                job
                   Cancel = {IsValue CancelVar}
                end
+               %%  should work without job...end too;
+               job
+                  OFSWidth = {WidthC Term}
+               end
+               job
+                  ChWidth = {IsValue OFSWidth}
+               end
 
                %%
+               %% test: {SpecsObj drawOFSWidth(5)}
                if GotValue = True then
                   %%
                   {self extend}
@@ -1932,6 +1941,12 @@ in
                      %%  wait for a 'TailVar';
                      {self initTypeWatching}
                   end
+               [] ChWidth = True then
+                  {SpecsObj drawOFSWidth(OFSWidth)}
+
+                  %%
+                  %%  it has got a record probably...
+                  {self initTypeWatching}
                [] Cancel = True then true
                end
             end

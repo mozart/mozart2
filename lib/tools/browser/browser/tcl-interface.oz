@@ -1233,6 +1233,20 @@ in
       end
 
       %%
+      %%  Set a mark to the left of the tag;
+      %%
+      meth setMarkOnTag(Tag NewMark)
+\ifdef DEBUG_TI
+         {Show 'tcl/tk: setMarkOnTag:'#Tag}
+\endif
+         %%
+         {self.browseWidget tk(mark set NewMark p(Tag last))}
+
+         %%
+         <<UrObject nil>>
+      end
+
+      %%
       %%  Duplicate mark, but with left gravity;
       %%
       meth duplicateMarkLG(Mark NewMark)

@@ -202,7 +202,13 @@ in
          widgetObj
          parentObj
          term: InitValue        % unique value;
+
+      %%
+      attr
+         shown: False
+         sync                   % bound to true when it gets shown;
          name: DOpenFS
+         num: ''
          size: {VSLength DOpenFS}
 
       %%
@@ -222,7 +228,7 @@ in
 
       %%
       meth getSize(?Size)
-         Size = self.size
+         Size = @size
       end
 
       %%
@@ -231,13 +237,47 @@ in
       end
 
       %%
+      %%  For OFS records - show the width of it;
+      %%  it might be used only if the term is shown;
+      meth drawOFSWidth(Num)
+         case @shown then
+            TmpMark
+         in
+            num <- Num
+            size <- {VSLength @name#@num}
+
+            %%
+            TmpMark = {self.widgetObj genTkName($)}
+            {self.widgetObj setMarkOnTag(self TmpMark)}
+
+            %%
+            {self.widgetObj delete(self)}
+            {self.widgetObj insertWithTag(TmpMark @name#@num [self])}
+
+            %%
+            {self.widgetObj unsetMark(TmpMark)}
+         else
+            SyncVar
+         in
+            SyncVar = @sync
+
+            %%
+            case {IsValue SyncVar} then
+               {self drawOFSWidth(Num)}
+            end
+         end
+      end
+
+      %%
       meth draw(Mark ?Sync)
          %%
          %%  Note: we don't need to stretch parent's tag explicitly,
          %% since records are "enclosed" structures;
-         {self.widgetObj insertWithTag(Mark self.name [self])}
+         {self.widgetObj insertWithTag(Mark @name#@num [self])}
 
          %%
+         shown <- True
+         @sync = True
          Sync = True
       end
 
@@ -245,11 +285,19 @@ in
       %%
       meth undraw
          {self.widgetObj [delete(self) deleteTag(self)]}
+
+         %%
+         sync <- _
+         shown <- False
       end
 
       %%
       meth setUndrawn
          {self.widgetObj deleteTag(self)}
+
+         %%
+         sync <- _
+         shown <- False
       end
 
       %%
@@ -296,6 +344,11 @@ in
       end
 
       %%
+      meth setNum(_)
+         {BrowserError ['PseudoTermTWQuestion::setNum ???']}
+      end
+
+      %%
       meth draw(Mark ?Sync)
          %%
          %%  Note: we don't need to stretch parent's tag explicitly,
@@ -307,7 +360,7 @@ in
       end
 
       %%
-      %%  Note: leave dots for responsibility of parent object;
+      %%  Note: leave question for responsibility of parent object;
       meth undraw
          true
       end
@@ -360,6 +413,11 @@ in
       %%
       meth checkLayout
          true
+      end
+
+      %%
+      meth setNum(_)
+         {BrowserError ['PseudoTermTWDotsQuestion::setNum ???']}
       end
 
       %%

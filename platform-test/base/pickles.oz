@@ -62,14 +62,23 @@ define
 
    Return =
    pickles(proc {$}
-              Tmp = {OS.tmpnam}
+              Tmp = {OS.tmpnam} LoadedGoods
            in
               % check nogoods
               {All Nogoods fun {$ X} {TrySave X Tmp}==[X] end}=true
 
               % check saving
               {TrySave Goods Tmp} = nil
-              {Pickle.load Tmp} = Goods
+              LoadedGoods = {Pickle.load Tmp}
+              %
+              cond Goods = LoadedGoods
+              then skip
+              else
+                 raise
+                    base(pickles('loaded goods mismatched:'
+                                 #Goods#LoadedGoods))
+                 end
+              end
 
               % check compressed save
               {Pickle.saveCompressed Goods Tmp 9}

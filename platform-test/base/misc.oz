@@ -186,7 +186,7 @@ define
          bug(proc {$}
                 X Y Z
              in
-                thread if thread X=Y end then Z = unit end end
+                thread cond thread X=Y end then Z = unit end end
                 {For 1 10000 1 proc {$ X} _=X*X end}
                 X=Y
                 {Wait Z}

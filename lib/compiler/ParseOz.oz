@@ -106,6 +106,8 @@ local
                 else
                    {Reporter M}
                 end
+             [] warn then
+                {Reporter M}
              [] logInsert then FileName Coord in
                 FileName = M.1
                 Coord = {CondSelect M 2 unit}

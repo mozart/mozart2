@@ -488,8 +488,7 @@ define
          {Adjoin Message
           error(loc: {GetExceptionLocation Exc}
                 info: {GetExceptionInfo Exc}
-                stack: {GetExceptionStack Exc}
-                footer: true)}
+                stack: {GetExceptionStack Exc})}
       end
 
       fun {GenericFormatter Msg Exc}
@@ -530,13 +529,14 @@ define
                             m:oz({GetExceptionDispatch ExcExc}))
                        line(BugReport)]
                loc: {GetExceptionLocation Exc}
-               stack: {GetExceptionStack Exc})
+               stack: {GetExceptionStack Exc}
+               footer: true)
       end
    in
       proc {PrintException Exc}
-         try
-            {System.printError
-             {MessageToVirtualString {ExceptionToMessage Exc}}}
+         try M in
+            M = {AdjoinAt {ExceptionToMessage Exc} footer true}
+            {System.printError {MessageToVirtualString M}}
          catch X then
             {System.printError
              {MessageToVirtualString {FormatReRaiseExc Exc X}}}

@@ -335,14 +335,10 @@ in
                                                        default:   "Oz Applet"))
                                            ArgSpec}
                             in
-                               fun {$ S}
+                               fun {$}
                                   OVs Rs
                                in
-                                  case {SystemGet internal}.browser then
-                                     OVs={WebPreProc S} Rs=nil
-                                  else
-                                     {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
-                                  end
+                                  {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
                                   {PostProc OVs Rs}
                                end
                             end

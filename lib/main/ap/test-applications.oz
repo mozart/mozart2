@@ -22,7 +22,7 @@
 
 
 {Application.applet
- '/home/ps-home/schulte/public_html/test-applet'
+ 'test-applet'
  c('SP':eager 'OP':eager 'WP':eager)
  fun {$ IMPORT}
     \insert 'SP.env'

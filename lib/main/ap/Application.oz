@@ -622,24 +622,37 @@ local
       Loader    = {RegistryGetLoader R
                    {Adjoin CompSpec c('WP': eager)}}
       ArgProc   = {Parser.applet ArgSpec}
-      SystemGet = System.get
    in
       proc {$}
-         Exit = {`Builtin` shutdown 1}
+         Exit   = {`Builtin` shutdown 1}
+         Status
       in
          try
-            {{`Builtin` 'PutProperty' 2} 'internal.applet' true}
-            Loaded    = {Loader}
-            Applet    = Loaded.'WP'.'Tk'.applet
-            Args      = case {SystemGet internal}.browser then
-                           thread {ArgProc Applet.rawArgs} end
-                        else
-                           {ArgProc unit}
-                        end
+            Loaded = {Loader}
+            Tk     = Loaded.'WP'.'Tk'
+
+            Args   = {ArgProc}
+
+            Top    = {New Tk.toplevel tkInit(withdraw: true
+                                             title:    Args.title
+                                             delete:   proc {$}
+                                                          Status = 0
+                                                       end)}
          in
-            Applet.args = Args
-            {{Functor Loaded} Applet Args}
-            {Wait _} % Never terminate!
+            {Tk.batch
+             case Args.width>0 andthen Args.height>0 then
+                [wm(geometry  Top Args.width#x#Args.height)
+                 wm(resizable Top false false)
+                 update(idletasks)
+                 wm(deiconify Top)]
+             else
+                [update(idletasks)
+                 wm(deiconify Top)]
+             end}
+
+            {{Functor Loaded} Top Args}
+
+            {Exit Status}
             % provide some error message
          catch E then
             {{{`Builtin` getDefaultExceptionHandler 1}} E}

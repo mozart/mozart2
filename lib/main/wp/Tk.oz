@@ -236,98 +236,26 @@ local
       end
    end
 
-   Magic = "Oz aPpLeT: the MOZART release"
+   Stream = local
+               HOME    = {OS.getEnv 'OZHOME'}
+               OSS#CPU = {System.get platform}
+               WISH    = case OSS=='win32' then 'ozwish.exe'
+                         else 'oz.wish.bin'
+                         end
+               CMD     = HOME # '/platform/'#OSS#'-'#CPU#'/'#WISH
+            in
+               {OS.putEnv 'TCL_LIBRARY' HOME#'/lib/wish/tcl'}
+               {OS.putEnv 'TK_LIBRARY'  HOME#'/lib/wish/tk'}
 
-   class TextFile from Open.text Open.file
-      prop final
-   end
-
-   class TextSock from Open.text Open.socket
-      prop final
-   end
-
-   fun {BrowserAppletGetArgs}
-      SI
-   in
-      try
-         SI = {New TextFile init(name: stdin flags: [read])}
-         {SI getS(Magic)}
-         {ForThread 1 {String.toInt {SI getS($)}} 1
-          fun {$ AVs _}
-             {SI getS($)}#{SI getS($)}|AVs
-          end nil}
-      finally
-         {SI close()}
-      end
-   end
-
-   proc {CreateSocket ?Sock0}
-      SO
-   in
-      try Sock Port in
-         SO = {New TextFile init(name:stdout)}
-         thread
-            Sock = {New TextSock server(port: ?Port)}
-         end
-         {SO write(vs: {OS.uName}.nodename#'\n')}
-         {SO write(vs: Port#'\n')}
-         Sock0 = Sock
-      finally
-         {SO close()}
-      end
-   end
-
-   SGI = {System.get internal}
-   Stream Applet
-   case SGI.browser then
-      %% Connect to already running plugin
-      Stream = {CreateSocket}
-      thread
-         Applet         = {New BrowserAppletToplevel tkInit}
-         Applet.rawArgs = {BrowserAppletGetArgs}
-      end
-   else
-      HOME   = {OS.getEnv 'OZHOME'}
-      {OS.putEnv 'TCL_LIBRARY' HOME#'/lib/wish/tcl'}
-      {OS.putEnv 'TK_LIBRARY'  HOME#'/lib/wish/tk'}
-      OSS#CPU = {System.get platform}
-      WISH    = case OSS=='win32' then 'ozwish.exe' else 'oz.wish.bin' end
-      Cmd     = HOME # '/platform/'#OSS#'-'#CPU#'/'#WISH
-   in
-      Stream = {New class $ from Open.pipe Open.text
+               {New class $ from Open.pipe Open.text
                        prop final
                     end
-                init(cmd:Cmd)}
-
-      case SGI.applet then
-         thread
-            Applet={New AppletToplevel tkInit(withdraw:true)}
-
-            local
-               Args = Applet.args
-            in
-               {TkBatch
-                case Args.width>0 andthen Args.height>0 then
-                   [wm(title Applet Args.title)
-                    wm(geometry  Applet Args.width#x#Args.height)
-                    wm(resizable Applet false false)
-                    update(idletasks)
-                    wm(deiconify Applet)]
-                else
-                   [wm(title Applet Args.title)
-                    update(idletasks)
-                    wm(deiconify Applet)]
-                end}
+                init(cmd:CMD)}
             end
-         end
-      else
-         Applet = unit
-      end
-   end
 
    ActionIdServer = {New Counter get(_)}
+
    TkDict         = {Dictionary.new}
-   AppletClosed   = {NewName}
 
    local
       TkInitStr =
@@ -787,49 +715,6 @@ local
       end
 
    end
-
-
-   class AppletToplevel from TkToplevel
-      prop final
-      feat args
-
-      meth tkClose
-         TkToplevel, tkClose
-         {System.exit 0}
-      end
-
-   end
-
-   class BrowserAppletToplevel from Widget
-      prop final
-      attr Action
-      feat rawArgs args
-      meth tkInit
-         ThisTclName = self.TclName
-         case {IsDet ThisTclName} then
-            {`RaiseError` tk(alreadyInitialized self tkInit)}
-         else skip end
-      in
-         self.TclSlaveEntry = nil
-         self.TclSlaves = [nil]
-         ThisTclName = ''
-         Action <- self#tkClose
-      end
-
-      meth tkDeleteAction(A)
-         Action <- A
-      end
-
-      meth !AppletClosed
-         case @Action of O#M then {O M} elseof A then {A} end
-      end
-
-      meth tkClose
-         {System.exit 0}
-      end
-
-   end
-
 
    class TkFrame from NoCommandWidget
       feat !TkClass:frame
@@ -1338,10 +1223,8 @@ local
         o(S configure command:        s(T xview))]}
    end
 
-   IsColor = case SGI.browser then true else
-                thread
-                   {TkReturnInt winfo(depth '.')}>1
-                end
+   IsColor = thread
+                {TkReturnInt winfo(depth '.')}>1
              end
 
    fun {DefineUserCmd TclCmd Action Args}
@@ -1420,7 +1303,6 @@ in
       addYScrollbar: AddYScrollbar
       addXScrollbar: AddXScrollbar
 
-      defineUserCmd: DefineUserCmd
-      applet:        Applet)
+      defineUserCmd: DefineUserCmd)
 
 end

@@ -19,18 +19,18 @@
 %%% WARRANTIES.
 %%%
 
- functor
- import
-    Module.load
-    System.{printInfo printError property}
-    Error.{msg formatLine}
-    OS.{putEnv getEnv system unlink tmpnam}
-    Open.file
-    Pickle.save
-    Compiler.{engine quietInterface}
-    Syslet
- body
-    Syslet.spec = plain
-    \insert BatchCompile
-    {Syslet.exit {BatchCompile Syslet.args}}
- end
+functor prop once
+import
+   Module.load
+   System.{printInfo printError property}
+   Error.{msg formatLine}
+   OS.{putEnv getEnv system unlink tmpnam}
+   Open.file
+   Pickle.save
+   Compiler.{engine quietInterface}
+   Syslet
+body
+   Syslet.spec = plain
+   \insert BatchCompile
+   {Syslet.exit {BatchCompile Syslet.args}}
+end

@@ -689,17 +689,20 @@ in
 
       local
          proc {DefExHdl Exc}
-            try
-               {Thread.setThisPriority high}
-               {LineOutput ErrorMsgDebug {FormatOzError Exc}}
-            catch X then
-               {LineOutput ErrorMsgDebug {FormatReRaiseExc Exc X}}
-            end
-            %% terminate local computation
-            if {System.onToplevel} then
-               {{Property.condGet 'errors.toplevel' ExitError}}
-            elseif {Label Exc}==failure then fail else
-               {{Property.condGet 'errors.subordinate' ExitError}}
+            %% ignore thread termination exception
+            case Exc of system(kernel(terminate) debug:_) then skip else
+               try
+                  {Thread.setThisPriority high}
+                  {LineOutput ErrorMsgDebug {FormatOzError Exc}}
+               catch X then
+                  {LineOutput ErrorMsgDebug {FormatReRaiseExc Exc X}}
+               end
+               %% terminate local computation
+               if {System.onToplevel} then
+                  {{Property.condGet 'errors.toplevel' ExitError}}
+               elseif {Label Exc}==failure then fail else
+                  {{Property.condGet 'errors.subordinate' ExitError}}
+               end
             end
          end
       in

@@ -248,8 +248,7 @@ local
 
    fun {MakeRecordArgument Feature}
       if {IsObject Feature} then value({Feature reg($)})
-      elseif {IsInt Feature} then number(Feature)
-      else literal(Feature)
+      else constant(Feature)
       end
    end
 
@@ -262,7 +261,7 @@ local
          value(ConsReg)
       [] nil then
          VHd = VTl
-         literal(nil)
+         constant(nil)
       end
    end
 
@@ -272,9 +271,7 @@ local
          {Feature reg(?Reg)}
       else
          {CS newReg(?Reg)}
-         VHd = if {IsInt Feature} then vEquateNumber(_ Feature Reg VTl)
-               else vEquateLiteral(_ Feature Reg VTl)
-               end
+         VHd = vEquateConstant(_ Feature Reg VTl)
       end
    end
 

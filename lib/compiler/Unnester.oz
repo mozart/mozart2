@@ -57,10 +57,9 @@ import
 export
    MakeExpressionQuery
    UnnestQuery
-%--**require
-%--**   FD(sup: FdSup)
+require
+   FD(sup: FdSup)
 prepare
-   FdSup = 134217726
    fun {IsFd I}
       I =< FdSup andthen I >= 0
    end
@@ -494,13 +493,13 @@ define
       meth UnnestToTerm(FE Origin ?GEqs ?GT)
          case FE of fAtom(X C) then
             GEqs = nil
-            GT = {New Core.atomNode init(X C)}
+            GT = {New Core.valueNode init(X C)}
          [] fInt(X C) then
             GEqs = nil
-            GT = {New Core.intNode init(X C)}
+            GT = {New Core.valueNode init(X C)}
          [] fFloat(X C) then
             GEqs = nil
-            GT = {New Core.floatNode init(X C)}
+            GT = {New Core.valueNode init(X C)}
          else
             Unnester, UnnestToVar(FE Origin ?GEqs ?GT)
          end
@@ -545,13 +544,14 @@ define
       end
       meth MakeLabelOrFeature(F $)
          case F of fAtom(X C) then
-            {New Core.atomNode init(X C)}
+            {New Core.valueNode init(X C)}
+         [] fInt(X C) then
+            {New Core.valueNode init(X C)}
          [] fVar(PrintName C) then
             {@BA refer(PrintName C $)}
-         [] fInt(X C) then
-            {New Core.intNode init(X C)}
-         [] fEscape(V _) then   % this case is needed for class attr/feat
-            Unnester, MakeLabelOrFeature(V $)
+         [] fEscape(fVar(PrintName C) _) then
+            %% this case is needed for class attr/feat
+            {@BA refer(PrintName C $)}
          end
       end
       meth GenerateNewVar(Origin FVs C ?GV)
@@ -779,11 +779,11 @@ define
                                        fOcc({GVO getVariable($)})] CND)
                Unnester, UnnestStatement(FS ?GNewFunctor)
                GS = GFun|GNewFunctor
-               GFrontEq|if {@state getSwitch(debuginfocontrol $)}
-                           andthen {IsStep C}
-                        then {New Core.stepPoint init(GS 'definition' C)}
-                        else GS
-                        end
+               GFrontEq|
+               if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
+               then {New Core.stepPoint init(GS 'definition' C)}
+               else GS
+               end
             else GV1 GV2 FV1 FV2 FS1 CND BaseURL FS2 in
                {@BA generate('OuterFunctor' C ?GV1)}
                {@BA generate('InnerFunctor' C ?GV2)}
@@ -1213,7 +1213,7 @@ define
             Unnester, UnnestStatement(FS $)
          [] fAtom(X C) then GVO in
             {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.atomNode init(X C)} C)}
+            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
          [] fVar(PrintName C) then GVO1 GVO2 in
             {ToGV occ(C ?GVO1)}
             {@BA refer(PrintName C ?GVO2)}
@@ -1242,10 +1242,10 @@ define
             {New Core.skipNode init(C)}
          [] fInt(X C) then GVO in
             {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.intNode init(X C)} C)}
+            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
          [] fFloat(X C) then GVO in
             {ToGV occ(C ?GVO)}
-            {New Core.equation init(GVO {New Core.floatNode init(X C)} C)}
+            {New Core.equation init(GVO {New Core.valueNode init(X C)} C)}
          [] fRecord(_ _) then GRecord GBack in
             Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
             GRecord|GBack
@@ -1875,7 +1875,7 @@ define
       end
       meth UnnestMethHead(FHead ?GLabel ?FFormals ?IsOpen)
          case FHead of fAtom(X C) then
-            GLabel = {New Core.atomNode init(X C)}
+            GLabel = {New Core.valueNode init(X C)}
             FFormals = nil
             IsOpen = false
          [] fVar(PrintName C) then
@@ -2122,7 +2122,7 @@ define
                Unnester, TranslatePattern(FE1 PatternPNs true $)
             end
          [] fAtom(X C) then
-            {New Core.atomNode init(X C)}
+            {New Core.valueNode init(X C)}
          [] fVar(PrintName C) then
             if {Member PrintName PatternPNs} then
                if PVAllowed then skip
@@ -2148,9 +2148,9 @@ define
                {@BA refer(PrintName C $)}
             end
          [] fInt(X C) then
-            {New Core.intNode init(X C)}
+            {New Core.valueNode init(X C)}
          [] fFloat(X C) then
-            {New Core.floatNode init(X C)}
+            {New Core.valueNode init(X C)}
          [] fRecord(L As) then
             Unnester, TranslateRecordPattern(L As false PatternPNs $)
          [] fOpenRecord(L As) then

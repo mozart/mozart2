@@ -24,8 +24,7 @@ Continuations = c(vStepPoint: 5
                   vClear: 3
                   vUnify: 4
                   vFailure: 2
-                  vEquateNumber: 4
-                  vEquateLiteral: 4
+                  vEquateConstant: 4
                   vEquateRecord: 6
                   vGetVariable: 3
                   vCallBuiltin: 5
@@ -53,8 +52,7 @@ Continuations = c(vStepPoint: 5
                   vWaitTop: 2
                   vTestBool: 7
                   vTestBuiltin: 6
-                  vTestNumber: 7
-                  vTestLiteral: 7
+                  vTestConstant: 7
                   vMatch: 6
                   vThread: 4
                   vLockThread: 4
@@ -179,9 +177,7 @@ class CodeStore from Emitter
             CodeStore, RegOcc(Reg2 RS)
          [] vFailure(_ _) then
             skip
-         [] vEquateNumber(_ _ Reg _) then
-            CodeStore, RegOcc(Reg RS)
-         [] vEquateLiteral(_ _ Reg _) then
+         [] vEquateConstant(_ _ Reg _) then
             CodeStore, RegOcc(Reg RS)
          [] vEquateRecord(_ _ _ Reg VArgs _) then
             CodeStore, RegOcc(Reg RS)
@@ -397,8 +393,7 @@ class CodeStore from Emitter
          [] vClear(_ _ _) then skip
          [] vUnify(_ _ _ _) then skip
          [] vFailure(_ _) then skip
-         [] vEquateNumber(_ _ _ _) then skip
-         [] vEquateLiteral(_ _ _ _) then skip
+         [] vEquateConstant(_ _ _ _) then skip
          [] vEquateRecord(_ _ _ _ _ _) then skip
          [] vGetVariable(_ _ _) then skip
          [] vCallBuiltin(_ _ _ _ _) then skip

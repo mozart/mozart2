@@ -25,8 +25,8 @@
 
 functor
 import
-   BootName at 'x-oz://boot/Name'
-   CompilerSupport(newNamedName newCopyableName isCopyableName
+   BootName(newUnique) at 'x-oz://boot/Name'
+   CompilerSupport(newNamedName newCopyableName
                    newPredicateRef newCopyablePredicateRef
                    nameVariable chunkArity
                    isBuiltin
@@ -74,7 +74,6 @@ export
    variable:               SAVariable
    variableOccurrence:     SAVariableOccurrence
    token:                  SAToken
-   nameToken:              SANameToken
 require
    Search(base)
    FD(less distinct distribute record sup)
@@ -847,7 +846,7 @@ define
    end
 
    fun {MakeDummyObject PN}
-      {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop}
+      {New {Object.'class' [BaseObject] '#' 'attr' 'feat' nil PN} noop()}
    end
 
    fun {MakeDummyClass PN}
@@ -1443,23 +1442,15 @@ define
       meth saSimple(Ctrl)
          case {MakeDummyProcedure {Length @formalArgs}} of unit then skip
          elseof DummyProc then Value in
-            %% prepare some feature values for the code generator:
-            if {self isClauseBody($)} then
-               Value = {New Core.clauseBodyToken init(DummyProc)}
-               Value.clauseBodyStatements = @statements
-            else
-               Value = {New Core.procedureToken init(DummyProc)}
-               if {Ctrl getTop($)} andthen {Not {Member 'dynamic' @procFlags}}
-               then PredicateRef in
-                  {Ctrl declareToplevelProcedure(?PredicateRef)}
-                  Value.predicateRef = PredicateRef
-                  predicateRef <- PredicateRef
-               end
+            Value = {New Core.procedureToken init(DummyProc self)}
+            if {Not {self isClauseBody($)}}
+               andthen {Ctrl getTop($)}
+               andthen {Not {Member 'dynamic' @procFlags}}
+            then
+               predicateRef <- {Ctrl declareToplevelProcedure($)}
             end
-
             {@designator unifyVal(Ctrl Value)}
          end
-
 \ifdef DEBUGSA
          {System.show lookedAhead({@designator getPrintName($)} Value)}
 \endif
@@ -1719,17 +1710,17 @@ define
          if
             BIInfo==noInformation
          then
+            Val = {GetPrintData @designator}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
             Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
                             msg:   'application of unknown builtin'
-                            items: [hint(l:'Builtin' m:pn(N))
-                                    hint(l:'Argument names'
+                            items: [hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
-                                         m:{ApplToVS pn(N)|Vals})])}
+                                         m:{ApplToVS Val|Vals})])}
             false
          elseif
             NumArgs==ProcArity
@@ -1762,6 +1753,7 @@ define
                false
             end
          else
+            Val = {GetPrintData @designator}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
             Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
@@ -1773,34 +1765,34 @@ define
                                     hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
-                                         m:{ApplToVS pn(N)|Vals})])}
+                                         m:{ApplToVS Val|Vals})])}
             false
          end
       end
 
       meth doNewName(Ctrl)
-         BndVO BndV PrintName TheName Token
+         BndVO BndV PrintName Token
       in
          BndVO = {Nth @actualArgs 1}
          {BndVO getVariable(?BndV)}
          {BndV getPrintName(?PrintName)}
-         if PrintName == unit then
-            TheName = {NewName}
-         elseif {Ctrl getTop($)} then
-            {Ctrl declareToplevelName(PrintName ?TheName)}
-         else
-            TheName = {CompilerSupport.newNamedName PrintName}
-         end
-         Token = {New Core.nameToken init(TheName {Ctrl getTop($)})}
+         Token = if {Ctrl getTop($)} then TheName in
+                    {Ctrl declareToplevelName(PrintName ?TheName)}
+                    self.codeGenMakeEquateLiteral = TheName
+                    {New Core.valueNode init(TheName unit)}
+                 else TheName in
+                    TheName = case PrintName of unit then {NewName}
+                              else {CompilerSupport.newNamedName PrintName}
+                              end
+                    {New Core.token init(TheName)}
+                 end
          {BndVO unifyVal(Ctrl Token)}
-         if {Ctrl getTop($)} then self.codeGenMakeEquateLiteral = TheName
-         end
       end
 
       meth doNewUniqueName(Ctrl)
          NName = {GetData {Nth @actualArgs 1}}
          Value = {BootName.newUnique NName}   % always succeeds
-         Token = {New Core.nameToken init(Value true)}
+         Token = {New Core.valueNode init(Value unit)}
          BndVO = {Nth @actualArgs 2}
       in
 \ifdef DEBUGSA
@@ -1867,8 +1859,12 @@ define
       end
 
       meth doNew(Ctrl)
-         DummyObj = {MakeDummyObject {@designator getPrintName($)}}
-         Cls      = {GetClassData {Nth @actualArgs 1}}
+         ClsArg   = {Nth @actualArgs 1}
+         DummyObj = {MakeDummyObject
+                     case {ClsArg getPrintName($)} of unit then ''
+                     elseof PN then PN
+                     end}
+         Cls      = {GetClassData ClsArg}
          Msg      = {Nth @actualArgs 2}
          Token    = {New Core.objectToken init(DummyObj Cls)}
          BndVO    = {Nth @actualArgs 3}
@@ -2118,15 +2114,16 @@ define
                {Ctrl.rep
                 warn(coord: @coord
                      kind:  SAGenWarn
-                     msg:   'applying ' #
-                     {System.printName {GetData @designator}} #
-                     ' to unavailable attribute'
-                     items: [hint(l:'Expression' m:Expr)
+                     msg:   case {System.printName {GetData @designator}}
+                            of 'Object.\'<-\'' then 'access of'
+                            [] 'Object.\'@\'' then 'assignment to'
+                            end#' unavailable attribute'
+                     items: [hint(l:'Statement' m:Expr)
                              hint(l:Cls
                                   m:pn({System.printName {Self getValue($)}}))
                              hint(l:'Expected one of' m:{SetToVS {Ozify Attrs}})
                              line(Hint)])}
-            else skip end
+            end
          end
       end
 
@@ -2209,11 +2206,7 @@ define
                {Ctrl setErrorMsg('label assertion failed')}
                {Ctrl setUnifier(BVO2 Val)}
 
-               if {IsAtom Lab} then
-                  LabNode = {New Core.atomNode init(Lab unit)}
-               else
-                  LabNode = {New Core.nameToken init(Lab unit)}
-               end
+               LabNode = {New Core.valueNode init(Lab unit)}
                {BVO2 unify(Ctrl LabNode)}
 
                {Ctrl resetUnifier}
@@ -2230,7 +2223,7 @@ define
          if
             {IsDet Data}
          then
-            IntVal= {New Core.intNode init({Width Data} @coord)}
+            IntVal= {New Core.valueNode init({Width Data} @coord)}
          in
             {Ctrl setErrorMsg('width assertion failed')}
             {Ctrl setUnifier(BVO2 IntVal)}
@@ -2250,7 +2243,7 @@ define
          if
             {IsDet Data}
          then
-            IntVal = {New Core.intNode init({Procedure.arity Data} @coord)}
+            IntVal = {New Core.valueNode init({Procedure.arity Data} @coord)}
          in
             {Ctrl setErrorMsg('assertion of procedure arity failed')}
             {Ctrl setUnifier(BVO2 IntVal)}
@@ -2909,7 +2902,10 @@ define
 
       meth saSimple(Ctrl)
          IllClass TestClass
-         DummyClass = {MakeDummyClass {@designator getPrintName($)}}
+         DummyClass = {MakeDummyClass
+                       case {@designator getPrintName($)} of unit then ''
+                       elseof PN then PN
+                       end}
          Value = {New Core.classToken init(DummyClass)}
       in
          isToplevel <- {Ctrl getTop($)}
@@ -3574,26 +3570,19 @@ define
                {System.show valToSubst(Val)}
 \endif
                case Type of int then
-                  {New Core.intNode init(Val unit)}
+                  {New Core.valueNode init(Val unit)}
                [] float then
-                  {New Core.floatNode init(Val unit)}
+                  {New Core.valueNode init(Val unit)}
                [] atom then
-                  {New Core.atomNode init(Val unit)}
+                  {New Core.valueNode init(Val unit)}
                [] name then
-                  {New Core.nameToken init(Val true)}
+                  {New Core.valueNode init(Val unit)}
                [] tuple then
                   SAVariable, RecordToSubst(Seen Depth Val $)
                [] record then
                   SAVariable, RecordToSubst(Seen Depth Val $)
                [] procedure then
-                  if {CompilerSupport.isBuiltin Val} then
-                     {New Core.builtinToken init(Val)}
-                  else
-                     ProcToken = {New Core.procedureToken init(Val)}
-                  in
-                     ProcToken.predicateRef = Val
-                     ProcToken
-                  end
+                  {New Core.procedureToken init(Val Val)}
                [] cell then
                   {New Core.token init(Val)}
                [] array then
@@ -3710,13 +3699,7 @@ define
       end
       meth RecordTypeToSubst(Arity Rec Depth ?Args ?RecArgs)
          case Arity of F|Fr then RecFeat V VO Argr RecArgr in
-            RecFeat = case {Value.type F} of int then
-                         {New Core.intNode init(F unit)}
-                      [] atom then
-                         {New Core.atomNode init(F unit)}
-                      [] name then
-                         {New Core.nameToken init(F true)}
-                      end
+            RecFeat = {New Core.valueNode init(F unit)}
             V = {New Core.generatedVariable init('RecordType' unit)}
             {V TypeToSubst(Rec.F Depth - 1)}
             {V occ(unit ?VO)}
@@ -4093,15 +4076,6 @@ define
                 [hint(l:'First value' m:oz(@value))
                  hint(l:'Second value' m:oz(RVal))]}
             end
-         end
-      end
-   end
-
-   class SANameToken
-      meth reflectType(_ $)
-         if @isToplevel andthen {Not {CompilerSupport.isCopyableName @value}}
-         then value(@value)
-         else type({OzTypes.decode @type})
          end
       end
    end

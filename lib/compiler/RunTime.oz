@@ -25,7 +25,7 @@
 functor
 import
    Module(manager)
-   Core(nameToken userVariable)
+   Core(valueNode userVariable)
 export
    Literals
    Tokens
@@ -173,7 +173,7 @@ define
 
    Tokens = {Record.mapInd TokenValues
              fun {$ X Value}
-                {New Core.nameToken init(Value true)}
+                {New Core.valueNode init(Value unit)}
              end}
 
    Procs = {Record.mapInd

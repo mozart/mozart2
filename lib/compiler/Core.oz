@@ -93,9 +93,6 @@ export
    ChoiceNode
    Clause
    ValueNode
-   AtomNode
-   IntNode
-   FloatNode
    BitStringNode
    ByteStringNode
    Variable
@@ -107,10 +104,7 @@ export
 
    %% classes for token representations:
    Token
-   NameToken
    ProcedureToken
-   ClauseBodyToken
-   BuiltinToken
    ClassToken
    ObjectToken
 
@@ -437,7 +431,7 @@ define
       end
    end
    class FunctionDefinition
-      from Definition Annotate.functionDefinition CodeGen.functionDefinition
+      from Definition Annotate.functionDefinition
       prop final
    end
    class ClauseBody
@@ -1046,47 +1040,15 @@ define
       meth isConstruction($)
          false
       end
+      meth output2(_ $ ?FS)
+         FS = ""
+         {Value.toVirtualString @value 10 10}
+      end
+      meth outputPattern2(R _ $ ?FS)
+         ValueNode, output2(R $ ?FS)
+      end
       meth outputEscaped2(R $ ?FS)
-         {self output2(R $ ?FS)}
-      end
-   end
-
-   class AtomNode
-      from ValueNode CodeGen.atomNode
-      prop final
-      meth output2(_ $ ?FS)
-         FS = ""
-         {Value.toVirtualString @value 0 0}
-      end
-      meth outputPattern2(_ _ $ ?FS)
-         FS = ""
-         {Value.toVirtualString @value 0 0}
-      end
-   end
-
-   class IntNode
-      from ValueNode CodeGen.intNode
-      prop final
-      meth output2(_ $ ?FS)
-         FS = ""
-         if @value < 0 then '~'#~@value else @value end
-      end
-      meth outputPattern2(_ _ $ ?FS)
-         FS = ""
-         if @value < 0 then '~'#~@value else @value end
-      end
-   end
-
-   class FloatNode
-      from ValueNode CodeGen.floatNode
-      prop final
-      meth output2(_ $ ?FS)
-         FS = ""
-         if @value < 0.0 then '~'#~@value else @value end
-      end
-      meth outputPattern2(_ _ $ ?FS)
-         FS = ""
-         if @value < 0.0 then '~'#~@value else @value end
+         ValueNode, output2(R $ ?FS)
       end
    end
 
@@ -1309,27 +1271,13 @@ define
       end
    end
 
-   class NameToken from Token StaticAnalysis.nameToken CodeGen.nameToken
-      prop final
-      attr isToplevel: unit
-      meth init(Value IsToplevel)
-         isToplevel <- IsToplevel
-         Token, init(Value)
-      end
-   end
-
    class ProcedureToken from Token CodeGen.procedureToken
       prop final
-      feat predicateRef
-   end
-
-   class ClauseBodyToken from Token CodeGen.clauseBodyToken
-      prop final
-      feat clauseBodyStatements
-   end
-
-   class BuiltinToken from Token CodeGen.builtinToken
-      prop final
+      attr definition: unit
+      meth init(Value Definition)
+         definition <- Definition
+         Token, init(Value)
+      end
    end
 
    class ClassToken from Token

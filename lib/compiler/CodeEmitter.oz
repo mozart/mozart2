@@ -346,32 +346,32 @@ in
             end
          [] vFailure(_ _) then
             Emitter, Emit(failure)
-         [] vEquateNumber(_ Number Reg _) then
-            case Emitter, GetReg(Reg $) of none then
-               if Emitter, IsLast(Reg $) then skip
-               else
-                  {Dictionary.put @Temporaries Reg ThisAddr}
-                  {Dictionary.put @Permanents Reg ThisAddr}
-               end
-            elseof R then
-               Emitter, Emit(getNumber(Number R))
-            end
-         [] vEquateLiteral(_ Literal Reg Cont) then
+         [] vEquateConstant(_ Constant Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
                if self.debugInfoControlSwitch then R in
                   %% This is needed for 'name generation' step points:
                   Emitter, PredictReg(Reg ?R)
-                  Emitter, Emit(putConstant(Literal R))
+                  Emitter, Emit(putConstant(Constant R))
                elseif Emitter, IsLast(Reg $) then skip
-               elseif Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal 0
-                                                 nil Cont $)
+               elseif
+                  {IsLiteral Constant}
+                  andthen Emitter, TryToUseAsSendMsg(ThisAddr Reg Constant 0
+                                                     nil Cont $)
                then skip
                else
                   {Dictionary.put @Temporaries Reg ThisAddr}
                   {Dictionary.put @Permanents Reg ThisAddr}
                end
             elseof R then
-               Emitter, Emit(getLiteral(Literal R))
+               if {IsNumber Constant} then
+                  Emitter, Emit(getNumber(Constant R))
+               elseif {IsLiteral Constant} then
+                  Emitter, Emit(getLiteral(Constant R))
+               else X in
+                  Emitter, AllocateShortLivedTemp(?X)
+                  Emitter, Emit(putConstant(Constant X))
+                  Emitter, Emit(unify(R X))
+               end
             end
          [] vEquateRecord(_ Literal RecordArity Reg VArgs Cont) then
             if Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity
@@ -427,36 +427,36 @@ in
                         [Reg1 Reg2 _] = Regs
                      in
                         case {Dictionary.condGet @Temporaries Reg1 none}
-                        of vEquateNumber(_ Number _ _) then
-                           vTestNumber(OccsRS Reg2 Number Addr1 Addr2
-                                       Coord NewCont InitsRS)
-                        [] vEquateLiteral(_ Literal _ _) then
-                           vTestLiteral(OccsRS Reg2 Literal Addr1 Addr2
-                                        Coord NewCont InitsRS)
+                        of vEquateConstant(_ Constant _ _)
+                           andthen ({IsNumber Constant} orelse
+                                    {IsLiteral Constant})
+                        then
+                           vTestConstant(OccsRS Reg2 Constant Addr1 Addr2
+                                         Coord NewCont InitsRS)
                         elsecase {Dictionary.condGet @Temporaries Reg2 none}
-                        of vEquateNumber(_ Number _ _) then
-                           vTestNumber(OccsRS Reg1 Number Addr1 Addr2
-                                       Coord NewCont InitsRS)
-                        [] vEquateLiteral(_ Literal _ _) then
-                           vTestLiteral(OccsRS Reg1 Literal Addr1 Addr2
-                                        Coord NewCont InitsRS)
+                        of vEquateConstant(_ Constant _ _)
+                           andthen ({IsNumber Constant} orelse
+                                    {IsLiteral Constant})
+                        then
+                           vTestConstant(OccsRS Reg1 Constant Addr1 Addr2
+                                         Coord NewCont InitsRS)
                         else ~1
                         end
                      [] 'Value.\'\\=\'' then [Reg1 Reg2 _] = Regs in
                         case {Dictionary.condGet @Temporaries Reg1 none}
-                        of vEquateNumber(_ Number _ _) then
-                           vTestNumber(OccsRS Reg2 Number Addr2 Addr1
-                                       Coord NewCont InitsRS)
-                        [] vEquateLiteral(_ Literal _ _) then
-                           vTestLiteral(OccsRS Reg2 Literal Addr2 Addr1
-                                        Coord NewCont InitsRS)
+                        of vEquateConstant(_ Constant _ _)
+                           andthen ({IsNumber Constant} orelse
+                                    {IsLiteral Constant})
+                        then
+                           vTestConstant(OccsRS Reg2 Constant Addr2 Addr1
+                                         Coord NewCont InitsRS)
                         elsecase {Dictionary.condGet @Temporaries Reg2 none}
-                        of vEquateNumber(_ Number _ _) then
-                           vTestNumber(OccsRS Reg1 Number Addr2 Addr1
-                                       Coord NewCont InitsRS)
-                        [] vEquateLiteral(_ Literal _ _) then
-                           vTestLiteral(OccsRS Reg1 Literal Addr2 Addr1
-                                        Coord NewCont InitsRS)
+                        of vEquateConstant(_ Constant _ _)
+                           andthen ({IsNumber Constant} orelse
+                                    {IsLiteral Constant})
+                        then
+                           vTestConstant(OccsRS Reg1 Constant Addr2 Addr1
+                                         Coord NewCont InitsRS)
                         else ~1
                         end
                      else ~1
@@ -481,6 +481,7 @@ in
                continuations <- NewCont2|@continuations.2
             else
                case Builtinname of 'getReturn' then [Reg] = Regs in
+                  %--** does this still exist?
                   case Emitter, GetReg(Reg $) of none then R in
                      Emitter, PredictReg(Reg ?R)
                      Emitter, Emit(getReturn(R))
@@ -801,8 +802,15 @@ in
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreRegisterMapping(RegMap2)
             Emitter, PopContLabel(OldContLabels)
-         [] vTestNumber(_ Reg Number Addr1 Addr2 Coord Cont InitsRS) then
-            Emitter, EmitTestConstant(testNumber Reg Number Addr1 Addr2
+         [] vTestConstant(_ Reg Constant Addr1 Addr2 Coord Cont InitsRS) then
+            Instr = if {IsLiteral Constant} then testLiteral
+                    elseif {IsNumber Constant} then testNumber
+                    else
+                       {Exception.raiseError
+                        compiler(internal testConstant(Constant))} unit
+                    end
+         in
+            Emitter, EmitTestConstant(Instr Reg Constant Addr1 Addr2
                                       Coord Cont InitsRS ThisAddr)
          [] vTestLiteral(_ Reg Literal Addr1 Addr2 Coord Cont InitsRS) then
             Emitter, EmitTestConstant(testLiteral Reg Literal Addr1 Addr2
@@ -936,7 +944,7 @@ in
       end
 
       meth TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity VArgs Cont $)
-         %% If a vEquate{Number,Literal,Record} instruction is immediately
+         %% If a vEquate{Constant,Record} instruction is immediately
          %% followed by a unary vCall instruction with the same register as
          %% argument and this register is linear, we emit a sendMsg instruction
          %% for the sequence.
@@ -986,10 +994,8 @@ in
          Regs#ArgInits =
          {List.foldRInd VArgs
           fun {$ I VArg Regs#ArgInits}
-             case VArg of number(Number) then
-                (~I|Regs)#((I - 1)#putConstant(Number x(I - 1))|ArgInits)
-             [] literal(Literal) then
-                (~I|Regs)#((I - 1)#putConstant(Literal x(I - 1))|ArgInits)
+             case VArg of constant(Constant) then
+                (~I|Regs)#((I - 1)#putConstant(Constant x(I - 1))|ArgInits)
              [] value(Reg) then
                 (Reg|Regs)#ArgInits
              [] record(Literal RecordArity VArgs) then
@@ -1225,16 +1231,11 @@ in
                 end
              else
                 case {Dictionary.condGet @Temporaries Reg none}
-                of vEquateNumber(_ Number _ _) then   % 1)
+                of vEquateConstant(_ Constant _ _) then   % 1)
                    {Dictionary.remove @Temporaries Reg}
                    {Dictionary.remove @Permanents Reg}
                    {Dictionary.put @DelayedInitsDict I
-                    putConstant(Number x(I))}
-                [] vEquateLiteral(_ Literal _ _) then   % 1)
-                   {Dictionary.remove @Temporaries Reg}
-                   {Dictionary.remove @Permanents Reg}
-                   {Dictionary.put @DelayedInitsDict I
-                    putConstant(Literal x(I))}
+                    putConstant(Constant x(I))}
                 [] vGetSelf(_ _ _) then   % 1)
                    {Dictionary.remove @Temporaries Reg}
                    {Dictionary.remove @Permanents Reg}
@@ -1386,20 +1387,16 @@ in
          [] nil then Regs
          end
       end
-      meth EmitRecordWrite(Literal RecordArity R VArgs)
+      meth EmitRecordWrite(Literal RecordArity R VArgs) IHd ITl in
          %% Emit in write mode, i.e., bottom-up and using `set':
-         IHd ITl
-      in
          Emitter, EmitVArgsWrite(VArgs IHd ITl)
          Emitter, Emit(putRecord(Literal RecordArity R))
          Emitter, EmitMultiple(IHd ITl)
       end
       meth EmitVArgsWrite(VArgs IHd ITl)
          case VArgs of VArg|VArgr then IInter in
-            case VArg of number(Number) then
-               IHd = setConstant(Number)|IInter
-            [] literal(Literal) then
-               IHd = setConstant(Literal)|IInter
+            case VArg of constant(Constant) then
+               IHd = setConstant(Constant)|IInter
             [] predicateRef(PredicateRef) then
                IHd = setPredicateRef(PredicateRef)|IInter
             [] value(Reg) then
@@ -1423,10 +1420,8 @@ in
             IHd = ITl
          end
       end
-      meth EmitRecordRead(Literal RecordArity R VArgs)
+      meth EmitRecordRead(Literal RecordArity R VArgs) SubRecords in
          %% Emit in read mode, i.e., top-down and using `unify':
-         SubRecords
-      in
          Emitter, Emit(getRecord(Literal RecordArity R))
          Emitter, EmitVArgsRead(VArgs ?SubRecords nil)
          {ForAll SubRecords
@@ -1436,12 +1431,17 @@ in
       end
       meth EmitVArgsRead(VArgs SHd STl)
          case VArgs of VArg|VArgr then SInter in
-            case VArg of number(Number) then
+            case VArg of constant(Constant) then
                SHd = SInter
-               Emitter, Emit(unifyNumber(Number))
-            [] literal(Literal) then
-               SHd = SInter
-               Emitter, Emit(unifyLiteral(Literal))
+               if {IsNumber Constant} then
+                  Emitter, Emit(unifyNumber(Constant))
+               elseif {IsLiteral Constant} then
+                  Emitter, Emit(unifyLiteral(Constant))
+               else X in
+                  Emitter, AllocateShortLivedTemp(?X)
+                  Emitter, Emit(putConstant(Constant X))
+                  Emitter, Emit(unifyValue(X))
+               end
             [] value(Reg) then
                SHd = SInter
                case Emitter, GetReg(Reg $) of none then
@@ -1752,10 +1752,8 @@ in
       end
 
       meth EmitInitialization(VInstr R)
-         case VInstr of vEquateNumber(_ Number _ _) then
-            Emitter, Emit(putConstant(Number R))
-         [] vEquateLiteral(_ Literal _ _) then
-            Emitter, Emit(putConstant(Literal R))
+         case VInstr of vEquateConstant(_ Constant _ _) then
+            Emitter, Emit(putConstant(Constant R))
          [] vGetSelf(_ _ _) then x(_) = R in
             Emitter, Emit(getSelf(R))
          end
@@ -2017,7 +2015,9 @@ in
             if {Member Reg Regs} then R = anyperm
             else Emitter, PredictRegSub(Reg Cont2 ?R)
             end
-         [] vEquateLiteral(_ _ MessageReg Cont2) then
+         [] vEquateConstant(_ Constant MessageReg Cont2)
+            andthen {IsLiteral Constant}
+         then
             %% Check whether this will be optimized into a sendMsg instruction.
             case Cont2 of vCall(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
@@ -2081,10 +2081,7 @@ in
                Addrs = [Addr1 Addr2 Cont]
                Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
             end
-         [] vTestNumber(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
-            Addrs = [Addr1 Addr2 Cont]
-            Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
-         [] vTestLiteral(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
+         [] vTestConstant(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
          [] vMatch(_ _ Addr VHashTableEntries _ Cont InitsRS) then

@@ -147,13 +147,13 @@ local
          \insert 'engine.oz'
          \insert 'compute-tests.oz'
 
-         fun {RunUntil T0 TMin Script}
-            {Wait {DoTest Script}}
+         fun {RunUntil T0 TMin Test}
+            {Test _}
             local
                T1={Property.get time}
             in
                if T1.total - T0.total < TMin then
-                  1+{RunUntil T0 TMin Script}
+                  1+{RunUntil T0 TMin Test}
                else
                   1
                end
@@ -204,12 +204,18 @@ local
                {ForAll ToRun
                 proc {$ T}
                    Result={MakeTuple time Repeat}
+                   proc {Test _}
+                      {For 1 T.repeat 1
+                       proc {$ _}
+                          {Wait {DoTest T.script}}
+                       end}
+                   end
                 in
                    {PI {Label T} # ': '}
                    local
                       {System.gcDo}
                       T0 = {Property.get time}
-                      N={RunUntil T0 Argv.mintime T.script}
+                      N={RunUntil T0 Argv.mintime Test}
                       % results of first run discarded (lazy loading)
                       %T1 = {Property.get time}
                       %Result.1={DiffTime T0 T1 N}
@@ -219,12 +225,10 @@ local
                        proc {$ I}
                           {System.gcDo}
                           T0={Property.get time}
-                          {For 1 N 1 proc {$ _}
-                                        {Wait {DoTest T.script}}
-                                     end}
+                          {For 1 N 1 Test}
                           T1={Property.get time}
                        in
-                          Result.I={DiffTime T0 T1 N}
+                          Result.I={DiffTime T0 T1 N*T.repeat}
                        end}
                    end
                    {PV '-------------------------\n'}
@@ -292,8 +296,8 @@ in
                          {GetAll S {Append Ids [LL]} L}
                       end}}
          else
-            if {HasFeature S bench} andthen S.bench then
-               [L # {Append Ids [LL]} # {CondSelect S keys nil}]
+            if {HasFeature S bench} then
+               [L # {Append Ids [LL]} # {CondSelect S keys nil} # S.bench]
             else nil
             end
          end
@@ -306,12 +310,13 @@ in
                               S = {ModMan link(url:C $)}.return
                            in
                               {Map {GetAll S nil nil}
-                               fun {$ T#Id#K}
+                               fun {$ T#Id#K#R}
                                   L={String.toAtom T}
                                in
                                   L(id:Id
                                     keys:K
                                     url:{String.toAtom C}
+                                    repeat:R
                                    )
                                end}
                            end}}

@@ -552,6 +552,21 @@ define
 
                  1
               end}
+
+             {MiscTest 49
+              fun {$}
+                 S1 = {FS.var.upperBound [1 2]}
+                 S2 = {FS.var.upperBound [2]}
+                 R
+              in
+                 R = thread
+                        cond S2 = {FS.value.make 2} then 1 else 0 end
+                     end
+                 {FS.distinct S1 S2}
+                 S1 = {FS.var.upperBound nil}
+                 R
+              end}
+
             ])
       ])
 

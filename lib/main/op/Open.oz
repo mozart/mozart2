@@ -719,7 +719,7 @@ in
                   {Delay KillTime}
                   {OS.wait _ _}
                   {OS.wait _ _}
-                  DescClass, close
+                  DescClass, CloseDescs
                end
             end
          end

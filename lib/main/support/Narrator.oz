@@ -71,12 +71,12 @@ define
       end
       meth startPhase(VS)
          if @LogPhases then
-            {@Narrator tell(info('%%%     '#VS#'\n'))}
+            {@Narrator tell(info('%%%     '#VS#' ...\n'))}
          end
       end
       meth startSubPhase(VS)
          if @LogPhases then
-            {@Narrator tell(info('%%%         '#VS#'\n'))}
+            {@Narrator tell(info('%%%         '#VS#' ...\n'))}
          end
       end
       meth endBatch(Kind)

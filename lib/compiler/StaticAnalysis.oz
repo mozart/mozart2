@@ -1316,87 +1316,67 @@ define
       end
 
       meth makeValue(Ctrl ?Rec)
-         Coord= {@label getCoord($)}
-         Args = {FoldL @args
-                 fun {$ In Arg}
-                    case Arg of F#_ then F|In else In end
-                 end nil}
-      in
-         if
-            {DetTypeTests.literal @label}
-         then
-            IllFeat TestFeats
-         in
+         if {DetTypeTests.literal @label} then Args IllFeat TestFeats in
+            Args = {FoldL @args
+                    fun {$ In Arg}
+                       case Arg of F#_ then F|In else In end
+                    end nil}
             {AllUpTo Args DetTypeTests.feature ?IllFeat ?TestFeats}
-
-            if
-               TestFeats
-            then
+            if TestFeats then
                LData = {GetData @label}
-               FData = {List.mapInd
-                        @args
-                        fun {$ I Arg}
-                           FF TT in
+               FData = {List.mapInd @args
+                        fun {$ I Arg} FF TT in
                            case Arg of F#T then
-                              FF={GetData F} TT=T
+                              FF = {GetData F}
+                              TT = T
                            else
-                              FF=I TT=Arg
+                              FF = I
+                              TT = Arg
                            end
-
-                           if{TT isConstruction($)}
-                           then FF # {TT getValue($)}
-                           else FF # TT end
+                           FF#if {TT isConstruction($)} then {TT getValue($)}
+                              else TT
+                              end
                         end}
-               Fields= {Map FData fun {$ F#_} F end}
             in
-\ifdef DEBUGSA
-               {System.show makeValue(LData FData Fields)}
-\endif
-               if
-                  {AllDistinct Fields}
-               then
-                  if
-                     {All @label|Args DetTests.det}
-                  then
-                     if
-                        @isOpen
-                     then
-                        if {IsDet LData} then
-                           Rec = {TellRecord LData}
-                        end
-                        {ForAll FData proc {$ F#V} Rec^F=V end}
-                     else
-                        Rec = {List.toRecord LData FData}
-                     end
-                  else
-\ifdef DEBUGSA
-                     {System.show noRecordConstructed}
-\endif
-                     %% no record constructed
-                     Rec = _
+               if @isOpen then
+                  if {DetTests.det @label} then
+                     Rec = {TellRecord LData}
                   end
-               else
-                  {Ctrl.rep
-                   error(coord: Coord
-                         kind:  SAGenError
-                         msg:   'duplicate features in record construction'
-                         items: [hint(l:'Features found' m:{SetToVS {Ozify Fields}})])}
+                  if {All Args DetTests.det} then
+                     {ForAll FData proc {$ F#V} Rec^F=V end}
+                  end
+               elseif {DetTests.det @label}
+                  andthen {All Args DetTests.det}
+               then
+                  try
+                     Rec = {List.toRecord LData FData}
+                  catch error(kernel(recordConstruction ...) ...) then
+                     Fields = {Map FData fun {$ F#_} F end}
+                  in
+                     {Ctrl.rep
+                      error(coord: {@label getCoord($)}
+                            kind:  SAGenError
+                            msg:   'duplicate feature in record construction'
+                            items: [hint(l:'Features found'
+                                         m:{SetToVS {Ozify Fields}})])}
+                  end
                end
-            else
+            else Coord in
+               {@label getCoord(?Coord)}
                {Ctrl.rep error(coord: Coord
                                kind:  SAGenError
-                               msg:   'illegal record feature '
-                               items: [hint(l:'Feature found' m:oz({GetPrintData IllFeat}))])}
+                               msg:   'illegal record feature'
+                               items: [hint(l:'Feature found'
+                                            m:oz({GetPrintData IllFeat}))])}
             end
-         else
+         else Coord in
+            {@label getCoord(?Coord)}
             {Ctrl.rep error(coord: Coord
                             kind:  SAGenError
-                            msg:   'illegal record label '
-                            items: [hint(l:'Label found' m:oz({GetPrintData @label}))])}
+                            msg:   'illegal record label'
+                            items: [hint(l:'Label found'
+                                         m:oz({GetPrintData @label}))])}
          end
-\ifdef DEBUGSA
-         {System.show madeValue(Rec)}
-\endif
       end
 
       meth sa(Ctrl)

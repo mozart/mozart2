@@ -161,10 +161,14 @@ define
    {Wait FDB.int}
 
    FdpPlus = FDP.plus
-   FdpMinus = FDP.minus
+   proc {FdpMinus X Y Z}
+      {FdpPlus Z Y X}
+   end
    FdpTimes = FDP.times
    FdpPlusD = FDP.plusD
-   FdpMinusD = FDP.minusD
+   proc {FdpMinusD X Y Z}
+      {FdpPlusD Z Y X}
+   end
    FdpTimesD = FDP.timesD
    FdpPower = FDP.power
    FdpDivD = FDP.divD

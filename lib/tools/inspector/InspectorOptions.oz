@@ -140,6 +140,18 @@ define
       in
          {VirtualString.toAtom TypeS#'-Menu'}
       end
+
+      fun {IsAtomic V}
+         case {Value.status V}
+         of det(Type) then
+            case Type
+            of tuple  then false
+            [] record then false
+            else true
+            end
+         else false
+         end
+      end
    in
       WidgetDefaults = [
                         widgetTreeWidth        # 50
@@ -159,6 +171,7 @@ define
                         widgetContextMenuFont  # '-adobe-helvetica-bold-r-*-*-*-100-*'
                         widgetContextMenuABg   # '#d9d9d9'
                         widgetContextMenuTitle # MakeMenuTitle
+                        widgetAtomicTest       # IsAtomic %% This must not be changed!!!!
                        ]
    end
 

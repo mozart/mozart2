@@ -97,6 +97,7 @@ define
          treeNodes     %% TreeWidget Node Container (used to fill (norm|rel)NodesDict)
          normNodesDict %% Normal Mode Nodes
          relNodesDict  %% Relation Mode Nodes
+         isAtomic      %% Atomic Test Function (must not be changed in Oz)
       meth create(Options Parent DspWidth DspHeight)
          StoreListener, create
          GraphicSupport, create(Parent DspWidth DspHeight)
@@ -199,6 +200,7 @@ define
          dDepth    <- {Dictionary.get OpDict widgetTreeDepth}
          dMode     <- {Not {Dictionary.get OpDict widgetTreeDisplayMode}}
          curDefRel <- TreeWidget, searchDefRel({Dictionary.get OpDict widgetRelationList} $)
+         isAtomic  <- {Dictionary.get OpDict widgetAtomicTest}
          GraphicSupport, queryDB
       end
       meth searchDefRel(Rels $)
@@ -379,17 +381,7 @@ define
          end
       end
       meth graphCreate(Val Parent Index Depth $)
-         Atomic = case {Value.status Val}
-                  of det(Type) then
-                     case Type
-                     of tuple  then false
-                     [] record then false
-                     else true
-                     end
-                  else false
-                  end
-      in
-         if Atomic
+         if {@isAtomic Val}
          then
             {New {Dictionary.condGet @relNodesDict {ValueToKey Val} @treeNodes.generic}
              create(Val Parent Index self Depth)}

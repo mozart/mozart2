@@ -398,7 +398,12 @@ Return=
                  X = 0
                  R
               end}
-            ])
+
+              {MiscTest 52
+               fun {$}
+                  cond {FD.int nil _} then 0 else 1 end
+               end}
+             ])
       ])
 
 end

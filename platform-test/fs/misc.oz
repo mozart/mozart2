@@ -523,6 +523,35 @@ define
                  {FS.card SV MaxCard - 5}
                  R
               end}
+             {MiscTest 48
+              fun {$}
+
+                 {FS.value.make nil _}
+                 {FS.value.make 1 _}
+                 {FS.value.make 1#5 _}
+                 {FS.value.make [1] _}
+                 {FS.value.make [1#5] _}
+                 {FS.value.make [1#5 10 20#30] _}
+                 {FS.value.make compl(1) _}
+                 {FS.value.make compl(1#5) _}
+                 {FS.value.make compl([1]) _}
+                 {FS.value.make compl([1#5]) _}
+                 {FS.value.make compl([1#5 10 20#30]) _}
+
+                 {FS.var.bounds nil nil _}
+                 {FS.var.bounds nil 1 _}
+                 {FS.var.bounds 1 1#5 _}
+                 {FS.var.bounds 1 [1] _}
+                 {FS.var.bounds 1#4 [1#5] _}
+                 {FS.var.bounds [1#3] [1#5 10 20#30] _}
+                 {FS.var.bounds compl(1#2) compl(1) _}
+                 {FS.var.bounds nil compl(1#5) _}
+                 {FS.var.bounds nil compl([1]) _}
+                 {FS.var.bounds compl(1#10) compl([1#5]) _}
+                 {FS.var.bounds nil compl([1#5 10 20#30]) _}
+
+                 1
+              end}
             ])
       ])
 

@@ -460,10 +460,11 @@ in
       meth EmitVInstr(ThisAddr)
          case ThisAddr of vDebugExit(_ Coord Kind _) then
             Emitter, DebugExit(Coord Kind)
-         [] vStepPoint(_ Addr Coord Kind _) then
+         [] vStepPoint(_ Addr Coord Kind _) then OldContinuations in
             Emitter, DebugEntry(Coord Kind)
-            Emitter, PushDebugExit(Coord Kind)
+            Emitter, PushDebugExit(Coord Kind ?OldContinuations)
             Emitter, EmitAddr(Addr)
+            continuations <- OldContinuations
          [] vMakePermanent(_ RegIndices _) then TempX1 TempX2 S D in
             Emitter, AllocateShortLivedTemp(?TempX2)
             Emitter, AllocateShortLivedTemp(?TempX1)
@@ -920,7 +921,7 @@ in
             Emitter, DebugExit(Coord 'exception handler')
             Emitter, Emit(popEx)
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord _) then
-            HasLocalEnv R Dest2 Dest3 RegMap1 RegMap2 RegMap3
+            HasLocalEnv R Dest2 Dest3 OldContinuations RegMap1 RegMap2 RegMap3
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
             case Emitter, GetReg(Reg $) of none then
@@ -935,7 +936,7 @@ in
             end
             Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(testBool(R Dest2 Dest3))
-            Emitter, PushDebugExit(Coord 'conditional')
+            Emitter, PushDebugExit(Coord 'conditional' ?OldContinuations)
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -947,6 +948,7 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap3)
             Emitter, EmitAddrInLocalEnv(Addr3 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap3)
+            continuations <- OldContinuations
          [] vTestBuiltin(_ Builtinname Regs Addr1 Addr2 _) then
             HasLocalEnv Dest2 BIInfo XsIn XsOut RegMap1 RegMap2
          in
@@ -962,7 +964,7 @@ in
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap2)
          [] vTestConstant(_ Reg Constant Addr1 Addr2 Coord _) then
-            HasLocalEnv R Dest2 InstrLabel RegMap1 RegMap2
+            HasLocalEnv R Dest2 InstrLabel OldContinuations RegMap1 RegMap2
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
             case Emitter, GetReg(Reg $) of none then
@@ -983,7 +985,7 @@ in
                              compiler(internal testConstant(Constant))} unit
                          end
             Emitter, Emit(InstrLabel(R Constant Dest2))
-            Emitter, PushDebugExit(Coord 'conditional')
+            Emitter, PushDebugExit(Coord 'conditional' ?OldContinuations)
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -991,8 +993,9 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap2)
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap2)
+            continuations <- OldContinuations
          [] vMatch(_ Reg Addr VHashTableEntries Coord _) then
-            HasLocalEnv R Dest NewVHashTableEntries RegMap
+            HasLocalEnv R Dest OldContinuations NewVHashTableEntries RegMap
          in
             Emitter, MayAllocateEnvLocally(?HasLocalEnv)
             case Emitter, GetReg(Reg $) of none then
@@ -1007,7 +1010,7 @@ in
             end
             Emitter, DebugEntry(Coord 'conditional')
             Emitter, Emit(match(R ht(Dest NewVHashTableEntries)))
-            Emitter, PushDebugExit(Coord 'conditional')
+            Emitter, PushDebugExit(Coord 'conditional' ?OldContinuations)
             NewVHashTableEntries =
             {Map VHashTableEntries
              proc {$ VHashTableEntry ?NewEntry} Addr Dest RegMap in
@@ -1027,6 +1030,7 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap)
             Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap)
+            continuations <- OldContinuations
          [] vLockThread(_ Reg Coord _ Dest) then X in
             if Emitter, IsFirst(Reg $) then
                {self.reporter
@@ -1068,9 +1072,10 @@ in
                             {VirtualString.toAtom Comment#'/'#Kind}))
          end
       end
-      meth PushDebugExit(Coord Kind)
+      meth PushDebugExit(Coord Kind ?OldContinuations)
+         OldContinuations = @continuations
          if {IsStep Coord} then
-            case @continuations of Cont|Rest then RS Label NewCont Inter in
+            case OldContinuations of Cont|Rest then RS Label NewCont Inter in
                RS = Cont.1
                CodeStore, newLabel(?Label)
                NewCont = vShared({BitArray.clone RS} _ Label Inter)

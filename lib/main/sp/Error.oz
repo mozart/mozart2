@@ -111,7 +111,7 @@ in
    functor $ prop once
 
    import
-      Property.{get}
+      Property.{get put}
 
       System.{printName
               printError
@@ -692,10 +692,10 @@ in
             case {System.onToplevel} then skip else fail end
          end
       in
-         {{`Builtin` setDefaultExceptionHandler 1} DefExHdl}
+         {Property.put 'errors.handler' DefExHdl}
       end
 
-      OzError = {{`Builtin` getDefaultExceptionHandler 1}}
+      OzError = {Property.get 'errors.handler'}
 
    end
 

@@ -77,13 +77,13 @@ body
       import
          Error
       body
-         {{`Builtin` setDefaultExceptionHandler 1}
+         {Property.put 'errors.handler'
           proc {$ E}
              %% cause Error to be instantiated, which installs
              %% a new error handler as a side effect
              {Wait Error}
              %% invoke this new error handler
-             {{{`Builtin` getDefaultExceptionHandler 1}} E}
+             {Property.get 'errors.handler' E}
              %% this whole procedure is invoked at most once
              %% since instantiatingError causes the handler
              %% to be replaced with a better one.

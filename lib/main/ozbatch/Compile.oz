@@ -348,7 +348,11 @@ in
        end}
       {OS.putEnv 'OZPATH'
        {FoldL {Access IncDir}
-        fun {$ In S} {Append S &:|In} end
+        fun {$ In S}
+           {Append S case {Property.get 'platform.os'} of win32 then &;
+                     else &:
+                     end|In}
+        end
         case {OS.getEnv 'OZPATH'} of false then "."
         elseof S then S
         end}}

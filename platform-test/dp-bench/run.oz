@@ -11,7 +11,7 @@ define
    = ['host'(   multiple type:string)
       'local'(  single   type:int  default:0)
       'threads'(single   type:int  default:0)
-      'fork'(   single   type:atom(sh rsh ssh virtual automatic) default:sh)
+      'fork'(   single   type:atom(sh rsh ssh virtual automatic) default:rsh)
       'verbose'(single   type:bool default:false)
       'help'(   single   type:bool default:false)]
    GlobalHelp
@@ -26,7 +26,7 @@ define
    '\ton every site, N additional threads will be started\n'#
    '\tto simulate concurrent activity\n\n'#
    '--fork=FORK\n'#
-   '\tspecifies the default forking method (default is sh)\n\n'#
+   '\tspecifies the default forking method (default is rsh)\n\n'#
    '--verbose\n'#
    '\tprints out a little bit more information\n\n'#
    '--help\n'#

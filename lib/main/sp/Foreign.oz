@@ -43,7 +43,7 @@ local
    %%
    Resolver
    Localize
-   case {Dictionary.condGet {{`Builtin` 'ServiceRegistry' 1}} url false}
+   case {Dictionary.condGet {{`Builtin` 'SystemRegistry' 1}} url false}
    of false then
       !Resolver = unit
       fun{!Localize PATH} old(PATH) end

@@ -20,6 +20,8 @@
 %%%
 
 functor
+import
+   Compiler
 export
    Return
 define
@@ -63,6 +65,90 @@ define
                                  end x} = 3
                              end
                              keys: [compiler codeGen fixedBug])
+             xshuffle(%% PR#1329
+                      proc {$}
+                         NUM = 20
+                         LENGTH = 40000.0
+
+                         fun {C2Pos C}
+                            ({IntToFloat C} - 1.0) * (LENGTH / {IntToFloat NUM})
+                         end
+                      in
+                         {fun {$ Type Entry}
+                             Pos C Dur
+                          in
+                             local SpeedSec DurSoFar in
+                                SpeedSec = Entry.speed / 3.6
+
+                                if Entry.c == NUM then
+                                   DurSoFar = 0
+                                else
+                                   Pos = {C2Pos Entry.c+1}
+                                   C = Entry.c+1
+                                   DurSoFar = (Pos - Entry.pos) / SpeedSec
+                                end
+                                %% {Show Entry}
+                                Dur = (Entry.buggyone - DurSoFar)
+                             end
+
+                             someatom(type:Type pos:Pos c:C buggyone:Dur)
+                          end handover someatom(c:1 buggyone:1.0 pos:1.0 speed:1.0 time:1.0) _}
+                      end
+                      keys: [compiler codeGen fixedBug])
+             exhandler_initsrs(%% PR#1291
+                               proc {$}
+                                  proc {Skip _} skip end
+                               in
+                                  {IsDet {fun {$ V1} V2 in
+                                             case V1 of a then
+                                                try V2=a catch _ then skip end
+                                                a=a
+                                             else
+                                                V2 = b
+                                             end
+                                             {Skip V2}
+                                             V2
+                                          end a} true}
+                               end
+                               keys: [compiler codeGen fixedBug])
+             register_optimiser(%% PR#1070
+                                %% If the engine throws an exception then this test will halt the
+                                %% test suite run immediately. We can't catch the exception, I guess
+                                %% the feedVirtualString runs the compiler in a sub-thread.
+                                proc {$}
+                                   TestProg =
+                                   "local proc {Skip _ _ _} skip end in "#
+                                   "{fun lazy {$ S I N} "#
+                                   "if I==N then skip else C in skip end "#
+                                   "{Skip S I N} a "#
+                                   "end a a a} "#
+                                   "end"
+                                in
+                                   {proc {$ VS ?Result} E I S in
+                                       E = {New Compiler.engine init()}
+                                       I = {New Compiler.interface init(E)}
+                                       {E enqueue(setSwitch(expression true))}
+                                       {E enqueue(setSwitch(threadedqueries false))}
+                                       %% Test requires +staticvarnames
+                                       {E enqueue(setSwitch(staticvarnames true))}
+                                       {E enqueue(feedVirtualString(VS return(result: ?Result)))}
+                                       thread
+                                          {I sync()}
+                                          if {I hasErrors($)} then Ms in
+                                             {I getMessages(?Ms)}
+                                             S = error(compiler(evalExpression VS Ms))
+                                          else
+                                             S = success
+                                          end
+                                       end
+                                       case S of error(M) then
+                                          {Exception.raiseError M}
+                                       [] success then skip
+                                       end
+                                    end TestProg _}
+                                end
+                                keys: [compiler codeGen fixedBug])
+
              bigDatastructure(proc {$}
                                  {fun {$}
                                      f(f(["00000000000000000000"

@@ -43,21 +43,27 @@ local
       feat
          Run
          Ctrl
+         Host
       attr
          Run:  nil
          Ctrl: nil
 
-      meth init(Host)
+      meth init(H)
          RunRet  RunPort ={Port.new RunRet}
          CtrlRet CtrlPort={Port.new CtrlRet}
          Ticket={Connection.offer RunPort#CtrlPort}
       in
-         {StartRemote Host
+         self.Host = H
+         {StartRemote H
           {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
          Run      <- RunRet.2
          Ctrl     <- CtrlRet.2
          self.Run  = RunRet.1
          self.Ctrl = CtrlRet.1
+      end
+
+      meth getHost($)
+         self.Host
       end
 
       meth Send(Which What $)

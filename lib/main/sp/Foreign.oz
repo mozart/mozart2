@@ -108,13 +108,16 @@ local
    fun {ForeignLoad File}
       _#Module = {ForeignLoadBI File}
    in Module end
+
+   ForeignPointer = foreignPointer(is: {`Builtin` 'isForeignPointer' 2})
 in
 
    Foreign = foreign(
-                     dload   : DLoad
-                     require : Require
+                     pointer:  ForeignPointer
+                     dload:    DLoad
+                     require:  Require
                      resolver: Resolver
-                     load    : ForeignLoad
-                     loadBI  : ForeignLoadBI
+                     load:     ForeignLoad
+                     loadBI:   ForeignLoadBI
                     )
 end

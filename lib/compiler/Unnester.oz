@@ -2603,6 +2603,8 @@ define
          [] fSynAssignment(V E) then fSynAssignment(V {SP E})
          [] fSynTemplateInstantiation(K Es C) then
             fSynTemplateInstantiation(K {Map Es SP} C)
+         [] fLoop(S C) then fLoop({SP S} {CS C})
+         [] fMacro(Ss C) then fMacro({Map Ss SP} {CS C})
          end
       end
 
@@ -2674,6 +2676,8 @@ define
             fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {FS C})
          [] fParser(P1 Ds Ms T Ps X C) then
             fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {FS C})
+         [] fLoop(S C) then fLoop({EP S} {CS C})
+         [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
          end
       end
 

@@ -60,8 +60,6 @@ in
                {Compiler feedFile(OZRC)}
             elsecase {FileExists '~/.ozrc'} then
                {Compiler feedFile('~/.ozrc')}
-            elsecase {FileExists {System.get home}#'/lib/ozrc'} then
-               {Compiler feedFile({System.get home}#'/lib/ozrc')}
             else
                skip
             end

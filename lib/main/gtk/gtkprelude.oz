@@ -31,6 +31,8 @@ export
    Dispatcher
    GetObject
 
+   \insert 'gtkimportlist.oz'
+
 define
 
 % -----------------------------------------------------------------------------

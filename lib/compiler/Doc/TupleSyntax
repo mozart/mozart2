@@ -42,6 +42,7 @@ Phrase            = fAnd(Phrase Phrase).
                   | fApply(Phrase [Phrase] Coordinates)
                   | fProc(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
                   | fFun(Phrase [Phrase] Phrase [ProcFlag] Coordinates)
+                  | fFunctor(Phrase [Decl] [Decl] Phrase Coordinates)
                   | fClass(Phrase [ClassDescriptor] [Meth] Coordinates)
                   | fLocal(Phrase Phrase Coordinates)
                   | fBoolCase(Phrase Phrase OptElse Coordinates)
@@ -69,7 +70,10 @@ Variable          = NakedVariable
 Wildcard          = fWildcard(Coordinates).
 RecordArgument    = Phrase
                   | fColon(Feature Phrase).
-ProcFlag          = codeInstatiation.
+ProcFlag          = instantiate
+                  | copy
+                  | lazy.
+Decl              = NakedVariable.
 FDExpression      = fFdCompare(atom Phrase Phrase Coordinates)
                   | fFdIn(atom Phrase Phrase Coordinates).
 ClassDescriptor   = fFrom([Phrase] Coordinates)

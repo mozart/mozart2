@@ -501,7 +501,12 @@ define
              [hint(l:'Non-class used as parent' m:oz(CParent))
               hint(l:'Class to be created' m:CChild)]
              Exc}
-
+         elseof object(illegalProp Ps) then
+            {Error.format T
+             'Illegal property value'
+             [hint(l:'Illegal values' m:oz(Ps))
+              hint(l:'Expected one of' m:oz([final locking sited]))]
+             Exc}
          elseof object(arityMismatchDefaultMethod L)
          then
             {Error.format T

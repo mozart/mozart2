@@ -575,7 +575,7 @@ define
 
    class TkAction
       prop
-         native
+         sited
       feat
          ActionId
          !TclName
@@ -646,7 +646,7 @@ define
    end
 
    class ReturnClass
-      prop native
+      prop sited
       meth tkReturn(...) = M
          {self TkReturnMethod(M TkStringToString)}
       end
@@ -951,7 +951,7 @@ define
 
       class TkMenuentry
          prop
-            native
+            sited
          feat
             !TclSlaves
             !TclSlaveEntry
@@ -1090,7 +1090,7 @@ define
    %% Tcl/Tk variables
    %%
    class TkVariable from ReturnClass
-      prop native
+      prop sited
       feat !TclName
 
       meth tkInit(InitValue <= Void)

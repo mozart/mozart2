@@ -293,6 +293,20 @@ local
          AsNewAttr = {Arity NewAttr}
          AsNewFeat = {Arity NewFeat}
       in
+         if
+            {All NewProp IsAtom} andthen
+            {List.sub {Sort NewProp Value.'<'} [final locking sited]}
+         then skip else
+            {`RaiseError` object(unkownProp
+                                 {FoldL NewProp fun {$ Ps P}
+                                                   case P
+                                                   of final then Ps
+                                                   [] locking then Ps
+                                                   [] sited then Ps
+                                                   else P|Ps
+                                                   end
+                                                end nil})}
+         end
          case Parents
          of nil then
             %% Methods

@@ -188,7 +188,7 @@ in
 
       class DescClass
          prop
-            native
+            sited
          feat
             !ReadLock
             !WriteLock

@@ -75,7 +75,6 @@ local
                    unit#"debugvalue"#debugvalue(type: bool)
                    unit#"debugtype"#debugtype(type: bool)
                    &p#"profile"#profile(type: bool)
-                   unit#"runwithdebugger"#runwithdebugger(type: bool)
                    unit#"debuginfocontrol"#debuginfocontrol(type: bool)
                    unit#"debuginfovarnames"#debuginfovarnames(type: bool)
                    &g#"debuginfo"#debuginfo(type: bool)]}
@@ -130,10 +129,9 @@ local
    '--(no)debugvalue              Annotate variable values in core output.\n'#
    '--(no)debugtype               Annotate variable types in core output.\n'#
    '-p, --(no)profile             Include profiling information.\n'#
-   '--(no)runwithdebugger         Execute queries under debugger.\n'#
    '--(no)debuginfocontrol        Include control flow information.\n'#
    '--(no)debuginfovarnames       Include variable information.\n'#
-   '-g, --(no)debuginfo           All three above.\n'
+   '-g, --(no)debuginfo           Both of the above.\n'
 
    local
       fun {SignConvert S}
@@ -467,7 +465,6 @@ in
              [] outputfile then
                 {Assign OutputFile X}
              [] debuginfo then
-                {BatchCompiler enqueue(setSwitch(runwithdebugger X))}
                 {BatchCompiler enqueue(setSwitch(debuginfocontrol X))}
                 {BatchCompiler enqueue(setSwitch(debuginfovarnames X))}
              elseof SwitchName then

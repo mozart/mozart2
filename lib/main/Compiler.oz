@@ -27,7 +27,7 @@ in
       Property.{get condGet}
       System   %--**.{gcDo printName valueToVirtualString get printError eq}
       Foreign   %--**.{pointer}
-      Parser
+      Parser from 'x-oz-boot:Parser'
       Error   %--**.{formatExc formatPos formatLine formatGeneric format dispatch msg}
       ErrorRegistry.put
       FS.{include var subset value reflect isIn}

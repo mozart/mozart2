@@ -64,7 +64,7 @@ in
 
 local
    \insert 'DumpSettings.oz'
-   SmartSave = {`Builtin` smartSave          6}
+   SmartSave = {`Builtin` smartSave          3}
    SPI       = {`Builtin` 'System.printInfo' 1}
    `unit`    = {{`Builtin` 'NewUniqueName' 2} 'unit'}
    proc {ALL Xs P}
@@ -79,13 +79,13 @@ in
       {{`Builtin` 'SystemSetErrors' 1} print(depth: 100 width: 100)}
 
       ExtNAME = Name   # ComEXT
-      ExtURL  = ComURL # ExtNAME
       ExtPATH = ComDIR # ExtNAME
+      ExtURL  = ComURL # ExtNAME
    in
-      case {SmartSave X ExtPATH ExtURL unit _} of nil then skip
+      case {SmartSave X ExtPATH} of nil then skip
       elseof Xs then
          {ALL Xs {`Builtin` 'Wait' 1}}
-         {SmartSave X ExtPATH ExtURL unit _ nil}
+         {SmartSave X ExtPATH nil}
       end
       {SPI 'Saved: '#ExtURL#'\n'}
    end

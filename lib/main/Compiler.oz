@@ -34,7 +34,7 @@ in
               get
               property
               printError
-              show
+              Show = show
               eq}
 
       Foreign.{pointer
@@ -53,7 +53,8 @@ in
           union
           diff
           cardRange
-          disjoint}
+          disjoint
+          isIn}
 
       FD.{int
           is

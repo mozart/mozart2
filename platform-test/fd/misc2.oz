@@ -3,6 +3,7 @@ functor
 import
 
    FD
+   Search
 
 export
    Return
@@ -65,7 +66,30 @@ define
                   X = 3
                   cond D = 65 then 1 else 0 end
                end}
+
+              {MiscTest 7
+               fun {$}
+                  proc{P Sol}
+                     Numer1 Denom1 Numer2 Denom2 Numer3 Denom3
+                     B1 B2 B3
+                  in
+                     Sol = [Numer1 Denom1 Numer2 Denom2 Numer3 Denom3]
+                     [Numer1 Denom1 Numer2 Denom2 Numer3 Denom3] ::: 1#2
+                     [B1 B2 B3] ::: 0#1
+                     thread
+                        ((Numer1 * Denom2) <: (Numer2 * Denom1)) = B1
+                        ((Numer1 * Denom3) =: (Numer3 * Denom1)) = B2
+                        ((Numer2 * Denom3) =: (Numer3 * Denom2)) = B3
+                     end
+                     {FD.distinct [B2 B3]}
+                     {FD.impl B1 B3 1}
+                     {FD.impl {FD.nega B1} B2 1}
+                     {FD.distribute naive Sol}
+                  end
+                  AllSols = {Search.base.all P}
+               in
+                  cond {ForAll AllSols P} then 1 else 0 end
+               end}
              ])
       ])
-
 end

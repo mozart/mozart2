@@ -741,6 +741,7 @@ in
                            )
 
             reified:      r(isIn:     proc {$ E S B}
+                                         {`::` 0#1 B}
                                          {FSIsInReif E S B}
                                       end
                             areIn:    proc {$ WList S BList}
@@ -749,7 +750,10 @@ in
                                          = {Map WList
                                             fun {$ E} {FSIsInReif E S} end}
                                       end
-                            include:  FSP.includeR
+                            include:  proc {$ E S B}
+                                         {`::` 0#1 B}
+                                         {FSP.includeR E S B}
+                                      end
                             bounds:   FSP.bounds
                             boundsN:  FSP.boundsN
                             partition: FSP.partitionReified

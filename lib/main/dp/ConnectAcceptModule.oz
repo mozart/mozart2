@@ -241,7 +241,8 @@ in
              Id = {GetIdFromRequestor Requestor}
           in
              if {Dictionary.member OngoingRequests Id} then
-                thread raise already_connecting(Id) end end
+                skip
+%               thread raise already_connecting(Id) end end
              else
                 OngoingRequests.Id:=r(thr:_)
                 thread

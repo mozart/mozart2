@@ -190,7 +190,7 @@ define
          end
       catch X then
 \ifdef DBG
-         {System.showInfo acceptProc_caught(X {OS.getPID})}
+         {System.show acceptProc_caught(X {OS.getPID})}
 \endif
          case X of system(os(_ _ _ "Try again") ...) then % EAGAIN => try again
             {AcceptProc FD}

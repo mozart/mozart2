@@ -28,9 +28,7 @@
 functor
 
 require
-   CpSupport(waitStable:     WaitStable
-
-             vectorToList:   VectorToList
+   CpSupport(vectorToList:   VectorToList
              vectorsToLists: VectorsToLists
              vectorToType:   VectorToType
              vectorToTuple:  VectorToTuple
@@ -631,7 +629,7 @@ define
    in
 
       proc {FdDistribute RawSpec Vec}
-         {WaitStable}
+         {Space.waitStable}
          if {Width Vec}>0 then
             case {PreProcessSpec RawSpec}
             of opt(value:SelVal order:SelVar) then
@@ -641,7 +639,7 @@ define
                   D={SelVal V}
                in
                   choice {FdInt D V} [] {FdInt compl(D) V} end
-                  {WaitStable}
+                  {Space.waitStable}
                   {Do}
                end
             in
@@ -660,9 +658,9 @@ define
                      D={SelVal V}
                   in
                      {Proc}
-                     {WaitStable}
+                     {Space.waitStable}
                      choice {FdInt D V} [] {FdInt compl(D) V} end
-                     {WaitStable}
+                     {Space.waitStable}
                      {Do Xs}
                   end
                end
@@ -673,7 +671,7 @@ define
       end
 
       proc {FdChoose RawSpec Vec ?V ?D}
-         {WaitStable}
+         {Space.waitStable}
          try
             case {PreProcessSpec RawSpec}
             of opt(value:SelVal order:SelVar) then

@@ -27,9 +27,7 @@
 functor
 
 require
-   CpSupport(waitStable:     WaitStable
-
-             vectorsToLists: VectorsToLists
+   CpSupport(vectorsToLists: VectorsToLists
              vectorToTuple:  VectorToTuple
              vectorToList:   VectorToList
 
@@ -272,7 +270,7 @@ define
 
 
       proc {EnumTI ETTuple Start Dur OldOut Stream}
-         {WaitStable}
+         {Space.waitStable}
          NewStream NewOut
       in
          Stream = dist(OldOut NewOut)|NewStream
@@ -352,7 +350,7 @@ define
          end
 
          proc {Try FLs RestTasks Mode Tasks ETTuple Start Dur Stream}
-            {WaitStable}
+            {Space.waitStable}
             case FLs of nil then fail
             [] H|T then
                case T
@@ -381,7 +379,7 @@ define
       in
 
          proc {EnumFL ETTuple Start Dur OldOut Stream}
-            {WaitStable}
+            {Space.waitStable}
             NewStream NewOut
          in
             Stream = dist(OldOut NewOut)|NewStream

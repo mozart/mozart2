@@ -95,14 +95,6 @@ prepare
 
 
    %%
-   %% General abstractions for distribution
-   %%
-
-   proc {WaitStable}
-      choice skip end
-   end
-
-   %%
    %% Error formatting
    %%
 
@@ -205,8 +197,6 @@ prepare
 
 export
    formatOrigin:   FormatOrigin
-
-   waitStable:     WaitStable
 
    vectorToType:   VectorToType
    vectorToList:   VectorToList

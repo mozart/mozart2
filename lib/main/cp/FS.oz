@@ -29,18 +29,8 @@
 functor
 
 require
-   CpSupport(vectorToList:
-                VectorToList
-             expand:
-                ExpandList)
-
-prepare
-
-   fun {Head H|_} H end
-
-   fun {Tail _|T} T end
-
-   Last = List.last
+   CpSupport(vectorToList: VectorToList
+             expand:       ExpandList)
 
 import
    FSB at 'x-oz://boot/FSB'
@@ -141,18 +131,24 @@ define
          end
       end
 
-      fun {Find L C}
-         {FoldL {Tail L}
-          fun {$ I E} if {C I E} then I else E end end
-          {Head L}}
+      fun {Find X|Xr C}
+         {FoldL Xr fun {$ I E}
+                      if {C I E} then I else E end
+                   end X}
       end
 
-      fun {MinElement CL}
-         Y = {Head CL} in case Y of L#_ then L else Y end
+      fun {MinElement Y|_}
+         case Y
+         of L#_ then L
+         else Y
+         end
       end
 
-      fun {MaxElement CL}
-         Y = {Last CL} in case Y of _#R then R else Y end
+      fun {MaxElement Ys}
+         case {List.last Ys}
+         of _#R then R
+         [] Y   then Y
+         end
       end
 
       MINELEM = {NewName}
@@ -311,25 +307,21 @@ define
          end
       end
 
-      proc {FSDistNaive SL}
-         if SL == nil then skip
-         else
-            choice
-               case {FSReflect.unknown {Head SL}}
-               of nil then {FSDistNaive {Tail SL}}
-               elseof Unknown then
-                  UnknownVal = {MinElement Unknown}
-               in
-                  choice
-                     {FSIsIncl UnknownVal {Head SL}}
-
-                     {FSDistNaive SL}
-                  []
-                     {FSIsExcl UnknownVal {Head SL}}
-
-                     {FSDistNaive SL}
-                  end
+      proc {FSDistNaive Xs}
+         case Xs of nil then skip
+         [] X|Xr then
+            {Space.waitStable}
+            Unknown={FSReflect.unknown X}
+         in
+            if Unknown==nil then
+               {FSDistNaive Xr}
+            else
+               UnknownVal = {MinElement Unknown}
+            in
+               choice {FSIsIncl UnknownVal X}
+               []     {FSIsExcl UnknownVal X}
                end
+               {FSDistNaive Xs}
             end
          end
       end
@@ -337,34 +329,29 @@ define
       proc {FSDistGeneric Vs Order FCond Elem RRobin Sel Proc}
          SL = {VectorToList Vs}
       in
-         choice
-            {Proc}
-
-            choice
-               SortedSL = {Order {Filter SL FCond}}
+         {Space.waitStable}
+         {Proc}
+         {Space.waitStable}
+         local
+            SortedSL = {Order {Filter SL FCond}}
+         in
+            case SortedSL
+            of nil then skip
+            [] HSL|_ then
+               UnknownVal={Elem HSL}
+               DistVar   ={Sel  HSL}
             in
-               if SortedSL \= nil then
-                  UnknownVal = {Elem {Head SortedSL}}
-                  DistVar    = {Sel {Head SortedSL}}
-               in
-                  choice
-                     {FSIsIncl UnknownVal DistVar}
-
-                     {FSDistGeneric {RRobin SortedSL}
-                      Order FCond Elem RRobin Sel Proc}
-                  []
-                     {FSIsExcl UnknownVal DistVar}
-
-                     {FSDistGeneric {RRobin SortedSL}
-                      Order FCond Elem RRobin Sel Proc}
-                  end
+               choice {FSIsIncl UnknownVal DistVar}
+               []     {FSIsExcl UnknownVal DistVar}
                end
+               {FSDistGeneric {RRobin SortedSL}
+                Order FCond Elem RRobin Sel Proc}
             end
          end
       end
    in
       proc {FSDistribute K Vs}
-         L = {VectorToList Vs}
+         L={VectorToList Vs}
       in
          case K
          of naive then {FSDistNaive L}

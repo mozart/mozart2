@@ -2362,11 +2362,10 @@ in
             case @HasDetLabel then skip
             else ObjClosed GotLabel in
                ObjClosed = self.closed
-               thread GotLabel = {Det self.RLabel} end
 
                %%
                thread
-                  {WaitOr GotLabel ObjClosed}
+                  {WaitOr self.RLabel ObjClosed}
                   case {IsDet GotLabel} then {self checkTermReq}
                   else skip
                   end

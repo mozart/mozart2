@@ -22,7 +22,7 @@
  functor
  import
     Module.load
-    System.{printInfo printError}
+    System.{printInfo printError property}
     Error.{msg formatLine}
     OS.{putEnv getEnv system unlink tmpnam}
     Open.file

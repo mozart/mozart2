@@ -82,7 +82,6 @@ local
    end
 
    Usage =
-   'Usage: ozc [options] [file] ...\n'#
    'You have to choose one of the following modes of operation:\n'#
    '-E, --core                    Transform a statement into core language\n'#
    '                              (file extension: .ozi).\n'#
@@ -414,8 +413,9 @@ in
          SysletPrefix = {NewCell unit}
          {ForAll Opts
           proc {$ Opt#X}
-             case Opt of help then
-                {System.printInfo Usage}
+             case Opt of help then X in
+                X = {System.property.get 'root.url'}
+                {System.printInfo 'Usage: '#X#' [options] [file] ...\n'#Usage}
                 raise success end
              [] define then
                 {BatchCompiler enqueue(macroDefine(X))}

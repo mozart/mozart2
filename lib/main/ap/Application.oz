@@ -842,9 +842,7 @@ local
          {Script write(vs:'export PATH\n')}
          {Script write(vs:'exec ozengine $0 "$@"\n')}
          {Script close}
-         {Save ExecProc TmpFile o(components: unit
-                                  include:    unit
-                                  resources:  nil)}
+         {Save ExecProc TmpFile}
          {OS.system 'cat '#TmpFile#' >> '#File#'; chmod +x '#File _}
       finally
          {OS.unlink TmpFile}

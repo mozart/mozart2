@@ -468,8 +468,8 @@ in
                 else skip
                 end
                 case {Access Mode} of dump then
-                   case {Component.smartSave R OFN} of nil then skip
-                   elseof Vs then
+                   try {Component.save R OFN}
+                   catch dp(save(resources Filename Vs)) then
                       {OS.unlink OFN}
                       {Report
                        error(kind: UsageError

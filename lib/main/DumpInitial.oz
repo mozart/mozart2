@@ -35,7 +35,7 @@ declare
 in
 
 local
-   SmartSave = {`Builtin` smartSave          3}
+   BISave      = {`Builtin` save          2}
    PutProperty = {`Builtin` 'PutProperty' 2}
 
    proc {ALL Xs P}
@@ -51,10 +51,11 @@ in
 
       ExtPATH = Name # '.ozc'
    in
-      case {SmartSave X ExtPATH} of nil then skip
-      elseof Xs then
+      try
+         {BISave X ExtPATH}
+      catch dp(save(resources Filename Xs)) then
          {ALL Xs {`Builtin` 'Wait' 1}}
-         {SmartSave X ExtPATH nil}
+         {BISave X ExtPATH}
       end
    end
 end

@@ -1820,9 +1820,22 @@ in
               hint(l:'At 3rd argument' m:Call.2.2.2.1)
               hint(l:'Expected' m:'virtual string or record')]
              Exc}
+         elseof dp(save(resources Filename Resources)) then
+            {FormatExc
+             'Resources found during save'
+             unit
+             [hint(l:'Filename'  m:Filename)
+              hint(l:'Resources' m:oz(Resources))]
+             Exc}
          elseof dp(save nogoods NoGoods) then
             {FormatExc
              'Non-distributables found during save'
+             unit
+             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             Exc}
+         elseof dp('export' nogoods NoGoods) then
+            {FormatExc
+             'Non-distributables found during export'
              unit
              [hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}

@@ -176,9 +176,12 @@ local
    %% Single connections
    %%
 
+   Export = {`Builtin` 'export' 1}
+
    fun {Offer X}
       T={NewTicket true}
    in
+      {Export X}
       {Dictionary.put KeyDict T.key X}
       {String.toAtom {TicketToString T}}
    end
@@ -196,6 +199,7 @@ local
       meth init(X ?AT <= _)
          T={NewTicket false}
       in
+         {Export X}
          {Dictionary.put KeyDict T.key X}
          self.Ticket     = T
          self.TicketAtom = {String.toAtom {TicketToString T}}

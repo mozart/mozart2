@@ -119,7 +119,7 @@ local
                        end
             Key      = {KeyToInt K}
          catch _ then
-            raise ticket(illegal) end
+            {`RaiseError` connection(illegalTicket Ticket)}
          end
       end
    end
@@ -167,12 +167,12 @@ local
          {ProcSend ProcId {String.toAtom Ticket}#A}
          case A
          of no     then
-            raise ticket(refused) end
+            {`RaiseError` connection(refusedTicket TicketV)}
          [] yes(Y) then
             X=Y
          end
       else
-         raise ticket(illegal) end
+         {`RaiseError` connection(illegalTicket TicketV)}
       end
    end
 
@@ -214,12 +214,12 @@ local
    in
       {DeTicket Ticket ?ProcId ?IsSingle _}
       case IsSingle then
-         raise ticket(illegal) end
+         {`RaiseError` connection(illegalTicket TicketV)}
       else A in
          {ProcSend ProcId {String.toAtom Ticket}#A}
          case A
          of no     then
-            raise ticket(refused) end
+            {`RaiseError` connection(illegalTicket TicketV)}
          [] yes(Y) then
             X=Y
          end

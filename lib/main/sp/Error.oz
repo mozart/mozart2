@@ -26,6 +26,8 @@
 %%% WARRANTIES.
 %%%
 
+\undef TYPE_DEBUG
+
 local
 
    %% constants
@@ -391,6 +393,7 @@ local
       end
    end
 
+\ifdef TYPE_DEBUG
    fun {IsBinaryProc P}
       {IsProcedure P} andthen {Procedure.arity P}==2
    end
@@ -402,6 +405,7 @@ local
    AskProcOrObject={Type.ask.generic
                     fun {$ P} {IsProcedure P} orelse {IsObject P} end
                     'procedure or object'}
+\endif
 
    %%
    %% names of fd related builtins
@@ -670,8 +674,10 @@ in
       end
 
       proc {NewFormatter Key P}
+\ifdef TYPE_DEBUG
          {Type.ask.feature Key}
          {AskBinaryProc P}
+\endif
          case {ExFormatter Key}
          then {`RaiseError` system(reinstallFormatter Key)}
          else
@@ -782,11 +788,12 @@ in
          then
             LayOut
          in
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
             {Type.ask.atom T}
             {Type.ask.int P}
             {Type.ask.virtualString S}
-
+\endif
             LayOut = case A # Xs
                      of '.' # [R F X] then
                         Ls = {LayoutDot R F X '.'}
@@ -843,11 +850,12 @@ in
          elseof kernel(instantiation A Xs T P S) then
             LayOut
          in
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
             {Type.ask.atom T}
             {Type.ask.int P}
             {Type.ask.virtualString S}
-
+\endif
             local
                Ls =
                hint(l:'In statement' m:{FormatAppl A Xs})
@@ -869,8 +877,10 @@ in
 
          elseof kernel(apply X Xs) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
-         in
+\endif
+
             {FormatExc
              'error in application'
              'Application of non-procedure and non-object'
@@ -879,8 +889,10 @@ in
 
          elseof kernel('.' R F) then
 
+\ifdef TYPE_DEBUG
             {AskChunkOrRec R}
             {Type.ask.feature F}
+\endif
 
             {FormatExc
              'Error: illegal field selection'
@@ -890,13 +902,16 @@ in
 
          elseof kernel(recordConstruction L As) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.literal L}
             {Type.ask.list As}
+
             {ForAll As
              proc {$ A}
                 {Type.ask.pair A}
                 {Type.ask.feature A.1}
              end}
+\endif
 
             {FormatExc
              'Error: duplicate fields'
@@ -907,9 +922,11 @@ in
 
          elseof kernel(arity P Xs) then
 
+\ifdef TYPE_DEBUG
             {AskProcOrObject P}
             {Type.ask.list Xs}
-         in
+\endif
+
             {FormatExc
              'Error: illegal number of arguments'
              unit
@@ -922,8 +939,9 @@ in
 
          elseof kernel(noElse Pos) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.int Pos}
-
+\endif
             {FormatExc
              'Error: conditional failed'
              'Missing else clause'
@@ -932,7 +950,9 @@ in
 
          elseof kernel(noElse Pos A) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.int Pos}
+\endif
 
             {FormatExc
              'Error: conditional failed'
@@ -943,7 +963,9 @@ in
 
          elseof kernel(boolCaseType Pos) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.int Pos}
+\endif
 
             {FormatExc
              'Error: boolean conditional failed'
@@ -979,8 +1001,10 @@ in
 
             Ks
          in
+\ifdef TYPE_DEBUG
             {Type.ask.dictionary D}
             {Type.ask.feature K}
+\endif
 
             Ks = {Dictionary.keys D}
 
@@ -994,8 +1018,10 @@ in
 
          elseof kernel(array A I) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.array A}
             {Type.ask.int I}
+\endif
 
             {FormatExc
              'Error: Array'
@@ -1011,7 +1037,9 @@ in
 
          elseof kernel(stringNoFloat S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.string S}
+\endif
 
             {FormatExc
              'Error: representation fault'
@@ -1021,7 +1049,9 @@ in
 
          elseof kernel(stringNoInt S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.string S}
+\endif
 
             {FormatExc
              'Error: representation fault'
@@ -1031,8 +1061,9 @@ in
 
          elseof kernel(stringNoAtom S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.string S}
-
+\endif
             {FormatExc
              'Error: representation fault'
              'Conversion to atom failed'
@@ -1041,7 +1072,9 @@ in
 
          elseof kernel(stringNoValue S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.string S}
+\endif
 
             {FormatExc
              'Error: representation fault'
@@ -1053,7 +1086,9 @@ in
 
             Msg
          in
+\ifdef TYPE_DEBUG
             {Type.ask.atom What}
+\endif
 
             Msg  = case What
                    of     array  then 'Assignment to global array'
@@ -1072,7 +1107,9 @@ in
 
          elseof kernel(spaceMerged S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.space S}
+\endif
 
             {FormatExc
              'Error: Space'
@@ -1082,7 +1119,9 @@ in
 
          elseof kernel(spaceSuper S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.space S}
+\endif
 
             {FormatExc
              'Error: Space'
@@ -1092,7 +1131,9 @@ in
 
          elseof kernel(spaceParent S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.space S}
+\endif
 
             {FormatExc
              'Error: Space'
@@ -1102,7 +1143,9 @@ in
 
          elseof kernel(spaceNoChoice S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.space S}
+\endif
 
             {FormatExc
              'Error: Space'
@@ -1112,7 +1155,9 @@ in
 
          elseof kernel(portClosed P) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.port P}
+\endif
 
             {FormatExc
              'Error: Port'
@@ -1126,7 +1171,9 @@ in
 
          elseof kernel(block T) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.'thread' T}
+\endif
 
             {FormatExc
              'Error: Thread'
@@ -1164,8 +1211,10 @@ in
 
          elseof apply(A Xs) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
             {Type.ask.list Xs}
+\endif
 
             {FormatExc
              T
@@ -1324,9 +1373,11 @@ in
          case E
          of record(width A Xs P S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
             {Type.ask.int P}
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc
              T unit
@@ -1370,10 +1421,12 @@ in
          case E
          of fd(scheduling A Xs T P S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
             {Type.ask.atom T}
             {Type.ask.int P}
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc
              T unit
@@ -1386,9 +1439,11 @@ in
 
          elseof fd(noChoice A Xs P S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.list Xs}
             {Type.ask.int P}
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc
              T unit
@@ -1413,9 +1468,11 @@ in
 
          case E
          of foreign(cannotFindFunction F A H) then
+\ifdef TYPE_DEBUG
             {Type.ask.atom F}
             {Type.ask.int A}
             {Type.ask.int H}
+\endif
 
             {FormatExc T
              'Cannot find foreign function'
@@ -1425,8 +1482,9 @@ in
              Exc}
 
          [] foreign(dlOpen F S) then
+\ifdef TYPE_DEBUG
             {Type.ask.virtualString F}
-
+\endif
             {FormatExc T
              'Cannot load foreign function file'
              [hint(l:'File name' m:F)
@@ -1472,7 +1530,9 @@ in
 
          elseof system(limitInternal S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc T
              unit
@@ -1481,7 +1541,9 @@ in
 
          elseof system(limitExternal S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc T
              unit
@@ -1490,7 +1552,9 @@ in
 
          elseof system(fallbackInstalledTwice A) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
+\endif
 
             {FormatExc
              T unit
@@ -1499,7 +1563,9 @@ in
 
          elseof system(fallbackNotInstalled A) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
+\endif
 
             {FormatExc
              T unit
@@ -1508,7 +1574,9 @@ in
 
          elseof system(builtinUndefined A) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
+\endif
 
             {FormatExc T
              'Undefined builtin'
@@ -1517,9 +1585,11 @@ in
 
          elseof system(builtinArity A F E) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
             {Type.ask.int F}
             {Type.ask.int E}
+\endif
 
             {FormatExc T
              'Illegal arity in Oz-declaration'
@@ -1530,9 +1600,11 @@ in
 
          elseof system(inconsistentArity A F E) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom A}
             {Type.ask.int F}
             {Type.ask.int E}
+\endif
 
             {FormatExc T
              'Illegal arity in emulator-declaration'
@@ -1551,7 +1623,9 @@ in
 
          elseof system(fatal S) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.virtualString S}
+\endif
 
             {FormatExc
              T
@@ -1570,7 +1644,9 @@ in
 
          elseof system(reinstallFormatter Key) then
 
+\ifdef TYPE_DEBUG
             {Type.ask.atom Key}
+\endif
 
             {FormatExc
              T
@@ -1594,37 +1670,39 @@ in
 
          case E
          of tk(wrongParent O M) then
+\ifdef TYPE_DEBUG
             {Type.ask.object O}
             {Type.ask.record M}
-
+\endif
             {FormatExc T
              'Wrong Parent'
              [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
              Exc}
 
          elseof tk(alreadyInitialized O M) then
+\ifdef TYPE_DEBUG
             {Type.ask.object O}
             {Type.ask.record M}
-
+\endif
             {FormatExc T
              'Object already initialized'
              [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
              Exc}
 
          elseof tk(alreadyClosed O M) then
-
+\ifdef TYPE_DEBUG
             {Type.ask.object O}
             {Type.ask.record M}
-
+\endif
             {FormatExc T
              'Window already closed'
              [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
               Exc}
 
          elseof tk(alreadyClosed O) then
-
+\ifdef TYPE_DEBUG
             {Type.ask.object O}
-
+\endif
             {FormatExc T
              'Window already closed'
              [hint(l:'Object' m:oz(O))]
@@ -1645,15 +1723,24 @@ in
       in
          case E
          of open(What O M) then
+\ifdef TYPE_DEBUG
             {Type.ask.atom What}
             {Type.ask.object O}
-
+\endif
             {FormatExc T
              case What
-             of alreadyClosed then 'Object already closed'
-             [] alreadyInitialized then 'Object already initialized'
-             [] illegalFlags then 'Illegal value for flags'
-             [] illegalModes then 'Illegal value for mode'
+             of alreadyClosed then
+                'Object already closed'
+             [] alreadyInitialized then
+                'Object already initialized'
+             [] illegalFlags then
+                'Illegal value for flags'
+             [] illegalModes then
+                'Illegal value for mode'
+             [] nameOrUrl then
+                'Exactly one of \'name\' or \'url\' feature needed'
+             [] urlIsReadOnly then
+                'Only reading access to url-files allowed'
              else 'Unknown' end
              [hint(l:'Object Application'
                    m:'{' # oz(O) # ' ' # oz(M) # '}')]
@@ -1673,10 +1760,12 @@ in
       in
          case E
          of os(K N S) then
+\ifdef TYPE_DEBUG
             {Type.ask.atom K}
             {Type.ask.int N}
             {Type.ask.virtualString S}
-         in
+\endif
+
             case K
             of os then
                {FormatExc T
@@ -1730,6 +1819,18 @@ in
              [hint(l:'In statement' m:'{'#list(Call ' ')#'}')
               hint(l:'At 3rd argument' m:Call.2.2.2.1)
               hint(l:'Expected' m:'virtual string or record')]
+             Exc}
+         elseof connection(illegalTicket V) then
+            {FormatExc
+             'Illegal ticket for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
+             Exc}
+         elseof connection(refusedTicket V) then
+            {FormatExc
+             'Ticket refused for connection'
+             unit
+             [hint(l:'Ticket' m:V)]
              Exc}
          else
             {GenericFormatter T Exc}

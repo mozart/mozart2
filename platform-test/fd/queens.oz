@@ -68,15 +68,16 @@ define
    end
 
    proc {EnumMid Xs}
-      {Space.waitStable}
-      case {SkipDet Xs}
-      of nil then skip
-      [] X|Xr then
-         local Y Yr Hole Mid in
-            {Choose Xr Yr Hole X {GetSize X} Y Hole}
-            Mid={GetMid Y}
-            choice Y=Mid {EnumMid Yr}
-            []  Y\=:Mid {EnumMid Y|Yr}
+      choice
+         case {SkipDet Xs}
+         of nil then skip
+         [] X|Xr then
+            local Y Yr Hole Mid in
+               {Choose Xr Yr Hole X {GetSize X} Y Hole}
+               Mid={GetMid Y}
+               choice Y=Mid {EnumMid Yr}
+               []  Y\=:Mid {EnumMid Y|Yr}
+               end
             end
          end
       end

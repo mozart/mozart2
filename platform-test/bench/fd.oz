@@ -39,6 +39,6 @@ body
                           {Wait {Space.ask S}}
                        end
                        keys:[bench fd propagator]
-                       bench:true)
+                       bench:1)
                ])
 end

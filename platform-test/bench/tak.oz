@@ -60,11 +60,11 @@ body
                            _={TakB 7}
                         end
                         keys:[bench takeushi]
-                        bench:true)
+                        bench:1)
                  'thread'(proc {$}
                              {Wait {TakFB 6}}
                           end
                           keys:[bench takeushi 'thread']
-                          bench:true)
+                          bench:1)
                 ])
 end

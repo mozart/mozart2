@@ -39,6 +39,6 @@ body
                                 {Wait {E enqueue(ping($))}}
                              end
                              keys:[bench compiler]
-                             bench:true)
+                             bench:1)
                      ])
 end

@@ -52,7 +52,9 @@ in
                   keys: [fd])
               all(equal(fun {$} {Search.base.all Alpha} end
                         AlphaSol)
-                  keys: [fd])
+                  keys: [fd]
+                  bench: 10
+                 )
               one_entailed(entailed(proc {$} {Search.base.one Alpha _} end)
                   keys: [fd entailed])
               all_entailed(entailed(proc {$} {Search.base.all Alpha _} end)

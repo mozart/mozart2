@@ -173,6 +173,6 @@ body
                   end
                   true)
             keys: [scheduling fd]
-            bench:true
+            bench:1
            )
 end

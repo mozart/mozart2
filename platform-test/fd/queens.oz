@@ -184,7 +184,8 @@ body
                std(equal(fun {$} {Search.base.one proc {$ X} {Queens 14 X} end}
                          end
                          QueensSol)
-                   keys: [fd])
+                   keys: [fd]
+                   bench:10)
 
                middle_out(equal(fun {$}
                                    {Search.base.one proc {$ X}
@@ -192,7 +193,8 @@ body
                                               end}
                                 end
                                 QueensMiddleOutSol)
-                          keys: [fd])
+                          keys: [fd]
+                          bench:40)
 
                primer(equal(fun {$}
                                {Search.base.one {QueensPrimer 233}}

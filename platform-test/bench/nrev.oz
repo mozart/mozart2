@@ -84,5 +84,5 @@ body
                     _={Dobench 10000}
                  end
                  keys:[bench naive reverse nrev]
-                 bench:true)
+                 bench:1)
 end

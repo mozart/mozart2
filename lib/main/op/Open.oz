@@ -45,8 +45,7 @@ local
       end
    in
       fun {Tag2Vs Tag}
-         if {IsAtom Tag} then Tag
-         elseif {IsTuple Tag} then L={Label Tag} in
+         if {IsTuple Tag} then L={Label Tag} in
             if {HtmlTable.isTag L} then
                '<'#L#'>'#{TagBody {Width Tag} Tag}#
                if {HtmlTable.isNonFinalTag L} then '' else

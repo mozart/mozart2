@@ -400,7 +400,7 @@ define
          end
          meth getDataNode(X Y $)
             CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
-            CY = Tk.canvas, tkReturnInt(canvasy(Y) $) div @fontY
+            CY = Tk.canvas, tkReturnInt(canvasy(Y) $) %% y needs to be offset-adjusted (later)
          in
             GraphicSupport, SearchNode(1 0 0 CX CY $)
          end
@@ -431,8 +431,9 @@ define
                GraphicSupport, adjustCanvasView
             end
          end
-         meth !SearchNode(I XA YA X Y $)
+         meth !SearchNode(I XA YA X CY $)
             Node = {Dictionary.get @nodes I}
+            Y    = (CY - ((I - 1) * 3)) div @fontY
          in
             case Node
             of nil then nil
@@ -444,7 +445,7 @@ define
                if X >= XA andthen X < XM andthen Y >= YA andthen Y < YM
                then {Node searchNode(XA YA X Y $)}
                elseif I < @maxPtr
-               then GraphicSupport, SearchNode((I + 1) XA YM X Y $)
+               then GraphicSupport, SearchNode((I + 1) XA YM X CY $)
                else nil
                end
             end

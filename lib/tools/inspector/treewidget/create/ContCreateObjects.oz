@@ -345,17 +345,20 @@ in
    class KindedRecordCreateObject from RecordCreateObject
       attr
          monitorValue %% Monitor Value
+         hasLabel     %% LabelFlag
       meth createContainer
-         Arity  = @arity
-         Visual = @visual
-         Value  = @value
+         Arity    = @arity
+         Visual   = @visual
+         Value    = @value
+         HasLabel = @hasLabel
       in
-         @type  = kindedrecord
-         @label = if {RecordC.hasLabel Value}
-                  then {New Aux.label create({Label Value} '(' self Visual)}
-                  else {New Aux.label create('_' '(' self Visual)}
-                  end
-         @brace = {New Aux.atom create(')' self 0 Visual internal)}
+         @type    = kindedrecord
+         HasLabel = {RecordC.hasLabel Value}
+         @label   = if HasLabel
+                    then {New Aux.label create({Label Value} '(' self Visual)}
+                    else {New Aux.label create('_' '(' self Visual)}
+                    end
+         @brace   = {New Aux.atom create(')' self 0 Visual internal)}
          {RecordC.monitorArity Value _ Arity}
          KindedRecordCreateObject, computeArityLength(Arity 1)
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)

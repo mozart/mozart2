@@ -736,9 +736,14 @@ in
                   of det(record) then type <- record
                   else skip
                   end
-               else
+               end
+               if @hasLabel
+               then skip
+               elseif {RecordC.hasLabel MyValue}
+               then
                   {@label undraw}
-                  label <- {New Aux.label create({Label MyValue} '(' self @visual)}
+                  hasLabel <- true
+                  label    <- {New Aux.label create({Label MyValue} '(' self @visual)}
                end
                xDim <- _
                {@parent getRootIndex(@index $)}

@@ -22,6 +22,7 @@
 functor $
 import
    CreateObjects(recordCreateObject kindedRecordCreateObject)
+   RecordC(hasLabel)
    System(eq show)
    Tk(send)
    Aux

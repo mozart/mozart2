@@ -54,7 +54,9 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        mini url equality port cell cellAndLock variable object objectAndLock
+        mini url equality port cell cellAndLock variable object objectAndLock \
+        fault1
+
 DP2=
 DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)
 

@@ -84,8 +84,9 @@ sub gtk2oz_meth_name {
 #  }
 
 sub write_oz_class_header {
-    print "class " . gtk2oz_class_name($$class{name});
-    print " from " . gtk2oz_class_name($$class{super}) if $$class{super};
+#    print "class " . gtk2oz_class_name($$class{name});
+    print "X = \nclass \$ ";
+    print 'from ' . gtk2oz_class_name($$class{super}) if $$class{super};
     print "\n";
 }
 
@@ -209,11 +210,16 @@ sub write_oz_meth_wrappers {
 }
 
 sub process_class {
+    print gtk2oz_class_name($$class{name}) . ' = {Value.byNeed proc {$ X} ';
+
     write_oz_class_header;
     write_oz_fields_wrappers;
     write_oz_init_methods;
     write_oz_meth_wrappers;
-    print "end\n\n";
+    print "end\n"; # class
+
+    print "end\n"; # byNeed
+    print '$}'."\n\n";
 }
 
 sub build_classes {

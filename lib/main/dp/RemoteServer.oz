@@ -101,7 +101,8 @@ define
    %% site
 
    if Args.detached then
-      {OS.signal 'SIGHUP' proc {$ _} skip end}
+      {OS.signal 'SIGHUP'  proc {$ _} skip end}
+      {OS.signal 'SIGTERM' proc {$ _} skip end}
    else
       {Fault.siteWatcher  RunRet
        proc {$ E C}

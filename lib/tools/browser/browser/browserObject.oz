@@ -1179,8 +1179,7 @@ class WindowPrimary from UrObject
              local CProc in
                 {Window
                  addRadioEntry(FontMiscMenu
-                               {List.flatten
-                                [" " {Atom.toString Font.name} " "]}
+                               " "#{Atom.toString Font.name}#" "
                                FontVar Font.font CProc)}
 
                 %%
@@ -1198,10 +1197,9 @@ class WindowPrimary from UrObject
              local CProc in
                 {Window
                  addRadioEntry(FontCourMenu
-                               {List.flatten
-                                [" " {Atom.toString Font.name} " "]}
+                               " "#{Atom.toString Font.name}#" "
                                FontVar Font.font CProc)}
-                %%
+
                 %%
                 case {Window tryFont(Font.font $)}
                 then true       % font exists - ok;

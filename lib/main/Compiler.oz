@@ -34,7 +34,9 @@ in
 
       Compiler = compiler(compilerClass: CompilerClass
                           genericInterface: GenericInterface
-                          quietInterface: QuietInterface)
+                          quietInterface: QuietInterface
+                          evalExpression: EvalExpression
+                          virtualStringToValue: VirtualStringToValue)
    in
       \insert 'Compiler.env'
    end

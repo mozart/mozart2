@@ -45,6 +45,7 @@ local
 
                             %% parsing and expanding:
                             %%
+                            expression: false
                             system: true
                             catchall: false
                             selfallowedanywhere: false
@@ -166,20 +167,20 @@ local
          @maxNumberOfErrors
       end
 
-      meth enter(V X <= _)
-         CompilerStateClass, Enter(V X)
+      meth enter(V X <= _ NameIt <= true)
+         CompilerStateClass, Enter(V X NameIt)
          {@wrapper notify(env(self.values))}
       end
       meth enterMultiple(Vs)
-         {ForAll Vs proc {$ V} CompilerStateClass, Enter(V _) end}
+         {ForAll Vs proc {$ V} CompilerStateClass, Enter(V _ true) end}
          {@wrapper notify(env(self.values))}
       end
-      meth Enter(V X) PrintName in
+      meth Enter(V X NameIt) PrintName in
          {V getPrintName(?PrintName)}
          {Dictionary.put self.variables PrintName V}
          {Dictionary.put self.values PrintName X}
-         case {IsDet X} then skip
-         else {NameVariable X PrintName}
+         case {IsFree X} andthen NameIt then {NameVariable X PrintName}
+         else skip
          end
          {V setUse(multiple)}
          {V setToplevel(true)}
@@ -199,7 +200,7 @@ local
           proc {$ PrintName Value}
              case {IsPrintName PrintName} then V in
                 V = {New Core.variable init(PrintName putEnv unit)}
-                CompilerStateClass, Enter(V Value)
+                CompilerStateClass, Enter(V Value true)
              else
                 {@reporter warn(kind: 'warning'
                                 msg: ('tried to add variable with '#
@@ -278,18 +279,28 @@ local
             {@reporter logInterrupt()}
          end
       end
-      meth feedFile(FileName ?RequiredInterfaces <= _)
+      meth CheckReturn(Return)
+         Return = return(...)
+         case {List.sub {Record.reflectArity Return}
+               ['requiredInterfaces' 'result']}
+         then skip
+         else fail
+         end
+      end
+
+      meth feedFile(FileName Return <= return)
+         CompilerEngine, CheckReturn(Return)
          CompilerEngine,
          CatchResult(proc {$}
-                        CompilerEngine, FeedFileSub(FileName
-                                                    ?RequiredInterfaces)
+                        CompilerEngine, FeedFileSub(FileName Return)
                      end)
       end
-      meth FeedFileSub(FileName ?RequiredInterfaces)
+      meth FeedFileSub(FileName Return)
          {@reporter userInfo('%%% feeding file '#FileName#'\n')}
-         CompilerEngine, Feed(ParseOzFile FileName ?RequiredInterfaces)
+         CompilerEngine, Feed(ParseOzFile FileName Return)
       end
-      meth feedVirtualString(VS ?RequiredInterfaces <= _)
+      meth feedVirtualString(VS Return <= return)
+         CompilerEngine, CheckReturn(Return)
          CompilerEngine,
          CatchResult(proc {$}
                         case CompilerStateClass, getSwitch(echoqueries $) then
@@ -297,20 +308,19 @@ local
                         else
                            {@reporter userInfo('%%% feeding virtual string\n')}
                         end
-                        CompilerEngine, Feed(ParseOzVirtualString VS
-                                             ?RequiredInterfaces)
+                        CompilerEngine, Feed(ParseOzVirtualString VS Return)
                      end)
       end
       meth FeedFileWithSwitches(FileName Switches) OldState in
          OldState = {Record.map Switches fun {$ _} _ end}
          CompilerStateClass, getMultipleSwitches(OldState)
          CompilerStateClass, setMultipleSwitches(Switches)
-         CompilerEngine, Feed(ParseOzFile FileName _)
+         CompilerEngine, Feed(ParseOzFile FileName return)
          CompilerStateClass, setMultipleSwitches(OldState)
       end
-      meth Feed(ParseOz Data ?RequiredInterfaces)
-         {@reporter clearErrors()}
+      meth Feed(ParseOz Data Return)
          ExecutingThread <- {Thread.this}
+         {@reporter clearErrors()}
          try Queries0 Queries T in
             {@reporter logPhase('parsing ...')}
             Queries0 = {ParseOz Data @reporter
@@ -323,6 +333,11 @@ local
             end
             Queries = case CompilerStateClass, getSwitch(ozma $) then
                          {JoinQueries Queries0 @reporter}
+                      elsecase CompilerStateClass, getSwitch(expression $) then
+                         V = {New Core.variable init('`result`' putEnv unit)}
+                      in
+                         CompilerStateClass, enter(V _ false)
+                         {MakeExpressionQuery Queries0}
                       else
                          Queries0
                       end
@@ -330,10 +345,15 @@ local
             CompilerEngine,
             ExecProtected(proc {$}
                              try
-                                {Map Queries
-                                 fun {$ Query}
-                                    CompilerEngine, CompileQuery(Query $)
-                                 end ?RequiredInterfaces}
+                                Is = {Map Queries
+                                      fun {$ Query}
+                                         CompilerEngine, CompileQuery(Query $)
+                                      end}
+                             in
+                                case {HasFeature Return requiredInterfaces}
+                                then Return.requiredInterfaces = Is
+                                else skip
+                                end
                              catch tooManyErrors then
                                 {Thread.injectException T tooManyErrors}
                              [] rejected then
@@ -346,6 +366,13 @@ local
                           end true)
             case {@reporter hasSeenError($)} then
                raise rejected end
+            else skip
+            end
+            case CompilerStateClass, getSwitch(expression $) then
+               case {HasFeature Return result} then
+                  CompilerStateClass, lookupInEnv('`result`' ?Return.result)
+               else skip
+               end
             else skip
             end
          finally
@@ -376,7 +403,7 @@ local
          [] dirPopSwitches then
             CompilerStateClass, popSwitches()
          [] dirFeed(FileName) then
-            CompilerEngine, FeedFileSub(FileName _)
+            CompilerEngine, FeedFileSub(FileName return)
          [] dirThreadedFeed(FileName) then
             CompilerEngine,
             FeedFileWithSwitches(FileName
@@ -738,9 +765,9 @@ in
             [] mergeEnv(Env) then skip
             [] getEnv(?Env) then skip
             [] feedVirtualString(VS) then skip
-            [] feedVirtualString(VS ?RequiredInterfaces) then skip
+            [] feedVirtualString(VS Return) then skip
             [] feedFile(VS) then skip
-            [] feedFile(VS ?RequiredInterfaces) then skip
+            [] feedFile(VS Return) then skip
             [] ping(?HereIAm) then skip
             else
                raise compiler(invalidQuery M) end

@@ -67,19 +67,6 @@ local
       end
    end
 
-   fun {IsDirective Query}
-      case Query of dirHalt then true
-      [] dirHelp then true
-      [] dirSwitch(_) then true
-      [] dirShowSwitches then true
-      [] dirFeed(_) then true
-      [] dirThreadedFeed(_) then true
-      [] dirCore(_) then true
-      [] dirMachine(_) then true
-      else false
-      end
-   end
-
    %% The following three functions (DollarsInScope, DollarCoord and
    %% ReplaceDollar) operate on the dollars in pattern position,
    %% corresponding to the definition of GetPatternVariablesExpression.
@@ -1825,6 +1812,21 @@ local
          end
       end
    end
+
+   fun {IsDirective Query}
+      case Query of dirHalt then true
+      [] dirHelp then true
+      [] dirSwitch(_) then true
+      [] dirShowSwitches then true
+      [] dirPushSwitches then true
+      [] dirPopSwitches then true
+      [] dirFeed(_) then true
+      [] dirThreadedFeed(_) then true
+      [] dirCore(_) then true
+      [] dirMachine(_) then true
+      else false
+      end
+   end
 in
    local
       fun {VariableMember PrintName Vs}
@@ -1883,6 +1885,34 @@ in
                             msg: 'Ozma only supports one query in input')}
             Directives
          end
+      end
+   end
+
+   local
+      proc {MakeExpressionQuerySub Qs ?NewQs ?Found}
+         case Qs of Q1|Qr then NewQr Found0 in
+            {MakeExpressionQuerySub Qr ?NewQr ?Found0}
+            case Found0 then
+               NewQs = Q1|NewQr
+               Found = true
+            elsecase {IsDirective Q1} then
+               NewQs = Qs
+               Found = false
+            elsecase Q1 of fDeclare(FS FE C) then
+               NewQs = fDeclare(FS fEq(fVar('`result`' unit) FE unit) C)|Qr
+               Found = true
+            else
+               NewQs = fEq(fVar('`result`' unit) Q1 unit)|Qr
+               Found = true
+            end
+         [] nil then
+            NewQs = nil
+            Found = false
+         end
+      end
+   in
+      fun {MakeExpressionQuery Queries}
+         {MakeExpressionQuerySub Queries $ _}
       end
    end
 

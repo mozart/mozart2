@@ -28,6 +28,11 @@ prepare
     'list'      # ['return' 'collect' 'append' 'prepend']]
    GENERAL_FEATURES = ['break' 'continue']
    fun {IsNotGeneral F} {Not {Member F GENERAL_FEATURES}} end
+   fun {CoordNoDebug Coord}
+      case {Label Coord} of pos then Coord
+      else {Adjoin Coord pos}
+      end
+   end
 define
    fun {MakeVar Name}
       fVar({NewNamedName Name} unit)
@@ -43,6 +48,7 @@ define
    end
    %%
    fun {Compile fFOR(DECLS BODY COORDS)}
+      COORDS_NODEBUG={CoordNoDebug COORDS}
       D1 = {Record.toDictionary
             o('inners' : nil
               'outers' : nil
@@ -203,8 +209,8 @@ define
                     fSkip(unit)
                     unit)
               end
-      {Push 'outers' fProc(LoopProc {Reverse D1.'args'} Loop3 nil unit)}
-      Main1 = fApply(LoopProc {Reverse D1.'inits'} COORDS)
+      {Push 'outers' fProc(LoopProc {Reverse D1.'args'} Loop3 nil COORDS_NODEBUG)}
+      Main1 = fApply(LoopProc {Reverse D1.'inits'} COORDS_NODEBUG)
       Main2 = if {HasFeature D2 'break'} then
                  fTry(Main1
                       fCatch(
@@ -212,7 +218,7 @@ define
                              fEscape(VarD.'break' unit)
                              fSkip(unit))]
                          unit)
-                      fNoFinally COORDS)
+                      fNoFinally COORDS_NODEBUG)
               else Main1 end
       Main3 = case AccuType
               of unit then Main2
@@ -225,15 +231,15 @@ define
                             fRecord(
                                fAtom('for' unit)
                                [fAtom('noDefaultValue' unit)])
-                            COORDS)
+                            COORDS_NODEBUG)
                       end)
               [] 'list' then
-                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS))
+                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS_NODEBUG))
               elseif {HasFeature D2 'default'} then
                  fAnd(Main2
-                      fOpApply('For.retintdefault' [VarAccu VarD.'default'] COORDS))
+                      fOpApply('For.retintdefault' [VarAccu VarD.'default'] COORDS_NODEBUG))
               else
-                 fAnd(Main2 fOpApply('For.retint' [VarAccu] COORDS))
+                 fAnd(Main2 fOpApply('For.retint' [VarAccu] COORDS_NODEBUG))
               end
       Main4 = if {HasFeature D2 'return'} then
                  V = {MakeVar 'V'}
@@ -247,7 +253,7 @@ define
                               [fEscape(VarD.'return' unit) V])
                            V)]
                        unit)
-                    fNoFinally COORDS)
+                    fNoFinally COORDS_NODEBUG)
               else Main3 end
       Main5 = case D1.'outers'
               of nil then Main4
@@ -255,9 +261,9 @@ define
                  fLocal(
                     {FoldL T fun {$ A D} fAnd(D A) end H}
                     Main4
-                    COORDS)
+                    COORDS_NODEBUG)
               end
    in
-      Main5
+      fStepPoint(Main5 'loop' COORDS)
    end
 end

@@ -27,8 +27,11 @@
 %%
 local
    ByNeedFail = Boot_Value.'byNeedFail'
-   fun lazy {ByNeedDot X F}
-      try X.F catch E then {ByNeedFail E} end
+   fun {ByNeedDot X F}
+      if {IsDet X} andthen {IsDet F}
+      then try X.F catch E then {ByNeedFail E} end
+      else {ByNeed fun {$} try X.F catch E then {ByNeedFail E} end end}
+      end
    end
 in
    Value = value(wait:            Wait

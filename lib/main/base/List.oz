@@ -247,24 +247,24 @@ local
    end
 
    fun {Take Xs N}
-      case Xs of nil then nil
-      [] X|Xr then if N>0 then X|{Take Xr N-1} else N=0 nil end
-      end
+      if N>0 then
+         case Xs of nil then nil
+         [] X|Xr then X|{Take Xr N-1} end
+      else N=0 nil end
    end
 
    fun {Drop Xs N}
-      case Xs of nil then nil
-      [] _|Xr then if N>0 then {Drop Xr N-1} else N=0 Xs end
-      end
+      if N>0 then
+         case Xs of nil then nil
+         [] _|Xr then {Drop Xr N-1} end
+      else N=0 Xs end
    end
 
    proc {TakeDrop Xs N ?Ys ?Zs}
-      case Xs of nil then Ys=nil Zs=nil
-      [] X|Xr then
-         if N>0 then Ys=X|{TakeDrop Xr N-1 $ Zs}
-         else N=0 Ys=nil Zs=Xs
-         end
-      end
+      if N>0 then
+         case Xs of nil then Ys=nil Zs=nil
+         [] X|Xr then Ys=X|{TakeDrop Xr N-1 $ Zs} end
+      else N=0 Ys=nil Zs=Xs end
    end
 
    %%

@@ -161,7 +161,7 @@ define
       in
          Module = UnsitedBaseManager,LINK(Url ExpectedType _ $)
          if {Not {HasFeature Message 1}} then
-            thread {Wait Module} end
+            thread try {Wait Module} catch _ then skip end end
          end
       end
 
@@ -186,7 +186,7 @@ define
       in
          Module = UnsitedBaseManager,APPLY(Url Func $)
          if {Not {HasFeature Message 2}} then
-            thread {Wait Module} end
+            thread try {Wait Module} catch _ then skip end end
          end
       end
 

@@ -41,7 +41,7 @@ in
             prop final
             meth readQuery($) S in
                Open.text, getS(?S)
-               case S == false orelse ({IsTuple S} andthen S.1 == 4) then ""  % 4 == ^D
+               case S == false orelse ({HasFeature S 1} andthen S.1 == 4) then ""  % 4 == ^D
                else S#'\n'#TextFile, readQuery($)
                end
             end

@@ -98,7 +98,7 @@ define
 \ifdef DBG
          {System.showInfo 'After acceptSelect '#FD#' '#{OS.getPID}}
 \endif
-         {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
+         {OS.acceptNonblocking_noDnsLookup FD _ _ NewFD} %InAddress InIPPort NewFD}
 \ifdef DBG
          {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'#' '#{OS.getPID}}
 \endif

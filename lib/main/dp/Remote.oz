@@ -60,7 +60,11 @@ define
 \endif
                         ]}
         else
-           [unit unit]
+           [unit
+\ifdef DENYS_EVENTS
+            unit
+\endif
+           ]
         end
 
    if {Property.condGet 'oz.engine' unit}==unit then

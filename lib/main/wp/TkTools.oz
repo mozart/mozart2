@@ -290,7 +290,7 @@ define
 
       fun {MakeClass C Fs}
          case Fs of nil then C else
-            {Class.extendFeatures C f Fs}
+            {Class.extendFeatures C {List.toTuple '#' Fs}}
          end
       end
 

@@ -54,7 +54,7 @@ prepare
                    'Tk' 'TkTools'
                    'Compiler'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
-                   'DefaultURL']
+                   'DefaultURL' 'ObjectSupport']
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System']
       Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'

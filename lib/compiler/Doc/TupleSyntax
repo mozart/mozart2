@@ -2,7 +2,6 @@ Tuple Syntax used by the New Oz Compiler:
 -----------------------------------------
 
 File              = parseError
-                  | fileNotFound
                   | [Query].
 Query             = Phrase
                   | Directive

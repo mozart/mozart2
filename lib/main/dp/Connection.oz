@@ -38,7 +38,7 @@ export
    offer: Offer
    take:  Take
    gate:  Gate
-
+   offerMultiple: OfferMultiple
 
 prepare
 
@@ -231,6 +231,12 @@ define
       meth close
          {Dictionary.remove KeyDict self.Ticket.key}
       end
+   end
+
+   proc {OfferMultiple X ?Ticket ?Close}
+      G = {New Gate init(X Ticket)}
+   in
+      proc {Close} {G close} end
    end
 
 

@@ -236,11 +236,6 @@ define
                      {TExecTk M}
                   end
                end
-               meth blur
-                  lock
-                     {TExecTk focus('""')}
-                  end
-               end
                meth icursor(...)=M
                   lock
                      {TExecTk M}
@@ -316,7 +311,7 @@ define
 
       % find not supplied : it returns Tk tags and they can't be transformed into the corresponding Oz objects
 
-      meth focus=M
+      meth focus(...)=M
          lock
             {ExecTk self M}
          end

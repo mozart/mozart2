@@ -4,8 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchBest = 'SearchBest'}
+   Search
 
 export
    Return
@@ -85,24 +84,24 @@ body
    Return=
    fd([photo([
               primer(equal(fun {$}
-                              {SearchOne PhotoPrimer}
+                              {Search.base.one PhotoPrimer}
                            end
                            PhotoPrimerSol)
                      keys: [fd])
 
               best(equal(fun {$}
-                            {SearchBest Photo
+                            {Search.base.best Photo
                              proc{$ Old New} Old.2 <: New.2 end}
                          end
                          PhotoSol)
                    keys: [fd])
               primer_entailed(entailed(proc {$}
-                              {SearchOne PhotoPrimer _}
+                              {Search.base.one PhotoPrimer _}
                                        end)
                               keys: [fd entailed])
 
               best_entailed(entailed(proc {$}
-                                        {SearchBest Photo
+                                        {Search.base.best Photo
                                          proc{$ Old New} Old.2 <: New.2 end _}
                                      end)
                    keys: [fd entailed])

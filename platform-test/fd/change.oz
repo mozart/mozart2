@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -36,12 +36,12 @@ body
    Return=
    fd([change([
                one(equal(fun {$}
-                            {SearchOne Change}
+                            {Search.base.one Change}
                          end
                          ChangeSol)
                    keys: [fd])
                one_entailed(entailed(proc {$}
-                                        {SearchOne Change _}
+                                        {Search.base.one Change _}
                                      end)
                    keys: [fd entailed])
               ])

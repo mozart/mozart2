@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 
 export
@@ -123,7 +123,7 @@ body
 
    fd([diagnosis([
                   test1(equal(fun {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 2 0 0 2 1 0 X 1}
                                      {FD.distribute ff X}
@@ -132,7 +132,7 @@ body
                               DiagSol1)
                         keys: [fd])
                   test2(equal(fun {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 5 0 0 31 0 0 X 5}
                                      {FD.distribute ff X}
@@ -141,7 +141,7 @@ body
                               DiagSol2)
                         keys: [fd])
                   test3(equal(fun {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 6 0 0 63 0 0 X 6}
                                      {FD.distribute ff X}
@@ -150,7 +150,7 @@ body
                               DiagSol3)
                         keys: [fd])
                   test4(equal(fun {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 7 0 0 127 0 0 X 7}
                                      {FD.distribute ff X}
@@ -160,7 +160,7 @@ body
                         keys: [fd])
 
                   test1_entailed(entailed(proc {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 2 0 0 2 1 0 X 1}
                                      {FD.distribute ff X}
@@ -168,7 +168,7 @@ body
                               end)
                         keys: [fd entailed])
                   test2_entailed(entailed(proc {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 5 0 0 31 0 0 X 5}
                                      {FD.distribute ff X}
@@ -176,7 +176,7 @@ body
                               end)
                         keys: [fd entailed])
                   test3_entailed(entailed(proc {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 6 0 0 63 0 0 X 6}
                                      {FD.distribute ff X}
@@ -184,7 +184,7 @@ body
                               end)
                         keys: [fd entailed])
                   test4_entailed(entailed(proc {$}
-                                 {SearchOne
+                                 {Search.base.one
                                   proc {$ X}
                                      {DiagnosisProblem 7 0 0 127 0 0 X 7}
                                      {FD.distribute ff X}

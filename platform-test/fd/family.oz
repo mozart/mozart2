@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -48,10 +48,10 @@ body
 
    Return=
    fd([family([
-               all(equal(fun {$} {SearchAll Family} end
+               all(equal(fun {$} {Search.base.all Family} end
                          FamilySol)
                    keys: [fd])
-               all_entailed(entailed(proc {$} {SearchAll Family _} end)
+               all_entailed(entailed(proc {$} {Search.base.all Family _} end)
                    keys: [fd entailed])
               ])
       ])

@@ -6,7 +6,7 @@ import
 
    FS
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
    System.{Show = show}
 
@@ -234,7 +234,7 @@ body
                  the length of the list is: (N+1)^N = sigma N^I |   |
                                                       I = 1     \ I /
                  */
-                 Sol = {SearchAll {SetPart 3}}
+                 Sol = {Search.base.all {SetPart 3}}
                  SolLen = {Length Sol}
                  case SolLen  == 64 then 1 else 0 end
               end}
@@ -259,7 +259,7 @@ body
                  /*
                  the length of the list is: N!
                  */
-                 Sol = {SearchAll {SetPart 5}}
+                 Sol = {Search.base.all {SetPart 5}}
                  SolLen = {Length Sol}
                  case SolLen  == 120 then 1 else 0 end
               end}

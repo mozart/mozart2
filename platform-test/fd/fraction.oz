@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -38,10 +38,10 @@ body
    [sol(a:9 b:1 c:2 d:5 e:3 f:4 g:7 h:6 i:8)]
 Return=
    fd([fraction([
-                 all(equal(fun {$} {SearchAll Fraction} end
+                 all(equal(fun {$} {Search.base.all Fraction} end
                            FractionSol)
                      keys: [fd])
-                 all_entailed(entailed(proc {$} {SearchAll Fraction _} end)
+                 all_entailed(entailed(proc {$} {Search.base.all Fraction _} end)
                      keys: [fd scheduling])
                 ])
       ])

@@ -24,7 +24,7 @@ functor $ prop once
 
 import
    FD
-   Search.{SearchAll = 'SearchAll'}
+   Search
 
 export
    Return
@@ -206,7 +206,7 @@ body
                         keys: [space clone commit merge ask 'choice'])
 
            deep(equal(fun {$}
-                         {SearchAll proc {$ X}
+                         {Search.base.all proc {$ X}
                                        dis X = 1
                                        []
                                           dis X = 3
@@ -223,7 +223,7 @@ body
            unstable_dis(entailed(proc {$}
                                     U in
                                     thread
-                                       {SearchAll
+                                       {Search.base.all
                                         proc {$ X}
                                            U=1
                                            cond U=1 then skip end
@@ -247,7 +247,7 @@ body
                                      U1 V1 U2 V2
                                   in
                                      thread
-                                        {SearchAll proc {$ X} H in
+                                        {Search.base.all proc {$ X} H in
                                                       dis X=1
                                                       [] dis X=a
                                                             cond U1=1 then H=1
@@ -261,7 +261,7 @@ body
                                                    end} = [1 a b 2]
                                      end
                                      thread
-                                        {SearchAll proc {$ X} H in
+                                        {Search.base.all proc {$ X} H in
                                                       dis X=1
                                                       [] dis X=a
                                                             cond U2=1 then H=1
@@ -399,10 +399,10 @@ body
            nested(entailed(proc {$}
                               U
                            in
-                              thread {SearchAll
+                              thread {Search.base.all
                                       proc {$ X}
                                          Y in
-                                         X = {SearchAll
+                                         X = {Search.base.all
                                               proc {$ X}
                                                  thread
                                                     dis X = 1

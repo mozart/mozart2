@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -69,10 +69,10 @@ body
 
    Return=
    fd([srat([
-             all(equal(fun {$} {SearchAll SRAT} end
+             all(equal(fun {$} {Search.base.all SRAT} end
                        SRATSol)
                  keys: [fd])
-             all_entailed(entailed(proc {$} {SearchAll SRAT _} end)
+             all_entailed(entailed(proc {$} {Search.base.all SRAT _} end)
                  keys: [fd entailed])
             ])
       ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -29,7 +29,7 @@ body
 
    end
 
-   S = {SearchOne ModDivProb}
+   S = {Search.base.one ModDivProb}
    T = S.1
 
 

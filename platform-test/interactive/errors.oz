@@ -389,19 +389,19 @@ thread {FD.schedule.firstsLasts [[a]] s(a:2) d(a:2)} end
 
 %type('ListToTuple' [Xs I T] list(fd) 1 "For FD.distribute and
 %FD.choose, the vector to distribute must contain finite domains.")
-thread {SearchOne proc{$ _} {FD.distribute ff [a]} end _} end
+thread {Search.base.one proc{$ _} {FD.distribute ff [a]} end _} end
 
 %type('TupleToTuple' [T1 I T2] list(fd) 1 "For FD.distribute and
 %FD.choose, the vector to distribute must contain finite domains.")
-thread {SearchOne proc{$ _} {FD.distribute ff f(a)} end _} end
+thread {Search.base.one proc{$ _} {FD.distribute ff f(a)} end _} end
 
 %type('RecordToTuple' [T1 I T2] list(fd) 1 "For FD.distribute and
 %FD.choose, the vector to distribute must contain finite domains.")
-thread {SearchOne proc{$ _} {FD.distribute ff f(a:a)} end _} end
+thread {Search.base.one proc{$ _} {FD.distribute ff f(a:a)} end _} end
 
 %type('MakeDistrTuple' [V T] vector 1 "For FD.distribute and
 %FD.choose, the input argument must be a vector.")
-thread {SearchOne proc{$ _} {FD.distribute generic(order: size) [a]} end _} end
+thread {Search.base.one proc{$ _} {FD.distribute generic(order: size) [a]} end _} end
 
 %fdNoChoice('FD.choose' [T Order Value Selected Spec] tuple 1 "The
 %vector to choose from does not contain non-determined elements.")
@@ -409,7 +409,7 @@ thread {FD.choose ff [3 4] a b} end
 
 %type('FD.distribute' [Dist Vector] 1 fdDistrDesc "Incorrect
 %specification for distribution.")
-thread {SearchOne proc{$ _} {FD.distribute gr [3]} end _} end
+thread {Search.base.one proc{$ _} {FD.distribute gr [3]} end _} end
 
 %type('FD.choose' [Dist Vector Selected Spec] 1 fdDistrDesc "Incorrect
 %specification for choice.")

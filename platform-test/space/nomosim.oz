@@ -23,7 +23,7 @@
 functor $ prop once
 
 import
-   Search.{SearchOne = 'SearchOne'}
+   Search
 
 export
    Return
@@ -109,7 +109,7 @@ body
                               {SolveAll {Reverse LineS}}
                            end
                         in
-                           {SearchOne DoIt}
+                           {Search.base.one DoIt}
                         end
 
                         [[[o x x x o o o o]

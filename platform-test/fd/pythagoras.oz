@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -32,10 +32,10 @@ body
 
    Return=
    fd([pythagoras([
-                   one(equal(fun {$} {SearchOne Pythagoras} end
+                   one(equal(fun {$} {Search.base.one Pythagoras} end
                              PythagorasSol)
                        keys: [fd])
-                   one_entailed(entailed(proc {$} {SearchOne Pythagoras _} end)
+                   one_entailed(entailed(proc {$} {Search.base.one Pythagoras _} end)
                                 keys: [fd entailed])
                   ])
       ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 
 export
@@ -394,7 +394,7 @@ Return=
             %A + B + X =<: 10
                     {FD.distribute naive R}
                  end
-                 R = thread cond {Wait {SearchOne Test}} then 1 else 0 end end
+                 R = thread cond {Wait {Search.base.one Test}} then 1 else 0 end end
                  X = 0
                  R
               end}

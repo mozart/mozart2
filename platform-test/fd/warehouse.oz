@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchBest  = 'SearchBest'}
+   Search
 
 export
    Return
@@ -74,14 +74,14 @@ body
    Return =
    fd([
        warehouse([
-                  best(equal(fun {$} {SearchBest WareHouse
+                  best(equal(fun {$} {Search.base.best WareHouse
                                       proc {$ Old New}
                                          Old.totalCost >: New.totalCost end}
                              end
                              WareHouseSol)
                        keys: [fd])
                   best_entailed(entailed(proc {$}
-                                            {SearchBest WareHouse
+                                            {Search.base.best WareHouse
                                              proc {$ Old New}
                                                 Old.totalCost >: New.totalCost
                                              end _}

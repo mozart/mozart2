@@ -6,7 +6,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -67,10 +67,10 @@ body
 
    Return=
    fs([hamming([
-                one(equal(fun {$} {SearchOne Hamming} end HammingSol)
+                one(equal(fun {$} {Search.base.one Hamming} end HammingSol)
                     keys: [fs])
                 one_entailed(entailed(proc {$}
-                                         {SearchOne Hamming _}
+                                         {Search.base.one Hamming _}
                                       end)
                     keys: [fs entailed])
                ]

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchBest = 'SearchBest'}
+   Search
 
 export
    Return
@@ -364,12 +364,12 @@ body
 
 
    fd([bridge([
-               noterm(equal(fun {$} {SearchBest {NoTermCompile BridgeNoterm}
+               noterm(equal(fun {$} {Search.base.best {NoTermCompile BridgeNoterm}
                                      proc{$ O N} N.pe <: O.pe end}
                             end
                             BridgeNotermSol)
                       keys: [fd])
-               noterm_entailed(entailed(proc {$} {SearchBest {NoTermCompile BridgeNoterm}
+               noterm_entailed(entailed(proc {$} {Search.base.best {NoTermCompile BridgeNoterm}
                                      proc{$ O N} N.pe <: O.pe end _}
                             end)
                       keys: [fd entailed])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -79,12 +79,12 @@ Return=
 
    fd([
        zebra([
-              all(equal(fun {$} {SearchAll Zebra} end
+              all(equal(fun {$} {Search.base.all Zebra} end
                         ZebraSol)
                   keys: [fd])
              ])
        zebra_entailed([
-                       all(entailed(proc {$} {SearchAll Zebra _} end)
+                       all(entailed(proc {$} {Search.base.all Zebra _} end)
                   keys: [fd entailed])
              ])
       ])

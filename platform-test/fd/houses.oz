@@ -7,7 +7,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -61,10 +61,10 @@ body
    Return=
 
    fd([houses([
-               all(equal(fun {$} {SearchAll Houses} end
+               all(equal(fun {$} {Search.base.all Houses} end
                          HousesSol)
                    keys: [fd])
-               all_entailed(entailed(proc {$} {SearchAll Houses _} end)
+               all_entailed(entailed(proc {$} {Search.base.all Houses _} end)
                    keys: [fd entailed])
               ])
       ])

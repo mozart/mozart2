@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -98,7 +98,7 @@ Return=
 
    fd([magicsquare([
                     one(equal(fun {$}
-                                 {SearchOne proc {$ Sol}
+                                 {Search.base.one proc {$ Sol}
                                                Size Square
                                             in
                                                {MagicSquare 4
@@ -111,13 +111,13 @@ Return=
                         keys: [fd])
 
                     primer(equal(fun {$}
-                                    {SearchOne MagicSquarePrimer}
+                                    {Search.base.one MagicSquarePrimer}
 
                                  end
                                  MagicSquarePrimerSol)
                            keys: [fd])
                     one_entailed(entailed(proc {$}
-                                             {SearchOne proc {$ Sol}
+                                             {Search.base.one proc {$ Sol}
                                                            Size Square
                                                         in
                                                            {MagicSquare 4
@@ -129,7 +129,7 @@ Return=
                                  keys: [fd entailed])
 
                     primer_entailed(entailed(proc {$}
-                                                {SearchOne MagicSquarePrimer _}
+                                                {Search.base.one MagicSquarePrimer _}
                                              end)
                                     keys: [fd entailed])
                    ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -103,10 +103,10 @@ body
 
    Return=
    fd([binpacking([
-                   one(equal(fun {$} {SearchOne BinPacking} end
+                   one(equal(fun {$} {Search.base.one BinPacking} end
                              BinPackingSol)
                        keys: [fd])
-                   one_entailed(entailed(proc {$} {SearchOne BinPacking _} end)
+                   one_entailed(entailed(proc {$} {Search.base.one BinPacking _} end)
                        keys: [fd entailed])
                   ])
             ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -75,10 +75,10 @@ body
 
    Return=
    fd([multiply([
-                 all(equal(fun {$} {SearchAll Multiply} end
+                 all(equal(fun {$} {Search.base.all Multiply} end
                            MultiplySol)
                      keys: [fd])
-                 all_entailed(entailed(proc {$} {SearchAll Multiply _} end)
+                 all_entailed(entailed(proc {$} {Search.base.all Multiply _} end)
                               keys: [fd entailed])
                 ])
       ])

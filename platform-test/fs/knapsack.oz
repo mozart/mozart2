@@ -4,7 +4,7 @@ import
 
    FD FS
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -52,11 +52,11 @@ body
 
    Return=
    fs([knapsack([
-                 one(equal(fun {$} {SearchOne {KnapSack Weights Capacity}} end
+                 one(equal(fun {$} {Search.base.one {KnapSack Weights Capacity}} end
                            KnapSackSol)
                      keys: [fs])
                  one_entailed(entailed(proc {$}
-                                          {SearchOne {KnapSack Weights Capacity} _}
+                                          {Search.base.one {KnapSack Weights Capacity} _}
                                        end)
                               keys: [fs entailed])
                 ]

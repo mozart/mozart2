@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -128,14 +128,14 @@ body
    Return=
    fd([cars([
              one(equal(fun {$}
-                          {SearchOne proc{$ Slots}
+                          {Search.base.one proc{$ Slots}
                                         {StateConstraints Slots 10 5 6
                                          OutOfInfo#OptionInfo CarInfo} end}
                        end
                        CarsSol)
                  keys: [fd])
              one_entailed(entailed(proc {$}
-                          {SearchOne proc{$ Slots}
+                          {Search.base.one proc{$ Slots}
                                         {StateConstraints Slots 10 5 6
                                          OutOfInfo#OptionInfo CarInfo} end _}
                        end)

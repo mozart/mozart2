@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -171,7 +171,7 @@ body
    Return=
    fd([permutation([
                     all(equal(fun {$}
-                                 {SearchAll
+                                 {Search.base.all
                                   proc{$ X}
                                      {Permutation [1 1 0 1 0 1 0 1]
                                       [1 1 1 1 0 1 1 0] 9 X}
@@ -180,7 +180,7 @@ body
                               PermutationSol)
                         keys: [fd])
                     all_entailed(entailed(proc {$}
-                                             {SearchAll
+                                             {Search.base.all
                                               proc{$ X}
                                                  {Permutation [1 1 0 1 0 1 0 1]
                                                   [1 1 1 1 0 1 1 0] 9 X}

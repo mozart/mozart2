@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -87,10 +87,10 @@ KnightsSol =
 Return =
 
    fd([knights([
-                one(equal(fun {$} {SearchOne {Knights 8}} end
+                one(equal(fun {$} {Search.base.one {Knights 8}} end
                           KnightsSol)
                     keys: [fd])
-                one_entailed(entailed(proc {$} {SearchOne {Knights 8} _} end)
+                one_entailed(entailed(proc {$} {Search.base.one {Knights 8} _} end)
                     keys: [fd entailed])
                ])
       ])

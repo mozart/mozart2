@@ -23,7 +23,7 @@
 functor $
 
 import
-   Search.{SearchAll = 'SearchAll'}
+   Search.base
    System.{show apply}
    Browser.{getsBoundB}
    from 'x-oz://boot/Browser'
@@ -38,7 +38,7 @@ body
    misc([
               search1(
                      proc {$}
-                        {SearchAll fun {$} Ele in thread Ele=a end Ele=b end}
+                        {Search.base.all fun {$} Ele in thread Ele=a end Ele=b end}
                         =nil
                      end
                      keys:[fixedBug search])
@@ -76,7 +76,7 @@ body
                             end
                          end
                       in
-                         {SearchAll FailChk _}
+                         {Search.base.all FailChk _}
                       end
                       keys:[fixedBug search])
 

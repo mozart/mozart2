@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{allS}
+   Search
 
 export
    Return

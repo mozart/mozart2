@@ -3,9 +3,7 @@ functor $ prop once
 import
 
    FD
-
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -49,15 +47,15 @@ body
 in
 
    fd([alpha([
-              one(equal(fun {$} {SearchOne Alpha} end
+              one(equal(fun {$} {Search.base.one Alpha} end
                         AlphaSol)
                   keys: [fd])
-              all(equal(fun {$} {SearchAll Alpha} end
+              all(equal(fun {$} {Search.base.all Alpha} end
                         AlphaSol)
                   keys: [fd])
-              one_entailed(entailed(proc {$} {SearchOne Alpha _} end)
+              one_entailed(entailed(proc {$} {Search.base.one Alpha _} end)
                   keys: [fd entailed])
-              all_entailed(entailed(proc {$} {SearchAll Alpha _} end)
+              all_entailed(entailed(proc {$} {Search.base.all Alpha _} end)
                   keys: [fd entailed])
              ])
       ])

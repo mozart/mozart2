@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -181,13 +181,13 @@ body
 
    Return=
    fd([queens([
-               std(equal(fun {$} {SearchOne proc {$ X} {Queens 14 X} end}
+               std(equal(fun {$} {Search.base.one proc {$ X} {Queens 14 X} end}
                          end
                          QueensSol)
                    keys: [fd])
 
                middle_out(equal(fun {$}
-                                   {SearchOne proc {$ X}
+                                   {Search.base.one proc {$ X}
                                                  {QueensMiddleOut 8 X}
                                               end}
                                 end
@@ -195,18 +195,18 @@ body
                           keys: [fd])
 
                primer(equal(fun {$}
-                               {SearchOne {QueensPrimer 233}}
+                               {Search.base.one {QueensPrimer 233}}
                             end
                             QueensPrimerSol)
                       keys: [fd])
 
-               std(equal(fun {$} {SearchOne proc {$ X} {Queens 14 X} end}
+               std(equal(fun {$} {Search.base.one proc {$ X} {Queens 14 X} end}
                          end
                          QueensSol)
                    keys: [fd])
 
                middle_out(equal(fun {$}
-                                   {SearchOne proc {$ X}
+                                   {Search.base.one proc {$ X}
                                                  {QueensMiddleOut 8 X}
                                               end}
                                 end
@@ -214,25 +214,25 @@ body
                           keys: [fd])
 
                primer(equal(fun {$}
-                               {SearchOne {QueensPrimer 233}}
+                               {Search.base.one {QueensPrimer 233}}
                             end
                             QueensPrimerSol)
                       keys: [fd])
 
                std_entailed(entailed(proc {$}
-                                        {SearchOne proc {$ X} {Queens 14 X} end _}
+                                        {Search.base.one proc {$ X} {Queens 14 X} end _}
                                      end)
                             keys: [fd entailed])
 
                middle_out_entailed(entailed(proc {$}
-                                               {SearchOne proc {$ X}
+                                               {Search.base.one proc {$ X}
                                                              {QueensMiddleOut 8 X}
                                                           end _}
                                             end)
                                    keys: [fd entailed])
 
                primer_entailed(entailed(proc {$}
-                                           {SearchOne {QueensPrimer 233} _}
+                                           {Search.base.one {QueensPrimer 233} _}
                                         end)
                                keys: [fd entailed])
               ])

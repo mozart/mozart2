@@ -5,7 +5,7 @@ import
    FS
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -70,9 +70,9 @@ body
     ]]
 Return=
    fs([steiner([
-                one(equal(fun {$} {SearchOne {Steiner 9}} end SteinerSol)
+                one(equal(fun {$} {Search.base.one {Steiner 9}} end SteinerSol)
                     keys: [fs])
-                one_entailed(entailed(proc {$} {SearchOne {Steiner 9} _} end)
+                one_entailed(entailed(proc {$} {Search.base.one {Steiner 9} _} end)
                              keys: [fs entailed])
                ]
               )

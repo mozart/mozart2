@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -50,10 +50,10 @@ body
 
    Return=
    fd([pigeon([
-               all(equal(fun {$} {SearchAll proc{$ X} {Pigeon 2 3 X} end} end
+               all(equal(fun {$} {Search.base.all proc{$ X} {Pigeon 2 3 X} end} end
                          PigeonSol)
                    keys: [fd])
-               all_entailed(entailed(proc {$} {SearchAll proc{$ X} {Pigeon 2 3 X} end _} end)
+               all_entailed(entailed(proc {$} {Search.base.all proc{$ X} {Pigeon 2 3 X} end _} end)
                             keys: [fd entailed])
               ])
       ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -17,13 +17,13 @@ body
 Return=
    fd([equations([
                   test1(equal(fun {$}
-                                 {SearchOne proc{$ X} X :: 1#10 27 =: X*X*X
+                                 {Search.base.one proc{$ X} X :: 1#10 27 =: X*X*X
                                                {FD.distribute ff [X]} end}
                               end
                               EqSol1)
                         keys: [fd])
                   test2(equal(fun {$}
-                                 {SearchOne proc{$ S} X Y Z in
+                                 {Search.base.one proc{$ S} X Y Z in
                                                S = X#Y#Z
                                                [X Y Z] = {FD.dom 1#10 }
                                                176 =: X*X + Y*Y*Y + Z
@@ -34,12 +34,12 @@ Return=
                         keys: [fd])
 
                   test1_entailed(entailed(proc {$}
-                                 {SearchOne proc{$ X} X :: 1#10 27 =: X*X*X
+                                 {Search.base.one proc{$ X} X :: 1#10 27 =: X*X*X
                                                {FD.distribute ff [X]} end _}
                               end)
                         keys: [fd entailed])
                   test2_entailed(entailed(proc {$}
-                                 {SearchOne proc{$ S} X Y Z in
+                                 {Search.base.one proc{$ S} X Y Z in
                                                S = X#Y#Z
                                                [X Y Z] = {FD.dom 1#10 }
                                                176 =: X*X + Y*Y*Y + Z

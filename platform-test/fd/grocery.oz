@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -37,10 +37,10 @@ body
 Return=
 
    fd([grocery([
-                one(equal(fun {$} {SearchOne Grocery} end
+                one(equal(fun {$} {Search.base.one Grocery} end
                           GrocerySol)
                     keys: [fd])
-                one_entailed(entailed(proc {$} {SearchOne Grocery _} end)
+                one_entailed(entailed(proc {$} {Search.base.one Grocery _} end)
                     keys: [fd entailed])
                ])
       ])

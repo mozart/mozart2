@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -66,12 +66,12 @@ body
 
    fd([color([
               one(equal(fun {$}
-                           {SearchOne Color}
+                           {Search.base.one Color}
                         end
                         ColorSol)
                   keys: [fd])
               one_entailed(entailed(proc {$}
-                           {SearchOne Color _}
+                           {Search.base.one Color _}
                                     end)
                   keys: [fd entailed])
              ])

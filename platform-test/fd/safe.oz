@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -27,10 +27,10 @@ body
 
    Return=
    fd([safe([
-             all(equal(fun {$} {SearchAll Safe} end
+             all(equal(fun {$} {Search.base.all Safe} end
                        SafeSol)
                  keys: [fd])
-             all_entailed(entailed(proc {$} {SearchAll Safe _} end)
+             all_entailed(entailed(proc {$} {Search.base.all Safe _} end)
                  keys: [fd entailed])
             ])
       ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -138,7 +138,7 @@ body
 
    Return=
    fd([tiling([
-               test1(equal(fun {$} {SearchOne
+               test1(equal(fun {$} {Search.base.one
                                     proc{$ X}
                                        local Xs#Ys#Ss = !X in
                                           {Square 2 Xs Ys Ss}
@@ -148,7 +148,7 @@ body
                            TilingSol1)
                      keys: [fd])
 
-               test2(equal(fun {$} {SearchOne
+               test2(equal(fun {$} {Search.base.one
                                     proc{$ X}
                                        local Xs#Ys#Ss=!X in
                                           {Square 1 Xs Ys Ss}
@@ -157,7 +157,7 @@ body
                            end
                            TilingSol2)
                      keys: [fd])
-               test1_entailed(entailed(proc {$} {SearchOne
+               test1_entailed(entailed(proc {$} {Search.base.one
                                                  proc{$ X}
                                                     local Xs#Ys#Ss = !X in
                                                        {Square 2 Xs Ys Ss}
@@ -166,7 +166,7 @@ body
                                        end)
                               keys: [fd entailed])
 
-               test2_entailed(entailed(proc {$} {SearchOne
+               test2_entailed(entailed(proc {$} {Search.base.one
                                                  proc{$ X}
                                                     local Xs#Ys#Ss=!X in
                                                        {Square 1 Xs Ys Ss}

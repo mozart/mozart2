@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchBest = 'SearchBest'}
+   Search
 
 export
    Return
@@ -306,7 +306,7 @@ body
    Return=
    schedule([product([
                       best(equal(fun {$}
-                                    {SearchBest
+                                    {Search.base.best
                                      Product
                                      proc{$ Old New}
                                         local N O in
@@ -323,7 +323,7 @@ body
                                  ProductSol)
                            keys: [fd scheduling])
                       best_entailed(entailed(proc {$}
-                                                {SearchBest
+                                                {Search.base.best
                                                  Product
                                                  proc{$ Old New}
                                                     local N O in

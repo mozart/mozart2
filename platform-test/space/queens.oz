@@ -23,7 +23,7 @@
 functor $ prop once
 
 import
-   Search.{SearchOne = 'SearchOne'}
+   Search
 
 export
    Return
@@ -105,7 +105,7 @@ body
                           end
 
                        in
-                          {SearchOne fun {$} {Queens 8} end}
+                          {Search.base.one fun {$} {Queens 8} end}
                        end
                        [board(row(1 0 0 0 0 0 0 0) row(0 0 0 0 1 0 0 0)
                               row(0 0 0 0 0 0 0 1) row(0 0 0 0 0 1 0 0)

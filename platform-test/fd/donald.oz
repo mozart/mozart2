@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -45,23 +45,23 @@ body
 Return=
    fd([
        donald([all_one_equation(equal(fun {$}
-                                         {SearchAll Donald}
+                                         {Search.base.all Donald}
                                       end
                                       DonaldSol)
                                 keys: [fd])
               ])
        money([all_one_equation(equal(fun {$}
-                                        {SearchAll Money}
+                                        {Search.base.all Money}
                                      end
                                      MoneySol)
                                keys: [fd])
              ])
        donald_entailed([all_one_equation(entailed(proc {$}
-                                         {SearchAll Donald _}
+                                         {Search.base.all Donald _}
                                       end)                              keys: [fd entailed])
                        ])
        money_entailed([all_one_equation(entailed(proc {$}
-                                                    {SearchAll Money _}
+                                                    {Search.base.all Money _}
                                                  end)
                                keys: [fd entailed])
              ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchBest = 'SearchBest'}
+   Search
 
 export
    Return
@@ -159,30 +159,30 @@ body
    fd([
        students([
                  best1(equal(fun {$}
-                                {SearchBest {StudentsProblem 2 3 P4} Cmp}
+                                {Search.base.best {StudentsProblem 2 3 P4} Cmp}
                              end
                              StudentsSol1)
                        keys: [fd])
                  best2(equal(fun {$}
-                                {SearchBest {StudentsProblem 2 11 P5} Cmp}
+                                {Search.base.best {StudentsProblem 2 11 P5} Cmp}
                              end
                              StudentsSol2)
                        keys: [fd])
                  best3(equal(fun {$}
-                                {SearchBest {StudentsProblem 2 5 P6} Cmp}
+                                {Search.base.best {StudentsProblem 2 5 P6} Cmp}
                              end
                              StudentsSol3)
                        keys: [fd])
                  best1_entailed(entailed(proc {$}
-                                            {SearchBest {StudentsProblem 2 3 P4} Cmp _}
+                                            {Search.base.best {StudentsProblem 2 3 P4} Cmp _}
                                          end)
                        keys: [fd entailed])
                  best2_entailed(entailed(proc {$}
-                                            {SearchBest {StudentsProblem 2 11 P5} Cmp _}
+                                            {Search.base.best {StudentsProblem 2 11 P5} Cmp _}
                              end)
                        keys: [fd entailed])
                  best3_entailed(entailed(proc {$}
-                                            {SearchBest {StudentsProblem 2 5 P6} Cmp _}
+                                            {Search.base.best {StudentsProblem 2 5 P6} Cmp _}
                                          end)
                        keys: [fd entailed])
                 ])

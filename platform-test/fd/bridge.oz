@@ -6,7 +6,7 @@ import
 
    Schedule
 
-   Search.{SearchBest = 'SearchBest'}
+   Search
 
 export
    Return
@@ -212,24 +212,24 @@ body
 
    fd([bridge([
                nonglobal(equal(fun {$}
-                                {SearchBest {Compile BridgeProb false}
+                                {Search.base.best {Compile BridgeProb false}
                                  proc {$ Old New} Old.pe >: New.pe end}
                              end
                              BridgeSolNonGlobal)
                          keys: [fd])
                global(equal(fun {$}
-                                {SearchBest {Compile BridgeProb true}
+                                {Search.base.best {Compile BridgeProb true}
                                  proc {$ Old New} Old.pe >: New.pe end}
                              end
                              BridgeSolGlobal)
                        keys: [fd])
                nonglobal_entailed(entailed(proc {$}
-                                {SearchBest {Compile BridgeProb false}
+                                {Search.base.best {Compile BridgeProb false}
                                  proc {$ Old New} Old.pe >: New.pe end _}
                              end)
                          keys: [fd entailed])
                global_entailed(entailed(proc {$}
-                                {SearchBest {Compile BridgeProb true}
+                                {Search.base.best {Compile BridgeProb true}
                                  proc {$ Old New} Old.pe >: New.pe end _}
                              end)
                        keys: [fd entailed])

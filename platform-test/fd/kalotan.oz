@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -35,10 +35,10 @@ body
 
    Return =
    fd([kalotan([
-                one(equal(fun {$} {SearchOne Kalotan} end
+                one(equal(fun {$} {Search.base.one Kalotan} end
                           KalotanSol)
                     keys: [fd])
-                one_entailed(entailed(proc {$} {SearchOne Kalotan _} end)
+                one_entailed(entailed(proc {$} {Search.base.one Kalotan _} end)
                     keys: [fd entailed])
                ])
       ])

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -62,12 +62,12 @@ body
    Return=
    fd([mapcoloring([
                     one(equal(fun {$}
-                                 {SearchOne MapColoring}
+                                 {Search.base.one MapColoring}
                               end
                               MapColoringSol)
                         keys: [fd])
                     one_entailed(entailed(proc {$}
-                                             {SearchOne MapColoring _}
+                                             {Search.base.one MapColoring _}
                                           end)
                         keys: [fd entailed])
                    ])

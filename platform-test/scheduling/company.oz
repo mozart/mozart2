@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -179,7 +179,7 @@ body
 
    Return=
    schedule([
-             company([one(equal(fun {$} {SearchOne proc{$ X}
+             company([one(equal(fun {$} {Search.base.one proc{$ X}
                                                    local C#S = !X
                                                    in {XYZProblem C S}
                                                    end
@@ -188,7 +188,7 @@ body
                              XYZSol)
                        keys: [fd scheduling])
                   ])
-             company_entailed([one(entailed(proc {$} {SearchOne proc{$ X}
+             company_entailed([one(entailed(proc {$} {Search.base.one proc{$ X}
                                                             local C#S = !X
                                                             in {XYZProblem C S}
                                                             end

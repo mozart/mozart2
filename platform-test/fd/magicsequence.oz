@@ -4,8 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -59,24 +58,24 @@ Return=
 
    fd([magicsequence([
                       primer(equal(fun {$}
-                                      {SearchAll MagicSequencePrimer}
+                                      {Search.base.all MagicSequencePrimer}
                                    end
                                    MagicSequencePrimerSol)
                              keys: [fd])
 
                       one(equal(fun {$}
-                                   {SearchOne
+                                   {Search.base.one
                                     proc{$ X} {MagicSequence 7 X} end}
                                 end
                                 MagicSequenceSol)
                           keys: [fd])
                       primer_entailed(entailed(proc {$}
-                                                  {SearchAll MagicSequencePrimer _}
+                                                  {Search.base.all MagicSequencePrimer _}
                                                end)
                                       keys: [fd entailed])
 
                       one_entailed(entailed(proc {$}
-                                               {SearchOne
+                                               {Search.base.one
                                                 proc{$ X} {MagicSequence 7 X}
                                                 end _}
                                             end)

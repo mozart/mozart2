@@ -29,7 +29,7 @@ import
 
    Schedule
 
-   Search.{one object}
+   Search
 
 export
    Return

@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -258,13 +258,13 @@ body
 
    Return=
    fd([schur([
-              all(equal(fun {$} {SearchAll proc{$ X} {Schur X 5} end} end
+              all(equal(fun {$} {Search.base.all proc{$ X} {Schur X 5} end} end
                         SchurSol)
 
 
                   keys: [fd])
               all_entailed(entailed(proc {$}
-                                       {SearchAll proc{$ X} {Schur X 5} end _}
+                                       {Search.base.all proc{$ X} {Schur X 5} end _}
                                     end)
                   keys: [fd entailed])
              ])

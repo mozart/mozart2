@@ -15,8 +15,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -52,15 +51,15 @@ HubertSol = [sol(a:9 b:1 c:2 d:5 e:3 f:4 g:7 h:6 i:8)]
 Return=
 
    fd([hubert([
-               one(equal(fun {$} {SearchOne Hubert} end
+               one(equal(fun {$} {Search.base.one Hubert} end
                          HubertSol)
                    keys: [fd])
-               all(equal(fun {$} {SearchAll Hubert} end
+               all(equal(fun {$} {Search.base.all Hubert} end
                         HubertSol)
                   keys: [fd])
-               one_entailed(entailed(proc {$} {SearchOne Hubert _} end)
+               one_entailed(entailed(proc {$} {Search.base.one Hubert _} end)
                    keys: [fd entailed])
-               all_entailed(entailed(proc {$} {SearchAll Hubert _} end)
+               all_entailed(entailed(proc {$} {Search.base.all Hubert _} end)
                   keys: [fd entailed])
               ])
       ])

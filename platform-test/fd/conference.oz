@@ -4,7 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'}
+   Search
 
 export
    Return
@@ -64,12 +64,12 @@ body
    Return=
    fd([conference([
                    one(equal(fun {$}
-                                {SearchOne Conference}
+                                {Search.base.one Conference}
                              end
                              ConferenceSol)
                        keys: [fd])
                    one_entailed(entailed(proc {$}
-                                            {SearchOne Conference _}
+                                            {Search.base.one Conference _}
                                          end)
                        keys: [fd entailed])
                   ])

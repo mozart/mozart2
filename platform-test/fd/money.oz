@@ -4,8 +4,7 @@ import
 
    FD
 
-   Search.{SearchOne  = 'SearchOne'
-           SearchAll  = 'SearchAll'}
+   Search
 
 export
    Return
@@ -52,23 +51,23 @@ body
    DonaldSol = [[5 2 6 4 8 1 9 7 3 0]]
 Return=
    fd([money([
-              one(equal(fun {$} {SearchOne Money} end MoneySol)
+              one(equal(fun {$} {Search.base.one Money} end MoneySol)
                   keys: [fd])
-              all(equal(fun {$} {SearchAll Money} end MoneySol)
+              all(equal(fun {$} {Search.base.all Money} end MoneySol)
                   keys: [fd])
-              one_entailed(entailed(proc {$} {SearchOne Money _} end)
+              one_entailed(entailed(proc {$} {Search.base.one Money _} end)
                   keys: [fd entailed])
-              all_entailed(entailed(proc {$} {SearchAll Money _} end)
+              all_entailed(entailed(proc {$} {Search.base.all Money _} end)
                   keys: [fd entailed])
              ])
        donald([
-               one(equal(fun {$} {SearchOne Donald} end DonaldSol)
+               one(equal(fun {$} {Search.base.one Donald} end DonaldSol)
                    keys: [fd])
-               all(equal(fun {$} {SearchAll Donald} end DonaldSol)
+               all(equal(fun {$} {Search.base.all Donald} end DonaldSol)
                    keys: [fd])
-               one_entailed(entailed(proc {$} {SearchOne Donald _} end)
+               one_entailed(entailed(proc {$} {Search.base.one Donald _} end)
                             keys: [fd entailed])
-               all_entailed(entailed(proc {$} {SearchAll Donald _} end)
+               all_entailed(entailed(proc {$} {Search.base.all Donald _} end)
                             keys: [fd entailed])
               ])
       ])

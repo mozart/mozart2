@@ -168,14 +168,6 @@ local
       meth getSwitch(SwitchName $)
          @switches.SwitchName
       end
-      meth showSwitches($)
-         '%\n% Current values of switches:\n%\n'#
-         {Record.foldRInd @switches
-          fun {$ SwitchName B In}
-             '\\switch '#case B then '+' else '-' end#SwitchName#'\n'#In
-          end '%\n% Number of saved switch states: '#{Length @savedSwitches}#
-          '\n%\n'}
-      end
       meth localSwitches()
          case @localSwitches of unit then
             localSwitches <- @switches|@savedSwitches
@@ -454,8 +446,6 @@ local
       meth CompileQuery(Query)
          case Query of dirSwitch(Ss) then
             {ForAll Ss self}
-         [] dirShowSwitches then
-            {@reporter userInfo(CompilerStateClass, showSwitches($))}
          [] dirLocalSwitches then
             CompilerStateClass, localSwitches()
          [] dirPushSwitches then

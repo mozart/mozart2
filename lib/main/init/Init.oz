@@ -104,18 +104,25 @@ define
    local
 
       %% create module manager
-      Module = {NewModule.apply 'import'('System'       : System
-                                         'OS'   : OS
-                                         'Boot' : Boot
-                                         'Property'     : Property
-                                         'Resolve'      : Resolve)}
+      Module = {NewModule.apply 'import'('System':   System
+                                         'OS':       OS
+                                         'Boot':     Boot
+                                         'Property': Property
+                                         'Resolve':  Resolve)}
 
       %% The root module manager
       RM = Module.root
 
       %% The real Module module
-      RealModule = 'export'(manager: Module.manager
-                            trace:   Module.trace)
+      local
+         \insert 'ModuleAbstractions.oz'
+      in
+         RealModule = 'export'(manager: Module.manager
+                               trace:   Module.trace
+                               link:    Link
+                               apply:   Apply)
+      end
+
    in
       %% Register boot modules
       {RM enter(url:'x-oz://boot/URL' BURL)}

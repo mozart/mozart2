@@ -1047,6 +1047,54 @@ in
               hint(l:'Legal Range' m:{Array.low A} # ' - ' # {Array.high A})]
              Exc}
 
+         elseof kernel('BitArray.new' L H) then
+
+\ifdef TYPE_DEBUG
+            {Type.ask.int L}
+            {Type.ask.int H}
+\endif
+
+            {FormatExc
+             'Error: BitArray'
+             'Illegal boundaries to BitArray.new'
+             [hint(l: 'Lower bound' m: L)
+              hint(l: 'Upper bound' m: H)]
+             Exc}
+
+         elseof kernel('BitArray.index' B I) then
+
+\ifdef TYPE_DEBUG
+            {Type.ask.bitArray B}
+            {Type.ask.int I}
+\endif
+
+            {FormatExc
+             'Error: BitArray'
+             'Index out of range'
+             [hint(l: 'Bit array' m: oz(B))
+              hint(l: 'Index found' m: I)
+              hint(l: 'Legal Range'
+                   m: {BitArray.low B}#' - '#{BitArray.high B})]
+             Exc}
+
+         elseof kernel('BitArray.binop' B1 B2) then
+
+\ifdef TYPE_DEBUG
+            {Type.ask.bitArray B1}
+            {Type.ask.bitArray B2}
+\endif
+
+            {FormatExc
+             'Error: BitArray'
+             'Incompatible bounds in binary operation on BitArrays'
+             [hint(l: 'First bit array' m: oz(B1))
+              hint(l: 'First bounds'
+                   m: {BitArray.low B1}#' - '#{BitArray.high B1})
+              hint(l: 'Second bit array' m: oz(B2))
+              hint(l: 'Second bounds'
+                   m: {BitArray.low B2}#' - '#{BitArray.high B2})]
+             Exc}
+
             %%
             %% REPRESENTATION FAULT
             %%

@@ -1,21 +1,36 @@
 local
-   FunMisc      = {Load 'FunMisc.ozc'}
-   FunBuiltins  = {Load 'FunBuiltins.ozc'}
-   FunSA        = {Load 'FunSA.ozc'}
-   FunCode      = {Load 'FunCode.ozc'}
-   FunCore      = {Load 'FunCore.ozc'}
-   FunUnnest    = {Load 'FunUnnest.ozc'}
-   FunAssembler = {Load 'FunAssembler.ozc'}
-   FunCompiler  = {Load 'FunCompiler.ozc'}
+   FunMisc      = {Pickle.load 'FunMisc.ozf'}
+   FunBuiltins  = {Pickle.load 'FunBuiltins.ozf'}
+   FunSA        = {Pickle.load 'FunSA.ozf'}
+   FunCode      = {Pickle.load 'FunCode.ozf'}
+   FunCore      = {Pickle.load 'FunCore.ozf'}
+   FunUnnest    = {Pickle.load 'FunUnnest.ozf'}
+   FunAssembler = {Pickle.load 'FunAssembler.ozf'}
+   FunCompiler  = {Pickle.load 'FunCompiler.ozf'}
 in
-   fun instantiate {$ IMPORT}
-      \insert 'SP.env'
-      = IMPORT.'SP'
-      \insert 'CP.env'
-      = IMPORT.'CP'
-      \insert '../tools/Gump.env'
-      = IMPORT.'Gump'
-   in
+   functor prop once
+   import
+      System   %.{gcDo printName valueToVirtualString get property
+               %  printError eq}
+      Foreign   %.{pointer staticLoad}
+      Error   %.{formatExc formatPos formatLine formatGeneric format
+              %  dispatch msg}
+      ErrorRegistry   %.put
+      FS   %.{include var subset value reflect isIn}
+      FD   %.{int is less distinct distribute}
+      Search   %.{SearchOne='SearchOne'}
+\ifndef OZM
+      Gump
+\endif
+   export
+      Engine
+      CompilerClass   %--** deprecated
+      GenericInterface
+      QuietInterface
+      EvalExpression
+      VirtualStringToValue
+      Assemble
+   body
       local
          ImAConstruction       = {NewName}
          ImAValueNode          = {NewName}
@@ -26,27 +41,35 @@ in
          Core
          Core^core = _
          Core^flattenSequence = _
+         Core^trueToken = _
+         Core^falseToken = _
 
          Misc      = {FunMisc.apply c}
          Builtins  = {FunBuiltins.apply c}
          SA        = {FunSA.apply
-                      c('SP':                    IMPORT.'SP'
-                        'CP':                    IMPORT.'CP'
+                      c('FD':                    FD
+                        'FS':                    FS
+                        'Search':                Search
+                        'Foreign':               Foreign
+                        'System':                System
                         'Misc':                  Misc
                         'ImAConstruction':       ImAConstruction
                         'ImAValueNode':          ImAValueNode
                         'ImAVariableOccurrence': ImAVariableOccurrence
                         'ImAToken':              ImAToken
                         'Core':                  Core.core
+                        'TrueToken':             Core.trueToken
+                        'FalseToken':            Core.falseToken
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          Code      = {FunCode.apply
-                      c('SP':                    IMPORT.'SP'
+                      c('Foreign':               Foreign
+                        'System':                System
                         'Misc':                  Misc
                         'ImAVariableOccurrence': ImAVariableOccurrence
                         'Core':                  Core.core
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          Core      = {FunCore.apply
-                      c('SP':                    IMPORT.'SP'
+                      c('System':                System
                         'Misc':                  Misc
                         'SA':                    SA.sA
                         'CodeGen':               Code.codeGen
@@ -55,16 +78,20 @@ in
                         'ImAVariableOccurrence': ImAVariableOccurrence
                         'ImAToken':              ImAToken)}
          Unnest    = {FunUnnest.apply
-                      c('CP':                    IMPORT.'CP'
+                      c('FD':                    FD
                         'Misc':                  Misc
                         'FlattenSequence':       Core.flattenSequence
                         'Core':                  Core.core
                         'Gump':                  Gump)}
          Assembler = {FunAssembler.apply
-                      c('SP':                    IMPORT.'SP'
+                      c('System':                System
+                        'Foreign':               Foreign
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          CompilerF = {FunCompiler.apply
-                      c('SP':                    IMPORT.'SP'
+                      c('System':                System
+                        'Error':                 Error
+                        'ErrorRegistry':         ErrorRegistry
+                        'Foreign':               Foreign
                         'Misc':                  Misc
                         'Core':                  Core.core
                         'JoinQueries':           Unnest.joinQueries
@@ -72,18 +99,14 @@ in
                         'UnnestQuery':           Unnest.unnestQuery
                         'Gump':                  Gump
                         'Assemble':              Assembler.assemble)}
-
-         Compiler = compiler(engine: CompilerF.compilerEngine
-                             %--** deprecated:
-                             compilerClass: CompilerF.compilerEngine
-                             genericInterface: CompilerF.genericInterface
-                             quietInterface: CompilerF.quietInterface
-                             evalExpression: CompilerF.evalExpression
-                             virtualStringToValue:
-                                CompilerF.virtualStringToValue
-                             assemble: Assembler.doAssemble)
       in
-         \insert 'Compiler.env'
+         Engine = CompilerF.compilerEngine
+         CompilerClass = CompilerF.compilerEngine   %--** deprecated
+         GenericInterface = CompilerF.genericInterface
+         QuietInterface = CompilerF.quietInterface
+         EvalExpression = CompilerF.evalExpression
+         VirtualStringToValue = CompilerF.virtualStringToValue
+         Assemble = Assembler.doAssemble
       end
    end
 end

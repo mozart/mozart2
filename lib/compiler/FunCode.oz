@@ -1,6 +1,7 @@
 functor
 import
-   \insert SP-new.env
+   Foreign.pointer
+   System.valueToVirtualString
    \insert Misc-new.env
    GetBuiltinInfo
    ImAVariableOccurrence

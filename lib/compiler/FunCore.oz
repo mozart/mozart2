@@ -1,6 +1,6 @@
 functor
 import
-   \insert SP-new.env
+   System.valueToVirtualString
    \insert Misc-new.env
    SA
    CodeGen
@@ -11,6 +11,8 @@ import
 export
    FlattenSequence
    Core
+   TrueToken
+   FalseToken
 body
    local
       \insert Annotate

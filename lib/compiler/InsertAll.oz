@@ -38,7 +38,6 @@ local
 in
    \insert Misc
    \insert Builtins
-   \insert Errors
 
    local
       ImAConstruction       = {NewName}
@@ -136,3 +135,5 @@ in
       \insert Abstractions
    end
 end
+
+\insert Errors

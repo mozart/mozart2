@@ -1,6 +1,7 @@
 functor
 import
-   \insert SP-new.env
+   System.{printName valueToVirtualString}
+   Foreign.pointer
    GetBuiltinInfo
 export
    Assemble

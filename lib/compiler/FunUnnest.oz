@@ -1,6 +1,6 @@
 functor
 import
-   \insert CP-new.env
+   FD.is
    \insert Misc-new.env
    FlattenSequence
    Core

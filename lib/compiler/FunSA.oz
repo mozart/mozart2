@@ -1,13 +1,18 @@
 functor
 import
-   \insert SP-new.env
-   \insert CP-new.env
+   FD.{int is less distinct distribute}
+   FS.{include var subset value reflect isIn}
+   Search.{SearchOne='SearchOne'}
+   Foreign.pointer
+   System.{eq valueToVirtualString}
    \insert Misc-new.env
    ImAConstruction
    ImAValueNode
    ImAVariableOccurrence
    ImAToken
    Core
+   TrueToken
+   FalseToken
    GetBuiltinInfo
 export
    SA

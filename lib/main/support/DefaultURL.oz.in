@@ -60,7 +60,11 @@ prepare
       Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
                    'EvalDialog'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
-                   'GumpParser' 'ProductionTemplates' 'Inspector']
+                   'GumpParser' 'ProductionTemplates'
+\ifdef INSPECTOR
+                   'Inspector'
+\endif
+                  ]
    in
       LibFuncs    = {MakeUrlTable Libs}
       VolFuncs    = {MakeUrlTable Volatiles}

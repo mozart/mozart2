@@ -183,9 +183,10 @@ define
           if
              T.time == ThisPid.time andthen
              {Dictionary.member KeyDict T.key}
-          then Y={Dictionary.get KeyDict T.key} in
+          then S Y={Dictionary.get KeyDict T.key} in
              if T.single then {Dictionary.remove KeyDict T.key} end
-             thread A=yes(Y) end
+             S = unit
+             thread {Wait S} A=yes(Y) end
           else
              thread A=no end
           end

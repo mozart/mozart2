@@ -30,7 +30,7 @@ fun {$ IMPORT}
    \insert 'OP.env'
    = IMPORT.'OP'
 
-   \insert AP/Application.oz
+   \insert ap/Application.oz
 in
    ap('Application':Application)
 end

@@ -28,8 +28,8 @@ fun instantiate {$ IMPORT}
    \insert 'AP.env'
    = IMPORT.'AP'
 
-   \insert 'DP/Connection.oz'
-   \insert 'DP/Remote.oz'
+   \insert 'dp/Connection.oz'
+   \insert 'dp/Remote.oz'
 in
    \insert 'DP.env'
 end

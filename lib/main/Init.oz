@@ -21,11 +21,15 @@
 %%%
 
 proc {$}
-   Getenv = {`Builtin` 'OS.getEnv' 2}
-   SET = {`Builtin` 'PutProperty' 2}
-   GET = {`Builtin` 'GetProperty' 2}
-   \insert Init/Prop
-   \insert Init/URL
+   Getenv = {`Builtin` 'OS.getEnv'   2}
+
+   SET    = {`Builtin` 'PutProperty' 2}
+   GET    = {`Builtin` 'GetProperty' 2}
+
+   \insert 'init/Prop.oz'
+
+   \insert 'init/URL.oz'
+
 in
    {SET url  URL}
    {SET load URL.load}

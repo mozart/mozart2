@@ -21,10 +21,6 @@
 %%%
 
 
-declare
-   OS
-in
-
 OS = os(%% Os IO common to both files and sockets
         getCWD:        {`Builtin` 'OS.getCWD'        1}
         uName:         {`Builtin` 'OS.uName'         1}

@@ -24,18 +24,20 @@
 %%% This file creates the Open Programming Functor
 %%%
 
-\insert OP/OS
-
-fun
-\ifdef NEWCOMPILER
-   instantiate
-\endif
-   {$ IMPORT}
-   \insert 'SP.env'
-   = IMPORT.'SP'
-
-   \insert OP/Open
-   \insert OP/Component.oz
+local
+   \insert OP/OS
 in
-   \insert 'OP.env'
+   fun
+\ifdef NEWCOMPILER
+      instantiate
+\endif
+      {$ IMPORT}
+      \insert 'SP.env'
+      = IMPORT.'SP'
+
+      \insert OP/Open
+      \insert OP/Component.oz
+   in
+      \insert 'OP.env'
+   end
 end

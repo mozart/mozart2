@@ -710,7 +710,7 @@ define
          meth action(Index P)
             if {IsTuple P}
             then {self P}
-            else try {P @value} catch _ then skip end
+            else thread {P @value} end
             end
          end
          meth modifyWidth(Index N)

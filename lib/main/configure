@@ -11,6 +11,7 @@
 ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
+ac_default_prefix=/usr/local/oz
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -539,13 +540,16 @@ ac_config_sub=$ac_aux_dir/config.sub
 ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 
 
+
+
+
 # Make sure we can run config.sub.
 if $ac_config_sub sun4 >/dev/null 2>&1; then :
 else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:549: checking host system type" >&5
+echo "configure:553: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -566,19 +570,24 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 
-if test -n "$oz_default_prefix" && test -d $oz_default_prefix
-then
-  ac_default_prefix=$oz_default_prefix
-fi
+    if test -z "$TOPDIR"
+    then
+        TOPDIR=$srcdir
+        if test ! -r $TOPDIR/OZVERSION
+        then
+            TOPDIR=$srcdir/..
+        fi
+    fi
+    if test ! -r $TOPDIR/OZVERSION
+    then
+        { echo "configure: error: can't find TOPDIR" 1>&2; exit 1; }
+    fi
+
+    oz_topdira=`cd $TOPDIR; pwd`
+
 
 
 srcdira=`(cd $srcdir; pwd)`
-
-
-TOPDIR=$srcdir/..
-
-
-TOPDIRA=`(cd $srcdir; cd ..; pwd)`
 
 
 
@@ -593,7 +602,7 @@ TOPDIRA=`(cd $srcdir; cd ..; pwd)`
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:597: checking for a BSD compatible install" >&5
+echo "configure:606: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -648,7 +657,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:652: checking for $ac_word" >&5
+echo "configure:661: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_SH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -681,7 +690,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:685: checking for $ac_word" >&5
+echo "configure:694: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -714,7 +723,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:718: checking for $ac_word" >&5
+echo "configure:727: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_MKDIR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -747,7 +756,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:751: checking for $ac_word" >&5
+echo "configure:760: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RMDIR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -780,7 +789,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:784: checking for $ac_word" >&5
+echo "configure:793: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_ECHO'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -813,7 +822,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:817: checking for $ac_word" >&5
+echo "configure:826: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_M4'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -846,7 +855,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:850: checking for $ac_word" >&5
+echo "configure:859: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_TRUE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -879,7 +888,7 @@ SRCPATH=.:$srcdir
 # Extract the first word of "env2type", so it can be a program name with args.
 set dummy env2type; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:883: checking for $ac_word" >&5
+echo "configure:892: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_ENV2TYPE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -908,11 +917,11 @@ else
 fi
 
 
-OZPATH=$PATH:$TOPDIRA/bin:$TOPDIR:$prefix/bin
-# Extract the first word of "ozinstallsrc", so it can be a program name with args.
+
+    # Extract the first word of "ozinstallsrc", so it can be a program name with args.
 set dummy ozinstallsrc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:916: checking for $ac_word" >&5
+echo "configure:925: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_INSTALLSRC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -922,7 +931,7 @@ else
   ;;
   *)
   IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in $OZPATH$ac_dummy; do
+  for ac_dir in $PATH:$oz_topdira/bin:$oz_topdira$ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
       ac_cv_path_INSTALLSRC="$ac_dir/$ac_word"
@@ -940,12 +949,55 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
+    if test ! -n "$INSTALLSRC"
+    then
+        INSTALLSRC=undefined
+
+    fi
 
 
-# Extract the first word of "ozbatch", so it can be a program name with args.
+    # Extract the first word of "ozplatform", so it can be a program name with args.
+set dummy ozplatform; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:963: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_OZPLATFORM'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$OZPLATFORM" in
+  /*)
+  ac_cv_path_OZPLATFORM="$OZPLATFORM" # Let the user override the test with a path.
+  ;;
+  *)
+  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in $PATH:$oz_topdira/bin:$oz_topdira$ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_OZPLATFORM="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+OZPLATFORM="$ac_cv_path_OZPLATFORM"
+if test -n "$OZPLATFORM"; then
+  echo "$ac_t""$OZPLATFORM" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+    if test ! -n "$OZPLATFORM"
+    then
+        OZPLATFORM=undefined
+
+    fi
+
+
+    # Extract the first word of "ozbatch", so it can be a program name with args.
 set dummy ozbatch; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:949: checking for $ac_word" >&5
+echo "configure:1001: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_OZBATCH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -955,7 +1007,7 @@ else
   ;;
   *)
   IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in $OZPATH$ac_dummy; do
+  for ac_dir in $PATH:$oz_topdira/bin:$oz_topdira$ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
       ac_cv_path_OZBATCH="$ac_dir/$ac_word"
@@ -973,7 +1025,30 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
+    if test ! -n "$OZBATCH"
+    then
+        OZBATCH=undefined
+        OZBATCH=./ozbatch
+    fi
 
+
+echo $ac_n "checking for oz.emulator.bin""... $ac_c" 1>&6
+echo "configure:1037: checking for oz.emulator.bin" >&5
+if test -z "$OZ_EMULATOR_DIR"
+then
+    OZ_EMULATOR_DIR=not_found
+    for d in $TOPDIR/Emulator $TOPDIR/Emulator/`$OZPLATFORM` \
+            /usr/local/oz/platform/`$OZPLATFORM`
+    do
+        if test -r $d/ozma.so && test -x $d/oz.emulator.bin
+        then
+            OZ_EMULATOR_DIR=$d
+            break
+        fi
+    done
+fi
+
+echo "$ac_t""$OZ_EMULATOR_DIR" 1>&6
 
 
 trap '' 1 2 15
@@ -1124,9 +1199,8 @@ s%@host_alias@%$host_alias%g
 s%@host_cpu@%$host_cpu%g
 s%@host_vendor@%$host_vendor%g
 s%@host_os@%$host_os%g
-s%@srcdira@%$srcdira%g
 s%@TOPDIR@%$TOPDIR%g
-s%@TOPDIRA@%$TOPDIRA%g
+s%@srcdira@%$srcdira%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@SH@%$SH%g
@@ -1138,7 +1212,9 @@ s%@M4@%$M4%g
 s%@TRUE@%$TRUE%g
 s%@ENV2TYPE@%$ENV2TYPE%g
 s%@INSTALLSRC@%$INSTALLSRC%g
+s%@OZPLATFORM@%$OZPLATFORM%g
 s%@OZBATCH@%$OZBATCH%g
+s%@OZ_EMULATOR_DIR@%$OZ_EMULATOR_DIR%g
 
 CEOF
 EOF

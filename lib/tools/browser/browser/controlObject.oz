@@ -49,7 +49,7 @@ in
 %        %% job...end and simple "cases";
 %        job IsEQ = Obj.term == Term end
 %        case
-%           case {IsVar IsEQ} then False
+%           case {IsFree IsEQ} then False
 %           else IsEQ
 %           end
 %        then
@@ -58,7 +58,7 @@ in
          case {EQ Obj.term Term} then
             %%
             case Obj.type == T_RootTerm then InitValue
-            elsecase {IsVar Obj.closed} then Obj
+            elsecase {IsFree Obj.closed} then Obj
             else PO in
                %% i.e., this is garbage (or lack of synchronization);
                PO = Obj.ParentObj

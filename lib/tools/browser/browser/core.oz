@@ -23,7 +23,7 @@ IntToAtom = {`Builtin` 'intToAtom'
 %% These are non-monotonic tests, that is, they never suspend.
 %% Since we don't have job...end anymore, they actually must present
 %% somewhere and somehow in Oz Kernel(?);
-IsVar =        !System.isVar
+IsVar =        fun {$ X} {Value.isDet X} == False end
 IsFdVar =      {`Builtin` 'fdIsVarB' noHandler}
 IsRecordCVar = {`Builtin` 'recordCIsVarB' noHandler}
 IsMetaVar =    {`Builtin` 'metaIsVarB' noHandler}

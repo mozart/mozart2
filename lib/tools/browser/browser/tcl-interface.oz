@@ -1431,7 +1431,7 @@ in
 \endif
             %%
             %% if there is a freed tcl, then reuse it ...
-            case {IsVar @TclsCache} then N in
+            case {IsFree @TclsCache} then N in
                N = @TclCN
                TclCN <- N + 1
                N

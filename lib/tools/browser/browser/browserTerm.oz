@@ -40,12 +40,11 @@ in
       end
    in
       fun {IsVirtualString X}
-         case {IsVar X} then False
-         elsecase {Type.ofValue X}
-         of atom  then True
-         [] int   then True
-         [] float then True
-         [] tuple then
+         case {Value.status X}
+         of det(atom)  then True
+         [] det(int)   then True
+         [] det(float) then True
+         [] det(tuple) then
             case {Label X}
             of '#' then {IsAll {Width X} X}
             [] '|' then {IsString X}
@@ -63,19 +62,22 @@ in
    %%
    fun {GetTermType Term Store}
       %%
-      case {IsVar Term} then
-         %%
-         case {IsRecordCVar Term}  then T_Record
-         elsecase {IsFdVar Term}   then T_FDVariable
-         elsecase {IsMetaVar Term} then T_MetaVariable
-         else T_Variable
+      case {Value.status Term}
+      of free then T_Variable
+
+      [] kinded(record) then T_Record
+      [] kinded(int)    then T_FDVariable
+      [] kinded(other)  then
+         case {IsMetaVar Term} then T_MetaVariable % TODO
+         else T_Variable        % don't know;
          end
-      elsecase {Type.ofValue Term}
-      of atom    then T_Atom
-      [] int     then T_Int
-      [] float   then T_Float
-      [] name    then T_Name
-      [] tuple   then
+
+      [] det(atom)      then T_Atom
+      [] det(int)       then T_Int
+      [] det(float)     then T_Float
+      [] det(name)      then T_Name
+
+      [] det(tuple)     then
          %%
          case {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
          then T_Atom
@@ -91,11 +93,11 @@ in
          else T_Tuple
          end
 
-      [] procedure then T_Procedure
-      [] cell then T_Cell
-      [] record then T_Record
+      [] det(procedure) then T_Procedure
+      [] det(cell)      then T_Cell
+      [] det(record)    then T_Record
 
-      [] chunk then CW in
+      [] det(chunk)     then CW in
          CW = {ChunkWidth Term}
          case {Object.is Term} then
             case CW of 0 then T_PrimObject else T_CompObject end
@@ -106,12 +108,8 @@ in
          elsecase CW of 0 then T_PrimChunk else T_CompChunk
          end
 
-      [] 'thread' then T_Thread
-             /*
-          end           % "Oz" emacs mode problems;
-         */
-
-      [] 'space' then T_Space
+      [] det('thread')  then T_Thread
+      [] det('space')   then T_Space
 
       else
          %% 'of' is a keyword ;-)

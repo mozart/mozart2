@@ -28,7 +28,7 @@ in
    %%
    proc {GCProc List Length ?NewList ?NewLength}
       %%
-      case {IsVar List} then
+      case {IsFree List} then
          List = NewList         % keep the tail unchanged;
          NewLength = Length
       else Obj R in
@@ -36,7 +36,7 @@ in
          List = Obj|R
 
          %%
-         case {IsVar Obj.closed} then NewTail in
+         case {IsFree Obj.closed} then NewTail in
             %%
             NewList = Obj|NewTail
             {GCProc R (Length + 1) NewTail NewLength}
@@ -93,7 +93,7 @@ in
       %%
       meth Check(Term List $)
          %%
-         case {IsVar List} then InitValue
+         case {IsFree List} then InitValue
          else Obj R in
             %%
             List = Obj|R
@@ -102,7 +102,7 @@ in
             %%> case {EQ Obj.term Term} then ...
             if Obj.term = Term then
                %%
-               case {IsVar Obj.closed} then Obj
+               case {IsFree Obj.closed} then Obj
                else
                   fails <- @fails + 1
                   TermsStoreClass , Check(Term R $)
@@ -119,7 +119,7 @@ in
       %% (and it yields bool);
       meth Search(Self List $)
          %%
-         case {IsVar List} then False
+         case {IsFree List} then False
          else Obj R in
             %%
             List = Obj|R
@@ -132,7 +132,7 @@ in
                %%
                if Obj.term = Self.term then
                   %%
-                  case {IsVar Obj.closed} then True
+                  case {IsFree Obj.closed} then True
                   else
                      fails <- @fails + 1
                      TermsStoreClass , Search(Self R $)

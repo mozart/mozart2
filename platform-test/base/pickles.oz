@@ -23,6 +23,7 @@ functor
 import
    Pickle(save load saveCompressed pack unpack)
    OS(tmpnam unlink)
+   FS(value)
 export
    Return
 define
@@ -71,6 +72,7 @@ define
         true: fun {$ X Y} X+Y end
         cycle: Goods)
       {ByteString.make "bla"}
+      {FS.value.make [1 4 6]}
      ]
 
    Return =

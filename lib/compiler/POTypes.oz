@@ -220,16 +220,15 @@ in
        recordC# value
        record # recordC
        number # value
-       intC   # number
-       int    # intC
+       int    # number
        float  # number
-       char   # fdint
-       fdint  # int
+       char   # fdIntC
+       fdIntC # int
        tuple  # record
        literal# tuple
        atom   # literal
        name   # literal
-       nilAtom # atom
+       nil    # atom
        cons   # tuple
        bool   # name
        'unit' # name
@@ -257,8 +256,8 @@ in
        def(comparable        [number atom])
        def(recordOrChunk     [record chunk])
        def(recordCOrChunk    [recordC chunk])
-       def(list              [nilAtom cons])
-       def(string            [nilAtom cons])
+       def(list              [nil cons])
+       def(string            [nil cons])
        def(procedure         ['procedure/0'
                               'procedure/1'
                               'procedure/2'
@@ -281,7 +280,7 @@ in
             case {IsChar V}
             then {OzTypes.encode char nil}
             elsecase {FD.is V}
-            then {OzTypes.encode fdint nil}
+            then {OzTypes.encode fdIntC nil}
             else {OzTypes.encode int nil}
             end
          elsecase {IsFloat V}
@@ -289,7 +288,7 @@ in
          elsecase {IsAtom V}
          then
             case V == nil
-            then {OzTypes.encode nilAtom nil}
+            then {OzTypes.encode nil nil}
             else {OzTypes.encode atom nil}
             end
          elsecase {IsName V}
@@ -356,10 +355,10 @@ in
          {IsKinded V}
       then
          case {FD.is V}
-         then {OzTypes.encode intC nil}
+         then {OzTypes.encode fdIntC nil}
          elsecase {IsRecordC V}
          then {OzTypes.encode recordC nil}
-         else {OzTypes.encode value [intC recordC]}
+         else {OzTypes.encode value [fdIntC recordC]}
          end
       else
          {OzTypes.encode value nil}

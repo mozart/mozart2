@@ -885,6 +885,7 @@ define
          in
             {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
             Flags = flags(prefix: Prefix
+                          directory: {@state getGumpDirectory($)}
                           bestfit:
                              {@state getSwitch(gumpscannerbestfit $)}
                           caseless:
@@ -910,6 +911,7 @@ define
          in
             {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
             Flags = flags(expect: Expect
+                          directory: {@state getGumpDirectory($)}
                           outputSimplified:
                              {@state
                               getSwitch(gumpparseroutputsimplified $)}

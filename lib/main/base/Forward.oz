@@ -26,17 +26,8 @@ declare
    `Raise` `RaiseError`
    %% Record construction
    `record`
-   %% Shutdown
-   `ShutDown`
 in
 
 `Raise`      = {`Builtin` 'raise'      1}
 `RaiseError` = {`Builtin` 'raiseError' 1}
 `record`     = {`Builtin` 'record'     3}
-
-local
-   Exit       = {`Builtin` shutdown 1}
-in
-% Compiler
-   proc {`ShutDown` _} {Exit 0} end
-end

@@ -169,7 +169,7 @@ in
          P={Property.get errors}
       in
          {System.showError 'Tk Module: '#S#
-          case Tcl==unit then '' else '\n'#
+          if Tcl==unit then '' else '\n'#
              {System.valueToVirtualString Tcl P.depth P.width}
           end}
       end
@@ -200,9 +200,9 @@ in
          fun {TkStringToInt S}
             %% Read a number and convert it to an integer
             OS IsAFloat in OS={TkNum S false ?IsAFloat}
-            case IsAFloat andthen {String.isFloat OS} then
+            if IsAFloat andthen {String.isFloat OS} then
                {FloatToInt {String.toFloat OS}}
-            elsecase {Not IsAFloat} andthen {String.isInt OS} then
+            elseif {Not IsAFloat} andthen {String.isInt OS} then
                {String.toInt OS}
             else false
             end
@@ -211,9 +211,9 @@ in
          fun {TkStringToFloat S}
             %% Read a number and convert it to a float
             OS IsAFloat in OS={TkNum S false ?IsAFloat}
-            case IsAFloat andthen {String.isFloat OS} then
+            if IsAFloat andthen {String.isFloat OS} then
                {String.toFloat OS}
-            elsecase {Not IsAFloat} andthen {String.isInt OS} then
+            elseif {Not IsAFloat} andthen {String.isInt OS} then
                {IntToFloat {String.toInt OS}}
             else false
             end
@@ -243,10 +243,10 @@ in
       fun {Expand Is}
          case Is of nil then nil
          [] I|Ir then
-            case I==&\\ then
+            if I==&\\ then
                case Ir of nil then nil
                [] II|Irr then
-                  case II==&n then &\n else II end|{Expand Irr}
+                  if II==&n then &\n else II end|{Expand Irr}
                end
             else I|{Expand Ir}
             end
@@ -261,15 +261,13 @@ in
          end
 
          proc {EnterPrefixArgs I MP M}
-            case I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M}
-            else skip
-            end
+            if I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M} end
          end
 
          fun {MaxInt As M}
             case As of nil then M
             [] A|Ar then
-               {MaxInt Ar case {IsInt A} then {Max M A} else M end}
+               {MaxInt Ar if {IsInt A} then {Max M A} else M end}
             end
          end
 
@@ -282,26 +280,26 @@ in
          proc {InvokeAction Action Args NoArgs Thread}
             case Action
             of OP # M then SM in
-               case NoArgs==0 then SM=M
-               elsecase {IsTuple M} then W={Width M} in
+               if NoArgs==0 then SM=M
+               elseif {IsTuple M} then W={Width M} in
                   SM = {MakeTuple {Label M} NoArgs + W}
                   {EnterPrefixArgs W M SM}
                   {EnterMessageArgs Args {Width M}+1 SM}
                else
                   SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
                end
-               case {IsPort OP} then {Send OP SM}
-               elsecase Thread then thread {OP SM} end
+               if {IsPort OP} then {Send OP SM}
+               elseif Thread then thread {OP SM} end
                else {OP SM}
                end
             else
-               case NoArgs==0 then
-                  case Thread then
+               if NoArgs==0 then
+                  if Thread then
                      thread {Action} end
                   else {Action}
                   end
                else
-                  case Thread then
+                  if Thread then
                      thread {System.apply Action Args} end
                   else {System.apply Action Args}
                   end
@@ -358,16 +356,16 @@ in
       IdNumber     = {Width IdCharacters}
 
       fun {GenString N}
-         case N>=IdNumber then
+         if N>=IdNumber then
             IdCharacters.((N mod IdNumber) + 1)|{GenString N div IdNumber}
-      else [IdCharacters.N]
+         else [IdCharacters.N]
+         end
       end
-   end
 
    Stream = local
                HOME    = {Property.get 'oz.home'}
                OSS#CPU = {Property.get platform}
-               WISH    = case OSS=='win32' then 'ozwish.exe'
+               WISH    = if OSS=='win32' then 'ozwish.exe'
                          else 'oz.wish.bin'
                          end
                PLTFRM  = HOME # '/platform/'#OSS#'-'#CPU#'/'
@@ -400,7 +398,7 @@ in
    local
       fun {GetArgs N Ps}
          %% Get the next N line lines expanded
-         case N>0 then E={Expand {Stream getS($)}} in
+         if N>0 then E={Expand {Stream getS($)}} in
             case Ps
             of nil  then E | {GetArgs N-1 nil}
             [] P|Pr then {P E} | {GetArgs N-1 Pr}
@@ -517,9 +515,9 @@ in
                                       of O#M then O#M#Casts
                                       elseof P then P # Casts
                                       end}
-      Command = '{'#case AddIt then '+' else '' end#'ozp '#ActionId#
+      Command = '{'#if AddIt then '+' else '' end#'ozp '#ActionId#
       Fields #
-      case BreakIt then '; break' else '' end#'}'
+      if BreakIt then '; break' else '' end#'}'
    end
 
    proc {DefineCommand Action Args ?ActionId ?Command}
@@ -546,9 +544,9 @@ in
          ThisActionId = self.ActionId
          GetTclName
       in
-         case ParentSlaves==unit then
+         if ParentSlaves==unit then
             {Exception.raiseError tk(wrongParent self M)}
-         elsecase {IsDet ThisTclName} then
+         elseif {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self M)}
          else
             self.TclSlaveEntry = {AddSlave ParentSlaves self}
@@ -652,7 +650,7 @@ in
                   args:   Args    <= nil
                   append: AddIt   <= false
                   break:  BreakIt <= false) = Message
-         case {HasFeature Message action} then
+         if {HasFeature Message action} then
             ActionId Command
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
@@ -683,27 +681,27 @@ in
 
       meth tkInit(parent:Parent ...) = Message
          ThisTclName = self.TclName
-         case {IsDet ThisTclName} then
+         if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self Message)}
-         else skip end
+         end
          NewTkName  =
-         case {IsObject Parent} then
+         if {IsObject Parent} then
             ParentSlaves = {CondSelect Parent TclSlaves unit}
          in
-            case ParentSlaves==unit then
+            if ParentSlaves==unit then
                {Exception.raiseError tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
             end
-         elsecase {IsVirtualString Parent} then
+         elseif {IsVirtualString Parent} then
             self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
             {Exception.raiseError tk(wrongParent self Message)} _
          end
       in
-         case {HasFeature Message action} then
+         if {HasFeature Message action} then
             ActionId Command
          in
             {DefineCommand Message.action {CondSelect Message args nil}
@@ -719,7 +717,7 @@ in
       end
 
       meth tkAction(action:Action<=_ args:Args <= nil) = Message
-         case {HasFeature Message action} then ActionId Command in
+         if {HasFeature Message action} then ActionId Command in
             {DefineCommand Action Args ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
             {TkSend o(self configure command: v(Command))}
@@ -734,21 +732,20 @@ in
 
       meth tkInit(parent:Parent ...) = Message
          ThisTclName = self.TclName
-         case {IsDet ThisTclName} then
+         if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self Message)}
-         else skip
          end
          NewTkName =
-         case {IsObject Parent} then
+         if {IsObject Parent} then
             ParentSlaves = {CondSelect Parent TclSlaves unit}
          in
-            case ParentSlaves==unit then
+            if ParentSlaves==unit then
                {Exception.raiseError tk(wrongParent self Message)} _
             else
                self.TclSlaveEntry = {AddSlave ParentSlaves self}
                {GenWidgetName Parent.TclName}
             end
-         elsecase {IsVirtualString Parent} then
+         elseif {IsVirtualString Parent} then
             self.TclSlaveEntry = nil
             {GenWidgetName Parent}
          else
@@ -767,24 +764,24 @@ in
 
       meth tkInit(...) = Message
          ThisTclName = self.TclName
-         case {IsDet ThisTclName} then
+         if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self Message)}
-         else skip end
+         end
          MyTitle  = {CondSelect Message title 'Oz Window'}
          MyTkName =
-         case {HasFeature Message parent} then
+         if {HasFeature Message parent} then
             Parent = Message.parent
          in
-            case {IsObject Parent} then
+            if {IsObject Parent} then
                ParentSlaves = {CondSelect Parent TclSlaves unit}
             in
-               case ParentSlaves==unit then
+               if ParentSlaves==unit then
                   {Exception.raiseError tk(wrongParent self Message)} _
                else
                   self.TclSlaveEntry = {AddSlave ParentSlaves self}
                   {GenWidgetName Parent.TclName}
                end
-            elsecase {IsVirtualString Parent} then
+            elseif {IsVirtualString Parent} then
                self.TclSlaveEntry = nil
                {GenWidgetName Parent}
             else
@@ -801,7 +798,7 @@ in
          self.TclSlaves = [nil CloseId]
          {TkSendFilter toplevel MyTkName Message
           [delete parent title withdraw]
-          o(case {CondSelect Message withdraw false} then
+          o(if {CondSelect Message withdraw false} then
                v('; wm withdraw '#MyTkName)
             else unit
             end
@@ -892,7 +889,7 @@ in
       fun {Insert Es EA EB I ?Tcl}
          case Es of nil then Tcl=[v(';') set(EA.EntryVar I)] [EA]
          [] E|Er then
-            case E==EB then Tcl={MkMove EA|Es I} EA|Es
+            if E==EB then Tcl={MkMove EA|Es I} EA|Es
             else E|{Insert Er EA EB I+1 ?Tcl}
             end
          end
@@ -901,7 +898,7 @@ in
       fun {Remove Es EA I ?Tcl}
          case Es of nil then Tcl=[unit] nil
          [] E|Er then
-            case E==EA then Tcl={MkMove Er I} Er
+            if E==EA then Tcl={MkMove Er I} Er
             else E|{Remove Er EA I+1 ?Tcl}
             end
          end
@@ -923,17 +920,17 @@ in
                      action: Action <= _
                      args:   Args   <= nil ...) = Message
             ThisTclName = self.TclName
-            case {IsDet ThisTclName} then
+            if {IsDet ThisTclName} then
                {Exception.raiseError tk(alreadyInitialized self Message)}
-            else skip end
+            end
             ParentLock  = {CondSelect Parent EntryLock unit}
-            case ParentLock==unit then
+            if ParentLock==unit then
                {Exception.raiseError tk(wrongParent self Message)}
-            else skip end
+            end
          in
             lock ParentLock then
                IsInsert = {HasFeature Message before}
-               MoveTcl  = case IsInsert then
+               MoveTcl  = if IsInsert then
                              {Parent InsertEntry(self Before $)}
                           else {Parent AddEntry(self $)}
                           end
@@ -943,13 +940,13 @@ in
                   self.TkWidget      = Parent
                   self.TclSlaveEntry = {AddSlave Parent.TclSlaves self}
                   self.EntryVar      = VarName
-                  case {HasFeature Message action} then
+                  if {HasFeature Message action} then
                      ActionId Command
                   in
                      {DefineCommand Action Args ?ActionId ?Command}
                      self.TclSlaves = [nil ActionId]
                      {TkSendFilter
-                      o(Parent case IsInsert then insert(Before)
+                      o(Parent if IsInsert then insert(Before)
                                else add
                                end)
                       self.TkType Message [action args before parent]
@@ -957,7 +954,7 @@ in
                   else
                      self.TclSlaves = [nil]
                      {TkSendFilter
-                      o(Parent case IsInsert then insert(Before)
+                      o(Parent if IsInsert then insert(Before)
                                else add
                                end)
                       self.TkType Message [action args before parent]
@@ -1056,9 +1053,9 @@ in
          MyTclName   = {GenVarName}
          ThisTclName = self.TclName
       in
-         case {IsDet ThisTclName} then
+         if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self Message)}
-         else skip end
+         end
          case {Width Message}
          of 0 then skip
          [] 1 then {TkSend set(v(MyTclName) Message.1)}
@@ -1117,12 +1114,12 @@ in
          ThisTclName  = self.TclName
          ParentSlaves = {CondSelect Parent TclSlaves unit}
       in
-         case ParentSlaves==unit then
+         if ParentSlaves==unit then
             {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
-         else skip end
-         case {IsDet ThisTclName} then
+         end
+         if {IsDet ThisTclName} then
             {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
-         else skip end
+         end
          self.TclSlaves     = [nil]
          self.TclSlaveEntry = {AddSlave ParentSlaves self}
          self.TkWidget      = Parent
@@ -1158,7 +1155,7 @@ in
                   args:   Args    <= nil
                   append: AddIt   <= false
                   break:  BreakIt <= false) = Message
-         case {HasFeature Message action} then
+         if {HasFeature Message action} then
             ActionId Command
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
@@ -1192,7 +1189,7 @@ in
                   args:   Args    <= nil
                   append: AddIt   <= false
                   break:  BreakIt <= false) = Message
-         case {HasFeature Message action} then
+         if {HasFeature Message action} then
             ActionId Command
          in
             {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
@@ -1260,15 +1257,15 @@ in
 
          meth tkInit(type:Type ...) = Message
             ThisTclName = self.TclName
-            case {IsDet ThisTclName} then
+            if {IsDet ThisTclName} then
                {Exception.raiseError tk(alreadyInitialized self Message)}
-            else skip end
+            end
             NewTkName   = {GenImageName}
-            MessUrl = case {HasFeature Message url} then
+            MessUrl = if {HasFeature Message url} then
                          {AdjoinAt Message file {TkLocalize Message.url}}
                       else Message
                       end
-            MessAll = case {HasFeature MessUrl maskurl} then
+            MessAll = if {HasFeature MessUrl maskurl} then
                          {AdjoinAt MessUrl maskfile
                           {TkLocalize MessUrl.maskurl}}
                       else MessUrl

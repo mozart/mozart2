@@ -86,7 +86,7 @@ end
 
 local
 
-   Select = case IsColor then 2 else 3 end
+   Select = if IsColor then 2 else 3 end
    ColorOptionsList =
    [
     '*OzTools*NumberEntry*Entry*background' # wheat # white
@@ -139,7 +139,7 @@ local
    File = local
              UserHome = {OS.getEnv 'HOME'}
           in
-             case UserHome \= false then
+             if UserHome \= false then
                 F = UserHome # '/.oz/wishrc'
              in
                 try {OS.stat F _} F
@@ -147,8 +147,7 @@ local
              else unit end
           end
 in
-   case File \= unit then
+   if File \= unit then
       {TkSend option(readfile File widgetDefault)}
-   else skip
    end
 end

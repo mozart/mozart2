@@ -27,6 +27,10 @@ functor
 import
    DPB at 'x-oz://boot/DPB'
    Fault at 'x-oz://boot/Fault'
+
+require
+   InterFault at 'x-oz://boot/InterFault'
+
 export
    getEntityCond:     GetEntityCond
    enable:            Enable

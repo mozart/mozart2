@@ -58,7 +58,6 @@ require
    Boot_Time            at 'x-oz://boot/Time'
    Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
-   Boot_InterFault      at 'x-oz://boot/InterFault'
    Boot_Combinators     at 'x-oz://boot/Combinators'
 
 prepare
@@ -324,7 +323,6 @@ prepare
    \insert 'Functor.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
-   \insert 'InterFault.oz'
    \insert 'Combinators.oz'
 
 export
@@ -516,9 +514,6 @@ export
    'ByteString' : ByteString
    'IsBitString'        : IsBitString
    'IsByteString'       : IsByteString
-
-   %% InterFault
-   'InterFault' : InterFault
 
    %% Will be removed by the compiler
    'OoExtensions': OoExtensions

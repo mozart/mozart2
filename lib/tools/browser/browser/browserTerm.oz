@@ -183,7 +183,11 @@ in
          [] cell       then T_Cell
          [] record     then T_Record
 
-         [] chunk      then CW in
+         [] 'thread'  then T_Thread
+         [] 'space'   then T_Space
+
+         % everything else is a chunk
+         else CW in
             CW = {ChunkWidth Term}
             case {Object.is Term} then
                case CW of 0 then T_PrimObject else T_CompObject end
@@ -197,17 +201,6 @@ in
             elsecase CW of 0 then T_PrimChunk else T_CompChunk
             end
 
-         [] 'thread'  then T_Thread
-                /*
-             end
-            */
-         [] 'space'   then T_Space
-
-         else
-            %% 'of' is a keyword ;-)
-            {BrowserWarning 'Oz Term _o_f an unknown type '
-             # {System.valueToVirtualString Term DInfinite DInfinite}}
-            T_Unknown
          end
       else T_Unknown
       end

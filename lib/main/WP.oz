@@ -9,16 +9,11 @@
 \insert 'TkTools.oz'
 
 \ifdef SAVE
-declare NewWP in
-
+declare
 fun {NewWP Open}
    Tk      = {NewTk Open}
    TkTools = {NewTkTools Tk}
 in
-   wp('Tk':         Tk
-      'NewTk':      NewTk
-      'TkTools':    TkTools
-      'NewTkTools': NewTkTools)
+   \insert 'WP.env'
 end
-
 \endif

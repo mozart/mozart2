@@ -808,6 +808,9 @@ in
       %%
 
       meth register(P)
+         case {IsPort P} then skip
+         else {Exception.raiseError compiler(register P)}
+         end
          lock self.RegistrationLock then
             Registered <- P|@Registered
             {self.Compiler notifyOne(P)}

@@ -24,9 +24,10 @@
 
 \define ANALYSEINHERITANCE
 
+
 /*
-\define LOOP
 \define DEBUGSA
+\define LOOP
 \define INHERITANCE
 \define DEBUGPOS
 \define REMINDER
@@ -547,7 +548,7 @@ local
          {L isVariableOccurrence($)}
       then
 \ifdef DEBUGSA
-         {Show env(var:V last:L data:{GetDataObject L} type:T)}
+         {System.show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
          case {IsMinimalType T}
          then env(var:V last:L data:{GetDataObject L})
@@ -561,7 +562,7 @@ local
          {L isConstruction($)}
       then
 \ifdef DEBUGSA
-         {Show env(var:V last:L data:{GetDataObject L} type:T)}
+         {System.show env(var:V last:L data:{GetDataObject L} type:T)}
 \endif
          case {IsMinimalType T}
          then env(var:V last:L data:{GetDataObject L})
@@ -578,7 +579,7 @@ local
          then env(var:V last:L)
          else
 \ifdef DEBUGSA
-            {Show weird(L T)}
+            {System.show weird(L T)}
 \endif
             % copy non-constant types
             {V setType({TypeClone T})}
@@ -596,8 +597,7 @@ local
       L = E.last
    in
 \ifdef DEBUGSA
-      {Showinstalling(E)}
-      {Show install({V getPrintName($)} L {V getLastValue($)})}
+      {System.show install({V getPrintName($)} L {V getLastValue($)})}
 \endif
       {V setLastValue(L)}
 
@@ -614,8 +614,8 @@ local
       ReachableVs = {FoldL Vs AppendReachable nil}
    in
 \ifdef DEBUGSA
-      {Show v(Vs {Map Vs fun {$ V} {V getPrintName($)} end})}
-      {Show r(ReachableVs {Map ReachableVs fun {$ V} {V getPrintName($)} end})}
+      {System.show v(Vs {Map Vs fun {$ V} {V getPrintName($)} end})}
+      {System.show r(ReachableVs {Map ReachableVs fun {$ V} {V getPrintName($)} end})}
 \endif
 
       {Map ReachableVs GetReachable}
@@ -654,7 +654,7 @@ local
 
    proc {IssueTypeError TX TY X Y Ctrl Coord}
 \ifdef DEBUGSA
-      {Show issuetypeerror(TX TY X Y)}
+      {System.show issuetypeerror(TX TY X Y)}
 \endif
 
       ErrMsg UnifLeft UnifRight Msgs Items
@@ -712,7 +712,7 @@ local
 
    fun {ConstrainTypes TX TY}
 \ifdef DEBUGSA
-      {Show constrainTypes(TX TY)}
+      {System.show constrainTypes({BitArray.toList TX} {BitArray.toList TY})}
 \endif
       case
          {TypeClash TX TY}
@@ -1178,7 +1178,7 @@ local
 \ifdef DEBUGSA_POS
          case @coord of unit then skip
          else
-            {System.showError
+            {System.System.showError
              {Error.formatPos @coord.1 @coord.2 @coord.3 unit}}
          end
 \endif
@@ -1241,7 +1241,7 @@ local
    class SADeclaration
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show declaration({Map @localVars fun {$ V} {V getPrintName($)} end})}
+         {System.show declaration({Map @localVars fun {$ V} {V getPrintName($)} end})}
 \endif
          {ForAll @localVars proc {$ V} {V setToplevel({Ctrl getTop($)})} end}
       end
@@ -1260,7 +1260,7 @@ local
    class SAEquation
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show saEQ(@left @right)}
+         {System.show saEQ(@left @right)}
 \endif
          {@right sa(Ctrl)}                            % analyse right hand side
 
@@ -1410,7 +1410,7 @@ local
       end
       meth reachable(Vs $)
 \ifdef LOOP
-         {Show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
+         {System.show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
 \endif
          {FoldL @args
           fun {$ VsIn Arg}
@@ -1452,7 +1452,7 @@ local
                Fields= {Map FData fun {$ F#_} F end}
             in
 \ifdef DEBUGSA
-               {Show makeConstruction(LData FData Fields)}
+               {System.show makeConstruction(LData FData Fields)}
 \endif
                case
                   {AllDistinct Fields}
@@ -1470,7 +1470,7 @@ local
                      end
                   else
 \ifdef DEBUGSA
-                     {Show noRecordConstructed}
+                     {System.show noRecordConstructed}
 \endif
                      value <- _ % no record constructed
                   end
@@ -1494,7 +1494,7 @@ local
                             items: [hint(l:'Label found' m:oz({GetPrintData @label}))])}
          end
 \ifdef DEBUGSA
-         {Show madeConstruction(@value)}
+         {System.show madeConstruction(@value)}
 \endif
       end
 
@@ -1502,7 +1502,7 @@ local
 
       meth bind(Ctrl RHS)
 \ifdef DEBUGSA
-         {Show bindConstruction(self {RHS getValue($)})}
+         {System.show bindConstruction(self {RHS getValue($)})}
 \endif
          case
             {UnifyTypesOf self RHS Ctrl {@label getCoord($)}}
@@ -1518,7 +1518,7 @@ local
 
       meth unify(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyC(RHS)}
+         {System.show unifyC(RHS)}
 \endif
          Coord = {@label getCoord($)}
       in
@@ -1544,7 +1544,7 @@ local
                {RLab unify(Ctrl @label)}
             else                                % both labels must be known
 \ifdef DEBUGSA
-               {Show label({GetData @label} {GetData RLab})}
+               {System.show label({GetData @label} {GetData RLab})}
 \endif
                case
                   {GetData @label}=={GetData RLab}
@@ -1647,7 +1647,7 @@ local
       meth sa(Ctrl)
 
 \ifdef DEBUGSA
-         {Show saConstruction}
+         {System.show saConstruction}
 \endif
 
          {ForAll @args
@@ -1720,13 +1720,13 @@ local
          {@designator unifyVal(Ctrl @value)}
 
 \ifdef DEBUGSA
-         {Show lookedAhead({@designator getPrintName($)} @value)}
+         {System.show lookedAhead({@designator getPrintName($)} @value)}
 \endif
       end
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show definition({@designator getPrintName($)})}
+         {System.show definition({@designator getPrintName($)})}
 \endif
       end
       meth saDescend(Ctrl)
@@ -1821,7 +1821,7 @@ local
 
       meth AssertTypes(Ctrl N Args Types Det)
 \ifdef DEBUGSA
-         {Show 'AssertTypes'(Args Types Det)}
+         {System.show 'AssertTypes'(Args Types Det)}
 \endif
          case Args
          of nil then skip
@@ -1830,7 +1830,7 @@ local
             of (T|Tr) # (D|Dr)
             then
 \ifdef DEBUG
-               {Show asserting(A T D)}
+               {System.show asserting(A T D)}
 \endif
                case
                   {ConstrainTypes
@@ -1868,7 +1868,7 @@ local
       meth assertTypes(Ctrl BIName)
 
 \ifdef DEBUGSA
-         {Show assertTypes(BIName)}
+         {System.show assertTypes(BIName)}
 \endif
 
          case {GetBuiltinInfo BIName}
@@ -1878,7 +1878,7 @@ local
             Det   = I.det
          in
 \ifdef DEBUGSA
-            {Show assert(BIName I @actualArgs)}
+            {System.show assert(BIName I @actualArgs)}
 \endif
             SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
          end
@@ -1888,7 +1888,7 @@ local
          Msg     = {GetData MsgArg}
          MsgData = {GetPrintData MsgArg}   %--** memory leak with named vars!
 \ifdef DEBUG
-         {Show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
+         {System.show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
          What Where
       in
@@ -1986,7 +1986,7 @@ local
          ProcArity = {Procedure.arity BIData}
       in
 \ifdef DEBUGSA
-         {Show checkArguments}
+         {System.show checkArguments}
 \endif
          case
             NumArgs==ProcArity
@@ -2000,7 +2000,7 @@ local
                0 % no type error
             then
 \ifdef DEBUGSA
-               {Show det(N Det {Map @actualArgs GetData})}
+               {System.show det(N Det {Map @actualArgs GetData})}
 \endif
                {Not Det} orelse
                SABuiltinApplication, detCheck(Ctrl @actualArgs BIInfo.det $)
@@ -2045,14 +2045,14 @@ local
          BndVO  = {Nth @actualArgs 3}
       in
 \ifdef DEBUGSA
-         {Show newBuiltinDef(BIName BIArity)}
+         {System.show newBuiltinDef(BIName BIArity)}
 \endif
          try
             Proc = {`Builtin` BIName BIArity}
             BI = {New Core.builtinToken init(Proc)}
          in
 \ifdef DEBUGSA
-            {Show newBuiltin(Proc)}
+            {System.show newBuiltin(Proc)}
 \endif
             {BndVO unifyVal(Ctrl BI)}
 
@@ -2060,7 +2060,7 @@ local
             error(system(K ...) ...) = Exc
          then
 \ifdef DEBUGSA
-            {Show '******' # Exc}
+            {System.show '******' # Exc}
 \endif
             case K of builtinUndefined then
                {Ctrl.rep
@@ -2104,7 +2104,7 @@ local
          BndVO = {Nth @actualArgs 2}
       in
 \ifdef DEBUGSA
-         {Show newUniqueName(NName Token)}
+         {System.show newUniqueName(NName Token)}
 \endif
          {BndVO unifyVal(Ctrl Token)}
          self.codeGenMakeEquateLiteral = Value
@@ -2160,7 +2160,7 @@ local
          BndVO= {Nth @actualArgs 2}
 \ifdef DEBUGSA
          Pred = {GetData {Nth @actualArgs 1}}
-         {Show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
+         {System.show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
 \endif
       in
          {BndVO unifyVal(Ctrl Token)}
@@ -2174,7 +2174,7 @@ local
          BndVO    = {Nth @actualArgs 3}
          PN       = {BndVO getPrintName($)}
 \ifdef DEBUGSA
-         {Show doNew(Token)}
+         {System.show doNew(Token)}
 \endif
       in
          {BndVO unifyVal(Ctrl Token)}
@@ -2202,21 +2202,21 @@ local
 
       meth doDot(Ctrl)
 \ifdef DEBUGSA
-         {Show dot(@actualArgs {Map @actualArgs GetData})}
+         {System.show dot(@actualArgs {Map @actualArgs GetData})}
 \endif
          FirstArg = {Nth @actualArgs 1}
          RecOrCh  = {GetData FirstArg}
          F        = {GetData {Nth @actualArgs 2}}
       in
 \ifdef DEBUGSA
-         {Show dot(FirstArg RecOrCh F)}
+         {System.show dot(FirstArg RecOrCh F)}
 \endif
          case
             {IsDet RecOrCh}
             andthen {TypeTests.object RecOrCh}
          then
 \ifdef DEBUGSA
-            {Show dotobj}
+            {System.show dotobj}
 \endif
             case {GetClassOfObjectData FirstArg}
             of unit then
@@ -2303,13 +2303,13 @@ local
 
       meth doHat(Ctrl)
 \ifdef DEBUGSA
-         {Show hat(@actualArgs {Map @actualArgs GetData})}
+         {System.show hat(@actualArgs {Map @actualArgs GetData})}
 \endif
          Rec = {GetData {Nth @actualArgs 1}}
          Fea = {GetData {Nth @actualArgs 2}}
       in
 \ifdef DEBUGSA
-         {Show hat(Rec Fea)}
+         {System.show hat(Rec Fea)}
 \endif
          case
             {HasFeatureNow Rec Fea}
@@ -2530,7 +2530,7 @@ local
 
       meth doCheckType(TestType Test Ctrl)
 \ifdef DEBUGSA
-         {Show doCheckType(TestType Test)}
+         {System.show doCheckType(TestType Test)}
 \endif
          case TestType
          of det  then SABuiltinApplication, DoDetType(Test Ctrl)
@@ -2541,7 +2541,7 @@ local
 
       meth DoDetType(Test Ctrl)
 \ifdef DEBUGSA
-         {Show doDetType(Test @actualArgs)}
+         {System.show doDetType(Test @actualArgs)}
 \endif
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
@@ -2564,12 +2564,12 @@ local
 
       meth DoRecDetType(ThreeValuedTest Ctrl)
 \ifdef DEBUGSA
-         {Show doRecDetType(ThreeValuedTest)}
+         {System.show doRecDetType(ThreeValuedTest)}
 \endif
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
 \ifdef DEBUGSA
-         {Show doRecDetType({GetFullData BVO1})}
+         {System.show doRecDetType({GetFullData BVO1})}
 \endif
       in
          {Ctrl setErrorMsg('type test failed')}
@@ -2648,7 +2648,7 @@ local
       meth sa(Ctrl)
 
 \ifdef DEBUGSA
-         {Show application({@designator getPrintName($)} )}
+         {System.show application({@designator getPrintName($)} )}
 \endif
          {@designator sa(Ctrl)}
 
@@ -2661,7 +2661,7 @@ local
             ArgsOk
          in
 \ifdef DEBUGSA
-            {Show applying(BIName)}
+            {System.show applying(BIName)}
 \endif
             case
                {CondSelect BINameToMethod BIName unit}
@@ -2673,7 +2673,7 @@ local
                M
             then
 \ifdef DEBUGSA
-               {Show applyingKnown(BIName)}
+               {System.show applyingKnown(BIName)}
 \endif
                SABuiltinApplication, checkArguments(Ctrl true ArgsOk)
                case
@@ -2692,7 +2692,7 @@ local
             %%
 
 \ifdef DEBUGSA
-            {Show doneMsg(ArgsOk)}
+            {System.show doneMsg(ArgsOk)}
 \endif
 
             case ArgsOk then
@@ -2793,7 +2793,7 @@ local
    class SABoolCase
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show boolCase}
+         {System.show boolCase}
 \endif
          skip
       end
@@ -2806,7 +2806,7 @@ local
             PN = {@arbiter getPrintName($)}
          in
 \ifdef DEBUGSA
-         {Show isConst(PN)}
+         {System.show isConst(PN)}
 \endif
             case
                {TypeTests.'true' {GetData @arbiter}}
@@ -2933,7 +2933,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show patternCase(@clauses {Map @globalVars fun {$ V} {V getPrintName($)} end})}
+         {System.show patternCase(@clauses {Map @globalVars fun {$ V} {V getPrintName($)} end})}
 \endif
       end
       meth saDescend(Ctrl)
@@ -2966,7 +2966,7 @@ local
    class SAPatternClause
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show patternClause(@statements)}
+         {System.show patternClause(@statements)}
 \endif
          T N in
          {Ctrl getTopNeeded(T N)}
@@ -2976,7 +2976,7 @@ local
       end
       meth saDescendWith(Ctrl Arbiter)
 \ifdef DEBUGSA
-         {Show patternClause}
+         {System.show patternClause}
 \endif
          ArbV  = {Arbiter getVariable($)}
          % also save arbiter !!
@@ -3046,7 +3046,7 @@ local
 
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show equationPattern}
+         {System.show equationPattern}
 \endif
          {@right sa(Ctrl)}                            % analyse right hand side
          {@left unify(Ctrl @right)}                   % l -> r
@@ -3054,7 +3054,7 @@ local
 
       meth reachable(Vs $)
 \ifdef LOOP
-         {Show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
+         {System.show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
 \endif
          {@right reachable({@left reachable(Vs $)} $)}
       end
@@ -3063,7 +3063,7 @@ local
 
       meth unify(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyEP(RHS)}
+         {System.show unifyEP(RHS)}
 \endif
          {@right unify(Ctrl RHS)}
       end
@@ -3083,7 +3083,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'else'}
+         {System.show 'else'}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3133,7 +3133,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show noElse}
+         {System.show noElse}
 \endif
       end
       meth saDescendWithValue(Ctrl Arbiter Val)
@@ -3158,7 +3158,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show threadNode}
+         {System.show threadNode}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3178,7 +3178,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'try'}
+         {System.show 'try'}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3217,7 +3217,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show lockNode}
+         {System.show lockNode}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3253,7 +3253,7 @@ local
           DetTypeTests.'class' ?IllClass ?TestClass} % do type test, return exc
 
 \ifdef DEBUG
-         {Show classNode({@designator getPrintName($)}
+         {System.show classNode({@designator getPrintName($)}
                          {Map @parents fun {$ X} {X getPrintName($)} end})}
 \endif
          case
@@ -3309,7 +3309,7 @@ local
          {Ctrl resetErrorMsg}
 
 \ifdef DEBUGSA
-         {Show lookedAhead({@designator getPrintName($)} @value)}
+         {System.show lookedAhead({@designator getPrintName($)} @value)}
 \endif
       end
 
@@ -3318,7 +3318,7 @@ local
       in
 
 \ifdef DEBUGSA
-         {Show properties(@properties)}
+         {System.show properties(@properties)}
 \endif
 
          {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
@@ -3365,11 +3365,11 @@ local
          Att  = {Map @attributes FirstOrId}
          IllFeat TestFeat
       in
-\ifdef DEBUGSA
-         {Show attributes(Att)}
-\endif
-
          {AllUpTo Att DetTypeTests.feature ?IllFeat ?TestFeat}
+
+\ifdef DEBUGSA
+         {System.show attributes(Att TestFeat {Map Att GetData})}
+\endif
 
          case
             TestFeat
@@ -3425,7 +3425,7 @@ local
          IllFeat TestFeat
       in
 \ifdef DEBUGSA
-         {Show features(Fea)}
+         {System.show features(Fea)}
 \endif
 
          {AllUpTo Fea DetTypeTests.feature ?IllFeat ?TestFeat}
@@ -3485,7 +3485,7 @@ local
          IllOptMeth TestOpt
       in
 \ifdef DEBUGSA
-         {Show methods(PTs Met)}
+         {System.show methods(PTs Met)}
 \endif
 
          {AllUpTo Met
@@ -3586,7 +3586,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show classDef({@designator getPrintName($)})}
+         {System.show classDef({@designator getPrintName($)})}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3654,7 +3654,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show method}
+         {System.show method}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3699,7 +3699,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show methodWithDesignator}
+         {System.show methodWithDesignator}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3719,7 +3719,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show methodFormal}
+         {System.show methodFormal}
 \endif
       end
       meth getFormal($)
@@ -3733,7 +3733,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show methodFormalOptional}
+         {System.show methodFormalOptional}
 \endif
       end
       meth getFormal($)
@@ -3747,7 +3747,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show methodFormalDefault}
+         {System.show methodFormalDefault}
 \endif
       end
       meth getFormal($)
@@ -3762,7 +3762,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show objectLockNode}
+         {System.show objectLockNode}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3785,7 +3785,7 @@ local
    class SAGetSelf
       meth sa(Ctrl)
 \ifdef DEBUGSA
-         {Show getSelf}
+         {System.show getSelf}
 \endif
          {@destination setValue(@destination)}
       end
@@ -3798,7 +3798,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'fail'}
+         {System.show 'fail'}
 \endif
       end
    end
@@ -3807,7 +3807,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'if'}
+         {System.show 'if'}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3840,7 +3840,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show choices}
+         {System.show choices}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3871,7 +3871,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'or'}
+         {System.show 'or'}
 \endif
       end
    end
@@ -3880,7 +3880,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'dis'}
+         {System.show 'dis'}
 \endif
       end
    end
@@ -3889,7 +3889,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'choice'}
+         {System.show 'choice'}
 \endif
       end
    end
@@ -3899,7 +3899,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show 'clause'}
+         {System.show 'clause'}
 \endif
       end
       meth saDescend(Ctrl)
@@ -3948,7 +3948,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show atomNode(@value)}
+         {System.show atomNode(@value)}
 \endif
       end
 
@@ -3960,7 +3960,7 @@ local
 
       meth unify(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyA(RHS)}
+         {System.show unifyA(RHS)}
 \endif
          case
             {UnifyTypesOf self RHS Ctrl @coord}
@@ -3997,7 +3997,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show intNode(@value)}
+         {System.show intNode(@value)}
 \endif
       end
 
@@ -4009,7 +4009,7 @@ local
 
       meth unify(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyI(RHS)}
+         {System.show unifyI(RHS)}
 \endif
 
          case
@@ -4049,7 +4049,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show floatNode(@value)}
+         {System.show floatNode(@value)}
 \endif
       end
 
@@ -4061,7 +4061,7 @@ local
 
       meth unify(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyF(RHS)}
+         {System.show unifyF(RHS)}
 \endif
 
          case
@@ -4214,7 +4214,7 @@ local
             Depth =< 0
          then
 \ifdef DEBUGSA
-            {Show valToSubstBreakDepth(Value)}
+            {System.show valToSubstBreakDepth(Value)}
 \endif
             SAVariable, setLastValue(unit) % stop analysis here
 
@@ -4223,7 +4223,7 @@ local
          then
 
 \ifdef DEBUGSA
-            {Show valToSubstInt(Value)}
+            {System.show valToSubstInt(Value)}
 \endif
 
             case
@@ -4354,6 +4354,11 @@ local
                SAVariable, setLastValue({New Core.threadToken init(Value)})
 
             elsecase
+               {BitArray.is Value}
+            then
+               SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
+
+            elsecase
                {IsChunk Value}
             then
                SAVariable, setLastValue({New Core.chunkToken init(Value)})
@@ -4404,7 +4409,7 @@ local
       end
       meth reachable(Vs $)
 \ifdef LOOP
-         {Show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
+         {System.show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
 \endif
          SAVariable, deref(@lastValue)
 
@@ -4447,7 +4452,7 @@ local
       meth sa(Ctrl)
          skip
 \ifdef DEBUGSA
-         {Show varOccurrence({self getPrintName($)} @value)}
+         {System.show varOccurrence({self getPrintName($)} @value)}
 \endif
       end
 
@@ -4467,7 +4472,7 @@ local
 
       meth updateValue(O)
 \ifdef DEBUGSA
-         {Show updating(O)}
+         {System.show updating(O)}
 \endif
          case
             O==unit                       % no value known
@@ -4508,12 +4513,12 @@ local
                andthen Lab == NLab
             then
 \ifdef DEBUGSA
-               {Show notCopyingSame}
+               {System.show notCopyingSame}
 \endif
                {self setValue(O)}
             else
 \ifdef DEBUGSA
-               {Show copyingStruct({O getValue($)})}
+               {System.show copyingStruct({O getValue($)})}
 \endif
                Constr = {New Core.construction init(NLab NArgs {O isOpen($)})}
             in
@@ -4575,7 +4580,7 @@ local
 
       meth reachable(Vs $)
 \ifdef LOOP
-         {Show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
+         {System.show reachable({Map Vs fun {$ V} {V getPrintName($)} end})}
 \endif
          case
             {Member @variable Vs}
@@ -4590,7 +4595,7 @@ local
 
       meth unifyVal(Ctrl RHS)
 \ifdef LOOP
-         {Show unifyVO({self getPrintName($)} RHS)}
+         {System.show unifyVO({self getPrintName($)} RHS)}
 \endif
          LHS
       in
@@ -4639,7 +4644,7 @@ local
 
       meth bind(Ctrl RHS)
 \ifdef DEBUGSA
-         {Show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
+         {System.show bind({self getPrintName($)} {self getType($)} {RHS getValue($)})}
 \endif
          case
             {UnifyTypesOf self RHS Ctrl @coord}
@@ -4658,9 +4663,9 @@ local
          case
             {TorC isVariableOccurrence($)}
          then
-            {Show unifyV({self getPrintName($)} {TorC getPrintName($)})}
+            {System.show unifyV({self getPrintName($)} {TorC getPrintName($)})}
          else
-            {Show unifyV({self getPrintName($)} TorC)}
+            {System.show unifyV({self getPrintName($)} TorC)}
          end
 \endif
 
@@ -4695,7 +4700,7 @@ local
 
       meth UnifyDeref(Ctrl LHS RHS)
 \ifdef LOOP
-         {Show unifyDR({self getPrintName($)} LHS RHS)}
+         {System.show unifyDR({self getPrintName($)} LHS RHS)}
 \endif
          case
             LHS == RHS

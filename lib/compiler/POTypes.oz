@@ -19,6 +19,15 @@
 %%% WARRANTIES.
 %%%
 
+%%%
+%%% when a new data type is added, edit
+%%%  OzTypes (definition of the partial order)
+%%%  OzValueToType
+%%% define corresponding token classes in CoreLanguage.oz
+%%% and edit the method valToSubst in StaticAnalysis.oz
+%%%  such that it uses the extended core language definition
+%%%
+
 local
    % add to list if no duplicate
    fun {Add X Ys}
@@ -331,6 +340,8 @@ in
             then {OzTypes.encode 'lock' nil}
             elsecase {IsPort V}
             then {OzTypes.encode port nil}
+            elsecase {BitArray.is V}
+            then {OzTypes.encode bitArray nil}
             else {OzTypes.encode chunk [array dictionary 'class'
                                         'object' 'lock' port
                                         bitArray promise]}

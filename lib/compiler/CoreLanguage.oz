@@ -1421,6 +1421,18 @@ in
             SA.token, init()
          end
       end
+
+      class BitArrayToken from Token
+         prop final
+         feat kind: 'bitArray'
+         meth init(TheBitArray)
+            value <- TheBitArray
+            SA.token, init()
+         end
+         meth isChunk($)
+            true
+         end
+      end
    in
       Core = core(statement: Statement
                   stepPoint: StepPoint
@@ -1480,7 +1492,8 @@ in
                   lockToken: LockToken
                   portToken: PortToken
                   threadToken: ThreadToken
-                  spaceToken: SpaceToken)
+                  spaceToken: SpaceToken
+                  bitArrayToken: BitArrayToken)
 
       TrueToken = {New NameToken init('`true`' `true` true)}
       FalseToken = {New NameToken init('`false`' `false` true)}

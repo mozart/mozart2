@@ -99,5 +99,17 @@ define
                       end
                    end
                    keys:[fs])
+                convex(
+                   proc {$}
+                      case {Search.base.one
+                            proc {$ S}
+                               {FS.var.decl S}
+                               {FS.include 1 S}
+                               {FS.int.convex S}
+                            end}
+                      of [_] then skip
+                      else raise fs_denys_convex end end
+                   end
+                   keys:[fs])
                ])
 end

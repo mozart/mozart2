@@ -29,6 +29,7 @@ import
    Combinator('not' 'cond' 'or' 'dis')
    Space('choose')
    RecordC('^' tellSize)
+   FD(sum sumC sumCN reified)
 export
    Literals
    Tokens
@@ -172,6 +173,30 @@ define
       {Space.choose X Y}
    end
 
+   proc {FDSum X O D}
+      {FD.sum X O D}
+   end
+
+   proc {FDSumC A X O D}
+      {FD.sumC A X O D}
+   end
+
+   proc {FDSumCN A X O D}
+      {FD.sumCN A X O D}
+   end
+
+   fun {FDReifiedSum X O D}
+      {FD.reified.sum X O D}
+   end
+
+   fun {FDReifiedSumC A X O D}
+      {FD.reified.sumC A X O D}
+   end
+
+   fun {FDReifiedSumCN A X O D}
+      {FD.reified.sumCN A X O D}
+   end
+
    ProcValues = {Adjoin ProcValues0
                  env(%% RecordC
                      'RecordC.\'^\'': `RecordC.'^'`
@@ -187,7 +212,15 @@ define
                      'Combinator.\'dis\'': CombinatorDis
 
                      %% Space
-                     'Space.choose': SpaceChoose)}
+                     'Space.choose': SpaceChoose
+
+                     %% FD
+                     'FD.sum': FDSum
+                     'FD.sumC': FDSumC
+                     'FD.sumCN': FDSumCN
+                     'FD.reified.sum': FDReifiedSum
+                     'FD.reified.sumC': FDReifiedSumC
+                     'FD.reified.sumCN': FDReifiedSumCN)}
 
    Procs = {Record.mapInd ProcValues MakeVar}
 end

@@ -269,7 +269,20 @@ in
    %%-------------------------------------------------------------------
    %% Expansion of FD Compare Statements and Expressions
 
-   fun {MakeFdCompareStatement Op E1 E2 C} NewOp TmpE NewE Const in
+   fun {Apply X Ys Args C}
+      case X of unit then
+         fOpApplyStatement({VirtualString.toAtom
+                            {FoldL Ys
+                             fun {$ A Y}
+                                A#'.'#{Value.toVirtualString Y 0 0}
+                             end 'FD'}} Args C)
+      else
+         fApply({FoldL Ys fun {$ FE Y} fOpApply('.' [FE fAtom(Y C)] C) end X}
+                Args C)
+      end
+   end
+
+   fun {MakeFdCompareStatement Op E1 E2 C FD} NewOp TmpE NewE Const in
       %% This function normalizes the FD expression
       %%    E1 Op E2
       %% where E1, E2 are unnested FD expressions of the form:
@@ -294,20 +307,17 @@ in
                O = fAtom(NewOp C)
                D = fInt(~Const C)
                if {All Cs fun {$ fInt(I _)} I == 1 end} then
-                  fApply(fOpApply('.' [fVar('FD' C) fAtom('sum' C)] C)
-                         [X O D] C)
+                  {Apply FD ['sum'] [X O D] C}
                else A in
                   A = fRecord(fAtom('#' C) Cs)
-                  fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
-                         [A X O D] C)
+                  {Apply FD ['sumC'] [A X O D] C}
                end
             else A X O D in
                A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
                X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
                O = fAtom(NewOp C)
                D = fInt(0 C)
-               fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
-                      [A X O D] C)
+               {Apply FD ['sumC'] [A X O D] C}
             end
          else Cs Vs A X O D in
             {MakeTupleTuples NewE ?Cs nil ?Vs nil}
@@ -322,13 +332,12 @@ in
                O = fAtom(NewOp C)
                D = fInt(0 C)
             end
-            fApply(fOpApply('.' [fVar('FD' C) fAtom('sumCN' C)] C)
-                   [A X O D] C)
+            {Apply FD ['sumCN'] [A X O D] C}
          end
       end
    end
 
-   fun {MakeFdCompareExpression Op E1 E2 C V} NewOp TmpE NewE Const in
+   fun {MakeFdCompareExpression Op E1 E2 C V FD} NewOp TmpE NewE Const in
       %% This function normalizes the reified FD expression
       %%    V = (E1 Op E2)
       %% where E1, E2 are unnested FD expressions of the form:
@@ -342,9 +351,7 @@ in
          X = fRecord(fAtom('#' C2) [fInt(1 C2)])
          O = fAtom(NewOp C)
          D = fInt(0 C2)
-         fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C) fAtom('reified' C)] C)
-                              fAtom('sumC' C)] C)
-                [A X O D V] C)
+         {Apply FD ['reified' 'sumC'] [A X O D V] C}
       else
          if {AreLinearConstraints NewE} then Cs Vs in
             {MakeTuples NewE ?Cs nil ?Vs nil}
@@ -353,26 +360,17 @@ in
                O = fAtom(NewOp C)
                D = fInt(~Const C)
                if {All Cs fun {$ fInt(I _)} I == 1 end} then
-                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                     fAtom('reified' C)] C)
-                                       fAtom('sum' C)] C)
-                         [X O D V] C)
+                  {Apply FD ['reified' 'sum'] [X O D V] C}
                else A in
                   A = fRecord(fAtom('#' C) Cs)
-                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                     fAtom('reified' C)] C)
-                                       fAtom('sumC' C)] C)
-                         [A X O D V] C)
+                  {Apply FD ['reified' 'sumC'] [A X O D V] C}
                end
             else A X O D in
                A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
                X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
                O = fAtom(NewOp C)
                D = fInt(0 C)
-               fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                                  fAtom('reified' C)] C)
-                                    fAtom('sumC' C)] C)
-                      [A X O D V] C)
+               {Apply FD ['reified' 'sumC'] [A X O D V] C}
             end
          else Cs Vs A X O D in
             {MakeTupleTuples NewE ?Cs nil ?Vs nil}
@@ -387,10 +385,7 @@ in
                O = fAtom(NewOp C)
                D = fInt(0 C)
             end
-            fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
-                                               fAtom('reified' C)] C)
-                                 fAtom('sumCN' C)] C)
-                   [A X O D V] C)
+            {Apply FD ['reified' 'sumCN'] [A X O D V] C}
          end
       end
    end

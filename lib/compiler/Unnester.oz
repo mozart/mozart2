@@ -599,10 +599,12 @@ define
             GS = {New Core.application init(GVO GTs C)}
             GFrontEqs1|GFrontEqs2|GS
          [] fFdCompare(Op FE1 FE2 C) then
-            GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
+            GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS FD
+         in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-            FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C}
+            Unnester, AddImport('x-oz://system/FD' ?FD)
+            FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
             %% note: reverse arguments!
@@ -1202,10 +1204,12 @@ define
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}
          [] fFdCompare(Op FE1 FE2 C) then
-            GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
+            GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS FD
+         in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-            FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C fOcc(ToGV)}
+            Unnester, AddImport('x-oz://system/FD' ?FD)
+            FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C fOcc(ToGV) FD}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
             %% note: reverse arguments!

@@ -2175,7 +2175,9 @@ local
             end
          [] ',' then [Arg1 Arg2] = ActualArgs Value in
             {Arg2 getCodeGenValue(?Value)}
-            case {IsDet Value} andthen {IsRecord Value} then
+            case {IsDet Value} andthen {IsRecord Value}
+               andthen {Not CS.debugInfoControlSwitch}
+            then
                RecordArity ActualArgs Regs Cont1 in
                case {IsTuple Value} then
                   RecordArity = {Width Value}

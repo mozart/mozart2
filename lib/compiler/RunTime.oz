@@ -40,7 +40,7 @@ require
    BootRecord(tellRecordSize test testLabel testFeature)
    at 'x-oz://boot/Record'
 
-   BootObject(ooExch ooGetLock)
+   BootObject(ooGetLock)
    at 'x-oz://boot/Object'
 
    BootName(newUnique)
@@ -78,24 +78,8 @@ prepare
       end
    end
 
-   local
-      proc {Match Xs I T}
-         case Xs of nil then skip
-         [] X|Xr then
-            T.I = X
-            {Match Xr I + 1 T}
-         end
-      end
-   in
-      proc {DoTuple L Xs I T}
-         T = {MakeTuple L I}
-         {Match Xs 1 T}
-      end
-   end
-
-   ProcValues = env(%% Value
+   ProcValues = env(%% Operators
                     '.': Value.'.'
-                    'byNeedDot': Value.byNeedDot
                     '==': Value.'=='
                     '=': Value.'='
                     '\\=': Value.'\\='
@@ -103,56 +87,56 @@ prepare
                     '=<': Value.'=<'
                     '>=': Value.'>='
                     '>': Value.'>'
-                    'hasFeature': HasFeature
-                    'byNeed': ByNeed
                     '!!': Value.'!!'
-
-                    %% Int
                     'div': Int.'div'
                     'mod': Int.'mod'
-
-                    %% Float
                     '/': Float.'/'
-
-                    %% Number
                     '+': Number.'+'
                     '-': Number.'-'
                     '*': Number.'*'
                     '~': Number.'~'
+                    '^': Record.'^'
 
-                    %% Tuple
-                    'tuple': DoTuple
+                    %% Value
+                    'Value.byNeedDot': Value.byNeedDot
+                    'Value.byNeed': Value.byNeed
+
+                    %% Name
+                    'Name.new': Name.new
+
+                    %% List
+                    'List.toTuple': List.toTuple
+                    'List.toRecord': List.toRecord
 
                     %% Record
-                    'record': List.toRecord
-                    'width': Width
-                    '^': Record.'^'
-                    'tellRecordSize': BootRecord.tellRecordSize
+                    'Record.width': Record.width
                     'Record.test': BootRecord.test
                     'Record.testLabel': BootRecord.testLabel
                     'Record.testFeature': BootRecord.testFeature
 
                     %% Object
-                    'ooPrivate': NewName
-                    '@': Object.'@'
-                    '<-': Object.'<-'
-                    'ooExch': BootObject.ooExch
-                    ',': Object.','
-                    'ooGetLock': BootObject.ooGetLock
-                    'class': Object.'class'
-                    'aritySublist': AritySublist
+                    'Object.\'@\'': Object.'@'
+                    'Object.\'<-\'': Object.'<-'
+                    'Object.exchange': Object.exchange
+                    'Object.\',\'': Object.','
+                    'Object.\'class\'': Object.'class'
 
                     %% Thread
-                    'Thread.create': BootThread.create
 
                     %% Exception
-                    'Raise': Raise
-                    'RaiseError': Exception.raiseError
-                    'RaiseDebugCheck': RaiseDebugCheck
-                    'RaiseDebugExtend': RaiseDebugExtend
+                    'Exception.\'raise\'': Exception.'raise'
+                    'Exception.raiseError': Exception.raiseError
 
                     %% Functor
-                    'NewFunctor': Functor.new)
+                    'Functor.new': Functor.new
+
+                    %% Internal
+                    'tellRecordSize': BootRecord.tellRecordSize
+                    'ooGetLock': BootObject.ooGetLock
+                    'aritySublist': AritySublist
+                    'Thread.create': BootThread.create
+                    'RaiseDebugCheck': RaiseDebugCheck
+                    'RaiseDebugExtend': RaiseDebugExtend)
 
    NewUniqueName = BootName.newUnique
 

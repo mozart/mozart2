@@ -620,7 +620,8 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'attribute assignment used outside of method')}
             end
-            Unnester, UnnestStatement(fOpApplyStatement('<-' [FE1 FE2] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('Object.\'<-\''
+                                                        [FE1 FE2] C) $)
          [] fOpApplyStatement(Op FEs C) then
             GVO GFrontEqs1 GFrontEqs2 GTs GS
          in
@@ -660,7 +661,8 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'object application used outside of method')}
             end
-            Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 FE2] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('Object.\',\''
+                                                        [FE1 FE2] C) $)
          [] fDollar(C) then
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
@@ -774,7 +776,7 @@ define
                AdditionalImports <- OldAdditionalImports
                CurrentImportFV <- OldImportFV
                FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
-               FS = fOpApplyStatement('NewFunctor'
+               FS = fOpApplyStatement('Functor.new'
                                       [FImportDesc FExportDesc FunFV
                                        fOcc({GVO getVariable($)})] CND)
                Unnester, UnnestStatement(FS ?GNewFunctor)
@@ -848,7 +850,7 @@ define
             {Map {UniqueVariables FPrivates}
              fun {$ FV=fVar(PrintName C)} FS in
                 {@BA bind(PrintName C _)}
-                FS = fOpApplyStatement('ooPrivate' [FV] C)
+                FS = fOpApplyStatement('Name.new' [FV] C)
                 Unnester, UnnestStatement(FS $)
              end ?GPrivates}
             %% unnest the descriptors:
@@ -1018,14 +1020,15 @@ define
          [] fTry(_ _ _ _) then
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then
-            Unnester, UnnestStatement(fOpApplyStatement('Raise' [FE] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('Exception.\'raise\''
+                                                        [FE] C) $)
          [] fRaiseWith(FE1 FE2 C) then GFrontEqs GVO FV CND FS in
             Unnester, UnnestToVar(FE1 'Exception' ?GFrontEqs ?GVO)
             FV = fOcc({GVO getVariable($)})
             CND = {CoordNoDebug C}
             FS = fBoolCase(fOpApply('RaiseDebugCheck' [FV] CND)
                            fOpApplyStatement('RaiseDebugExtend' [FV FE2] C)
-                           fOpApplyStatement('Raise' [FV] C) CND)
+                           fOpApplyStatement('Exception.\'raise\'' [FV] C) CND)
             GFrontEqs|Unnester, UnnestStatement(FS $)
          [] fSkip(C) then
             {New Core.skipNode init(C)}
@@ -1121,7 +1124,8 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'attribute exchange used outside of method')}
             end
-            FApply = fOpApplyStatement('ooExch' [FE1 FE2 fOcc(ToGV)] C)
+            FApply = fOpApplyStatement('Object.exchange'
+                                       [FE1 FE2 fOcc(ToGV)] C)
             Unnester, UnnestStatement(FApply $)
          [] fOrElse(FE1 FE2 C) then FV FS in
             FV = fOcc(ToGV)
@@ -1153,7 +1157,7 @@ define
             LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
          in
             {@BA referUnchecked(X C ?LeftGVO)}
-            {RunTime.procs.'byNeedDot' occ(C ?DotGVO)}
+            {RunTime.procs.'Value.byNeedDot' occ(C ?DotGVO)}
             Unnester, UnnestApplyArgs([FT fOcc(ToGV)]
                                       ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
@@ -1200,7 +1204,8 @@ define
                       msg: 'object application used outside of method')}
             end
             NewFE2 = {ReplaceDollar FE2 fOcc(ToGV)}
-            Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 NewFE2] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('Object.\',\''
+                                                        [FE1 NewFE2] C) $)
          [] fAt(FE C) then FS in
             if @Stateful then
                StateUsed <- true
@@ -1209,7 +1214,7 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'attribute access used outside of method')}
             end
-            FS = fOpApplyStatement('@' [FE fOcc(ToGV)] C)
+            FS = fOpApplyStatement('Object.\'@\'' [FE fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
          [] fAtom(X C) then GVO in
             {ToGV occ(C ?GVO)}
@@ -1634,7 +1639,7 @@ define
                   end FS}
          FBody0 = if IsLazy then CND in
                      CND = {CoordNoDebug C}
-                     fOpApply('byNeed'
+                     fOpApply('Value.byNeed'
                               [fFun(fDollar(C) nil NewFS nil CND)] CND)
                   else NewFS
                   end
@@ -2191,8 +2196,8 @@ define
                           fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
                           fNoFinally C)
             NewFS2 = fCase(FV [fCaseClause(FException
-                                           fOpApplyStatement('Raise' [FX]
-                                                             CND))]
+                                           fOpApplyStatement(
+                                              'Exception.\'raise\'' [FX] CND))]
                            fSkip(CND) CND)
             Unnester, UnnestTry(NewFS1 $)|
             Unnester, UnnestStatement(FFinally $)|
@@ -2211,7 +2216,7 @@ define
             [] [fCaseClause(fWildcard(_) _)] then
                FElse = fNoElse(C2)
             else
-               FElse = fOpApplyStatement('Raise' [FX] C2)
+               FElse = fOpApplyStatement('Exception.\'raise\'' [FX] C2)
             end
             NewC = case C#C2 of pos(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
                       pos(F1 L1 C1 F2 L2 C2)

@@ -429,7 +429,7 @@ define
                                  end
                                  {Map VOs fun {$ VO} value({VO reg($)}) end}}
       VHd = vEquateRecord(_ 'kernel' {Length VArgs} Reg VArgs VInter)
-      {MakeRunTimeProcApplication 'RaiseError' {CoordNoDebug Coord}
+      {MakeRunTimeProcApplication 'Exception.raiseError' {CoordNoDebug Coord}
        [VO] CS VInter VTl}
    end
 
@@ -554,23 +554,19 @@ define
           end Cont2 VTl}
       end
       proc {MakeConstructionTuple CS VO TheLabel Rec VHd VTl}
-         C SubtreesReg SubtreesVO WidthValue WidthReg WidthVO Cont1 Cont2
+         C SubtreesReg SubtreesVO WidthValue Cont
       in
          %% translate the construction as:
-         %%    {`tuple` Label [Subtree1 ... Subtreen] Width ?Reg}
+         %%    {`List.toTuple` Label [Subtree1 ... Subtreen] ?Reg}
          {TheLabel getCoord(?C)}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
          WidthValue = {Width Rec}
-         {CS newReg(?WidthReg)}
-         WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
          case WidthValue of 0 then
-            VHd = vEquateConstant(_ nil SubtreesReg Cont1)
+            VHd = vEquateConstant(_ nil SubtreesReg Cont)
          else
             fun {MakeList I VHd VTl}
-               if I =< WidthValue then
-                  ArgIn VInter1 ConsReg VInter2 NewArg
-               in
+               if I =< WidthValue then ArgIn VInter1 ConsReg VInter2 NewArg in
                   ArgIn = {MakeList I + 1 VHd VInter1}
                   {CS newReg(?ConsReg)}
                   {Rec.I makeRecordArgument(CS VInter1 VInter2 ?NewArg)}
@@ -585,26 +581,16 @@ define
          in
             Arg = {MakeList 2 VHd VInter1}
             {Rec.1 makeRecordArgument(CS VInter1 VInter2 ?NewArg)}
-            VInter2 = vEquateRecord(_ '|' 2 SubtreesReg [NewArg Arg] Cont1)
+            VInter2 = vEquateRecord(_ '|' 2 SubtreesReg [NewArg Arg] Cont)
          end
-         Cont1 = vEquateConstant(_ WidthValue WidthReg Cont2)
-         if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication 'tuple' {CoordNoDebug C}
-             [TheLabel SubtreesVO WidthVO VO] CS Cont2 VTl}
-         else LabelReg LabelVO LabelValue Inter in
-            {CS newReg(?LabelReg)}
-            LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
-            {TheLabel getCodeGenValue(?LabelValue)}
-            Cont2 = vEquateConstant(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication 'tuple' {CoordNoDebug C}
-             [LabelVO SubtreesVO WidthVO VO] CS Inter VTl}
-         end
+         {MakeRunTimeProcApplication 'List.toTuple' {CoordNoDebug C}
+          [TheLabel SubtreesVO VO] CS Cont VTl}
       end
       proc {MakeConstructionRecord CS VO TheLabel Args VHd VTl}
          C SubtreesReg SubtreesVO Cont
       in
          %% translate the construction as:
-         %%    {`record` Label [Feat1#Subtree1 ... Featn#Subtreen] ?Reg}
+         %%    {`List.toRecord` Label [Feat1#Subtree1 ... Featn#Subtreen] ?Reg}
          {TheLabel getCoord(?C)}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
@@ -645,14 +631,14 @@ define
                                     [value(PairReg) Arg] Cont)
          end
          if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication 'record' {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'List.toRecord' {CoordNoDebug C}
              [TheLabel SubtreesVO VO] CS Cont VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {TheLabel getCodeGenValue(?LabelValue)}
             Cont = vEquateConstant(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication 'record' {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'List.toRecord' {CoordNoDebug C}
              [LabelVO SubtreesVO VO] CS Inter VTl}
          end
       end
@@ -1313,7 +1299,7 @@ define
             VInter2 = vEquateConstant(_ PN Reg VInter3)
             PrintName = {New PseudoVariableOccurrence init(Reg)}
          end
-         {MakeRunTimeProcApplication 'class' {CoordNoDebug @coord}
+         {MakeRunTimeProcApplication 'Object.\'class\'' {CoordNoDebug @coord}
           [From Meth Attr Feat Prop PrintName @designator] CS VInter3 VTl0}
          {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
       end
@@ -1531,7 +1517,7 @@ define
                {CS newReg(?Reg)}
                VO = {New PseudoVariableOccurrence init(Reg)}
                VHd = vEquateConstant(_ NArgs Reg Cont1)
-               {MakeRunTimeProcApplication 'width' {CoordNoDebug @coord}
+               {MakeRunTimeProcApplication 'Record.width' {CoordNoDebug @coord}
                 [MessageVO VO] CS Cont1 VTl}
             end
          end

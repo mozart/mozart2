@@ -455,14 +455,16 @@ define
          if R.realcore then
             Application, OutputApplication(R $)
          else P = {{@designator getVariable($)} getPrintName($)} in
-            case P of '`ooExch`' then Attr New Old FS1 FS2 FS3 in
+            case P of '`Object.exchange`' then Attr New Old FS1 FS2 FS3 in
                @actualArgs = [Attr New Old]
                {Old output2(R $ ?FS1)}#' = '#
                {Attr output2(R $ ?FS2)}#' <- '#{New output2(R $ ?FS3)}#
                FS1#FS2#FS3
-            [] '`@`' then Application, OutputPrefixExpression('@' R $)
+            [] '`Object.\'@\'`' then
+               Application, OutputPrefixExpression('@' R $)
             [] '`~`' then Application, OutputPrefixExpression('~' R $)
-            [] '`<-`' then Application, OutputInfixStatement(' <- ' R $)
+            [] '`Object.\'<-\'`' then
+               Application, OutputInfixStatement(' <- ' R $)
             [] '`,`' then Application, OutputInfixStatement(', ' R $)
             [] '`==`' then Application, OutputInfixExpression(' == ' R $)
             [] '`<`' then Application, OutputInfixExpression(' < ' R $)

@@ -542,7 +542,7 @@ define
          else
             {ForAll Clears
              proc {$ clear(Y)}
-                {Assembler append(clearY(Y))}
+                {Assembler append(clear(Y))}
              end}
          end
          {Peephole Rest Assembler}

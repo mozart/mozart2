@@ -79,7 +79,7 @@ in
          LengthStr = PrintStr
       end
    end
-   local X in  {Inspect {System.printName X}} end
+
    class ProcedureLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          Value = @value

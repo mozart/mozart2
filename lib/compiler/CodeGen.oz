@@ -819,8 +819,9 @@ local
          EndLabel = {NewName}
          Code =
          lbl(StartLabel)|
-         definition(x(0) EndLabel pid('Toplevel abstraction' 0 '' 0 false true) unit
-                    {List.mapInd GRegs fun {$ I _} g(I - 1) end} BodyCode)|
+         definition(x(0) EndLabel pid('Toplevel abstraction' 0 '' 0 false true)
+                    unit {List.mapInd GRegs fun {$ I _} g(I - 1) end}
+                    BodyCode)|
          endDefinition(StartLabel)|
          {Append BodyCode2 [lbl(EndLabel) tailCall(x(0) 0)]}
       end
@@ -928,8 +929,9 @@ local
          PrintName = case {V getOrigin($)} of generated then @printName
                      else {V getPrintName($)}
                      end
-         PredId = pid(PrintName {Length @formalArgs} FileName Line false
-                     {Member native @procFlags})
+         PredId = pid(PrintName {Length @formalArgs} FileName Line
+                      {Member 'once' @procFlags}
+                      {Member 'native' @procFlags})
 \ifdef DEBUG_DEFS
          {Show PredId}
 \endif

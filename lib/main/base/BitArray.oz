@@ -28,8 +28,8 @@ bitArray(new:              Boot_BitArray.new
          low:              Boot_BitArray.low
          high:             Boot_BitArray.high
          clone:            Boot_BitArray.clone
-         'or':             Boot_BitArray.'or'
-         and:              Boot_BitArray.'and'
+         disj:             Boot_BitArray.disj
+         conj:             Boot_BitArray.conj
          nimpl:            Boot_BitArray.nimpl
          disjoint:         Boot_BitArray.disjoint
          card:             Boot_BitArray.card

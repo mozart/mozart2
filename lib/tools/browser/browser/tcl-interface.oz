@@ -431,8 +431,8 @@ in
             %% it handler expects immediate (forced through "update
             %% idletasks") reaction from widget, which is impossible
             %% in our case. So, i just disable it;
-            {Tk.batch [o(bindtags VS q(VS 'Scrollbar'))
-                       o(bind VS '<B2-Motion>' "break")]}
+            {Tk.batch [bindtags(VS q(VS 'Scrollbar'))
+                       bind(VS '<B2-Motion>' 'break')]}
 
             %%
             {Tk.addXScrollbar BW FHS_HS}
@@ -558,29 +558,29 @@ in
 
             %%
             %%
-            {BW [tkBind(event:  '<ButtonPress>'
-                        action: ButtonClickAction
-                        args:   [atom('b') int('x') int('y')])
-                 tkBind(event:  '<Double-ButtonPress>'
-                        action: DButtonClickAction
-                        args:   [atom('b') int('x') int('y')])
+            {BW tkBind(event:  '<ButtonPress>'
+                       action: ButtonClickAction
+                       args:   [atom('b') int('x') int('y')])}
+            {BW tkBind(event:  '<Double-ButtonPress>'
+                       action: DButtonClickAction
+                       args:   [atom('b') int('x') int('y')])}
                  %%
                  %%  some special bindings for browse text widget;
-                 tkBind(event:  '<Configure>'
-                        action: self#resetTW)]}
+            {BW tkBind(event:  '<Configure>'
+                       action: self#resetTW)}
 
             %%
             %%  toplevel-widget;
-            {W [tkBind(event: '<FocusIn>'
-                       action: proc {$}
-                                  {self focusIn}
-                                  {BrowserMessagesFocus self.Window}
-                               end)
-                tkBind(event: '<FocusOut>'
-                       action: proc {$}
-                                  %%  no special action;
-                                  {BrowserMessagesNoFocus}
-                               end)]}
+            {W tkBind(event: '<FocusIn>'
+                      action: proc {$}
+                                 {self focusIn}
+                                 {BrowserMessagesFocus self.Window}
+                              end)}
+            {W tkBind(event: '<FocusOut>'
+                      action: proc {$}
+                                 %%  no special action;
+                                 {BrowserMessagesNoFocus}
+                              end)}
 
             %%
 \ifdef DEBUG_TI
@@ -1485,9 +1485,9 @@ in
             %%
             BrowserWindowClass , unHighlightRegion
             %%
-            {self.BrowseWidget
-             [tk(tag add TB#Tag TB#M1 TB#M2)
-              tk(tag conf TB#Tag o(background:black foreground:white))]}
+            {self.BrowseWidget tk(tag add TB#Tag TB#M1 TB#M2)}
+            {self.BrowseWidget tk(tag conf TB#Tag
+                                  background:black foreground:white)}
 
             %%
             HighlightTag <- Tag
@@ -1604,9 +1604,8 @@ in
 
             %%
             %% it removes '\n' too;
-            {self.BrowseWidget
-             [tk(del p(T first) p(T last))
-              tk(tag delete T)]}
+            {self.BrowseWidget tk(del p(T first) p(T last))}
+            {self.BrowseWidget tk(tag delete T)}
             BrowserWindowClass , FreeTcl(Tag)
 
             %%
@@ -1796,7 +1795,7 @@ in
             Button = {New Tk.button {Adjoin BD tkInit(parent: @menuBar)}}
 
             %%
-            {Tk.send pack(Button o(side:right))}
+            {Tk.send pack(Button side:right)}
 
             %%
             buttons <- {AdjoinAt @buttons {Label BD} Button}
@@ -2049,10 +2048,12 @@ in
       %%
       meth showIn(VS)
          case @window == InitValue then skip
-         else MyScreen LWScreen LeaderWindow RealLWindow in
-            {@messageWidget [tk(ins insert VS)
-                             tk(ins insert '\n')
-                             tk(yview 'insert-2lines')]}
+         else MyScreen LWScreen LeaderWindow RealLWindow
+            MW = @messageWidget
+         in
+            {MW tk(ins insert VS)}
+            {MW tk(ins insert '\n')}
+            {MW tk(yview 'insert-2lines')}
 
             %%
             %%  Now, let's try to move it to a (current) leader window;
@@ -2224,7 +2225,9 @@ in
       %%
       meth showIn(VS)
          case @window == InitValue then skip
-         else {@messageWidget [tk(ins insert VS) tk(ins insert '\n')]}
+         else MW=@messageWidget in
+            {MW tk(ins insert VS)}
+            {MW tk(ins insert '\n')}
                              % tk(yview 'insert-2lines')
          end
       end

@@ -647,15 +647,7 @@ local
        end}
    end
    fun {MakeDefaultRegistry}
-      UseURL = case {OS.getEnv 'OZCOMPONENTS'} of false then
-                  'http://www.ps.uni-sb.de/ozhome/lib'
-               elseof URL then
-                  case {List.last {VirtualString.toString URL}}==&/ then URL
-                  else URL#'/'
-                  end
-               end
-   in
-      {StandardRegistry UseURL}
+      {StandardRegistry 'http://www.ps.uni-sb.de/ozhome/lib'}
    end
    %%
    %% There is a default registry to make things easier and corresponding

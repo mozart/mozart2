@@ -30,12 +30,12 @@ export
 
 define
 
-   fun {DerefBlocked S}
-      case S of blocked(S) then {DerefBlocked S} else S end
+   fun {DerefSuspended S}
+      case S of suspended(S) then {DerefSuspended S} else S end
    end
 
    fun {AskVerbose S}
-      {DerefBlocked {Space.askVerbose S}}
+      {DerefSuspended {Space.askVerbose S}}
    end
 
 

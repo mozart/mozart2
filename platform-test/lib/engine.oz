@@ -24,7 +24,7 @@
 local
    local
       fun {Deref A}
-         case A of blocked(A) then {Deref A} else A end
+         case A of suspended(A) then {Deref A} else A end
       end
    in
       fun {Ask S}

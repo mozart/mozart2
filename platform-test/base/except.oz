@@ -12,7 +12,7 @@ define
 
    local
       fun {Deref S}
-         case S of blocked(S) then {Deref S} else S end
+         case S of suspended(S) then {Deref S} else S end
       end
    in
       fun {AskVerbose S}

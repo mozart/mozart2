@@ -49,7 +49,7 @@
                      end}
 
    local
-      fun {Deref S} case S of blocked(S) then {Deref S} else S end end
+      fun {Deref S} case S of suspended(S) then {Deref S} else S end end
    in
       proc {AssertEntailed S}
          {Deref {Space.askVerbose S}}=succeeded(entailed)

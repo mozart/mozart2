@@ -32,12 +32,12 @@ export
 
 define
 
-   fun {DerefBlocked S}
-      case S of blocked(S) then {DerefBlocked S} else S end
+   fun {DerefSuspended S}
+      case S of suspended(S) then {DerefSuspended S} else S end
    end
 
    fun {AskVerbose S}
-      {DerefBlocked {Space.askVerbose S}}
+      {DerefSuspended {Space.askVerbose S}}
    end
 
    Return=
@@ -114,7 +114,7 @@ define
                                 A1 = thread {Space.ask        S1} end
                              in
                                 {IsFree A1 true}
-                                ({Label A2}==blocked) = true
+                                ({Label A2}==suspended) = true
                                 {Value.status A2.1}=future
                                 Z = 1
                                 {Thread.setThisPriority low}
@@ -126,7 +126,7 @@ define
                                        end
                                     end}
                                 end
-                                case A2 of blocked(succeeded(entailed)) then
+                                case A2 of suspended(succeeded(entailed)) then
                                    {For 1 10 1
                                     proc {$ _}
                                        thread
@@ -456,7 +456,7 @@ define
                                               end}
                             in
                                case thread {Space.askVerbose S} end
-                               of blocked(_) then
+                               of suspended(_) then
                                   Z=unit
                                end
                                {Space.ask S}=succeeded
@@ -492,7 +492,7 @@ define
                                   end)
                          keys: [merge space])
 
-                  blocked(entailed(proc {$}
+                  suspended(entailed(proc {$}
                                       Y Z
                                       S={Space.new proc {$ X} Y=a Y=X end}
                                    in

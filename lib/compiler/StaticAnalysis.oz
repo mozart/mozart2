@@ -36,7 +36,7 @@
 
 functor prop once
 import
-   Boot         @ 'x-oz://boot/Boot'
+   BootName at 'x-oz://boot/Name'
    CompilerSupport(newNamedName newCopyableName isCopyableName
                    newPredicateRef newCopyablePredicateRef
                    nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
@@ -470,7 +470,6 @@ define
             'Object.\',\''      : doComma
             'Object.\'<-\''     : doAssignAccess
             'Object.\'@\''      : doAssignAccess
-            'Boot.builtin'      : doBuiltin
             'Bool.and'          : doAnd
             'Bool.or'           : doOr
             'Bool.not'          : doNot
@@ -947,8 +946,6 @@ define
 
 %-----------------------------------------------------------------------
 %  global control information
-
-   NewUniqueName           = {Boot.builtin 'Name.newUnique' 2}
 
    class Control
       prop final
@@ -1980,47 +1977,6 @@ define
          end
       end
 
-      meth doBuiltin(Ctrl)
-         BIName = {GetData {Nth @actualArgs 1}}
-         BIArity= {GetData {Nth @actualArgs 2}}
-         BndVO  = {Nth @actualArgs 3}
-      in
-\ifdef DEBUGSA
-         {System.show newBuiltinDef(BIName BIArity)}
-\endif
-         try
-            Proc = {Boot.builtin BIName BIArity}
-            BI = {New Core.builtinToken init(Proc)}
-         in
-\ifdef DEBUGSA
-            {System.show newBuiltin(Proc)}
-\endif
-            {BndVO unifyVal(Ctrl BI)}
-
-         catch
-            error(system(K ...) ...) = Exc
-         then
-\ifdef DEBUGSA
-            {System.show '******' # Exc}
-\endif
-            case K of builtinUndefined then
-               {Ctrl.rep
-                warn(coord: @coord
-                     kind:  SAGenWarn
-                     msg:   'builtin undefined'
-                     items: [hint(l:'Name' m:pn(BIName))
-                             hint(l:'Arity' m:BIArity)])}
-            [] builtinArity then
-               {Ctrl.rep
-                warn(coord: @coord
-                     kind:  SAGenWarn
-                     msg:   'builtin has wrong arity'
-                     items: [hint(l:'Name' m:pn(BIName))
-                             hint(l:'Arity' m:BIArity)])}
-            end
-         end
-      end
-
       meth doNewName(Ctrl)
          BndVO BndV PrintName TheName Token
       in
@@ -2040,7 +1996,7 @@ define
 
       meth doNewUniqueName(Ctrl)
          NName = {GetData {Nth @actualArgs 1}}
-         Value = {NewUniqueName NName}   % always succeeds
+         Value = {BootName.newUnique NName}   % always succeeds
          Token = {New Core.nameToken init(Value true)}
          BndVO = {Nth @actualArgs 2}
       in

@@ -2182,7 +2182,7 @@ define
             FV = fOcc(V)
             FX = fVar('X' C)
             FException = fRecord(fAtom('ex' C) [FX])
-            NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) C))
+            NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) CND))
                           fCatch([fCaseClause(FX fEq(FV FException C))] CND)
                           fNoFinally C)
             NewFS2 = fCase(FV [fCaseClause(FException

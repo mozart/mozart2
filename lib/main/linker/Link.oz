@@ -39,26 +39,39 @@ local
    in
 
       fun {NewUrlFilter Spec RootUrl}
+         {Debug 'Root: '#{UrlToVs RootUrl}}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
+         {Debug 'Base: '#{UrlToVs BaseUrl}}
          AllSpecs= {Map {Append {Access IncludeSpecs}
-                         exclude("x-oz://")|
-                         if Args.relative
-                         then [include(BaseUrl)] else nil end}
+                         if Args.relative then
+                            [include(BaseUrl) exclude("x-oz://")]
+                         else
+                            [exclude("x-oz://")]
+                         end}
                     fun {$ Spec}
                        Lab = {Label Spec}
                        Str = Spec.1
                     in
                        Lab({UrlToString {UrlExpand {UrlMake Str}}})
                     end}
+         if Args.debug then
+            {Debug 'Include/Exclude Specs:'}
+            {ForAll AllSpecs
+             proc {$ S}
+                {Debug '\t'#{Label S}#' '#S.1}
+             end}
+         end
       in
          fun {$ Url}
             if {IsNativeUrl Url} then false
             else
                try Str={UrlToString Url} in
+                  {Debug 'IMPORT '#Str}
                   {ForAll AllSpecs
                    proc {$ S}
                       if {List.isPrefix S.1 Str}
                       then
+                         {Debug 'MATCH '#{Label S}#' '#S.1}
                          raise {Label S} end
                       end
                    end}

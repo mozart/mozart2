@@ -710,12 +710,12 @@ local
       'DP':             ['SP' 'OP' 'AP' 'WP']
       'Panel':          ['SP' 'OP' 'WP']
       'Browser':        ['SP' 'WP' 'CP']
-      'Explorer':       ['SP' 'WP' 'Browser']
+      'Explorer':       ['SP' 'WP' 'Browser'#lazy]
       'Compiler':       ['SP' 'CP']
-      'CompilerPanel':  ['SP' 'OP' 'WP' 'Compiler' 'Browser']
+      'CompilerPanel':  ['SP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
       'Emacs':          ['OP' 'SP']
-      'Ozcar':          ['SP' 'WP' 'Browser' 'Compiler' 'Emacs']
-      'Profiler':       ['SP' 'OP' 'WP' 'Browser' 'Compiler' 'Emacs'])
+      'Ozcar':          ['SP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
+      'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy])
    %%
    %% we also want to export a useful collection of submodules
    %%
@@ -748,7 +748,11 @@ local
           {RegistryRegister R Name
            module(src:system(Name)
                   args:{List.toRecord x
-                        {Map Args fun {$ A} A#A end}}
+                        {Map Args
+                         fun {$ Arg}
+                            case Arg of A#M then A#(A#M)
+                            else Arg#Arg end
+                         end}}
                   type:system(Name))}
        end}
       {Record.forAllInd StandardSubModules

@@ -130,7 +130,8 @@ define
                        fun {$ V In} Reg in
                           {V reg(?Reg)}
                           case {V getPrintName($)} of unit then In
-                          elseof PN then Reg#_#PN|In
+                          elseof PN andthen {IsAtom PN} then Reg#_#PN|In
+                          else In
                           end
                        end nil}
       in

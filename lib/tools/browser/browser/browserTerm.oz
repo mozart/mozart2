@@ -179,9 +179,9 @@ in
 
          % everything else is a chunk
          [] object  then
-            if {ChunkWidth Term}==0 then T_PrimObject else T_CompObject end
+            if {ChunkHasFeatures Term} then T_CompObject else T_PrimObject end
          [] 'class' then
-            if {ChunkWidth Term}==0 then T_PrimClass else T_CompClass end
+            if {ChunkHasFeatures Term} then T_CompClass else T_PrimClass end
          [] dictionary then T_Dictionary
          [] array then T_Array
          [] bitArray then T_BitArray
@@ -190,7 +190,7 @@ in
          [] bitString then T_BitString
          [] byteString then T_ByteString
          [] chunk then
-            if {ChunkWidth Term}==0 then T_PrimChunk else T_CompChunk end
+            if {ChunkHasFeatures Term} then T_CompChunk else T_PrimChunk end
          else
             T_Unknown
          end

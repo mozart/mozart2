@@ -72,8 +72,26 @@ DeepFeed = BrowserSupport.deepFeed
 %%
 %% Yield arity/width of a chunk, suspend on variables,
 %% or rise type errors;
-ChunkArity = BrowserSupport.chunkArity
-ChunkWidth = BrowserSupport.chunkWidth
+
+local
+   BSCA = BrowserSupport.chunkArity
+   BSCW = BrowserSupport.chunkWidth
+   fun {Unique Xs Us}
+      case Xs of nil then Us
+      [] X|Xr then
+         {Unique Xr if {Member X Us} then Us
+                    else X|Us
+                    end}
+      end
+   end
+in
+   fun {ChunkHasFeatures Chunk}
+      {BSCW Chunk}>0
+   end
+   fun {ChunkArity Chunk}
+      {Unique {BSCA Chunk} nil}
+   end
+end
 
 %%
 AddrOf = BrowserSupport.addr

@@ -115,7 +115,7 @@ define
    GetsTouched    % fires when its argument is ever touched;
    DeepFeed       % 'feed', but also from local computation spaces;
    ChunkArity     % yields chunk arity;
-   ChunkWidth     % ... its width;
+   ChunkHasFeatures % ... its width;
    AddrOf         %
    OnToplevel     %
 

@@ -49,5 +49,23 @@ define
                                   lock L then skip end
                                end)
                       keys: ['thread' 'lock' 'injectExcpetion' 'raise'])
+             termLock2(proc {$}
+                          % As reported in bug 595
+                          L={NewLock} DeathAgony=100 T1 T2
+                          proc {TryLock N}
+                             try
+                                lock L then {Delay 1000} end
+                             catch abortLock then
+                                {Delay DeathAgony}
+                             end
+                          end
+                       in
+                          thread T1={Thread.this} {TryLock 1} end
+                          {Delay 100}
+                          thread T2={Thread.this} {TryLock 2} end
+                          {Delay 100}
+                          {Thread.injectException T2 abortLock}
+                       end
+                       keys: ['thread' 'lock' efixedBug])
             ])
 end

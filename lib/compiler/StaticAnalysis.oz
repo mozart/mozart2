@@ -1316,7 +1316,7 @@ define
           {@label reachable(Vs $)}}
       end
 
-      meth makeValue(Ctrl ?Rec)
+      meth makeValue(Ctrl IsOpen ?Rec)
          if {DetTypeTests.literal @label} then Args IllFeat TestFeats in
             Args = {FoldL @args
                     fun {$ In Arg}
@@ -1339,7 +1339,7 @@ define
                               end
                         end}
             in
-               if @isOpen then
+               if IsOpen then
                   if {DetTests.det @label} then
                      Rec = {RecordC.tell LData}
                   end
@@ -1382,6 +1382,22 @@ define
          end
       end
 
+      meth applyEnvSubst(Ctrl)
+         {@label applyEnvSubst(Ctrl)}
+         {ForAll @args
+          proc {$ Arg}
+             case Arg of F#T then
+                {F applyEnvSubst(Ctrl)}
+                {T applyEnvSubst(Ctrl)}
+             else
+                {Arg applyEnvSubst(Ctrl)}
+             end
+          end}
+      end
+   end
+
+   class SAConstruction
+      from SAConstructionOrPattern
       meth sa(Ctrl)
 
 \ifdef DEBUGSA
@@ -1399,24 +1415,8 @@ define
           end}
 
          value <- {New RecordConstr
-                   init(SAConstruction,makeValue(Ctrl $) self)}
+                   init(SAConstruction,makeValue(Ctrl false $) self)}
       end
-      meth applyEnvSubst(Ctrl)
-         {@label applyEnvSubst(Ctrl)}
-         {ForAll @args
-          proc {$ Arg}
-             case Arg of F#T then
-                {F applyEnvSubst(Ctrl)}
-                {T applyEnvSubst(Ctrl)}
-             else
-                {Arg applyEnvSubst(Ctrl)}
-             end
-          end}
-      end
-   end
-
-   class SAConstruction
-      from SAConstructionOrPattern
    end
 
    class SADefinition from SAStatement
@@ -2614,6 +2614,26 @@ define
 
    class SARecordPattern
       from SAConstructionOrPattern
+      meth sa(Ctrl)
+
+\ifdef DEBUGSA
+         {System.show saConstruction}
+\endif
+
+         {ForAll
+          @args
+          proc {$ Arg}
+             case Arg of _#T then
+                {T sa(Ctrl)}
+             else
+                {Arg sa(Ctrl)}
+             end
+          end}
+
+         value <- {New RecordConstr
+                   init(SAConstruction,makeValue(Ctrl @isOpen $) self)}
+      end
+
       meth getPatternValue($)
          %% the value of record patterns is
          %% not the pattern itself, but stored in it

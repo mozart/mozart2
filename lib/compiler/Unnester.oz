@@ -401,6 +401,14 @@ define
       end
    end
 
+   proc {SetPrintName GBack0 PrintName FeatPrintName}
+      case PrintName of unit then skip
+      elsecase {GetLast GBack0} of nil then skip
+      elseof GS then
+         {GS setPrintName({VirtualString.toAtom PrintName#'.'#FeatPrintName})}
+      end
+   end
+
    class Unnester
       attr
          BA                  % this holds an instance of `BindingAnalysis'
@@ -993,9 +1001,18 @@ define
             NewFS = fStepPoint(fOpApplyStatement('Exception.\'fail\'' nil CND)
                                'fail' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fNot(FS C) then NewFS in
-            NewFS = fThread(fCond([fClause(fSkip(C) FS fFail(C))]
-                                  fSkip(C) C) C)
+         [] fNot(FS C) then CND CombinatorFS NewFS in
+            CND = {CoordNoDebug FS}
+            case Unnester, AddImport('x-oz://system/Combinator' $)
+            of unit then
+               CombinatorFS = fOpApplyStatement('Combinator.\'not\''
+                                                [fProc(fDollar(C) nil FS
+                                                       nil CND)] CND)
+            elseof FE then
+               CombinatorFS = fApply(fOpApply('.' [FE fAtom('not' CND)] CND)
+                                     [fProc(fDollar(C) nil FS nil CND)] CND)
+            end
+            NewFS = fStepPoint(CombinatorFS 'combinator' C)
             Unnester, UnnestStatement(NewFS $)
          [] fException(C) then
             {New Core.exceptionNode init(C)}
@@ -1133,6 +1150,17 @@ define
             then RightGVO in
                {ToGV occ(C3 ?RightGVO)}
                {New Core.equation init(LeftGVO RightGVO C)}
+            elseof fOpApply('^' [FE1 FE2] C) then NewFS in
+               NewFS = case Unnester, AddImport('x-oz://system/RecordC' $)
+                       of unit then
+                          fOpApplyStatement('RecordC.\'^\''
+                                            [FE1 FE2 fOcc(ToGV)] C)
+                       elseof FE then CND in
+                          CND = {CoordNoDebug C}
+                          fApply(fOpApply('.' [FE fAtom('^' CND)] CND)
+                                 [FE1 FE2 fOcc(ToGV)] C)
+                       end
+               Unnester, UnnestStatement(NewFS $)
             else GVO GFrontEqs1 GFrontEqs2 GTs GS in
                if {IsAtom Op} then
                   {RunTime.procs.Op occ(C ?GVO)}
@@ -1462,12 +1490,13 @@ define
                %% Records as arguments are treated in a special way here
                %% so as to make the sendMsg optimization apply in more
                %% cases, e.g.:
-               C GV GRecord GBack GEquation GFrontEqr1 GFrontEqr2 GTr
+               C GV GFront GRecord GBack GEquation GFrontEqr1 GFrontEqr2 GTr
             in
                C = {CoordinatesOf Label}
                {@BA generate('UnnestApply' C ?GV)}
-               Unnester, UnnestRecord(unit Label Args false ?GRecord ?GBack)
-               GFrontEqs1 = GBack|GFrontEqr1
+               Unnester, UnnestRecord(unit Label Args false
+                                      ?GFront ?GRecord ?GBack)
+               GFrontEqs1 = GFront|GBack|GFrontEqr1
                GEquation = {New Core.equation init({GV occ(C $)} GRecord C)}
                GFrontEqs2 = GEquation|GFrontEqr2
                GTs = {GV occ(C $)}|GTr
@@ -1490,18 +1519,24 @@ define
             GBack = GBack1|GBack2
             Unnester, UnnestConstraint(FE1 ToGV ?GFront1 ?GBack1)
             Unnester, UnnestConstraint(FE2 ToGV ?GFront2 ?GBack2)
-         [] fRecord(Label Args) then C GVO PrintName GRecord in
+         [] fRecord(Label Args) then C GVO PrintName GFront1 GFront2 GRecord in
+            GFront = GFront1|GFront2
             C = {CoordinatesOf Label}
             {ToGV occ(C ?GVO)}
             {ToGV getPrintName(?PrintName)}
-            Unnester, UnnestRecord(PrintName Label Args false ?GRecord ?GBack)
-            Unnester, MakeEquation(GVO GRecord C ?GFront)
-         [] fOpenRecord(Label Args) then C GVO PrintName GRecord in
+            Unnester, UnnestRecord(PrintName Label Args false
+                                   ?GFront1 ?GRecord ?GBack)
+            Unnester, MakeEquation(GVO GRecord C ?GFront2)
+         [] fOpenRecord(Label Args) then
+            C GVO PrintName GFront1 GFront2 GRecord
+         in
+            GFront = GFront1|GFront2
             C = {CoordinatesOf Label}
             {ToGV occ(C ?GVO)}
             {ToGV getPrintName(?PrintName)}
-            Unnester, UnnestRecord(PrintName Label Args true ?GRecord ?GBack)
-            Unnester, MakeEquation(GVO GRecord C ?GFront)
+            Unnester, UnnestRecord(PrintName Label Args true
+                                   ?GFront1 ?GRecord ?GBack)
+            Unnester, MakeEquation(GVO GRecord C ?GFront2)
          [] fOcc(GV) then C GVO1 GVO2 in
             GBack = nil
             {ToGV getCoord(?C)}
@@ -1554,14 +1589,15 @@ define
             {New Core.equation init(GVO GRight C)}
          end
       end
-      meth UnnestRecord(PrintName Label Args IsOpen ?GRecord ?GBack)
-         GLabel N GArgs NewGArgs X
+      meth UnnestRecord(PrintName Label Args IsOpen ?GFront ?GRecord ?GBack)
+         GLabel N GFront1 GFront2 GArgs NewGArgs X
       in
          Unnester, MakeLabelOrFeature(Label ?GLabel)
          N = {NewCell 1}
-         GArgs#GBack =
+         GFront = GFront1|GFront2
+         GFront1#GArgs#GBack =
          {List.foldL Args
-          fun {$ GArgs#GBack Arg} FE NewGArgs GArg FeatPrintName in
+          fun {$ GFront#GArgs#GBack Arg} FE NewGArgs GArg FeatPrintName in
              case Arg of fColon(FF FE0) then GF in
                 Unnester, MakeLabelOrFeature(FF ?GF)
                 FE = FE0
@@ -1576,42 +1612,77 @@ define
                 FeatPrintName = {Access N}
                 {Assign N {Access N} + 1}
              end
-             case FE of fEq(_ _ C) then GV GFront0 GBack0 in
+             if IsOpen then GBack0 in
+                Unnester, UnnestToVar(FE 'RecordArg' ?GBack0 ?GArg)
+                {SetPrintName GBack0 PrintName FeatPrintName}
+                GFront#NewGArgs#(GBack|GBack0)
+             elsecase FE of fEq(_ _ C) then GV GFront0 GBack0 in
                 {@BA generate('Equation' C ?GV)}
                 {GV occ(C ?GArg)}
                 Unnester, UnnestConstraint(FE GV ?GFront0 ?GBack0)
-                NewGArgs#(GFront0|GBack|GBack0)
-             [] fRecord(Label Args) then
+                GFront#NewGArgs#(GFront0|GBack|GBack0)
+             [] fRecord(Label Args) then NewPrintName GFront0 GBack0 in
                 NewPrintName = case PrintName of unit then unit
                                else PrintName#'.'#FeatPrintName
                                end
-                GBack0
-             in
                 Unnester, UnnestRecord(NewPrintName Label Args false
-                                       ?GArg ?GBack0)
-                NewGArgs#(GBack|GBack0)
-             [] fOpenRecord(Label Args) then
+                                       ?GFront0 ?GArg ?GBack0)
+                (GFront|GFront0)#NewGArgs#(GBack|GBack0)
+             [] fOpenRecord(Label Args) then NewPrintName GFront0 GBack0 in
                 NewPrintName = case PrintName of unit then unit
                                else PrintName#'.'#FeatPrintName
                                end
-                GBack0
-             in
                 Unnester, UnnestRecord(NewPrintName Label Args true
-                                       ?GArg ?GBack0)
-                NewGArgs#(GBack|GBack0)
+                                       ?GFront0 ?GArg ?GBack0)
+                (GFront|GFront0)#NewGArgs#(GBack|GBack0)
              else GBack0 in
                 Unnester, UnnestToTerm(FE 'RecordArg' ?GBack0 ?GArg)
-                case PrintName of unit then skip
-                elsecase {GetLast GBack0} of nil then skip
-                elseof GS then
-                   {GS setPrintName({VirtualString.toAtom
-                                     PrintName#'.'#FeatPrintName})}
-                end
-                NewGArgs#(GBack|GBack0)
+                {SetPrintName GBack0 PrintName FeatPrintName}
+                GFront#NewGArgs#(GBack|GBack0)
              end
-          end nil#nil}
+          end nil#nil#nil}
          {SortNoColonsToFront {Reverse GArgs} ?NewGArgs X X nil}
-         GRecord = {New Core.construction init(GLabel NewGArgs IsOpen)}
+         if IsOpen then CND RecordGV GFront3 LabelGVO FSs in
+            %% {`RecordC.tellSize` Label Width ?VO}
+            %% {`^` VO Feat1 Subtree1} ... {`^` VO Featn Subtreen}
+            CND = {CoordNoDebug {GLabel getCoord($)}}
+            {@BA generate('OpenRecord' CND ?RecordGV)}
+            Unnester, UnnestToVar(Label 'Label' ?GFront3 ?LabelGVO)
+            FSs = (case Unnester, AddImport('x-oz://system/RecordC' $)
+                   of unit then
+                      fOpApplyStatement('RecordC.tellSize'
+                                        [fOcc({LabelGVO getVariable($)})
+                                         fInt({Length GArgs} CND)
+                                         fOcc(RecordGV)] CND)
+                   elseof FE then
+                      fApply(fOpApply('.' [FE fAtom('tellSize' CND)] CND)
+                             [fOcc({LabelGVO getVariable($)})
+                              fInt({Length GArgs} CND)
+                              fOcc(RecordGV)] CND)
+                   end|
+                   {List.mapInd GArgs
+                    fun {$ I GArg} Feat Subtree in
+                       Feat#Subtree =
+                       case GArg of F#T then Feat in
+                          {F getValue(?Feat)}
+                          if {IsLiteral Feat} then
+                             fAtom(Feat CND)
+                          else   % if {IsInt Feat} then
+                             fInt(Feat CND)
+                          end#fOcc({T getVariable($)})
+                       elseof T then
+                          fInt(I CND)#fOcc({T getVariable($)})
+                       end
+                       fEq(fOpApply('^' [fOcc(RecordGV) Feat] CND) Subtree CND)
+                    end})
+            GFront2 = GFront3|{Map FSs fun {$ FS}
+                                          Unnester, UnnestStatement(FS $)
+                                       end}
+            {RecordGV occ(CND ?GRecord)}
+         else
+            GFront2 = nil
+            GRecord = {New Core.construction init(GLabel NewGArgs)}
+         end
       end
 
       meth UnnestProc(FEs FS IsLazy C ?GS)

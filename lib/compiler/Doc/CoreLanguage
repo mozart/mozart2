@@ -73,7 +73,6 @@ S  ::=  <Statement>
 <Construction>
      label:  L
      args:   (T|F#T)+   % all featureless subtrees in front
-     isOpen: bool
 
 
 % 'proc' procFlags '{' designator formalArgs '}' statements 'end'

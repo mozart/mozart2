@@ -26,7 +26,7 @@ functor
 import
    Module(manager)
    Core(valueNode userVariable)
-   Combinator('cond' 'or' 'dis')
+   Combinator('not' 'cond' 'or' 'dis')
    Space('choose')
    RecordC('^' tellSize)
 export
@@ -136,25 +136,40 @@ define
       {V reg(~1)}
    end
 
+   %--** The following built-in procedures should not need wrappers.
+   %--** Unfortunately, code generation crashes if we omit them.
+
+   proc {`RecordC.'^'` A B C}
+      {RecordC.'^' A B C}
+   end
+
+   proc {RecordCTellSize A B C}
+      {RecordC.tellSize A B C}
+   end
+
+   proc {CombinatorNot P}
+      {Combinator.'not' P}
+   end
+
    proc {SpaceChoose X Y}
       {Space.choose X Y}
    end
 
    ProcValues = {Adjoin ProcValues0
                  env(%% Operators
-                     '^': RecordC.'^'
-                     'RecordC.tellSize': RecordC.tellSize
+                     'RecordC.\'^\'': `RecordC.'^'`
+                     'RecordC.tellSize': RecordCTellSize
 
                      %% Functor
                      'ApplyFunctor': ApplyFunctor
 
                      %% Combinators
+                     'Combinator.\'not\'': CombinatorNot
                      'Combinator.\'cond\'': Combinator.'cond'
                      'Combinator.\'or\'': Combinator.'or'
                      'Combinator.\'dis\'': Combinator.'dis'
 
                      %% Space
-                     %'Space.choose': Space.choose   %--** doesn't work!
                      'Space.choose': SpaceChoose)}
 
    Procs = {Record.mapInd ProcValues MakeVar}

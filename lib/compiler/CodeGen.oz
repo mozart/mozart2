@@ -478,7 +478,7 @@ define
          Args = {MakeAttrFeatSub AttrFeat CS}
       in
          VO = {NewPseudoVariableOccurrence CS}
-         {MakeConstruction CS VO Label Args false VHd VTl}
+         {MakeConstruction CS VO Label Args VHd VTl}
       end
    end
 
@@ -510,42 +510,6 @@ define
                             end nil#VTl}
             VHd = vEquateRecord(_ Label RecordArity {VO reg($)} VArgs VInter)
          end
-      end
-      proc {MakeConstructionOpen CS VO TheLabel Args VHd VTl}
-         C CND WidthReg WidthVO Cont1 Cont2
-      in
-         %% translate the construction as:
-         %%    {`RecordC.tellSize` Label Width ?VO}
-         %%    {`^` VO Feat1 Subtree1} ... {`^` VO Featn Subtreen}
-         {TheLabel getCoord(?C)}
-         CND = {CoordNoDebug C}
-         {CS newReg(?WidthReg)}
-         WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
-         VHd = vEquateConstant(_ {Length Args} WidthReg Cont1)
-         if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication 'RecordC.tellSize' CND
-             [TheLabel WidthVO VO] CS Cont1 Cont2}
-         else LabelReg LabelVO LabelValue Inter in
-            {CS newReg(?LabelReg)}
-            LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
-            {TheLabel getCodeGenValue(?LabelValue)}
-            Cont1 = vEquateConstant(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication 'RecordC.tellSize' CND
-             [LabelVO WidthVO VO] CS Inter Cont2}
-         end
-         {List.foldLInd Args
-          proc {$ I VHd Arg VTl} VO1 VO2 VInter1 in
-             case Arg of F#T then VInter2 in
-                {F makeVO(CS VHd VInter2 ?VO1)}
-                {T makeVO(CS VInter2 VInter1 ?VO2)}
-             else VInter2 in
-                VO1 = {NewPseudoVariableOccurrence CS}
-                VO1.value = I
-                VHd = vEquateConstant(_ I {VO1 reg($)} VInter2)
-                {Arg makeVO(CS VInter2 VInter1 ?VO2)}
-             end
-             {MakeRunTimeProcApplication '^' CND [VO VO1 VO2] CS VInter1 VTl}
-          end Cont2 VTl}
       end
       proc {MakeConstructionTuple CS VO TheLabel Rec VHd VTl}
          C SubtreesReg SubtreesVO WidthValue Cont
@@ -637,54 +601,52 @@ define
          end
       end
    in
-      proc {MakeConstruction CS VO TheLabel Args IsOpen VHd VTl}
+      proc {MakeConstruction CS VO TheLabel Args VHd VTl}
          %% Determine in which way the record may be constructed.
-         if IsOpen then
-            {MakeConstructionOpen CS VO TheLabel Args VHd VTl}
-         else Label Feats LabelIsDet FeatsAreDet in
-            {TheLabel getCodeGenValue(?Label)}
-            Feats = {List.mapInd Args
-                     fun {$ I Arg}
-                        case Arg of F#_ then {F getCodeGenValue($)}
-                        else I
-                        end
-                     end}
-            LabelIsDet = {IsDet Label}
-            FeatsAreDet = {All Feats IsDet}
-            if LabelIsDet andthen FeatsAreDet then
-               {MakeConstructionBasic CS VO Label Feats TheLabel Args VHd VTl}
-            elseif FeatsAreDet then PairList Rec in
-               PairList = {List.zip Feats Args
-                           fun {$ F Arg}
-                              case Arg of _#T then F#T else F#Arg end
-                           end}
-               try
-                  Rec = {List.toRecord someLabel PairList}
-               catch error(kernel(recordConstruction ...) ...) then C in
-                  {TheLabel getCoord(?C)}
-                  {CS.reporter
-                   error(coord: C kind: 'code generation error'
-                         msg: 'duplicate feature in record construction')}
-                  Rec = {AdjoinList someLabel() PairList}
-               end
-               if {IsTuple Rec} then
-                  {MakeConstructionTuple CS VO TheLabel Rec VHd VTl}
-               else NewArgs in
-                  NewArgs = {Record.toListInd Rec}
-                  {MakeConstructionRecord CS VO TheLabel NewArgs VHd VTl}
-               end
+         Label Feats LabelIsDet FeatsAreDet
+      in
+         {TheLabel getCodeGenValue(?Label)}
+         Feats = {List.mapInd Args
+                  fun {$ I Arg}
+                     case Arg of F#_ then {F getCodeGenValue($)}
+                     else I
+                     end
+                  end}
+         LabelIsDet = {IsDet Label}
+         FeatsAreDet = {All Feats IsDet}
+         if LabelIsDet andthen FeatsAreDet then
+            {MakeConstructionBasic CS VO Label Feats TheLabel Args VHd VTl}
+         elseif FeatsAreDet then PairList Rec in
+            PairList = {List.zip Feats Args
+                        fun {$ F Arg}
+                           case Arg of _#T then F#T else F#Arg end
+                        end}
+            try
+               Rec = {List.toRecord someLabel PairList}
+            catch error(kernel(recordConstruction ...) ...) then C in
+               {TheLabel getCoord(?C)}
+               {CS.reporter
+                error(coord: C kind: 'code generation error'
+                      msg: 'duplicate feature in record construction')}
+               Rec = {AdjoinList someLabel() PairList}
+            end
+            if {IsTuple Rec} then
+               {MakeConstructionTuple CS VO TheLabel Rec VHd VTl}
             else NewArgs in
-               NewArgs = {List.zip Feats Args
-                          fun {$ FV Arg} F T in
-                             case Arg of X#Y then F = X T = Y else T = Arg end
-                             if {IsDet FV} andthen
-                                ({IsInt FV} orelse {IsLiteral FV})
-                             then FV
-                             else F
-                             end#T
-                          end}
+               NewArgs = {Record.toListInd Rec}
                {MakeConstructionRecord CS VO TheLabel NewArgs VHd VTl}
             end
+         else NewArgs in
+            NewArgs = {List.zip Feats Args
+                       fun {$ FV Arg} F T in
+                          case Arg of X#Y then F = X T = Y else T = Arg end
+                          if {IsDet FV} andthen
+                             ({IsInt FV} orelse {IsLiteral FV})
+                          then FV
+                          else F
+                          end#T
+                       end}
+            {MakeConstructionRecord CS VO TheLabel NewArgs VHd VTl}
          end
       end
    end
@@ -767,7 +729,7 @@ define
 
    class CodeGenConstruction from CodeGenConstructionOrPattern
       meth makeEquation(CS VO VHd VTl)
-         {MakeConstruction CS VO @label @args @isOpen VHd VTl}
+         {MakeConstruction CS VO @label @args VHd VTl}
       end
       meth makeVO(CS VHd VTl ?VO)
          VO = {NewPseudoVariableOccurrence CS}
@@ -779,7 +741,7 @@ define
                   fun {$ I Arg}
                      case Arg of F#_ then {F getCodeGenValue($)} else I end
                   end}
-         if {Not @isOpen} andthen {IsDet Label} andthen {All Feats IsDet} then
+         if {IsDet Label} andthen {All Feats IsDet} then
             case Feats of nil then
                VHd = VTl
                constant(Label)
@@ -1327,7 +1289,7 @@ define
                        {Formal getFeature($)}#{Formal getDefault($)}
                     end}
             VO = {NewPseudoVariableOccurrence CS}
-            {MakeConstruction CS VO @label Args false VInter2 VInter3}
+            {MakeConstruction CS VO @label Args VInter2 VInter3}
             VInter3 = vEquateRecord(_ '#' [1 2 default fast] Reg
                                     [{@label makeRecordArgument(CS X X $)}
                                      value(SlowMeth) value({VO reg($)})
@@ -1391,7 +1353,7 @@ define
               VO = {NewPseudoVariableOccurrence CS}
               VO.value = unit
               {Formal getFeature($)}#VO
-           end} false VHd VTl}
+           end} VHd VTl}
       end
       meth MakePattern(CS BodyVInstr VInter)
          Lab ReqArgs OptArgs Pattern Statement

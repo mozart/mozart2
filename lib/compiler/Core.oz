@@ -332,11 +332,10 @@ define
       from Annotate.construction StaticAnalysis.construction
          CodeGen.construction
       prop final
-      attr label: unit args: unit isOpen: unit
-      meth init(Label Args IsOpen)
+      attr label: unit args: unit
+      meth init(Label Args)
          label <- Label
          args <- Args
-         isOpen <- IsOpen
          StaticAnalysis.construction, init()
       end
       meth getCoord($)
@@ -369,10 +368,6 @@ define
          else
             FS2 = ""
             ""
-         end#
-         if @isOpen then
-            case @args of nil then '...' else GL#'...' end
-         else ""
          end#')'#PO
       end
       meth isConstruction($)
@@ -471,7 +466,6 @@ define
             [] '`*`' then Application, OutputInfixExpression(' * ' R $)
             [] '`/`' then Application, OutputInfixExpression(' / ' R $)
             [] '`.`' then Application, OutputInfixExpression('.' R $)
-            [] '`^`' then Application, OutputInfixExpression('^' R $)
             [] '`::`' then Application, OutputFdInStatement(' :: ' R $)
             [] '`:::`' then Application, OutputFdInStatement(' ::: ' R $)
             [] '`::R`' then Application, OutputFdInExpression(' :: ' R $)

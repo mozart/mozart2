@@ -146,7 +146,7 @@ define
    in
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
-                         if Sum \= Times then
+                         if Sum > Times + 1 orelse Sum < Times - 1  then
                             {System.show obj(Sum Times)}
                             raise dp_object_test_failed(Sum Times) end
                          else

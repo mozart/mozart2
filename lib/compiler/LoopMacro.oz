@@ -19,7 +19,7 @@ define
       proc {DeclType T}
          if {Access Type}\=unit then
             {Exception.raiseError
-             loop(conflictingAccumulation(Form))}
+             'loop'(conflictingAccumulation(Form))}
          else
             {Assign Type T}
          end
@@ -33,7 +33,7 @@ define
             <<'`' raise <<',' LEAVE_EXCEPTION>> end>>
          [] [V] then
             <<'`' case <<',' V>> of
-                     loop(leave:L next:_)
+                     'loop'(leave:L next:_)
                   then raise L end end>>
          end
       end
@@ -42,7 +42,7 @@ define
             <<'`' raise <<',' NEXT_EXCEPTION>> end>>
          [] [V] then
             <<'`' case <<',' V>> of
-                     loop(leave:_ next:L)
+                     'loop'(leave:_ next:L)
                   then raise L end end>>
          end
       end
@@ -143,12 +143,12 @@ define
       fun {NamedExpander fMacro([_ E] _) _}
          if {Access Named}\=unit then
             {Exception.raiseError
-             loop(multipleNamedClauses)}
+             'loop'(multipleNamedClauses)}
          elsecase E of fVar(_ _) then
             {Assign Named E}
          else
             {Exception.raiseError
-             loop(badNamedClause)}
+             'loop'(badNamedClause)}
          end
          SKIP
       end
@@ -299,8 +299,8 @@ define
                <<','  NEXT_EXCEPTION>> = <<',' CALL_NEWNAME>>
                <<',' if {Access Named}\=unit then
                         <<'`' <<',' {Access Named}>>
-                        = loop(leave:<<',' LEAVE_EXCEPTION>>
-                               next :<<','  NEXT_EXCEPTION>>)>>
+                           = 'loop'(leave:<<',' LEAVE_EXCEPTION>>
+                                    next :<<','  NEXT_EXCEPTION>>)>>
                      else
                         <<'`' skip>>
                      end >>

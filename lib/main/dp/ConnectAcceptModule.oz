@@ -79,7 +79,8 @@ define
               {Obj putLocalState(State)}
            end
            Socket=OS.socket
-           Connect=OS.connectNonblocking
+%          Connect=OS.connectNonblocking
+           Connect=OS.connect
            Write=OS.write
            Read=OS.read
            WriteSelect=OS.writeSelect
@@ -124,7 +125,8 @@ define
             {ConnectModule.connect DistOzState.parameter}
 \ifdef DBG
          catch X then
-            {System.show warning(X)}
+%           {System.show warning(X)}
+            thread raise X end end
 \else
          catch _ then
             skip

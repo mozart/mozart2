@@ -37,7 +37,7 @@ define
                   {ConnectionWrapper.connect FD Address IPPort}
                catch X then
                   case X of system(os(_ _ 111 _) ...) then
-                     Done=unit
+                     Done=failed
                      {ConnectionWrapper.close FD}
 \ifdef DBG
                      {System.show discovered_perm(FD Address IPPort)}
@@ -57,7 +57,7 @@ define
                   end
                end
             else
-               Done=unit
+               Done=failed
                {ConnectionWrapper.connFailed temp}
             end
          end
@@ -71,15 +71,24 @@ define
             ReadS
          in
             case Grant of grant(...) then
-               {ConnectionWrapper.writeSelect FD}
-               _={ConnectionWrapper.write FD "tcp"}
-               {ConnectionWrapper.readSelect FD}
-               _ = {ConnectionWrapper.read FD 2 ReadS nil}
-               case ReadS of "ok" then
-                  {ConnectionWrapper.handover Grant settings(fd:FD)}
-                  Done=unit
-               else
-                  {ConnectionWrapper.freeConnGrant Grant}
+               try
+                  {ConnectionWrapper.writeSelect FD}
+                  _={ConnectionWrapper.write FD "tcp"}
+
+                  {ConnectionWrapper.readSelect FD}
+                  _ = {ConnectionWrapper.read FD 2 ReadS nil}
+                  case ReadS of "ok" then
+                     {ConnectionWrapper.handover Grant settings(fd:FD)}
+                     Done=connected
+                  else
+                     {ConnectionWrapper.freeConnGrant Grant}
+                  end
+               % If we catch an exception here it means the connection
+               % was somehow corrupted. Report this as a temp error and let
+               % the requestor try again.
+               catch _ then
+                  Done=failed
+                  {ConnectionWrapper.connFailed temp}
                end
             else
                skip
@@ -94,13 +103,16 @@ define
 
       % Either we have a connection or
       % we figured out that the remote site was perm or
-      % we are out of pConnectionWrappersible transport medias
+      % we are out of ConnectionWrappersible transport medias
          if {Not {IsDet Done}} then
-            {ConnectionWrapper.write FD "give_up"}
-            {ConnectionWrapper.close FD}
+            try
+               _={ConnectionWrapper.write FD "give_up"}
+               {ConnectionWrapper.close FD}
+            catch _ then skip end
+
             {ConnectionWrapper.connFailed noTransport}
 \ifdef DBG
-         else
+         elseif Done==connected then
             {System.show connectDone({Property.get 'time.total'} -T0)}
 \endif
          end

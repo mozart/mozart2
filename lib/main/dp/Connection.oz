@@ -32,7 +32,7 @@ import
 
    Error(dispatch format formatGeneric)
    ErrorRegistry(put)
-   Fault(install deinstall)
+   Fault(injector removeInjector siteWatcher removeSiteWatcher)
    Property(get)
 
 export
@@ -247,23 +247,23 @@ define
          {Exception.raiseError connection(wrongModel V)}
       end
 
-      {Fault.install P watcher('cond':permHome) Watch}
-      {Fault.install P handler('cond':perm)     Handle}
+
+      {Fault.siteWatcher P  Watch}
+      {Fault.injector    P  Handle}
 
       {Send P T#X}
 
+      {Fault.removeInjector P Handle}
+
       case X#Y
       of no#_ then
-         {Fault.deinstall P watcher('cond':permHome) Watch}
-         {Fault.deinstall P handler('cond':perm)     Handle}
+         {Fault.removeSiteWatcher P Watch}
          {Exception.raiseError connection(refusedTicket V)}
       [] _#no then
-         {Fault.deinstall P watcher('cond':permHome) Watch}
-         {Fault.deinstall P handler('cond':perm)     Handle}
+         {Fault.removeSiteWatcher P Watch}
          {Exception.raiseError connection(ticketToDeadSite V)}
       [] yes(A)#_ then
-         {Fault.deinstall P watcher('cond':permHome) Watch}
-         {Fault.deinstall P handler('cond':perm)     Handle}
+         {Fault.removeSiteWatcher P Watch}
          Entity=A
       end
    end

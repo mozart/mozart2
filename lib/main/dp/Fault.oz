@@ -1,6 +1,7 @@
 %%%
 %%% Authors:
 %%%   Per Brand (perbrand@sics.se)
+%%%   Erik Klintskog (erik@sics.se)
 %%%
 %%% Copyright:
 %%%   Per Brand, 1998
@@ -26,83 +27,69 @@ functor
 import
    DPB
    at 'x-oz://boot/DPB'
-   Fault(installHW
-         deInstallHW
-         getEntityCond)
+   Fault(getEntityCond
+         distHandlerInstall
+         distHandlerDeInstall)
    at 'x-oz://boot/Fault'
 
 export
    install:           Install
    deinstall:         Deinstall
    getEntityCond:     GetEntityCond
+   eInstall:          EInstall
+   eDeinstall:        EDeinstall
 
+
+   injector:          Injector
+   removeInjector:    RmInjector
+
+   siteWatcher:       SiteWatcher
+   removeSiteWatcher: RmSiteWatcher
 define
    local
-      proc{DecodeConds Cond Rec}
-         case Cond of
-            handler('cond':perm) then
-            Rec = handler(
-                     'cond':      [permBlocked]
-                     once_only:   yes
-                     retry:       no
-                     basis:       perSite
-                     )
-         elseof
-            seifHandler then
-            Rec = handler(
-                     'cond':      [permBlocked permTerm]
-                     once_only:   no
-                     retry:       no
-                     basis:       perSite
-                     )
-         elseof permHandler then
-            Rec = handler(
-                     'cond':      [permBlocked]
-                     once_only:   yes
-                     retry:       no
-                     basis:       perSite
-                     )
-         elseof watcher('cond':permHome) then
-            Rec = watcher(
-                     'cond':      [permHome]
-                     once_only:   yes
-                     retry:       no
-                     basis:       perSite
-                     )
-         elseof permWatcher  then
-            Rec = watcher(
-                     'cond':      [permHome]
-                     once_only:   yes
-                     retry:       no
-                     basis:       perSite
-                     )
-
-         else raise unknownHandlerSpec(Cond) end
-         end
+      proc{ExceptionHandler Entity Cond}
+         {Exception.raiseError distribution(entity:Entity condition:Cond)}
       end
-      %%
-      %% Force linking of base library
-      %%
+
+      proc{InjectorH T  E P}
+         TT in
+         if T == install then   TT = Fault.distHandlerInstall
+         else TT = Fault.distHandlerDeInstall end
+         {TT injector('cond':[permBlocked]
+                      'thread':this
+                      entityType:single
+                      entity:E)  P}
+      end
+
+      proc{SiteWH T E P}
+         TT in
+         if T == install then   TT = Fault.distHandlerInstall
+         else TT = Fault.distHandlerDeInstall end
+         {TT siteWatcher('cond':[permWillBlock]
+                         entity:E) P}
+      end
+
    in
       {Wait DPB}
 
-      Install       = proc{$ Entity Cond Proc}
-                         Rec = {DecodeConds Cond}
-                      in
-                         if {IsLock Entity} orelse
-                            {IsCell Entity} orelse
-                            {IsPort Entity} orelse
-                            Entity == seif
-                         then
-                            {Fault.installHW Entity Rec Proc}
-                         else skip end
+      GetEntityCond  = Fault.getEntityCond
+      Install        = Fault.distHandlerInstall
+      Deinstall      = Fault.distHandlerDeInstall
+
+      EInstall      = proc{$ Cond}
+                         {Fault.distHandlerInstall Cond ExceptionHandler}
+
                       end
 
-      Deinstall     = proc{$ Entity Cond Proc}
-                         Rec = {DecodeConds Cond}
-                      in
-                         {Fault.deInstallHW Entity Rec Proc}
+      EDeinstall    = proc{$ Cond}
+                         {Fault.distHandlerDeInstall Cond ExceptionHandler}
                       end
-      GetEntityCond = Fault.getEntityCond
+
+      Injector      = proc{$ E P} {InjectorH install E P} end
+      RmInjector    = proc{$ E P} {InjectorH denstall E P} end
+
+      SiteWatcher   = proc{$ E P} {SiteWH install E P} end
+      RmSiteWatcher = proc{$ E P} {SiteWH deinstall E P} end
+
    end
 end

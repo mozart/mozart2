@@ -104,9 +104,7 @@ define
    %% site
 
    if {Not Args.detached} then
-      {Fault.install
-       RunRet
-       watcher('cond':permHome)
+      {Fault.siteWatcher  RunRet
        proc {$ E C}
           {System.showError 'RemoteServer: client crashed.'}
           {Application.exit ExitErrorClient}

@@ -1013,47 +1013,6 @@ define
                                                   FElseProc] CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fOr(FClauses X C) then   %--** remove
-            case X of fchoice then FSs CND N NewFS in
-               %% choice S1 [] ... [] Sn end
-               %% =>
-               %% case {Space.choose n} of 1 then S1
-               %% [] ...
-               %% [] n then Sn
-               %% end
-               FSs = {Map FClauses
-                      fun {$ FClause}
-                         case FClause of fClause(fSkip(_) fSkip(_) FS) then FS
-                         elseof fClause(FS1 FS2 FS3) then
-                            {@reporter error(coord: C kind: ExpansionError
-                                             msg: ('choice clause may have '#
-                                                   'no `then\''))}
-                            fLocal(FS1 fAnd(FS2 FS3) C)
-                         end
-                      end}
-               CND = {CoordNoDebug C}
-               N = {Length FSs}
-               NewFS = fStepPoint(fCase(fOpApply('Space.choose'
-                                                 [fInt(N C)] CND)
-                                        {List.mapInd FSs
-                                         fun {$ I FS}
-                                            fCaseClause(fInt(I C) FS)
-                                         end}
-                                        fNoElse(C) CND)
-                                  'combinator' C)
-               Unnester, UnnestStatement(NewFS $)
-            else FClauseProcs CND Op NewFS in
-               Unnester, UnnestClauses(FClauses ?FClauseProcs)
-               CND = {CoordNoDebug C}
-               Op = case X of for then 'Combinators.\'or\''
-                    [] fdis then 'Combinators.\'dis\''
-                    end
-               NewFS = fStepPoint(fOpApplyStatement(Op
-                                                    [fRecord(fAtom('#' C)
-                                                             FClauseProcs)]
-                                                    CND) 'combinator' C)
-               Unnester, UnnestStatement(NewFS $)
-            end
          [] fOr(FClauses C) then FClauseProcs CND NewFS in
             Unnester, UnnestClauses(FClauses ?FClauseProcs)
             CND = {CoordNoDebug C}
@@ -1487,19 +1446,6 @@ define
                Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
             else
                NewFV = fOcc(ToGV)
-               Unnester, UnnestStatement(FS $)
-            end
-         [] fOr(FClauses X C) then   %--** remove
-            case X of for then
-               Unnester, TransformExpressionOr(fOr FClauses C ToGV $)
-            [] fdis then
-               Unnester, TransformExpressionOr(fDis FClauses C ToGV $)
-            [] fchoice then NewFV FS in
-               NewFV = fOcc(ToGV)
-               FS = fOr({Map FClauses
-                         fun {$ fClause(FS1 FS2 FE)}
-                            fClause(FS1 FS2 fEq(NewFV FE C))
-                         end} X C)
                Unnester, UnnestStatement(FS $)
             end
          [] fOr(FClauses C) then
@@ -2544,7 +2490,9 @@ define
             NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
             fClause({VsToFAnd Vs} {SP fAnd(NewP1 P2)} {SP P3})
          [] fNoThen(C) then fNoThen({CS C})
-         [] fOr(Cs X C) then fOr({Map Cs SP} X {CS C})
+         [] fOr(Cs C) then fOr({Map Cs SP} {CS C})
+         [] fDis(Cs C) then fDis({Map Cs SP} {CS C})
+         [] fChoice(Ps C) then fChoice({Map Ps SP} {CS C})
          [] fCondis(Pss C) then
             fCondis({Map Pss fun {$ Ps} {Map Ps SP} end} {CS C})
          [] fScanner(P1 Ds Ms Rs X C) then
@@ -2629,7 +2577,9 @@ define
          [] fCond(Cs P C) then fCond({Map Cs EP} {EP P} {FS C})
          [] fClause(P1 P2 P3) then fClause({EP P1} {EP P2} {EP P3})
          [] fNoThen(_) then P
-         [] fOr(Cs X C) then fOr({Map Cs EP} X {FS C})
+         [] fOr(Cs C) then fOr({Map Cs EP} {FS C})
+         [] fDis(Cs C) then fDis({Map Cs EP} {FS C})
+         [] fChoice(Ps C) then fChoice({Map Ps EP} {FS C})
          [] fCondis(Pss C) then
             fCondis({Map Pss fun {$ Ps} {Map Ps TP} end} {FS C})
          [] fScanner(P1 Ds Ms Rs X C) then

@@ -562,9 +562,6 @@ define
       [] move(X1=x(_) Y1=y(_))|move(Y2=y(_) X2=x(_))|Rest then
          {Assembler append(moveMoveXYYX(X1 Y1 Y2 X2))}
          {Peephole Rest Assembler}
-      [] move(Y1=y(_) X1=x(_))|move(X2=x(_) Y2=y(_))|Rest then
-         {Assembler append(moveMoveYXXY(Y1 X1 X2 Y2))}
-         {Peephole Rest Assembler}
       [] createVariable(R)|move(R X=x(_))|Rest then
          {Peephole createVariableMove(R X)|Rest Assembler}
       [] createVariable(X=x(_))|move(X R)|Rest then

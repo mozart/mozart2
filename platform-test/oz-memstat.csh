@@ -19,6 +19,8 @@ if $#argv == 0 then
   echo '   --sort=<oztest memory key>  [default: do not sort at all]'
   echo '   --resort=<oztest memory key>'
   echo '   --append                    [default: truncate the output file first]'
+  echo '   --skipfile=<name>           [default: none, spin until test succeeds]'
+  echo '   --skipcount=<num>           [default: none, spin until test succeeds]'
   exit
 endif
 
@@ -35,6 +37,8 @@ set ignores=""
 set keys=""
 set memopts="vh"
 set sortfield=""
+set skipfile=""
+set skipcount=0
 set run=true
 set truncate=true
 set delay=0
@@ -92,6 +96,16 @@ while ($#argv > 1)
         shift
         breaksw
 
+    case --skipfile=*:
+        set skipfile=`echo $1 | sed '1,$s/--skipfile=//'`
+        shift
+        breaksw
+
+    case --skipcount=*:
+        set skipcount=`echo $1 | sed '1,$s/--skipcount=//'`
+        shift
+        breaksw
+
     default:
         goto prusage;
     endsw
@@ -121,6 +135,7 @@ if $run == true then
     #
     foreach i ($tests)
         echo doing test $i
+        set repnum=0
         rm -f $tmpfile
         set res=false
         if $noglobbing == true then
@@ -130,6 +145,16 @@ if $run == true then
         endif
         while ($res == false)
             oztest $opts --tests=$i $ignopt > $tmpfile && set res=true
+            set repnum=`expr $repnum + 1`
+            if ( $res == false && "$skipfile" != "" && -f "$skipfile" ) then
+                echo $i failed, skipping..
+                set res=true
+                /bin/rm $skipfile
+            endif
+            if ( $res == false && $skipcount > 0 && $repnum >= $skipcount ) then
+                echo $i failed, skipping after $repnum tries..
+                set res=true
+            endif
         end
         egrep "^>" $tmpfile | sed 's/^>//' >> $fout
         egrep "^:" $tmpfile | sed 's/^://' >> $bout

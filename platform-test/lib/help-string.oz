@@ -35,5 +35,4 @@ The following options are supported:
             c:atoms for code
             f:bytes in free lists
             n:bytes for names
-        Example: "time=rgs" prints the run, gc and system time.
 '

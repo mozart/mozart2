@@ -635,7 +635,7 @@ in
             OldContLabels Label Dest RegMap
          in
             Emitter, DoInits(InitsRS ThisAddr)
-            Emitter, PrepareShared(Addr)
+            Emitter, PrepareShared(Addr _)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
             Emitter, DebugEntry(Coord 'cond')
@@ -685,7 +685,7 @@ in
             Emitter, Emit(waitTop)
             Emitter, KillAllTemporaries()
          [] vShallowGuard(_ Addr1 Addr2 Addr3 Coord Cont _ InitsRS) then
-            OldContLabels Label3 Dest3 RegMap1 RegMap2 HasLocalEnv
+            OldContLabels Label3 Dest3 RegMap1 RegMap2 LocalEnv1 HasLocalEnv
          in
             Emitter, DoInits(InitsRS Cont)
             Emitter, PushContLabel(Cont ?OldContLabels)
@@ -695,8 +695,8 @@ in
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitGuard(Addr1)
             Emitter, Emit(shallowThen)
-            Emitter, PrepareShared(Addr3)
-            Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+            Emitter, PrepareShared(Addr3 ?LocalEnv1)
+            Emitter, MayAllocateEnvLocally(Cont LocalEnv1 ?HasLocalEnv)
             Emitter, EmitAddrInLocalEnv(Addr2 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
             Emitter, Emit(lbl(Label3))
@@ -706,14 +706,16 @@ in
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'cond')
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord Cont InitsRS) then
+            LocalEnv1 LocalEnv2 LocalEnv3
             HasLocalEnv R OldContLabels Label1 Dest1 Label2 Dest2 Label3 Dest3
             RegMap1 RegMap2 RegMap3
          in
             Emitter, DoInits(InitsRS Cont)
-            Emitter, PrepareShared(Addr1)
-            Emitter, PrepareShared(Addr2)
-            Emitter, PrepareShared(Addr3)
-            Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+            Emitter, PrepareShared(Addr1 ?LocalEnv1)
+            Emitter, PrepareShared(Addr2 ?LocalEnv2)
+            Emitter, PrepareShared(Addr3 ?LocalEnv3)
+            Emitter, MayAllocateEnvLocally(Cont {And {And LocalEnv1 LocalEnv2}
+                                                 LocalEnv3} ?HasLocalEnv)
             case Emitter, GetReg(Reg $) of none then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
@@ -745,13 +747,15 @@ in
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'cond')
          [] vTestBuiltin(_ Builtinname Regs Addr1 Addr2 Cont InitsRS) then
+            LocalEnv1 LocalEnv2
             HasLocalEnv OldContLabels Label2 Dest2 BIInfo XsIn NLiveRegs
             XsOut RegMap1 RegMap2
          in
             Emitter, DoInits(InitsRS Cont)
-            Emitter, PrepareShared(Addr1)
-            Emitter, PrepareShared(Addr2)
-            Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+            Emitter, PrepareShared(Addr1 ?LocalEnv1)
+            Emitter, PrepareShared(Addr2 ?LocalEnv2)
+            Emitter, MayAllocateEnvLocally(Cont {And LocalEnv1 LocalEnv2}
+                                           ?HasLocalEnv)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
             BIInfo = {GetBuiltinInfo Builtinname}
@@ -773,11 +777,12 @@ in
             Emitter, EmitTestConstant(testLiteral Reg Literal Addr1 Addr2
                                       Coord Cont InitsRS ThisAddr)
          [] vMatch(_ Reg Addr VHashTableEntries Coord Cont InitsRS) then
-            HasLocalEnv R OldContLabels Label Dest NewVHashTableEntries RegMap
+            LocalEnv1 HasLocalEnv
+            R OldContLabels Label Dest NewVHashTableEntries RegMap
          in
             Emitter, DoInits(InitsRS Cont)
-            Emitter, PrepareShared(Addr)
-            Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+            Emitter, PrepareShared(Addr ?LocalEnv1)
+            Emitter, MayAllocateEnvLocally(Cont LocalEnv1 ?HasLocalEnv)
             case Emitter, GetReg(Reg $) of none then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
@@ -819,7 +824,7 @@ in
             HasLocalEnv ContLabel Dest RegMap OldContLabels
          in
             Emitter, DoInits(InitsRS ThisAddr)
-            Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+            Emitter, MayAllocateEnvLocally(Cont true ?HasLocalEnv)
             Emitter, Dereference(Cont ?ContLabel ?Dest)
             Emitter, Emit('thread'(Dest))
             Emitter, SaveAllRegisterMappings(?RegMap)
@@ -1514,12 +1519,14 @@ in
       end
       meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
                             Coord Cont InitsRS ThisAddr)
+         LocalEnv1 LocalEnv2
          HasLocalEnv R OldContLabels Label1 Dest1 Label2 Dest2 RegMap1 RegMap2
       in
          Emitter, DoInits(InitsRS Cont)
-         Emitter, PrepareShared(Addr1)
-         Emitter, PrepareShared(Addr2)
-         Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
+         Emitter, PrepareShared(Addr1 ?LocalEnv1)
+         Emitter, PrepareShared(Addr2 ?LocalEnv2)
+         Emitter, MayAllocateEnvLocally(Cont {And LocalEnv1 LocalEnv2}
+                                        ?HasLocalEnv)
          case Emitter, GetReg(Reg $) of none then
             {self.reporter
              warn(coord: Coord kind: 'code generation warning'
@@ -1580,14 +1587,16 @@ in
              end}
          end
       end
-      meth PrepareShared(Addr)
+      meth PrepareShared(Addr ?LocalEnv)
          case Addr of vShared(_ _ Count Addr2) then
             case {Access Count} > 1 then
+               LocalEnv = false
                Emitter, DoInits(nil Addr)
             else
-               Emitter, PrepareShared(Addr2)
+               Emitter, PrepareShared(Addr2 ?LocalEnv)
             end
-         else skip
+         else
+            LocalEnv = true
          end
       end
       meth PushContLabel(Cont ?OldContLabels)
@@ -1629,9 +1638,9 @@ in
          Emitter, Emit(deAllocateL(@LocalEnvSize))
          Emitter, Emit(return)
       end
-      meth MayAllocateEnvLocally(Cont $)
+      meth MayAllocateEnvLocally(Cont B $)
          case @InExceptionHandler then false
-         elsecase Cont == nil andthen @contLabels == nil
+         elsecase B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
          then

@@ -25,16 +25,13 @@
 functor $
 
 export
-   'Misc': Misc
+   agenda: NewAgenda
+   server: NewServer
 
 body
 
    \insert 'misc/Server.oz'
    \insert 'misc/Agenda.oz'
-
-in
-   Misc = misc(agenda: NewAgenda
-               server: NewServer)
 
 end
 

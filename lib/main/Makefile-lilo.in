@@ -8,8 +8,6 @@ OZPREFIX        = $(PREFIX)
 OZBIN           = $(PREFIX)/bin
 OZLIB           = $(PREFIX)/lib
 IMAGESDIR       = $(OZLIB)/images
-CACHEDIR        = $(PREFIX)/cache/http/www.ps.uni-sb.de/ozhome/lib
-
 SHELL           = /bin/sh
 LN_S            = @LN_S@
 M4              = @M4@
@@ -48,6 +46,7 @@ APSRC = Application
 CPSRC = Search FD FS
 DPSRC = Connection Remote
 WPSRC = Tk TkTools
+MISCSRC = Misc
 
 FUNCTORS = \
         $(SPSRC:%=%.ozf) \
@@ -56,6 +55,7 @@ FUNCTORS = \
         $(CPSRC:%=%.ozf) \
         $(DPSRC:%=%.ozf) \
         $(WPSRC:%=%.ozf) \
+        $(MISCSRC:%=%.ozf) \
         Compiler.ozf
 
 SYSLETS = \
@@ -113,6 +113,8 @@ $(FUNCTORS): Standard.ozf Init.ozc
 %.ozf: dp/%.oz
         $(COMPILE) $< -o $@
 %.ozf: wp/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: misc/%.oz
         $(COMPILE) $< -o $@
 %.ozf: %.oz
         $(COMPILE) $< -o $@
@@ -188,8 +190,6 @@ ozc.ozc: ozc.ozm
 
 LIBFUNCTORS = \
         $(FUNCTORS:%=$(OZLIB)/%) $(OZLIB)/Init.ozc
-CACHEFUNCTORS = \
-        $(FUNCTORS:%=$(CACHEDIR)/%) $(CACHEDIR)/Init.ozc
 BINFILES = \
         $(SYSLETS:%=$(OZBIN)/%)
 STAGEEXTRAFILES = \
@@ -213,19 +213,20 @@ IMAGES = $(IMAGES1:%=$(IMAGESDIR)/%)
 install-images: \
         $(IMAGESDIR) $(IMAGES)
 
+CACHEDIR  = $(PREFIX)/cache/http/www.ps.uni-sb.de
+CACHELINK = $(CACHEDIR)/ozhome
+
 install-cache: \
-        $(CACHEDIR) $(CACHEFUNCTORS)
+        $(CACHEDIR) $(CACHELINK)
 
 $(CACHEDIR):
         $(INSTALL_DIR) $(CACHEDIR)
+
+$(CACHELINK): $(CACHEDIR)
+        $(LN_S)  $(PREFIX) $(CACHELINK)
+
 $(OZLIB) $(IMAGESDIR) $(OZBIN):
         $(INSTALL_DIR) $@
-
-$(CACHEDIR)/%.ozf: %.ozf
-        $(INSTALL_FILE) $< $@
-
-$(CACHEDIR)/%.ozc: %.ozc
-        $(INSTALL_FILE) $< $@
 
 $(OZLIB)/%.ozf: %.ozf
         $(INSTALL_FILE) $< $@

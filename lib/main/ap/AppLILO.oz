@@ -40,8 +40,13 @@ in
       OS.{tmpnam
           system
           unlink}
-      System.{get show property}
+
+      System.{get
+              show
+              property}
+
       Open.{file}
+
       Component.{save}
 
    export
@@ -61,6 +66,22 @@ in
       %%
 
       local
+         functor ErrorHandler prop once
+         import LILO.{loadEager}
+         body
+            {{`Builtin` setDefaultExceptionHandler 1}
+             proc {$ E}
+                %% cause Error to be instantiated, which installs
+                %% a new error handler as a side effect
+                {Wait {LILO.loadEager 'Error'}}
+                %% invoke this new error handler
+                {{{`Builtin` getDefaultExceptionHandler 1}} E}
+                %% this whole procedure is invoked at most once
+                %% since instantiatingError causes the handler
+                %% to be replaced with a better one.
+             end}
+         end
+
          proc {WriteApp File App}
             TmpFile = {OS.tmpnam}
             Script  = {New Open.file
@@ -70,13 +91,10 @@ in
                {Script write(vs:'#!/bin/sh\n')}
                {Script write(vs:'exec ozengine $0 "$@"\n')}
                {Script close}
-               try
-                  {Component.save App TmpFile}
-               catch X then
-                  {System.property.put 'print' print(width:10 depth:10)}
-                  {System.show X}
-               end
+               {Component.save App TmpFile}
                {OS.system 'cat '#TmpFile#' >> '#File#'; chmod +x '#File _}
+            catch E then
+               raise E end
             finally
                {OS.unlink TmpFile}
             end
@@ -84,14 +102,11 @@ in
 
          fun {MakeBody Functor LetKey LetFunctor}
             proc {$}
-               try
-                  LILO = {NewLILO}
-               in
-                  {LILO.link LetKey LetFunctor '.' _}
-                  {LILO.link unit Functor '.' _}
-               catch E then
-                  {{`Builtin` 'Show' 1} E}
-               end
+               LILO = {NewLILO}
+            in
+               {LILO.link unit   ErrorHandler '.' _}
+               {LILO.link LetKey LetFunctor   '.' _}
+               {LILO.link unit   Functor      '.' _}
             end
          end
 
@@ -130,7 +145,7 @@ in
          end
 
          proc {Applet File Functor Arg}
-            ArgParser = {Parser.cmd Arg}
+            ArgParser = {Parser.applet Arg}
 
             functor Applet prop once
             import Tk

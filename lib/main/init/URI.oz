@@ -384,14 +384,22 @@ local
    end
 
    fun {URI_fromDict D}
+      REC
       %% -- add the normalized string (to be computed on demand)
       {Dictionary.put D string _}
-      {NewChunk x(URI_:{Dictionary.toRecord uri D})}
+      %% -- add the record representation itself then compute it
+      {Dictionary.put D URI_ REC}
+      {Dictionary.toRecord uri D REC}
+   in
+      {NewChunk REC}
    end
 
    fun {URI_fromRec R}
       %% -- add the normalized string (to be computed on demand)
-      {NewChunk x(URI_:{AdjoinAt R string _})}
+      %% -- and the record representation
+      REC = {Adjoin REC uri(string:_ URI_:REC)}
+   in
+      {NewChunk REC}
    end
 
    %% -- unoptimized parser for experimental info in uri.
@@ -497,8 +505,7 @@ local
 
    %% -- converting a uri record to a virtual string
 
-   fun {URI_toVS Chk}
-      U         = Chk.URI_
+   fun {URI_toVS U}
       Scheme    = {CondSelect U scheme    unit}
       Device    = {CondSelect U device    unit}
       Authority = {CondSelect U authority unit}
@@ -537,11 +544,10 @@ local
 
    %% -- resolving en Relative uri with respect to a Base uri.
 
-   fun {URI_resolve BASE REL}
-      Base = BASE.URI_ Rel = REL.URI_
-   in
-      case {HasFeature Rel scheme} then REL
-      else D = {Record.toDictionary Rel} in
+   fun {URI_resolve Base Rel}
+      %% -- maybe should optimize the case when one of them is empty
+      case {HasFeature Rel scheme} then Rel
+      else D = {Record.toDictionary Rel.URI_} in
          try
             %% -- Scheme
             Scheme = {CondSelect Base scheme unit}
@@ -594,7 +600,7 @@ local
    end
 
    fun {URI_toString U}
-      STR = U.URI_.string
+      STR = U.string
    in
       case {IsDet STR} then STR else
          STR={VSToString {URI_toVS U}}
@@ -612,7 +618,7 @@ local
    %% -- has been normalized away: it is implicit in all relative paths
    %% -- that do not begin with "~...".
 
-   fun {URI_expand Chk} U = Chk.URI_ in
+   fun {URI_expand U}
       case
          {CondSelect U scheme    unit}==unit andthen
          {CondSelect U authority unit}==unit andthen
@@ -623,34 +629,33 @@ local
             of rel(dir(&~|USER)|_) then
                {URL_front true
                 case USER==nil then {GET 'user.home'}
-                else {Getpwnam USER}.dir end Chk}
+                else {Getpwnam USER}.dir end U}
             elseof rel(_) then
-               {URL_front false {GetCWD} Chk}
-            else Chk end
-         catch _ then Chk end
-      else Chk end
+               {URL_front false {GetCWD} U}
+            else U end
+         catch _ then U end
+      else U end
    end
 
-   %% -- if Skip1 is true, remove 1st segment of relative path in Chk.
+   %% -- if Skip1 is true, remove 1st segment of relative path in Rel.
    %% -- prepend parsed Path. return new parsed uri. Skip1==true is
    %% -- used to drop a leading ~USER component in the relative uri
-   %% -- parsed as Chk.
+   %% -- parsed as Rel.
 
-   fun {URL_front Skip1 Path Chk}
+   fun {URL_front Skip1 Path Rel}
       %% -- oh hum! we need to add a trailing slash so that the Path
       %% -- end with a directory component rather than a file
       %% -- component.  This should be enforced by normalization.
-      Front = {URI_make Path#'/'}.URI_.path.1
-      Rec = Chk.URI_
-      Back= case Skip1 then Rec.path.(1).2 else Rec.path.1 end
+      Front = {URI_make Path#'/'}.path.1
+      Back= case Skip1 then Rel.path.(1).2 else Rel.path.1 end
       Abs = {Normalize {Append Front Back} nil}
    in
-      {URI_fromRec {AdjoinAt Rec path abs(Abs)}}
+      {URI_fromRec {AdjoinAt Rel path abs(Abs)}}
    end
 
    %% -- return the underlying record
 
-   fun {URI_toRecord Chk} Chk.URI_ end
+   fun {URI_toRecord U} U.URI_ end
 
 in
    URI = uri(is         : URI_is

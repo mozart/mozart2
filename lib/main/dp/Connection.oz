@@ -119,6 +119,9 @@ in
 
    functor $ prop once
 
+   import
+      Fault.{install}
+
    export
       offer: Offer
       take:  Take
@@ -225,35 +228,31 @@ in
       end
 
 
-      local
-         InstallHW = {`Builtin` 'installHW' 3}
+      proc {Take V Entity}
+         T = {VsToTicket V}
+         P = {ToPort T}
+         X = {Promise.new}
       in
-         proc {Take V Entity}
-            T = {VsToTicket V}
-            P = {ToPort T}
-            X = {Promise.new}
-         in
-            {InstallHW  P watcher(cond:permHome)
-             proc {$ E C}
-                try
-                   X:=error
-                catch _ then skip
-                end
-             end}
-            {InstallHW  P handler(cond:perm)
-             proc{$ E C}
-                {`RaiseError` dp(connection(ticketToDeadSite V))}
-             end}
-            {Send P T#X}
-            case !!X of no then
-               {`RaiseError` dp(connection(refusedTicket V))}
-            elseof error then
-               {`RaiseError` dp(connection(ticketToDeadSite V))}
-            elseof yes(A) then
-               Entity=A
-            else
-               skip
-            end
+         {Fault.install  P watcher(cond:permHome)
+          proc {$ E C}
+             try
+                X:=error
+             catch _ then skip
+             end
+          end}
+         {Fault.install  P handler(cond:perm)
+          proc{$ E C}
+             {`RaiseError` dp(connection(ticketToDeadSite V))}
+          end}
+         {Send P T#X}
+         case !!X of no then
+            {`RaiseError` dp(connection(refusedTicket V))}
+         elseof error then
+            {`RaiseError` dp(connection(ticketToDeadSite V))}
+         elseof yes(A) then
+            Entity=A
+         else
+            skip
          end
       end
 

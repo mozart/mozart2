@@ -208,31 +208,26 @@ in
       %% Register System defaults
       %%
 
-      %% System library functors
-      {ForAll ['Application'
-               'Search' 'FD' 'Schedule' 'FS'
-               'System' 'Error' 'ErrorRegistry' 'Debug' 'Finalize' 'Foreign'
-               'Connection' 'Remote' 'VirtualSite'
-               'OS' 'Open' 'Pickle'
-               'Tk' 'TkTools'
-               'Compiler'
-               'Misc'
-               'URL' 'Module'
-               'Applet' 'Syslet' 'Servlet'
-              ]
-       proc {$ ModName}
-          {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
-       end}
-
-      %% Tool functors
-      {ForAll ['Panel' 'Browser' 'Explorer' 'CompilerPanel'
-               'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
-               'GumpParser']
-       proc {$ ModName}
-          {Module.system ModName MozartUrl#'tools/'#ModName#FunExt}
-       end}
+      local
+         Functors = \insert '../functor-defaults.oz'
+      in
+         %% System library functors
+         {ForAll Functors.dirs
+          proc {$ Kind}
+             {ForAll Functors.Kind
+              proc {$ ModName}
+                 {Module.system ModName MozartUrl#Kind#'/'#ModName#FunExt}
+              end}
+          end}
+         {ForAll Functors.volatile
+          proc {$ ModName}
+             {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
+          end}
+      end
 
       %% Register some virtual modules
+      %% Hmm, still not independent: CS
+
       {Module.enter MozartUrl#'lib/Module'#FunExt Module}
       {Module.enter MozartUrl#'lib/URL'#FunExt
        {{`Builtin` 'CondGetProperty' 3} url unit}}

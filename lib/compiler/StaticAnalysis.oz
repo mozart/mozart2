@@ -2814,7 +2814,7 @@ local
             Val = {GetPrintData Arbiter}
          in
             {Ctrl.rep
-             error(coord: @coord
+             error(coord: {@body.1 getCoord($)}
                    msg:   'Non-boolean arbiter in boolean case statement'
                    kind:  SATypeError
                    body:  [hint(l:'Name' m:pn(PN))

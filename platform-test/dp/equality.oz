@@ -26,7 +26,7 @@ import
    Remote(manager)
    OS(uName)
    System
-   Fault(install deinstall)
+   %Fault(install deinstall)
 export
    Return
 define
@@ -72,10 +72,10 @@ define
          {GCdo}
       end
 
-      proc{Watch A B}
+/*      proc{Watch A B}
          {Send PP.1 siteFault(siteDown)}
       end
-
+*/
       thread
          try
             {ForAll MyStream
@@ -143,8 +143,8 @@ define
                          )}
              {RM.Nr ping}
              {Wait PP.Nr}
-             {Fault.install PP.Nr watcher('cond':permHome)
-              Watch}
+/*           {Fault.install PP.Nr watcher('cond':permHome)
+              Watch}*/
           end}
       end
    in
@@ -181,8 +181,8 @@ define
 
       %% close managers
       {For 2 4 1 proc{$ Nr}
-                         {Fault.deinstall PP.Nr
-                      watcher('cond':permHome) Watch}
+                        /* {Fault.deinstall PP.Nr
+                      watcher('cond':permHome) Watch}*/
                     {RM.Nr close}
                  end}
       {Send PP.1 silentDeath}

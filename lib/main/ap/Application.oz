@@ -728,9 +728,9 @@ local
    %% This indicates that Application shouldn't be in OP: it ought
    %% to be instantiated with the Compiler module as import.
    %%
-   GetOPICompiler = {`Builtin` 'getOPICompiler' 1}
+   GetOPI = {`Builtin` 'getOPICompiler' 1}
    fun {ReadFromFile File}
-      CC = {GetOPICompiler}
+      CC = {{GetOPI} getCompiler($)}
       VS = 'local \\insert '#File#'\n=Registry__Return__Value__ in skip end'
    in
       {CC enqueue(mergeEnv(x('Registry__Return__Value__':_)))}

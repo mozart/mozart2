@@ -70,6 +70,7 @@ T_CompClass     = {NewName}
 T_Dictionary    = {NewName}
 T_Array         = {NewName}
 T_Port          = {NewName}
+T_Lock          = {NewName}
 %% first-class threads and spaces;
 T_Thread        = {NewName}
 T_Space         = {NewName}
@@ -370,7 +371,7 @@ BrowserBufferSize = 'size'
 BrowserSeparators = 'separateBufferEntries'
 RepresentationON  = 'representation'
 BrowserRepMode    = 'mode'
-BrowserChunkFields        = 'privateChunkFields'
+BrowserChunkFields        = 'detailedChunks'
 BrowserNamesAndProcs      = 'detailedNamesAndProcedures'
 BrowserVirtualStrings     = 'virtualStrings'
 BrowserStrings    = 'strings'

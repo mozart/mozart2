@@ -126,9 +126,9 @@ class FBrowserClass
 
    %%
    %% Break + purge unprocessed suspensions + undraw everything;
-   meth reset
+   meth clear
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::reset is applied'}
+      {Show 'FBrowserClass::clear is applied'}
 \endif
       lock
          %%
@@ -148,7 +148,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::reset is finished'}
+         {Show 'FBrowserClass::clear is finished'}
 \endif
       end
    end
@@ -161,8 +161,11 @@ class FBrowserClass
 \endif
       lock
          %%
-         FBrowserClass , reset
-         {self.BrowserStream enq(closeWindow)}
+         FBrowserClass , clear
+         case {self.Store read(StoreOrigWindow $)} == InitValue
+         then {self.BrowserStream enq(closeWindow)}
+         else skip
+         end
 
          %%
 \ifdef DEBUG_BO
@@ -254,7 +257,7 @@ class FBrowserClass
               enq(entriesDisable([%%
                                   unselect break rebrowse
                                   process clear clearAllButLast
-                                  checkLayout expand shrink deref]))
+                                  refineLayout expand shrink deref]))
               enq(entriesEnable([%%
                                  break
                                  %% should be on since that's a
@@ -266,7 +269,7 @@ class FBrowserClass
                                  then clearAllButLast else InitValue
                                  end
                                  case {self.BrowserBuffer getSize($)} > 0
-                                 then checkLayout else InitValue
+                                 then refineLayout else InitValue
                                  end]))]}
          end
 
@@ -370,7 +373,7 @@ class FBrowserClass
             proc {ProceedProc}
                %%  spawns drawing work;
                {self.BrowserStream [enq(browse(Term RootTermObj))
-                                    enq(entriesEnable([clear checkLayout]))]}
+                                    enq(entriesEnable([clear refineLayout]))]}
 
                %%
                Sync = unit
@@ -391,7 +394,7 @@ class FBrowserClass
             %% can be closed already when it's applied);
             case {self.BrowserBuffer getSize($)} > 1 then
                {self.BrowserStream
-                enq(entriesEnable([clearAllButLast checkLayout]))}
+                enq(entriesEnable([clearAllButLast refineLayout]))}
             else skip
             end
 
@@ -473,33 +476,6 @@ class FBrowserClass
    end
 
    %%
-   %% clear method;
-   %%
-   meth clear
-\ifdef DEBUG_BO
-      {Show 'FBrowserClass::clear is applied'}
-\endif
-      %%
-      lock
-         local CurrentSize in
-            CurrentSize = {self.BrowserBuffer getSize($)}
-
-            %%
-            FBrowserClass , Undraw(CurrentSize)
-
-            %%
-            {self.BrowserStream
-             enq(entriesDisable([clear clearAllButLast checkLayout]))}
-         end
-
-         %%
-\ifdef DEBUG_BO
-         {Show 'FBrowserClass::clear is finished'}
-\endif
-      end
-   end
-
-   %%
    %%
    meth clearAllButLast
 \ifdef DEBUG_BO
@@ -565,7 +541,7 @@ class FBrowserClass
             case {self.BrowserBuffer getSize($)}
             of 0 then {self.BrowserStream
                        enq(entriesDisable([clear clearAllButLast
-                                           checkLayout]))}
+                                           refineLayout]))}
             [] 1 then {self.BrowserStream
                        enq(entriesDisable([clearAllButLast]))}
             else skip
@@ -1184,7 +1160,7 @@ class FBrowserClass
 
    %%
    %% Check the layout;
-   meth checkLayout
+   meth refineLayout
 \ifdef DEBUG_BO
       {Show 'FBrowserClass::checkLayt is applied'}
 \endif
@@ -1192,7 +1168,7 @@ class FBrowserClass
          local CLProc in
             %%
             proc {CLProc RootTermObj}
-               {self.BrowserStream enq(checkLayoutReq(RootTermObj))}
+               {self.BrowserStream enq(refineLayoutReq(RootTermObj))}
             end
 
             %%
@@ -1219,7 +1195,7 @@ class FBrowserClass
          {self.Store store(StoreTWWidth Width)}
 
          %%
-         {self  checkLayout}
+         {self  refineLayout}
 
          %%
 \ifdef DEBUG_BO

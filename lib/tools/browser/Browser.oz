@@ -148,6 +148,7 @@ local
    DictionaryTermObject
    ArrayTermObject
    PortTermObject
+   LockTermObject
    ThreadTermObject
    SpaceTermObject
    PrimObjectTermObject

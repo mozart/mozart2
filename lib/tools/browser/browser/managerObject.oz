@@ -396,31 +396,31 @@ in
 
       %%
       %%
-      meth checkLayout(TermObj)
+      meth refineLayout(TermObj)
 \ifdef DEBUG_MO
-         {Show 'BrowserManagerClass::checkLayout is applied'}
+         {Show 'BrowserManagerClass::refineLayout is applied'}
 \endif
          BrowserManagerClass , CheckObj(TermObj)
          {DoCheckLayout TermObj}
 
          %%
 \ifdef DEBUG_MO
-         {Show 'BrowserManagerClass::checkLayout is finished'}
+         {Show 'BrowserManagerClass::refineLayout is finished'}
 \endif
       end
 
       %%
       %%
-      meth checkLayoutReq(TermObj)
+      meth refineLayoutReq(TermObj)
 \ifdef DEBUG_MO
-         {Show 'BrowserManagerClass::checkLayoutReq is applied'}
+         {Show 'BrowserManagerClass::refineLayoutReq is applied'}
 \endif
          BrowserManagerClass , CheckObj(TermObj)
          {TermObj CheckLayoutReq}
 
          %%
 \ifdef DEBUG_MO
-         {Show 'BrowserManagerClass::checkLayoutReq is finished'}
+         {Show 'BrowserManagerClass::refineLayoutReq is finished'}
 \endif
       end
 

@@ -33,6 +33,7 @@ local
    GenDictionaryPrintName
    GenArrayPrintName
    GenPortPrintName
+   GenLockPrintName
    GenThreadPrintName
    GenSpacePrintName
    GenObjPrintName
@@ -277,6 +278,14 @@ in
       %%
       case {Store read(StoreSmallNames $)} then '<Port>'
       else '<Port: ' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   fun {GenLockPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Lock>'
+      else '<Lock: ' # {System.printName Term} # '>'
       end
    end
 
@@ -1052,21 +1061,21 @@ in
    end
 
    %%
-   %% Ports;
+   %% Locks;
    %%
-   class PortTermObject from MetaTermObject
+   class LockTermObject from MetaTermObject
       %%
       feat
-         type: T_Port
+         type: T_Lock
 
       %%
       %%
       meth makeTerm
 \ifdef DEBUG_TO
-         {Show 'PortTermObject::makeTerm is applied'#self.term}
+         {Show 'LockTermObject::makeTerm is applied'#self.term}
 \endif
          local Name in
-            Name = {GenPortPrintName self.term self.store}
+            Name = {GenLockPrintName self.term self.store}
 
             %%
             RepManagerObject , insert(str: Name)
@@ -1076,7 +1085,7 @@ in
       %%
       %%
       meth otherwise(Message)
-         ControlObject , processOtherwise('PortObject::' Message)
+         ControlObject , processOtherwise('LockObject::' Message)
       end
 
       %%

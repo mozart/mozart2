@@ -2590,7 +2590,7 @@ in
 
             %%
             %% Note that 'UsedIndentOut' contains the current
-            %% position in a line in the 'checkLayout' context, where
+            %% position in a line in the 'refineLayout' context, where
             %% 'EvalDesc' is used!
          [] current then @UsedIndentOut
 

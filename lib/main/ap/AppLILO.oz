@@ -20,7 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-declare
+%declare
 
 local
 

@@ -29,8 +29,8 @@ fun
    instantiate
 \endif
    {$ IMPORT}
-   \insert SP/Foreign
    \insert SP/System
+   \insert SP/Foreign
    \insert SP/Debug
    \insert SP/Error
 \ifndef NOFINALIZATION

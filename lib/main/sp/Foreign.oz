@@ -43,19 +43,21 @@ local
    %%
    Resolver
    Localize
-   case {Dictionary.condGet {{`Builtin` 'SystemRegistry' 1}} url false}
+   case {RegistryCondGet url false}%System is inserted 1st
+      %{Dictionary.condGet {{`Builtin` 'SystemRegistry' 1}} url false}
    of false then
       !Resolver = unit
       fun{!Localize PATH} old(PATH) end
    elseof URL then
       !Resolver = {URL.makeResolver foreign
-                   env('OZ_DL_LOAD'
-                       local
-                          HOME   = {{`Builtin` 'SystemGetHome'     1}}
-                          OS#CPU = {{`Builtin` 'SystemGetPlatform' 1}}
-                       in
-                          'root='#HOME#'/platform/'#OS#'-'#CPU
-                       end)}
+                   vs({RegistryGet 'oz.search.dload'})}
+      %%      env('OZ_DL_LOAD'
+      %%          local
+      %%             HOME   = {{`Builtin` 'SystemGetHome'     1}}
+      %%             OS#CPU = {{`Builtin` 'SystemGetPlatform' 1}}
+      %%          in
+      %%             'root='#HOME#'/platform/'#OS#'-'#CPU
+      %%          end)}
       !Localize = Resolver.localize
    end
 

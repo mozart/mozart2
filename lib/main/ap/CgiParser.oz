@@ -4,11 +4,12 @@
 
 local
    local
+      OpenFile = Open.file
       class StdIn
-         from Open.file
+         from OpenFile
          prop final
          meth init
-            Open.file,dOpen(0 1)
+            OpenFile,dOpen(0 1)
          end
          meth get(N ?Is)
             Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
@@ -20,12 +21,12 @@ local
       end
    in
       fun {CgiGet}
-         case {String.toAtom {OS.getEnv 'REQUEST_METHOD'}}
-         of 'GET' then {OS.getEnv 'QUERY_STRING'}
+         case {String.toAtom {Getenv 'REQUEST_METHOD'}}
+         of 'GET' then {Getenv 'QUERY_STRING'}
          [] 'POST' then F in
             try
                F={New StdIn init}
-               {F get({String.toInt {OS.getEnv 'CONTENT_LENGTH'}} $)}
+               {F get({String.toInt {Getenv 'CONTENT_LENGTH'}} $)}
             finally
                {F close}
             end

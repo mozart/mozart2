@@ -67,6 +67,13 @@
 %%% * ARGS is a record of FEATURE:MODULE_NAME mappings.  It describes
 %%%   the shape of the functor's IMPORT record and indicates which
 %%%   module should be plugged into each feature.
+%%%   >>>EXTENSION<<<
+%%%   Allow FEATURE:MODULE_NAME#MODE to indicate the required loading
+%%%   loading policy for the argument.  By default, it is the same
+%%%   as for the parent.  But sometimes a module will need to use
+%%%   another module only rarely (e.g. maybe for special interaction
+%%%   with the user).  In that case, you would like the argument to
+%%%   be loaded lazily regardless of the loading policy of the parent.
 %%%
 %%% * TYPE describes the interface exported by a module.  This makes
 %%%   it possible to create a `lazy' interface that makes available
@@ -148,27 +155,28 @@ local
       raise error(registry(circularDependency Name) debug:debug)
       with  debug end
    end
+   ErrorFormatterGeneric = Error.formatter.generic
    fun {RegistryFormatter Exc}
       case Exc.1
       of registry(nameNotFound Name) then
          {Adjoin
-          {Error.formatter.generic 'module name not found: '#oz(Name) Exc}
+          {ErrorFormatterGeneric 'module name not found: '#oz(Name) Exc}
           error(body:unit kind:'Registry Error')}
       elseof registry(badRegistration Name Desc Which) then
          {Adjoin
-          {Error.formatter.generic 'Bad Registration Attempt' Exc}
+          {ErrorFormatterGeneric 'Bad Registration Attempt' Exc}
           error(body:[line('for module : '#oz(Name))
                       line('at argument: '#oz(Which))
                       line('in         : '#oz(Desc))]
                 kind:'Registry Error')}
       elseof registry(circularDependency Name) then
          {Adjoin
-          {Error.formatter.generic
+          {ErrorFormatterGeneric
            'circular dependency for module: '#oz(Name) Exc}
           error(body:unit kind:'Registry Error')}
       else
          {Adjoin
-          {Error.formatter.generic 'unrecognized exception' Exc}
+          {ErrorFormatterGeneric 'unrecognized exception' Exc}
           error(kind:'Registry Error')}
       end
    end
@@ -284,11 +292,22 @@ local
       {ForAll {Reverse ArgsLstSorted}
        proc {$ Parent}
           Mode = {Dictionary.get ModeMap Parent}%must already be in
+          Modes= {RegistryGetModes R Parent}%modes of children
        in
-          {Record.forAll {RegistryGetArgs R Parent}
-           proc {$ Child}
+          {Record.forAllInd {RegistryGetArgs R Parent}
+           proc {$ Cidx Child}
+              InterfaceMode = Modes.Cidx
+              % if the parent has mode include then the arguments
+              % must too, otherwise, if the argument's mode is unspecified
+              % (i.e. unit) then it inherits the parent's, else
+              % it gets whatever is specified. The argument's mode is
+              % propagated into the child using ModeCombine.
+              ActualMode    = case Mode==include then include
+                              elsecase InterfaceMode==unit then Mode
+                              else InterfaceMode end
+           in
               {Dictionary.put ModeMap Child
-               {ModeCombine Mode
+               {ModeCombine ActualMode
                 {Dictionary.condGet ModeMap Child 'lazyTop'}}}
            end}
        end}
@@ -334,45 +353,31 @@ local
       {RegistryGet R Name}.args
    end
    %%
-   %% {RegistryDependsOn R Name $}
-   %%   compute the transitive closure of the modules Name depends on
+   %% {RegistryGetModes R Name $}
+   %%   returns a record of FEATURE:MODE mappings indicating the
+   %%   desired loading mode of the corresponding argument.  A mode
+   %%   of unit indicates that the mode should be inherited from the
+   %%   parent.
    %%
-   fun {RegistryDependsOn R Name}
-      Deps={Dictionary.new}
-   in
-      {Record.forAll {RegistryGetArgs R Name}
-       proc {$ Arg} {RegistryPropagate R Arg Deps Name} end}
-      {Dictionary.keys Deps}
-   end
-   %%
-   %% {RegistryPropagate R Name Deps Except}
-   %%   record Name as well as all its recursive dependencies in Deps
-   %%   if Name==Except we have found a circularity: we are back at
-   %%   the Name that initiated the Propagation from DependsOn.  The
-   %%   reason it is enough to watch out for loops that reenter at
-   %%   the initiating node, is that we are going to do this for all
-   %%   modules involved anyway: if there is a loop, we will eventually
-   %%   find it.
-   %%
-   proc {RegistryPropagate R Name Deps Except}
-      % check for circularity
-      case Name==Except then {CircularDependency Name}
-         % skip, if we have already explored Name
-      elsecase {Dictionary.condGet Deps Name false} then skip
-         % otherwise, record Name and explore its dependencies
-      else
-         {Dictionary.put Deps Name true}
-         {Record.forAll {RegistryGetArgs R Name}
-          proc {$ Arg} {RegistryPropagate R Arg Deps Except} end}
-      end
+   fun {RegistryGetModes R Name}
+      {RegistryGet R Name}.modes
    end
    %%
    %% register(NAME src:SRC args:ARGS type:TYPE)
    %%
    proc {RegistryRegister R NAME Desc}
       SRC  = Desc.src
-      ARGS = Desc.args
       TYPE = case {HasFeature Desc type} then Desc.type else unit end
+      ARGS = {Record.map Desc.args
+              fun {$ D}
+                 case D of Name#_     then Name
+                 elsecase {Atom.is D} then D
+                 else {BadRegistration NAME Desc args} unit end
+              end}
+      MODES= {Record.map Desc.args
+              fun {$ D}
+                 case D of _#Mode then Mode else unit end
+              end}
    in
       %% check arguments
       case SRC
@@ -381,8 +386,6 @@ local
       []   path(_) then skip
       [] system(_) then skip
       else {BadRegistration NAME Desc src} end
-      case {Record.is ARGS} andthen {Record.all ARGS Atom.is}
-      then skip else {BadRegistration NAME Desc args} end
       case TYPE
       of unit      then skip
       [] _#_       then skip
@@ -391,7 +394,7 @@ local
       [] system(_) then skip
       else {BadRegistration NAME Desc type} end
       {Dictionary.put {RegistryGetMap R} NAME
-       module(name:NAME src:SRC args:ARGS type:TYPE)}
+       module(name:NAME src:SRC args:ARGS type:TYPE modes:MODES)}
    end
    %%
    %% The Loader code is adapted from code originally written
@@ -405,8 +408,9 @@ local
    fun {ComputeSystemURL BASENAME}
       {SystemURL}#BASENAME#'.ozc'
    end
+   Getenv = OS.getEnv
    fun {SystemURL}
-      case {OS.getEnv 'OZCOMPONENTS'} of false then
+      case {Getenv 'OZCOMPONENTS'} of false then
          'http://www.ps.uni-sb.de/ozhome/lib/'
       elseof URL then
          case {List.last {VirtualString.toString URL}}==&/ then URL
@@ -745,7 +749,7 @@ local
    %%
    DefaultRegistry = {Lazy.new MakeDefaultRegistry}
    proc {DefaultRegister Name Desc}
-      {RegistryRegister DefaultRegister Name Desc}
+      {RegistryRegister DefaultRegistry Name Desc}
    end
    fun  {DefaultGetPlan   Spec} {RegistryGetPlan   DefaultRegistry Spec} end
    fun  {DefaultGetLoader Spec} {RegistryGetLoader DefaultRegistry Spec} end
@@ -809,7 +813,8 @@ local
       end
    end
 in
-%   {Error.formatter.put registry RegistryFormatter}
+   try {Error.formatter.put registry RegistryFormatter}
+   catch _ then skip end
    Application = application(
                              register   :DefaultRegister
                              loader     :DefaultGetLoader

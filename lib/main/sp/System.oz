@@ -35,9 +35,9 @@ Print      = {`Builtin` 'Print' 1}
 Exit       = {`Builtin` shutdown 1}
 SystemRegistry = {{`Builtin` 'SystemRegistry' 1}}
 
-%proc {RegistryGet     P   V} {Dictionary.get     SystemRegistry P   V} end
-%proc {RegistryPut     P   V} {Dictionary.put     SystemRegistry P   V} end
-%proc {RegistryCondGet P D V} {Dictionary.condGet SystemRegistry P D V} end
+proc {RegistryGet     P   V} {Dictionary.get     SystemRegistry P   V} end
+proc {RegistryPut     P   V} {Dictionary.put     SystemRegistry P   V} end
+proc {RegistryCondGet P D V} {Dictionary.condGet SystemRegistry P D V} end
 
 %%
 %% Module
@@ -247,8 +247,9 @@ in
                       {`Builtin` 'System.valueToVirtualString' 4}
                    exit: Exit
                    %% interface to system registry
-%                  registry(get:RegistryGet
-%                           put:RegistryPut
-%                           condGet:RegistryCondGet)
+                   registry:
+                      registry(get:RegistryGet
+                               put:RegistryPut
+                               condGet:RegistryCondGet)
                   )
 end

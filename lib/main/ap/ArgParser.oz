@@ -188,8 +188,9 @@ local
       {Dictionary.toRecord argv D}
    end
 
+   SystemGet = System.get
    fun {GetArgs}
-      {Map {System.get argv} AtomToString}
+      {Map {SystemGet argv} AtomToString}
    end
 
 in

@@ -2697,6 +2697,7 @@ define
          [] fLoop(S C) then fLoop({SP S} {CS C})
          [] fMacro(Ss C) then fMacro({Map Ss SP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {CS C})
+         [] fColonEquals(L R C) then fColonEquals({EP L} {EP R} {CS C})
          [] fFOR(Ds B C) then fFOR({Map Ds FP} {SP B} {CS C})
          end
       end
@@ -2772,6 +2773,7 @@ define
          [] fLoop(S C) then fLoop({EP S} {FS C})
          [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {FS C})
+         [] fColonEquals(L R C) then fColonEquals({EP L} {EP R} {FS C})
          [] fFOR(Ds B C) then fFOR({Map Ds FP} {SP B} {FS C})
          end
       end

@@ -2182,10 +2182,6 @@ local
                end
             else skip
             end
-         [] '^' then [Arg1 Arg2 Arg3] = ActualArgs in
-            VHd = vInlineUparrow(_ {Arg1 reg($)} {Arg2 reg($)}
-                                 {{Arg3 getVariable($)} reg($)}
-                                 VTl)
          [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
             {Arg1 getCodeGenValue(?Atomname)}
             case {IsDet Atomname} andthen {IsLiteral Atomname} then
@@ -2269,8 +2265,6 @@ local
                end
             else skip
             end
-         [] 'getTclNames' then
-            skip   % has been executed by LoadActualArgs
          else skip
          end
          case {IsDet VHd} then skip

@@ -453,20 +453,6 @@ in
                Emitter, Emit(unify(X2 R))
                Emitter, FreeX(X2.1)
             end
-         [] vInlineUparrow(_ Reg1 Reg2 Reg3 Cont) then X1 X2 in
-            Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-            Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-            case Emitter, GetReg(Reg3 $) of none then NLiveRegs X3 in
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, PredictInlineFunResult(Reg3 ?X3)
-               Emitter, Emit(inlineUparrow(X1 X2 X3 NLiveRegs))
-            elseof R then NLiveRegs X3 in
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, AllocateShortLivedTemp(?X3)
-               Emitter, Emit(inlineUparrow(X1 X2 X3 NLiveRegs))
-               Emitter, Emit(unify(X3 R))
-               Emitter, FreeX(X3.1)
-            end
          [] vInlineAt(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then NLiveRegs X in
                NLiveRegs = @HighestUsedX + 1

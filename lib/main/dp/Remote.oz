@@ -27,21 +27,21 @@ functor
 
 import
    Open(pipe)
-
    OS(getEnv)
-
    System(showInfo)
-
    Connection(offer)
-
    Property(get)
-
    Module(manager)
 
 export
    manager: ManagerProxy
 
 define
+
+   %%
+   %% Force linking of base libraries
+   %%
+   {Wait Connection.offer}
 
    HasVirtualSite = {Property.get 'distribution.virtualsites'}
 

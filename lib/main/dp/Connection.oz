@@ -26,12 +26,11 @@
 functor
 
 import
-   Fault(install deinstall)
-
+   DPB                      at 'x-oz://boot/DPB'
    PID(get received toPort) at 'x-oz://boot/PID'
+   Distribution('export')   at 'x-oz://boot/Distribution'
 
-   Distribution('export') at 'x-oz://boot/Distribution'
-
+   Fault(install deinstall)
    Property(get)
 
 export
@@ -143,6 +142,11 @@ prepare
 
 
 define
+
+   %%
+   %% Force linking of base library
+   %%
+   {Wait DPB}
 
    %%
    %% Base Process Identifier package

@@ -24,6 +24,8 @@
 functor
 
 import
+   DPB
+   at 'x-oz://boot/DPB'
    Fault(installHW
          deInstallHW
          getEntityCond)
@@ -35,6 +37,12 @@ export
    getEntityCond:     GetEntityCond
 
 define
+
+   %%
+   %% Force linking of base library
+   %%
+   {Wait DPB}
+
    Install       = Fault.installHW
    Deinstall     = Fault.deInstallHW
    GetEntityCond = Fault.getEntityCond

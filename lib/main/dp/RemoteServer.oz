@@ -26,7 +26,7 @@
 functor
 
 import
-   Connection(take)
+   Connection % Do not request!
 
    Application(exit getCmdArgs)
 
@@ -34,7 +34,7 @@ import
 
    System(showError)
 
-   Fault(install)
+   Fault
 
    Property(put)
 
@@ -57,6 +57,11 @@ define
 
    %% Set the appropriate distribution model
    {Property.put 'perdio.minimal' Args.minimal}
+
+   %%
+   %% Force linking of base libraries
+   %%
+   {Wait Connection}
 
    %% Module manager needed for
    ModMan = {New Module.manager init}

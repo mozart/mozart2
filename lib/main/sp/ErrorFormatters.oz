@@ -489,7 +489,7 @@ define
          elseof object(nonLiteralMethod L) then
             error(kind: T
                   msg: 'Method label is not a literal'
-                  items: [hint(l:'Method' m:L)])
+                  items: [hint(l:'Method' m:oz(L))])
          else
             error(kind: T
                   items: [line(oz(E))])

@@ -116,6 +116,10 @@ in
          EvalDialog, tkPack()
       end
 
+      %%
+      %% Actions
+      %%
+
       meth Eval()
          case {self.Expr tkReturn(get $)} of "" then
             {self.Result tk(conf text:'Did you ask something?')}
@@ -130,6 +134,31 @@ in
             EvalDialog, eval(S false)
          end
       end
+      meth Reset()
+         EvalDialog, Kill()
+         {self.Result tk(conf text: '')}
+      end
+      meth Kill()
+         lock
+            if @EvalThread \= unit then
+               {Thread.injectException @EvalThread interrupt}
+               lock @SpinnerLock then skip end   %% wait for spinner to finish
+               EvalThread <- unit
+            end
+         end
+      end
+      meth Close()
+         EvalDialog, Kill()
+         {self tkClose()}
+      end
+
+      %%
+      %% Public Methods
+      %%
+
+      meth getCompiler($)
+         @CurComp
+      end
       meth eval(VS IsExpression <= true) VS2 in
          VS2 = if IsExpression then VS else VS#'\nunit' end
          EvalDialog, Kill()
@@ -138,7 +167,7 @@ in
                EvalThread <- {Thread.this}
                thread
                   lock @SpinnerLock then
-                     {Delay 150} %% short calculations don't need a spinner
+                     {Delay 150}   %% short computations don't need a spinner
                      if {IsFree Sync} then
                         {self.Result tk(conf fg:DefaultForeground)}
                         {Thread.setThisPriority high}
@@ -148,8 +177,6 @@ in
                end
                {@CurComp enqueue(setSwitch(expression true))}
                {@CurComp enqueue(setSwitch(threadedqueries false))}
-               {@CurComp enqueue(setSwitch(debuginfovarnames true))}
-               {@CurComp enqueue(setSwitch(debuginfocontrol true))}
                {Wait {@CurComp enqueue(ping($))}}
                {@CurCompUI reset()}
                case @Self of unit then
@@ -184,31 +211,12 @@ in
                end
                EvalThread <- unit
             catch interrupt then
-               if @CurComp \= unit then
-                  {@CurComp clearQueue()}
-                  {@CurComp interrupt()}
-               end
+               {@CurComp clearQueue()}
+               {@CurComp interrupt()}
             finally
                Sync = unit
             end
          end
-      end
-      meth Reset()
-         EvalDialog, Kill()
-         {self.Result tk(conf text: '')}
-      end
-      meth Kill()
-         lock
-            if @EvalThread \= unit then
-               {Thread.injectException @EvalThread interrupt}
-               lock @SpinnerLock then skip end   %% wait for spinner to finish
-               EvalThread <- unit
-            end
-         end
-      end
-      meth Close()
-         EvalDialog, Kill()
-         {self tkClose()}
       end
    end
 end

@@ -157,6 +157,7 @@ ozbench: $(BENCHSRCS:%=./lib/%.oz) $(COMPONENTS) $(OTHERS)
 clean:
         -rm -f *~ ./*/*~ ./*/*/*~
         -rm -f $(COMPONENTS) $(OTHERS)
+        -rm -f $(SONATIVES)
         -rm -f LambdaScanner.* LambdaParser.*
         -rm -f make-test
         -rm -f te.ozf

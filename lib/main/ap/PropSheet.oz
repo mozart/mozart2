@@ -164,15 +164,66 @@ class AtomChoice from Tk.frame Editor
    end
 end
 
+%% Map a type spec to the pair of an editor class
+%% and extra args for the init message
+
+fun {TypeToEditor Type}
+   case Type
+   of bool       then BoolEditor        # Type
+   [] string     then StringEditor      # Type
+   [] atom       then AtomEditor        # Type
+   [] int(...)   then IntEditor         # Type
+   [] float(...) then FloatEditor       # Type
+   [] atom(...)  then AtomChoices       #
+      atom(choices:{Record.toList Type})
+   end
+end
+
+%% A PropManager corresponds to one specific option
+%% (1) it has the option specification
+%% (2) it is reponsible for creating and keeping track
+%%     of rows corresponding to this option
+
+NoDefault = {NewName}
+
+class PropManager
+   feat name text type occ default alias optional
+      parent
+   attr rows:nil
+   meth init(Spec parent:P)
+      self.parent   = P
+      self.name     = {Label Spec}
+      self.text     = {CondSelect Spec text '--'#self.name}
+      self.occ      = {CondSelect Spec 1 single}
+      self.type     = {CondSelect Spec type string}
+      self.default  = {CondSelect Spec default NoDefault}
+      self.optional = {CondSelect Spec optional
+                       {HasFeature Spec default}}
+      self.alias    = {CondSelect Spec alias nil}
+   end
+   meth createRow($)
+
+   end
+   meth unmanage(Row)
+      %% when a row is being deleted, it tells its
+      %% manager that it should be unmanaged
+      try
+         {List.forAllInd @rows
+          proc {$ I R}
+             if R==Row then raise ok(I) end end
+          end}
+      catch ok(I) then Prefix Suffix in
+         {List.takeDrop @rows I-1 Prefix Row|Suffix}
+         rows <- {Append Prefix Suffix}
+      end
+   end
+end
+
 %%
 
-EditorMap =
-map(bool        : BoolEditor
-    string      : StringEditor
-    atom        : AtomEditor
-    int         : IntEditor
-    float       : FloatEditor
-    atoms       : AtomChoice)
+class PropRow
+
+%%
 
 class PropLabel from Tk.label
    meth showState(S)

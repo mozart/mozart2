@@ -31,6 +31,7 @@ import
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Property(get)
    Builtins(getInfo)
+   System(show)
 export
    'class': Emitter
    Continuations
@@ -221,6 +222,7 @@ define
             CDs:    nil  % List of pairs cardinality and bitarrays
                          % representing distinct constraints
             Es:     nil  % List of pairs of equality constraints
+            Ns:     nil  % List of pairs of inequality constraints
             Ss:     nil  % List of hard assignments
          feat
             Mapping      % Maps allocation to real registers
@@ -247,6 +249,10 @@ define
             end
          end
 
+         meth neq(I1 I2)
+            Ns <- (I1|I2)|@Ns
+         end
+
          meth decl(Is ?Y ?I)
             J
          in
@@ -271,16 +277,34 @@ define
             Ss <- (Y|I)|@Ss
          end
 
-         meth optimize($)
+         meth Optimize(AddNs $)
+            LNs = @Ns
             LCDs = {Sort @CDs fun {$ C1|_ C2|_}
                                  C1>C2
                               end}
-            CDs <- nil
             LEs = @Es
-            Es  <- nil
             LSs = @Ss
-            Ss  <- nil
             LN  = @N-1
+\ifdef DEBUG_OPTIMIZER
+            {System.show 'OPTIMISE'}
+            local
+               ShowDist = {Map LCDs fun {$ _|C}
+                                       distinct_regs({BitArray.toList C})
+                                    end
+                          }
+            in
+               {ForAll LEs proc {$ R1|R2}
+                              {System.show eq_reg(R1 R2)}
+                           end}
+               {ForAll LSs proc {$ R1|R2}
+                              {System.show hard_eq_reg(R1 R2)}
+                           end}
+               {ForAll ShowDist System.show}
+               {ForAll LNs proc {$ R1|R2}
+                              {System.show ineq_reg(R1 R2)}
+                           end}
+            end
+\endif
             S = {Space.new proc {$ X}
                               %% Create mapping
                               X = {MakeTuple regs LN}
@@ -303,6 +327,10 @@ define
                               end
                               %% Tell domain constraints
                               X ::: 0#LN
+                              if AddNs then
+                                 %% inequalities
+                                 {ForAll LNs proc {$ I1|I2} X.I1 \=: X.I2 end}
+                              end
                               local
                                  Vs={Map if LSs==nil andthen LCDs\=nil then
                                             LCDs.2
@@ -323,10 +351,13 @@ define
                            end}
             T = {Thread.this}
             RaiseOnBlock = {Debug.getRaiseOnBlock T}
-            Alloc
+            Alloc Status
          in
             {Debug.setRaiseOnBlock T false}
-            {Space.ask S succeeded}
+            {Space.ask S Status}
+            if Status \= succeeded then
+               raise ineq_cs_failed end
+            end
             {Debug.setRaiseOnBlock T RaiseOnBlock}
             Alloc = {Space.merge S}
             {Record.foldLInd Alloc
@@ -334,6 +365,30 @@ define
                 {Dictionary.get self.Mapping I}=J
                 {Max M J}
              end ~1}+1
+         end
+         %% PR#571, PR#931, PR#1244
+         %% To fix register allocation bugs we have added inequality
+         %% constraints between source/target Y registers involved in
+         %% EmitShared's register shuffling. We first try with those
+         %% constraints, if it fails we try without those constraints.
+         %% (i.e. we fall back on the old behaviour) this is expected
+         %% to be a short term fix until further investigations have
+         %% made it unnecessary.
+         meth optimize(Res)
+            Res = try
+                     {self Optimize(true $)}
+                  catch X then
+                     {System.show X}
+                     {self Optimize(false $)}
+                  end
+            {self reset()}
+         end
+
+         meth reset()
+            Ns  <- nil
+            CDs <- nil
+            Es  <- nil
+            Ss  <- nil
          end
       end
    end
@@ -526,63 +581,80 @@ define
             {System.show {Dictionary.toRecord currentTemporaries @Temporaries}}
             {System.show {Dictionary.toRecord targetTemporaries Ts}}
 \endif
-            %%--** this reordering is not correct; consider the following:
-            %%   proc {F Foo Bar} X in
-            %%      if Bar == 1 orelse {Member 1 nil} then X = 3
-            %%      else X = Bar
-            %%      end
-            %%      {System.show Foo}
-            %%      {System.show X}
-            %%   end
-            %%   {F foo bar}
-            %%
-            %% At the first application of System.show,
-            %% registers x(0) and y(0) must actually be swapped.
-            {ForAll {Dictionary.entries Ps}
-             proc {$ Reg#YG}
-                case YG of (Y=y(_))#I then
-                   case Emitter, GetPerm(Reg $) of none then
-                      case Emitter, GetTemp(Reg $) of none then
-                         Emitter, Emit(createVariable(Y))
-                      elseof X then
-                         Emitter, Emit(move(X Y))
+            %% PR#571, PR#931, PR#1244
+            %% We move register contents around to be in the right place
+            %% for the code block we are about to jump to.
+            %% For the X registers this is straightforward,  we know the
+            %% physical source/target register numbers.
+            %% For the Y registers we don't know the physical numbers until we call
+            %% "@RegOpt optimize" at the end of code generation.
+            %% We must ensure that we don't overwrite the value in a Y register that
+            %% is still required as a source. To ensure this we add inequality
+            %% constraints between all source and target Y registers
+            %% (and see comment on the register optimizer)
+            local
+               SourceYs = {NewCell nil}
+               TargetYs = {NewCell nil}
+            in
+               {ForAll {Dictionary.entries Ps}
+                proc {$ Reg#YG}
+                   case YG of (Y=y(_))#I then
+                      case Emitter, GetPerm(Reg $) of none then
+                         %% Remember all Indexes, I, that get overwritten
+                         local L in {Exchange TargetYs L I|L} end
+                         case Emitter, GetTemp(Reg $) of none then
+                            Emitter, Emit(createVariable(Y))
+                         elseof X then
+                            Emitter, Emit(move(X Y))
+                         end
+                      elsecase {Dictionary.get @Permanents Reg} of _#J then
+                         {@RegOpt eq(I J)}
                       end
-                   elsecase {Dictionary.get @Permanents Reg} of _#J then
-                      {@RegOpt eq(I J)}
+                   else skip
                    end
-                else skip
-                end
-             end}
-            Arity <- 0
-            {ForAll {Dictionary.entries Ts}
-             proc {$ Reg#(X=x(I))} Instr in
-                if I >= @Arity then
-                   Arity <- I + 1
-                end
-                case {Dictionary.condGet @Permanents Reg none}
-                of vEquateConstant(_ Constant _ _) then
-                   {Dictionary.remove @Permanents Reg}
-                   putConstant(Constant X)
-                [] vGetSelf(_ _ _) then
-                   {Dictionary.remove @Permanents Reg}
-                   getSelf(X)
-                elsecase Emitter, GetTemp(Reg $) of none then
-                   case Emitter, GetPerm(Reg $) of none then
-                      createVariable(X)
-                   elseof YG then
-                      move(YG X)
+                end}
+               Arity <- 0
+               {ForAll {Dictionary.entries Ts}
+                proc {$ Reg#(X=x(I))} Instr in
+                   if I >= @Arity then
+                      Arity <- I + 1
                    end
-                [] x(!I) then
-                   %% Optimize the special case that the register
-                   %% already is located in its destination.
-                   'skip'
-                elseof X2=x(J) then
-                   {Dictionary.put @AdjDict J
-                    I|{Dictionary.condGet @AdjDict J nil}}
-                   move(X2 X)
-                end = Instr
-                {Dictionary.put @DelayedInitsDict I Instr}
-             end}
+                   case {Dictionary.condGet @Permanents Reg none}
+                   of vEquateConstant(_ Constant _ _) then
+                      {Dictionary.remove @Permanents Reg}
+                      putConstant(Constant X)
+                   [] vGetSelf(_ _ _) then
+                      {Dictionary.remove @Permanents Reg}
+                      getSelf(X)
+                   elsecase Emitter, GetTemp(Reg $) of none then
+                      case Emitter, GetPerm(Reg $) of none then
+                         createVariable(X)
+                      elseof YG then
+                         case {Dictionary.condGet @Permanents Reg none}
+                         of y(_)#IndS then
+                            %% Remember all Indexes, I, that get read
+                            local L in {Exchange SourceYs L IndS|L} end
+                         else skip end
+                         move(YG X)
+                      end
+                   [] x(!I) then
+                      %% Optimize the special case that the register
+                      %% already is located in its destination.
+                      'skip'
+                   elseof X2=x(J) then
+                      {Dictionary.put @AdjDict J
+                       I|{Dictionary.condGet @AdjDict J nil}}
+                      move(X2 X)
+                   end = Instr
+                   {Dictionary.put @DelayedInitsDict I Instr}
+                end}
+               {ForAll {Access SourceYs}
+                proc {$ IndS}
+                   {ForAll {Access TargetYs}
+                    proc {$ IndT}
+                       {@RegOpt neq(IndS IndT)} end}
+                end}
+            end
             Emitter, ConfigureXBank()
             Temporaries <- {Dictionary.clone Ts}
             Permanents <- {Dictionary.clone Ps}

@@ -50,7 +50,13 @@ local
    in
       Peanuts = {Map \insert '../module-Peanuts.oz'
                  fun {$ M}
-                    M # {Load M#FunExt}.apply
+                    Fun = {Load M#FunExt}
+                 in
+                    case {Width Fun.'import'}==0
+                    then M # Fun.apply
+                    else
+                       raise error('No import for peanuts allowed') end
+                    end
                  end}
    end
 \endif
@@ -205,7 +211,7 @@ in
       %% System library functors
       {ForAll ['Application'
                'Search' 'FD' 'Schedule' 'FS'
-               'System' 'Error' 'Debug' 'Finalize' 'Foreign'
+               'System' 'Error' 'ErrorRegistry' 'Debug' 'Finalize' 'Foreign'
                'Connection' 'Remote' 'VirtualSite'
                'OS' 'Open' 'Pickle'
                'Tk' 'TkTools'

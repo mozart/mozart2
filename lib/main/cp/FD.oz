@@ -111,12 +111,123 @@ local
       choice skip end
    end
 
+   %%
+   %% Error formatting
+   %%
+
+   local
+      ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
+
+      BuiltinNames
+      = bi(fdp_twice:         [fdp_twice           ['FD.plus' 'FD.minus']]
+           fdp_square:        [fdp_square          ['FD.times']]
+           fdp_plus:          ['FD.plus'           ['FD.distance']]
+           fdp_plus_rel:      ['FD.plus'           ['FD.distance' '+']]
+           fdp_minus:         ['FD.minus'          nil]
+           fdp_times:         ['FD.times'          nil]
+           fdp_times_rel:     ['FD.plus'           ['FD.distance' '*']]
+           fdp_divD:          ['FD.divD'           nil]
+           fdp_divI:          ['FD.divI'           nil]
+           fdp_modD:          ['FD.modD'           nil]
+           fdp_modI:          ['FD.modI'           nil]
+           fdp_conj:          ['FD.conj'           nil]
+           fdp_disj:          ['FD.disj'           nil]
+           fdp_exor:          ['FD.exor'           nil]
+           fdp_impl:          ['FD.impl'           nil]
+           fdp_equi:          ['FD.equi'           nil]
+           fdp_nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
+           fdp_sumCR:         ['FD.reified.sumC'   ArithOps]
+           fdp_intR:          ['FD.refied.int'     ['FD.reified.dom']]
+           fdp_card:          ['FD.reified.card'   nil]
+           fdp_exactly:       ['FD.exactly'        nil]
+           fdp_atLeast:       ['FD.atLeast'        nil]
+           fdp_atMost:        ['FD.atMost'         nil]
+           fdp_element:       ['FD.element'        nil]
+           fdp_disjoint:      ['FD.disjoint'       nil]
+           fdp_disjointC:     ['FD.disjointC'      nil]
+           fdp_distance:      ['FD.distance'       nil]
+           fdp_notEqOff:      [fdp_notEqOff        ['FD.sumC' '\\=:']]
+           fdp_lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
+                                                    '>:' 'FD.min' 'FD.max'
+                                                    'FD.modD'
+                                                    'FD.modI' 'FD.disjoint'
+                                                    'FD.disjointC' 'FD.distance'
+                                                   ]]
+           fdp_minimum:        ['FD.min'                   nil]
+           fdp_maximum:        ['FD.max'                   nil]
+           fdp_inter:          ['FD.inter'                 nil]
+           fdp_union:          ['FD.union'                 nil]
+           fdp_distinct:       ['FD.distinct'              nil]
+           fdp_distinctOffset: ['FD.distinctOffset'        nil]
+           fdp_subset:         [fdp_subset         ['FD.union' 'FD.inter']]
+           fdp_sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
+           fdp_sumCN:          ['FD.sumCN'         ArithOps]
+           fdp_sumAC:          ['FD.sumAC'         nil]
+
+           sched_disjoint_card:['FD.schedule.disjoint'             nil]
+           sched_cpIterate:    ['FD.schedule.serialized'           nil]
+           sched_disjunctive:  ['FD.schedule.serializedDisj'       nil]
+
+           fdGetMin:           ['FD.reflect.min'   nil]
+           fdGetMid:           ['FD.reflect.mid'   nil]
+           fdGetMax:           ['FD.reflect.max'   nil]
+           fdGetDom:           ['FD.reflect.dom'   ['FD.reflect.domList']]
+           fdGetCard:          ['FD.reflect.size'  nil]
+           fdGetNextSmaller:   ['FD.reflect.nextSmaller'   nil]
+           fdGetNextLarger:    ['FD.reflect.nextLarger'    nil]
+
+           fdWatchSize:        ['FD.watch.size'    nil]
+           fdWatchMin:         ['FD.watch.min'     nil]
+           fdWatchMax:         ['FD.watch.max'     nil]
+
+           fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
+           fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
+           fd_sumCD:           [fdp_sumCD          ['condis ... end']]
+           fd_sumCCD:          [fdp_sumCCD         ['condis ... end']]
+           fd_sumCNCD:         [fdp_sumCNCD        ['condis ... end']]
+          )
+
+      fun {BIPrintName X}
+         case {IsAtom X}
+            andthen {HasFeature BuiltinNames X}
+         then BuiltinNames.X.1
+         else X end
+      end
+
+      fun {BIOrigin X}
+         BuiltinNames.X.2.1
+      end
+
+   in
+
+      fun {FormatOrigin A}
+         B = {BIPrintName A}
+      in
+         case {HasFeature BuiltinNames B}
+            andthen {BIOrigin B}\=nil
+         then
+            [unit
+             hint(l:'Possible origin of procedure' m:oz({BIPrintName B}))
+             line(oz({BIOrigin B}))]
+         else nil end
+      end
+   end
+
 in
 
    functor $ prop once
 
    import
       Foreign.{staticLoad}
+
+      ErrorRegistry.{put}
+
+      Error.{formatGeneric
+             formatAppl
+             formatTypes
+             formatHint
+             format
+             dispatch}
 
    export
       %% Telling Domains
@@ -801,6 +912,48 @@ in
          {FdBool C}
          {FdpDisjointC X XD Y YD C}
       end
+
+      %%
+      %% Register error formatter
+      %%
+
+      {ErrorRegistry.put
+
+       fd
+
+       fun {$ Exc}
+          E = {Error.dispatch Exc}
+          T = 'error in finite domain system'
+       in
+          case E
+          of fd(scheduling A Xs T P S) then
+
+         % expected Xs:list, T:atom, P:int S:virtualString
+
+             {Error.format
+              T unit
+              hint(l:'At argument' m:P)
+              | {Append
+                 {Error.formatTypes T}
+                 hint(l:'In statement' m:{Error.formatAppl A Xs})
+                 | {Append {FormatOrigin A} {Error.formatHint S}}}
+              Exc}
+
+          elseof fd(noChoice A Xs P S) then
+
+         % expected Xs:list, P:int, S:virtualString
+
+             {Error.format
+              T unit
+              hint(l:'At argument' m:P)
+              | hint(l:'In statement' m:{Error.formatAppl A Xs})
+              | {Append {FormatOrigin A} {Error.formatHint S}}
+              Exc}
+
+          else
+             {Error.formatGeneric T Exc}
+          end
+       end}
 
    end
 

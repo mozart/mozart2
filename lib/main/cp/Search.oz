@@ -797,6 +797,14 @@ in
 
    functor $ prop once
 
+   import
+
+      Error.{formatGeneric
+             dispatch
+             format}
+
+      ErrorRegistry.{put}
+
    export
       one:    OneModule
       all:    All
@@ -809,7 +817,25 @@ in
       'SearchAll':  SearchAll
       'SearchBest': SearchBest
    body
-      skip
+
+      {ErrorRegistry.put
+
+       search
+
+       fun {$ Exc}
+          T = 'Error: Search'
+       in
+          case {Error.dispatch Exc}
+          of search(nyi) then
+             {Error.format T
+              'Object not yet initialized'
+              nil
+              Exc}
+          else
+             {Error.formatGeneric T Exc}
+          end
+      end}
+
    end
 
 end

@@ -32,6 +32,12 @@ import
            showError
            valueToVirtualString}
 
+   Error.{formatGeneric
+          format
+          dispatch}
+
+   ErrorRegistry.{put}
+
    Open.{pipe
          text}
 
@@ -155,7 +161,7 @@ body
    %%
    %% Printing error messages
    %%
-   proc {Error S Tcl}
+   proc {TkError S Tcl}
       P={System.property.get errors}
    in
       {System.showError 'Tk Module: '#S#
@@ -452,7 +458,7 @@ body
                 v('puts stdout {s end}; flush stdout; destroy .')}
                {Stream close}
             [] &w then
-               {Error Irr#'\n'#{ReadUntilDot} unit}
+               {TkError Irr#'\n'#{ReadUntilDot} unit}
                {TkReadLoop Rs}
             else {TkReadLoop Rs}
             end
@@ -1355,5 +1361,60 @@ body
    %%
 
    \insert 'TkOptions.oz'
+
+   %%
+   %% Error formatter
+   %%
+
+   {ErrorRegistry.put
+
+    tk
+
+    fun {$ Exc}
+       E = {Error.dispatch Exc}
+       T = 'error in Tk module'
+    in
+
+       case E
+       of tk(wrongParent O M) then
+
+         % expected O: object, M: record
+
+          {Error.format T
+           'Wrong Parent'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+
+       elseof tk(alreadyInitialized O M) then
+
+         % expected O: object, M: record
+
+          {Error.format T
+           'Object already initialized'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+
+       elseof tk(alreadyClosed O M) then
+
+         % expected O: object, M: record
+
+          {Error.format T
+           'Window already closed'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+
+       elseof tk(alreadyClosed O) then
+
+         % expected O: object
+
+          {Error.format T
+           'Window already closed'
+           [hint(l:'Object' m:oz(O))]
+           Exc}
+
+       else
+          {Error.formatGeneric T Exc}
+      end
+    end}
 
 end

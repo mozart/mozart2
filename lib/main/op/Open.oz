@@ -143,6 +143,12 @@ in
           wait
          }
 
+      Error.{formatGeneric
+             format
+             dispatch}
+
+      ErrorRegistry.{put}
+
       URL.{open}
 
    export
@@ -769,6 +775,45 @@ in
          end
 
       end
+
+      %%
+      %% Error formatting
+      %%
+
+      {ErrorRegistry.put
+
+       open
+
+       fun {$ Exc}
+          E = {Error.dispatch Exc}
+          T = 'error in Open module'
+       in
+          case E
+          of open(What O M) then
+         % expected What: atom, O: object
+
+             {Error.format T
+              case What
+              of alreadyClosed then
+                 'Object already closed'
+              [] alreadyInitialized then
+                 'Object already initialized'
+              [] illegalFlags then
+                 'Illegal value for flags'
+              [] illegalModes then
+                 'Illegal value for mode'
+              [] nameOrUrl then
+                 'Exactly one of \'name\' or \'url\' feature needed'
+              [] urlIsReadOnly then
+                 'Only reading access to url-files allowed'
+              else 'Unknown' end
+              [hint(l:'Object Application'
+                    m:'{' # oz(O) # ' ' # oz(M) # '}')]
+              Exc}
+          else
+             {Error.formatGeneric T Exc}
+          end
+      end}
 
    end
 

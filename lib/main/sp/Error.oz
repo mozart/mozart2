@@ -26,30 +26,20 @@
 %%% WARRANTIES.
 %%%
 
-\undef TYPE_DEBUG
-
 local
-
-   %% constants
 
    SKIP  = 0     % alignment spaces
    WIDTH = 65    % width of error message output
 
    %% shorthands
 
-%   S2A  = String.toAtom
-   VS2S = VirtualString.toString
    VSL  = VirtualString.length
-%   VS2A = fun {$ X} {S2A {VS2S X}} end
-
+   VS2S    = VirtualString.toString
    IsNotNL = fun {$ X} X \= &\n end
    ToLower = fun {$ Xs} {Map {VS2S Xs} Char.toLower} end
+   BugReport = 'Please send bug report to oz@ps.uni-sb.de'
 
-   %%
-   %% PrintNameToVS: AlMostVS -> VS
-   %% OzValueToVS:   OzValue  -> VS
-   %% ListToVS:      list(AlMostVS) -> VS
-   %%
+   %% some formatting routines for arguments, applications, etc.
 
    local
       proc {EscapeVariableChar Hd C|Cr Tl}
@@ -84,29 +74,6 @@ local
       end
    end
 
-   %%
-   %% IsAlmostVSToVS: OzValue -> Bool
-   %%
-
-   fun {IsAlmostVirtualString X}
-      case {IsInt X}
-         orelse {IsFloat X}
-         orelse {IsAtom X}
-      then
-         true
-      elsecase {IsTuple X}
-         andthen {Label X}=='#'
-      then
-         {Record.all X IsAlmostVirtualString}
-      else
-         false
-      end
-   end
-
-   %%
-   %% format position information
-   %%
-
    fun {PosToVS F L C PC}
       Elems =
       {Filter
@@ -135,13 +102,20 @@ local
       {FoldL Xs fun {$ In L#_} {Max In L} end 0}
    end
 
-   fun {BugReport}
-      'Please send bug report to oz@ps.uni-sb.de'
-   end
-
    Stars  = '%***'
    Dashes = '%**' # {Repeat WIDTH - 3 &-} # '\n'
    NumStarsLeft = {VSL Stars}
+
+   local
+      DebugMode = {`Builtin` 'Debug.mode' 1}
+   in
+      fun {Spaces N}
+         case {DebugMode}
+         then [& ]
+         else {Repeat N & }
+         end
+      end
+   end
 
 in
 
@@ -151,29 +125,158 @@ in
       System.{get
               printName
               printError
-              valueToVirtualString}
+              valueToVirtualString
+              Show = show}
+
+      ErrorRegistry.{get
+                     exists}
+
    export
-      formatter: FormatterModule
-      formatExc: FormatOzError
-      formatLine:AlmostVSToVS
-      formatPos: PosToVS
+      formatGeneric: GenericFormatter
 
-      printExc:  OzError
+      formatExc:     FormatOzError
+      formatLine:    AlmostVSToVS
+      formatPos:     PosToVS
+      formatAppl:    FormatAppl
+      formatTypes:   FormatTypes
+      formatHint:    FormatHint
+      format:        Format
 
-      msg:       ErrorMsg
-      msgDebug:  ErrorMsgDebug
+      dispatch:      DispatchField
+      info:          InfoField
+
+      printExc:      OzError
+
+      msg:           ErrorMsg
+      msgDebug:      ErrorMsgDebug
 
    body
-      FormatterModule = p(put:     NewFormatter
-                          get:     GetFormatter
-                          exists:  ExFormatter
-                          generic: GenericFormatter)
-
-      OnToplevel = {`Builtin` onToplevel 1}
-
       %% current output: strings into emulator window
 
       Output = System.printError
+
+      %% some formatting routines
+
+      local
+         fun {DoFormatTypes Text S}
+            case S
+            of nil then nil
+            else
+               First Rest
+            in
+               {List.takeDropWhile S.2 IsNotNL First Rest}
+               case Text of '' then
+                  hint(m:{ToLower First})
+               else
+                  hint(l:Text m:{ToLower First})
+               end | {DoFormatTypes '' Rest}
+            end
+         end
+      in
+         fun {FormatTypes T}
+            {DoFormatTypes 'Expected type' &\n|{Atom.toString T}}
+         end
+      end
+
+      fun {FormatPartialAppl A Xs N}
+         P = case {IsProcedure A}
+             then {System.printName A}
+             else A end
+      in
+         '{' # pn(P) #
+         case Xs of nil then '' else list(Xs ' ') end #
+         ' ...<' # N # '>...' # '}'
+      end
+
+      fun {FormatAppl A Xs}
+         P = case {IsProcedure A}
+             then {System.printName A}
+             else A end
+      in
+         '{' # pn(P) #
+         case Xs of nil then '' else ist(Xs ' ') end #
+         '}'
+      end
+
+      local
+         fun {DoFormatHint S}
+            case S of nil then nil
+            else First Rest in
+               {List.takeDropWhile S.2 IsNotNL First Rest}
+               line(First) | {DoFormatHint Rest}
+            end
+         end
+      in
+         fun {FormatHint S}
+            case {System.get errors}.hints
+               andthen S \= nil
+            then unit|{DoFormatHint &\n|{VS2S S}}
+            else nil end
+         end
+      end
+
+      %% inspect exception record
+
+      fun {InfoField Exc}
+         D = {DebugField Exc}
+      in
+         case {IsRecord D}
+            andthen {HasFeature D info}
+         then D.info else unit end
+      end
+
+      fun {DebugField Exc}
+         case {IsRecord Exc}
+            andthen {HasFeature Exc debug}
+         then Exc.debug else unit end
+      end
+
+      fun {DispatchField Exc}
+         case {IsRecord Exc}
+            andthen {HasFeature Exc 1}
+         then Exc.1 else unit end
+      end
+
+      fun {HasDispatchField Exc}
+         {IsRecord Exc}
+         andthen {HasFeature Exc 1}
+         andthen {IsRecord Exc.1}
+      end
+
+      fun {DebugInfo Exc}
+         Is = {InfoField Exc}
+      in
+         case Is
+         of unit then nil
+         [] nil then nil
+         [] I|Ir then
+            case I
+            of apply(X Xs) then
+               hint(l:'In statement' m:{FormatAppl X Xs})
+            [] fapply(X Xs N) then
+               hint(l:'In statement' m:{FormatPartialAppl X Xs N})
+            [] vs(V) then hint(l:V)
+            end
+            | {DebugInfo Ir}
+         else
+            nil
+         end
+      end
+
+      fun {DebugLoc Exc}
+         D = {DebugField Exc}
+      in
+         {CondSelect D loc unit}
+      end
+
+      fun {DebugStack Exc}
+         E = {System.get errors}
+         D = {DebugField Exc}
+      in
+         case {HasFeature D stack}
+            andthen E.'thread'>0
+         then D.stack else unit end
+      end
 
       %% parametrized output routines
 
@@ -222,54 +325,6 @@ in
           end}
       end
 
-      %% some formatting routines for arguments, applications, etc.
-
-      local
-         fun {DoFormatTypes Text S}
-            case S
-            of nil then nil
-            else
-               First Rest
-            in
-               {List.takeDropWhile S.2 IsNotNL First Rest}
-               case Text of '' then
-                  hint(m:{ToLower First})
-               else
-                  hint(l:Text m:{ToLower First})
-               end | {DoFormatTypes '' Rest}
-            end
-         end
-      in
-         fun {FormatTypes T}
-            {DoFormatTypes 'Expected type' &\n|{Atom.toString T}}
-         end
-      end
-
-      fun {OzValueToVS X}
-         P={System.get errors} in
-         {System.valueToVirtualString X P.depth P.width}
-      end
-
-      fun {FormatPartialAppl A Xs N}
-         P = case {IsProcedure A}
-             then {System.printName A}
-             else A end
-      in
-         '{' # pn(P) #
-         case Xs of nil then '' else ' ' # list(Xs ' ') end #
-         ' ...<' # N # '>...' # '}'
-      end
-
-      fun {FormatAppl A Xs}
-         P = case {IsProcedure A}
-             then {System.printName A}
-             else A end
-      in
-         '{' # pn(P) #
-         case Xs of nil then '' else ' ' # list(Xs ' ') end #
-         '}'
-      end
-
       %%
       %% AlmostVSToVS: AlMostVS -> VS
       %%
@@ -280,6 +335,11 @@ in
       %% pn(P): variable print name
       %% list(Xs S): list of Oz values to be separated by VS S
       %%
+
+      fun {OzValueToVS X}
+         P={System.get errors} in
+         {System.valueToVirtualString X P.depth P.width}
+      end
 
       fun {AlmostVSToVS X}
          case {IsDet X}
@@ -451,73 +511,8 @@ in
       %% %************************** if <footer>
 
       %%
-      %% return exception components
-      %%
-
-      fun {InfoField Exc}
-         D = {DebugField Exc}
-      in
-         case {IsRecord D}
-            andthen {HasFeature D info}
-         then D.info else unit end
-      end
-
-      fun {DebugField Exc}
-         case {IsRecord Exc}
-            andthen {HasFeature Exc debug}
-         then Exc.debug else unit end
-      end
-
-      fun {DispatchField Exc}
-         case {IsRecord Exc}
-            andthen {HasFeature Exc 1}
-         then Exc.1 else unit end
-      end
-
-      fun {HasDispatchField Exc}
-         {IsRecord Exc}
-         andthen {HasFeature Exc 1}
-         andthen {IsRecord Exc.1}
-      end
-
-      %%
       %% return stack/location/info components
       %%
-
-      fun {DebugInfo Exc}
-         Is = {InfoField Exc}
-      in
-         case Is
-         of unit then nil
-         [] nil then nil
-         [] I|Ir then
-            case I
-            of apply(X Xs) then
-               hint(l:'In statement' m:{FormatAppl X Xs})
-            [] fapply(X Xs N) then
-               hint(l:'In statement' m:{FormatPartialAppl X Xs N})
-            [] vs(V) then hint(l:V)
-            end
-            | {DebugInfo Ir}
-         else
-            nil
-         end
-      end
-
-      fun {DebugLoc Exc}
-         D = {DebugField Exc}
-      in
-         {CondSelect D loc unit}
-      end
-
-      fun {DebugStack Exc}
-         E = {System.get errors}
-         D = {DebugField Exc}
-      in
-         case {HasFeature D stack}
-            andthen E.'thread'>0
-         then D.stack else unit end
-      end
 
       local
          proc {ErrorTitle Out Format}
@@ -604,6 +599,7 @@ in
          end
 
          proc {ErrorMsgDebug Out Format}
+            {Show Format}
             case Format
             of none then skip
             else
@@ -619,1432 +615,11 @@ in
          end
       end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% specific error formatters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      local
-         DebugMode = {`Builtin` 'Debug.mode' 1}
-      in
-         fun {Spaces N}
-            case {DebugMode}
-            then [& ]
-            else {Repeat N & }
-            end
-         end
-      end
-
-      local
-         fun {DoGiveHint S}
-            case S of nil then nil
-            else First Rest in
-               {List.takeDropWhile S.2 IsNotNL First Rest}
-               line(First) | {DoGiveHint Rest}
-            end
-         end
-      in
-         fun {GiveHint S}
-            case {System.get errors}.hints
-               andthen S \= nil
-            then unit|{DoGiveHint &\n|{VS2S S}}
-            else nil end
-         end
-      end
-
-\ifdef TYPE_DEBUG
-      fun {IsBinaryProc P}
-         {IsProcedure P} andthen {Procedure.arity P}==2
-      end
-
-      AskBinaryProc = {Type.ask.generic IsBinaryProc 'binary procedure'}
-      AskChunkOrRec = {Type.ask.generic
-                       fun {$ CR} {IsChunk CR} orelse {IsRecord CR} end
-                       'chunk or record'}
-      AskProcOrObject={Type.ask.generic
-                       fun {$ P} {IsProcedure P} orelse {IsObject P} end
-                       'procedure or object'}
-\endif
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% kernel related errors
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {LayoutDot R F X Op}
-         case {IsDet R}
-            andthen {IsRecord R}
-            andthen {Length {Arity R}}>5
-         then
-            [hint(l:'In statement' m:'R ' # Op # ' ' # oz(F) # ' = ' # oz(X))
-             hint(l:'Expected fields' m:list({Arity R} ' '))
-             hint(l:'Record value' m:oz(R))]
-         else
-            {LayoutBin R F X Op}
-         end
-      end
-
-      fun {LayoutComma C M}
-         [hint(l:'In statement' m:'C, '#oz(M))
-          hint(l:'Class value' m:oz(C))]
-      end
-
-      fun {LayoutBin X Y Z Op}
-         [hint(l:'In statement' m:oz(X) # ' ' # Op # ' ' # oz(Y) # ' = ' # oz(Z))]
-      end
-
-      fun {KernelFormatter Exc}
-
-         E = {DispatchField Exc}
-
-      in
-
-         case E
-         of kernel(type A Xs T P S)
-         then
-            LayOut
-         in
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-            {Type.ask.atom T}
-            {Type.ask.int P}
-            {Type.ask.virtualString S}
-\endif
-            LayOut = case A # Xs
-                     of '.' # [R F X] then
-                        Ls = {LayoutDot R F X '.'}
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     elseof '^' # [R F X] then
-                        Ls = {LayoutDot R F X '^'}
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     elseof ',' # [C M] then
-                        Ls = {LayoutComma C M}
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     elseof '+1' # [X Y] then
-                        Ls =
-                        [hint(l:'In statement' m:oz(X) # ' + 1 = ' # oz(Y))
-                         hint(l:'Possible origin' m:'1 + ' # oz(X) # ' = ' # oz(Y))]
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     elseof fdTellConstraint # [X Y] then
-                        Ls = [hint(l:'In statement' m:oz(X) # ' :: ' # oz(Y))]
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     elsecase
-                        {Member A ['+' '-' '*' '/' '<' '>' '=<' '>=' '\\=']}
-                     then
-                        Ls = case Xs of [X Y Z] then
-                                {LayoutBin X Y Z A}
-                             else
-                                hint(l:'In statement' m:{FormatAppl A Xs})
-                                | {FormatOrigin A}
-                             end
-                     in
-                        {Append Ls {GiveHint S}}
-
-                     else
-                        Ls =
-                        hint(l:'In statement' m:{FormatAppl A Xs})
-                        | {FormatOrigin A}
-                     in
-                        {Append Ls {GiveHint S}}
-                     end
-
-            {FormatExc
-             'type error'
-             unit
-             {Append
-              {FormatTypes T}
-              case P\=0 then
-                 hint(l:'At argument' m:P) | LayOut
-              else LayOut end}
-             Exc}
-
-         elseof kernel(instantiation A Xs T P S) then
-            LayOut
-         in
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-            {Type.ask.atom T}
-            {Type.ask.int P}
-            {Type.ask.virtualString S}
-\endif
-            local
-               Ls =
-               hint(l:'In statement' m:{FormatAppl A Xs})
-               | {FormatOrigin A}
-            in
-               LayOut = {Append Ls {GiveHint S}}
-
-            end
-
-            {FormatExc
-             'instantiation error'
-             unit
-             {Append
-              {FormatTypes T}
-              case P\=0 then
-                 hint(l:'At argument' m:P) | LayOut
-              else LayOut end}
-             Exc}
-
-         elseof kernel(apply X Xs) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-\endif
-
-            {FormatExc
-             'error in application'
-             'Application of non-procedure and non-object'
-             [hint(l:'In statement' m:{FormatAppl X Xs})]
-             Exc}
-
-         elseof kernel('.' R F) then
-
-\ifdef TYPE_DEBUG
-            {AskChunkOrRec R}
-            {Type.ask.feature F}
-\endif
-
-            {FormatExc
-             'Error: illegal field selection'
-             unit
-             {LayoutDot R F _ '.'}
-             Exc}
-
-         elseof kernel(recordConstruction L As) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.literal L}
-            {Type.ask.list As}
-
-            {ForAll As
-             proc {$ A}
-                {Type.ask.pair A}
-                {Type.ask.feature A.1}
-             end}
-\endif
-
-            {FormatExc
-             'Error: duplicate fields'
-             'Duplicate fields in record construction'
-             [hint(l:'Label' m:oz(L))
-              hint(l:'Feature-field Pairs' m:list(As ' '))]
-             Exc}
-
-         elseof kernel(arity P Xs) then
-
-\ifdef TYPE_DEBUG
-            {AskProcOrObject P}
-            {Type.ask.list Xs}
-\endif
-
-            {FormatExc
-             'Error: illegal number of arguments'
-             unit
-             [hint(l:'In statement' m:{FormatAppl P Xs})
-              hint(l:'Expected'
-                   m:case {IsProcedure P} then {Procedure.arity P} else 1 end
-                   # ' argument(s)')
-              hint(l:'Found' m:{Length Xs})]
-             Exc}
-
-         elseof kernel(noElse Pos) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.int Pos}
-\endif
-            {FormatExc
-             'Error: conditional failed'
-             'Missing else clause'
-             [hint(l:'At line' m:Pos)]
-             Exc}
-
-         elseof kernel(noElse Pos A) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.int Pos}
-\endif
-
-            {FormatExc
-             'Error: conditional failed'
-             'Missing else clause'
-             [hint(l:'At line' m:Pos)
-              hint(l:'Matching' m:oz(A))]
-             Exc}
-
-         elseof kernel(boolCaseType Pos) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.int Pos}
-\endif
-
-            {FormatExc
-             'Error: boolean conditional failed'
-             'Non-boolean value found'
-             [hint(l:'At line' m:Pos)]
-             Exc}
-
-            %%
-            %% ARITHMETICS
-            %%
-
-         elseof kernel(div0 X) then
-
-            {FormatExc
-             'division by zero error'
-             unit
-             [hint(l:'In statement' m:oz(X) # ' div 0' # ' = _')]
-             Exc}
-
-         elseof kernel(mod0 X) then
-
-            {FormatExc
-             'division by zero error'
-             unit
-             [hint(l:'In statement' m:oz(X) # ' mod 0' # ' = _')]
-             Exc}
-
-            %%
-            %% ARRAYS AND DICTIONARIES
-            %%
-
-         elseof kernel(dict D K) then
-
-            Ks
-         in
-\ifdef TYPE_DEBUG
-            {Type.ask.dictionary D}
-            {Type.ask.feature K}
-\endif
-
-            Ks = {Dictionary.keys D}
-
-            {FormatExc
-             'Error: Dictionary'
-             'Key not found'
-             [hint(l:'Dictionary' m:oz(D))
-              hint(l:'Key found'  m:oz(K))
-              hint(l:'Legal keys' m:oz(Ks))]
-             Exc}
-
-         elseof kernel(array A I) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.array A}
-            {Type.ask.int I}
-\endif
-
-            {FormatExc
-             'Error: Array'
-             'Index out of range'
-             [hint(l:'Array' m:oz(A))
-              hint(l:'Index Found' m:I)
-              hint(l:'Legal Range' m:{Array.low A} # ' - ' # {Array.high A})]
-             Exc}
-
-         elseof kernel('BitArray.new' L H) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.int L}
-            {Type.ask.int H}
-\endif
-
-            {FormatExc
-             'Error: BitArray'
-             'Illegal boundaries to BitArray.new'
-             [hint(l: 'Lower bound' m: L)
-              hint(l: 'Upper bound' m: H)]
-             Exc}
-
-         elseof kernel('BitArray.index' B I) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.bitArray B}
-            {Type.ask.int I}
-\endif
-
-            {FormatExc
-             'Error: BitArray'
-             'Index out of range'
-             [hint(l: 'Bit array' m: oz(B))
-              hint(l: 'Index found' m: I)
-              hint(l: 'Legal Range'
-                   m: {BitArray.low B}#' - '#{BitArray.high B})]
-             Exc}
-
-         elseof kernel('BitArray.binop' B1 B2) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.bitArray B1}
-            {Type.ask.bitArray B2}
-\endif
-
-            {FormatExc
-             'Error: BitArray'
-             'Incompatible bounds in binary operation on BitArrays'
-             [hint(l: 'First bit array' m: oz(B1))
-              hint(l: 'First bounds'
-                   m: {BitArray.low B1}#' - '#{BitArray.high B1})
-              hint(l: 'Second bit array' m: oz(B2))
-              hint(l: 'Second bounds'
-                   m: {BitArray.low B2}#' - '#{BitArray.high B2})]
-             Exc}
-
-            %%
-            %% REPRESENTATION FAULT
-            %%
-
-         elseof kernel(stringNoFloat S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.string S}
-\endif
-
-            {FormatExc
-             'Error: representation fault'
-             'Conversion to float failed'
-             [hint(l:'String' m:'\"' # S # '\"')]
-             Exc}
-
-         elseof kernel(stringNoInt S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.string S}
-\endif
-
-            {FormatExc
-             'Error: representation fault'
-             'Conversion to integer failed'
-             [hint(l:'String' m:'\"' # S # '\"')]
-             Exc}
-
-         elseof kernel(stringNoAtom S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.string S}
-\endif
-            {FormatExc
-             'Error: representation fault'
-             'Conversion to atom failed'
-             [hint(l:'String' m:'\"' # S # '\"')]
-             Exc}
-
-         elseof kernel(stringNoValue S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.string S}
-\endif
-
-            {FormatExc
-             'Error: representation fault'
-             'Conversion to Oz value failed'
-             [hint(l:'String'  m:'\"' # S # '\"')]
-             Exc}
-
-         elseof kernel(globalState What) then
-
-            Msg
-         in
-\ifdef TYPE_DEBUG
-            {Type.ask.atom What}
-\endif
-
-            Msg  = case What
-                   of     array  then 'Assignment to global array'
-                   elseof dict   then 'Assignment to global dictionary'
-                   elseof cell   then 'Assignment to global cell'
-                   elseof io     then 'Input/Output'
-                   elseof object then 'Assignment to global object'
-                   elseof 'lock' then 'Request of global lock'
-                   else What end
-
-            {FormatExc
-             'Error: space hierarchy'
-             Msg # ' from local space'
-             nil
-             Exc}
-
-         elseof kernel(spaceMerged S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.space S}
-\endif
-
-            {FormatExc
-             'Error: Space'
-             'Space already merged'
-             [hint(l:'Space' m:oz(S))]
-             Exc}
-
-         elseof kernel(spaceSuper S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.space S}
-\endif
-
-            {FormatExc
-             'Error: Space'
-             'Merge of superordinated space'
-             [hint(l:'Space' m:oz(S))]
-             Exc}
-
-         elseof kernel(spaceParent S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.space S}
-\endif
-
-            {FormatExc
-             'Error: Space'
-             'Current space must be parent space'
-             [hint(l:'Space' m:oz(S))]
-             Exc}
-
-         elseof kernel(spaceNoChoice S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.space S}
-\endif
-
-            {FormatExc
-             'Error: Space'
-             'No choices left'
-             [hint(l:'Space' m:oz(S))]
-             Exc}
-
-         elseof kernel(portClosed P) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.port P}
-\endif
-
-            {FormatExc
-             'Error: Port'
-             'Port already closed'
-             [hint(l:'Port' m:oz(P))]
-             Exc}
-
-         elseof kernel(terminate) then
-
-            none
-
-         elseof kernel(block T) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.'thread' T}
-\endif
-
-            {FormatExc
-             'Error: Thread'
-             'Purely sequential thread blocked'
-             [hint(l:'Thread' m:oz(T))]
-             Exc}
-
-         else
-            {GenericFormatter 'Kernel' Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% failure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {FailureFormatter Exc}
-         I = {InfoField Exc}
-         T = 'failure'
-      in
-
-         case I
-         of unit then
-
-            {GenericFormatter T Exc}
-
-         elseof 'fail' then
-
-            {FormatExc
-             T
-             unit
-             [hint(l:'Tell' m:'fail')]
-             Exc}
-
-         elseof apply(A Xs) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-            {Type.ask.list Xs}
-\endif
-
-            {FormatExc
-             T
-             unit
-             case A # Xs
-             of '^' # [R F] then
-                [hint(l:'Tell' m:oz(R) # ' ^ ' # oz(F) # ' = _')]
-             elseof '=' # [X Y] then
-                [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))]
-             elseof fdPutList # [X Y] then
-                [hint(l:'Tell' m:oz(X) # ' :: ' # oz(Y))]
-             elseof fdPutGe # [X Y] then
-                [hint(l:'Tell' m:oz(X) # ' >: ' # oz(Y))]
-             elseof fdPutLe # [X Y] then
-                [hint(l:'Tell' m:oz(X) # ' <: ' # oz(Y))]
-             elseof fdPutNot # [X Y] then
-                [hint(l:'Tell' m:oz(X) # ' \\=: ' # oz(Y))]
-             else
-                hint(l:'In statement' m:{FormatAppl A Xs})
-                | {FormatOrigin A}
-             end
-             Exc}
-
-         elseof eq(X Y) then
-
-            {FormatExc
-             T unit
-             [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))]
-             Exc}
-
-         elseof tell(X Y) then
-
-            {FormatExc
-             T unit
-             [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))
-              hint(l:'Store' m:oz(X))]
-             Exc}
-
-         else
-
-            {FormatExc
-             T unit
-             [hint(l:'??? ' m:oz(I))]
-             Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% objects
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {ObjectFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in object system'
-      in
-
-         case E
-         of object('<-' State A V) then
-            {FormatExc
-             T unit
-             [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
-              hint(l:'Attribute does not exist' m:oz(A))
-              hint(l:'Expected Attribute(s)' m:list({Arity State} ' '))]
-             Exc}
-
-         elseof object('@' State A) then
-            {FormatExc
-             T unit
-             [hint(l:'In statement' m:'@' # oz(A) # ' = _')
-              hint(l:'Attribute does not exist' m:oz(A))
-              hint(l:'Expected attribute(s)' m:list({Arity State} ' '))]
-             Exc}
-         elseof object(sharing C1 C2 A L) then
-            {FormatExc T
-             'Classes not ordered by inheritance'
-             [hint(l:'Classes' m:C1 # ' and ' # C2)
-              hint(l:'Shared ' # A m:oz(L) # ' (is not redefined)')]
-             Exc}
-         elseof object(order (A#B)|Xr) then
-            fun {Rel A B} A # ' < ' # B end
-         in
-            {FormatExc T
-             'Classes cannot be ordered'
-             hint(l:'Relation found' m:{Rel A B})
-             | {Map Xr fun {$ A#B} hint(m:{Rel A B}) end}
-             Exc}
-         elseof object(lookup C R) then
-            L1 = hint(l:'Class'   m:oz(C))
-            L2 = hint(l:'Message' m:oz(R))
-            H  = {GiveHint 'Method undefined and no otherwise method given'}
-         in
-            {FormatExc T
-             'Method lookup in message sending'
-             L1|L2|H
-             Exc}
-         elseof object(final CParent CChild) then
-            L2 = hint(l:'Final class used as parent' m:CParent)
-            L3 = hint(l:'Class to be created' m:CChild)
-            H  = {GiveHint 'remove prop final from parent class or change inheritance relation'}
-         in
-            {FormatExc T
-             'Inheritance from final class'
-             L2|L3|H
-             Exc}
-         elseof object(inheritanceFromNonClass
-                       CParent CChild) then
-            {FormatExc T
-             'Inheritance from non-class'
-             [hint(l:'Non-class used as parent' m:oz(CParent))
-              hint(l:'Class to be created' m:CChild)]
-             Exc}
-
-         elseof object(arityMismatchDefaultMethod L)
-         then
-            {FormatExc T
-             'Arity mismatch for method with defaults'
-             [hint(l:'Unexpected feature' m:oz(L))]
-             Exc}
-
-         elseof object(slaveNotFree)
-         then
-
-            {FormatExc T
-             'Method becomeSlave'
-             [hint(l:'Slave is not free')]
-             Exc}
-
-         elseof object(slaveAlreadyFree) then
-
-            {FormatExc T
-             'Method free'
-             [hint(l:'Slave is already free')]
-             Exc}
-
-         elseof object(locking O) then
-            {FormatExc T
-             'Attempt to lock unlockable object'
-             [hint(l:'Object' m:oz(O))]
-             Exc}
-
-         elseof object(fromFinalClass C O) then
-            {FormatExc T 'Final class not allowed'
-             [hint(l:'Final class' m:C)
-              hint(l:'Operation'   m:O)]
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% ofs constraints
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {OFSFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'Error: records'
-      in
-         case E
-         of record(width A Xs P S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-            {Type.ask.int P}
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc
-             T unit
-             hint(l:'At argument' m:P)
-             | hint(l:'Statement' m:{FormatAppl A Xs})
-             | {GiveHint S}
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% search
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {SearchFormatter Exc}
-         T = 'Error: Search'
-      in
-         case {DispatchField Exc}
-         of search(nyi) then
-            {FormatExc T
-             'Object not yet initialized'
-             nil
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% names and formatting routines for fd related builtins
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
-
-      BuiltinNames
-      = bi(fdp_twice:         [fdp_twice           ['FD.plus' 'FD.minus']]
-           fdp_square:        [fdp_square          ['FD.times']]
-           fdp_plus:          ['FD.plus'           ['FD.distance']]
-           fdp_plus_rel:      ['FD.plus'           ['FD.distance' '+']]
-           fdp_minus:         ['FD.minus'          nil]
-           fdp_times:         ['FD.times'          nil]
-           fdp_times_rel:     ['FD.plus'           ['FD.distance' '*']]
-           fdp_divD:          ['FD.divD'           nil]
-           fdp_divI:          ['FD.divI'           nil]
-           fdp_modD:          ['FD.modD'           nil]
-           fdp_modI:          ['FD.modI'           nil]
-           fdp_conj:          ['FD.conj'           nil]
-           fdp_disj:          ['FD.disj'           nil]
-           fdp_exor:          ['FD.exor'           nil]
-           fdp_impl:          ['FD.impl'           nil]
-           fdp_equi:          ['FD.equi'           nil]
-           fdp_nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
-           fdp_sumCR:         ['FD.reified.sumC'   ArithOps]
-           fdp_intR:          ['FD.refied.int'     ['FD.reified.dom']]
-           fdp_card:          ['FD.reified.card'   nil]
-           fdp_exactly:       ['FD.exactly'        nil]
-           fdp_atLeast:       ['FD.atLeast'        nil]
-           fdp_atMost:        ['FD.atMost'         nil]
-           fdp_element:       ['FD.element'        nil]
-           fdp_disjoint:      ['FD.disjoint'       nil]
-           fdp_disjointC:     ['FD.disjointC'      nil]
-           fdp_distance:      ['FD.distance'       nil]
-           fdp_notEqOff:      [fdp_notEqOff        ['FD.sumC' '\\=:']]
-           fdp_lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
-                                                    '>:' 'FD.min' 'FD.max'
-                                                    'FD.modD'
-                                                    'FD.modI' 'FD.disjoint'
-                                                    'FD.disjointC' 'FD.distance'
-                                                   ]]
-           fdp_minimum:        ['FD.min'                   nil]
-           fdp_maximum:        ['FD.max'                   nil]
-           fdp_inter:          ['FD.inter'                 nil]
-           fdp_union:          ['FD.union'                 nil]
-           fdp_distinct:       ['FD.distinct'              nil]
-           fdp_distinctOffset: ['FD.distinctOffset'        nil]
-           fdp_subset:         [fdp_subset         ['FD.union' 'FD.inter']]
-           fdp_sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
-           fdp_sumCN:          ['FD.sumCN'         ArithOps]
-           fdp_sumAC:          ['FD.sumAC'         nil]
-
-           sched_disjoint_card:['FD.schedule.disjoint'             nil]
-           sched_cpIterate:    ['FD.schedule.serialized'           nil]
-           sched_disjunctive:  ['FD.schedule.serializedDisj'       nil]
-
-           fdGetMin:           ['FD.reflect.min'   nil]
-           fdGetMid:           ['FD.reflect.mid'   nil]
-           fdGetMax:           ['FD.reflect.max'   nil]
-           fdGetDom:           ['FD.reflect.dom'   ['FD.reflect.domList']]
-           fdGetCard:          ['FD.reflect.size'  nil]
-           fdGetNextSmaller:   ['FD.reflect.nextSmaller'   nil]
-           fdGetNextLarger:    ['FD.reflect.nextLarger'    nil]
-
-           fdWatchSize:        ['FD.watch.size'    nil]
-           fdWatchMin:         ['FD.watch.min'     nil]
-           fdWatchMax:         ['FD.watch.max'     nil]
-
-           fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
-           fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
-           fd_sumCD:           [fdp_sumCD          ['condis ... end']]
-           fd_sumCCD:          [fdp_sumCCD         ['condis ... end']]
-           fd_sumCNCD:         [fdp_sumCNCD        ['condis ... end']]
-          )
-
-      fun {BIPrintName X}
-         case {IsAtom X}
-            andthen {HasFeature BuiltinNames X}
-         then BuiltinNames.X.1
-         else X end
-      end
-
-      fun {BIOrigin X}
-         BuiltinNames.X.2.1
-      end
-
-      fun {FormatOrigin A}
-         B = {BIPrintName A}
-      in
-         case {HasFeature BuiltinNames B}
-            andthen {BIOrigin B}\=nil
-         then
-            [unit
-             hint(l:'Possible Origin of Procedure' m:oz({BIPrintName B}))
-             line(oz({BIOrigin B}))]
-         else nil end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% fd constraints
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {FDFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in finite domain system'
-      in
-
-         case E
-         of fd(scheduling A Xs T P S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-            {Type.ask.atom T}
-            {Type.ask.int P}
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc
-             T unit
-             hint(l:'At argument' m:P)
-             | {Append
-                {FormatTypes T}
-                hint(l:'In statement' m:{FormatAppl A Xs})
-                | {Append {FormatOrigin A} {GiveHint S}}}
-             Exc}
-
-         elseof fd(noChoice A Xs P S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.list Xs}
-            {Type.ask.int P}
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc
-             T unit
-             hint(l:'At argument' m:P)
-             | hint(l:'In statement' m:{FormatAppl A Xs})
-             | {Append {FormatOrigin A} {GiveHint S}}
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% foreign function interface
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {ForeignFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'Error: Foreign'
-      in
-
-         case E
-         of foreign(cannotFindFunction F A H) then
-\ifdef TYPE_DEBUG
-            {Type.ask.atom F}
-            {Type.ask.int A}
-            {Type.ask.int H}
-\endif
-
-            {FormatExc T
-             'Cannot find foreign function'
-             [hint(l:'Function name' m:F)
-              hint(l:'Arity' m:A)
-              hint(l:'Handle' m:H)]
-             Exc}
-
-         elseof foreign(dlOpen F S) then
-\ifdef TYPE_DEBUG
-            {Type.ask.virtualString F}
-\endif
-            {FormatExc T
-             'Cannot load foreign function file'
-             [hint(l:'File name' m:F)
-              hint(l:'Error number' m:S)]
-             Exc}
-
-         elseof foreign(dlClose N) then
-
-            {FormatExc T
-             'Cannot unload foreign function file'
-             [hint(l:'File handle' m:oz(N))]
-             Exc}
-
-         elseof foreign(linkFiles As) then
-
-            {FormatExc T
-             'Cannot link object files'
-             [hint(l:'File names' m:list(As ' '))]
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% system
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {SystemFormatter Exc}
-
-         E = {DispatchField Exc}
-         T = 'system error'
-      in
-
-         case E
-         of system(parameter P) then
-
-            {FormatExc T
-             unit
-             [hint(l:'Illegal system parameter ' m:oz(P))]
-             Exc}
-
-         elseof system(limitInternal S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc T
-             unit
-             [hint(l:'Internal System Limit' m:S)]
-             Exc}
-
-         elseof system(limitExternal S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc T
-             unit
-             [hint(l:'External system limit' m:S)]
-             Exc}
-
-         elseof system(fallbackInstalledTwice A) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-\endif
-
-            {FormatExc
-             T unit
-             [hint(l:'Fallback procedure installed twice' m:A)]
-             Exc}
-
-         elseof system(fallbackNotInstalled A) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-\endif
-
-            {FormatExc
-             T unit
-             [hint(l:'Fallback procedure not installed' m:A)]
-             Exc}
-
-         elseof system(builtinUndefined A) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-\endif
-
-            {FormatExc T
-             'Undefined builtin'
-             [hint(l:'Requested' m:A)]
-             Exc}
-
-         elseof system(builtinArity A F E) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-            {Type.ask.int F}
-            {Type.ask.int E}
-\endif
-
-            {FormatExc T
-             'Illegal arity in Oz-declaration'
-             [hint(l:'Builtin' m:A)
-              hint(l:'Found' m:F)
-              hint(l:'Expected' m:E)]
-             Exc}
-
-         elseof system(inconsistentArity A F E) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom A}
-            {Type.ask.int F}
-            {Type.ask.int E}
-\endif
-
-            {FormatExc T
-             'Illegal arity in emulator-declaration'
-             [hint(l:'Builtin' m:A)
-              hint(l:'Found' m:F)
-              hint(l:'Expected' m:E)]
-             Exc}
-
-         elseof system(inconsistentFastcall) then
-
-            {FormatExc T
-             'Internal inconsistency'
-             [hint(l:'Inconsistency in optimized application')
-              hint(l:'Maybe due to previous toplevel failure')]
-             Exc}
-
-         elseof system(onceOnlyFunctor) then
-
-            {FormatExc T
-             'Procedure definition with flag `once\' executed more than once'
-             nil
-             Exc}
-
-         elseof system(fatal S) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.virtualString S}
-\endif
-
-            {FormatExc
-             T
-             'Fatal exception'
-             [line(S)
-              line({BugReport})]
-             Exc}
-
-         elseof system(reinstallFormatter Key) then
-
-\ifdef TYPE_DEBUG
-            {Type.ask.atom Key}
-\endif
-
-            {FormatExc
-             T
-             'Registration of error formatter failed'
-             [hint(l:'Exception name already in use:' m:Key)]
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% tk
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {TkFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in Tk module'
-      in
-
-         case E
-         of tk(wrongParent O M) then
-\ifdef TYPE_DEBUG
-            {Type.ask.object O}
-            {Type.ask.record M}
-\endif
-            {FormatExc T
-             'Wrong Parent'
-             [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-             Exc}
-
-         elseof tk(alreadyInitialized O M) then
-\ifdef TYPE_DEBUG
-            {Type.ask.object O}
-            {Type.ask.record M}
-\endif
-            {FormatExc T
-             'Object already initialized'
-             [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-             Exc}
-
-         elseof tk(alreadyClosed O M) then
-\ifdef TYPE_DEBUG
-            {Type.ask.object O}
-            {Type.ask.record M}
-\endif
-            {FormatExc T
-             'Window already closed'
-             [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-             Exc}
-
-         elseof tk(alreadyClosed O) then
-\ifdef TYPE_DEBUG
-            {Type.ask.object O}
-\endif
-            {FormatExc T
-             'Window already closed'
-             [hint(l:'Object' m:oz(O))]
-             Exc}
-
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
       %%
-      %% formatter for open programming errors
+      %% build error format record
       %%
 
-      fun {OpenFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in Open module'
-      in
-         case E
-         of open(What O M) then
-\ifdef TYPE_DEBUG
-            {Type.ask.atom What}
-            {Type.ask.object O}
-\endif
-            {FormatExc T
-             case What
-             of alreadyClosed then
-                'Object already closed'
-             [] alreadyInitialized then
-                'Object already initialized'
-             [] illegalFlags then
-                'Illegal value for flags'
-             [] illegalModes then
-                'Illegal value for mode'
-             [] nameOrUrl then
-                'Exactly one of \'name\' or \'url\' feature needed'
-             [] urlIsReadOnly then
-                'Only reading access to url-files allowed'
-             else 'Unknown' end
-             [hint(l:'Object Application'
-                   m:'{' # oz(O) # ' ' # oz(M) # '}')]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% operating system
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {OSFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in OS module'
-      in
-         case E
-         of os(K SysCall N S) then
-\ifdef TYPE_DEBUG
-            {Type.ask.atom K}
-            {Type.ask.virtualString SysCall}
-            {Type.ask.int N}
-            {Type.ask.virtualString S}
-\endif
-
-            case K
-            of os then
-               {FormatExc T
-                'Operating system error'
-                [
-                 hint(l:'System call' m:SysCall)
-                 hint(l:'Error number' m:N)
-                 hint(l:'Description' m:S)]
-                Exc}
-            [] host then
-               {FormatExc T
-                'Network Error'
-                [
-                 hint(l:'System call' m:SysCall)
-                 hint(l:'Error number' m:N)
-                 hint(l:'Description' m:S)]
-                Exc}
-            else
-               {GenericFormatter T Exc}
-            end
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% distributed programming
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {DPFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'Error: distributed programming'
-      in
-         case E
-         of dp(save resources Filename Resources) then
-            {FormatExc
-             'Resources found during save'
-             unit
-             [hint(l:'Filename'  m:Filename)
-              hint(l:'Resources' m:oz(Resources))]
-             Exc}
-         elseof dp(save nogoods Value NoGoods) then
-            {FormatExc
-             'Non-distributables found during save'
-             unit
-             [hint(l:'Value saved'        m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp('export' nogoods Value NoGoods) then
-            {FormatExc
-             'Non-distributables found during export'
-             unit
-             [hint(l:'Value exported'     m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp('export' exceptionNogoods Server) then
-            {FormatExc
-             'Non-distributables found in remote exception'
-             unit
-             [hint(l:'Remote server'     m:oz(Server))]
-             Exc}
-         elseof dp(load versionMismatch PickleName VerExpected VerGot) then
-            {FormatExc
-             'Version mismatch when loading of pickle'
-             unit
-             [hint(l:'Pickle name'      m:PickleName)
-              hint(l:'Version expected' m:VerExpected)
-              hint(l:'Version got'      m:VerGot)]
-             Exc}
-         elseof dp(load notComponent CompName) then
-            {FormatExc
-             'trying to load non-pickle'
-             unit
-             [hint(l:'File name'      m:CompName)]
-             Exc}
-         elseof dp(load open Err CompName) then
-            {FormatExc
-             'Operating system error when opening pickle'
-             unit
-             [hint(l:'File name'   m:CompName)
-              hint(l:'Description' m:Err)]
-             Exc}
-         elseof dp(send nogoods Value NoGoods) then
-            {FormatExc
-             'Trying to send non-distributables to port'
-             unit
-             [hint(l:'Value send'         m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp(unify nogoods Value NoGoods) then
-            {FormatExc
-             'Trying to unify distributed variable with non-distributables'
-             unit
-             [hint(l:'RHS of equation'    m:oz(Value))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
-             Exc}
-         elseof dp(connection(illegalTicket V)) then
-            {FormatExc
-             'Illegal ticket for connection'
-             unit
-             [hint(l:'Ticket' m:V)]
-             Exc}
-         elseof dp(connection(refusedTicket V)) then
-            {FormatExc
-             'Ticket refused for connection'
-             unit
-             [hint(l:'Ticket' m:V)]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% compiler
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {CompilerFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'compiler engine error'
-      in
-         case E
-         of compiler(invalidQuery M) then
-            {FormatExc T
-             'Invalid query'
-             [hint(l: 'Query' m: oz(M))]
-             Exc}
-         elseof compiler(invalidQuery M I A) then
-            {FormatExc T
-             'Ill-typed query argument'
-             [hint(l: 'Query' m: oz(M))
-              hint(l: 'At argument' m: I)
-              hint(l: 'Expected type' m: A)]
-             Exc}
-         elseof compiler(register P) then
-            {FormatExc T
-             'Trying to register a non-port'
-             [hint(l: 'Argument' m: oz(P))]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% panel
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {PanelFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in Oz Panel'
-      in
-         case E
-         of panel(option OM) then
-            {FormatExc T
-             'Illegal option specification'
-             [hint(l:'Message'
-                   m:oz(OM))]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% explorer
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {ExplorerFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'error in Oz Explorer'
-      in
-         case E
-         of explorer(Kind OM) then
-            {FormatExc T
-             case Kind
-             of actionAdd then 'Illegal action addition'
-             [] actionDel then 'Illegal action deletion'
-             [] option    then 'Illegal option specification'
-             end
-             [hint(l:'Message'
-                   m:oz(OM))]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% gump
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      fun {GumpFormatter Exc}
-         E = {DispatchField Exc}
-         T = 'Gump Scanner error'
-      in
-         case E of gump(fileNotFound FileName) then
-            {FormatExc T
-             'Could not open file'
-             [hint(l: 'File name' m: oz(FileName))]
-             Exc}
-         else
-            {GenericFormatter T Exc}
-         end
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% generic formatter for exceptions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      proc {FormatExc Kind Msg Bs Exc E}
+      proc {Format Kind Msg Bs Exc E}
          Fs = [items loc stack footer info]
       in
          E = {Record.make error
@@ -2072,44 +647,29 @@ in
          E.info   = {DebugInfo Exc}
       end
 
+      fun {FormatReRaiseExc Exc ExcExc}
+         error(title: 'Unable to Print Error Message'
+               items:[hint(l:'Initial exception' m:oz(Exc))
+                      hint(l:'Format exception Kind'  m:{Label ExcExc})
+                      hint(l:'Format exception' m:oz({DispatchField ExcExc}))
+                      line(BugReport)]
+               loc:   {DebugLoc Exc}
+               stack: {DebugStack Exc}
+              )
+      end
+
+
+      %%
+      %% generic formatter for exceptions
+      %%
+
       fun {GenericFormatter Msg Exc}
-         {FormatExc unit Msg [line(oz(Exc))] Exc}
+         {Format unit Msg [line(oz(Exc))] Exc}
       end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% registry of error printers
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      ErrorFormatter = {NewDictionary}
-
-      fun {ExFormatter Key}
-         {Dictionary.member ErrorFormatter Key}
-      end
-
-      proc {NewFormatter Key P}
-\ifdef TYPE_DEBUG
-         {Type.ask.feature Key}
-         {AskBinaryProc P}
-\endif
-         case {ExFormatter Key}
-         then {`RaiseError` system(reinstallFormatter Key)}
-         else
-            {Dictionary.put
-             ErrorFormatter
-             Key
-             P}
-         end
-      end
-
-      fun {GetFormatter Key}
-         {Dictionary.get
-          ErrorFormatter
-          Key}
-      end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% error print manager
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%
+      %% error print manager
+      %%
 
       fun {FormatOzError Exc}
          T = 'Error: unhandled exception'
@@ -2118,13 +678,13 @@ in
             LL={Label Exc}
          in
             case LL==failure then
-               {{GetFormatter failure} Exc}
+               {{ErrorRegistry.get failure} Exc}
             elsecase LL==error orelse LL==system then
                case {HasDispatchField Exc} then
                   Key = {Label {DispatchField Exc}}
                in
-                  case {ExFormatter Key}
-                  then {{GetFormatter Key} Exc}
+                  case {ErrorRegistry.exists Key}
+                  then {{ErrorRegistry.get Key} Exc}
                   else {GenericFormatter T Exc}
                   end
                else
@@ -2133,8 +693,8 @@ in
             else
                Key = {Label Exc}
             in
-               case {ExFormatter Key}
-               then {{GetFormatter Key} Exc}
+               case {ErrorRegistry.exists Key}
+               then {{ErrorRegistry.get Key} Exc}
                else {GenericFormatter T Exc}
                end
             end
@@ -2143,31 +703,20 @@ in
          end
       end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% register procedure OzError as Handler in the emulator
-%%% and initialize builtin error Formatters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%
+      %% register procedure OzError as Handler in the emulator
+      %% and initialize builtin error formatters
+      %%
 
       local
-         proc {ReRaise Exc ExcExc}
-            {LineOutput
-             ErrorMsgDebug
-             error(title: 'Unable to Print Error Message'
-                   items:[hint(l:'Initial exception' m:oz(Exc))
-                          hint(l:'Format exception Kind'  m:{Label ExcExc})
-                          hint(l:'Format exception' m:oz({DispatchField ExcExc}))
-                          line({BugReport})]
-                   loc:   {DebugLoc Exc}
-                   stack: {DebugStack Exc}
-                  )}
-         end
+         OnToplevel = {`Builtin` onToplevel 1}
 
          proc {DefExHdl Exc}
             try
                {Thread.setThisPriority high}
                {LineOutput ErrorMsgDebug {FormatOzError Exc}}
             catch X then
-               {ReRaise Exc X}
+               {LineOutput ErrorMsgDebug {FormatReRaiseExc Exc X}}
             end
             %% terminate local computation
             case {OnToplevel} then skip else fail end
@@ -2177,27 +726,6 @@ in
       end
 
       OzError = {{`Builtin` getDefaultExceptionHandler 1}}
-
-      %%
-      %% register formatters
-      %%
-
-      {NewFormatter failure     FailureFormatter}
-      {NewFormatter kernel      KernelFormatter}
-      {NewFormatter object      ObjectFormatter}
-      {NewFormatter fd          FDFormatter}
-      {NewFormatter record      OFSFormatter}
-      {NewFormatter search      SearchFormatter}
-      {NewFormatter tk          TkFormatter}
-      {NewFormatter os          OSFormatter}
-      {NewFormatter open        OpenFormatter}
-      {NewFormatter system      SystemFormatter}
-      {NewFormatter foreign     ForeignFormatter}
-      {NewFormatter dp          DPFormatter}
-      {NewFormatter compiler    CompilerFormatter}
-      {NewFormatter panel       PanelFormatter}
-      {NewFormatter explorer    ExplorerFormatter}
-      {NewFormatter gump        GumpFormatter}
 
    end
 

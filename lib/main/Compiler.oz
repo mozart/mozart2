@@ -42,7 +42,12 @@ in
       Error.{formatExc
              formatPos
              formatLine
+             formatGeneric
+             format
+             dispatch
              msg}
+
+      ErrorRegistry.{put}
 
       FS.{include
           var

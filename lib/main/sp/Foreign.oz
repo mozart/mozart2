@@ -29,6 +29,12 @@ functor $ prop once
 import
    System.{property}
 
+   Error.{formatGeneric
+          format
+          dispatch}
+
+   ErrorRegistry.{put}
+
 export
    pointer:    ForeignPointer
    dload:      DLoad
@@ -124,5 +130,55 @@ body
    end
 
    ForeignPointer = foreignPointer(is: {`Builtin` 'isForeignPointer' 2})
+
+   {ErrorRegistry.put
+
+    foreign
+
+    fun {$ Exc}
+      E = {Error.dispatch Exc}
+      T = 'Error: Foreign'
+   in
+
+      case E
+      of foreign(cannotFindFunction F A H) then
+
+         % expected F: atom, A: int, H: int
+
+         {Error.format T
+          'Cannot find foreign function'
+          [hint(l:'Function name' m:F)
+           hint(l:'Arity' m:A)
+           hint(l:'Handle' m:H)]
+          Exc}
+
+      elseof foreign(dlOpen F S) then
+
+         % expected F: virtualString
+
+         {Error.format T
+          'Cannot load foreign function file'
+          [hint(l:'File name' m:F)
+           hint(l:'Error number' m:S)]
+          Exc}
+
+      elseof foreign(dlClose N) then
+
+         {Error.format T
+          'Cannot unload foreign function file'
+          [hint(l:'File handle' m:oz(N))]
+          Exc}
+
+      elseof foreign(linkFiles As) then
+
+         {Error.format T
+          'Cannot link object files'
+          [hint(l:'File names' m:list(As ' '))]
+          Exc}
+
+      else
+         {Error.formatGeneric T Exc}
+      end
+   end}
 
 end

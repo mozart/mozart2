@@ -360,16 +360,39 @@ define
                end
             end
          end
+         %% Node Translation Tables
+         NormalNodes      = [int#int float#float atom#atom name#name procedure#procedure
+                             hashtuple#hashtuple pipetuple#pipetuple labeltuple#labeltuple
+                             record#record kindedrecord#kindedrecord fdint#fdint
+                             fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
+         RelationNodes    = [int#int float#float atom#atom name#name procedure#procedure
+                             hashtuple#hashtupleGr pipetuple#pipetupleGrM
+                             labeltuple#labeltupleGr record#recordGr
+                             kindedrecord#kindedrecordGr fdint#fdintGr
+                             fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
+                             byteString#bytestring]
+         NormalIndNodes   = [int#int float#float atom#atom name#name procedure#procedure
+                             hashtuple#hashtuple pipetuple#pipetuple labeltuple#labeltupleInd
+                             record#recordInd kindedrecord#kindedrecordInd fdint#fdint
+                             fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
+         RelationIndNodes = [int#int float#float atom#atom name#name procedure#procedure
+                             hashtuple#hashtupleGr pipetuple#pipetupleGrM
+                             labeltuple#labeltupleGrInd record#recordGrInd
+                             kindedrecord#kindedrecordGrInd fdint#fdintGr
+                             fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
+                             byteString#bytestring]
       in
          DefaultValues =
-         [inspectorWidth        # 600
-          inspectorHeight       # 400
-          optionsRange          # 'active' %% 'active' or 'all'
+         [inspectorWidth         # 600
+          inspectorHeight        # 400
+          optionsRange           # 'active' %% 'active' or 'all'
 
-          widgetTreeWidth       # 50
-          widgetTreeDepth       # 15
-          widgetTreeDisplayMode # true
-          widgetRelationList    # ['Structural Equality'(StructEqual)
+          widgetTreeWidth        # 50
+          widgetTreeDepth        # 15
+          widgetTreeDisplayMode  # true
+          widgetUseNodeSet       # 1 %% Select the used node-set (1 or 2)
+          widgetNodeSets         # ((NormalNodes|RelationNodes)#(NormalIndNodes|RelationIndNodes))
+          widgetRelationList     # ['Structural Equality'(StructEqual)
                                    auto('Token Equality'(System.eq))]
           widgetWidthLimitBitmap # {Root 'width.xbm'}
           widgetDepthLimitBitmap # {Root 'depth.xbm'}

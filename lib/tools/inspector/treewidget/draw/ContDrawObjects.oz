@@ -644,19 +644,26 @@ in
       end
    end
 
-   class LabelTupleDrawObject from InteractionDrawObject
-      meth performDraw(X Y)
-         Brace = @brace
-      in
-         ContainerDrawObject, performDraw({@label drawX(X Y $)} Y)
-         {Brace draw((X + @lastXDim - {Brace getXDim($)}) (Y + @yDim - 1))}
-      end
-      meth searchNode(XA YA X Y $)
-         Label = @label
-      in
-         case {Label searchNode(XA YA X Y $)}
-         of nil then
-            case ContainerDrawObject, searchNode((XA + {Label getXDim($)}) YA X Y $)
+   local
+      class LabelTupleCoreDrawObject from InteractionDrawObject
+         meth performDraw(X Y)
+            Brace = @brace
+         in
+            {self drawBody(X Y)}
+            {Brace draw((X + @lastXDim - {Brace getXDim($)}) (Y + @yDim - 1))}
+         end
+         meth getFirstItem($)
+            {@label getFirstItem($)}
+         end
+         meth makeDirty
+            dirty <- true {@label makeDirty} {@brace makeDirty}
+            ContainerDrawObject, performMakeDirty(1)
+         end
+         meth getMaxWidth(N $)
+            @maxWidth
+         end
+         meth searchNode(XA YA X Y $)
+            case {self searchBody(XA YA X Y $)}
             of nil then
                Brace = @brace
                BX    = {Brace getXDim($)}
@@ -664,57 +671,101 @@ in
                {Brace searchNode((XA + @lastXDim - BX) (YA + @yDim - 1) X Y $)}
             [] Res then Res
             end
-         [] Res then Res
          end
       end
-      meth getFirstItem($)
-         {@label getFirstItem($)}
-      end
-      meth makeDirty
-         dirty <- true {@label makeDirty} {@brace makeDirty}
-         ContainerDrawObject, performMakeDirty(1)
-      end
-      meth getMaxWidth(N $)
-         @maxWidth
-      end
-   end
 
-   class LabelTupleGrDrawObject from LabelTupleDrawObject
-      meth performDraw(X Y)
-         NewX  = if {@entry hasRefs($)} then {@mode drawX(X Y $)} else {@mode dirtyUndraw} X end
-         Brace = @brace
-      in
-         ContainerDrawObject, performDraw({@label drawX(NewX Y $)} Y)
-         {Brace draw((X + @lastXDim - {Brace getXDim($)}) (Y + @yDim - 1))}
+      class LabelTupleGrCoreDrawObject from LabelTupleCoreDrawObject
+         meth getFirstItem($)
+            if {@entry hasRefs($)} then {@mode getFirstItem($)} else {@label getFirstItem($)} end
+         end
+         meth makeDirty
+            {@entry sleep} {@mode makeDirty} LabelTupleDrawObject, makeDirty
+         end
       end
-      meth getFirstItem($)
-         if {@entry hasRefs($)} then {@mode getFirstItem($)} else {@label getFirstItem($)} end
-      end
-      meth makeDirty
-         {@entry sleep} {@mode makeDirty} LabelTupleDrawObject, makeDirty
-      end
-      meth searchNode(XA YA X Y $)
-         NewXA = if {@entry hasRefs($)} then (XA + {@mode getXDim($)}) else XA end
-         Label = @label
-      in
-         case {Label searchNode(NewXA YA X Y $)}
-         of nil then
-            case ContainerDrawObject, searchNode((NewXA + {Label getXDim($)}) YA X Y $)
-            of nil then
-               Brace = @brace
-               BX    = {Brace getXDim($)}
-            in
-               {Brace searchNode((XA + @lastXDim - BX) (YA + @yDim - 1) X Y $)}
+   in
+      class LabelTupleDrawObject from LabelTupleCoreDrawObject
+         meth drawBody(X Y)
+            ContainerDrawObject, performDraw({@label drawX(X Y $)} Y)
+         end
+         meth searchBody(XA YA X Y $)
+            Label = @label
+         in
+            case {Label searchNode(XA YA X Y $)}
+            of nil then ContainerDrawObject, searchNode((XA + {Label getXDim($)}) YA X Y $)
             [] Res then Res
             end
-         [] Res then Res
+         end
+      end
+
+      class LabelTupleIndDrawObject from LabelTupleCoreDrawObject
+         meth drawBody(X Y)
+            if @horzMode
+            then ContainerDrawObject, performDraw({@label drawX(X Y $)} Y)
+            else
+               {@label drawX(X Y _)}
+               ContainerDrawObject, performDraw((X + 3) (Y + 1))
+            end
+         end
+         meth searchBody(XA YA X Y $)
+            Label = @label
+         in
+            case {Label searchNode(XA YA X Y $)}
+            of nil then
+               if @horzMode
+               then ContainerDrawObject, searchNode((XA + {Label getXDim($)}) YA X Y $)
+               else ContainerDrawObject, searchNode((XA + 3) (YA + 1) X Y $)
+               end
+            [] Res then Res
+            end
+         end
+      end
+
+      class LabelTupleGrDrawObject from LabelTupleGrCoreDrawObject
+         meth drawBody(X Y)
+            NewX = if {@entry hasRefs($)} then {@mode drawX(X Y $)} else {@mode dirtyUndraw} X end
+         in
+            ContainerDrawObject, performDraw({@label drawX(NewX Y $)} Y)
+         end
+         meth searchBody(XA YA X Y $)
+            NewXA = if {@entry hasRefs($)} then (XA + {@mode getXDim($)}) else XA end
+            Label = @label
+         in
+            case {Label searchNode(NewXA YA X Y $)}
+            of nil then ContainerDrawObject, searchNode((NewXA + {Label getXDim($)}) YA X Y $)
+            [] Res then Res
+            end
+         end
+      end
+
+      class LabelTupleGrIndDrawObject from LabelTupleGrCoreDrawObject
+         meth drawBody(X Y)
+            NewX = if {@entry hasRefs($)} then {@mode drawX(X Y $)} else {@mode dirtyUndraw} X end
+         in
+            if @horzMode
+            then ContainerDrawObject, performDraw({@label drawX(NewX Y $)} Y)
+            else {@label drawX(NewX Y _)} ContainerDrawObject, performDraw((NewX + 3) (Y + 1))
+            end
+         end
+         meth searchBody(XA YA X Y $)
+            NewXA = if {@entry hasRefs($)} then (XA + {@mode getXDim($)}) else XA end
+            Label = @label
+         in
+            case {Label searchNode(NewXA YA X Y $)}
+            of nil then
+               if @horzMode
+               then ContainerDrawObject, searchNode((NewXA + {Label getXDim($)}) YA X Y $)
+               else ContainerDrawObject, searchNode((NewXA + 3) (YA + 1) X Y $)
+               end
+            [] Res then Res
+            end
          end
       end
    end
 
    class RecordDrawObject from LabelTupleDrawObject end
-
+   class RecordIndDrawObject from LabelTupleIndDrawObject end
    class RecordGrDrawObject from LabelTupleGrDrawObject end
+   class RecordGrIndDrawObject from LabelTupleGrIndDrawObject end
 
    local
       class KindedRecordShare
@@ -761,11 +812,29 @@ in
          end
       end
 
+      class KindedRecordIndDrawObject from LabelTupleIndDrawObject KindedRecordShare
+         meth performDraw(X Y)
+            Value = @value
+         in
+            LabelTupleIndDrawObject, performDraw(X Y)
+            if {IsKinded Value} then {@visual logVar(self Value false)} end
+         end
+      end
+
       class KindedRecordGrDrawObject from LabelTupleGrDrawObject KindedRecordShare
          meth performDraw(X Y)
             Value = @value
          in
             LabelTupleGrDrawObject, performDraw(X Y)
+            if {IsKinded Value} then {@visual logVar(self Value false)} end
+         end
+      end
+
+      class KindedRecordGrIndDrawObject from LabelTupleGrIndDrawObject KindedRecordShare
+         meth performDraw(X Y)
+            Value = @value
+         in
+            LabelTupleGrIndDrawObject, performDraw(X Y)
             if {IsKinded Value} then {@visual logVar(self Value false)} end
          end
       end

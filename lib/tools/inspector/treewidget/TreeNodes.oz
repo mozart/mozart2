@@ -25,37 +25,43 @@ import
    LayoutObjects
    DrawObjects
 export
-   int            : Int
-   float          : Float
-   atom           : Atom
-   name           : Name
-   procedure      : Procedure
-   record         : Record
-   recordGr       : RecordGr
-   kindedrecord   : KindedRecord
-   kindedrecordGr : KindedRecordGr
-   hashtuple      : HashTuple
-   hashtupleGr    : HashTupleGr
-   pipetuple      : PipeTuple
-   pipetupleGrS   : PipeTupleGrS
-   pipetupleGrM   : PipeTupleGrM
-   labeltuple     : LabelTuple
-   labeltupleGr   : LabelTupleGr
-   future         : Future
-   futureGr       : FutureGr
-   bytestring     : ByteString
-   free           : Free
-   freeGr         : FreeGr
-   fdint          : FDInt
-   fdintGr        : FDIntGr
-   fsval          : FSVal
-   fsvalGr        : FSValGr
-   fshelper       : FSHelper
-   fsvar          : FSVar
-   fsvarGr        : FSVarGr
+   int               : Int
+   float             : Float
+   atom              : Atom
+   name              : Name
+   procedure         : Procedure
+   record            : Record
+   recordInd         : RecordInd
+   recordGr          : RecordGr
+   recordGrInd       : RecordGrInd
+   kindedrecord      : KindedRecord
+   kindedrecordInd   : KindedRecordInd
+   kindedrecordGr    : KindedRecordGr
+   kindedrecordGrInd : KindedRecordGrInd
+   hashtuple         : HashTuple
+   hashtupleGr       : HashTupleGr
+   pipetuple         : PipeTuple
+   pipetupleGrS      : PipeTupleGrS
+   pipetupleGrM      : PipeTupleGrM
+   labeltuple        : LabelTuple
+   labeltupleInd     : LabelTupleInd
+   labeltupleGr      : LabelTupleGr
+   labeltupleGrInd   : LabelTupleGrInd
+   future            : Future
+   futureGr          : FutureGr
+   bytestring        : ByteString
+   free              : Free
+   freeGr            : FreeGr
+   fdint             : FDInt
+   fdintGr           : FDIntGr
+   fsval             : FSVal
+   fsvalGr           : FSValGr
+   fshelper          : FSHelper
+   fsvar             : FSVar
+   fsvarGr           : FSVarGr
 
-   generic        : Generic
-   atomRef        : AtomRef
+   generic           : Generic
+   atomRef           : AtomRef
 define
    class Int
       from
@@ -111,11 +117,29 @@ define
          final
    end
 
+   class RecordInd
+      from
+         CreateObjects.recordIndCreateObject
+         LayoutObjects.recordIndLayoutObject
+         DrawObjects.recordIndDrawObject
+      prop
+         final
+   end
+
    class RecordGr
       from
          CreateObjects.recordGrCreateObject
          LayoutObjects.recordGrLayoutObject
          DrawObjects.recordGrDrawObject
+      prop
+         final
+   end
+
+   class RecordGrInd
+      from
+         CreateObjects.recordGrIndCreateObject
+         LayoutObjects.recordGrIndLayoutObject
+         DrawObjects.recordGrIndDrawObject
       prop
          final
    end
@@ -129,11 +153,29 @@ define
          final
    end
 
+   class KindedRecordInd
+      from
+         CreateObjects.kindedRecordIndCreateObject
+         LayoutObjects.recordIndLayoutObject
+         DrawObjects.kindedRecordIndDrawObject
+      prop
+         final
+   end
+
    class KindedRecordGr
       from
          CreateObjects.kindedRecordGrCreateObject
          LayoutObjects.recordGrLayoutObject
          DrawObjects.kindedRecordGrDrawObject
+      prop
+         final
+   end
+
+   class KindedRecordGrInd
+      from
+         CreateObjects.kindedRecordGrCreateObject
+         LayoutObjects.recordGrLayoutObject
+         DrawObjects.kindedRecordGrIndDrawObject
       prop
          final
    end
@@ -192,11 +234,29 @@ define
          final
    end
 
+   class LabelTupleInd
+      from
+         CreateObjects.labelTupleCreateObject
+         LayoutObjects.labelTupleIndLayoutObject
+         DrawObjects.labelTupleIndDrawObject
+      prop
+         final
+   end
+
    class LabelTupleGr
       from
          CreateObjects.labelTupleGrCreateObject
          LayoutObjects.labelTupleGrLayoutObject
          DrawObjects.labelTupleGrDrawObject
+      prop
+         final
+   end
+
+   class LabelTupleGrInd
+      from
+         CreateObjects.labelTupleGrCreateObject
+         LayoutObjects.labelTupleGrIndLayoutObject
+         DrawObjects.labelTupleGrIndDrawObject
       prop
          final
    end

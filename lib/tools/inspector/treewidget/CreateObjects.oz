@@ -27,36 +27,40 @@ import
    System(printName show)
    Aux
 export
-   createObject               : CreateObject
-   intCreateObject            : IntCreateObject
-   floatCreateObject          : FloatCreateObject
-   atomCreateObject           : AtomCreateObject
-   nameCreateObject           : NameCreateObject
-   procedureCreateObject      : ProcedureCreateObject
-   recordCreateObject         : RecordCreateObject
-   recordGrCreateObject       : RecordGrCreateObject
-   kindedRecordCreateObject   : KindedRecordCreateObject
-   kindedRecordGrCreateObject : KindedRecordGrCreateObject
-   hashTupleCreateObject      : HashTupleCreateObject
-   hashTupleGrCreateObject    : HashTupleGrCreateObject
-   pipeTupleCreateObject      : PipeTupleCreateObject
-   pipeTupleGrCreateObject    : PipeTupleGrCreateObject
-   labelTupleCreateObject     : LabelTupleCreateObject
-   labelTupleGrCreateObject   : LabelTupleGrCreateObject
-   futureCreateObject         : FutureCreateObject
-   futureGrCreateObject       : FutureGrCreateObject
-   byteStringCreateObject     : ByteStringCreateObject
-   freeCreateObject           : FreeCreateObject
-   freeGrCreateObject         : FreeGrCreateObject
-   fDIntCreateObject          : FDIntCreateObject
-   fDIntGrCreateObject        : FDIntGrCreateObject
-   fSValCreateObject          : FSValCreateObject
-   fSValGrCreateObject        : FSValGrCreateObject
-   fSHelperCreateObject       : FSHelperCreateObject
-   fSVarCreateObject          : FSVarCreateObject
-   fSVarGrCreateObject        : FSVarGrCreateObject
-   genericCreateObject        : GenericCreateObject
-   atomRefCreateObject        : AtomRefCreateObject
+   createObject                  : CreateObject
+   intCreateObject               : IntCreateObject
+   floatCreateObject             : FloatCreateObject
+   atomCreateObject              : AtomCreateObject
+   nameCreateObject              : NameCreateObject
+   procedureCreateObject         : ProcedureCreateObject
+   recordCreateObject            : RecordCreateObject
+   recordIndCreateObject         : RecordIndCreateObject
+   recordGrCreateObject          : RecordGrCreateObject
+   recordGrIndCreateObject       : RecordGrIndCreateObject
+   kindedRecordCreateObject      : KindedRecordCreateObject
+   kindedRecordIndCreateObject   : KindedRecordIndCreateObject
+   kindedRecordGrCreateObject    : KindedRecordGrCreateObject
+   kindedRecordGrIndCreateObject : KindedRecordGrIndCreateObject
+   hashTupleCreateObject         : HashTupleCreateObject
+   hashTupleGrCreateObject       : HashTupleGrCreateObject
+   pipeTupleCreateObject         : PipeTupleCreateObject
+   pipeTupleGrCreateObject       : PipeTupleGrCreateObject
+   labelTupleCreateObject        : LabelTupleCreateObject
+   labelTupleGrCreateObject      : LabelTupleGrCreateObject
+   futureCreateObject            : FutureCreateObject
+   futureGrCreateObject          : FutureGrCreateObject
+   byteStringCreateObject        : ByteStringCreateObject
+   freeCreateObject              : FreeCreateObject
+   freeGrCreateObject            : FreeGrCreateObject
+   fDIntCreateObject             : FDIntCreateObject
+   fDIntGrCreateObject           : FDIntGrCreateObject
+   fSValCreateObject             : FSValCreateObject
+   fSValGrCreateObject           : FSValGrCreateObject
+   fSHelperCreateObject          : FSHelperCreateObject
+   fSVarCreateObject             : FSVarCreateObject
+   fSVarGrCreateObject           : FSVarGrCreateObject
+   genericCreateObject           : GenericCreateObject
+   atomRefCreateObject           : AtomRefCreateObject
 define
    class CreateObject
       attr

@@ -62,20 +62,6 @@ define
       end
    end
 
-   %% Node Translation Tables
-   NormalNodes = [int#int float#float atom#atom name#name procedure#procedure
-                  hashtuple#hashtuple pipetuple#pipetuple labeltuple#labeltuple
-                  record#record kindedrecord#kindedrecord fdint#fdint
-                  fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
-   RelNodes    = [int#int float#float atom#atom name#name procedure#procedure
-                  hashtuple#hashtupleGr pipetuple#pipetupleGrM
-                  labeltuple#labeltupleGr record#recordGr
-                  kindedrecord#kindedrecordGr fdint#fdintGr
-                  fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr byteString#bytestring]
-
-   NDict       = {Dictionary.new} {FillDict NDict NormalNodes}
-   RDict       = {Dictionary.new} {FillDict RDict RelNodes}
-
    fun {HasSub Ss Sub}
       case Ss of _|Sr then Ss == Sub orelse {HasSub Sr Sub} else false end
    end
@@ -91,25 +77,28 @@ define
    fun {IsUnbound V}
       {Value.isFree V} orelse {Value.isFuture V}
    end
+
    class TreeWidget from StoreListener.'class' GraphicSupport.'class'
       attr
-         widPort    %% TreeWidget Port
-         dMode      %% Display Mode (True: GraphMode / False TreeMode)
-         dWidth     %% Display Width (Logical Expansion)
-         dDepth     %% Display Depth (Locical Expansion)
-         curY       %% Current Y Position
-         maxX       %% Maxmimal X Dimension
-         maxPtr     %% Current Node Counter
-         nodes      %% Node Dictionary
-         relManDict %% Relation Manager Dictionary
-         curRelMan  %% Current Relation Manager
-         curDefRel  %% Current Default Relation
-         stopPVar   %% Privtate Stop Variable (shields stop reactions from beeing interrupted.)
-         stopOVar   %% Open Stop Variable
-         opDict     %% Option Dictionary
-         colDict    %% Color Dictionary
-         mapDict    %% Automap Function Dictionary
-         lines      %% Separator Dictionary
+         widPort       %% TreeWidget Port
+         dMode         %% Display Mode (True: GraphMode / False TreeMode)
+         dWidth        %% Display Width (Logical Expansion)
+         dDepth        %% Display Depth (Locical Expansion)
+         curY          %% Current Y Position
+         maxX          %% Maxmimal X Dimension
+         maxPtr        %% Current Node Counter
+         nodes         %% Node Dictionary
+         relManDict    %% Relation Manager Dictionary
+         curRelMan     %% Current Relation Manager
+         curDefRel     %% Current Default Relation
+         stopPVar      %% Privtate Stop Variable (shields stop reactions from beeing interrupted.)
+         stopOVar      %% Open Stop Variable
+         opDict        %% Option Dictionary
+         colDict       %% Color Dictionary
+         mapDict       %% Automap Function Dictionary
+         lines         %% Separator Dictionary
+         normNodesDict %% Normal Mode Nodes
+         relNodesDict  %% Relation Mode Nodes
       meth create(Options Parent DspWidth DspHeight)
          StoreListener.'class', create
          GraphicSupport.'class', create(Parent DspWidth DspHeight)
@@ -130,6 +119,14 @@ define
          Colors     = {Filter StringKeys FilterColor}
          Menus      = {Filter StringKeys FilterMenu}
       in
+         case {Dictionary.get Options widgetNodeSets}.{Dictionary.get Options widgetUseNodeSet}
+         of NSet|RSet then
+            NDict = {Dictionary.new}
+            RDict = {Dictionary.new}
+         in
+            normNodesDict <- NDict {FillDict NDict NSet}
+            relNodesDict  <- RDict {FillDict RDict RSet}
+         end
          opDict  <- Options
          colDict <- ColDict
          mapDict <- MapDict
@@ -346,7 +343,7 @@ define
                if @dMode
                then TreeWidget, graphCreate(Val Parent Index Depth $)
                else
-                  NodeKey = {Dictionary.condGet NDict ValKey generic}
+                  NodeKey = {Dictionary.condGet @normNodesDict ValKey generic}
                in
                   {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
                end
@@ -357,7 +354,7 @@ define
                Node = if @dMode
                       then TreeWidget, graphCreate(NVal Parent Index Depth $)
                       else
-                         NodeKey = {Dictionary.condGet NDict {ValueToKey NVal} generic}
+                         NodeKey = {Dictionary.condGet @normNodesDict {ValueToKey NVal} generic}
                       in
                          {New TreeNodes.NodeKey create(NVal Parent Index self Depth)}
                       end
@@ -382,7 +379,7 @@ define
       in
          if Atomic
          then
-            NodeKey = {Dictionary.condGet RDict {ValueToKey Val} generic}
+            NodeKey = {Dictionary.condGet @relNodesDict {ValueToKey Val} generic}
          in
             {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
          else
@@ -391,7 +388,7 @@ define
             if {Entry isActive($)}
             then {New TreeNodes.atomRef create(Entry Parent Index self Depth)}
             else
-               NodeKey = {Dictionary.condGet RDict {ValueToKey Val} generic}
+               NodeKey = {Dictionary.condGet @relNodesDict {ValueToKey Val} generic}
             in
                {New TreeNodes.NodeKey gcr(Entry Val Parent Index self Depth)}
             end
@@ -418,7 +415,7 @@ define
          if Depth > @dDepth
          then {New Aux.bitmap treeCreate(dpeth Parent Index self Val)}
          else
-            NodeKey = {Dictionary.condGet NDict {ValueToKey Val} generic}
+            NodeKey = {Dictionary.condGet @normNodesDict {ValueToKey Val} generic}
          in
             {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
          end

@@ -34,6 +34,9 @@ local
       meth getLastXDim($)
          @lastXDim
       end
+      meth getHorzMode($)
+         @horzMode
+      end
       meth layout
          {self checkHorzMode(1)}
          case @dirty of fresh then skip else dirty <- true end
@@ -73,6 +76,12 @@ local
             end
          end
       end
+      meth isVert($)
+         true
+      end
+   end
+
+   class NormalAdjust
       meth adjustLayout(LXDim BXDim)
          NLastXDim = (@lastXDim + BXDim)
          NewXDim   = {Max NLastXDim @xDim}
@@ -80,8 +89,24 @@ local
          xDim     <- (LXDim + NewXDim)
          lastXDim <- (LXDim + NLastXDim)
       end
-      meth isVert($)
-         true
+   end
+
+   class IndentAdjust
+      meth adjustLayout(LXDim BXDim)
+         NLastXDim = (@lastXDim + BXDim)
+         NewXDim   = {Max NLastXDim @xDim}
+      in
+         if @horzMode
+         then
+            xDim     <- (LXDim + NewXDim)
+            lastXDim <- (LXDim + NLastXDim)
+         else
+            RealXDim = {Max (LXDim - 3) NewXDim}
+         in
+            xDim     <- (3 + RealXDim)
+            yDim     <- (@yDim + 1)
+            lastXDim <- (3 + NLastXDim)
+         end
       end
    end
 
@@ -141,7 +166,7 @@ in
       end
    end
 
-   class HashTupleGrLayoutObject from HashTupleLayoutObject GraphShare
+   class HashTupleGrLayoutObject from HashTupleLayoutObject NormalAdjust GraphShare
       meth layout
          if {IsFree @xDim}
          then
@@ -151,7 +176,7 @@ in
                case @mode
                of Ref|OB|CB then
                   {OB layout} {CB layout}
-                  ContainerLayoutObject, adjustLayout(({Ref layoutX($)} + 1) 1)
+                  NormalAdjust, adjustLayout(({Ref layoutX($)} + 1) 1)
                end
             end
          end
@@ -164,7 +189,8 @@ in
       end
    end
 
-   class PipeTupleLayoutObject from ContainerLayoutObject LabelShareObject InfixShareObject
+   class PipeTupleLayoutObject from ContainerLayoutObject NormalAdjust
+                                  LabelShareObject InfixShareObject
       meth checkHorzMode(I)
          case @type
          of pipetuple then InfixShareObject, infixCheckHorzMode(I false)
@@ -178,7 +204,7 @@ in
             of pipetuple then ContainerLayoutObject, layout
             [] list then
                ContainerLayoutObject, layout
-               ContainerLayoutObject, adjustLayout({@label layoutX($)} {@brace layoutX($)})
+               NormalAdjust, adjustLayout({@label layoutX($)} {@brace layoutX($)})
             end
          end
       end
@@ -193,7 +219,7 @@ in
       end
    end
 
-   class PipeTupleGrLayoutObject from ContainerLayoutObject
+   class PipeTupleGrLayoutObject from ContainerLayoutObject NormalAdjust
       meth layout
          if {IsFree @xDim}
          then
@@ -210,7 +236,7 @@ in
                case @mode
                of Ref|OB|CB then
                   {OB layout} {CB layout}
-                  ContainerLayoutObject, adjustLayout(({Ref layoutX($)} + 1) 1)
+                  NormalAdjust, adjustLayout(({Ref layoutX($)} + 1) 1)
                end
             end
          end
@@ -250,48 +276,57 @@ in
       end
    end
 
-   class LabelTupleLayoutObject from ContainerLayoutObject LabelShareObject
-      meth layout
-         if {IsFree @xDim}
-         then
-            ContainerLayoutObject, layout
-            ContainerLayoutObject, adjustLayout({@label layoutX($)} {@brace layoutX($)})
-         end
-      end
-      meth layoutX($)
-         LabelTupleLayoutObject, layout @xDim
-      end
-      meth layoutY($)
-         LabelTupleLayoutObject, layout @xDim|@yDim
-      end
-      meth noSep($)
-         false
-      end
-   end
-
-   class LabelTupleGrLayoutObject from LabelTupleLayoutObject GraphShare
-      meth layout
-         if {IsFree @xDim}
-         then
-            BX = {@brace layoutX($)}
-         in
-            ContainerLayoutObject, layout
-            if {@entry hasRefs($)}
-            then ContainerLayoutObject, adjustLayout(({@mode layoutX($)} + {@label layoutX($)}) BX)
-            else ContainerLayoutObject, adjustLayout({@label layoutX($)} BX)
+   local
+      class LabelTupleCoreLayoutObject from ContainerLayoutObject LabelShareObject
+         meth layout
+            if {IsFree @xDim}
+            then
+               ContainerLayoutObject, layout
+               {self adjustLayout({@label layoutX($)} {@brace layoutX($)})}
             end
          end
+         meth layoutX($)
+            LabelTupleCoreLayoutObject, layout @xDim
+         end
+         meth layoutY($)
+            LabelTupleCoreLayoutObject, layout @xDim|@yDim
+         end
+         meth noSep($)
+            false
+         end
       end
-      meth layoutX($)
-         LabelTupleGrLayoutObject, layout @xDim
+
+      class LabelTupleGrCoreLayoutObject from LabelTupleCoreLayoutObject GraphShare
+         meth layout
+            if {IsFree @xDim}
+            then
+               BX = {@brace layoutX($)}
+            in
+               ContainerLayoutObject, layout
+               if {@entry hasRefs($)}
+               then {self adjustLayout(({@mode layoutX($)} + {@label layoutX($)}) BX)}
+               else {self adjustLayout({@label layoutX($)} BX)}
+               end
+            end
+         end
+         meth layoutX($)
+            LabelTupleGrCoreLayoutObject, layout @xDim
+         end
+         meth layoutY($)
+            LabelTupleGrCoreLayoutObject, layout @xDim|@yDim
+         end
       end
-      meth layoutY($)
-         LabelTupleGrLayoutObject, layout @xDim|@yDim
-      end
+   in
+      class LabelTupleLayoutObject from LabelTupleCoreLayoutObject NormalAdjust end
+      class LabelTupleIndLayoutObject from LabelTupleCoreLayoutObject IndentAdjust end
+      class LabelTupleGrLayoutObject from LabelTupleGrCoreLayoutObject NormalAdjust end
+      class LabelTupleGrIndLayoutObject from LabelTupleGrCoreLayoutObject IndentAdjust end
    end
 
    class RecordLayoutObject from LabelTupleLayoutObject end
+   class RecordIndLayoutObject from LabelTupleIndLayoutObject end
    class RecordGrLayoutObject from LabelTupleGrLayoutObject end
+   class RecordGrIndLayoutObject from LabelTupleGrIndLayoutObject end
 
    class FDIntLayoutObject from LabelTupleLayoutObject
       meth checkHorzMode(I)

@@ -28,6 +28,7 @@ export
    atom        : AtomNode
    label       : LabelNode
    feature     : FeatureNode
+   featureInd  : FeatureIndNode
    separator   : SeparatorNode
    bitmap      : BitmapNode
    proxy       : ProxyNode
@@ -326,8 +327,6 @@ define
       class FeatureNode from CombinedValues SecondTags GetType
          attr
             sDim %% String Length
-         prop
-            final
          meth create(FeaVal Visual Node)
             String = @string
          in
@@ -409,6 +408,68 @@ define
          end
          meth getSelectionNode($)
             {@node getParent($)}
+         end
+      end
+
+      class FeatureIndNode from FeatureNode
+         prop
+            final
+         meth layout
+            FeaX = (@sDim + 1)
+            Node = @node
+         in
+            case {Node layoutY($)}
+            of XDim|YDim then
+               if {{Node getParent($)} getHorzMode($)}
+               then
+                  xDim     <- (FeaX + XDim)
+                  yDim     <- YDim
+                  lastXDim <- (FeaX + {Node getLastXDim($)})
+               else
+                  RealXDim = {Max (FeaX - 3) XDim}
+               in
+                  xDim     <- (3 + RealXDim)
+                  yDim     <- (YDim + 1)
+                  lastXDim <- (3 + {Node getLastXDim($)})
+               end
+            end
+         end
+         meth layoutX($)
+            FeatureIndNode, layout @xDim
+         end
+         meth layoutY($)
+            FeatureIndNode, layout @xDim|@yDim
+         end
+         meth draw(X Y)
+            Visual = @visual
+            SDim   = @sDim
+            Node   = @node
+         in
+            if @dirty
+            then
+               dirty <- false
+               {Visual printXY(X Y @string @tag feature)}
+               {Visual printXY((X + SDim) Y ':' @secTag colon)}
+            else {Visual doublePlace(X Y SDim @tag @secTag)}
+            end
+            if {{Node getParent($)} getHorzMode($)}
+            then {Node draw((X + SDim + 1) Y)}
+            else {Node draw((X + 3) (Y + 1))}
+            end
+         end
+         meth drawX(X Y $)
+            FeatureIndNode, draw(X Y) (X + @xDim)
+         end
+         meth drawY(X Y $)
+            FeatureIndNode, draw(X Y) (Y + @yDim)
+         end
+         meth searchNode(XA YA X Y $)
+            Node = @node
+         in
+            if {{Node getParent($)} getHorzMode($)}
+            then {Node searchNode((XA + @sDim + 1) YA X Y $)}
+            else {Node searchNode((XA + 3) (YA + 1) X Y $)}
+            end
          end
       end
 
@@ -681,6 +742,7 @@ define
             {@parent modifyDepth(Index N)}
          end
          meth reinspect
+            {@parent notify}
             {@parent replace(@index @value replaceNormal)}
          end
          meth getSelectionNode($)

@@ -603,6 +603,7 @@ local
             visualRed
             visualGreen
             visualBlue
+            visualRecAlign
          meth create
             MyBook   = @book
             MyNote   = {New TkTools.note
@@ -712,6 +713,26 @@ local
                                       highlightthickness: 0)}
                SelColN      = {Dictionary.condGet @namesDict SelColor SelColor}
                GetColor     = {Dictionary.get OpDict {VirtualString.toAtom SelColN#'Color'}}
+               RecordFrame  = {New TkTools.textframe
+                               tkInit(parent: MyFrame
+                                      text:   'Record Alignment')}
+               RecordInner  = RecordFrame.inner
+               RecordVar    = {New Tk.variable
+                               tkInit({Dictionary.get OpDict widgetUseNodeSet})}
+               RecordButton = {New Tk.checkbutton
+                               tkInit(parent:RecordInner
+                                      text:     'Use Fixed Width Indent'
+                                      onvalue:  2
+                                      offvalue: 1
+                                      font:     MediumFont
+                                      variable: RecordVar
+                                      anchor: w)}
+               RecordFillC  = {New Tk.canvas
+                               tkInit(parent:             RecordInner
+                                      width:              221 % 220
+                                      height:             0
+                                      borderwidth:        0
+                                      highlightthickness: 0)}
             in
                @visualCurType = SelColor
                @visualCanvas  = ColorCanvas
@@ -721,6 +742,7 @@ local
                VisualNote, createColors(1 0 0)
                @visualFontBold = BoldVar
                @visualFontSize = InitFSize
+               @visualRecAlign = RecordVar
                {self handle(selCol(VisualNote, MatchColor(1 GetColor $)))}
                {Tk.batch [grid(row: 0 column: 0 TypeLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 TypeSelector padx: 4 pady: 4 sticky: nw)
@@ -732,7 +754,10 @@ local
                           grid(row: 0 column: 1 SizeSelector padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 2 BoldFillCanv padx: 0 pady: 0 sticky: nw)
                           grid(row: 0 column: 3 BoldButton padx: 4 pady: 4 sticky: w)
-                          grid(row: 1 column: 0 FontFrame padx: 4 pady: 4 sticky: nw)]}
+                          grid(row: 1 column: 0 FontFrame padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 0 RecordButton padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 1 RecordFillC padx:0 pady:0 sticky: nw)
+                          grid(row: 2 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)]}
             end
             {Tk.send pack(MyCanvas anchor: nw padx: 0 pady: 0)}
          end
@@ -900,6 +925,7 @@ local
              widgetTreeFont font(family: 'courier'
                                  size:   @visualFontSize
                                  weight: {@visualFontBold tkReturnAtom($)})}
+            {Dictionary.put OpDict widgetUseNodeSet {@visualRecAlign tkReturnInt($)}}
          end
       end
    end

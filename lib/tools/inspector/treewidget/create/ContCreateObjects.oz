@@ -296,7 +296,8 @@ in
 
    class RecordCreateObject from LabelContainerCreateObject
       attr
-         arity %% Record Arity
+         arity                 %% Record Arity
+         auxfeat : Aux.feature %% Aux Separator Class
       meth createContainer
          Visual = @visual
          Value  = @value
@@ -327,8 +328,7 @@ in
                case As
                of A|Ar then
                   {Dictionary.put @items I
-                   {New Aux.feature create(A Visual
-                                           {Visual treeCreate((@value).A self I Depth $)})}}
+                   {New @auxfeat create(A Visual {Visual treeCreate((@value).A self I Depth $)})}}
                   RecordCreateObject, performInsertion((I + 1) Ar Stop)
                end
             elseif Width < @maxWidth
@@ -343,7 +343,13 @@ in
       end
    end
 
+   class RecordIndCreateObject from RecordCreateObject
+      attr
+         auxfeat : Aux.featureInd
+   end
+
    class RecordGrCreateObject from RecordCreateObject GraphCreate LabelModeShare end
+   class RecordGrIndCreateObject from RecordIndCreateObject GraphCreate LabelModeShare end
 
    class KindedRecordCreateObject from RecordCreateObject
       attr
@@ -391,7 +397,8 @@ in
                elsecase As
                of A|Ar then
                   {Dictionary.put @items I
-                   {New Aux.feature create(A Visual {Visual treeCreate(@value.A self I Depth $)})}}
+                   {New Aux.feature
+                    create(A Visual {Visual treeCreate(@value.A self I Depth $)})}}
                   KindedRecordCreateObject, performInsertion((I + 1) Ar Stop)
                [] nil then
                   monitorValue <- nil
@@ -410,7 +417,14 @@ in
       end
    end
 
+   class KindedRecordIndCreateObject from KindedRecordCreateObject
+      attr
+         auxfeat : Aux.featureInd
+   end
+
    class KindedRecordGrCreateObject from KindedRecordCreateObject GraphCreate LabelModeShare end
+   class KindedRecordGrIndCreateObject from KindedRecordIndCreateObject GraphCreate LabelModeShare
+   end
 
    class FDIntCreateObject from RecordCreateObject
       meth createContainer

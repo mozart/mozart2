@@ -27,25 +27,31 @@ import
    Tk(send)
    Aux
 export
-   drawObject               : DrawObject
-   recordDrawObject         : RecordDrawObject
-   recordGrDrawObject       : RecordGrDrawObject
-   kindedRecordDrawObject   : KindedRecordDrawObject
-   kindedRecordGrDrawObject : KindedRecordGrDrawObject
-   hashTupleDrawObject      : HashTupleDrawObject
-   hashTupleGrDrawObject    : HashTupleGrDrawObject
-   pipeTupleDrawObject      : PipeTupleDrawObject
-   pipeTupleGrSDrawObject   : PipeTupleGrSDrawObject
-   pipeTupleGrMDrawObject   : PipeTupleGrMDrawObject
-   labelTupleDrawObject     : LabelTupleDrawObject
-   labelTupleGrDrawObject   : LabelTupleGrDrawObject
-   futureDrawObject         : FutureDrawObject
-   futureGrDrawObject       : FutureGrDrawObject
-   freeDrawObject           : FreeDrawObject
-   freeGrDrawObject         : FreeGrDrawObject
-   fDIntDrawObject          : FDIntDrawObject
-   fDIntGrDrawObject        : FDIntGrDrawObject
-   atomRefDrawObject        : AtomRefDrawObject
+   drawObject                  : DrawObject
+   recordDrawObject            : RecordDrawObject
+   recordIndDrawObject         : RecordIndDrawObject
+   recordGrDrawObject          : RecordGrDrawObject
+   recordGrIndDrawObject       : RecordGrIndDrawObject
+   kindedRecordDrawObject      : KindedRecordDrawObject
+   kindedRecordIndDrawObject   : KindedRecordIndDrawObject
+   kindedRecordGrDrawObject    : KindedRecordGrDrawObject
+   kindedRecordGrIndDrawObject : KindedRecordGrIndDrawObject
+   hashTupleDrawObject         : HashTupleDrawObject
+   hashTupleGrDrawObject       : HashTupleGrDrawObject
+   pipeTupleDrawObject         : PipeTupleDrawObject
+   pipeTupleGrSDrawObject      : PipeTupleGrSDrawObject
+   pipeTupleGrMDrawObject      : PipeTupleGrMDrawObject
+   labelTupleDrawObject        : LabelTupleDrawObject
+   labelTupleIndDrawObject     : LabelTupleIndDrawObject
+   labelTupleGrDrawObject      : LabelTupleGrDrawObject
+   labelTupleGrIndDrawObject   : LabelTupleGrIndDrawObject
+   futureDrawObject            : FutureDrawObject
+   futureGrDrawObject          : FutureGrDrawObject
+   freeDrawObject              : FreeDrawObject
+   freeGrDrawObject            : FreeGrDrawObject
+   fDIntDrawObject             : FDIntDrawObject
+   fDIntGrDrawObject           : FDIntGrDrawObject
+   atomRefDrawObject           : AtomRefDrawObject
 define
    RecordCreateObject       = CreateObjects.recordCreateObject
    KindedRecordCreateObject = CreateObjects.kindedRecordCreateObject
@@ -133,6 +139,7 @@ define
          skip
       end
       meth reinspect
+         {@parent notify}
          {@parent replace(@index @value replaceNormal)}
       end
    end

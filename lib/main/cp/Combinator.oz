@@ -62,7 +62,7 @@ prepare
 
    fun {Deref S}
       case S
-      of blocked(S)      then {Deref S}
+      of suspended(S)    then {Deref S}
       [] alternatives(_) then stuck
       [] succeeded(S)    then S
       else S
@@ -139,7 +139,7 @@ define
                {Dictionary.remove A I}
                {DiscardGuards {Dictionary.keys A} G}
                {CommitGuard G.I}
-            [] blocked(AI) then
+            [] suspended(AI) then
                {Dictionary.put A I AI}
                {Resolve G A N B E}
             end
@@ -164,7 +164,7 @@ define
             of failed then
                {Dictionary.remove A I}
                {WaitFailed G A N-1}
-            [] blocked(AI) then
+            [] suspended(AI) then
                {Dictionary.put A I AI}
                {WaitFailed G A N}
             else
@@ -178,7 +178,7 @@ define
             of failed then
                {Dictionary.remove A I}
                {Resolve G A N-1}
-            [] blocked(AI) then
+            [] suspended(AI) then
                {Dictionary.put A I AI}
                {Resolve G A N}
             else
@@ -236,9 +236,9 @@ define
             {CommitOrDiscard G J I ?B}
          else
             case A
-            of failed     then {FdInt compl(J) I}
-            [] merged     then skip
-            [] blocked(A) then {Control G A J I ?B}
+            of failed       then {FdInt compl(J) I}
+            [] merged       then skip
+            [] suspended(A) then {Control G A J I ?B}
             else {CommitOrDiscard G J I ?B}
             end
          end

@@ -43,7 +43,7 @@ SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 
 FCORE = \
         conversion float record type exception guards future misc \
-        link instruction compiler except dictionary ofs
+        link instruction compiler except dictionary ofs pickles
 
 CORE = $(FCORE:%=./core/%.ozf)
 

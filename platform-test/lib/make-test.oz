@@ -2,6 +2,9 @@
 %%% Authors:
 %%%   Christian Schulte (schulte@dfki.de)
 %%%
+%%% Contributors:
+%%%   Tobias Mueller (tmueller@ps.uni-sb.de)
+%%%
 %%% Copyright:
 %%%   Christian Schulte, 1998
 %%%
@@ -46,6 +49,9 @@ local
          [] J|Jr then
             {IsPrefix Is Js} orelse {IsIn Is Jr}
          end
+      end
+      fun {IsNotIn Is Js}
+         case {IsIn Is Js} then false else true end
       end
    end
 
@@ -96,7 +102,20 @@ local
                                end}
                            end}
                        end
-               RunTests = {Filter Tests
+               Tests1 = case Argv.ignores=="none" then Tests else
+                          TestTests = {String.tokens Argv.ignores &,}
+                       in
+                          {Filter Tests
+                           fun {$ T}
+                              S1={Atom.toString {Label T}}
+                           in
+                              {All TestTests
+                               fun {$ S2}
+                                  {IsNotIn S2 S1}
+                               end}
+                           end}
+                       end
+               RunTests = {Filter Tests1
                            fun {$ T}
                               {Some T.keys fun {$ K1}
                                               {Member K1 Keys}
@@ -288,6 +307,7 @@ local
           usage(type:bool default:false)
           verbose(type:bool default:false)
           gc(type:int optional:false default:0)
+          ignores(type:string optional:true default:"none")
           keys(type:string optional:true default:"all")
           time(type:string optional:true default:"")
           tests(type:string optional:true default:"all")

@@ -4,6 +4,7 @@ VPATH=          @srcdir@
 SRCDIR=         @srcdir@
 BUILDTOP=       @BUILDTOP@
 SRCTOP=         @SRCTOP@
+HOMEURL=        @HOMEURL@
 
 INSTALL_DIR     = @INSTALL_DIR@
 
@@ -89,7 +90,7 @@ all: dirs oztest ozbench
 boot-all:
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
         make all \
-        OZ_LOAD=prefix=http\\://mozart.ps.uni-sb.de/home/share/=$(BUILDTOP)/share/lib/:prefix=./=./:prefix=/=/:.:= \
+        OZ_LOAD=prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=./=./:prefix=/=/:.:= \
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh
@@ -103,7 +104,7 @@ boot-check: boot-all
         PATH=$(SRCTOP)/share/bin:$(PATH) \
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
         make check \
-        OZ_LOAD=prefix=http\\://mozart.ps.uni-sb.de/home/share/=$(BUILDTOP)/share/lib/:prefix=http\\://mozart.ps.uni-sb.de/home/share/=$(BUILDTOP)/share/tools/:prefix=./=./:prefix=/=/:.:= \
+        OZ_LOAD=prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/tools/:prefix=./=./:prefix=/=/:.:= \
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh \

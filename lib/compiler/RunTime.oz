@@ -52,7 +52,7 @@ require
    BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
 
-   BootValue(dotAssign dotExchange catAccess catAssign catExchange) at 'x-oz://boot/Value'
+   BootValue(dotAssign dotExchange catAccess catAssign catExchange catAccessOO catAssignOO catExchangeOO) at 'x-oz://boot/Value'
 prepare
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
@@ -61,6 +61,9 @@ prepare
                      catAccess: BootValue.catAccess
                      catAssign: BootValue.catAssign
                      catExchange: BootValue.catExchange
+                     catAccessOO: BootValue.catAccessOO
+                     catAssignOO: BootValue.catAssignOO
+                     catExchangeOO: BootValue.catExchangeOO
                      '==': Value.'=='
                      '=': Value.'='
                      '\\=': Value.'\\='

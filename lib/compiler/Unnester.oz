@@ -1174,7 +1174,7 @@ define
             % We then optimise this call statically during byte code generation.
             % (not yet implemented)
             %
-            Unnester, UnnestStatement(fOpApplyStatement('catAssign'
+            Unnester, UnnestStatement(fOpApplyStatement(if @Stateful then 'catAssignOO' else 'catAssign' end
                                                         [Left Right] C) $)
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
@@ -1326,7 +1326,7 @@ define
                % We always set StateUsed see comment on UnnestStatement(fDotAssign(...))
                StateUsed <- true
             end
-            FS = fOpApplyStatement('catAccess' [FE fOcc(ToGV)] C)
+            FS = fOpApplyStatement(if @Stateful then 'catAccessOO' else 'catAccess' end [FE fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
          [] fAtom(_ _) then GFront GBack in
             Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
@@ -1605,7 +1605,7 @@ define
                % See comments on UnnestStatement(fDotAssign(...))
                StateUsed <- true
             end
-            FApply = fOpApplyStatement('catExchange' [Left Right fOcc(ToGV)] C)
+            FApply = fOpApplyStatement(if @Stateful then 'catExchangeOO' else 'catExchange' end [Left Right fOcc(ToGV)] C)
             Unnester, UnnestStatement(FApply $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError

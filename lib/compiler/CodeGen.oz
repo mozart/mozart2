@@ -349,7 +349,21 @@ define
             then
                VHd = vInlineAt(_ Feature {Arg2 reg($)} VTl)
             end
+         [] 'Value.catAccessOO' then [Arg1 Arg2]  = ActualArgs Feature in
+            {Arg1 getCodeGenValue(?Feature)}
+            if {IsDet Feature}
+               andthen ({IsInt Feature} orelse {IsLiteral Feature})
+            then
+               VHd = vInlineAt(_ Feature {Arg2 reg($)} VTl)
+            end
          [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Feature in
+            {Arg1 getCodeGenValue(?Feature)}
+            if {IsDet Feature}
+               andthen ({IsInt Feature} orelse {IsLiteral Feature})
+            then
+               VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
+            end
+         [] 'Value.catAssignOO' then [Arg1 Arg2] = ActualArgs Feature in
             {Arg1 getCodeGenValue(?Feature)}
             if {IsDet Feature}
                andthen ({IsInt Feature} orelse {IsLiteral Feature})

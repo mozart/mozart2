@@ -12,6 +12,7 @@ import
 \ifndef OZM
    Gump
 \endif
+   Debug
 export
    Engine
    ParseOzFile
@@ -43,13 +44,15 @@ body
                      'ImAToken':              ImAToken
                      'Core':                  Core
                      'CompilerSupport':       CompilerSupport
-                     'Builtins':              Builtins)}
+                     'Builtins':              Builtins
+                     'RunTime':               RT)}
       Code      = {FunCode.apply
                    c('System':                System
                      'Misc':                  Misc
+                     'Builtins':              Builtins
                      'ImAVariableOccurrence': ImAVariableOccurrence
                      'Core':                  Core
-                     'Builtins':              Builtins)}
+                     'RunTime':               RT)}
       Core      = {FunCore.apply
                    c('System':                System
                      'Misc':                  Misc
@@ -59,6 +62,9 @@ body
                      'ImAValueNode':          ImAValueNode
                      'ImAVariableOccurrence': ImAVariableOccurrence
                      'ImAToken':              ImAToken)}
+      RT        = {FunRT.apply
+                   c('System':                System
+                     'Core':                  Core)}
       Unnest    = {FunUnnest.apply
                    c('FD':                    FD
                      'Misc':                  Misc
@@ -67,7 +73,7 @@ body
 \ifndef OZM
                      'Gump':                  Gump
 \endif
-                    )}
+                     'RunTime':               RT)}
       Assembler = {FunAssembler.apply
                    c('System':                System
                      'CompilerSupport':       CompilerSupport
@@ -77,6 +83,7 @@ body
                      'Property':              Property
                      'Error':                 Error
                      'ErrorRegistry':         ErrorRegistry
+                     'Debug':                 Debug
                      'Parser':                Parser
                      'Misc':                  Misc
                      'Core':                  Core

@@ -63,15 +63,6 @@ local
       end
    end
 
-   proc {GetExpansionVars Node VsHd VsTl}
-      {Record.foldL Node.expansionOccs
-       proc {$ VsHd VO VsTl}
-          case VO of undeclared then VsHd = VsTl
-          else VsHd = {VO getVariable($)}|VsTl
-          end
-       end VsHd VsTl}
-   end
-
    proc {MarkFirstList Nodes WarnFormals Rep}
       case Nodes of Node|Noder then
          {Node markFirst(WarnFormals Rep)}
@@ -89,15 +80,6 @@ local
                                             WarnFormals Rep)}
                     {UsesMax NewUses1 NewUses2}
                  end NewUses1}
-   end
-
-   proc {MarkFirstExpansionOccs Node WarnFormals Rep}
-      {Record.forAll Node.expansionOccs
-       proc {$ VO}
-          case VO of undeclared then skip
-          else {VO markFirst(WarnFormals Rep)}
-          end
-       end}
    end
 
    proc {SetUninitVars GlobalVars}
@@ -189,9 +171,8 @@ local
    end
 
    class AnnotateConstruction
-      meth annotateGlobalVars(Ls VsHd VsTl) VsInter1 VsInter2 in
-         {GetExpansionVars self VsHd VsInter1}
-         {@label annotateGlobalVars(Ls VsInter1 VsInter2)}
+      meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
+         {@label annotateGlobalVars(Ls VsHd VsInter)}
          {FoldL @args
           proc {$ VsHd Arg VsTl}
              case Arg of F#T then VsInter in
@@ -200,10 +181,9 @@ local
              else
                 {Arg annotateGlobalVars(Ls VsHd VsTl)}
              end
-          end VsInter2 VsTl}
+          end VsInter VsTl}
       end
       meth markFirst(WarnFormals Rep)
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {@label markFirst(WarnFormals Rep)}
          {ForAll @args
           proc {$ Arg}
@@ -259,18 +239,16 @@ local
 
    class AnnotateBoolCase
       attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) VsInter1 VsInter2 VsInter3 in
-         {GetExpansionVars self VsHd VsInter1}
-         {@arbiter annotateGlobalVars(Ls VsInter1 VsInter2)}
-         {@consequent annotateGlobalVars(Ls VsInter2 VsInter3)}
-         {@alternative annotateGlobalVars(Ls VsInter3 VsTl)}
+      meth annotateGlobalVars(Ls VsHd VsTl) VsInter1 VsInter2 in
+         {@arbiter annotateGlobalVars(Ls VsHd VsInter1)}
+         {@consequent annotateGlobalVars(Ls VsInter1 VsInter2)}
+         {@alternative annotateGlobalVars(Ls VsInter2 VsTl)}
          globalVars <- {VariableUnion
                         {@consequent getGlobalVars($)}
                         {@alternative getGlobalVars($)}}
       end
       meth markFirst(WarnFormals Rep) OldUses NewUses1 NewUses2 in
          {SetUninitVars @globalVars}
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {@arbiter markFirst(WarnFormals Rep)}
          OldUses = {GetUses @globalVars}
          {@consequent markFirstClause(@globalVars OldUses ?NewUses1
@@ -361,9 +339,8 @@ local
    end
 
    class AnnotateRecordPattern
-      meth annotateGlobalVars(Ls VsHd VsTl) VsInter1 VsInter2 in
-         {GetExpansionVars self VsHd VsInter1}
-         {@label annotateGlobalVars(Ls VsInter1 VsInter2)}
+      meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
+         {@label annotateGlobalVars(Ls VsHd VsInter)}
          {FoldL @args
           proc {$ VsHd Arg VsTl}
              case Arg of F#P then VsInter in
@@ -372,10 +349,9 @@ local
              else
                 {Arg annotateGlobalVars(Ls VsHd VsTl)}
              end
-          end VsInter2 VsTl}
+          end VsInter VsTl}
       end
       meth markFirst(WarnFormals Rep)
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {@label markFirst(WarnFormals Rep)}
          {ForAll @args
           proc {$ Arg}
@@ -425,13 +401,12 @@ local
    end
    class AnnotateNoElse
       meth annotateGlobalVars(_ VsHd VsTl)
-         {GetExpansionVars self VsHd VsTl}
+         VsHd = VsTl
       end
       meth getGlobalVars($)
          nil
       end
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -490,17 +465,16 @@ local
 
    class AnnotateClassNode
       meth annotateGlobalVars(Ls VsHd VsTl)
-         VsInter1 VsInter2 VsInter3 VsInter4 VsInter5 VsInter6 in
-         {GetExpansionVars self VsHd VsInter1}
-         {@designator annotateGlobalVars(Ls VsInter1 VsInter2)}
+         VsInter1 VsInter2 VsInter3 VsInter4 VsInter5 in
+         {@designator annotateGlobalVars(Ls VsHd VsInter1)}
          {FoldL @parents
           proc {$ VsHd Parent VsTl}
              {Parent annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter2 VsInter3}
+          end VsInter1 VsInter2}
          {FoldL @properties
           proc {$ VsHd Property VsTl}
              {Property annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter3 VsInter4}
+          end VsInter2 VsInter3}
          {FoldL @attributes
           proc {$ VsHd I VsTl}
              case I of T1#T2 then VsInter in
@@ -509,7 +483,7 @@ local
              else
                 {I annotateGlobalVars(Ls VsHd VsTl)}
              end
-          end VsInter4 VsInter5}
+          end VsInter3 VsInter4}
          {FoldL @features
           proc {$ VsHd I VsTl}
              case I of T1#T2 then VsInter in
@@ -518,14 +492,13 @@ local
              else
                 {I annotateGlobalVars(Ls VsHd VsTl)}
              end
-          end VsInter5 VsInter6}
+          end VsInter4 VsInter5}
          {FoldL @methods
           proc {$ VsHd Method VsTl}
              {Method annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter6 VsTl}
+          end VsInter5 VsTl}
       end
       meth markFirst(WarnFormals Rep)
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {@designator markFirst(WarnFormals Rep)}
          {MarkFirstList @parents WarnFormals Rep}
          {MarkFirstList @properties WarnFormals Rep}
@@ -553,16 +526,14 @@ local
 
    class AnnotateMethod
       attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl)
-         Vs VsInter1 VsInter2 VsInter3 NewLs Vs1 in
-         {GetExpansionVars self Vs VsInter1}
-         {@label annotateGlobalVars(Ls VsInter1 VsInter2)}
+      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter1 VsInter2 NewLs Vs1 in
+         {@label annotateGlobalVars(Ls Vs VsInter1)}
          {FoldL @formalArgs
           proc {$ VsHd Arg VsTl}
              {{Arg getFeature($)} annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter2 VsInter3}
+          end VsInter1 VsInter2}
          NewLs = {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
-         {AnnotateGlobalVarsList @statements NewLs VsInter3 nil}
+         {AnnotateGlobalVarsList @statements NewLs VsInter2 nil}
          Vs1 = {VariableUnion Vs nil}
          globalVars <- Vs1
          {FoldL Vs1
@@ -576,24 +547,21 @@ local
          {ForAll @formalArgs
           proc {$ A} {{A getVariable($)} setUse(wildcard)} end}
          {SetUninitVars @globalVars}
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {@label markFirst(WarnFormals Rep)}
          {MarkFirstList @formalArgs WarnFormals Rep}
          {MarkFirstList @statements WarnFormals Rep}
       end
    end
    class AnnotateMethodWithDesignator
-      meth annotateGlobalVars(Ls VsHd VsTl)
-         Vs VsInter1 VsInter2 VsInter3 NewLs Vs1 in
-         {GetExpansionVars self Vs VsInter1}
-         {@label annotateGlobalVars(Ls VsInter1 VsInter2)}
+      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter1 VsInter2 NewLs Vs1 in
+         {@label annotateGlobalVars(Ls Vs VsInter1)}
          {FoldL @formalArgs
           proc {$ VsHd Arg VsTl}
              {{Arg getFeature($)} annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter2 VsInter3}
+          end VsInter1 VsInter2}
          NewLs = @messageDesignator|
                  {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
-         {AnnotateGlobalVarsList @statements NewLs VsInter3 nil}
+         {AnnotateGlobalVarsList @statements NewLs VsInter2 nil}
          Vs1 = {VariableUnion Vs nil}
          globalVars <- Vs1
          {FoldL Vs1
@@ -629,12 +597,10 @@ local
    end
 
    class AnnotateObjectLockNode
-      meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
-         {GetExpansionVars self VsHd VsInter}
-         {AnnotateGlobalVarsList @statements Ls VsInter VsTl}
+      meth annotateGlobalVars(Ls VsHd VsTl)
+         {AnnotateGlobalVarsList @statements Ls VsHd VsTl}
       end
       meth markFirst(WarnFormals Rep)
-         {MarkFirstExpansionOccs self WarnFormals Rep}
          {MarkFirstList @statements WarnFormals Rep}
       end
    end

@@ -72,7 +72,7 @@ local
    end
 
    fun {Bool2Token B}
-      case B then Core.trueToken else Core.falseToken end
+      case B then RunTime.tokens.'true' else RunTime.tokens.'false' end
    end
 
 % assumes privacy of the following feature names
@@ -1662,11 +1662,6 @@ in
          SAConstructionOrPattern, makeType
       end
       meth applyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
          {@label applyEnvSubst(Ctrl)}
          {ForAll @args
           proc {$ Arg}
@@ -1865,22 +1860,17 @@ in
       end
 
       meth assertTypes(Ctrl BIName)
-
 \ifdef DEBUGSA
          {System.show assertTypes(BIName)}
 \endif
-
-         case {Builtins.getInfo BIName}
-         of noInformation then skip
-         elseof I then
-            Types = I.types
-            Det   = I.det
-         in
+         I = {Builtins.getInfo BIName}
+         Types = I.types
+         Det   = I.det
+      in
 \ifdef DEBUGSA
-            {System.show assert(BIName I @actualArgs)}
+         {System.show assert(BIName I @actualArgs)}
 \endif
-            SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
-         end
+         SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
       end
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
@@ -1990,10 +1980,7 @@ in
          case
             NumArgs==ProcArity
          then
-            case BIInfo
-            of noInformation then
-               false
-            elsecase
+            case
                SABuiltinApplication, typeCheck(Ctrl @actualArgs BIInfo.types $)
             of
                0 % no type error
@@ -2549,11 +2536,11 @@ in
             {Ctrl setErrorMsg('type test failed')}
 
             case {Test {GetData BVO1}} then
-               {Ctrl setUnifier(BVO2 Core.trueToken)}
-               {BVO2 unifyVal(Ctrl Core.trueToken)}
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
             else
-               {Ctrl setUnifier(BVO2 Core.falseToken)}
-               {BVO2 unifyVal(Ctrl Core.falseToken)}
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
             end
 
             {Ctrl resetUnifier}
@@ -2575,11 +2562,11 @@ in
 
          case {ThreeValuedTest {GetFullData BVO1}}
          of true then
-            {Ctrl setUnifier(BVO2 Core.trueToken)}
-            {BVO2 unifyVal(Ctrl Core.trueToken)}
+            {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+            {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
          elseof false then
-            {Ctrl setUnifier(BVO2 Core.falseToken)}
-            {BVO2 unifyVal(Ctrl Core.falseToken)}
+            {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+            {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
          elseof unit then
             skip
          end
@@ -2595,11 +2582,11 @@ in
 
          case {DetTests.detOrKinded BVO1} then
             case {Test {GetData BVO1}} then
-               {Ctrl setUnifier(BVO2 Core.trueToken)}
-               {BVO2 unifyVal(Ctrl Core.trueToken)}
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'true')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'true')}
             else
-               {Ctrl setUnifier(BVO2 Core.falseToken)}
-               {BVO2 unifyVal(Ctrl Core.falseToken)}
+               {Ctrl setUnifier(BVO2 RunTime.tokens.'false')}
+               {BVO2 unifyVal(Ctrl RunTime.tokens.'false')}
             end
          else skip end
          {Ctrl resetUnifier}
@@ -2850,12 +2837,10 @@ in
             {Ctrl notTopNotNeeded}
 
             {@consequent
-             saDescendWithValue(Ctrl @arbiter
-                                self.expansionOccs.'`true`')}
+             saDescendWithValue(Ctrl @arbiter RunTime.tokens.'true')}
 
             {@alternative
-             saDescendWithValue(Ctrl @arbiter
-                                self.expansionOccs.'`false`')}
+             saDescendWithValue(Ctrl @arbiter RunTime.tokens.'false')}
 
             {Ctrl setTopNeeded(T N)}
          else
@@ -2873,11 +2858,6 @@ in
          end
       end
       meth applyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
          {@arbiter applyEnvSubst(Ctrl)}
 
          local T N in
@@ -3137,13 +3117,6 @@ in
       end
       meth saDescendWithValue(Ctrl Arbiter Val)
          skip
-      end
-      meth applyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
       end
       meth saDescendWith(Ctrl Arbiter)
          skip
@@ -3607,11 +3580,6 @@ in
       end
       meth applyEnvSubst(Ctrl)
 
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
          {@designator applyEnvSubst(Ctrl)}
          {ForAll @parents
           proc {$ P}
@@ -3672,11 +3640,6 @@ in
          end
       end
       meth preApplyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
          {@label applyEnvSubst(Ctrl)}
          {ForAll @formalArgs
           proc {$ A} {A applyEnvSubst(Ctrl)} end}
@@ -3771,13 +3734,6 @@ in
          {Ctrl notTopButNeeded}
          SAStatement, saBody(Ctrl @statements)
          {Ctrl setTopNeeded(T N)}
-      end
-      meth applyEnvSubst(Ctrl)
-         {Record.forAll self.expansionOccs
-          proc {$ VO}
-             case VO of undeclared then skip
-             else {VO applyEnvSubst(Ctrl)} end
-          end}
       end
    end
 

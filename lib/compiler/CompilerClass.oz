@@ -627,7 +627,7 @@ local
                   end
                   case CompilerStateClass, getSwitch(feedtoemulator $) then
 \ifndef NO_ASSEMBLER
-                     Globals Proc P
+                     Globals Proc P0 P
                   in
                      {@reporter logSubPhase('loading ...')}
                      proc {Proc}
@@ -640,9 +640,14 @@ local
                                       CompilerStateClass,
                                       lookupInEnv(PrintName $)
                                    end}
-                        {MyAssembler load(Globals ?P)}
+                        {MyAssembler load(Globals ?P0)}
                      end
                      CompilerInternal, ExecuteUninterruptible(Proc)
+                     case CompilerStateClass, getSwitch(runwithdebugger $) then
+                        proc {P} {Debug.breakpoint} {P0} end
+                     else
+                        P = P0
+                     end
                      case CompilerStateClass, getSwitch(threadedqueries $) then
                         OPI = {Property.condGet 'opi.compiler' false}
                      in

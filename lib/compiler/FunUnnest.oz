@@ -7,6 +7,7 @@ import
 \ifndef OZM
    Gump.{transformParser transformScanner}
 \endif
+   RunTime.procs
 export
    JoinQueries
    MakeExpressionQuery

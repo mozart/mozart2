@@ -218,14 +218,6 @@ local
       end
    end
 
-   proc {SetExpansionOccs Node BA} Coord in
-      {Node getCoord(?Coord)}
-      {Record.forAllInd Node.expansionOccs
-       proc {$ PrintName GVO}
-          {BA referExpansionOcc(PrintName Coord ?GVO)}
-       end}
-   end
-
    fun {MakeDeclaration GVs GS C}
       % If GVs (a list of variables local to statement GS) is empty,
       % return GS, else instantiate a Declaration node.
@@ -239,13 +231,11 @@ local
       GT = {New Core.boolClause init(GCaseTrue)}
       case GCaseFalse of noElse(C) then
          GF = {New Core.noElse init(C)}
-         {SetExpansionOccs GF BA}
       else
          GF = {New Core.elseNode init(GCaseFalse)}
       end
       GBoolCase = {New Core.boolCase init(GArbiter GT GF C)}
       GBoolCase.noBoolShared = NoBoolShared
-      {SetExpansionOccs GBoolCase BA}
    end
 
    proc {SortNoColonsToFront Args IHd ITl FHd FTl}
@@ -537,7 +527,7 @@ local
                FV2 = fVar({GV2 getPrintName($)} C)
                Unnester, UnnestConstraint(FE1 FV1 ?GFront1 ?GBack1)
                Unnester, UnnestConstraint(FE2 FV2 ?GFront2 ?GBack2)
-               Unnester, UnnestStatement(fApply(fVar('`=`' C) [FV1 FV2] C)
+               Unnester, UnnestStatement(fOpApplyStatement('=' [FV1 FV2] C)
                                          ?Equation)
                GFront1|GFront2|Equation|GBack1|GBack2
             else GFront GBack in
@@ -564,10 +554,14 @@ local
                 error(coord: C kind: ExpansionError
                       msg: 'attribute assignment used outside of method')}
             end
-            Unnester, UnnestStatement(fApply(fVar('`<-`' C) [FE1 FE2] C) $)
-         [] fOpApplyStatement(Op FEs C) then PrintName in
-            PrintName = {VirtualString.toAtom '`'#Op#'`'}
-            Unnester, UnnestStatement(fApply(fVar(PrintName C) FEs C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('<-' [FE1 FE2] C) $)
+         [] fOpApplyStatement(Op FEs C) then
+            GVO GFrontEqs1 GFrontEqs2 GTs GS
+         in
+            {RunTime.procs.Op occ(C ?GVO)}
+            Unnester, UnnestApplyArgs(FEs ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+            GS = {New Core.application init(GVO GTs C)}
+            GFrontEqs1|GFrontEqs2|GS
          [] fFdCompare(Op FE1 FE2 C) then
             GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
@@ -600,7 +594,7 @@ local
                 error(coord: C kind: ExpansionError
                       msg: 'object application used outside of method')}
             end
-            Unnester, UnnestStatement(fApply(fVar('`,`' C) [FE1 FE2] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 FE2] C) $)
          [] fDollar(C) then
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
@@ -673,7 +667,7 @@ local
          [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
             FImportArgs ImportFS FExportArgs FColons CND NewFBody FFun
-            FImportDesc FExportDesc GS
+            FImportDesc FExportDesc FS GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
             FV = fVar({{GVO getVariable($)} getPrintName($)}
@@ -694,16 +688,16 @@ local
                         fAtom('instantiate' C)|FProp CND)
             FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
             FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
+            FS = fOpApplyStatement('NewFunctor'
+                                   [FImportDesc FExportDesc FFun FV] CND)
             Unnester,
-            UnnestStatement(fStepPoint(fApply(fVar('`NewFunctor`' C)
-                                              [FImportDesc FExportDesc FFun FV]
-                                              CND) 'definition' C) ?GS)
+            UnnestStatement(fStepPoint(FS 'definition' C) ?GS)
             GFrontEq|GS
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
             GFrontEqs FeatureGVO ResGVO
          in
-            {@BA refer('`.`' C ?DotGVO)}
+            {RunTime.procs.'.' occ(C ?DotGVO)}
             {@BA refer(PrintName C ?ImportGVO)}
             Unnester, UnnestToVar(fAtom({GV getPrintName($)} C) 'Feature'
                                   ?GFrontEqs ?FeatureGVO)
@@ -727,7 +721,7 @@ local
             {Map {UniqueVariables FPrivates}
              fun {$ FV} fVar(PrintName C) = FV FS in
                 {@BA bind(PrintName C _)}
-                FS = fApply(fVar('`ooPrivate`' C) [FV] C)
+                FS = fOpApplyStatement('ooPrivate' [FV] C)
                 Unnester, UnnestStatement(FS $)
              end ?GPrivates}
             % unnest the descriptors:
@@ -745,7 +739,6 @@ local
             {@BA closeScope(?GVs)}
             GClass = {New Core.classNode
                       init(GVO GParents GProps GAttrs GFeats GMeths C)}
-            {SetExpansionOccs GClass @BA}
             GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
 \ifndef OZM
          [] fScanner(T Ds Ms Rules Prefix C) then
@@ -869,7 +862,7 @@ local
             Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
             Unnester, UnnestStatement(FS ?GS)
             GFrontEq|{New Core.lockNode init(GVO GS C)}
-         [] fLock(FS C) then GS GRes in
+         [] fLock(FS C) then GS in
             case @Stateful then
                StateUsed <- true
             else
@@ -877,9 +870,7 @@ local
                                 msg: 'object lock used outside of method')}
             end
             Unnester, UnnestStatement(FS ?GS)
-            GRes = {New Core.objectLockNode init(GS C)}
-            {SetExpansionOccs GRes @BA}
-            GRes
+            {New Core.objectLockNode init(GS C)}
          [] fThread(FS C) then GBody GS in
             {@BA openScope()}
             Unnester, UnnestStatement(FS ?GBody)
@@ -888,14 +879,14 @@ local
          [] fTry(_ FCatch _ _) then
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then
-            Unnester, UnnestStatement(fApply(fVar('`Raise`' C) [FE] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('Raise' [FE] C) $)
          [] fRaiseWith(FE1 FE2 C) then GFrontEqs GVO FV CND FS in
             Unnester, UnnestToVar(FE1 'Exception' ?GFrontEqs ?GVO)
             FV = fVar({{GVO getVariable($)} getPrintName($)} C)
             CND = {CoordNoDebug C}
-            FS = fBoolCase(fApply(fVar('`RaiseDebugCheck`' C) [FV] CND)
-                           fApply(fVar('`RaiseDebugExtend`' C) [FV FE2] C)
-                           fApply(fVar('`Raise`' C) [FV] CND) CND)
+            FS = fBoolCase(fOpApply('RaiseDebugCheck' [FV] CND)
+                           fOpApplyStatement('RaiseDebugExtend' [FV FE2] C)
+                           fOpApplyStatement('Raise' [FV] CND) CND)
             GFrontEqs|Unnester, UnnestStatement(FS $)
          [] fSkip(C) then
             {New Core.skipNode init(C)}
@@ -908,7 +899,6 @@ local
             Unnester, UnnestClauses(FClauses fif ?GClauses)
             case FElse of fNoElse(C) then
                GElse = {New Core.noElse init(C)}
-               {SetExpansionOccs GElse @BA}
             else GS in
                Unnester, UnnestStatement(FElse ?GS)
                GElse = {New Core.elseNode init(GS)}
@@ -987,12 +977,14 @@ local
                 error(coord: C kind: ExpansionError
                       msg: 'attribute exchange used outside of method')}
             end
-            FApply = fApply(fVar('`ooExch`' C) [FE1 FE2 FV] C)
+            FApply = fOpApplyStatement('ooExch' [FE1 FE2 FV] C)
             Unnester, UnnestStatement(FApply $)
          [] fOrElse(FE1 FE2 C) then FS in
+            %--** `true`
             FS = fBoolCase(FE1 fEq(FV fVar('`true`' C) C) fEq(FV FE2 C) C)
             Unnester, UnnestStatement(FS $)
          [] fAndThen(FE1 FE2 C) then FS in
+            %--** `false`
             FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fVar('`false`' C) C) C)
             Unnester, UnnestStatement(FS $)
          [] fOpApply(Op FEs C) then
@@ -1007,16 +999,18 @@ local
                Unnester, OptimizeImportFeature(FV C X C2 Y FA $)
             elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] _) then
                Unnester, OptimizeImportFeature(FV C X C2 Y FI $)
-            else PrintName in
-               PrintName = {VirtualString.toAtom '`'#Op#'`'}
-               Unnester, UnnestStatement(fApply(fVar(PrintName C)
-                                                {Append FEs [FV]} C) $)
+            else GVO GFrontEqs1 GFrontEqs2 GTs GS in
+               {RunTime.procs.Op occ(C ?GVO)}
+               Unnester, UnnestApplyArgs({Append FEs [FV]}
+                                         ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+               GS = {New Core.application init(GVO GTs C)}
+               GFrontEqs1|GFrontEqs2|GS
             end
          [] fUnoptimizedDot(FV2 FT) then
             fVar(X C) = FV2 LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
          in
             {@BA referUnchecked(X C ?LeftGVO)}
-            {@BA refer('`.`' C ?DotGVO)}
+            {RunTime.procs.'.' occ(C ?DotGVO)}
             Unnester, UnnestApplyArgs([FT FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}
@@ -1062,7 +1056,7 @@ local
                       msg: 'object application used outside of method')}
             end
             NewFE2 = {ReplaceDollar FE2 FV}
-            Unnester, UnnestStatement(fApply(fVar('`,`' C) [FE1 NewFE2] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 NewFE2] C) $)
          [] fAt(FE C) then
             case @Stateful then
                StateUsed <- true
@@ -1071,7 +1065,7 @@ local
                 error(coord: C kind: ExpansionError
                       msg: 'attribute access used outside of method')}
             end
-            Unnester, UnnestStatement(fApply(fVar('`@`' C) [FE FV] C) $)
+            Unnester, UnnestStatement(fOpApplyStatement('@' [FE FV] C) $)
          [] fAtom(X C) then fVar(PrintName VC) = FV GVO in
             {@BA refer(PrintName VC ?GVO)}
             {New Core.equation init(GVO {New Core.atomNode init(X C)} C)}
@@ -1312,10 +1306,10 @@ local
             end
          [] fRaise(_ C) then
             Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fVar('`unit`' C) FV $)
+            Unnester, UnnestExpression(fVar('`unit`' C) FV $)   %--**
          [] fRaiseWith(_ _ C) then
             Unnester, UnnestStatement(FE $)|
-            Unnester, UnnestExpression(fVar('`unit`' C) FV $)
+            Unnester, UnnestExpression(fVar('`unit`' C) FV $)   %--**
          [] fNot(FE C) then
             Unnester, UnnestStatement(fNot(fEq(FV FE C) C) $)
          [] fIf(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
@@ -1500,7 +1494,6 @@ local
           end nil#nil}
          {SortNoColonsToFront {Reverse GArgs} ?NewGArgs X X nil}
          GRecord = {New Core.construction init(GLabel NewGArgs IsOpen)}
-         {SetExpansionOccs GRecord @BA}
       end
 
       meth UnnestProc(FEs FS IsLazy C ?GS)
@@ -1532,8 +1525,9 @@ local
          end
          FBody0 = case IsLazy then CND in
                      CND = {CoordNoDebug C}
-                     fApply(fVar('`byNeed`' C)
-                            [fFun(fDollar(C) nil NewFS nil CND)] CND)
+                     fOpApplyStatement('byNeed'
+                                       [fFun(fDollar(C) nil NewFS nil CND)]
+                                       CND)
                   else NewFS
                   end
          FBody = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FBody0}
@@ -1646,7 +1640,7 @@ local
          case {Not IsImport}
             orelse {{LeftGVO getVariable($)} isRestricted($)}
          then DotGVO GFrontEqs1 GFrontEqs2 GTs in
-            {@BA refer('`.`' C ?DotGVO)}
+            {RunTime.procs.'.' occ(C ?DotGVO)}
             Unnester, UnnestApplyArgs([FF FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}
@@ -1762,7 +1756,6 @@ local
             {GMeth setAllVariables({@BA getAllVariables($)})}
          else skip
          end
-         {SetExpansionOccs GMeth @BA}
       end
       meth UnnestMethHead(FHead GVMsg ?GLabel ?FFormals ?IsOpen)
          case FHead of fAtom(X C) then
@@ -1886,7 +1879,7 @@ local
                    FVMsg = fVar({GVMsg getPrintName($)} C)
                 else skip
                 end
-                FS0 = fBoolCase(fApply(fVar('`hasFeature`' C) [FVMsg FF] C)
+                FS0 = fBoolCase(fOpApply('hasFeature' [FVMsg FF] C)
                                 fEq(FV fOpApply('.' [FVMsg FF] C) C) FS C)
                 Unnester, UnnestStatement(FS0 ?GS0)
                 (GFormal|GFormals)#(GS0|GS)
@@ -1966,7 +1959,6 @@ local
             [] nil then
                case FElse of fNoElse(C) then
                   GElse = {New Core.noElse init(C)}
-                  {SetExpansionOccs GElse @BA}
                else GBody0 GBody in
                   {@BA openScope()}
                   Unnester, UnnestStatement(FElse ?GBody0)
@@ -2055,7 +2047,7 @@ local
             Unnester, TranslateRecord(L As true PatternPNs $)
          end
       end
-      meth TranslateRecord(L Args IsOpen PatternPNs ?GPattern)
+      meth TranslateRecord(L Args IsOpen PatternPNs $)
          GL GArgs NewGArgs X
       in
          Unnester, TranslatePattern(L PatternPNs ?GL)
@@ -2069,8 +2061,7 @@ local
                      end
                   end}
          {SortNoColonsToFront GArgs ?NewGArgs X X nil}
-         GPattern = {New Core.recordPattern init(GL NewGArgs IsOpen)}
-         {SetExpansionOccs GPattern @BA}
+         {New Core.recordPattern init(GL NewGArgs IsOpen)}
       end
 
       meth UnnestTry(FS $)
@@ -2087,12 +2078,12 @@ local
             {@BA generate('Exception' C ?X)}
             FX = fVar({X getPrintName($)} C)
             FException = fRecord(fAtom('ex' C) [FX])
-            NewFS1 = fTry(fAnd(FS fEq(FV fVar('`unit`' C) CND))
+            NewFS1 = fTry(fAnd(FS fEq(FV fVar('`unit`' C) CND))   %--**
                           fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
                           fNoFinally C)
             NewFS2 = fCase(FV [[fCaseClause(FException
-                                            fApply(fVar('`Raise`' C) [FX]
-                                                   CND))]]
+                                            fOpApplyStatement('Raise' [FX]
+                                                              CND))]]
                            fSkip(CND) CND)
             Unnester, UnnestTry(NewFS1 $)|
             Unnester, UnnestStatement(FFinally $)|
@@ -2109,7 +2100,7 @@ local
             case FCaseClauses of [fCaseClause(fVar(_ _) _)] then
                FElse = fNoElse
             else
-               FElse = fApply(fVar('`Raise`' C) [FX] C2)
+               FElse = fOpApplyStatement('Raise' [FX] C2)
             end
             %--** does this work with step points?
             NewC = case C#C2 of pos(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
@@ -2297,9 +2288,11 @@ in
                NewQs = Qs
                Found = false
             elsecase Q1 of fDeclare(FS FE C) then
+               %--** `result`
                NewQs = fDeclare(FS fEq(fVar('`result`' unit) FE unit) C)|Qr
                Found = true
             else
+               %--** `result`
                NewQs = fEq(fVar('`result`' unit) Q1 unit)|Qr
                Found = true
             end

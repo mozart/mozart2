@@ -1,9 +1,11 @@
 functor prop once
 import
    System.printName
+   Misc.isBuiltin
    Builtins.getInfo
    ImAVariableOccurrence
    Core
+   RunTime.{procs literals}
 export
    % mixin classes for the abstract syntax:
    statement: CodeGenStatement

@@ -73,10 +73,6 @@ export
    ThreadToken
    SpaceToken
    BitArrayToken
-
-   % token instances:
-   TrueToken
-   FalseToken
 body
    local
       \insert Annotate

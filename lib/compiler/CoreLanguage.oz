@@ -216,12 +216,8 @@ in
       from Annotate.construction SA.construction CodeGen.construction
       prop final
       attr label: unit args: unit isOpen: unit value
-      feat !ImAConstruction: unit expansionOccs
+      feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
-         self.expansionOccs = expansionOccs('`tuple`': _
-                                            '`record`': _
-                                            '`tellRecordSize`': _
-                                            '`^`': _)
          label <- Label
          args <- Args
          isOpen <- IsOpen
@@ -405,11 +401,8 @@ in
       from Statement Annotate.boolCase SA.boolCase CodeGen.boolCase
       prop final
       attr arbiter: unit consequent: unit alternative: unit
-      feat expansionOccs noBoolShared
+      feat noBoolShared
       meth init(Arbiter Consequent Alternative Coord)
-         self.expansionOccs = expansionOccs('`RaiseError`': _
-                                            '`true`': _
-                                            '`false`': _)
          arbiter <- Arbiter
          consequent <- Consequent
          alternative <- Alternative
@@ -469,14 +462,8 @@ in
       from Annotate.recordPattern SA.recordPattern CodeGen.recordPattern
       prop final
       attr label: unit args: unit isOpen: unit value
-      feat !ImAConstruction: unit expansionOccs
+      feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
-         self.expansionOccs = expansionOccs('`tuple`': _
-                                            '`record`': _
-                                            '`tellRecordSize`': _
-                                            '`^`': _
-                                            '`nonBlockingLabel`': _
-                                            '`nonBlockingDot`': _)
          label <- Label
          args <- Args
          isOpen <- IsOpen
@@ -608,9 +595,7 @@ in
       from AbstractElse Annotate.noElse SA.noElse CodeGen.noElse
       prop final
       attr coord: unit
-      feat expansionOccs
       meth init(Coord)
-         self.expansionOccs = expansionOccs('`RaiseError`': _)
          coord <- Coord
       end
       meth getCoord($)
@@ -675,14 +660,7 @@ in
          designator: unit parents: unit properties: unit
          attributes: unit features: unit methods: unit
          printName: '' isToplevel: false
-      feat expansionOccs
       meth init(Designator Parents Props Attrs Feats Meths Coord)
-         self.expansionOccs = expansionOccs('`class`': _
-                                            '`ooFreeFlag`': _
-                                            '`tuple`': _
-                                            '`record`': _
-                                            '`tellRecordSize`': _
-                                            '`^`': _)
          designator <- Designator
          parents <- Parents
          properties <- Props
@@ -753,19 +731,7 @@ in
       attr
          label: unit formalArgs: unit statements: unit coord: unit
          allVariables: nil predicateRef: unit
-      feat expansionOccs
       meth init(Label FormalArgs Statements Coord)
-         self.expansionOccs = expansionOccs('`ooRequiredArg`': _
-                                            '`ooDefaultVar`': _
-                                            '`true`': _
-                                            '`false`' : _
-                                            '`.`': _
-                                            '`width`': _
-                                            '`hasFeature`': _
-                                            '`RaiseError`': _
-                                            '`aritySublist`': _
-                                            '`tuple`': _
-                                            '`record`': _)
          label <- Label
          formalArgs <- FormalArgs
          statements <- {FlattenSequence Statements}
@@ -864,9 +830,7 @@ in
          CodeGen.objectLockNode
       prop final
       attr statements: unit
-      feat expansionOccs
       meth init(Statements Coord)
-         self.expansionOccs = expansionOccs('`ooGetLock`': _)
          statements <- {FlattenSequence Statements}
          coord <- Coord
       end
@@ -1432,7 +1396,4 @@ in
          true
       end
    end
-
-   TrueToken = {New NameToken init('`true`' `true` true)}
-   FalseToken = {New NameToken init('`false`' `false` true)}
 end

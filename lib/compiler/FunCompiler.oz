@@ -7,6 +7,7 @@ in
       System   %--**.{gcDo printError}
       Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}
       ErrorRegistry.put
+      Debug.breakpoint
       Parser
       Misc.{nameVariable isPrintName}
       Core

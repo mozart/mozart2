@@ -157,19 +157,6 @@ local
       {New PseudoVariableOccurrence init({CS newReg($)})}
    end
 
-   fun {GetExpansionOcc PrintName Node ErrCoord CS} VO in
-      VO = Node.expansionOccs.PrintName
-      case VO of undeclared then PVO in
-         {CS.reporter error(coord: ErrCoord kind: 'code generation error'
-                            msg: 'system variable '#pn(PrintName)#
-                                 ' used before its declaration')}
-         PVO = {NewPseudoVariableOccurrence CS}
-         PVO.coord = ErrCoord
-         PVO
-      else VO
-      end
-   end
-
    proc {MakeMessageArgs ActualArgs CS ?Regs VHd VTl}
       case ActualArgs of Arg|Argr then Reg1 Regr VInter VO in
          {Arg makeVO(CS VHd VInter ?VO)}
@@ -227,19 +214,32 @@ local
                            Coord VTl)
          end
       end
+
+      proc {MakeRunTimeProcApplication Name Coord ActualArgs CS VHd VTl}
+         Value NewActualArgs VInter
+      in
+         {{RunTime.procs.Name getLastValue($)} getCodeGenValue(?Value)}
+         {LoadActualArgs ActualArgs CS VHd VInter ?NewActualArgs}
+         case {Misc.isBuiltin Value} then
+            {{New Core.builtinToken init(Value)}
+             codeGenApplication(unit Coord NewActualArgs CS VInter VTl)}
+         else
+            VInter = vFastCall(_ Value
+                               {Map ActualArgs fun {$ A} {A reg($)} end}
+                               Coord VTl)
+         end
+      end
    end
 
-   proc {MakeException Node Literal Coord VOs CS VHd VTl}
-      RaiseError Reg VO VArgs VInter
-   in
-      RaiseError = {GetExpansionOcc '`RaiseError`' Node Coord CS}
+   proc {MakeException Literal Coord VOs CS VHd VTl} Reg VO VArgs VInter in
       {CS newReg(?Reg)}
       VO = {New PseudoVariableOccurrence init(Reg)}
       VArgs =
       literal(Literal)|number(case Coord of unit then ~1 else Coord.2 end)|
       {Map VOs fun {$ VO} value({VO reg($)}) end}
       VHd = vEquateRecord(_ 'kernel' {Length VArgs} Reg VArgs VInter)
-      {MakeApplication RaiseError {CoordNoDebug Coord} [VO] CS VInter VTl}
+      {MakeRunTimeProcApplication 'RaiseError' {CoordNoDebug Coord}
+       [VO] CS VInter VTl}
    end
 
    fun {GuardNeedsThread VInstr}
@@ -447,27 +447,24 @@ local
    end
 
    local
-      fun {MakeAttrFeatSub Xs OOFreeFlag}
+      fun {MakeAttrFeatSub Xs CS}
          case Xs of X|Xr then
-            case X of F#VO then X else X#OOFreeFlag end|
-            {MakeAttrFeatSub Xr OOFreeFlag}
+            case X of F#VO then X
+            else VO in
+               VO = {NewPseudoVariableOccurrence CS}
+               VO.value = RunTime.literals.ooFreeFlag
+               X#VO
+            end|{MakeAttrFeatSub Xr CS}
          [] nil then
             nil
          end
       end
    in
-      proc {MakeAttrFeat Kind AttrFeat ClassObject C CS VHd VTl ?VO}
-         OOFreeFlag = {GetExpansionOcc '`ooFreeFlag`' ClassObject C CS}
+      proc {MakeAttrFeat Kind AttrFeat CS VHd VTl ?VO}
          Label = {New Core.atomNode init(Kind unit)}
-         Args = {MakeAttrFeatSub AttrFeat OOFreeFlag}
+         Args = {MakeAttrFeatSub AttrFeat CS}
          Constr = {New Core.construction init(Label Args false)}
-         E1 = Constr.expansionOccs
-         E2 = ClassObject.expansionOccs
       in
-         E1.'`tuple`' = E2.'`tuple`'
-         E1.'`record`' = E2.'`record`'
-         E1.'`tellRecordSize`' = E2.'`tellRecordSize`'
-         E1.'`^`' = E2.'`^`'
          VO = {NewPseudoVariableOccurrence CS}
          {Constr makeEquation(CS VO VHd VTl)}
       end
@@ -589,26 +586,25 @@ local
          end
       end
       meth MakeConstructionOpen(CS VO VHd VTl)
-         C CND TellRecordSize Hat WidthReg WidthVO Cont1 Cont2 in
+         C CND WidthReg WidthVO Cont1 Cont2
+      in
          % translate the construction as:
          %    {`tellRecordSize` Label Width ?VO}
          %    {`^` VO Feat1 Subtree1} ... {`^` VO Featn Subtreen}
          {@label getCoord(?C)}
          CND = {CoordNoDebug C}
-         TellRecordSize = {GetExpansionOcc '`tellRecordSize`' self C CS}
-         Hat = {GetExpansionOcc '`^`' self C CS}
          {CS newReg(?WidthReg)}
          WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
          VHd = vEquateNumber(_ {Length @args} WidthReg Cont1)
          case {@label isVariableOccurrence($)} then
-            {MakeApplication TellRecordSize CND
+            {MakeRunTimeProcApplication tellRecordSize CND
              [@label WidthVO VO] CS Cont1 Cont2}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont1 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication TellRecordSize {CoordNoDebug C}
+            {MakeRunTimeProcApplication tellRecordSize CND
              [LabelVO WidthVO VO] CS Inter Cont2}
          end
          {List.foldLInd @args
@@ -622,17 +618,17 @@ local
                 VHd = vEquateNumber(_ I {VO1 reg($)} VInter2)
                 {Arg makeVO(CS VInter2 VInter1 ?VO2)}
              end
-             {MakeApplication Hat CND [VO VO1 VO2] CS VInter1 VTl}
+             {MakeRunTimeProcApplication '^' CND
+              [VO VO1 VO2] CS VInter1 VTl}
           end Cont2 VTl}
       end
       meth MakeConstructionTuple(CS VO Rec VHd VTl)
-         C BQTuple SubtreesReg SubtreesVO WidthValue WidthReg WidthVO
+         C SubtreesReg SubtreesVO WidthValue WidthReg WidthVO
          Cont1 Cont2
       in
          % translate the construction as:
          %    {`tuple` Label [Subtree1 ... Subtreen] Width ?Reg}
          {@label getCoord(?C)}
-         BQTuple = {GetExpansionOcc '`tuple`' self C CS}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
          WidthValue = {Width Rec}
@@ -663,24 +659,23 @@ local
          end
          Cont1 = vEquateNumber(_ WidthValue WidthReg Cont2)
          case {@label isVariableOccurrence($)} then
-            {MakeApplication BQTuple {CoordNoDebug C}
+            {MakeRunTimeProcApplication tuple {CoordNoDebug C}
              [@label SubtreesVO WidthVO VO] CS Cont2 VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont2 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication BQTuple {CoordNoDebug C}
+            {MakeRunTimeProcApplication tuple {CoordNoDebug C}
              [LabelVO SubtreesVO WidthVO VO] CS Inter VTl}
          end
       end
       meth MakeConstructionRecord(CS VO Args VHd VTl)
-         C BQRecord SubtreesReg SubtreesVO Cont
+         C SubtreesReg SubtreesVO Cont
       in
          % translate the construction as:
          %    {`record` Label [Feat1#Subtree1 ... Featn#Subtreen] ?Reg}
          {@label getCoord(?C)}
-         BQRecord = {GetExpansionOcc '`record`' self C CS}
          {CS newReg(?SubtreesReg)}
          SubtreesVO = {New PseudoVariableOccurrence init(SubtreesReg)}
          case Args of (F1#A1)|Argr then   % else it would have been a tuple
@@ -722,14 +717,14 @@ local
                                     [value(PairReg) Arg] Cont)
          end
          case {@label isVariableOccurrence($)} then
-            {MakeApplication BQRecord {CoordNoDebug C}
+            {MakeRunTimeProcApplication record {CoordNoDebug C}
              [@label SubtreesVO VO] CS Cont VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {@label getCodeGenValue(?LabelValue)}
             Cont = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeApplication BQRecord {CoordNoDebug C}
+            {MakeRunTimeProcApplication record {CoordNoDebug C}
              [LabelVO SubtreesVO VO] CS Inter VTl}
          end
       end
@@ -832,11 +827,7 @@ in
          {CodeGenList Nodes CS StartAddr nil}
          {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0 ?NLiveRegs)}
          BodyCode0 = BodyCode1#BodyCode2
-         case {Switches getSwitch(runwithdebugger $)} then
-            BodyCode = callBI('Debug.breakpoint' nil#nil)|BodyCode1
-         else
-            BodyCode = BodyCode1
-         end
+         BodyCode = BodyCode1
          {CS getRegNames(GRegs ?GPNs)}
          StartLabel = {NewName}
          EndLabel = {NewName}
@@ -1109,49 +1100,25 @@ in
    end
 
    class CodeGenBoolCase
-      meth codeGen(CS VHd VTl) True TrueValue False FalseValue ErrAddr in
-         True = {GetExpansionOcc '`true`' self @coord CS}
-         {True getCodeGenValue(?TrueValue)}
-         False = {GetExpansionOcc '`false`' self @coord CS}
-         {False getCodeGenValue(?FalseValue)}
+      meth codeGen(CS VHd VTl) ErrAddr Value in
          ErrAddr = self.noBoolShared
          case {IsFree ErrAddr} then Label Count Addr in
             ErrAddr = vShared(_ Label Count Addr)
             {CS newLabel(?Label)}
             Count = {NewCell 0}
-            {MakeException self boolCaseType @coord nil CS Addr nil}
+            {MakeException boolCaseType @coord nil CS Addr nil}
          else skip
          end
-         case {IsDet TrueValue} andthen TrueValue == true
-            andthen {IsDet FalseValue} andthen FalseValue == false
-         then Value in
-            {@arbiter getCodeGenValue(?Value)}
-            case {IsDet Value} andthen Value == true
-            then {@consequent codeGen(CS VHd VTl)}
-            elsecase {IsDet Value} andthen Value == false
-            then {@alternative codeGenNoShared(CS VHd VTl)}
-            else ThenAddr AltAddr in
-               {@consequent codeGen(CS ThenAddr nil)}
-               {@alternative codeGenShared(CS AltAddr nil)}
-               VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
-                               @coord VTl _)
-            end
-         else
-            Cont1 Cont2 GuardVInstr1 BodyVInstr1 GuardVInstr2 BodyVInstr2
-            AllocatesRS VClause1 VClause2
-         in
-            {True makeEquation(CS @arbiter GuardVInstr1 Cont1)}
-            Cont1 = vAsk(_ nil)
-            {@consequent codeGen(CS BodyVInstr1 nil)}
-            {False makeEquation(CS @arbiter GuardVInstr2 Cont2)}
-            Cont2 = vAsk(_ nil)
-            {@alternative codeGenNoShared(CS BodyVInstr2 nil)}
-            {CS makeRegSet(?AllocatesRS)}
-            {CS enterVs([@arbiter True False] AllocatesRS)}
-            VClause1 = _#GuardVInstr1#BodyVInstr1
-            VClause2 = _#GuardVInstr2#BodyVInstr2
-            VHd = vCreateCond(_ [VClause1 VClause2] ErrAddr VTl @coord
-                              AllocatesRS _)
+         {@arbiter getCodeGenValue(?Value)}
+         case {IsDet Value} andthen Value == true
+         then {@consequent codeGen(CS VHd VTl)}
+         elsecase {IsDet Value} andthen Value == false
+         then {@alternative codeGenNoShared(CS VHd VTl)}
+         else ThenAddr AltAddr in
+            {@consequent codeGen(CS ThenAddr nil)}
+            {@alternative codeGenShared(CS AltAddr nil)}
+            VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
+                            @coord VTl _)
          end
       end
    end
@@ -1407,7 +1374,7 @@ in
             VHd = vShared(_ Label Count Addr)
             {CS newLabel(?Label)}
             Count = {NewCell 0}
-            {MakeException self noElse @coord nil CS Addr nil}
+            {MakeException noElse @coord nil CS Addr nil}
          else skip
          end
       end
@@ -1418,15 +1385,15 @@ in
             VHd = vShared(_ Label Count Addr)
             {CS newLabel(?Label)}
             Count = {NewCell 0}
-            {MakeException self noElse @coord [VO] CS Addr nil}
+            {MakeException noElse @coord [VO] CS Addr nil}
          else skip
          end
       end
       meth codeGenNoShared(CS VHd VTl)
-         {MakeException self noElse @coord nil CS VHd VTl}
+         {MakeException noElse @coord nil CS VHd VTl}
       end
       meth codeGenWithArbiterNoShared(CS VO VHd VTl)
-         {MakeException self noElse @coord [VO] CS VHd VTl}
+         {MakeException noElse @coord [VO] CS VHd VTl}
       end
    end
 
@@ -1462,15 +1429,14 @@ in
 
    class CodeGenClassNode
       meth codeGen(CS VHd VTl)
-         VHd0 VTl0 Class From Attr Feat Prop PN Meth PrintName
+         VHd0 VTl0 From Attr Feat Prop PN Meth PrintName
          VInter1 VInter2 VInter3
       in
-         Class = {GetExpansionOcc '`class`' self @coord CS}
          local Cont1 Cont2 Cont3 in
             {MakeFromProp @parents CS VHd0 Cont1 ?From}
             {MakeFromProp @properties CS Cont1 Cont2 ?Prop}
-            {MakeAttrFeat 'attr' @attributes self @coord CS Cont2 Cont3 ?Attr}
-            {MakeAttrFeat 'feat' @features self @coord CS Cont3 VInter1 ?Feat}
+            {MakeAttrFeat 'attr' @attributes CS Cont2 Cont3 ?Attr}
+            {MakeAttrFeat 'feat' @features CS Cont3 VInter1 ?Feat}
          end
          case @printName == '' then
             {{@designator getVariable($)} getPrintName(?PN)}
@@ -1503,7 +1469,7 @@ in
             VInter2 = vEquateLiteral(_ PN Reg VInter3)
             PrintName = {New PseudoVariableOccurrence init(Reg)}
          end
-         {MakeApplication Class {CoordNoDebug @coord}
+         {MakeRunTimeProcApplication 'class' {CoordNoDebug @coord}
           [From Meth Attr Feat Prop PrintName @designator] CS VInter3 VTl0}
          {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
       end
@@ -1596,7 +1562,7 @@ in
             CodeGenMethod, makeArityCheck(MessageVO CS BodyVInstr Cont2)
             {FoldL @formalArgs
              proc {$ VHd Formal VTl}
-                {Formal bindMethFormal(MessageVO CS self VHd VTl)}
+                {Formal bindMethFormal(MessageVO CS VHd VTl)}
              end Cont2 Cont3}
             case IsToplevel then
                Cont3 = vFastCall(_ @predicateRef
@@ -1622,11 +1588,9 @@ in
          case self.hasDefaults then Args Constr VO VInter3 in
             Args = {Map @formalArgs
                     fun {$ Formal}
-                       {Formal getFeature($)}#{Formal getDefault(CS self $)}
+                       {Formal getFeature($)}#{Formal getDefault($)}
                     end}
             Constr = {New Core.recordPattern init(@label Args false)}
-            Constr.expansionOccs.'`tuple`' = self.expansionOccs.'`tuple`'
-            Constr.expansionOccs.'`record`' = self.expansionOccs.'`record`'
             VO = {NewPseudoVariableOccurrence CS}
             {Constr makeEquation(CS VO VInter2 VInter3)}
             VInter3 = vEquateRecord(_ '#' [1 2 default fast] Reg
@@ -1640,21 +1604,19 @@ in
          end
       end
       meth makeArityCheck(MessageVO CS VHd VTl)
-         case self.hasDefaults then AritySublist in
-            AritySublist = {GetExpansionOcc '`aritySublist`' self @coord CS}
-            {MakeApplication AritySublist {CoordNoDebug @coord}
+         case self.hasDefaults then
+            {MakeRunTimeProcApplication 'aritySublist' {CoordNoDebug @coord}
              [MessageVO self.MessagePatternVO] CS VHd VTl}
          else NArgs LabelValue in
             NArgs = {Length @formalArgs}
             {@label getCodeGenValue(?LabelValue)}
             case NArgs == 0 andthen {IsDet LabelValue} then
                VHd = vEquateLiteral(_ LabelValue {MessageVO reg($)} VTl)
-            else Reg VO WidthVO Cont1 in
+            else Reg VO Cont1 in
                {CS newReg(?Reg)}
                VO = {New PseudoVariableOccurrence init(Reg)}
-               WidthVO = {GetExpansionOcc '`width`' self @coord CS}
                VHd = vEquateNumber(_ NArgs Reg Cont1)
-               {MakeApplication WidthVO {CoordNoDebug @coord}
+               {MakeRunTimeProcApplication width {CoordNoDebug @coord}
                 [MessageVO VO] CS Cont1 VTl}
             end
          end
@@ -1674,8 +1636,6 @@ in
                                VO.value = unit
                                {Formal getFeature($)}#VO
                             end} false)}
-            Constr.expansionOccs.'`tuple`' = self.expansionOccs.'`tuple`'
-            Constr.expansionOccs.'`record`' = self.expansionOccs.'`record`'
             {Constr makeEquation(CS self.MessagePatternVO VHd VTl)}
          else
             VHd = VTl
@@ -1722,7 +1682,7 @@ in
             end
             {FoldL @formalArgs
              proc {$ VHd Formal VTl}
-                {Formal bindMethFormal(MessageVO CS self VHd VTl)}
+                {Formal bindMethFormal(MessageVO CS VHd VTl)}
              end Cont3 Cont4}
             {CodeGenList @statements CS Cont4 Cont5}
             case CS.debugInfoVarnamesSwitch then
@@ -1752,50 +1712,41 @@ in
    end
 
    class CodeGenMethFormal
-      meth getDefault(CS ExpansionOccNode $) C in
-         {@feature getCoord(?C)}
-         {GetExpansionOcc '`ooRequiredArg`' ExpansionOccNode C CS}
+      meth getDefault($)
+         {New CodeGenOzValue init(RunTime.literals.ooRequiredArg)}
       end
-      meth bindMethFormal(MessageVO CS ExpansionOccNode VHd VTl)
-         C Dot FeatureVO ArgVO VInter
-      in
+      meth bindMethFormal(MessageVO CS VHd VTl) C FeatureVO ArgVO VInter in
          {@arg setFreshReg(CS)}
          {@feature getCoord(?C)}
-         Dot = {GetExpansionOcc '`.`' ExpansionOccNode C CS}
          ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
          {@feature makeVO(CS VHd VInter ?FeatureVO)}
-         {MakeApplication Dot {CoordNoDebug C}
+         {MakeRunTimeProcApplication '.' {CoordNoDebug C}
           [MessageVO FeatureVO ArgVO] CS VInter VTl}
       end
    end
    class CodeGenMethFormalOptional
-      meth getDefault(CS ExpansionOccNode $) C in
-         {@feature getCoord(?C)}
-         {GetExpansionOcc '`ooDefaultVar`' ExpansionOccNode C CS}
+      meth getDefault($)
+         {New CodeGenOzValue init(RunTime.literals.ooDefaultVar)}
       end
-      meth bindMethFormal(MessageVO CS ExpansionOccNode VHd VTl)
+      meth bindMethFormal(MessageVO CS VHd VTl)
          {@arg setFreshReg(CS)}
          case @isInitialized then
             VHd = VTl
          else
-            Coord CND HasFeature Dot ArbiterReg ArbiterVO
+            Coord CND ArbiterReg ArbiterVO
             FeatureVO ArgVO ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
          in
             {@arg getCoord(?Coord)}
             CND = {CoordNoDebug Coord}
-            HasFeature = {GetExpansionOcc '`hasFeature`' ExpansionOccNode
-                          Coord CS}
-            Dot = {GetExpansionOcc '`.`' ExpansionOccNode Coord CS}
             {CS newReg(?ArbiterReg)}
             ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
             {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
             ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-            {MakeApplication Dot CND
+            {MakeRunTimeProcApplication '.' CND
              [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
             ElseVInstr = nil
-            {MakeException ExpansionOccNode boolCaseType Coord nil CS
-             ErrVInstr nil}
-            {MakeApplication HasFeature CND
+            {MakeException boolCaseType Coord nil CS ErrVInstr nil}
+            {MakeRunTimeProcApplication hasFeature CND
              [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
             Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
                               unit VTl _)
@@ -1803,30 +1754,26 @@ in
       end
    end
    class CodeGenMethFormalWithDefault
-      meth getDefault(CS ExpansionOccNode $)
+      meth getDefault($)
          {New CodeGenOzValue init(@default)}
       end
-      meth bindMethFormal(MessageVO CS ExpansionOccNode VHd VTl)
-         Coord CND HasFeature Dot ArbiterReg ArbiterVO
+      meth bindMethFormal(MessageVO CS VHd VTl)
+         Coord CND ArbiterReg ArbiterVO
          FeatureVO ArgVO ThenVInstr Default ElseVInstr ErrVInstr Cont1 Cont2
       in
          {@arg setFreshReg(CS)}
          {@arg getCoord(?Coord)}
          CND = {CoordNoDebug Coord}
-         HasFeature = {GetExpansionOcc '`hasFeature`' ExpansionOccNode
-                       Coord CS}
-         Dot = {GetExpansionOcc '`.`' ExpansionOccNode Coord CS}
          {CS newReg(?ArbiterReg)}
          ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
          {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
          ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-         {MakeApplication Dot CND
+         {MakeRunTimeProcApplication '.' CND
           [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
          Default = {New CodeGenOzValue init(@default)}
          {Default makeEquation(CS ArgVO ElseVInstr nil)}
-         {MakeException ExpansionOccNode boolCaseType Coord nil CS
-          ErrVInstr nil}
-         {MakeApplication HasFeature CND
+         {MakeException boolCaseType Coord nil CS ErrVInstr nil}
+         {MakeRunTimeProcApplication hasFeature CND
           [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
          Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
                            unit VTl _)
@@ -1834,13 +1781,11 @@ in
    end
 
    class CodeGenObjectLockNode
-      meth codeGen(CS VHd VTl)
-         OOGetLock Reg Arg SharedData Cont1 Cont2
-      in
-         OOGetLock = {GetExpansionOcc '`ooGetLock`' self @coord CS}
+      meth codeGen(CS VHd VTl) Reg Arg SharedData Cont1 Cont2 in
          {CS newReg(?Reg)}
          Arg = {New PseudoVariableOccurrence init(Reg)}
-         {MakeApplication OOGetLock {CoordNoDebug @coord} [Arg] CS VHd Cont1}
+         {MakeRunTimeProcApplication ooGetLock {CoordNoDebug @coord}
+          [Arg] CS VHd Cont1}
          Cont1 = vLockThread(_ Reg @coord Cont2 SharedData)
          {CodeGenList @statements CS Cont2 vLockEnd(_ @coord VTl SharedData)}
       end
@@ -2173,148 +2118,136 @@ in
       end
    end
 
-   local
-      fun {IsFeature X}
-         {IsLiteral X} orelse {IsInt X}
-      end
-   in
-      class CodeGenBuiltinToken
-         meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
-            Builtinname = {System.printName @value}
-            BIInfo = {Builtins.getInfo Builtinname}
+   class CodeGenBuiltinToken
+      meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
+         Builtinname = {System.printName @value}
+      in
+         case Builtinname of 'New' then
+            [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
          in
-            case BIInfo == noInformation
-               orelse {CondSelect BIInfo sited false}
-            then
-               VHd = vCall(_ {Designator reg($)}
-                           {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
-                           Coord VTl)
-            elsecase Builtinname of 'New' then
-               [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
-            in
             % this ensures that the created object is always a fresh
             % register and that the message is sent before the new
             % object is unified with the output variable.  This is
             % needed for the correctness of the sendMsg-optimization
             % performed in the CodeEmitter:
-               {CS newReg(?ObjReg)}
-               VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
-                                  Coord Cont)
-               Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
-            [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
-               {Arg1 getCodeGenValue(?Value)}
-               case {IsDet Value} then
-                  case Value of 1 then
-                     VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                        Coord VTl)
-                  [] ~1 then
-                     VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
-                                        Coord VTl)
-                  else skip
-                  end
-               else skip
-               end
-               case {IsDet VHd} then skip
-               else Value in
-                  {Arg2 getCodeGenValue(?Value)}
-                  case {IsDet Value} then
-                     case Value of 1 then
-                        VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                           Coord VTl)
-                     [] ~1 then
-                        VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                           Coord VTl)
-                     else skip
-                     end
-                  else skip
-                  end
-               end
-            [] '-' then [Arg1 Arg2 Arg3] = ActualArgs Value in
-               {Arg2 getCodeGenValue(?Value)}
-               case {IsDet Value} then
-                  case Value of 1 then
-                     VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        Coord VTl)
-                  [] ~1 then
-                     VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        Coord VTl)
-                  else skip
-                  end
-               else skip
-               end
-            elsecase CS.debugInfoControlSwitch then skip
-            elsecase Builtinname of '.' then
-               [Arg1 Arg2 Arg3] = ActualArgs Feature in
-               {Arg2 getCodeGenValue(?Feature)}
-               case {IsDet Feature} andthen {IsFeature Feature} then
-                  Value1 AlwaysSucceeds in
-                  {Arg1 getCodeGenValue(?Value1)}
-                  AlwaysSucceeds = ({IsDet Value1}
-                                    andthen {IsRecord Value1}
-                                    andthen {HasFeature Value1 Feature})
-                  case AlwaysSucceeds
-                     andthen {IsObject Value1.Feature}
-                     andthen {HasFeature Value1.Feature ImAVariableOccurrence}
-                     andthen {IsDet {Value1.Feature reg($)}}
-                  then
-                  % Evaluate by issuing an equation.
-                  % Note: {Value1.Feature reg($)} may be undetermined for
-                  % nested records annotated by valToSubst.
-                     {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
-                  else
-                  % Because the static analyzer may annotate some
-                  % variable equality at Arg3, we cannot use the
-                  % (dereferencing) {Arg3 reg($)} call but have to
-                  % use the variable's original register:
-                     VHd = vInlineDot(_ {Arg1 reg($)} Feature
-                                      {{Arg3 getVariable($)} reg($)}
-                                      AlwaysSucceeds Coord VTl)
-                  end
-               else skip
-               end
-            [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
-               {Arg1 getCodeGenValue(?Atomname)}
-               case {IsDet Atomname} andthen {IsLiteral Atomname} then
-                  VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
-               else skip
-               end
-            [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
-               {Arg1 getCodeGenValue(?Atomname)}
-               case {IsDet Atomname} andthen {IsLiteral Atomname} then
-                  VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
-               else skip
-               end
-            [] ',' then [Arg1 Arg2] = ActualArgs Value in
-               {Arg2 getCodeGenValue(?Value)}
-               case {IsDet Value} andthen {IsRecord Value} then
-                  RecordArity ActualArgs Regs Cont1 in
-                  case {IsTuple Value} then
-                     RecordArity = {Width Value}
-                     ActualArgs = {ForThread RecordArity 1 ~1
-                                   fun {$ In I} Value.I|In end nil}
-                  else
-                     RecordArity = {Arity Value}
-                     ActualArgs = {Map RecordArity fun {$ I} Value.I end}
-                  end
-                  {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-                  case {{Arg1 getVariable($)} isToplevel($)} then
-                     Cont1 = vGenCall(_ {Arg1 reg($)} true
-                                      {Label Value} RecordArity Regs
-                                      Coord VTl)
-                  else
-                     Cont1 = vApplMeth(_ {Arg1 reg($)}
-                                       {Label Value} RecordArity Regs
-                                       Coord VTl)
-                  end
+            {CS newReg(?ObjReg)}
+            VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
+                               Coord Cont)
+            Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
+         [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+            {Arg1 getCodeGenValue(?Value)}
+            case {IsDet Value} then
+               case Value of 1 then
+                  VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
+                                     Coord VTl)
+               [] ~1 then
+                  VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
+                                     Coord VTl)
                else skip
                end
             else skip
             end
             case {IsDet VHd} then skip
-            else Regs in
-               Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
-               VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
+            else Value in
+               {Arg2 getCodeGenValue(?Value)}
+               case {IsDet Value} then
+                  case Value of 1 then
+                     VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                        Coord VTl)
+                  [] ~1 then
+                     VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                        Coord VTl)
+                  else skip
+                  end
+               else skip
+               end
             end
+         [] '-' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+            {Arg2 getCodeGenValue(?Value)}
+            case {IsDet Value} then
+               case Value of 1 then
+                  VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                     Coord VTl)
+               [] ~1 then
+                  VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                     Coord VTl)
+               else skip
+               end
+            else skip
+            end
+         elsecase CS.debugInfoControlSwitch then skip
+         elsecase Builtinname of '.' then
+            [Arg1 Arg2 Arg3] = ActualArgs Feature in
+            {Arg2 getCodeGenValue(?Feature)}
+            case {IsDet Feature}
+               andthen ({IsLiteral Feature} orelse {IsInt Feature})
+            then Value1 AlwaysSucceeds in
+               {Arg1 getCodeGenValue(?Value1)}
+               AlwaysSucceeds = ({IsDet Value1}
+                                 andthen {IsRecord Value1}
+                                 andthen {HasFeature Value1 Feature})
+               case AlwaysSucceeds
+                  andthen {IsObject Value1.Feature}
+                  andthen {HasFeature Value1.Feature ImAVariableOccurrence}
+                  andthen {IsDet {Value1.Feature reg($)}}
+               then
+                  % Evaluate by issuing an equation.
+                  % Note: {Value1.Feature reg($)} may be undetermined for
+                  % nested records annotated by valToSubst.
+                  {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
+               else
+                  % Because the static analyzer may annotate some
+                  % variable equality at Arg3, we cannot use the
+                  % (dereferencing) {Arg3 reg($)} call but have to
+                  % use the variable's original register:
+                  VHd = vInlineDot(_ {Arg1 reg($)} Feature
+                                   {{Arg3 getVariable($)} reg($)}
+                                   AlwaysSucceeds Coord VTl)
+               end
+            else skip
+            end
+         [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
+            {Arg1 getCodeGenValue(?Atomname)}
+            case {IsDet Atomname} andthen {IsLiteral Atomname} then
+               VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
+            else skip
+            end
+         [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
+            {Arg1 getCodeGenValue(?Atomname)}
+            case {IsDet Atomname} andthen {IsLiteral Atomname} then
+               VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
+            else skip
+            end
+         [] ',' then [Arg1 Arg2] = ActualArgs Value in
+            {Arg2 getCodeGenValue(?Value)}
+            case {IsDet Value} andthen {IsRecord Value} then
+               RecordArity ActualArgs Regs Cont1 in
+               case {IsTuple Value} then
+                  RecordArity = {Width Value}
+                  ActualArgs = {ForThread RecordArity 1 ~1
+                                fun {$ In I} Value.I|In end nil}
+               else
+                  RecordArity = {Arity Value}
+                  ActualArgs = {Map RecordArity fun {$ I} Value.I end}
+               end
+               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+               case {{Arg1 getVariable($)} isToplevel($)} then
+                  Cont1 = vGenCall(_ {Arg1 reg($)} true
+                                   {Label Value} RecordArity Regs
+                                   Coord VTl)
+               else
+                  Cont1 = vApplMeth(_ {Arg1 reg($)}
+                                    {Label Value} RecordArity Regs
+                                    Coord VTl)
+               end
+            else skip
+            end
+         else skip
+         end
+         case {IsDet VHd} then skip
+         else Regs in
+            Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
+            VHd = vCallBuiltin(_ Builtinname Regs Coord VTl)
          end
       end
    end

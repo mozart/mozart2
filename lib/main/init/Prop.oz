@@ -62,7 +62,9 @@ OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
                   elseof V then V end
 
 OZ_DOTOZ        = case {Getenv 'OZ_DOTOZ'} of false then
-                     '~/.oz'
+                     case {Getenv 'OZDOTOZ'} of false then
+                        '~/.oz/'#{GET 'oz.version'}
+                     elseof V then {SafePath V} end
                   elseof V then {SafePath V} end
 
 OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then

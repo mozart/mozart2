@@ -91,7 +91,7 @@ define
    fun {UserFile}
       case {Property.condGet 'user.custom.file' unit} of unit then
          case {OS.getEnv 'MOZART_CUSTOM_FILE'} of false then
-            '~/.oz/CUSTOM'
+            {Property.get 'oz.dotoz'}#'/CUSTOM'
          [] X then X end
       [] X then X end
    end

@@ -140,7 +140,7 @@ local
              UserHome = {OS.getEnv 'HOME'}
           in
              if UserHome \= false then
-                F = UserHome # '/.oz/wishrc'
+                F = {Property.get 'oz.dotoz'} # '/wishrc'
              in
                 try {OS.stat F _} F
                 catch system(...) then unit end

@@ -888,6 +888,51 @@ in
       end
 
       %%
+      %% Foreign interface
+      %%
+
+      fun {ForeignFormatter Exc}
+         E = {Error.dispatch Exc}
+         T = 'Error: native code interface'
+      in
+         case E
+         of foreign(cannotFindInterface F) then
+            {Error.format T
+             'Cannot find interface'
+             [hint(l:'File name' m:F)]
+             Exc}
+         elseof foreign(dlOpen F M) then
+            {Error.format T
+             'Cannot dynamically link object file'
+             [hint(l:'File name' m:F)
+              hint(l:'dlerror'   m:M)]
+             Exc}
+         else
+            {Error.formatGeneric T Exc}
+         end
+      end
+
+      %%
+      %% URL/Resolver library
+      %%
+
+      fun {URLFormatter Exc}
+         E = {Error.dispatch Exc}
+         T = 'error in URL support'
+      in
+         case E
+         of url(O U) then
+            {Error.format T
+             'Cannot locate file'
+             [hint(l:'File name' m:U)
+              hint(l:'Operation' m:O)]
+             Exc}
+         else
+            {Error.formatGeneric T Exc}
+         end
+      end
+
+      %%
       %% Error registry proper
       %%
 
@@ -922,6 +967,8 @@ in
       {NewFormatter system  SystemFormatter}
       {NewFormatter dp      DPFormatter}
       {NewFormatter os      OSFormatter}
+      {NewFormatter foreign ForeignFormatter}
+      {NewFormatter url     URLFormatter}
 
    in skip end
 

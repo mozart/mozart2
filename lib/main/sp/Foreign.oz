@@ -29,12 +29,6 @@ functor $ prop once
 import
    Property.get
 
-   Error.{formatGeneric
-          format
-          dispatch}
-
-   ErrorRegistry.{put}
-
    Foreign.{dlLoad}
       from 'x-oz://boot/Foreign'
 
@@ -82,23 +76,5 @@ body
       _#Module = {ForeignLoadBI File}
    in Module
    end
-
-
-   {ErrorRegistry.put
-    foreign
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
-       T = 'Error: Foreign'
-    in
-       case E
-       of foreign(cannotFindInterface F) then
-          {Error.format T
-           'Cannot find interface'
-           [hint(l:'File name' m:F)]
-           Exc}
-       else
-          {Error.formatGeneric T Exc}
-       end
-    end}
 
 end

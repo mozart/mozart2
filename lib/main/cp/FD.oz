@@ -145,6 +145,7 @@ export
    disjoint:       FdpDisjoint
 
    %% Distribution
+   assign:         FdAssign
    distribute:     FdDistribute
    choose:         FdChoose
 
@@ -561,6 +562,9 @@ define
       end
    end
 
+   proc {FdAssign Spec V}
+      {Wait {FDP.assign Spec V}}
+   end
 
    %%
    %% Watching variables

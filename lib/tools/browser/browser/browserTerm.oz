@@ -104,12 +104,12 @@ in
    fun {IsListDepth L D}
       case D > 0 then
          %%
-         case {Value.status L}
-         of free      then false
-         [] kinded(_) then false
-         elsecase L
-         of _|Xr then {IsListDepth Xr (D-1)}
-         else L == nil
+         if {IsDet L} then
+            case L
+            of _|Xr then {IsListDepth Xr (D-1)}
+            else L == nil
+            end
+         else false
          end
       else
          {Value.status L} == det(atom) andthen L == nil
@@ -296,7 +296,7 @@ in
       [] !T_FDVariable     then true
       [] !T_FSet           then true
       [] !T_CtVariable     then true
-      [] !T_Future         then true
+      [] !T_Future         then false
       [] !T_BitString      then true
       [] !T_ByteString     then true
       else

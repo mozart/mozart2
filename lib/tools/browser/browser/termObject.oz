@@ -2753,7 +2753,8 @@ in
             %% Note that this conditional may not block the state;
             thread
                {WaitOr ChVar ObjClosed}
-               case {IsDet ChVar} then {self checkTermReq}
+               case {IsDet ChVar} then
+                  {self checkTermReq}
                else skip
                end
             end
@@ -2797,9 +2798,14 @@ in
          type: T_Future
 
 
+      meth !GetName($) {System.printName self.term}#'<Future>' end
+
       meth !GetWatchFun($)
-         fun {$ F}
-            thread {Value.waitQuiet F} unit end
+         proc {$ F ?U}
+            thread
+               {Value.waitQuiet F}
+               U=unit
+            end
          end
       end
 

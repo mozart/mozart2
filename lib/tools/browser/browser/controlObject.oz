@@ -343,6 +343,7 @@ in
                 of '1' then SetSelected
                 [] '2' then Process
                 [] '3' then noop   % 'UnsetSelected';
+                else noop
                 end}
       end
 
@@ -354,6 +355,7 @@ in
                 of '1' then Expand
                 [] '2' then Deref
                 [] '3' then Shrink
+                else noop
                 end}
       end
 

@@ -338,17 +338,32 @@ local
       end
    end
 
-   proc {SortFunctorDescriptors FDescriptors Rep ?FImport ?FExport ?FProp}
+   proc {SortFunctorDescriptors FDescriptors Rep
+         FRequire FPrepare FImport FExport FProp FDefine1 FDefine2}
       case FDescriptors of D|Dr then
-         case D of fImport(Ds C) then
-            if {IsFree FImport} then FImport = Ds
+         case D of fRequire(Rs C) then
+            if {IsFree FRequire} then FRequire = Rs
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `require\' descriptor '#
+                                'in functor definition'))}
+            end
+         [] fPrepare(_ _ C) then
+            if {IsFree FPrepare} then FPrepare = D
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `prepare\' descriptor '#
+                                'in functor definition'))}
+            end
+         [] fImport(Is C) then
+            if {IsFree FImport} then FImport = Is
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `import\' descriptor '#
                                 'in functor definition'))}
             end
-         [] fExport(Ds C) then
-            if {IsFree FExport} then FExport = Ds
+         [] fExport(Es C) then
+            if {IsFree FExport} then FExport = Es
             else
                {Rep error(coord: C kind: SyntaxError
                           msg: ('more than one `export\' descriptor '#
@@ -361,16 +376,30 @@ local
                           msg: ('more than one `prop\' descriptor '#
                                 'in functor definition'))}
             end
+         [] fDefine(D1 D2 C) then
+            if {IsFree FDefine1} then FDefine1 = D1 FDefine2 = D2
+            else
+               {Rep error(coord: C kind: SyntaxError
+                          msg: ('more than one `define\' descriptor '#
+                                'in functor definition'))}
+            end
          end
-         {SortFunctorDescriptors Dr Rep ?FImport ?FExport ?FProp}
+         {SortFunctorDescriptors Dr Rep
+          FRequire FPrepare FImport FExport FProp FDefine1 FDefine2}
       [] nil then
+         if {IsFree FRequire} then FRequire = unit end
+         if {IsFree FPrepare} then FPrepare = unit end
          if {IsFree FImport} then FImport = nil end
          if {IsFree FExport} then FExport = nil end
          if {IsFree FProp} then FProp = nil end
+         if {IsFree FDefine1} then
+            FDefine1 = fSkip(unit)
+            FDefine2 = fSkip(unit)
+         end
       end
    end
 
-   proc {SortClassDescriptors FDescriptors Rep ?FFrom ?FProp ?FAttr ?FFeat}
+   proc {SortClassDescriptors FDescriptors Rep FFrom FProp FAttr FFeat}
       case FDescriptors of D|Dr then
          case D of fFrom(Fs C) then
             if {IsFree FFrom} then FFrom = Fs
@@ -401,7 +430,7 @@ local
                                 'in class definition'))}
             end
          end
-         {SortClassDescriptors Dr Rep ?FFrom ?FProp ?FAttr ?FFeat}
+         {SortClassDescriptors Dr Rep FFrom FProp FAttr FFeat}
       [] nil then
          if {IsFree FFrom} then FFrom = nil end
          if {IsFree FProp} then FProp = nil end
@@ -482,7 +511,7 @@ local
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
                         [] fFun(_ _ _ _ _) then 'Fun'
-                        [] fFunctor(_ _ _ _ _) then 'Functor'
+                        [] fFunctor(_ _ _) then 'Functor'
                         [] fClass(_ _ _ _) then 'Class'
                         [] fScanner(_ _ _ _ _ _) then 'Scanner'
                         [] fParser(_ _ _ _ _ _ _) then 'Parser'
@@ -667,35 +696,61 @@ local
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
-         [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
-            GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
-            FImportArgs ImportFS FExportArgs FColons CND NewFBody FFun
-            FImportDesc FExportDesc FS GS
+         [] fFunctor(FE FDescriptors C) then
+            FRequire FPrepare FImport FExport FProp FDefine1 FDefine2
          in
-            Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
-            FV = fVar({{GVO getVariable($)} getPrintName($)}
-                      {CoordinatesOf FE})
             {SortFunctorDescriptors FDescriptors @reporter
-             ?FImport ?FExport ?FProp}
-            {@BA openScope()}
-            Unnester, AnalyseImports(FImport ImportFV ?FImportArgs ?ImportFS)
-            Unnester, AnalyseExports(FExport ?FExportArgs ?FColons)
-            {@BA generate('IMPORT' C ?ImportGV)}
-            {@BA closeScope(_)}
-            ImportFV = fVar({ImportGV getPrintName($)} C)
-            CND = {CoordNoDebug C}
-            NewFBody = fLocal(fAnd(ImportFS FBody1)
-                              fAnd(FBody2 fRecord(fAtom('export' CND) FColons))
-                              C)
-            FFun = fFun(fDollar(CND) [ImportFV] NewFBody
-                        fAtom('instantiate' C)|FProp CND)
-            FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
-            FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
-            FS = fOpApplyStatement('NewFunctor'
-                                   [FImportDesc FExportDesc FFun FV] CND)
-            Unnester,
-            UnnestStatement(fStepPoint(FS 'definition' C) ?GS)
-            GFrontEq|GS
+             ?FRequire ?FPrepare ?FImport ?FExport ?FProp ?FDefine1 ?FDefine2}
+            if FRequire == unit andthen FPrepare == unit then
+               GFrontEq GVO FV
+               ImportGV ImportFV FImportArgs ImportFS FExportArgs FColons CND
+               NewFDefine FFun FImportDesc FExportDesc FS GS
+            in
+               Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
+               FV = fVar({{GVO getVariable($)} getPrintName($)}
+                         {CoordinatesOf FE})
+               {@BA openScope()}
+               Unnester, AnalyseImports(FImport ImportFV
+                                        ?FImportArgs ?ImportFS)
+               Unnester, AnalyseExports(FExport ?FExportArgs ?FColons)
+               {@BA generate('IMPORT' C ?ImportGV)}
+               {@BA closeScope(_)}
+               ImportFV = fVar({ImportGV getPrintName($)} C)
+               CND = {CoordNoDebug C}
+               NewFDefine = fLocal(fAnd(ImportFS FDefine1)
+                                   fAnd(FDefine2
+                                        fRecord(fAtom('export' CND) FColons))
+                                   C)
+               FFun = fFun(fDollar(CND) [ImportFV] NewFDefine
+                           fAtom('instantiate' C)|FProp CND)
+               FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
+               FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
+               FS = fOpApplyStatement('NewFunctor'
+                                      [FImportDesc FExportDesc FFun FV] CND)
+               Unnester,
+               UnnestStatement(fStepPoint(FS 'definition' C) ?GS)
+               GFrontEq|GS
+            else GV FV FS in
+               {@BA openScope()}
+               {@BA generate('ComputedFunctor' C ?GV)}
+               {@BA closeScope(_)}
+               FV = fVar({GV getPrintName($)} C)
+               %--** generate variable different from all FRequire/FPrepare;
+               %--** wrap {Module.link ...} around it
+               FS = fFunctor(FE [fImport(FRequire unit)
+                                 fExport([fExportItem(FV)] unit)
+                                 fDefine(fAnd(fLocal({CondSelect FPrepare 1
+                                                      fSkip(unit)}
+                                                     {CondSelect FPrepare 2
+                                                      fSkip(unit)} C)
+                                              fFunctor(FV
+                                                       [fImport(FImport unit)
+                                                        fExport(FExport unit)
+                                                        fDefine(FDefine1
+                                                                FDefine2
+                                                                unit)] C)))] C)
+               Unnester, UnnestStatement(FS $)
+            end
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
             GFrontEqs FeatureGVO ResGVO
@@ -1158,10 +1213,10 @@ local
                                       'of nested function'))}
                Unnester, UnnestStatement(FE $)
             end
-         [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
+         [] fFunctor(FE FDescriptors C) then
             case FE of fDollar(_) then
                Unnester,
-               UnnestStatement(fFunctor(FV FDescriptors FBody1 FBody2 C) $)
+               UnnestStatement(fFunctor(FV FDescriptors C) $)
             else
                {@reporter
                 error(coord: {CoordinatesOf FE} kind: SyntaxError
@@ -1587,7 +1642,7 @@ local
 
       meth AnalyseImports(Ds ImportFV ?FImportArgs ?ImportFS)
          case Ds of D|Dr then
-            fImportItem(FV=fVar(PrintName C) Fs FFrom) = D
+            fImportItem(FV=fVar(PrintName C) Fs FImportAt) = D
             FFsList FS ImportFS2 FInfo FImportArgr
          in
             {@BA bind(PrintName C _)}
@@ -1597,10 +1652,9 @@ local
             ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
             FInfo = fRecord(fAtom('info' C)
                             fColon(fAtom('type' C) FFsList)|
-                            case FFrom of fFrom(FE) then
-                               %--** FE must be ground
+                            case FImportAt of fImportAt(FE) then
                                [fColon(fAtom('from' C) FE)]
-                            [] fNoFrom then nil
+                            [] fNoImportAt then nil
                             end)
             FImportArgs = fColon(fAtom(PrintName C) FInfo)|FImportArgr
             Unnester, AnalyseImports(Dr ImportFV ?FImportArgr ?ImportFS2)
@@ -2358,10 +2412,13 @@ in
          [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {FS C})
          [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {FS C})
          [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {FS C})
-         [] fFunctor(P1 Ds P2 P3 C) then
-            fFunctor({NP P1} {Map Ds NP} {SP P2} {SP P3} {FS C})
+         [] fFunctor(P1 Ds C) then
+            fFunctor({NP P1} {Map Ds NP} {FS C})
+         [] fRequire(_ _) then P
+         [] fPrepare(P1 P2 C) then fPrepare({SP P1} {SP P2} C)
          [] fImport(_ _) then P
          [] fExport(_ _) then P
+         [] fBody(P1 P2 C) then fBody({SP P1} {SP P2} C)
          [] fClass(P Ds Ms C) then
             fClass({NP P} {Map Ds NP} {Map Ms SP} {FS C})
          [] fFrom(Ps C) then fFrom({Map Ps NP} C)
@@ -2429,8 +2486,8 @@ in
          [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {CS C})
          [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {CS C})
          [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {CS C})
-         [] fFunctor(P1 Ds P2 P3 C) then
-            fFunctor({NP P1} {Map Ds NP} {SP P2} {SP P3} {CS C})
+         [] fFunctor(P1 Ds C) then
+            fFunctor({NP P1} {Map Ds NP} {CS C})
          [] fClass(P Ds Ms C) then
             fClass({NP P} {Map Ds NP} {Map Ms SP} {CS C})
          [] fMeth(X P C) then fMeth(X {SP P} C)

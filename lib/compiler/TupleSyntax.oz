@@ -88,7 +88,7 @@ proc {GetPatternVariablesStatement S VsHd VsTl}
       {GetPatternVariablesExpression E VsHd VsTl}
    [] fFun(E _ _ _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}
-   [] fFunctor(E _ _ _ _) then
+   [] fFunctor(E _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}
    [] fClass(E _ _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}

@@ -251,6 +251,8 @@ in
        'procedure/6' # value
        'procedure/>6'   # value
        pair # tuple
+       bitString # value
+       byteString # value
       ]
 
       % partitioned subtypes
@@ -330,6 +332,10 @@ in
          then {OzTypes.encode space nil}
          elsecase {IsThread V}
          then {OzTypes.encode 'thread' nil}
+         elsecase {IsBitString V}
+         then {OzTypes.encode bitString nil}
+         elsecase {IsByteString V}
+         then {OzTypes.encode byteString nil}
          elsecase {IsChunk V}
          then
             case {IsArray V}

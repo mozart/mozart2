@@ -118,6 +118,8 @@ export
    ThreadToken
    SpaceToken
    BitArrayToken
+   BitStringToken
+   ByteStringToken
 define
    \insert Annotate
 
@@ -1361,6 +1363,16 @@ define
    class BitArrayToken from ChunkToken
       prop final
       feat kind: 'bitArray'
+   end
+
+   class BitStringToken from ChunkToken
+      prop final
+      feat kind: 'bitString'
+   end
+
+   class ByteStringToken from ChunkToken
+      prop final
+      feat kind: 'byteString'
    end
 
    class ClassToken from ChunkToken

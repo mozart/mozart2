@@ -3940,6 +3940,16 @@ define
                SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
 
             elsecase
+               {IsBitString Value}
+            then
+               SAVariable, setLastValue({New Core.bitStringToken init(Value)})
+
+            elsecase
+               {IsByteString Value}
+            then
+               SAVariable, setLastValue({New Core.byteStringToken init(Value)})
+
+            elsecase
                {IsChunk Value}
             then
                SAVariable, setLastValue({New Core.chunkToken init(Value)})

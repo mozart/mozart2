@@ -567,12 +567,6 @@ define
             {GV occ({GV getCoord($)} ?GVO)}
          end
       end
-      meth GetPrintName(FV $)
-         case FV of fVar(PrintName C) then PrintName
-         [] fOcc(GV) then
-            {GV getPrintName($)}
-         end
-      end
 
       meth UnnestStatement(FS $)
          case FS of fStepPoint(FS Kind C) then GS in

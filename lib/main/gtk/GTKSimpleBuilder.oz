@@ -24,7 +24,7 @@
 
 functor
 import
-   GTK at 'x-oz://system/GTK.ozf'
+   GTK
 export
    Make gtk:GTK
 define

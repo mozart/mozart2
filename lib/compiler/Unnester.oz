@@ -45,20 +45,12 @@
 %%
 
 functor
-
 require
-   FD(sup)
-
+   FD(sup: FdSup)
 prepare
-
-   local
-      FdSup = FD.sup
-   in
-      fun {IsFd I}
-         I=<FdSup andthen I>=0
-      end
+   fun {IsFd I}
+      I =< FdSup andthen I >= 0
    end
-
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
 \ifndef NO_GUMP
@@ -1415,7 +1407,11 @@ define
             Unnester, UnnestToVar(FE1 'Arbiter' ?GFrontEq ?GVO)
             {GVO getVariable(?GV)}
             FV2 = fVar({GV getPrintName($)} {GV getCoord($)})
-            FS = {FoldR FClausess
+            FS = {FoldR if {@state getSwitch(functionalpatterns $)} then
+                           %% `elseof' is equivalent to `[]'
+                           [{FoldR FClausess Append nil}]
+                        else FClausess
+                        end
                   fun {$ FClauses FElse} FVs in
                      {FoldL FClauses
                       fun {$ FVs fCaseClause(FE _)}

@@ -115,7 +115,8 @@ in
 
       System.{printName
               printError
-              valueToVirtualString}
+              valueToVirtualString
+              onToplevel}
 
       ErrorRegistry.{get
                      exists}
@@ -680,8 +681,6 @@ in
       %%
 
       local
-         OnToplevel = {`Builtin` onToplevel 1}
-
          proc {DefExHdl Exc}
             try
                {Thread.setThisPriority high}
@@ -690,7 +689,7 @@ in
                {LineOutput ErrorMsgDebug {FormatReRaiseExc Exc X}}
             end
             %% terminate local computation
-            case {OnToplevel} then skip else fail end
+            case {System.onToplevel} then skip else fail end
          end
       in
          {{`Builtin` setDefaultExceptionHandler 1} DefExHdl}

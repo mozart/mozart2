@@ -125,7 +125,6 @@ local
       end
    end
 
-   IsBitArray = {`Builtin` 'BitArray.is' 2}
    IsThread   = {`Builtin` 'Thread.is'   2}
 
    Is = is(array:               IsArray
@@ -143,6 +142,7 @@ local
            float:               IsFloat
            fset:                IsFSet
            fsetC:               IsFSetC
+           foreignPointer:      IsForeignPointer
            list:                IsList
            'lock':              IsLock
            literal:             IsLiteral
@@ -179,6 +179,7 @@ local
              fdVector:          {GenericAsk IsFDVector fdVector}
              feature:           {GenericAsk IsFeature feature}
              float:             {GenericAsk IsFloat float}
+             foreignPointer:    {GenericAsk IsForeignPointer foreignPointer}
              list:              {GenericAsk IsList list}
              literal:           {GenericAsk IsLiteral literal}
              'lock':            {GenericAsk IsLock 'lock'}

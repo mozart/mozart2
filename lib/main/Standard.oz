@@ -56,12 +56,13 @@
 \insert 'standard/Space.oz'
 \insert 'standard/Object.oz'
 \insert 'standard/Class.oz'
+\insert 'standard/BitArray.oz'
+\insert 'standard/ForeignPointer.oz'
+\insert 'standard/Thread.oz'
 \insert 'standard/Type.oz'
 \insert 'standard/Exception.oz'
-\insert 'standard/Thread.oz'
 \insert 'standard/Time.oz'
 \insert 'standard/Functor.oz'
-\insert 'standard/BitArray.oz'
 
 \ifndef OZM
 
@@ -304,6 +305,10 @@ export
    '`NewFunctor`':       `NewFunctor`
    %% BitArray
    'BitArray':           BitArray
+   'IsBitArray':         IsBitArray
+   %% ForeignPointer
+   'ForeignPointer':     ForeignPointer
+   'IsForeignPointer':   IsForeignPointer
 
 body
    skip

@@ -20,9 +20,14 @@
 %%%
 
 declare
+BitArray IsBitArray
+in
+
+IsBitArray = {`Builtin` 'BitArray.is' 2}
+
 BitArray =
 bitArray(new:              {`Builtin` 'BitArray.new'              3}
-         is:               {`Builtin` 'BitArray.is'               2}
+         is:               IsBitArray
          set:              {`Builtin` 'BitArray.set'              2}
          clear:            {`Builtin` 'BitArray.clear'            2}
          test:             {`Builtin` 'BitArray.test'             3}

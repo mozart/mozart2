@@ -247,37 +247,45 @@ define
                                      U1 V1 U2 V2
                                   in
                                      thread
-                                        {Search.base.all proc {$ X} H in
-                                                      dis X=1
-                                                      [] dis X=a
-                                                            cond U1=1 then H=1
-                                                            else fail
-                                                            end
-                                                            dis H=1 [] V1=2 end
-                                                         [] X=b
-                                                         end
-                                                      [] X=2
-                                                      end
-                                                   end} = [1 a b 2]
+                                        {Search.base.all
+                                         proc {$ X} H in
+                                            choice
+                                               X=1
+                                            []
+                                               choice
+                                                  X=a
+                                                  cond U1=1 then H=1
+                                                  else fail
+                                                  end
+                                                  choice H=1 [] V1=2 end
+                                               [] X=b
+                                               end
+                                            [] X=2
+                                            end
+                                         end} = [1 a a b 2]
                                      end
                                      thread
-                                        {Search.base.all proc {$ X} H in
-                                                      dis X=1
-                                                      [] dis X=a
-                                                            cond U2=1 then H=1
-                                                            else fail
-                                                            end
-                                                            dis H=1 [] V2=2 end
-                                                         [] X=b
-                                                         end
-                                                      [] X=2
-                                                      end
-                                                   end} = [1 b 2]
+                                        {Search.base.all
+                                         proc {$ X} H in
+                                            choice X=1
+                                            []
+                                               choice
+                                                  X=a
+                                                  cond U2=1 then H=1
+                                                  else fail
+                                                  end
+                                                  choice H=1 [] V2=2 end
+                                               [] X=b
+                                               end
+                                            [] X=2
+                                            end
+                                         end} = [1 b 2]
                                      end
+
                                      U1=1 V1=2
                                      U2=2 V2=1
                                   end)
-                         keys: [space stability 'dis'])
+                         keys: [space stability])
 
            clone([vars(entailed(proc {$}
                                    proc {MakeVars ?V}
@@ -688,69 +696,6 @@ define
                          keys: [merge space])
                  ])
 
-
-           'unit'(entailed(proc {$}
-                              proc {AssumeDet X}
-                                 if {IsDet X} then skip else fail end
-                              end
-                              S1={Space.new proc {$ X}
-                                               A#B#C#D = X
-                                            in
-                                               thread
-                                                  choice A=1 end
-                                               end
-                                               thread
-                                                  choice
-                                                     D=1
-                                                  then
-                                                     {AssumeDet A} A=1
-                                                     {AssumeDet B} B=2
-                                                     {AssumeDet C} C=3
-                                                  []
-                                                     D=2
-                                                  then
-                                                     {AssumeDet A} A=1
-                                                     {AssumeDet B} B=2
-                                                     {AssumeDet C} C=3
-                                                  end
-                                               end
-                                               thread
-                                                  choice
-                                                     thread choice B=2 end end
-                                                  end
-                                               end
-                                               choice
-                                                  thread
-                                                     {Wait A}
-                                                     choice thread C=3 end end
-                                                  end
-                                               end
-                                            end}
-                              A  = {Space.ask S1}
-                              S2 = {Space.clone S1}
-                           in
-                              if {IsDet A} then
-                                 A=alternatives(2)
-                                 {Space.commit S1 1}
-                                 {Space.commit S2 2}
-                                 local
-                                    {Space.ask S1} = succeeded
-                                    A#B#C#D        = {Space.merge S1}
-                                 in
-                                    {Wait A} {Wait B} {Wait C} {Wait D}
-                                    A=1 B=2 C=3 D=1
-                                 end
-                                 local
-                                    {Space.ask S2} = succeeded
-                                    A#B#C#D={Space.merge S2}
-                                 in
-                                    {Wait A} {Wait B} {Wait C} {Wait D}
-                                    A=1 B=2 C=3 D=2
-                                 end
-                              else fail
-                              end
-                           end)
-                  keys: [det 'choice' space])
 
            'lock'(entailed(proc {$}
                               S = {Space.new

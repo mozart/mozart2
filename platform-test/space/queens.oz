@@ -97,8 +97,8 @@ define
                              end
                              {For 1 N 1 proc {$ I}
                                            {For 1 N 1 proc {$ J}
-                                                         choice Board.I.J=1 then skip
-                                                         []     Board.I.J=0 then skip
+                                                         choice Board.I.J=1
+                                                         []     Board.I.J=0
                                                          end
                                                       end}
                                         end}

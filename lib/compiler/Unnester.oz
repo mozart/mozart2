@@ -726,9 +726,10 @@ local
                 case FV of fVar(PrintName C) then
                    {@BA bind(PrintName C _)}
                 elseof fDoImport(FI GV _) then
-                   fImportItem(fVar(PrintName C) Features _) = FI
+                   fImportItem(fVar(PrintName C) Fs _) = FI NewFs
                 in
-                   {@BA bindImport(PrintName C Features ?GV)}
+                   {@BA bindImport(PrintName C NewFs ?GV)}
+                   Unnester, UnnestImportFeatures(Fs ?NewFs)
                 elseof fExportItem(fVar(PrintName C)) then
                    {@BA bindExport(PrintName C _)}
                 end
@@ -920,26 +921,22 @@ local
                       msg: OpKind#' operator cannot take $ as argument')}
             end
             case FE of fOpApply('.' [fVar(X C2) FA=fAtom(Y _)] _) then
-               LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
-            in
-               {@BA referImport(X C2 Y ?LeftGVO)}
-               {@BA refer('`.`' C ?DotGVO)}
-               Unnester, UnnestApplyArgs([FA FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
-               GFrontEqs1|GFrontEqs2|
-               {New Core.application init(DotGVO LeftGVO|GTs C)}
+               Unnester, OptimizeImportFeature(FV C X C2 Y FA $)
             elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] _) then
-               LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
-            in
-               {@BA referImport(X C2 Y ?LeftGVO)}
-               {@BA refer('`.`' C ?DotGVO)}
-               Unnester, UnnestApplyArgs([FI FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
-               GFrontEqs1|GFrontEqs2|
-               {New Core.application init(DotGVO LeftGVO|GTs C)}
+               Unnester, OptimizeImportFeature(FV C X C2 Y FI $)
             else PrintName in
                PrintName = {VirtualString.toAtom '`'#Op#'`'}
                Unnester, UnnestStatement(fApply(fVar(PrintName C)
                                                 {Append FEs [FV]} C) $)
             end
+         [] fUnoptimizedDot(FV2 FT) then
+            fVar(X C) = FV2 LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
+         in
+            {@BA referUnchecked(X C ?LeftGVO)}
+            {@BA refer('`.`' C ?DotGVO)}
+            Unnester, UnnestApplyArgs([FT FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+            GFrontEqs1|GFrontEqs2|
+            {New Core.application init(DotGVO LeftGVO|GTs C)}
          [] fFdCompare(Op FE1 FE2 C) then
             GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
@@ -1120,9 +1117,10 @@ local
                                 {@BA bind(X C _)}
                                 {Or In X == PrintName}
                              elseof fDoImport(FI GV _) then
-                                fImportItem(fVar(X C) Features _) = FI
+                                fImportItem(fVar(X C) Fs _) = FI NewFs
                              in
-                                {@BA bindImport(X C Features ?GV)}
+                                {@BA bindImport(X C NewFs ?GV)}
+                                Unnester, UnnestImportFeatures(Fs ?NewFs)
                                 {Or In X == PrintName}
                              elseof fExportItem(fVar(X C)) then
                                 {@BA bindExport(X C _)}
@@ -1494,16 +1492,57 @@ local
 
       meth AnalyseImports(Ds ImportFV ?ImportFS)
          case Ds of D|Dr then
-            fImportItem(fVar(PrintName C) _ _) = D ImportFS2
+            fImportItem(FV=fVar(PrintName C) Fs _) = D FS ImportFS2
          in
             {@BA bind(PrintName C _)}
+            Unnester, AnalyseImportFeatures(Fs FV ?FS)
             %--** respect from clause
             %--** check that all features are distinct
             %--** read corresponding type description from pickle
-            ImportFS = fAnd(fDoImport(D _ ImportFV) ImportFS2)
+            ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
             Unnester, AnalyseImports(Dr ImportFV ?ImportFS2)
          [] nil then
             ImportFS = fSkip(unit)
+         end
+      end
+      meth AnalyseImportFeatures(Fs FV ?FS)
+         case Fs of X|Xr then FSr in
+            case X of (FFV=fVar(PrintName C))#F then
+               {@BA bind(PrintName C _)}
+               FS = fAnd(fEq(FFV fUnoptimizedDot(FV F) unit) FSr)
+            else
+               FS = FSr
+            end
+            Unnester, AnalyseImportFeatures(Xr FV ?FSr)
+         [] nil then
+            FS = fSkip(unit)
+         end
+      end
+      meth UnnestImportFeatures(Fs $)
+         case Fs of X|Xr then
+            case X of fVar(PrintName C)#F then GV in
+               {@BA bind(PrintName C ?GV)}
+               case F of fAtom(X C) then X#C#_#GV
+               [] fInt(I C) then I#C#_#GV
+               end
+            elsecase X of fAtom(X C) then X#C#_
+            [] fInt(I C) then I#C#_
+            end|Unnester, UnnestImportFeatures(Xr $)
+         [] nil then nil
+         end
+      end
+      meth OptimizeImportFeature(FV C X C2 Y FF $) IsImport LeftGVO in
+         {@BA referImport(X C2 Y ?IsImport ?LeftGVO)}
+         case {Not IsImport}
+            orelse {{LeftGVO getVariable($)} isRestricted($)}
+         then DotGVO GFrontEqs1 GFrontEqs2 GTs in
+            {@BA refer('`.`' C ?DotGVO)}
+            Unnester, UnnestApplyArgs([FF FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+            GFrontEqs1|GFrontEqs2|
+            {New Core.application init(DotGVO LeftGVO|GTs C)}
+         else fVar(Z C3) = FV RightGVO in
+            {@BA refer(Z C3 ?RightGVO)}
+            {New Core.equation init(LeftGVO RightGVO C)}
          end
       end
       meth AnalyseExports(Ds ?ExportFS ?FColons)

@@ -791,12 +791,15 @@ local
          end
       end
       meth CheckUse(Fs Rep)
-         case Fs of X|Fr then F#C#B = X in
-            case {IsDet B} then skip
-            else
-               {Rep warn(coord: C kind: BindingAnalysisWarning
-                         msg: ('feature '#pn(@printName)#'.'#oz(F)#
-                               ' imported but never used'))}
+         case Fs of X|Fr then
+            case X of F#C#B then
+               case {IsDet B} then skip
+               else
+                  {Rep warn(coord: C kind: BindingAnalysisWarning
+                            msg: ('feature '#pn(@printName)#'.'#oz(F)#
+                                  ' imported but never used'))}
+               end
+            [] _#_#_#_ then skip
             end
             AnnotateRestrictedVariable, CheckUse(Fr Rep)
          [] nil then skip

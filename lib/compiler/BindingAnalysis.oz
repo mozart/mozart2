@@ -135,22 +135,32 @@ in
             {V occ(Coord ?VO)}
          end
       end
-      meth referImport(PrintName Coord Feature ?VO) V in
+      meth referImport(PrintName Coord Feature ?IsImport ?VO) V in
          BindingAnalysis, Refer(PrintName Coord @env ?V)
          case V of undeclared then
             {self.MyReporter
              error(coord: Coord kind: BindingAnalysisError
                    msg: 'variable '#pn(PrintName)#' not introduced')}
+            IsImport = false
             {BindingAnalysis, bind(PrintName Coord $) occ(Coord ?VO)}
-         else
-            case {V isDenied(Feature $)} then
+         else GV in
+            {V isRestricted(?IsImport)}
+            case {V isDenied(Feature ?GV $)} then
                {self.MyReporter
                 error(coord: Coord kind: BindingAnalysisError
                       msg: 'illegal use of imported variable '#pn(PrintName))}
             else skip
             end
-            {V occ(Coord ?VO)}
+            case GV \= unit then
+               {GV occ(Coord ?VO)}
+            else
+               {V occ(Coord ?VO)}
+            end
          end
+      end
+      meth referUnchecked(PrintName Coord ?VO) V in
+         BindingAnalysis, Refer(PrintName Coord @env ?V)
+         {V occ(Coord ?VO)}
       end
       meth referExpansionOcc(PrintName Coord ?VO) V in
          BindingAnalysis, Refer(PrintName Coord @env ?V)

@@ -1027,7 +1027,8 @@ in
          meth isRestricted($)
             false
          end
-         meth isDenied(Feature $)
+         meth isDenied(Feature ?GV $)
+            GV = unit
             false
          end
          meth getPrintName($)
@@ -1079,28 +1080,33 @@ in
          attr features: unit
          meth init(PrintName Features Coord)
             Variable, init(PrintName user Coord)
-            features <- {Map Features
-                         fun {$ F}
-                            case F of fAtom(X C) then X#C#_
-                            [] fInt(I C) then I#C#_
-                            end
-                         end}
+            features <- Features
          end
          meth isRestricted($)
             @features \= nil
          end
-         meth isDenied(Feature $) Fs = @features in
-            Fs \= nil andthen RestrictedVariable, IsDenied(Fs Feature $)
+         meth isDenied(Feature ?GV $) Fs = @features in
+            case Fs of nil then
+               GV = unit
+               false
+            else
+               RestrictedVariable, IsDenied(Fs Feature ?GV $)
+            end
          end
-         meth IsDenied(Fs Feature $)
-            case Fs of X|Fr then F#_#B = X in
-               case Feature == F then
-                  B = true
+         meth IsDenied(Fs Feature ?GV $)
+            case Fs of X|Fr then
+               case Feature == X.1 then
+                  X.3 = true
+                  GV = case X of _#_#_#GV0 then GV0
+                       else unit
+                       end
                   false
                else
-                  RestrictedVariable, IsDenied(Fr Feature $)
+                  RestrictedVariable, IsDenied(Fr Feature ?GV $)
                end
-            [] nil then true
+            [] nil then
+               GV = unit
+               true
             end
          end
       end

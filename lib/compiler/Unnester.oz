@@ -477,8 +477,8 @@ define
 
       meth init(TopLevel Reporter State)
          BA <- {New BindingAnalysis init(TopLevel Reporter)}
-         CurrentImportFV <- nil
-         AdditionalImports <- unit
+         CurrentImportFV <- unit
+         AdditionalImports <- nil
          reporter <- Reporter
          switches <- State
       end

@@ -156,8 +156,10 @@ define
             stopPVar <- StopVar
             stopOVar <- StopVar
             {self enableStop}
-            RI = {Node tell($)}
-            {self update([RI] RI)}
+            case {Node tell($)}
+            of true then {self adjustCanvasView}
+            [] RI   then {self update([RI] RI)}
+            end
          end
       end
    end

@@ -63,11 +63,11 @@ COMPONENTS = \
 
 ####################################################
 
-OZCC = @OZC@
+OZC = @OZC@
 OZFLAGS = --nowarnunused
 
-OZE = $(OZCC) $(OZFLAGS)
-OZC = $(OZE) -c
+OZEE = $(OZC) $(OZFLAGS)
+OZCC = $(OZEE) -c
 
 all: oztest
 
@@ -86,7 +86,7 @@ $(COMPONENTS): dirs
 oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
-        $(OZE) -l Application lib/make-test.oz
+        $(OZEE) -l Application lib/make-test.oz
         ./make-test -verbose $(COMPONENTS)
         -rm -f ./make-test
 
@@ -108,7 +108,7 @@ distclean: veryclean
 .SUFFIXES: $SUFFIXES .ozf .oz
 
 .oz.ozf:
-        $(OZC) $< -o $@
+        $(OZCC) $< -o $@
 
 include $(SRCTOP)/share/Makefile.boot
 

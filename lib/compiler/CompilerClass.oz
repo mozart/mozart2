@@ -299,7 +299,7 @@ local
                   \insert Standard.env
                  }
 
-   class CompilerEngine from CompilerStateClass
+   class CompilerInternal from CompilerStateClass
       prop final
       attr wrapper reporter ExecutingThread InterruptLock
       meth init(WrapperObject)
@@ -353,31 +353,31 @@ local
       end
 
       meth feedFile(FileName Return <= return)
-         CompilerEngine,
+         CompilerInternal,
          CatchResult(proc {$}
-                        CompilerEngine, FeedFileSub(FileName Return)
+                        CompilerInternal, FeedFileSub(FileName Return)
                      end)
       end
       meth FeedFileSub(FileName Return)
          {@reporter userInfo('%%% feeding file '#FileName#'\n')}
-         CompilerEngine, Feed(ParseOzFile FileName Return)
+         CompilerInternal, Feed(ParseOzFile FileName Return)
       end
       meth feedVirtualString(VS Return <= return)
-         CompilerEngine,
+         CompilerInternal,
          CatchResult(proc {$}
                         case CompilerStateClass, getSwitch(echoqueries $) then
                            {@reporter userInfo(VS)}
                         else
                            {@reporter userInfo('%%% feeding virtual string\n')}
                         end
-                        CompilerEngine, Feed(ParseOzVirtualString VS Return)
+                        CompilerInternal, Feed(ParseOzVirtualString VS Return)
                      end)
       end
       meth FeedFileWithSwitches(FileName Switches) OldState in
          OldState = {Record.map Switches fun {$ _} _ end}
          CompilerStateClass, getMultipleSwitches(OldState)
          CompilerStateClass, setMultipleSwitches(Switches)
-         CompilerEngine, Feed(ParseOzFile FileName return)
+         CompilerInternal, Feed(ParseOzFile FileName return)
          CompilerStateClass, setMultipleSwitches(OldState)
       end
       meth Feed(ParseOz Data Return)
@@ -407,7 +407,7 @@ local
                       else
                          Queries0
                       end
-            CompilerEngine, FeedSub(Queries Return)
+            CompilerInternal, FeedSub(Queries Return)
          finally
             ExecutingThread <- unit
          end
@@ -415,12 +415,12 @@ local
       meth FeedSub(Queries Return)
          T = {Thread.this}
       in
-         CompilerEngine,
+         CompilerInternal,
          ExecProtected(proc {$}
                           try
                              Is = {Map Queries
                                    fun {$ Query}
-                                      CompilerEngine, CompileQuery(Query $)
+                                      CompilerInternal, CompileQuery(Query $)
                                    end}
                           in
                              case {HasFeature Return requiredInterfaces}
@@ -466,18 +466,18 @@ local
          [] dirPopSwitches then
             CompilerStateClass, popSwitches()
          [] dirFeed(FileName) then
-            CompilerEngine, FeedFileSub(FileName return)
+            CompilerInternal, FeedFileSub(FileName return)
          [] dirThreadedFeed(FileName) then
-            CompilerEngine,
+            CompilerInternal,
             FeedFileWithSwitches(FileName
                                  state(threadedqueries: true))
          [] dirCore(FileName) then
-            CompilerEngine,
+            CompilerInternal,
             FeedFileWithSwitches(FileName
                                  state(core: true
                                        codegen: false))
          [] dirMachine(FileName) then
-            CompilerEngine,
+            CompilerInternal,
             FeedFileWithSwitches(FileName
                                  state(staticanalysis: true
                                        core: false
@@ -665,7 +665,7 @@ local
                                    end}
                         {Assembler load(Globals ?P)}
                      end
-                     CompilerEngine, ExecuteUninterruptible(Proc)
+                     CompilerInternal, ExecuteUninterruptible(Proc)
                      case CompilerStateClass, getSwitch(threadedqueries $) then
                         OPI = {{`Builtin` getOPICompiler 1}}
                      in
@@ -682,7 +682,7 @@ local
                         {@reporter
                          logSubPhase('executing and waiting for '#
                                      'completion ...')}
-                        CompilerEngine, ExecProtected(P false)
+                        CompilerInternal, ExecProtected(P false)
                      end
 \else
                      {@reporter error(kind: 'compiler restriction'
@@ -765,7 +765,7 @@ local
       {IsRecord E} andthen {All {Arity E} IsPrintName}
    end
 in
-   class CompilerClass
+   class CompilerEngine
       prop final
       attr Registered: nil CurrentQuery: unit QueriesHd QueriesTl NextId: 1
       feat RegistrationLock QueueLock Compiler
@@ -774,9 +774,9 @@ in
          self.QueueLock = {NewLock}
          QueriesHd <- X
          QueriesTl <- X
-         self.Compiler = {New CompilerEngine init(self)}
+         self.Compiler = {New CompilerInternal init(self)}
          thread
-            CompilerClass, RunQueue()
+            CompilerEngine, RunQueue()
          end
       end
 
@@ -821,14 +821,14 @@ in
                   {Send P busy()}
                   {Send P runQuery(Id M)}
                end
-               CompilerClass, NotifyQueue(@QueriesHd P)
+               CompilerEngine, NotifyQueue(@QueriesHd P)
             end
          end
       end
       meth NotifyQueue(Qs P)
          case {IsDet Qs} then Id#M|Qr = Qs in
             {Send P newQuery(Id M)}
-            CompilerClass, NotifyQueue(Qr P)
+            CompilerEngine, NotifyQueue(Qr P)
          else skip
          end
       end
@@ -893,7 +893,7 @@ in
             NextId <- Id + 1
             @QueriesTl = Id#M|NewTl
             QueriesTl <- NewTl
-            CompilerClass, notify(newQuery(Id M))
+            CompilerEngine, notify(newQuery(Id M))
          end
       end
       meth interrupt()
@@ -901,18 +901,18 @@ in
       end
       meth dequeue(Id)
          lock self.QueueLock then
-            QueriesHd <- CompilerClass, Dequeue(@QueriesHd Id $)
+            QueriesHd <- CompilerEngine, Dequeue(@QueriesHd Id $)
          end
       end
       meth clearQueue()
          lock self.QueueLock then
-            CompilerClass, ClearQueue(@QueriesHd)
+            CompilerEngine, ClearQueue(@QueriesHd)
          end
       end
       meth ClearQueue(Qs)
          case {IsDet Qs} then Id#_|Qr = Qs in
-            CompilerClass, notify(removeQuery(Id))
-            CompilerClass, ClearQueue(Qr)
+            CompilerEngine, notify(removeQuery(Id))
+            CompilerEngine, ClearQueue(Qr)
          else
             QueriesHd <- Qs
          end
@@ -921,10 +921,10 @@ in
          case {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
             case Id == Id0 then
                NewQs = Qr
-               CompilerClass, notify(removeQuery(Id))
+               CompilerEngine, notify(removeQuery(Id))
             else NewQr in
                NewQs = Q|NewQr
-               CompilerClass, Dequeue(Qr Id ?NewQr)
+               CompilerEngine, Dequeue(Qr Id ?NewQr)
             end
          else
             % make sure that no race conditions occur, since the
@@ -935,9 +935,9 @@ in
 
       meth RunQueue()
          case {IsFree @QueriesHd} then
-            CompilerClass, notify(idle())
+            CompilerEngine, notify(idle())
             {Wait @QueriesHd}
-            CompilerClass, notify(busy())
+            CompilerEngine, notify(busy())
          else skip
          end
          try
@@ -951,7 +951,7 @@ in
             end
          catch query(Id M) then
             lock self.QueueLock then
-               CompilerClass, notify(runQuery(Id M))
+               CompilerEngine, notify(runQuery(Id M))
                CurrentQuery <- Id#M
             end
             try
@@ -963,16 +963,16 @@ in
                                      '-- description follows')
                                items: [hint(l: 'Query' m: oz(M))]
                                abort: false)}
-               CompilerClass, notify(message({AdjoinAt {Error.formatExc E}
-                                              footer false} unit))
+               CompilerEngine, notify(message({AdjoinAt {Error.formatExc E}
+                                               footer false} unit))
                {Reporter logReject()}
             end
             lock self.QueueLock then
                CurrentQuery <- unit
-               CompilerClass, notify(removeQuery(Id))
+               CompilerEngine, notify(removeQuery(Id))
             end
          end
-         CompilerClass, RunQueue()
+         CompilerEngine, RunQueue()
       end
    end
 end

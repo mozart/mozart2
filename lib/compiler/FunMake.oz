@@ -73,7 +73,9 @@ in
                         'Gump':                  Gump
                         'Assemble':              Assembler.assemble)}
 
-         Compiler = compiler(compilerClass: CompilerF.compilerClass
+         Compiler = compiler(engine: CompilerF.compilerEngine
+                             %--** deprecated:
+                             compilerClass: CompilerF.compilerEngine
                              genericInterface: CompilerF.genericInterface
                              quietInterface: CompilerF.quietInterface
                              evalExpression: CompilerF.evalExpression

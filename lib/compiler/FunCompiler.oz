@@ -9,7 +9,7 @@ import
    Gump.makeProductionTemplates
    Assemble
 export
-   CompilerClass
+   CompilerEngine
    GenericInterface
    QuietInterface
    EvalExpression

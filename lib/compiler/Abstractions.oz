@@ -1,5 +1,5 @@
 proc {EvalExpression VS Env ?Kill ?Result} E I S in
-   E = {New CompilerClass init()}
+   E = {New CompilerEngine init()}
    I = {New QuietInterface init(E)}
    {E enqueue(mergeEnv(Env))}
    {E enqueue(setSwitch(expression true))}

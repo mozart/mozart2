@@ -39,11 +39,9 @@
 
 local
    % This constant states to what depth the interface description of
-   % records should be computed.
-   %--** this should correspond to the depth used in the static
-   %--** analyzer in valToSubst!  valToSubst should not check for
-   %--** cyclic structures but for a maximum depth instead.
-   MaxDepth = 2
+   % records should be computed.  It should always correspond to the
+   % parameter `AnalysisDepth' in StaticAnalysis.oz.
+   MaxDepth = 3
 
 %   IsBuiltin = {`Builtin` 'isBuiltin' 2}
 %   GetBuiltinName = {`Builtin` 'getBuiltinName' 2}

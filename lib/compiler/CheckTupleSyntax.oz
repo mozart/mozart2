@@ -115,7 +115,24 @@ local
          {Type.ask.int I} {Coord C}
       [] fLoop(E C) then {Phrase E} {Coord C}
       [] fMacro(Es C) then {ForAll Es Phrase} {Coord C}
+      [] fFOR(Ds B C) then {ForAll Ds ForDecl} {Phrase B} {Coord C}
       else {FDExpression X}
+      end
+   end
+
+   proc {ForDecl D}
+      case D
+      of forFeature(F E) then {Atom F} {Phrase E}
+      [] forPattern(X G) then {Pattern X}
+         case G
+         of forGeneratorList(E) then {Phrase E}
+         [] forGeneratorInt(E1 E2 E3) then
+            {Phrase E1} {Phrase E2}
+            if E3==unit then skip else {Phrase E3} end
+         [] forGeneratorC(E1 E2 E3) then
+            {Phrase E1} {Phrase E2}
+            if E3==unit then skip else {Phrase E3} end
+         end
       end
    end
 

@@ -12,9 +12,9 @@ export
    Collect
    Append
    Prepend
-require
-   Exception(raiseError:RaiseError)
 prepare
+   RaiseError=Exception.raiseError
+   %%
    NONE={NewName}
    %%
    fun {Mkoptimize}
@@ -85,12 +85,21 @@ prepare
    proc {Prepend C X}
       Head Tail
    in
-      {Exchange C Head|Tail (X|Head)|Tail}
+      {Exchange C Head|Tail {Append X Head}|Tail}
    end
    %%
-   fun {ReturnDefault C D} V in
+   fun {ReturnIntDefault C D} V in
       {Exchange C V unit}
       if V==NONE then D else V end
+   end
+   fun {ReturnInt C} V in
+      {Exchange C V unit}
+      if V==NONE then
+         {RaiseError 'for'(noDefaultValue)}
+      else V end
+   end
+   fun {ReturnList C}
+      {Exchange $|nil unit}
    end
    %%
    fun {Return C} V in

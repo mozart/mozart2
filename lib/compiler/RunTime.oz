@@ -43,7 +43,7 @@ require
    BootObject(ooGetLock ',' '@' '<-' ooExch)
    at 'x-oz://boot/Object'
 
-   BootException('fail')
+   BootException('fail' raiseError:RaiseError)
    at 'x-oz://boot/Exception'
 
    BootThread(create)
@@ -123,6 +123,78 @@ prepare
 
    TokenValues = env('true': true
                      'false': false)
+
+   %% For loop support
+   local
+      NONE={NewName}
+      fun {MkOptimize} {NewCell NONE} end
+      fun {MkCount} {NewCell 0} end
+      fun {MkList} L in {NewCell L|L} end
+      MkSum=MkCount
+      fun {MkMultiply} {NewCell 1} end
+      proc {Maximize C N} Old New in
+         {Exchange C Old New}
+         if Old==NONE orelse N>Old then New=N end
+      end
+      proc {Minimize C N} Old New in
+         {Exchange C Old New}
+         if Old==NONE orelse N<Old then New=N end
+      end
+      proc {Count C B}
+         if B then Old New in
+            {Exchange C Old New}
+            New=Old+1
+         end
+      end
+      proc {Sum C N} Old New in
+         {Exchange C Old New}
+         New=Old+N
+      end
+      proc {Multiply C N} Old New in
+         {Exchange C Old New}
+         New=Old*N
+      end
+      proc {Collect C X} Head Tail in
+         {Exchange C Head|(X|Tail) Head|Tail}
+      end
+      proc {Postpend C X} Head Tail in
+         {Exchange C Head|{Append X Tail} Head|Tail}
+      end
+      proc {Prepend C X} Head Tail in
+         {Exchange C Head|Tail {Append X Head}|Tail}
+      end
+      fun {RetIntDefault C D} V in
+         {Exchange C V unit}
+         if V==NONE then D else V end
+      end
+      fun {RetInt C} V in
+         {Exchange C V unit}
+         if V==NONE
+         then {RaiseError 'for'(noDefaultValue)} unit
+         else V end
+      end
+      fun {RetList C} {Exchange C $|nil unit} end
+   in
+      ProcValuesFor =
+      env(
+         'For.mkoptimize'    : MkOptimize
+         'For.mkcount'       : MkCount
+         'For.mklist'        : MkList
+         'For.mksum'         : MkSum
+         'For.mkmultiply'    : MkMultiply
+         'For.maximize'      : Maximize
+         'For.minimize'      : Minimize
+         'For.count'         : Count
+         'For.sum'           : Sum
+         'For.multiply'      : Multiply
+         'For.collect'       : Collect
+         'For.postpend'      : Postpend
+         'For.prepend'       : Prepend
+         'For.retintdefault' : RetIntDefault
+         'For.retint'        : RetInt
+         'For.retlist'       : RetList)
+   end
+   ProcValuesAll = {Adjoin ProcValues0 ProcValuesFor}
 define
    fun {ApplyFunctor FileName F}
       ModMan = {New Module.manager init()}
@@ -216,7 +288,7 @@ define
       {FD.reified.sumCN A X O D}
    end
 
-   ProcValues = {Adjoin ProcValues0
+   ProcValues = {Adjoin ProcValuesAll
                  env(%% RecordC
                      'RecordC.\'^\'': `RecordC.'^'`
                      'RecordC.tellSize': RecordCTellSize

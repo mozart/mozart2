@@ -1,10 +1,10 @@
 functor
 import
    CompilerSupport(newNamedName:NewNamedName) at 'x-oz://boot/CompilerSupport'
-   Exception(raiseError:RaiseError)
 export
    Compile
 prepare
+   RaiseError=Exception.raiseError
    FEATURES =
    ["break"   #break
     "continue"#continue
@@ -43,9 +43,15 @@ define
    end
    %%
    fun {Compile fFOR(DECLS BODY COORDS)}
-      D1 = {NewDictionary}
+      D1 = {Record.toDictionary
+            o('inners' : nil
+              'outers' : nil
+              'args'   : nil
+              'inits'  : nil
+              'tests'  : nil
+              'nexts'  : nil)}
       proc {Push F V}
-         {Dictionary.put D1 F V|{Dictionary.condGet D1 F nil}}
+         {Dictionary.put D1 F V|{Dictionary.get D1 F}}
       end
       %%
       D2 = {NewDictionary}
@@ -82,7 +88,7 @@ define
                 By = fInt(1 unit)
              else
                 By = {MakeVar 'ForIntVarBy'}
-                {Push 'outers' fEq(By E3)}
+                {Push 'outers' fEq(By E3 unit)}
              end
              {Push 'args'  X}
              {Push 'inits' Lo}
@@ -112,9 +118,10 @@ define
                 fun {$ _#L}
                    {All Feats fun {$ F} {Member F L} end}
                 end}
-      of ['return'] then 'return'
-      [] ['return' T] then T
-      else {RaiseError 'for'(incompatibleFeatures(Feats))} unit end
+      of nil then {RaiseError 'for'(incompatibleFeatures(Feats))} unit
+      [] ('return'#_)|_ then 'return'
+      [] [T#_] then T
+      else {RaiseError 'for'(ambiguousFeatures(Feats))} unit end
       %%
       VarD = {NewDictionary}
       VarAccu
@@ -126,7 +133,8 @@ define
          {Push 'outers' fEq(VarAccu
                             fOpApply(
                                {VirtualString.toAtom 'For.mk'#AccuType}
-                               nil unit))}
+                               nil unit)
+                            unit)}
       end
       {ForAll {Dictionary.entries D2}
        proc {$ F#E}
@@ -135,20 +143,20 @@ define
              V = {MakeVar 'ForContinue'}
           in
              VarD.'continue' := V
-             {Push 'outers' fEq(V fOpApply('Name.new' nil unit))}
+             {Push 'outers' fEq(V fOpApply('Name.new' nil unit) unit)}
              {Push 'outers' fProc(E nil fRaise(V unit) nil unit)}
           [] 'break' then
              V = {MakeVar 'ForBreak'}
           in
              VarD.'break' := V
-             {Push 'outers' fEq(V fOpApply('Name.new' nil unit))}
+             {Push 'outers' fEq(V fOpApply('Name.new' nil unit) unit)}
              {Push 'outers' fProc(E nil fRaise(V unit) nil unit)}
           [] 'return' then
              V = {MakeVar 'ForReturn'}
              X = {MakeVar 'V'}
           in
              VarD.'return' := V
-             {Push 'outers' fEq(V fOpApply('Name.new' nil unit))}
+             {Push 'outers' fEq(V fOpApply('Name.new' nil unit) unit)}
              {Push 'outers' fProc(E [X]
                                   fRaise(fRecord(fAtom('|' unit) [V X]) unit)
                                   nil unit)}
@@ -156,7 +164,7 @@ define
              V = {MakeVar 'ForDefault'}
           in
              VarD.'default' := V
-             {Push 'outers' fEq(V E)}
+             {Push 'outers' fEq(V E unit)}
           else
              X = {MakeVar 'V'}
           in
@@ -216,20 +224,16 @@ define
                          fRaise(
                             fRecord(
                                fAtom('for' unit)
-                               [fAtom('noDefaultValue')])
+                               [fAtom('noDefaultValue' unit)])
                             unit)
                       end)
-              else
+              [] 'list' then
+                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] unit))
+              elseif {HasFeature D2 'default'} then
                  fAnd(Main2
-                      if {HasFeature D2 'default'} then
-                         fOpApply(
-                            'For.valueDefault'
-                            [VarAccu VarD.'default'] unit)
-                      else
-                         fOpApply(
-                            'For.value'
-                            [VarAccu] unit)
-                      end)
+                      fOpApply('For.retintdefault' [VarAccu VarD.'default'] unit))
+              else
+                 fAnd(Main2 fOpApply('For.retint' [VarAccu] unit))
               end
       Main4 = if {HasFeature D2 'return'} then
                  V = {MakeVar 'V'}

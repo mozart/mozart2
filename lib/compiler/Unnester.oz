@@ -55,6 +55,7 @@ import
    Core
    RunTime(procs makeVar)
    Macro(macroExpand:MacroExpand)
+   ForLoop(compile)
 export
    MakeExpressionQuery
    UnnestQuery
@@ -1132,6 +1133,8 @@ define
             Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fMacrolet(_ _) then
             Unnester, UnnestStatement({MacroExpand FS unit} $)
+         [] fFOR(_ _ _) then
+            Unnester, UnnestStatement({ForLoop.compile FS} $)
          [] fDotAssign(Left Right C1) then
             case Left
             of fOpApply('.' [DB Key] _) then
@@ -1548,6 +1551,8 @@ define
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fMacrolet(_ _) then
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
+         [] fFOR(_ _ _) then
+            Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'statement at expression position')}
@@ -2638,6 +2643,7 @@ define
          [] fLoop(S C) then fLoop({SP S} {CS C})
          [] fMacro(Ss C) then fMacro({Map Ss SP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {CS C})
+         [] fFOR(Ds B C) then fFOR({Map Ds FP} {SP B} {CS C})
          end
       end
 
@@ -2712,6 +2718,7 @@ define
          [] fLoop(S C) then fLoop({EP S} {FS C})
          [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {FS C})
+         [] fFOR(Ds B C) then fFOR({Map Ds FP} {SP B} {FS C})
          end
       end
 
@@ -2728,6 +2735,27 @@ define
          [] fOpenRecord(L As) then fOpenRecord(L {Map As TP})
          [] fColon(F P) then fColon(F {TP P})
          else {EP P}
+         end
+      end
+
+      fun {FP D}
+         case D
+         of forFeature(F E) then forFeature(F {EP E})
+         [] forPattern(X G) then
+            forPattern(
+               X
+               case G
+               of forGeneratorList(E) then
+                  forGeneratorList({EP E})
+               [] forGeneratorInt(E1 E2 E3) then
+                  forGeneratorInt(
+                     {EP E1} {EP E2}
+                     if E3==unit then unit else {EP E3} end)
+               [] forGeneratorC(E1 E2 E3) then
+                  forGeneratorC(
+                     {EP E1} {EP E2}
+                     if E3==unit then unit else {EP E3} end)
+               end)
          end
       end
    in

@@ -471,6 +471,15 @@ in
             end
             case NewCont2 \= ~1 then
                continuations <- NewCont2|@continuations.2
+            elsecase Builtinname of 'getReturn' then [Reg] = Regs in
+               case Emitter, GetReg(Reg $) of none then R in
+                  Emitter, PredictReg(Reg ?R)
+                  Emitter, Emit(getReturn(R))
+               elseof R then X in
+                  Emitter, AllocateShortLivedTemp(?X)
+                  Emitter, Emit(getReturn(X))
+                  Emitter, Emit(unify(R X))
+               end
             else XsIn XsOut Unifies in
                Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
                                             false ?XsOut ?Unifies)

@@ -337,6 +337,20 @@ local
       end
    end
 
+   fun {IsConstraint FE}
+      case FE of fEq(_ _ _) then true
+      [] fAtom(_ _) then true
+      [] fVar(_ _) then true
+      [] fWildcard(_) then true
+      [] fEscape(_ _) then true
+      [] fInt(_ _) then true
+      [] fFloat(_ _) then true
+      [] fRecord(_ _) then true
+      [] fOpenRecord(_ _) then true
+      else false
+      end
+   end
+
    proc {SortFunctorDescriptors FDescriptors Rep ?FImport ?FExport ?FProp}
       case FDescriptors of D|Dr then
          case D of fImport(Ds C) then
@@ -510,9 +524,18 @@ local
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestStatement(FS2 $)
          [] fEq(FE1 FE2 C) then
-            case {IsStep C} then
-               Unnester,
-               UnnestStatement(fApply(fVar('`=`' C) [FE1 FE2] C) $)
+            case {IsStep C} andthen
+               {IsConstraint FE1} andthen {IsConstraint FE2}
+            then GV1 FV1 GV2 FV2 GFront1 GBack1 GFront2 GBack2 Equation in
+               {@BA generate('Left' C ?GV1)}
+               FV1 = fVar({GV1 getPrintName($)} C)
+               {@BA generate('Left' C ?GV2)}
+               FV2 = fVar({GV2 getPrintName($)} C)
+               Unnester, UnnestConstraint(FE1 FV1 ?GFront1 ?GBack1)
+               Unnester, UnnestConstraint(FE2 FV2 ?GFront2 ?GBack2)
+               Unnester, UnnestStatement(fApply(fVar('`=`' C) [FV1 FV2] C)
+                                         ?Equation)
+               GFront1|GFront2|Equation|GBack1|GBack2
             else GFront GBack in
                case FE2 of fVar(_ _) then
                   Unnester, UnnestConstraint(FE1 FE2 ?GFront ?GBack)
@@ -1358,6 +1381,12 @@ local
          end
       end
       meth UnnestConstraint(FE FV ?GFront ?GBack)
+         %--** [] fEq(_ _ _) then true
+         %--** [] fAtom(_ _) then true
+         %--** [] fWildcard(_) then true
+         %--** [] fEscape(_ _) then true
+         %--** [] fInt(_ _) then true
+         %--** [] fFloat(_ _) then true
          case FE of fEq(FE1 FE2 _) then
             case FE1 of fWildcard(_) then
                Unnester, UnnestConstraint(FE2 FV ?GFront ?GBack)

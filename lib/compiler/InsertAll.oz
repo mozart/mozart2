@@ -145,7 +145,7 @@ in
       end
       \insert Interface
       \insert Assembler
-      \insert Compiler
+      \insert CompilerClass
       \insert GenericInterface
       \insert QuietInterface
    end

@@ -5,7 +5,7 @@ Imakefile
 InsertAll.oz
    system configuration file using `\insert' instead of components.
 
-Compiler.oz
+CompilerClass.oz
    defines the CompilerClass which invokes all compiler passes.
 
 ParseOz.oz

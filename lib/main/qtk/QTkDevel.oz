@@ -391,6 +391,7 @@ prepare
          [] relief then {String.toAtom Str}
          [] boolean then Str=="1"
          [] natural then {TkStringToInt Str}
+         [] int then {TkStringToInt Str}
          [] float then {TkStringToFloat Str}
          [] list then {TkStringToListString Str}
          [] listInt then {TkStringToListInt Str}

@@ -47,7 +47,7 @@ prepare
 
    local
       Libs      = ['Application'
-                   'Search' 'FD' 'Schedule' 'FS' 'Combinators'
+                   'Search' 'FD' 'Schedule' 'FS' 'Combinator'
                    'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'

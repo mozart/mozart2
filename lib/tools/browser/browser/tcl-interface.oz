@@ -397,7 +397,7 @@ in
                        * {Int.toFloat Last}}}
 
                      %%
-                     NewMark = {Tk.server tkGet($)}
+                     NewMark = {Tk.getId}
                      {BW tk(m s NewMark p(Current 0))}
                      Pairs = {SelfBWO mapMark(NewMark $)}
 
@@ -446,7 +446,7 @@ in
 \endif
 
             %%
-            MyTkTextButton1 = {Tk.server tkGet($)}
+            MyTkTextButton1 = {Tk.getId}
 
             %%
             %%  pack them;
@@ -519,7 +519,7 @@ in
                %%
                proc {Act Handler Arg X Y}
                   local NewMark Pairs in
-                     NewMark = {Tk.server tkGet($)}
+                     NewMark = {Tk.getId}
                      %% the default gravity is right...
                      {BW tk(m s NewMark '@'#X#','#Y)}
 

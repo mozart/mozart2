@@ -67,7 +67,7 @@ local
    local
       fun {FindMin CTaskPair CCost Start Dur TPs Acc Rest}
          case TPs of nil then Rest=Acc CTaskPair
-         [] TP|TPr then
+         [] TP|_ then
             if {IsKinded TP.3}
             then
                TCost = {TaskPairCost TP Start Dur}

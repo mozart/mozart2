@@ -25,10 +25,8 @@ functor
 
 import
    Remote(manager)
-   Property
    Connection
    TestMisc(localHost)
-   System
 export
    Return
 

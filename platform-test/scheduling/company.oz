@@ -23,7 +23,7 @@ define
       ((2#2)#(3#1)#(3#1))
       local proc{Connect CS}
                case CS of nil#nil then skip
-               [] (C|Cs)#(S1|S2|S3|Ss) then C=S1 {Connect Cs#Ss}
+               [] (C|Cs)#(S1|_|_|Ss) then C=S1 {Connect Cs#Ss}
                end
             end
          fun{Help Steps D1 D2 D3}
@@ -47,7 +47,7 @@ define
           {List.forAllTail Campaign
            proc{$ C|Cs}
               case Cs of nil then skip
-              [] H|R then C+CampaignsDur.Ind =<: H
+              [] H|_ then C+CampaignsDur.Ind =<: H
               end
            end}
        end}

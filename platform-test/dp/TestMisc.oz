@@ -25,7 +25,6 @@ import
    OS(uName)
    Remote(manager)
    System(gcDo show)
-   Fault(deinstall)
    Property(get)
 export
    getHostNames:GetHostNames

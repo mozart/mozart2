@@ -10,8 +10,6 @@ fun
    instantiate
 \endif
    {NewCompiler IMPORT}
-   \insert 'Standard.env'
-   = IMPORT.'Standard'
    \insert 'SP.env'
    = IMPORT.'SP'
    \insert 'OP.env'

@@ -12,25 +12,25 @@
 \define DumpIntroLoaded
 
 declare
-   Base
-   Dump
+  Base Standard Dump
+in
+
+declare
    \insert 'Base.env'
-= Base
-\ifdef STANDARD
-Standard
-\insert 'Standard.env'
-= Standard
-\endif
+   = Base
+in
+
+declare
+   \insert 'Standard.env'
+   = Standard
 in
 
 local
    \insert 'DumpSettings.oz'
    Load = {`Builtin` load 2}
 in
-   Base = {Load ComDIR#'Base'#ComEXT}
-\ifdef STANDARD
-   Standard = {{Load ComDIR#'Standard'#ComEXT} m}
-\endif
+   Base     = {Load ComDIR#'Base'#ComEXT}
+   Standard = {Load ComDIR#'Standard'#ComEXT}
 end
 
 \insert 'Dump.oz'

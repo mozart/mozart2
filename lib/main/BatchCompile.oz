@@ -435,10 +435,10 @@ in
                 {Wait {BatchCompiler enqueue(ping($))}}
                 case {UI hasBeenTopped($)} then
                    {System.printError {UI getVS($)}}
-                   case {UI hasErrors($)} then
-                      raise error end
-                   else skip
-                   end
+                else skip
+                end
+                case {UI hasErrors($)} then
+                   raise error end
                 else skip
                 end
              [] sysletprefix then

@@ -60,6 +60,7 @@ local
       functor
 
       import
+         Property
          System
          Debug
          Module
@@ -207,14 +208,14 @@ local
                %% Go for it
 
                case Argv.time \= nil then
-                  {System.set time(detailed:true)}
+                  {Property.put 'time.detailed' true}
                else skip
                end
 
-               StartTime = {System.get time}
+               StartTime = {Property.get time}
                Results = {Map ToRun
                           fun {$ T}
-                             T0={System.get time}
+                             T0={Property.get time}
                              {PV {Label T} # ': '}
                              Bs={Map {MakeList Argv.threads}
                                  fun {$ _}
@@ -232,7 +233,7 @@ local
                           in
                              {Wait B}
                              case Argv.time \= nil then
-                                T1={System.get time}
+                                T1={Property.get time}
                                 proc {PT C#F}
                                    case {Member C Argv.time} then
                                       {PV ' '#[C]#':'#T1.F-T0.F#' ms'}
@@ -257,7 +258,7 @@ local
             in
                {Wait Goofed}
                case Argv.time \= nil then
-                  T1={System.get time}
+                  T1={Property.get time}
                   proc {PT C#F}
                      case {Member C Argv.time} then
                         {PV ' '#[C]#':'#T1.F-StartTime.F#' ms'}

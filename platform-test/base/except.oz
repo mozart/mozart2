@@ -1,7 +1,7 @@
 functor $ prop once
 
 import
-   System
+   Property
    Open
 
 export
@@ -11,8 +11,8 @@ body
    % tests may be performed (1) either at top-level or in a space
    % and (2) either width debugging on or off.
    local
-      proc {DebugGet B} {System.property.get 'errors.debug' B} end
-      proc {DebugSet B} {System.property.put 'errors.debug' B} end
+      proc {DebugGet B} {Property.get 'errors.debug' B} end
+      proc {DebugSet B} {Property.put 'errors.debug' B} end
       % perform the test in the appropriate context
       fun {Test Fun Debug TopLevel}
          D = {DebugGet}

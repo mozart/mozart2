@@ -34,4 +34,4 @@ T={Module.load '' {OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf'}.run
         gc:       0
         threads:  1) _}
 
-{System.set messages(idle:true)}
+{Property.put 'messages.idle' true}

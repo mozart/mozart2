@@ -2217,7 +2217,6 @@ local
 
    fun {IsDirective Query}
       case Query of dirSwitch(_) then true
-      [] dirShowSwitches then true
       [] dirLocalSwitches then true
       [] dirPushSwitches then true
       [] dirPopSwitches then true

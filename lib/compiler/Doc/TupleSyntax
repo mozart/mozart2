@@ -9,7 +9,6 @@ Query             = Phrase
                   | fDeclare(Phrase Phrase Coordinates).
 Directive         = dirSwitch([Switch])
                   | dirLocalSwitches
-                  | dirShowSwitches
                   | dirPushSwitches
                   | dirPopSwitches.
 Switch            = on(SwitchName Coordinates)

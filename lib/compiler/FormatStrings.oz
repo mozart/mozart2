@@ -117,7 +117,7 @@ local
                case FS of pn(PrintName) then
                   Formatter, append({PrintNameToVirtualString PrintName})
                [] oz(X) then
-                  Formatter, append({System.valueToVirtualString X
+                  Formatter, append({Value.toVirtualString X
                                      @PrintDepth @PrintWidth})
                [] list(Elems Sep) then
                   Formatter, AppendSeparated(Elems Sep)

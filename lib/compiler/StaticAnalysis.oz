@@ -38,7 +38,7 @@ in
                       newPredicateRef newCopyablePredicateRef
                       nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
       FD(is)
-      System(eq valueToVirtualString printName show)
+      System(eq printName show)
       Type(is)
       Core
       Builtins(getInfo)
@@ -222,7 +222,7 @@ in
       end
 
       fun {LabelToVS X}
-         case {IsDet X} then {System.valueToVirtualString X 0 0} else '_' end
+         case {IsDet X} then {Value.toVirtualString X 0 0} else '_' end
       end
 
       fun {Bool2Token B}
@@ -571,7 +571,7 @@ in
                'Record.width'   : doWidth
                'Procedure.arity'        : doProcedureArity
                'Value.\'=\''    : doEq
-               'Record.\'.\''   : doDot
+               'Value.\'.\''    : doDot
                'Record.\'^\''   : doHat
                'Object.\',\''   : doComma
                'Object.\'<-\''  : doAssignAccess
@@ -3917,8 +3917,8 @@ in
       class SAVariableOccurrence
          meth outputDebugValue($)
             %--** provide more readable output here
-            {System.valueToVirtualString {self getValue($)} 10 10}#' // '#
-            {System.valueToVirtualString {GetData self} 10 10}
+            {Value.toVirtualString {self getValue($)} 10 10}#' // '#
+            {Value.toVirtualString {GetData self} 10 10}
          end
 
          meth getLastValue($)
@@ -4336,7 +4336,7 @@ in
                      {ListToVS
                       '(' | {Map {Record.toListInd @value}
                              fun {$ F#X}
-                                {System.valueToVirtualString F 0 0} # ': ' #
+                                {Value.toVirtualString F 0 0} # ': ' #
                                 {X getPrintType(D-1 $)}
                              end}
                       {LabelToVS {Label @value}} ' ' ' )'}
@@ -4351,7 +4351,7 @@ in
                   {ListToVS
                    '(' | {Map {CurrentArity @value}
                           fun {$ F}
-                             {System.valueToVirtualString F 0 0} # ': ' #
+                             {Value.toVirtualString F 0 0} # ': ' #
                              {@value^F getPrintType(D-1 $)}
                           end}
                    {LabelToVS Lab}  ' ' '...)'}

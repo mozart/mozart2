@@ -37,7 +37,7 @@
 
 functor
 import
-   System(printName valueToVirtualString)
+   System(printName)
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
    RunTime(procValues)
@@ -143,12 +143,12 @@ define
             fun {FindProcSub Xs P}
                case Xs of X|Xr then
                   if RunTime.procValues.X == P then
-                     '<R: '#{System.valueToVirtualString X 0 0}#'>'
+                     '<R: '#{Value.toVirtualString X 0 0}#'>'
                   else
                      {FindProcSub Xr P}
                   end
                [] nil then
-                  {System.valueToVirtualString P 0 0}
+                  {Value.toVirtualString P 0 0}
                end
             end
          in
@@ -209,7 +209,7 @@ define
                   [] ami then '\'ami\''
                   [] pos then '\'pos\''
                   else
-                     {System.valueToVirtualString Value 0 0}
+                     {Value.toVirtualString Value 0 0}
                   end
                end
             elseif {IsProcedure Value} then
@@ -240,7 +240,7 @@ define
                   if {IsTuple Value} then
                      {TupleToVirtualString Value FPToIntMap}
                   else
-                     {System.valueToVirtualString Value 1000 1000}
+                     {Value.toVirtualString Value 1000 1000}
                   end
                end
             end

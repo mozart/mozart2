@@ -2299,7 +2299,7 @@ define
          else
             if CS.debugInfoControlSwitch then skip
             else
-               case Builtinname of 'Record.\'.\'' then
+               case Builtinname of 'Value.\'.\'' then
                   [Arg1 Arg2 Arg3] = ActualArgs Feature in
                   {Arg2 getCodeGenValue(?Feature)}
                   if {IsDet Feature}

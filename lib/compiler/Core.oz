@@ -41,7 +41,6 @@
 
 functor
 import
-   System(valueToVirtualString)
    StaticAnalysis
    CodeGen
 export
@@ -254,7 +253,7 @@ define
       end
       meth output(R $) FS in
          {@res output2(R $ ?FS)}#' = '#
-         {System.valueToVirtualString @value 50 1000}#
+         {Value.toVirtualString @value 50 1000}#
          '   % typeof '#{@arg output(R $)}#FS
       end
    end
@@ -397,7 +396,7 @@ define
       end
       meth output(R $) FS1 in
          {FoldL @procFlags
-          fun {$ In A} In#{System.valueToVirtualString A 0 0}#' ' end
+          fun {$ In A} In#{Value.toVirtualString A 0 0}#' ' end
           'proc '}#
          '{'#PU#{@designator output2(R $ ?FS1)}#
          case @formalArgs of _|_ then GL#{LI @formalArgs GL R}
@@ -932,7 +931,7 @@ define
       end
       meth output2(R $ ?FS)
          MethFormal, output2(R $ ?FS)#' <= '#
-         {System.valueToVirtualString @default 50 1000}
+         {Value.toVirtualString @default 50 1000}
       end
    end
 
@@ -1072,11 +1071,11 @@ define
       prop final
       meth output2(_ $ ?FS)
          FS = ""
-         {System.valueToVirtualString @value 0 0}
+         {Value.toVirtualString @value 0 0}
       end
       meth outputPattern2(_ _ $ ?FS)
          FS = ""
-         {System.valueToVirtualString @value 0 0}
+         {Value.toVirtualString @value 0 0}
       end
    end
 
@@ -1271,19 +1270,19 @@ define
              [NL#'%    type: '#{@variable outputDebugType($)}
               case {@variable outputDebugProps($)} of unit then unit
               elseof Ps then
-                 NL#'%    prop: '#{System.valueToVirtualString Ps 10 10}
+                 NL#'%    prop: '#{Value.toVirtualString Ps 10 10}
               end
               case {@variable outputDebugAttrs($)} of unit then unit
               elseof As then
-                 NL#'%    attr: '#{System.valueToVirtualString As 10 10}
+                 NL#'%    attr: '#{Value.toVirtualString As 10 10}
               end
               case {@variable outputDebugFeats($)} of unit then unit
               elseof Fs then
-                 NL#'%    feat: '#{System.valueToVirtualString Fs 10 10}
+                 NL#'%    feat: '#{Value.toVirtualString Fs 10 10}
               end
               case {@variable outputDebugMeths($)} of unit then unit
               elseof Ms then
-                 NL#'%    meth: '#{System.valueToVirtualString Ms 10 10}
+                 NL#'%    meth: '#{Value.toVirtualString Ms 10 10}
               end]
           else nil
           end}

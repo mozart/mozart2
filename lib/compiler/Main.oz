@@ -28,7 +28,6 @@ import
    Parser                        at 'x-oz://boot/Parser'
    CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
    Property(get condGet)
-   System(valueToVirtualString)
    Error   %--**(formatPos formatExc dispatch format formatGeneric)
    ErrorRegistry(put)
    Type   %--**(ask)

@@ -24,8 +24,7 @@ local
 
    BorderWidth = 1
    BorderOptionsList =
-   [
-    '*OzTools*Label*borderWidth'
+   ['*OzTools*Label*borderWidth'
     '*OzTools*Button*borderWidth'
     '*OzTools*Checkbutton*borderWidth'
     '*OzTools*Radiobutton*borderWidth'
@@ -55,15 +54,14 @@ local
 
     '*TkFDialog*borderWidth'
     '*TkFDialog*activeBorderWidth'
-    '*TkFDialog*selectBorderWidth'
-   ]
+    '*TkFDialog*selectBorderWidth']
 
 in
 
-   {Tk.batch {Map BorderOptionsList
-              fun {$ Pattern}
-                 option(add Pattern BorderWidth widgetDefault)
-              end}}
+   {TkBatch {Map BorderOptionsList
+             fun {$ Pattern}
+                option(add Pattern BorderWidth widgetDefault)
+             end}}
 
 end
 
@@ -77,19 +75,19 @@ local
 
 in
 
-   {Tk.batch {Map BooleanOptionsList
-              fun {$ Option}
-                 Pattern # Value = Option
-              in
-                 option(add Pattern Value widgetDefault)
-              end}}
+   {TkBatch {Map BooleanOptionsList
+             fun {$ Option}
+                Pattern # Value = Option
+             in
+                option(add Pattern Value widgetDefault)
+             end}}
 
 end
 
 
 local
 
-   Select = case Tk.isColor then 2 else 3 end
+   Select = case IsColor then 2 else 3 end
    ColorOptionsList =
    [
     '*OzTools*NumberEntry*Entry*background' # wheat # white
@@ -97,13 +95,13 @@ local
 
 in
 
-   {Tk.batch {Map ColorOptionsList
-              fun {$ Option}
-                 Pattern = Option.1
-                 Value   = Option.Select
-              in
-                 option(add Pattern Value widgetDefault)
-              end}}
+   {TkBatch {Map ColorOptionsList
+             fun {$ Option}
+                Pattern = Option.1
+                Value   = Option.Select
+             in
+                option(add Pattern Value widgetDefault)
+             end}}
 
 end
 
@@ -111,11 +109,10 @@ end
 %% this removes some additional bindings which Motif doesn't
 %% have. Unfortunately, it also disables some of the more useful key
 %% bindings...
-%{Tk.send set(tk_strictMotif 1)}
 
-{Tk.send bind('Checkbutton' '<Return>' '')}
-{Tk.send bind('Radiobutton' '<Return>' '')}
-{Tk.send bind('Entry' '<Control-u>' '%W delete 0 end')}
+{TkBatch [bind('Checkbutton' '<Return>' '')
+          bind('Radiobutton' '<Return>' '')
+          bind('Entry' '<Control-u>' '%W delete 0 end')]}
 
 
 %% Read user's config file
@@ -132,6 +129,7 @@ local
           end
 in
    case File \= unit then
-      {Tk.send option(readfile File widgetDefault)}
-   else skip end
+      {TkSend option(readfile File widgetDefault)}
+   else skip
+   end
 end

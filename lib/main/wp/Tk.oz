@@ -37,6 +37,7 @@ import
 
    OS.{getEnv
        putEnv
+       stat
        unlink}
 
    URL.{makeResolver}
@@ -1336,5 +1337,11 @@ body
          {Dictionary.remove TkDict ActionId}
       end
    end
+
+   %%
+   %% Define additional options
+   %%
+
+   \insert 'TkOptions.oz'
 
 end

@@ -22,6 +22,7 @@ install:: $(BrowserLib) $(LIBMODULES) $(AUXMODULES) bitmaps
 bitmaps: $(OzLib)/bitmaps
         $(INSTALL) -m 444 ../bitmaps/browserMIcon.xbm $(OzLib)/bitmaps
         $(INSTALL) -m 444 ../bitmaps/browserIcon.xbm  $(OzLib)/bitmaps
+        $(INSTALL) -m 444 ../bitmaps/eject.xbm  $(OzLib)/bitmaps
 
 $(BrowserLib):
         install -m 775 -d $@

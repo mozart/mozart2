@@ -6,9 +6,9 @@ import
    CompilerSupport
 \ifndef OZM
    Gump.{transformParser transformScanner}
+   Debug
 \endif
    RunTime.procs
-   Debug
 export
    JoinQueries
    MakeExpressionQuery

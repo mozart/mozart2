@@ -48,12 +48,7 @@ local
    \insert Compiler.env
    = {NewCompiler Env}
 
-   \insert StartOPI
+   \insert BatchCompile
 in
-   {StartOPI
-    {Record.foldL Env Adjoin
-     {Adjoin
-      \insert Base.env
-      \insert Standard.env
-     }}}
+   {Exit {BatchCompile {Map {System.get argv} Atom.toString}}}
 end

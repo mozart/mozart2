@@ -723,7 +723,7 @@ local
       'Browser':        ['SP' 'WP' 'CP']
       'Explorer':       ['SP' 'WP' 'Browser'#lazy]
       'Compiler':       ['SP' 'CP' 'Gump'#lazy]
-      'CompilerPanel':  ['SP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
+      'CompilerPanel':  ['SP' 'CP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
       'Emacs':          ['OP' 'SP']
       'Ozcar':          ['SP' 'CP'#lazy 'WP' 'Browser'#lazy
                          'Compiler' 'Emacs'#lazy]

@@ -521,3 +521,7 @@ class BatchObject
       skip
    end
 end
+
+%%
+TkX11MinCanvasWidth     = 2
+TkWindowsMinCanvasWidth = 3

@@ -1714,7 +1714,17 @@ in
             Mark = self.Cursor
 
             %%
-            {X11ResourceCache getSmallestFont(SFont YRes)}
+            YRes =
+            {Max {X11ResourceCache getSmallestFont(SFont $)}
+             local
+                PN =
+                {List.take {Atom.toString {Property.get 'platform'}.name} 3}
+             in
+                if PN == "win"
+                then TkWindowsMinCanvasWidth
+                else TkX11MinCanvasWidth
+                end
+             end}
 
             %%
             %% we have to do this because text widget may be even not

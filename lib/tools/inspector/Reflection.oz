@@ -147,10 +147,15 @@ define
    %%
    %% Watching Stuff
    %%
+   %% Note: getsBoundB has the bug this it will not return iff the
+   %% Note: is already determined. This indeed might happen due to
+   %% Note: tremendous delays.
    local
       proc {WaitTouched X}
          if {IsFuture X}
          then {Value.waitQuiet X}
+         elseif {IsDet X}
+         then skip
          else {Wait {BrowserSupport.getsBoundB X}}
          end
       end

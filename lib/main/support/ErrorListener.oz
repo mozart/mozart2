@@ -21,7 +21,7 @@
 
 functor
 import
-   Error(msg formatLine)
+   Error(messageToVirtualString)
    System(printError)
    Listener('class')
 export
@@ -30,14 +30,7 @@ define
    fun {MessageToVS Item}
       case Item of info(VS) then VS
       [] info(VS _) then VS
-      [] message(Record _) then VSCell in
-         VSCell = {NewCell ""}
-         {Error.msg
-          proc {$ X}
-             {Assign VSCell {Access VSCell}#{Error.formatLine X}}
-          end
-          Record}
-         {Access VSCell}
+      [] message(Record _) then {Error.messageToVirtualString Record}
       end
    end
 
@@ -72,7 +65,7 @@ define
                OutputMessage = unit
             [] message(M1 _) then
                IsActive <- true
-               if {Label M1} == error then
+               case M1 of error(...) then
                   HasErrors <- true
                end
                OutputMessage = M

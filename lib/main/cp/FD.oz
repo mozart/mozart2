@@ -63,12 +63,6 @@ import
 
    ErrorRegistry(put)
 
-   Error(formatGeneric
-         formatAppl
-         formatHint
-         format
-         dispatch)
-
    System(nbSusps)
 
 export
@@ -739,24 +733,21 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put
-    fd
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+   {ErrorRegistry.put fd
+    fun {$ E}
        T = 'error in finite domain system'
     in
        case E
        of fd(noChoice A Xs P S) then
           %% expected Xs:list, P:int, S:virtualString
-          {Error.format
-           T unit
-           hint(l:'At argument' m:P)
-           | hint(l:'In statement' m:{Error.formatAppl A Xs})
-           | {Append {FormatOrigin A} {Error.formatHint S}}
-           Exc}
+          error(kind: T
+                items: (hint(l:'At argument' m:P)|
+                        hint(l:'In statement' m:apply(A Xs))|
+                        {Append {FormatOrigin A} [line(S)]}))
 
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

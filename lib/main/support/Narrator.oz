@@ -22,22 +22,20 @@
 functor
 import
    ErrorRegistry(put)
-   Error(dispatch format formatGeneric)
 export
    'class': Narrator
 define
    {ErrorRegistry.put narrator
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+    fun {$ E}
        T = 'narrator error'
     in
        case E of narrator(register P) then
-          {Error.format T
-           'Trying to register a non-port'
-           [hint(l: 'Argument' m: oz(P))]
-           Exc}
+          error(kind: T
+                msg: 'Trying to register a non-port'
+                items: [hint(l: 'Argument' m: oz(P))])
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

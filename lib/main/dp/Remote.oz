@@ -30,9 +30,7 @@ import
    Connection(offer)
    Property(get)
    Module(link)
-   Error(formatGeneric format dispatch)
    ErrorRegistry(put)
-
 
 export
    manager: ManagerProxy
@@ -190,18 +188,18 @@ define
    %%
 
    {ErrorRegistry.put remote
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+    fun {$ E}
        T = 'Error: remote module manager'
     in
        case E
        of remote(alreadyClosed O M) then
-          {Error.format T
-           'Remote manager already closed'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
+          error(kind: T
+                msg: 'Remote manager already closed'
+                items: [hint(l:'Object application'
+                             m:'{' # oz(O) # ' ' # oz(M) # '}')])
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

@@ -156,7 +156,7 @@ in
       Module
       Property(get)
       System(printInfo printError)
-      Error(msg formatLine printExc)
+      Error(messageToVirtualString)
       OS(putEnv getEnv system)
       Open(file)
       Pickle(saveWithHeader)
@@ -226,10 +226,7 @@ in
       end
 
       proc {Report E}
-         {Error.msg
-          proc {$ X}
-             {System.printError {Error.formatLine X}}
-          end E}
+         {System.printError {Error.messageToVirtualString E}}
          raise error end
       end
    in
@@ -387,12 +384,7 @@ in
                    {File close()}
                 else
                    case OptRec.mode of dump then
-                      try
-                         {Pickle.saveWithHeader R OFN '' OptRec.compress}
-                      catch E then
-                         {Error.printExc E}
-                         raise error end
-                      end
+                      {Pickle.saveWithHeader R OFN '' OptRec.compress}
                    [] executable then
                       if {Functor.is R} then skip
                       else
@@ -402,23 +394,18 @@ in
                                 items: [hint(l: 'Value found'
                                              m: oz(R))])}
                       end
-                      try
-                         {Pickle.saveWithHeader
-                          R % Value
-                          OFN % Filename
-                          OptRec.execheader % Header
-                          OptRec.compress % Compression level
-                         }
-                         case {OS.system 'chmod +x '#OFN}
-                         of 0 then skip elseof N then
-                            {Report
-                             error(kind: BatchCompilationError
-                                   msg: 'writing executable functor failed'
-                                   items: [hint(l: 'Error code' m: N)])}
-                         end
-                      catch E then
-                         {Error.printExc E}
-                         raise error end
+                      {Pickle.saveWithHeader
+                       R % Value
+                       OFN % Filename
+                       OptRec.execheader % Header
+                       OptRec.compress % Compression level
+                      }
+                      case {OS.system 'chmod +x '#OFN}
+                      of 0 then skip elseof N then
+                         {Report
+                          error(kind: BatchCompilationError
+                                msg: 'writing executable functor failed'
+                                items: [hint(l: 'Error code' m: N)])}
                       end
                    [] feedtoemulator then skip
                    else File in   % core, outputcode

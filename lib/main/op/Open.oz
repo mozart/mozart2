@@ -143,10 +143,6 @@ in
          wait
         )
 
-      Error(formatGeneric
-            format
-            dispatch)
-
       ErrorRegistry(put)
 
       Resolve(open)
@@ -766,38 +762,33 @@ in
       %% Error formatting
       %%
 
-      {ErrorRegistry.put
-
-       open
-
-       fun {$ Exc}
-          E = {Error.dispatch Exc}
+      {ErrorRegistry.put open
+       fun {$ E}
           T = 'error in Open module'
        in
           case E
           of open(What O M) then
-         % expected What: atom, O: object
-
-             {Error.format T
-              case What
-              of alreadyClosed then
-                 'Object already closed'
-              [] alreadyInitialized then
-                 'Object already initialized'
-              [] illegalFlags then
-                 'Illegal value for flags'
-              [] illegalModes then
-                 'Illegal value for mode'
-              [] nameOrUrl then
-                 'Exactly one of \'name\' or \'url\' feature needed'
-              [] urlIsReadOnly then
-                 'Only reading access to url-files allowed'
-              else 'Unknown' end
-              [hint(l:'Object Application'
-                    m:'{' # oz(O) # ' ' # oz(M) # '}')]
-              Exc}
+             %% expected What: atom, O: object
+             error(kind: T
+                   msg: case What
+                        of alreadyClosed then
+                           'Object already closed'
+                        [] alreadyInitialized then
+                           'Object already initialized'
+                        [] illegalFlags then
+                           'Illegal value for flags'
+                        [] illegalModes then
+                           'Illegal value for mode'
+                        [] nameOrUrl then
+                           'Exactly one of \'name\' or \'url\' feature needed'
+                        [] urlIsReadOnly then
+                           'Only reading access to url-files allowed'
+                        else 'Unknown' end
+                   items: [hint(l:'Object Application'
+                                m:'{' # oz(O) # ' ' # oz(M) # '}')])
           else
-             {Error.formatGeneric T Exc}
+             error(kind: T
+                   items: [line(oz(E))])
           end
       end}
 

@@ -30,7 +30,6 @@ import
    PID(get getCRC received toPort) at 'x-oz://boot/PID'
    Distribution('export')          at 'x-oz://boot/Distribution'
 
-   Error(dispatch format formatGeneric)
    ErrorRegistry(put)
    Fault(injector removeInjector siteWatcher removeSiteWatcher)
    Property(get)
@@ -279,25 +278,29 @@ define
    %%
 
    {ErrorRegistry.put connection
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+    fun {$ E}
        T = 'Error: connections'
     in
        case E
        of connection(illegalTicket V) then
-          {Error.format 'Illegal ticket for connection' unit
-           [hint(l:'Ticket' m:V)] Exc}
+          error(kind: T
+                msg: 'Illegal ticket for connection'
+                items: [hint(l:'Ticket' m:V)])
        [] connection(refusedTicket V) then
-          {Error.format 'Ticket refused by offering site' unit
-           [hint(l:'Ticket' m:V)] Exc}
+          error(kind: T
+                msg: 'Ticket refused by offering site'
+                items: [hint(l:'Ticket' m:V)])
        [] connection(ticketToDeadSite V) then
-          {Error.format 'Ticket refused: refers to dead site' unit
-           [hint(l:'Ticket' m:V)] Exc}
+          error(kind: T
+                msg: 'Ticket refused: refers to dead site'
+                items: [hint(l:'Ticket' m:V)])
        [] connection(wrongModel V) then
-          {Error.format 'Ticket presupposes wrong distribution model' unit
-           [hint(l:'Ticket' m:V)] Exc}
+          error(kind: T
+                msg: 'Ticket presupposes wrong distribution model'
+                items: [hint(l:'Ticket' m:V)])
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

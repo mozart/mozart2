@@ -31,10 +31,6 @@ import
 
    System(showError)
 
-   Error(formatGeneric
-         format
-         dispatch)
-
    ErrorRegistry(put)
 
    Open(pipe
@@ -370,37 +366,36 @@ define
    %%
 
    {ErrorRegistry.put tk
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+    fun {$ E}
        T = 'Error: Tk module'
     in
        case E
        of tk(wrongParent O M) then
-          {Error.format T
-           'Wrong Parent'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
+          error(kind: T
+                msg: 'Wrong Parent'
+                items: [hint(l:'Object application'
+                             m:'{' # oz(O) # ' ' # oz(M) # '}')])
        [] tk(alreadyInitialized O M) then
-          {Error.format T
-           'Object already initialized'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
+          error(kind: T
+                msg: 'Object already initialized'
+                items: [hint(l:'Object application'
+                             m:'{' # oz(O) # ' ' # oz(M) # '}')])
        [] tk(alreadyClosed O M) then
-          {Error.format T
-           'Window already closed'
-           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-           Exc}
+          error(kind: T
+                msg: 'Window already closed'
+                items: [hint(l:'Object application'
+                             m:'{' # oz(O) # ' ' # oz(M) # '}')])
        [] tk(alreadyClosed O) then
-          {Error.format T
-           'Window already closed'
-           [hint(l:'Object' m:oz(O))]
-           Exc}
+          error(kind: T
+                msg: 'Window already closed'
+                items: [hint(l:'Object' m:oz(O))])
        [] tk(engineCrashed) then
-          {Error.format T
-           'Graphics engine (tk.exe) crashed or could not be started' nil
-           Exc}
+          error(kind: T
+                msg: ('Graphics engine (tk.exe) crashed '#
+                      'or could not be started'))
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

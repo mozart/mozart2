@@ -29,14 +29,7 @@
 functor
 
 import
-   Error(formatGeneric
-         formatAppl
-         formatTypes
-         formatHint
-         format
-         dispatch
-         info)
-   System
+   System(printName)
 
 export
    put:     NewFormatter
@@ -68,15 +61,60 @@ prepare
       [hint(l:'In statement' m:oz(X) # ' ' # Op # ' ' # oz(Y) # ' = ' # oz(Z))]
    end
 
+   fun {IsNotNL X}
+      X \= &\n
+   end
+
+   fun {ToLower Xs}
+      {Map {VirtualString.toString Xs} Char.toLower}
+   end
+
+   local
+      fun {DoFormatTypes Text S}
+         case S of nil then nil
+         else First Rest in
+            {List.takeDropWhile S.2 IsNotNL First Rest}
+            case Text of '' then
+               hint(m:{ToLower First})
+            else
+               hint(l:Text m:{ToLower First})
+            end|{DoFormatTypes '' Rest}
+         end
+      end
+   in
+      fun {FormatTypes T}
+         {DoFormatTypes 'Expected type' &\n|{Atom.toString T}}
+      end
+   end
+
+   local
+      fun {DoFormatHint S}
+         case S of nil then nil
+         else First Rest in
+            {List.takeDropWhile S.2 IsNotNL First Rest}
+            line(First) | {DoFormatHint Rest}
+         end
+      end
+   in
+      fun {FormatHint S}
+         if S \= nil then
+            unit|{DoFormatHint &\n|{VirtualString.toString S}}
+         else nil
+         end
+      end
+   end
+
+   fun {Plural N}
+      if N == 1 then '' else 's' end
+   end
+
 define
 
    %%
    %% kernel related errors
    %%
 
-   fun {KernelFormatter Exc}
-      E = {Error.dispatch Exc}
-   in
+   fun {KernelFormatter E}
       case E
       of kernel(type A Xs T P S) then
          % expected A:procedure or atom, Xs: list, T: atom, P:int, S: virtualString
@@ -84,25 +122,25 @@ define
                   of '.' # [R F X] then
                      Ls = {LayoutDot R F X '.'}
                   in
-                     {Append Ls {Error.formatHint S}}
+                     {Append Ls {FormatHint S}}
                   elseof '^' # [R F X] then
                      Ls = {LayoutDot R F X '^'}
                   in
-                     {Append Ls {Error.formatHint S}}
+                     {Append Ls {FormatHint S}}
                   elseof ',' # [C M] then
                      Ls = {LayoutComma C M}
                   in
-                     {Append Ls {Error.formatHint S}}
+                     {Append Ls {FormatHint S}}
                   elseof '+1' # [X Y] then
                      Ls =
                      [hint(l:'In statement' m:oz(X) # ' + 1 = ' # oz(Y))
                       hint(l:'Possible origin' m:'1 + ' # oz(X) # ' = ' # oz(Y))]
                   in
-                     {Append Ls {Error.formatHint S}}
+                     {Append Ls {FormatHint S}}
                   elseof fdTellConstraint # [X Y] then
                      Ls = [hint(l:'In statement' m:oz(X) # ' :: ' # oz(Y))]
                   in
-                     {Append Ls {Error.formatHint S}}
+                     {Append Ls {FormatHint S}}
                   else
                      if
                         {Member A ['+' '-' '*' '/' '<' '>' '=<' '>=' '\\=']}
@@ -110,231 +148,181 @@ define
                         Ls = case Xs of [X Y Z] then
                                 {LayoutBin X Y Z A}
                              else
-                                [hint(l:'In statement' m:{Error.formatAppl A Xs})]
+                                [hint(l:'In statement' m:apply(A Xs))]
                              end
                      in
-                        {Append Ls {Error.formatHint S}}
+                        {Append Ls {FormatHint S}}
                      else
-                        Ls = [hint(l:'In statement' m:{Error.formatAppl A Xs})]
+                        Ls = [hint(l:'In statement' m:apply(A Xs))]
                      in
-                        {Append Ls {Error.formatHint S}}
+                        {Append Ls {FormatHint S}}
                      end
                   end
       in
-         {Error.format
-          'type error'
-          unit
-          {Append
-           {Error.formatTypes T}
-           if P\=0 then
-              hint(l:'At argument' m:P) | LayOut
-           else LayOut end}
-          Exc}
+         error(kind: 'type error'
+               items: {Append
+                       {FormatTypes T}
+                       if P\=0 then
+                          hint(l:'At argument' m:P) | LayOut
+                       else LayOut end})
+
       elseof kernel(instantiation A Xs T P S) then
          %% expected A: procedure or atom, Xs: list, T: atom,
          %% P:int, S:virtualString
          LayOut = {Append
-                   [hint(l:'In statement' m:{Error.formatAppl A Xs})]
-                   {Error.formatHint S}}
+                   [hint(l:'In statement' m:apply(A Xs))]
+                   {FormatHint S}}
       in
-         {Error.format
-          'instantiation error'
-          unit
-          {Append
-           {Error.formatTypes T}
-           if P\=0 then
-              hint(l:'At argument' m:P) | LayOut
-           else LayOut end}
-          Exc}
+         error(kind: 'instantiation error'
+               items: {Append
+                       {FormatTypes T}
+                       if P\=0 then
+                          hint(l:'At argument' m:P) | LayOut
+                       else LayOut end})
+
       elseof kernel(apply X Xs) then
          %% expected X: procedure or atom, Xs: list
-         {Error.format
-          'error in application'
-          'Application of non-procedure and non-object'
-          [hint(l:'In statement' m:{Error.formatAppl X Xs})]
-          Exc}
+         error(kind: 'error in application'
+               msg: 'Application of non-procedure and non-object'
+               items: [hint(l:'In statement' m:apply(X Xs))])
+
       elseof kernel('.' R F) then
          %% expected R: chunk or record, F: feature
-         {Error.format
-          'Error: illegal field selection'
-          unit
-          {LayoutDot R F _ '.'}
-          Exc}
+         error(kind: 'Error: illegal field selection'
+               items: {LayoutDot R F _ '.'})
+
       elseof kernel(recordConstruction L As) then
          %% expected L: literal, As: property list
-         {Error.format
-          'Error: duplicate fields'
-          'Duplicate fields in record construction'
-          [hint(l:'Label' m:oz(L))
-           hint(l:'Feature-field Pairs' m:list(As ' '))]
-          Exc}
+         error(kind: 'Error: duplicate fields'
+               msg: 'Duplicate fields in record construction'
+               items: [hint(l:'Label' m:oz(L))
+                       hint(l:'Feature-field Pairs' m:list(As ' '))])
+
       elseof kernel(recordPattern L As) then
          %% expected L: literal, As: feature list
-         {Error.format
-          'Error: duplicate fields'
-          'Duplicate fields in record pattern'
-          [hint(l:'Label' m:oz(L))
-           hint(l:'Features' m:list(As ' '))]
-          Exc}
+         error(kind: 'Error: duplicate fields'
+               msg: 'Duplicate fields in record pattern'
+               items: [hint(l:'Label' m:oz(L))
+                       hint(l:'Features' m:list(As ' '))])
+
       elseof kernel(arity P Xs) then
          %% expected P: procedure or object, Xs: list
          N = if {IsProcedure P} then {Procedure.arity P} else 1 end
          M = {Length Xs}
       in
-         {Error.format
-          'Error: illegal number of arguments'
-          unit
-          [hint(l:'In statement' m:{Error.formatAppl P Xs})
-           hint(l:'Expected'
-                m: N # ' argument' # if N == 1 then '' else 's' end)
-           hint(l:'Found'
-                m: M # ' argument' # if M == 1 then '' else 's' end)]
-          Exc}
+         error(kind: 'Error: illegal number of arguments'
+               items: [hint(l:'In statement' m:apply(P Xs))
+                       hint(l:'Expected'
+                            m: N # ' argument' # {Plural N})
+                       hint(l:'Found'
+                            m: M # ' argument' # {Plural M})])
+
       elseof kernel(noElse File Line) then
-         {Error.format
-          'Error: conditional failed'
-          'Missing else clause'
-          [pos(File Line unit)]
-          Exc}
+         error(kind: 'Error: conditional failed'
+               msg: 'Missing else clause'
+               items: [pos(File Line unit)])
+
       elseof kernel(noElse File Line A) then
-         % expected A: Oz term
-         {Error.format
-          'Error: conditional failed'
-          'Missing else clause'
-          [hint(l:'Matching' m:oz(A))
-           pos(File Line unit)]
-          Exc}
+         %% expected A: Oz term
+         error(kind: 'Error: conditional failed'
+               msg: 'Missing else clause'
+               items: [hint(l:'Matching' m:oz(A))
+                       pos(File Line unit)])
+
       elseof kernel(boolCaseType File Line A) then
-         {Error.format
-          'Error: boolean conditional failed'
-          'Non-boolean value found'
-          [hint(l:'Value found' m:oz(A))
-           pos(File Line unit)]
-          Exc}
+         error(kind: 'Error: boolean conditional failed'
+               msg: 'Non-boolean value found'
+               items: [hint(l:'Value found' m:oz(A))
+                       pos(File Line unit)])
+
          %%
          %% ARITHMETICS
          %%
       elseof kernel(div0 X) then
-         {Error.format
-          'division by zero error'
-          unit
-          [hint(l:'In statement' m:oz(X) # ' div 0' # ' = _')]
-          Exc}
+         error(kind: 'division by zero error'
+               items: [hint(l:'In statement' m:oz(X) # ' div 0' # ' = _')])
+
       elseof kernel(mod0 X) then
-         {Error.format
-          'division by zero error'
-          unit
-          [hint(l:'In statement' m:oz(X) # ' mod 0' # ' = _')]
-          Exc}
+         error(kind: 'division by zero error'
+               items: [hint(l:'In statement' m:oz(X) # ' mod 0' # ' = _')])
+
          %%
          %% ARRAYS AND DICTIONARIES
          %%
       elseof kernel(dict D K) then
-         % expected D: dictionary, K: feature
-         {Error.format
-          'Error: Dictionary'
-          'Key not found'
-          [hint(l:'Dictionary' m:oz(D))
-           hint(l:'Key found'  m:oz(K))
-           hint(l:'Legal keys' m:oz({Dictionary.keys D}))]
-          Exc}
+         %% expected D: dictionary, K: feature
+         error(kind: 'Error: Dictionary'
+               msg: 'Key not found'
+               items: [hint(l:'Dictionary' m:oz(D))
+                       hint(l:'Key found'  m:oz(K))
+                       hint(l:'Legal keys' m:oz({Dictionary.keys D}))])
+
       elseof kernel(array A I) then
-         % expected A: array, I: int
-         {Error.format
-          'Error: Array'
-          'Index out of range'
-          [hint(l:'Array' m:oz(A))
-           hint(l:'Index Found' m:I)
-           hint(l:'Legal Range' m:{Array.low A} # ' - ' # {Array.high A})]
-          Exc}
+         %% expected A: array, I: int
+         error(kind: 'Error: Array'
+               msg: 'Index out of range'
+               items: [hint(l:'Array' m:oz(A))
+                       hint(l:'Index Found' m:I)
+                       hint(l:'Legal Range'
+                            m:{Array.low A} # ' - ' # {Array.high A})])
 
       elseof kernel('BitArray.new' L H) then
-
-         % expected L: int, H: int
-
-         {Error.format
-          'Error: BitArray'
-          'Illegal boundaries to BitArray.new'
-          [hint(l: 'Lower bound' m: L)
-           hint(l: 'Upper bound' m: H)]
-          Exc}
+         %% expected L: int, H: int
+         error(kind: 'Error: BitArray'
+               msg: 'Illegal boundaries to BitArray.new'
+               items: [hint(l: 'Lower bound' m: L)
+                       hint(l: 'Upper bound' m: H)])
 
       elseof kernel('BitArray.index' B I) then
-
-         % expected B: Bitarray, I: int
-
-         {Error.format
-          'Error: BitArray'
-          'Index out of range'
-          [hint(l: 'Bit array' m: oz(B))
-           hint(l: 'Index found' m: I)
-           hint(l: 'Legal Range'
-                m: {BitArray.low B}#' - '#{BitArray.high B})]
-          Exc}
+         %% expected B: Bitarray, I: int
+         error(kind: 'Error: BitArray'
+               msg: 'Index out of range'
+               items: [hint(l: 'Bit array' m: oz(B))
+                       hint(l: 'Index found' m: I)
+                       hint(l: 'Legal Range'
+                            m: {BitArray.low B}#' - '#{BitArray.high B})])
 
       elseof kernel('BitArray.binop' B1 B2) then
+         %% expected B1: BitArray, B2: BitArray
 
-         % expected B1: BitArray, B2: BitArray
-
-         {Error.format
-          'Error: BitArray'
-          'Incompatible bounds in binary operation on BitArrays'
-          [hint(l: 'First bit array' m: oz(B1))
-           hint(l: 'First bounds'
-                m: {BitArray.low B1}#' - '#{BitArray.high B1})
-           hint(l: 'Second bit array' m: oz(B2))
-           hint(l: 'Second bounds'
-                m: {BitArray.low B2}#' - '#{BitArray.high B2})]
-          Exc}
+         error(kind: 'Error: BitArray'
+               msg: 'Incompatible bounds in binary operation on BitArrays'
+               items: [hint(l: 'First bit array' m: oz(B1))
+                       hint(l: 'First bounds'
+                            m: {BitArray.low B1}#' - '#{BitArray.high B1})
+                       hint(l: 'Second bit array' m: oz(B2))
+                       hint(l: 'Second bounds'
+                            m: {BitArray.low B2}#' - '#{BitArray.high B2})])
 
          %%
          %% REPRESENTATION FAULT
          %%
-
       elseof kernel(stringNoFloat S) then
-
-         % expected S: string
-
-         {Error.format
-          'Error: representation fault'
-          'Conversion to float failed'
-          [hint(l:'String' m:'\"' # S # '\"')]
-          Exc}
+         %% expected S: string
+         error(kind: 'Error: representation fault'
+               msg: 'Conversion to float failed'
+               items: [hint(l:'String' m:'\"' # S # '\"')])
 
       elseof kernel(stringNoInt S) then
-
-         % expected S: string
-
-         {Error.format
-          'Error: representation fault'
-          'Conversion to integer failed'
-          [hint(l:'String' m:'\"' # S # '\"')]
-          Exc}
+         %% expected S: string
+         error(kind: 'Error: representation fault'
+               msg: 'Conversion to integer failed'
+               items: [hint(l:'String' m:'\"' # S # '\"')])
 
       elseof kernel(stringNoAtom S) then
-
-         % expected S: string
-
-         {Error.format
-          'Error: representation fault'
-          'Conversion to atom failed'
-          [hint(l:'String' m:'\"' # S # '\"')]
-          Exc}
+         %% expected S: string
+         error(kind: 'Error: representation fault'
+               msg: 'Conversion to atom failed'
+               items: [hint(l:'String' m:'\"' # S # '\"')])
 
       elseof kernel(stringNoValue S) then
-
-         % expected S: string
-
-         {Error.format
-          'Error: representation fault'
-          'Conversion to Oz value failed'
-          [hint(l:'String'  m:'\"' # S # '\"')]
-          Exc}
+         %% expected S: string
+         error(kind: 'Error: representation fault'
+               msg: 'Conversion to Oz value failed'
+               items: [hint(l:'String'  m:'\"' # S # '\"')])
 
       elseof kernel(globalState What) then
-
-         % expected What: atom
-
+         %% expected What: atom
          Msg  = case What
                 of     array  then 'Assignment to global array'
                 elseof dict   then 'Assignment to global dictionary'
@@ -344,79 +332,54 @@ define
                 elseof 'lock' then 'Request of global lock'
                 else What end
       in
-         {Error.format
-          'Error: space hierarchy'
-          Msg # ' from local space'
-          nil
-          Exc}
+         error(kind: 'Error: space hierarchy'
+               msg: Msg # ' from local space')
 
       elseof kernel(spaceMerged S) then
-
-         % expected S: space
-
-         {Error.format
-          'Error: Space'
-          'Space already merged'
-          [hint(l:'Space' m:oz(S))]
-          Exc}
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Space already merged'
+               items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(spaceSuper S) then
-
-         % expected S: space
-
-         {Error.format
-          'Error: Space'
-          'Merge of superordinated space'
-          [hint(l:'Space' m:oz(S))]
-          Exc}
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Merge of superordinated space'
+               items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(spaceParent S) then
-
-         % expected S: space
-
-         {Error.format
-          'Error: Space'
-          'Current space must be parent space'
-          [hint(l:'Space' m:oz(S))]
-          Exc}
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Current space must be parent space'
+               items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(spaceNoChoice S) then
-
-         % expected S: space
-
-         {Error.format
-          'Error: Space'
-          'No choices left'
-          [hint(l:'Space' m:oz(S))]
-          Exc}
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'No choices left'
+               items: [hint(l:'Space' m:oz(S))])
 
       elseof kernel(portClosed P) then
-
-         % expected P: port
-
-         {Error.format
-          'Error: Port'
-          'Port already closed'
-          [hint(l:'Port' m:oz(P))]
-          Exc}
+         %% expected P: port
+         error(kind: 'Error: Port'
+               msg: 'Port already closed'
+               items: [hint(l:'Port' m:oz(P))])
 
       elseof kernel(terminate) then
-
-         none
+         error(kind: 'Thread'
+               msg: 'Thread terminated')
 
       elseof kernel(block X) then
-
-         % expected X: variable
-
-         {Error.format
-          'Error: Thread'
-          'Purely sequential thread blocked'
-          [hint(l: 'Thread' m:oz({Thread.this}))
-           hint(l:'Variable' m:oz(X))]
-          Exc}
+         %% expected X: variable
+         error(kind: 'Error: Thread'
+               msg: 'Purely sequential thread blocked'
+               items: [hint(l: 'Thread' m:oz({Thread.this}))
+                       hint(l:'Variable' m:oz(X))])
 
       else
-         {Error.formatGeneric 'Kernel' Exc}
+         error(kind: 'Kernel'
+               items: [line(oz(E))])
+
       end
    end
 
@@ -433,33 +396,30 @@ define
          end
       end
    in
-      fun {ObjectFormatter Exc}
-         E = {Error.dispatch Exc}
+      fun {ObjectFormatter E}
          T = 'Error: object system'
       in
          case E
          of object('<-' O A V) then
-            {Error.format T
-             'Assignment to undefined attribute'
-             [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
-              hint(l:'Expected one of'
-                   m:oz({OoExtensions.getAttrNames O}))]
-             Exc}
+            error(kind: T
+                  msg: 'Assignment to undefined attribute'
+                  items: [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
+                          hint(l:'Expected one of'
+                               m:oz({OoExtensions.getAttrNames O}))])
          elseof object('@' O A) then
-            {Error.format T
-             'Access of undefined attribute'
-             [hint(l:'In statement' m:'_ = @' # oz(A))
-              hint(l:'Expected one of'
-                   m:oz({OoExtensions.getAttrNames O}))]
-             Exc}
+            error(kind: T
+                  msg: 'Access of undefined attribute'
+                  items: [hint(l:'In statement' m:'_ = @' # oz(A))
+                          hint(l:'Expected one of'
+                               m:oz({OoExtensions.getAttrNames O}))])
          elseof object(ooExch O A V) then
-            {Error.format T
-             'Exchange of undefined attribute'
-             [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
-              hint(l:'Attribute' m:oz(A))
-              hint(l:'Expected one of'
-                   m:oz({OoExtensions.getAttrNames O}))]
-             Exc}
+            error(kind: T
+                  msg: 'Exchange of undefined attribute'
+                  items: [hint(l:'In statement'
+                               m:'_ = ' # oz(A) # ' <- ' # oz(V))
+                          hint(l:'Attribute' m:oz(A))
+                          hint(l:'Expected one of'
+                               m:oz({OoExtensions.getAttrNames O}))])
          elseof object(conflicts N 'meth':Ms 'attr':As 'feat':Fs) then
             MMs = case {FormatConf Ms} of nil then nil
                   [] M|Mr then {AdjoinAt M l 'Methods'}|Mr
@@ -471,313 +431,190 @@ define
                   [] F|Fr then {AdjoinAt F l 'Features'}|Fr
                   end
          in
-            {Error.format T
-             'Unresolved conflicts in class definition'
-             (hint(l:'Class definition' m:N)|
-              {Append MMs {Append MAs MFs}}) Exc}
+            error(kind: T
+                  msg: 'Unresolved conflicts in class definition'
+                  items: (hint(l:'Class definition' m:N)|
+                          {Append MMs {Append MAs MFs}}))
          elseof object(lookup C R) then
-            {Error.format T
-             'Undefined method'
-             hint(l:'Class'   m:oz(C))|
-             hint(l:'Message' m:oz(R))|
-             {Error.formatHint
-              'Method undefined and no otherwise method given'}
-             Exc}
+            error(kind: T
+                  msg: 'Undefined method'
+                  items:
+                     [hint(l:'Class'   m:oz(C))
+                      hint(l:'Message' m:oz(R))
+                      line('Method undefined and no otherwise method given')])
          elseof object(final CParent CChild) then
-            {Error.format T
-             'Inheritance from final class'
-             hint(l:'Final class used as parent' m:CParent)|
-             hint(l:'Class to be created' m:CChild)|
-             {Error.formatHint
-              'remove prop final from parent class or change inheritance relation'}
-             Exc}
+            error(kind: T
+                  msg: 'Inheritance from final class'
+                  items: [hint(l:'Final class used as parent' m:CParent)
+                          hint(l:'Class to be created' m:CChild)
+                          line('remove prop final from parent class '#
+                               'or change inheritance relation')])
          elseof object(inheritanceFromNonClass CParent CChild) then
-            {Error.format T
-             'Inheritance from non-class'
-             [hint(l:'Non-class used as parent' m:oz(CParent))
-              hint(l:'Class to be created' m:CChild)]
-             Exc}
+            error(kind: T
+                  msg: 'Inheritance from non-class'
+                  items: [hint(l:'Non-class used as parent' m:oz(CParent))
+                          hint(l:'Class to be created' m:CChild)])
          elseof object(illegalProp Ps) then
-            {Error.format T
-             'Illegal property value in class definition'
-             [hint(l:'Illegal values' m:oz(Ps))
-              hint(l:'Expected one of' m:oz([final locking sited]))]
-             Exc}
+            error(kind: T
+                  msg: 'Illegal property value in class definition'
+                  items: [hint(l:'Illegal values' m:oz(Ps))
+                          hint(l:'Expected one of'
+                               m:oz([final locking sited]))])
          elseof object(arityMismatch File Line M O) then
-            {Error.format T
-             'Arity mismatch in object or method application'
-             [hint(l:'Message' m:oz(M))
-              hint(l:'Object' m:oz(O))
-              pos(File Line unit)]
-             Exc}
+            error(kind: T
+                  msg: 'Arity mismatch in object or method application'
+                  items: [hint(l:'Message' m:oz(M))
+                          hint(l:'Object' m:oz(O))
+                          pos(File Line unit)])
          elseof object(slaveNotFree) then
-            {Error.format T
-             'Method becomeSlave'
-             [hint(l:'Slave is not free')]
-             Exc}
+            error(kind: T
+                  msg: 'Method becomeSlave'
+                  items: [hint(l:'Slave is not free')])
          elseof object(slaveAlreadyFree) then
-            {Error.format T
-             'Method free'
-             [hint(l:'Slave is already free')]
-             Exc}
+            error(kind: T
+                  msg: 'Method free'
+                  items: [hint(l:'Slave is already free')])
          elseof object(locking O) then
-            {Error.format T
-             'Attempt to lock unlockable object'
-             [hint(l:'Object' m:oz(O))]
-             Exc}
+            error(kind: T
+                  msg: 'Attempt to lock unlockable object'
+                  items: [hint(l:'Object' m:oz(O))])
          elseof object(nonLiteralMethod L) then
-            {Error.format T 'Method label is not a literal'
-             [hint(l:'Method' m:L)]
-             Exc}
+            error(kind: T
+                  msg: 'Method label is not a literal'
+                  items: [hint(l:'Method' m:L)])
          else
-            {Error.formatGeneric T Exc}
+            error(kind: T
+                  items: [line(oz(E))])
          end
       end
    end
-
 
    %%
    %% failure
    %%
 
-   fun {FailureFormatter Exc}
-      I = {Error.info Exc}
-      T = 'failure'
-   in
-
-      case I
-      of unit then
-
-         {Error.formatGeneric T Exc}
-
-      elseof 'fail' then
-
-         {Error.format
-          T
-          unit
-          [hint(l:'Tell' m:'fail')]
-          Exc}
-
-      elseof apply(A Xs) then
-
-         % expected A: atom, Xs: list
-
-         {Error.format
-          T
-          unit
-          case A # Xs
-          of '^' # [R F] then
-             [hint(l:'Tell' m:oz(R) # ' ^ ' # oz(F) # ' = _')]
-          elseof '=' # [X Y] then
-             [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))]
-          elseof fdPutList # [X Y] then
-             [hint(l:'Tell' m:oz(X) # ' :: ' # oz(Y))]
-          elseof fdPutGe # [X Y] then
-             [hint(l:'Tell' m:oz(X) # ' >: ' # oz(Y))]
-          elseof fdPutLe # [X Y] then
-             [hint(l:'Tell' m:oz(X) # ' <: ' # oz(Y))]
-          elseof fdPutNot # [X Y] then
-             [hint(l:'Tell' m:oz(X) # ' \\=: ' # oz(Y))]
-          else
-             [hint(l:'In statement' m:{Error.formatAppl A Xs})]
-          end
-          Exc}
-
-      elseof eq(X Y) then
-
-         {Error.format
-          T unit
-          [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))]
-          Exc}
-
-      elseof tell(X Y) then
-
-         {Error.format
-          T unit
-          [hint(l:'Tell' m:oz(X) # ' = ' # oz(Y))
-           hint(l:'Store' m:oz(X))]
-          Exc}
-
-      else
-
-         {Error.format
-          T unit
-          [hint(l:'??? ' m:oz(I))]
-          Exc}
-      end
+   fun {FailureFormatter E}
+      error(kind: 'failure')
    end
 
    %%
    %% record constraints
    %%
 
-   fun {RecordCFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {RecordCFormatter E}
       T = 'Error: records'
    in
       case E
       of record(width A Xs P S) then
-
-         % expected Xs: list, P: int, S: virtualString
-
-         {Error.format
-          T unit
-          hint(l:'At argument' m:P)
-          | hint(l:'Statement' m:{Error.formatAppl A Xs})
-          | {Error.formatHint S}
-          Exc}
-
+         %% expected Xs: list, P: int, S: virtualString
+         error(kind: T
+               items: (hint(l:'At argument' m:P)|
+                       hint(l:'Statement' m:apply(A Xs))|
+                       {FormatHint S}))
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
    %%
-   %% system
+   %% system programming
    %%
 
-   fun {SystemFormatter Exc}
-
-      E = {Error.dispatch Exc}
+   fun {SystemFormatter E}
       T = 'system error'
    in
-
       case E
       of system(limitInternal S) then
-
-         % expected S: virtualString
-
-         {Error.format T
-          unit
-          [hint(l:'Internal System Limit' m:S)]
-          Exc}
+         %% expected S: virtualString
+         error(kind: T
+               items: [hint(l:'Internal System Limit' m:S)])
 
       elseof system(limitExternal S) then
-
-         % expected S: virtualString
-
-         {Error.format T
-          unit
-          [hint(l:'External system limit' m:S)]
-          Exc}
+         %% expected S: virtualString
+         error(kind: T
+               items: [hint(l:'External system limit' m:S)])
 
       elseof system(fallbackInstalledTwice A) then
-
-         % expected A: atom
-
-         {Error.format
-          T unit
-          [hint(l:'Fallback procedure installed twice' m:A)]
-          Exc}
+         %% expected A: atom
+         error(kind: T
+               items: [hint(l:'Fallback procedure installed twice' m:A)])
 
       elseof system(fallbackNotInstalled A) then
-
-         % expected A: atom
-
-         {Error.format
-          T unit
-          [hint(l:'Fallback procedure not installed' m:A)]
-          Exc}
+         %% expected A: atom
+         error(kind: T
+               items: [hint(l:'Fallback procedure not installed' m:A)])
 
       elseof system(inconsistentFastcall) then
-
-         {Error.format T
-          'Internal inconsistency'
-          [hint(l:'Inconsistency in optimized application')
-           hint(l:'Maybe due to previous toplevel failure')]
-          Exc}
+         error(kind: T
+               msg: 'Internal inconsistency'
+               items: [line('Inconsistency in optimized application')
+                       line('Maybe due to previous toplevel failure')])
 
       elseof system(onceOnlyFunctor) then
-
-         {Error.format T
-          'Procedure definition with flag `once\' executed more than once'
-          nil
-          Exc}
+         error(kind: T
+               msg: ('Procedure definition with flag `once\' '#
+                     'executed more than once'))
 
       elseof system(fatal S) then
-
-         % expected S: virtualString
-
-         {Error.format
-          T
-          'Fatal exception'
-          [line(S)
-           line(BugReport)]
-          Exc}
+         %% expected S: virtualString
+         error(kind: T
+               msg: 'Fatal exception'
+               itms: [line(S)
+                      line(BugReport)])
 
       elseof system(getProperty Feature) then
-
-         {Error.format
-          T
-          'Undefined property or property not readable'
-          [hint(l:'Property' m:Feature)]
-          Exc}
+         error(kind: T
+               msg: 'Undefined property or property not readable'
+               items: [hint(l:'Property' m:Feature)])
 
       elseof system(condGetProperty Feature) then
-
-         {Error.format
-          T
-          'Property not readable'
-          [hint(l:'Property' m:Feature)]
-          Exc}
+         error(kind: T
+               msg: 'Property not readable'
+               items: [hint(l:'Property' m:Feature)])
 
       elseof system(putProperty Feature) then
-
-         {Error.format
-          T
-          'Property not writable'
-          [hint(l:'Property' m:Feature)]
-          Exc}
+         error(kind: T
+               msg: 'Property not writable'
+               items: [hint(l:'Property' m:Feature)])
 
       elseof system(putProperty Feature Type) then
-
-         {Error.format
-          T
-          'Type error in property record'
-          [hint(l:'Record feature' m:Feature)
-           hint(l:'Expected type' m:Type)]
-          Exc}
+         error(kind: T
+               msg: 'Type error in property record'
+               items: [hint(l:'Record feature' m:Feature)
+                       hint(l:'Expected type' m:Type)])
 
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
    %%
-   %% open programming
+   %% OS module
    %%
 
-   fun {OSFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {OSFormatter E}
       T = 'error in OS module'
    in
       case E
-      of os(K SysCall N S) then
-
-         % expected K: atom, SysCall: virtualString, N: int, S: virtualString
-
-         case K
-         of os then
-            {Error.format T
-             'Operating system error'
-             [
-              hint(l:'System call' m:SysCall)
-              hint(l:'Error number' m:N)
-              hint(l:'Description' m:S)]
-             Exc}
-         [] host then
-            {Error.format T
-             'Network Error'
-             [
-              hint(l:'System call' m:SysCall)
-              hint(l:'Error number' m:N)
-              hint(l:'Description' m:S)]
-             Exc}
-         else
-            {Error.formatGeneric T Exc}
-         end
+      of os(os SysCall N S) then
+         %% expected SysCall: virtualString, N: int, S: virtualString
+         error(kind: T
+               msg: 'Operating system error'
+               items: [hint(l:'System call' m:SysCall)
+                       hint(l:'Error number' m:N)
+                       hint(l:'Description' m:S)])
+      elseof os(host SysCall N S) then
+         %% expected SysCall: virtualString, N: int, S: virtualString
+         error(kind: T
+               msg: 'Network Error'
+               items: [hint(l:'System call' m:SysCall)
+                       hint(l:'Error number' m:N)
+                       hint(l:'Description' m:S)])
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
@@ -785,45 +622,38 @@ define
    %% application programming
    %%
 
-   fun {APFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {APFormatter E}
       T = 'Error: application programming'
    in
       case E
       of ap(usage Msg) then
-         {Error.format T
-          Msg
-          nil
-          Exc}
+         error(kind: T
+               msg: Msg)
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
-
    %%
-   %% Register dp formatter
+   %% distributed programming
    %%
 
-   fun {DpFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {DpFormatter E}
       T = 'Error: distributed programming'
    in
       case E
       of dp(generic _ Msg Hints) then
-         {Error.format
-          Msg
-          unit
-          {Map Hints fun {$ L#M} hint(l:L  m:oz(M)) end}
-          Exc}
+         error(kind: T
+               msg: Msg
+               items: {Map Hints fun {$ L#M} hint(l:L m:oz(M)) end})
       elseof dp(modelChoose) then
-         {Error.format
-          'Cannot change distribution model: distribution layer already started'
-          unit
-          nil
-          Exc}
+         error(kind: T
+               msg: ('Cannot change distribution model: '#
+                     'distribution layer already started'))
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
@@ -831,24 +661,22 @@ define
    %% Foreign interface
    %%
 
-   fun {ForeignFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {ForeignFormatter E}
       T = 'Error: native code interface'
    in
       case E
       of foreign(cannotFindInterface F) then
-         {Error.format T
-          'Cannot find interface'
-          [hint(l:'File name' m:F)]
-          Exc}
+         error(kind: T
+               msg: 'Cannot find interface'
+               items: [hint(l:'File name' m:F)])
       elseof foreign(dlOpen F M) then
-         {Error.format T
-          'Cannot dynamically link object file'
-          [hint(l:'File name' m:F)
-           hint(l:'dlerror'   m:M)]
-          Exc}
+         error(kind: T
+               msg: 'Cannot dynamically link object file'
+               items: [hint(l:'File name' m:F)
+                       hint(l:'dlerror'   m:M)])
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
@@ -856,19 +684,18 @@ define
    %% URL/Resolver library
    %%
 
-   fun {URLFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {URLFormatter E}
       T = 'error in URL support'
    in
       case E
       of url(O U) then
-         {Error.format T
-          'Cannot locate file'
-          [hint(l:'File name' m:U)
-           hint(l:'Operation' m:O)]
-          Exc}
+         error(kind: T
+               msg: 'Cannot locate file'
+               items: [hint(l:'File name' m:U)
+                       hint(l:'Operation' m:O)])
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
 
@@ -876,33 +703,32 @@ define
    %% module manager
    %%
 
-   fun {ModuleFormatter Exc}
-      E = {Error.dispatch Exc}
+   fun {ModuleFormatter E}
       T = 'Error: module manager'
    in
       case E
       of module(alreadyInstalled Url) then
-         {Error.format T 'Module already installed'
-          [hint(l:'Module URL' m:Url)]
-          Exc}
-      [] module(notFound Kind Url) then
-         {Error.format T 'Could not link module'
-          [hint(l:case Kind
-                  of system then 'Unknown system module'
-                  [] native then 'Could not load native functor at URL'
-                  [] load   then 'Could not load functor at URL'
-                  end
-                m:Url)]
-          Exc}
+         error(kind: T
+               msg: 'Module already installed'
+               items: [hint(l:'Module URL' m:Url)])
+      [] module(notFound Kind Url) then K in
+         K = case Kind
+             of system then 'Unknown system module'
+             [] native then 'Could not load native functor at URL'
+             [] load   then 'Could not load functor at URL'
+             end
+         error(kind: T
+               msg: 'Could not link module'
+               items: [hint(l:K m:Url)])
       [] module(urlSyntax Url) then
-         {Error.format T 'Illegal URL syntax'
-          [hint(l:'URL' m:Url)]
-          Exc}
+         error(kind: T
+               msg: 'Illegal URL syntax'
+               items: [hint(l:'URL' m:Url)])
       else
-         {Error.formatGeneric T Exc}
+         error(kind: T
+               items: [line(oz(E))])
       end
    end
-
 
 
    %%

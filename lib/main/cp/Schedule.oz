@@ -54,13 +54,6 @@ import
 
    ErrorRegistry(put)
 
-   Error(formatTypes
-         formatGeneric
-         formatAppl
-         formatHint
-         format
-         dispatch)
-
 export
    %% Serialization propagators for unary propagators
    Serialized
@@ -448,25 +441,21 @@ define
    %% Register error formatter
    %%
 
-   {ErrorRegistry.put
-    schedule
-    fun {$ Exc}
-       E = {Error.dispatch Exc}
+   {ErrorRegistry.put schedule
+    fun {$ E}
        T = 'error in scheduling'
     in
        case E
        of schedule(A Xs T P S) then
           %% expected Xs:list, T:atom, P:int S:virtualString
-          {Error.format
-           T unit
-           hint(l:'At argument' m:P)
-           | {Append
-              {Error.formatTypes T}
-              hint(l:'In statement' m:{Error.formatAppl A Xs})
-              | {Append {FormatOrigin A} {Error.formatHint S}}}
-           Exc}
+          error(kind: T
+                items: (hint(l:'At argument' m:P)|
+                        hint(l:'Expected type' m:T)|
+                        hint(l:'In statement' m:apply(A Xs))|
+                        {Append {FormatOrigin A} [line(S)]}))
        else
-          {Error.formatGeneric T Exc}
+          error(kind: T
+                items: [line(oz(E))])
        end
     end}
 

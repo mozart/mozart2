@@ -129,6 +129,7 @@ in
       meth logAbort()
          Reporter, ProfileEnd()
          {self.Wrapper notify(info('%** ------------------ aborted\n'))}
+         {self.Wrapper notify(unsuccessful())}
       end
       meth logCrash()
          Reporter, ProfileEnd()
@@ -156,6 +157,7 @@ in
                  body: Body <= nil) MaxNumberOfErrors in
          case @ErrorCount == 0 then
             {self.Wrapper notify(toTop())}
+            {self.Wrapper notify(unsuccessful())}
          else skip
          end
          {Error.msg
@@ -190,6 +192,7 @@ in
       meth addErrors(N)
          case @ErrorCount == 0 then
             {self.Wrapper notify(toTop())}
+            {self.Wrapper notify(unsuccessful())}
          else skip
          end
          ErrorCount <- @ErrorCount + N

@@ -40,7 +40,9 @@ declare
 local
 \endif
 
+\ifdef SAVE
    BrowserClass Browser Browse
+\endif
 
    %%
    %%

@@ -642,8 +642,8 @@ define
    %%
 
    fun {GetCmdArgs Spec} Argv in
-      Argv = case {Property.condGet 'ozd.argv' unit} of unit then
-                {Map {Property.get 'argv'} AtomToString}
+      Argv = case {Property.condGet 'ozd.args' unit} of unit then
+                {Map {Property.get 'application.args'} AtomToString}
              elseof X then X
              end
       case {Label Spec} of plain then Argv

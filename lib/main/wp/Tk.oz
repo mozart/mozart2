@@ -361,8 +361,8 @@ in
       end
 
    Stream = local
-               OSS#CPU={Property.get platform}
-               PLTFRM ={Property.get 'oz.home'} # '/platform/'#OSS#'-'#CPU#'/'
+               PLTFRM = ({Property.get 'oz.home'} #
+                         '/platform/'#{Property.get 'platform.name'}#'/')
             in
                {OS.putEnv 'TCL_LIBRARY' PLTFRM#'wish/tcl'}
                {OS.putEnv 'TK_LIBRARY'  PLTFRM#'wish/tk'}

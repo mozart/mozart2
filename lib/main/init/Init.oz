@@ -144,6 +144,6 @@ define
       {RM apply(url:'' ErrorHandler)}
 
       %% Link root functor (i.e. application)
-      {RM link(url:{GET 'root.url'})}
+      {RM link(url:{GET 'application.url'})}
    end
 end

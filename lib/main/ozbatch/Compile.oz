@@ -242,7 +242,7 @@ in
                                            'usage information'))])}
          end
          case OptRec.mode of help then X in
-            X = {Property.get 'root.url'}
+            X = {Property.get 'application.url'}
             {System.printInfo 'Usage: '#X#' { [option] | [file] }\n'#Usage}
             raise success end
          else skip

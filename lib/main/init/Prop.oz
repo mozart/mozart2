@@ -31,14 +31,13 @@
 %%% path.escape         OZ_PATH_ESCAPE (to escape a path separator)
 %%% user.home           HOME
 
-OS_NAME         = {GET 'os.name'}
-OS_CPU          = {GET 'os.cpu'}
+PLATFORM_OS     = {GET 'platform.os'}
 
 PATH_SEPARATOR  = case {Getenv 'OZ_PATH_SEPARATOR'} of [C] then C
-                  elsecase OS_NAME of win32 then &; else &: end
+                  elsecase PLATFORM_OS of win32 then &; else &: end
 
 PATH_ESCAPE     = case {Getenv 'OZ_PATH_ESCAPE'} of [C] then C
-                  elsecase OS_NAME of win32 then unit else &\\ end
+                  elsecase PLATFORM_OS of win32 then unit else &\\ end
 
 OZ_HOME_        = case {Getenv 'OZ_HOME'} of false then
                      case {Getenv 'OZHOME'} of false then
@@ -80,5 +79,4 @@ OZ_TRACE_LOAD   = case {Getenv 'OZ_TRACE_LOAD'} of false then false
 {SET 'oz.search.path'   OZ_SEARCH_PATH  }
 {SET 'oz.search.load'   OZ_SEARCH_LOAD  }
 {SET 'user.home'        USER_HOME       }
-{SET 'platform'         OS_NAME#OS_CPU  }
 {SET 'oz.trace.load'    OZ_TRACE_LOAD   }

@@ -162,8 +162,7 @@ in
                 end
             get:fun {$ B} {Access Trace}==TraceON end)
 
-      PLATFORM = case {Property.get 'platform'} of Name#Cpu
-                 then Name#'-'#Cpu else 'unknown' end
+      PLATFORM = {Property.get 'platform.name'}
 
       class RootManager from BaseManager
 

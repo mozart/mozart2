@@ -531,6 +531,22 @@ define
                {Dictionary.toRecord DictEntries V}
             end
          end
+         %% WeakDictionary Secific Functions
+         local
+            WeakDictKeys    = {NewName}
+            WeakDictItems   = {NewName}
+            WeakDictEntries = {NewName}
+         in
+            fun {ShowWeakDictKeys V W D}
+               WeakDictKeys({WeakDictionary.keys V})
+            end
+            fun {ShowWeakDictItems V W D}
+               WeakDictItems({WeakDictionary.items V})
+            end
+            fun {ShowWeakDictCont V W D}
+               {WeakDictionary.toRecord WeakDictEntries V}
+            end
+         end
          %% Class Specific Functions
          local
             OOMeth  = {BN.newUnique 'ooMeth'}
@@ -611,6 +627,12 @@ define
                                                  'Show Items'(ShowDictItems)
                                                  auto('Show Entries'(ShowDictCont))]
                                                 nil)
+                          weakDictionaryMenu # menu(nil
+                                                    nil
+                                                    ['Show Keys'(ShowWeakDictKeys)
+                                                     'Show Items'(ShowWeakDictItems)
+                                                     auto('Show Entries'(ShowWeakDictCont))]
+                                                    nil)
                           classMenu      # menu(nil
                                                 nil
                                                 [auto('Show Entries'(MapClass))]

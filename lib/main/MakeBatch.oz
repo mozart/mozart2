@@ -19,34 +19,6 @@
 %%% WARRANTIES.
 %%%
 
-declare
-local
-   Load = {`Builtin` load 2}
-in
-   NewSP = {Load 'SP.ozc'}
-   SP = {NewSP m}
-   \insert 'SP.env'
-   = SP
-
-   NewOP = {Load 'OP.ozc'}
-   OP = {NewOP m('SP': SP)}
-   \insert 'OP.env'
-   = OP
-
-   NewAP = {Load 'AP.ozc'}
-   AP = {NewAP m('SP':SP 'OP':OP)}
-   \insert 'AP.env'
-   = AP
-end
-
-\ifdef NEWCOMPILER
-%% Inserting a bogus directive here splits this file into two directives.
-%% This implied that after loading the above components, the environment
-%% gets reannotated by the compiler, providing for more opportunities for
-%% optimization.
-\switch
-\endif
-
 {Application.exec
  'ozbatch'
  c('SP':       eager

@@ -42,7 +42,8 @@ in
    in
       local
          Connection = {NewConnection}
-         \insert DP/Site
+         \insert 'DP/Remote.oz'
+         \insert 'DP/Site.oz'
       in
          \insert 'DP.env'
       end

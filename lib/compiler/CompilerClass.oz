@@ -513,27 +513,6 @@ local
                   end
                end
             end
-            if CompilerStateClass, getSwitch(warnredecl $) then
-               {ForAll DeclaredGVs
-                proc {$ GV} PrintName = {GV getPrintName($)} in
-                   case CompilerStateClass, lookupVariableInEnv(PrintName $)
-                   of undeclared then skip
-                   elseof PreviousGV then C in
-                      {PreviousGV getCoord(?C)}
-                      {@reporter
-                       warn(kind: 'warning'
-                            msg: ('redeclaring top-level variable '#
-                                  pn(PrintName))
-                            items: if C == unit then
-                                      [line('previously declared via putEnv')
-                                       {GV getCoord($)}]
-                                   else
-                                      [{GV getCoord($)} unit
-                                       line('previous declaration was') C]
-                                   end)}
-                   end
-                end}
-            end
             if {@reporter hasSeenError($)} then
                raise rejected end
             end

@@ -21,6 +21,7 @@
 
 local
    BindingAnalysisError = 'binding analysis error'
+   BindingAnalysisWarning = 'binding analysis warning'
 
    fun {IsDeclared Env PrintName}
       case Env of E|Er then
@@ -46,12 +47,13 @@ in
    class BindingAnalysis
       prop final
       attr env: nil freeVariablesOfQuery: unit
-      feat MyTopLevel MyReporter
-      meth init(TopLevel Reporter)
+      feat MyTopLevel MyReporter WarnRedecl
+      meth init(TopLevel Reporter State)
          env <- nil
          freeVariablesOfQuery <- {NewDictionary}
          self.MyTopLevel = TopLevel
          self.MyReporter = Reporter
+         self.WarnRedecl = {State getSwitch(warnredecl $)}
       end
       meth openScope() Env = @env X in
          case Env of E|_ then
@@ -78,6 +80,16 @@ in
          env <- Dr
       end
       meth bind(PrintName Coord ?V) X Env = @env (D#G#Hd#Tl)|Dr = Env in
+         if self.WarnRedecl then TopV in
+            {self.MyTopLevel lookupVariableInEnv(PrintName ?TopV)}
+            case TopV of undeclared then skip
+            else
+               {self.MyReporter warn(coord: Coord
+                                     kind: BindingAnalysisWarning
+                                     msg: ('redeclaring top-level variable `'#
+                                           pn(PrintName)#'\''))}
+            end
+         end
          X = {Dictionary.condGet D PrintName undeclared}
          case X of undeclared then NewTl in
             V = {New Core.variable init(PrintName user Coord)}

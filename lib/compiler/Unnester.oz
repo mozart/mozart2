@@ -476,7 +476,7 @@ define
          switches
 
       meth init(TopLevel Reporter State)
-         BA <- {New BindingAnalysis init(TopLevel Reporter)}
+         BA <- {New BindingAnalysis init(TopLevel Reporter State)}
          CurrentImportFV <- unit
          AdditionalImports <- nil
          reporter <- Reporter

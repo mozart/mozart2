@@ -38,13 +38,9 @@ in
    Dictionary =
    dictionary(new:          NewDictionary
               is:           IsDictionary
-%             isEmpty:      {`Builtin` 'Dictionary.isEmpty'      2}
               put:          {`Builtin` 'Dictionary.put'          3}
-%             condPut:      {`Builtin` 'Dictionary.condPut'      3}
               get:          {`Builtin` 'Dictionary.get'          3}
               condGet:      {`Builtin` 'Dictionary.condGet'      4}
-%             exchange:     {`Builtin` 'Dictionary.exchange'     4}
-%             condExchange: {`Builtin` 'Dictionary.condExchange' 5}
               keys:         {`Builtin` 'Dictionary.keys'         2}
               entries:      Entries
               items:        {`Builtin` 'Dictionary.items'        2}

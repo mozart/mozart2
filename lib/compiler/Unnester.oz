@@ -639,7 +639,7 @@ local
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors FBody C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
-            FImportArgs ImportFS ExportFS FColons FBody2 FFun FImportType
+            FImportArgs ImportFS ExportFS FColons CND FBody2 FFun FImportType
             FRecord GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
@@ -653,8 +653,9 @@ local
             {@BA generate('IMPORT' C ?ImportGV)}
             {@BA closeScope(_)}
             ImportFV = fVar({ImportGV getPrintName($)} C)
+            CND = {CoordNoDebug C}
             FBody2 = fLocal(fAnd(ImportFS ExportFS)
-                            fAnd(FBody fRecord(fAtom('export' C) FColons)) C)
+                            fAnd(FBody fRecord(fAtom('export' CND) FColons)) C)
             FFun = fFun(fDollar(unit) [ImportFV] FBody2
                         fAtom('instantiate' C)|FProp C)
             FImportType = fRecord(fAtom('import' unit) FImportArgs)
@@ -662,8 +663,8 @@ local
                               [fColon(fAtom(apply unit) FFun)
                                fColon(fAtom('import' unit) FImportType)])
             Unnester,
-            UnnestStatement(fApply(fVar('`NewChunk`' unit)
-                                   [fLocal(fEq(FV FRecord C) FV C) FV] C)
+            UnnestStatement(fApply(fVar('`NewChunk`' C)
+                                   [fLocal(fEq(FV FRecord CND) FV C) FV] CND)
                             ?GS)
             GFrontEq|GS
          [] fDoImport(_ GV ImportFV) then

@@ -509,7 +509,7 @@ in
             end
          else
             %%
-            '<Cell: ' # {System.termToVirtualString Term} # '>'
+            '<Cell: ' # {System.valueToVirtualString Term 10 10} # '>'
          end
       end
    end

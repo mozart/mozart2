@@ -309,20 +309,6 @@ define
        [VO] CS VInter VTl}
    end
 
-   fun {GuardNeedsThread VInstr}
-      if {IsFree VInstr} then false
-      else
-         case VInstr of nil then false
-         [] vEquateNumber(_ _ _ Cont) then {GuardNeedsThread Cont}
-         [] vEquateLiteral(_ _ _ Cont) then {GuardNeedsThread Cont}
-         [] vEquateRecord(_ _ _ _ _ Cont) then {GuardNeedsThread Cont}
-         [] vUnify(_ _ _ Cont) then {GuardNeedsThread Cont}
-         [] vFailure(_ Cont) then {GuardNeedsThread Cont}   %--** emulator bug?
-         else true
-         end
-      end
-   end
-
    fun {GuardIsShallow VInstr}
       if {IsFree VInstr} then true
       else
@@ -336,8 +322,47 @@ define
       end
    end
 
-   proc {MakeThread VHd VTl VInstr Coord}
-      VHd = vThread(_ VInstr Coord VTl _)
+   local
+      fun {GuardNeedsThread VInstr}
+         if {IsFree VInstr} then false
+         else
+            case VInstr of nil then false
+            [] vEquateNumber(_ _ _ Cont) then {GuardNeedsThread Cont}
+            [] vEquateLiteral(_ _ _ Cont) then {GuardNeedsThread Cont}
+            [] vEquateRecord(_ _ _ _ _ Cont) then {GuardNeedsThread Cont}
+            [] vUnify(_ _ _ Cont) then {GuardNeedsThread Cont}
+            [] vFailure(_ Cont) then {GuardNeedsThread Cont}   %--** vm bug?
+            else true
+            end
+         end
+      end
+   in
+      proc {MakeGuardThread GuardVHd GuardVTl VHd VTl CS Coord}
+         if {GuardNeedsThread GuardVHd} then
+            GRegs Code NLiveRegs DefReg FileName Line Col VInter
+         in
+            if {CS.switches getSwitch(warnopt $)} then
+               {CS.reporter
+                warn(coord: Coord kind: 'optimization warning'
+                     msg: ('translating `cond\', `or\', `dis\' or `choice\' '#
+                           'clause with thread'))}
+            end
+            GuardVTl = nil
+            {CS endDefinition(GuardVHd nil nil ?GRegs ?Code ?NLiveRegs)}
+            {CS newReg(?DefReg)}
+            case Coord of unit then FileName = '' Line = 1 Col = 0
+            else FileName = Coord.1 Line = Coord.2 Col = Coord.3
+            end
+            VHd = vDefinition(_ DefReg
+                              pid('' 0 pos(FileName Line Col) nil NLiveRegs)
+                              unit GRegs Code VInter)
+            VInter = vCallBuiltin(_ 'Thread.create' [DefReg] Coord VTl)
+         else
+            {CS cancelDefinition()}
+            VHd = GuardVHd
+            GuardVTl = VTl
+         end
+      end
    end
 
    class SwitchHashTable
@@ -471,21 +496,16 @@ define
             VClauses =
             {FoldL Clauses
              fun {$ In LocalVars#Subpatterns#Coord#Body}
-                GuardVHd GuardVTl GuardVInstr Cont BodyVInstr
+                GuardVHd GuardVTl GuardVInstr BodyVInstr
              in
+                {CS startDefinition()}
                 {MakeGuard Subpatterns VOs GuardVHd GuardVTl}
-                if {GuardNeedsThread GuardVHd} then
-                   GuardVTl = nil
-                   {MakeThread GuardVInstr Cont GuardVHd Coord}
-                else
-                   GuardVTl = Cont
-                   GuardVInstr = GuardVHd
-                end
-                Cont = vAsk(_ nil)
-                if CS.debugInfoVarnamesSwitch then Regs Cont3 Cont4 in
-                   {MakePermanent LocalVars ?Regs BodyVInstr Cont3}
-                   {CodeGenList Body CS Cont3 Cont4}
-                   {Clear Regs Cont4 nil}
+                {MakeGuardThread GuardVHd GuardVTl GuardVInstr vAsk(_ nil)
+                 CS Coord}
+                if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
+                   {MakePermanent LocalVars ?Regs BodyVInstr Cont1}
+                   {CodeGenList Body CS Cont1 Cont2}
+                   {Clear Regs Cont2 nil}
                 else
                    {CodeGenList Body CS BodyVInstr nil}
                 end
@@ -920,7 +940,7 @@ define
          Code =
          lbl(StartLabel)|
          definition(x(0) EndLabel
-                    pid('Toplevel abstraction' 0 pos('' 0 0) [native]
+                    pid('Toplevel abstraction' 0 pos('' 1 0) [native]
                         NLiveRegs)
                     unit {List.mapInd GRegs fun {$ I _} g(I - 1) end}
                     BodyCode)|
@@ -1266,24 +1286,16 @@ define
           end}
          {SHT Msg}
       end
-      meth makeCondClause(CS VO $)
-         GuardVHd GuardVTl GuardVInstr Cont BodyVInstr
-      in
+      meth makeCondClause(CS VO $) GuardVHd GuardVTl GuardVInstr BodyVInstr in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
+         {CS startDefinition()}
          {@pattern makeEquation(CS VO GuardVHd GuardVTl)}
-         if {GuardNeedsThread GuardVHd} then Coord in
-            {@pattern getCoord(?Coord)}
-            GuardVTl = nil
-            {MakeThread GuardVInstr Cont GuardVHd Coord}
-         else
-            GuardVTl = Cont
-            GuardVInstr = GuardVHd
-         end
-         Cont = vAsk(_ nil)
-         if CS.debugInfoVarnamesSwitch then Regs Cont3 Cont4 in
-            {MakePermanent @localVars ?Regs BodyVInstr Cont3}
-            {CodeGenList @statements CS Cont3 Cont4}
-            {Clear Regs Cont4 nil}
+         {MakeGuardThread GuardVHd GuardVTl GuardVInstr vAsk(_ nil) CS
+          {@pattern getCoord($)}}
+         if CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
+            {MakePermanent @localVars ?Regs BodyVInstr Cont1}
+            {CodeGenList @statements CS Cont1 Cont2}
+            {Clear Regs Cont2 nil}
          else
             {CodeGenList @statements CS BodyVInstr nil}
          end
@@ -1958,21 +1970,10 @@ define
    class CodeGenClause
       meth codeGen(CS ?GuardVInstr ?VTl ?Cont ?BodyVInstr) GuardVHd GuardVTl in
          {ForAll @localVars proc {$ V} {V setReg(CS)} end}
+         {CS startDefinition()}
          {CodeGenList @guard CS GuardVHd GuardVTl}
-         if {GuardNeedsThread GuardVHd} then Coord in
-            {@guard.1 getCoord(?Coord)}
-            if {CS.switches getSwitch(warnopt $)} then
-               {CS.reporter
-                warn(coord: Coord kind: 'optimization warning'
-                     msg: ('translating `cond\', `or\', `dis\' or `choice\' '#
-                           'clause with thread'))}
-            end
-            GuardVTl = nil
-            {MakeThread GuardVInstr VTl GuardVHd Coord}
-         else
-            GuardVTl = VTl
-            GuardVInstr = GuardVHd
-         end
+         {MakeGuardThread GuardVHd GuardVTl GuardVInstr Cont
+          CS {@guard.1 getCoord($)}}
          Cont = case @kind of ask then vAsk(_ nil)
                 [] wait then vWait(_ nil)
                 [] waitTop then vWaitTop(_ nil)

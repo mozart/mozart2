@@ -301,7 +301,6 @@ define
             [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] endDefinition(L) then AssemblerClass, declareLabel(L)
             [] branch(L) then AssemblerClass, declareLabel(L)
-            [] 'thread'(L) then AssemblerClass, declareLabel(L)
             [] exHandler(L) then AssemblerClass, declareLabel(L)
             [] createCond(L) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
@@ -402,9 +401,6 @@ define
             [] branch(L) then A in
                A = {Dictionary.get @LabelDict L}
                branch(A)
-            [] 'thread'(L) then A in
-               A = {Dictionary.get @LabelDict L}
-               'thread'(A)
             [] exHandler(L) then A in
                A = {Dictionary.get @LabelDict L}
                exHandler(A)

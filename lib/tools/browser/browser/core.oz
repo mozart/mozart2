@@ -56,14 +56,6 @@ MetaGetStrength = {`Builtin` metaGetStrength noHandler}
 %% Equality on terms using their physical location (pointers);
 EQ = !System.eq
 
-%%
-%% X is a record, F is a literal. Do an immediate test whether X has
-%% the feature F.  Gives a type error if X or F is of wrong type.
-%% *It never suspends*;
-%%
-%% It could be used e.g. for filtering (already) non-existing features
-%% out of a record;
-% TestC = {`Builtin` 'testCB' noHandler}
 
 %%
 %% it takes three arguments - a term, depth and width has to be

@@ -26,6 +26,7 @@ import
    DPMisc
    Module
    System
+%   Browser
    Pickle
    OS
 export
@@ -44,7 +45,7 @@ define
 
    %% Gets a unique id out of the Requsteor structure
    fun{GetIdFromRequestor Requestor}
-      Requestor %% Add Code here
+      Requestor.id
    end
    %% Check the functor, it is only allowed to importthe ConnectionWrapper
    fun{CheckFunctor Func}
@@ -82,23 +83,20 @@ define
 
            proc{Handover Grant SetUpParameter}
               {Obj unregisterResource(Grant)}
-              if {Dictionary.member ReqDict
-                  {GetIdFromRequestor Obj.requestor}} then
+              if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.handover Obj.requestor Grant SetUpParameter}
               end
            end
 
            proc{ConnFailed Reason}
-              if {Dictionary.member ReqDict
-                  {GetIdFromRequestor Obj.requestor}} then
+              if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.connFailed Obj.requestor Reason}
               end
            end
 
            proc{FreeConnGrant Grant}
               {Obj unregisterResource(Grant)}
-              if {Dictionary.member ReqDict
-                  {GetIdFromRequestor Obj.requestor}} then
+              if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.freeConnGrant Obj.requestor Grant}
               end
            end
@@ -128,16 +126,18 @@ define
       prop
          locking
       feat
+         id
          requestor
          moduleManager
       attr
          allocatedResources:nil
          localState
-      meth init(Requestor LocalOzState DistOzState)
+      meth init(Id Requestor LocalOzState DistOzState)
          ConnectionFunctor
          ConnectModule
       in
          try
+            self.id=Id
             self.requestor = Requestor
             case DistOzState.type of
                ordinary then
@@ -194,38 +194,46 @@ define
          end
       end
    end
-   ReqDict
+   OngoingRequests
 in
    proc{InitConnection Stream}
-      ReqDict = {NewDictionary}
+      OngoingRequests = {NewDictionary}
+%      thread {Browser.browse Stream} end
       {ForAll Stream
        proc{$ Request}
+\ifdef DBG
+          {Wait Request}
+          {System.show got(Request)}
+\endif
           case Request of
              connect(Requestor LocalOzState DistOzState) then
              thread
                 Id = {GetIdFromRequestor Requestor}
              in
-                if {Dictionary.member ReqDict Id} then
+                if {Dictionary.member OngoingRequests Id} then
                    raise already_connecting(Id) end
                 end
-                ReqDict.Id:={Thread.this}
+                OngoingRequests.Id:={Thread.this}
                 try
-                   _ = {New ConnectionController init(Requestor
+                   _ = {New ConnectionController init(Id Requestor
                                                       LocalOzState
                                                       DistOzState)}
                 catch X then
-                   raise X end
+                   raise X end % AN! this is not the release behaviour, it
+                               % should simply be discarded
 %                  {System.showError "Connection proc failed to execute"}
                 end
-                {Dictionary.remove ReqDict Id}
+                {Dictionary.remove OngoingRequests Id}
              end
           elseof abort(Requestor) then
              Id = {GetIdFromRequestor Requestor}
           in
-             if{Dictionary.member ReqDict Id} then
-                {Thread.terminate ReqDict.Id}
-                {Dictionary.remove ReqDict Id}
-             end
+             try
+                if{Dictionary.member OngoingRequests Id} then
+                   {Dictionary.remove OngoingRequests Id}
+                   {Thread.terminate OngoingRequests.Id}
+                end
+             catch _ then skip end
           else
              {System.showError "Warning Connection Wrapper called with wrong parameters"}
 %            {System.showError {Value.toVirtualString Request 100 100}}

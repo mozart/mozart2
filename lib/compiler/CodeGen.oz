@@ -1028,7 +1028,7 @@ local
       meth codeGen(CS VHd VTl)
          case {IsDet self.codeGenMakeEquateLiteral} then
             % the application is either a toplevel application of NewName
-            % or any application of getTrue, getFalse, or NewUniqueName:
+            % or any application of NewUniqueName:
             VHd = vEquateLiteral(_ self.codeGenMakeEquateLiteral
                                  {{List.last @actualArgs} reg($)} VTl)
          else

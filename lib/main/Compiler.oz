@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -19,7 +18,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-
 
 declare
 fun
@@ -33,81 +31,15 @@ fun
    = IMPORT.'OP'
    \insert 'CP.env'
    = IMPORT.'CP'
-   \insert 'WP.env'
-   = IMPORT.'WP'
-   \insert 'Browser.env'
-   = IMPORT.'Browser'
 in
    local
-      CiTkReq
-
       \insert 'compiler/InsertAll.oz'
 
-      CompilerInterfaceTk =
-      thread
-         {Wait CiTkReq}
-         {NewCompilerInterfaceTk Tk TkTools Open Browse}
-      end
-      CompilerInterfaceEmacs = {NewCompilerInterfaceEmacs Open OS}
-      CompilerInterfaceQuiet = {NewCompilerInterfaceQuiet}
+      GetOPICompiler = {`Builtin` 'getOPICompiler' 1}
 
-      local
-         class TextFile from Open.file Open.text
-            prop final
-            meth readQuery($) S in
-               Open.text, getS(?S)
-               case S == false orelse ({HasFeature S 1} andthen S.1 == 4) then ""  % 4 == ^D
-               else S#'\n'#TextFile, readQuery($)
-               end
-            end
-         end
-
-         SetOPICompiler = {`Builtin` setOPICompiler 1}
-         GetOPICompiler = {`Builtin` getOPICompiler 1}
-         FileExists = {`Builtin` ozparser_fileExists 2}
-
-         proc {CompilerReadEvalLoop} File VS in
-            File = {New TextFile init(name: stdin flags: [read])}
-            {File readQuery(?VS)}
-            {File close()}
-            {{GetOPICompiler} feedVirtualString(VS)}
-            {CompilerReadEvalLoop}
-         end
-      in
-         proc {StartCompiler Env} Compiler OZRC in
-            Compiler = {New CompilerInterfaceEmacs init()}
-            {Compiler mergeEnv(Env)}
-            {SetOPICompiler Compiler}
-
-            % Try to load some ozrc file:
-            OZRC = {OS.getEnv 'OZRC'}
-            case OZRC \= false then
-               {Compiler feedFile(OZRC)}
-            elsecase {FileExists '~/.oz/ozrc'} then
-               {Compiler feedFile('~/.oz/ozrc')}
-            elsecase {FileExists '~/.ozrc'} then   % note: deprecated
-               {Compiler feedFile('~/.ozrc')}
-            else
-               skip
-            end
-
-            {CompilerReadEvalLoop}
-         end
-      end
-
-      proc {GetOPICompiler ?CompilerObject}
-         try
-            {{`Builtin` 'getOPICompiler' 1} ?CompilerObject}
-         catch error(...) then
-            CompilerObject = false
-         end
-      end
-
-      Compiler = compiler(start: StartCompiler
-                          interface: interface(tk: CompilerInterfaceTk
-                                               tkRequest: CiTkReq
-                                               emacs: CompilerInterfaceEmacs
-                                               quiet: CompilerInterfaceQuiet)
+      Compiler = compiler(compilerClass: CompilerClass
+                          genericInterface: CompilerInterfaceGeneric
+                          quietInterface: CompilerInterfaceQuiet
                           getOPICompiler: GetOPICompiler)
    in
       \insert 'Compiler.env'

@@ -73,7 +73,7 @@ FNATIVES = \
 
 SONATIVES = $(FNATIVES:%=%.so-$(OZPLATFORM))
 
-DIRS = base space fd fs scheduling dp tools bench
+DIRS = base space fd fs scheduling dp tools bench dp-bench
 
 # All tests
 COMPONENTS = \

@@ -508,6 +508,13 @@ in
                    [] ozma then
                       OFN = {ChangeExtension Arg ".ozm"}
                    [] feedtoemulator then
+                      case {Access MakeDepend} then
+                         {Report
+                          error(kind: UsageError
+                                msg: ('--makedepend may not be given '#
+                                      'with --feedtoemulator'))}
+                      else skip
+                      end
                       OFN = unit
                    [] dump then
                       OFN = {ChangeExtension Arg ".ozf"}
@@ -528,7 +535,7 @@ in
                    {Report
                     error(kind: UsageError
                           msg: ('no output file name must be '#
-                                'specified for feedtoemulator'))}
+                                'specified for --feedtoemulator'))}
                 else
                    OFN = {Access OutputFile}
                 end

@@ -172,7 +172,7 @@ local
                %% Start garbage collection thread, if requested
                if Argv.gc > 0 then
                   proc {GcLoop}
-                     {System.gcDo} {Wait Argv.gc} {GcLoop}
+                     {System.gcDo} {Delay Argv.gc} {GcLoop}
                   end
                in
                   thread {GcLoop} end

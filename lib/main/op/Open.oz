@@ -663,11 +663,77 @@ local
       end
    end
 
+
+   local
+      fun {GetOptions As N ?M}
+         case As of nil then M=N nil
+         [] A|Ar then
+            case {IsInt A} then {GetOptions Ar N+1 M}
+            else M=N As
+            end
+         end
+      end
+
+      fun {BuildOptions As Tag}
+         case As of nil then ''
+         [] A|Ar then ' '#A#'="'#Tag.A#'"'#{BuildOptions Ar Tag}
+         end
+      end
+   in
+      class Html
+
+         meth header
+            {self write(vs:'Content-type: text/html\n\n')}
+         end
+
+         meth WriteTagBody(I N Tag)
+            case I>N then skip else
+               Html,tag(Tag.I) Html,WriteTagBody(I+1 N Tag)
+            end
+         end
+
+         meth tag(Tag)
+            case {IsRecord Tag} then
+               L={Label Tag}
+            in
+               case {HtmlTable.isTag L} then N in
+                  {self write(vs:
+                                 ('<'#L#
+                                  case {IsTuple Tag} then
+                                     N={Width Tag} ''
+                                  else
+                                     As={GetOptions {Arity Tag} 0 ?N}
+                                  in
+                                     {BuildOptions As Tag}
+                                  end#
+                               '>'))}
+                  Html,WriteTagBody(1 N Tag)
+                  case {HtmlTable.isNonFinalTag L} then skip else
+                     {self write(vs:'</'#L#'>')}
+                  end
+                  case {HtmlTable.isNlTag L} then
+                     {self write(vs:'\n')}
+                  else skip
+                  end
+               elsecase L=='#' then
+                  Html,WriteTagBody(1 {Width Tag} Tag)
+               else
+                  {self write(vs:Tag)}
+               end
+            elsecase {IsProcedure Tag} then Html,tag({Tag})
+            else {self write(vs:Tag)}
+            end
+         end
+
+      end
+   end
+
 in
 
    Open = open(file:   File
                text:   Text
                socket: Socket
-               pipe:   Pipe)
+               pipe:   Pipe
+               html:   Html)
 
 end

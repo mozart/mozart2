@@ -27,7 +27,7 @@ fun {Usage}
    '--help, --usage, -h, -?\n' #
    '    Print this message.\n' #
    '--[no]verbose (default: false)\n' #
-   '    Print messages on activities perfomed.\n' #
+   '    Print messages on activities performed.\n' #
    '--[no]relative (default: true)\n' #
    '    Include functors referred by relative pathes.\n' #
    '--include=URL,..,URL (default: none)\n' #

@@ -157,7 +157,7 @@ in
          H V
       in
          H = N div 2
-         case H + H == N then
+         if H + H == N then
             V = {CreateSpaces H}
             V # V
          else
@@ -231,8 +231,8 @@ in
             {SplitPairs Pairs LObjs RObjs}
 
             %%
-            case LObjs \= nil then {GetInnerMostObj LObjs}
-            elsecase RObjs \= nil then {GetOuterMostObj RObjs}.ParentObj
+            if LObjs \= nil then {GetInnerMostObj LObjs}
+            elseif RObjs \= nil then {GetOuterMostObj RObjs}.ParentObj
             else
 \ifdef DEBUG_RM
                {BrowserWarning 'GetTargetObj: no objects??!'}
@@ -285,9 +285,8 @@ in
             InitValue
          [] Obj|R then
 \ifdef DEBUG_RM
-            case R \= nil then
+            if R \= nil then
                {BrowserWarning 'GetTargetObj: multiple outer-most objects?'}
-            else skip
             end
 \endif
             Obj
@@ -307,9 +306,8 @@ in
             InitValue
          [] Obj|R then
 \ifdef DEBUG_RM
-            case R \= nil then
+            if R \= nil then
                {BrowserWarning 'GetTargetObj: multiple inner-most objects?'}
-            else skip
             end
 \endif
             Obj
@@ -381,8 +379,7 @@ in
             %% 'Size'/'SavedSize' are initialized already;
 
             %%
-            case IsEncRep then MetaRepManagerObject , PutOP
-            else skip
+            if IsEncRep then MetaRepManagerObject , PutOP
             end
 
             %%
@@ -390,8 +387,7 @@ in
             {self AnchorLB}
 
             %%
-            case IsEncRep then MetaRepManagerObject , PutCP
-            else skip
+            if IsEncRep then MetaRepManagerObject , PutCP
             end
 
             %%
@@ -530,9 +526,8 @@ in
       meth !PutRefName(refName: RefNameIn)
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::PutRefName is applied '}
-         case @RefName \= '' then
+         if @RefName \= '' then
             {BrowserError 'RepManagerObject::PutRefName: error!'}
-         else skip
          end
 \endif
          %%
@@ -555,9 +550,8 @@ in
       meth !PutEncRefName(refName: RefNameIn)
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::PutEncRefName is applied'}
-         case @RefName \= '' then
+         if @RefName \= '' then
             {BrowserError 'RepManagerObject::PutEncRefName: error!'}
-         else skip
          end
 \endif
          %%
@@ -607,9 +601,8 @@ in
       meth !PutOP
 \ifdef DEBUG_RM
          {Show 'RepManagerObject::PutOP is applied'}
-         case @HaveBraces then
+         if @HaveBraces then
             {BrowserError 'RepManagerObject::PutOP: error!'}
-         else skip
          end
 \endif
          %%
@@ -643,9 +636,9 @@ in
             RNSize = @RefNameSize
 
             %%
-            case @HaveBraces then
+            if @HaveBraces then
                {WO advanceCursor(RNSize + DSpace)} % at least DSpace;
-            elsecase RNSize == 0 then skip         % no parentheses;
+            elseif RNSize == 0 then skip         % no parentheses;
             else {WO advanceCursor(RNSize)}
             end
          end
@@ -655,24 +648,23 @@ in
       %% Skip a closing parenthesis, if any;
       meth !SkipAuxEnd
          %%
-         case @HaveBraces then {self.WidgetObj advanceCursor(DSpace)}
-         else skip              % no parentheses;
+         if @HaveBraces then {self.WidgetObj advanceCursor(DSpace)}
          end
       end
 
       %%
       meth !GetAuxSize($)
-         @RefNameSize + case @HaveBraces then DDSpace else 0 end
+         @RefNameSize + if @HaveBraces then DDSpace else 0 end
       end
 
       %%
       meth !GetAuxSizeB($)
-         @RefNameSize + case @HaveBraces then DSpace else 0 end
+         @RefNameSize + if @HaveBraces then DSpace else 0 end
       end
 
       %%
       meth !GetAuxSizeE($)
-         case @HaveBraces then DSpace else 0 end
+         if @HaveBraces then DSpace else 0 end
       end
 
       %%
@@ -801,10 +793,9 @@ in
       %% block. But we have only one :-))
       meth !AnchorLB
 \ifdef DEBUG_RM
-         case MetaRepManagerObject , GetAuxSize($) == @Size then
+         if MetaRepManagerObject , GetAuxSize($) == @Size then
             {BrowserError
              'RepManagerObject: a primitive term cannot be empty!!!'}
-         else skip
          end
 \endif
          skip
@@ -1012,7 +1003,7 @@ in
             Group = CompoundRepManagerObject , GetGroup(b:B ln:N group:$)
 
             %%
-            case
+            if
                case {Label Group}
                of e   then false
                [] t   then false
@@ -1027,7 +1018,6 @@ in
                   false
                end
             then {self.WidgetObj setMarkGravity(Group.mark Gravity)}
-            else skip
             end
          end
       end
@@ -1068,10 +1058,9 @@ in
          %%     'AnchorGroup' method (see comments in the 'block'
          %%     method);
          %%
-         case @CurrentBlock == @MaxBlock then skip
-         else B N in
+         if @CurrentBlock \= @MaxBlock then B N in
             %%
-            case CompoundRepManagerObject , GetLastGroup(b:B ln:N found:$)
+            if CompoundRepManagerObject , GetLastGroup(b:B ln:N found:$)
             then CompoundRepManagerObject , AnchorGroup(b:B ln:N)
             else
                {BrowserError
@@ -1164,13 +1153,12 @@ in
             %%
             %% that is, a new block cannot be created after a
             %% non-existing one;
-            case
+            if
                N < 0 orelse
                CM == NoBlock andthen N \= @MaxBlock + 1
             then
                {BrowserError
                 'CompoundRepManagerObject::block: out of order!'}
-            else skip           % ok
             end
          end
 \endif
@@ -1180,18 +1168,18 @@ in
             Base = N * DInfinite
 
             %%
-            case N == PrevBlock then skip
+            if N == PrevBlock then skip
                %% #1: stay at the place;
-            elsecase N > @MaxBlock then          % N > 0;
+            elseif N > @MaxBlock then          % N > 0;
                %% #2 & #3: a new block to be created;
                %%
-               case PrevBlock == N - 1 then skip
+               if PrevBlock == N - 1 then skip
                   %% #2': don't touch the cursor;
                else PB in                         % N > 0;
                   %% #3': some other block - move cursor?
 
                   %%
-                  case
+                  if
                      CompoundRepManagerObject
                      , GetPrevBlock(sb:N-1 b:PB found:$)
                   then PLN in
@@ -1232,13 +1220,13 @@ in
                %% Do we enter a (still) empty block after a direct
                %% predecessor? This is a frequent case where cursor
                %% movement can be avoided;
-               case
+               if
                   PrevBlock == N - 1 andthen
                   {Dictionary.get self.Subterms Base} == 0
                then skip
                else PB in
                   %%
-                  case
+                  if
                      CompoundRepManagerObject
                      , GetPrevBlock(sb:N b:PB found:$)
                   then PLN in
@@ -1294,17 +1282,16 @@ in
          local NoBlock CB Base CM in
             NoBlock = {NewName}
             CB = @CurrentBlock
-            Base = case {Int.is CB} then (CB * DInfinite) else NoBlock end
+            Base = if {Int.is CB} then (CB * DInfinite) else NoBlock end
             CM = {Dictionary.condGet self.Subterms Base NoBlock}
 
             %%
-            case CB == InitValue orelse CM == NoBlock then
+            if CB == InitValue orelse CM == NoBlock then
                {BrowserError
                 'CompoundRepManagerObject::StoreNewGroup: no block!'}
-            elsecase CM + 1 \= LN then
+            elseif CM + 1 \= LN then
                {BrowserError
                 'CompoundRepManagerObject::StoreNewGroup: out of order!'}
-            else skip           % ok
             end
          end
 \endif
@@ -1329,17 +1316,16 @@ in
          {Show 'CompoundRepManagerObject::ReplaceGroup: ' # B # LN # Group}
          local NoBlock Base CM in
             NoBlock = {NewName}
-            Base = case {Int.is B} then (B * DInfinite) else NoBlock end
+            Base = if {Int.is B} then (B * DInfinite) else NoBlock end
             CM = {Dictionary.condGet self.Subterms Base NoBlock}
 
             %%
-            case B < 0 orelse B > @MaxBlock orelse CM == NoBlock then
+            if B < 0 orelse B > @MaxBlock orelse CM == NoBlock then
                {BrowserError
                 'CompoundRepManagerObject::ReplaceGroup: no block!'}
-            elsecase LN < 1 orelse LN > CM then
+            elseif LN < 1 orelse LN > CM then
                {BrowserError
                 'CompoundRepManagerObject::ReplaceGroup: no group!'}
-            else skip           % ok
             end
          end
 \endif
@@ -1353,17 +1339,16 @@ in
          {Show 'CompoundRepManagerObject::GetGroup: ' # B # LN}
          local NoBlock Base CM in
             NoBlock = {NewName}
-            Base = case {Int.is B} then (B * DInfinite) else NoBlock end
+            Base = if {Int.is B} then (B * DInfinite) else NoBlock end
             CM = {Dictionary.condGet self.Subterms Base NoBlock}
 
             %%
-            case B < 0 orelse B > @MaxBlock orelse CM == NoBlock then
+            if B < 0 orelse B > @MaxBlock orelse CM == NoBlock then
                {BrowserError
                 'CompoundRepManagerObject::GetGroup: no block!'}
-            elsecase LN < 1 orelse LN > CM then
+            elseif LN < 1 orelse LN > CM then
                {BrowserError
                 'CompoundRepManagerObject::GetGroup: no group!'}
-            else skip           % ok
             end
          end
 \endif
@@ -1378,17 +1363,16 @@ in
          local NoBlock CB Base CM in
             NoBlock = {NewName}
             CB = @CurrentBlock
-            Base = case {Int.is CB} then (CB * DInfinite) else NoBlock end
+            Base = if {Int.is CB} then (CB * DInfinite) else NoBlock end
             CM = {Dictionary.condGet self.Subterms Base NoBlock}
 
             %%
-            case CB == InitValue orelse CM == NoBlock then
+            if CB == InitValue orelse CM == NoBlock then
                {BrowserError
                 'CompoundRepManagerObject::RemoveLastGroup: no block!'}
-            elsecase CM < 1 then
+            elseif CM < 1 then
                {BrowserError
                 'CompoundRepManagerObject::RemoveLastGroup: no group!'}
-            else skip           % ok
             end
          end
 \endif
@@ -1433,8 +1417,8 @@ in
       %% 'Found' says whether it was found at all;
       %%
       meth GetNextBlock(sb:SB b:?B found:$)
-         case SB > @MaxBlock then false
-         elsecase {Dictionary.get self.Subterms SB*DInfinite} > 0
+         if SB > @MaxBlock then false
+         elseif {Dictionary.get self.Subterms SB*DInfinite} > 0
          then
             B = SB
             true
@@ -1444,8 +1428,8 @@ in
          end
       end
       meth GetPrevBlock(sb:SB b:?B found:$)
-         case SB < 0 then false
-         elsecase {Dictionary.get self.Subterms SB*DInfinite} > 0
+         if SB < 0 then false
+         elseif {Dictionary.get self.Subterms SB*DInfinite} > 0
          then
             B = SB
             true
@@ -1470,8 +1454,7 @@ in
       meth GetLastGroup(b:?B ln:?N found:Found)
          CompoundRepManagerObject
          , GetPrevBlock(sb:@MaxBlock b:B found:Found)
-         case Found then N = {Dictionary.get self.Subterms B*DInfinite}
-         else skip
+         if Found then N = {Dictionary.get self.Subterms B*DInfinite}
          end
 \ifdef DEBUG_RM
          {Show 'CompoundRepManagerObject::GetLastGroup' # Found # (B#N)}
@@ -1488,10 +1471,10 @@ in
          local Out in Out =
 \endif
             %%
-            case N > 1 then
+            if N > 1 then
                PB = B  PN = N-1
                true
-            elsecase
+            elseif
                B > 0 andthen
                CompoundRepManagerObject , GetPrevBlock(sb:(B-1) b:PB found:$)
             then
@@ -1513,9 +1496,9 @@ in
          local Out in Out =
 \endif
             %%
-            case N >= {Dictionary.get self.Subterms B*DInfinite} then
+            if N >= {Dictionary.get self.Subterms B*DInfinite} then
                %%
-               case
+               if
                   CompoundRepManagerObject
                   , GetNextBlock(sb:(B+1) b:NB found:$)
                then
@@ -1562,9 +1545,9 @@ in
 
             %%
             Cont =
-            case {self  LM(group:Group b:B ln:N arg:Arg cont:$)}
+            if {self  LM(group:Group b:B ln:N arg:Arg cont:$)}
             then NB NN in
-               case {self  NextMeth(sb:B sln:N b:NB ln:NN found:$)}
+               if {self  NextMeth(sb:B sln:N b:NB ln:NN found:$)}
                then
                   CompoundRepManagerObject
                   , ApplyGroups(b:NB ln:NN next:NextMeth
@@ -1586,7 +1569,7 @@ in
       %%
       meth ApplyAllGroups(lm:LM arg:Arg cont:$)
          local B N in
-            case CompoundRepManagerObject , GetFirstGroup(b:B ln:N found:$)
+            if CompoundRepManagerObject , GetFirstGroup(b:B ln:N found:$)
             then
                CompoundRepManagerObject ,
                ApplyGroups(b:B ln:N next:IncNumber lm:LM arg:Arg cont:$)
@@ -1596,7 +1579,7 @@ in
       end
       meth ApplyAllGroupsRev(lm:LM arg:Arg cont:$)
          local B N in
-            case CompoundRepManagerObject , GetLastGroup(b:B ln:N found:$)
+            if CompoundRepManagerObject , GetLastGroup(b:B ln:N found:$)
             then
                CompoundRepManagerObject ,
                ApplyGroups(b:B ln:N next:DecNumber lm:LM arg:Arg cont:$)
@@ -1618,7 +1601,7 @@ in
       %%
       meth ApplyObj(group:Group b:_ ln:_ arg:Message cont:$)
          %%
-         case
+         if
             case {Label Group}
             of e   then false
             [] t   then true
@@ -1636,7 +1619,6 @@ in
          then
             %% found a subterm object:
             {Group.obj Message}
-         else skip
          end
 
          %%
@@ -1662,7 +1644,7 @@ in
       %%
       meth UnsetMark(group:Group b:B ln:LN arg:Arg cont:$)
          %%
-         case
+         if
             case {Label Group}
             of e   then false
             [] t   then false
@@ -1680,7 +1662,6 @@ in
          then
             %% found a mark:
             {self.WidgetObj unsetMark(Group.mark)}
-         else skip
          end
 
          %%
@@ -1733,14 +1714,14 @@ in
             %%
             %% If we still have not succeeded in getting of something,
             %% use 'HeadMark' and 'UsedIndentIn':
-            case
+            if
                CompoundRepManagerObject
                , ApplyGroups(b:B ln:LN next:DecNumber
                              lm:AnchorGroupRec arg:Token cont:$)
             then
                %% is something still missing?
                %%
-               case {Token gotMark($)} then skip
+               if {Token gotMark($)} then skip
                else
                   AuxSizeB = CompoundRepManagerObject , GetAuxSizeB($)
                in
@@ -1748,7 +1729,7 @@ in
                end
 
                %%
-               case {Token gotIndent($)} then skip
+               if {Token gotIndent($)} then skip
                else
                   AuxSizeB = CompoundRepManagerObject , GetAuxSizeB($)
                in
@@ -1775,66 +1756,70 @@ in
             %% indentation;
 
             %%
-            case {Token gotMark($)} then skip
-            elsecase GrType
-            of e   then skip
-            [] t   then
-               %% tail mark;
-               {Token setMark(Group.obj.TailMark)}
-            [] s   then
-               {Token incOffset(Group.strSize)}
-            [] st  then
-               %% tail mark;
-               {Token setMark(Group.obj.TailMark)}
-            [] sgs then
-               %% glue mark;
-               {Token setMarkIncOffset(Group.mark
-                                       (Group.str2Size + Group.glueSize))}
-            [] sgt then
-               %% tail mark;
-               {Token setMark(Group.obj.TailMark)}
-            [] gs  then
-               %% glue mark;
-               {Token setMarkIncOffset(Group.mark
-                                       (Group.strSize + Group.glueSize))}
-            [] gt  then
-               %% tail mark;
-               {Token setMark(Group.obj.TailMark)}
+            if {Token gotMark($)} then skip
             else
-               {BrowserError
-                'CompoundRepManagerObject::AnchorGroupRec: group type??!'}
+               case GrType
+               of e   then skip
+               [] t   then
+                  %% tail mark;
+                  {Token setMark(Group.obj.TailMark)}
+               [] s   then
+                  {Token incOffset(Group.strSize)}
+               [] st  then
+                  %% tail mark;
+                  {Token setMark(Group.obj.TailMark)}
+               [] sgs then
+                  %% glue mark;
+                  {Token setMarkIncOffset(Group.mark
+                                          (Group.str2Size + Group.glueSize))}
+               [] sgt then
+                  %% tail mark;
+                  {Token setMark(Group.obj.TailMark)}
+               [] gs  then
+                  %% glue mark;
+                  {Token setMarkIncOffset(Group.mark
+                                          (Group.strSize + Group.glueSize))}
+               [] gt  then
+                  %% tail mark;
+                  {Token setMark(Group.obj.TailMark)}
+               else
+                  {BrowserError
+                   'CompoundRepManagerObject::AnchorGroupRec: group type??!'}
+               end
             end
 
             %%
-            case {Token gotIndent($)} then skip
-            elsecase GrType
-            of e   then skip
-            [] t   then
-               %% fetch 'UsedIndentOut' - and that's all;
-               {Token setIndent({Group.obj GetIndentOut($)})}
-            [] s   then
-               {Token incIndent(Group.strSize)}
-            [] st  then
-               %% 'UsedIndentOut' ...
-               {Token setIndent({Group.obj GetIndentOut($)})}
-            [] sgs then
-               {Token
-                incIndent(Group.strSize + Group.glueSize + Group.str2Size)}
-            [] sgt then
-               %% 'UsedIndentOut' ...
-               {Token setIndent({Group.obj GetIndentOut($)})}
-            [] gs  then
-               {Token incIndent(Group.strSize + Group.glueSize)}
-            [] gt  then
-               %% 'UsedIndentOut' ...
-               {Token setIndent({Group.obj GetIndentOut($)})}
-            else fail           % will fail ever before;
+            if {Token gotIndent($)} then skip
+            else
+               case GrType
+               of e   then skip
+               [] t   then
+                  %% fetch 'UsedIndentOut' - and that's all;
+                  {Token setIndent({Group.obj GetIndentOut($)})}
+               [] s   then
+                  {Token incIndent(Group.strSize)}
+               [] st  then
+                  %% 'UsedIndentOut' ...
+                  {Token setIndent({Group.obj GetIndentOut($)})}
+               [] sgs then
+                  {Token
+                   incIndent(Group.strSize + Group.glueSize + Group.str2Size)}
+               [] sgt then
+                  %% 'UsedIndentOut' ...
+                  {Token setIndent({Group.obj GetIndentOut($)})}
+               [] gs  then
+                  {Token incIndent(Group.strSize + Group.glueSize)}
+               [] gt  then
+                  %% 'UsedIndentOut' ...
+                  {Token setIndent({Group.obj GetIndentOut($)})}
+               else fail           % will fail ever before;
+               end
             end
 
             %%
             %% Now, if both the mark and indent came here, terminate
             %% the loop:
-            case {Token gotMark($)} andthen {Token gotIndent($)}
+            if {Token gotMark($)} andthen {Token gotIndent($)}
             then false else true
             end
          end
@@ -1870,7 +1855,7 @@ in
 
             %%
             Needs =
-            case
+            if
                CompoundRepManagerObject
                , DecNumber(sb:B sln:N b:?PB ln:?PN found:$) == false orelse
                CompoundRepManagerObject
@@ -1901,7 +1886,7 @@ in
 
             %%
             %% first, check the case 1.
-            case
+            if
                case GrType
                of e   then false
                [] t   then true
@@ -1923,7 +1908,7 @@ in
 
                %%
                %% now, look at the case 2.:
-            elsecase
+            elseif
                case GrType
                of e   then false
                [] t   then false
@@ -1962,7 +1947,7 @@ in
           # IndentIn # self.term}
 \endif
          %%
-         case
+         if
             IndentIn == @UsedIndentIn andthen
             @Size == @SavedSize
          then IndentOut = @UsedIndentOut
@@ -2071,7 +2056,7 @@ in
 
             %%
             ReqGlueSize =
-            case
+            if
                ReqNL orelse
                CompoundRepManagerObject , NeedsLineBreak(b:B ln:N needs:$)
             then
@@ -2082,14 +2067,13 @@ in
                 CompoundRepManagerObject , EvalDesc(self.indentDesc $)
                 0}       % it cannot be less than 0. Per definition :-)
 \ifdef DEBUG_RM
-               case ReqIndent >= DInfinite then
+               if ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}
-               else skip
                end
 \endif
 
                %%
-               case ReqIndent < @UsedIndentOut then
+               if ReqIndent < @UsedIndentOut then
                   %%
                   %% that is, it makes sense to break the line here;
                   ReqIndent + DSpace   % + '\n';
@@ -2102,14 +2086,13 @@ in
 \endif
 
             %%
-            case ReqGlueSize == Group.glueSize then
+            if ReqGlueSize == Group.glueSize then
                %% either no glue, or of the same size;
                %%
-               case ReqGlueSize > 0 then
+               if ReqGlueSize > 0 then
                   UsedIndentOut <- ReqIndent
-               else skip
                end
-            elsecase ReqGlueSize > 0 then NewGroup in
+            elseif ReqGlueSize > 0 then NewGroup in
                %% expanded!;
                %%
                %% two subcases - either it was a zero glue, or its
@@ -2118,7 +2101,7 @@ in
                {WO setCursor(Group.mark @UsedIndentOut)}
 
                %%
-               case Group.glueSize == 0 then Spaces in
+               if Group.glueSize == 0 then Spaces in
                   %%
                   %% there were no glue - we have to take care about
                   %% the mark's gravity:
@@ -2130,7 +2113,7 @@ in
                   %%
                else GS in
                   GS = Group.glueSize
-                  case GS > ReqGlueSize then
+                  if GS > ReqGlueSize then
                      %% remove something;
                      {WO [advanceCursor(DSpace)
                           deleteForward(GS - ReqGlueSize)]}
@@ -2181,7 +2164,7 @@ in
             FN = B#N
 
             %%
-            case
+            if
                CompoundRepManagerObject , isGroup(b:B ln:N is:$) andthen
                STObj == CompoundRepManagerObject , GetObjG(b:B ln:N obj:$)
             then MyOldSize MyNewSize in
@@ -2197,7 +2180,6 @@ in
                %%
                %% up to a root term object;
                ControlObject , SizeChanged(MyOldSize MyNewSize)
-            else skip
             end
          end
 
@@ -2326,7 +2308,7 @@ in
             %% Decide whether this glue should be extended or not,
             %% what is done using the 'decision procedure'.
             GlueSize =
-            case
+            if
                {DP @UsedIndentIn GlueIndent LineSize} orelse
                CompoundRepManagerObject
                , NeedsLineBreak(b:@CurrentBlock ln:LN needs:$)
@@ -2339,14 +2321,13 @@ in
                 CompoundRepManagerObject , EvalDesc(self.indentDesc $)
                 0}       % it cannot be less than 0. Per definition :-)
 \ifdef DEBUG_RM
-               case ReqIndent >= DInfinite then
+               if ReqIndent >= DInfinite then
                   {BrowserError '... infinity indentation!!!'}
-               else skip
                end
 \endif
 
                %%
-               case ReqIndent < GlueIndent then Spaces in
+               if ReqIndent < GlueIndent then Spaces in
                   %%
                   %% ... it makes sense to break the line here;
                   Spaces = {CreateSpaces ReqIndent}
@@ -2526,172 +2507,174 @@ in
       %%
       meth EvalDesc(IndExpr $)
          %%
-         case {Int.is IndExpr} then IndExpr
-         elsecase IndExpr
-         of st_size(N) then B LN in
-            N = B#LN
-            %%
-            case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
-            then Group in
-               Group =
-               CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
-
-               %%
-\ifdef DEBUG_RM
-               case
-                  case {Label Group}
-                  of e   then false
-                  [] t   then true
-                  [] s   then false
-                  [] st  then true
-                  [] sgs then false
-                  [] sgt then true
-                  [] gs  then false
-                  [] gt  then true
-                  else
-                     {BrowserError
-                      'CompoundRepManagerObject::EvalDesc: group type??!'}
-                     false
-                  end
-               then skip        % fine - there is an object;
-               else
-                  {BrowserError
-                   'CompoundRepManagerObject::EvalDesc: no object in a group!'}
-               end
-\endif
-
-               %%
-               {Group.obj GetSize($)}
-            else 0
-            end
-
-         [] gr_size(N) then B LN in
-            N = B#LN
-            %%
-            case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
-            then Group in
-               Group =
-               CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
-
-               %%
-               case {Label Group}
-               of e   then 0
-               [] t   then {Group.obj GetSize($)}
-               [] s   then Group.strSize
-               [] st  then {Group.obj GetSize($)} + Group.strSize
-               [] sgs then Group.strSize + Group.str2Size
-               [] sgt then {Group.obj GetSize($)} + Group.strSize
-               [] gs  then Group.strSize
-               [] gt  then {Group.obj GetSize($)}
-               else
-                  {BrowserError
-                   'CompoundRepManagerObject::EvalDesc: group type??!'}
-                  0
-               end
-            else 0
-            end
-
-         [] self_size then @Size
-
-         [] line_size then {self.store read(StoreTWWidth $)}
-
-            %%
-            %% Note that 'UsedIndentOut' contains the current
-            %% position in a line in the 'refineLayout' context, where
-            %% 'EvalDesc' is used!
-         [] current then @UsedIndentOut
-
-         [] st_indent(N) then B LN in
-            N = B#LN
-            %%
-            case CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
-            then Group in
-               Group =
-               CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
-
-               %%
-\ifdef DEBUG_RM
-               case
-                  case {Label Group}
-                  of e   then false
-                  [] t   then true
-                  [] s   then false
-                  [] st  then true
-                  [] sgs then false
-                  [] sgt then true
-                  [] gs  then false
-                  [] gt  then true
-                  else
-                     {BrowserError
-                      'CompoundRepManagerObject::EvalDesc: group type??!'}
-                     false
-                  end
-               then skip        % fine - there is an object;
-               else
-                  {BrowserError
-                   'CompoundRepManagerObject::EvalDesc: no object in a group!'}
-               end
-\endif
-
-               %%
-               {Group.obj GetIndentIn($)}
-            else DInfinite
-            end
-
-         [] self_indent then @UsedIndentIn
-
-         [] '+'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            R1 + R2
-
-         [] '-'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            R1 - R2
-
-         [] 'min'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            {Min R1 R2}
-
-         [] 'max'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            {Max R1 R2}
-
-         [] '>'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            R1 > R2
-
-         [] '<'(A1 A2) then R1 R2 in
-            %%
-            CompoundRepManagerObject , EvalDesc(A1 R1)
-            CompoundRepManagerObject , EvalDesc(A2 R2)
-
-            %%
-            R1 < R2
-
+         if {Int.is IndExpr} then IndExpr
          else
-            {BrowserError
-             'CompoundRepManagerObject::EvalDesc: expression??!'}
-            DInfinite
+            case IndExpr
+            of st_size(N) then B LN in
+               N = B#LN
+               %%
+               if CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
+               then Group in
+                  Group =
+                  CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
+
+                  %%
+\ifdef DEBUG_RM
+                  if
+                     case {Label Group}
+                     of e   then false
+                     [] t   then true
+                     [] s   then false
+                     [] st  then true
+                     [] sgs then false
+                     [] sgt then true
+                     [] gs  then false
+                     [] gt  then true
+                     else
+                        {BrowserError
+                         'CompoundRepManagerObject::EvalDesc: group type??!'}
+                        false
+                     end
+                  then skip        % fine - there is an object;
+                  else
+                     {BrowserError
+                      'CompoundRepManagerObject::EvalDesc: no object in a group!'}
+                  end
+\endif
+
+                  %%
+                  {Group.obj GetSize($)}
+               else 0
+               end
+
+            [] gr_size(N) then B LN in
+               N = B#LN
+               %%
+               if CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
+               then Group in
+                  Group =
+                  CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
+
+                  %%
+                  case {Label Group}
+                  of e   then 0
+                  [] t   then {Group.obj GetSize($)}
+                  [] s   then Group.strSize
+                  [] st  then {Group.obj GetSize($)} + Group.strSize
+                  [] sgs then Group.strSize + Group.str2Size
+                  [] sgt then {Group.obj GetSize($)} + Group.strSize
+                  [] gs  then Group.strSize
+                  [] gt  then {Group.obj GetSize($)}
+                  else
+                     {BrowserError
+                      'CompoundRepManagerObject::EvalDesc: group type??!'}
+                     0
+                  end
+               else 0
+               end
+
+            [] self_size then @Size
+
+            [] line_size then {self.store read(StoreTWWidth $)}
+
+               %%
+               %% Note that 'UsedIndentOut' contains the current
+               %% position in a line in the 'refineLayout' context, where
+               %% 'EvalDesc' is used!
+            [] current then @UsedIndentOut
+
+            [] st_indent(N) then B LN in
+               N = B#LN
+               %%
+               if CompoundRepManagerObject , isGroup(b:B ln:LN is:$)
+               then Group in
+                  Group =
+                  CompoundRepManagerObject , GetGroup(b:B ln:LN group:$)
+
+                  %%
+\ifdef DEBUG_RM
+                  if
+                     case {Label Group}
+                     of e   then false
+                     [] t   then true
+                     [] s   then false
+                     [] st  then true
+                     [] sgs then false
+                     [] sgt then true
+                     [] gs  then false
+                     [] gt  then true
+                     else
+                        {BrowserError
+                         'CompoundRepManagerObject::EvalDesc: group type??!'}
+                        false
+                     end
+                  then skip        % fine - there is an object;
+                  else
+                     {BrowserError
+                      'CompoundRepManagerObject::EvalDesc: no object in a group!'}
+                  end
+\endif
+
+                  %%
+                  {Group.obj GetIndentIn($)}
+               else DInfinite
+               end
+
+            [] self_indent then @UsedIndentIn
+
+            [] '+'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               R1 + R2
+
+            [] '-'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               R1 - R2
+
+            [] 'min'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               {Min R1 R2}
+
+            [] 'max'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               {Max R1 R2}
+
+            [] '>'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               R1 > R2
+
+            [] '<'(A1 A2) then R1 R2 in
+               %%
+               CompoundRepManagerObject , EvalDesc(A1 R1)
+               CompoundRepManagerObject , EvalDesc(A2 R2)
+
+               %%
+               R1 < R2
+
+            else
+               {BrowserError
+                'CompoundRepManagerObject::EvalDesc: expression??!'}
+               DInfinite
+            end
          end
       end
 
@@ -2733,8 +2716,7 @@ in
             andthen OldGroup.glueSize == 0
 
             %%
-            case SwapGravity then {WO setMarkGravity(OldGroup.mark left)}
-            else skip
+            if SwapGravity then {WO setMarkGravity(OldGroup.mark left)}
             end
 
             %%
@@ -2759,8 +2741,7 @@ in
                          obj:      $)
 
             %%
-            case SwapGravity then {WO setMarkGravity(OldGroup.mark right)}
-            else skip
+            if SwapGravity then {WO setMarkGravity(OldGroup.mark right)}
             end
 
             %%
@@ -2794,7 +2775,7 @@ in
          {Show 'CompoundRepManagerObject::removeG' # LN}
 
          %%
-         case
+         if
             LN == {Dictionary.get self.Subterms (@CurrentBlock*DInfinite)}
          then skip              % ok;
          else

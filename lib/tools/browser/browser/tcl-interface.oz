@@ -89,12 +89,14 @@ in
    proc {ProcessEntries M Es W}
       case Es of nil then skip
       [] E|Er then {ProcessEntries M E W} {ProcessEntries M Er W}
-      elsecase {IsAtom Es} then {M.Es W}
-      else {ProcessEntries M.{Label Es} Es.1 W}
+      else
+         if {IsAtom Es} then {M.Es W}
+         else {ProcessEntries M.{Label Es} Es.1 W}
+         end
       end
    end
    fun {DerefEntry M E}
-      case {IsAtom E} then M.E
+      if {IsAtom E} then M.E
       else {DerefEntry M.{Label E} E.1}
       end
    end
@@ -137,7 +139,7 @@ in
          M = {Tk.return o(BW mark prev Index)}
 
          %%
-         case M == "" orelse {Tk.return o(BW index M)} \= RefIndex
+         if M == "" orelse {Tk.return o(BW index M)} \= RefIndex
          then nil
          else M|{GetRepMarks BW M RefIndex}
          end
@@ -219,11 +221,11 @@ in
             H = {Tk.returnInt winfo(reqheight self)}
 
             %%
-            case X > 0 andthen Y > 0 then XLoc YLoc in
-               XLoc = case X + IXTransDist + W > SW then X - W - IXTransDist
+            if X > 0 andthen Y > 0 then XLoc YLoc in
+               XLoc = if X + IXTransDist + W > SW then X - W - IXTransDist
                       else X + IXTransDist
                       end
-               YLoc = case Y + IYTransDist + H > SH then Y - H - IYTransDist
+               YLoc = if Y + IYTransDist + H > SH then Y - H - IYTransDist
                       else Y + IYTransDist
                       end
                {Tk.send wm(geometry self '+'#XLoc#'+'#YLoc)}
@@ -272,9 +274,9 @@ in
 
       %%
       meth make
-         case
+         if
             lock
-               case @Req then false
+               if @Req then false
                else Req <- true true
                end
             end
@@ -285,21 +287,19 @@ in
 
             %%
             lock
-               case @Req andthen @SeqNum == N then
+               if @Req andthen @SeqNum == N then
                   Helper <- {New HelperTransient
                              make(master:self.Master text:self.Text)}
-               else skip
                end
             end
-         else skip
          end
       end
 
       %%
       meth remove
          lock
-            case @Helper == unit then skip
-            else {@Helper close}
+            if @Helper \= unit then
+               {@Helper close}
             end
 
             %%
@@ -390,7 +390,7 @@ in
          self.store = Store
 
          %%
-         case WindowIn == InitValue then
+         if WindowIn == InitValue then
             WindowLocal XSize YSize RootXSize RootYSize
          in
             self.standAlone = true
@@ -399,7 +399,7 @@ in
 
             %%
             WindowLocal =
-            {New MyToplevel case Screen == InitValue
+            {New MyToplevel if Screen == InitValue
                             then tkInit('class': 'OzTools'
                                         withdraw: true
                                         delete: BObj#close)
@@ -549,8 +549,8 @@ in
 
                      %%
                      local TO = {GetTargetObj Pairs} in
-                        case TO == InitValue then skip
-                        else {SelfBWO.browserObj ScrollTo(TO Kind)}
+                        if TO \= InitValue then
+                           {SelfBWO.browserObj ScrollTo(TO Kind)}
                         end
                      end
                   elseof       m("scroll" N "units") then
@@ -680,8 +680,8 @@ in
 
                      %%
                      local TO = {GetTargetObj Pairs} in
-                        case TO == InitValue then skip
-                        else {StreamObj enq(processEvent(TO Handler Arg))}
+                        if TO \= InitValue then
+                           {StreamObj enq(processEvent(TO Handler Arg))}
                         end
                      end
                   end
@@ -751,9 +751,9 @@ in
 
       %%
       meth TryFont(Proceed IFont $)
-         case Proceed then
+         if Proceed then
             %%
-            case BrowserWindowClass , setTWFont(IFont $) then
+            if BrowserWindowClass , setTWFont(IFont $) then
                %%
                %% Browser object will also send a request to select an
                %% appropriate radio button;
@@ -780,8 +780,7 @@ in
 \endif
          %%
          %% external window must be closed by provider;
-         case self.standAlone then {self.Window tkClose}
-         else skip
+         if self.standAlone then {self.Window tkClose}
          end
 
          %%
@@ -798,8 +797,7 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::expose'}
 \endif
-         case self.standAlone then {Tk.send wm(deiconify self.Window)}
-         else skip
+         if self.standAlone then {Tk.send wm(deiconify self.Window)}
          end
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::expose is finished'}
@@ -837,9 +835,8 @@ in
       meth setTWFont(NewFont $)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTWFont'#NewFont}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -849,15 +846,17 @@ in
             %%
             case NewFont
             of !Font then true  %  have it already;
-            elsecase BrowserWindowClass , tryFont(NewFont $) then
-               %%
-               {self.BrowseWidget tk(conf font:NewFont.font)}
-               {self.store store(StoreTWFont NewFont)}
-               BrowserWindowClass , resetTW
+            else
+               if BrowserWindowClass , tryFont(NewFont $) then
+                  %%
+                  {self.BrowseWidget tk(conf font:NewFont.font)}
+                  {self.store store(StoreTWFont NewFont)}
+                  BrowserWindowClass , resetTW
 
-               %%
-               true
-            else false
+                  %%
+                  true
+               else false
+               end
             end
          end
       end
@@ -867,9 +866,8 @@ in
       meth resetTW
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::resetTW'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -890,13 +888,13 @@ in
             {self.store store(StoreYSize WHeight)}
 
             %%
-            XRes = case Font.xRes == 0 then
+            XRes = if Font.xRes == 0 then
                       BrowserWindowClass , getFontRes(Font $ _)
                    else Font.xRes
                    end
 
             %%
-            case XRes \= 0 then
+            if XRes \= 0 then
                thread           % job
                   {self.browserObj
                    SetTWWidth((TWWidth - 2*ITWPad - 2*IBigBorder) div XRes)}
@@ -919,20 +917,19 @@ in
       meth setXYSize
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setXYSize'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case self.standAlone then X Y MinXSize MinYSize in
+         if self.standAlone then X Y MinXSize MinYSize in
             {self.store [read(StoreXMinSize MinXSize)
                          read(StoreYMinSize MinYSize)
                          read(StoreXSize X)
                          read(StoreYSize Y)]}
 
             %%
-            case MinXSize =< X andthen MinYSize =< Y then
+            if MinXSize =< X andthen MinYSize =< Y then
                %%
                {Tk.send wm(geometry self.Window X#'x'#Y)}
 
@@ -942,7 +939,6 @@ in
                {Wait {Tk.returnInt winfo(exists self.BrowseWidget)}}
             else {BrowserWarning 'Impossible window size wrt limits'}
             end
-         else skip
          end
 
          %%
@@ -970,7 +966,7 @@ in
          {Show 'BrowserWindowClass::exposeMenuBar'}
 \endif
          %%
-         case @menuBar \= InitValue then
+         if @menuBar \= InitValue then
             {Tk.send pack(@menuBar
                           side: top
                           fill: x
@@ -993,13 +989,12 @@ in
          {Show 'BrowserWindowClass::closeMenuBar'}
 \endif
          %%
-         case @menuBar \= InitValue then
+         if @menuBar \= InitValue then
             %%
             {@menuBar tkClose}
 
             %%
             menuBar <- InitValue
-         else skip
          end
 
          %%
@@ -1014,15 +1009,14 @@ in
       meth setMinSize
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setMinSize'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case self.standAlone then XMinSize YMinSize in
+         if self.standAlone then XMinSize YMinSize in
             %%
-            case @menuBar == InitValue then
+            if @menuBar == InitValue then
                %%
                {Tk.send update(idletasks)}
 
@@ -1055,13 +1049,13 @@ in
                {Tk.send wm(minsize self.Window XMinSize YMinSize)}
 
                %%
-               case XMinSize =< XSize andthen YMinSize =< YSize then skip
-               elsecase XSize < XMinSize andthen YMinSize =< YSize then
+               if XMinSize =< XSize andthen YMinSize =< YSize then skip
+               elseif XSize < XMinSize andthen YMinSize =< YSize then
                   {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}
 
                   %%
                   BrowserWindowClass , resetTW
-               elsecase YSize < YMinSize andthen XMinSize =< XSize then
+               elseif YSize < YMinSize andthen XMinSize =< XSize then
                   {Tk.send wm(geometry self.Window XSize#'x'#YMinSize)}
 
                   %%
@@ -1073,7 +1067,6 @@ in
                   BrowserWindowClass , resetTW
                end
             end
-         else skip
          end
 
          %%
@@ -1119,9 +1112,8 @@ in
       meth putMark(Gravity ToMapOn ?NewMark)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMark' # Gravity}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1135,8 +1127,7 @@ in
 
             %%
             %% use the default: right gravity;
-            case Gravity \= right then {BW tk(m g MarkName Gravity)}
-            else skip
+            if Gravity \= right then {BW tk(m g MarkName Gravity)}
             end
 
             %%
@@ -1146,9 +1137,8 @@ in
                NN = {NewName}
 
                %%
-               case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
+               if {Dictionary.condGet self.TclsMap NewMark NN} \= NN
                then {BrowserError 'BrowserWindowClass::putMark: error!'}
-               else skip
                end
             end
 \endif
@@ -1167,9 +1157,8 @@ in
       meth putMarkBefore(Offset ToMapOn ?NewMark)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMarkBefore' # Offset}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1187,9 +1176,8 @@ in
                NN = {NewName}
 
                %%
-               case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
+               if {Dictionary.condGet self.TclsMap NewMark NN} \= NN
                then {BrowserError 'BrowserWindowClass::putMark: error!'}
-               else skip
                end
             end
 \endif
@@ -1210,9 +1198,8 @@ in
       meth unsetMark(Mark)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::unsetMark' # Mark}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1224,9 +1211,8 @@ in
             NN = {NewName}
 
             %%
-            case {Dictionary.condGet self.TclsMap Mark NN} == NN
+            if {Dictionary.condGet self.TclsMap Mark NN} == NN
             then {BrowserError 'BrowserWindowClass::unsetMark: error!'}
-            else skip
             end
          end
 \endif
@@ -1241,9 +1227,8 @@ in
       meth flushUnsetMarks
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::flushUnsetMarks'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          local ListOf OT Base in
@@ -1274,9 +1259,8 @@ in
       meth mapMark(Mark $)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::mapMark is applied' # Mark}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1304,7 +1288,7 @@ in
             AMark = {Tk.return o(BW mark prev FirstIndex)}
 
             %%
-            case AMark == "" then nil   % there are no marks;
+            if AMark == "" then nil   % there are no marks;
             else RefIndex Pairs in
                %% 'RefIndex' is an index (not an empty string);
                RefIndex = {Tk.return o(BW index AMark)}
@@ -1330,9 +1314,9 @@ in
                 fun {$ E} E \= InitValue end}
 
                %%
-               case Pairs == nil then
+               if Pairs == nil then
                   %%
-                  case RefIndex \= "1.0" then
+                  if RefIndex \= "1.0" then
                      %%
                      %% so, all the marks we have found were auxiliary -
                      %% just repeat the procedure from a previous
@@ -1354,9 +1338,8 @@ in
       meth deleteRegion(M1 M2)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteRegion' # M1 # M2}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1390,18 +1373,16 @@ in
       meth deleteForward(N)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteForward' # N}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case N > 0 then C in
+         if N > 0 then C in
             C = self.Cursor
 
             %%
             {self.BrowseWidget tk(del C C#'+'#N#'c')}
-         else skip
          end
       end
 
@@ -1409,18 +1390,16 @@ in
       meth deleteBackward(N)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::deleteBackward' # N}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case N > 0 then C in
+         if N > 0 then C in
             C = self.Cursor
 
             %%
             {self.BrowseWidget tk(del C#'-'#N#'c' C)}
-         else skip
          end
       end
 
@@ -1429,9 +1408,8 @@ in
       meth setMarkGravity(Mark Gravity)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setMarkGravity' # Mark # Gravity}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1443,9 +1421,8 @@ in
       meth setCursor(Mark Column)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setCursor' # Mark}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1458,9 +1435,8 @@ in
       meth setCursorOffset(Mark Offset Column)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setCursorOffset' # Mark # Offset}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1474,16 +1450,14 @@ in
       meth advanceCursor(N)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::advanceCursor' # N}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case N \= 0 then
+         if N \= 0 then
             {self.BrowseWidget tk(m s self.Cursor self.Cursor#'+'#N#'c')}
             cursorCol <- @cursorCol + N
-         else skip
          end
       end
 
@@ -1496,9 +1470,8 @@ in
       meth jumpEnd
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::jumpEnd'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1525,9 +1498,8 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::insert'
           # {String.toAtom {VirtualString.toString VS}}}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1547,9 +1519,8 @@ in
       meth insertNL
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::insertNL'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1561,9 +1532,8 @@ in
       meth removeNL
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeNL'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          {self.BrowseWidget tk(del self.Cursor)}
@@ -1573,9 +1543,8 @@ in
       meth setScrolling(X Y)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setScrolling' # X # Y}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1595,9 +1564,8 @@ in
       meth pickMark(Mark How)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::pickMark' # Mark # How}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1612,14 +1580,12 @@ in
       meth scrollToMark(Mark)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::scrollToMark' # Mark}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @ScrollingOn then {self pickMark(Mark 'any')}
-         else skip
+         if @ScrollingOn then {self pickMark(Mark 'any')}
          end
       end
 
@@ -1643,7 +1609,7 @@ in
 \endif
             %%
             %% if there is a freed tcl, then reuse it ...
-            case {IsFree @TclsCache} then N in
+            if {IsFree @TclsCache} then N in
                N = @TclCN
                TclCN <- N + 1
                N
@@ -1689,9 +1655,8 @@ in
       meth highlightRegion(M1 M2)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::highlightRegion' # M1 # M2}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1716,14 +1681,12 @@ in
       meth unHighlightRegion
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::unHighlightRegion'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @HighlightTag == InitValue then skip
-         else Tag in
+         if @HighlightTag \= InitValue then Tag in
             Tag = @HighlightTag
 
             %%
@@ -1741,9 +1704,8 @@ in
       meth makeUnderline(?Underline)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::makeUnderline'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1768,16 +1730,14 @@ in
             %% these three components constitute the width
             %% 'overhead');
             TWWidthS = {Tk.return winfo(width BW)}
-            case {String.isInt TWWidthS} then
+            if {String.isInt TWWidthS} then
                TWWidth = {String.toInt TWWidthS} - 2*ITWPad - 2*IBigBorder
+            elseif MyClosableObject , isClosed($) then
+               {Exception.raiseError
+                browser('Closed window object is applied!')}
             else
-               case MyClosableObject , isClosed($) then
-                  {Exception.raiseError
-                   browser('Closed window object is applied!')}
-               else
-                  {Exception.raiseError browser('Invalid "width" string:'
-                                                {String.toAtom TWWidthS})}
-               end
+               {Exception.raiseError browser('Invalid "width" string:'
+                                             {String.toAtom TWWidthS})}
             end
 
             [F1 F2] = {Tk.returnListFloat o(BW xview)}
@@ -1822,9 +1782,8 @@ in
       meth removeUnderline(Underline)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeUnderline'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1878,9 +1837,8 @@ in
       meth createTkVar(FValue UpdateProc ?TkVar)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::createTkVar'#FValue}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
@@ -1915,13 +1873,12 @@ in
       meth setPostCommand(MenuDesc UserProc)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setPostCommand'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @menuBar \= InitValue then Menu SuppProc Action ActionProc in
+         if @menuBar \= InitValue then Menu SuppProc Action ActionProc in
             Menu = {DerefEntry @menuBar MenuDesc}
 
             %%
@@ -1956,14 +1913,12 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::addRadioEntry'#
           {String.toAtom {VirtualString.toString Label}}}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @menuBar == InitValue then skip
-         else Menu in
+         if @menuBar \= InitValue then Menu in
             %%
             %%  This can be also done by 'Tk.menuentry.radiobutton',
             %% but i do it so (as an example, if you want);
@@ -1987,14 +1942,12 @@ in
       meth removeRadioEntry(MenuDesc N)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeRadioEntry'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @menuBar == InitValue then skip
-         else Menu in
+         if @menuBar \= InitValue then Menu in
             %%
             %%  This can be also done by 'Tk.menuentry.radiobutton',
             %% but i do it so (as an example, if you want);
@@ -2016,13 +1969,12 @@ in
       meth commandEntriesEnable(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesEnable'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
          end
 
          %%
@@ -2035,13 +1987,12 @@ in
       meth commandEntriesDisable(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesDisable'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
          end
 
          %%
@@ -2057,14 +2008,12 @@ in
       meth pushButton(BD TText)
 \ifdef DEBUG_TI
          {Show 'tcl/tk: pushButton:' # BD}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($)
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @menuBar == InitValue then skip
-         else Action NewBD Button TM in
+         if @menuBar \= InitValue then Action NewBD Button TM in
             proc {Action}
                case BD.action
                of O#M then {O M}
@@ -2104,14 +2053,12 @@ in
       meth pushEmptyFrame(FD)
 \ifdef DEBUG_TI
          {Show 'tcl/tk: pushEmptyFrame:' # FD}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
          %%
-         case @menuBar == InitValue then skip
-         else Frame in
+         if @menuBar \= InitValue then Frame in
             Frame = {New Tk.frame {Adjoin FD tkInit(parent: @menuBar)}}
             {Tk.send pack(Frame side:right)}
          end
@@ -2119,17 +2066,15 @@ in
 
       %%
       meth setWaitCursor
-         case {X11ResourceCache tryCursor(ICursorClock $)}
+         if {X11ResourceCache tryCursor(ICursorClock $)}
          then {self.BrowseWidget tk(conf cursor: ICursorClock)}
-         else skip
          end
       end
 
       %%
       meth setDefaultCursor
-         case {X11ResourceCache tryCursor(ICursorName $)}
+         if {X11ResourceCache tryCursor(ICursorName $)}
          then {self.BrowseWidget tk(conf cursor: ICursorName)}
-         else skip
          end
       end
 
@@ -2137,13 +2082,12 @@ in
       meth buttonsEnable(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @buttons Arg tk(conf state:normal)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @buttons Arg tk(conf state:normal)}
          end
 
          %%
@@ -2156,13 +2100,12 @@ in
       meth buttonsDisable(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsDisable'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @buttons Arg tk(conf state:disabled)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @buttons Arg tk(conf state:disabled)}
          end
 
          %%
@@ -2175,13 +2118,12 @@ in
       meth checkButtonOn(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOn'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
          end
 
          %%
@@ -2194,13 +2136,12 @@ in
       meth checkButtonOff(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
          end
 
          %%
@@ -2213,13 +2154,12 @@ in
       meth noTearOff(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::noTearOff'}
-         case MyClosableObject , isClosed($) then
+         if MyClosableObject , isClosed($) then
             {Exception.raiseError browser('Closed window object is applied!')}
-         else skip
          end
 \endif
-         case @menuBar == InitValue then skip
-         else {ProcessEntries @menuBar Arg tk(conf tearoff:false)}
+         if @menuBar \= InitValue then
+            {ProcessEntries @menuBar Arg tk(conf tearoff:false)}
          end
 
          %%
@@ -2246,7 +2186,7 @@ in
 \endif
          %%
          {New TkTools.error
-          case Leader == InitValue then
+          if Leader == InitValue then
              tkInit(title: IMTitle text:Message)
           else
              tkInit(title: IMTitle master: Leader text: Message)
@@ -2300,9 +2240,9 @@ in
 
       %%
       meth SetTitleFont(Proceed IFont $)
-         case Proceed then
+         if Proceed then
             %%
-            case {X11ResourceCache tryFont(IFont $)} then
+            if {X11ResourceCache tryFont(IFont $)} then
                {self.TitleW tk(conf font:IFont)}
                %%
                false
@@ -2326,13 +2266,12 @@ in
          proc {Okay} S in
             {Size enter}
             S = {Size tkGet($)}
-            case {IsInt S} then
+            if {IsInt S} then
                {WO.browserObj SetBufferSize(S)}
                {WO.store store(StoreAreSeparators
                                {Tcl2Oz {SepVar tkReturnAtom($)}})}
                {self tkClose}
                {self close}
-            else skip
             end
          end
 
@@ -2513,7 +2452,7 @@ in
             W  = {Width tkGet($)}
             DI = {DepthInc tkGet($)}
             WI = {WidthInc tkGet($)}
-            case {All [D W DI WI] IsInt} then
+            if {All [D W DI WI] IsInt} then
                {WO.browserObj SetDepth(D)}
                {WO.browserObj SetWidth(W)}
                {WO.browserObj SetDInc(DI)}
@@ -2521,7 +2460,6 @@ in
                {WO.browserObj UpdateSizes}
                {self tkClose}
                {self close}
-            else skip
             end
          end
 
@@ -2650,12 +2588,11 @@ in
             %%
             {ForAll IKnownCourFonts
              proc {$ Font}
-                case
+                if
                    Font.size == Size andthen
                    Font.wght == Wght andthen
                    Font \= StoredFN
                 then {WO setTWFont(Font _)}
-                else skip
                 end
              end}
 

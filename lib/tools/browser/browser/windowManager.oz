@@ -108,7 +108,7 @@ class WindowManagerClass from MyClosableObject BatchObject
       {System.show 'WindowManagerClass::createWindow is applied'}
 \endif
       %%
-      case @window == InitValue then
+      if @window == InitValue then
          %%
          %%  This guy produces a top-level window without a menubar;
          window <- {New BrowserWindowClass
@@ -122,7 +122,6 @@ class WindowManagerClass from MyClosableObject BatchObject
 
          %%
          {self.store store(StoreIsWindow true)}
-      else skip
       end
 
       %%
@@ -138,7 +137,7 @@ class WindowManagerClass from MyClosableObject BatchObject
       {System.show 'WindowManagerClass::createMenus is applied'}
 \endif
       %%
-      case {self.store read(StoreAreMenus $)} then skip
+      if {self.store read(StoreAreMenus $)} then skip
       else Store BO Window Menus ActionVar Actions CurrAction in
          %%
          Store = self.store
@@ -285,7 +284,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                                fun {$ I K}
                                   Action = {Dictionary.get Actions K}
                                in
-                                  case Action.action == CurrAction
+                                  if Action.action == CurrAction
                                   then Action.number
                                   else I
                                   end
@@ -339,7 +338,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          end
 
          %%
-         case @window.standAlone then {@window setMinSize}
+         if @window.standAlone then {@window setMinSize}
          else WindowManagerClass , entriesDisable([close])
          end
 
@@ -372,8 +371,8 @@ class WindowManagerClass from MyClosableObject BatchObject
       {System.show 'WindowManagerClass::resetWindowSize is applied'}
 \endif
       %%
-      case @window == InitValue then skip
-      else {@window [setMinSize setXYSize resetTW]}
+      if @window \= InitValue then
+         {@window [setMinSize setXYSize resetTW]}
       end
 
       %%
@@ -400,7 +399,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 \ifdef DEBUG_WM
       {System.show 'WindowManagerClass::closeMenus is applied'}
 \endif
-      case
+      if
          @window \= InitValue andthen
          {self.store read(StoreAreMenus $)}
       then
@@ -408,7 +407,6 @@ class WindowManagerClass from MyClosableObject BatchObject
          actions <- InitValue
          actionVar <- InitValue
          {self.store store(StoreAreMenus false)}
-      else skip
       end
 \ifdef DEBUG_WM
       {System.show 'WindowManagerClass::closeMenus is finished'}
@@ -422,8 +420,7 @@ class WindowManagerClass from MyClosableObject BatchObject
       {System.show 'WindowManagerClass::closeWindow is applied'}
 \endif
       %%
-      case @window == InitValue then skip
-      else
+      if @window \= InitValue then
          %%
          WindowManagerClass , closeMenus
 
@@ -518,10 +515,9 @@ class WindowManagerClass from MyClosableObject BatchObject
          nextANumber <- N + 1
 
          %%
-         case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+         if @window \= InitValue andthen {self.store read(StoreAreMenus $)}
          then {@window
                addRadioEntry(selection(action(menu)) Label @actionVar N)}
-         else skip
          end
       end
 \ifdef DEBUG_WM
@@ -544,7 +540,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          CurrAction = {Store read(StoreProcessAction $)}
       in
          %%
-         case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+         if @window \= InitValue andthen {self.store read(StoreAreMenus $)}
          then
             Window = @window
             AVar = @actionVar
@@ -600,7 +596,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                     fun {$ D K}
                        Action = {Dictionary.get Actions K}
                     in
-                       case Action.action == CurrAction
+                       if Action.action == CurrAction
                        then CurrAction
                        else D
                        end
@@ -624,7 +620,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          Actions = @actions
          WSetProc
       in
-         case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+         if @window \= InitValue andthen {self.store read(StoreAreMenus $)}
          then AVar = @actionVar in
             proc {WSetProc K}
                {AVar tkSet(K)}
@@ -638,10 +634,9 @@ class WindowManagerClass from MyClosableObject BatchObject
           proc {$ K}
              A = {Dictionary.get Actions K}
           in
-             case A.action == Action then
+             if A.action == Action then
                 {WSetProc K}
                 {self.store store(StoreProcessAction Action)}
-             else skip
              end
           end}
       end
@@ -676,16 +671,14 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%  ... Aux: checks either we have created a window already;
    %% Otherwise, the message ('Meth') is just ignored;
    meth WrapWindow(Meth)
-      case @window \= InitValue then {@window Meth}
-      else skip
+      if @window \= InitValue then {@window Meth}
       end
    end
 
    %%
    meth WrapMenuBar(Meth)
-      case @window \= InitValue andthen {self.store read(StoreAreMenus $)}
+      if @window \= InitValue andthen {self.store read(StoreAreMenus $)}
       then {@window Meth}
-      else skip
       end
    end
 

@@ -54,7 +54,7 @@ in
       end
    in
       fun {AtomConcatAll As}
-         case {IsAtom As} then As else {String.toAtom {All As}} end
+         if {IsAtom As} then As else {String.toAtom {All As}} end
       end
    end
 
@@ -72,14 +72,13 @@ in
    fun {IsSeen Term ReflectedTerm ListOfSeen ?NewList}
       %%
       %% ReflectedTerm is in/out both;
-      case {Some ListOfSeen fun {$ X} {EQ X.1 Term} end} then
+      if {Some ListOfSeen fun {$ X} {EQ X.1 Term} end} then
          %%
 
          %%
          {ForAll ListOfSeen
           proc {$ X}
-             case {EQ X.1 Term} then X.2 = ReflectedTerm
-             else skip
+             if {EQ X.1 Term} then X.2 = ReflectedTerm
              end
           end}
 
@@ -150,11 +149,11 @@ in
          Status = {IsSeen TermIn TermOut ListIn TmpList}
 
          %%
-         case Status then TmpList
-         elsecase {IsVar TermIn} then
+         if Status then TmpList
+         elseif {IsVar TermIn} then
             %%
             %%
-            case {IsRecordCVar TermIn} then
+            if {IsRecordCVar TermIn} then
                RArity KillP KnownRArity KnownRefRArity RLabel L
             in
                %%
@@ -172,14 +171,13 @@ in
                %% primitive saying whether an OFS has a label
                %% already, or - even better? - a non-monotonic
                %% version of 'Label' which never suspends;
-               case {HasLabel TermIn}
+               if {HasLabel TermIn}
                then L = {Label TermIn}
-               else skip
                end
 
                %%
                RLabel =
-               case {IsVar L} then '_...'
+               if {IsVar L} then '_...'
                else {String.toAtom
                      {VirtualString.toString
                       {ReflectTerm L nil $ _}#'...'}}
@@ -194,15 +192,15 @@ in
                 end}
             else
                %%  a variable;
-               case {IsFdVar TermIn} then
+               if {IsFdVar TermIn} then
                   %%
                   TermOut =
                   {VirtualString.toAtom {Value.toVirtualString TermIn 1 1}}
-               elsecase {IsFSetVar TermIn} then
+               elseif {IsFSetVar TermIn} then
                   %%
                   TermOut =
                   {VirtualString.toAtom {Value.toVirtualString TermIn 1 1}}
-               elsecase {IsCtVar TermIn} then
+               elseif {IsCtVar TermIn} then
                   %%
                   TermOut = {AtomConcatAll
                              [{System.printName TermIn}
@@ -219,9 +217,9 @@ in
             case {Value.type TermIn}
             of name then
                TermOut =
-               case {IsBool TermIn} then
-                  case TermIn then 'true' else 'false' end
-               elsecase TermIn == unit then 'unit'
+               if {IsBool TermIn} then
+                  if TermIn then 'true' else 'false' end
+               elseif TermIn == unit then 'unit'
                else
                   {AtomConcatAll
                    ['<Name: ' {System.printName TermIn } ' @ '
@@ -307,7 +305,7 @@ in
          IsDeep = {IsDeepGuard}
 
          %%
-         case IsDeep then
+         if IsDeep then
             {ReflectTerm Term nil ReflectedTerm _}
             S = {Search.one.depth proc {$ X} X = ReflectedTerm end 1 _}
 

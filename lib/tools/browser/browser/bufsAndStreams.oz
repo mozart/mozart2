@@ -36,7 +36,7 @@ in
    %% My version of 'List.take' - yields the empty list if N=0.
    %% (It accepts also malformed lists, but i don't care;)
    fun {Take Xs N}
-      case N>0 then
+      if N>0 then
          case Xs of X|Xr then X|{Take Xr N-1}
          else nil
          end
@@ -77,7 +77,7 @@ in
       meth enq(El)
          local NewTail in
             lock
-               case MyClosableObject , isClosed($) then skip
+               if MyClosableObject , isClosed($) then skip
                else
                   @Tail = El|NewTail
                   Tail <- NewTail
@@ -191,7 +191,7 @@ in
       %%
       meth enq(El $)
          lock
-            case LimitedBufferClass , hasPlace($) then
+            if LimitedBufferClass , hasPlace($) then
                NumBufferClass , enq(El)
                true
             else false
@@ -202,7 +202,7 @@ in
       %%
       meth getFirstEl(?El $)
          lock
-            case LimitedBufferClass , isNotEmpty($) then
+            if LimitedBufferClass , isNotEmpty($) then
                CoreBufferClass , getFirstEl(El)
                true
             else false
@@ -215,7 +215,7 @@ in
       %% (because of 'resize');
       meth deq(?El $)
          lock
-            case LimitedBufferClass , isNotEmpty($) then
+            if LimitedBufferClass , isNotEmpty($) then
                NumBufferClass , deq(El)
                true
             else false
@@ -248,7 +248,7 @@ in
       %%
       meth deq(?Req $)
          lock
-            case NumBufferClass , getSize($) > 0 then
+            if NumBufferClass , getSize($) > 0 then
                NumBufferClass , deq(Req)
                true
             else
@@ -262,7 +262,7 @@ in
       %% Note that it does not block the object state;
       meth waitElement
          {Wait
-          case MyClosableObject , isClosed($) then _   % forever;
+          if MyClosableObject , isClosed($) then _   % forever;
           else CoreBufferClass , GetTail($)
           end}
       end
@@ -293,17 +293,15 @@ in
       meth close
          lock
             %%  there are probably some suspended enq"s;
-            case {self.ToEnqueue getSize($)} > 0 then L in
+            if {self.ToEnqueue getSize($)} > 0 then L in
                L = {self.ToEnqueue getContent($)}
                {ForAll L proc {$ E} {E.discardAction} end}
-            else skip
             end
 
             %%  ... deq"s?
-            case {self.ToDequeue getSize($)} > 0 then L in
+            if {self.ToDequeue getSize($)} > 0 then L in
                L = {self.ToDequeue getContent($)}
                {ForAll L proc {$ E} {E.discardAction} end}
-            else skip
             end
 
             %%
@@ -313,7 +311,7 @@ in
       %%
       meth CheckDequeue
          lock
-            case
+            if
                {self.CoreBuffer isNotEmpty($)} andthen
                {self.ToDequeue getSize($)} > 0
             then Entry in
@@ -324,7 +322,6 @@ in
 
                %%
                BrowserBufferClass , CheckDequeue
-            else skip
             end
          end
       end
@@ -332,7 +329,7 @@ in
       %%
       meth CheckEnqueue
          lock
-            case
+            if
                {self.CoreBuffer hasPlace($)} andthen
                {self.ToEnqueue getSize($)} > 0
             then Entry in
@@ -342,7 +339,6 @@ in
 
                %%
                BrowserBufferClass , CheckEnqueue
-            else skip
             end
          end
       end
@@ -350,7 +346,7 @@ in
       %%
       meth enq(El ProceedAction DiscardAction)
          lock
-            case {self.CoreBuffer enq(El $)} then
+            if {self.CoreBuffer enq(El $)} then
                {ProceedAction}
 
                %%  check whether we have some pending deq"s;
@@ -384,7 +380,7 @@ in
       %%
       meth deq(?El ProceedAction DiscardAction)
          lock
-            case {self.CoreBuffer deq(El $)} then
+            if {self.CoreBuffer deq(El $)} then
                {ProceedAction}
 
                %%
@@ -414,7 +410,7 @@ in
                {self.CoreBuffer resize(NewMaxSize)}
 
                %%
-               case NewMaxSize > CurrentMaxSize then
+               if NewMaxSize > CurrentMaxSize then
                   BrowserBufferClass , CheckEnqueue
                else skip
                   %% no special action when getting smaller;

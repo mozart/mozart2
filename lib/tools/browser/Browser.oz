@@ -388,7 +388,7 @@ in
    %%
    %% Auxiliary - emulation of former job..end constructor;
    proc {While Cond Body}
-      case {Cond} then {Body} {While Cond Body} else skip end
+      if {Cond} then {Body} {While Cond Body} else skip end
    end
    proc {JobEnd Proc}
       local MyThr JobThr in
@@ -432,7 +432,7 @@ in
          %% Fairly to say, there are few things that can be caught
          %% this way: a browser object has an internal
          %% asynchronous worker which does the actual job ...
-         case {IsVar HasCrashed} then skip
+         if {IsVar HasCrashed} then skip
          else
             %%
             try
@@ -468,7 +468,7 @@ in
       %%
       %% A real make which does the work;
       meth Make
-         case @RealBrowser == InitValue then BS RB InternalBrowserLoop in
+         if @RealBrowser == InitValue then BS RB InternalBrowserLoop in
             BrowserStream <- BS
             BrowserCell <- {NewCell @BrowserStream}
             RB = {New FBrowserClass @InitMeth}
@@ -497,7 +497,6 @@ in
                {Wait RB.closed}
                {self Drop}
             end
-         else skip
          end
       end
       meth Drop
@@ -514,7 +513,7 @@ in
       %%
       %%
       meth init(...)=M
-         case @InitMeth == InitValue then
+         if @InitMeth == InitValue then
             InitMeth <- M
             %% the first one *must* be created because of deep
             %% browsing - that requires the presence of a cell;
@@ -525,7 +524,7 @@ in
 
       %%
       meth otherwise(M)
-         case {IsDeepGuard} then {DeepFeed @BrowserCell {Reflect M}}
+         if {IsDeepGuard} then {DeepFeed @BrowserCell {Reflect M}}
          else {self CheckAndDo(M)}   % be transparent;
          end
       end

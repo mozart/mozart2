@@ -178,9 +178,8 @@ class FBrowserClass
       lock
          %%
          FBrowserClass , clear
-         case {self.Store read(StoreOrigWindow $)} == InitValue
+         if {self.Store read(StoreOrigWindow $)} == InitValue
          then {self.BrowserStream enq(closeWindow)}
-         else skip
          end
 
          %%
@@ -241,14 +240,13 @@ class FBrowserClass
 \endif
       %%
       lock
-         case {self.Store read(StoreIsWindow $)} then skip
+         if {self.Store read(StoreIsWindow $)} then skip
          else
             {self.BrowserStream enq(createWindow)}
 
             %%
-            case {self.Store read(StoreWithMenus $)} then
+            if {self.Store read(StoreWithMenus $)} then
                FBrowserClass , createMenus
-            else skip
             end
          end
 
@@ -266,7 +264,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case {self.Store read(StoreAreMenus $)} then skip
+         if {self.Store read(StoreAreMenus $)} then skip
          else
             {self.BrowserStream
              [enq(createMenus)
@@ -278,13 +276,13 @@ class FBrowserClass
                                  break
                                  %% should be on since that's a
                                  %% request itself;
-                                 case {self.BrowserBuffer getSize($)} > 0
+                                 if {self.BrowserBuffer getSize($)} > 0
                                  then clear else InitValue
                                  end
-                                 case {self.BrowserBuffer getSize($)} > 1
+                                 if {self.BrowserBuffer getSize($)} > 1
                                  then clearAllButLast else InitValue
                                  end
-                                 case {self.BrowserBuffer getSize($)} > 0
+                                 if {self.BrowserBuffer getSize($)} > 0
                                  then refineLayout else InitValue
                                  end]))]}
          end
@@ -304,7 +302,7 @@ class FBrowserClass
       %%
       lock
          FBrowserClass ,
-         case {self.Store read(StoreAreMenus $)} then closeMenus
+         if {self.Store read(StoreAreMenus $)} then closeMenus
          else createMenus
          end
 \ifdef DEBUG_BO
@@ -373,7 +371,7 @@ class FBrowserClass
             FBrowserClass , createWindow    % check it;
 
             %%
-            case
+            if
                {self.BrowserBuffer getSize($)} >=
                {self.Store read(StoreBufferSize $)}
             then
@@ -408,10 +406,9 @@ class FBrowserClass
             %% it might be a little bit too early, but it *must* be
             %% inside the "touched" region (since e.g. 'BrowserBuffer'
             %% can be closed already when it's applied);
-            case {self.BrowserBuffer getSize($)} > 1 then
+            if {self.BrowserBuffer getSize($)} > 1 then
                {self.BrowserStream
                 enq(entriesEnable([clearAllButLast refineLayout]))}
-            else skip
             end
 
             %%
@@ -435,7 +432,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case {IsInt NewSize} andthen NewSize > 0 then CurrentSize in
+         if {IsInt NewSize} andthen NewSize > 0 then CurrentSize in
             {self.Store store(StoreBufferSize NewSize)}
             CurrentSize = {self.BrowserBuffer getSize($)}
 
@@ -443,10 +440,9 @@ class FBrowserClass
             {self.BrowserBuffer resize(NewSize)}
 
             %%
-            case NewSize < CurrentSize then
+            if NewSize < CurrentSize then
                %%
                FBrowserClass , Undraw(CurrentSize - NewSize)
-            else skip
             end
          else {BrowserError 'Illegal size of the browser buffer'}
          end
@@ -475,8 +471,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case @selected == InitValue then skip
-         else Obj in
+         if @selected \= InitValue then Obj in
             Obj = @selected
 
             %%
@@ -503,9 +498,8 @@ class FBrowserClass
             CurrentSize = {self.BrowserBuffer getSize($)}
 
             %%
-            case CurrentSize > 1 then
+            if CurrentSize > 1 then
                FBrowserClass , Undraw(CurrentSize - 1)
-            else skip
             end
 
             %%
@@ -529,7 +523,7 @@ class FBrowserClass
       {System.show 'FBrowserClass::Undraw is applied'}
 \endif
       %%
-      case N > 0 andthen {self.BrowserBuffer getSize($)} > 0 then
+      if N > 0 andthen {self.BrowserBuffer getSize($)} > 0 then
          RootTermObj Sync ProceedProc DiscardProc
       in
          %%
@@ -565,15 +559,13 @@ class FBrowserClass
 
             %%
             %% Unselect it if it was;
-            case {GetRootTermObject @selected} == RootTermObj
+            if {GetRootTermObject @selected} == RootTermObj
             then FBrowserClass , UnsetSelected
-            else skip
             end
 
             %%
             FBrowserClass , Undraw(N-1)
          end
-      else skip
       end
 
       %%
@@ -590,7 +582,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case {self.BrowserBuffer getSize($)} > 0 then
+         if {self.BrowserBuffer getSize($)} > 0 then
             %%
             %% state is free already;
             {self Undraw(1)}
@@ -624,14 +616,14 @@ class FBrowserClass
           proc {$ F}
              case F
              of !BrowserXSize                  then
-                case {IsInt M.F} andthen M.F > 1 then
+                if {IsInt M.F} andthen M.F > 1 then
                    {self.Store store(StoreXSize M.F)}
                    {self.BrowserStream enq(resetWindowSize)}
                 else {BrowserError 'Illegal value for browser\'s "xSize"'}
                 end
 
              [] !BrowserYSize                  then
-                case {IsInt M.F} andthen M.F > 1 then
+                if {IsInt M.F} andthen M.F > 1 then
                    {self.Store store(StoreYSize M.F)}
                    {self.BrowserStream enq(resetWindowSize)}
                 else
@@ -639,7 +631,7 @@ class FBrowserClass
                 end
 
              [] !BrowserXMinSize               then
-                case {IsInt M.F} andthen M.F >= IXMinSize then
+                if {IsInt M.F} andthen M.F >= IXMinSize then
                    {self.Store store(StoreXMinSize M.F)}
                    {self.BrowserStream enq(resetWindowSize)}
                 else {BrowserError
@@ -647,7 +639,7 @@ class FBrowserClass
                 end
 
              [] !BrowserYMinSize               then
-                case {IsInt M.F} andthen M.F > IYMinSize then
+                if {IsInt M.F} andthen M.F > IYMinSize then
                    {self.Store store(StoreYMinSize M.F)}
                    {self.BrowserStream enq(resetWindowSize)}
                 else {BrowserError
@@ -799,7 +791,7 @@ class FBrowserClass
                    %%
                    %%  must leave the object's state!
                    thread
-                      case {self.BrowserStream enq(setTWFont(Font $))}
+                      if {self.BrowserStream enq(setTWFont(Font $))}
                       then skip
                       else {BrowserError
                             'Illegal value of browser\'s "fontSize" option'}
@@ -811,7 +803,7 @@ class FBrowserClass
 
              [] !BrowserBold                   then StoredFN Wght Fonts in
                 StoredFN = {self.Store read(StoreTWFont $)}
-                Wght = case M.F then bold else medium end
+                Wght = if M.F then bold else medium end
                 Fonts = {Filter IKnownCourFonts
                          fun {$ F}
                             F.wght == Wght andthen
@@ -823,7 +815,7 @@ class FBrowserClass
                 of [Font] then
                    %%
                    thread
-                      case {self.BrowserStream enq(setTWFont(Font $))}
+                      if {self.BrowserStream enq(setTWFont(Font $))}
                       then skip
                       else {BrowserError
                             'Illegal value of browser\'s "fontSize" option'}
@@ -924,12 +916,14 @@ class FBrowserClass
          elseof !T_Reference then
             {self.BrowserStream [enq(entriesDisable([expand shrink]))
                                  enq(entriesEnable([deref]))]}
-         elsecase AreCommas then
-            {self.BrowserStream [enq(entriesDisable([deref]))
-                                 enq(entriesEnable([expand shrink]))]}
          else
-            {self.BrowserStream [enq(entriesDisable([expand deref]))
-                                 enq(entriesEnable([shrink]))]}
+            if AreCommas then
+               {self.BrowserStream [enq(entriesDisable([deref]))
+                                    enq(entriesEnable([expand shrink]))]}
+            else
+               {self.BrowserStream [enq(entriesDisable([expand deref]))
+                                    enq(entriesEnable([shrink]))]}
+            end
          end
 
          %%
@@ -969,8 +963,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case @selected == InitValue then skip
-         else
+         if @selected \= InitValue then
             %%
             {self.BrowserStream enq(expand(@selected))}
 
@@ -993,8 +986,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case @selected == InitValue then skip
-         else
+         if @selected \= InitValue then
             %%
             {self.BrowserStream enq(shrink(@selected))}
 
@@ -1020,8 +1012,7 @@ class FBrowserClass
          Selected = @selected   % a snapshot;
 
          %%
-         case Selected == InitValue then skip
-         else
+         if Selected \= InitValue then
             Action = {self.Store read(StoreProcessAction $)}
             proc {CrashProc _ _ _}
                skip
@@ -1053,8 +1044,7 @@ class FBrowserClass
 \endif
       %%
       lock
-         case @selected == InitValue then skip
-         else
+         if @selected \= InitValue then
             %%
             {self.BrowserStream enq(deref(@selected))}
 
@@ -1085,7 +1075,7 @@ class FBrowserClass
    %%
    meth !SetDepth(Depth)
       lock
-         case {IsInt Depth} andthen Depth > 0 then
+         if {IsInt Depth} andthen Depth > 0 then
             {self.Store store(StoreDepth Depth)}
          else {BrowserError 'Illegal value of parameter BrowserDepth'}
          end
@@ -1103,7 +1093,7 @@ class FBrowserClass
    %%
    meth !SetWidth(Width)
       lock
-         case {IsInt Width} andthen Width > 1 then
+         if {IsInt Width} andthen Width > 1 then
             {self.Store store(StoreWidth Width)}
          else {BrowserError 'Illegal value of parameter BrowserWidth'}
          end
@@ -1121,7 +1111,7 @@ class FBrowserClass
    %%
    meth !SetDInc(DI)
       lock
-         case {IsInt DI} andthen DI > 0 then
+         if {IsInt DI} andthen DI > 0 then
             {self.Store store(StoreDepthInc DI)}
          else {BrowserError 'Illegal value of parameter BrowserDepthInc'}
          end
@@ -1138,7 +1128,7 @@ class FBrowserClass
    %%
    meth !SetWInc(WI)
       lock
-         case {IsInt WI} andthen WI > 0 then
+         if {IsInt WI} andthen WI > 0 then
             {self.Store store(StoreWidthInc WI)}
          else {BrowserError 'Illegal value of parameter BrowserWidthInc'}
          end

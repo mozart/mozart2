@@ -54,10 +54,10 @@ in
       %% reflect the constraint store contents;
 
       %%
-      case {EQ Obj.term Term} then
+      if {EQ Obj.term Term} then
          %%
-         case Obj.type == T_RootTerm then InitValue
-         elsecase {IsFree Obj.closed} then Obj
+         if Obj.type == T_RootTerm then InitValue
+         elseif {IsFree Obj.closed} then Obj
          else PO in
             %% i.e., this is garbage (or lack of synchronization);
             PO = Obj.ParentObj
@@ -82,7 +82,7 @@ in
    %%
    %%
    fun {GetRootTermObject Obj}
-      case Obj == InitValue orelse Obj.ParentObj == InitValue
+      if Obj == InitValue orelse Obj.ParentObj == InitValue
       then Obj
       else {GetRootTermObject Obj.ParentObj}
       end
@@ -148,7 +148,7 @@ in
 
          %%
          %% either with parentheses or not;
-         {self  MakeRep(isEnc:  case self.IsPrimitive then false
+         {self  MakeRep(isEnc:  if self.IsPrimitive then false
                                 else {BrowserTerm.delimiterLEQ
                                       self.delimiter ParentObjIn.delimiter}
                                 end)}
@@ -285,7 +285,7 @@ in
             StoredRefName = RepManagerObject , GetRefName($)
 
             %%
-            case StoredRefName == '' then NeedBraces in
+            if StoredRefName == '' then NeedBraces in
                %%
                RefName = Type # {NewRefNameGen gen($)}
                %%
@@ -295,7 +295,7 @@ in
 
                %%
                {self BeginUpdate}
-               {self case {self IsEnc(are:$)} orelse NeedBraces == false
+               {self if {self IsEnc(are:$)} orelse NeedBraces == false
                      then PutRefName(refName: RefName)
                      else PutEncRefName(refName: RefName)
                      end}
@@ -405,12 +405,12 @@ in
                  [] name then {System.printName Message}
                  [] tuple then L in
                     L = {Label Message}
-                    case {IsAtom L} then L
+                    if {IsAtom L} then L
                     else {System.printName L}
                     end
                  [] record then L in
                     L = {Label Message}
-                    case {IsAtom L} then L
+                    if {IsAtom L} then L
                     else {System.printName L}
                     end
                  else
@@ -499,18 +499,18 @@ in
             %% either the depth limit is exceeded, or the browser
             %% is working in 'break' mode;
             ObjClass =
-            case
+            if
                STDepth > 0 andthen CompoundControlObject , mayContinue($)
             then STType in
                STType = {BrowserTerm.getTermType ST Store}
 
                %%
                RefObj =
-               case
+               if
                   RepMode == GraphRep andthen
                   {BrowserTerm.checkGraph STType}
                then {CheckCycleFun ST self}
-               elsecase
+               elseif
                   RepMode == MinGraphRep andthen
                   {BrowserTerm.checkMinGraph STType}
                then {self.TermsStore checkANDStore(self ST Obj $)}
@@ -518,7 +518,7 @@ in
                end
 
                %%
-               case RefObj == InitValue then
+               if RefObj == InitValue then
                   %% none found -- proceed;
                   {BrowserTerm.getObjClass STType}
                else ReferenceTermObject
@@ -538,9 +538,9 @@ in
                       iTermsStore: self.TermsStore)}
 
             %%
-            case ObjClass == ReferenceTermObject then StreamObj RefType in
+            if ObjClass == ReferenceTermObject then StreamObj RefType in
                StreamObj = {Store read(StoreStreamObj $)}
-               RefType = case RepMode == GraphRep then 'C' else 'R' end
+               RefType = if RepMode == GraphRep then 'C' else 'R' end
 
                %%
                %% 'RefObj' can lie on the same path with 'Obj'. This
@@ -556,7 +556,6 @@ in
                   {Wait RefObj.closed}
                   {Obj rebrowse}
                end
-            else skip
             end
          end
       end
@@ -576,7 +575,7 @@ in
             FN = B#N
 
             %%
-            case
+            if
                CompoundRepManagerObject , isGroup(b:B ln:N is:$) andthen
                Obj == CompoundRepManagerObject , GetObjG(b:B ln:N obj:$)
             then CurDepth in
@@ -611,7 +610,7 @@ in
             FN = B#N
 
             %%
-            case
+            if
                CompoundRepManagerObject , isGroup(b:B ln:N is:$) andthen
                Obj == CompoundRepManagerObject , GetObjG(b:B ln:N obj:$)
             then
@@ -619,7 +618,6 @@ in
                {self BeginUpdate}
                {self subtermChanged(FN)}
                {self EndUpdate}
-            else skip
             end
          end
       end
@@ -660,7 +658,7 @@ in
           # self.term # Depth}
 \endif
          %%
-         case Depth == 0 then {self  Shrink}
+         if Depth == 0 then {self  Shrink}
          else MaxWidth ActWidth NewDepth in
             %%
             TDepth <- Depth
@@ -672,11 +670,10 @@ in
             %%
             %%  ... check whether we are allowed to show more subterms
             %% than actually shown;
-            case {self  hasCommas($)} andthen ActWidth < MaxWidth
+            if {self  hasCommas($)} andthen ActWidth < MaxWidth
             then
                {{self.store read(StoreStreamObj $)}
                 enq(expandWidth(self (MaxWidth-ActWidth)))}
-            else skip
             end
 
             %% second phase: update depth of subterms;
@@ -779,7 +776,7 @@ in
          %%
          {WidgetObjIn insertNL}
          self.underline =
-         case {Store read(StoreAreSeparators $)} then
+         if {Store read(StoreAreSeparators $)} then
             %%
             %% Note that 'makeUnderline' inserts yet another '\n'. The
             %% general convention is that outside the
@@ -808,9 +805,8 @@ in
 
          %%
          {self.WidgetObj removeNL}
-         case self.underline \= InitValue then
+         if self.underline \= InitValue then
             {self.WidgetObj removeUnderline(self.underline)}
-         else skip
          end
 \ifdef DEBUG_CO
          {Show 'RootTermObject::Close is finished'}
@@ -877,7 +873,7 @@ in
           # self.term # self.type}
 \endif
          %%
-         case Obj.numberOf == DRootGroup andthen Obj == @termObj then
+         if Obj.numberOf == DRootGroup andthen Obj == @termObj then
             %%
             {@termObj SetCursorAt}
             {@termObj Close}
@@ -895,7 +891,6 @@ in
 
             %%
             %%  leave an underline in place;
-         else skip
          end
       end
 
@@ -907,7 +902,7 @@ in
           # self.term # Depth}
 \endif
          %%
-         case Obj.numberOf == DRootGroup andthen Obj == @termObj
+         if Obj.numberOf == DRootGroup andthen Obj == @termObj
          then CurDepth in
             %%
             CurDepth = @TDepth
@@ -919,7 +914,6 @@ in
 
             %%
             TDepth <- CurDepth
-         else skip
          end
       end
 
@@ -998,7 +992,7 @@ in
             Master = @master
 
             %%
-            case Master == InitValue then skip
+            if Master == InitValue then skip
                %% i.e. cannot yet deref - simply ignore it;
             else
                {Master pickPlace('begin' 'any')}

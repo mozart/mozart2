@@ -41,7 +41,7 @@ local
 in
    %%
    fun {WhileLoop ValueIn Fun IncFun}
-      case {Fun ValueIn} then {WhileLoop {IncFun ValueIn} Fun IncFun}
+      if {Fun ValueIn} then {WhileLoop {IncFun ValueIn} Fun IncFun}
       else ValueIn
       end
    end
@@ -125,7 +125,7 @@ in
             of XR#YR    then XRes=XR YRes=YR
             [] !InitValue then
                %%
-               case X11ResourceCacheClass , tryFont(Font $) then
+               if X11ResourceCacheClass , tryFont(Font $) then
                   {self.TestTW tk(conf font:Font)}
 
                   %%
@@ -154,7 +154,7 @@ in
       %% (with the smallest "pixel size", to be precise);
       meth getSmallestFont(?Font ?PixSize)
          lock
-            case @smallestFont \= InitValue then
+            if @smallestFont \= InitValue then
                @smallestFont = font(font:Font pixSize:PixSize)
             else
                %%

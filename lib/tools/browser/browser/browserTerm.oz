@@ -102,7 +102,7 @@ in
    %%
    %%  Note: that's not a function!
    fun {IsListDepth L D}
-      case D > 0 then
+      if D > 0 then
          %%
          if {IsDet L} then
             case L
@@ -132,7 +132,7 @@ in
          [] int     then T_FDVariable
          [] fset    then T_FSet
          [] other   then
-            case {IsCtVar Term} then T_CtVariable % TODO TMUELLER
+            if {IsCtVar Term} then T_CtVariable % TODO TMUELLER
             else T_Variable     % don't know;
             end
          else T_Unknown
@@ -149,25 +149,29 @@ in
 
          [] tuple      then
             %%
-            case
+            if
                {Store read(StoreAreStrings $)} andthen {LocalIsString Term}
                orelse
                {Store read(StoreAreVSs $)} andthen {IsVirtualString Term}
             then T_Atom
-            elsecase Term of _|_ then
-               case {IsListDepth Term ({Store read(StoreWidth $)} * 2)}
-               then T_List
-               else T_FCons
+            else
+               case Term of _|_ then
+                  if {IsListDepth Term ({Store read(StoreWidth $)} * 2)}
+                  then T_List
+                  else T_FCons
+                  end
+               else
+                  if
+                     case {Label Term}
+                     of '#' then TW in TW = {Width Term}
+                        %%  must fit into width constraint;
+                        TW > 1 andthen TW =< {Store read(StoreWidth $)}
+                     else false
+                     end
+                  then T_HashTuple
+                  else T_Tuple
+                  end
                end
-            elsecase
-               case {Label Term}
-               of '#' then TW in TW = {Width Term}
-                  %%  must fit into width constraint;
-                  TW > 1 andthen TW =< {Store read(StoreWidth $)}
-               else false
-               end
-            then T_HashTuple
-            else T_Tuple
             end
 
          [] procedure  then T_Procedure

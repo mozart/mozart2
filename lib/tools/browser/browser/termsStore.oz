@@ -44,7 +44,7 @@ in
    %%
    proc {GCProc List Length ?NewList ?NewLength}
       %%
-      case {IsFree List} then
+      if {IsFree List} then
          List = NewList         % keep the tail unchanged;
          NewLength = Length
       else Obj R in
@@ -52,7 +52,7 @@ in
          List = Obj|R
 
          %%
-         case {IsFree Obj.closed} then NewTail in
+         if {IsFree Obj.closed} then NewTail in
             %%
             NewList = Obj|NewTail
             {GCProc R (Length + 1) NewTail NewLength}
@@ -122,15 +122,15 @@ in
       %%
       meth Check(Term List $)
          %%
-         case {IsFree List} then InitValue
+         if {IsFree List} then InitValue
          else Obj R in
             %%
             List = Obj|R
 
             %%
-            case {NMTest proc {$ _} Obj.term = Term end} then
+            if {NMTest proc {$ _} Obj.term = Term end} then
                %%
-               case {IsFree Obj.closed} then Obj
+               if {IsFree Obj.closed} then Obj
                else
                   fails <- @fails + 1
                   TermsStoreClass , Check(Term R $)
@@ -147,20 +147,20 @@ in
       %% (and it yields bool);
       meth Search(Self List $)
          %%
-         case {IsFree List} then false
+         if {IsFree List} then false
          else Obj R in
             %%
             List = Obj|R
 
             %%
-            case Obj == Self then
+            if Obj == Self then
                %% skip itself;
                TermsStoreClass , Search(Self R $)
             else
                %%
-               case {NMTest proc {$ _} Obj.term = Self.term end} then
+               if {NMTest proc {$ _} Obj.term = Self.term end} then
                   %%
-                  case {IsFree Obj.closed} then true
+                  if {IsFree Obj.closed} then true
                   else
                      fails <- @fails + 1
                      TermsStoreClass , Search(Self R $)
@@ -189,7 +189,7 @@ in
          %% during deleting a term object, how it was done bedore.
          %% This optimizes the most probable case of "browse
          %% sequentially, no modifications, remove it!";
-         case @fails * TermsStoreGCRatio > @length + TermsStoreGCBase
+         if @fails * TermsStoreGCRatio > @length + TermsStoreGCBase
          then NewList NewLength in
             {GCProc @list 0 NewList NewLength}
 
@@ -197,7 +197,6 @@ in
             list <- NewList
             length <- NewLength
             fails <- 0          %  per definition :-))
-         else skip
          end
 
          %%

@@ -152,7 +152,7 @@ in
       %%
       proc {HashVS I V1 V2}
          V2.I={GenVS V1.I}
-         case I>1 then {HashVS I-1 V1 V2} else skip end
+         if I>1 then {HashVS I-1 V1 V2} end
       end
 
       %%
@@ -209,7 +209,7 @@ in
    fun {StripBQuotes IStr}
       case IStr of nil then nil
       [] I1|I2 then
-         case I1==&` then {StripBQuotes I2}
+         if I1==&` then {StripBQuotes I2}
          else I1|{StripBQuotes I2}
          end
       end
@@ -224,7 +224,7 @@ in
          PN = {System.printName Term}
 
          %%
-         case AreSmallNames then
+         if AreSmallNames then
             case PN
             of '' then '<N>'
             [] '_' then '<N>'
@@ -253,7 +253,7 @@ in
 
    %%
    fun {GenForeignPointerPrintName Term Store}
-      case {Store read(StoreSmallNames $)} then
+      if {Store read(StoreSmallNames $)} then
          '<Foreign Pointer>'
       else
          '<Foreign Pointer: ' # {ForeignPointer.toInt Term} # ' @ ' #
@@ -263,12 +263,12 @@ in
 
    %%
    fun {GenLitPrintName FN Store}
-      case {IsAtom FN} then {GenAtomPrintName FN}
-      elsecase {IsName FN} then {GenNamePrintName FN Store}
+      if {IsAtom FN} then {GenAtomPrintName FN}
+      elseif {IsName FN} then {GenNamePrintName FN Store}
          %%
          %% Note that special names (true, false and unit) are not
          %% treated specially here!
-      elsecase {IsInt FN} then {VirtualString.changeSign FN '~'}
+      elseif {IsInt FN} then {VirtualString.changeSign FN '~'}
       else FN
       end
    end
@@ -315,7 +315,7 @@ in
          PN = {System.printName {Class.get Term}}
 
          %%
-         case AreSmallNames then
+         if AreSmallNames then
             case PN
             of '' then '<O>'
             [] '_' then '<O>'
@@ -353,7 +353,7 @@ in
          PN = {System.printName Term}
 
          %%
-         case AreSmallNames then
+         if AreSmallNames then
             case PN
             of '' then '<C>'
             [] '_' then '<C>'
@@ -389,7 +389,7 @@ in
          PN = {System.printName Term}
 
          %%
-         case AreSmallNames then
+         if AreSmallNames then
             case PN
             of '' then '<P/' # {Procedure.arity Term} # '>'
             [] '_' then '<P/' # {Procedure.arity Term} # '>'
@@ -429,15 +429,17 @@ in
 
       %%
       fun {DoInfList L Xs NIn Depth}
-         case NIn > Depth then NIn
-         elsecase {IsVar Xs} then Depth + 1
-         elsecase Xs of _|Ts then NN in
-            NN = NIn + 1
-            %%
-            case {EQ L Ts} then NN
-            else {DoInfList L Ts NN Depth}
+         if NIn > Depth then NIn
+         elseif {IsVar Xs} then Depth + 1
+         else
+            case Xs of _|Ts then NN in
+               NN = NIn + 1
+               %%
+               if {EQ L Ts} then NN
+               else {DoInfList L Ts NN Depth}
+               end
+            else Depth + 1
             end
-         else Depth + 1
          end
       end
 
@@ -453,7 +455,7 @@ in
    fun {AtomicFilter In}
       case In
       of E|R then
-         case {IsAtom E} then E|{AtomicFilter R}
+         if {IsAtom E} then E|{AtomicFilter R}
          else {AtomicFilter R}
          end
       else nil
@@ -481,22 +483,24 @@ in
       %% There are functions that traverse arguments of tuples and
       %% records:
       fun {AuxTupleSize T CN MN SIn SMax}
-         case SIn < SMax andthen CN =< MN then
+         if SIn < SMax andthen CN =< MN then
             {AuxTupleSize T (CN + 1) MN
              {LimitedTermSize T.CN (SIn + DSpace) SMax} SMax}    % ' '
          else SIn
          end
       end
       fun {AuxRecordSize Term Arity SIn SMax}
-         case SIn >= SMax then SIn
-         elsecase Arity
-         of H|T then
-            {AuxRecordSize Term T
-             {LimitedTermSize H
-              ({LimitedTermSize Term.H (SIn + DDSpace) SMax})    % ':',' '
-              SMax}
-             SMax}
-         else SIn
+         if SIn >= SMax then SIn
+         else
+            case Arity
+            of H|T then
+               {AuxRecordSize Term T
+                {LimitedTermSize H
+                 ({LimitedTermSize Term.H (SIn + DDSpace) SMax})    % ':',' '
+                 SMax}
+                SMax}
+            else SIn
+            end
          end
       end
 
@@ -507,13 +511,13 @@ in
       %% or greater than 'SMax';
       %%
       fun {LimitedTermSize Term SIn SMax}
-         case SIn >= SMax then SIn              % that's all;
+         if SIn >= SMax then SIn                % that's all;
             %%
             %% Note that 'SIn' may not be just added to a size of
             %% (sub)term in order to get the new size: we have to
             %% start at that value;
-         elsecase {IsVar Term} then
-            case {IsRecordCVar Term} then RArity KillP RLabel in
+         elseif {IsVar Term} then
+            if {IsRecordCVar Term} then RArity KillP RLabel in
                %% we can see some structure in there;
                %%
                %% we don't care about non-monotonic changes that could
@@ -525,9 +529,8 @@ in
                %% *approximate* a size of a term's representation;
                RArity = {Record.monitorArity Term KillP}
                {KillP}
-               case {HasLabel Term}
+               if {HasLabel Term}
                then RLabel = {Label Term}
-               else skip
                end
 
                %%
@@ -537,32 +540,34 @@ in
                 (SIn + {FullTermSize RLabel} + DSpace + DQSpace) SMax}
             else SIn + {FullTermSize Term}     % primitive;
             end
-         elsecase {Value.type Term}
-         of tuple  then
-            %%
-            case Term
-            of H|T then
-               {LimitedTermSize T
-                {LimitedTermSize H (SIn + DSpace) SMax} SMax}         % '|'
-            else
-               {AuxTupleSize Term 1 {Width Term}
-                (SIn + {FullTermSize {Label Term}} + DSpace) SMax}    % '('
-            end
-
-         [] record then
-            %%
-            {AuxRecordSize Term {Record.arity Term}
-             (SIn + {FullTermSize {Label Term}} + DSpace) SMax}  % '('
-
-         [] chunk then
-            %%
-            {AuxRecordSize Term {ChunkArity Term}
-             (SIn + ChLabelSize + DSpace) SMax}                  % '('
-
          else
-            %%
-            %% Sizes of primitive values are taken as they are;
-            SIn + {FullTermSize Term}
+            case {Value.type Term}
+            of tuple  then
+               %%
+               case Term
+               of H|T then
+                  {LimitedTermSize T
+                   {LimitedTermSize H (SIn + DSpace) SMax} SMax}         % '|'
+               else
+                  {AuxTupleSize Term 1 {Width Term}
+                   (SIn + {FullTermSize {Label Term}} + DSpace) SMax}    % '('
+               end
+
+            [] record then
+               %%
+               {AuxRecordSize Term {Record.arity Term}
+                (SIn + {FullTermSize {Label Term}} + DSpace) SMax}  % '('
+
+            [] chunk then
+               %%
+               {AuxRecordSize Term {ChunkArity Term}
+                (SIn + ChLabelSize + DSpace) SMax}                  % '('
+
+            else
+               %%
+               %% Sizes of primitive values are taken as they are;
+               SIn + {FullTermSize Term}
+            end
          end
       end
    end
@@ -661,7 +666,7 @@ in
          {Show 'AtomTermObject::makeTerm is applied' # self.term}
 \endif
          local Name in
-            Name = case
+            Name = if
                       {self.store read(StoreAreVSs $)} orelse
                       ({self.store read(StoreAreStrings $)} andthen
                        {Value.status self.term} == det(tuple))
@@ -741,7 +746,7 @@ in
 \endif
          local Name in
             %%
-            Name = case {self.store read(StoreAreVSs $)}
+            Name = if {self.store read(StoreAreVSs $)}
                    then {GenVSPrintName self.term}
                    else {VirtualString.changeSign self.term '~'}
                    end
@@ -775,7 +780,7 @@ in
 \endif
          local Name in
             %%
-            Name = case {self.store read(StoreAreVSs $)}
+            Name = if {self.store read(StoreAreVSs $)}
                    then {GenVSPrintName self.term}
                    else {VirtualString.changeSign self.term '~'}
                    end
@@ -812,9 +817,9 @@ in
          local Term Name in
             Term = self.term
             %%
-            Name = case {Bool.is Term} then
-                      case Term then 'true' else 'false' end
-                   elsecase Term == unit then 'unit'
+            Name = if {Bool.is Term} then
+                      if Term then 'true' else 'false' end
+                   elseif Term == unit then 'unit'
                    else {GenNamePrintName Term self.store}
                    end
 
@@ -1338,7 +1343,7 @@ in
             NotShownElementsHere = @NotShownElements
 
             %%
-            case {IsVar NotShownElementsHere}
+            if {IsVar NotShownElementsHere}
             then NotShownElementsHereAgain in
                %%
                %% as a last resort we have to lookup for one;
@@ -1346,7 +1351,7 @@ in
                NotShownElementsHereAgain = @NotShownElements
 
                %%
-               case {IsVar NotShownElementsHereAgain} then false
+               if {IsVar NotShownElementsHereAgain} then false
                else NotShownElementsHereAgain \= nil
                end
             else
@@ -1407,7 +1412,7 @@ in
          %%
          %% An optimisation: don't try to set the cursor if no
          %% subterms will be drawn;
-         case N > 0 andthen MetaCompoundTermObject , CanBeExpanded($)
+         if N > 0 andthen MetaCompoundTermObject , CanBeExpanded($)
          then
             %%
             %% Invariant: the cursor is set already at a right
@@ -1418,7 +1423,6 @@ in
             %% class (it is recursive - that's the reason why it's
             %% here at all);
             MetaCompoundTermObject , DrawElementsLoop(N)
-         else skip
          end
 
          %%
@@ -1428,11 +1432,11 @@ in
          %%
          %% Note that new terms can arrive between leaving the
          %% 'DrawElements' and this point - see the comment above;
-         case MetaCompoundTermObject , CanBeExpanded($) then
+         if MetaCompoundTermObject , CanBeExpanded($) then
             %%
             %% there are still terms that can be shown, but probably
             %% there is still no ",,," group;
-            case MetaCompoundTermObject , hasCommas($) then skip
+            if MetaCompoundTermObject , hasCommas($) then skip
             else
                CompoundRepManagerObject
                , putG_SGS(ln:   DCommasGroup
@@ -1444,9 +1448,8 @@ in
          else
             %%
             %% ... and vice versa;
-            case MetaCompoundTermObject , hasCommas($)
+            if MetaCompoundTermObject , hasCommas($)
             then CompoundRepManagerObject , removeG(ln:DCommasGroup)
-            else skip
             end
          end
 
@@ -1457,7 +1460,7 @@ in
       %% ... a local, recursive method (doesn't care about the cursor
       %% location);
       meth DrawElementsLoop(N)
-         case
+         if
             N > 0 andthen
             MetaCompoundTermObject , CanBeExpanded($) andthen
             CompoundControlObject , mayContinue($)
@@ -1470,7 +1473,6 @@ in
 
             %%
             MetaCompoundTermObject , DrawElementsLoop(N - 1)
-         else skip
          end
       end
 
@@ -1525,7 +1527,7 @@ in
             Desc = '>'('+'(current st_size(DMainBlock#NewWidth)) line_size)
 
             %%
-            case NewWidth == 1 then
+            if NewWidth == 1 then
                %%
                CompoundRepManagerObject
                , putG_GT(ln:       1
@@ -1611,67 +1613,69 @@ in
          %%
          %% Obviously, no further subterms are expected iff the
          %% 'Elements' list is determined:
-         case {IsVar @TailElements} then TL in
+         if {IsVar @TailElements} then TL in
             TL = @TailList
 
             %%
-            case {IsVar TL} then skip
+            if {IsVar TL} then skip
                %% no new subterms (but they are still expected);
-            elsecase TL
-            of _|_ then RepMode = {self.store read(StoreRepMode $)} in
-               %%
-               %% There are three interesting cases when searching
-               %% for cycles is switched on:
-               %% (a) there is a cyclie over the new element, and
-               %%     that element is the first one - then pull all
-               %%     the elements before that "cyclic" one and close
-               %%     the list: the reference must be drawn in its
-               %%     tail;
-               %% (b) ... but the current element is not the first
-               %%     one - then just close the list: we need a new
-               %%     list;
-               %%
-               %% Note that the 'show minimal graph' mode is not
-               %% implemented here. That is, what is done is really
-               %% the list "cyclicity" based on the pointer equality;
-
-               %%
-               %% So, we have probably to check whether a tail list
-               %% is cyclic
-               case RepMode == GraphRep orelse RepMode == MinGraphRep
-               then MW NNonCyclic in
-                  MW = {self.store read(StoreWidth $)}
+            else
+               case TL
+               of _|_ then RepMode = {self.store read(StoreRepMode $)} in
+                  %%
+                  %% There are three interesting cases when searching
+                  %% for cycles is switched on:
+                  %% (a) there is a cyclie over the new element, and
+                  %%     that element is the first one - then pull all
+                  %%     the elements before that "cyclic" one and close
+                  %%     the list: the reference must be drawn in its
+                  %%     tail;
+                  %% (b) ... but the current element is not the first
+                  %%     one - then just close the list: we need a new
+                  %%     list;
+                  %%
+                  %% Note that the 'show minimal graph' mode is not
+                  %% implemented here. That is, what is done is really
+                  %% the list "cyclicity" based on the pointer equality;
 
                   %%
-                  case {IsCyclicListDepth TL MW NNonCyclic} then
-                     case {EQ @TailElements @Elements} then
-                        %% over the first element - pull elements
-                        %% up to the "cyclic" one. This must be done
-                        %% since there are other cycles - over
-                        %% all subsequent elements;
-                        MetaListTermObject , PullElements(NNonCyclic)
-                     else skip
-                        %% not the first element - a new list is
-                        %% necessary;
-                     end
+                  %% So, we have probably to check whether a tail list
+                  %% is cyclic
+                  if RepMode == GraphRep orelse RepMode == MinGraphRep
+                  then MW NNonCyclic in
+                     MW = {self.store read(StoreWidth $)}
 
                      %%
-                     %% in both cases, close up the list - a cyclie
-                     %% is detected;
-                     @TailElements = nil
+                     if {IsCyclicListDepth TL MW NNonCyclic} then
+                        if {EQ @TailElements @Elements} then
+                           %% over the first element - pull elements
+                           %% up to the "cyclic" one. This must be done
+                           %% since there are other cycles - over
+                           %% all subsequent elements;
+                           MetaListTermObject , PullElements(NNonCyclic)
+                        else skip
+                           %% not the first element - a new list is
+                           %% necessary;
+                        end
+
+                        %%
+                        %% in both cases, close up the list - a cyclie
+                        %% is detected;
+                        @TailElements = nil
+                     else
+                        %% there is no cycle going over this list
+                        %% constructor.
+                        MetaListTermObject , PullElement
+                     end
                   else
-                     %% there is no cycle going over this list
-                     %% constructor.
+                     %% the (a) case;
                      MetaListTermObject , PullElement
                   end
                else
-                  %% the (a) case;
-                  MetaListTermObject , PullElement
+                  %% has got either a closed well-formed list, or a
+                  %% malformed one;
+                  @TailElements = {self  GetLastElements(TL $)}
                end
-            else
-               %% has got either a closed well-formed list, or a
-               %% malformed one;
-               @TailElements = {self  GetLastElements(TL $)}
             end
          else skip
             %%
@@ -1705,8 +1709,7 @@ in
 
       %%
       meth PullElements(N)
-         case N =< 0 then skip
-         else
+         if N > 0 then
             MetaListTermObject , PullElement
             MetaListTermObject , PullElements(N-1)
          end
@@ -1725,7 +1728,7 @@ in
             TL = @TailList
 
             %%
-            case {IsVar TL} then false
+            if {IsVar TL} then false
             else TL == nil
             end
          end
@@ -1788,7 +1791,7 @@ in
             CompoundRepManagerObject , block(DSpecialBlock)
 
             %%
-            case
+            if
                MetaCompoundTermObject , hasCommas($) orelse
                MetaListTermObject , IsWFList($)
             then
@@ -1797,7 +1800,7 @@ in
                %% when 'DrawSubterms' has put a ",,," group, but more
                %% subterms can be shown now (see the comment for the
                %% 'MetaCompoundTermObject::DrawSubterms');
-               case
+               if
                   RestInc > 0 andthen
                   MetaCompoundTermObject , CanBeExpanded($) andthen
                   CompoundControlObject , mayContinue($)
@@ -1813,11 +1816,10 @@ in
                   %% in both cases (there is a ",,," group *or* the
                   %% list is a well-formed one) there can be no
                   %% 'ltg';
-                  case {self  HasLTG($)}
+                  if {self  HasLTG($)}
                   then
                      %% i.e. it was an incomplete list before;
                      {self  RemoveLTG}
-                  else skip
                   end
                end
 
@@ -1825,7 +1827,7 @@ in
             else                % has no commas *and* is not well-formed;
                %%
                %% otherwise, we have to place an 'ltg';
-               case {self  HasLTG($)}
+               if {self  HasLTG($)}
                then
                   %%
                   %% if it is still an incomplete list, we replace the
@@ -1845,7 +1847,7 @@ in
                %%
                %% ... and now, if the list *became* meanwhile expandable
                %% or well-formed:
-               case
+               if
                   (MetaListTermObject , IsWFList($) orelse
                    MetaCompoundTermObject , CanBeExpanded($)) andthen
                   CompoundControlObject , mayContinue($)
@@ -1853,7 +1855,6 @@ in
                   %%
                   %% ... just iterate again;
                   MetaListTermObject , expand(RestInc)
-               else skip
                end
             end
 
@@ -1876,9 +1877,8 @@ in
       %%
       meth !HasLTG($)
 \ifdef DEBUG_TO
-         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
-         then skip
-         else {BrowserError 'MetaListTermObject::HasLTG: wrong block!'}
+         if CompoundRepManagerObject , getBlock($) \= DSpecialBlock
+            {BrowserError 'MetaListTermObject::HasLTG: wrong block!'}
          end
 \endif
          %%
@@ -1899,7 +1899,7 @@ in
           # self.term # N}
 \endif
          %%
-         case N == DSpecialBlock#DLTGroup then MaxWidth CurrentSWidth in
+         if N == DSpecialBlock#DLTGroup then MaxWidth CurrentSWidth in
             %%
             %% presumably we face a growth of the list;
             MaxWidth = {self.store read(StoreWidth $)}
@@ -2039,7 +2039,7 @@ in
 
       %%
       meth !GetLastElements(TL $)
-         case TL == nil then ['nil'] else nil end
+         if TL == nil then ['nil'] else nil end
       end
 
       %%
@@ -2226,7 +2226,7 @@ in
             %% (a) a solid one, - similar to tuples, and
             %% (b) an 'expanded' one, called 'record fields aligned'.
             %%
-            case
+            if
                case {Store read(StoreFillStyle $)}
                of !Expanded then true
                [] !Filled then false
@@ -2261,7 +2261,7 @@ in
             %% course, it's also possible to make the second group
             %% "glueful", but i don't know whether it's necessary;
             CompoundRepManagerObject
-            , case NewWidth == 1 then
+            , if NewWidth == 1 then
                  putG_GS(ln:       (CurrentLastGroup + 1)
                          dp:       DP
                          desc:     Desc
@@ -2309,7 +2309,7 @@ in
             %%
             %% Note that this can be also OFS (yet) without a label -
             %% reflect it non-monotonically;
-            case {IsVar L} then {System.printName L}
+            if {IsVar L} then {System.printName L}
             else
                HasDetLabel <- true
                {GenLitPrintName L self.store}
@@ -2345,7 +2345,7 @@ in
             RecordTermObject , SetWatchPoint
 
             %%
-            self.RLabel = case {HasLabel Term} then {Label Term}
+            self.RLabel = if {HasLabel Term} then {Label Term}
                           else thread {Label Term} end
                           end
 
@@ -2391,7 +2391,7 @@ in
       %% 'ListTermObject::IsWFList');
       meth IsClosedRecord($)
          %%
-         case {IsVar @NotShownElements} then false
+         if {IsVar @NotShownElements} then false
          else @NotShownElements == nil
          end
       end
@@ -2399,10 +2399,9 @@ in
       %%
       meth HasEllipses($)
 \ifdef DEBUG_TO
-         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
-         then skip
-         else {BrowserError
-               'MetaCompoundTermObject::hasEllipses: wrong block!'}
+         if CompoundRepManagerObject , getBlock($) \= DSpecialBlock
+            {BrowserError
+             'MetaCompoundTermObject::hasEllipses: wrong block!'}
          end
 \endif
          %%
@@ -2429,22 +2428,21 @@ in
          CompoundRepManagerObject , block(DSpecialBlock)
 
          %%
-         case
+         if
             MetaCompoundTermObject , hasCommas($) orelse
             RecordTermObject , IsClosedRecord($)
          then
             %%
             %% no '...' group;
-            case RecordTermObject , HasEllipses($) then
+            if RecordTermObject , HasEllipses($) then
                %%
                CompoundRepManagerObject , removeG(ln: DEllipsesGroup)
-            else skip
             end
 
             %%
          else           % has no commas *and* is not yet closed;
             %%
-            case RecordTermObject , HasEllipses($) then skip
+            if RecordTermObject , HasEllipses($) then skip
             else
                %%
                %% note that the insertion cursor is located at a
@@ -2488,7 +2486,7 @@ in
          {Show 'RecordTermObject::SetWatchPoint: ' # self.term}
 \endif
          %%
-         case RecordTermObject , IsProperOFS($) then ObjClosed ChVar in
+         if RecordTermObject , IsProperOFS($) then ObjClosed ChVar in
             %%
             ObjClosed = self.closed
             ChVar = {GetsTouched self.term}
@@ -2497,21 +2495,19 @@ in
             %% Note that this conditional may not block the state;
             thread
                {WaitOr ChVar ObjClosed}
-               case {IsDet ChVar} then {self checkTermReq}
-               else skip
+               if {IsDet ChVar} then {self checkTermReq}
                end
             end
 
             %%
-            case @HasDetLabel then skip
+            if @HasDetLabel then skip
             else ObjClosed GotLabel in
                ObjClosed = self.closed
 
                %%
                thread
                   {WaitOr self.RLabel ObjClosed}
-                  case {IsDet GotLabel} then {self checkTermReq}
-                  else skip
+                  if {IsDet GotLabel} then {self checkTermReq}
                   end
                end
             end
@@ -2535,7 +2531,7 @@ in
 
          %%
          %% First, check the label:
-         case @HasDetLabel orelse {IsVar self.RLabel} then skip
+         if @HasDetLabel orelse {IsVar self.RLabel} then skip
          else
             CompoundRepManagerObject
             , block(DLeadingBlock)
@@ -2553,11 +2549,11 @@ in
          %% First, take a shortcut: if there is a ',,,' group,
          %% nothing must be done here (except setting up a new
          %% watchpoint, what is done in 'SetWatchPoint');
-         case MetaCompoundTermObject , hasCommas($) then skip
+         if MetaCompoundTermObject , hasCommas($) then skip
          else
             %%
             %% The term could get coreferenced by some other term;
-            case {self  isCoreferenced($)}
+            if {self  isCoreferenced($)}
             then
                %%
                %% This method enqueues a request for the 'checkTerm'
@@ -2624,7 +2620,7 @@ in
 
             %%
             FullArity = {ChunkArity Term}
-            Elements <- case NF then nil else FullArity end
+            Elements <- if NF then nil else FullArity end
             NotShownElements <- @Elements
             ShownWidth <- 0
 
@@ -2646,7 +2642,7 @@ in
             , block(DTailBlock)
             CompoundRepManagerObject
             , putG_S(ln:  DBraceGroup
-                     str: case
+                     str: if
                              NF andthen
                              {Length @Elements} \= {Length FullArity}
                           then DUnshownPFs#DRRBraceS
@@ -2753,9 +2749,8 @@ in
             %% Note that this conditional may not block the state;
             thread
                {WaitOr ChVar ObjClosed}
-               case {IsDet ChVar} then
+               if {IsDet ChVar} then
                   {self checkTermReq}
-               else skip
                end
             end
 
@@ -2861,7 +2856,7 @@ in
                          end
 
                    %%
-                   case Num == 1 then SubInts.1 = Tmp
+                   if Num == 1 then SubInts.1 = Tmp
                    else SubInts.Num = " "#Tmp
                    end
                 end
@@ -2894,7 +2889,7 @@ in
          {Show 'FSetTermObject::makeTerm is applied' # self.term}
 \endif
          %%
-         case {IsDet self.term}
+         if {IsDet self.term}
          then % FSetValue
             Term Comp Le SubInts Name
          in
@@ -2915,7 +2910,7 @@ in
                          end
 
                    %%
-                   case Num == 1 then SubInts.1 = Tmp
+                   if Num == 1 then SubInts.1 = Tmp
                    else SubInts.Num = " "#Tmp
                    end
                 end
@@ -2953,7 +2948,7 @@ in
                             end
 
                       %%
-                      case Num == 1 then GlbSubInts.1 = Tmp
+                      if Num == 1 then GlbSubInts.1 = Tmp
                       else GlbSubInts.Num = " "#Tmp
                       end
                    end
@@ -2967,7 +2962,7 @@ in
                             end
 
                       %%
-                      case Num == 1 then LubSubInts.1 = Tmp
+                      if Num == 1 then LubSubInts.1 = Tmp
                       else LubSubInts.Num = " "#Tmp
                       end
                    end

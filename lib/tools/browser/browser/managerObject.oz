@@ -38,8 +38,7 @@ local
    %%
    %% Waits until the 'Thr' becomes blocked;
    proc {ThreadSync Thr}
-      case {Thread.state Thr} == blocked then skip
-      else
+      if {Thread.state Thr} \= blocked then
          {Thread.preempt {Thread.this}} % yet delay?
          {ThreadSync Thr}
       end
@@ -104,10 +103,10 @@ in
          {Show 'BrowserManagerClass::ServeRequest ...'}
 \endif
          %%
-         case MyClosableObject , isClosed($) then skip
+         if MyClosableObject , isClosed($) then skip
          else Req in
             %%
-            case {self.Stream deq(Req $)} then
+            if {self.Stream deq(Req $)} then
                %% Got one - process it.
 \ifdef DEBUG_MO
                {Show 'BrowserManagerClass::ServeRequest: got it!'}
@@ -141,9 +140,8 @@ in
                   %% (or it is still blocked). So, bombing it with the
                   %% 'noop' can be redundant but seems to be the only
                   %% way to make things really working;
-                  case {self.Stream getSize($)} > 0
+                  if {self.Stream getSize($)} > 0
                   then {self.Stream enq(noop)} % my kludge ;-)
-                  else skip
                   end
                end
                {self.Stream waitElement}
@@ -163,11 +161,10 @@ in
 
       %%
       meth CheckObj(Obj)
-         case
+         if
             MyClosableObject , isClosed($) orelse  % discard everthing!
             {Obj isClosed($)}
          then {Raise BEx(general)}
-         else skip
          end
       end
 

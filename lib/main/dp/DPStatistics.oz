@@ -9,6 +9,7 @@ export
    GetNetInfo
    PerdioStatistics
    CreateLogFile
+   MessageCounter
 define
    %%
    %% Force linking of base library
@@ -21,4 +22,5 @@ define
    PerdioStatistics=C_DPStatistics.perdioStatistics
 
    CreateLogFile = C_DPMisc.createLogFile
+   MessageCounter = C_DPMisc.getMsgCntr
 end

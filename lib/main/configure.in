@@ -69,7 +69,8 @@ AC_CHECK_PROGS(EGREP, egrep)
 AC_CHECK_PROGS(ECHO, echo true)
 AC_CHECK_PROGS(M4, gm4 m4)
 
-AC_PATH_PROG(ENV2TYPE, env2type, , .:$srcdir)
+SRCPATH=.:$srcdir
+AC_PATH_PROG(ENV2TYPE, env2type, , $SRCPATH)
 
 OZPATH=$PATH:$TOPDIRA/bin:$TOPDIR:$prefix/bin
 AC_PATH_PROG(INSTALLSRC, ozinstallsrc, , $OZPATH)

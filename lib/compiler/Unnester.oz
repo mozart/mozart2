@@ -1721,15 +1721,15 @@ define
                    of unit then
                       fOpApplyStatement('RecordC.tellSize'
                                         [fOcc({LabelGVO getVariable($)})
-                                         fInt({Length GArgs} CND)
+                                         fInt({Length NewGArgs} CND)
                                          fOcc(RecordGV)] CND)
                    elseof FE then
                       fApply(fOpApply('.' [FE fAtom('tellSize' CND)] CND)
                              [fOcc({LabelGVO getVariable($)})
-                              fInt({Length GArgs} CND)
+                              fInt({Length NewGArgs} CND)
                               fOcc(RecordGV)] CND)
                    end|
-                   {List.mapInd GArgs
+                   {List.mapInd NewGArgs
                     fun {$ I GArg} Feat Subtree in
                        Feat#Subtree =
                        case GArg of F#T then

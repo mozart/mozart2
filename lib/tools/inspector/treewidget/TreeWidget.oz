@@ -46,7 +46,7 @@ define
          of tuple then
             case {Label V}
             of '#' then hashtuple
-            [] '|' then pipetuple
+            [] '|' then if ({Width V} == 1) then labeltuple else pipetuple end
             else labeltuple
             end
          else Type

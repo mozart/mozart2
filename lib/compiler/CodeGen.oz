@@ -383,27 +383,28 @@ define
       end
    in
       proc {MakeApplication Designator Coord ActualArgs CS VHd VTl}
-         VInter NewActualArgs Value Def
+         VInter NewActualArgs Proc
       in
          {LoadActualArgs ActualArgs CS VHd VInter ?NewActualArgs}
-         {Designator getValue(?Value)}
-         if {HasFeature Value Core.imAToken}
-            andthen ({Value getDefinition(?Def)} Def \= unit)
-         then
-            if {IsProcedure Def} then
-               {MakeDirectApplication Def Coord NewActualArgs CS VInter VTl}
-            else   % it's a Definition node
+         {Designator getCodeGenValue(?Proc)}
+         if {IsDet Proc} andthen {IsProcedure Proc} then
+            {MakeDirectApplication Proc Coord NewActualArgs CS VInter VTl}
+         else Value Def in
+            {Designator getValue(?Value)}
+            if {HasFeature Value Core.imAToken}
+               andthen ({Value getDefinition(?Def)} Def \= unit)
+            then
                {Def codeGenApply(Designator Coord NewActualArgs CS VInter VTl)}
+            elseif {{Designator getVariable($)} isToplevel($)}
+               andthen {Not CS.debugInfoControlSwitch}
+            then
+               VInter = vGenCall(_ {Designator reg($)}
+                                 false '' {Length NewActualArgs}
+                                 {GetRegs NewActualArgs} Coord VTl)
+            else
+               VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
+                              Coord VTl)
             end
-         elseif {{Designator getVariable($)} isToplevel($)}
-            andthen {Not CS.debugInfoControlSwitch}
-         then
-            VInter = vGenCall(_ {Designator reg($)}
-                              false '' {Length NewActualArgs}
-                              {GetRegs NewActualArgs} Coord VTl)
-         else
-            VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
-                           Coord VTl)
          end
       end
 
@@ -1723,10 +1724,8 @@ define
 
    class CodeGenVariableOccurrence
       meth getCodeGenValue($)
-         if {IsDet @value} then
-            if @value == self then _
-            else {@value getCodeGenValue($)}
-            end
+         if {IsDet @value} andthen @value \= self then
+            {@value getCodeGenValue($)}
          else _
          end
       end

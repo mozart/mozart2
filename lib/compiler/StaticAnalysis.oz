@@ -3582,15 +3582,15 @@ define
                [] record then
                   SAVariable, RecordToSubst(Seen Depth Val $)
                [] procedure then
-                  {New Core.procedureToken init(Val Val)}
+                  {New Core.valueNode init(Val unit)}
                [] cell then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] array then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] dictionary then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] bitArray then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] 'class' then
                   Cls = {New Core.classToken init(Val)}
                   Meths = {Record.make m {Class.methodNames Val}}
@@ -3619,9 +3619,9 @@ define
                   {Cls setProperties(Props)}
                   {New Core.objectToken init(Val Cls)}
                [] 'lock' then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] port then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] chunk then Rec RecRepr in
                   Rec = {List.toRecord void
                          {Map {CompilerSupport.chunkArity Val}
@@ -3629,9 +3629,9 @@ define
                   SAVariable, RecordToSubst(Seen Depth Rec ?RecRepr)
                   {New Core.token init({NewChunk {RecRepr getValue($)}})}
                [] space then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] 'thread' then
-                  {New Core.token init(Val)}
+                  {New Core.valueNode init(Val unit)}
                [] byteString then
                   {New Core.valueNode init(Val unit)}
                [] bitString then

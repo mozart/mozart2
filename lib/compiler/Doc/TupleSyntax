@@ -119,13 +119,13 @@ Coordinates       = pos(atom int int)   % atom is 'nofile' for parsing VSs
 Extensions for Gump:
 --------------------
 
-File              = ...
+Query             = ...
                   | fSynTopLevelProductionTemplates([ProdClause]).
 Phrase            = ...
                   | fScanner(NakedVariable [ClassDescriptor] [Meth]
-                             [ScannerRule] Coordinates)
+                             [ScannerRule] atom Coordinates)
                   | fParser(NakedVariable [ClassDescriptor] [Meth]
-                            TokenClause [ParserDescriptor] Coordinates).
+                            TokenClause [ParserDescriptor] int Coordinates).
 
 GrammarSymbol     = Atom
                   | NakedVariable.

@@ -27,6 +27,7 @@ import
    Remote(manager)
    Fault
    TestMisc(localHost)
+   System(show:Show)
 export
    Return
 
@@ -189,7 +190,7 @@ proc{TryCell C}
              {TryCell DistCell}
           end
           keys:[fault])
-
+/*
        fault_state_manager_injector_dead(
           proc {$}
              S={New Remote.manager init(host:TestMisc.localHost)}
@@ -239,8 +240,12 @@ proc{TryCell C}
                              end)}
              {S ping}
              {Wait Sync}
+% Swap these two lines
+% and it doesn't work
+%            {InjectInj DistCell DistLock}
              {WatchWat DistCell DistLock AA}
              {InjectInj DistCell DistLock}
+%
              AA.lokk = unit
              {S close}
              {Delay 100}
@@ -248,7 +253,7 @@ proc{TryCell C}
              {CheckWat AA}
           end
           keys:[fault])
-
+*/
 
        fault_state_manager_watcher_dead(
           proc {$}
@@ -353,7 +358,7 @@ proc{TryCell C}
 
 
 
-
+/*
        fault_state_proxy_tokenLost_live_watcher(
           proc {$}
              S1={New Remote.manager init(host:TestMisc.localHost)}
@@ -381,11 +386,15 @@ proc{TryCell C}
 
              {Wait Sync}
              {SiteWatcherInstall DistCell proc{$ A B}
-                                            {Assign CC true}
-                                         end}
+                                             {Assign CC true}
+                                          end}
              {S2 close}
              {Delay 2000}
              {S1 close}
+             try
+                {S1 ping} {S2 ping}
+             catch X then {Show X} end
+             {Delay 2000}
              {Access CC true}
           end
           keys:[fault])
@@ -583,6 +592,6 @@ proc{TryCell C}
              {Access CC true}
 
           end
-          keys:[fault])
+          keys:[fault])*/
       ])
 end

@@ -61,7 +61,9 @@ define
       in
          {Assign CC RR.2#_}
          {For 2 4 1 proc{$ P}
-                       {Send PP.P newEntity(RR.2)}
+                       Cntrl in
+                       {Send PP.P newEntity(RR.2 Cntrl)}
+                       {Wait Cntrl}
                     end}
          {Send PP.(L.1) H(RR.2 L.2)}
          if {Access CC}.2 == ok then
@@ -127,8 +129,9 @@ define
                                                     {Access MemCell} = R
                                                     {Send PP.(L.1)
                                                      entity(R L.2)}
-                                                 elseof newEntity(E) then
+                                                 elseof newEntity(E C) then
                                                     {Assign MemCell E}
+                                                    C = unit
                                                  elseof gcDo(A) then
                                                     {System.gcDo}
                                                     A = unit
@@ -170,30 +173,30 @@ define
       {RRsend entity#proc sited{$ D } A = 2 in  D=A*2 end  Dist}
       %% object
       {RRsend entity#{New class $
-                             feat a
-                             meth init self.a = 6 end
-                          end
-                      init}
-       Dist}
+                              feat a
+                              meth init self.a = 6 end
+                           end
+                       init}
+        Dist}
       %% sited object
       {RRsend entity#{New class $
-                             prop sited
-                             meth init skip end
-                          end
-                      init}
-       Dist}
+                              prop sited
+                              meth init skip end
+                           end
+                       init}
+        Dist}
       %% class
       {RRsend entity#class $
-                        feat a
-                        meth init self.a = 6 end
-                     end
+                         feat a
+                         meth init self.a = 6 end
+                      end
        Dist}
       %% sited class
       {RRsend entity#class $
-                        prop sited
-                        meth init skip end
-                     end
-       Dist}
+                         prop sited
+                         meth init skip end
+                      end
+        Dist}
       %% dictionaries
       {RRsend entity#{Dictionary.new} Dist}
 

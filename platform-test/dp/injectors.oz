@@ -66,7 +66,8 @@ define
    end
    proc{TryPort P}
       try
-         {Send P apa}
+         {For 1 1000000000 1
+          proc {$ _} {Send P apa} {Delay 50} end}
          raise abort end
       catch injector then skip end
    end

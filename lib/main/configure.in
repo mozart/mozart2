@@ -1,0 +1,94 @@
+dnl -*- sh -*-
+dnl
+dnl  Authors:
+dnl    Michael Mehl (mehl@dfki.de)
+dnl
+dnl  Contributors:
+dnl    optional, Contributor's name (Contributor's email address)
+dnl
+dnl  Copyright:
+dnl    Michael Mehl (1997)
+dnl
+dnl  Last change:
+dnl    $Date$ by $Author$
+dnl    $Revision$
+dnl
+dnl  This file is part of Mozart, an implementation
+dnl  of Oz 3:
+dnl     $MOZARTURL$
+dnl
+dnl  See the file "LICENSE" or
+dnl     $LICENSEURL$
+dnl  for information on usage and redistribution
+dnl  of this file, and for a DISCLAIMER OF ALL
+dnl  WARRANTIES.
+dnl
+
+dnl Process this file with autoconf to produce a configure script.
+
+dnl mm2: Known Problems and Bugs
+
+dnl *****************************************************************
+dnl INITIALIZE
+dnl *****************************************************************
+
+dnl This will check that we are in the Oz directory and initiate
+AC_INIT(Value.oz)
+
+AC_CANONICAL_HOST
+
+if test -d $OZHOME
+then
+  ac_default_prefix=$OZHOME
+fi
+
+dnl *****************************************************************
+dnl set TOPDIR
+dnl *****************************************************************
+
+case $srcdir in
+    .*)
+        srcdir=`(cd $srcdir; pwd)`
+        ;;
+esac
+
+if test "x$TOPDIR" = x
+then
+    TOPDIR=`(cd $srcdir; cd ..; pwd)`
+fi
+
+. $TOPDIR/VERSION
+
+dnl *****************************************************************
+dnl Checks for programs.
+dnl *****************************************************************
+
+AC_PROG_INSTALL
+
+AC_CHECK_PROGS(RM, rm)
+AC_CHECK_PROGS(SH, sh bash)
+AC_CHECK_PROGS(SED, gnused sed)
+AC_CHECK_PROGS(TOUCH, touch)
+AC_CHECK_PROGS(EGREP, egrep)
+AC_CHECK_PROGS(ECHO, echo true)
+AC_CHECK_PROGS(M4, gm4 m4)
+
+OZPATH=$PATH:../bin:../../bin:$prefix/bin
+AC_PATH_PROG(INSTALLSRC, ozinstallsrc, , $OZPATH)
+AC_PATH_PROG(OZBATCH, ozbatch, , $OZPATH)
+
+dnl *****************************************************************
+dnl configurable variables
+dnl *****************************************************************
+
+dnl substitutions variable
+AC_SUBST(INSTALLSRC)
+AC_SUBST(OZBATCH)
+AC_SUBST(OZVERSION)
+AC_SUBST(TOPDIR)
+
+dnl *****************************************************************
+dnl FINALIZE
+dnl *****************************************************************
+
+AC_OUTPUT(Makefile Makefile.vars browser/Makefile compiler/Makefile explorer/Makefile ozcar/Makefile panel/Makefile perdio/Makefile profiler/Makefile)

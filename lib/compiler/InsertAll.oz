@@ -89,10 +89,6 @@ in
       % Reporter
       Reporter
 
-      % ParseOz
-      ParseOzFile
-      ParseOzVirtualString
-
       % Unnester
       JoinQueries
       MakeExpressionQuery
@@ -100,7 +96,6 @@ in
    in
       \insert FormatStrings
       \insert Reporter
-      \insert ParseOz
       local
          % TupleSyntax
          CoordinatesOf
@@ -126,6 +121,7 @@ in
       end
       \insert Assembler
       \insert CompilerClass
+      \insert ParseOz
       \insert GenericInterface
       \insert QuietInterface
       \insert Abstractions

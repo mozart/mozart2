@@ -25,6 +25,8 @@ in
    export
       Engine
       CompilerClass   %--** deprecated
+      ParseOzFile
+      ParseOzVirtualString
       GenericInterface
       QuietInterface
       EvalExpression
@@ -102,6 +104,8 @@ in
       in
          Engine = CompilerF.compilerEngine
          CompilerClass = CompilerF.compilerEngine   %--** deprecated
+         ParseOzFile = CompilerF.parseOzFile
+         ParseOzVirtualString = CompilerF.parseOzVirtualString
          GenericInterface = CompilerF.genericInterface
          QuietInterface = CompilerF.quietInterface
          EvalExpression = CompilerF.evalExpression

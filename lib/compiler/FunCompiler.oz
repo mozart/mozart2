@@ -13,6 +13,8 @@ import
    Assemble
 export
    CompilerEngine
+   ParseOzFile
+   ParseOzVirtualString
    GenericInterface
    QuietInterface
    EvalExpression
@@ -22,9 +24,9 @@ body
       StandardEnv = \insert compiler-Env
       \insert FormatStrings
       \insert Reporter
-      \insert ParseOz
    in
       \insert CompilerClass
+      \insert ParseOz
       \insert GenericInterface
       \insert QuietInterface
       \insert Abstractions

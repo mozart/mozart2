@@ -301,13 +301,18 @@ local
 
    class CompilerInternal from CompilerStateClass
       prop final
-      attr wrapper reporter ExecutingThread InterruptLock
+      attr
+         wrapper reporter
+         ParseFile ParseVirtualString
+         ExecutingThread InterruptLock
       meth init(WrapperObject)
          wrapper <- WrapperObject
          CompilerStateClass, init({Adjoin StandardEnv
                                    env('`Builtin`': {`Builtin` 'builtin' 3}
                                        '`Compiler`': WrapperObject)})
          reporter <- {New Reporter init(self WrapperObject)}
+         ParseFile <- ParseOzFile
+         ParseVirtualString <- ParseOzVirtualString
          ExecutingThread <- unit
          InterruptLock <- {NewLock}
       end
@@ -335,6 +340,29 @@ local
          {@wrapper notify(pong())}
          X = unit
       end
+
+      meth setFrontEnd(PF PVS)
+         ParseFile <- PF
+         ParseVirtualString <- PVS
+      end
+      meth feedFile(FileName Return <= return)
+         CompilerInternal,
+         CatchResult(proc {$}
+                        {@reporter userInfo('%%% feeding file '#FileName#'\n')}
+                        CompilerInternal, Feed(@ParseFile FileName Return)
+                     end)
+      end
+      meth feedVirtualString(VS Return <= return)
+         CompilerInternal,
+         CatchResult(proc {$}
+                        case CompilerStateClass, getSwitch(echoqueries $) then
+                           {@reporter userInfo(VS)}
+                        else
+                           {@reporter userInfo('%%% feeding virtual string\n')}
+                        end
+                        CompilerInternal, Feed(@ParseVirtualString VS Return)
+                     end)
+      end
       meth CatchResult(P)
          try
             {P}
@@ -351,31 +379,24 @@ local
             {@reporter logInterrupt()}
          end
       end
-
-      meth feedFile(FileName Return <= return)
-         CompilerInternal,
-         CatchResult(proc {$}
-                        {@reporter userInfo('%%% feeding file '#FileName#'\n')}
-                        CompilerInternal, Feed(ParseOzFile FileName Return)
-                     end)
-      end
-      meth feedVirtualString(VS Return <= return)
-         CompilerInternal,
-         CatchResult(proc {$}
-                        case CompilerStateClass, getSwitch(echoqueries $) then
-                           {@reporter userInfo(VS)}
-                        else
-                           {@reporter userInfo('%%% feeding virtual string\n')}
-                        end
-                        CompilerInternal, Feed(ParseOzVirtualString VS Return)
-                     end)
-      end
-      meth Feed(ParseOz Data Return)
+      meth Feed(ParseProc Data Return)
          ExecutingThread <- {Thread.this}
          {@reporter clearErrors()}
-         try Queries0 Queries in
+         try DoParse Queries0 Queries in
             {@reporter logPhase('parsing ...')}
-            Queries0 = {ParseOz Data @reporter self}
+            proc {DoParse}
+               Queries0 = {ParseProc Data @reporter
+                           fun {$ S} CompilerStateClass, getSwitch(S $) end
+                           CompilerStateClass, getDefines($)}
+            end
+            case ParseProc == ParseOzFile
+               orelse ParseProc == ParseOzVirtualString
+            then
+               {DoParse}
+            else
+               CompilerInternal, ExecProtected(DoParse false)
+               %--** do a consistency check on the resulting structure
+            end
             case {@reporter hasSeenError($)} then
                raise rejected end
             else skip
@@ -726,6 +747,10 @@ local
    fun {IsEnv E}
       {IsRecord E} andthen {All {Arity E} IsPrintName}
    end
+
+   fun {IsProcedure5 P}
+      {IsProcedure P} andthen {Procedure.arity P} == 5
+   end
 in
    class CompilerEngine
       prop final
@@ -828,6 +853,9 @@ in
             [] mergeEnv(_) then
                {TypeCheck IsEnv M 1 'environment'}
             [] getEnv(_) then skip
+            [] setFrontEnd(_ _) then
+               {TypeCheck IsProcedure5 M 1 'procedure/5'}
+               {TypeCheck IsProcedure5 M 2 'procedure/5'}
             [] feedVirtualString(_) then
                {TypeCheck IsVirtualString M 1 'virtual string'}
             [] feedVirtualString(VS Return) then

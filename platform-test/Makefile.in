@@ -1,0 +1,45 @@
+RM      = @RM@ -f
+OZBATCH = @OZBATCH@
+
+OZE = $(OZBATCH)
+OZC = $(OZBATCH) -c
+
+# Test for spaces
+SPACELOCAL = \
+        basic nomosim queens
+SPACEOZC = $(SPACELOCAL:%=./space/%.ozc)
+
+# Tests for finite domains
+FDLOCAL = \
+        distribute
+FDOZC = $(FDLOCAL:%=./fd/%.ozc)
+
+####################################################
+
+COMPONENTS = \
+        $(SPACEOZC) $(FDOZC)
+
+all: test $(COMPONENTS)
+
+
+make-test: ./lib/make-test.oz
+        $(OZE) -l AP,SP ./lib/make-test.oz
+
+
+test: $(COMPONENTS) make-test
+        ./make-test -verbose $(COMPONENTS)
+
+
+clean:
+        $(RM) *~ ./*/*~ ./*/*/*~
+        $(RM) make-test
+
+veryclean: clean
+        $(RM) $(COMPONENTS)
+        $(RM) test
+
+
+.SUFFIXES: $SUFFIXES .ozc .oz
+
+.oz.ozc:
+        $(OZC) $< -o $@

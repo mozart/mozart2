@@ -570,10 +570,14 @@ local
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
             FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
-         [] fFdIn(Op FE1 FE2 C) then PrintName FS in
-            PrintName = {String.toAtom {VirtualString.toString '`'#Op#'`'}}
+         [] fFdIn(Op FE1 FE2 C) then Feature CND PrintName FS in
             % note: reverse arguments!
-            FS = fApply(fVar(PrintName C) [FE2 FE1] C)
+            Feature = case Op of '::' then 'int'
+                      [] ':::' then 'dom'
+                      end
+            CND = {CoordNoDebug C}
+            FS = fApply(fOpApply('.' [fVar('FD' C) fAtom(Feature C)] CND)
+                        [FE2 FE1] C)
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then
             case @Stateful then

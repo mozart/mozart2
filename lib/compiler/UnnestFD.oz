@@ -324,17 +324,20 @@ in
             O = fAtom(NewOp C)
             D = fInt(~Const C)
             case {All Cs fun {$ fInt(I _)} I == 1 end} then
-               fApply(fVar('`GenSum`' C) [X O D] C)
+               fApply(fOpApply('.' [fVar('FD' C) fAtom('sum' C)] C)
+                      [X O D] C)
             else A in
                A = fRecord(fAtom('#' C) Cs)
-               fApply(fVar('`GenSumC`' C) [A X O D] C)
+               fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
+                      [A X O D] C)
             end
          else A X O D in
             A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
             X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
             O = fAtom(NewOp C)
             D = fInt(0 C)
-            fApply(fVar('`GenSumC`' C) [A X O D] C)
+            fApply(fOpApply('.' [fVar('FD' C) fAtom('sumC' C)] C)
+                   [A X O D] C)
          end
       else Cs Vs A X O D in
          {MakeTupleTuples NewE ?Cs nil ?Vs nil}
@@ -349,7 +352,8 @@ in
             O = fAtom(NewOp C)
             D = fInt(0 C)
          end
-         fApply(fVar('`GenSumCN`' C) [A X O D] C)
+         fApply(fOpApply('.' [fVar('FD' C) fAtom('sumCN' C)] C)
+                [A X O D] C)
       end
    end
 
@@ -366,7 +370,9 @@ in
          X = fRecord(fAtom('#' C2) [fInt(Const C2)])
          O = fAtom(NewOp C)
          D = fInt(0 C2)
-         fApply(fVar('`GenSumR`' C) [X O D V] C)
+         fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C) fAtom('reified' C)] C)
+                              fAtom('sum' C)] C)
+                [X O D V] C)
       elsecase {AreLinearConstraints NewE} then Cs Vs in
          {MakeTuples NewE ?Cs nil ?Vs nil}
          case {FD.is ~Const} then X O D in
@@ -374,17 +380,26 @@ in
             O = fAtom(NewOp C)
             D = fInt(~Const C)
             case {All Cs fun {$ fInt(I _)} I == 1 end} then
-               fApply(fVar('`GenSumR`' C) [X O D V] C)
+               fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                  fAtom('reified' C)] C)
+                                    fAtom('sum' C)] C)
+                      [X O D V] C)
             else A in
                A = fRecord(fAtom('#' C) Cs)
-               fApply(fVar('`GenSumCR`' C) [A X O D V] C)
+               fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                  fAtom('reified' C)] C)
+                                    fAtom('sumC' C)] C)
+                      [A X O D V] C)
             end
          else A X O D in
             A = fRecord(fAtom('#' C) fInt(Const C)|Cs)
             X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
             O = fAtom(NewOp C)
             D = fInt(0 C)
-            fApply(fVar('`GenSumCR`' C) [A X O D V] C)
+            fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                               fAtom('reified' C)] C)
+                                 fAtom('sumC' C)] C)
+                   [A X O D V] C)
          end
       else Cs Vs A X O D in
          {MakeTupleTuples NewE ?Cs nil ?Vs nil}
@@ -399,7 +414,10 @@ in
             O = fAtom(NewOp C)
             D = fInt(0 C)
          end
-         fApply(fVar('`GenSumCNR`' C) [A X O D V] C)
+         fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                            fAtom('reified' C)] C)
+                              fAtom('sumCN' C)] C)
+                [A X O D V] C)
       end
    end
 
@@ -514,7 +532,10 @@ in
                   X = fRecord(fAtom('#' C) [fInt(1 C)])
                   O = fAtom(Op C)
                   D = fInt(0 C2)
-                  fApply(fVar('`GenSumCCD`' C) [A X O D B] C)
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('cd' C)] C)
+                                       fAtom('sumC' C)] C)
+                         [A X O D B] C)
                elsecase {AreLinearConstraints NewE} then Cs Vs in
                   {MakeTuples NewE ?Cs nil ?Vs nil}
                   case {FD.is Const} then X O D in
@@ -522,17 +543,26 @@ in
                      O = fAtom(Op C)
                      D = fInt(Const C)
                      case {All Cs fun {$ fInt(I _)} I == 1 end} then
-                        fApply(fVar('`GenSumCD`' C) [X O D B] C)
+                        fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                           fAtom('cd' C)] C)
+                                             fAtom('sum' C)] C)
+                               [X O D B] C)
                      else A in
                         A = fRecord(fAtom('#' C) Cs)
-                        fApply(fVar('`GenSumCCD`' C) [A X O D B] C)
+                        fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                           fAtom('cd' C)] C)
+                                             fAtom('sumC' C)] C)
+                               [A X O D B] C)
                      end
                   else A X O D in
                      A = fRecord(fAtom('#' C) fInt(~Const C)|Cs)
                      X = fRecord(fAtom('#' C) fInt(1 C)|Vs)
                      O = fAtom(Op C)
                      D = fInt(0 C)
-                     fApply(fVar('`GenSumCCD`' C) [A X O D B] C)
+                     fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                        fAtom('cd' C)] C)
+                                          fAtom('sumC' C)] C)
+                            [A X O D B] C)
                   end
                else Cs Vs A X O D in
                   {MakeTupleTuples NewE ?Cs nil ?Vs nil}
@@ -548,15 +578,24 @@ in
                      O = fAtom(Op C)
                      D = fInt(0 C)
                   end
-                  fApply(fVar('`GenSumCNCD`' C) [A X O D B] C)
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('cd' C)] C)
+                                       fAtom('sumCN' C)] C)
+                         [A X O D B] C)
                end
             [] fFdIn(Op E1 E2 C) then NewE1 in
                case Op of '::' then fVar(X C) = E1 in
                   NewE1 = fVar({Dictionary.get D X} C)
-                  fApply(fVar('`::CD`' C) [E2 NewE1 B] C)
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('cd' C)] C)
+                                       fAtom('int' C)] C)
+                         [E2 NewE1 B] C)
                [] ':::' then
                   NewE1 = {RenameFdIn E1 D}
-                  fApply(fVar('`:::CD`' C) [E2 NewE1 B] C)
+                  fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                     fAtom('cd' C)] C)
+                                       fAtom('dom' C)] C)
+                         [E2 NewE1 B] C)
                end
             end
          end
@@ -660,8 +699,14 @@ in
                       fun {$ In _#_#Ss}
                          {FoldL Ss fun {$ In S} fAnd(In S) end In}
                       end fSkip(C)}
-         fAnd(fApply(fVar('`CDHeader`' C) [NRec BRec VRec CVRec] C)
-              fAnd(PropCalls fApply(fVar('`CDBody`' C) [BRec VRec CVRec] C)))
+         fAnd(fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C) fAtom('cd' C)] C)
+                                   fAtom('header' C)] C)
+                     [NRec BRec VRec CVRec] C)
+              fAnd(PropCalls
+                   fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
+                                                      fAtom('cd' C)] C)
+                                        fAtom('body' C)] C)
+                          [BRec VRec CVRec] C)))
       end
    end
 end

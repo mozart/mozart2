@@ -304,7 +304,11 @@ local
       in
          Loader = {Application.loader m(X: lazy)}
       catch error(...) then
-         raise usage('unknown component `'#Comp1#'\' requested') end
+         {Report error(kind: UsageError
+                       msg: 'unknown component `'#Comp1#'\' requested'
+                       items: [hint(l: 'Hint'
+                                    m: ('Use --help to obtain '#
+                                        'usage information'))])}
       end
       {Compiler enqueue(mergeEnv({Record.foldL {Loader} Adjoin env()}))}
       case Rest of _|S2 then {IncludeComponents S2 Compiler}
@@ -335,9 +339,9 @@ in
          catch usage(VS) then
             {Report error(kind: UsageError
                           msg: VS
-                          body: [hint(l: 'Hint'
-                                      m: ('Use --help to obtain '#
-                                          'usage information'))])}
+                          items: [hint(l: 'Hint'
+                                       m: ('Use --help to obtain '#
+                                           'usage information'))])}
          end
          Verbose = {GetVerbose Opts}
          BatchCompiler = {New Compiler.compilerClass init()}
@@ -392,9 +396,9 @@ in
          case FileNames of nil then
             {Report error(kind: UsageError
                           msg: 'no input files given'
-                          body: [hint(l: 'Hint'
-                                      m: ('Use --help to obtain '#
-                                          'usage information'))])}
+                          items: [hint(l: 'Hint'
+                                       m: ('Use --help to obtain '#
+                                           'usage information'))])}
          elsecase {Access OutputFile} \= "-"
             andthen {Access OutputFile} \= unit
             andthen {Length FileNames} > 1
@@ -470,8 +474,8 @@ in
                       {Report
                        error(kind: UsageError
                              msg: 'saved value is not stateless'
-                             body: [hint(l: 'Stateful values'
-                                         m: oz(Vs))])}
+                             items: [hint(l: 'Stateful values'
+                                          m: oz(Vs))])}
                    end
                 [] feedtoemulator then skip
                 else File in

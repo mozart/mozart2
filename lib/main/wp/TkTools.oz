@@ -35,16 +35,17 @@ import
    Tk Property
 
 export
-   error:       Error
-   dialog:      Dialog
-   menubar:     MakeMenu
-   popupmenu:   PopupMenu
-   textframe:   Textframe
-   notebook:    Notebook
-   note:        Note
-   scale:       DiscreteScale
-   numberentry: NumberEntry
-   images:      LoadImages
+   error:         Error
+   dialog:        Dialog
+   menubar:       MakeMenu
+   popupmenu:     PopupMenu
+   textframe:     Textframe
+   notebook:      Notebook
+   note:          Note
+   scale:         DiscreteScale
+   numberentry:   NumberEntry
+   images:        LoadImages
+   resolveImages: NewLoadImages
 
 define
 
@@ -905,14 +906,37 @@ define
       in
          {Select Url Base Ext}
          Base # if Ext==xbm then
-                   {New Tk.image tkInit(type:bitmap url:Url)}
+                   {New Tk.image tkInit(type:bitmap
+                                        url:Url)}
                 else
-                   {New Tk.image tkInit(type:photo format:Ext url:Url)}
+                   {New Tk.image tkInit(type:photo format:Ext
+                                        url:Url)}
                 end
+      end
+      fun {NewMkImg Res}
+         fun {$ Url}
+            Ext Base
+         in
+            {Select Url Base Ext}
+            Base # if Ext==xbm then
+                      {New Tk.image tkInit(type:bitmap
+                                           resolver:Res url:Url)}
+                   else
+                      {New Tk.image tkInit(type:photo format:Ext
+                                           resolver:Res url:Url)}
+                   end
+         end
       end
    in
       fun {LoadImages Vs}
          {List.toRecord images {Map Vs MkImg}}
+      end
+      fun {NewLoadImages Res}
+         ResMkImg = {NewMkImg Res}
+      in
+         fun {$ Vs}
+            {List.toRecord images {Map Vs ResMkImg}}
+         end
       end
    end
 

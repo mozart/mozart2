@@ -1314,8 +1314,8 @@ define
 
    in
 
-      fun {TkLocalize Url}
-         case {ImRes.localize Url}
+      fun {TkLocalize Res Url}
+         case {Res.localize Url}
          of old(F) then F
          [] new(F) then {PathStore add(F)} F
          end
@@ -1323,23 +1323,25 @@ define
 
       class TkImage
          from ReturnClass
-         feat !TclName
+         feat
+            !TclName
 
-         meth tkInit(type:Type ...) = Message
+         meth tkInit(type:Type resolver:Resolver<=!ImRes ...) = Message
             ThisTclName = self.TclName
             if {IsDet ThisTclName} then
                {Exception.raiseError tk(alreadyInitialized self Message)}
             end
-            NewTkName   = {GenImageName}
-            MessUrl = if {HasFeature Message url} then
-                         {AdjoinAt Message file {TkLocalize Message.url}}
-                      else Message
-                      end
-            MessAll = if {HasFeature MessUrl maskurl} then
-                         {AdjoinAt MessUrl maskfile
-                          {TkLocalize MessUrl.maskurl}}
-                      else MessUrl
-                      end
+            NewTkName = {GenImageName}
+            MessUrl   = if {HasFeature Message url} then
+                           {AdjoinAt Message file
+                            {TkLocalize Resolver Message.url}}
+                        else Message
+                        end
+            MessAll   = if {HasFeature MessUrl maskurl} then
+                           {AdjoinAt MessUrl maskfile
+                            {TkLocalize Resolver MessUrl.maskurl}}
+                        else MessUrl
+                        end
          in
             {TkSendFilter v('image create '#Type) NewTkName
              MessAll [maskurl type url] unit}

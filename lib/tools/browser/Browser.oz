@@ -333,7 +333,7 @@ in
 \insert 'browser/tcl-interface.oz'
 
       %%
-\insert 'browser/bufs&streams.oz'
+\insert 'browser/bufsAndStreams.oz'
 
       %%
       %% Browser manager;

@@ -353,23 +353,9 @@ define
       end
    end
 
-   BridgeNotermSol =
-   [start(a1:4 a2:17 a3:8 a4:0 a5:2 a6:19 ab1:19 ab2:27 ab3:41 ab4:23
-          ab5:11 ab6:37 b1:18 b2:26 b3:40 b4:22 b5:10 b6:36 l:30 m1:20 m2:44
-          m3:52 m4:36 m5:12 m6:60 p1:15 p2:2 pa:0 pe:104 s1:10 s2:22 s3:36
-          s4:18 s5:6 s6:26 t1:56 t2:92 t3:68 t4:44 t5:80 ua:78 ue:0 v1:68
-          v2:92)]
 
    Return=
-
-
-   fd([bridge([
-               noterm(equal(fun {$} {Search.base.best {NoTermCompile BridgeNoterm}
-                                     proc{$ O N} N.pe <: O.pe end}
-                            end
-                            BridgeNotermSol)
-                      keys: [fd])
-               noterm_entailed(entailed(proc {$} {Search.base.best {NoTermCompile BridgeNoterm}
+   fd([bridge([noterm_entailed(entailed(proc {$} {Search.base.best {NoTermCompile BridgeNoterm}
                                      proc{$ O N} N.pe <: O.pe end _}
                             end)
                       keys: [fd entailed])

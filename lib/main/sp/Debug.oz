@@ -4,6 +4,7 @@
 %%%
 %%% Contributors:
 %%%   Benjamin Lorenz (lorenz@ps.uni-sb.de)
+%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
 %%%   Ralf Scheidhauer, 1997
@@ -25,18 +26,21 @@
 
 local
 
-   BIdumpThreads = {`Builtin` 'Debug.dumpThreads' 0}
-   BIlistThreads = {`Builtin` 'Debug.listThreads' 1}
+   BIdumpThreads        = {`Builtin` 'Debug.dumpThreads' 0}
+   BIprepareDumpThreads = {`Builtin` 'Debug.prepareDumpThreads' 0}
+   BIlistThreads        = {`Builtin` 'Debug.listThreads' 1}
 
    local
       proc {Dummy} skip end
    in
       proc {DumpThreads}
+         {BIprepareDumpThreads}
          {System.gcDo}
          {Dummy} % force GC
          {BIdumpThreads}
       end
       proc {ListThreads ?Ts}
+         {BIprepareDumpThreads}
          {System.gcDo}
          {Dummy} % force GC
          {BIlistThreads ?Ts}

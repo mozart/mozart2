@@ -809,10 +809,6 @@ in
       best:   BestModule
       object: SearchObject
       base:   SearchBase
-
-      'SearchOne':  SearchOne
-      'SearchAll':  SearchAll
-      'SearchBest': SearchBest
    body
 
       skip

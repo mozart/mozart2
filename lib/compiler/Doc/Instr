@@ -46,7 +46,7 @@
 %%            endDefinition(L1)
 %%            localVarname(_)    % either 0 or as many as the environment size
 %%            ...                % (if these are present, there may only be one
-%%            localVarname(_)    % allocateL/deAllocateL in the procedure)
+%%            localVarname(_)    % allocateL in the procedure)
 %%            globalVarname(_)   % either 0 or n
 %%            ...
 %%            globalVarname(_)
@@ -299,10 +299,6 @@ deAllocateL10
 %%  Applying Builtins
 %%
 
-callBuiltin
-   Builtinname
-   Arity            number of argument X registers; these may survive the call
-
 callBI
    Builtinname
    Location
@@ -350,10 +346,6 @@ inlineMinus
 %%  Applying Procedures
 %%
 
-genCall
-   GenCallInfo
-   Arity            must be 0
-
 call
    Register
    Arity
@@ -372,11 +364,15 @@ genFastCall
 
 fastCall
    PredicateRef     address of an AbstractionEntry
-   Dummy            ignored
+   Arity
 
 fastTailCall        == fastCall(Arg1 Arg2) return
    PredicateRef     address of an AbstractionEntry
-   Dummy            ignored
+   Arity
+
+genCall
+   GenCallInfo
+   Arity            must be 0
 
 %%
 %%  Sending Messages

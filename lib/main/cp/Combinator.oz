@@ -102,9 +102,9 @@ define
       end
    end
 
-   proc {DiscardGuards Is G}
+   proc {KillGuards Is G}
       case Is of nil then skip
-      [] I|Ir then {Space.discard G.I} {DiscardGuards Ir G}
+      [] I|Ir then {Space.kill G.I} {KillGuards Ir G}
       end
    end
 
@@ -129,15 +129,15 @@ define
                {Resolve G A N-1 B E}
             [] succeeded(stuck) then
                {Dictionary.remove A I}
-               {Space.discard G.I}
+               {Space.kill G.I}
                {Resolve G A N-1 true E}
             [] alternatives(_) then
                {Dictionary.remove A I}
-               {Space.discard G.I}
+               {Space.kill G.I}
                {Resolve G A N-1 true E}
             [] succeeded(entailed) then
                {Dictionary.remove A I}
-               {DiscardGuards {Dictionary.keys A} G}
+               {KillGuards {Dictionary.keys A} G}
                {CommitGuard G.I}
             [] suspended(AI) then
                {Dictionary.put A I AI}
@@ -227,19 +227,19 @@ define
    end
 
    local
-      proc {CommitOrDiscard G J I ?B}
-         if I==J then B={Space.merge G} else {Space.discard G} end
+      proc {CommitOrKill G J I ?B}
+         if I==J then B={Space.merge G} else {Space.kill G} end
       end
       proc {Control G A J I ?B}
          {WaitOr A I}
          if {IsDet I} then
-            {CommitOrDiscard G J I ?B}
+            {CommitOrKill G J I ?B}
          else
             case A
             of failed       then {FdInt compl(J) I}
             [] merged       then skip
             [] suspended(A) then {Control G A J I ?B}
-            else {CommitOrDiscard G J I ?B}
+            else {CommitOrKill G J I ?B}
             end
          end
       end

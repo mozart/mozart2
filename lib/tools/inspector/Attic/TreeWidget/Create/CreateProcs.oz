@@ -82,27 +82,6 @@ in
          else
             {New GenericNode
              create(CurValue Parent Index Visual Depth Type)}
-%        [] space  then
-%           {New TreeNodes.spaceTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] 'class' then
-%           {New TreeNodes.classTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] object then
-%           {New TreeNodes.objectTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] array  then
-%           {New TreeNodes.arrayTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] dictionary then
-%           {New TreeNodes.dictionaryTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] port then
-%           {New TreeNodes.portTreeNode
-%            create(CurValue Parent Index Visual Depth)}
-%        [] chunk then
-%           {New TreeNodes.chunkTreeNode
-%            create(CurValue Parent Index Visual Depth)}
          end
       end
    else
@@ -137,10 +116,9 @@ in
             [] record then
                {New TreeNodes.kindedRecordCycleTreeNode
                 create(CurValue Parent Index Visual CycleMan Depth)}
-            [] other  then
-               {New TreeNodes.atomTreeNode
-                create('<unknown other non-determined value>'
-                       Parent Index Visual Depth)}
+            else
+               {New GenericNode
+                create(CurValue Parent Index Visual Depth Type)}
             end
          [] free      then
             {New TreeNodes.freeTreeNode
@@ -184,27 +162,9 @@ in
             [] record then
                {New TreeNodes.recordCycleTreeNode
                 create(CurValue Parent Index Visual CycleMan Depth)}
-            [] space  then
-               {New TreeNodes.spaceTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] 'class' then
-               {New TreeNodes.classTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] object then
-               {New TreeNodes.objectTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] array  then
-               {New TreeNodes.arrayTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] dictionary then
-               {New TreeNodes.dictionaryTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] port then
-               {New TreeNodes.portTreeNode
-                create(CurValue Parent Index Visual Depth)}
-            [] chunk then
-               {New TreeNodes.chunkTreeNode
-                create(CurValue Parent Index Visual Depth)}
+            else
+               {New GenericNode
+                create(CurValue Parent Index Visual Depth Type)}
             end
          end
       else

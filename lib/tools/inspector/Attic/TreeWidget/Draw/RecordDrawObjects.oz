@@ -55,7 +55,7 @@ class RecordDrawObject
          else {@brace draw((DeltaX + NodeXDim) Y)}
          end
       else
-         skip
+         {self stopDraw(I X Y)}
       end
    end
 
@@ -77,8 +77,21 @@ class RecordDrawObject
             {@brace draw(((X + LabelXDim) + LXDim) (Y + (NodeYDim - 1)))}
          end
       else
-         skip
+         {self stopDraw(I X Y)}
       end
+   end
+
+   meth stopDraw(I X Y)
+      Visual  = @visual
+      Depth   = @depth
+      Bitmap  = {New BitmapTreeNode create(width self I Visual Depth)}
+      NullObj = {New NullNode create(nil self I Visual Depth)}
+      RI      = {self getRootIndex(0 $)}
+   in
+      {Dictionary.put @items I NullObj|Bitmap}
+      width <- I
+      RecordDrawObject, notify
+      {@visual update(RI|nil)}
    end
 
    meth undraw
@@ -518,6 +531,23 @@ class RecordCycleDrawObject
          {CycleNode draw(X Y)}
          RecordDrawObject, draw((X + XDim) Y)
       end
+   end
+
+   meth stopDraw(I X Y)
+      Visual    = @visual
+      Depth     = @depth
+      Items     = @items
+      _|OldNode = {Dictionary.get Items I}
+      OldStack  = {OldNode getStack($)}
+      Bitmap    = {New BitmapTreeNode create(width self I Visual Depth)}
+      NullObj   = {New NullNode create(nil self I Visual Depth)}
+      RI        = {self getRootIndex(0 $)}
+   in
+      {Bitmap setStack(OldStack)}
+      {Dictionary.put Items I NullObj|Bitmap}
+      width <- I
+      RecordDrawObject, notify
+      {@visual update(RI|nil)}
    end
 
    meth undraw

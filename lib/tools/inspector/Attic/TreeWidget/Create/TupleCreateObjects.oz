@@ -25,6 +25,10 @@ local
          widthLen %% Real Tuple Width
          curWidth %% Current Width
          curDepth %% Current Depth
+
+      meth ignoreStop($)
+         false
+      end
    end
 in
 
@@ -84,7 +88,7 @@ in
                width <- NewWidth
             end
          else
-            skip
+            {self stopCreation}
          end
       end
    end
@@ -174,7 +178,7 @@ in
                type  <- pipeTuple
             end
          else
-            skip
+            {self stopCreation}
          end
       end
 
@@ -284,7 +288,7 @@ in
                width <- NewWidth
             end
          else
-            skip
+            {self stopCreation}
          end
       end
    end
@@ -386,7 +390,7 @@ in
                type  <- pipeTuple
             end
          else
-            skip
+            {self stopCreation}
          end
       end
 
@@ -437,8 +441,7 @@ class LabelTupleCreateObject
    in
       CreateObject, create(Value Parent Index Visual (Depth + 1))
       @type     = labelTuple
-      TLabel    = {New TreeNodes.atomTreeNode
-                   create({Label Value} self 0 Visual Depth)}
+      TLabel    = {Create {Label Value} self 0 Visual Depth}
       {TLabel initMenu(@type)}
       @items    = {Dictionary.new}
       @widthLen = {Width Value}
@@ -477,8 +480,12 @@ class LabelTupleCreateObject
          else skip
          end
       else
-         skip
+         {self stopCreation}
       end
+   end
+
+   meth ignoreStop($)
+      false
    end
 end
 
@@ -540,7 +547,7 @@ class LabelTupleCycleCreateObject
          else skip
          end
       else
-         skip
+         {self stopCreation}
       end
    end
 end

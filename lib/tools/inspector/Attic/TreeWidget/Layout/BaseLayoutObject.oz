@@ -67,4 +67,10 @@ class LayoutObject
    meth pure($)
       true
    end
+
+   meth stopCreation
+      dazzle <- false
+      xDim   <- 0
+      yDim   <- 0
+   end
 end

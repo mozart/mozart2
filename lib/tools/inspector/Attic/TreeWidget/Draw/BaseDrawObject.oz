@@ -69,8 +69,14 @@ local
       end
 
       meth getMenuData(MenuType Status $)
-         _#_#MenuData = {OpMan get(MenuType $)} %% _ is the auto flag
+         Auto Fun MenuData
       in
+         try
+            Auto#Fun#MenuData = {OpMan get(MenuType $)}
+         catch _ then
+            MenuData = title(@type)|nil
+         end
+
          case Status
          of normal   then MenuData
          [] expanded then

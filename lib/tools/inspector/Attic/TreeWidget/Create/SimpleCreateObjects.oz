@@ -118,9 +118,20 @@ class NameCreateObject
    from
       CreateObject
 
+   attr
+      buffer %% Rescue Value
+
    meth create(Value Parent Index Visual Depth)
       CreateObject, create(Value Parent Index Visual Depth)
       @type = name
+   end
+
+   meth setRescueValue(Value)
+      @buffer = Value
+   end
+
+   meth getRescueValue($)
+      @buffer
    end
 end
 

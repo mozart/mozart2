@@ -79,4 +79,8 @@ class CreateObject
    meth getCurrentNode($)
       self
    end
+
+   meth ignoreStop($)
+      true
+   end
 end

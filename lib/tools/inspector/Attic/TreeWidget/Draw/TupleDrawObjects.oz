@@ -56,7 +56,7 @@ local
                {Node draw(X Y)}
             end
          else
-            skip
+            {self stopDraw(I X Y)}
          end
       end
 
@@ -80,7 +80,7 @@ local
                {Node draw(X Y)}
             end
          else
-            skip
+            {self stopDraw(I X Y)}
          end
       end
 
@@ -646,7 +646,7 @@ in
             else {@cbrace draw((X + XDim) Y)}
             end
          else
-            skip
+            {self stopDraw(I X Y)}
          end
       end
 
@@ -666,7 +666,7 @@ in
                {@cbrace draw((X + LXDim) (Y + (YDim - 1)))}
             end
          else
-            skip
+            {self stopDraw(I X Y)}
          end
       end
 
@@ -1176,7 +1176,7 @@ class LabelTupleDrawObject
          else {@brace draw((X + XDim) Y)}
          end
       else
-         skip
+         {self stopDraw(I X Y)}
       end
    end
 
@@ -1197,7 +1197,7 @@ class LabelTupleDrawObject
             {@brace draw((X + LXDim) ((Y + YDim) - 1))}
          end
       else
-         skip
+         {self stopDraw(I X Y)}
       end
    end
 

@@ -143,19 +143,42 @@ class NameLayoutObject
    from
       LayoutObject
 
+   attr
+      layoutType : normal %% LayoutType
+
    meth layout
       case @dazzle
       then
          String = @string
       in
-         String = '<N>'
+         case @layoutType
+         of normal then
+            String = NameLayoutObject, calcValue($)
+            @color = {OpMan get(nameColor $)}
+         [] tuple  then
+            String = NameLayoutObject, calcValue($)#'('
+            @color = black
+         [] record then
+            String = NameLayoutObject, calcValue($)#':'
+            @color = black
+         end
          @xDim  = {VirtualString.length String}
          yDim <- 1
-         @color = {OpMan get(nameColor $)}
          dazzle <- false
          dirty  <- true
       else skip
       end
+   end
+
+   meth calcValue($)
+      case @value
+      of unit then 'unit'
+      else '<N>'
+      end
+   end
+
+   meth setLayoutType(Type)
+      layoutType <- Type
    end
 end
 

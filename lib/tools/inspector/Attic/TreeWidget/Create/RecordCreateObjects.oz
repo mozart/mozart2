@@ -18,6 +18,8 @@ local
    fun {FCreate Value Parent Index Visual Depth}
       case {IsAtom Value}
       then {New TreeNodes.atomTreeNode create(Value Parent Index Visual Depth)}
+      elsecase {IsName Value}
+      then {New TreeNodes.nameTreeNode create(Value Parent Index Visual Depth)}
       else {New TreeNodes.intTreeNode  create(Value Parent Index Visual Depth)}
       end
    end
@@ -104,8 +106,12 @@ in
             else skip
             end
          else
-            skip
+            {self stopCreation}
          end
+      end
+
+      meth ignoreStop($)
+         false
       end
    end
 
@@ -191,7 +197,7 @@ in
             else skip
             end
          else
-            skip
+            {self stopCreation}
          end
       end
    end
@@ -266,7 +272,7 @@ in
             else skip
             end
          else
-            skip
+            {self stopCreation}
          end
       end
    end
@@ -356,7 +362,7 @@ in
             else skip
             end
          else
-            skip
+            {self stopCreation}
          end
       end
    end

@@ -409,6 +409,12 @@ define
                items: [hint(l: 'Thread' m:oz({Thread.this}))
                        hint(l:'Variable' m:oz(X))])
 
+      elseof kernel(weakDictionary WeakDict Key) then
+         error(kind: 'Error: WeakDictionary'
+               msg: 'Key not found'
+               items: [hint(l: 'Dictionary' m: oz(WeakDict))
+                       hint(l: 'Key' m: oz(Key))])
+
       else
          error(kind: 'Kernel'
                items: [line(oz(E))])

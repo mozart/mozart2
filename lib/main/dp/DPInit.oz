@@ -109,6 +109,7 @@ define
          init(ip:MySite.ip
               port:MySite.port
               firewall:{CondSelect S firewall false}
+              address:MySite.addr
               connectProc:{CondSelect S connectProc default}
               acceptProc:{CondSelect S acceptProc default})
       end

@@ -70,7 +70,7 @@ in
       S={Space.new P}
       W
    in
-      thread {Space.askVerbose S W} end
+      {Space.askVerbose S W}
       W == succeeded(entailed)
    end
 

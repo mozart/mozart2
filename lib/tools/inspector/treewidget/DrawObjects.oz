@@ -71,6 +71,9 @@ define
       meth getFirstItem($)
          @tag
       end
+      meth getTag($)
+         @tag
+      end
       meth eliminateFresh(I)
          skip
       end
@@ -88,6 +91,9 @@ define
       end
       meth isMapped(Index $)
          {@parent isMapped(@index $)}
+      end
+      meth isDirty($)
+         @dirty
       end
       meth seekEnd($)
          @parent
@@ -111,7 +117,22 @@ define
          {@parent unlink(@index)}
       end
       meth action(Index P)
-         try {P @value} catch _ then skip end
+         if {IsTuple P}
+         then {self P}
+         else try {P @value} catch _ then skip end
+         end
+      end
+      meth getSelectionNode($)
+         self
+      end
+      meth modifyDepth(Index N)
+         {@parent up((N + 1) Index)}
+      end
+      meth modifyWidth(Index N)
+         skip
+      end
+      meth reinspect
+         {@parent replace(@index @value replaceNormal)}
       end
    end
 

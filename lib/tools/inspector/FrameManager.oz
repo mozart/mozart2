@@ -248,7 +248,7 @@ in
                            action: proc {$}
                                       {Port.send InspPort delPane}
                                    end)}
-            {Canvas tkBind(event: '<1>'
+            {Canvas tkBind(event: '<2>'
                            action: proc {$}
                                       {Port.send InspPort changeFocus(self)}
                                    end)}
@@ -274,11 +274,26 @@ in
          meth getCanvas($)
             @widObj
          end
+         meth getPort($)
+            @widPort
+         end
          meth getCanvasXYDim($)
             @cWidth|@cHeight
          end
          meth display(Value)
             {Port.send @widPort display(Value)}
+         end
+         meth selectionCall(Node Mesg)
+            {Port.send @widPort selectionCall(Node Mesg)}
+         end
+         meth clearAll(F)
+            {Port.send @widPort clearAll(F)}
+         end
+         meth apply(P)
+            {Port.send @widPort apply(P)}
+         end
+         meth exportSelectionNode(Node)
+            {Port.send @widPort exportSelectionNode(Node)}
          end
          meth getOptions($)
             {Port.send @widPort getOptions($)}

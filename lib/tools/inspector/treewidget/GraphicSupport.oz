@@ -249,36 +249,38 @@ define
    in
       class GraphicSupport from Tk.canvas
          attr
-            canvasId       %% Local Canvas Id
-            canvasPrint    %% Tcl Print Procecure
-            canvasPaint    %% Tcl Bitmap Paint Procedure
-            canvasMove     %% Tcl Move Procedure
-            canvasDelete   %% Tcl Delete Procedure
-            canvasPlace    %% Tcl Placement Procedure
-            canvasRDraw    %% Tcl Rectangle Draw Procedure
-            canvasRMove    %% Tcl Rectangle Move Procedure
-            canvasUp       %% Tcl Tag Tree Up Procedure
-            canvasDn       %% Tcl Tag Tree Down Procedure
-            canvasMCV      %% Tcl MoveCanvasView Procedure
-            canvasACV      %% Tcl AdjustCanvasView Procedure
-            canvasCSp      %% Tcl Create Separator Procedure
-            canvasMSp      %% Tcl Move Separator Procedure
-            canvasName     %% Canvas Tcl Name (getTclName)
-            tagVar         %% Canvas Tag Variable
-            tagCount       %% Tag Counter
-            font     : nil %% Fontname
-            fontO          %% Tk Font Object
-            fontX          %% Font X Dimension
-            fontY          %% Font Y Dimension
-            offY           %% Y Offset due to Separators
-            fAscent        %% Font Ascent
-            curCX          %% Current Canvas X Dimension
-            curCY          %% Current Canvas Y Dimension
-            nIndex         %% SubNode MenuIndex
-            object         %% Current W/D Menu related Node
-            menuDict       %% TkMenu Dictionary
-            isMapped       %% Menu Mapping State
-            ftw            %% Font XY Dimension Test Widget
+            canvasId        %% Local Canvas Id
+            canvasPrint     %% Tcl Print Procecure
+            canvasPaint     %% Tcl Bitmap Paint Procedure
+            canvasMove      %% Tcl Move Procedure
+            canvasDelete    %% Tcl Delete Procedure
+            canvasPlace     %% Tcl Placement Procedure
+            canvasRDraw     %% Tcl Rectangle Draw Procedure
+            canvasRMove     %% Tcl Rectangle Move Procedure
+            canvasUp        %% Tcl Tag Tree Up Procedure
+            canvasDn        %% Tcl Tag Tree Down Procedure
+            canvasMCV       %% Tcl MoveCanvasView Procedure
+            canvasACV       %% Tcl AdjustCanvasView Procedure
+            canvasCSp       %% Tcl Create Separator Procedure
+            canvasMSp       %% Tcl Move Separator Procedure
+            canvasName      %% Canvas Tcl Name (getTclName)
+            tagVar          %% Canvas Tag Variable
+            tagCount        %% Tag Counter
+            font     : nil  %% Fontname
+            fontO           %% Tk Font Object
+            fontX           %% Font X Dimension
+            fontY           %% Font Y Dimension
+            offY            %% Y Offset due to Separators
+            fAscent         %% Font Ascent
+            curCX           %% Current Canvas X Dimension
+            curCY           %% Current Canvas Y Dimension
+            nIndex          %% SubNode MenuIndex
+            object          %% Current W/D Menu related Node
+            menuDict        %% TkMenu Dictionary
+            isMapped        %% Menu Mapping State
+            ftw             %% Font XY Dimension Test Widget
+            selObject : nil %% Selection Object
+            selTag          %% Selection Rectangle Tag
          meth create(Parent DspWidth DspHeight)
             CanvasId = {IdCounter inc($)}
          in
@@ -292,7 +294,8 @@ define
             @canvasId   = CanvasId
             @canvasName = {Tk.getTclName self}
             @tagVar     = {VirtualString.toAtom 'Tg'#CanvasId}
-            @tagCount   = 0
+            @tagCount   = 1
+            @selTag     = 0
             @menuDict   = {Dictionary.new}
             @ftw        = {New Tk.text
                            tkInit(parent:Parent
@@ -379,6 +382,11 @@ define
          meth initButtonHandler
             WidPort = {self getServer($)}
          in
+            Tk.canvas, tkBind(event: '<1>'
+                              args:  [int(x) int(y)]
+                              action: proc {$ X Y}
+                                         {Port.send WidPort GlobalCanvasHandler(select(X Y))}
+                                      end)
             Tk.canvas, tkBind(event:  '<3>'
                               args:   [int(x) int(y)]
                               action: proc {$ X Y}
@@ -390,15 +398,31 @@ define
                                          {Port.send WidPort GlobalCanvasHandler(adjust(W H))}
                                       end)
          end
+         meth getDataNode(X Y $)
+            CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
+            CY = Tk.canvas, tkReturnInt(canvasy(Y) $) div @fontY
+         in
+            GraphicSupport, SearchNode(1 0 0 CX CY $)
+         end
          meth !GlobalCanvasHandler(Event)
             case Event
             of menu(X Y) then
-               CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
-               CY = Tk.canvas, tkReturnInt(canvasy(Y) $) div @fontY
-            in
-               case GraphicSupport, SearchNode(1 0 0 CX CY $)
+               case GraphicSupport, getDataNode(X Y $)
                of nil  then skip %% No valid Tree on that Position
                [] Node then GraphicSupport, HandleEvent(Node X Y)
+               end
+            [] select(X Y) then
+               case GraphicSupport, getDataNode(X Y $)
+               of nil  then skip %% No valid Tree on that Position
+               [] Node then
+                  SelNode = {Node getSelectionNode($)}
+               in
+                  if {System.eq SelNode @selObject}
+                  then skip
+                  else
+                     GraphicSupport, clearSelection
+                     GraphicSupport, createSelection(SelNode)
+                  end
                end
             [] adjust(W H) then
                curCX <- W
@@ -410,7 +434,9 @@ define
          meth !SearchNode(I XA YA X Y $)
             Node = {Dictionary.get @nodes I}
          in
-            case {Node getXYDim($)}
+            case Node
+            of nil then nil
+            elsecase {Node getXYDim($)}
             of XDim|YDim then
                XM = (XA + XDim)
                YM = (YA + YDim)
@@ -496,7 +522,7 @@ define
             DrCol = {Dictionary.condGet @colDict ColorKey black}
          in
             {Tk.send v(@canvasPrint#(@fontX * X)#' '#((@fontY * Y) + @offY)#
-                       ' '#DrCol#' "'#String#'" '#Tag)}
+                       ' '#DrCol#' {'#String#'} '#Tag)} %% ""
          end
          meth paintXY(X Y Image Tag ColorKey)
             DrCol = {Dictionary.get @colDict ColorKey}
@@ -513,10 +539,10 @@ define
                FX = @fontX
                FY = @fontY
                OY = @offY
-               X1 = (X * FX)
-               Y1 = ((Y * FY) + OY)
-               X2 = (((X + XDim) * FX) + 1)
-               Y2 = (((Y + YDim) * FY) + OY + 1)
+               X1 = ((X * FX) + 1)
+               Y1 = (((Y * FY) + OY) + 1)
+               X2 = ((X + XDim) * FX)
+               Y2 = (((Y + YDim) * FY) + OY)
             in
                if Dirty
                then
@@ -571,6 +597,72 @@ define
          end
          meth disableStop
             {Tk.send v('F0')}
+         end
+         meth drawSelectionRectangle(Node Fresh)
+            SelTag   = @selTag
+            FirstTag = {Node getFirstItem($)}
+            TreeTag  = {Node getTag($)}
+            RI       = {Node getSimpleRootIndex(0 $)}
+         in
+            case GraphicSupport, getTreeCoords(FirstTag RI $)
+            of X|Y then
+               case {Node getXYDim($)}
+               of XDim|YDim then
+                  FX = @fontX
+                  FY = @fontY
+                  OY = @offY
+                  X1 = ((X * FX) + 1)
+                  Y1 = (((Y * FY) + OY) + 1)
+                  X2 = ((X + XDim) * FX)
+                  Y2 = (((Y + YDim) * FY) + OY)
+               in
+                  if Fresh
+                  then
+                     FC = {Dictionary.get @colDict selection}
+                  in
+                     {Tk.send v(@canvasName#' cre rectangle '#X1#' '#Y1#' '#X2#' '#Y2#' -fill '#FC#' -tags t'#SelTag)}
+                  else {Tk.send v(@canvasName#' coords t'#SelTag#' '#X1#' '#Y1#' '#X2#' '#Y2)}
+                  end
+                  {Tk.send v(@canvasName#' raise t'#TreeTag#' t'#SelTag)}
+               end
+            end
+         end
+         meth exportSelectionNode($)
+            @selObject
+         end
+         meth getTreeCoords(Tag I $)
+            case Tk.canvas, tkReturnListInt(coords t#Tag $)
+            of [X Y] then
+               OffY =  ((I - 1) * 3)
+            in
+               offY <-OffY
+               (X div @fontX)|((Y - OffY) div @fontY)
+            [] _     then nil %% This case must not happen
+            end
+         end
+         meth createSelection(Node)
+            HP = {Dictionary.get @opDict selectionHandler}
+         in
+            selObject <- Node
+            {HP Node}
+            GraphicSupport, drawSelectionRectangle(Node true)
+         end
+         meth adjustSelection
+            case @selObject
+            of nil  then skip
+            [] Node then
+               if {Node isDirty($)}
+               then GraphicSupport, clearSelection
+               else GraphicSupport, drawSelectionRectangle(Node false)
+               end
+            end
+         end
+         meth clearSelection
+            HP = {Dictionary.get @opDict selectionHandler}
+         in
+            selObject <- nil
+            {Tk.send v(@canvasDelete#@selTag)}
+            {HP nil}
          end
       end
    end

@@ -223,6 +223,7 @@ local
          NewDepth = (CurDepth + N - 1)
          NewNode
       in
+         {System.show 'running show more depth'#Node}
          {Node undraw}
          {Visual setDepth(NewDepth)}
          NewNode = {Visual treeCreate(Value self Index CurDepth $)}
@@ -265,9 +266,6 @@ local
          then {OldNode change(NewNode)}
          else {Dictionary.put Items I NewNode}
          end
-      end
-      meth action(Index P)
-         {P {{Dictionary.get @items Index} getValue($)}}
       end
       meth link(I Value)
          Items     = @items

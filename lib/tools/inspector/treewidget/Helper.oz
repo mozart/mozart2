@@ -21,7 +21,7 @@
 
 functor $
 import
-   System(printName)
+   System(show printName)
 export
    convert   : ConvertAtom
    atom      : AtomNode
@@ -78,11 +78,11 @@ define
                end
             [] punct then
                case I
-               of &\" then &\\|&\"|{QuoteStr Ir}
-               [] &\\ then &\\|&\\|{QuoteStr Ir}
-               [] 91  then &\\|91|{QuoteStr Ir}  %% '['
-               [] 93  then &\\|93|{QuoteStr Ir}  %% ']'
-               [] 123 then &\\|123|{QuoteStr Ir} %% '{'
+%              of &"  then &\\|&"|{QuoteStr Ir} %% &\"
+%              [] &\\ then &\\|&\\|{QuoteStr Ir}
+%              [] 91  then &\\|91|{QuoteStr Ir}  %% '['
+%              [] 93  then &\\|93|{QuoteStr Ir}  %% ']'
+               of 123 then &\\|123|{QuoteStr Ir} %% '{'
                [] 125 then &\\|125|{QuoteStr Ir} %% '}'
                else I|{QuoteStr Ir}
                end
@@ -190,6 +190,9 @@ define
          meth getFirstItem($)
             @tag
          end
+         meth getTag($)
+            @tag
+         end
       end
    in
       class AtomNode from SharedValues SharedProcs
@@ -247,6 +250,9 @@ define
          meth dirtyUndraw
             if @dirty then skip else {@visual delete(@tag)} end
             dirty <- true
+         end
+         meth getSelectionNode($)
+            @parent
          end
       end
 
@@ -310,6 +316,9 @@ define
                {Visual delete(@tag)}
                {Visual delete(@secTag)}
             end
+         end
+         meth getSelectionNode($)
+            @parent
          end
       end
 
@@ -394,6 +403,12 @@ define
          meth getFirstItem($)
             @tag
          end
+         meth getTag($)
+            @tag
+         end
+         meth getSelectionNode($)
+            {@node getParent($)}
+         end
       end
 
       class SeparatorNode from CombinedValues GetType
@@ -477,6 +492,9 @@ define
          meth getFirstItem($)
             {@node getFirstItem($)}
          end
+         meth getSelectionNode($)
+            {@node getParent($)}
+         end
       end
 
       class BitmapNode
@@ -507,6 +525,9 @@ define
          end
          meth isInfix($)
             false
+         end
+         meth isDirty($)
+            @dirty
          end
          meth seekEnd($)
             @parent
@@ -541,6 +562,9 @@ define
          end
          meth getSimpleRootIndex(I $)
             {@parent getSimpleRootIndex(@index $)}
+         end
+         meth collectTags(I Ts $)
+            {@parent collectTags(@index @tag|Ts $)}
          end
          meth mustChange($)
             false
@@ -613,6 +637,9 @@ define
          meth getFirstItem($)
             @tag
          end
+         meth getTag($)
+            @tag
+         end
          meth undraw
             if @dirty then skip else dirty <- true {@visual delete(@tag)} end
          end
@@ -641,13 +668,22 @@ define
             {@parent unlink(@index)}
          end
          meth action(Index P)
-            try {P @value} catch _ then skip end
+            if {IsTuple P}
+            then {self P}
+            else try {P @value} catch _ then skip end
+            end
          end
          meth modifyWidth(Index N)
             {@parent modifyWidth(Index N)}
          end
          meth modifyDepth(Index N)
             {@parent modifyDepth(Index N)}
+         end
+         meth reinspect
+            {@parent replace(@index @value replaceNormal)}
+         end
+         meth getSelectionNode($)
+            self
          end
       end
 
@@ -664,6 +700,9 @@ define
             end
             meth getSimpleRootIndex(I $)
                {@node getSimpleRootIndex(I $)}
+            end
+            meth collectTags(I Ts $)
+               {@node collectTags(I Ts $)}
             end
             meth getLData($)
                {@node getLData($)}
@@ -701,8 +740,6 @@ define
                tag          %% Own Tag
                visual       %% Visual Object
                dirty : true %% Dirty Flag
-            prop
-               final
             meth create(Passive Active Index Visual Depth)
                @node   = Active
                @old    = Passive
@@ -711,6 +748,9 @@ define
             end
             meth isInfix($)
                {@node isInfix($)}
+            end
+            meth isDirty($)
+               @dirty
             end
             meth seekEnd($)
                {@node getParent($)}
@@ -787,12 +827,8 @@ define
                XYDim  = {Node getXYDim($)}
                Dirty  = @dirty
             in
-               if Dirty
-               then
-                  dirty <- false
-                  {Visual drawRectangle(X Y @tag XYDim Dirty)}
-               else {Visual drawRectangle(X Y @tag XYDim Dirty)}
-               end
+               if Dirty then dirty <- false end
+               {Visual drawRectangle(X Y @tag XYDim Dirty)}
             end
             meth isFresh($)
                {@node isFresh($)}
@@ -808,6 +844,9 @@ define
             end
             meth getFirstItem($)
                {@node getFirstItem($)}
+            end
+            meth getTag($)
+               {@node getTag($)}
             end
             meth makeDirty
                dirty <- true {@node makeDirty}
@@ -903,6 +942,9 @@ define
             end
             meth getFirstItem($)
                @tag
+            end
+            meth getTag($)
+               {@node getTag($)}
             end
             meth makeDirty
                dirty <- true {@node makeDirty}

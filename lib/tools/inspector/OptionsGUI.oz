@@ -147,7 +147,7 @@ local
          MyCanvas = {New Tk.canvas
                      tkInit(parent:             MyNote
                             width:              400
-                            height:             400
+                            height:             350 %% former 400
                             borderwidth:        0
                             highlightthickness: 0)}
          MyFrame  = {New Tk.frame
@@ -181,7 +181,7 @@ local
                                  anchor:   w)}
             Canvas    = {New Tk.canvas
                          tkInit(parent:             InnerFrame
-                                width:              200
+                                width:              208 %% 210
                                 height:             0
                                 borderwidth:        0
                                 highlightthickness: 0)}
@@ -238,7 +238,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             400
+                               height:             350 %% former 400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -266,23 +266,24 @@ local
                DepthEntry = @displayDepth
                FillCanvas = {New Tk.canvas
                              tkInit(parent:             TravInner
-                                    width:              230
+                                    width:              225 %% 230
                                     height:             0
                                     borderwidth:        0
                                     highlightthickness: 0)}
             in
-               WidthEntry = {New Tk.entry
+               WidthEntry = {New TkTools.numberentry
                              tkInit(parent:      TravInner
                                     width:       6
-                                    background:  white
-                                    borderwidth: 1)}
-               DepthEntry = {New Tk.entry
+                                    min:         0
+                                    val:         {Dictionary.get OpDict widgetTreeWidth})}
+               DepthEntry = {New TkTools.numberentry
                              tkInit(parent:      TravInner
                                     width:       6
-                                    background:  white
-                                    borderwidth: 1)}
-               {WidthEntry tk(insert 'end' {Dictionary.get OpDict widgetTreeWidth})}
-               {DepthEntry tk(insert 'end' {Dictionary.get OpDict widgetTreeDepth})}
+                                    min:         0
+                                    val:         {Dictionary.get OpDict widgetTreeDepth})}
+
+               {WidthEntry.entry tk(conf background: white)}
+               {DepthEntry.entry tk(conf background: white)}
                {Tk.batch [grid(row: 0 column: 0 WidthLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 WidthEntry padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 2 FillCanvas padx: 4 pady: 4 sticky: nw)
@@ -350,7 +351,7 @@ local
                                        highlightthickness: 0)}
                TypeLabel     = {New Tk.label
                                 tkInit(parent: TypeFrame
-                                       text:   'Current Type:'
+                                       text:   'Selected Type:'
                                        font:    MediumFont)}
                TypeHandler   = proc {$ Type}
                                   OldType = @mappingType
@@ -366,14 +367,22 @@ local
                                   true
                                end
                TypesList     = {Map {Filter {Dictionary.keys OpDict} SubFilter} CutMap}
-               MappingType   = TypesList.1
+               TypPrList     = {Sort {Map TypesList
+                                      fun {$ N}
+                                         NA = {VirtualString.toAtom N}
+                                      in
+                                         {Dictionary.condGet @printDict NA NA}
+                                      end}
+                                Value.'<'}
+               MappingType   = TypPrList.1
                TypeSelector  = {New PopupSelector
-                                create(TypeFrame 20 MappingType TypeActive TypeHandler TypesList)}
+                                create(TypeFrame 20 MappingType TypeActive TypeHandler TypPrList)}
                MappingFrame  = {New TkTools.textframe
                                 tkInit(parent: NewMyFrame
                                        text:  'Type Defaults')}
                MappingInner  = MappingFrame.inner
-               AllFilter     = {Dictionary.get OpDict {VirtualString.toAtom MappingType#'Menu'}}
+               MapTypeName   = {Dictionary.condGet @namesDict MappingType MappingType}
+               AllFilter     = {Dictionary.get OpDict {VirtualString.toAtom MapTypeName#'Menu'}}
                AutoFilter    = DisplayNote, ExtractAuto(AllFilter $)
                VarValue      = case AutoFilter of nil then 'none' else 'auto' end
                MyVar         = {New Tk.variable
@@ -407,7 +416,7 @@ local
                                        ApplyHandler FilterList)}
                FillCanvas    = {New Tk.canvas
                                 tkInit(parent:             MappingInner
-                                       width:              210%240
+                                       width:              215%240
                                        height:             0
                                        borderwidth:        0
                                        highlightthickness: 0)}
@@ -454,12 +463,18 @@ local
             end
          end
          meth !HandleNewFilter(OldType NewType)
+            NamesDict = @namesDict
+            OTA       = {VirtualString.toAtom OldType}
+            NTA       = {VirtualString.toAtom NewType}
+            OTN       = {Dictionary.condGet NamesDict OTA OTA}
+            NTN       = {Dictionary.condGet NamesDict NTA NTA}
             AutoLabel = case {@mappingVariable tkReturnAtom($)}
                         of 'auto' then {@mappingSelector getValue($)} else nil end
             OpDict    = @opDict
-            OldKey    = {VirtualString.toAtom OldType#'Menu'}
-            NewKey    = {VirtualString.toAtom NewType#'Menu'}
+            OldKey    = {VirtualString.toAtom OTN#'Menu'}
+            NewKey    = {VirtualString.toAtom NTN#'Menu'}
          in
+            {System.show 'running HandleNewFilter'}
             case {Dictionary.get OpDict OldKey}
             of menu(WL DL FL AL) then
                NewFL = DisplayNote, AdjustFilters(FL AutoLabel $)
@@ -475,7 +490,7 @@ local
                VarValue   = case AutoLabel of nil then 'none' else 'auto' end
                MyVar      = {New Tk.variable tkInit(VarValue)}
                ShowSel    = case AutoLabel of nil then
-                               case FilterList of F|_ then F else 'No Filters defined' end
+                               case FilterList of F|_ then F else 'No Mapfunctions defined' end
                             else AutoLabel
                             end
             in
@@ -515,8 +530,8 @@ local
          end
          meth collect
             OpDict  = @opDict
-            Width   = case {@displayWidth tkReturnInt(get $)} of false then 0 elseof N then N end
-            Height  = case {@displayDepth tkReturnInt(get $)} of false then 0 elseof N then N end
+            Width   = case {@displayWidth.entry tkReturnInt(get $)} of false then 0 elseof N then N end
+            Height  = case {@displayDepth.entry tkReturnInt(get $)} of false then 0 elseof N then N end
             Mode    = case {@displayVariable tkReturnAtom($)} of 'false' then false else true end
             Rels    = {Dictionary.get OpDict widgetRelationList}
             NewRels = DisplayNote, buildRels(Rels {@displayRelation getValue($)} $)
@@ -596,7 +611,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             400
+                               height:             350 %% former 400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -618,15 +633,16 @@ local
                                       highlightthickness: 0)}
                TypeLabel    = {New Tk.label
                                tkInit(parent: TypeFrame
-                                      text:   'Current Type:'
+                                      text:   'Selected Type:'
                                       font:   MediumFont)}
                THandler     = proc {$ Type}
                                  OldType = @visualCurType
                               in
                                  if OldType \= Type
                                  then
+                                    TN    = {Dictionary.condGet @namesDict Type Type}
                                     Color = {Dictionary.get @opDict
-                                             {VirtualString.toAtom Type#'Color'}}
+                                             {VirtualString.toAtom TN#'Color'}}
                                  in
                                     visualCurType <- Type
                                     {self handle(selCol(VisualNote, MatchColor(1 Color $)))}
@@ -638,9 +654,16 @@ local
                ColorKeys    = {Filter {Dictionary.keys OpDict} SubFilter}
                KnownColors  = VisualNote, ComputeColorList(OpDict ColorKeys nil $)
                ColorList    = {Map ColorKeys CutMap}
-               SelColor     = ColorList.1
+               ColPrList    = {Sort {Map ColorList
+                                     fun {$ N}
+                                        NA = {VirtualString.toAtom N}
+                                     in
+                                        {Dictionary.condGet @printDict NA NA}
+                                     end}
+                               Value.'<'}
+               SelColor     = ColPrList.1
                TypeSelector = {New PopupSelector
-                               create(TypeFrame 20 SelColor TAct THandler ColorList)}
+                               create(TypeFrame 20 SelColor TAct THandler ColPrList)}
                ColorCanvas  = {New Tk.canvas
                                tkInit(parent:             ColFrInner
                                       width:              260
@@ -649,7 +672,7 @@ local
                                       highlightthickness: 0)}
                FillCanvas   = {New Tk.canvas
                                tkInit(parent:             TypeFrame
-                                      width:              100
+                                      width:              111 % 110
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
@@ -683,13 +706,14 @@ local
                                       anchor:   w)}
                BoldFillCanv = {New Tk.canvas
                                tkInit(parent:             FontInner
-                                      width:              190
+                                      width:              207 % 205
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
-               GetColor     = {Dictionary.get OpDict {VirtualString.toAtom SelColor#'Color'}}
+               SelColN      = {Dictionary.condGet @namesDict SelColor SelColor}
+               GetColor     = {Dictionary.get OpDict {VirtualString.toAtom SelColN#'Color'}}
             in
-               @visualCurType = nil
+               @visualCurType = SelColor
                @visualCanvas  = ColorCanvas
                @visualColDict = {Dictionary.new}
                VisualNote, fillColorDict(KnownColors 1)
@@ -741,7 +765,8 @@ local
             Color    = {Dictionary.get @visualColDict I}
             T        = {New Tk.toplevel
                         tkInit(title:    'Change Color'
-                               withdraw: true)}
+                               withdraw: true
+                               delete:   {SyncCall proc {$} colPannerWin <- nil {T tkClose} end})}
             TopFrame = {New Tk.frame
                         tkInit(parent:             T
                                borderwidth:        1
@@ -772,6 +797,7 @@ local
                                                                   {IntToHex @visualGreen}#
                                                                   {IntToHex @visualBlue}}
                                                       in
+                                                         colPannerWin <- nil
                                                          {T tkClose}
                                                          {self handle(updateCol(I Color))}
                                                       end})}
@@ -780,9 +806,13 @@ local
                                text:        'Cancel'
                                width:       6
                                borderwidth: 1
-                               action:      {SyncCall proc {$} {T tkClose} end})}
+                               action:      {SyncCall proc {$}
+                                                         colPannerWin <- nil
+                                                         {T tkClose}
+                                                      end})}
             Ss
          in
+            colPannerWin <- T
             case VisualNote, ComputeColorParts(Color $)
             of RedVal|GreenVal|BlueVal then
                Ss = {Map ['Red'#RedVal 'Green'#GreenVal 'Blue'#BlueVal]
@@ -879,15 +909,22 @@ in
          book
          winEntry
          opDict
+         printDict %% Readable Names Dictionary (N->P)
+         namesDict %% Option Names Dictonary (P->N)
+         colPannerWin : nil
       prop
          final
       meth create(WinEntry Options)
          MyBook = @book
       in
          Tk.toplevel, tkInit(title:    'Inspector Options'
+                             delete:   {SyncCall proc {$} {self handle(cancel)} end}
                              withdraw: true)
-         @winEntry = WinEntry
-         @opDict   = Options
+         @winEntry  = WinEntry
+         @opDict    = Options
+         @printDict = {Dictionary.new}
+         @namesDict = {Dictionary.new}
+         InspectorGUIClass, fillConvDict({Dictionary.get @opDict typeConversion})
          local
             UpFrame    = {New Tk.frame
                           tkInit(parent:             self
@@ -940,6 +977,15 @@ in
                        wm(deiconify self)]}
          end
       end
+      meth fillConvDict(Ls)
+         case Ls
+         of (N#P)|Lr then
+            {Dictionary.put @printDict N P}
+            {Dictionary.put @namesDict P N}
+            InspectorGUIClass, fillConvDict(Lr)
+         [] nil then skip
+         end
+      end
       meth collect
          skip %% This is to satisfy the OO System
       end
@@ -958,31 +1004,40 @@ in
          [] selCol(I) then
             TagDict = @visualTagDict
             Canvas  = @visualCanvas
+            VCType  = @visualCurType
+            CurTypN = {Dictionary.condGet @namesDict VCType VCType}
          in
             case @visualSelection
             of nil then skip
             elseof OldI then
                {Canvas tk(itemconfigure {Dictionary.get TagDict OldI} outline: FrameColor)}
             end
+            case @colPannerWin of nil then skip [] T then colPannerWin <- nil {T tkClose} end
             visualSelection <- I
-            {Dictionary.put @opDict {VirtualString.toAtom @visualCurType#'Color'}
+            {Dictionary.put @opDict {VirtualString.toAtom CurTypN#'Color'}
              {Dictionary.get @visualColDict I}}
             {Canvas tk(itemconfigure {Dictionary.get TagDict I} outline: black)}
          [] changeCol(I) then
             case @visualSelection
             of nil then skip
             elseof CurI then
-               if CurI == I then VisualNote, ChangeColor(I) end
+               if CurI == I andthen @colPannerWin == nil then VisualNote, ChangeColor(I) end
             end
          [] updateCol(I Col) then
             TagDict = @visualTagDict
             Canvas  = @visualCanvas
          in
             {Dictionary.put @visualColDict I Col}
-            {System.show debug#{VirtualString.toAtom @visualCurType#'Color'}}
             {Dictionary.put @opDict {VirtualString.toAtom @visualCurType#'Color'} Col}
             {Canvas tk(itemconfigure {Dictionary.get TagDict I} fill: Col)}
          end
+      end
+      meth tellClose
+         case @colPannerWin
+         of nil then skip
+         [] Node then {Node tkClose}
+         end
+         Tk.toplevel, tkClose
       end
    end
 end

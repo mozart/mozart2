@@ -62,6 +62,7 @@ define
       end
    end
 
+   %% Node Translation Tables
    NormalNodes = [int#int float#float atom#atom name#name procedure#procedure
                   hashtuple#hashtuple pipetuple#pipetuple labeltuple#labeltuple
                   record#record kindedrecord#kindedrecord fdint#fdint
@@ -218,6 +219,9 @@ define
       meth getSimpleRootIndex(I $)
          TreeWidget, getRootIndex(I $)
       end
+      meth collectTags(I Ts $)
+         I|Ts
+      end
       meth getRootIndex(I $)
          if @dMode
          then
@@ -312,8 +316,25 @@ define
          {Obj Mesg}
          TreeWidget, update(RI|nil RI)
       end
+      meth selectionCall(Node Mesg)
+         RI    = {Node getSimpleRootIndex(0 $)}
+         Index = {Node getIndex($)}
+         StopVar
+      in
+         GraphicSupport.'class', enableStop
+         stopPVar <- StopVar
+         stopOVar <- StopVar
+         case Mesg
+         of changeWidth(N) then {Node modifyWidth(Index N)}
+         [] changeDepth(N) then {Node modifyDepth(Index N)}
+         [] reinspect      then {Node reinspect}
+         end
+         TreeWidget, update(RI|nil RI)
+      end
       meth treeCreate(Val Parent Index Depth $)
-         if Depth > @dDepth
+         MaxDepth = @dDepth
+      in
+         if Depth > MaxDepth
          then {New Aux.bitmap treeCreate(depth Parent Index self Val)}
          else
             ValKey = {ValueToKey Val}
@@ -328,11 +349,9 @@ define
                   {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
                end
             elseof F then
-               NVal = try {F Val} catch X then
+               MaxW = @dWidth
+               NVal = try {F Val MaxW MaxDepth} catch X then
                          failed(ex:{Value.byNeed fun {$} X end}) end
-               Box  = {New Aux.box create(Val)}
-               Node
-            in
                Node = if @dMode
                       then TreeWidget, graphCreate(NVal Parent Index Depth $)
                       else
@@ -340,7 +359,11 @@ define
                       in
                          {New TreeNodes.NodeKey create(NVal Parent Index self Depth)}
                       end
-               {New Aux.proxy create(Box Node Index self Depth)}
+            in
+               if {System.eq NVal Val}
+               then Node
+               else {New Aux.proxy create({New Aux.box create(Val)} Node Index self Depth)}
+               end
             end
          end
       end
@@ -443,7 +466,10 @@ define
             dDepth <- DDepth
          else Node = {New Aux.bitmap treeCreate(depth self I self Value)}
          end
-         {Dictionary.put Items I Node}
+         if {OldNode mustChange($)}
+         then {OldNode change(Node)}
+         else {Dictionary.put Items I Node}
+         end
       end
       meth link(I Value)
          Items   = @nodes
@@ -480,7 +506,10 @@ define
             dDepth <- (N - 1)
             NewNode = TreeWidget, treeCreate(Value self Index 0 $)
             dDepth <- OldDepth
-            {Dictionary.put Items Index NewNode}
+            if {Node mustChange($)}
+            then {Node change(NewNode)}
+            else {Dictionary.put Items Index NewNode}
+            end
          end
       end
       meth handleStop(I)
@@ -541,6 +570,7 @@ define
             else
                maxX <- NewX
                curY <- NewY
+               GraphicSupport.'class', adjustSelection
                GraphicSupport.'class', adjustCanvasView
 %              {Wait {Tk.return update(idletasks)}}
             end
@@ -560,6 +590,36 @@ define
       end
       meth getRelMan($)
          @curRelMan
+      end
+      meth apply(P)
+         {P}
+      end
+      meth clearAll(F)
+         TreeWidget, performClearAll(1)
+         maxPtr <- 0
+         maxX   <- 0
+         curY   <- 0
+         case @selObject
+         of nil  then GraphicSupport.'class',adjustCanvasView
+         [] Node then
+            GraphicSupport.'class', clearSelection
+            TreeWidget, display({Node getValue($)})
+         end
+         F = unit
+      end
+      meth performClearAll(I)
+         if I =< @maxPtr
+         then
+            Items = @nodes
+            Lines = @lines
+            T     = {Dictionary.get Lines I}
+         in
+            {{Dictionary.get Items I} undraw}
+            GraphicSupport.'class', delete(T)
+            {Dictionary.remove Items I}
+            {Dictionary.remove Lines I}
+            TreeWidget, performClearAll((I + 1))
+         end
       end
    end
 end

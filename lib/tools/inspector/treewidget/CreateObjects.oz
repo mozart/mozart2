@@ -85,6 +85,9 @@ define
       meth getSimpleRootIndex(I $)
          {@parent getSimpleRootIndex(@index $)}
       end
+      meth collectTags(I Ts $)
+         {@parent collectTags(@index @tag|Ts $)}
+      end
       meth getValue($)
          @value
       end

@@ -62,6 +62,7 @@ define
             meth about(Menu)
                T       = {New Tk.toplevel
                           tkInit(title:    'About Inspector'
+                                 delete:   proc {$} {Port.send InspPort aboutClose(Menu T)} end
                                  withdraw: true)}
                UpFrame = {New Tk.frame
                           tkInit(parent:             T
@@ -120,6 +121,8 @@ define
                widget            %% Current Active TreeWidget
                aboutWin  : nil   %% About Window
                configWin : nil   %% Configuration Window
+               selMenu           %% Selection Menu
+               selNode           %% Selection Node (exported from TreeWidget)
             prop
                final
             meth create(Options)
@@ -142,7 +145,7 @@ define
                                       relief:             raised
                                       highlightthickness: 0)}
                   Menu      = {TkTools.menubar MenuFrame MenuFrame
-                               [menubutton(text:      'Inspector'
+                               [menubutton(text: 'Inspector'
                                            menu: [command(label:  'About...'
                                                           action:  proc {$}
                                                                       {Port.send InspPort
@@ -159,6 +162,14 @@ define
                                                                      {Port.send InspPort delPane}
                                                                   end)
                                                   separator
+                                                  command(label:   'Clear all but Selection'
+                                                          action:  proc {$}
+                                                                      {Port.send InspPort
+                                                                       clearAll(
+                                                                          Menu.inspector.myclear)}
+                                                                   end
+                                                          feature: myclear)
+                                                  separator
                                                   command(label:   'Iconify'
                                                           action:  proc {$}
                                                                       {Port.send InspPort iconify}
@@ -170,6 +181,38 @@ define
                                                                    end
                                                           feature: close)]
                                            feature: inspector)
+                                menubutton(text: 'Selection'
+                                           menu: [command(label:  'Expand'
+                                                          action:
+                                                             proc {$}
+                                                                {Port.send InspPort
+                                                                 selectionHandler(expand)}
+                                                             end
+                                                          feature: expand)
+                                                  command(label:  'Shrink'
+                                                          action:
+                                                             proc {$}
+                                                                {Port.send InspPort
+                                                                 selectionHandler(shrink)}
+                                                             end
+                                                          feature: shrink)
+                                                  separator
+                                                  command(label:  'Deref'
+                                                          action:
+                                                             proc {$}
+                                                                {Port.send InspPort
+                                                                 selectionHandler(deref)}
+                                                             end
+                                                          feature: deref)
+                                                  separator
+                                                  command(label:  'Reinspect'
+                                                          action:
+                                                             proc {$}
+                                                                {Port.send InspPort
+                                                                 selectionHandler(reinspect)}
+                                                             end
+                                                          feature: reinspect)]
+                                           feature: selection)
                                 menubutton(text: 'Options'
                                            menu: [command(label:  'Preferences...'
                                                           action:  proc {$}
@@ -194,9 +237,15 @@ define
                in
                   {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
                   @options = Options
+                  @selMenu = Menu.selection
                   {Menu.inspector tk(conf borderwidth: 1)}
                   {Menu.insoptions tk(conf borderwidth: 1)}
                   {Menu.inspector.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
+                  {Menu.selection.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
+                  {Menu.selection.expand tk(entryconf state:disabled)}
+                  {Menu.selection.shrink tk(entryconf state:disabled)}
+                  {Menu.selection.deref tk(entryconf state:disabled)}
+                  {Menu.selection.reinspect tk(entryconf state:disabled)}
                   {Menu.insoptions.menu
                    tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
                   {Tk.batch [grid(row: 0 column: 0 Menu sticky: ew)
@@ -204,6 +253,7 @@ define
                              grid(row: 0 column: 0 MenuFrame sticky: nsew)
                              grid(columnconfigure MenuFrame 0 weight: 1)
                              grid(columnconfigure MenuFrame 1 weight: 0)]}
+                  {Dictionary.put Options selectionHandler proc {$ Mode} {Port.send InspPort selectionHandler(Mode)} end}
                end
                ManagerFrame = FrameManager, create(Frame Width Height $)
                @widget      = {New TreeWidgetNode create(self Width Height)}
@@ -286,7 +336,7 @@ define
                   case @configWin
                   of nil then skip
                   elseof Win|Menu then
-                     configWin <- nil {Win tkClose}
+                     configWin <- nil {Win tellClose}
                      {Menu tk(entryconf state: normal)}
                   end
                end
@@ -417,6 +467,56 @@ define
                   NumItems <- (MaxNum - 2)
                   {Dictionary.remove MyItems (MaxNum - 1)}
                   {Dictionary.remove MyItems MaxNum}
+               end
+            end
+            meth clearAll(Menu)
+               Finished
+            in
+               {Menu tk(entryconf state: disabled)}
+               {@widget clearAll(Finished)}
+               {Wait Finished}
+               {Menu tk(entryconf state: normal)}
+            end
+            meth selectionHandler(Mode)
+               Menu = @selMenu
+            in
+               case Mode
+               of nil then
+                  selNode <- nil
+                  {Menu.expand tk(entryconf state: disabled)}
+                  {Menu.shrink tk(entryconf state: disabled)}
+                  {Menu.deref tk(entryconf state: disabled)}
+                  {Menu.reinspect tk(entryconf state: disabled)}
+               [] expand then
+                  Node = @selNode
+               in
+                  case {Node getType($)}
+                  of widthbitmap then {@widget selectionCall(Node changeWidth(1))}
+                  else {@widget selectionCall(Node changeDepth(1))}
+                  end
+               [] shrink    then
+                  {@widget selectionCall(@selNode changeDepth(~1))}
+               [] deref     then skip
+               [] reinspect then {@widget selectionCall(@selNode reinspect)}
+               [] Node      then
+                  selNode <- Node
+                  case {Node getType($)}
+                  of depthbitmap then
+                     {Menu.expand tk(entryconf state: normal)}
+                     {Menu.shrink tk(entryconf state: disabled)}
+                     {Menu.deref tk(entryconf state: disabled)}
+                     {Menu.reinspect tk(entryconf state: disabled)}
+                  [] widthbitmap then
+                     {Menu.expand tk(entryconf state: normal)}
+                     {Menu.shrink tk(entryconf state: disabled)}
+                     {Menu.deref tk(entryconf state: disabled)}
+                     {Menu.reinspect tk(entryconf state: disabled)}
+                  else
+                     {Menu.expand tk(entryconf state: disabled)}
+                     {Menu.shrink tk(entryconf state: normal)}
+                     {Menu.deref tk(entryconf state: disabled)}
+                     {Menu.reinspect tk(entryconf state: normal)}
+                  end
                end
             end
          end

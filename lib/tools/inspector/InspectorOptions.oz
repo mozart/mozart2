@@ -145,19 +145,19 @@ define
                case As of F|Ar then NV.F = V.F {CopyRecVal Ar NV V} else NV end
             end
          in
-            fun {TupPruneOdd V}
+            fun {TupPruneOdd V W D}
                Arity = {GetEven {Record.arity V}}
                NewV  = {Tuple.make {Label V} {Length Arity}}
             in
                {CopyTupVal Arity 1 NewV V}
             end
-            fun {TupPruneEven V}
+            fun {TupPruneEven V W D}
                Arity = {GetOdd {Record.arity V}}
                NewV  = {Tuple.make {Label V} {Length Arity}}
             in
                {CopyTupVal Arity 1 NewV V}
             end
-            fun {TupSplitOddEven V}
+            fun {TupSplitOddEven V W D}
                case {SplitArity {Record.arity V} 1 nil nil}
                of AO|AE then
                   MyLabel = {Record.label V}
@@ -166,28 +166,28 @@ define
                           {CopyTupVal AE 1 {Tuple.make ev {Length AE}} V})
                end
             end
-            fun {PipPruneOdd V}
+            fun {PipPruneOdd V W D}
                case {SplitList V 1 nil nil} of _|AE then ev(AE) end
             end
-            fun {PipPruneEven V}
+            fun {PipPruneEven V W D}
                case {SplitList V 1 nil nil} of AO|_ then od(AO) end
             end
-            fun {PipSplitOddEven V}
+            fun {PipSplitOddEven V W D}
                case {SplitList V 1 nil nil} of AO|AE then [od(AO) ev(AE)] end
             end
-            fun {RecPruneOdd V}
+            fun {RecPruneOdd V W D}
                Arity = {GetEven {Record.arity V}}
                NewV  = {Record.make {Label V} Arity}
             in
                {CopyRecVal Arity NewV V}
             end
-            fun {RecPruneEven V}
+            fun {RecPruneEven V W D}
                Arity = {GetOdd {Record.arity V}}
                NewV  = {Record.make {Label V} Arity}
             in
                {CopyRecVal Arity NewV V}
             end
-            fun {RecSplitOddEven V}
+            fun {RecSplitOddEven V W D}
                case {SplitArity {Record.arity V} 1 nil nil}
                of AO|AE then
                   MyLabel = {Record.label V}
@@ -200,23 +200,31 @@ define
                try _ = V.foo catch _ then skip end
             end
             local
-               Dict = {NewName}
+               ArrayContents = {NewName}
             in
-               fun {MapDict V}
-                  {Dictionary.toRecord Dict V}
+               fun {ShowArrayCont V W D}
+                  {Array.toRecord ArrayContents V}
                end
             end
             local
-               Arr = {NewName}
+               DictKeys    = {NewName}
+               DictItems   = {NewName}
+               DictEntries = {NewName}
             in
-               fun {MapArray V}
-                  {Array.toRecord Arr V}
+               fun {ShowDictKeys V W D}
+                  DictKeys({Dictionary.keys V})
+               end
+               fun {ShowDictItems V W D}
+                  DictItems({Dictionary.items V})
+               end
+               fun {ShowDictCont V W D}
+                  {Dictionary.toRecord DictEntries V}
                end
             end
             local
                Chunk = {NewName}
             in
-               fun {MapChunk V}
+               fun {MapChunk V W D}
                   Arity = {ChunkArity V}
                in
                   {CopyRecVal Arity {Record.make Chunk Arity} V}
@@ -230,7 +238,7 @@ define
                %%              OOProp  = {BN.newUnique 'ooProperties'}
                OOList  = [OOAttr OOFeat OOMeth]
             in
-               fun {MapClass V}
+               fun {MapClass V W D}
                   Arity = {Filter {ChunkArity V} fun {$ A} {Member A OOList} end}
                in
                   {CopyRecVal Arity {Record.make V.OOPrint Arity} V}
@@ -256,7 +264,7 @@ define
                   else skip
                   end
                end
-               fun {MapObject V}
+               fun {MapObject V W D}
                   Class = {BO.getClass V}
                   Name  = Class.OOPrint
                   Attr  = {Record.arity Class.OOAttr}
@@ -267,27 +275,68 @@ define
                end
             end
             local
-               Cell = {NewName}
+               CellContent = {NewName}
             in
-               fun {MapCell V}
-                  Cell({Access V})
-               end
-               fun {CleanCell V}
-                  {Exchange V _ _} V
+               fun {ShowCellCont V W D}
+                  CellContent({Access V})
                end
             end
-            fun {StringShow V}
-               if {String.is V} then {ByteString.make V} else V end
+            local
+               fun {IsString V W}
+                  if W > 0
+                  then
+                     case V
+                     of C|Vr then {Char.is C} andthen {IsString Vr (W - 1)}
+                     [] nil  then true
+                     end
+                  else false
+                  end
+               end
+               fun {InsertNew I Ls V}
+                  case Ls
+                  of L|Lr then V.I = L {InsertNew (I + 1) Lr V}
+                  [] nil  then V
+                  end
+               end
+               fun {Convert NIs Ls V I TW W F}
+                  if I =< TW
+                  then
+                     Val = V.I
+                  in
+                     if I =< W andthen
+                        ({IsAtom Val} orelse {IsInt Val} orelse {IsFloat Val}
+                         orelse {IsString Val W})
+                     then {Convert NIs {Append Ls {VirtualString.toString Val}} V (I + 1) TW W true}
+                     elsecase Ls
+                     of nil then {Convert V|NIs nil V (I + 1) TW W F}
+                     [] Ls  then {Convert V|Ls|NIs nil V (I + 1) TW W F}
+                     end
+                  else
+                     NewNIs = case Ls of nil then NIs [] Ls then Ls|NIs end
+                  in
+                     if F
+                     then {InsertNew 1 {Reverse NewNIs} {MakeTuple '#' {Length NewNIs}}}
+                     else V
+                     end
+                  end
+               end
+            in
+               fun {ShowString V W D}
+                  if {IsString V W} then {ByteString.make "\""#V#"\""} else V end
+               end
+               fun {ShowVirtualString V W D}
+                  {Convert nil nil V 1 {Width V} W false}
+               end
             end
          end
       in
          DefaultValues =
          [inspectorWidth        # 600
           inspectorHeight       # 400
-          optionsRange          # 'all'
+          optionsRange          # 'active' %% 'active' or 'all'
 
-          widgetTreeWidth       # 100 %  Browser has (50)
-          widgetTreeDepth       # 15  % Browser has (15)
+          widgetTreeWidth       # 50
+          widgetTreeDepth       # 15
           widgetTreeDisplayMode # true
           widgetRelationList    # ['Structural Equality'(StructEqual)
                                    auto('Token Equality'(System.eq))]
@@ -323,6 +372,7 @@ define
           depthbitmapColor       # Color6
           separatorColor         # Color1
           proxyColor             # BackC
+          selectionColor         # '#f7dfb6'
 
           %%  menu(WidthList DepthList FilterList ActionList)
 
@@ -345,29 +395,31 @@ define
 
           intMenu                # nil
           floatMenu              # nil
+          bytestringMenu         # menu(nil nil nil nil)
           atomMenu               # nil
           atomrefMenu            # nil
           hashtupleMenu          # menu(WidthList DepthList
-                                        ['Prune Odd'(TupPruneOdd)
+                                        [auto('Show VirtualString'(ShowVirtualString))
+                                         'Prune Odd'(TupPruneOdd)
                                          'Prune Even'(TupPruneEven)
                                          'Split Odd/Even'(TupSplitOddEven)]
                                         nil)
           pipetupleMenu          # menu(WidthList DepthList
-                                        ['Prune Odd'(PipPruneOdd)
+                                        [auto('Show String'(ShowString))
+                                         'Prune Odd'(PipPruneOdd)
                                          'Prune Even'(PipPruneEven)
                                          'Split Odd/Even'(PipSplitOddEven)]
                                         nil)
           listMenu               # menu(WidthList DepthList
                                         ['Prune Odd'(PipPruneOdd)
                                          'Prune Even'(PipPruneEven)
-                                         'Split Odd/Even'(PipSplitOddEven)
-                                         'ShowAsString'(StringShow)]
+                                         'Split Odd/Even'(PipSplitOddEven)]
                                         nil)
           labeltupleMenu         # menu(WidthList DepthList
                                         ['Prune Odd'(TupPruneOdd)
                                          'Prune Even'(TupPruneEven)
                                          'Split Odd/Even'(TupSplitOddEven)]
-                                        nil)
+                                        ['Reinspect'(reinspect)])
           recordMenu             # menu(WidthList DepthList
                                         ['Prune Odd'(RecPruneOdd)
                                          'Prune Even'(RecPruneEven)
@@ -384,15 +436,59 @@ define
           fsetMenu               # menu(WidthList DepthList nil nil)
           genericMenu            # nil
 
-          arrayMenu              # menu(nil nil [auto('Show Contents'(MapArray))] nil)
-          dictionaryMenu         # menu(nil nil [auto('Show Contents'(MapDict))] nil)
-          classMenu              # menu(nil nil [auto('Show Contents'(MapClass))] nil)
-          objectMenu             # menu(nil nil [auto('Show Contents'(MapObject))] nil)
+          arrayMenu              # menu(nil nil [auto('Show Contents'(ShowArrayCont))] nil)
+          dictionaryMenu         # menu(nil nil ['Show Keys'(ShowDictKeys)
+                                                 'Show Items'(ShowDictItems)
+                                                 auto('Show Entries'(ShowDictCont))] nil)
+          classMenu              # menu(nil nil [auto('Show Entries'(MapClass))] nil)
+          objectMenu             # menu(nil nil [auto('Show Entries'(MapObject))] nil)
           lockMenu               # nil
           portMenu               # nil
-          chunkMenu              # menu(nil nil [auto('Show Contents'(MapChunk))] nil)
-          cellMenu               # menu(nil nil [auto('Show Contents'(MapCell))
-                                                 'Garbage Contents'(CleanCell)] nil)
+          chunkMenu              # menu(nil nil [auto('Show Entries'(MapChunk))] nil)
+          cellMenu               # menu(nil nil [auto('Show Entries'(ShowCellCont))] nil)
+
+          %% This is to enable Human readable Selections in OptionsGUI
+          typeConversion         # [ procedure    # 'Procedure'
+                                     future       # 'Future'
+                                     free         # 'Logic Variable'
+                                     fdint        # 'Finite Domain Integer'
+                                     fset         # 'Finite Sets'
+                                     array        # 'Array'
+                                     dictionary   # 'Dictionary'
+                                     'class'      # 'Class'
+                                     object       # 'Object'
+                                     'lock'       # 'Lock'
+                                     int          # 'Integer'
+                                     float        # 'Floating Point Number'
+                                     port         # 'Port'
+                                     atom         # 'Atom'
+                                     atomref      # 'Atomref' %% Don't now
+                                     hashtuple    # 'Hashtuple'
+                                     pipetuple    # 'Piped List'
+                                     cell         # 'Cell'
+                                     list         # 'Closed List'
+                                     labeltuple   # 'Tuple'
+                                     record       # 'Record'
+                                     kindedrecord # 'Feature Constraint'
+                                     'unit'       # 'Unit'
+                                     name         # 'Name'
+                                     colon        # 'Colon'
+                                     bytestring   # 'ByteString'
+                                     internal     # 'Internal'
+                                     braces       # 'Braces'
+                                     separator    # 'Pipe Symbol'
+                                     background   # 'TreeWidget Background'
+                                     proxy        # 'Mapped Background'
+                                     selection    # 'Selection Background'
+                                     ref          # 'Ref'
+                                     label        # 'Label'
+                                     feature      # 'Feature'
+                                     chunk        # 'Chunk'
+                                     bool         # 'Boolean'
+                                     generic      # 'Default Type'
+                                     depthbitmap  # 'Bitmap (Depthlimit)'
+                                     widthbitmap  # 'Bitmap (Widthlimit)'
+                                   ]
          ]
       end
    in

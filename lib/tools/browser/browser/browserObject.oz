@@ -202,6 +202,7 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::close is applied'}
 \endif
       %%
+      BrowserClass , Reset
       {Wait {self.BrowserStream [enq(close) enq(sync($))]}}
 
       %%

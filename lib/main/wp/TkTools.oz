@@ -25,9 +25,7 @@ functor
 
 require
    DefaultURL(homeUrl)
-   at '../DefaultURL.ozf'
    URL(make resolve toAtom)
-   at '../URL.ozf'
 
 prepare
    ImageDir = {URL.toAtom {URL.resolve DefaultURL.homeUrl

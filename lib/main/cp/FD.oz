@@ -40,8 +40,6 @@ require
 
              formatOrigin:   FormatOrigin)
 
-   at '../CpSupport.ozf'
-
 
 prepare
    FwdRelTable = fwdRelTable('=:':   false

@@ -32,9 +32,6 @@ require
    CpSupport(vectorToList:   VectorToList
              expand:         ExpandList)
 
-   at '../CpSupport.ozf'
-
-
 prepare
 
    fun {Head H|_} H end

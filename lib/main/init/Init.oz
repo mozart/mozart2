@@ -37,14 +37,11 @@ require
        isRelative:    UrlIsRelative
        toVsExtended:  UrlToVsExtended)
 
-   at '../URL.ozf'
-
    DefaultURL(ozScheme
               functorExt:  FunctorExt
               homeUrl:     MozartHome
               contribUrl:  ContribHome
               nameToUrl:   ModNameToUrl)
-   at '../DefaultURL.ozf'
 
 prepare
 

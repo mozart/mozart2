@@ -23,13 +23,15 @@
 %%%
 
 {Error.registerFormatter compiler
- fun {$ E} T in
+ fun {$ E}
+    BugReport = 'Please send bug report to mozart-bugs@ps.uni-sb.de'
     T = 'compiler engine error'
+ in
     case E of compiler(internal X) then
        error(kind: T
              msg: 'Internal compiler error'
              items: [hint(l: 'Additional information' m: oz(X))
-                     line('please send a bug report to oz-bugs@ps.uni-sb.de')])
+                     line(BugReport)])
     elseof compiler(invalidQuery M) then
        error(kind: T
              msg: 'Invalid query'

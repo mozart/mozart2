@@ -25,9 +25,7 @@
 local
    NewSpace   = Space.new
    DictWaitOr = Boot_Dictionary.waitOr
-%   [BS]={Module.link ['x-oz://boot/Space']}
-%   Ask      = BS.askUnsafe
-   Ask      = Boot_Space.askUnsafe
+   Ask        = Boot_Space.askUnsafe
 
    local
       proc {Skip}
@@ -196,35 +194,6 @@ local
       end
    end
 
-   /*
-   local
-      skip
-   in
-      proc {Dis C}
-         case {Width C}
-         of 0 then fail
-         [] 1 then {{{Guardify C.1}}}
-         [] 2 then
-            dis B in B={{Guardify C.1}} then {B}
-            []  B in B={{Guardify C.2}} then {B}
-            end
-         [] 3 then
-            dis B in B={{Guardify C.1}} then {B}
-            []  B in B={{Guardify C.2}} then {B}
-            []  B in B={{Guardify C.3}} then {B}
-            end
-         [] 4 then
-            dis B in B={{Guardify C.1}} then {B}
-            []  B in B={{Guardify C.2}} then {B}
-            []  B in B={{Guardify C.3}} then {B}
-            []  B in B={{Guardify C.4}} then {B}
-            end
-         end
-      end
-   end
-
-   */
-
    local
       proc {CommitOrDiscard G J I}
          if I==J then {CommitGuard G} else {Space.discard G} end
@@ -273,14 +242,14 @@ local
                        end}
             {Space.waitStable}
             if {IsDet I} then skip else
-               I={Space.register {List.toTuple '#' {Expand {Reflect I}}}}
+               I={Space.choose {List.toTuple '#' {Expand {Reflect I}}}}
             end
          end
       end
    end
 
    proc {Choice C}
-      {{Space.register C}}
+      {{Space.choose C}}
    end
 
 in
@@ -291,30 +260,3 @@ in
                              'cond':   Cond)
 
 end
-
-
-
-/*
-
-declare A={MakeTuple '#' 4}
-
-declare
-fun {Guard A I}
-   fun {$}
-      {For 1 {Width A}-1 1 proc {$ I} A.I=1 end}
-      A.{Width A}=I
-      proc {$} {Show clause(I)} end
-   end
-end
-
-{CombCond
- '#'({Guard A 1}
-     {Guard A 2}
-     {Guard A 3}
-     {Guard A 4}
-     {Guard A 5}) proc {$} {Show no} end}
-
-A.4=1
-A.1=2
-A.4=1
-*/

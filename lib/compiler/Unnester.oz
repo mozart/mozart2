@@ -50,6 +50,37 @@ local
       end
    end
 
+   fun {IsDirective Query}
+      case Query of dirHalt then true
+      [] dirHelp then true
+      [] dirSwitch(_) then true
+      [] dirShowSwitches then true
+      [] dirFeed(_) then true
+      [] dirThreadedFeed(_) then true
+      [] dirCore(_) then true
+      [] dirMachine(_) then true
+      else false
+      end
+   end
+
+   local
+      fun {VariableMember PrintName Vs}
+         case Vs of fVar(PrintName0 _)|Vr then
+            PrintName == PrintName0 orelse {VariableMember PrintName Vr}
+         [] nil then false
+         end
+      end
+   in
+      fun {AreDisjointVariableLists Vs1 Vs2}
+         case Vs1 of fVar(PrintName _)|Vr then
+            case {VariableMember PrintName Vs2} then false
+            else {AreDisjointVariableLists Vr Vs2}
+            end
+         [] nil then true
+         end
+      end
+   end
+
    %% The following three functions (DollarsInScope, DollarCoord and
    %% ReplaceDollar) operate on the dollars in pattern position,
    %% corresponding to the definition of GetPatternVariablesExpression.
@@ -339,6 +370,33 @@ in
          BA <- {New BindingAnalysis init(TopLevel @reporter)}
       end
 
+      meth joinQueries(Queries $)
+         case Queries of Q1|(Qr=Q2|Qrr) then
+            case {IsDirective Q1} then
+               Q1|Unnester, joinQueries(Qr $)
+            elsecase Q1 of fDeclare(P11 P12 C1) then
+               case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
+                  NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
+                  NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
+                  case {AreDisjointVariableLists Vs1 Vs2} then NewQ in
+                     NewQ = fDeclare({FoldR {Append Vs1 Vs2}
+                                      fun {$ V Rest} fAnd(V Rest) end
+                                      fSkip(C1)}
+                                     fAnd(NewP1 fAnd(P12 fAnd(NewP2 P22))) C1)
+                     Unnester, joinQueries(NewQ|Qrr $)
+                  else
+                     Q1|Unnester, joinQueries(Qr $)
+                  end
+               else
+                  Unnester, joinQueries(fDeclare(P11 fAnd(P12 Q2) C1)|Qrr $)
+               end
+            else
+               Q1|Unnester, joinQueries(Qr $)
+            end
+         else
+            Queries
+         end
+      end
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
          Stateful <- {@switches get(selfallowedanywhere $)}
          case Query of fDeclare(FS1 FS2 C) then NewFS1 FVs GS0 GVs0 in

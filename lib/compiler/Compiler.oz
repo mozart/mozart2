@@ -29,6 +29,7 @@ local
                         system: true
                         catchall: false
                         selfallowedanywhere: false
+                        joinqueries: false
 
                         %% static analysis:
                         %%
@@ -263,14 +264,19 @@ in
       meth Feed(ParseOz Data ?RequiredInterfaces)
          {@reporter clearErrors()}
          ExecutingThread <- {Thread.this}
-         try Queries T in
+         try Queries0 Queries T in
             {@reporter logPhase('parsing ...')}
-            Queries = {ParseOz Data @reporter
-                       {@switches get(showinsert $)}
-                       {@switches get(system $)}}
+            Queries0 = {ParseOz Data @reporter
+                        {@switches get(showinsert $)}
+                        {@switches get(system $)}}
             case {@reporter hasSeenError($)} then
                raise rejected end
             else skip
+            end
+            case {@switches get(joinqueries $)} then
+               Unnester, joinQueries(Queries0 ?Queries)
+            else
+               Queries = Queries0
             end
             T = {Thread.this}
             CompilerClass,

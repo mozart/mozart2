@@ -435,41 +435,29 @@ local
    end
 
    local
-      fun {MakeAttrFeatSub Xs OOFreeFlag CS VHd VTl}
+      fun {MakeAttrFeatSub Xs OOFreeFlag}
          case Xs of X|Xr then
-            ArgIn VInter1 AttrFeat InitVO PairReg ConsReg VInter2 V = unit
-         in
-            ArgIn = {MakeAttrFeatSub Xr OOFreeFlag CS VHd VInter1}
-            case X of F#VO then
-               AttrFeat = F
-               InitVO = VO
-            else
-               AttrFeat = X
-               InitVO = OOFreeFlag
-            end
-            {CS newReg(?PairReg)}
-            {CS newReg(?ConsReg)}
-            VInter1 = vEquateRecord(_ '#' 2 PairReg
-                                    [{AttrFeat makeRecordArgument(CS V V $)}
-                                     {InitVO makeRecordArgument(CS V V $)}]
-                                    VInter2)
-            VInter2 = vEquateRecord(_ '|' 2 ConsReg
-                                    [value(PairReg) ArgIn] VTl)
-            value(ConsReg)
+            case X of F#VO then X else X#OOFreeFlag end|
+            {MakeAttrFeatSub Xr OOFreeFlag}
          [] nil then
-            VHd = VTl
-            literal(nil)
+            nil
          end
       end
    in
-      proc {MakeAttrFeat AttrFeat OOFreeFlag CS VHd VTl ?VO} Reg in
-         case AttrFeat of _|_ then
-            {MakeAttrFeatSub AttrFeat OOFreeFlag CS VHd VTl ?value(Reg)}
-         [] nil then
-            {CS newReg(?Reg)}
-            VHd = vEquateLiteral(_ nil Reg VTl)
-         end
-         VO = {New PseudoVariableOccurrence init(Reg)}
+      proc {MakeAttrFeat Kind AttrFeat ClassObject C CS VHd VTl ?VO}
+         OOFreeFlag = {GetExpansionOcc '`ooFreeFlag`' ClassObject C CS}
+         Label = {New Core.atomNode init(Kind unit)}
+         Args = {MakeAttrFeatSub AttrFeat OOFreeFlag}
+         Constr = {New Core.construction init(Label Args false)}
+         E1 = Constr.expansionOccs
+         E2 = ClassObject.expansionOccs
+      in
+         E1.'`tuple`' = E2.'`tuple`'
+         E1.'`record`' = E2.'`record`'
+         E1.'`tellRecordSize`' = E2.'`tellRecordSize`'
+         E1.'`^`' = E2.'`^`'
+         VO = {NewPseudoVariableOccurrence CS}
+         {Constr makeEquation(CS VO VHd VTl)}
       end
    end
 
@@ -1426,50 +1414,43 @@ local
 
    class CodeGenClassNode
       meth codeGen(CS VHd VTl)
-         Class From Attr Feat Prop PN Meth PrintName Send
+         Class From Attr Feat Prop PN Meth PrintName
          VInter1 VInter2 VInter3
       in
          Class = {GetExpansionOcc '`class`' self @coord CS}
-         local OOFreeFlag Cont1 Cont2 Cont3 in
-            OOFreeFlag = {GetExpansionOcc '`ooFreeFlag`' self @coord CS}
+         local Cont1 Cont2 Cont3 in
             {MakeFromProp @parents CS VHd Cont1 ?From}
             {MakeFromProp @properties CS Cont1 Cont2 ?Prop}
-            {MakeAttrFeat @attributes OOFreeFlag CS Cont2 Cont3 ?Attr}
-            {MakeAttrFeat @features OOFreeFlag CS Cont3 VInter1 ?Feat}
+            {MakeAttrFeat 'attr' @attributes self @coord CS Cont2 Cont3 ?Attr}
+            {MakeAttrFeat 'feat' @features self @coord CS Cont3 VInter1 ?Feat}
          end
          case @printName == '' then
             {{@designator getVariable($)} getPrintName(?PN)}
          else
             PN = @printName
          end
+         Meth = {NewPseudoVariableOccurrence CS}
          case @methods of _|_ then
-            fun {MakeMethods Methods V1Hd V1Tl V2Hd V2Tl}
-               case Methods of M|Mr then
-                  ArgIn V1Inter V2Inter MethReg ConsReg in
-                  ArgIn = {MakeMethods Mr V1Hd V1Inter V2Hd V2Inter}
+            fun {MakeMethods Methods VHd VTl}
+               case Methods of M|Mr then MethReg VInter in
                   {CS newReg(?MethReg)}
                   {M makeQuadruple(PN CS MethReg
                                    {{@designator getVariable($)} isToplevel($)}
                                    @isVirtualToplevel
-                                   V1Inter V1Tl)}
-                  {CS newReg(?ConsReg)}
-                  V2Inter = vEquateRecord(_ '|' 2 ConsReg
-                                          [value(MethReg) ArgIn] V2Tl)
-                  value(ConsReg)
+                                   VHd VInter)}
+                  value(MethReg)|{MakeMethods Mr VInter VTl}
                [] nil then
-                  V1Hd = V1Tl
-                  V2Hd = V2Tl
-                  literal(nil)
+                  VHd = VTl
+                  nil
                end
             end
-            Reg Cont1
+            Cont Args
          in
-            value(Reg) = {MakeMethods @methods VInter1 Cont1 Cont1 VInter2}
-            Meth = {New PseudoVariableOccurrence init(Reg)}
-         [] nil then Reg in
-            {CS newReg(?Reg)}
-            VInter1 = vEquateLiteral(_ nil Reg VInter2)
-            Meth = {New PseudoVariableOccurrence init(Reg)}
+            Args = {MakeMethods @methods VInter1 Cont}
+            Cont = vEquateRecord(_ '#' {Length @methods} {Meth reg($)}
+                                 Args VInter2)
+         [] nil then
+            VInter1 = vEquateLiteral(_ '#' {Meth reg($)} VInter2)
          end
          methods <- unit   % hand them to the garbage collector
          local Reg in
@@ -1477,16 +1458,15 @@ local
             VInter2 = vEquateLiteral(_ PN Reg VInter3)
             PrintName = {New PseudoVariableOccurrence init(Reg)}
          end
-         Send = {GetExpansionOcc '`send`' self @coord CS}
          {MakeApplication Class
-          [From Attr Feat Prop Meth PrintName Send @designator] CS VInter3 VTl}
+          [From Meth Attr Feat Prop PrintName @designator] CS VInter3 VTl}
       end
    end
 
    class CodeGenMethod
       feat hasDefaults MessagePatternVO
       meth makeQuadruple(PrintName CS Reg IsToplevel IsVirtualToplevel VHd VTl)
-         FileName Line SlowMeth FastMeth DefaultsArg VInter1 VInter2 VInter3
+         FileName Line SlowMeth FastMeth VInter1 VInter2
          X = unit
          AbstractionTableID = case IsToplevel then
                                  {GenerateAbstractionTableID IsVirtualToplevel}
@@ -1588,7 +1568,7 @@ local
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter2)
          end
-         case self.hasDefaults then Args Constr VO in
+         case self.hasDefaults then Args Constr VO VInter3 in
             Args = {Map @formalArgs
                     fun {$ Formal}
                        {Formal getFeature($)}#{Formal getDefault(CS self $)}
@@ -1597,18 +1577,16 @@ local
             Constr.expansionOccs.'`tuple`' = self.expansionOccs.'`tuple`'
             Constr.expansionOccs.'`record`' = self.expansionOccs.'`record`'
             VO = {NewPseudoVariableOccurrence CS}
-            DefaultsArg = value({VO reg($)})
             {Constr makeEquation(CS VO VInter2 VInter3)}
-         else C in
-            {@label getCoord(?C)}
-            {{GetExpansionOcc '`ooNoDefault`' self C CS}
-             makeRecordArgument(CS X X ?DefaultsArg)}
-            VInter2 = VInter3
+            VInter3 = vEquateRecord(_ '#' [1 2 default fast] Reg
+                                    [{@label makeRecordArgument(CS X X $)}
+                                     value(SlowMeth) value({VO reg($)})
+                                     value(FastMeth)] VTl)
+         else
+            VInter2 = vEquateRecord(_ '#' [1 2 fast] Reg
+                                    [{@label makeRecordArgument(CS X X $)}
+                                     value(SlowMeth) value(FastMeth)] VTl)
          end
-         VInter3 = vEquateRecord(_ '#' 4 Reg
-                                 [{@label makeRecordArgument(CS X X $)}
-                                  value(SlowMeth) value(FastMeth)
-                                  DefaultsArg] VTl)
       end
       meth makeArityCheck(MessageVO CS VHd VTl)
          case self.hasDefaults then AritySublist in
@@ -1654,7 +1632,7 @@ local
    end
    class CodeGenMethodWithDesignator
       meth makeQuadruple(PrintName CS Reg IsToplevel IsVirtualToplevel VHd VTl)
-         FileName Line X = unit SlowMeth FastMethArg DefaultsArg VInter1
+         FileName Line X = unit SlowMeth VInter1
       in
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
@@ -1663,10 +1641,6 @@ local
          [] pos(F L _ _ _ _) then FileName = F Line = L
          [] posNoDebug(F L _) then FileName = F Line = L
          end
-         {{GetExpansionOcc '`ooNoFastMethod`' self @coord CS}
-          makeRecordArgument(CS X X ?FastMethArg)}
-         {{GetExpansionOcc '`ooNoDefault`' self @coord CS}
-          makeRecordArgument(CS X X ?DefaultsArg)}
          local
             PredId MessageReg MessageVO BodyVInstr
             FormalRegs GRegs Code Cont1 Cont2 Cont3 Cont4 Cont5
@@ -1717,10 +1691,9 @@ local
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter1)
          end
-         VInter1 = vEquateRecord(_ '#' 4 Reg
+         VInter1 = vEquateRecord(_ '|' 2 Reg
                                  [{@label makeRecordArgument(CS X X $)}
-                                  value(SlowMeth) FastMethArg
-                                  DefaultsArg] VTl)
+                                  value(SlowMeth)] VTl)
       end
    end
 

@@ -630,8 +630,11 @@ in
          feat expansionOccs
          meth init(Designator Parents Props Attrs Feats Meths Coord)
             self.expansionOccs = expansionOccs('`class`': _
-                                               '`send`': _
-                                               '`ooFreeFlag`': _)
+                                               '`ooFreeFlag`': _
+                                               '`tuple`': _
+                                               '`record`': _
+                                               '`tellRecordSize`': _
+                                               '`^`': _)
             designator <- Designator
             parents <- Parents
             properties <- Props
@@ -645,13 +648,34 @@ in
                           {VirtualString.toString PrintName#'.'#FeatPrintName}}
          end
          meth output(R $) FS1 in
-            'class '#{@designator output2(R $ ?FS1)}#IN#FS1#NL#
+            'class '#{@designator output2(R $ ?FS1)}#IN#FS1#
+            case @parents \= nil
+               orelse @properties \= nil
+               orelse @attributes \= nil
+               orelse @features \= nil
+               orelse @methods \= nil
+            then NL
+            else ""
+            end#
             case @parents of _|_ then FS2 in
-               PU#'from'#GL#{LI2 @parents GL R ?FS2}#PO#FS2#NL
+               PU#'from'#GL#{LI2 @parents GL R ?FS2}#PO#FS2#
+               case @properties \= nil
+                  orelse @attributes \= nil
+                  orelse @features \= nil
+                  orelse @methods \= nil
+               then NL
+               else ""
+               end
             else ""
             end#
             case @properties of _|_ then FS3 in
-               PU#'prop'#GL#{LI2 @properties GL R ?FS3}#PO#FS3#NL
+               PU#'prop'#GL#{LI2 @properties GL R ?FS3}#PO#FS3#
+               case @attributes \= nil
+                  orelse @features \= nil
+                  orelse @methods \= nil
+               then NL
+               else ""
+               end
             else ""
             end#
             case @attributes of A1|Ar then FS0 FS1 FSs FS4 in
@@ -660,7 +684,8 @@ in
                           fun {$ FSs#FS I} FS0 in
                              ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                           end [FS1]#FS0}
-               PU#'attr'#GL#format(list({Reverse FSs} GL))#PO#FS4#NL
+               PU#'attr'#GL#format(list({Reverse FSs} GL))#PO#FS4#
+               case @features \= nil orelse @methods \= nil then NL else "" end
             else ""
             end#
             case @features of F1|Fr then FS0 FS1 FSs FS5 in
@@ -669,7 +694,8 @@ in
                           fun {$ FSs#FS I} FS0 in
                              ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                           end [FS1]#FS0}
-               PU#'feat'#GL#format(list({Reverse FSs} GL))#PO#FS5#NL
+               PU#'feat'#GL#format(list({Reverse FSs} GL))#PO#FS5#
+               case @methods \= nil then NL else "" end
             else ""
             end#{LI @methods NL R}#EX#NL#'end'
          end
@@ -680,9 +706,7 @@ in
          attr label: unit formalArgs: unit body: unit coord: unit
          feat expansionOccs
          meth init(Label FormalArgs Body Coord)
-            self.expansionOccs = expansionOccs('`ooNoFastMethod`': _
-                                               '`ooNoDefault`': _
-                                               '`ooRequiredArg`': _
+            self.expansionOccs = expansionOccs('`ooRequiredArg`': _
                                                '`ooDefaultVar`': _
                                                '`true`': _
                                                '`false`' : _

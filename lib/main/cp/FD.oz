@@ -377,9 +377,7 @@ in
          end
 
          proc {TupleDom N T Dom}
-            case N>0 then {FdPutList T.N Dom} {TupleDom N-1 T Dom}
-            else skip
-            end
+            if N>0 then {FdPutList T.N Dom} {TupleDom N-1 T Dom} end
          end
 
          proc {RecordDom As R Dom}

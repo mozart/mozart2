@@ -20,23 +20,28 @@
 %%% WARRANTIES.
 %%%
 
-functor
-define skip
-end
-
-/*
-
-
 
 local
 
    %%
-   %% Short cuts
+   %% Some closure avoidance accesses, to keep Denys happy
    %%
+   CharToLower   = Char.toLower
+   CharIsUpper   = Char.isUpper
+   CharIsLower   = Char.isLower
+
+   AtomToString  = Atom.toString
+
+   StringIsInt   = String.isInt
+   StringToAtom  = String.toAtom
+   StringToInt   = String.toInt
+   StringToFloat = String.toFloat
+   StringToken   = String.token
+   StringTokens  = String.tokens
 
 
    %%
-   %% Preprocessing of CGI arguments
+   %% Preprocessing of CGI or Applet arguments
    %%
    local
       fun {HexToInt D}
@@ -65,11 +70,11 @@ local
       end
 
    in
-      fun {WebPreProc SSs}
+      fun {WebPreProcess SSs}
          %% Takes a list of pairs of strings
          case SSs of nil then nil
          [] SS|SSr then S1#S2=SS in
-            ({StringToAtom {Unquote S1}}#{Unquote S2})|{WebPreProc SSr}
+            ({StringToAtom {Unquote S1}}#{Unquote S2})|{WebPreProcess SSr}
          end
       end
    end
@@ -95,14 +100,14 @@ local
          end
       end
    in
-      fun {CmdPreProc Ss ?RSs}
+      fun {CmdPreProcess Ss ?RSs}
          %% RSs is a list of string that are unprocessed
          case Ss of nil then
             RSs=nil nil
          [] S|Sr then SO in
             case {IsOption S ?SO} then S1 S2 in
                {StringToken SO &= S1 S2}
-               {StringToAtom S1}#S2|{CmdPreProc Sr RSs}
+               {StringToAtom S1}#S2|{CmdPreProcess Sr RSs}
             else
                RSs=Ss nil
             end
@@ -132,7 +137,8 @@ local
                                   [] atom   then ''
                                   [] bool   then false
                                   else
-                                     {`RaiseError` argParser(type(TA.type))} _
+                                     {Exception.raiseError
+                                      argParser(type(TA.type))} _
                                   end) TA}
              end
       in
@@ -149,12 +155,9 @@ local
          end
       end
    in
-      fun {NormArgSpec DefSpec ArgSpec}
+      fun {NormArgSpec ArgSpec}
          D={Dictionary.new}
       in
-         {Record.forAll DefSpec proc {$ AS}
-                                   {Normalize AS D}
-                                end}
          {Record.forAll ArgSpec proc {$ AS}
                                    {Normalize AS D}
                                 end}
@@ -183,7 +186,7 @@ local
             [] string then S
             end
          catch _ then
-            {`RaiseError` argParser(value(O.real S))} _
+            {Exception.raiseError argParser(value(O.real S))} _
          end
       end
 
@@ -213,168 +216,125 @@ local
                       end}
       end
    in
-      fun {GetPostProc DefSpec ArgSpec}
-         FAS  = {NormArgSpec DefSpec ArgSpec}
+      fun {PostProcess ArgSpec OVs Rs}
+         FAS  = {NormArgSpec ArgSpec}
          Args = {Record.foldL ArgSpec fun {$ As S}
                                          {LowerLabel S}|As
-                                      end
-                 {Record.foldL DefSpec fun {$ As S}
-                                          {Label S}|As
-                                       end nil}}
+                                      end nil}
       in
          case {Label ArgSpec}
          of list then
-            fun {$ OVs Rs}
-               args(OVs Rs)
-            end
+            args(OVs Rs)
          [] single then
-            fun {$ OVs Rs}
-               D    = {MakeDefaultDict Args FAS}
-               ROVs = {EnterValues OVs FAS D}
-            in
-               {ForAll {Dictionary.keys D}
-                proc {$ K}
-                   {Dictionary.put D K {Dictionary.get D K}.1}
-                end}
-               {Dictionary.put D 1 ROVs}
-               {Dictionary.put D 2 Rs}
-               {Dictionary.toRecord args D}
-            end
+            D    = {MakeDefaultDict Args FAS}
+            ROVs = {EnterValues OVs FAS D}
+         in
+            {ForAll {Dictionary.keys D}
+             proc {$ K}
+                {Dictionary.put D K {Dictionary.get D K}.1}
+             end}
+            {Dictionary.put D 1 ROVs}
+            {Dictionary.put D 2 Rs}
+            {Dictionary.toRecord args D}
          [] multiple then
-            fun {$ OVs Rs}
-               D    = {MakeDefaultDict Args FAS}
-               ROVs = {EnterValues OVs FAS D}
-            in
-               {Dictionary.put D 1 ROVs}
-               {Dictionary.put D 2 Rs}
-               {Dictionary.toRecord args D}
-            end
+            D    = {MakeDefaultDict Args FAS}
+            ROVs = {EnterValues OVs FAS D}
+         in
+            {Dictionary.put D 1 ROVs}
+            {Dictionary.put D 2 Rs}
+            {Dictionary.toRecord args D}
          end
       end
    end
-   skip
 
 in
 
    functor
 
    import
+      System(exit)
+      OS(getEnv)
+      Open(file)
+      Property(get)
 
    export
-      exit : Exit
+      Exit GetCgiArgs GetCmdArgs
 
    define
-
       Exit = System.exit
 
-define
-   skip
-end
+      %%
+      %% Access to Serlvet parameters following CGI spec
+      %%
+      local
+         local
+            GetEnv = OS.getEnv
 
-/*
+            class StdIn from Open.file
+               prop final
+               meth init
+                  StdIn,dOpen(0 1)
+               end
+               meth get(N ?Is)
+                  Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+               in
+                  Ir = case M<N then StdIn,get(N-M $) else nil end
+               end
+            end
 
-local
-
-
-   %%
-   %% Access to Serlvet parameters following CGI spec
-   %%
-   fun {MakeGetServletArgs Open OS}
-      GetEnv        = OS.getEnv
-
-      class StdIn from Open.file
-         prop final
-         meth init
-            StdIn,dOpen(0 1)
-         end
-         meth get(N ?Is)
-            Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+            fun {CgiRawGet}
+               case {StringToAtom {GetEnv 'REQUEST_METHOD'}}
+               of 'GET'  then {GetEnv 'QUERY_STRING'}
+               [] 'POST' then F in
+                  try
+                     F={New StdIn init}
+                     {F get({StringToInt {GetEnv 'CONTENT_LENGTH'}} $)}
+                  finally
+                     {F close}
+                  end
+               end
+            end
          in
-            Ir = case M<N then StdIn,get(N-M $) else nil end
+            fun {GetRawCgiArgs}
+               {Map {StringTokens {CgiRawGet} &&}
+                fun {$ S}
+                   S1 S2 in {StringToken S &= ?S1 ?S2} S1#S2
+                end}
+            end
          end
-      end
-
-      fun {CgiRawGet}
-         case {StringToAtom {GetEnv 'REQUEST_METHOD'}}
-         of 'GET'  then {GetEnv 'QUERY_STRING'}
-         [] 'POST' then F in
-            try
-               F={New StdIn init}
-               {F get({StringToInt {GetEnv 'CONTENT_LENGTH'}} $)}
-            finally
-               {F close}
+      in
+         fun {GetCgiArgs ArgSpec}
+            RawArgs = {GetRawCgiArgs}
+         in
+            if ArgSpec==plain then
+               RawArgs
+            else OVs in
+               {WebPreProcess RawArgs ?OVs}
+               {PostProcess ArgSpec OVs nil}
             end
          end
       end
-   in
-      fun {$}
-         {Map {StringTokens {CgiRawGet} &&}
-          fun {$ S}
-             S1 S2 in {StringToken S &= ?S1 ?S2} S1#S2
-          end}
+
+      %%
+      %% Access to commandline arguments
+      %%
+      local
+         fun {GetRawCmdArgs}
+            {Map {Property.get 'argv'} Atom.toString}
+         end
+      in
+         fun {GetCmdArgs ArgSpec}
+            RawArgs = {GetRawCmdArgs}
+         in
+            if ArgSpec==plain then
+               RawArgs
+            else Rs OVs in
+               {CmdPreProcess RawArgs ?Rs ?OVs}
+               {PostProcess ArgSpec OVs Rs}
+            end
+         end
       end
+
    end
-
-
-   %%
-   %% Access to commandline arguments
-   %%
-   fun {GetCmdArgs}
-      {Map XXXX AtomToString}
-   end
-
-
-
-in
-
-   Parser = parser(cmd:     fun {$ ArgSpec}
-                               case ArgSpec==plain then
-                                  GetCmdArgs
-                               else
-                                  PostProc = {GetPostProc plain ArgSpec}
-                               in
-                                  fun {$}
-                                     OVs Rs
-                                  in
-                                     {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
-                                     {PostProc OVs Rs}
-                                  end
-                               end
-                            end
-                   applet:  fun {$ ArgSpec}
-                               PostProc = {GetPostProc
-                                           plain(width(type:     int
-                                                       optional: false
-                                                       default:  ~1)
-                                                 height(type:     int
-                                                        optional: false
-                                                        default:  ~1)
-                                                 title(type:      string
-                                                       optional:  false
-                                                       default:   "Oz Applet"))
-                                           ArgSpec}
-                            in
-                               fun {$}
-                                  OVs Rs
-                               in
-                                  {CmdPreProc {GetCmdArgs} ?Rs ?OVs}
-                                  {PostProc OVs Rs}
-                               end
-                            end
-                   servlet: fun {$ ArgSpec}
-                               PostProc = {GetPostProc plain ArgSpec}
-                            in
-                               fun {$ Open OS}
-                                  GetArgs = {MakeGetServletArgs Open OS}
-                               in
-                                  {PostProc {WebPreProc {GetArgs}} nil}
-                               end
-                            end)
 
 end
-
-
-*/
-
-
-*/

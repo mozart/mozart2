@@ -41,7 +41,7 @@ in
    import
       Connection(take)
 
-      Syslet(exit spec args)
+      Application(exit getCmdArgs)
 
       Module(manager)
 
@@ -52,8 +52,7 @@ in
    define
 
       %% Get the arguments
-      Syslet.spec = ArgSpec
-      Args        = Syslet.args
+      Args = {Application.getCmdArgs ArgSpec}
 
       %% Module manager needed for
       ModMan = {New Module.manager init}
@@ -74,7 +73,7 @@ in
             {VirtualSite.initServer Args.shmkey}
          catch _ then
             {System.showError 'Virtual Site: failed to initialize'}
-            {Syslet.exit ExitErrorInit}
+            {Application.exit ExitErrorInit}
          end
 
       end
@@ -88,7 +87,7 @@ in
          {Port.send RunRet  {Port.new RunStr}}
          {Port.send CtrlRet {Port.new CtrlStr}}
       catch _ then
-         {Syslet.exit ExitErrorTicket}
+         {Application.exit ExitErrorTicket}
       end
 
       %% If we are detached, terminate when our client runs into trouble.
@@ -101,7 +100,7 @@ in
           watcher('cond':permHome once_only:yes variable:no)
           proc {$ E C}
              {System.showError 'RemoteServer: client crashed.'}
-             {Syslet.exit ExitErrorClient}
+             {Application.exit ExitErrorClient}
           end}
       end
 
@@ -130,7 +129,7 @@ in
           proc {$ C}
               case C
               of ping  then {Port.send CtrlRet okay}
-              [] close then {Syslet.exit ExitDone}
+              [] close then {Application.exit ExitDone}
               end
           end}
       end

@@ -29,9 +29,8 @@ import
    Open(file)
    Pickle(saveWithHeader)
    Compiler(engine quietInterface)
-   Syslet(spec args exit)
+   Application(getCmdArgs exit)
 define
-   Syslet.spec = plain
-   \insert BatchCompile
-   {Syslet.exit {BatchCompile Syslet.args}}
+   \insert 'Compile.oz'
+   {Application.exit {BatchCompile {Application.getCmdArgs plain}}}
 end

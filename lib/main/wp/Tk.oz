@@ -1143,14 +1143,12 @@ define
    end
 
 
-
-
-   class TkTagAndMark from ReturnClass
+   class TkTextMark from ReturnClass
       feat
          !TkWidget
          !TclSlaves
          !TclSlaveEntry
-         !TclName        % widget name
+         !TclName
 
       meth tkInit(parent:Parent)
          ThisTclName  = self.TclName
@@ -1168,12 +1166,6 @@ define
          ThisTclName        = {GenTagName}
       end
 
-   end
-
-
-   class TkTextMark
-      from TkTagAndMark
-
       meth tk(...) = M
          {TkSendTagTuple o(self.TkWidget mark) self M}
       end
@@ -1189,8 +1181,28 @@ define
    end
 
 
-   class TkCanvasTag
-      from TkTagAndMark
+   class TkCanvasTag from ReturnClass
+      feat
+         !TkWidget
+         !TclSlaves
+         !TclSlaveEntry
+         !TclName
+
+      meth tkInit(parent:Parent)
+         ThisTclName  = self.TclName
+         ParentSlaves = {CondSelect Parent TclSlaves unit}
+      in
+         if ParentSlaves==unit then
+            {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
+         end
+         if {IsDet ThisTclName} then
+            {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
+         end
+         self.TclSlaves     = [nil]
+         self.TclSlaveEntry = {AddSlave ParentSlaves self}
+         self.TkWidget      = Parent
+         ThisTclName        = {GenTagName}
+      end
 
       meth tkBind(event:  Event
                   action: Action  <= _
@@ -1223,8 +1235,33 @@ define
    end
 
 
-   class TkTextTag
-      from TkTagAndMark
+   class TkTextTag from ReturnClass
+      feat
+         !TkWidget
+         !TclSlaves
+         !TclSlaveEntry
+         !TclName
+
+      meth tkInit(parent:Parent ...) = M
+         ParentSlaves = {CondSelect Parent TclSlaves unit}
+         ThisTclName  = {GenTagName}
+      in
+         if ParentSlaves==unit then
+            {Exception.raiseError tk(wrongParent self M)}
+         end
+         if {IsDet self.TclName} then
+            {Exception.raiseError tk(alreadyInitialized self M)}
+         end
+         self.TclSlaves     = [nil]
+         self.TclSlaveEntry = {AddSlave ParentSlaves self}
+         self.TkWidget      = Parent
+         if {Width M}>1 then
+            {TkSendFilter
+             o(Parent tag configure) ThisTclName M [parent]
+             unit}
+         end
+         self.TclName       = ThisTclName
+      end
 
       meth tkBind(event:  Event
                   action: Action  <= _

@@ -11,10 +11,10 @@ dnl   $Date$ by $Author$
 dnl   $Revision$
 dnl
 dnl This file is part of Mozart, an implementation of Oz 3:
-dnl    $MOZARTURL$
+dnl    http://mozart.ps.uni-sb.de
 dnl
 dnl See the file "LICENSE" or
-dnl    $LICENSEURL$
+dnl    http://mozart.ps.uni-sb.de/LICENSE.html
 dnl for information on usage and redistribution
 dnl of this file, and for a DISCLAIMER OF ALL
 dnl WARRANTIES.

@@ -718,7 +718,7 @@ local
       'AP':             ['SP' 'OP']
       'CP':             ['SP']
       'WP':             ['SP' 'OP']
-      'DP':             ['OP' 'AP']
+      'DP':             ['OP']
       'Panel':          ['SP' 'OP' 'WP']
       'Browser':        ['SP' 'WP' 'CP']
       'Explorer':       ['SP' 'WP' 'Browser'#lazy]

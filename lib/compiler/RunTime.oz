@@ -129,7 +129,9 @@ prepare
       NONE={NewName}
       fun {MkOptimize} {NewCell NONE} end
       fun {MkCount} {NewCell 0} end
-      fun {MkList} L in {NewCell L|L} end
+      %% First cell contains the head of list, Second
+      %% cell contains current unbound var at tail of list.
+      fun {MkList} L in {NewCell L} | {NewCell L} end
       MkSum=MkCount
       fun {MkMultiply} {NewCell 1} end
       proc {Maximize C N} Old New in
@@ -154,14 +156,15 @@ prepare
          {Exchange C Old New}
          New=Old*N
       end
-      proc {Collect C X} Head Tail in
-         {Exchange C Head|(X|Tail) Head|Tail}
+      %% Bind element to tail, and create new unbound tail var
+      proc {Collect C X} Tail in
+         {Exchange C.2 X|Tail Tail}
       end
-      proc {Postpend C X} Head Tail in
-         {Exchange C Head|{Append X Tail} Head|Tail}
+      proc {Postpend C X} Tail in
+         {Exchange C.2 {Append X Tail} Tail}
       end
-      proc {Prepend C X} Head Tail in
-         {Exchange C Head|Tail {Append X Head}|Tail}
+      proc {Prepend C X} Head in
+         {Exchange C.1 Head {Append X Head}}
       end
       fun {RetIntDefault C D} V in
          {Exchange C V unit}
@@ -173,7 +176,10 @@ prepare
          then {RaiseError 'for'(noDefaultValue)} unit
          else V end
       end
-      fun {RetList C} {Exchange C $|nil unit} end
+      fun {RetList C}
+         {Exchange C.2 nil unit}
+         {Access C.1}
+      end
    in
       ProcValuesFor =
       env(

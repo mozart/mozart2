@@ -1250,6 +1250,12 @@ in
                end
             end
 
+            meth Unlink(Fs)
+               case Fs of nil then skip
+               [] F|Fr then {OS.unlink F} TkImage,Unlink(Fr)
+               end
+            end
+
             meth tkInit(type:Type ...) = Message
                ThisTclName = self.TclName
                case {IsDet ThisTclName} then
@@ -1270,6 +1276,9 @@ in
                {TkSendFilter Session v('image create '#Type) NewTkName
                 MessAll [maskurl type url] unit}
                ThisTclName = NewTkName
+               {Wait {Tk.return update(idletasks)}}
+               TkImage,Unlink(@ToUnlink)
+               ToUnlink <- nil
             end
             meth tk(...) = M
                {TkSendTuple Session self M}

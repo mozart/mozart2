@@ -55,16 +55,11 @@
 %%%             url(URL)
 %%%             value(FUN)
 %%%             path(PATH)
-%%%             system(BASENAME)
 %%%
 %%%   value(FUN) is for the case when the functor is not in a component
 %%%   but is given explicitly as a procedure value. path(PATH) is for
 %%%   the case that the module is to be looked up in an argument to the
 %%%   functor: this facilitates creating entries for submodules.
-%%%   system(BASENAME) is used for system components in Oz/lib; these
-%%%   are not registered as url so as to permit local testing of
-%%%   components via the environment variable OZCOMPONENTS.  The url
-%%%   is then computed dynamically.
 %%%
 %%% * ARGS is a record of FEATURE:MODULE_NAME mappings.  It describes
 %%%   the shape of the functor's IMPORT record and indicates which
@@ -83,21 +78,18 @@
 %%%   the module.  Only when one of these values is touched/requested
 %%%   is the module actually loaded, and, as a side-effect, all the
 %%%   lazy exports are then instantiated with their actual values.
-%%%   valid values are:
+%%%   Valid values are:
 %%%
 %%%             LABEL#ARITY
 %%%             file(FILE)
-%%%             load(URL)       system(NAME)
+%%%             load(URL)
 %%%             unit
 %%%
 %%%   LABEL#ARITY describes an export record.  file(FILE) indicates
 %%%   that FILE is a `*.env' kind of file from which LABEL#ARITY can
 %%%   be computed. unit indicates that no interface is available.
 %%%   load(URL) indicates that LABEL#ARITY can be obtained by loading
-%%%   the component available at URL.  system(NAME) is essentially
-%%%   equivalent to load(COMPS#NAME#'.tyc') where COMPS is either the
-%%%   value of environment variable OZCOMPONENTS or the default:
-%%%   'http://www.ps.uni-sb.de/ozhome/lib/'.
+%%%   the component available at URL.
 %%% ------------------------------------------------------------------
 %%% {Application.registry.plan R SPEC ?PLAN}
 %%%
@@ -382,14 +374,12 @@ local
       of    url(_) then skip
       []  value(_) then skip
       []   path(_) then skip
-      [] system(_) then skip
       else {BadRegistration NAME Desc src} end
       case TYPE
       of unit      then skip
       [] _#_       then skip
       [] file(_)   then skip
       [] load(_)   then skip
-      [] system(_) then skip
       else {BadRegistration NAME Desc type} end
       {Dictionary.put {RegistryGetMap R} NAME
        module(name:NAME src:SRC args:ARGS type:TYPE modes:MODES)}
@@ -402,22 +392,6 @@ local
    %% there are 3 versions that differ e.g. in when the functor is
    %% loaded from its url and when it is actually applied to its
    %% arguments.
-   %%
-   fun {ComputeSystemURL BASENAME}
-      {SystemURL}#BASENAME#'.ozc'
-   end
-
-   fun {SystemURL}
-      Getenv = {`Builtin` 'OS.getEnv' 2}
-   in
-      case {Getenv 'OZCOMPONENTS'} of false then
-         'http://www.ps.uni-sb.de/ozhome/lib/'
-      elseof URL then
-         case {List.last {VirtualString.toString URL}}==&/ then URL
-         else URL#'/'
-         end
-      end
-   end
    %%
    %% MakeEagerLoader creates a loader that, when applied, retrieves
    %% the functor and immediately applies it to its arguments.
@@ -433,12 +407,6 @@ local
       [] value(FUN) then FUN
       [] path(PATH) then
          fun {$ IMPORT} {LookupPath IMPORT PATH} end
-      [] system(BASENAME) then
-         fun {$ IMPORT}
-            Load = {`Builtin` load 2}
-         in
-            {{Load {ComputeSystemURL BASENAME}} IMPORT}
-         end
       end
    end
    %%
@@ -477,8 +445,6 @@ local
          SRC = Entry.src
          LABEL#ARITY = case TYPE of file(FILE) then {GetType FILE}
                        elseof       load(URL ) then {Load URL}
-                       elseof     system(NAME) then
-                          {Load {SystemURL}#NAME#'.tyc'}
                        else TYPE end
       in
          proc {$ IMPORT EXPORT}
@@ -500,8 +466,6 @@ local
                case SRC of url(URL) then {{Load URL} IMPORT}
                []        value(FUN) then {FUN IMPORT}
                []        path(PATH) then {LookupPath IMPORT PATH}
-               []  system(BASENAME) then {{Load {ComputeSystemURL BASENAME}}
-                                          IMPORT}
                end
             end
          end
@@ -529,12 +493,6 @@ local
          fun {$ IMPORT}
             {Lazy.new fun {$} {LookupPath IMPORT PATH} end}
          end
-      [] system(BASENAME) then
-         fun {$ IMPORT}
-            Load = {`Builtin` load 2}
-         in
-            {Lazy.new fun {$} {{Load {ComputeSystemURL BASENAME}} IMPORT} end}
-         end
       end
    end
    %%
@@ -549,7 +507,6 @@ local
       [] value(FUN) then FUN
       [] path(PATH) then
          fun {$ IMPORT} {LookupPath IMPORT PATH} end
-      [] system(BASENAME) then {Load {ComputeSystemURL BASENAME}}
       end
    end
    %%
@@ -756,22 +713,27 @@ local
    %%
    StandardSubModules = \insert 'StandardSubModules.oz'
    %%
+   %% The table of all Oz tools, similar to the StandardModules.
+   %%
+   Tools              = \insert 'Tools.oz'
+   %%
    %% Create a new registry and record in it all the standard modules
    %% and submodules
    %%
+   BaseURL = 'http://www.ps.uni-sb.de/ozhome/'
    proc {StandardRegistry Result} R in
       {NewEmptyRegistry R}
       {Record.forAllInd StandardModules
        proc {$ Name Args}
           {RegistryRegister R Name
-           module(src:system(Name)
+           module(src:url(BaseURL#'lib/'#Name#'.ozc')
                   args:{List.toRecord x
                         {Map Args
                          fun {$ Arg}
                             case Arg of A#M then A#(A#M)
                             else Arg#Arg end
                          end}}
-                  type:system(Name))}
+                  type:load(BaseURL#'lib/'#Name#'.tyc'))}
        end}
       {Record.forAllInd StandardSubModules
        proc {$ Mod SubMods}
@@ -780,6 +742,18 @@ local
               {RegistryRegister R SubMod
                submodule(src:path([1 SubMod]) args:x(Mod))}
            end}
+       end}
+      {Record.forAllInd Tools
+       proc {$ Name Args}
+          {RegistryRegister R Name
+           module(src:url(BaseURL#'tools/'#Name#'.ozc')
+                  args:{List.toRecord x
+                        {Map Args
+                         fun {$ Arg}
+                            case Arg of A#M then A#(A#M)
+                            else Arg#Arg end
+                         end}}
+                  type:load(BaseURL#'tools/'#Name#'.tyc'))}
        end}
       Result = R
    end

@@ -24,11 +24,15 @@
 %%% WARRANTIES.
 %%%
 
-oz('SP':             nil
-   'OP':             ['SP']
-   'AP':             ['SP' 'OP']
-   'CP':             ['SP']
-   'WP':             ['SP' 'OP']
-   'DP':             ['OP' 'SP' 'AP']
-   'Compiler':       ['SP' 'CP' 'Gump'#lazy]
-   'Misc':           nil)
+oz('Panel':          ['SP' 'OP' 'WP']
+   'Browser':        ['SP' 'WP' 'CP']
+   'Explorer':       ['SP' 'WP' 'Browser'#lazy]
+   'CompilerPanel':  ['SP' 'CP' 'OP' 'WP' 'Compiler'
+                      'Browser'#lazy 'Emacs'#lazy]
+   'Emacs':          ['OP' 'SP' 'Compiler']
+   'Ozcar':          ['SP' 'CP'#lazy 'WP'
+                      'Browser'#lazy 'Compiler'#lazy 'Emacs'#lazy]
+   'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Emacs'#lazy]
+   'Gump':           ['SP' 'OP']
+   'GumpScanner':    ['SP']
+   'GumpParser':     ['SP'])

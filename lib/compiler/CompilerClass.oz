@@ -111,7 +111,7 @@ local
    class CompilerStateClass
       prop final
       attr
-         defines: DefaultDefines
+         defines: unit
          switches: DefaultSwitches
          savedSwitches: nil
          localSwitches: unit
@@ -128,6 +128,9 @@ local
       feat variables values
 
       meth init(NarratorObject ReporterObject)
+         defines <- {NewDictionary}
+         {ForAll DefaultDefines
+          proc {$ D} {Dictionary.put @defines D true} end}
          InterruptLock <- {NewLock}
          narrator <- NarratorObject
          reporter <- ReporterObject
@@ -141,18 +144,14 @@ local
       %% Defines
       %%
 
-      meth macroDefine(X) A in
-         A = {String.toAtom {VirtualString.toString X}}
-         if {Member A @defines} then skip
-         else defines <- A|@defines
-         end
+      meth macroDefine(X)
+         {Dictionary.put @defines {VirtualString.toAtom X} true}
       end
-      meth macroUndef(X) A in
-         A = {String.toAtom {VirtualString.toString X}}
-         defines <- {Filter @defines fun {$ B} A \= B end}
+      meth macroUndef(X)
+         {Dictionary.remove @defines {VirtualString.toAtom X}}
       end
       meth getDefines($)
-         @defines
+         {Dictionary.keys @defines}
       end
 
       %%
@@ -408,7 +407,7 @@ local
             proc {DoParse}
                Queries0 = {ParseProc Data @reporter
                            fun {$ S} CompilerStateClass, getSwitch(S $) end
-                           CompilerStateClass, getDefines($)}
+                           @defines}
             end
             if ParseProc == ParseOzFile
                orelse ParseProc == ParseOzVirtualString

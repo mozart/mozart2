@@ -2797,6 +2797,12 @@ in
          type: T_Future
 
 
+      meth !GetWatchFun($)
+         fun {$ F}
+            thread {Value.waitQuiet F} unit end
+         end
+      end
+
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'FutureTermObject::makeTerm is applied' # self.term}

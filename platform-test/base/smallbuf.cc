@@ -6,7 +6,7 @@ OZ_BI_define(BI_smallbuf,2,0)
 {
   OZ_declareInt(0,fd);
   OZ_declareInt(1,size);
-  setsockopt(fd,SOL_SOCKET,SO_SNDBUF,&size,1);
+  setsockopt(fd,SOL_SOCKET,SO_SNDBUF,(char*)&size,1);
   return PROCEED;
 } OZ_BI_end
 

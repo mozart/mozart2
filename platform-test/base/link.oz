@@ -108,13 +108,12 @@ in
       Return=
 
       link(equal(local
-                    OSS#CPU = {Property.get platform}
                     L={Lock.new}
                  in
                     fun {$}
                        lock L then
                           File   = '/tmp/link_test_'#{OS.time}
-                          FileSO = File#'.so-'#OSS#'-'#CPU
+                          FileSO = File#'.so-'#{Property.get 'platform.name'}
                           Goodies
                           F={New Open.file init(name:File#'.c'
                                                 flags:['create' write])}
@@ -125,9 +124,6 @@ in
                           {F write(vs:Code)}
                           {F close}
                           0={OS.system (Oztool#' c++ '#Oztoolinc
-                                        %'gcc -Wno-conversion -c -I '
-                                        %#{Property.get 'oz.home'}
-                                        %#'/include '#
                                         #' -c '#File#'.c -o '#File#'.o'
                                         #' 2>/dev/null'
                                        )}

@@ -979,7 +979,13 @@ in
          %% followed by a unary vCall instruction with the same register as
          %% argument and this register is linear, we emit a sendMsg instruction
          %% for the sequence.
+         Arity = if {IsInt RecordArity} then RecordArity
+                 else {Length RecordArity}
+                 end
+      in
          if self.debugInfoControlSwitch then false
+         elseif Arity >= {Property.get 'limits.bytecode.xregisters'} then
+            false
          elseif Emitter, IsFirst(Reg $) then
             case Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
                if Emitter, DoesNotOccurIn(Reg Cont2 $) then
@@ -1376,7 +1382,9 @@ in
                   %% amount of moveMove peephole optimizations.
                   skip
                end
-            elseof I1|Ir then X = x(@LowestFreeX) In in
+            elseof I1|Ir then I X In in
+               Emitter, SpillTemporary(?I)
+               X = x(I)
                Emitter, Emit(move(x(I1) X))
                In = {FoldL Ir
                      fun {$ J I} Emitter, Emit(move(x(I) x(J))) I end I1}
@@ -1820,7 +1828,8 @@ in
       meth ReserveTemps(Index)
          %% All temporaries lower than Index are reserved; i.e., LowestFreeX
          %% and HighestEverX are set such that AllocateAnyTemp will not
-         %% choose any conflicting index.
+         %% choose any conflicting index.  This is invoked when preparing
+         %% calls.
          if @HighestEverX >= Index then
             if @LowestFreeX < Index then
                LowestFreeX <- {NextFreeIndex @UsedX Index}
@@ -1832,14 +1841,22 @@ in
       end
       meth AllocateAnyTemp(Reg ?X)
          case Emitter, GetTemp(Reg $) of none then I in
-            I = @LowestFreeX
+            Emitter, SpillTemporary(?I)
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-            if @HighestEverX >= I then skip
-            else HighestEverX <- I
+            if I > @HighestEverX then
+               HighestEverX <- I
             end
             {Dictionary.put @Temporaries Reg X=x(I)}
             {Dictionary.put @UsedX I 1}
          elseof X0 then X = X0
+         end
+      end
+      meth SpillTemporary($) I in
+         I = @LowestFreeX
+         if I >= {Property.get 'limits.bytecode.xregisters'} then
+            %--** which one should we take?
+            {Exception.raiseError compiler(internal spillTemporary)} unit
+         else I
          end
       end
       meth AllocateThisTemp(I Reg ?X)
@@ -1847,14 +1864,15 @@ in
          if @LowestFreeX == I then
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
          end
-         if @HighestEverX >= I then skip
-         else HighestEverX <- I
+         if I > @HighestEverX then
+            HighestEverX <- I
          end
          {Dictionary.put @Temporaries Reg X=x(I)}
          {Dictionary.put @UsedX I 1}
       end
-      meth AllocateShortLivedTemp(?X)
-         Emitter, AllocateThisShortLivedTemp(@LowestFreeX ?X)
+      meth AllocateShortLivedTemp(?X) I in
+         Emitter, SpillTemporary(?I)
+         Emitter, AllocateThisShortLivedTemp(I ?X)
       end
       meth AllocateThisShortLivedTemp(I ?X)
          %% Precondition: X register index I is free

@@ -2413,7 +2413,10 @@ define
                {Ctrl.rep
                 warn(coord: {@arbiter getCoord($)}
                      kind:  SAGenWarn
-                     msg:   'boolean guard ' # pn(PN) # ' is always true')}
+                     msg:   ('boolean guard' #
+                             case PN of unit then ""
+                             else ' ' # pn(PN)
+                             end # ' is always true'))}
 
                local T N in
                   {Ctrl getTopNeeded(T N)}
@@ -2428,7 +2431,10 @@ define
                {Ctrl.rep
                 warn(coord: {@arbiter getCoord($)}
                      kind:  SAGenWarn
-                     msg:   'boolean guard ' # pn(PN) # ' is always false')}
+                     msg:   ('boolean guard' #
+                             case PN of unit then ""
+                             else ' ' # pn(PN)
+                             end # ' is always false'))}
 
                local T N in
                   {Ctrl getTopNeeded(T N)}

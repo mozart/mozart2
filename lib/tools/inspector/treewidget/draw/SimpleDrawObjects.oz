@@ -55,7 +55,7 @@ local
          SimpleGrDrawObject, draw(X Y) (Y + 1)
       end
       meth getFirstItem($)
-         if {@entry hasRefs($)} then {@mode getFirstItem($)} else @ownTag end
+         if {@entry hasRefs($)} then {@mode getFirstItem($)} else @tag end
       end
       meth undraw
          if @dirty

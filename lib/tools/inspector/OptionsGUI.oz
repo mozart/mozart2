@@ -25,15 +25,15 @@ local
    FontMatch        = '-*-*-*-*-*-*'
    MediumFont       = MediumFontFamily # 120 # FontMatch
 
-   fun {SyncCall P}
+   fun {SyncCall CallPort P}
       proc {$}
-         {Port.send InspPort Call(P)}
+         {Port.send CallPort Call(P)}
       end
    end
 
-   fun {SyncOne P}
+   fun {SyncOne CallPort P}
       proc {$ V}
-         {Port.send InspPort CallOne(P V)}
+         {Port.send CallPort CallOne(P V)}
       end
    end
 
@@ -44,7 +44,8 @@ local
          popupValue
          popupMenu
          popupHandler
-      meth create(Parent Width Sel ActiveCheck Handler Ls)
+         inspPort
+      meth create(Parent Width Sel ActiveCheck Handler Ls InspPort)
          Tk.frame, tkInit(parent:             Parent
                           borderwidth:        1
                           relief:             raised
@@ -65,15 +66,18 @@ local
                                highlightthickness: 0)}
             Toplevel
          in
+            @inspPort = InspPort
             PopupSelector, makeMenu(Toplevel _ Ls) %% _ equals Menu
             @popupToplevel = Toplevel
             @popupValue    = Sel
             @popupLabel    = MyLabel
             @popupHandler  = Handler
             {MyCanvas tkBind(event:  '<1>'
-                             action: {SyncCall proc {$}
-                                                  if {ActiveCheck} then {self popup} end
-                                               end})}
+                             action:
+                                {SyncCall InspPort proc {$}
+                                             if {ActiveCheck}
+                                             then {self popup} end
+                                          end})}
             {MyCanvas tk(cre line 11 1 1 1 5 11)}
             {MyCanvas tk(cre line 10 0 5 10)}
             {Tk.batch [grid(row: 0 column: 0 MyLabel sticky: nw)
@@ -100,7 +104,8 @@ local
                  tkInit(parent: Menu
                         label:  Entry
                         font:   MediumFont
-                        action: {SyncCall proc {$} {self handle(Entry)} end})}
+                        action: {SyncCall @inspPort
+                                 proc {$} {self handle(Entry)} end})}
             PopupSelector, createEntries(Menu Er)
          else popupMenu <- Menu
          end
@@ -246,6 +251,7 @@ local
                                borderwidth:        0
                                highlightthickness: 0)}
             OpDict   = @opDict
+            InspPort = @inspPort
          in
             {MyCanvas tk(cre window 0 0 anchor: nw window: MyFrame)}
             {MyBook add(MyNote)}
@@ -324,7 +330,7 @@ local
                                {MyVar tkReturnAtom($)} == 'false'
                             end
                RelPopup   = {New PopupSelector
-                             create(RepInner 20 StartSel RelActive RelHandler RelList)}
+                             create(RepInner 20 StartSel RelActive RelHandler RelList InspPort)}
                FillCanvas = {New Tk.canvas
                              tkInit(parent:             RepInner
                                     width:              0
@@ -381,7 +387,7 @@ local
                                 Value.'<'}
                MappingType   = TypPrList.1
                TypeSelector  = {New PopupSelector
-                                create(TypeFrame 20 MappingType TypeActive TypeHandler TypPrList)}
+                                create(TypeFrame 20 MappingType TypeActive TypeHandler TypPrList InspPort)}
                MappingFrame  = {New TkTools.textframe
                                 tkInit(parent: NewMyFrame
                                        text:  'Type Defaults')}
@@ -419,7 +425,7 @@ local
                                else AutoFilter end
                ApplySelector = {New PopupSelector
                                 create(MappingInner 20 ShowSel ApplyActive
-                                       ApplyHandler FilterList)}
+                                       ApplyHandler FilterList InspPort)}
                FillCanvas    = {New Tk.canvas
                                 tkInit(parent:             MappingInner
                                        width:              215%240
@@ -625,6 +631,7 @@ local
                                borderwidth:        0
                                highlightthickness: 0)}
             OpDict   = @opDict
+            InspPort = @inspPort
          in
             {MyCanvas tk(cre window 0 0 anchor: nw window: MyFrame)}
             {MyBook add(MyNote)}
@@ -674,7 +681,7 @@ local
                                Value.'<'}
                SelColor     = ColPrList.1
                TypeSelector = {New PopupSelector
-                               create(TypeFrame 20 SelColor TAct THandler ColPrList)}
+                               create(TypeFrame 20 SelColor TAct THandler ColPrList InspPort)}
                ColorCanvas  = {New Tk.canvas
                                tkInit(parent:             ColFrInner
                                       width:              260
@@ -704,7 +711,7 @@ local
                InitFont     = {Dictionary.get OpDict widgetTreeFont}
                InitFSize    = InitFont.size
                SizeSelector = {New PopupSelector
-                               create(FontInner 3 InitFSize SizeActive SizeHandler FontSizes)}
+                               create(FontInner 3 InitFSize SizeActive SizeHandler FontSizes InspPort)}
                BoldVar      = {New Tk.variable
                                tkInit(InitFont.weight)}
                BoldButton   = {New Tk.checkbutton
@@ -807,7 +814,7 @@ local
             T        = {New Tk.toplevel
                         tkInit(title:    'Change Color'
                                withdraw: true
-                               delete:   {SyncCall proc {$} colPannerWin <- nil {T tkClose} end})}
+                               delete:   {SyncCall @inspPort proc {$} colPannerWin <- nil {T tkClose} end})}
             TopFrame = {New Tk.frame
                         tkInit(parent:             T
                                borderwidth:        1
@@ -827,30 +834,33 @@ local
                                height:             2#c
                                borderwidth:        0
                                highlightthickness: 0)}
-            OkButton = {New Tk.button
-                        tkInit(parent:      BtFrame
-                               text:        'Ok'
-                               borderwidth: 1
-                               width:       6
-                               action:      {SyncCall proc {$}
-                                                         Color = {VirtualString.toAtom
-                                                                  "#"#{IntToHex @visualRed}#
-                                                                  {IntToHex @visualGreen}#
-                                                                  {IntToHex @visualBlue}}
-                                                      in
-                                                         colPannerWin <- nil
-                                                         {T tkClose}
-                                                         {self handle(updateCol(I Color))}
-                                                      end})}
+            OkButton =
+            {New Tk.button
+             tkInit(parent:      BtFrame
+                    text:        'Ok'
+                    borderwidth: 1
+                    width:       6
+                    action:      {SyncCall @inspPort
+                                  proc {$}
+                                     Color = {VirtualString.toAtom
+                                              "#"#{IntToHex @visualRed}#
+                                              {IntToHex @visualGreen}#
+                                              {IntToHex @visualBlue}}
+                                  in
+                                     colPannerWin <- nil
+                                     {T tkClose}
+                                     {self handle(updateCol(I Color))}
+                                  end})}
             CcButton = {New Tk.button
                         tkInit(parent:      BtFrame
                                text:        'Cancel'
                                width:       6
                                borderwidth: 1
-                               action:      {SyncCall proc {$}
-                                                         colPannerWin <- nil
-                                                         {T tkClose}
-                                                      end})}
+                               action:      {SyncCall @inspPort
+                                             proc {$}
+                                                colPannerWin <- nil
+                                                {T tkClose}
+                                             end})}
             Ss
          in
             colPannerWin <- T
@@ -872,12 +882,14 @@ local
                                    variable: AttrVar
                                    args:     [int]
                                    orient:   horizontal
-                                   action:   {SyncOne proc {$ V}
-                                                          Attr <- V
-                                                          {ColFrame tk(conf bg: c(@visualRed
-                                                                                  @visualGreen
-                                                                                  @visualBlue))}
-                                                       end})}
+                                   action:
+                                      {SyncOne @inspPort
+                                       proc {$ V}
+                                          Attr <- V
+                                          {ColFrame tk(conf bg: c(@visualRed
+                                                                  @visualGreen
+                                                                  @visualBlue))}
+                                       end})}
                         end
                      end}
             end
@@ -930,9 +942,9 @@ local
             {@visualCanvas tk(cre rectangle NX NY (NX + 36) (NY + 16)
                               fill:Color outline: FrameColor width: 2 tags: Tag)}
             {Tag tkBind(event: '<1>'
-                        action: {SyncCall proc {$} {self handle(selCol(I))} end})}
+                        action: {SyncCall @inspPort proc {$} {self handle(selCol(I))} end})}
             {Tag tkBind(event: '<3>'
-                        action: {SyncCall proc {$} {self handle(changeCol(I))} end})}
+                        action: {SyncCall @inspPort proc {$} {self handle(changeCol(I))} end})}
          end
          meth collect
             OpDict = @opDict
@@ -954,14 +966,16 @@ in
          cloneOpDict %% Clone-Dict (used for apply)
          printDict   %% Readable Names Dictionary (N->P)
          namesDict   %% Option Names Dictionary (P->N)
+         inspPort    %% Inspector Port
          colPannerWin : nil
       prop
          final
-      meth create(WinEntry Options)
+      meth create(WinEntry Options InspPort)
          MyBook = @book
       in
+         @inspPort = InspPort
          Tk.toplevel, tkInit(title:    'Inspector Settings'
-                             delete:   {SyncCall proc {$} {self handle(cancel)} end}
+                             delete:   {SyncCall @inspPort proc {$} {self handle(cancel)} end}
                              withdraw: true)
          @winEntry    = WinEntry
          @opDict      = Options
@@ -989,19 +1003,19 @@ in
                                  text:        'Ok'
                                  width:       6
                                  borderwidth: 1
-                                 action:      {SyncCall proc {$} {self handle(ok)} end})}
+                                 action:      {SyncCall @inspPort proc {$} {self handle(ok)} end})}
             AppButton  = {New Tk.button
                           tkInit(parent:      BtFrame
                                  text:        'Apply'
                                  width:       6
                                  borderwidth: 1
-                                 action:      {SyncCall proc {$} {self handle(apply)} end})}
+                                 action:      {SyncCall @inspPort proc {$} {self handle(apply)} end})}
             ClButton   = {New Tk.button
                           tkInit(parent:      BtFrame
                                  text:        'Cancel'
                                  width:       6
                                  borderwidth: 1
-                                 action:      {SyncCall proc {$} {self handle(cancel)} end})}
+                                 action:      {SyncCall @inspPort proc {$} {self handle(cancel)} end})}
             FillCanvas = {New Tk.canvas
                           tkInit(parent:             DnFrame
                                  width:              180 %% former 200
@@ -1041,6 +1055,8 @@ in
          skip %% This is to satisfy the OO System
       end
       meth handle(Mode)
+         InspPort = @inspPort
+      in
          case Mode
          of ok        then
             GlobalNote, collect

@@ -36,7 +36,8 @@ in
             !Height     %% Current Height
             !Frame      %% Widget Container
          meth create(Parent FWidth FHeight $)
-            MyFrame = @Frame
+            InspPort = @inspPort
+            MyFrame  = @Frame
          in
             MyFrame = {New Tk.frame
                        tkInit(parent:             Parent
@@ -146,21 +147,26 @@ in
                FrameManager, MoveY((I + 1) DeltaY)
             end
          end
+         meth getInspPort($)
+            @inspPort
+         end
       end
    end
 
    local
       class FrameNode
          attr
-            parent %% Window Object
-            index  %% Parent Index
-            y      %% Y Position
-            xDim   %% X Dimension
-            yDim   %% Y Dimension
+            parent   %% Window Object
+            index    %% Parent Index
+            y        %% Y Position
+            xDim     %% X Dimension
+            yDim     %% Y Dimension
+            inspPort %% Inspector Port
          meth create(Parent XDim YDim)
-            @parent = Parent
-            @xDim   = XDim
-            @yDim   = YDim
+            @inspPort = {Parent getInspPort($)}
+            @parent   = Parent
+            @xDim     = XDim
+            @yDim     = YDim
          end
          meth setIndex(Index)
             index <- Index
@@ -179,6 +185,9 @@ in
          end
          meth getYDim($)
             @yDim
+         end
+         meth getInspPort($)
+            {@parent getInspPort($)}
          end
          meth tellNewXY(DeltaX DeltaY $)
             XDim = (@xDim + DeltaX)
@@ -221,6 +230,7 @@ in
             ScrollY   = @scrollY
             Canvas    = @widObj
             WidPort   = @widPort
+            InspPort  = {Parent getInspPort($)}
          in
             FrameNode, create(Parent XDim YDim)
             {Parent NotifyWidgets(1)}
@@ -372,9 +382,10 @@ in
          prop
             final
          meth create(Parent XDim YDim)
-            Frame = {Parent getFrame($)}
-            DXDim = (XDim - 2)
-            Grip  = @grip
+            Frame    = {Parent getFrame($)}
+            DXDim    = (XDim - 2)
+            Grip     = @grip
+            InspPort = {Parent getInspPort($)}
          in
             FrameNode, create(Parent DXDim 10)
             @sash = {New Tk.frame

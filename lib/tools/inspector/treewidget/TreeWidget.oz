@@ -23,7 +23,6 @@ functor $
 import
    FS(value)
    System(eq show)
-   Tk(return)
    Property(get)
    HelperComponent('nodes' : Helper) at 'Helper.ozf'
    TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
@@ -89,13 +88,13 @@ define
          relManDict    %% Relation Manager Dictionary
          curRelMan     %% Current Relation Manager
          curDefRel     %% Current Default Relation
-         stopPVar      %% Private Stop Variable (shields stop reactions from beeing broken.)
+         stopPVar      %% Priv Stop Var (shields stop reactions)
          stopOVar      %% Open Stop Variable
          opDict        %% Option Dictionary
          colDict       %% Color Dictionary
          mapDict       %% Automap Function Dictionary
          lines         %% Separator Dictionary
-         treeNodes     %% TreeWidget Node Container (used to fill (norm|rel)NodesDict)
+         treeNodes     %% TreeWidget Node Container (fill (norm|rel)NodesDict)
          normNodesDict %% Normal Mode Nodes
          relNodesDict  %% Relation Mode Nodes
          relGlobal     %% Global Relation Mode
@@ -282,15 +281,6 @@ define
       meth graphMode($)
          @dMode
       end
-%       meth display(Value)
-%        A B
-%       in
-%        A = {Property.get time}.total
-%        TreeWidget, doDisplay(Value)
-%        {Wait {Tk.return update(idletasks)}}
-%        B = {Property.get time}.total
-%        {System.show 'display time: '#(B - A)}
-%       end
       meth display(Value)
          MaxPtr = (@maxPtr + 1)
          Nodes  = @nodes
@@ -581,10 +571,7 @@ define
             NewY = (Y + YDim)
             NewX = {Max MaxX XDim}
          in
-%           if true
-%           then
             GraphicSupport, moveLine({Dictionary.get @lines I} NewY)
-%           end
             if I < @maxPtr
             then TreeWidget, performUpdate((I + 1) X NewY NewX)
             else
@@ -592,7 +579,6 @@ define
                curY <- NewY
                GraphicSupport, adjustSelection
                GraphicSupport, adjustCanvasView
-%              {Wait {Tk.return update(idletasks)}}
             end
          end
       end
@@ -600,7 +586,8 @@ define
          @stopPVar
       end
       meth stopUpdate
-         @stopOVar = unit %% Stops only open Var; yields stop if OSV and PSV are equal
+         %% Stops only open Var; yields stop if OSV and PSV are equal
+         @stopOVar = unit
       end
       meth freeze(FreezeVar)
          {Wait FreezeVar}

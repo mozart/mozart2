@@ -428,6 +428,7 @@ define
                curCX <- W
                curCY <- H
                offY  <- ({Max (@maxPtr - 1) 0} * 3)
+               GraphicSupport, adjustLines(1 0)
                GraphicSupport, adjustCanvasView
             end
          end
@@ -592,6 +593,20 @@ define
          end
          meth adjustCanvasView
             {Tk.send v(@canvasACV#(@maxX * @fontX)#' '#((@curY * @fontY) + @offY#';F0'))}
+         end
+         meth adjustLines(I OldY)
+            if I =< @maxPtr
+            then
+               NewY
+            in
+               case {{Dictionary.get @nodes I} getXYDim($)}
+               of _|YDim then
+                  NewY = (OldY + YDim)
+                  offY <- ((I - 1) * 3)
+                  GraphicSupport, moveLine({Dictionary.get @lines I} NewY)
+               end
+               GraphicSupport, adjustLines((I + 1) NewY)
+            end
          end
          meth enableStop
             {Tk.send v('O0')}

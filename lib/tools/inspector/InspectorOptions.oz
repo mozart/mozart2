@@ -290,40 +290,64 @@ define
             end
             local
                fun {IsString V W}
-                  if W > 0
+                  if {IsDet V} andthen W > 0
                   then
                      case V
-                     of C|Vr then {Char.is C} andthen {IsString Vr (W - 1)}
+                     of C|Vr then ({IsDet C} andthen {Char.is C}) andthen {IsString Vr (W - 1)}
                      [] nil  then true
+                     else false
                      end
                   else false
                   end
                end
-               fun {InsertNew I Ls V}
-                  case Ls
-                  of L|Lr then V.I = L {InsertNew (I + 1) Lr V}
-                  [] nil  then V
+               local
+                  LimitInd = {NewName}
+                  D        = {Dictionary.new}
+               in
+                  {Dictionary.put D 1 LimitInd}
+                  proc {InsertVals I M T}
+                     if I =< M then T.I = {Dictionary.get D I} {InsertVals (I + 1) M T} end
                   end
-               end
-               fun {Convert NIs Ls V I TW W F}
-                  if I =< TW
-                  then
-                     Val = V.I
-                  in
-                     if I =< W andthen
-                        ({IsAtom Val} orelse {IsInt Val} orelse {IsFloat Val}
-                         orelse {IsString Val W})
-                     then {Convert NIs {Append Ls {VirtualString.toString Val}} V (I + 1) TW W true}
-                     elsecase Ls
-                     of nil then {Convert V|NIs nil V (I + 1) TW W F}
-                     [] Ls  then {Convert V|Ls|NIs nil V (I + 1) TW W F}
-                     end
-                  else
-                     NewNIs = case Ls of nil then NIs [] Ls then Ls|NIs end
-                  in
-                     if F
-                     then {InsertNew 1 {Reverse NewNIs} {MakeTuple '#' {Length NewNIs}}}
-                     else V
+                  fun {IsCollectable V W}
+                     {IsDet V} andthen
+                     ({IsAtom V} orelse {IsInt V} orelse {IsFloat V} orelse {IsString V W})
+                  end
+                  fun {Convert DI V I TW W F}
+                     if I =< TW
+                     then
+                        Val = V.I
+                     in
+                        if I =< W andthen {IsCollectable Val W}
+                        then
+                           CurVal  = {Dictionary.get D DI}
+                           RealVal = if {System.eq CurVal LimitInd} then nil else CurVal end
+                        in
+                           {Dictionary.put D DI
+                            {Append RealVal {VirtualString.toString Val}}}
+                           {Convert DI V (I + 1) TW W true}
+                        else
+                           ValDI NewDI
+                        in
+                           if {System.eq {Dictionary.get D DI} LimitInd}
+                           then ValDI = DI       NewDI = (DI + 1)
+                           else ValDI = (DI + 1) NewDI = (DI + 2)
+                           end
+                           {Dictionary.put D ValDI Val} {Dictionary.put D NewDI LimitInd}
+                           {Convert NewDI V (I + 1) TW W F}
+                        end
+                     else
+                        RetVal
+                     in
+                        if F
+                        then
+                           RealDI = if {System.eq {Dictionary.get D DI} LimitInd}
+                                    then (DI - 1) else DI end
+                        in
+                           RetVal = {MakeTuple '#' RealDI} {InsertVals 1 RealDI RetVal}
+                        else RetVal = V
+                        end
+                        {Dictionary.removeAll D} {Dictionary.put D 1 LimitInd}
+                        RetVal
                      end
                   end
                end
@@ -332,7 +356,7 @@ define
                   if {IsString V W} then {ByteString.make "\""#V#"\""} else V end
                end
                fun {ShowVirtualString V W D}
-                  {Convert nil nil V 1 {Width V} W false}
+                  {Convert 1 V 1 {Width V} W false}
                end
             end
          end

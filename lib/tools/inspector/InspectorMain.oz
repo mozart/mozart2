@@ -244,6 +244,7 @@ define
                {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
                @options = Options
                {Dictionary.put Options widgetSitedId Reflection.label}
+               {Dictionary.put Options widgetReflectMan Reflection.manager}
                @selMenu = Menu.selection
                {Menu.inspector tk(conf borderwidth: 1)}
                {Menu.insoptions tk(conf borderwidth: 1)}

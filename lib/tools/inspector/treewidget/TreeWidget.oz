@@ -21,8 +21,6 @@
 
 functor $
 import
-   FD(int)
-   FS
    System(eq show)
    HelperComponent('nodes' : Helper) at 'Helper.ozf'
    TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
@@ -98,6 +96,7 @@ define
          isAtomic      %% Atomic Test Function (must not be changed in Oz)
          showString    %% String Flag
          sitedId       %% Sited Value Label
+         reflMan       %% Reflection Manager
       meth create(Options Parent DspWidth DspHeight)
          StoreListener, create
          GraphicSupport, create(Parent DspWidth DspHeight)
@@ -110,6 +109,7 @@ define
          @relManDict   = {Dictionary.new}
          @lines        = {Dictionary.new}
          @sitedId      = {Dictionary.get Options widgetSitedId}
+         @reflMan      = {Dictionary.get Options widgetReflectMan}
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
       end
@@ -184,7 +184,8 @@ define
          else
             %% Add Default Sited Data Handler
             {Dictionary.put D @sitedId fun {$ V _ _}
-                                          TreeWidget, createSited(V $)
+                                          %% reflMan is synced
+                                          {@reflMan getValue(V $)}
                                        end}
          end
       end
@@ -493,21 +494,6 @@ define
          in
             {New {Dictionary.condGet @normNodesDict ValKey @treeNodes.generic}
              create(Val Parent Index self Depth)}
-         end
-      end
-      meth createSited(Val $)
-         Type = Val.1
-         Info = Val.2
-      in
-         case Type
-         of free   then _
-         [] future then !!_
-         [] fd     then {FD.int Info}
-         [] fsval  then {FS.value.make Info}
-         [] fsvar  then
-            case Info
-            of LB#UB then {FS.var.bounds LB UB}
-            end
          end
       end
       meth getRefNode($)

@@ -1,0 +1,97 @@
+BUILDTOP        = @BUILDTOP@
+VPATH           = @srcdir@
+SRCDIR          = @srcdir@
+
+PREFIX          = @prefix@
+OZPREFIX        = $(PREFIX)
+
+OZBIN           = $(PREFIX)/bin
+OZLIB           = $(PREFIX)/lib
+IMAGESDIR       = $(OZLIB)/images
+CACHEDIR        = $(PREFIX)/cache/http/www.ps.uni-sb.de/ozhome/lib
+
+SHELL           = /bin/sh
+LN_S            = @LN_S@
+M4              = @M4@
+
+INSTALL         = @INSTALL@
+INSTALL_FILE    = $(INSTALL) -m 444
+INSTALL_BIN     = $(INSTALL) -m 555
+INSTALL_SRC     = @INSTALL_SRC@
+INSTALL_DIR     = @INSTALL_DIR@
+
+OZFLAGS         = -DLILO
+OZBATCH         = @OZBATCH@
+
+COMPILE         = $(OZBATCH) $(OZFLAGS) --include=DumpIntro.oz -c
+EXEC            = $(OZBATCH) $(OZFLAGS)
+EXECWITHSTD     = $(OZBATCH) $(OZFLAGS) -l AP --include=DumpIntro.oz
+OZMA            = $(OZBATCH) $(OZFLAGS) -DOZM --ozma
+
+# exports
+export BUILDTOP
+export SRCDIR
+export OZPREFIX
+export OZLIB
+export OZMAINIT = Init.ozc
+export OZMAFILE = -u ozbatch.ozc
+export OZPATH = .:$(SRCDIR)
+export OZ_PI = 1
+export OZ_LIB = $(OZLIB)
+export OZ_LOAD = root=.:prefix=http\://www.ps.uni-sb.de/ozhome/lib/=tyc/:prefix=http\://www.ps.uni-sb.de/ozhome/lib/=$(OZ_LIB)/
+
+STANDARDSRC1 = \
+        Forward.oz \
+        Record.oz Unit.oz Tuple.oz Atom.oz Name.oz Procedure.oz \
+        Int.oz Float.oz Number.oz Bool.oz List.oz Chunk.oz \
+        Literal.oz Value.oz Cell.oz Lock.oz Char.oz String.oz \
+        VirtualString.oz Object.oz Class.oz Loop.oz Port.oz \
+        Time.oz Thread.oz Match.oz Type.oz Space.oz \
+        Array.oz Dictionary.oz Exception.oz Lazy.oz Promise.oz \
+        Functor.oz BitArray.oz
+
+STANDARDSRC = $(STANDARDSRC1:%=standard/%) Standard.oz
+
+INITSRC1 = URL.oz Prop.oz
+INITSRC = $(INITSRC1:%=init/%) Init.oz
+
+SPSRC = System Debug Foreign Error Finalize
+OPSRC = OS Open Component
+APSRC = Application
+CPSRC = Search FD FS
+DPSRC = Connection Remote
+WPSRC = Tk TkTools
+
+FUNCTORS = \
+        $(SPSRC:%=%.ozf) \
+        $(OPSRC:%=%.ozf) \
+        $(APSRC:%=%.ozf) \
+        $(CPSRC:%=%.ozf) \
+        $(DPSRC:%=%.ozf) \
+        $(WPSRC:%=%.ozf)
+
+.PHONY: all
+
+all: $(FUNCTORS)
+
+%.ozf: sp/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: op/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: ap/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: cp/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: dp/%.oz
+        $(COMPILE) $< -o $@
+%.ozf: wp/%.oz
+        $(COMPILE) $< -o $@
+
+wp/Tk.ozf: wp/TkInit.oz
+wp/TkTools.ozf: wp/TkOptions.oz
+
+Makefile-lilo: Makefile-lilo.in ../config.status
+        cd .. && ./config.status
+
+../config.status: ../configure
+        cd .. && ./config.status --recheck

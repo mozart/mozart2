@@ -22,8 +22,142 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+functor $
 
+import
+   Foreign.{staticLoad}
+
+   System.{apply
+           get
+           showError
+           valueToVirtualString}
+
+   Open.{pipe
+         text}
+
+   OS.{getEnv
+       putEnv
+       unlink}
+
+   URL.{makeResolver}
+
+export
+   send:          TkSend
+   batch:         TkBatch
+
+   return:           TkReturn
+   returnString:     TkReturnString
+   returnAtom:       TkReturnAtom
+   returnInt:        TkReturnInt
+   returnFloat:      TkReturnFloat
+   returnList:       TkReturnList
+   returnListString: TkReturnListString
+   returnListAtom:   TkReturnListAtom
+   returnListInt:    TkReturnListInt
+   returnListFloat:  TkReturnListFloat
+
+   getPrefix:        TkGetPrefix
+   getId:            TkGetId
+   getTclName:       TkGetTclName
+
+   invoke:        InvokeAction
+
+   button:        TkButton
+   canvas:        TkCanvas
+   checkbutton:   TkCheckbutton
+   entry:         TkEntry
+   frame:         TkFrame
+   label:         TkLabel
+   listbox:       TkListbox
+   menu:          TkMenu
+   menubutton:    TkMenubutton
+   message:       TkMessage
+   radiobutton:   TkRadiobutton
+   scale:         TkScale
+   scrollbar:     TkScrollbar
+   text:          TkText
+   toplevel:      TkToplevel
+
+   menuentry:     TkMenuentries
+
+   image:         TkImage
+
+   textTag:       TkTextTag
+   textMark:      TkTextMark
+   canvasTag:     TkCanvasTag
+
+   action:        TkAction
+   variable:      TkVariable
+   string:        TkString
+
+   isColor:       IsColor
+
+   addYScrollbar: AddYScrollbar
+   addXScrollbar: AddXScrollbar
+
+   defineUserCmd: DefineUserCmd
+
+body
+
+   tk(send:          TkSend
+      batch:         TkBatch
+
+      return:           TkReturn
+      returnString:     TkReturnString
+      returnAtom:       TkReturnAtom
+      returnInt:        TkReturnInt
+      returnFloat:      TkReturnFloat
+      returnList:       TkReturnList
+      returnListString: TkReturnListString
+      returnListAtom:   TkReturnListAtom
+      returnListInt:    TkReturnListInt
+      returnListFloat:  TkReturnListFloat
+
+      getPrefix:        TkGetPrefix
+      getId:            TkGetId
+      getTclName:       TkGetTclName
+
+      invoke:        InvokeAction
+
+      button:        TkButton
+      canvas:        TkCanvas
+      checkbutton:   TkCheckbutton
+      entry:         TkEntry
+      frame:         TkFrame
+      label:         TkLabel
+      listbox:       TkListbox
+      menu:          TkMenu
+      menubutton:    TkMenubutton
+      message:       TkMessage
+      radiobutton:   TkRadiobutton
+      scale:         TkScale
+      scrollbar:     TkScrollbar
+      text:          TkText
+      toplevel:      TkToplevel
+
+      menuentry:     TkMenuentries
+
+      image:         TkImage
+
+      textTag:       TkTextTag
+      textMark:      TkTextMark
+      canvasTag:     TkCanvasTag
+
+      action:        TkAction
+      variable:      TkVariable
+      string:        TkString
+      isColor:       IsColor
+
+      addYScrollbar: AddYScrollbar
+      addXScrollbar: AddXScrollbar
+
+      defineUserCmd: DefineUserCmd)
+
+   =
+\endif
 local
+
 
    %%
    %% Load & link wish interface
@@ -1319,3 +1453,6 @@ in
       defineUserCmd: DefineUserCmd)
 
 end
+\ifdef LILO
+end
+\endif

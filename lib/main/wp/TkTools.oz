@@ -23,8 +23,63 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+functor $
 
+import
+   Tk.{toplevel
+       frame
+       label
+       message
+       button
+       menu
+       menubutton
+       canvas
+       scale
+       menuentry
+       entry
+
+       returnInt
+
+       isColor
+       invoke
+       send
+       batch
+       string
+       image
+       canvasTag}
+
+   System.{get}
+
+export
+   error:       Error
+   dialog:      Dialog
+   menubar:     MakeMenu
+   popupmenu:   PopupMenu
+   textframe:   Textframe
+   notebook:    Notebook
+   note:        Note
+   scale:       DiscreteScale
+   numberentry: NumberEntry
+   images:      LoadImages
+
+body
+
+   tkTools(error:       Error
+           dialog:      Dialog
+           menubar:     MakeMenu
+           popupmenu:   PopupMenu
+           textframe:   Textframe
+           notebook:    Notebook
+           note:        Note
+           scale:       DiscreteScale
+           numberentry: NumberEntry
+           images:      LoadImages)
+
+   =
+\endif
 local
+
    DefaultFont = local
                     T = {New Tk.toplevel
                          tkInit(withdraw:true 'class':'OzTools')}
@@ -1335,3 +1390,6 @@ in
            images:      LoadImages)
 
 end
+\ifdef LILO
+end
+\endif

@@ -17,15 +17,19 @@ SCHEDLOCAL = \
         abz6
 SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 
+FMODULES = \
+        conversion float record type
+MODULES = $(FMODULES:%=./modules/%.ozc)
+
 # Other tests
 OTHER = \
-        link guards
+        link guards misc exception
 OTHEROZC = $(OTHER:%=./%.ozc)
 
 
 # All tests
 COMPONENTS = \
-        $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(OTHEROZC)
+        $(MODULES) $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(OTHEROZC)
 
 
 ####################################################

@@ -23,7 +23,7 @@
 functor
 
 import
-   FD Space
+   Space
 export
    Return
 

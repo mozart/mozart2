@@ -1855,7 +1855,7 @@ local
          SABuiltinApplication, checkArguments(Ctrl 'NewName' true B)
 
          case B then
-            BndVO BndV PrintName TheName Token
+            BndVO BndV PrintName TheName Top0 Token
          in
             BndVO = {Nth @actualArgs 1}
             {BndVO getVariable(?BndV)}
@@ -1866,7 +1866,8 @@ local
             else
                TheName = {NewName}
             end
-            Token = {New Core.nameToken init(PrintName TheName Top)}
+            Top0 = Top andthen {Not {Ctrl.switches get(debuginfovarnames $)}}
+            Token = {New Core.nameToken init(PrintName TheName Top0)}
             {BndVO unifyVal(Ctrl Top Token)}
             case Top then self.codeGenMakeEquateLiteral = TheName
             else skip end

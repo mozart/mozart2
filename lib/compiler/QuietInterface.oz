@@ -34,14 +34,19 @@ proc {NewCompilerInterfaceQuiet ?CompilerInterfaceQuiet}
       end
 
       meth hasErrors($)
-         @HasErrors
+         lock @HasErrors end
       end
       meth getVS($)
-         @AccVS
+         lock @AccVS end
       end
       meth reset()
-         AccVS <- ""
-         HasErrors <- false
+         lock
+            AccVS <- ""
+            HasErrors <- false
+         end
+      end
+      meth interrupt()
+         {self.Compiler interrupt()}
       end
 
       meth putEnv(Env)

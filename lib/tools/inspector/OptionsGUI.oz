@@ -955,7 +955,6 @@ in
          printDict   %% Readable Names Dictionary (N->P)
          namesDict   %% Option Names Dictionary (P->N)
          colPannerWin : nil
-         usedApply : false
       prop
          final
       meth create(WinEntry Options)
@@ -1051,13 +1050,11 @@ in
             {Port.send InspPort setOptions(@opDict)}
             {@winEntry tk(entryconf state: normal)}
          [] apply     then
-            usedApply <- true
             GlobalNote, collect
             DisplayNote, collect
             VisualNote, collect
             {Port.send InspPort setOptions(@opDict)}
          [] cancel    then
-            if @usedApply then {Port.send InspPort setOptions(@cloneOpDict)} end
             Tk.toplevel, tkClose
             {@winEntry tk(entryconf state: normal)}
          [] selCol(I) then

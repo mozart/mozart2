@@ -125,10 +125,13 @@ define
          {@parent unlink(@index)}
       end
       meth action(Index P)
+         {System.show 'DrawObject::action entered'}
          if {IsTuple P}
          then {self P}
-         else try {P @value} catch _ then skip end
+         else
+            thread {System.show 'DrawObject::action try '} {P @value} {System.show 'DrawObject::try catch entered'} end
          end
+         {System.show 'DrawObject::action leave'}
       end
       meth getSelectionNode($)
          self

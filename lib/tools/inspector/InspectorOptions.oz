@@ -465,7 +465,7 @@ define
       local
          %% Future Specific Functions
          proc {Force V}
-            try _ = V.foo catch _ then skip end
+            {Wait V}
          end
       in
          VariableMenus = [

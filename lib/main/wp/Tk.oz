@@ -421,6 +421,7 @@ in
                end
                {{`Builtin` closeTclSession 1} Session}
                {Stream close}
+               {Show close_close_close}
             end
          end
 
@@ -799,6 +800,12 @@ in
       class AppletToplevel from TkToplevel
          prop final
          feat args
+
+         meth tkClose
+            TkToplevel, tkClose
+            {System.exit 0}
+         end
+
       end
 
       class BrowserAppletToplevel from Widget

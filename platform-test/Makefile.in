@@ -48,7 +48,7 @@ SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 FBASE = \
         conversion float int record type exception guards future misc \
         instruction compiler except dictionary ofs pickles \
-        thread unix
+        thread unix weakdictionary weakdictionaryGC finalize
 
 BASE = $(FBASE:%=./base/%.ozf)
 
@@ -60,7 +60,8 @@ BENCH = $(FBENCH:%=./bench/%.ozf)
 DP1= \
         url mini maxi equality table port cell cellAndLock variable object \
         objectAndLock injectors watchers basicfault fault_state \
-        parallel-search variable2 huge object_proc_port caching credit_circle
+        parallel-search variable2 huge object_proc_port caching credit_circle \
+        credit
 
 DP2=
 DP=     $(DP1:%=./dp/%.ozf) $(DP2:%=./dp/%.ozf)

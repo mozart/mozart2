@@ -1709,7 +1709,7 @@ local
             {MakeApplication HasFeature [MessageVO FeatureVO ArbiterVO] CS
              Cont1 Cont2}
             Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
-                              {@feature getCoord($)} VTl _)
+                              unit VTl _)
          end
       end
    end

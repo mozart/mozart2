@@ -688,11 +688,9 @@ fun {NewTkTools Tk}
          end
 
          meth remove(Note)
-            lock
-               X W
-            in
+            lock W in
                Notes <- {List.subtract @Notes Note}
-               {Note.Store remove(?X ?W)}
+               {Note.Store remove(_ ?W)}
                case @TopNote==Note then
                   case @Notes of nil then TopNote <- unit
                   elseof N|_ then

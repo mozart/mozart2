@@ -24,12 +24,6 @@
 %%% WARRANTIES.
 %%%
 
-%%% Development switch
-%%%
-%%%\define DEBUG_LOCAL_LIBRARIES
-%%%\undef  DEBUG_LOCAL_LIBRARIES
-%%%
-
 `::` `:::`
 
 `GenSum` `GenSumC` `GenSumCN`
@@ -48,41 +42,17 @@ local
    CompileDate
 
    local
-      HasForeignFDP = {{`Builtin` foreignFDProps 1}}
-
-      fun {GetBiArity Spec}
-         _ # BiArity = Spec in BiArity
-      end
-
-      fun {GetBi Spec}
-         BiName # BiArity = Spec in {`Builtin` BiName BiArity}
+      fun {LoadLibrary LibName Spec}
+         L = {Foreign.staticLoad LibName}
+      in
+         {Record.map Spec
+          fun {$ A#_}
+             L.A
+          end}
       end
    in
-      fun {LoadLibrary LibName LibSpec}
-         case HasForeignFDP then
-            OzHome      = {System.get home}
-            OS#CPU      = {System.get platform}
-\ifdef DEBUG_LOCAL_LIBRARIES
-            ObjectFile  = '/home/ps-home3/tmueller/Oz/Emulator/' # LibName
-            {Show {StringToAtom
-                   {VirtualString.toString '   Loading: ' # ObjectFile}}}
-\else
-            ObjectFile  = OzHome#'/platform/'#OS#'-'#CPU#'/'#LibName
-\endif
-         in
-            {Foreign.dload
-             ObjectFile
-             {Record.map LibSpec GetBiArity}
-             _
-            }
-         else
-            {Record.map LibSpec GetBi}
-         end
-      end
-   end
-
-   FDP = {LoadLibrary 'fdlib.so'
-          fdp(init:           fdp_init           #1
+      FDP = {LoadLibrary 'libfd.so'
+             fdp(init:           fdp_init           #1
               plus_rel:       fdp_plus_rel       #3
               plus:           fdp_plus           #3
               minus:          fdp_minus          #3
@@ -127,9 +97,10 @@ local
               sumCNR:         fdp_sumCNR         #5
               sumCD:          fdp_sumCD          #4
               sumCCD:         fdp_sumCCD         #5
-              sumCNCD:        fdp_sumCNCD        #5)}
+                 sumCNCD:        fdp_sumCNCD        #5)}
 
-   SchedLib = {LoadLibrary 'schedlib.so'
+
+   SchedLib = {LoadLibrary 'libschedule.so'
                sched(disjoint_card:      sched_disjoint_card      #4
                      cpIterate:          sched_cpIterate          #3
                      taskIntervals:      sched_taskIntervals      #3
@@ -139,6 +110,7 @@ local
                      cpIterateCapUp:     sched_cpIterateCapUp     #5
                      taskIntervalsProof: sched_taskIntervalsProof #5
                      firstsLasts:        sched_firstsLasts        #5)}
+   end
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %% Converter functions

@@ -87,7 +87,7 @@ oztest: lib/make-test.oz lib/engine.oz \
         lib/passed.oz lib/failed.oz lib/help-string.oz \
         $(COMPONENTS)
         $(OZEE) -l Application lib/make-test.oz
-        ./make-test -verbose $(COMPONENTS)
+        ./make-test -verbose $(COMPONENTS:%=`pwd`/%)
         -rm -f ./make-test
 
 

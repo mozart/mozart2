@@ -241,8 +241,10 @@ local
       meth getMaxNumberOfErrors($)
          @options.maxNumberOfErrors
       end
-      meth setBaseURL(V) A in
-         A = {VirtualString.toAtom V}
+      meth setBaseURL(X)
+         A = case X of unit then X
+             else {VirtualString.toAtom X}
+             end
          options <- {AdjoinAt @options baseURL A}
          {@narrator tell(baseURL(A))}
       end
@@ -729,12 +731,16 @@ local
       end
    end
 
-   fun {IsEnv E}
-      {IsRecord E} andthen {All {Arity E} PrintName.is}
+   fun {IsVirtualStringOrUnit X}
+      {IsUnit X} orelse {IsVirtualString X}
    end
 
-   fun {IsProcedure5 P}
-      {IsProcedure P} andthen {Procedure.arity P} == 5
+   fun {IsEnv X}
+      {IsRecord X} andthen {All {Arity X} PrintName.is}
+   end
+
+   fun {IsProcedure5 X}
+      {IsProcedure X} andthen {Procedure.arity X} == 5
    end
 in
    class Engine from Narrator.'class'
@@ -811,7 +817,7 @@ in
                {TypeCheck IsInt M 1 'int'}
             [] getMaxNumberOfErrors(_) then skip
             [] setBaseURL(_) then
-               {TypeCheck IsVirtualString M 1 'virtual string'}
+               {TypeCheck IsVirtualStringOrUnit M 1 'virtual string or unit'}
             [] getBaseURL(_) then skip
             [] addToEnv(_ _) then
                {TypeCheck PrintName.is M 1 'print name'}

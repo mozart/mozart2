@@ -682,16 +682,20 @@ in
                   YetEnd  = @AtEnd  NextEnd
                   YetBuff = @Buff   NextBuff
                   YetLast = @Last   NextLast
+                  GetDesc = @ReadDesc
                in
-                  AtEnd <- NextEnd
-                  Buff  <- NextBuff
-                  Last  <- NextLast
-                  if YetEnd then
-                     I=false
-                     NextEnd=true NextBuff=nil NextLast=YetLast
-                  else
-                     I={DoReadOne YetBuff @ReadDesc NextBuff NextEnd}
-                     NextLast=I
+                  if {IsInt GetDesc} then
+                     AtEnd <- NextEnd
+                     Buff  <- NextBuff
+                     Last  <- NextLast
+                     if YetEnd then
+                        I=false
+                        NextEnd=true NextBuff=nil NextLast=YetLast
+                     else
+                        I={DoReadOne YetBuff GetDesc NextBuff NextEnd}
+                        NextLast=I
+                     end
+                  else {RaiseClosed self getC(I)}
                   end
                end
             end
@@ -700,24 +704,28 @@ in
                {self write(vs:[I])}
             end
 
-            meth getS($)
+            meth getS(Result)
                lock self.ReadLock then
                   YetEnd  = @AtEnd  NextEnd
                   YetBuff = @Buff   NextBuff
                   GetDesc = @ReadDesc
                in
-                  AtEnd <- NextEnd
-                  Buff  <- NextBuff
-                  if YetEnd then
-                     NextEnd=true NextBuff=nil
-                     false
-                  else
-                     It={DoReadLine YetBuff GetDesc NextBuff NextEnd}
-                  in
-                     if NextEnd then
-                        case It of nil then false else It end
-                     else It
-                     end
+                  if {IsInt GetDesc} then
+                     AtEnd <- NextEnd
+                     Buff  <- NextBuff
+                     Result = if YetEnd then
+                                 NextEnd=true NextBuff=nil
+                                 false
+                              else
+                                 It={DoReadLine YetBuff GetDesc
+                                     NextBuff NextEnd}
+                              in
+                                 if NextEnd then
+                                    case It of nil then false else It end
+                                 else It
+                                 end
+                              end
+                  else {RaiseClosed self getS(Result)}
                   end
                end
             end

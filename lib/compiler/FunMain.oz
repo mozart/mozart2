@@ -1,7 +1,7 @@
 functor prop once
 import
-   Parser           from 'x-oz-boot:Parser'
-   CompilerSupport  from 'x-oz-boot:CompilerSupport'
+   Parser           from 'x-oz://boot/Parser'
+   CompilerSupport  from 'x-oz://boot/CompilerSupport'
    Property
    System   %.{gcDo printName valueToVirtualString get property printError eq}
    Error   %.{formatExc formatPos formatLine formatGeneric format dispatch msg}

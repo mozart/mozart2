@@ -219,18 +219,6 @@ local
          end
       end
 
-      fun {ExtractInt S}
-         {StringToInt {TidyMinus S}}
-      end
-
-      fun {ExtractFloat S}
-         TS={TidyMinus S}
-      in
-         case {StringIsInt TS} then {IntToFloat {StringToInt TS}}
-         else {StringToFloat TS}
-         end
-      end
-
       fun {ExtractValue S O}
          try
             case S of nil then O.value

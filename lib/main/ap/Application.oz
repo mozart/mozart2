@@ -149,10 +149,6 @@ local
       raise error(registry(badRegistration Name Desc Which) debug:debug)
       with debug end
    end
-   proc {BadDescriptor Name Desc}
-      raise error(registry(badDescriptor Name Desc) debug:debug)
-      with debug end
-   end
    proc {CircularDependency Name}
       raise error(registry(circularDependency Name) debug:debug)
       with  debug end
@@ -634,7 +630,6 @@ local
                    {Adjoin CompSpec c('WP': eager)}}
       ArgProc   = {Parser.applet ArgSpec}
       SystemGet = System.get
-      SystemSet = System.set
    in
       proc {$}
          try
@@ -860,18 +855,18 @@ in
    try {Error.formatter.put registry RegistryFormatter}
    catch _ then skip end
    Application = application(
-                             register   :DefaultRegister
-                             loader     :DefaultGetLoader
-                             plan       :DefaultGetPlan
-                             exec       :DefaultMakeExec
-                             servlet:   DefaultMakeServlet
-                             applet:    DefaultMakeApplet
-                             registry   :registry(new     :MakeDefaultRegistry
-                                                  register:RegistryRegister
-                                                  loader  :RegistryGetLoader
-                                                  plan    :RegistryGetPlan
-                                                  exec    :RegistryMakeExec
-                                                  servlet: RegistryMakeServlet
-                                                  applet:  RegistryMakeApplet)
+                             register: DefaultRegister
+                             loader:   DefaultGetLoader
+                             plan:     DefaultGetPlan
+                             exec:     DefaultMakeExec
+                             servlet:  DefaultMakeServlet
+                             applet:   DefaultMakeApplet
+                             registry: registry(new:      MakeDefaultRegistry
+                                                register: RegistryRegister
+                                                loader:   RegistryGetLoader
+                                                plan:     RegistryGetPlan
+                                                exec:     RegistryMakeExec
+                                                servlet:  RegistryMakeServlet
+                                                applet:   RegistryMakeApplet)
                             )
 end

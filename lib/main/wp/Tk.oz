@@ -327,7 +327,6 @@ in
 
       ActionIdServer = {New Counter get(_)}
       TkDict         = {Dictionary.new}
-      SessionId      = {NewName}
       AppletClosed   = {NewName}
 
       local
@@ -895,7 +894,6 @@ in
 
 
       local
-         TkEntries   = {NewName}
          TkType      = {NewName}
          EntryVar    = {NewName}
          EntryLock   = {NewName}

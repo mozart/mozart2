@@ -33,13 +33,9 @@
 %%%
 
 local
-   CompileDate
-
-   Head       = fun {$ H|_} H end
-   Tail       = fun {$ _|T} T end
-   Last       = List.last
-   GetElement = fun {$ T} T.1 end
-   GetWeight  = fun {$ T} T.2 end
+   Head = fun {$ H|_} H end
+   Tail = fun {$ _|T} T end
+   Last = List.last
 
    fun {ExpandList TupleList}
       {FoldR TupleList
@@ -135,9 +131,11 @@ local
    FSSet        = {`Builtin` fsSet 3}
    FSDisjoint   = FSP.disjoint
    FSDistinct   = FSP.distinct
+\ifdef CONSTRAINT_N_NAIVE
    fun {FSDisjointWith S1}
       proc {$ S2}{FSDisjoint S1 S2} end
    end
+\endif
    fun {FSDistinctWith S1}
       proc {$ S2} {FSDistinct S1 S2} end
    end
@@ -475,21 +473,19 @@ local
    FSGetGlb        = {`Builtin` fsGetGlb 2}
    FSGetLub        = {`Builtin` fsGetLub 2}
 
-   FSGetKnownIn    = {`Builtin` fsGetKnownIn 2}
-   FSGetKnownNotIn = {`Builtin` fsGetKnownNotIn 2}
    FSGetCard       = {`Builtin` fsGetCard 2}
 
    FSGetNumOfGlb     = {`Builtin` fsGetNumOfKnownIn 2}
    FSGetNumOfLub     = {`Builtin` fsGetNumOfKnownNotIn 2}
    FSGetNumOfUnknown = {`Builtin` fsGetNumOfUnknown 2}
 
+\ifdef CONSTRAINT_N_NAIVE
    FSEmpty         = {FSSetValue nil}
+\endif
    FSSup           = {{`Builtin` fsSup 1}}
    FSInf           = 0
    FSUniversalRefl = [0#FSSup]
    FSUniversal     = {FSSetValue FSUniversalRefl}
-
-   While           = List.takeWhile
 
    VectorToList =
    fun {$ Vector}

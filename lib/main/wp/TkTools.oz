@@ -71,13 +71,11 @@ fun {NewTkTools Tk}
       end
    end
 
-   Border        = 1
-   BigBorder     = 2
-   Pad           = 4
-   BigPad        = 4
-   NoArg         = {NewName}
-   EntryColor    = case Tk.isColor then wheat else white end
-   ScrollerWidth = 12
+   Border     = 1
+   BigBorder  = 2
+   BigPad     = 4
+   NoArg      = {NewName}
+   EntryColor = case Tk.isColor then wheat else white end
 
    class Dialog
       from Tk.frame
@@ -480,8 +478,6 @@ fun {NewTkTools Tk}
 
 
    local
-      MarkFrameColor     = black
-
       Home               = ~10000
       FreeMarkX          = 0
       NotebookFrameWidth = 2
@@ -594,7 +590,6 @@ fun {NewTkTools Tk}
             ThisHighlightTag  = Note.HighlightTag
             ThisTextTag       = Note.TextTag
             ThisEventTag      = Note.EventTag
-            ThisNoteTag       = Note.NoteTag
             ThisTextWidth     = Note.TextWidth
             TotalMarkHeight   = 2 * MarkDelta + self.TextHeight
             TotalMarkWidth    = 2 * MarkDelta + ThisTextWidth
@@ -606,7 +601,6 @@ fun {NewTkTools Tk}
             X6 = X2 + TotalMarkWidth
             X7 = X6 + NotebookFrameWidth - 1
             X4 = X6 - MarkEdgeWidth
-            X5 = X4 + 1
             X8 = NotebookFrameWidth + W
             X9 = X8 + NotebookFrameWidth - 1
             %% Y coordinates needed

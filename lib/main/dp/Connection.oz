@@ -247,6 +247,10 @@ define
          {Exception.raiseError connection(ticketToDeadSite V)}
       end
    in
+      if T.major#T.minor \= {Property.get 'dp.version'} then
+         {Exception.raiseError connection(differentDssVersion V)}
+      end
+
       {Fault.installWatcher P [permFail] Watch true}
       {Fault.install P 'thread'(this) [permFail] Handle true}
       {Send P T#X}
@@ -304,6 +308,10 @@ define
        [] connection(wrongModel V) then
           error(kind: T
                 msg: 'Ticket presupposes wrong distribution model'
+                items: [hint(l:'Ticket' m:V)])
+       [] connection(differentDssVersion V) then
+          error(kind: T
+                msg: 'Ticket refused: different distribution subsystem version'
                 items: [hint(l:'Ticket' m:V)])
        else
           error(kind: T

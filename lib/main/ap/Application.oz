@@ -680,19 +680,19 @@ define
 
    local
       local
-         class StdIn from Open.file
-            prop final
-            meth init
-               StdIn,dOpen(0 1)
-            end
-            meth get(N ?Is)
-               Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
-            in
-               Ir = if M<N then StdIn,get(N-M $) else nil end
-            end
-         end
-
          fun {CgiRawGet}
+            class StdIn from Open.file
+               prop final
+               meth init
+                  StdIn,dOpen(0 1)
+               end
+               meth get(N ?Is)
+                  Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+               in
+                  Ir = if M<N then StdIn,get(N-M $) else nil end
+               end
+            end
+         in
             case {OS.getEnv 'REQUEST_METHOD'} of false then
                {Exception.raiseError ap(spec env 'REQUEST_METHOD')} unit
             [] S then

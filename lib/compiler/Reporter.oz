@@ -89,8 +89,7 @@ in
          in
             case {self.Compiler getSwitch(showcompiletime $)} then T in
                T = {Property.get time}.user
-               {self.Wrapper
-                notify(info(Indent#'time: '#(T - @TimeUsed)#' msec\n'))}
+               Reporter, userInfo(Indent#'time: '#(T - @TimeUsed)#' msec\n')
                TimeUsed <- T
             else skip
             end
@@ -98,9 +97,9 @@ in
                H0 = {GetUsedHeap}
                {System.gcDo}
                H1 = {GetUsedHeap}
-               {self.Wrapper notify(info(Indent#'heap allocation: '#
-                                         (H0 - @HeapUsed)#' KB\n'))}
-               {self.Wrapper notify(info(Indent#'active size: '#H1#' KB\n'))}
+               Reporter, userInfo(Indent#'heap allocation: '#
+                                  (H0 - @HeapUsed)#' KB\n')
+               Reporter, userInfo(Indent#'active size: '#H1#' KB\n')
                HeapUsed <- H1
             else skip
             end
@@ -114,18 +113,16 @@ in
             NewCoord = {NormalizeCoord Coord}
             case NewCoord of pos(F L C) then
                VS = {Error.formatPos F L C unit}
-               {self.Wrapper notify(info('%%% processing query in '#VS#'\n'
-                                         NewCoord))}
+               Reporter, userInfo('%%% processing query in '#VS#'\n' NewCoord)
             else
-               {self.Wrapper notify(info('%%% processing query'))}
+               Reporter, userInfo('%%% processing query')
             end
          else skip
          end
       end
       meth logInsert(FileName)
          case {self.Compiler getSwitch(showinsert $)} then
-            {self.Wrapper notify(info('%%%         inserted file "'#
-                                      FileName#'"\n'))}
+            Reporter, userInfo('%%%         inserted file "'#FileName#'"\n')
          else skip
          end
       end
@@ -133,7 +130,7 @@ in
          Reporter, ProfileEnd()
          Reporter, ProfileStart(phase)
          case {self.Compiler getSwitch(compilerpasses $)} then
-            {self.Wrapper notify(info('%%%     '#VS#'\n'))}
+            Reporter, userInfo('%%%     '#VS#'\n')
          else skip
          end
       end
@@ -141,49 +138,50 @@ in
          Reporter, ProfileEnd()
          Reporter, ProfileStart(subphase)
          case {self.Compiler getSwitch(compilerpasses $)} then
-            {self.Wrapper notify(info('%%%         '#VS#'\n'))}
+            Reporter, userInfo('%%%         '#VS#'\n')
          else skip
          end
       end
       meth logAccept()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('% -------------------- accepted\n'))}
+         Reporter, userInfo('% -------------------- accepted\n')
       end
       meth logReject()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('%** ------------------ rejected'#
-                                   case @ErrorCount > 0 then
-                                      ' ('#@ErrorCount#' error'#
-                                      case @ErrorCount == 1 then ""
-                                      else 's'
-                                      end#')'
-                                   else ""
-                                   end#'\n'))}
+         Reporter, userInfo('%** ------------------ rejected'#
+                            case @ErrorCount > 0 then
+                               ' ('#@ErrorCount#' error'#
+                               case @ErrorCount == 1 then "" else 's' end#')'
+                            else ""
+                            end#'\n')
       end
       meth logAbort()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('%** ------------------ aborted\n'))}
+         Reporter, userInfo('%** ------------------ aborted\n')
          {self.Wrapper notify(errorFound())}
       end
       meth logCrash()
          Reporter, ProfileEnd()
-         {self.Wrapper
-          notify(info('%** ------------------ compiler crashed\n'))}
+         Reporter, userInfo('%** ------------------ compiler crashed\n')
          Reporter, ToTop(true)
       end
       meth logHalt()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('% -------------------- halting\n'))}
+         Reporter, userInfo('% -------------------- halting\n')
       end
       meth logInterrupt()
          Reporter, ProfileEnd()
-         {self.Wrapper notify(info('% -------------------- interrupted\n'))}
+         Reporter, userInfo('% -------------------- interrupted\n')
       end
       meth displaySource(Title Ext VS)
          {self.Wrapper notify(displaySource(Title Ext VS))}
       end
-      meth userInfo(VS)
-         {self.Wrapper notify(info(VS))}
+      meth userInfo(VS Coord <= unit)
+         case Coord of unit then
+            {self.Wrapper notify(info(VS))}
+         else
+            {self.Wrapper notify(info(VS Coord))}
+         end
       end
 
       meth error(coord: Coord <= unit

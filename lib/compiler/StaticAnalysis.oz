@@ -2085,7 +2085,7 @@ local
                             kind:  SAGenError
                             msg:   'illegal feature selection from object'
                             body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:F)])}
+                                    hint(l:'Found' m:oz(F))])}
                   end
                end
 
@@ -2107,7 +2107,7 @@ local
                             kind:  SAGenError
                             msg:   'illegal feature selection from class'
                             body:  [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                    hint(l:'Found' m:F)])}
+                                    hint(l:'Found' m:oz(F))])}
                   end
                end
 
@@ -2132,7 +2132,7 @@ local
                          kind:  SAGenError
                          msg:   'illegal feature selection from record'
                          body:  [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
-                                 hint(l:'Found' m:F)])}
+                                 hint(l:'Found' m:oz(F))])}
                end
             elsecase
                {TypeTests.recordC RecOrCh}
@@ -2188,7 +2188,7 @@ local
                       kind:  SAGenError
                       msg:   'illegal feature selection from record'
                       body:  [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
-                              hint(l:'Found' m:Fea)])}
+                              hint(l:'Found' m:oz(Fea))])}
             else
                skip
             end
@@ -2234,8 +2234,8 @@ local
                else
                   Val  = {GetData {Nth @actualArgs 2}}
                   Expr = case PName
-                         of '<-' then Fea # ' <- ' # oz(Val)
-                         elseof '@' then '@' # Fea # ' = ' # oz(Val)
+                         of '<-' then oz(Fea) # ' <- ' # oz(Val)
+                         elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
                          end
                   Final = (Props\=unit andthen {Member final Props})
                   Hint = case Final

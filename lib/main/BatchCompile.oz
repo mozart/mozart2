@@ -468,9 +468,9 @@ in
                 else skip
                 end
                 case {Access Mode} of dump then
-                   try {Component.save R OFN}
-                   catch dp(save(resources Filename Vs)) then
-                      {OS.unlink OFN}
+                   try
+                      {Component.save R OFN}
+                   catch error(dp(save resources Filename Vs) ...) then
                       {Report
                        error(kind: UsageError
                              msg: 'saved value is not stateless'

@@ -40,6 +40,10 @@ in
 end
 
 \ifdef NEWCOMPILER
+%% Inserting a bogus directive here splits this file into two directives.
+%% This implied that after loading the above components, the environment
+%% gets reannotated by the compiler, providing for more opportunities for
+%% optimization.
 \switch
 \endif
 

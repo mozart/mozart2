@@ -1,12 +1,9 @@
 %%%
 %%% Authors:
-%%%   Author's name (Author's email address)
-%%%
-%%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Leif Kornstaedt, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -22,9 +19,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-%%%  Programming Systems Lab, Universitaet des Saarlandes,
-%%%  Postfach 15 11 50, D-66041 Saarbruecken, Phone (+49) 681 302-5609
-%%%  Author: Leif Kornstaedt <kornstae@ps.uni-sb.de>
 
 %%
 %% This file defines the mixin class `Unnester' which transforms
@@ -84,24 +78,6 @@ local
       [] dirCore(_) then true
       [] dirMachine(_) then true
       else false
-      end
-   end
-
-   local
-      fun {VariableMember PrintName Vs}
-         case Vs of fVar(PrintName0 _)|Vr then
-            PrintName == PrintName0 orelse {VariableMember PrintName Vr}
-         [] nil then false
-         end
-      end
-   in
-      fun {AreDisjointVariableLists Vs1 Vs2}
-         case Vs1 of fVar(PrintName _)|Vr then
-            case {VariableMember PrintName Vs2} then false
-            else {AreDisjointVariableLists Vr Vs2}
-            end
-         [] nil then true
-         end
       end
    end
 
@@ -382,57 +358,20 @@ local
          case {IsFree FFeat} then FFeat = nil else skip end
       end
    end
-in
+
    class Unnester
       attr
          BA             % this holds an instance of `BindingAnalysis'
          Stateful: unit % true iff state access allowed (i. e., in method)
          StateUsed      % true iff state has been accessed
          ArgCounter     % temporarily used while transforming method heads
+         reporter
+         switches
 
-      meth init(TopLevel)
-         BA <- {New BindingAnalysis init(TopLevel @reporter)}
-      end
-
-      meth joinQueries(Queries $) Directives OtherQueries NewQueries in
-         {List.takeDropWhile Queries IsDirective ?Directives ?OtherQueries}
-         Unnester, JoinQueries(OtherQueries ?NewQueries)
-         case NewQueries of [fDeclare(P1 P2 C)] then
-            {Append Directives [fLocal(P1 P2 C)]}
-         elseof nil then
-            Directives
-         else
-            {@reporter error(kind: ExpansionError
-                             msg: 'Ozma only supports one query in input')}
-            Directives
-         end
-      end
-      meth JoinQueries(Queries $)
-         case Queries of Q1|(Qr=Q2|Qrr) then
-            case {IsDirective Q1} then
-               Q1|Unnester, JoinQueries(Qr $)
-            elsecase Q1 of fDeclare(P11 P12 C1) then
-               case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
-                  NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
-                  NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
-                  case {AreDisjointVariableLists Vs1 Vs2} then NewQ in
-                     NewQ = fDeclare({FoldR {Append Vs1 Vs2}
-                                      fun {$ V Rest} fAnd(V Rest) end
-                                      fSkip(C1)}
-                                     fAnd(NewP1 fAnd(P12 fAnd(NewP2 P22))) C1)
-                     Unnester, JoinQueries(NewQ|Qrr $)
-                  else
-                     Q1|Unnester, JoinQueries(Qr $)
-                  end
-               else
-                  Unnester, JoinQueries(fDeclare(P11 fAnd(P12 Q2) C1)|Qrr $)
-               end
-            else
-               Q1|Unnester, JoinQueries(Qr $)
-            end
-         else
-            Queries
-         end
+      meth init(TopLevel Reporter Switches)
+         BA <- {New BindingAnalysis init(TopLevel Reporter)}
+         reporter <- Reporter
+         switches <- Switches
       end
 
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
@@ -1879,5 +1818,71 @@ in
                          'as first argument to `:::\' in a condis clause'))}
          end
       end
+   end
+in
+   local
+      fun {VariableMember PrintName Vs}
+         case Vs of fVar(PrintName0 _)|Vr then
+            PrintName == PrintName0 orelse {VariableMember PrintName Vr}
+         [] nil then false
+         end
+      end
+
+      fun {AreDisjointVariableLists Vs1 Vs2}
+         case Vs1 of fVar(PrintName _)|Vr then
+            case {VariableMember PrintName Vs2} then false
+            else {AreDisjointVariableLists Vr Vs2}
+            end
+         [] nil then true
+         end
+      end
+
+      fun {JoinQueriesSub Queries}
+         case Queries of Q1|(Qr=Q2|Qrr) then
+            case {IsDirective Q1} then
+               Q1|{JoinQueriesSub Qr}
+            elsecase Q1 of fDeclare(P11 P12 C1) then
+               case Q2 of fDeclare(P21 P22 C2) then NewP1 NewP2 Vs1 Vs2 in
+                  NewP1 = {MakeTrivialLocalPrefix P11 ?Vs1 nil}
+                  NewP2 = {MakeTrivialLocalPrefix P21 ?Vs2 nil}
+                  case {AreDisjointVariableLists Vs1 Vs2} then NewQ in
+                     NewQ = fDeclare({FoldR {Append Vs1 Vs2}
+                                      fun {$ V Rest} fAnd(V Rest) end
+                                      fSkip(C1)}
+                                     fAnd(NewP1 fAnd(P12 fAnd(NewP2 P22))) C1)
+                     {JoinQueriesSub NewQ|Qrr}
+                  else
+                     Q1|{JoinQueriesSub Qr}
+                  end
+               else
+                  {JoinQueriesSub fDeclare(P11 fAnd(P12 Q2) C1)|Qrr}
+               end
+            else
+               Q1|{JoinQueriesSub Qr}
+            end
+         else
+            Queries
+         end
+      end
+   in
+      fun {JoinQueries Queries Reporter} Directives OtherQueries NewQueries in
+         {List.takeDropWhile Queries IsDirective ?Directives ?OtherQueries}
+         {JoinQueriesSub OtherQueries ?NewQueries}
+         case NewQueries of [fDeclare(P1 P2 C)] then
+            {Append Directives [fLocal(P1 P2 C)]}
+         elseof nil then
+            Directives
+         else
+            {Reporter error(kind: ExpansionError
+                            msg: 'Ozma only supports one query in input')}
+            Directives
+         end
+      end
+   end
+
+   proc {UnnestQuery TopLevel Reporter Switches Query ?GVs ?GS ?FreeGVs}
+      O = {New Unnester init(TopLevel Reporter Switches)}
+   in
+      {O unnestQuery(Query ?GVs ?GS ?FreeGVs)}
    end
 end

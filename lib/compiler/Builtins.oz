@@ -1,12 +1,12 @@
 %%%
 %%% Authors:
-%%%   Author's name (Author's email address)
+%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
 %%%
 %%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Martin Mueller (mmueller@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Leif Kornstaedt, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -22,9 +22,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-%%%  Programming Systems Lab, Universitaet des Saarlandes,
-%%%  Postfach 15 11 50, D-66041 Saarbruecken, Phone (+49) 681 302-5609
-%%%  Author: Leif Kornstaedt <kornstae@ps.uni-sb.de>
 
 %%
 %% This defines a function `GetBuiltinInfo' that returns information

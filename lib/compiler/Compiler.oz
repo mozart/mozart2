@@ -1,12 +1,9 @@
 %%%
 %%% Authors:
-%%%   Author's name (Author's email address)
-%%%
-%%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Leif Kornstaedt, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -22,9 +19,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-%%%  Programming Systems Lab, Universitaet des Saarlandes,
-%%%  Postfach 15 11 50, D-66041 Saarbruecken, Phone (+49) 681 302-5609
-%%%  Author: Leif Kornstaedt <kornstae@ps.uni-sb.de>
 
 local
    %%
@@ -205,7 +199,7 @@ in
    %% which is supposed to ensure the necessary locking.
    %%
 
-   class CompilerClass from Unnester
+   class CompilerClass
       prop final
       feat interface
       attr switches reporter TopLevel ExecutingThread InterruptLock
@@ -224,7 +218,6 @@ in
          {Interface ShowInfo('PS Oz Compiler '#OZVERSION#' of '#DATE#'\n\n')}
          CompilerClass, putEnv(BaseEnv)
          CompilerClass, mergeEnv(CompilerEnv)
-         Unnester, init(@TopLevel)
          {Interface SetSwitches(@switches)}
          {@reporter getMaxNumberOfErrors(?N)}
          {Interface SetMaxNumberOfErrors(N)}
@@ -295,11 +288,11 @@ in
                raise rejected end
             else skip
             end
-            case {@switches get(ozma $)} then
-               Unnester, joinQueries(Queries0 ?Queries)
-            else
-               Queries = Queries0
-            end
+            Queries = case {@switches get(ozma $)} then
+                         {JoinQueries Queries0 @reporter}
+                      else
+                         Queries0
+                      end
             T = {Thread.this}
             CompilerClass,
             ExecProtected(proc {$}
@@ -403,7 +396,8 @@ in
             else skip
             end
             {@reporter logPhase('transforming into graph representation ...')}
-            Unnester, unnestQuery(Query ?TopLevelGVs ?GS ?FreeGVs)
+            {UnnestQuery @TopLevel @reporter @switches Query
+             ?TopLevelGVs ?GS ?FreeGVs}
             case {@switches get(warnredecl $)} then
                {ForAll TopLevelGVs
                 proc {$ GV} PrintName = {GV getPrintName($)} in

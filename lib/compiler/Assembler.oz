@@ -1,12 +1,10 @@
 %%%
 %%% Authors:
-%%%   Author's name (Author's email address)
-%%%
-%%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%%   Ralf Scheidhauer (scheidhr@ps.uni-sb.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Leif Kornstaedt and Ralf Scheidhauer, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -22,10 +20,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-%%%  Programming Systems Lab, Universitaet des Saarlandes,
-%%%  Postfach 15 11 50, D-66041 Saarbruecken, Phone (+49) 681 302-5609
-%%%  Author: Leif Kornstaedt <kornstae@ps.uni-sb.de>
-%%%  Taken in parts from Oz/newcompiler/assembler.oz (modified)
 
 %%
 %% This file defines the procedure `Assemble' which takes a list of

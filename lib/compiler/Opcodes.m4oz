@@ -1,3 +1,26 @@
+dnl
+dnl Authors:
+dnl   Ralf Scheidhauer (scheidhr@ps.uni-sb.de)
+dnl   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+dnl
+dnl Copyright:
+dnl   Ralf Scheidhauer and Leif Kornstaedt, 1997
+dnl
+dnl Last change:
+dnl   $Date$ by $Author$
+dnl   $Revision$
+dnl
+dnl This file is part of Mozart, an implementation
+dnl of Oz 3
+dnl    $MOZARTURL$
+dnl
+dnl See the file "LICENSE" or
+dnl    $LICENSEURL$
+dnl for information on usage and redistribution
+dnl of this file, and for a DISCLAIMER OF ALL
+dnl WARRANTIES.
+dnl
+
 define(instruction,
         `ifelse(numOfRegs($2,$3,$4),1,oneReg($@),
                 numOfRegs($2,$3,$4),2,twoRegs($@),

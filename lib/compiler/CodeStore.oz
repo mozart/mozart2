@@ -57,6 +57,7 @@ Continuations = c(vStepPoint: 5
                   vTestNumber: 7
                   vTestLiteral: 7
                   vMatch: 6
+                  vThread: 4
                   vLockThread: 4
                   vLockEnd: 3)
 
@@ -110,12 +111,6 @@ class CodeStore from Emitter
    meth startDefinition()
       Saved <- @minReg|@Saved
       minReg <- @NextReg
-   end
-   meth cancelDefinition()
-      case @Saved of M|R then
-         minReg <- M
-         Saved <- R
-      end
    end
    meth newReg(?Reg)
       Reg = @NextReg
@@ -331,6 +326,11 @@ class CodeStore from Emitter
                 end
                 {BitArray.'or' RS CodeStore, GetOccs(Addr $)}
              end}
+         [] vThread(_ Addr _ Cont InitsRS) then RS0 in
+            CodeStore, ComputeOccs(Addr ?RS0)
+            InitsRS = {BitArray.clone RS0}
+            {BitArray.and InitsRS RS}
+            {BitArray.'or' RS RS0}
          [] vLockThread(_ Reg _ _ _) then
             CodeStore, RegOcc(Reg RS)
          [] vLockEnd(_ _ _ _) then
@@ -469,6 +469,8 @@ class CodeStore from Emitter
                 end
                 CodeStore, AddRegOccs(Addr AddRS2)
              end}
+         [] vThread(_ Addr _ Cont _) then
+            CodeStore, AddRegOccs(Addr AddRS2)
          [] vLockThread(_ _ _ _ _) then
             skip
          [] vLockEnd(_ _ _ _) then

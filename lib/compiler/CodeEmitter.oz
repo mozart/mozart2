@@ -866,6 +866,30 @@ in
             Emitter, RestoreRegisterMapping(RegMap)
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'conditional')
+         [] vThread(_ Addr Coord Cont InitsRS) then
+            HasLocalEnv ContLabel Dest RegMap
+            OldContLabels OldLocalEnvsInhibited
+         in
+            Emitter, DoInits(InitsRS ThisAddr)
+            Emitter, MayAllocateEnvLocally(Cont true ?HasLocalEnv)
+            Emitter, Dereference(Cont ?ContLabel ?Dest)
+            Emitter, DebugEntry(Coord 'thread')
+            Emitter, Emit('thread'(Dest))
+            Emitter, SaveAllRegisterMappings(?RegMap)
+            Emitter, KillAllTemporaries()
+            OldContLabels = @contLabels
+            contLabels <- nil
+            OldLocalEnvsInhibited = @LocalEnvsInhibited
+            if HasLocalEnv then skip
+            else
+               LocalEnvsInhibited <- true
+            end
+            Emitter, EmitAddrInLocalEnv(Addr HasLocalEnv)
+            LocalEnvsInhibited <- OldLocalEnvsInhibited
+            contLabels <- OldContLabels
+            Emitter, RestoreAllRegisterMappings(RegMap)
+            Emitter, Emit(lbl(ContLabel))
+            Emitter, DebugExit(Coord 'thread')
          [] vLockThread(_ Reg Coord Cont Dest) then X in
             if Emitter, IsFirst(Reg $) then
                {self.reporter
@@ -2088,6 +2112,8 @@ in
                      end [Addr Cont]}
          in
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
+         [] vThread(_ _ _ Cont InitsRS) then
+            Emitter, PredictRegForInits(Reg InitsRS [Cont] ?R)
          [] vLockThread(_ Reg0 _ Cont _) then
             if Reg == Reg0 then
                Emitter, AllocateAnyTemp(Reg ?R)

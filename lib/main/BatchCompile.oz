@@ -92,7 +92,7 @@ local
    '                              This is the default mode.\n'#
    '-c, --dump                    Compile and evaluate an expression,\n'#
    '                              pickling the result\n'#
-   '                              (file extension: .ozp).\n'#
+   '                              (file extension: .ozf).\n'#
    '-x, --syslet                  Compile and evaluate an expression,\n'#
    '                              making a syslet of the result\n'#
    '                              (file extension: none).\n'#
@@ -503,7 +503,7 @@ in
                    [] feedtoemulator then
                       OFN = unit
                    [] dump then
-                      OFN = {ChangeExtension Arg ".oz" ".ozp"}
+                      OFN = {ChangeExtension Arg ".oz" ".ozf"}
                    [] syslet then
                       OFN = {ChangeExtension Arg ".oz" ""}
                    end

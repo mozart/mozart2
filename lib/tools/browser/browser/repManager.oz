@@ -2811,6 +2811,7 @@ in
             [] t   then Size GObj = Group.obj in
                Size = {GObj GetSize($)}
                {GObj Close}
+               Size
 
             [] s   then
                {WO deleteBackward(Group.strSize)}

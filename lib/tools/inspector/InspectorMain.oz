@@ -37,6 +37,7 @@ export
    'nodes'      : TreeNodes
    'new'        : NewInspector
    'reflect'    : Reflect
+   'unreflect'  : Unreflect
 define
    fun {NewServer O}
       S P
@@ -574,6 +575,7 @@ define
    %% Object Creation Function
    %%
    Reflect = Reflection.reflect
+   Unreflect = Reflection.unreflect
    fun {NewInspector Options}
       InspectorPort InspectorObject
    in

@@ -37,7 +37,7 @@ export
    deinstallWatchers:DeinstallWatchers
 define
    fun {GetHostNames}
-      [{OS.uName}.nodename]
+      [localhost {OS.uName}.nodename]
    end
 
    proc {GetRemoteManagers Number Hosts Managers}

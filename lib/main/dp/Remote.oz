@@ -99,17 +99,18 @@ define
          Ctrl:   nil
          Status: okay
 
-      meth init(host:   HostIn <= localhost
-                fork:   ForkIn <= automatic
-                detach: Detach <= false
-                home:   Home   <= HOME
-                pid:    PID    <= _)
+      meth init(host:    HostIn  <= localhost
+                fork:    ForkIn  <= automatic
+                detach:  Detach  <= false
+                home:    Home    <= HOME
+                timeout: Timeout <= 30000 % kost@ : 30 secs should be OK?
+                pid:     PID     <= _)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
          Host = {VirtualString.toAtom HostIn}
          Fork = {VirtualString.toAtom ForkIn}
-
+         Cancel
       in
          PID={ForkProcess
               if Host==localhost then
@@ -123,10 +124,25 @@ define
               end
               Home Host RunPort#CtrlPort Detach}
 
-         Run        <- RunRet.2
-         Ctrl       <- CtrlRet.2
-         self.Run    = RunRet.1
-         self.Ctrl   = CtrlRet.1
+         thread
+            {Delay Timeout}
+            Cancel = unit
+         end
+
+         case {Record.waitOr RunRet#Cancel}
+         of 1 then
+            case {Record.waitOr CtrlRet#Cancel}
+            of 1 then
+               Run        <- RunRet.2
+               Ctrl       <- CtrlRet.2
+               self.Run    = RunRet.1
+               self.Ctrl   = CtrlRet.1
+            else
+               {Exception.raiseError remote(cannotCreate self Host)}
+            end
+         else
+            {Exception.raiseError remote(cannotCreate self Host)}
+         end
       end
 
       meth SyncSend(Which What)

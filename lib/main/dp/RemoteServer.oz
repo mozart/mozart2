@@ -34,6 +34,7 @@ import
    Fault
    Property(put)
    OS(signal)
+   Error(printException)
 
 prepare
    ExitDone        = 0
@@ -89,10 +90,11 @@ define
 
    try
       RunRet # CtrlRet = {Connection.take Args.ticket}
-
       {Port.send RunRet  {Port.new RunStr}}
       {Port.send CtrlRet {Port.new CtrlStr}}
-   catch _ then
+   catch Ex then
+      {System.showError 'Remote Server: failed to take a ticket'}
+      {Error.printException Ex}
       {Application.exit ExitErrorTicket}
    end
 
@@ -110,7 +112,6 @@ define
           {Application.exit ExitErrorClient}
        end}
    end
-
 
    %% The module manager server
    thread

@@ -18,8 +18,16 @@ define
    thread
       {List.forAll {NewPort $ PP} proc{$  M}
                                      thread
-                                        case M of port(P) then
+                                        case M of new_port(P) then
                                            {Send P {NewPort _}}
+                                        elseof  old_port(P) then
+                                           {Send P PP}
+                                        elseof no_port(P) then
+                                           {Send P p}
+                                        elseof bind(V) then
+                                           V = unit
+                                        elseof id_var(Id) then
+                                           {Send DD.Id _}
                                         elseof start(V) then
                                            {Dictionary.removeAll DD}
                                            {System.gcDo}
@@ -29,6 +37,8 @@ define
                                            DD.Id:=P
                                         elseof send(Id) then
                                            {Send DD.Id a}
+                                        elseof send_port(Id) then
+                                           {Send DD.Id {NewPort _}}
                                         elseof kill then
                                            {Application.exit 0}
                                         end

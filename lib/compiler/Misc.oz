@@ -85,8 +85,8 @@ fun {DowncasePrintName X} S in
    end
 end
 
-NameVariable = {`Builtin` 'nameVariable' 2}
+NameVariable = {`Builtin` 'Compiler.nameVariable' 2}
 
-IsBuiltin = {`Builtin` 'isBuiltin' 2}
+IsBuiltin = {`Builtin` 'Compiler.isBuiltin' 2}
 
-ConcatenateAtomAndInt = {`Builtin` 'concatenateAtomAndInt' 3}
+ConcatenateAtomAndInt = {`Builtin` 'Compiler.concatenateAtomAndInt' 3}

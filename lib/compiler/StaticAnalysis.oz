@@ -978,10 +978,11 @@ local
 %-----------------------------------------------------------------------
 %  global control information
 
-   NewNamedName            = {`Builtin` 'newNamedName'            2}
-   NewCopyableName         = {`Builtin` 'newCopyableName'         2}
-   NewPredicateRef         = {`Builtin` 'newPredicateRef'         1}
-   NewCopyablePredicateRef = {`Builtin` 'newCopyablePredicateRef' 1}
+   NewNamedName            = {`Builtin` 'Compiler.newNamedName'            2}
+   NewCopyableName         = {`Builtin` 'Compiler.newCopyableName'         2}
+   NewPredicateRef         = {`Builtin` 'Compiler.newPredicateRef'         1}
+   NewCopyablePredicateRef = {`Builtin` 'Compiler.newCopyablePredicateRef' 1}
+   NewUniqueName           = {`Builtin` 'NewUniqueName'                    2}
 
    class Control
       prop final
@@ -2098,7 +2099,7 @@ local
 
       meth doNewUniqueName(Ctrl)
          NName = {GetData {Nth @actualArgs 1}}
-         Value = {{`Builtin` 'NewUniqueName' 2} NName}   % always succeeds
+         Value = {NewUniqueName NName}   % always succeeds
          Token = {New Core.nameToken init(NName Value true)}
          BndVO = {Nth @actualArgs 2}
       in

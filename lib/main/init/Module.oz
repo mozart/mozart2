@@ -94,12 +94,13 @@ local
       end
 
       meth !Link(Url ?Module)
-         {self trace('link' Url)}
          %% Return module from "Url"
          lock Key={URL.toAtom Url} ModMap=self.ModuleMap in
-            case {Dictionary.member ModMap Key} then
+            if {Dictionary.member ModMap Key} then
+               {self trace('link [found]' Url)}
                {Dictionary.get ModMap Key Module}
             else
+               {self trace('link [lazy]' Url)}
                TryModule
                = {ByNeed
                   fun {$}
@@ -195,7 +196,7 @@ in
       end
 
       Trace = {NewCell
-               case {OS.getEnv 'OZ_TRACE_MODULE'}==false
+               if {OS.getEnv 'OZ_TRACE_MODULE'}==false
                then TraceOFF else TraceON end}
       ApiTrace =
       trace(set:proc {$ B}

@@ -24,9 +24,24 @@
 local
 
    local
-      fun {AllToString I V S}
-         if I>0 then {AllToString I-1 V {Append {ToString V.I} S}}
-         else S
+      fun {Flatten I V Ss}
+         if I>0 then VI=V.I in
+            {Flatten I-1 V if {IsTuple VI} andthen {Label VI}=='#' then
+                              {Flatten {Width VI} VI Ss}
+                           else
+                              {ToString VI}|Ss
+                           end}
+         else Ss
+         end
+      end
+      fun {App Is Sr}
+         case Is of nil then {AllToString Sr}
+         [] I|Ir then I|{App Ir Sr}
+         end
+      end
+      fun {AllToString Ss}
+         case Ss of nil then nil
+         [] S|Sr then {App S Sr}
          end
       end
       fun {SignOzToOS Is}
@@ -42,17 +57,19 @@ local
             if V<0 then &-|{Int.toString {Abs V}}
             else {Int.toString V}
             end
-         [] float then {SignOzToOS {Float.toString V}}
+         [] float then
+            {SignOzToOS {Float.toString V}}
          [] atom then
             case V
             of '#' then nil
             [] nil then nil
             else {Atom.toString V}
             end
-         [] byteString then {Boot_ByteString.toString V}
+         [] byteString then
+            {Boot_ByteString.toString V}
          [] tuple then
             case {Label V}
-            of '#' then {AllToString {Width V} V ""}
+            of '#' then {AllToString {Flatten {Width V} V nil}}
             [] '|' then V
             end
          end

@@ -31,6 +31,7 @@ NewOpen
 NewCompiler
 UrlDefaults
 OuterBoot
+NewModule
 in
 
 \insert 'sp/Error.oz'
@@ -50,6 +51,8 @@ in
 
 \insert 'op/Open.oz'
 = NewOpen
+
+\insert 'init/Module.oz'
 
 local
    FunMisc      = \insert compiler/FunMisc
@@ -128,22 +131,19 @@ OuterBoot = {`Builtin` 'BootManager' 2}
         thread {F.apply IMPORT}=V end
      end}
 
-    \insert 'init/Module.oz'
-
-    Module = {NewModule}
+    Module = {NewModule.apply 'import'('Pickle': Pickle
+                                       'System': System
+                                       'OS':     OS
+                                       'Boot':   b(manager: BootManager))}
 
     {ForAll ['Parser'#   Parser
              'FDB'#      FDB
              'FSB'#      FSB
              'FDP'#      FDP
              'FSP'#      FSP
-             'OS'#       OS
-             'Pickle'#   Pickle
-             'System'#   System
-             'CompilerSupport'#  CompilerSupport
-             'Property'# Property]
+             'CompilerSupport'#  CompilerSupport]
      proc {$ A#M}
-        {Module.enter 'x-oz-boot://'#A M}
+        {Module.enter 'x-oz://boot/'#A M}
      end}
 
     {ForAll ['System'#       System

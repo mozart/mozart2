@@ -37,8 +37,16 @@
 
 local
 
-   BootScheme   = "x-oz-boot"
-   % SystemScheme = "x-oz-system"
+   \insert 'RURL.oz'
+
+   local
+      BootUrl   = {RURL.vsToUrl "x-oz://boot//DUMMY"}
+      SystemUrl = {RURL.vsToUrl "x-oz://system//DUMMY"}
+   in
+      OzScheme  = BootUrl.scheme = SystemUrl.scheme
+      %% BootLoc   = BootUrl.netloc
+      %% SystemLoc = SystemUrl.netloc
+   end
 
    local
       UrlDefaults = \insert '../../url-defaults.oz'
@@ -47,66 +55,72 @@ local
       MozartUrl = UrlDefaults.'home'
    end
 
-   \insert 'RURL.oz'
-
-
    fun {ToUrl UorV}
       case {VirtualString.is UorV} then {RURL.vsToUrl UorV}
       else UorV
       end
    end
 
-   fun {NewSyncDict}
-      D = {Dictionary.new}
-      L = {Lock.new}
-   in
-      dict(ensure: fun {$ Key ?Entry}
-                      lock L then
-                         case {Dictionary.member D Key} then
-                            Entry={Dictionary.get D Key} true
-                         else
-                            Entry={Dictionary.put D Key} false
-                         end
-                      end
-                   end
-           member: fun {$ Key}
-                      lock L then {Dictionary.member D Key} end
-                   end
-           put:    proc {$ Key X}
-                      lock L then {Dictionary.put D Key X} end
-                   end
-           get:    fun {$ Key}
-                      lock L then {Dictionary.get D Key} end
-                   end)
+   proc {Swallow _}
+      skip
    end
 
+   %%
+   %% Register System names
+   %%
+
+   SystemMap = local
+                  Functors = \insert '../functor-defaults.oz'
+                  ProtoUrl = {RURL.vsToUrl MozartUrl#"DUMMY"}
+                  ShareUrl = url(netloc: ProtoUrl.netloc
+                                 scheme: ProtoUrl.scheme)
+               in
+                  {List.toRecord map
+                   {FoldL Functors.dirs
+                    fun {$ Urls Kind}
+                       {FoldL Functors.Kind
+                        fun {$ Urls ModName}
+                           ModName #
+                           {Adjoin
+                            {RURL.vsToUrl MozartUrl#Kind#'/'#ModName#FunExt}
+                            ShareUrl} | Urls
+                        end Urls}
+                    end
+                    {FoldL Functors.volatile
+                     fun {$ Urls ModName}
+                        ModName #
+                        {Adjoin
+                         {RURL.vsToUrl MozartUrl#'lib/'#ModName#FunExt}
+                         ShareUrl} | Urls
+                     end nil}}}
+               end
 
 in
 
-   fun {NewModule}
+   functor NewModule prop once
 
-      Load  = Pickle.load
+   import
+      Pickle System OS Boot
+   export
+      load:   ModuleLoad
+      link:   ModuleLink
+      enter:  ModuleEnter
 
-      Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then
-                 proc {$ _} skip end
-              else
-                 System.showInfo
+   body
+
+      Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then Swallow
+              else System.showInfo
               end
 
       fun {LoadFromUrl UrlV}
-         {Trace '[Module] Load: '#UrlV}
-         {Load UrlV}
+         {Trace '[Module] Load:  '#UrlV}
+         {Pickle.load UrlV}
       end
 
+      %%
       %% Mapping: URL -> Module
       %%
-      ModuleMap = {NewSyncDict}
-
-      %%
-      %% Url resolving
-      %%
-      SystemMap = {NewSyncDict}
-
+      ModuleMap = {Dictionary.new}
 
       fun {ModNameToUrl ModName From BaseUrl}
          FromUrl = {ToUrl case From==unit then
@@ -114,10 +128,11 @@ in
                           else From
                           end}
       in
-         case {CondSelect FromUrl scheme ""}==BootScheme then
+         case {CondSelect FromUrl scheme ""}==OzScheme then
+            %% Reserved scheme for boot and system modules
             FromUrl
-         elsecase {SystemMap.member ModName} then
-            {SystemMap.get ModName}
+         elsecase {HasFeature SystemMap ModName} then
+            SystemMap.ModName
          else
             RelUrl = {ToUrl case From==unit then ModName#'.ozf'
                             else From
@@ -143,86 +158,56 @@ in
          {Func.'apply' IMPORT}
       end
 
-      proc {GetFunctor Url ?Mod}
-         UrlKey = {RURL.urlToKey Url}
+      local
+         GetLock = {NewLock}
       in
-         case {ModuleMap.ensure UrlKey ?Mod} then
-            {Trace '[Module] Get:   '#UrlKey}
-         elsecase {CondSelect Url scheme ""}==BootScheme then
-            {Trace '[Module] Boot:  '#UrlKey}
-            Mod = {BootManager Url.path.1.1}
-         else
-            {Trace '[Module] Sync: '#UrlKey}
-            Mod={ByNeed fun {$}
-                           {LinkFunctor Url {LoadFromUrl UrlKey}}
-                        end}
+         fun {GetFunctor Url}
+            UrlKey = {RURL.urlToKey Url}
+         in
+            lock GetLock then
+               case {Dictionary.member ModuleMap UrlKey} then skip else
+                  {Dictionary.put ModuleMap UrlKey
+                   case {CondSelect Url scheme ""}==OzScheme then
+                      {Trace '[Module] Boot:  '#UrlKey}
+                      {Boot.manager Url.path.1.1}
+                   else
+                      {Trace '[Module] Sync:  '#UrlKey}
+                      {ByNeed fun {$}
+                                 {LinkFunctor Url {LoadFromUrl UrlKey}}
+                              end}
+                   end}
+               end
+               {Dictionary.get ModuleMap UrlKey}
+            end
+         end
+
+         proc {ModuleLink UrlV Func ?Mod}
+            {Trace '[Module] Link:  '#UrlV}
+            Url = {RURL.vsToUrl UrlV}
+         in
+            lock GetLock then
+               {Dictionary.put ModuleMap {RURL.urlToKey Url} Mod}
+            end
+            thread
+               Mod={LinkFunctor Url Func}
+            end
+         end
+
+         proc {ModuleEnter UrlV Mod}
+            {Trace '[Module] Enter: '#UrlV}
+            Url={RURL.vsToUrl UrlV}
+         in
+            lock GetLock then
+               {Dictionary.put ModuleMap {RURL.urlToKey Url} Mod}
+            end
          end
       end
 
-
-      Module = module(load:
-                         fun {$ ModName From}
-                            Url={ModNameToUrl ModName From unit}
-                         in
-                            {GetFunctor Url}
-                         end
-                      link:
-                         proc {$ UrlV Func ?Mod}
-                            Url = {RURL.vsToUrl UrlV}
-                         in
-                            {ModuleMap.put {RURL.urlToKey Url} Mod}
-                            thread
-                               Mod={LinkFunctor Url Func}
-                            end
-                         end
-                      enter:
-                         proc {$ UrlV Mod}
-                            {Trace '[Module] Enter: '#UrlV}
-                            Url={RURL.vsToUrl UrlV}
-                         in
-                            {ModuleMap.put {RURL.urlToKey Url} Mod}
-                         end
-                      system:
-                         proc {$ ModName UrlV}
-                            {Trace '[Module] System Map: '#ModName#':='#UrlV}
-                            {SystemMap.put ModName {RURL.vsToUrl UrlV}}
-                         end
-                      resolve: ModNameToUrl
-                      getUrl:
-                         fun {$ ModName From}
-                            case {SystemMap.member ModName} then
-                               {SystemMap.get ModName}
-                            else
-                               {ToUrl case From==unit then ModName#'.ozf'
-                                      else From
-                                      end}
-                            end
-                         end)
-
-      %%
-      %% Register System defaults
-      %%
-
-      local
-         Functors = \insert '../functor-defaults.oz'
+      fun {ModuleLoad ModName From}
+         Url={ModNameToUrl ModName From unit}
       in
-         %% System library functors
-         {ForAll Functors.dirs
-          proc {$ Kind}
-             {ForAll Functors.Kind
-              proc {$ ModName}
-                 {Module.system ModName MozartUrl#Kind#'/'#ModName#FunExt}
-              end}
-          end}
-         {ForAll Functors.volatile
-          proc {$ ModName}
-             {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
-          end}
+         {GetFunctor Url}
       end
-
-   in
-
-      Module
 
    end
 

@@ -35,7 +35,7 @@ in
    functor $ prop once
 
    import
-      WIF from 'x-oz-boot:Wif'
+      WIF from 'x-oz://boot/Wif'
 
       Property.{get}
 

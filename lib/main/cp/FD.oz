@@ -218,9 +218,9 @@ in
    functor $ prop once
 
    import
-      FDB from 'x-oz-boot:FDB'
+      FDB from 'x-oz://boot/FDB'
 
-      FDP from 'x-oz-boot:FDP'
+      FDP from 'x-oz://boot/FDP'
 
       ErrorRegistry.{put}
 

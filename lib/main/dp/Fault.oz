@@ -31,7 +31,7 @@ import
           getNetBufferSize
           tempSimulate}
 
-      from 'x-oz-boot:Fault'
+      from 'x-oz://boot/Fault'
 
 export
    install:           Install

@@ -28,9 +28,9 @@
 functor $ prop once
 
 import
-   FSB from 'x-oz-boot:FSB'
+   FSB from 'x-oz://boot/FSB'
 
-   FSP from 'x-oz-boot:FSP'
+   FSP from 'x-oz://boot/FSP'
 
    FD.{bool
        decl

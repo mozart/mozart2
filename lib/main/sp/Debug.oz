@@ -46,7 +46,7 @@ in
              procedureCode
              procedureCoord
             }
-         from 'x-oz-boot:Debug'
+         from 'x-oz://boot/Debug'
 
    export
       dumpThreads:    DumpThreads

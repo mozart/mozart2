@@ -123,10 +123,10 @@ in
       Fault.{install deinstall}
 
       PID.{get received toPort}
-          from 'x-oz-boot:PID'
+          from 'x-oz://boot/PID'
 
       Distribution.{'export'}
-          from 'x-oz-boot:Distribution'
+          from 'x-oz://boot/Distribution'
 
    export
       offer: Offer

@@ -103,7 +103,7 @@ in
    functor $ prop once
 
    import
-      SCP from 'x-oz-boot:Schedule'
+      SCP from 'x-oz://boot/Schedule'
 
       FD.{bool
           is

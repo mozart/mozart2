@@ -26,7 +26,7 @@
 functor $ prop once
 
 import
-   Finalize from 'x-oz-boot:Finalize'
+   Finalize from 'x-oz://boot/Finalize'
 
 export
    register:   Register

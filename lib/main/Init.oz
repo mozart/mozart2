@@ -22,80 +22,91 @@
 %%% WARRANTIES.
 %%%
 
-functor prop once
-import
-   Boot.{manager}
-body
+local
 
-   BootManager = Boot.manager
+   \insert 'init/Module.oz'
 
-   BURL     = {BootManager 'URL'}
-
-   OS       = {BootManager 'OS'}
-   Pickle   = {BootManager 'Pickle'}
-   Property = {BootManager 'Property'}
-   System   = {BootManager 'System'}
-
-
-   Getenv = OS.getEnv
-   SET    = Property.put
-   GET    = Property.get
-
-   %% usual system initialization
-   URL = local
-      \insert 'init/Prop.oz'
-      \insert 'init/URL.oz'
-   in
-      {SET url URL}
-      {SET load URL.load}
-      URL
-   end
-   %% execute application
    local
-      %% create module manager
-      \insert 'init/Module.oz'
-      Module = {NewModule}
-
-      %% Register some volatile modules
-
       UrlDefaults = \insert '../url-defaults.oz'
+   in
       FunExt      = UrlDefaults.'functor'
       MozartUrl   = UrlDefaults.'home'
+   end
 
-      {Module.enter 'x-oz-boot://OS'       OS}
-      {Module.enter 'x-oz-boot://Property' OS}
-      {Module.enter 'x-oz-boot://URL'      BURL}
-      {Module.enter 'x-oz-boot://Pickle'   Pickle}
-      {Module.enter 'x-oz-boot://System'   System}
+in
 
-      {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
-      {Module.enter MozartUrl#'lib/Property'#FunExt Property}
-      {Module.enter MozartUrl#'lib/Pickle'#FunExt   Pickle}
-      {Module.enter MozartUrl#'lib/System'#FunExt   System}
+   functor prop once
+   import
+      Boot
+   body
 
-      {Module.enter MozartUrl#'lib/Module'#FunExt Module}
-      {Module.enter MozartUrl#'lib/URL'#FunExt    URL}
+      BootManager = Boot.manager
 
-      %% create and install ErrorHandler module
-      functor ErrorHandler prop once
-      import
-         Error
-      body
-         {Property.put 'errors.handler'
-          proc {$ E}
-             %% cause Error to be instantiated, which installs
-             %% a new error handler as a side effect
-             {Wait Error}
-             %% invoke this new error handler
-             {Property.get 'errors.handler' E}
-             %% this whole procedure is invoked at most once
-             %% since instantiatingError causes the handler
-             %% to be replaced with a better one.
-          end}
+      BURL     = {BootManager 'URL'}
+
+      OS       = {BootManager 'OS'}
+      Pickle   = {BootManager 'Pickle'}
+      Property = {BootManager 'Property'}
+      System   = {BootManager 'System'}
+
+
+      Getenv = OS.getEnv
+      SET    = Property.put
+      GET    = Property.get
+
+      %% usual system initialization
+      URL = local
+               \insert 'init/Prop.oz'
+               \insert 'init/URL.oz'
+            in
+               {SET url URL}
+               {SET load URL.load}
+               URL
+            end
+
+      %% execute application
+
+      local
+         %% create module manager
+         Module = {NewModule.apply 'import'('System': System
+                                            'Pickle': Pickle
+                                            'OS':     OS
+                                            'Boot':   Boot)}
+
+         %% Register some volatile modules
+
+         {Module.enter 'x-oz://boot/URL' BURL}
+
+         {Module.enter MozartUrl#'lib/OS'#FunExt       OS}
+         {Module.enter MozartUrl#'lib/Property'#FunExt Property}
+         {Module.enter MozartUrl#'lib/Pickle'#FunExt   Pickle}
+         {Module.enter MozartUrl#'lib/System'#FunExt   System}
+         {Module.enter MozartUrl#'lib/Module'#FunExt   Module}
+         {Module.enter MozartUrl#'lib/URL'#FunExt      URL}
+
+         %% create and install ErrorHandler module
+         functor ErrorHandler prop once
+         import
+            Error
+         body
+            {Property.put 'errors.handler'
+             proc {$ E}
+                %% cause Error to be instantiated, which installs
+                %% a new error handler as a side effect
+                {Wait Error}
+                %% invoke this new error handler
+                {Property.get 'errors.handler' E}
+                %% this whole procedure is invoked at most once
+                %% since instantiatingError causes the handler
+                %% to be replaced with a better one.
+             end}
+         end
+
+         {Module.link MozartUrl#'ErrorHandler'#FunExt ErrorHandler _}
+      in
+
+         %% load and install (i.e. execute) root functor (i.e. application)
+         {Wait {Module.load unit {GET 'root.url'}}}
       end
-      {Module.link MozartUrl#'ErrorHandler'#FunExt ErrorHandler _}
-   in
-      %% load and install (i.e. execute) root functor (i.e. application)
-      {Wait {Module.load unit {GET 'root.url'}}}
    end
 end

@@ -722,6 +722,7 @@ define
                                          end}
                                  in
                                     {Space.commit S 1}
+                                    {Space.ask S _}
                                     {Space.merge  S _}
                                  end)
                         keys: [commit merge space 'choice'])

@@ -20,23 +20,11 @@
 %%% WARRANTIES.
 %%%
 
-fun lazy {MakeAllLoader IMPORT}
-   {Application.loader
-    {List.toRecord full
-     {Append
-      {Map ['SP' 'OP' 'DP']
-       fun {$ C}
-          C#case {HasFeature IMPORT C} then X=IMPORT.C in value(fun {$} X end)
-            else eager end
-       end}
-      {Map ['AP' 'CP' 'WP'
-            'Panel' 'Browser' 'Explorer'
-            'Compiler' 'CompilerPanel'
-            'Emacs' 'Ozcar' 'Profiler'
-            'Gump' 'GumpScanner' 'GumpParser'
-            'Misc']
-       fun {$ C}
-          C#case {HasFeature IMPORT C} then X=IMPORT.C in value(fun {$} X end)
-            else lazy end
-       end}}}}
-end
+AllLoader = {Application.loader
+             full('SP':eager 'OP':eager 'DP':eager
+                  'AP':lazy 'CP':lazy 'WP':lazy
+                  'Panel':lazy 'Browser':lazy 'Explorer':lazy
+                  'Compiler':lazy 'CompilerPanel':lazy
+                  'Emacs':lazy 'Ozcar':lazy 'Profiler':lazy
+                  'Gump':lazy 'GumpScanner':lazy 'GumpParser':lazy
+                  'Misc':lazy)}

@@ -50,10 +50,10 @@ in
       {ForAll CtrlStr
        proc {$ C}
           {Port.send CtrlRet
-           case C
-           of ping  then unit
-           [] close then {Close} unit
-           end}
+           okay(case C
+                of ping  then unit
+                [] close then {Close} unit
+                end)}
        end}
    end
 

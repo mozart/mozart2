@@ -26,10 +26,6 @@ local
 
    \insert './DP/RemoteServer.oz'
 
-   AllLoader = {MakeAllLoader full}
-
-   {Wait AllLoader}
-
 in
 
    {Application.exec
@@ -41,11 +37,7 @@ in
     in
        proc {$ Argv ?Status}
           try
-             Show = {`Builtin` 'Show' 1}
-             {Show waiting(Argv.ticket)}
-             {Show waiting(IMPORT)}
              RunRet # CtrlRet = {IMPORT.'DP'.'Connection'.take Argv.ticket}
-             {Show taken(RunRet CtrlRet)}
           in
              {RemoteServer RunRet CtrlRet IMPORT proc {$}
                                                     Status = 0

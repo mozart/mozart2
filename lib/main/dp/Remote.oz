@@ -22,12 +22,6 @@
 
 local
 
-   \insert 'RemoteServer.oz'
-
-   \insert 'MakeAllLoader.oz'
-
-   IMPORT_ALL = {MakeAllLoader {Adjoin IMPORT full}}
-
    proc {StartRemote Host Cmd}
       try
          0={OS.system 'rsh '#Host#' '#Cmd#' '#[&&]}
@@ -49,23 +43,12 @@ local
       meth init(Host)
          RunRet  RunPort ={Port.new RunRet}
          CtrlRet CtrlPort={Port.new CtrlRet}
-         Show = {`Builtin` 'Show' 1}
+         Ticket={Connection.offer RunPort#CtrlPort}
       in
-         case {VirtualString.toAtom Host}==samehost then
-            {RemoteServer RunRet CtrlRet
-             IMPORT_ALL
-             proc {$} skip end}
-         else
-            Ticket={Connection.offer RunPort#CtrlPort}
-         in
-            {StartRemote Host
-             {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
-            {Show started(RunRet CtrlRet)}
-         end
+         {StartRemote Host
+          {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
          Run      <- RunRet.2
-         {Show run}
          Ctrl     <- CtrlRet.2
-         {Show ctrl}
          self.Run  = RunRet.1
          self.Ctrl = CtrlRet.1
       end

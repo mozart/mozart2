@@ -91,7 +91,7 @@ sub write_oz_fields_wrappers {
     print "   % Accessors for class fields\n";
 
     foreach my $field (keys %$fields) {
-        my $meth = gtk2oz_meth_name("get_$field");
+        my $meth = gtk2oz_meth_name("get_field_$field");
         my $var = gtk2oz_name($field);
 
         my $native = "$$class{name}\Get". gtk2oz_meth_name($field);
@@ -108,7 +108,7 @@ sub write_oz_fields_wrappers {
     print "   % Mutators for class fields\n";
 
     foreach my $field (keys %$fields) {
-        my $meth = gtk2oz_meth_name("set_$field");
+        my $meth = gtk2oz_meth_name("set_field_$field");
         my $var = gtk2oz_name($field);
 
         my $native = "$$class{name}\Set". gtk2oz_meth_name($field);
@@ -128,16 +128,6 @@ sub write_oz_fields_wrappers {
 
 }
 
-sub write_inline_method_when_applicable_and_next {
-    my ($meth) = @_;
-
-    my $code = $$class{meths}{$meth}{code};
-    if ($code) {
-        print "$code\n";
-        next;
-    }
-}
-
 sub write_oz_init_methods {
     return unless $$class{inits};
 
@@ -146,7 +136,11 @@ sub write_oz_init_methods {
     my $inits = $$class{inits};
 
     foreach my $init (keys %$inits) {
-        write_inline_method_when_applicable_and_next($init);
+        my $code = $$class{inits}{$init}{code};
+        if ($code) {
+            print "$code\n";
+            next;
+        }
 
         my $in  = $$class{inits}{$init}{in};  # list of input arguments
         my $out = $$class{inits}{$init}{out}; # the output value
@@ -206,7 +200,11 @@ sub write_oz_meth_wrappers {
 
     foreach my $meth (keys %$meths) {
 
-        write_inline_method_when_applicable_and_next($meth);
+        my $code = $$class{meths}{$meth}{code};
+        if ($code) {
+            print "$code\n";
+            next;
+        }
 
         my $in  = $$class{meths}{$meth}{in};  # list of input arguments
         my $out = $$class{meths}{$meth}{out}; # the output value

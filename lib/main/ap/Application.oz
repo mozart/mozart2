@@ -738,7 +738,7 @@ define
    %% Access to commandline arguments
    %%
 
-   fun {GetCmdArgs Spec} Argv in
+   fun {GetCmdArgs Spec}
       {ProcessArgv Spec
        case {Property.condGet 'ozd.args' unit} of unit then
           {Map {Property.get 'application.args'} AtomToString}

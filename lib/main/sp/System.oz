@@ -30,14 +30,12 @@
 %%
 %% Global
 %%
-Show       = {`Builtin` 'Show'  1}
-Print      = {`Builtin` 'Print' 1}
-Exit       = {`Builtin` shutdown 1}
-SystemRegistry = {{`Builtin` 'SystemRegistry' 1}}
-
-proc {RegistryGet     P   V} {Dictionary.get     SystemRegistry P   V} end
-proc {RegistryPut     P   V} {Dictionary.put     SystemRegistry P   V} end
-proc {RegistryCondGet P D V} {Dictionary.condGet SystemRegistry P D V} end
+Show            = {`Builtin` 'Show'            1}
+Print           = {`Builtin` 'Print'           1}
+Exit            = {`Builtin` shutdown          1}
+GetProperty     = {`Builtin` 'GetProperty'     2}
+PutProperty     = {`Builtin` 'PutProperty'     2}
+CondGetProperty = {`Builtin` 'CondGetProperty' 3}
 
 %%
 %% Module
@@ -253,8 +251,8 @@ in
                    exit: Exit
                    %% interface to system registry
                    registry:
-                      registry(get:RegistryGet
-                               put:RegistryPut
-                               condGet:RegistryCondGet)
+                      registry(get:GetProperty
+                               put:PutProperty
+                               condGet:CondGetProperty)
                   )
 end

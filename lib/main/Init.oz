@@ -22,9 +22,8 @@
 
 proc {$}
    Getenv = {`Builtin` 'OS.getEnv' 2}
-   SystemRegistry = {{`Builtin` 'SystemRegistry' 1}}
-   proc {SET P V} {Dictionary.put SystemRegistry P V} end
-   proc {GET P V} {Dictionary.get SystemRegistry P V} end
+   SET = {`Builtin` 'PutProperty' 2}
+   GET = {`Builtin` 'GetProperty' 2}
    \insert Init/Prop
    \insert Init/URL
 in

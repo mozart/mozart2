@@ -101,7 +101,7 @@ prepare
                          then Module
                          [] 4 andthen
                             {self.TypeCheckProc
-                             ActualType ExpectedType o(url: Url)}
+                             ActualType ExpectedType o(url: Key)}
                          then Module
                          else
                             raise

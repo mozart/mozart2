@@ -103,7 +103,7 @@ define
                 fork:    ForkIn  <= automatic
                 detach:  Detach  <= false
                 home:    Home    <= HOME
-                timeout: Timeout <= 30000 % kost@ : 30 secs should be OK?
+                timeout: Timeout <= {Property.get 'perdio.timeout'}
                 pid:     PID     <= _)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}

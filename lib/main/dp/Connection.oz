@@ -238,8 +238,8 @@ define
       T = {VsToTicket V}
       P = {ToPort T}
       X Y
-      proc {Watch _ _}
-         Y=no
+      proc {Watch E C}
+         Y=no(E C)
       end
       proc {Handle _ _}
          {Exception.raiseError connection(ticketToDeadSite V)}
@@ -266,8 +266,8 @@ define
             Entity=A
          end
       [] 2 then
-         case Y of no then
-            {Exception.raiseError connection(ticketToDeadSite V)}
+         case Y of no(E C) then
+            {Exception.raiseError connection(ticketToDeadSite V E C)}
          end
       end
    end

@@ -293,7 +293,7 @@ in
    fun {GenThreadPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Thr>'
-      else '<Thread: ' # {System.printName Term} # '>'
+      else '<Thread: ' # {Thread.id Term} # '>'
       end
    end
 

@@ -146,6 +146,11 @@ prepare
    end
 
 
+   fun {ListsToTuples Ts}
+      {VectorToTuple {Map Ts VectorToTuple}}
+   end
+
+
 define
 
 
@@ -272,10 +277,6 @@ define
          end
       end
 
-
-      fun {ListsToTuples Ts}
-         {VectorToTuple {Map Ts VectorToTuple}}
-      end
 
       proc {EnumTI ETTuple Start Dur OldOut Stream}
          {WaitStable}

@@ -20,212 +20,200 @@
 %%% WARRANTIES.
 %%%
 
-declare
+%declare
 
 local
-   [BS]={Module.link ['x-oz://boot/Space']}
    NewSpace = Space.new
-   Discard  = Space.discard
-   Ask      = BS.askUnsafe
-   proc {SKIP}
-      skip
+   WaitOr   = Boot_Dictionary.waitOr
+%   [BS]={Module.link ['x-oz://boot/Space']}
+%   Ask      = BS.askUnsafe
+   Ask      = Boot_Space.askUnsafe
+
+   local
+      proc {Skip}
+         skip
+      end
+   in
+      fun {Guardify C}
+         case {Procedure.arity C}
+         of 1 then C
+         [] 0 then fun {$} {C} Skip end
+         end
+      end
+      fun {NewGuard C}
+         {NewSpace {Guardify C}}
+      end
    end
-   fun {NewGuard C}
-      {NewSpace if {Procedure.arity C}==1 then C
-                else proc {$ X} {C} X=SKIP end
-                end}
-   end
+
    proc {CommitGuard G}
       {{Space.merge G}}
    end
+
    fun {DerefCheck S}
       if {IsDet S} then
          case S
          of blocked(S)      then {DerefCheck S}
          [] alternatives(_) then suspended
          [] succeeded(S)    then S
-         [] failed          then failed
+         else S
          end
       else S
       end
    end
+
    fun {Deref S}
       case S
       of blocked(S)      then {Deref S}
       [] alternatives(_) then suspended
       [] succeeded(S)    then S
-      [] failed          then failed
+      else S
       end
    end
+
    proc {WUHFI}
       {Wait _}
    end
+
    local
-      proc {Before I T1 T2}
-         if I>0 then T2.I=T1.I {Before I-1 T1 T2} end
-      end
-      proc {After I N T1 T2}
-         if I=<N then I1=I+1 in T2.I=T1.I1 {After I1 N T1 T2} end
+      proc {Init N C G A}
+         if N>0 then NG={NewGuard C.N} in
+            G.N=NG {Dictionary.put A N {Ask NG}}
+            {Init N-1 C G A}
+         end
       end
    in
-      proc {Drop T1 I ?T2}
-         N={Width T1}-1
+      proc {InitGuards N C ?G ?A}
+         G={MakeTuple '#' N}
+         A={Dictionary.new}
+         {Init N C G A}
+      end
+   end
+
+   proc {DiscardGuards Is G}
+      case Is of nil then skip
+      [] I|Ir then {Space.discard G.I} {DiscardGuards Ir G}
+      end
+   end
+
+   local
+      proc {Cond1 C E}
+         G={NewGuard C}
       in
-         T2={Tuple.make '#' N}
-         {Before I-1 T1 T2} {After I N T1 T2}
+         case {Deref {Ask G}}
+         of failed    then {E}
+         [] entailed  then {CommitGuard G}
+         [] suspended then {WUHFI}
+         end
       end
-   end
-in
 
-   proc {CombCond1 C E}
-      G={NewGuard C}
-   in
-      case {Deref {Ask G}}
-      of failed    then {E}
-      [] entailed  then {CommitGuard G}
-      [] suspended then {WUHFI}
-      end
-   end
-
-   local
       proc {Resolve G A N B E}
-         {Show resolve(G A N B)}
          if N==0 then
             if B then {WUHFI} else {E} end
          else
-            M  = {Record.waitOr A}
-            AM = {DerefCheck A.M}
+            I  = {WaitOr A}
+            AI = {DerefCheck {Dictionary.get A I}}
          in
-            if {IsDet AM} then
-               case AM
+            if {IsDet AI} then
+               {Dictionary.remove A I}
+               case AI
                of failed    then
-                  {Resolve {Drop G M} {Drop A M} N-1 B E}
+                  {Resolve G A N-1 B E}
                [] suspended then
-                  {Discard G.M}
-                  {Resolve {Drop G M} {Drop A M} N-1 true E}
+                  {Space.discard G.I}
+                  {Resolve G A N-1 true E}
                [] entailed then
-                  {Record.forAll {Drop G M} Discard}
-                  {CommitGuard G.M}
+                  {DiscardGuards {Dictionary.keys A} G}
+                  {CommitGuard G.I}
                end
-            else {Resolve G {AdjoinAt A M AM} N B E}
+            else
+               {Dictionary.put A I AI}
+               {Resolve G A N B E}
             end
          end
       end
    in
-      proc {CombCond C E}
-         G={Record.map C NewGuard}
-         A={Record.map G Ask}
-      in
-         {Resolve G A {Width C} false E}
+      proc {Cond C E}
+         case {Width C}
+         of 0 then {E}
+         [] 1 then {Cond1 C.1 E}
+         [] N then G A in
+            {InitGuards N C G A}
+            {Resolve G A N false E}
+         end
       end
    end
 
 
    local
-      skip
-   in
-      proc {CombOr2 C1 C2}
-         skip
-      end
-   end
-
-   local
-      proc {WaitAllFailed G A N B}
+      proc {WaitFailed G A N}
          if N>0 then
-            M  = {Record.waitOr A}
-            AM = {DerefCheck A.M}
+            I  = {WaitOr A}
+            AI = {DerefCheck {Dictionary.get A I}}
          in
-            if {IsDet AM} then
-               case AM
-               of failed    then
-                  {WaitAllFailed {Drop G M} {Drop A M} N-1 B}
-               [] suspended then
+            if {IsDet AI} then
+               {Dictionary.remove A I}
+               if AI==failed then
+                  {WaitFailed G A N-1}
+               else
                   {WUHFI}
-               [] entailed then
-                  B1={Space.merge G.M}
-               in
-                  if B1==SKIP then
-                     if {IsSpace B} then
-                        {Discard B}
-                     end
-                     {Record.forAll {Drop G M} Discard}
-                  else
-                     {WUHFI}
-                  end
                end
-            else {WaitAllFailed G {AdjoinAt A M AM} N B}
+            else
+               {Dictionary.put A I AI}
+               {WaitFailed G A N}
             end
-         else
-            if {IsProcedure B} then {B} else {CommitGuard B} end
          end
       end
       proc {Resolve G A N}
-         {Show resolve(G A N)}
          if N>1 then
-            M  = {Record.waitOr A}
-            AM = {DerefCheck A.M}
+            I  = {WaitOr A}
+            AI = {DerefCheck {Dictionary.get A I}}
          in
-            if {IsDet AM} then
-               case AM
-               of failed    then
-                  {Resolve {Drop G M} {Drop A M} N-1}
-               [] suspended then
-                  {WaitAllFailed {Drop G M} {Drop A M} N-1 G.M}
-               [] entailed then
-                  B={Space.merge G.M}
-               in
-                  if B==SKIP then
-                     {Record.forAll {Drop G M} Discard}
-                  else
-                     {WaitAllFailed {Drop G M} {Drop A M} N-1 B}
-                  end
+            if {IsDet AI} then
+               {Dictionary.remove A I}
+               if AI==failed then
+                  {Resolve G A N-1}
+               else
+                  {WaitFailed G A N-1}
+                  {CommitGuard G.I}
                end
-            else {Resolve G {AdjoinAt A M AM} N}
+            else
+               {Dictionary.put A I AI}
+               {Resolve G A N}
             end
-         else
-            {CommitGuard G.1}
+         else [I]={Dictionary.keys A} in
+            {CommitGuard G.I}
          end
       end
    in
-      proc {CombOr C}
-         G={Record.map C NewGuard}
-         A={Record.map G Ask}
-      in
-         {Resolve G A {Width C}}
+      proc {Or C}
+         case {Width C}
+         of 0 then fail
+         [] 1 then {{Guardify C.1}}
+         [] N then G A in
+            {InitGuards N C G A}
+            {Resolve G A N}
+         end
       end
    end
 
    local
       skip
    in
-      proc {CombDis C}
+      proc {Dis C}
          skip
       end
    end
 
-   local
-      skip
-   in
-      proc {CombDis2 C1 C2}
-         skip
-      end
+   proc {Choice C}
+      {{Space.register C}}
    end
 
-   local
-      skip
-   in
-      proc {CombChoice C}
-         skip
-      end
-   end
+in
 
-   local
-      skip
-   in
-      proc {CombChoice2 C}
-         skip
-      end
-   end
+   Combinators = combinators('choice': Choice
+                             'or':     Or
+                             'dis':    Dis
+                             'cond':   Cond)
 
 end
 

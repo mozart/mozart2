@@ -21,26 +21,26 @@
 %%%
 
 local
-   Inject = Boot_Space.inject
+   Inject       = Boot_Space.inject
 
    proc {Fail _} fail end
 
-   fun {RegisterBase N}
+\ifdef NEW_REGISTER
+   BootRegister = Boot_Space.register
+\else
+   fun {BootRegister N}
       case N
       of 1 then choice 1 end
       [] 2 then choice 1 [] 2 end
       [] 3 then choice 1 [] 2 [] 3 end
       [] 4 then choice 1 [] 2 [] 3 [] 4 end
-      [] 5 then choice 1 [] 2 [] 3 [] 4 [] 5 end
-      [] 6 then choice 1 [] 2 [] 3 [] 4 [] 5 [] 6 end
-      [] 7 then choice 1 [] 2 [] 3 [] 4 [] 5 [] 6 [] 7 end
-      [] 8 then choice 1 [] 2 [] 3 [] 4 [] 5 [] 6 [] 7 [] 8 end
       end
    end
+\endif
 
    fun {Register X}
-      if {IsInt X} then {RegisterBase X}
-      else X.{RegisterBase {Width X}}
+      if {IsInt X} then {BootRegister X}
+      else X.{BootRegister {Width X}}
       end
    end
 
@@ -58,7 +58,7 @@ in
                                 {Inject S Fail}
                              end
                  waitStable: proc {$}
-                                choice skip end
+                                {Wait {Register 1}}
                              end
                  register:   Register)
 

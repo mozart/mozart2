@@ -325,6 +325,7 @@ prepare
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
    \insert 'InterFault.oz'
+   \insert 'Combinators.oz'
 
 export
    %% Value
@@ -521,5 +522,8 @@ export
 
    %% Will be removed by the compiler
    'OoExtensions': OoExtensions
+
+   %% Deep Guard Combinators
+   'Combinators':  Combinators
 
 end

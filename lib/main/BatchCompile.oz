@@ -569,6 +569,14 @@ in
                                           m: oz(Vs))])}
                    end
                 [] syslet then TmpFileName in
+                   case {Functor.is R} then skip
+                   else
+                      {Report
+                       error(kind: BatchCompilationError
+                             msg: 'syslets can only be built from functors'
+                             items: [hint(l: 'Value found'
+                                          m: oz(R))])}
+                   end
                    TmpFileName = {OS.tmpnam}
                    try File VS in
                       File = {New Open.file

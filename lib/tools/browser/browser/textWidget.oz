@@ -262,7 +262,7 @@ in
             SyncVar = @sync
 
             %%
-            case {IsValue SyncVar} then
+            case {Det SyncVar} then
                {self drawOFSWidth(Num)}
             end
          end
@@ -1521,7 +1521,7 @@ in
                   OldMark = PreOutInfo.mark
 
                   %%
-                  case {All RightMostMarks IsValue} then
+                  case {All RightMostMarks Det} then
                      %%
                      %%  Note that 'CreateSimpleGlue' handles non-enclosed
                      %% structures properly (i.e. extends (sub)term's
@@ -1785,7 +1785,7 @@ in
             %% all their glues are simple).
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -1947,7 +1947,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -2107,7 +2107,7 @@ in
                   RightMostMarks = <<GetRightMostMarks($)>>
 
                   %%
-                  case {All RightMostMarks IsValue} then
+                  case {All RightMostMarks Det} then
                      {self.widgetObj
                       [setMarksGravity(RightMostMarks left)
                        insertBeforeTag(self Tags
@@ -2141,7 +2141,7 @@ in
                   RightMostMarks = <<GetRightMostMarks($)>>
 
                   %%
-                  case {All RightMostMarks IsValue} then
+                  case {All RightMostMarks Det} then
                      {self.widgetObj
                       [setMarksGravity(RightMostMarks left)
                        insertBeforeTag(self Tags RefVarName#DEqualS#DLRBraceS)
@@ -2379,7 +2379,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -2570,7 +2570,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -2768,7 +2768,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -3259,7 +3259,7 @@ in
                   OldMark = PreOutInfo.mark
 
                   %%
-                  case {All RightMostMarks IsValue} then
+                  case {All RightMostMarks Det} then
                      %%
                      %%  Note that 'CreateSimpleGlue' handles non-enclosed
                      %% structures properly (i.e. extends (sub)term's
@@ -3571,7 +3571,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                <<UrObject nil>>
             end
@@ -3768,7 +3768,7 @@ in
 
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
-            case {All SyncList IsValue} then
+            case {All SyncList Det} then
                Sync = True
                %%
                <<initTypeWatching>>

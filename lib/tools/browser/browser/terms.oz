@@ -1755,11 +1755,11 @@ in
                   GotLabel GotClosed
                in
                   job
-                     GotLabel = {IsValue OFSLab}
+                     GotLabel = {Det OFSLab}
                   end
                   %%
                   job
-                     GotClosed = {IsValue SelfClosed}
+                     GotClosed = {Det SelfClosed}
                   end
 
                   %%
@@ -1914,7 +1914,7 @@ in
 
             %%
             job
-               GotValue = {IsValue TailVar}
+               GotValue = {Det TailVar}
             end
             %%
             job
@@ -1925,7 +1925,7 @@ in
                OFSWidth = {WidthC Term}
             end
             job
-               ChWidth = {IsValue OFSWidth}
+               ChWidth = {Det OFSWidth}
             end
 
             %% Note that this conditional should not block the state;

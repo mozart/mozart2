@@ -61,7 +61,7 @@ TestC = {`Builtin` 'testCB' noHandler}
 %%
 %%  single argument is a term; suspends till this variable is ever touched;
 %%  Useful for three reasons:
-%%  a) subsumes the 'IsValue'
+%%  a) subsumes the 'Det'
 %%  b) fires when the name of a variable is changed;
 %%  c) fires when a variable becomes fd-variable;
 GetsBound = {`Builtin` getsBoundB noHandler}

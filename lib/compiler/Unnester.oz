@@ -67,6 +67,15 @@ local
       end
    end
 
+   proc {MyWait X}
+      T = {Thread.this}
+      RaiseOnBlock = {Thread.getRaiseOnBlock T}
+   in
+      {Thread.setRaiseOnBlock T false}
+      {Wait X}
+      {Thread.setRaiseOnBlock T RaiseOnBlock}
+   end
+
    %% The following three functions (DollarsInScope, DollarCoord and
    %% ReplaceDollar) operate on the dollars in pattern position,
    %% corresponding to the definition of GetPatternVariablesExpression.
@@ -592,6 +601,7 @@ local
                              {@switches getSwitch(gumpscannerperfreport $)}
                           statistics:
                              {@switches getSwitch(gumpscannerstatistics $)})
+            {MyWait Gump}
             FS = {Gump.transformScanner
                   T From Prop Attr Feat Ms Rules C Flags @reporter}
             Unnester, UnnestStatement(FS $)
@@ -605,6 +615,7 @@ local
                               getSwitch(gumpparseroutputsimplified $)}
                           verbose:
                              {@switches getSwitch(gumpparserverbose $)})
+            {MyWait Gump}
             FS = {Gump.transformParser
                   T From Prop Attr Feat Ms Tokens Rules C Flags
                   {@switches getProductionTemplates($)}

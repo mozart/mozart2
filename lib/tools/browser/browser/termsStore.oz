@@ -23,7 +23,6 @@ local
    GCProc
 in
    %%
-   %%
    %%  There are the two purposes of the terms store:
    %%
    %%  First;
@@ -55,6 +54,7 @@ in
    %%  Note
    %%  It works properly under assumption that there are two adjuncted
    %% features in each termObject: 'term' and 'parentObject';
+
    %%
    class ProtoTermsStore from UrObject
       %%
@@ -64,6 +64,7 @@ in
          onlyCycles
          refType
          store
+
       %%
       attr
          list: InitValue
@@ -71,6 +72,7 @@ in
          length: 0              % # of (instantiated) elements in list;
          pruned: 0              % # of removed elements;
          currentNumber: 0       % number of nodes;
+
       %%
       %%
       meth init(isChecking: IsChecking
@@ -81,16 +83,18 @@ in
             self.isChecking = IsChecking
             self.onlyCycles = OnlyCycles
             self.store = Store
+
             %%
             case OnlyCycles then self.refType = 'C'
             else self.refType = 'R'
             end
+
             %%
             tail <- List
             list <- List
          end
       end
-      %%
+
       %%
       %%  Yields 'True' if checking should be performed;
       %%  Note that this case should be complaint with the 'draw' methods;
@@ -134,6 +138,7 @@ in
             Needs = False
          end
       end
+
       %%
       %%  'check' method;
       %%  If there is already such a term, gives the corresponding
@@ -161,6 +166,7 @@ in
             end
          end
       end
+
       %%
       %%  Check whether there is another object stored in there;
       %%
@@ -169,6 +175,7 @@ in
                    else {SearchProc SelfObj @list}
                    end
       end
+
       %%
       %%  'Retract' method;
       %%  This method is necessary when an object is destroyed
@@ -181,17 +188,19 @@ in
 \endif
          local WasChecked in
             <<needsCheck(Object.type WasChecked)>>
+
             %%
             case WasChecked then
                case self.onlyCycles then true
                else
-                  %%
                   pruned <- @pruned + 1
+
                   %%
                   %%  never zero in divide;
                   case {`div` @length @pruned} < TermsStoreGCRatio then
                      local NewList NewLength in
                         {GCProc @list 0 NewList NewLength}
+
                         %%
                         list <- NewList
                         length <- NewLength
@@ -204,6 +213,7 @@ in
             end
          end
       end
+
       %%
       %%
       meth debugShowStore
@@ -223,6 +233,7 @@ in
          %%
          {Show '   There are '#@currentNumber#'registered nodes.'}
       end
+
       %%
       %%
       %%  'Number-of-nodes' limitation;
@@ -231,8 +242,10 @@ in
          local CurrentLimit CurrentNumber in
             CurrentLimit = {self.store read(StoreNodeNumber $)}
             CurrentNumber = @currentNumber
+
             %%
-            case CurrentNumber < CurrentLimit then Permition = True
+            case CurrentNumber < CurrentLimit then
+               Permition = True
             else
                case CurrentNumber == CurrentLimit then
                   {BrowserWarning
@@ -241,19 +254,24 @@ in
                                                       ') is reached']}
                else true
                end
+
+               %%
                Permition = False
             end
-            %%
+
             %% ... since the object T_Shrunken is created anyway;
             currentNumber <- CurrentNumber + 1
          end
       end
+
       %%
       %%
       %%  Decrease the number of objects (if one is destroyed);
       meth decNumberOfNodes
          currentNumber <- @currentNumber - 1
       end
+
+      %%
    end
 
    %%
@@ -265,13 +283,16 @@ in
       else
          Obj R IsAway
       in
+         %%
          List = Obj|R
+
          %% relational;
          if Obj.term = Term then
             %%
             job
                IsAway = {Object.closed Obj}
             end
+
             %%
             case {IsVar IsAway} then Obj
             else {CheckProc Term R}
@@ -291,7 +312,9 @@ in
       else
          Obj R IsAway
       in
+         %%
          List = Obj|R
+
          %%
          case Obj == Self then {SearchProc Self R}
          else
@@ -301,6 +324,7 @@ in
                job
                   IsAway = {Object.closed}
                end
+
                %%
                case {IsVar IsAway} then True
                else {SearchProc Self R}
@@ -318,6 +342,7 @@ in
       %% faster, but if you write 'declare T = a(a(T)) in {Browse T}'
       %% the representation 'C1=a(a(C1))' will be shown (instead 'C1=a(C1)')!
       %%< case {EQ SelfObject.term Term} then FoundObj = SelfObject
+
       %%
       %% relational;
       if SelfObject.term = Term then
@@ -337,8 +362,8 @@ in
                PO
             in
                %% i.e., this is garbage (or lack of synchronization);
-               %%
                PO = SelfObject.parentObj
+
                %%
                case PO == InitValue then InitValue
                else {CheckCycleProc Term PO}
@@ -347,6 +372,7 @@ in
          end
       [] PO in true then
          PO = SelfObject.parentObj
+
          %%
          case PO == InitValue then InitValue
          else {CheckCycleProc Term PO}
@@ -354,6 +380,7 @@ in
       fi
    end
 
+   %%
    %%
    proc {GCProc List Length ?NewList ?NewLength}
       %%
@@ -363,12 +390,14 @@ in
       else
          Obj R IsAway
       in
-         List = Obj|R
          %%
+         List = Obj|R
+
          %%
          job
             IsAway = {Object.closed Obj}
          end
+
          %%
          case {IsVar IsAway} then
             NewTail
@@ -381,4 +410,5 @@ in
       end
    end
 
+   %%
 end

@@ -19,7 +19,6 @@ define
 % Square tiling problem:
 % A list of squares of given sizes must fit exactly into a fixed square.
 
-
    proc {StateConstraints Choice Xs Ys Ss SX SY}
       case Choice
       of 1 then   Ss=[3 2 2 1 1 1] SX=5 SY=4
@@ -58,7 +57,7 @@ define
                [] X>=:Pos+1 then B=0
                [] X=<:Pos-S then B=0
                [] B=1 then X=<:Pos  X>=:Pos-S+1
-               [] B=0 then dis X>=:Pos+1 [] X=<:Pos-S end
+               [] B=0 then or X>=:Pos+1 [] X=<:Pos-S end
                end
             end
             SY :: 0#FD.sup

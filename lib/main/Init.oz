@@ -22,18 +22,28 @@
 %%% WARRANTIES.
 %%%
 
-\ifdef NEWMODULE
-
 local
 
-   \insert 'init/Module.oz'
+   functor ErrorHandler prop once
 
-   local
-      UrlDefaults = \insert '../url-defaults.oz'
-   in
-      FunExt      = UrlDefaults.'functor'
-      MozartUrl   = UrlDefaults.'home'
+   import
+      Error Property
+
+   body
+      {Property.put 'errors.handler'
+       proc {$ E}
+          %% cause Error to be instantiated, which installs
+          %% a new error handler as a side effect
+          {Wait Error}
+          %% invoke this new error handler
+          {{Property.get 'errors.handler'} E}
+          %% this whole procedure is invoked at most once
+          %% since instantiatingError causes the handler
+          %% to be replaced with a better one.
+       end}
    end
+
+   \insert 'init/Module.oz'
 
 in
 
@@ -42,8 +52,10 @@ in
       Boot
    body
 
+      %% The mechanism with which builtin modules can be accessed
       BootManager = Boot.manager
 
+      %% Retrieve modules needed to get things started
       BURL     = {BootManager 'URL'}
 
       OS       = {BootManager 'OS'}
@@ -51,7 +63,7 @@ in
       Property = {BootManager 'Property'}
       System   = {BootManager 'System'}
 
-
+      %% Shortcuts
       Getenv = OS.getEnv
       SET    = Property.put
       GET    = Property.get
@@ -71,130 +83,30 @@ in
                                             'Pickle': Pickle
                                             'OS':     OS
                                             'Boot':   Boot)}
-         %% Register some volatile modules
 
-         {Module.root enter(url:'x-oz://boot/URL' BURL)}
+         %% The root module manager
+         RM = Module.root
 
-         {Module.root enter(name:'OS'       OS)}
-         {Module.root enter(name:'Property' Property)}
-         {Module.root enter(name:'Pickle'   Pickle)}
-         {Module.root enter(name:'System'   System)}
-         {Module.root enter(name:'Resolve'  Resolve)}
-
-         {Module.root enter(name:'Module'
-                            'export'(manager: Module.manager))}
-
-         %% create and install ErrorHandler module
-         functor ErrorHandler prop once
-         import
-            Error
-         body
-            {Property.put 'errors.handler'
-             proc {$ E}
-                %% cause Error to be instantiated, which installs
-                %% a new error handler as a side effect
-                {Wait Error}
-                %% invoke this new error handler
-                {{Property.get 'errors.handler'} E}
-                %% this whole procedure is invoked at most once
-                %% since instantiatingError causes the handler
-                %% to be replaced with a better one.
-             end}
-         end
-
-         {Module.root apply(url:'x-oz://system/ErrorHandler' ErrorHandler)}
+         %% The real Module module
+         RealModule = 'export'(manager: Module.manager)
       in
-         %% load and install (i.e. execute) root functor (i.e. application)
-         {Module.root link(url:{GET 'root.url'})}
+         %% Register boot modules
+         {RM enter(url:'x-oz://boot/URL' BURL)}
+
+         %% Register volatile system modules
+         {RM enter(name:'OS'       OS)}
+         {RM enter(name:'Property' Property)}
+         {RM enter(name:'Pickle'   Pickle)}
+         {RM enter(name:'System'   System)}
+         {RM enter(name:'Resolve'  Resolve)}
+         {RM enter(name:'Module'   RealModule)}
+
+         %% Execute error handler that will replace itself by real
+         %% error handler on need
+         {RM apply(url:'' ErrorHandler)}
+
+         %% Link root functor (i.e. application)
+         {RM link(url:{GET 'root.url'})}
       end
    end
 end
-
-\else
-
-local
-
-   \insert 'init/Module.oz'
-
-   local
-      UrlDefaults = \insert '../url-defaults.oz'
-   in
-      FunExt      = UrlDefaults.'functor'
-      MozartUrl   = UrlDefaults.'home'
-   end
-
-in
-
-   functor prop once
-   import
-      Boot
-   body
-
-      BootManager = Boot.manager
-
-      BURL     = {BootManager 'URL'}
-
-      OS       = {BootManager 'OS'}
-      Pickle   = {BootManager 'Pickle'}
-      Property = {BootManager 'Property'}
-      System   = {BootManager 'System'}
-
-
-      Getenv = OS.getEnv
-      SET    = Property.put
-      GET    = Property.get
-
-      %% usual system initialization
-      \insert 'init/Prop.oz'
-      \insert 'init/Resolve.oz'
-
-      {SET load Resolve.load}
-
-      %% execute application
-
-      local
-         %% create module manager
-         Module = {NewModule.apply 'import'('System': System
-                                            'Pickle': Pickle
-                                            'OS':     OS
-                                            'Boot':   Boot)}
-
-         %% Register some volatile modules
-
-         {Module.enter 'x-oz://boot/URL' BURL}
-
-         {Module.enter MozartUrl#'OS'#FunExt       OS}
-         {Module.enter MozartUrl#'Property'#FunExt Property}
-         {Module.enter MozartUrl#'Pickle'#FunExt   Pickle}
-         {Module.enter MozartUrl#'System'#FunExt   System}
-         {Module.enter MozartUrl#'Module'#FunExt   Module}
-         {Module.enter MozartUrl#'Resolve'#FunExt  Resolve}
-
-         %% create and install ErrorHandler module
-         functor ErrorHandler prop once
-         import
-            Error
-         body
-            {Property.put 'errors.handler'
-             proc {$ E}
-                %% cause Error to be instantiated, which installs
-                %% a new error handler as a side effect
-                {Wait Error}
-                %% invoke this new error handler
-                {{Property.get 'errors.handler'} E}
-                %% this whole procedure is invoked at most once
-                %% since instantiatingError causes the handler
-                %% to be replaced with a better one.
-             end}
-         end
-
-         {Module.link MozartUrl#'ErrorHandler'#FunExt ErrorHandler _}
-      in
-
-         %% load and install (i.e. execute) root functor (i.e. application)
-         {Wait {Module.load unit {GET 'root.url'}}}
-      end
-   end
-end
-
-\end

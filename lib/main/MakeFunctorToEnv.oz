@@ -58,17 +58,15 @@ in
        {O '%% Environment record generated, do not edit.'}
        {O ''}
        {O 'env('}
-\ifdef NEWMODULE
+
        local
           ModMan = {New Module.manager init}
        in
           A={ModMan link(url:Syslet.args.'in' $)}
        end
-\else
-       A={Module.load unit Syslet.args.'in'}
 
        {Wait A}
-\endif
+
        {ForAll {Arity A}
         proc {$ A}
            S={Double A}

@@ -119,17 +119,17 @@ OuterBoot = {`Builtin` 'BootManager' 2}
 
     BootManager = {`Builtin` 'BootManager'  2}
 
-    {ForAll ['Parser'#   Parser
-             'FDB'#      FDB
-             'FSB'#      FSB
-             'FDP'#      FDP
-             'FSP'#      FSP
-             'OS'#       OS
-             'Pickle'#   Pickle
-             'System'#   System
-             'Debug'#         Debug
-             'CompilerSupport'#      CompilerSupport
-             'Property'# Property]
+    {ForAll ['Parser'#          Parser
+             'FDB'#             FDB
+             'FSB'#             FSB
+             'FDP'#             FDP
+             'FSP'#             FSP
+             'OS'#              OS
+             'Pickle'#          Pickle
+             'System'#          System
+             'Debug'#           Debug
+             'CompilerSupport'# CompilerSupport
+             'Property'#        Property]
      proc {$ A#M}
         M={BootManager A}
      end}
@@ -151,15 +151,15 @@ OuterBoot = {`Builtin` 'BootManager' 2}
                                        'OS':     OS
                                        'Boot':   b(manager: BootManager))}
 
-    {ForAll ['Parser'#   Parser
-             'FDB'#      FDB
-             'FSB'#      FSB
-             'FDP'#      FDP
-             'Debug'#    Debug
-             'FSP'#      FSP
-             'CompilerSupport'#  CompilerSupport]
+    {ForAll ['Parser'#          Parser
+             'FDB'#             FDB
+             'FSB'#             FSB
+             'FDP'#             FDP
+             'Debug'#           Debug
+             'FSP'#             FSP
+             'CompilerSupport'# CompilerSupport]
      proc {$ A#M}
-        {Module.enter 'x-oz://boot/'#A M}
+        {Module.root enter(url:'x-oz://boot/'#A M)}
      end}
 
     {ForAll ['System'#       System
@@ -171,9 +171,10 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'OS'#           OS
              'Open'#         Open
              'Pickle'#       Pickle
-             'Compiler'#     Compiler]
+             'Compiler'#     Compiler
+             'Module'#       Module]
      proc {$ A#M}
-        {Module.enter UrlDefaults.home#A#UrlDefaults.'functor' M}
+        {Module.root enter(name:A M)}
      end}
 
     \insert BatchCompile

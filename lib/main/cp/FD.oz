@@ -110,7 +110,7 @@ local
               minimum:        fdp_minimum        #3
               maximum:        fdp_maximum        #3
               distinct:       fdp_distinct       #1
-%             distinct2:      fdp_distinct2      #4
+              distinct2:      fdp_distinct2      #4
               distinctD:      fdp_distinctD      #1
               distinctOffset: fdp_distinctOffset #2
               disjoint:       fdp_disjoint       #4
@@ -134,7 +134,7 @@ local
                      cpIterate:          sched_cpIterate          #3
                      taskIntervals:      sched_taskIntervals      #3
                      disjunctive:        sched_disjunctive        #3
-%                    cpIterateCap:       sched_cpIterateCap       #6
+                     cpIterateCap:       sched_cpIterateCap       #6
                      cumulativeTI:       sched_cumulativeTI       #5
                      cpIterateCapUp:     sched_cpIterateCapUp     #5
                      taskIntervalsProof: sched_taskIntervalsProof #5
@@ -572,7 +572,7 @@ local
       CPIterate          = SchedLib.cpIterate
       Disjunctive        = SchedLib.disjunctive
       TaskInts           = SchedLib.taskIntervals
-%      CPIterateCap       = SchedLib.cpIterateCap
+      CPIterateCap       = SchedLib.cpIterateCap
       CumulativeTIS      = SchedLib.cumulativeTI
       CPIterateCapUp     = SchedLib.cpIterateCapUp
    in
@@ -589,13 +589,11 @@ local
       end
 
       proc {Cumulative Tasks Start Dur Use Capacities}
-%        {CPIterateCap Tasks Start Dur Use Capacities 0}
-          {CumulativeTIS Tasks Start Dur Use Capacities}
+         {CPIterateCap Tasks Start Dur Use Capacities 0}
       end
 
       proc {CumulativeEF Tasks Start Dur Use Capacities}
-%        {CPIterateCap Tasks Start Dur Use Capacities 1}
-          {CumulativeTIS Tasks Start Dur Use Capacities}
+         {CPIterateCap Tasks Start Dur Use Capacities 1}
       end
 
       proc {CumulativeTI Tasks Start Dur Use Capacities}
@@ -1394,7 +1392,7 @@ in
 
           %% Symbolic Propagators
           distinct:       FDP.distinct
-%         distinct2:      FDP.distinct2
+          distinct2:      FDP.distinct2
           distinctD:      FDP.distinctD
           distinctOffset: FDP.distinctOffset
           atMost:         FDP.atMost

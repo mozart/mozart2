@@ -110,7 +110,7 @@ S  ::=  <Statement>
 <IfNode> from <Statement>
      arbiter:     O
      consequent:  <BoolClause>
-     alternative: <AbstractElse>
+     alternative: <ElseNode> | <NoElse>
      coord:       C
      globalVars:  V*   % those of all clauses (not arbiter)
 
@@ -125,7 +125,7 @@ S  ::=  <Statement>
 <PatternCase> from <Statement>
      arbiter:     O
      clauses:     <PatternClause>+
-     alternative: <AbstractElse>
+     alternative: <ElseNode> | <NoElse>
      coord:       C
      globalVars:  V*   % those of all clauses (not arbiter)
 
@@ -161,18 +161,14 @@ S  ::=  <Statement>
      coord: C
 
 
-% (never instantiated)
-<AbstractElse>
-
-
 % 'else' statements
-<ElseNode> from <AbstractElse>
+<ElseNode>
      statements: S+
      globalVars: V*
 
 
 % (empty)
-<NoElse> from <AbstractElse>
+<NoElse>
      coord:         C
 
 
@@ -250,7 +246,7 @@ S  ::=  <Statement>
 % 'cond' ( clause // '[]' ) alternative 'end'
 <CondNode> from <Statement>
      clauses:     <Clause>+
-     alternative: <AbstractElse>
+     alternative: <ElseNode> | <NoElse>
      coord:       C
      globalVars:  V*
 

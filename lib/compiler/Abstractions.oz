@@ -10,17 +10,25 @@ proc {EvalExpression VS Env ?Kill ?Result} E I S in
       proc {Kill}
          {E clearQueue()}
          {E interrupt()}
-         {Thread.terminate T}
-         S = unit
+         try
+            {Thread.terminate T}
+            S = killed
+         catch _ then skip   % already dead
+         end
       end
-      {Wait {E enqueue(ping($))}}
+      {I sync()}
       if {I hasErrors($)} then Ms in
          {I getMessages(?Ms)}
-         {Exception.raiseError compiler(evalExpression VS Ms)}
+         S = error(compiler(evalExpression VS Ms))
+      else
+         S = success
       end
-      S = unit
    end
-   {Wait S}
+   case S of error(M) then
+      {Exception.raiseError M}
+   [] success then skip
+   [] killed then skip
+   end
 end
 
 fun {VirtualStringToValue VS}

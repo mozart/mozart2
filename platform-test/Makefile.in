@@ -80,7 +80,7 @@ all: dirs oztest
 boot-all:
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
         make all \
-        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=/=/:.:= \
+        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=./=./:prefix=/=/:.:= \
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh
@@ -94,7 +94,7 @@ boot-check: boot-all
         PATH=$(SRCTOP)/share/bin:$(PATH) \
         BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
         make check \
-        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/tools/:prefix=/=/:.:= \
+        OZ_LOAD=prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/lib/:prefix=http\\://www.ps.uni-sb.de/ozhome/share/=$(BUILDTOP)/share/tools/:prefix=./=./:prefix=/=/:.:= \
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh \

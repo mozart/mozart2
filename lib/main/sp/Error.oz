@@ -517,7 +517,7 @@ in
    %%
    %%  <label>(kind:  AVS            % almost virtual string
    %%          msg:   AVS
-   %%          body:  <line>*
+   %%          items: <line>*
    %%          loc:                  % added by the emulator
    %%          stack:                % added by the emulator
    %%          footer:               % yes/no
@@ -594,8 +594,8 @@ in
             end
          end
 
-         proc {ErrorBody Out Format}
-            case {CondSelect Format body unit}
+         proc {ErrorItems Out Format}
+            case {CondSelect Format items unit}
             of unit then
                skip
             elseof Ts then
@@ -642,7 +642,7 @@ in
                {ErrorAlert Format}
                {ErrorTitle Out Format}
                {ErrorMsgLine Out Format}
-               {ErrorBody Out Format}
+               {ErrorItems Out Format}
                {ErrorFooter Out Format}
             end
          end
@@ -655,7 +655,7 @@ in
                {ErrorAlert Format}
                {ErrorTitle Out Format}
                {ErrorMsgLine Out Format}
-               {ErrorBody Out Format}
+               {ErrorItems Out Format}
                {ErrorLoc Out Format}
                {ErrorStack Out Format}
                {ErrorFooter Out Format}
@@ -743,7 +743,7 @@ in
       %%
 
       proc {FormatExc Kind Msg Bs Exc E}
-         Fs = [body loc stack footer alert]
+         Fs = [items loc stack footer alert]
       in
          E = {Record.make error
               case Kind==unit then
@@ -763,7 +763,7 @@ in
          then E.msg = Msg
          else skip end
 
-         E.body   = Bs
+         E.items  = Bs
          E.loc    = {DebugLoc Exc}
          E.stack  = {DebugStack Exc}
          E.footer = true
@@ -1953,10 +1953,10 @@ in
          {ErrorMsgDebug
           LineOutput
           error(title: 'Unable to Print Error Message'
-                body:[hint(l:'Initial exception' m:oz(Exc))
-                      hint(l:'Format exception Kind'  m:{Label ExcExc})
-                      hint(l:'Format exception' m:oz({DispatchField ExcExc}))
-                      line({BugReport})]
+                items:[hint(l:'Initial exception' m:oz(Exc))
+                       hint(l:'Format exception Kind'  m:{Label ExcExc})
+                       hint(l:'Format exception' m:oz({DispatchField ExcExc}))
+                       line({BugReport})]
                 loc:   {DebugLoc Exc}
                 stack: {DebugStack Exc}
                )}

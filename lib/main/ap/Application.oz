@@ -159,19 +159,19 @@ local
       of registry(nameNotFound Name) then
          {Adjoin
           {ErrorFormatterGeneric 'module name not found: '#oz(Name) Exc}
-          error(body:unit kind:'Registry Error')}
+          error(kind:'Registry Error')}
       elseof registry(badRegistration Name Desc Which) then
          {Adjoin
           {ErrorFormatterGeneric 'Bad Registration Attempt' Exc}
-          error(body:[line('for module : '#oz(Name))
-                      line('at argument: '#oz(Which))
-                      line('in         : '#oz(Desc))]
+          error(items:[line('for module : '#oz(Name))
+                       line('at argument: '#oz(Which))
+                       line('in         : '#oz(Desc))]
                 kind:'Registry Error')}
       elseof registry(circularDependency Name) then
          {Adjoin
           {ErrorFormatterGeneric
            'circular dependency for module: '#oz(Name) Exc}
-          error(body:unit kind:'Registry Error')}
+          error(kind:'Registry Error')}
       else
          {Adjoin
           {ErrorFormatterGeneric 'unrecognized exception' Exc}

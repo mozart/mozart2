@@ -128,11 +128,18 @@ define
       local
          BitmapUrl = {URL.toAtom {URL.resolve DefaultURL.homeUrl
                                   {URL.make 'images/inspector/'}}}
+
+         fun {TranslateToUrl Ss}
+            case Ss
+            of S|Sr then if S == &\\ then &/ else S end|{TranslateToUrl Sr}
+            [] nil  then nil
+            end
+         end
       in
          fun {Root X}
             F = {Tk.localize BitmapUrl#X}
          in
-            {ShortName F}
+            {TranslateToUrl {VirtualString.toString {ShortName F}}}
          end
       end
       %% Context Menu Title Preparation Functions

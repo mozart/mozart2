@@ -360,7 +360,11 @@ in
             end
          [] vEquateLiteral(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
-               case Emitter, IsLast(Reg $) then skip
+               case self.debugInfoControlSwitch then R in
+                  % This is needed for 'name generation' step points:
+                  Emitter, PredictReg(Reg ?R)
+                  Emitter, Emit(putConstant(Literal R))
+               elsecase Emitter, IsLast(Reg $) then skip
                elsecase Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal 0
                                                    nil Cont $)
                then skip

@@ -679,6 +679,7 @@ define
                          Emitter, Emit(move(Y Y2))
                       end
                       Emitter, Emit(clear(Y))
+                   [] g(_) then skip   % see PR#995
                    end
                 end}
             end

@@ -28,7 +28,8 @@
 %%
 
 local
-   GetUsedHeap = {`Builtin` heapUsed 1}
+   %GetUsedHeap = {`Builtin` heapUsed 1}
+   fun {GetUsedHeap} {System.property.get 'heap.used'} end
 in
    class Reporter
       prop final

@@ -29,7 +29,7 @@ import
 
 export
    initIPConnection:  InitIP
-
+   messageCounter:    MsgCntr
 define
    %%
    %% Force linking of base library
@@ -41,7 +41,7 @@ define
    InitIP = fun{$ R}
                if {Value.hasFeature R ip} then
                   try
-                     {List.foldL {String.tokens "193.10.66.192" &.}
+                     {List.foldL {String.tokens R.ip &.}
                       fun{$ Acc In}
                          I = {String.toInt In} in
                          if I>256 orelse I<0 then raise toLarge end end
@@ -54,4 +54,5 @@ define
                end
                {Misc.initIPConnection R}
             end
+   MsgCntr         = fun{$}{Misc.getMsgCntr}end
 end

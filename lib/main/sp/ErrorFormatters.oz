@@ -259,11 +259,21 @@ define
          %%
       elseof kernel(dict D K) then
          %% expected D: dictionary, K: feature
+         L={Dictionary.keys D}
+      in
          error(kind: 'Error: Dictionary'
                msg: 'Key not found'
-               items: [hint(l:'Dictionary' m:oz(D))
-                       hint(l:'Key found'  m:oz(K))
-                       hint(l:'Legal keys' m:oz({Dictionary.keys D}))])
+               items:
+                  hint(l:'Dictionary' m:oz(D))
+               |  hint(l:'Key found'  m:oz(K))
+               |  hint(l:'Legal keys' m:oz(L))
+               %% we cannot use Dictionary.member because, due to concurrence,
+               %% the answer could be incoherent with the list returned by
+               %% Dictionary.keys
+               |  if {Member K L} then
+                     [line('it looks like the key concurrently appeared in the')
+                      line('dictionary after the exception was raised')]
+                  else nil end)
 
       elseof kernel(array A I) then
          %% expected A: array, I: int

@@ -106,19 +106,39 @@ define
              Hi = {MakeVar 'ForIntVarHi'}
              XVar = case X of fWildcard(_) then {MakeVar 'ForIntVar'} else X end
              By
+             Dir
           in
              {Push 'outers' fEq(Lo E1 unit)}
              {Push 'outers' fEq(Hi E2 unit)}
              if E3==unit then
                 By = fInt(1 unit)
+                Dir = up
              else
+                case E3
+                of fInt(V _) then
+                   if V<0 then Dir=down else Dir=up end
+                else
+                   Dir=unknown
+                end
                 By = {MakeVar 'ForIntVarBy'}
                 {Push 'outers' fEq(By E3 unit)}
              end
-
              {Push 'args'  XVar}
              {Push 'inits' Lo}
-             {Push 'tests' fOpApply('=<' [XVar Hi] unit)}
+             case Dir
+             of up   then {Push 'tests' fOpApply('=<' [XVar Hi] unit)}
+             [] down then {Push 'tests' fOpApply('>=' [XVar Hi] unit)}
+             [] unknown then B in
+                B={MakeVar 'ForIntCountingUp'}
+                {Push 'outers'
+                 fEq(B fOpApply('>=' [By fInt(0 unit)] unit) unit)}
+                {Push 'tests'
+                 fBoolCase(
+                    B
+                    fOpApply('=<' [XVar Hi] unit)
+                    fOpApply('>=' [XVar Hi] unit)
+                    unit)}
+             end
              {Push 'nexts' fOpApply('+'  [XVar By] unit)}
           [] forPattern(X forGeneratorC(E1 E2 unit)) then
              {Push 'args'  X}

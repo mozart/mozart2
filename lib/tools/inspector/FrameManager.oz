@@ -95,14 +95,13 @@ in
          meth newItem(Item X Y W H $)
             MyFrame = @Frame
          in
-            {MyFrame newItem({MyFrame root($)}
-                             {MyFrame widgetGetType($)}
-                             ['widget'#Item
-                              'x'#{Int.toFloat X}
-                              'y'#{Int.toFloat Y}
-                              'width'#{Int.toFloat W}
-                              'height'#{Int.toFloat H}
-                              'anchor'#GTK.'ANCHOR_NW'] $)}
+            {MyFrame newItem(widget(parent : {MyFrame rootItem($)}
+                                    widget : {MyFrame unwrapItem(Item $)}
+                                    x      : X
+                                    y      : Y
+                                    width  : W
+                                    height : H
+                                    anchor : GTK.'ANCHOR_NW') $)}
          end
       end
 \endif
@@ -404,14 +403,14 @@ in
             Frame = {@parent getFrame($)}
          in
             {Frame configureItem(@canvasItem
-                                 ['width'#{Int.toFloat CWidth}
-                                  'height'#{Int.toFloat CHeight}])}
+                                 options(width  : {Int.toFloat CWidth}
+                                         height : {Int.toFloat CHeight}))}
             {Frame configureItem(@scrollYItem
-                                 ['x'#{Int.toFloat CWidth}
-                                  'height'#{Int.toFloat CHeight}])}
+                                 options(x      : {Int.toFloat CWidth}
+                                         height : {Int.toFloat CHeight}))}
             {Frame configureItem(@scrollXItem
-                                 ['y'#{Int.toFloat (Y + CHeight)}
-                                  'width'#{Int.toFloat CWidth}])}
+                                 options(y     : {Int.toFloat (Y + CHeight)}
+                                         width : {Int.toFloat CWidth}))}
             %% Propagate configure to Canvas
             %% This is definitly a bug
             {Port.send @widPort globalCanvasHandler(adjust(CWidth CHeight))}
@@ -419,9 +418,10 @@ in
          meth setPosition(NY)
             Frame = {@parent getFrame($)}
          in
-            {Frame configureItem(@canvasItem ['y'#{Int.toFloat NY}])}
-            {Frame configureItem(@scrollY ['y'#{Int.toFloat NY}])}
-            {Frame configureItem(@scrollX ['y'#{Int.toFloat (NY + @cHeight)}])}
+            {Frame configureItem(@canvasItem options(y : {Int.toFloat NY}))}
+            {Frame configureItem(@scrollY options(y : {Int.toFloat NY}))}
+            {Frame
+             configureItem(@scrollX options(y : {Int.toFloat (NY + @cHeight)}))}
          end
       end
 \endif

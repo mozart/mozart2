@@ -102,8 +102,6 @@ define
       end
    end
 
-   MakeColor = GDK.makeColor
-
    %% Gtk GraphicSupport
    local
       local
@@ -130,24 +128,35 @@ define
       IdCounter = {New Counter create}
 
       %% Private Methods
-      InternalPlace             = {NewName}
       InternalCanvasView        = {NewName}
       InternalScroll            = {NewName}
       InternalAdjNew            = {NewName}
       InternalScrollCanvasEvent = {NewName}
       LoadImage                 = {NewName}
+      StopUpdate                = {NewName}
+      ReleaseUpdate             = {NewName}
 
       fun {MakeFont Family Size Weight}
          {VirtualString.toString
           "-*-"#Family#"-medium-r-"#Weight#"-*-"#Size#"-*-*-*-m-*-iso8859-1"}
       end
+
+\ifndef INSPECTOR_GTK_SLOW
+      local
+         Tools= {{New GTKCANVAS.canvas noop} inspectorTools($)}
+      in
+         NewText    = Tools.text
+         NewImage   = Tools.image
+         UnwrapItem = Tools.unwrap
+      end
+\endif
    in
       class GraphicSupport from GTKCANVAS.canvas
          attr
             canvasId        %% Local Canvas Id
             tagVar          %% Canvas Tag Variable
+            tagRoot         %% First Item In Tree List
             tagTree         %% Canvas Tag Tree List
-            tagRoot         %% First Item of tagTree
             font     : nil  %% Fontname
             fontO           %% Tk Font Object
             curCX           %% Current Canvas X Dimension
@@ -159,12 +168,8 @@ define
             selItem         %% selection Rectangle Item
             miscObj         %% GDK Misc Services Object
             imageObj        %% GDK Dummy Image Object
-            groupType       %% Canvas Group Type
-            textType        %% Canvas Text Type
-            rectType        %% Canvas Rectangle Type
-            lineType        %% Canvas Line Type
-            imageType       %% Canvas Image Type
             textAnchor      %% Canvas Text Anchor
+            lineStyle       %% Canvas Line Style
             blackColor      %% GDK Black Color
             whiteColor      %% GDK White Color
             scrollXAdj      %% GTK ScrollXAdjustment
@@ -175,7 +180,7 @@ define
             stopButton      %% Stop Button
          meth create(Parent DspWidth DspHeight)
             CanvasId = {IdCounter inc($)}
-            Root     = @tagVar
+            Root
          in
             %% We do need image support
             GTKCANVAS.canvas, new(true)
@@ -197,35 +202,32 @@ define
                                              1.0
                                              {Int.toFloat DspHeight}
                                              {Int.toFloat DspHeight} $)
-            @canvasId       = CanvasId
-            Root            = {self root($)}
-            @tagTree        = [Root]
-            @tagRoot        = Root
-            @miscObj        = {New GDK.misc noop}
-            @imageObj       = {New GDK.imlib noop}
-            @menuDict       = {Dictionary.new}
-            @groupType      = {@tagVar getType($)}
-            @textType       = {self textGetType($)}
-            @rectType       = {self rectGetType($)}
-            @lineType       = {self lineGetType($)}
-            @imageType      = {self imageGetType($)}
-            @textAnchor     = GTK.'ANCHOR_NW'
-            @selItem        = unit
-            @selTag         = {self newSimpleTagItem(Root $)}
-            @blackColor     = {MakeColor '#000000'}
-            @whiteColor     = {MakeColor '#ffffff'}
-            @innerX         = 0.0
-            @innerY         = 0.0
-            @imageDict      = {Dictionary.new}
+            @canvasId        = CanvasId
+            Root             = {self rootItem($)}
+            @tagRoot         = Root
+            @tagVar          = Root
+            @tagTree         = [Root]
+            @miscObj         = {New GDK.misc noop}
+            @imageObj        = {New GDK.imlib noop}
+            @menuDict        = {Dictionary.new}
+            @textAnchor      = GTK.'ANCHOR_NW'
+            @lineStyle       = GDK.'LINE_ON_OFF_DASH'
+            @selItem         = unit
+            @selTag          = unit % {self newTagItem($)}
+            @blackColor      = {self itemColor('#000000' $)}
+            @whiteColor      = {self itemColor('#ffffff' $)}
+            @innerX          = 0.0
+            @innerY          = 0.0
+            @imageDict       = {Dictionary.new}
             @backgroundItem =
-            {self newItem(Root @rectType
-                          ['x1'#0.0
-                           'y1'#0.0
-                           'x2'#{Int.toFloat DspWidth}
-                           'y2'#{Int.toFloat DspHeight}
-                           'fill_color_gdk'#@whiteColor
-                           'outline_color_gdk'#@whiteColor
-                           'width_pixels'#0] $)}
+            {self newItem(rectangle(parent            : Root
+                                    x1                : 0
+                                    y1                : 0
+                                    x2                : DspWidth
+                                    y2                : DspHeight
+                                    fill_color_gdk    : @whiteColor
+                                    outline_color_gdk : @whiteColor
+                                    width_pixels      : 0) $)}
          end
          meth setScrollbars(XScroll YScroll)
             @scrollBars = XScroll#YScroll
@@ -286,7 +288,9 @@ define
             {self getv(1 ArgH)}
             Height = {GTK.getArg unit ArgH}
             {GTK.freeArg ArgH}
-            {@backgroundItem set('fill_color_gdk' {MakeColor Col})}
+            {self
+             configureItem(@backgroundItem
+                           options(fill_color_gdk : {self itemColor(Col $)}))}
             curCX <- Width
             if Font \= @font
             then GraphicSupport, computeFontDim(Font Bitmap)
@@ -304,7 +308,7 @@ define
                FWidth  = {@miscObj stringWidth(FontO "W" $)}
             in
                font  <- Font
-               fontO <- FontO
+               fontO <- {self unwrapItem(FontO $)}
                %% X/Y Dim of Fonts
                fontX <- FWidth
                fontY <- FHeight
@@ -382,7 +386,6 @@ define
             end
          end
          meth newTag($)
-%           {self newTagItem(@tagVar 0 0 $)}
             _
          end
          meth getTclId($)
@@ -391,14 +394,24 @@ define
          meth printXY(X Y String Tag ColorKey)
             Color = case {Dictionary.condGet @colDict ColorKey nil}
                     of nil then @blackColor
-                    [] Str then {MakeColor Str}
+                    [] Str then {self itemColor(Str $)}
                     end
          in
             %% Place item in tree
-%           {Tag reparent(@tagRoot)}
-            Tag = {self newSimpleTagItem(@tagRoot $)}
-            {self newTextItem(Tag String (@fontX * X) ((@fontY * Y) + @offY)
-                              @textAnchor @fontO Color _)}
+\ifdef INSPECTOR_GTK_SLOW
+            Tag = {self newItem(group(parent: @tagRoot) $)}
+            {self
+             newItem(text(parent         : Tag
+                          text           : String
+                          x              : (@fontX * X)
+                          y              : ((@fontY * Y) + @offY)
+                          anchor         : @textAnchor
+                          font_gdk       : @fontO
+                          fill_color_gdk : Color) _)}
+\else
+            Tag = {NewText @tagRoot String
+                   (@fontX * X) ((@fontY * Y) + @offY) @fontO Color}
+\endif
          end
          meth paintXY(X Y ImageName Tag _)
             Image  = GraphicSupport, LoadImage({String.toAtom ImageName} $)
@@ -408,10 +421,19 @@ define
             ImageY = {Max 0 (FontY - 4)}
          in
             %% Place item in tree
-%           {Tag reparent(@tagRoot)}
-            Tag = {self newSimpleTagItem(@tagRoot $)}
-            {self newImageItem(Tag Image (FontX * X) ((FontY * Y) + @offY)
-                               ImageX ImageY @textAnchor _)}
+\ifdef INSPECTOR_GTK_SLOW
+            Tag = {self newItem(group(parent: @tagRoot) $)}
+            {self newItem(image(parent : Tag
+                                image  : Image
+                                x      : (FontX * X)
+                                y      : ((FontY * Y) + @offY)
+                                width  : ImageX
+                                height : ImageY
+                                anchor : @textAnchor) _)}
+\else
+            Tag = {NewImage @tagRoot Image
+                   (FontX * X) ((FontY * Y) + @offY) ImageX ImageY}
+\endif
          end
          meth !LoadImage(ImageName $)
             ImageDict = @imageDict
@@ -419,17 +441,21 @@ define
          in
             case ImageObj
             of nil then
+\ifdef INSPECTOR_GTK_SLOW
                NewImage = {@imageObj loadImage(ImageName $)}
+\else
+               NewImage = {UnwrapItem {@imageObj loadImage(ImageName $)}}
+\endif
             in
                {Dictionary.put ImageDict ImageName NewImage} NewImage
             [] ImageObj then ImageObj
             end
          end
          meth delete(Tag)
-            {Tag destroy}
+            {self destroyItem(Tag)}
          end
          meth rectangleDelete(TagAndItem $)
-            case TagAndItem of Tag|_ then {Tag destroy} end _
+            case TagAndItem of Tag|_ then {self destroyItem(Tag)} end _
          end
          meth drawRectangle(X Y TagAndItem XYDim Dirty)
             case XYDim
@@ -444,50 +470,35 @@ define
             in
                if Dirty
                then
-                  FillCol = {MakeColor {Dictionary.get @colDict proxy}}
-                  Tag     = {self newSimpleTagItem(@tagRoot $)}
+                  FillCol = {self itemColor({Dictionary.get @colDict proxy} $)}
+                  Tag     = {self newItem(group(parent: @tagRoot) $)}
                   Item
                in
                   TagAndItem = Tag|Item
-                  {self newItem(Tag @rectType
-                                ['x1'#{Int.toFloat X1}
-                                 'y1'#{Int.toFloat Y1}
-                                 'x2'#{Int.toFloat X2}
-                                 'y2'#{Int.toFloat Y2}
-                                 'fill_color_gdk'#FillCol
-                                 'outline_color_gdk'#FillCol
-                                 'width_pixels'#0] Item)}
+                  Item =
+                  {self
+                   newItem(rectangle(parent            : Tag
+                                     x1                : X1
+                                     y1                : Y1
+                                     x2                : X2
+                                     y2                : Y2
+                                     fill_color_gdk    : FillCol
+                                     outline_color_gdk : FillCol
+                                     width_pixels      : 0) $)}
                elsecase TagAndItem
                of _|Item then
-                  {self configureItem(Item ['x1'#{Int.toFloat X1}
-                                            'y1'#{Int.toFloat Y1}
-                                            'x2'#{Int.toFloat X2}
-                                            'y2'#{Int.toFloat Y2}])}
+                  {self configureItem(Item options(x1 : {Int.toFloat X1}
+                                                   y1 : {Int.toFloat Y1}
+                                                   x2 : {Int.toFloat X2}
+                                                   y2 : {Int.toFloat Y2}))}
                end
             end
          end
          meth move(X Y Tag FTag)
-            NewX = {Int.toFloat (@fontX * X)}
-            NewY = {Int.toFloat ((@fontY * Y) + @offY)}
-            XCur YCur DX DY
-         in
-            %% Bounding Box includes all items?
-            {Tag getBounds(0.0#XCur 0.0#YCur 0.0#_ 0.0#_)} %% Was FTag
-            DX = (NewX - XCur)
-            DY = (NewY - YCur)
-            if DX \= 0.0 orelse DY \= 0.0 then {Tag move(DX DY)} end
-         end
-         meth !InternalPlace(X Y Tag)
-            XCur YCur
-         in
-            {Tag getBounds(0.0#XCur 0.0#YCur 0.0#_ 0.0#_)}
-            {Tag move(({Int.toFloat X} - XCur) ({Int.toFloat Y} - YCur))}
+            {self moveItemTo(Tag (@fontX * X) ((@fontY * Y) + @offY))}
          end
          meth place(X Y Tag)
-            XPos = (@fontX * X)
-            YPos = ((@fontY * Y) + @offY)
-         in
-            GraphicSupport, InternalPlace(XPos YPos Tag)
+            {self moveItemTo(Tag (@fontX * X) ((@fontY * Y) + @offY))}
          end
          meth doublePlace(X Y XD Tag SecTag)
             FontX = @fontX
@@ -495,13 +506,12 @@ define
             X2Pos = (FontX * (X + XD))
             YPos  = ((@fontY * Y) + @offY)
          in
-            GraphicSupport, InternalPlace(X1Pos YPos Tag)
-            GraphicSupport, InternalPlace(X2Pos YPos SecTag)
+            {self moveItemTo(Tag X1Pos YPos)}
+            {self moveItemTo(SecTag X2Pos YPos)}
          end
          meth tagTreeDown(Tag)
-%           {Tag reparent(@tagRoot)}
             if {IsFree Tag}
-            then Tag = {self newSimpleTagItem(@tagRoot $)}
+            then Tag = {self newItem(group(parent: @tagRoot) $)}
             end
             tagRoot <- Tag
             tagTree <- Tag|@tagTree
@@ -513,20 +523,20 @@ define
             tagTree <- TagTree
          end
          meth createLine(T Y)
-            XP = @curCX
+            XP = {Max @curCX (@maxX * @fontX)}
             YP = ((Y * @fontY) + @offY)
          in
-            {self newItem(@tagVar @lineType
-                          ['points'#[0 YP XP YP]
-                           'fill_color_gdk'#@blackColor
-                           'line_style'#GDK.'LINE_ON_OFF_DASH'
-                           'width_pixels'#1] T)}
+            T = {self newItem(line(parent         : @tagVar
+                                   points         : [0 YP XP YP]
+                                   fill_color_gdk : @blackColor
+                                   line_style     : @lineStyle
+                                   width_pixels   : 1) $)}
          end
          meth moveLine(T Y)
-            XP = @curCX
+            XP = {Max @curCX (@maxX * @fontX)}
             YP = ((Y * @fontY) + @offY)
          in
-            {self configureItem(T ['points'#[0 YP XP YP]])}
+            {self configureItem(T options('points' : [0 YP XP YP]))}
          end
          meth !InternalCanvasView(Move)
             MaxX  = (@maxX * @fontX)
@@ -535,11 +545,9 @@ define
             CurCY = @curCY
             NewX  = {Int.toFloat {Max CurCX MaxX}}
             NewY  = {Int.toFloat {Max CurCY MaxY}}
-            Back  = @backgroundItem
          in
             GTKCANVAS.canvas, setScrollRegion(0.0 0.0 NewX NewY)
-            {Back set('x2' NewX)}
-            {Back set('y2' NewY)}
+            {self configureItem(@backgroundItem options(x2 : NewX y2 : NewY))}
             if Move
             then
                NewY = {Max 0 (MaxY - CurCY)}
@@ -586,11 +594,17 @@ define
          meth !InternalScrollCanvasEvent(Dim Adj)
             XPos YPos
          in
-            GTKCANVAS.canvas, freeze
+            GraphicSupport, StopUpdate
             Dim <- {Adj adjustmentGetFieldValue($)}
             XPos = {Float.toInt @innerX}
             YPos = {Float.toInt @innerY}
             GTKCANVAS.canvas, scrollTo(XPos YPos)
+            GraphicSupport, ReleaseUpdate
+         end
+         meth !StopUpdate
+            GTKCANVAS.canvas, freeze
+         end
+         meth !ReleaseUpdate
             GTKCANVAS.canvas, thaw
          end
          meth moveCanvasView
@@ -619,7 +633,7 @@ define
          end
          meth enableStop
             {@stopButton setSensitive(1)}
-            GTKCANVAS.canvas, freeze
+            GraphicSupport, StopUpdate
          end
          meth disableStop
             StopButton = @stopButton
@@ -628,7 +642,7 @@ define
             then skip
             else {StopButton setSensitive(0)}
             end
-            GTKCANVAS.canvas, thaw
+            GraphicSupport, ReleaseUpdate
          end
          meth drawSelectionRectangle(Node Fresh)
             FirstTag = {Node getFirstItem($)}
@@ -648,37 +662,41 @@ define
                   X2 = ((X + XDim) * FX)
                   Y2 = (((Y + YDim) * FY) + OY)
                in
-                  GTKCANVAS.canvas, freeze
+                  GraphicSupport, StopUpdate
                   if Fresh
                   then
-                     FC = {MakeColor {Dictionary.get @colDict selection}}
+                     FC = {self
+                           itemColor({Dictionary.get @colDict selection} $)}
                   in
                      %% Assoc selection rectangle with covered tree
-                     SelTag = {self newSimpleTagItem(TreeTag $)}
+                     SelTag  = {self newItem(group(parent : TreeTag) $)}
                      selTag  <- SelTag
-                     selItem <- {self newItem(SelTag @rectType
-                                             ['x1'#{Int.toFloat X1}
-                                              'y1'#{Int.toFloat Y1}
-                                              'x2'#{Int.toFloat X2}
-                                              'y2'#{Int.toFloat Y2}
-                                              'fill_color_gdk'#FC
-                                              'outline_color_gdk'#@blackColor
-                                              'width_pixels'#0] $)}
+                     selItem <-
+                     {self
+                      newItem(rectangle(parent            : SelTag
+                                        x1                : X1
+                                        y1                : Y1
+                                        x2                : X2
+                                        y2                : Y2
+                                        fill_color_gdk    : FC
+                                        outline_color_gdk : @blackColor
+                                        width_pixels      : 0) $)}
                      %% Make it the lowest item within the spanned tree
-                     {SelTag lowerToBottom}
+                     {self lowerItem(SelTag 0)}
                      %% In case of a proxy node the rectangle must be raised
                      %% by one to cover the mapping rectangles
                      if {Node isProxy($)}
-                     then {SelTag 'raise'(1)}
+                     then {self raiseItem(SelTag 1)}
                      else skip
                      end
                   else
-                     {self configureItem(@selItem ['x1'#{Int.toFloat X1}
-                                                   'y1'#{Int.toFloat Y1}
-                                                   'x2'#{Int.toFloat X2}
-                                                   'y2'#{Int.toFloat Y2}])}
+                     {self
+                      configureItem(@selItem options(x1 : {Int.toFloat X1}
+                                                     y1 : {Int.toFloat Y1}
+                                                     x2 : {Int.toFloat X2}
+                                                     y2 : {Int.toFloat Y2}))}
                   end
-                  GTKCANVAS.canvas, thaw
+                  GraphicSupport, ReleaseUpdate
                end
             end
          end
@@ -686,9 +704,9 @@ define
             OffY = ((I - 1) * 3)
             X Y
          in
-            {Tag getBounds(0.0#X 0.0#Y 0.0#_ 0.0#_)}
+            {self itemGetPosition(Tag X Y)}
             offY <- OffY
-            ({Float.toInt X} div @fontX)|(({Float.toInt Y} - OffY) div @fontY)
+            (X div @fontX)|((Y - OffY) div @fontY)
          end
       end
    end

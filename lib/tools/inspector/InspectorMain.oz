@@ -32,6 +32,7 @@ import
    GTK GTKCANVAS
    GBuilder(create)
 \endif
+   Profiler(open)
 export
    'object'     : InspectorObj
    'inspect'    : Inspect
@@ -530,6 +531,7 @@ define
             if @isVisible
             then skip
             else
+%              {Profiler.open}
                isVisible <- true
                GuiInspectorClass, topShow
             end

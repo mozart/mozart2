@@ -1221,11 +1221,99 @@ local
       end
    end
 
+   local
+      local
+         fun {DoWhere Xs Y N}
+            X|Xr = Xs in
+            case Y == X then N else
+               {DoWhere Xr Y N+1}
+            end
+         end
+      in
+         fun {Where Xs Y}
+            {DoWhere Xs Y 0}
+         end
+      end
+      fun {Subtract R Fs}
+         {FoldL Fs fun {$ A F} {Record.subtract A F} end R}
+      end
+   in
+      class PopupMenu from Tk.menubutton
+         feat
+            Entries
+            Menu
+            Action
+         attr
+            Current
+         meth tkInit(parent:   P
+                     entries:  E <= [empty]
+                     selected: X <= 1
+                     font:     F <= unit
+                     action:   A <= proc {$ S} skip end ...)=M
+            T#C = {Nth E X}
+         in
+            Tk.menubutton,
+            {Record.adjoin {Subtract M case F == unit then
+                                          [entries selected font action]
+                                       else
+                                          [entries selected action]
+                                       end}
+             tkInit(text:T foreground:C activeforeground:C)}
+            self.Entries = E
+            self.Action  = A
+            self.Menu    =
+            case F == unit then
+               {New Tk.menu tkInit(parent:  P
+                                   tearoff: false)}
+            else
+               {New Tk.menu tkInit(parent:  P
+                                   font:    F
+                                   tearoff: false)}
+            end
+            {ForAll E
+             proc {$ S}
+                case S
+                of T#C then
+                   {New Tk.menuentry.command
+                    tkInit(parent:           self.Menu
+                           label:            T
+                           foreground:       C
+                           activeforeground: C
+                           action:           self # Select(S)) _}
+                end
+             end}
+            Tk.menubutton,tkBind(event:  '<1>'
+                                 action: self # Popup)
+            Current <- T#C
+         end
+         meth Select(S)
+            Current <- S
+            case S of T#C then
+               Tk.menubutton,tk(conf text:T foreground:C activeforeground:C)
+               {self.Action T}
+            end
+         end
+         meth Popup
+            X  = {Tk.returnInt winfo(rootx     self)}
+            XW = {Tk.returnInt winfo(reqwidth  self)}
+            Y  = {Tk.returnInt winfo(rooty     self)}
+            YH = {Tk.returnInt winfo(reqheight self)}
+            N  = {Where self.Entries @Current}
+         in
+            {Tk.send tk_popup(self.Menu X+(XW div 2) Y+(YH div 2)+1 N)}
+         end
+         meth getCurrent($)
+            case @Current of T#_ then T end
+         end
+      end
+   end
+
 in
 
    tkTools(error:       Error
            dialog:      Dialog
            menubar:     MakeMenu
+           popupmenu:   PopupMenu
            textframe:   Textframe
            notebook:    Notebook
            note:        Note

@@ -27,6 +27,8 @@
 %%    Spec ::= plain
 %%          |  list([mode: Mode] Option ... Option)
 %%          |  record([mode: Mode] Option ... Option)
+%%          |  single([mode: Mode] Option ... Option)
+%%          |  multiple([mode: Mode] Option ... Option)
 %%    Mode ::= start | anywhere   % default: anywhere
 %%    Option ::= LongOpt(['char': Char] [type: Type]
 %%                       [1: Occ] [default: value] [optional: bool])
@@ -59,9 +61,13 @@
 %% combined.  The argument to a single-character option may be attached to
 %% the option character.  A single hyphen `-' is returned in the RestArgs.
 %% Parsing stops at a double hyphen `--' not followed by an option name;
-%% the double hyphen does not appear in the RestArgs.  If the input does
-%% not conform to the specification, an error exception of the form
-%% `ap(usage VS)' is raised (VS being a virtual string describing the error).
+%% the double hyphen does not appear in the RestArgs.
+%%
+%% General Information:
+%%
+%% If the input does not conform to the specification, an error exception
+%% of the form `ap(usage VS)' is raised (VS being a virtual string describing
+%% the error).
 %%
 %% When using `list', the `Occ', `default' and `optional' specifications
 %% are ignored.  An OptionList are returned:
@@ -80,6 +86,13 @@
 %%
 %%    OptRec ::= optRec(1: OptionList
 %%                      LongOpt: value ... LongOpt: value)
+%%
+%% When using `single' or `multiple', the specification is preprocessed
+%% for backwards compatibility:  the `default' specification has a
+%% default value (false for boolean options, 0 for integers, 0.0 for
+%% floats, "" for strings, and '' for atoms) and all arguments have
+%% an `Occ' value of `rightmost' by default.  For single-letter LongOpts
+%% (and only for these), single-character options are accepted.
 %%
 
 local
@@ -658,14 +671,16 @@ in
             [] record then
                {PostProcess
                 {CgiParse {CgiPreProcessArgs RawArgs} Spec} Spec}
-            [] single then NewSpec in
+            [] single then NewSpec X in
                NewSpec = {BackwardCompat Spec rightmost}
-               {PostProcess
-                {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
-            [] multiple then NewSpec in
+               X = {PostProcess
+                    {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
+               {Adjoin X optRec(1: nil 2: X.1)}
+            [] multiple then NewSpec X in
                NewSpec = {BackwardCompat Spec multiple}
-               {PostProcess
-                {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
+               X = {PostProcess
+                    {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
+               {Adjoin X optRec(1: nil 2: X.1)}
             end
          end
       end
@@ -681,12 +696,14 @@ in
             {CmdParse Argv Spec}
          [] record then
             {PostProcess {CmdParse Argv Spec} Spec}
-         [] single then
-            {PostProcess {CmdParse Argv Spec}
-             {BackwardCompat Spec rightmost}}
-         [] multiple then
-            {PostProcess {CmdParse Argv Spec}
+         [] single then X in
+            X = {PostProcess {CmdParse Argv Spec}
+                 {BackwardCompat Spec rightmost}}
+            {Adjoin X optRec(1: nil 2: X.1)}
+         [] multiple then X in
+            X = {PostProcess {CmdParse Argv Spec}
              {BackwardCompat Spec multiple}}
+            {Adjoin X optRec(1: nil 2: X.1)}
          end
       end
    end

@@ -313,6 +313,12 @@ local
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
                AssemblerClass, declareLabel(L3)
+            [] testRecord(_ _ _ L1 L2 _) then
+               AssemblerClass, declareLabel(L1)
+               AssemblerClass, declareLabel(L2)
+            [] testList(_ L1 L2 _) then
+               AssemblerClass, declareLabel(L1)
+               AssemblerClass, declareLabel(L2)
             [] match(_ HT NLiveRegs) then ht(L Cases) = HT in
                AssemblerClass, declareLabel(L)
                {ForAll Cases
@@ -430,6 +436,14 @@ local
                A1 = {Dictionary.get @LabelDict L1}
                A2 = {Dictionary.get @LabelDict L2}
                testNumber(X1 X2 A1 A2 X3)
+            [] testRecord(X1 X2 X3 L1 L2 X4) then A1 A2 in
+               A1 = {Dictionary.get @LabelDict L1}
+               A2 = {Dictionary.get @LabelDict L2}
+               testRecord(X1 X2 X3 A1 A2 X4)
+            [] testList(X1 L1 L2 X2) then A1 A2 in
+               A1 = {Dictionary.get @LabelDict L1}
+               A2 = {Dictionary.get @LabelDict L2}
+               testList(X1 A1 A2 X2)
             [] testBool(X1 L1 L2 L3 X2) then A1 A2 A3 in
                A1 = {Dictionary.get @LabelDict L1}
                A2 = {Dictionary.get @LabelDict L2}
@@ -534,34 +548,6 @@ local
       [] 9 then {Assembler append(deAllocateL9)}
       [] 10 then {Assembler append(deAllocateL10)}
       else {Assembler append(deAllocateL)}
-      end
-   end
-
-   fun {AllOnScalar Cases}
-      case Cases of C|Cr then
-         case C of onScalar(_ _) then {AllOnScalar Cr}
-         else false
-         end
-      [] nil then true
-      end
-   end
-
-   proc {OnScalarsToTests onScalar(X L)|Cr R ElseL NLiveRegs Assembler}
-      case Cr of nil then
-         case {IsNumber X} then
-            {Assembler append(testNumber(R X L ElseL NLiveRegs))}
-         elsecase {IsLiteral X} then
-            {Assembler append(testLiteral(R X L ElseL NLiveRegs))}
-         end
-      else NextL in
-         {Assembler newLabel(?NextL)}
-         case {IsNumber X} then
-            {Assembler append(testNumber(R X L NextL NLiveRegs))}
-         elsecase {IsLiteral X} then
-            {Assembler append(testLiteral(R X L NextL NLiveRegs))}
-         end
-         {Assembler setLabel(NextL)}
-         {OnScalarsToTests Cr R ElseL NLiveRegs Assembler}
       end
    end
 
@@ -931,19 +917,37 @@ local
          [] testNumber(_ _ _ _ _) then
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}
+         [] testRecord(R Literal Arity L1 L2 NLiveRegs) then
+            case Literal == '|' andthen Arity == 2 then
+               {Assembler append(testList(R L1 L2 NLiveRegs))}
+            else
+               {Assembler append(I1)}
+            end
+            {EliminateDeadCode Rest Assembler}
+         [] testList(_ _ _ _) then
+            {Assembler append(I1)}
+            {EliminateDeadCode Rest Assembler}
          [] testBool(_ _ _ _ _) then
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}
          [] match(R HT NLiveRegs) then ht(ElseL Cases) = HT in
-            case {Length Cases} < 6 andthen {AllOnScalar Cases} then
-               case Cases of [onScalar(true TrueL) onScalar(false FalseL)] then
+            case Cases of [onScalar(true TrueL) onScalar(false FalseL)] then
+               {Assembler append(testBool(R TrueL FalseL ElseL NLiveRegs))}
+            elseof [onScalar(false FalseL) onScalar(true TrueL)] then
+               {Assembler append(testBool(R TrueL FalseL ElseL NLiveRegs))}
+            elseof [onScalar(X L)] then
+               case {IsNumber X} then
+                  {Assembler append(testNumber(R X L ElseL NLiveRegs))}
+               elsecase {IsLiteral X} then
+                  {Assembler append(testLiteral(R X L ElseL NLiveRegs))}
+               end
+            elseof [onRecord(Label RecordArity L)] then
+               case Label == '|' andthen RecordArity == 2 then
                   {Assembler
-                   append(testBool(R TrueL FalseL ElseL NLiveRegs))}
-               elseof [onScalar(false FalseL) onScalar(true TrueL)] then
-                  {Assembler
-                   append(testBool(R TrueL FalseL ElseL NLiveRegs))}
+                   append(testList(R L ElseL NLiveRegs))}
                else
-                  {OnScalarsToTests Cases R ElseL NLiveRegs Assembler}
+                  {Assembler
+                   append(testRecord(R Label RecordArity L ElseL NLiveRegs))}
                end
             else
                {Assembler append(I1)}

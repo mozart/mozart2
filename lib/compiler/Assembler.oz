@@ -44,8 +44,10 @@ export
    InternalAssemble
    Assemble
 define
+
+   InstructionSizes = {CompilerSupport.getInstructionSizes}
+
    local
-      GetInstructionSize = CompilerSupport.getInstructionSize
       GetOpcode          = CompilerSupport.getOpcode
       AllocateCodeBlock  = CompilerSupport.allocateCodeBlock
       AddDebugInfo       = CompilerSupport.addDebugInfo
@@ -92,31 +94,6 @@ define
             {BIStorePredId CodeBlock {System.printName Name} Arity Pos Flags NLiveRegs}
          end
       end
-
-      /*
-
-      local
-         BINewHashTable  = CompilerSupport.newHashTable
-         BIStoreHTScalar = CompilerSupport.storeHTScalar
-         BIStoreHTRecord = CompilerSupport.storeHTRecord
-      in
-         proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
-            Addr = {Dictionary.get LabelDict ElseLabel}
-            HTable = {BINewHashTable CodeBlock {Length List} Addr}
-         in
-            {ForAll List
-             proc {$ Entry}
-                case Entry of onScalar(NumOrLit Lbl) then Addr in
-                   Addr = {Dictionary.get LabelDict Lbl}
-                   {BIStoreHTScalar CodeBlock HTable NumOrLit Addr}
-                [] onRecord(Label RecordArity Lbl) then Addr in
-                   Addr = {Dictionary.get LabelDict Lbl}
-                   {BIStoreHTRecord CodeBlock HTable Label RecordArity Addr}
-                end
-             end}
-         end
-      end
-      */
 
       local
          BINewHashTable  = CompilerSupport.newHashTable

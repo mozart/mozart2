@@ -20,111 +20,12 @@ dnl of this file, and for a DISCLAIMER OF ALL
 dnl WARRANTIES.
 dnl
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%% InstructionSizes maps instr labels to integers
-%%
-
-InstructionSizes =
-instructionSizes(
-   'skip': {GetInstructionSize 'skip'}
-   'definition': {GetInstructionSize 'definition'}
-   'definitionCopy': {GetInstructionSize 'definitionCopy'}
-   'endDefinition': {GetInstructionSize 'endDefinition'}
-   'move': {GetInstructionSize 'moveXX'}
-   'moveMove': {GetInstructionSize 'moveMoveXYXY'}
-   'createVariable': {GetInstructionSize 'createVariableX'}
-   'createVariableMove': {GetInstructionSize 'createVariableMoveX'}
-   'unify': {GetInstructionSize 'unifyXX'}
-   'putRecord': {GetInstructionSize 'putRecordX'}
-   'putList': {GetInstructionSize 'putListX'}
-   'putConstant': {GetInstructionSize 'putConstantX'}
-   'setVariable': {GetInstructionSize 'setVariableX'}
-   'setValue': {GetInstructionSize 'setValueX'}
-   'setConstant': {GetInstructionSize 'setConstant'}
-   'setProcedureRef': {GetInstructionSize 'setProcedureRef'}
-   'setVoid': {GetInstructionSize 'setVoid'}
-   'getRecord': {GetInstructionSize 'getRecordX'}
-   'getList': {GetInstructionSize 'getListX'}
-   'getListValVar': {GetInstructionSize 'getListValVarX'}
-   'unifyVariable': {GetInstructionSize 'unifyVariableX'}
-   'unifyValue': {GetInstructionSize 'unifyValueX'}
-   'unifyValVar': {GetInstructionSize 'unifyValVarXX'}
-   'unifyNumber': {GetInstructionSize 'unifyNumber'}
-   'unifyLiteral': {GetInstructionSize 'unifyLiteral'}
-   'unifyVoid': {GetInstructionSize 'unifyVoid'}
-   'getLiteral': {GetInstructionSize 'getLiteralX'}
-   'getNumber': {GetInstructionSize 'getNumberX'}
-   'allocateL': {GetInstructionSize 'allocateL'}
-   'allocateL1': {GetInstructionSize 'allocateL1'}
-   'allocateL2': {GetInstructionSize 'allocateL2'}
-   'allocateL3': {GetInstructionSize 'allocateL3'}
-   'allocateL4': {GetInstructionSize 'allocateL4'}
-   'allocateL5': {GetInstructionSize 'allocateL5'}
-   'allocateL6': {GetInstructionSize 'allocateL6'}
-   'allocateL7': {GetInstructionSize 'allocateL7'}
-   'allocateL8': {GetInstructionSize 'allocateL8'}
-   'allocateL9': {GetInstructionSize 'allocateL9'}
-   'allocateL10': {GetInstructionSize 'allocateL10'}
-   'deAllocateL': {GetInstructionSize 'deAllocateL'}
-   'deAllocateL1': {GetInstructionSize 'deAllocateL1'}
-   'deAllocateL2': {GetInstructionSize 'deAllocateL2'}
-   'deAllocateL3': {GetInstructionSize 'deAllocateL3'}
-   'deAllocateL4': {GetInstructionSize 'deAllocateL4'}
-   'deAllocateL5': {GetInstructionSize 'deAllocateL5'}
-   'deAllocateL6': {GetInstructionSize 'deAllocateL6'}
-   'deAllocateL7': {GetInstructionSize 'deAllocateL7'}
-   'deAllocateL8': {GetInstructionSize 'deAllocateL8'}
-   'deAllocateL9': {GetInstructionSize 'deAllocateL9'}
-   'deAllocateL10': {GetInstructionSize 'deAllocateL10'}
-   'callMethod': {GetInstructionSize 'callMethod'}
-   'callGlobal': {GetInstructionSize 'callGlobal'}
-   'call': {GetInstructionSize 'callX'}
-   'tailCall': {GetInstructionSize 'tailCallX'}
-   'callConstant': {GetInstructionSize 'callConstant'}
-   'callProcedureRef': {GetInstructionSize 'callProcedureRef'}
-   'sendMsg': {GetInstructionSize 'sendMsgX'}
-   'tailSendMsg': {GetInstructionSize 'tailSendMsgX'}
-   'getSelf': {GetInstructionSize 'getSelf'}
-   'setSelf': {GetInstructionSize 'setSelfG'}
-   'lockThread': {GetInstructionSize 'lockThread'}
-   'inlineAt': {GetInstructionSize 'inlineAt'}
-   'inlineAssign': {GetInstructionSize 'inlineAssign'}
-   'branch': {GetInstructionSize 'branch'}
-   'exHandler': {GetInstructionSize 'exHandler'}
-   'popEx': {GetInstructionSize 'popEx'}
-   'return': {GetInstructionSize 'return'}
-   'getReturn': {GetInstructionSize 'getReturnX'}
-   'funReturn': {GetInstructionSize 'funReturnX'}
-   'testLiteral': {GetInstructionSize 'testLiteralX'}
-   'testNumber': {GetInstructionSize 'testNumberX'}
-   'testRecord': {GetInstructionSize 'testRecordX'}
-   'testList': {GetInstructionSize 'testListX'}
-   'testBool': {GetInstructionSize 'testBoolX'}
-   'match': {GetInstructionSize 'matchX'}
-   'getVariable': {GetInstructionSize 'getVariableX'}
-   'getVarVar': {GetInstructionSize 'getVarVarXX'}
-   'getVoid': {GetInstructionSize 'getVoid'}
-   'debugEntry': {GetInstructionSize 'debugEntry'}
-   'debugExit': {GetInstructionSize 'debugExit'}
-   'globalVarname': {GetInstructionSize 'globalVarname'}
-   'localVarname': {GetInstructionSize 'localVarname'}
-   'clear': {GetInstructionSize 'clearY'}
-   'profileProc': {GetInstructionSize 'profileProc'}
-   'callBI': {GetInstructionSize 'callBI'}
-   'inlinePlus1': {GetInstructionSize 'inlinePlus1'}
-   'inlineMinus1': {GetInstructionSize 'inlineMinus1'}
-   'inlinePlus': {GetInstructionSize 'inlinePlus'}
-   'inlineMinus': {GetInstructionSize 'inlineMinus'}
-   'inlineDot': {GetInstructionSize 'inlineDot'}
-   'testBI': {GetInstructionSize 'testBI'}
-   'testLT': {GetInstructionSize 'testLT'}
-   'testLE': {GetInstructionSize 'testLE'})
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% Opcodes maps instructions with implicit addressing modes to integers
 %%
+
+
 
 define(instructionsUnneededForNewCompiler,`divert(-1)')
 
@@ -139,6 +40,8 @@ changequote(`,')
 
 Opcodes =
 opcodes(include(EMUDIR/instrDefs.m4))
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%

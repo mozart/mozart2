@@ -206,10 +206,8 @@ in
             of name then
                TermOut =
                case {IsBool TermIn} then
-                  case TermIn then '<Bool: true>'
-                  else '<Bool: false>'
-                  end
-               elsecase TermIn == unit then "<N: unit>"
+                  case TermIn then 'true' else 'false' end
+               elsecase TermIn == unit then 'unit'
                else
                   {AtomConcatAll
                    ['<Name: ' {System.printName TermIn } ' @ '

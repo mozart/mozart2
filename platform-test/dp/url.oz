@@ -45,8 +45,10 @@ define
          L(fun {$}
               {All Test.alist
                fun {$ Relative#Wanted}
-                  Resolved={URL.toString
-                            {URL.resolve Base {URL.make Relative}}}
+                  Resolved={VirtualString.toString
+                            {URL.toVirtualStringExtended
+                             {URL.resolve Base {URL.make Relative}}
+                             o(full:true)}}
                in
                   if Resolved\=Wanted then
                      {System.show {String.toAtom Resolved}#{String.toAtom Wanted}}
@@ -73,11 +75,11 @@ define
                      "?y"       #"http://a/b/c/?y"
                      "g?y"      #"http://a/b/c/g?y"
                      %%"#s"     #"(current document)#s"
-                     % GOOF "g#s"       #"http://a/b/c/g#s"
-                     % GOOF "g?y#s"     #"http://a/b/c/g?y#s"
+                     "g#s"      #"http://a/b/c/g#s"
+                     "g?y#s"    #"http://a/b/c/g?y#s"
                      ";x"       #"http://a/b/c/;x"
                      "g;x"      #"http://a/b/c/g;x"
-                     % GOOF "g;x?y#s"   #"http://a/b/c/g;x?y#s"
+                     "g;x?y#s"  #"http://a/b/c/g;x?y#s"
                      "."        #"http://a/b/c/"
                      "./"       #"http://a/b/c/"
                      ".."       #"http://a/b/"
@@ -94,7 +96,7 @@ define
                     [
                      "../../../g"       #"http://a/../g"
                      "../../../../g"    #"http://a/../../g"
-                     %%"/./g"           #"http://a/./g"
+                     "/./g"             #"http://a/./g"
                      "/../g"            #"http://a/../g"
                      "g."               #"http://a/b/c/g."
                      ".g"               #"http://a/b/c/.g"
@@ -108,8 +110,8 @@ define
                      "g;x=1/../y"       #"http://a/b/c/y"
                      "g?y/./x"          #"http://a/b/c/g?y/./x"
                      "g?y/../x"         #"http://a/b/c/g?y/../x"
-                     % GOOF "g#s/./x"           #"http://a/b/c/g#s/./x"
-                     % GOOF "g#s/../x"          #"http://a/b/c/g#s/../x"
+                     "g#s/./x"          #"http://a/b/c/g#s/./x"
+                     "g#s/../x"         #"http://a/b/c/g#s/../x"
                      "http:g"           #"http:g"
                      "http:"            #"http:"
                     ]
@@ -127,9 +129,9 @@ define
                      "g?y"      #"http://a/b/c/g?y"
                      "g?y/./x"  #"http://a/b/c/g?y/./x"
                      "g?y/../x" #"http://a/b/c/g?y/../x"
-                     % GOOF "g#s"       #"http://a/b/c/g#s"
-                     % GOOF "g#s/./x"   #"http://a/b/c/g#s/./x"
-                     % GOOF "g#s/../x"  #"http://a/b/c/g#s/../x"
+                     "g#s"      #"http://a/b/c/g#s"
+                     "g#s/./x"  #"http://a/b/c/g#s/./x"
+                     "g#s/../x" #"http://a/b/c/g#s/../x"
                      "./"       #"http://a/b/c/"
                      "../"      #"http://a/b/"
                      "../g"     #"http://a/b/g"

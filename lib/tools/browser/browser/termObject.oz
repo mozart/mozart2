@@ -444,14 +444,9 @@ in
    %%
    %% Generate a cell's print name;
    fun {GenCellPrintName Term Store}
-      local AreSmallNames CN in
-         AreSmallNames = {Store read(StoreSmallNames $)}
-         CN = {System.printName Term}
-
-         %%
-         case AreSmallNames then '<Cell>'
-         else '<Cell @ ' # {AddrOf Term} # '>'
-         end
+      %%
+      case {Store read(StoreSmallNames $)} then '<Cell>'
+      else '<Cell @ ' # {AddrOf Term} # '>'
       end
    end
 

@@ -639,9 +639,11 @@ in
             then skip
             else Regs in
                {GetRegs VArgs ?Regs nil}
-               if {Member Reg Regs} then R in
+               case Emitter, GetReg(Reg $) of none andthen {Member Reg Regs}
+               then R in
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(createVariable(R))
+               else skip
                end
                case Emitter, GetReg(Reg $) of none then
                   if Emitter, IsLast(Reg $) then skip

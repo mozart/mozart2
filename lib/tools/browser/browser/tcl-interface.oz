@@ -627,7 +627,7 @@ in
                       )))
               bind(BW '<Shift-B1-Motion>'
                    q(v(
-                      'tkTextSelectTo %W %x %y'
+                      '::tk::TextSelectTo %W %x %y'
                     )))
               bind(BW '<Shift-3>'
                    q(v(

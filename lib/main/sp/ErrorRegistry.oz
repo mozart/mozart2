@@ -809,6 +809,25 @@ in
       end
 
       %%
+      %% application programming
+      %%
+
+      fun {APFormatter Exc}
+         E = {Error.dispatch Exc}
+         T = 'Error: application programming'
+      in
+         case E
+         of ap(usage Msg) then
+            {Error.format T
+             Msg
+             nil
+             Exc}
+         else
+            {Error.formatGeneric T Exc}
+         end
+      end
+
+      %%
       %% distributed programming
       %%
 
@@ -919,6 +938,7 @@ in
       {NewFormatter failure FailureFormatter}
       {NewFormatter recordC RecordCFormatter}
       {NewFormatter system  SystemFormatter}
+      {NewFormatter ap      APFormatter}
       {NewFormatter dp      DPFormatter}
       {NewFormatter os      OSFormatter}
       {NewFormatter foreign ForeignFormatter}

@@ -1,4 +1,7 @@
 ####################################################
+@SET_MAKE@
+BUILDTOP= @BUILDTOP@
+TOPDIR  = @TOPDIR@
 
 # Tests for exceptions
 EXCEPTOZC = except.ozc
@@ -60,17 +63,18 @@ OZFLAGS = --nowarnunused
 
 OZE = $(OZBATCH) $(OZFLAGS)
 OZC = $(OZE) -c
+export OZENGINE
 
 all: oztest
 
 check: oztest
-        $< --verbose
+        $(OZENGINE) $< --verbose
 
 oztest: ./lib/make-test.oz ./lib/engine.oz \
         ./lib/passed.oz ./lib/failed.oz ./lib/help-string.oz \
         $(COMPONENTS)
         $(OZE) -l AP,SP ./lib/make-test.oz
-        ./make-test -verbose $(COMPONENTS)
+        $(OZENGINE) ./make-test -verbose $(COMPONENTS)
         $(RM) ./make-test
 
 
@@ -91,3 +95,5 @@ distclean: veryclean
 
 .oz.ozc:
         $(OZC) $< -o $@
+
+include ../Makefile.boot

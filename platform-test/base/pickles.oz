@@ -33,9 +33,11 @@ define
          {Pickle.save Val File}
          nil
       catch error(dp(generic 'pickle:nogoods'
-                     _ ('Resources'#X)|_) ...) then X
+                     _ ('Resources'#X)|_) ...) then
+         X
       []    error(dp(generic 'pickle:resources'
-                     _ ('Resources'#X)|_) ...) then X
+                     _ ('Resources'#X)|_) ...) then
+         X
       end
    end
 
@@ -43,9 +45,11 @@ define
       try
          {Pickle.pack Val _} nil
       catch error(dp(generic 'pickle:nogoods'
-                     _ ('Resources'#X)|_) ...) then X
+                     _ ('Resources'#X)|_) ...) then
+         X
       []    error(dp(generic 'pickle:resources'
-                     _ ('Resources'#X)|_) ...) then X
+                     _ ('Resources'#X)|_) ...) then
+         X
       end
    end
 

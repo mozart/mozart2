@@ -30,10 +30,8 @@ define
       try
          {Pickle.save Val File}
          nil
-      catch error(dp(generic
-                     'Resources found during save'
-                     ['Resources'#X _]) ...)
-      then X
+      catch error(dp(generic 'save:nogoods'   _ ('Resources'#X)|_) ...) then X
+      []    error(dp(generic 'save:resources' _ ('Resources'#X)|_) ...) then X
       end
    end
 

@@ -75,18 +75,18 @@ define
 
                           proc {Queens N Board}
                              {MkBoard N Board}
-                             {Loop.for 2 N 1
+                             {For 2 N 1
                               proc {$ I}
                                  {AtMostOne {Iterate Board N I N  1 ~1} 1 _}
                                  {AtMostOne {Iterate Board N I 1  1  1} 1 _}
                               end}
-                             {Loop.for 1 N 1
+                             {For 1 N 1
                               proc {$ I}
                                  {AtMostOne {Iterate Board N 1 I  1 ~1} 1 _}
                                  {AtMostOne {Iterate Board N 1 I  1  1} 1 _}
                                  {ExactOneC {Iterate Board N I 1  0  1} 1 _ 0 1}
                               end}
-                             {Loop.for N div 2 1 ~1
+                             {For N div 2 1 ~1
                               proc {$ I}
                                  {ExactOne {MidLine Board N 1 I} 1 _ 0 1}
                                  {ExactOne {MidLine Board N 1 N-I+1} 1 _ 0 1}

@@ -53,7 +53,7 @@ FBENCH = \
 BENCH = $(FBENCH:%=./bench/%.ozf)
 
 DP1= \
-        mini
+        mini url
 DP = $(DP1:%=./dp/%.ozf)
 
 FTOOLS = \

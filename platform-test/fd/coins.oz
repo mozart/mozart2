@@ -24,7 +24,7 @@ body
    end
 
    proc {Coins Sol}
-      PocketCoins coins(1:P 2:Tw 5:Fv 10:Te 20:Twe 50:Ff) = PocketCoins
+      PocketCoins coins(1:_ 2:_ 5:_ 10:_ 20:_ 50:_) = PocketCoins
       Min L = {MakeList 100}
    in
       Sol = sol(min: Min pocketcoins: PocketCoins sols: L)

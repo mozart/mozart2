@@ -1,0 +1,13 @@
+Quick instructions for testing your mozart installation.
+
+From <build-dir>/share/test:
+
+  make boot-all   - Builds all tests with the compiler in <build-dir>
+  make boot-check - Runs all tests (except dp) with the enulator in <build-dir>
+
+You can also run oztest and ozbench with the oz from your path/OZ_HOME. Run
+
+  oztest -h
+  ozbench -h
+
+for lots of options.

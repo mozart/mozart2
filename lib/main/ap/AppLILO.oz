@@ -20,13 +20,19 @@
 %%% WARRANTIES.
 %%%
 
+% \define INTERACTIVE
+\ifdef INTERACTIVE
+declare
+AF =
+\endif
+
 local
 
    \insert ../lilo/LILO.oz
 
 in
 
-   functor
+   functor $ prop once
 
    import
       OS.{tmpnam
@@ -99,15 +105,30 @@ in
                ArgParser = {Parser.cmd ArgSpec}
             in
                proc {$}
-                  Exit   = {`Builtin` shutdown 1}
-                  Script = {RootLink Functor _}
+                  LILO = {NewLILO {`Builtin` load 2}}
                in
+                  {{`Builtin` 'PutProperty' 2}
+                   print print(width:100 depth:100)}
+                  {{`Builtin` 'Show' 1} hallo}
+
+                  {{`Builtin` setDefaultExceptionHandler 1}
+                   proc {$ E}
+                      {{`Builtin` 'Show' 1} E}
+                   end}
+
                   try
-                     {Exit {Script {ArgParser}}}
+                     {LILO.link 'Syslet'
+                      functor $
+                      export
+                         args: Args
+                         exit: Exit
+                      body
+                         Args = {ArgParser}
+                         Exit = {`Builtin` shutdown 1}
+                      end '.' _}
+                     {LILO.link unit Functor '.' _}
                   catch E then
                      {{{`Builtin` getDefaultExceptionHandler 1}} E}
-                  finally
-                     {Exit 1}
                   end
                end
             end
@@ -203,3 +224,16 @@ in
    end
 
 end
+
+
+/*
+
+declare
+Application = {AF.apply 'import'('OS':        OS
+                                 'System':    System
+                                 'Open':      Open
+                                 'Component': Component)}
+
+{Browse Application}
+
+*/

@@ -27,7 +27,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 export
    load:   Load

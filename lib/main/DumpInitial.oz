@@ -49,7 +49,12 @@ in
       {PutProperty print  print(depth: 100 width: 100)}
       {PutProperty errors print(depth: 100 width: 100)}
 
-      ExtPATH = Name # '.ozc'
+      ExtPATH = Name #
+\ifdef LILO
+      '.ozp'
+\else
+      '.ozc'
+\endif
    in
       try
          {BISave X ExtPATH}

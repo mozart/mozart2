@@ -117,7 +117,7 @@ local
 
 in
 
-   functor $
+   functor $ prop once
 
    export
       offer: Offer

@@ -21,7 +21,7 @@ INSTALL_SRC     = @INSTALL_SRC@
 INSTALL_DIR     = @INSTALL_DIR@
 
 OZFLAGS         = -DLILO
-OZBATCH         = @OZBATCH@
+OZBATCH         = ./ozc # @OZBATCH@
 
 COMPILE         = $(OZBATCH) $(OZFLAGS) --include=DumpIntro.oz -c
 EXEC            = $(OZBATCH) $(OZFLAGS)
@@ -52,6 +52,9 @@ STANDARDSRC1 = \
 
 STANDARDSRC = $(STANDARDSRC1:%=standard/%) Standard.oz
 
+STANDARD = Base.ozp Standard.ozp Base.env Standard.env
+DUMPINTRO = DumpIntro.oz $(STANDARD)
+
 INITSRC1 = URL.oz Prop.oz
 INITSRC = $(INITSRC1:%=init/%) Init.oz
 
@@ -68,11 +71,29 @@ FUNCTORS = \
         $(APSRC:%=%.ozf) \
         $(CPSRC:%=%.ozf) \
         $(DPSRC:%=%.ozf) \
-        $(WPSRC:%=%.ozf)
+        $(WPSRC:%=%.ozf) \
+        Compiler.ozf
+
+SYSLETS = \
+        ozc
 
 .PHONY: all
 
-all: $(FUNCTORS)
+all: $(FUNCTORS) $(SYSLETS)
+
+Init.ozp: $(DUMPINTRO) $(INITSRC)
+        OZMAINIT="" $(COMPILE) Init.oz -o Init.ozp
+
+Base.ozp: Standard.ozp
+        @echo > /dev/null
+
+Standard.ozp: $(STANDARDSRC) Base.env Standard.env
+        OZMAINIT="" $(EXEC) DumpInitial.oz
+
+
+
+$(FUNCTORS): Init.ozp Standard.ozp Base.ozp
+
 
 %.ozf: sp/%.oz
         $(COMPILE) $< -o $@
@@ -86,9 +107,55 @@ all: $(FUNCTORS)
         $(COMPILE) $< -o $@
 %.ozf: wp/%.oz
         $(COMPILE) $< -o $@
+%.ozf: %.oz
+        $(COMPILE) $< -o $@
 
-wp/Tk.ozf: wp/TkInit.oz
-wp/TkTools.ozf: wp/TkOptions.oz
+
+# ap dependencies
+Application.ozf: ap/ArgParser.oz
+
+# op dependencies
+Open.ozf: op/HtmlTable.oz
+
+# wp dependencies
+Tk.ozf: wp/TkInit.oz
+TkTools.ozf: wp/TkOptions.oz
+
+# compiler dependencies
+COMPILERSRC1 = \
+        InsertAll.oz CompilerClass.oz Misc.oz Reporter.oz ParseOz.oz \
+        FormatStrings.oz Builtins.oz CoreLanguage.oz Annotate.oz \
+        StaticAnalysis.oz POTypes.oz CodeGen.oz CodeStore.oz \
+        CodeEmitter.oz BindingAnalysis.oz TupleSyntax.oz Unnester.oz \
+        UnnestFD.oz Assembler.oz Interface.oz \
+        GenericInterface.oz QuietInterface.oz
+
+COMPILERSRCNOVER = \
+        $(COMPILERSRC1:%=compiler/%) \
+        compiler-Builtins.oz compiler-Opcodes.oz Compiler.oz
+
+COMPILERSRC = $(COMPILERSRCNOVER) compiler-Version.oz
+
+compiler-Version.oz: $(COMPILERSRCNOVER) compiler/Opcodes.m4oz
+        echo 'DATE = '\'`date '+%h %d 19%y (%T)'`\' > $@ \
+        || (rm -f $@; exit 1)
+
+compiler-Builtins.oz: ../../platform/emulator/bidecl.perl
+        $(PERL) $< -oztable \
+        -exclude wif,fd,libfd,libschedule,fset,libfset,libparser > $@
+
+compiler-Opcodes.oz: compiler/Opcodes.m4oz ../../platform/emulator/instrDefs.m4
+        $(M4) -DEMUDIR=$(SRCDIR)/../../platform/emulator < $< > $@ \
+        || (rm -f $@; exit 1)
+
+Compiler.ozf: $(COMPILERSRC)
+
+
+
+# Syslets
+
+ozc: MakeBatch.oz BatchCompile.oz $(DUMPINTRO)
+        $(EXECWITHSTD) $<
 
 Makefile-lilo: Makefile-lilo.in ../config.status
         cd .. && ./config.status

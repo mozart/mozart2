@@ -262,7 +262,7 @@ local
 
 in
 
-   functor
+   functor $ prop once
 
    import
       System.{get

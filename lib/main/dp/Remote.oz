@@ -22,7 +22,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 import
    OS.{getEnv}

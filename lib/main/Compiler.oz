@@ -21,33 +21,57 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 import
-   SP.{System  = 'System'
-       Show    = 'Show'
-       Foreign = 'Foreign'
-       Error   = 'Error'}
+   System.{gcDo
+           printName
+           valueToVirtualString
+           get
+           property
+           printError
+           show
+           eq}
 
-   CP.{FS        = 'FS'
-       FD        = 'FD'
-       SearchOne = 'SearchOne'}
+   Foreign.{pointer
+            staticLoad}
+
+   Error.{formatExc
+          formatPos
+          formatLine
+          msg}
+
+   FS.{include
+       var
+       subset
+       value
+       reflect
+       union
+       diff
+       cardRange
+       disjoint}
+
+   FD.{int
+       is
+       less
+       distinct
+       distribute}
+
+   Search.{SearchOne = 'SearchOne'}
 
    Gump
 
 export
-   'Compiler': Compiler
+   engine:               CompilerEngine
+   compilerClass:        CompilerEngine   %--** deprecated
+   genericInterface:     GenericInterface
+   quietInterface:       QuietInterface
+   evalExpression:       EvalExpression
+   virtualStringToValue: VirtualStringToValue
+   assemble:             DoAssemble
 
 body
    \insert 'compiler/InsertAll.oz'
-in
-   Compiler = compiler(engine: CompilerEngine
-                       compilerClass: CompilerEngine   %--** deprecated
-                       genericInterface: GenericInterface
-                       quietInterface: QuietInterface
-                       evalExpression: EvalExpression
-                       virtualStringToValue: VirtualStringToValue
-                       assemble: DoAssemble)
 end
 
 \else

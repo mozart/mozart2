@@ -22,6 +22,30 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+%% The following ensures that this file works with the `-g' command
+%% line option:  With debug information, an application of the unbound
+%% variable `=` would be generated; the thread would block.
+\pushSwitches
+\switch -debuginfocontrol
+
+declare
+local
+   Load     = {`Builtin` load 2}
+   Base     = {Load 'Base.ozp'}
+   Standard = {Load 'Standard.ozp'}
+in
+   \insert 'Base.env'
+   = Base
+   \insert 'Standard.env'
+   = Standard
+end
+
+\popSwitches
+
+\else
+
 %% The following ensures that this file works with the `-g' command
 %% line option:  With debug information, an application of the unbound
 %% variable `=` would be generated; the thread would block.
@@ -41,3 +65,5 @@ in
 end
 
 \popSwitches
+
+\endif

@@ -24,7 +24,7 @@
 %%%
 
 \ifdef LILO
-functor $
+functor $ prop once
 
 import
    Tk.{toplevel

@@ -26,7 +26,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 import
    System.{gcDo}

@@ -25,7 +25,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 import
    System.{get
@@ -62,7 +62,7 @@ body
    Resolver
    Localize
 
-   case {System.property.cond url false}
+   case {System.property.condGet url false}
    of false then
       !Resolver = unit
       fun{!Localize PATH} old(PATH) end

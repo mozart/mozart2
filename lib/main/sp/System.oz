@@ -30,7 +30,7 @@
 
 \ifdef LILO
 
-functor
+functor $ prop once
 
 export
    get:                  SystemGet

@@ -119,7 +119,7 @@ local
 
 in
 
-   functor $
+   functor $ prop once
 
    import
       OS.{open

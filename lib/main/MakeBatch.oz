@@ -19,22 +19,38 @@
 %%% WARRANTIES.
 %%%
 
+%\define LILO
 \ifdef LILO
 
 {Application.syslet
- 'ozbatch'
+ 'ozc'
  functor
+
  import
-    LILO.load
-    SP.{System='System' Error='Error'}
-    OP.{OS='OS' Open='Open' Component='Component'}
-    Compiler.{X='Compiler'}
- export
-    BatchCompile
+    LILO.{load}
+
+    System.{printInfo
+            printError}
+
+    Error.{msg
+           formatLine}
+
+    OS.{putEnv
+        getEnv}
+
+    Open.{file}
+
+    Component.{save}
+
+    Compiler.{engine
+              quietInterface}
+
+    Syslet.{exit
+            args}
+
  body
-    Compiler = X
- in
     \insert BatchCompile
+    {Syslet.exit {BatchCompile Syslet.args}}
  end
  plain}
 

@@ -115,7 +115,7 @@ local
 
 in
 
-   functor
+   functor $ prop once
 
    import
       Foreign.{staticLoad}

@@ -22,7 +22,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 export
    %% Os IO common to both files and sockets

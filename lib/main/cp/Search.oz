@@ -797,7 +797,7 @@ local
 
 in
 
-   functor
+   functor $ prop once
 
    export
       one:    OneModule

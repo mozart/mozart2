@@ -25,7 +25,7 @@
 
 \ifdef LILO
 
-functor $
+functor $ prop once
 
 export
    register:   Register

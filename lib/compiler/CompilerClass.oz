@@ -48,6 +48,17 @@ local
                             expression: false
                             system: true
 
+                            %% gump:
+                            gump: false
+                            gumpscannerbestfit: false
+                            gumpscannercaseless: false
+                            gumpscannernowarn: false
+                            gumpscannerbackup: false
+                            gumpscannerperfreport: false
+                            gumpscannerstatistics: false
+                            gumpparseroutputsimplified: false
+                            gumpparserverbose: false
+
                             %% static analysis:
                             %%
                             staticanalysis: true
@@ -77,6 +88,7 @@ local
                             debuginfovarnames: false)
          savedSwitches: nil
          maxNumberOfErrors: 17
+         productionTemplates: unit
 
       feat variables values
 
@@ -232,6 +244,26 @@ local
       end
       meth getVars($)
          {Dictionary.items self.variables}
+      end
+
+      meth addProductionTemplates(Ps)
+         CompilerStateClass, InitProductionTemplates()
+         {@productionTemplates add(Ps @reporter)}
+      end
+      meth getProductionTemplates($)
+         CompilerStateClass, InitProductionTemplates()
+         {@productionTemplates get($)}
+      end
+      meth InitProductionTemplates()
+         case @productionTemplates of unit then
+            T = {Thread.this}
+            RaiseOnBlock = {Thread.getRaiseOnBlock T}
+         in
+            {Thread.setRaiseOnBlock T false}
+            productionTemplates <- {Gump.makeProductionTemplates}
+            {Thread.setRaiseOnBlock T RaiseOnBlock}
+         else skip
+         end
       end
    end
 
@@ -410,6 +442,8 @@ local
                                        codegen: true
                                        outputcode: true
                                        feedtoemulator: false))
+         [] fSynTopLevelProductionTemplates(Ps) then
+            CompilerStateClass, addProductionTemplates(Ps)
          else TopLevelGVs GS FreeGVs in
             case Query of fDeclare(_ _ C) then
                {@reporter logDeclare(C)}

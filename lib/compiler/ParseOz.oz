@@ -28,7 +28,7 @@ in
    in
       Res = {ParseFile FileName
              options(showInsert: {CompilerState getSwitch(showinsert $)}
-                     gumpSyntax: false
+                     gumpSyntax: {CompilerState getSwitch(gump $)}
                      systemVariables: {CompilerState getSwitch(system $)}
                      defines: {CompilerState getDefines($)}
                      errorOutput: ?VS)}
@@ -51,7 +51,7 @@ in
    in
       Res = {ParseVirtualString VS
              options(showInsert: {CompilerState getSwitch(showinsert $)}
-                     gumpSyntax: false
+                     gumpSyntax: {CompilerState getSwitch(gump $)}
                      systemVariables: {CompilerState getSwitch(system $)}
                      defines: {CompilerState getDefines($)}
                      errorOutput: ?VS2)}

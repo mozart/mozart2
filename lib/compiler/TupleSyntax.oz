@@ -105,11 +105,15 @@ proc {GetPatternVariablesStatement S VsHd VsTl}
       VsHd = S|VsTl
    [] fEq(E _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}
-   [] fClass(E _ _ _) then
-      {GetPatternVariablesExpression E VsHd VsTl}
    [] fProc(E _ _ _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}
    [] fFun(E _ _ _ _) then
+      {GetPatternVariablesExpression E VsHd VsTl}
+   [] fClass(E _ _ _) then
+      {GetPatternVariablesExpression E VsHd VsTl}
+   [] fScanner(E _ _ _ _ _) then
+      {GetPatternVariablesExpression E VsHd VsTl}
+   [] fParser(E _ _ _ _ _ _) then
       {GetPatternVariablesExpression E VsHd VsTl}
    [] fLocal(S1 S2 _) then Vs1 Vs2 in
       {GetPatternVariablesStatement S1 ?Vs1 nil}

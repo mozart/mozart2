@@ -342,10 +342,10 @@ local
          reporter
          switches
 
-      meth init(TopLevel Reporter Switches)
+      meth init(TopLevel Reporter State)
          BA <- {New BindingAnalysis init(TopLevel Reporter)}
          reporter <- Reporter
-         switches <- Switches
+         switches <- State
       end
 
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
@@ -400,6 +400,8 @@ local
                         [] fProc(_ _ _ _ _) then 'Proc'
                         [] fFun(_ _ _ _ _) then 'Fun'
                         [] fClass(_ _ _ _) then 'Class'
+                        [] fScanner(_ _ _ _ _ _) then 'Scanner'
+                        [] fParser(_ _ _ _ _ _ _) then 'Parser'
                         else Origin
                         end
             {@BA generate(NewOrigin C ?GV)}
@@ -573,6 +575,41 @@ local
                       init(GVO GParents GProps GAttrs GFeats GMeths C)}
             {SetExpansionOccs GClass @BA}
             GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
+         [] fScanner(T Ds Ms Rules Prefix C) then
+            From Prop Attr Feat Flags FS
+         in
+            {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
+            Flags = flags(prefix: Prefix
+                          bestfit:
+                             {@switches getSwitch(gumpscannerbestfit $)}
+                          caseless:
+                             {@switches getSwitch(gumpscannercaseless $)}
+                          nowarn:
+                             {@switches getSwitch(gumpscannernowarn $)}
+                          backup:
+                             {@switches getSwitch(gumpscannerbackup $)}
+                          perfreport:
+                             {@switches getSwitch(gumpscannerperfreport $)}
+                          statistics:
+                             {@switches getSwitch(gumpscannerstatistics $)})
+            FS = {Gump.transformScanner
+                  T From Prop Attr Feat Ms Rules C Flags @reporter}
+            Unnester, UnnestStatement(FS $)
+         [] fParser(T Ds Ms Tokens Rules Expect C) then
+            From Prop Attr Feat Flags FS
+         in
+            {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
+            Flags = flags(expect: Expect
+                          outputSimplified:
+                             {@switches
+                              getSwitch(gumpparseroutputsimplified $)}
+                          verbose:
+                             {@switches getSwitch(gumpparserverbose $)})
+            FS = {Gump.transformParser
+                  T From Prop Attr Feat Ms Tokens Rules C Flags
+                  {@switches getProductionTemplates($)}
+                  @reporter}
+            Unnester, UnnestStatement(FS $)
          [] fLocal(FS1 FS2 C) then NewFS1 FVs GS in
             {@BA openScope()}
             NewFS1 = {MakeTrivialLocalPrefix FS1 ?FVs nil}
@@ -909,6 +946,23 @@ local
                 error(coord: {CoordinatesOf FE1} kind: SyntaxError
                       msg: 'nesting marker expected in nested class')}
                Unnester, UnnestStatement(FE $)
+            end
+         [] fScanner(FE1 Ds Ms Rules Prefix C) then
+            case FE1 of fDollar(_) then
+               Unnester, UnnestStatement(fScanner(FV Ds Ms Rules Prefix C) $)
+            else
+               {@reporter
+                error(coord: {CoordinatesOf FE1} kind: SyntaxError
+                      msg: 'nesting marker expected in nested scanner class')}
+            end
+         [] fParser(FE1 Ds Ms Tokens Rules Expect C) then
+            case FE1 of fDollar(_) then
+               Unnester,
+               UnnestStatement(fParser(FV Ds Ms Tokens Rules Expect C) $)
+            else
+               {@reporter
+                error(coord: {CoordinatesOf FE1} kind: SyntaxError
+                      msg: 'nesting marker expected in nested parser class')}
             end
          [] fLocal(FS FE C) then fVar(PrintName VC) = FV GVO NewFS FVs in
             {@BA refer(PrintName VC ?GVO)}
@@ -1820,7 +1874,7 @@ in
             case {VariableMember PrintName Vs2} then false
             else {AreDisjointVariableLists Vr Vs2}
             end
-         [] nil then true
+         elseof nil then true
          end
       end
 
@@ -1898,8 +1952,8 @@ in
       end
    end
 
-   proc {UnnestQuery TopLevel Reporter Switches Query ?GVs ?GS ?FreeGVs}
-      O = {New Unnester init(TopLevel Reporter Switches)}
+   proc {UnnestQuery TopLevel Reporter State Query ?GVs ?GS ?FreeGVs}
+      O = {New Unnester init(TopLevel Reporter State)}
    in
       {O unnestQuery(Query ?GVs ?GS ?FreeGVs)}
    end

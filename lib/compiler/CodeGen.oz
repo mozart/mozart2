@@ -220,7 +220,7 @@ local
       {CS newReg(?Reg)}
       VO = {New PseudoVariableOccurrence init(Reg)}
       VArgs =
-      literal(Literal)|number(Coord.2)|
+      literal(Literal)|number(case Coord of unit then ~1 else Coord.2 end)|
       {Map VOs fun {$ VO} value({VO reg($)}) end}
       VHd = vEquateRecord(_ 'kernel' {Length VArgs} Reg VArgs VInter)
       {MakeApplication RaiseError [VO] CS VInter VTl}

@@ -36,8 +36,8 @@ $class =
                                                                   'GdkPixmap*',
                                                                   'GdkBitmap*'] },
                   'gtk_pixmap_get'                   => { in  => ['GtkPixmap*',
-                                                                  'GdkPixmap**',
-                                                                  'GdkBitmap**'] },
+                                                                  '+GdkPixmap**',
+                                                                  '+GdkBitmap**'] },
                   'gtk_pixmap_set_build_insensitive' => { in  => ['GtkPixmap*',
                                                                   'gint'] } }}
      );

@@ -73,6 +73,7 @@ local
                 &q#"quiet"#verbose(value: false)
                 &o#"outputfile"#outputfile(type: string)
                 0#"environment"#environment(type: string)
+                0#"include"#include(type: string)
                 0#"maxerrors"#maxerrors(type: int)
                 0#"compilerpasses"#compilerpasses(type: bool)
                 0#"showinsert"#showinsert(type: bool)
@@ -119,7 +120,10 @@ local
             '                              (`-\' means stdout).\n'#
             '--environment=COMPONENT,...,COMPONENT\n'#
             '                              Make the specified components\n'#
-            '                              available in the environment.\n')
+            '                              available in the environment.\n'#
+            '--include=FILE                Compile and execute FILE before\n'#
+            '                              processing the remaining command\n'#
+            '                              line options.\n')
 in
    {Application.exec
     'ozbatch'
@@ -178,11 +182,18 @@ in
              end
           end
 
-          proc {ParseOpt OptChar Args ?Opt ?Rest}
+          proc {ParseOpt OptChar Arg1r Args ?Opt ?Rest}
              case {GetOptSpec OptSpecs OptChar} of unit then
                 raise usage('unknown option `-'#[OptChar]#'\'') end
              elseof Spec then
-                {ParseOptArg Spec Args ?Opt ?Rest}
+                case Arg1r of nil then
+                   {ParseOptArg Spec Args ?Opt ?Rest}
+                elsecase {HasFeature Spec value} then
+                   Opt = {Label Spec}#Spec.value
+                   Rest = (&-|Arg1r)|Args
+                else
+                   {ParseOptArg Spec Arg1r|Args ?Opt ?Rest}
+                end
              end
           end
 
@@ -267,9 +278,7 @@ in
                    case Opt of &-|LongOpt then
                       {ParseLongOpt LongOpt Argr ?Opt1 ?NewArgr}
                    elseof OptChar|Arg1r then
-                      {ParseOpt OptChar
-                       case Arg1r of nil then Argr else Arg1r|Argr end
-                       ?Opt1 ?NewArgr}
+                      {ParseOpt OptChar Arg1r Argr ?Opt1 ?NewArgr}
                    [] nil then
                       raise usage('bad option syntax `-\'') end
                    end
@@ -363,6 +372,11 @@ in
                        {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
                     [] environment then
                        {IncludeComponents X BatchCompiler}
+                    [] include then
+                       {BatchCompiler enqueue(pushSwitches())}
+                       {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
+                       {BatchCompiler enqueue(feedFile(X return))}
+                       {BatchCompiler enqueue(popSwitches())}
                     [] verbose then
                        skip   % has already been set
                     [] mode then

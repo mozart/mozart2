@@ -2001,17 +2001,15 @@ define
             case FE of fWildcard(_) then
                GFrontEq = nil
                GFormal = {New Core.methFormalWithDefault init(GF GV unit)}
+            elseif {IsGround FE} then DefaultGV in
+               {@BA generateForOuterScope('Default' C ?DefaultGV)}
+               Unnester, UnnestExpression(FE DefaultGV ?GFrontEq)
+               GFormal = {New Core.methFormalWithDefault
+                          init(GF GV {DefaultGV occ(C $)})}
             else
-               if {IsGround FE} then DefaultGV in
-                  {@BA generateForOuterScope('Default' C ?DefaultGV)}
-                  Unnester, UnnestExpression(FE DefaultGV ?GFrontEq)
-                  GFormal = {New Core.methFormalWithDefault
-                             init(GF GV {DefaultGV occ(C $)})}
-               else
-                  GFrontEq = nil
-                  GFormal = ({New Core.methFormalOptional init(GF GV)}#
-                             FF#fOcc(GV)#FE)
-               end
+               GFrontEq = nil
+               GFormal = ({New Core.methFormalOptional init(GF GV)}#
+                          FF#fOcc(GV)#FE)
             end
          end
       end

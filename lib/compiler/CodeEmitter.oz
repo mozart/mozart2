@@ -297,12 +297,25 @@ in
                {ForAll Regs
                 proc {$ Reg}
                    case Emitter, GetPerm(Reg $) of none then skip
-                   elseof Y=y(_) then
-                      if Emitter, IsLast(Reg $) then skip
+                   elseof Y=y(I) then Regs in
+                      Regs = {Filter {Dictionary.entries @Permanents}
+                              fun {$ _#YG}
+                                 case YG of y(I2) then I2 == I
+                                 else false
+                                 end
+                              end}
+                      if {All Regs fun {$ Reg#_} Emitter, IsLast(Reg $) end}
+                      then skip
                       else Y2 in
-                         Emitter, FreeReg(Reg)
+                         {Dictionary.remove @Permanents Reg}
+                         Emitter, FreeY(Reg)
                          Emitter, AllocateUnnamedPerm(Reg ?Y2)
+                         {ForAll Regs
+                          proc {$ Reg#_}
+                             {Dictionary.put @Permanents Reg Y2}
+                          end}
                          Emitter, Emit(move(Y Y2))
+                         {Dictionary.put @UsedY I {Length Regs}}
                       end
                       Emitter, Emit(clear(Y))
                    end

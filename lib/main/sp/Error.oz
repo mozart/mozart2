@@ -185,7 +185,7 @@ in
       in
          '{' # pn(P) #
          case Xs of nil then '' else ' ' # list(Xs ' ') end #
-         case N==0 then ""
+         case N==0 then "}"
          else {Loop.forThread 1 N 1
                fun {$ In I} & |&_|In end nil} # '}'
          end

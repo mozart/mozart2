@@ -138,20 +138,42 @@ local
       \insert compiler-Opcodes
 
       local
-         fun {Sub In V}
-            In#' '#{ValueToVirtualString V}
+         ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}
+
+         fun {ListToVirtualString Vs In FPToIntMap}
+            case Vs of V|Vr then
+               {ListToVirtualString Vr
+                In#' '#{MyValueToVirtualString V FPToIntMap} FPToIntMap}
+            [] nil then In
+            end
          end
 
-         fun {ValueToVirtualString Value}
+         fun {TupleSub I N In Value FPToIntMap}
+            case I =< N then
+               {TupleSub I + 1 N
+                In#' '#{MyValueToVirtualString Value.I FPToIntMap}
+                Value FPToIntMap}
+            else In
+            end
+         end
+
+         fun {TupleToVirtualString Value FPToIntMap}
+            {TupleSub 2 {Width Value}
+             {Label Value}#'('#{MyValueToVirtualString Value.1 FPToIntMap}
+             Value FPToIntMap}#')'
+         end
+
+         fun {MyValueToVirtualString Value FPToIntMap}
             case {IsName Value} then
                case {IsUniqueName Value} then
+                  %--** this only works if the name's print name is friendly
                   '<U: '#{System.printName Value}#'>'
                else
                   {System.valueToVirtualString Value 0 0}
                end
             elsecase {IsAtom Value} then
-               case {HasFeature InstructionSizes Value} then
-                  '\''#Value#'\''
+               % the atom must not be mistaken for a token
+               case {HasFeature InstructionSizes Value} then '\''#Value#'\''
                elsecase Value of lbl then '\'lbl\''
                [] pid then '\'pid\''
                [] ht then '\'ht\''
@@ -163,58 +185,33 @@ local
                else
                   {System.valueToVirtualString Value 0 0}
                end
+            elsecase {Foreign.pointer.is Value} then I in
+               % foreign pointers are assigned increasing integers
+               % in order of appearance so that diffs are sensible
+               I = {ForeignPointerToInt Value}
+               case {Dictionary.condGet FPToIntMap I unit} of unit then N in
+                  N = {Dictionary.get FPToIntMap 0} + 1
+                  {Dictionary.put FPToIntMap 0 N}
+                  {Dictionary.put FPToIntMap I N}
+                  N
+               elseof V then
+                  V
+               end
             elsecase Value of V1|Vr then
-               {FoldL Vr Sub '['#{ValueToVirtualString V1}}#']'
+               {ListToVirtualString Vr
+                '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
             elsecase {IsTuple Value} then
-               {ForThread 2 {Width Value} 1
-                fun {$ In I}
-                   In#' '#{ValueToVirtualString Value.I}
-                end {Label Value}#'('#{ValueToVirtualString Value.1}}#')'
+               {TupleToVirtualString Value FPToIntMap}
             else
                {System.valueToVirtualString Value 1000 1000}
-            end
-         end
-         ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}
-         fun {FPToVS FP FPToIntMap}
-            I={ForeignPointerToInt FP}
-            V={Dictionary.condGet FPToIntMap I unit}
-         in
-            case V==unit then
-               N={Dictionary.get FPToIntMap 0}+1
-            in
-               {Dictionary.put FPToIntMap 0 N}
-               {Dictionary.put FPToIntMap I N}
-               '<ForeignPointer '#N#'>'
-            else
-               '<ForeignPointer '#V#'>'
             end
          end
       in
          fun {InstrToVirtualString Instr FPToIntMap}
             case {IsAtom Instr} then
-               {Label Instr}
-            elsecase Instr of genFastCall(FP N) then
-               case {Foreign.pointer.is FP} then
-                  VS={FPToVS FP FPToIntMap}
-               in
-                  'genFastCall('#VS#' '#N#')'
-               else
-                  {ValueToVirtualString Instr}
-               end
-            elsecase Instr of definition(X1 X2 X3 FP X5) then
-               case  {Foreign.pointer.is FP} then
-                  VS={FPToVS FP FPToIntMap}
-               in
-                  'definition('#
-                  {ValueToVirtualString X1}#' '#
-                  {ValueToVirtualString X2}#' '#
-                  {ValueToVirtualString X3}#' '#VS#' '#
-                  {ValueToVirtualString X5}#')'
-               else
-                  {ValueToVirtualString Instr}
-               end
+               Instr
             else
-               {ValueToVirtualString Instr}
+               {TupleToVirtualString Instr FPToIntMap}
             end
          end
       end
@@ -321,9 +318,11 @@ local
                          else '\t\t'
                          end
                AssemblerClass, TranslateInstrLabels(Instr ?NewInstr)
-               VS = LabelVS#{InstrToVirtualString NewInstr FPToIntMap}#'\n'#VSRest
+               VS = (LabelVS#{InstrToVirtualString NewInstr FPToIntMap}#'\n'#
+                     VSRest)
                NewAddr = Addr + InstructionSizes.{Label Instr}
-               AssemblerClass, OutputSub(Ir AddrToLabelMap FPToIntMap NewAddr ?VSRest)
+               AssemblerClass, OutputSub(Ir AddrToLabelMap FPToIntMap NewAddr
+                                         ?VSRest)
             [] nil then
                VS = ""
             end

@@ -73,9 +73,9 @@ local
    FunMisc      = \insert compiler/FunMisc
    FunBuiltins  = \insert compiler/FunBuiltins
    FunSA        = \insert compiler/FunSA
-   FunCode      = \insert compiler/FunCode
+   FunCodeGen   = \insert compiler/FunCodeGen
    FunCore      = \insert compiler/FunCore
-   FunRT        = \insert compiler/FunRT
+   FunRunTime   = \insert compiler/FunRunTime
    FunUnnest    = \insert compiler/FunUnnest
    FunAssembler = \insert compiler/FunAssembler
    FunCompiler  = \insert compiler/FunCompiler

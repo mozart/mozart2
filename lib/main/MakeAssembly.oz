@@ -65,6 +65,7 @@ local
    FunSA        = \insert compiler/FunSA
    FunCode      = \insert compiler/FunCode
    FunCore      = \insert compiler/FunCore
+   FunRT        = \insert compiler/FunRT
    FunUnnest    = \insert compiler/FunUnnest
    FunAssembler = \insert compiler/FunAssembler
    FunCompiler  = \insert compiler/FunCompiler

@@ -309,7 +309,7 @@ local
       meth init(WrapperObject)
          wrapper <- WrapperObject
          CompilerStateClass, init({Adjoin StandardEnv
-                                   env('`Builtin`': {`Builtin` 'builtin' 3}
+                                   env('`Builtin`': {`Builtin` 'Boot.builtin' 3}
                                        '`Compiler`': WrapperObject)})
          reporter <- {New Reporter init(self WrapperObject)}
          ParseFile <- ParseOzFile

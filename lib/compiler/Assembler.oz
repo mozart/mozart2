@@ -737,19 +737,20 @@ define
                   end
                else BIInfo in
                   BIInfo = {Builtins.getInfo Builtinname}
-                  case Builtinname of '+1' then [X1]#[X2] = Args in
+                  case Builtinname
+                  of 'Int.\'+1\'' then [X1]#[X2] = Args in
                      {Assembler append(inlinePlus1(X1 X2))}
-                  [] '-1' then [X1]#[X2] = Args in
+                  [] 'Int.\'-1\'' then [X1]#[X2] = Args in
                      {Assembler append(inlineMinus1(X1 X2))}
-                  [] '+' then [X1 X2]#[X3] = Args in
+                  [] 'Number.\'+\'' then [X1 X2]#[X3] = Args in
                      {Assembler append(inlinePlus(X1 X2 X3))}
-                  [] '-' then [X1 X2]#[X3] = Args in
+                  [] 'Number.\'-\'' then [X1 X2]#[X3] = Args in
                      {Assembler append(inlineMinus(X1 X2 X3))}
-                  [] '>' then [X1 X2]#Out = Args in
-                     {Assembler append(callBI('<' [X2 X1]#Out))}
-                  [] '>=' then [X1 X2]#Out = Args in
-                     {Assembler append(callBI('=<' [X2 X1]#Out))}
-                  [] '^' then [X1 X2]#[X3] = Args in
+                  [] 'Value.\'>\'' then [X1 X2]#Out = Args in
+                     {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
+                  [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
+                     {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
+                  [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
                      {Assembler append(inlineUparrow(X1 X2 X3))}
                   [] 'getReturn' then nil#[X1] = Args in
                      {Assembler append(getReturn(X1))}
@@ -927,13 +928,13 @@ define
             if {IsDet NewInstrs} then
                {Peephole NewInstrs Assembler}
             else
-               case Builtinname of '<' then [X1 X2]#[X3] = Args in
+               case Builtinname of 'Value.\'<\'' then [X1 X2]#[X3] = Args in
                   {Assembler append(testLT(X1 X2 X3 L1))}
-               [] '=<' then [X1 X2]#[X3] = Args in
+               [] 'Value.\'=<\'' then [X1 X2]#[X3] = Args in
                   {Assembler append(testLE(X1 X2 X3 L1))}
-               [] '>='then [X1 X2]#[X3] = Args in
+               [] 'Value.\'>=\''then [X1 X2]#[X3] = Args in
                   {Assembler append(testLE(X2 X1 X3 L1))}
-               [] '>' then [X1 X2]#[X3] = Args in
+               [] 'Value.\'>\'' then [X1 X2]#[X3] = Args in
                   {Assembler append(testLT(X2 X1 X3 L1))}
                else
                   {Assembler append(I1)}

@@ -430,7 +430,7 @@ in
                      andthen Emitter, DoesNotOccurIn(Reg NewCont $)
                   then
                      TestCont =
-                     case Builtinname of '==' then [Reg1 Reg2 _] = Regs in
+                     case Builtinname of 'Value.\'==\'' then [Reg1 Reg2 _] = Regs in
                         case {Dictionary.condGet @Temporaries Reg1 none}
                         of vEquateNumber(_ Number _ _) then
                            vTestNumber(OccsRS Reg2 Number Addr1 Addr2
@@ -447,7 +447,7 @@ in
                                         Coord NewCont InitsRS)
                         else ~1
                         end
-                     [] '\\=' then [Reg1 Reg2 _] = Regs in
+                     [] 'Value.\'\\=\'' then [Reg1 Reg2 _] = Regs in
                         case {Dictionary.condGet @Temporaries Reg1 none}
                         of vEquateNumber(_ Number _ _) then
                            vTestNumber(OccsRS Reg2 Number Addr2 Addr1
@@ -967,14 +967,14 @@ in
                   true
                else false
                end
-            elseof vCallBuiltin(_ 'New' [ClassReg !Reg ObjReg] Coord Cont2)
+            elseof vCallBuiltin(_ 'Object.new' [ClassReg !Reg ObjReg] Coord Cont2)
             then
                if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   X1 X2
                in
                   Emitter, AllocateAndInitializeAnyTemp(ClassReg ?X1)
                   Emitter, PredictTemp(ObjReg ?X2)
-                  Emitter, Emit(callBI('newObject' [X1]#[X2]))
+                  Emitter, Emit(callBI('Object.newObject' [X1]#[X2]))
                   %--** maybe X1 may die here?
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)
@@ -2038,7 +2038,7 @@ in
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
-            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] _ Cont3) then
+            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)
@@ -2049,7 +2049,7 @@ in
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
-            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] _ Cont3) then
+            elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)

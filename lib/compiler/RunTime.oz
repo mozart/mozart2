@@ -25,7 +25,7 @@
 %%%
 
 local
-   NewUniqueName = {`Builtin` 'NewUniqueName' 2}
+   NewUniqueName = {`Builtin` 'Name.newUnique' 2}
 
    LiteralValues = env('true': true
                        'false': false

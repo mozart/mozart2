@@ -425,54 +425,54 @@ define
 %-----------------------------------------------------------------------
 
    BINameToMethod
-   = bi(    'NewName'      : doNewName
-            'NewUniqueName': doNewUniqueName
-            'NewCell'      : doNewCell
-            'NewLock'      : doNewLock
-            'NewPort'      : doNewPort
-            'NewArray'     : doNewArray
-            'NewDictionary': doNewDictionary
-            'NewChunk'     : doNewChunk
-            'Space.new'    : doNewSpace
-            'New'          : doNew
-            'IsArray'      : doCheckType(det IsArray)
-            'IsAtom'       : doCheckType(det IsAtom)
-            'IsBool'       : doCheckType(det IsBool)
-            'IsCell'       : doCheckType(det IsCell)
-            'IsChar'       : doCheckType(det IsChar)
-            'IsChunk'      : doCheckType(det IsChunk)
-            'IsDet'        : doCheckType(det IsDet)
-            'IsDictionary' : doCheckType(det IsDictionary)
-            'IsFloat'      : doCheckType(det IsFloat)
-            'IsInt'        : doCheckType(det IsInt)
-            'IsList'       : doCheckType(rec IsList)
-            'IsLiteral'    : doCheckType(det IsLiteral)
-            'IsLock'       : doCheckType(det IsLock)
-            'IsName'       : doCheckType(det IsName)
-            'IsNumber'     : doCheckType(det IsNumber)
-            'IsObject'     : doCheckType(det IsObject)
-            'IsPort'       : doCheckType(det IsPort)
-            'IsProcedure'  : doCheckType(det IsProcedure)
-            'IsRecord'     : doCheckType(det IsRecord)
-            'IsRecordC'    : doCheckType(kind IsRecordC)
-            'IsSpace'      : doCheckType(det IsSpace)
-            'IsString'     : doCheckType(rec IsStringNow)
-            'IsTuple'      : doCheckType(det IsTuple)
-            'IsUnit'       : doCheckType(det IsUnit)
-            'IsVirtualString': doCheckType(rec IsVirtualStringNow)
-            'Label'        : doLabel
-            'Width'        : doWidth
-            'ProcedureArity': doProcedureArity
-            '='            : doEq
-            '.'            : doDot
-            '^'            : doHat
-            ','            : doComma
-            '<-'           : doAssignAccess
-            '@'            : doAssignAccess
-            'builtin'      : doBuiltin
-            'And'          : doAnd
-            'Or'           : doOr
-            'Not'          : doNot
+   = bi(    'Name.new'          : doNewName
+            'Name.newUnique'    : doNewUniqueName
+            'Cell.new'          : doNewCell
+            'Lock.new'          : doNewLock
+            'Port.new'          : doNewPort
+            'Array.new'         : doNewArray
+            'Dictionary.new'    : doNewDictionary
+            'Chunk.new'         : doNewChunk
+            'Space.new'         : doNewSpace
+            'Object.new'        : doNew
+            'Array.is'          : doCheckType(det IsArray)
+            'Atom.is'           : doCheckType(det IsAtom)
+            'Bool.is'           : doCheckType(det IsBool)
+            'Cell.is'           : doCheckType(det IsCell)
+            'Char.is'           : doCheckType(det IsChar)
+            'Chunk.is'          : doCheckType(det IsChunk)
+            'Value.isDet'       : doCheckType(det IsDet)
+            'Dictionary.is'     : doCheckType(det IsDictionary)
+            'Float.is'          : doCheckType(det IsFloat)
+            'Int.is'            : doCheckType(det IsInt)
+            'List.is'           : doCheckType(rec IsList)
+            'Literal.is'        : doCheckType(det IsLiteral)
+            'Lock.is'           : doCheckType(det IsLock)
+            'Name.is'           : doCheckType(det IsName)
+            'Number.is'         : doCheckType(det IsNumber)
+            'Object.is'         : doCheckType(det IsObject)
+            'Port.is'           : doCheckType(det IsPort)
+            'Procedure.is'      : doCheckType(det IsProcedure)
+            'Record.is'         : doCheckType(det IsRecord)
+            'Record.isC'        : doCheckType(kind IsRecordC)
+            'Space.is'          : doCheckType(det IsSpace)
+            'String.is'         : doCheckType(rec IsStringNow)
+            'Tuple.is'          : doCheckType(det IsTuple)
+            'Unit.is'           : doCheckType(det IsUnit)
+            'VirtualString.is'  : doCheckType(rec IsVirtualStringNow)
+            'Record.label'      : doLabel
+            'Record.width'      : doWidth
+            'Procedure.arity'   : doProcedureArity
+            '=\'Value.\'=\''    : doEq
+            'Record.\'.\''      : doDot
+            'Record.\'^\''      : doHat
+            'Object.\',\''      : doComma
+            'Object.\'<-\''     : doAssignAccess
+            'Object.\'@\''      : doAssignAccess
+            'Boot.builtin'      : doBuiltin
+            'Bool.and'          : doAnd
+            'Bool.or'           : doOr
+            'Bool.not'          : doNot
        )
 
 %-----------------------------------------------------------------------
@@ -947,7 +947,7 @@ define
 %-----------------------------------------------------------------------
 %  global control information
 
-   NewUniqueName           = {`Builtin` 'NewUniqueName'                    2}
+   NewUniqueName           = {`Builtin` 'Name.newUnique' 2}
 
    class Control
       prop final
@@ -2306,8 +2306,8 @@ define
          else
             Val  = {GetData {Nth @actualArgs 2}}
             Expr = case {System.printName {GetData @designator}}
-                   of '<-' then oz(Fea) # ' <- ' # oz(Val)
-                   elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
+                   of 'Object.\'<-\'' then oz(Fea) # ' <- ' # oz(Val)
+                   elseof 'Object.\'@\'' then '@' # oz(Fea) # ' = ' # oz(Val)
                    end
             Final = (Props\=unit andthen {Member final Props})
             Hint = case Final

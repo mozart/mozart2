@@ -2241,7 +2241,7 @@ define
       meth codeGenApplication(Designator Coord ActualArgs CS VHd VTl)
          Builtinname = {System.printName @value}
       in
-         case Builtinname of 'New' then
+         case Builtinname of 'Object.new' then
             [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
          in
             % this ensures that the created object is always a fresh
@@ -2250,17 +2250,17 @@ define
             % needed for the correctness of the sendMsg-optimization
             % performed in the CodeEmitter:
             {CS newReg(?ObjReg)}
-            VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
+            VHd = vCallBuiltin(_ 'Object.new' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
                                Coord Cont)
             Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
-         [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+         [] 'Number.\'+\'' then [Arg1 Arg2 Arg3] = ActualArgs Value in
             {Arg1 getCodeGenValue(?Value)}
             if {IsDet Value} then
                case Value of 1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
+                  VHd = vCallBuiltin(_ 'Int.\'+1\'' [{Arg2 reg($)} {Arg3 reg($)}]
                                      Coord VTl)
                [] ~1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
+                  VHd = vCallBuiltin(_ 'Int.\'-1\'' [{Arg2 reg($)} {Arg3 reg($)}]
                                      Coord VTl)
                else skip
                end
@@ -2270,23 +2270,23 @@ define
                {Arg2 getCodeGenValue(?Value)}
                if {IsDet Value} then
                   case Value of 1 then
-                     VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                     VHd = vCallBuiltin(_ 'Int.\'+1\'' [{Arg1 reg($)} {Arg3 reg($)}]
                                         Coord VTl)
                   [] ~1 then
-                     VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                     VHd = vCallBuiltin(_ 'Int.\'-1\'' [{Arg1 reg($)} {Arg3 reg($)}]
                                         Coord VTl)
                   else skip
                   end
                end
             end
-         [] '-' then [Arg1 Arg2 Arg3] = ActualArgs Value in
+         [] 'Number.\'-\'' then [Arg1 Arg2 Arg3] = ActualArgs Value in
             {Arg2 getCodeGenValue(?Value)}
             if {IsDet Value} then
                case Value of 1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                  VHd = vCallBuiltin(_ 'Int.\'-1\'' [{Arg1 reg($)} {Arg3 reg($)}]
                                      Coord VTl)
                [] ~1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                  VHd = vCallBuiltin(_ 'Int.\'+1\'' [{Arg1 reg($)} {Arg3 reg($)}]
                                      Coord VTl)
                else skip
                end
@@ -2295,7 +2295,7 @@ define
          else
             if CS.debugInfoControlSwitch then skip
             else
-               case Builtinname of '.' then
+               case Builtinname of 'Record.\'.\'' then
                   [Arg1 Arg2 Arg3] = ActualArgs Feature in
                   {Arg2 getCodeGenValue(?Feature)}
                   if {IsDet Feature}
@@ -2325,17 +2325,17 @@ define
                                          AlwaysSucceeds Coord VTl)
                      end
                   end
-               [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
+               [] 'Object.\'@\'' then [Arg1 Arg2] = ActualArgs Atomname in
                   {Arg1 getCodeGenValue(?Atomname)}
                   if {IsDet Atomname} andthen {IsLiteral Atomname} then
                      VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)
                   end
-               [] '<-' then [Arg1 Arg2] = ActualArgs Atomname in
+               [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Atomname in
                   {Arg1 getCodeGenValue(?Atomname)}
                   if {IsDet Atomname} andthen {IsLiteral Atomname} then
                      VHd = vInlineAssign(_ Atomname {Arg2 reg($)} VTl)
                   end
-               [] ',' then [Arg1 Arg2] = ActualArgs Value in
+               [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
                   {Arg2 getCodeGenValue(?Value)}
                   if {IsDet Value} andthen {IsRecord Value} then
                      RecordArity ActualArgs Regs Cont1 in

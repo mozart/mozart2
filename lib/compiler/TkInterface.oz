@@ -295,6 +295,7 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
       meth init(Parent Title VS) Menu SourceFrame Scrollbar in
          Tk.toplevel, tkInit(parent: Parent
                              title: Title
+                             'class': 'OzTools'
                              highlightthickness: 0
                              withdraw: true)
          {Tk.send wm(iconname self Title)}
@@ -317,8 +318,6 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
                                             font: MenuFont
                                             action: self#SelectAll())])]
                  nil}
-         {Menu.file.menu tk(configure tearoff: false)}
-         {Menu.edit.menu tk(configure tearoff: false)}
          SourceFrame = {New Tk.frame tkInit(parent: self
                                             highlightthickness: 0)}
          self.Source = {New Tk.text tkInit(parent: SourceFrame
@@ -558,6 +557,7 @@ in
 
          self.TopLevel = {New Tk.toplevel
                           tkInit(title: 'Oz Compiler'
+                                 'class': 'OzTools'
                                  delete: {MkAction Close()}
                                  highlightthickness: 0
                                  withdraw: true)}
@@ -634,14 +634,9 @@ in
                                             font: MenuFont
                                             action: {MkAction
                                                      AboutDialog()})])]}
-         {Menu.compiler.menu tk(configure tearoff: false)}
-         {Menu.options.menu tk(configure tearoff: false)}
          case Tk.isColor then skip
          else {Menu.options.colors tk(entryconfigure state: disabled)}
          end
-         {Menu.options.columns.menu tk(configure tearoff: false)}
-         {Menu.options.action.menu tk(configure tearoff: false)}
-         {Menu.help.menu tk(configure tearoff: false)}
 
          self.Book = {New TkTools.notebook tkInit(parent: self.TopLevel
                                                   font: MenuFont)}

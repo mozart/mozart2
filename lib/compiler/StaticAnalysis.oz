@@ -1947,6 +1947,7 @@ define
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
                                          m:{ApplToVS pn(N)|Vals})])}
+            false
          elseif
             NumArgs==ProcArity
          then

@@ -458,6 +458,7 @@ define
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
              S3={New Remote.manager init(host:TestMisc.localHost)}
+             P1 P2 P3
              CC = {NewCell false}
              DistLock
              Sync1 Sync2 Sync3 Sync4
@@ -465,15 +466,19 @@ define
           in
              {S1 ping}
              {S1 apply(url:'' functor
-                              export MyLock
-                              define MyLock = {NewLock}
-                              end $)}.myLock = DistLock
+                              export MyLock MyPort
+                              define
+                                 MyPort={NewPort _}
+                                 MyLock = {NewLock}
+                              end $)} = 'export'(myLock:DistLock myPort:P1)
 
 
              {S2 ping}
              {S2 apply(url:'' functor
+                              export MyPort
                               import Property
                               define
+                                 MyPort={NewPort _}
                                  {Property.put 'close.time' 0}
                                  thread
                                     lock DistLock then
@@ -481,23 +486,27 @@ define
                                        {Wait Sync1}
                                     end
                                  end
-                              end)}
+                              end $)} = 'export'(myPort:P2)
 
 
              {Wait Sync2}
              {S2 close}
+             {WaitPerm P2}
              {NetWatcherInstall DistLock
               proc{$ A B}
                  {Assign CC true}
               end}
+
              {S3 apply(url:'' functor
+                              export MyPort
                               define
+                                 MyPort={NewPort _}
                                  thread
                                     lock DistLock then
                                        !Sync3 = unit
                                     end
                                  end
-                              end)}
+                              end $)} = 'export'(myPort:P3)
 
              {S3 ping}
 
@@ -516,23 +525,24 @@ define
                    Sync4 = unit
                 end
              end
+
              {Wait Sync4}
 
              Sync4 = unit
              {S3 close}
              {S1 close}
-
+             {WaitPerm P3}
+             {WaitPerm P1}
              {Access CC true}
-
           end
           keys:[fault])
-
 
        fault_chain_broken_watcher_live(
           proc {$}
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
              S3={New Remote.manager init(host:TestMisc.localHost)}
+             P1 P2 P3
              CC = {NewCell false}
              DistLock
              Sync1 Sync2 Sync3 Sync4
@@ -540,15 +550,19 @@ define
           in
              {S1 ping}
              {S1 apply(url:'' functor
-                              export MyLock
-                              define MyLock = {NewLock}
-                              end $)}.myLock = DistLock
+                              export MyLock MyPort
+                              define
+                                 MyPort={NewPort _}
+                                 MyLock = {NewLock}
+                              end $)} = 'export'(myLock:DistLock myPort:P1)
 
 
              {S2 ping}
              {S2 apply(url:'' functor
+                              export MyPort
                               import Property
                               define
+                                 MyPort={NewPort _}
                                  {Property.put 'close.time' 0}
                                  thread
                                     lock DistLock then
@@ -556,7 +570,7 @@ define
                                        {Wait Sync1}
                                     end
                                  end
-                              end)}
+                              end $)} = 'export'(myPort:P2)
 
 
              {Wait Sync2}
@@ -565,15 +579,18 @@ define
                  {Assign CC true}
               end}
              {S2 close}
+             {WaitPerm P2}
 
              {S3 apply(url:'' functor
+                              export MyPort
                               define
+                                 MyPort={NewPort _}
                                  thread
                                     lock DistLock then
                                        !Sync3 = unit
                                     end
                                  end
-                              end)}
+                              end $)} = 'export'(myPort:P3)
 
              {S3 ping}
 
@@ -598,8 +615,9 @@ define
              Sync4 = unit
              {S3 close}
              {S1 close}
+             {WaitPerm P3}
+             {WaitPerm P1}
              {Access CC true}
-
           end
           keys:[fault])
       ])

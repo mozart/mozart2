@@ -29,7 +29,7 @@ import
 \ifdef DBG
    System
 \endif
-   DPMisc
+   DPMisc at 'x-oz://boot/DPMisc'
 define
    class ResourceHandler
       prop

@@ -30,7 +30,6 @@ functor
 
 import
    Connection % Do not request!
-   DPMisc
 
    Application(exit getCmdArgs)
    Module(manager)
@@ -63,10 +62,10 @@ define
    end
 
    %% Use a fix port number if desired
-   case Args.port
+/* case Args.port
    of 0 then skip
    [] P then {DPMisc.initIPConnection ipInfo(port:P) _}
-   end
+   end*/
 
    %%
    %% Force linking of base libraries

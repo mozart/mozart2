@@ -23,7 +23,7 @@
 %\define DBG
 functor
 import
-   DPMisc
+   DPMisc at 'x-oz://boot/DPMisc'
    Module
    System
 %   Browser

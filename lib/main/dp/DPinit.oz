@@ -26,7 +26,7 @@ import
    ConnectAcceptModule
    ConnectionFunctor
    AcceptFunctor
-   DPMisc
+   DPMisc at 'x-oz://boot/DPMisc'
 %   Pickle
 %   Module
 \ifdef DBG
@@ -37,6 +37,23 @@ export
 define
    {Wait DPB}
    ConnectState = {NewCell notStarted}
+
+   proc{CheckSettings R}
+      if {Value.hasFeature R ip} then
+         try
+            {List.foldL {String.tokens R.ip &.}
+             fun{$ Acc In}
+                I = {String.toInt In} in
+                if I>256 orelse I<0 then raise toLarge end end
+                Acc - 1
+             end
+             4 0}
+         catch _ then
+            raise badFormatedIpNo(R.ip) end
+         end
+      end
+   end
+
    proc{StartDP Settings}
       %% Here an AccMod is needed to start distribution.
       %% For c level a connection functor is also needed and has to be
@@ -49,6 +66,7 @@ define
                         ConnectionFunctor.connectionfunctor}
                     end
    in
+      {CheckSettings IntSettings}
 \ifdef DBG
       {System.show {DPMisc.initIPConnection IntSettings}}
 \else

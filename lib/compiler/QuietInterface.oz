@@ -44,7 +44,7 @@ in
    class QuietInterface from GenericInterface
       prop final
       attr
-         Verbose: false History: nil SourceVS: ""
+         Verbose: false History: nil InsertedFiles: nil SourceVS: ""
          HasErrors: false HasBeenTopped: false
       meth init(CompilerObject DoVerbose <= false)
          Verbose <- DoVerbose
@@ -53,6 +53,7 @@ in
       meth reset()
          lock
             History <- nil
+            InsertedFiles <- nil
             SourceVS <- ""
             HasErrors <- false
             HasBeenTopped <- false
@@ -66,6 +67,9 @@ in
                OutputMessage = M
             [] message(_ _) then
                OutputMessage = M
+            [] insert(VS) then
+               InsertedFiles <- VS|@InsertedFiles
+               OutputMessage = unit
             [] displaySource(_ _ VS) then
                case @SourceVS of "" then
                   SourceVS <- VS
@@ -122,6 +126,9 @@ in
       end
       meth formatMessages(History $)
          {HistoryToVS {Reverse History}}
+      end
+      meth getInsertedFiles($)
+         {Reverse @InsertedFiles}
       end
       meth getSource($)
          @SourceVS

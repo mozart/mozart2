@@ -38,6 +38,7 @@ define
          Started=unit
          nil
       else Site=site(man:_ num:Left) StartNext in
+         {Show init_manager(Left)}
          Site.man={New Remote.manager init(host:localhost)}
          thread
             {Wait StartNext}
@@ -66,9 +67,13 @@ define
    end
 
    proc {Start}
-      C={Property.get 'perdio.maxTCPCache'}
+      H={Property.get 'dp.tcpHardLimit'}
+      W={Property.get 'dp.tcpWeakLimit'}
    in
-      {Property.put 'perdio.maxTCPCache' 2}
+      {Show start}
+      {Property.put 'dp.tcpWeakLimit' 2}
+      {Property.put 'dp.tcpHardLimit' 4}
+      {Show properties_set}
       local
          All Started
       in
@@ -90,8 +95,13 @@ define
       {System.gcDo}
       {System.gcDo}
       {System.gcDo}
-      {Property.put 'perdio.maxTCPCache' C} % Reset
+      {Property.put 'dp.tcpHardLimit' H} % Reset
+      {Property.put 'dp.tcpWeakLimit' W} % Reset
    end
 
+\ifdef DBG
+   Return=dp([caching(proc{$} try {Start} catch X then raise X end end end keys:[cache])])
+\else
    Return=dp([caching(Start keys:[cache])])
+\endif
 end

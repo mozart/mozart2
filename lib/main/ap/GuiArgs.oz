@@ -1,10 +1,12 @@
-functor
-import
-   Tk TkTools
-export
-   OptionEditor Parse
-define
+%functor
+%import
+%   Tk TkTools
+%export
+%   OptionEditor Parse
+%define
    %% Editors
+
+declare
 
    class BoolEditor from Tk.checkbutton
       feat sticky:nw
@@ -31,6 +33,12 @@ define
       end
    end
 
+   class AtomEditor from StringEditor
+      meth get($)
+         {String.toAtom StringEditor,get($)}
+      end
+   end
+
    class IntEditor from TkTools.numberentry
       feat sticky:nw
       meth init(parent:P default:D<=unit)
@@ -41,6 +49,19 @@ define
       end
       meth get($)
          TkTools.numberentry,tkGet($)
+      end
+   end
+
+   class FloatEditor from Tk.entry
+      feat sticky:nw
+      meth init(parent:P default:D<=unit)
+         Tk.entry,tkInit(parent:P)
+         if {IsFloat D} then
+            {self tk(insert 0 {Float.toString D})}
+         end
+      end
+      meth get($)
+         {self tkReturnFloat(get $)}
       end
    end
 
@@ -55,6 +76,8 @@ define
        of bool   then BoolEditor
        [] int    then IntEditor
        [] string then StringEditor
+       [] atom   then AtomEditor
+       [] float  then FloatEditor
        end Msg}
    end
    %%
@@ -126,4 +149,4 @@ define
    in
       {New OptionEditor init(OptRec Result title:Title) _}
    end
-end
+%end

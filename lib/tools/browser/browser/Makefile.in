@@ -1,0 +1,44 @@
+include ../Makefile.vars
+include $(TOPDIR)/Makefile.rules
+
+BROWSERLIB      = $(OZLIB)/browser
+
+LOCALMODULES =  XResources.oz browserObject.oz browserTerm.oz \
+                bufs&streams.oz constants.oz controlObject.oz core.oz \
+                errors.oz managerObject.oz reflect.oz repManager.oz \
+                store.oz tcl-interface.oz termObject.oz \
+                termsStore.oz undefs.oz windowManager.oz
+
+AUXFILES =
+
+LIBMODULES = ${LOCALMODULES:%.oz=$(BROWSERLIB)/%.oz}
+AUXMODULES = ${AUXFILES:%.txt=$(BROWSERLIB)/%.txt}
+SRCS = ${LOCALMODULE:%.oz=$(SRCDIR)/browser/%.oz}
+
+all:: touch
+
+touch: $(SRCS)
+        $(TOUCH) $@
+
+realclean::
+        $(RM) touch
+
+install:: $(BROWSERLIB) $(LIBMODULES) $(AUXMODULES) bitmaps
+
+bitmaps: $(OZLIB)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserMIcon.xbm $(OzLib)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserIcon.xbm  $(OzLib)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/stop.xbm  $(OzLib)/bitmaps
+
+$(BROWSERLIB) $(OZLIB)/bitmaps:
+        $(INSTALLDIR) $@
+
+$(BrowserLib)/%.oz: %.oz
+        $(INSTALLSRC) '$<' '$@'
+
+$(BrowserLib)/%.txt: %.txt
+        $(INSTALLFILE) '$<' '$@'
+
+undefs: constants.oz
+        $(RM) undefs.oz
+        $(EGREP) '^\\define' constants.oz | $(SED) -e '1,$$s/define/undef/g' > undefs.oz

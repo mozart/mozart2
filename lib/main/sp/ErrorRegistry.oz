@@ -439,22 +439,22 @@ define
       in
          case E
          of object('<-' O A V) then
-            {Error.format
-             T 'Assignment to undefined attribute'
+            {Error.format T
+             'Assignment to undefined attribute'
              [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
               hint(l:'Expected one of'
                    m:oz({OoExtensions.getAttrNames O}))]
              Exc}
          elseof object('@' O A) then
-            {Error.format
-             T 'Access of undefined attribute'
+            {Error.format T
+             'Access of undefined attribute'
              [hint(l:'In statement' m:'_ = @' # oz(A))
               hint(l:'Expected one of'
                    m:oz({OoExtensions.getAttrNames O}))]
              Exc}
          elseof object(ooExch O A V) then
-            {Error.format
-             T 'Exchange of undefined attribute'
+            {Error.format T
+             'Exchange of undefined attribute'
              [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
               hint(l:'Attribute' m:oz(A))
               hint(l:'Expected one of'
@@ -476,25 +476,22 @@ define
              (hint(l:'Class definition' m:N)|
               {Append MMs {Append MAs MFs}}) Exc}
          elseof object(lookup C R) then
-            L1 = hint(l:'Class'   m:oz(C))
-            L2 = hint(l:'Message' m:oz(R))
-            H  = {Error.formatHint 'Method undefined and no otherwise method given'}
-         in
             {Error.format T
              'Undefined method'
-             L1|L2|H
+             hint(l:'Class'   m:oz(C))|
+             hint(l:'Message' m:oz(R))|
+             {Error.formatHint
+              'Method undefined and no otherwise method given'}
              Exc}
          elseof object(final CParent CChild) then
-            L2 = hint(l:'Final class used as parent' m:CParent)
-            L3 = hint(l:'Class to be created' m:CChild)
-            H  = {Error.formatHint 'remove prop final from parent class or change inheritance relation'}
-         in
             {Error.format T
              'Inheritance from final class'
-             L2|L3|H
+             hint(l:'Final class used as parent' m:CParent)|
+             hint(l:'Class to be created' m:CChild)|
+             {Error.formatHint
+              'remove prop final from parent class or change inheritance relation'}
              Exc}
-         elseof object(inheritanceFromNonClass
-                       CParent CChild) then
+         elseof object(inheritanceFromNonClass CParent CChild) then
             {Error.format T
              'Inheritance from non-class'
              [hint(l:'Non-class used as parent' m:oz(CParent))
@@ -506,10 +503,12 @@ define
              [hint(l:'Illegal values' m:oz(Ps))
               hint(l:'Expected one of' m:oz([final locking sited]))]
              Exc}
-         elseof object(arityMismatchDefaultMethod L) then
+         elseof object(arityMismatch File Line M O) then
             {Error.format T
-             'Arity mismatch for method with defaults'
-             [hint(l:'Unexpected feature' m:oz(L))]
+             'Arity mismatch in object or method application'
+             [hint(l:'Message' m:oz(M))
+              hint(l:'Object' m:oz(O))
+              pos(File Line unit)]
              Exc}
          elseof object(slaveNotFree) then
             {Error.format T

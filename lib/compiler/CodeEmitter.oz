@@ -81,10 +81,12 @@ local
          end
       end
    in
-      fun {HoistRecord Atomname RecordArity VArgs}
-         %--** disabled optimization causing bad behaviour of TkTools.ozf:
-         record(Atomname RecordArity VArgs)
-         %% {HoistVArg record(Atomname RecordArity VArgs)}
+      fun {HoistRecord State Atomname RecordArity VArgs}
+         if {State getSwitch(recordhoist $)} then
+            {HoistVArg record(Atomname RecordArity VArgs)}
+         else
+            record(Atomname RecordArity VArgs)
+         end
       end
    end
 
@@ -1583,7 +1585,7 @@ in
       end
 
       meth EmitRecordWrite(Literal RecordArity R NonlinearRegs VArgs)
-         case {HoistRecord Literal RecordArity VArgs}
+         case {HoistRecord self.state Literal RecordArity VArgs}
          of constant(Constant) then
             Emitter, Emit(putConstant(Constant R))
          [] record(Literal RecordArity VArgs) then

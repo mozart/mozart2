@@ -46,6 +46,7 @@ local
                               echoqueries: true
                               showdeclares: true
                               watchdog: true
+                              recordhoist: true
 
                               %% warnings:
                               %%

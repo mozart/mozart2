@@ -1081,6 +1081,83 @@ define
                      end)
             keys: [ofs record])
 
+        %% raph: t57 to t62 check what happens when a unification
+        %% fails with open feature records.  The behavior must reflect
+        %% the incremental tell semantics.
+        t57(entailed(proc {$}
+                        X Y Res in
+                        X = foo(...)
+                        Y = bar
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {RFL X} = 'foo(...)'
+                        Y = bar
+                     end)
+            keys: [ofs record])
+
+        t58(entailed(proc {$}
+                        X Y Res in
+                        X = foo(...)
+                        Y = bar(a)
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {RFL X} = 'foo(...)'
+                        Y = bar(a)
+                     end)
+            keys: [ofs record])
+
+        t59(entailed(proc {$}
+                        X Y Res in
+                        X = foo(...)
+                        Y = bar(a:1)
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {RFL X} = 'foo(...)'
+                        Y = bar(a:1)
+                     end)
+            keys: [ofs record])
+
+        t60(entailed(proc {$}
+                        X Y Res in
+                        X = foo(a:1 ...)
+                        Y = bar(b:2 ...)
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {Label X} = foo
+                        X.a = 1
+                        if {Member b {RecordC.reflectArity X}} then X.b = 2 end
+                        {Label Y} = bar
+                        Y.b = 2
+                        if {Member a {RecordC.reflectArity Y}} then Y.a = 1 end
+                     end)
+            keys: [ofs record])
+
+        t61(entailed(proc {$}
+                        X Y Res in
+                        X = foo(a:1 b:1 ...)
+                        Y^a = _
+                        Y^b = 2
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {RFL X} = 'foo(a:1 b:1 ...)'
+                        if {RecordC.hasLabel Y} then {Label Y} = foo end
+                        if {IsDet Y.a} then X.a = Y.a end
+                        Y.b = 2
+                     end)
+            keys: [ofs record])
+
+        t62(entailed(proc {$}
+                        X Y Res in
+                        X^a = 1
+                        Y^a = 2
+                        Res = try X=Y ko catch _ then ok end
+                        Res = ok
+                        {TellRecord foo X}
+                        {RFL X} = 'foo(a:1 ...)'
+                        if {RecordC.hasLabel Y} then {Label Y} = foo end
+                        Y.a = 2
+                     end)
+            keys: [ofs record])
        ])
 
 end

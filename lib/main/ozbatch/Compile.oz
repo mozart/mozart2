@@ -436,7 +436,8 @@ in
                 end
              end
              GumpDir = case OptRec.gumpdirectory of unit then
-                          case {Dirname OFN} of "" then unit
+                          case OFN of unit then unit
+                          elsecase {Dirname OFN} of "" then unit
                           elseof Dir then Dir
                           end
                        elseof Dir then Dir

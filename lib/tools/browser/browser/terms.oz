@@ -2259,18 +2259,14 @@ in
 
             %%
             ThPrio = {Thread.getPriority}
-            %%  critical section!
-            {Thread.setHighIntPri}
 
             %%
+            %%  Since the watchpoint on an FD variable is set currently
+            %% on its cardinality, getting the cardinality must go ahead!
             self.card = {FD.reflect.size Term}
 
             %%
             DomComp = {FD.reflect.dom Term}
-
-            %%
-            {Thread.setPriority ThPrio}
-            %%  end of critical section;
 
             %%
             {List.mapInd DomComp
@@ -2421,10 +2417,9 @@ in
 
             %%
             ThPrio = {Thread.getPriority}
-            %%  critical section!
-            {Thread.setHighIntPri}
 
             %%
+            %%  Must go ahead ... see the comment for FD variables;
             self.strength = {MetaGetStrength Term}
 
             %%
@@ -2432,10 +2427,6 @@ in
 
             %%
             MetaName = {MetaGetNameAsAtom Term}
-
-            %%
-            {Thread.setPriority ThPrio}
-            %%  end of critical section;
 
             %%
             %%  first subterm in hash-tuple must be a variable name!

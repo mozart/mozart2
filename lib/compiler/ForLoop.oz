@@ -204,7 +204,7 @@ define
                     unit)
               end
       {Push 'outers' fProc(LoopProc {Reverse D1.'args'} Loop3 nil unit)}
-      Main1 = fApply(LoopProc {Reverse D1.'inits'} unit)
+      Main1 = fApply(LoopProc {Reverse D1.'inits'} COORDS)
       Main2 = if {HasFeature D2 'break'} then
                  fTry(Main1
                       fCatch(
@@ -212,7 +212,7 @@ define
                              fEscape(VarD.'break' unit)
                              fSkip(unit))]
                          unit)
-                      fNoFinally unit)
+                      fNoFinally COORDS)
               else Main1 end
       Main3 = case AccuType
               of unit then Main2
@@ -225,15 +225,15 @@ define
                             fRecord(
                                fAtom('for' unit)
                                [fAtom('noDefaultValue' unit)])
-                            unit)
+                            COORDS)
                       end)
               [] 'list' then
-                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] unit))
+                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS))
               elseif {HasFeature D2 'default'} then
                  fAnd(Main2
-                      fOpApply('For.retintdefault' [VarAccu VarD.'default'] unit))
+                      fOpApply('For.retintdefault' [VarAccu VarD.'default'] COORDS))
               else
-                 fAnd(Main2 fOpApply('For.retint' [VarAccu] unit))
+                 fAnd(Main2 fOpApply('For.retint' [VarAccu] COORDS))
               end
       Main4 = if {HasFeature D2 'return'} then
                  V = {MakeVar 'V'}
@@ -247,7 +247,7 @@ define
                               [fEscape(VarD.'return' unit) V])
                            V)]
                        unit)
-                    fNoFinally unit)
+                    fNoFinally COORDS)
               else Main3 end
       Main5 = case D1.'outers'
               of nil then Main4

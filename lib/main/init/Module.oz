@@ -37,6 +37,20 @@
 
 local
 
+   MozartUrl  = 'http://www.ps.uni-sb.de/ozhome/'
+   FunExt     = '.ozf'
+
+\ifndef OZM
+   local
+      Load = {`Builtin` load 2}
+   in
+      Peanuts = {Map \insert '../module-Peanuts.oz'
+                 fun {$ M}
+                    M # {Load M#FunExt}.apply
+                 end}
+   end
+\endif
+
    \insert 'RURL.oz'
 
 
@@ -237,40 +251,43 @@ in
       %%
       %% Register System defaults
       %%
-      local
-         MozartUrl  = 'http://www.ps.uni-sb.de/ozhome/'
-         FunExt     = '.ozf'
-      in
-         %% System library functors
-         {ForAll ['Application'
-                  'Search' 'FD' 'Schedule' 'FS'
-                  'System' 'Error' 'Debug' 'Finalize' 'Foreign'
-                  'Connection' 'Remote'
-                  'OS' 'Open' 'Pickle'
-                  'Tk' 'TkTools'
-                  'Compiler'
-                  'Misc'
-                  'URL' 'Module'
-                  'Applet' 'Syslet' 'Servlet'
-                 ]
-          proc {$ ModName}
-             {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
-          end}
 
-         %% Tool functors
-         {ForAll ['Panel' 'Browser' 'Explorer' 'CompilerPanel'
-                  'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
-                  'GumpParser']
-          proc {$ ModName}
-             {Module.system ModName MozartUrl#'tools/'#ModName#FunExt}
-          end}
+      %% System library functors
+      {ForAll ['Application'
+               'Search' 'FD' 'Schedule' 'FS'
+               'System' 'Error' 'Debug' 'Finalize' 'Foreign'
+               'Connection' 'Remote'
+               'OS' 'Open' 'Pickle'
+               'Tk' 'TkTools'
+               'Compiler'
+               'Misc'
+               'URL' 'Module'
+               'Applet' 'Syslet' 'Servlet'
+              ]
+       proc {$ ModName}
+          {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
+       end}
 
-         %% Register some modules
-         {Module.enter MozartUrl#'lib/Module.ozf' Module}
-         {Module.enter MozartUrl#'lib/URL.ozf'
-          {{`Builtin` 'CondGetProperty' 3} url unit}}
+      %% Tool functors
+      {ForAll ['Panel' 'Browser' 'Explorer' 'CompilerPanel'
+               'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
+               'GumpParser']
+       proc {$ ModName}
+          {Module.system ModName MozartUrl#'tools/'#ModName#FunExt}
+       end}
 
-      end
+      %% Register some virtual modules
+      {Module.enter MozartUrl#'lib/Module'#FunExt Module}
+      {Module.enter MozartUrl#'lib/URL'#FunExt
+       {{`Builtin` 'CondGetProperty' 3} url unit}}
+
+      %% Register peanuts
+\ifndef OZM
+      {ForAll Peanuts
+       proc {$ M#P}
+          {Module.enter MozartUrl#'lib/'#M#FunExt {P 'import'}}
+       end}
+\endif
 
    in
 

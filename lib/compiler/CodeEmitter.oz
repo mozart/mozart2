@@ -410,9 +410,9 @@ in
          in
             BIInfo = {Builtins.getInfo Builtinname}
             NewCont2 =
-            if {CondSelect BIInfo test false} then
-               Reg = {Nth Regs {Length BIInfo.imods} + 1}
-            in
+            if {CondSelect BIInfo test false} then NInputs Reg in
+               NInputs = {Length BIInfo.imods}
+               Reg = {Nth Regs NInputs + 1}
                case Cont
                of vTestBool(_ !Reg Addr1 Addr2 _ Coord NewCont InitsRS) then
                   if {Not self.debugInfoControlSwitch}
@@ -422,7 +422,9 @@ in
                      andthen Emitter, DoesNotOccurIn(Reg NewCont $)
                   then
                      TestCont =
-                     case Builtinname of 'Value.\'==\'' then [Reg1 Reg2 _] = Regs in
+                     case Builtinname of 'Value.\'==\'' then
+                        [Reg1 Reg2 _] = Regs
+                     in
                         case {Dictionary.condGet @Temporaries Reg1 none}
                         of vEquateNumber(_ Number _ _) then
                            vTestNumber(OccsRS Reg2 Number Addr1 Addr2
@@ -460,9 +462,13 @@ in
                      end
                   in
                      if TestCont \= ~1 then TestCont
-                     else
+                     elseif
+                        {All {List.drop Regs NInputs}
+                         fun {$ Reg} Emitter, IsFirst(Reg $) end}
+                     then
                         vTestBuiltin(OccsRS Builtinname Regs Addr1 Addr2
                                      NewCont InitsRS)
+                     else ~1
                      end
                   else ~1
                   end
@@ -1460,10 +1466,8 @@ in
          end
       end
       meth AllocateBuiltinArgs(Regs IMods ?XsIn ?XsOut ?Unifies)
-         case IMods of IMod|IModr then
-            Reg|Regr = Regs
-            X|Xr = XsIn
-         in
+         case IMods#Regs of (IMod|IModr)#(Reg|Regr) then X Xr in
+            XsIn = X|Xr
             if IMod then
                Emitter, AllocateShortLivedTemp(?X)
                case Emitter, GetReg(Reg $) of none then R in
@@ -1477,15 +1481,16 @@ in
                Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             end
             Emitter, AllocateBuiltinArgs(Regr IModr ?Xr ?XsOut ?Unifies)
-         else
+         [] nil#_ then
             XsIn = nil
             Emitter, AllocateBuiltinOutputs(Regs ?XsOut ?Unifies)
          end
       end
       meth AllocateBuiltinOutputs(Regs ?XsOut ?Unifies)
-         case Regs of Reg|Regr then X|Xr = XsOut Ur in
+         case Regs of Reg|Regr then X Xr Ur in
+            XsOut = X|Xr
             case Emitter, GetReg(Reg $) of none then
-                  %--** here it would be nicer to PredictBuiltinOutput
+               %--** here it would be nicer to PredictBuiltinOutput
                Emitter, PredictTemp(Reg ?X)
                Unifies = Ur
             elseof R then

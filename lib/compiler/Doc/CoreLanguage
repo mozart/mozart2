@@ -31,7 +31,7 @@ A  ::=  int | F+
 I  ::=  F | F#O
 
 % method formal
-M  ::=  <MethFormal> | <MethFormalOptional> | <MethFormalWithDefault>
+M  ::=  <MethFormal>
 
 % statements
 S  ::=  <Statement>
@@ -77,9 +77,9 @@ S  ::=  <Statement>
 
 % label '(' args [ '...' ] ')'
 <Construction>
-     label:         L
-     args:          (T|F#T)+   % all featureless subtrees in front
-     isOpen:        bool
+     label:  L
+     args:   (T|F#T)+   % all featureless subtrees in front
+     isOpen: bool
 
 
 % 'proc' '{' designator formalArgs '}' statements 'end'
@@ -104,9 +104,9 @@ S  ::=  <Statement>
 
 % '{' designator actualArgs '}'
 <Application> from <Statement>
-     designator:    O
-     actualArgs:    O*
-     coord:         C
+     designator: O
+     actualArgs: O*
+     coord:      C
 
 
 % 'if' arbiter 'then' consequent alternative 'end'
@@ -199,41 +199,37 @@ S  ::=  <Statement>
      coord:             C
      isVirtualToplevel: bool
 
-% 'meth' label '(' formalArgs ')' statements 'end'
-<Method>
-     label:         L
-     formalArgs:    M*
-     statements:    S+
-     coord:         C
-     globalVars:    V*   % only of "local vars in label feats statements end"
-
-
-% 'meth' label '(' formalArgs [ '...' ] ')' '=' messageDesignator
+% 'meth' label '(' formalArgs [ '...' ] ')' [ '=' messageDesignator ]
 % statements 'end'
-<MethodWithDesignator> from <Method>
-     messageDesignator: V
+<Method>
+     label:             L
+     formalArgs:        M*
+     isOpen:            bool
+     messageDesignator: V | unit
+     statements:        S+
+     coord:             C
+     globalVars:        V*   % only of "vars in label feats statements"
 
 
-% F ':' V
+% feature ':' arg
 <MethFormal>
      feature: F
      arg:     V
 
 
-% F ':' V '<=' '_'
+% feature ':' arg '<=' default
 <MethFormalOptional> from <MethFormal>
-     isInitialized: bool
 
 
-% F ':' V '<=' default
+% feature ':' arg '<=' (arg in statements arg)
 <MethFormalWithDefault> from <MethFormal>
-     default: value   % must consist of int/float/atom/record exclusively
+     default: O | unit
 
 
 % 'lock' statements 'end'
 <ObjectLock> from <Statement>
-     statements:    S+
-     coord:         C
+     statements: S+
+     coord:      C
 
 
 % destination '=' 'self'

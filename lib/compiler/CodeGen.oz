@@ -22,7 +22,7 @@
 %%
 %% General Notes:
 %%
-%% meth codeGen(CS ?VInstrs)
+%% meth codeGen(CS ?VInstr)
 %%    CS is an instance of the CodeStore class.  It encapsulates the
 %%    internal state of the code generator (generation of virtual
 %%    registers as well as compiler switches) and stores the produced
@@ -65,7 +65,6 @@ export
    lockNode: CodeGenLockNode
    classNode: CodeGenClassNode
    method: CodeGenMethod
-   methodWithDesignator: CodeGenMethodWithDesignator
    methFormal: CodeGenMethFormal
    methFormalOptional: CodeGenMethFormalOptional
    methFormalWithDefault: CodeGenMethFormalWithDefault
@@ -413,34 +412,6 @@ define
             VInter = vEquateRecord(_ {Label Value} RecordArity Reg VArgs VTl)
          end
       end
-
-      %% Nodes of this class may be used as subtrees in Constructions.
-      %% Since the stored value must be ground, the `makeEquation' method
-      %% suffices for code generation (records are always basic).
-
-      class CodeGenOzValue
-         prop final
-         feat Val
-         meth init(Value)
-            self.Val = Value
-         end
-         meth makeEquation(CS VO VHd VTl)
-            {OzValueToVInstr self.Val {VO reg($)} CS VHd VTl}
-         end
-         meth makeRecordArgument(CS VHd VTl $) Value = self.Val in
-            if {IsNumber Value} then
-               VHd = VTl
-               number(Value)
-            elseif {IsLiteral Value} then
-               VHd = VTl
-               literal(Value)
-            else Reg in
-               {CS newReg(?Reg)}
-               {OzValueToVInstr self.Val Reg CS VHd VTl}
-               value(Reg)
-            end
-         end
-      end
    end
 
    local
@@ -483,14 +454,14 @@ define
          WidthVO = {New PseudoVariableOccurrence init(WidthReg)}
          VHd = vEquateNumber(_ {Length Args} WidthReg Cont1)
          if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication tellRecordSize CND
+            {MakeRunTimeProcApplication 'tellRecordSize' CND
              [TheLabel WidthVO VO] CS Cont1 Cont2}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {TheLabel getCodeGenValue(?LabelValue)}
             Cont1 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication tellRecordSize CND
+            {MakeRunTimeProcApplication 'tellRecordSize' CND
              [LabelVO WidthVO VO] CS Inter Cont2}
          end
          {List.foldLInd Args
@@ -544,14 +515,14 @@ define
          end
          Cont1 = vEquateNumber(_ WidthValue WidthReg Cont2)
          if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication tuple {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'tuple' {CoordNoDebug C}
              [TheLabel SubtreesVO WidthVO VO] CS Cont2 VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {TheLabel getCodeGenValue(?LabelValue)}
             Cont2 = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication tuple {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'tuple' {CoordNoDebug C}
              [LabelVO SubtreesVO WidthVO VO] CS Inter VTl}
          end
       end
@@ -602,14 +573,14 @@ define
                                     [value(PairReg) Arg] Cont)
          end
          if {HasFeature TheLabel Core.imAVariableOccurrence} then
-            {MakeRunTimeProcApplication record {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'record' {CoordNoDebug C}
              [TheLabel SubtreesVO VO] CS Cont VTl}
          else LabelReg LabelVO LabelValue Inter in
             {CS newReg(?LabelReg)}
             LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
             {TheLabel getCodeGenValue(?LabelValue)}
             Cont = vEquateLiteral(_ LabelValue LabelReg Inter)
-            {MakeRunTimeProcApplication record {CoordNoDebug C}
+            {MakeRunTimeProcApplication 'record' {CoordNoDebug C}
              [LabelVO SubtreesVO VO] CS Inter VTl}
          end
       end
@@ -1231,117 +1202,34 @@ define
    end
 
    class CodeGenMethod
-      feat hasDefaults MessagePatternVO
+      feat MessagePatternVO
+      meth isOptimizable($)
+         {Not @isOpen} andthen @messageDesignator == unit andthen
+         {All @formalArgs
+          fun {$ Formal} Value in
+             {{Formal getFeature($)} getCodeGenValue(?Value)}
+             {IsDet Value} andthen ({IsInt Value} orelse {IsLiteral Value})
+          end}
+      end
       meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
-         RecordArity FileName Line Col SlowMeth FastMeth VInter1 VInter2
-         X = unit
+         HasDefaults FileName Line Col FastMeth SlowMeth
+         VInter1 VInter2 X = unit
       in
-         local PairList Rec in
-            %% Sort the formal arguments by feature
-            %% (important for order of fast methods' formal parameters):
-            PairList = {Map @formalArgs
-                        fun {$ Formal}
-                           {{Formal getFeature($)} getCodeGenValue($)}#Formal
-                        end}
-            try
-               Rec = {List.toRecord someLabel PairList}
-               RecordArity = if {IsTuple Rec} then {Width Rec}
-                             else {Arity Rec}
-                             end
-               formalArgs <- {Record.toList Rec}
-            catch failure(...) then C = {@label getCoord($)} in
-               {CS.reporter
-                error(coord: C kind: 'code generation error'
-                      msg: 'duplicate feature in record construction')}
-               RecordArity = {Length @formalArgs}
-            end
-         end
-         self.hasDefaults = {Some @formalArgs
-                             fun {$ Formal} {Formal hasDefault($)} end}
+         HasDefaults = {Some @formalArgs
+                        fun {$ Formal} {Formal hasDefault($)} end}
          case @coord of unit then FileName = '' Line = 1 Col = 0
          elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
-         local PredId NLiveRegs FormalRegs AllRegs BodyVInstr GRegs Code in
-            PredId = pid({String.toAtom
-                          {VirtualString.toString
-                           PrintName#','#{@label methPrintName($)}#'/fast'}}
-                         RecordArity pos(FileName Line Col) nil NLiveRegs)
-\ifdef DEBUG_DEFS
-            {System.show PredId}
-\endif
-            {CS startDefinition()}
-            FormalRegs = {Map @formalArgs
-                          fun {$ Formal} V = {Formal getVariable($)} in
-                             {V setFreshReg(CS)}
-                             {V reg($)}
-                          end}
-            AllRegs = case @allVariables of nil then nil
-                      else {Map @allVariables fun {$ V} {V reg($)} end}
-                      end
-            if CS.debugInfoVarnamesSwitch then
-               StateReg Vs Regs Cont1 Cont2 Cont3 Cont4 Cont5
-            in
-               {CS newSelfReg(?StateReg)}
-               BodyVInstr = vMakePermanent(_ [StateReg] Cont1)
-               Cont1 = vGetSelf(_ StateReg Cont2)
-               Vs = {Map @formalArgs fun {$ F} {F getVariable($)} end}
-               {MakePermanent Vs ?Regs Cont2 Cont3}
-               {CodeGenList @statements CS Cont3 Cont4}
-               {Clear Regs Cont4 Cont5}
-               {Clear [StateReg] Cont5 nil}
-            else
-               {CodeGenList @statements CS BodyVInstr nil}
-            end
-            statements <- unit   % hand it to the garbage collector
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
-                              ?NLiveRegs)}
-            {CS newReg(?FastMeth)}
-            VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code
-                              VInter1)
-         end
-         local
-            PredId NLiveRegs MessageVO FormalRegs BodyVInstr GRegs
-            Code Cont1 Cont2 Cont3
-         in
-            PredId = pid({String.toAtom
-                          {VirtualString.toString
-                           PrintName#','#{@label methPrintName($)}#'/slow'}}
-                         1 pos(FileName Line Col) nil NLiveRegs)
-\ifdef DEBUG_DEFS
-            {System.show PredId}
-\endif
-            CodeGenMethod, makeArityCheckInit(CS VInter1 Cont1)
-            {CS startDefinition()}
-            MessageVO = {NewPseudoVariableOccurrence CS}
-            FormalRegs = [MessageVO.reg]
-            %--** use pattern matching instead?
-            CodeGenMethod, makeArityCheck(MessageVO CS BodyVInstr Cont2)
-            {FoldL @formalArgs
-             proc {$ VHd Formal VTl}
-                {Formal bindMethFormal(MessageVO CS VHd VTl)}
-             end Cont2 Cont3}
-            if IsToplevel then
-               Cont3 = vFastCall(_ @predicateRef
-                                 {Map @formalArgs
-                                  fun {$ Formal}
-                                     {{Formal getVariable($)} reg($)}
-                                  end} unit nil)
-            else
-               {MakeApplication
-                {New PseudoVariableOccurrence init(FastMeth)}
-                {CoordNoDebug @coord}
-                {Map @formalArgs
-                 fun {$ Formal}
-                    {New PseudoVariableOccurrence
-                     init({{Formal getVariable($)} reg($)})}
-                 end} CS Cont3 nil}
-            end
-            {CS endDefinition(BodyVInstr FormalRegs nil ?GRegs ?Code
-                              ?NLiveRegs)}
-            {CS newReg(?SlowMeth)}
-            Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter2)
-         end
-         if self.hasDefaults then Args VO VInter3 in
+         CodeGenMethod, MakeFastMeth(PrintName FileName Line Col CS
+                                     VHd VInter1 ?FastMeth)
+         CodeGenMethod, MakeSlowMeth(PrintName FileName Line Col HasDefaults
+                                     IsToplevel CS VInter1 VInter2 FastMeth
+                                     ?SlowMeth)
+         if FastMeth == unit then
+            VInter2 = vEquateRecord(_ '|' 2 Reg
+                                    [{@label makeRecordArgument(CS X X $)}
+                                     value(SlowMeth)] VTl)
+         elseif HasDefaults then Args VO VInter3 in
             Args = {Map @formalArgs
                     fun {$ Formal}
                        {Formal getFeature($)}#{Formal getDefault($)}
@@ -1358,8 +1246,155 @@ define
                                      value(SlowMeth) value(FastMeth)] VTl)
          end
       end
-      meth makeArityCheck(MessageVO CS VHd VTl)
-         if self.hasDefaults then
+      meth MakeFastMeth(PrintName FileName Line Col CS VHd VTl ?FastMeth)
+         if CodeGenMethod, isOptimizable($) then
+            RecordArity PredId NLiveRegs FormalRegs AllRegs BodyVInstr
+            GRegs Code
+         in
+            CodeGenMethod, SortFormals(CS ?RecordArity)
+            PredId = pid({String.toAtom
+                          {VirtualString.toString
+                           PrintName#','#{@label methPrintName($)}#'/fast'}}
+                         RecordArity pos(FileName Line Col) nil NLiveRegs)
+\ifdef DEBUG_DEFS
+            {System.show PredId}
+\endif
+            {CS startDefinition()}
+            FormalRegs = {Map @formalArgs
+                          fun {$ Formal} V = {Formal getVariable($)} in
+                             {V setFreshReg(CS)}
+                             {V reg($)}
+                          end}
+            CodeGenMethod, MakeBody(?AllRegs CS BodyVInstr nil)
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs
+                              ?GRegs ?Code ?NLiveRegs)}
+            {CS newReg(?FastMeth)}
+            VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code VTl)
+         else
+            VHd = VTl
+            FastMeth = unit
+         end
+      end
+      meth SortFormals(CS ?RecordArity) PairList Rec in
+         %% Sort the formal arguments by feature
+         %% (important for order of fast methods' formal parameters):
+         PairList = {Map @formalArgs
+                     fun {$ Formal}
+                        {{Formal getFeature($)} getCodeGenValue($)}#Formal
+                     end}
+         try
+            Rec = {List.toRecord someLabel PairList}
+            RecordArity = if {IsTuple Rec} then {Width Rec}
+                          else {Arity Rec}
+                          end
+            formalArgs <- {Record.toList Rec}
+         catch failure(...) then C = {@label getCoord($)} in
+            {CS.reporter
+             error(coord: C kind: 'code generation error'
+                   msg: 'duplicate feature in record construction')}
+            RecordArity = {Length @formalArgs}
+         end
+      end
+      meth MakeBody(?AllRegs CS VHd VTl)
+         AllRegs = case @allVariables of nil then nil
+                   else {Map @allVariables fun {$ V} {V reg($)} end}
+                   end
+         if CS.debugInfoVarnamesSwitch then
+            StateReg Vs Regs Cont1 Cont2 Cont3 Cont4 Cont5
+         in
+            {CS newSelfReg(?StateReg)}
+            VHd = vMakePermanent(_ [StateReg] Cont1)
+            Cont1 = vGetSelf(_ StateReg Cont2)
+            Vs = {FoldR @formalArgs fun {$ F In} {F getVariable($)}|In end
+                  case @messageDesignator of unit then nil
+                  elseof V then [V]
+                  end}
+            {MakePermanent Vs ?Regs Cont2 Cont3}
+            {CodeGenList @statements CS Cont3 Cont4}
+            {Clear Regs Cont4 Cont5}
+            {Clear [StateReg] Cont5 VTl}
+         else
+            {CodeGenList @statements CS VHd VTl}
+         end
+         statements <- unit   % hand them to the garbage collector
+      end
+      meth MakeSlowMeth(PrintName FileName Line Col HasDefaults IsToplevel CS
+                        VHd VTl FastMeth ?SlowMeth)
+         PredId NLiveRegs Cont1 MessageReg MessageVO BodyVInstr
+         AllRegs GRegs Code VInter1 VInter2
+      in
+         PredId = pid({String.toAtom
+                       {VirtualString.toString
+                        PrintName#','#{@label methPrintName($)}}}
+                      1 pos(FileName Line Col) nil NLiveRegs)
+\ifdef DEBUG_DEFS
+         {System.show PredId}
+\endif
+         CodeGenMethod, MakeArityCheckInit(HasDefaults CS VHd Cont1)
+         {CS startDefinition()}
+         case @messageDesignator of unit then
+            {CS newReg(?MessageReg)}
+         elseof V then
+            {V setReg(CS)}
+            {V reg(?MessageReg)}
+         end
+         MessageVO = {New PseudoVariableOccurrence init(MessageReg)}
+         CodeGenMethod, MakeArityCheck(HasDefaults MessageVO CS
+                                       BodyVInstr VInter1)
+         {FoldL @formalArgs
+          proc {$ VHd Formal VTl}
+             {Formal bindMethFormal(MessageVO CS VHd VTl)}
+          end VInter1 VInter2}
+         case FastMeth of unit then
+            CodeGenMethod, MakeBody(?AllRegs CS VInter2 nil)
+         else
+            if IsToplevel then FormalRegs in
+               FormalRegs = {Map @formalArgs
+                             fun {$ Formal}
+                                {{Formal getVariable($)} reg($)}
+                             end}
+               VInter2 = vFastCall(_ @predicateRef FormalRegs unit nil)
+            else FormalArgs in
+               FormalArgs = {Map @formalArgs
+                             fun {$ Formal}
+                                {New PseudoVariableOccurrence
+                                 init({{Formal getVariable($)} reg($)})}
+                             end}
+               {MakeApplication {New PseudoVariableOccurrence init(FastMeth)}
+                {CoordNoDebug @coord} FormalArgs CS VInter2 nil}
+            end
+            AllRegs = nil
+         end
+         {CS endDefinition(BodyVInstr [MessageReg] AllRegs
+                           ?GRegs ?Code ?NLiveRegs)}
+         {CS newReg(?SlowMeth)}
+         Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VTl)
+      end
+      meth MakeArityCheckInit(HasDefaults CS VHd VTl)
+         if @isOpen then
+            VHd = VTl
+         else
+            self.MessagePatternVO = {NewPseudoVariableOccurrence CS}
+            if HasDefaults then LabelReg LabelVO in
+               {CS newReg(?LabelReg)}
+               LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
+               LabelVO.value = 'messagePattern'
+               {MakeConstruction CS self.MessagePatternVO LabelVO
+                {Map @formalArgs
+                 fun {$ Formal} VO in
+                    VO = {NewPseudoVariableOccurrence CS}
+                    VO.value = unit
+                    {Formal getFeature($)}#VO
+                 end} false VHd VTl}
+            else
+               VHd = VTl
+            end
+         end
+      end
+      meth MakeArityCheck(HasDefaults MessageVO CS VHd VTl)
+         if @isOpen then
+            VHd = VTl
+         elseif HasDefaults then
             {MakeRunTimeProcApplication 'aritySublist' {CoordNoDebug @coord}
              [MessageVO self.MessagePatternVO] CS VHd VTl}
          else NArgs LabelValue in
@@ -1371,103 +1406,16 @@ define
                {CS newReg(?Reg)}
                VO = {New PseudoVariableOccurrence init(Reg)}
                VHd = vEquateNumber(_ NArgs Reg Cont1)
-               {MakeRunTimeProcApplication width {CoordNoDebug @coord}
+               {MakeRunTimeProcApplication 'width' {CoordNoDebug @coord}
                 [MessageVO VO] CS Cont1 VTl}
             end
          end
-      end
-      meth makeArityCheckInit(CS VHd VTl)
-         self.MessagePatternVO = {New PseudoVariableOccurrence
-                                  init({CS newReg($)})}
-         if self.hasDefaults then LabelReg LabelVO in
-            {CS newReg(?LabelReg)}
-            LabelVO = {New PseudoVariableOccurrence init(LabelReg)}
-            LabelVO.value = 'messagePattern'
-            {MakeConstruction CS self.MessagePatternVO LabelVO
-             {Map @formalArgs
-              fun {$ Formal} VO in
-                 VO = {NewPseudoVariableOccurrence CS}
-                 VO.value = unit
-                 {Formal getFeature($)}#VO
-              end} false VHd VTl}
-         else
-            VHd = VTl
-         end
-      end
-   end
-   class CodeGenMethodWithDesignator
-      meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
-         FileName Line Col X = unit SlowMeth VInter1
-      in
-         self.hasDefaults = {Some @formalArgs
-                             fun {$ Formal} {Formal hasDefault($)} end}
-         case @coord of unit then FileName = '' Line = 1 Col = 0
-         elseof C then FileName = C.1 Line = C.2 Col = C.3
-         end
-         local
-            PredId NLiveRegs MessageReg MessageVO BodyVInstr
-            FormalRegs AllRegs GRegs Code Cont1 Cont2 Cont3 Cont4 Cont5
-         in
-            PredId = pid({String.toAtom
-                          {VirtualString.toString
-                           PrintName#','#{@label methPrintName($)}}}
-                         1 pos(FileName Line Col) nil NLiveRegs)
-\ifdef DEBUG_DEFS
-            {System.show PredId}
-\endif
-            if @isOpen then
-               VHd = Cont1
-            else
-               CodeGenMethod, makeArityCheckInit(CS VHd Cont1)
-            end
-            {CS startDefinition()}
-            {@messageDesignator setReg(CS)}
-            {@messageDesignator reg(?MessageReg)}
-            MessageVO = {New PseudoVariableOccurrence init(MessageReg)}
-            FormalRegs = [MessageReg]
-            AllRegs = case @allVariables of nil then nil
-                      else {Map @allVariables fun {$ V} {V reg($)} end}
-                      end
-            %--** use pattern matching instead?
-            if @isOpen then
-               Cont2 = Cont3
-            else
-               CodeGenMethod, makeArityCheck(MessageVO CS Cont2 Cont3)
-            end
-            {FoldL @formalArgs
-             proc {$ VHd Formal VTl}
-                {Formal bindMethFormal(MessageVO CS VHd VTl)}
-             end Cont3 Cont4}
-            {CodeGenList @statements CS Cont4 Cont5}
-            if CS.debugInfoVarnamesSwitch then
-               StateReg Vs Regs Cont01 Cont02 Cont05
-            in
-               {CS newSelfReg(?StateReg)}
-               BodyVInstr = vMakePermanent(_ [StateReg] Cont01)
-               Cont01 = vGetSelf(_ StateReg Cont02)
-               Vs = @messageDesignator|{Map @formalArgs
-                                        fun {$ F} {F getVariable($)} end}
-               {MakePermanent Vs ?Regs Cont02 Cont2}
-               {Clear [StateReg] Cont5 Cont05}
-               {Clear Regs Cont05 nil}
-            else
-               BodyVInstr = Cont2
-               Cont5 = nil
-            end
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
-                              ?NLiveRegs)}
-            {CS newReg(?SlowMeth)}
-            Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter1)
-         end
-         VInter1 = vEquateRecord(_ '|' 2 Reg
-                                 [{@label makeRecordArgument(CS X X $)}
-                                  value(SlowMeth)] VTl)
       end
    end
 
    class CodeGenMethFormal
       meth getDefault($)
-         {New CodeGenOzValue init(RunTime.literals.ooRequiredArg)}
+         {New Core.atomNode init(RunTime.literals.ooRequiredArg unit)}
       end
       meth bindMethFormal(MessageVO CS VHd VTl) C FeatureVO ArgVO VInter in
          {@arg setFreshReg(CS)}
@@ -1480,40 +1428,23 @@ define
    end
    class CodeGenMethFormalOptional
       meth getDefault($)
-         {New CodeGenOzValue init(RunTime.literals.ooDefaultVar)}
+         {New Core.atomNode init(RunTime.literals.ooDefaultVar unit)}
       end
       meth bindMethFormal(MessageVO CS VHd VTl)
          {@arg setFreshReg(CS)}
-         if @isInitialized then
-            VHd = VTl
-         else
-            Coord CND ArbiterReg ArbiterVO
-            FeatureVO ArgVO ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
-         in
-            {@arg getCoord(?Coord)}
-            CND = {CoordNoDebug Coord}
-            {CS newReg(?ArbiterReg)}
-            ArbiterVO = {New PseudoVariableOccurrence init(ArbiterReg)}
-            {@feature makeVO(CS VHd Cont1 ?FeatureVO)}
-            ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
-            {MakeRunTimeProcApplication '.' CND
-             [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
-            ElseVInstr = nil
-            {MakeException boolCaseType Coord nil CS ErrVInstr nil}
-            {MakeRunTimeProcApplication hasFeature CND
-             [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
-            Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
-                              unit VTl _)
-         end
+         VHd = VTl
       end
    end
    class CodeGenMethFormalWithDefault
       meth getDefault($)
-         {New CodeGenOzValue init(@default)}
+         case @default of unit then
+            {New Core.atomNode init(RunTime.literals.ooDefaultVar unit)}
+         elseof VO then VO
+         end
       end
       meth bindMethFormal(MessageVO CS VHd VTl)
          Coord CND ArbiterReg ArbiterVO
-         FeatureVO ArgVO ThenVInstr Default ElseVInstr ErrVInstr Cont1 Cont2
+         FeatureVO ArgVO ThenVInstr ElseVInstr ErrVInstr Cont1 Cont2
       in
          {@arg setFreshReg(CS)}
          {@arg getCoord(?Coord)}
@@ -1524,10 +1455,12 @@ define
          ArgVO = {New PseudoVariableOccurrence init({@arg reg($)})}
          {MakeRunTimeProcApplication '.' CND
           [MessageVO FeatureVO ArgVO] CS ThenVInstr nil}
-         Default = {New CodeGenOzValue init(@default)}
-         {Default makeEquation(CS ArgVO ElseVInstr nil)}
+         case @default of unit then ElseVInstr = nil
+         elseof VO then {VO makeEquation(CS ArgVO ElseVInstr nil)}
+         end
          {MakeException boolCaseType Coord nil CS ErrVInstr nil}
-         {MakeRunTimeProcApplication hasFeature CND
+         %--** use 'Record.testFeature'
+         {MakeRunTimeProcApplication 'hasFeature' CND
           [MessageVO FeatureVO ArbiterVO] CS Cont1 Cont2}
          Cont2 = vTestBool(_ ArbiterReg ThenVInstr ElseVInstr ErrVInstr
                            unit VTl _)
@@ -1538,7 +1471,7 @@ define
       meth codeGen(CS VHd VTl) Reg Arg SharedData Cont1 Cont2 in
          {CS newReg(?Reg)}
          Arg = {New PseudoVariableOccurrence init(Reg)}
-         {MakeRunTimeProcApplication ooGetLock {CoordNoDebug @coord}
+         {MakeRunTimeProcApplication 'ooGetLock' {CoordNoDebug @coord}
           [Arg] CS VHd Cont1}
          Cont1 = vLockThread(_ Reg @coord Cont2 SharedData)
          {CodeGenList @statements CS Cont2 vLockEnd(_ @coord VTl SharedData)}

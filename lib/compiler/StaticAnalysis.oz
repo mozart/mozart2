@@ -61,7 +61,6 @@ export
    lockNode:               SALockNode
    classNode:              SAClassNode
    method:                 SAMethod
-   methodWithDesignator:   SAMethodWithDesignator
    methFormal:             SAMethFormal
    methFormalOptional:     SAMethFormalOptional
    methFormalWithDefault:  SAMethFormalWithDefault
@@ -870,9 +869,7 @@ define
       case Xs
       of nil then
          L # R
-      elseof [X] then
-         L # X # R
-      elseof X1|(Xr=(_|_)) then
+      elseof X1|Xr then
          L # X1 #
          {FoldR Xr
           fun {$ X In} Sep # X # In end
@@ -893,13 +890,11 @@ define
    end
 
    fun {FormatArity Xs}
-      {Map {CurrentArity Xs}
-       fun {$ X} if {IsLiteral X} then oz(X) else X end end}
+      {Ozify {CurrentArity Xs}}
    end
 
-   fun {Ozify Xs} %--** should be removed
-      {Map Xs
-       fun {$ X} if {IsVirtualString X} then X else oz(X) end end}
+   fun {Ozify Xs}
+      {Map Xs fun {$ X} oz(X) end}
    end
 
    fun {TypeToVS T}
@@ -1401,7 +1396,7 @@ define
                    error(coord: Coord
                          kind:  SAGenError
                          msg:   'duplicate features in record construction'
-                         items: [hint(l:'Features found' m:{SetToVS Fields})])}
+                         items: [hint(l:'Features found' m:{SetToVS {Ozify Fields}})])}
                end
             else
                {Ctrl.rep error(coord: Coord
@@ -1599,8 +1594,8 @@ define
                          msg:   'ill-typed application'
                          items: [hint(l:'Procedure' m:PN)
                                  hint(l:'At argument' m:N)
+                                 hint(l:'Type found' m:{TypeToVS {A getType($)}})
                                  hint(l:'Expected' m:oz(T))
-                                 hint(l:'Found' m:{TypeToVS {A getType($)}})
                                  hint(l:'Application (names)'
                                       m:{ApplToVS PN|PNs})
                                  hint(l:'Application (values)'
@@ -1670,14 +1665,16 @@ define
 
                {ForAll Req
                 proc {$ R}
-                   if {HasFeature Msg R}
-                   then skip else
+                   if {IsObject R} andthen {HasFeature R ImAVariableOccurrence}
+                   then skip
+                   elseif {HasFeature Msg R} then skip
+                   else
                       {Ctrl.rep
                        error(coord: @coord
                              kind:  SAGenError
                              msg:   'missing message feature in ' # Where
                              items: [hint(l:What m:pn(PN))
-                                     hint(l:'Required feature' m:R)
+                                     hint(l:'Required feature' m:oz(R))
                                      hint(l:'Message found'
                                           m:oz(MsgData))])}
                    end
@@ -1697,9 +1694,9 @@ define
                                 msg:   'illegal message feature in ' # Where
                                 items: [hint(l:What m:pn(PN))
                                         hint(l:'Required features'
-                                             m:{SetToVS Req})
+                                             m:{SetToVS {Ozify Req}})
                                         hint(l:'Optional features'
-                                             m:{SetToVS Opt})
+                                             m:{SetToVS {Ozify Opt}})
                                         hint(l:'Message found'
                                              m:oz(MsgData))])}
                       end
@@ -1714,8 +1711,8 @@ define
                       kind:  SAGenError
                       msg:   'illegal message label in ' # Where
                       items: [hint(l:What m:pn(PN))
-                              hint(l:'Expected' m:{SetToVS {FormatArity Meth}})
-                              hint(l:'Message found' m:oz(MsgData))])}
+                              hint(l:'Message found' m:oz(MsgData))
+                              hint(l:'Expected' m:{SetToVS {FormatArity Meth}})])}
             end
          else
             skip
@@ -1745,7 +1742,7 @@ define
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
                             msg:   'application of unknown builtin'
-                            items: [hint(l:'Builtin' m:N)
+                            items: [hint(l:'Builtin' m:pn(N))
                                     hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
@@ -1788,9 +1785,9 @@ define
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
                             msg:   'illegal arity in application'
-                            items: [hint(l:'Builtin' m:N)
+                            items: [hint(l:'Builtin' m:pn(N))
+                                    hint(l:'Arity found' m:NumArgs)
                                     hint(l:'Expected' m:ProcArity)
-                                    hint(l:'Found' m:NumArgs)
                                     hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
                                     hint(l:'Argument values'
@@ -1948,8 +1945,8 @@ define
                    error(coord: @coord
                          kind:  SAGenError
                          msg:   'illegal feature selection from object'
-                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                 hint(l:'Found' m:oz(F))])}
+                         items: [hint(l:'Feature found' m:oz(F))
+                                 hint(l:'Expected one of' m:{SetToVS {Ozify Fs}})])}
                end
             end
 
@@ -1971,8 +1968,8 @@ define
                    error(coord: @coord
                          kind:  SAGenError
                          msg:   'illegal feature selection from class'
-                         items: [hint(l:'Expected' m:{SetToVS {Ozify Fs}})
-                                 hint(l:'Found' m:oz(F))])}
+                         items: [hint(l:'Feature found' m:oz(F))
+                                 hint(l:'Expected one of' m:{SetToVS {Ozify Fs}})])}
                end
             end
 
@@ -1997,8 +1994,8 @@ define
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal feature selection on record'
-                      items: [hint(l:'Expected' m:{SetToVS {FormatArity RecOrCh}})
-                              hint(l:'Found' m:oz(F))])}
+                      items: [hint(l:'Feature found' m:oz(F))
+                              hint(l:'Expected one of' m:{SetToVS {FormatArity RecOrCh}})])}
             end
 
             %% dot selection from non-determined record
@@ -2077,8 +2074,8 @@ define
              error(coord: @coord
                    kind:  SAGenError
                    msg:   'illegal feature selection from record'
-                   items: [hint(l:'Expected' m:{SetToVS {FormatArity Rec}})
-                           hint(l:'Found' m:oz(Fea))])}
+                   items: [hint(l:'Feature found' m:oz(Fea))
+                           hint(l:'Expected one of' m:{SetToVS {FormatArity Rec}})])}
          else
             skip
          end
@@ -2143,7 +2140,7 @@ define
                      items: [hint(l:'Expression' m:Expr)
                              hint(l:Cls
                                   m:pn({System.printName {Self getValue($)}}))
-                             hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
+                             hint(l:'Expected one of' m:{SetToVS {Ozify Attrs}})
                              line(Hint)])}
             else skip end
          end
@@ -2466,10 +2463,10 @@ define
                {Ctrl.rep
                 error(coord: @coord
                       kind:  SAGenError
-                      msg:   'illegal number of arguments in application'
+                      msg:   'illegal arity in application'
                       items: [hint(l:'Procedure' m:pn(PN))
+                              hint(l:'Arity found' m:GotA)
                               hint(l:'Expected' m:ExpA)
-                              hint(l:'Found' m:GotA)
                               hint(l:'Application (names)'
                                    m:{ApplToVS pn(PN)|PNs})
                               hint(l:'Application (values)'
@@ -2491,8 +2488,8 @@ define
                       kind:  SAGenError
                       msg:   'illegal number of arguments in object application'
                       items: [hint(l:'Object' m:pn(PN))
-                              hint(l:'Expected' m:1)
-                              hint(l:'Found' m:GotA)])}
+                              hint(l:'Number found' m:GotA)
+                              hint(l:'Expected' m:1)])}
             elseif
                Cls == unit
             then
@@ -3256,38 +3253,6 @@ define
          {List.partition Fs fun {$ F} {Label F}==required end R1 O1}
 
          R2 = {Map R1 fun {$ R} R.1 end}
-         O2 = {Map O1 fun {$ O} O.1 end}
-
-         @label # (R2 # O2)
-      end
-      meth saDescend(Ctrl)
-         Env = {GetGlobalEnv @globalVars}
-         T N
-      in
-         {Ctrl getTopNeeded(T N)}
-         {Ctrl notTopNotNeeded}
-         SAStatement, saBody(Ctrl @statements)
-         {Ctrl setTopNeeded(T N)}
-
-         {InstallGlobalEnv Env}
-         if {Ctrl getTop($)} then
-            predicateRef <- {Ctrl declareToplevelProcedure($)}
-         end
-      end
-      meth preApplyEnvSubst(Ctrl)
-         {@label applyEnvSubst(Ctrl)}
-         {ForAll @formalArgs
-          proc {$ A} {A applyEnvSubst(Ctrl)} end}
-      end
-   end
-   class SAMethodWithDesignator
-      meth getPattern($)
-         Fs R1 O1 R2 O2
-      in
-         Fs = {Map @formalArgs fun {$ M} {M getFormal($)} end}
-         {List.partition Fs fun {$ F} {Label F}==required end R1 O1}
-
-         R2 = {Map R1 fun {$ R} R.1 end}
          O2 = if @isOpen then unit else {Map O1 fun {$ O} O.1 end} end
 
          @label # (R2 # O2)
@@ -3302,6 +3267,14 @@ define
          {Ctrl setTopNeeded(T N)}
 
          {InstallGlobalEnv Env}
+         if {Ctrl getTop($)} andthen {self isOptimizable($)} then
+            predicateRef <- {Ctrl declareToplevelProcedure($)}
+         end
+      end
+      meth preApplyEnvSubst(Ctrl)
+         {@label applyEnvSubst(Ctrl)}
+         {ForAll @formalArgs
+          proc {$ A} {A applyEnvSubst(Ctrl)} end}
       end
    end
 
@@ -3321,6 +3294,12 @@ define
    class SAMethFormalWithDefault
       meth getFormal($)
          optional(@feature)
+      end
+      meth applyEnvSubst(Ctrl)
+         {@feature applyEnvSubst(Ctrl)}
+         case @default of unit then skip
+         elseof VO then {VO applyEnvSubst(Ctrl)}
+         end
       end
    end
 

@@ -76,7 +76,6 @@ export
    LockNode
    ClassNode
    Method
-   MethodWithDesignator
    MethFormal
    MethFormalOptional
    MethFormalWithDefault
@@ -814,12 +813,15 @@ define
 
    class Method
       from Annotate.method StaticAnalysis.method CodeGen.method
+      prop final
       attr
-         label: unit formalArgs: unit statements: unit coord: unit
-         allVariables: nil predicateRef: unit
-      meth init(Label FormalArgs Statements Coord)
+         label: unit formalArgs: unit isOpen: unit messageDesignator: unit
+         statements: unit coord: unit allVariables: nil predicateRef: unit
+      meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
          label <- Label
          formalArgs <- FormalArgs
+         isOpen <- IsOpen
+         messageDesignator <- MessageDesignator
          statements <- {FlattenSequence Statements}
          coord <- Coord
       end
@@ -831,27 +833,14 @@ define
       end
       meth output(R $) FS1 FS2 in
          'meth '#{@label outputEscaped2(R $ ?FS1)}#'('#PU#
-         {LI2 @formalArgs GL R ?FS2}#')'#PO#IN#FS1#FS2#NL#
-         {LI @statements NL R}#EX#NL#'end'
-      end
-   end
-   class MethodWithDesignator
-      from Method Annotate.methodWithDesignator
-         StaticAnalysis.methodWithDesignator CodeGen.methodWithDesignator
-      prop final
-      attr messageDesignator: unit isOpen: unit
-      meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
-         Method, init(Label FormalArgs Statements Coord)
-         isOpen <- IsOpen
-         messageDesignator <- MessageDesignator
-      end
-      meth output(R $) FS1 FS2 in
-         'meth '#{@label outputEscaped2(R $ ?FS1)}#'('#PU#
          {LI2 @formalArgs GL R ?FS2}#
          if @isOpen then
             case @formalArgs of nil then '...' else GL#'...' end
          else ""
-         end#') = '#{@messageDesignator output(R $)}#PO#IN#FS1#FS2#NL#
+         end#')'#
+         case @messageDesignator of unit then ""
+         elseof V then '='#{V output(R $)}
+         end#PO#IN#FS1#FS2#NL#
          {LI @statements NL R}#EX#NL#'end'
       end
    end
@@ -877,14 +866,13 @@ define
       end
    end
    class MethFormalOptional
-      from MethFormal Annotate.methFormalOptional
+      from
+         MethFormal
          StaticAnalysis.methFormalOptional CodeGen.methFormalOptional
       prop final
-      attr isInitialized: unit
-      meth init(Feature Arg IsInitialized)
+      meth init(Feature Arg)
          feature <- Feature
          arg <- Arg
-         isInitialized <- IsInitialized
       end
       meth hasDefault($)
          true
@@ -906,8 +894,11 @@ define
          true
       end
       meth output2(R $ ?FS)
-         MethFormal, output2(R $ ?FS)#' <= '#
-         {Value.toVirtualString @default 50 1000}
+         case @default of unit then
+            MethFormal, output2(R $ ?FS)#' <= _'
+         elseof VO then FS1#FS2 = FS in
+            MethFormal, output2(R $ ?FS1)#' <= '#{VO output2(R $ ?FS2)}
+         end
       end
    end
 

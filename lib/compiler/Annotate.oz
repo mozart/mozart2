@@ -514,13 +514,18 @@ local
 
    class AnnotateMethod
       attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter1 VsInter2 NewLs Vs1 in
+      meth annotateGlobalVars(Ls VsHd VsTl)
+         Vs VsInter1 VsInter2 NewLs0 NewLs Vs1
+      in
          {@label annotateGlobalVars(Ls Vs VsInter1)}
          {FoldL @formalArgs
           proc {$ VsHd Arg VsTl}
-             {{Arg getFeature($)} annotateGlobalVars(Ls VsHd VsTl)}
+             {Arg annotateGlobalVars(Ls VsHd VsTl)}
           end VsInter1 VsInter2}
-         NewLs = {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
+         NewLs0 = {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
+         NewLs = case @messageDesignator of unit then NewLs0
+                 elseof V then V|NewLs0
+                 end
          {AnnotateGlobalVarsList @statements NewLs VsInter2 nil}
          Vs1 = {VariableUnion Vs nil}
          globalVars <- Vs1
@@ -534,40 +539,14 @@ local
       meth markFirst(WarnFormals Rep)
          {ForAll @formalArgs
           proc {$ A} {{A getVariable($)} setUse(wildcard)} end}
+         case @messageDesignator of unit then skip
+         elseof V then {V setUse(wildcard)}
+         end
          {SetUninitVars @globalVars}
          {@label markFirst(WarnFormals Rep)}
          {MarkFirstList @formalArgs WarnFormals Rep}
          {MarkFirstList @statements WarnFormals Rep}
-      end
-   end
-   class AnnotateMethodWithDesignator
-      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter1 VsInter2 NewLs Vs1 in
-         {@label annotateGlobalVars(Ls Vs VsInter1)}
-         {FoldL @formalArgs
-          proc {$ VsHd Arg VsTl}
-             {{Arg getFeature($)} annotateGlobalVars(Ls VsHd VsTl)}
-          end VsInter1 VsInter2}
-         NewLs = @messageDesignator|
-                 {Map @formalArgs fun {$ Arg} {Arg getVariable($)} end}
-         {AnnotateGlobalVarsList @statements NewLs VsInter2 nil}
-         Vs1 = {VariableUnion Vs nil}
-         globalVars <- Vs1
-         {FoldL Vs1
-          proc {$ VsHd V VsTl}
-             if {Member V Ls} then VsHd = VsTl
-             else VsHd = V|VsTl
-             end
-          end VsHd VsTl}
-      end
-      meth markFirst(WarnFormals Rep)
-         {ForAll @formalArgs
-          proc {$ A} {{A getVariable($)} setUse(wildcard)} end}
-         {@messageDesignator setUse(wildcard)}
-         {SetUninitVars @globalVars}
-         {@label markFirst(WarnFormals Rep)}
-         {MarkFirstList @formalArgs WarnFormals Rep}
-         {MarkFirstList @statements WarnFormals Rep}
-         if WarnFormals then
+         if WarnFormals andthen @messageDesignator \= unit then
             {@messageDesignator checkUse('message designator' Rep)}
          end
       end
@@ -577,10 +556,23 @@ local
       meth markFirst(WarnFormals Rep)
          {@feature markFirst(WarnFormals Rep)}
       end
-   end
-   class AnnotateMethFormalOptional
+      meth annotateGlobalVars(Ls VsHd VsTl)
+         {@feature annotateGlobalVars(Ls VsHd VsTl)}
+      end
    end
    class AnnotateMethFormalWithDefault
+      meth markFirst(WarnFormals Rep)
+         {@feature markFirst(WarnFormals Rep)}
+         case @default of unit then skip
+         elseof VO then {VO markFirst(WarnFormals Rep)}
+         end
+      end
+      meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
+         {@feature annotateGlobalVars(Ls VsHd VsInter)}
+         case @default of unit then VsInter = VsTl
+         elseof VO then {VO annotateGlobalVars(Ls VsInter VsTl)}
+         end
+      end
    end
 
    class AnnotateObjectLockNode
@@ -787,9 +779,7 @@ in
                        lockNode: AnnotateLockNode
                        classNode: AnnotateClassNode
                        method: AnnotateMethod
-                       methodWithDesignator: AnnotateMethodWithDesignator
                        methFormal: AnnotateMethFormal
-                       methFormalOptional: AnnotateMethFormalOptional
                        methFormalWithDefault: AnnotateMethFormalWithDefault
                        objectLockNode: AnnotateObjectLockNode
                        getSelf: AnnotateGetSelf

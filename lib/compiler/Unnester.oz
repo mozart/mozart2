@@ -280,31 +280,6 @@ define
       end
    end
 
-   fun {GroundToOzValue FE Rep}
-      case FE of fAtom(A _) then A
-      [] fInt(I _) then I
-      [] fFloat(F _) then F
-      [] fRecord(L As) then
-         try ArgCounter in
-            ArgCounter = {NewCell 1}
-            {List.toRecord L.1
-             {Map As
-              fun {$ Arg}
-                 case Arg of fColon(F E) then
-                    {GroundToOzValue F Rep}#{GroundToOzValue E Rep}
-                 else N NewN in
-                    {Exchange ArgCounter ?N NewN}
-                    NewN = N + 1
-                    N#{GroundToOzValue Arg Rep}
-                 end
-              end}}
-         catch failure(...) then
-            {Rep error(coord: {CoordinatesOf L} kind: ExpansionError
-                       msg: 'duplicate feature in record')}
-         end
-      end
-   end
-
    fun {IsPattern FE}
       %% Returns `true' if FE is a pattern as allowed in case and
       %% catch patterns and in proc/fun heads, else `false'.
@@ -855,8 +830,8 @@ define
          [] fClass(FE FDescriptors FMeths C) then
             GFrontEq GVO FPrivates GPrivates
             FFrom FProp FAttr FFeat
-            GS1 GS2 GS3 GS4 GParents GProps GAttrs
-            OldStateful OldStateUsed GFeats GMeths GVs GClass
+            GS1 GS2 GS3 GS4 GParents GProps GAttrs GFeats
+            OldStateful OldStateUsed GS5 GMeths GVs GClass
          in
             Unnester, UnnestToVar(FE 'Class' ?GFrontEq ?GVO)
             {@BA openScope()}
@@ -880,14 +855,14 @@ define
             %% transform methods:
             OldStateful = (Stateful <- true)
             OldStateUsed = (StateUsed <- false)
-            GMeths = {Map FMeths
-                      fun {$ FMeth} Unnester, UnnestMeth(FMeth $) end}
+            Unnester, UnnestMeths(FMeths ?GS5 ?GMeths)
             Stateful <- OldStateful
             StateUsed <- OldStateUsed
             {@BA closeScope(?GVs)}
             GClass = {New Core.classNode
                       init(GVO GParents GProps GAttrs GFeats GMeths C)}
-            GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
+            GFrontEq|
+            {MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GS5|GClass C}
 \ifndef NO_GUMP
          [] fScanner(T Ds Ms Rules Prefix C) then
             From Prop Attr Feat Flags FS Is
@@ -1836,8 +1811,20 @@ define
          end
       end
 
-      meth UnnestMeth(FMeth ?GMeth)
-         fMeth(FHead FP C) = FMeth
+      meth UnnestMeths(FMeths ?GFrontEq ?GMeths)
+         case FMeths of fMeth(FHead FP C)|FMethRest then
+            GFrontEq1 GMeth GFrontEq2 GMethRest
+         in
+            Unnester, UnnestMeth(FHead FP C ?GFrontEq1 ?GMeth)
+            GFrontEq = GFrontEq1|GFrontEq2
+            GMeths = GMeth|GMethRest
+            Unnester, UnnestMeths(FMethRest ?GFrontEq2 ?GMethRest)
+         elseof nil then
+            GFrontEq = nil
+            GMeths = nil
+         end
+      end
+      meth UnnestMeth(FHead FP C ?GFrontEq ?GMeth)
          RealFHead GVMsg GLabel FFormals IsOpen N GFormals GBody
       in
          {@BA openScope()}
@@ -1847,12 +1834,12 @@ define
          else
             RealFHead = FHead
          end
-         Unnester, UnnestMethHead(RealFHead GVMsg ?GLabel ?FFormals ?IsOpen)
-         Unnester, UnnestMethFormals1(FFormals GVMsg)
+         Unnester, UnnestMethHead(RealFHead ?GLabel ?FFormals ?IsOpen)
+         Unnester, BindMethFormals(FFormals)
          N = {DollarsInScope FFormals 0}
          ArgCounter <- 1
          if N == 0 then GFormals0 GS1 GS2 in
-            Unnester, UnnestMethFormals2(FFormals nil ?GFormals0)
+            Unnester, UnnestMethFormals(FFormals ?GFrontEq ?GFormals0)
             {@BA openScope()}
             Unnester, UnnestStatement(FP ?GS1)
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
@@ -1866,7 +1853,7 @@ define
             {@BA generate('Result' DollarC ?GV)}
             FV = fVar({GV getPrintName($)} C)
             NewFFormals = {ReplaceDollar FFormals FV}
-            Unnester, UnnestMethFormals2(NewFFormals nil ?GFormals0)
+            Unnester, UnnestMethFormals(NewFFormals ?GFrontEq ?GFormals0)
             {@BA openScope()}
             Unnester, UnnestExpression(FP FV ?GS1)
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
@@ -1878,16 +1865,14 @@ define
          end
          {@BA closeScope(_)}
          if {IsFree GVMsg} then
-            GMeth = {New Core.method init(GLabel GFormals GBody C)}
-         else
-            GMeth = {New Core.methodWithDesignator
-                     init(GLabel GFormals IsOpen GVMsg GBody C)}
+            GVMsg = unit
          end
+         GMeth = {New Core.method init(GLabel GFormals IsOpen GVMsg GBody C)}
          if {@state getSwitch(debuginfovarnames $)} then
             {GMeth setAllVariables({@BA getAllVariables($)})}
          end
       end
-      meth UnnestMethHead(FHead GVMsg ?GLabel ?FFormals ?IsOpen)
+      meth UnnestMethHead(FHead ?GLabel ?FFormals ?IsOpen)
          case FHead of fAtom(X C) then
             GLabel = {New Core.atomNode init(X C)}
             FFormals = nil
@@ -1901,56 +1886,49 @@ define
             FFormals = nil
             IsOpen = false
          [] fRecord(FLabel FArgs) then
-            Unnester, UnnestMethHead(FLabel GVMsg ?GLabel _ _)
+            Unnester, UnnestMethHead(FLabel ?GLabel _ _)
             FFormals = FArgs
             IsOpen = false
-         [] fOpenRecord(FLabel FArgs) then C in
-            C = {CoordinatesOf FLabel}
-            if {IsFree GVMsg} then
-               {@BA generate('Message' C ?GVMsg)}
-            end
-            Unnester, UnnestMethHead(FLabel GVMsg ?GLabel _ _)
+         [] fOpenRecord(FLabel FArgs) then
+            Unnester, UnnestMethHead(FLabel ?GLabel _ _)
             FFormals = FArgs
             IsOpen = true
          end
       end
-      meth UnnestMethFormals1(FFormals GVMsg)
-         %% This simply declares all arguments so that their variables
-         %% may be used inside features or defaults.
+      meth BindMethFormals(FFormals)
+         %% This simply declares all formal argument variables so that
+         %% they can be used inside defaults and we can check they are
+         %% not used as features.
          {ForAll FFormals
-          proc {$ FFormal}
-             case FFormal of fMethArg(FV _) then
-                case FV of fVar(PrintName C) then
+          proc {$ FFormal} FV in
+             FV = case FFormal of fMethArg(FV0 _) then FV0
+                  [] fMethColonArg(FF FV0 _) then FV0
+                  end
+             case FV of fVar(PrintName C) then
+                if {@BA isBoundLocally(PrintName $)} then
+                   {@reporter error(coord: C kind: SyntaxError
+                                    msg: ('argument variables in method head '#
+                                          'must be distinct'))}
+                else
                    {@BA bind(PrintName C _)}
-                [] fWildcard(_) then skip
-                [] fDollar(_) then skip
                 end
-             [] fMethColonArg(FF FV _) then
-                case FF of fVar(_ C) then
-                   if {IsFree GVMsg} then
-                      {@BA generate('Message' C ?GVMsg)}
-                   end
-                else skip
-                end
-                case FV of fVar(PrintName C) then
-                   {@BA bind(PrintName C _)}
-                [] fWildcard(_) then skip
-                [] fDollar(_) then skip
-                end
+             [] fWildcard(_) then skip
+             [] fDollar(_) then skip
              end
           end}
       end
-      meth UnnestMethFormals2(FFormals Occs ?GFormals)
-         case FFormals of FA|FAr then GA NewOccs GAr in
-            Unnester, UnnestMethFormal(FA Occs ?GA ?NewOccs)
+      meth UnnestMethFormals(FFormals ?GFrontEq ?GFormals)
+         case FFormals of FA|FAr then GFrontEq1 GA GFrontEq2 GAr in
+            Unnester, UnnestMethFormal(FA ?GFrontEq1 ?GA)
+            GFrontEq = GFrontEq1|GFrontEq2
             GFormals = GA|GAr
-            Unnester, UnnestMethFormals2(FAr NewOccs ?GAr)
+            Unnester, UnnestMethFormals(FAr ?GFrontEq2 ?GAr)
          [] nil then
+            GFrontEq = nil
             GFormals = nil
          end
       end
-      meth UnnestMethFormal(FFormal Occs ?GFormal ?NewOccs)
-         FF GF GV FDefault PrintName in
+      meth UnnestMethFormal(FFormal ?GFrontEq ?GFormal) FF GF GV FDefault in
          case FFormal of fMethArg(FV FE) then N = @ArgCounter in
             FF = fInt(N {CoordinatesOf FV})
             ArgCounter <- N + 1
@@ -1962,6 +1940,14 @@ define
             FDefault = FE
          [] fMethColonArg(FF0 FV FE) then
             FF = FF0
+            case FF of fVar(PrintName C) then
+               if {@BA isBoundLocally(PrintName $)} then
+                  {@reporter error(coord: C kind: SyntaxError
+                                   msg: ('nonsensical use of formal argument '#
+                                         'variable as feature'))}
+               end
+            else skip
+            end
             case FV of fVar(PrintName C) then
                {@BA bind(PrintName C ?GV)}
             [] fWildcard(C) then
@@ -1970,28 +1956,25 @@ define
             FDefault = FE
          end
          Unnester, MakeLabelOrFeature(FF ?GF)
-         PrintName = {GV getPrintName($)}
-         if {Member PrintName Occs} then
-            {@reporter error(coord: {GV getCoord($)} kind: SyntaxError
-                             msg: ('argument variables in method head '#
-                                   'must be distinct'))}
-            NewOccs = Occs
-         else
-            NewOccs = PrintName|Occs
-         end
          case FDefault of fNoDefault then
+            GFrontEq = nil
             GFormal = {New Core.methFormal init(GF GV)}
          [] fDefault(FE C) then
             case FE of fWildcard(_) then
-               GFormal = {New Core.methFormalOptional init(GF GV false)}
+               GFrontEq = nil
+               GFormal = {New Core.methFormalWithDefault init(GF GV unit)}
             else
-               if {IsGround FE} then Val in
-                  Val = {GroundToOzValue FE self}
-                  GFormal = {New Core.methFormalWithDefault init(GF GV Val)}
+               if {IsGround FE} then DefaultGV DefaultFV in
+                  {@BA generateForOuterScope('Default' C ?DefaultGV)}
+                  DefaultFV = fVar({DefaultGV getPrintName($)} C)
+                  Unnester, UnnestExpression(FE DefaultFV ?GFrontEq)
+                  GFormal = {New Core.methFormalWithDefault
+                             init(GF GV {DefaultGV occ(C $)})}
                else FV in
                   FV = fVar({GV getPrintName($)} C)
-                  GFormal = ({New Core.methFormalOptional init(GF GV true)}#
-                             FF#FV#fEq(FV FE C))
+                  GFrontEq = nil
+                  GFormal = ({New Core.methFormalOptional init(GF GV)}#
+                             FF#FV#FE)
                end
             end
          end
@@ -2003,16 +1986,24 @@ define
          GFormals#GS2 =
          {FoldR GFormals0
           fun {$ GFormal0 GFormals#GS}
-             case GFormal0 of GFormal#FF#FV#FS then C FS0 GS0 in
+             case GFormal0 of GFormal#FF#FV#FE then
+                C ArbiterGV ArbiterFV TempGV TempFV FS0 FS1 GS0 GS1
+             in
                 C = {CoordinatesOf FF}
                 if {IsFree GVMsg} then
                    {@BA generateForOuterScope('Message' C ?GVMsg)}
                    FVMsg = fVar({GVMsg getPrintName($)} C)
                 end
-                FS0 = fBoolCase(fOpApply('hasFeature' [FVMsg FF] C)
-                                fEq(FV fOpApply('.' [FVMsg FF] C) C) FS C)
+                {@BA generate('Arbiter' C ?ArbiterGV)}
+                ArbiterFV = fVar({ArbiterGV getPrintName($)} C)
+                {@BA generate('Temp' C ?TempGV)}
+                TempFV = fVar({TempGV getPrintName($)} C)
+                FS0 = fOpApplyStatement('Record.testFeature'
+                                        [FVMsg FF ArbiterFV TempFV] C)
+                FS1 = fBoolCase(ArbiterFV fEq(FV TempFV C) fEq(FV FE C) C)
                 Unnester, UnnestStatement(FS0 ?GS0)
-                (GFormal|GFormals)#(GS0|GS)
+                Unnester, UnnestStatement(FS1 ?GS1)
+                (GFormal|GFormals)#(GS0|GS1|GS)
              else
                 (GFormal0|GFormals)#GS
              end

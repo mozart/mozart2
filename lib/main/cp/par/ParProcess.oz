@@ -96,6 +96,11 @@ define
                                           script:  S.script)}
                              end $)}.worker
       end
+      meth close
+         if self.name\=same then
+            {self.process close}
+         end
+      end
    end
 
 end

@@ -190,13 +190,16 @@ local
       %% We have to call output a single time and not once per line
       %% so that the alarm character to raise the buffer if running
       %% under Emacs is only output once.
-      VSCell = {NewCell ""}
-      {ErrorMsg
-       proc {$ X}
-          {Assign VSCell {Access VSCell}#{AlmostVSToVS X}}
-       end
-       Format}
-      {Output {Access VSCell}}
+      case Format of none then skip
+      else
+         VSCell = {NewCell ""}
+         {ErrorMsg
+          proc {$ X}
+             {Assign VSCell {Access VSCell}#{AlmostVSToVS X}}
+          end
+          Format}
+         {Output {Access VSCell}}
+      end
    end
 
    proc {Repeat N C ?S}

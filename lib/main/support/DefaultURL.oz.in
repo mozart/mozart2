@@ -59,6 +59,7 @@ prepare
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System']
       Tools     = ['OPI' 'OPIEnv' 'Panel' 'Browser' 'Explorer' 'CompilerPanel'
+                   'EvalDialog'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
                    'GumpParser' 'ProductionTemplates' 'Inspector']
    in

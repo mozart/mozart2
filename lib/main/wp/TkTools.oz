@@ -33,14 +33,10 @@ prepare
 
 import
    Tk
-   Compiler(engine interface)
-   Property(get)
-   System(printInfo)
 
 export
    error:       Error
    dialog:      Dialog
-   evalDialog:  EvalDialog
    menubar:     MakeMenu
    popupmenu:   PopupMenu
    textframe:   Textframe
@@ -285,8 +281,6 @@ define
       end
 
    end
-
-   \insert EvalDialog
 
    local
       BarRelief = raised

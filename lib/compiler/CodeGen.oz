@@ -1456,7 +1456,6 @@ local
                   {CS newReg(?MethReg)}
                   {M makeQuadruple(PN CS MethReg
                                    {{@designator getVariable($)} isToplevel($)}
-                                   @isVirtualToplevel
                                    VHd VInter)}
                   value(MethReg)|{MakeMethods Mr VInter VTl}
                [] nil then
@@ -1485,13 +1484,9 @@ local
 
    class CodeGenMethod
       feat hasDefaults MessagePatternVO
-      meth makeQuadruple(PrintName CS Reg IsToplevel IsVirtualToplevel VHd VTl)
+      meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
          FileName Line SlowMeth FastMeth VInter1 VInter2
          X = unit
-         AbstractionTableID = case IsToplevel then
-                                 {GenerateAbstractionTableID IsVirtualToplevel}
-                              else unit
-                              end
       in
          local PairList Rec in
             % Sort the formal arguments by feature
@@ -1550,7 +1545,7 @@ local
             body <- unit   % hand it to the garbage collector
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?FastMeth)}
-            VHd = vDefinition(_ FastMeth PredId AbstractionTableID GRegs Code
+            VHd = vDefinition(_ FastMeth PredId @abstractionTableID GRegs Code
                               VInter1)
          end
          local
@@ -1573,7 +1568,7 @@ local
                 {Formal bindMethFormal(MessageVO CS self VHd VTl)}
              end Cont2 Cont3}
             case IsToplevel then
-               Cont3 = vFastCall(_ AbstractionTableID
+               Cont3 = vFastCall(_ @abstractionTableID
                                  {Map @formalArgs
                                   fun {$ Formal}
                                      {{Formal getVariable($)} reg($)}
@@ -1654,7 +1649,7 @@ local
       end
    end
    class CodeGenMethodWithDesignator
-      meth makeQuadruple(PrintName CS Reg IsToplevel IsVirtualToplevel VHd VTl)
+      meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
          FileName Line X = unit SlowMeth VInter1
       in
          self.hasDefaults = {Some @formalArgs

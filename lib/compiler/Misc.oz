@@ -77,6 +77,5 @@ IsUniqueName = {`Builtin` 'isUniqueName' 2}
 
 IsBuiltin = {`Builtin` 'isBuiltin' 2}
 GetBuiltinName = {`Builtin` 'getBuiltinName' 2}
-GenerateAbstractionTableID = {`Builtin` 'generateAbstractionTableID' 2}
 
 ConcatenateAtomAndInt = {`Builtin` 'concatenateAtomAndInt' 3}

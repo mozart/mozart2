@@ -27,7 +27,6 @@ local
    NewNamedName
    IsBuiltin
    GetBuiltinName
-   GenerateAbstractionTableID
    ConcatenateAtomAndInt
 
    % Builtins

@@ -1017,6 +1017,8 @@ local
 %-----------------------------------------------------------------------
 %  global control information
 
+   GenerateAbstractionTableID = {`Builtin` 'generateAbstractionTableID' 2}
+
    class Control
       prop final
       feat
@@ -1079,12 +1081,12 @@ local
          else toplevelNames <- N|@toplevelNames
          end
       end
+      meth declareAbstrEntry($)
+         {GenerateAbstractionTableID @toplevelNames \= unit}
+      end
       meth endVirtualToplevel(?Ns)
          Ns = @toplevelNames
          toplevelNames <- unit
-      end
-      meth isVirtualToplevel($)
-         @toplevelNames \= unit
       end
 
       meth setErrorMsg(E)
@@ -1597,12 +1599,10 @@ local
          case {self isClauseBody($)} then
             @value.clauseBodyStatements = @body
             ID = unit
+         elsecase Top then
+            {Ctrl declareAbstrEntry(?ID)}
          else
-            case Top then
-               ID = {GenerateAbstractionTableID {Ctrl isVirtualToplevel($)}}
-            else
-               ID = unit
-            end
+            ID = unit
          end
          self.abstractionTableID = ID
          @value.abstractionTableID = ID
@@ -3096,8 +3096,6 @@ local
       in
          value <- {New Core.classToken init(DummyClass)}
 
-         isVirtualToplevel <- {Ctrl isVirtualToplevel($)}
-
 \ifdef ANALYSEINHERITANCE
 
          {AllUpTo @parents
@@ -3469,6 +3467,10 @@ local
       in
          SAStatement, saBody(Ctrl false @body)
          {InstallGlobalEnv Env}
+         case Top then
+            abstractionTableID <- {Ctrl declareAbstrEntry($)}
+         else skip
+         end
       end
       meth preApplyEnvSubst(Ctrl Top)
          {Record.forAll self.expansionOccs
@@ -3499,6 +3501,12 @@ local
 \ifdef DEBUGSA
          {Show methodWithDesignator}
 \endif
+      end
+      meth saDescend(Ctrl Top)
+         Env = {GetGlobalEnv @globalVars}
+      in
+         SAStatement, saBody(Ctrl false @body)
+         {InstallGlobalEnv Env}
       end
    end
 

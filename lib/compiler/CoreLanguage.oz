@@ -650,7 +650,7 @@ in
          attr
             designator: unit parents: unit properties: unit
             attributes: unit features: unit methods: unit
-            printName: '' isVirtualToplevel: false
+            printName: ''
          feat expansionOccs
          meth init(Designator Parents Props Attrs Feats Meths Coord)
             self.expansionOccs = expansionOccs('`class`': _
@@ -729,7 +729,7 @@ in
          from Annotate.method SA.method CodeGen.method
          attr
             label: unit formalArgs: unit body: unit coord: unit
-            allVariables: nil
+            allVariables: nil abstractionTableID: unit
          feat expansionOccs
          meth init(Label FormalArgs Body Coord)
             self.expansionOccs = expansionOccs('`ooRequiredArg`': _

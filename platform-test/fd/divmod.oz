@@ -10,7 +10,6 @@ export
    Return
 define
 
-
    proc {ModDivProb S}
       X3 Y3 Z3 X4 Y4
    in
@@ -29,7 +28,6 @@ define
 
    end
 
-
    Return=
    fd([divmod([
                one(equal(fun {$}
@@ -38,7 +36,7 @@ define
                          in
                             cond {Map T fun {$ E} {FD.reflect.dom E} end}  =
                                [
-                                [3#93]
+                                [3]
                                 [10] [3] [6#100]
                                 [3#35 37#50]
                                ]

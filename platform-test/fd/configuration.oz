@@ -33,7 +33,7 @@ define
        CardPower       = {Map CardSpecs fun {$ T} T.power end}
        proc {Rack R}
           Type
-          Power         = {FD.int RackPower} = {FD.sumC CardPower NbCards '=<:'}
+          Power         = {FD.int RackPower} = thread {FD.sumC CardPower NbCards '=<:'} end
           NbCards
           Price
           NbSlots       = {FD.int RackNbSlots}

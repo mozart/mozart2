@@ -16,11 +16,12 @@ define
          {FD.times X X S}     % exploits coreference
       end
       [A B C] = Root
-      AA      = {Square A}
-      BB      = {Square B}
-      CC      = {Square C}
+      AA BB CC
    in
       Root ::: 1#1000
+AA           = {Square A}
+      BB      = {Square B}
+      CC      = {Square C}
       AA + BB =: CC           % A*A + B*B =: C*C propagates much worse
       A =<: B
       B =<: C

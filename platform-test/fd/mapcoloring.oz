@@ -38,7 +38,7 @@ define
           end
           {ForAll Data
            proc {$ A#Bs}
-              {ForAll Bs proc {$ B} Color.A \=: Color.B end}
+              {ForAll Bs proc {$ B} thread Color.A \=: Color.B end end}
            end}
           {FD.distribute naive [NbColors]}
           {FD.distribute ff Color}

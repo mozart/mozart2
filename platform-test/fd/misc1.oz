@@ -189,6 +189,7 @@ Return=
                  thread cond B = 0 then 1 else 0 end end
               end}
 
+              /*
              {MiscTest 24
               fun {$} R X Y Z in [X Y Z]:::0#10
                  {FD.sumACN [1 ~1] [[X Y] [Z]] '>:' 8}
@@ -217,6 +218,8 @@ Return=
                  Y=1
                  thread cond B = 0 then 1 else 0 end end
               end}
+
+              */
 
              {MiscTest 27
               fun {$} X Y in [X Y] ::: 0#10

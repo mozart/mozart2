@@ -166,16 +166,14 @@ define
                case Val of true then 'true'
                [] false then 'false'
                [] unit then 'unit'
+               elseif {IsUniqueName Val} then
+                  %--** these only work if the name's print name is friendly
+                  %--** and all names' print names are distinct
+                  '<U: '#{System.printName Val}#'>'
+               elseif {IsCopyableName Val} then
+                  '<M: '#{System.printName Val}#'>'
                else
-                  if {IsUniqueName Val} then
-                     %--** these only work if the name's print name is friendly
-                     %--** and all names' print names are distinct
-                     '<U: '#{System.printName Val}#'>'
-                  elseif {IsCopyableName Val} then
-                     '<M: '#{System.printName Val}#'>'
-                  else
-                     '<N: '#{System.printName Val}#'>'
-                  end
+                  '<N: '#{System.printName Val}#'>'
                end
             elseif {IsAtom Val} then
                %% the atom must not be mistaken for a token
@@ -208,26 +206,29 @@ define
                elseof V then
                   V
                end#'>'
+            elsecase Val of V1|Vr then
+               {ListToVirtualString Vr
+                '['#{MyValueToVirtualString V1 FPToIntMap}
+                FPToIntMap}#']'
+            [] V1#V2 then
+               {MyValueToVirtualString V1 FPToIntMap}#"#"#
+               {MyValueToVirtualString V2 FPToIntMap}
+            elseif {IsTuple Val} then
+               {TupleToVirtualString Val FPToIntMap}
             else
-               case Val of V1|Vr then
-                  {ListToVirtualString Vr
-                   '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
-               [] V1#V2 then
-                  {MyValueToVirtualString V1 FPToIntMap}#"#"#
-                  {MyValueToVirtualString V2 FPToIntMap}
-               else
-                  if {IsTuple Val} then
-                     {TupleToVirtualString Val FPToIntMap}
-                  else
-                     {Value.toVirtualString Val 1000 1000}
-                  end
-               end
+               {Value.toVirtualString Val 1000 1000}
             end
          end
       in
          fun {InstrToVirtualString Instr FPToIntMap}
             if {IsAtom Instr} then
                Instr
+            elsecase Instr of putConstant(C R) then
+               'putConstant('#{Value.toVirtualString C 1000 1000}#' '#
+               {MyValueToVirtualString R FPToIntMap}#')'
+            [] setConstant(C R) then
+               'setConstant('#{Value.toVirtualString C 1000 1000}#' '#
+               {MyValueToVirtualString R FPToIntMap}#')'
             else
                {TupleToVirtualString Instr FPToIntMap}
             end

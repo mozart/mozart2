@@ -38,7 +38,7 @@ import
 
    Space(waitStable)
 
-   FD(decl list sum int)
+   FD(decl list sum int distribute)
 
    Error(registerFormatter)
 
@@ -309,7 +309,7 @@ define
       end
 
       fun {RRobinFun Spec}
-         if Spec then fun {$ H|T} {Append T [H]} end
+         if Spec then fun {$ _|T} T end
          else fun {$ L} L end
          end
       end
@@ -324,10 +324,14 @@ define
                {FSDistNaive Xr}
             else
                UnknownVal = {MinElement Unknown}
+               B = {FSP.'reified.include' UnknownVal X}
             in
+               {FD.distribute generic(value:max) [B]}
+/*
                choice {FSIsIncl UnknownVal X}
                []     {FSIsExcl UnknownVal X}
                end
+               */
                {FSDistNaive Xs}
             end
          end
@@ -347,10 +351,14 @@ define
             [] HSL|_ then
                UnknownVal={Elem HSL}
                DistVar   ={Sel  HSL}
+               B = {FSP.'reified.include' UnknownVal DistVar}
             in
+               {FD.distribute generic(value:max) [B]}
+               /*
                choice {FSIsIncl UnknownVal DistVar}
                []     {FSIsExcl UnknownVal DistVar}
                end
+               */
                {FSDistGeneric {RRobin SortedSL}
                 Order FCond Elem RRobin Sel Proc}
             end

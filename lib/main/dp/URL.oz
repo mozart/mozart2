@@ -35,7 +35,7 @@
 %%%
 %%% The first implementation of such a library was written by
 %%% Christian Schulte for his `Module Manager' facility.  It has been
-%%% entorely rewritten by Dens Duchier to add various extensions such
+%%% entorely rewritten by Denys Duchier to add various extensions such
 %%% as support for Windows-style filenames.  The new implementation
 %%% also improves the theoretical complexity, although not necessarily
 %%% the performance.
@@ -47,7 +47,7 @@
 %%% http://search.ietf.org/internet-drafts/draft-fielding-uri-syntax-03.txt
 %%% and passes all 5 test suites published by Roy Fielding.
 %%%
-%%% The only erogations t said specification are made to accommodate
+%%% The only derogations to said specification are made to accommodate
 %%% Windows-style filenames: (1) a prefix of the form "C:" where C is
 %%% a single character is interpreted as Windows-style device notation
 %%% rather than as a uri scheme - in practice, this is a compatible

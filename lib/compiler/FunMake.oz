@@ -80,7 +80,8 @@ in
                              quietInterface: CompilerF.quietInterface
                              evalExpression: CompilerF.evalExpression
                              virtualStringToValue:
-                                CompilerF.virtualStringToValue)
+                                CompilerF.virtualStringToValue
+                             assemble: Assembler.doAssemble)
       in
          \insert 'Compiler.env'
       end

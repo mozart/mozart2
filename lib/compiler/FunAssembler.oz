@@ -4,6 +4,7 @@ import
    GetBuiltinInfo
 export
    Assemble
+   DoAssemble
 body
    \insert Assembler
 end

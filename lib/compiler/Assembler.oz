@@ -260,6 +260,15 @@ local
                {Dictionary.put @LabelDict L @Size}
             end
          end
+         meth checkLabels()
+            {ForAll {Dictionary.entries @LabelDict}
+             proc {$ L#V}
+                case {IsDet V} then skip
+                else
+                   {Exception.raiseError compiler(assembler undeclaredLabel L)}
+                end
+             end}
+         end
          meth append(Instr) NewTl in
             case Instr
             of definition(_ L _ _ _) then AssemblerClass, declareLabel(L)
@@ -575,9 +584,9 @@ local
             elseof move(Y1=y(_) X1=x(_))|move(X2=x(_) Y2=y(_))|Rest then
                {Assembler append(moveMoveYXXY(Y1 X1 X2 Y2))}
                {Peephole Rest Assembler}
-            elseof move(Other X1)|callBI('funReturn' [X1]#nil)|Rest then
+            elseof move(Other X)|callBI('funReturn' [X]#nil)|Rest then
                {Assembler append(funReturn(Other))}
-               {Peephole Rest Assembler}
+               {EliminateDeadCode Rest Assembler}
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}
@@ -676,50 +685,45 @@ local
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] callBI(Builtinname Args) then NewRest BIInfo in
-            BIInfo = {GetBuiltinInfo Builtinname}
+         [] funReturn(_) then
+            {Assembler append(I1)}
+            {EliminateDeadCode Rest Assembler}
+         [] callBI(Builtinname Args) then
             case Assembler.debugInfoControl then
                {Assembler append(I1)}
-               NewRest = Rest
-            elsecase Builtinname of '+1' then [X1]#[X2] = Args in
-               {Assembler append(inlinePlus1(X1 X2))}
-               NewRest = Rest
-            [] '-1' then [X1]#[X2] = Args in
-               {Assembler append(inlineMinus1(X1 X2))}
-               NewRest = Rest
-            [] '+' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlinePlus(X1 X2 X3))}
-               NewRest = Rest
-            [] '-' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineMinus(X1 X2 X3))}
-               NewRest = Rest
-            [] '>' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('<' [X2 X1]#Out))}
-               NewRest = Rest
-            [] '>=' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('=<' [X2 X1]#Out))}
-               NewRest = Rest
-            [] '^' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineUparrow(X1 X2 X3))}
-               NewRest = Rest
-            [] 'funReturn' then [X1]#nil = Args in
-               case Rest of
-                  deAllocateL(N)|MoreRest then
-                  NewRest = deAllocateL(N)|funReturn(X1)|MoreRest
-               else NewRest = funReturn(X1)|Rest end
-            [] 'getReturn' then nil#[X1] = Args in
-               case Rest of
-                  move(!X1 Other)|MoreRest then
-                  NewRest = getReturn(Other)|MoreRest
-               else NewRest = getReturn(X1)|Rest end
-            else
-               {Assembler append(I1)}
-               NewRest = Rest
-            end
-            case {CondSelect BIInfo doesNotReturn false} then
-               {EliminateDeadCode NewRest Assembler}
-            else
-               {Peephole NewRest Assembler}
+               {Peephole Rest Assembler}
+            elsecase Builtinname of 'funReturn' then [X1]#nil = Args in
+               case Rest of deAllocateL(N)|NewRest then
+                  {Peephole deAllocateL(N)|funReturn(X1)|NewRest Assembler}
+               else
+                  {Peephole funReturn(X1)|Rest Assembler}
+               end
+            else BIInfo in
+               BIInfo = {GetBuiltinInfo Builtinname}
+               case Builtinname of '+1' then [X1]#[X2] = Args in
+                  {Assembler append(inlinePlus1(X1 X2))}
+               [] '-1' then [X1]#[X2] = Args in
+                  {Assembler append(inlineMinus1(X1 X2))}
+               [] '+' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlinePlus(X1 X2 X3))}
+               [] '-' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlineMinus(X1 X2 X3))}
+               [] '>' then [X1 X2]#Out = Args in
+                  {Assembler append(callBI('<' [X2 X1]#Out))}
+               [] '>=' then [X1 X2]#Out = Args in
+                  {Assembler append(callBI('=<' [X2 X1]#Out))}
+               [] '^' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlineUparrow(X1 X2 X3))}
+               [] 'getReturn' then nil#[X1] = Args in
+                  {Assembler append(getReturn(X1))}
+               else
+                  {Assembler append(I1)}
+               end
+               case {CondSelect BIInfo doesNotReturn false} then
+                  {EliminateDeadCode Rest Assembler}
+               else
+                  {Peephole Rest Assembler}
+               end
             end
          [] genCall(GCI Arity) then
             Arity = 0
@@ -900,7 +904,7 @@ local
             else
                {Assembler append(I1)}
             end
-           {Peephole Rest Assembler}
+            {Peephole Rest Assembler}
          [] match(R HT) then ht(ElseL Cases) = HT in
             case Cases of [onScalar(X L)] then
                case Rest of lbl(!L)|_ then
@@ -953,9 +957,35 @@ local
       end
    end
 in
-   proc {Assemble Code ProfileSwitch DebugInfoControlSwitch ?Assembler}
+   proc {Assemble Code Switches ?Assembler}
+      ProfileSwitch = {CondSelect Switches profile false}
+      DebugInfoControlSwitch = {CondSelect Switches debuginfocontrol false}
+      Verify = {CondSelect Switches verify true}
+      DoPeephole = {CondSelect Switches peephole true}
+   in
       Assembler = {New AssemblerClass
                    init(ProfileSwitch DebugInfoControlSwitch)}
-      {Peephole Code Assembler}
+      case DoPeephole then
+         {Peephole Code Assembler}
+      else
+         {ForAll Code
+          proc {$ Instr}
+             case Instr of lbl(I) then
+                {Assembler setLabel(I)}
+             else
+                {Assembler append(Instr)}
+             end
+          end}
+      end
+      case Verify then
+         {Assembler checkLabels()}
+      else skip
+      end
+   end
+
+   proc {DoAssemble Code Globals Switches ?P}
+      Assembler = {Assemble Code Switches}
+   in
+      {Assembler load(Globals ?P)}
    end
 end

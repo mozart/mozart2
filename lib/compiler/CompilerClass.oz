@@ -620,8 +620,14 @@ local
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
                Assembler = {Assemble Code
-                            CompilerStateClass, getSwitch(profile $)
-                            CompilerStateClass, getSwitch(debuginfocontrol $)}
+                            switches(profile:
+                                        (CompilerStateClass,
+                                         getSwitch(profile $))
+                                     debuginfocontrol:
+                                        (CompilerStateClass,
+                                         getSwitch(debuginfocontrol $))
+                                     verify: false
+                                     peephole: true)}
                case CompilerStateClass, getSwitch(ozma $) then
                   case GPNs of nil then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}

@@ -101,9 +101,6 @@ in
 
       % Interface
       Interface
-
-      % Assembler
-      Assemble
    in
       \insert FormatStrings
       \insert Reporter

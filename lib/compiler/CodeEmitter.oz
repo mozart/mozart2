@@ -1685,6 +1685,7 @@ in
          case @InExceptionHandler then false
          elsecase Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
+            andthen {Not self.debugInfoControlSwitch}
          then
             % This means that in a conditional, local environments may be
             % allocated per branch instead of for the procedure as a whole.

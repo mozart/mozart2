@@ -21,13 +21,14 @@ class WinToplevel
       BaseObject
 
    attr
-      toplevel %% TK Toplevel Window
-      frame    %% TK Widget Container
-      items    %% Internal Items
-      maxPtr   %% Current Items Count
-      divCount %% Item Division Counter
-      width    %% Current Width
-      height   %% Current Height
+      visible : true %% Tk Toplevel is visible
+      toplevel       %% TK Toplevel Window
+      frame          %% TK Widget Container
+      items          %% Internal Items
+      maxPtr         %% Current Items Count
+      divCount       %% Item Division Counter
+      width          %% Current Width
+      height         %% Current Height
 
    meth create(Width Height Title)
       Toplevel = @toplevel
@@ -68,6 +69,24 @@ class WinToplevel
                        anchor:    nw
                        relwidth:  1.0
                        relheight: 1.0)]}
+   end
+
+   meth hide
+      case @visible
+      then
+         {Tk.send wm(withdraw @toplevel)}
+         visible <- false
+      else skip
+      end
+   end
+
+   meth unhide
+      case @visible
+      then skip
+      else
+         {Tk.send wm(deiconify @toplevel)}
+         visible <- true
+      end
    end
 
    meth getFrame($)
@@ -417,9 +436,7 @@ class ButtonFrameNode
                        foreground:  'red4'
                        takefocus:   0
                        borderwidth: 1
-                       action:      proc {$}
-                                       {Access WidgetCell} = unit
-                                    end)}
+                       action:      Server # stopUpdate(1))}
 
       MW     = {Tk.returnInt winfo(reqwidth @moreB)}
       SW     = {Tk.returnInt winfo(reqwidth @stopB)}
@@ -464,7 +481,8 @@ class ScrollCanvasNode
       focDim    %% Focus Dimension
       widget    %% Tree Widget
       freezeVar %% FreezeVar
-      wThread   %% Adapter Thread (needed for stop)
+      wObj      %% Widget Object (needed for Stop)
+      wThread   %% Adapter Thread
 
    meth create(Toplevel XDim YDim)
       Frame          = {Toplevel getFrame($)}
@@ -505,8 +523,9 @@ class ScrollCanvasNode
       {Canvas tkBind(event: '<KeyPress-d>'
                      action: Server # delPane)}
 
-      @focDim         = 2
-      @widget|@wThread = {NewServer TrWidget create(Canvas CWidth CHeight)}
+      @focDim                  = 2
+      @widget|(@wObj|@wThread) = {NewServer
+                                  TrWidget create(Canvas CWidth CHeight)}
       {@widget setServer(@widget)}
 
       ScrollX  = {New Tk.scrollbar
@@ -550,6 +569,10 @@ class ScrollCanvasNode
 
    meth display(Value)
       {@widget display(Value)}
+   end
+
+   meth stopUpdate
+      {@wObj stopUpdate}
    end
 
    meth draw

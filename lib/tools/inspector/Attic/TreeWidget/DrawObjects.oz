@@ -54,6 +54,7 @@ define
    OpMan                    = SupportNodes.options
    ProxyNode                = SupportNodes.proxyNode
    BitmapTreeNode           = SupportNodes.bitmapTreeNode
+   NullNode                 = SupportNodes.nullNode
    InternalAtomNode         = SupportNodes.internalAtomNode
    GenericNode              = SupportNodes.genericNode
    RecordCreateObject       = CreateObjects.recordCreateObject

@@ -26,7 +26,6 @@ import
 
 export
    treeWidget : TreeWidget
-   widgetCell : WidgetCell
 
 define
    OpMan            = SupportNodes.options
@@ -34,8 +33,6 @@ define
    BitmapTreeNode   = SupportNodes.bitmapTreeNode
    InternalAtomNode = SupportNodes.internalAtomNode
    GenericNode      = SupportNodes.genericNode
-
-   WidgetCell = {NewCell _} %% necessary to access widget within TinyWinMan.oz
 
    \insert 'Create/CreateProcs.oz'
 
@@ -186,13 +183,11 @@ define
       end
 
       meth getStop($)
-         Value = {Access WidgetCell}
-      in
-         Value
+         @stopV
       end
 
-      meth setStop(Value)
-         @stopV = Value
+      meth stopUpdate
+         @stopV = unit
       end
 
       meth printXY(X Y String Tag Color)
@@ -224,7 +219,7 @@ define
          Node = TreeWidget, performCreation(Value self MaxPtr 0 $)
          maxPtr <- MaxPtr
          {Node layout}
-         case {IsFree TreeWidget, getStop($)}
+         case {IsFree @stopV}
          then {Dictionary.put Nodes MaxPtr Node}
          else
             Node = {New BitmapTreeNode
@@ -233,14 +228,24 @@ define
             {Node setRescueValue(Value)}
             {Node layout}
             {Dictionary.put Nodes MaxPtr Node}
-            {Assign WidgetCell _}
+            stopV <- _
          end
          RealNode = {Dictionary.get Nodes MaxPtr}
          {RealNode draw(1 @curY)}
-         YDim = {RealNode getYDim($)}
-         curY <- (@curY + YDim)
-         TreeWidget, moveCanvasView
-         %% {Wait {Tk.return update(idletasks)}}
+         case {IsFree @stopV}
+         then
+            YDim = {RealNode getYDim($)}
+            curY <- (@curY + YDim)
+            TreeWidget, moveCanvasView
+         elsecase {RealNode ignoreStop($)}
+         then
+            YDim = {RealNode getYDim($)}
+            curY <- (@curY + YDim)
+            TreeWidget, moveCanvasView
+            stopV <- _
+         else
+            stopV <- _
+         end
       end
 
       meth call(Obj Mesg)

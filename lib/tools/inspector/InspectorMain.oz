@@ -19,7 +19,7 @@ functor $
 import
    InspectorOptions
    SupportNodes('options')
-   TreeWidget('treeWidget' 'widgetCell')
+   TreeWidget('treeWidget')
    Tk
    TkTools
 
@@ -48,12 +48,11 @@ define
       end
       proc {$ M}
          {Port.send P M}
-      end|Id
+      end|(O|Id)
    end
 
    OpMan      = SupportNodes.'options'
    TrWidget   = TreeWidget.treeWidget
-   WidgetCell = TreeWidget.widgetCell
 
    \insert 'TinyWinMan.oz'
 
@@ -62,11 +61,10 @@ define
          WinToplevel
 
       attr
-         visible : true %% Inspector is Visible
-         mNode          %% InspectorMenuNode
-         bNode          %% ButtonFrameNode
-         cNode          %% (Scroll)CanvasNode
-         uArea          %% Used Area
+         mNode %% InspectorMenuNode
+         bNode %% ButtonFrameNode
+         cNode %% (Scroll)CanvasNode
+         uArea %% Used Area
 
       meth create
          XDim  = {OpMan get(inspectorWidth $)}
@@ -74,6 +72,7 @@ define
          UArea = @uArea
       in
          WinToplevel, create(XDim YDim 'Oz Inspector')
+         WinToplevel, hide
          @mNode = {New InspectorMenuNode create(self XDim 0)}
          @bNode = {New ButtonFrameNode create(self XDim 0 self)}
          UArea  = ({@mNode getYDim($)} + {@bNode getYDim($)})
@@ -82,12 +81,7 @@ define
       end
 
       meth inspect(Value)
-         case @visible
-         then skip
-         else
-            {Tk.send wm(deiconify @toplevel)}
-            visible <- true
-         end
+         WinToplevel, unhide
          {@cNode display(Value)}
       end
 
@@ -170,7 +164,7 @@ define
          D = {New TkTools.dialog
               tkInit(title:   'Preferences'
                      buttons: ['Query'  # proc {$}
-                                              {Server queryOptions(E1 E2)}
+                                             {Server queryOptions(E1 E2)}
                                           end
                                'Set'    # proc {$}
                                              {Server setOptions(E1 E2)}
@@ -364,6 +358,22 @@ define
             Inspector, adjustIndex((I + DeltaK))
             AddSpace = (DeltaY div @divCount)
             WinToplevel, tellNewXY(3 0 AddSpace)
+         end
+      end
+
+      meth stopUpdate(I)
+         case I =< @maxPtr
+         then
+            Node = {Dictionary.get @items I}
+            Type = {Node getType($)}
+         in
+            case Type
+            of canvasNode then
+               {Node stopUpdate}
+            else skip
+            end
+            Inspector, stopUpdate((I + 1))
+         else skip
          end
       end
 

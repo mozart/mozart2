@@ -623,17 +623,19 @@ local
                   else
                      P = P0
                   end
-                  if CompilerStateClass, getSwitch(threadedqueries $) then
+                  local
                      OPI = {Property.condGet 'opi.compiler' false}
                   in
-                     {@reporter
-                      startSubPhase('executing in an independent thread')}
                      if OPI \= false
                         andthen {OPI getNarrator($)} == @narrator
                      then
                         %% this helps Ozcar detect queries from the OPI:
                         {Debug.setId {Thread.this} 1}
                      end
+                  end
+                  if CompilerStateClass, getSwitch(threadedqueries $) then
+                     {@reporter
+                      startSubPhase('executing in an independent thread')}
                      thread {P} end
                   else
                      {@reporter
@@ -664,17 +666,12 @@ local
          T Completed Exceptionless RaiseOnBlock
       in
          T = {Thread.this}
-         thread OPI in
+         thread
             ExecutingThread <- {Thread.this}
             if IsCompilerThread
                andthen CompilerStateClass, getSwitch(watchdog $)
             then
                {Debug.setRaiseOnBlock {Thread.this} true}
-            end
-            OPI = {Property.condGet 'opi.compiler' false}
-            if OPI \= false andthen {OPI getNarrator($)} == @narrator then
-               %% this helps Ozcar detect queries from the OPI:
-               {Debug.setId {Thread.this} 1}
             end
             try
                {P}

@@ -3394,8 +3394,7 @@ define
       end
       meth getFullData(D IsData $)
          if IsData then @value
-         elseif {IsVirtualString @value} then @value
-         else {System.printName @value}
+         else @value
          end
       end
       meth getLastValue($)
@@ -3891,9 +3890,7 @@ define
          {@value getValue($)}
       end
       meth getFullData(D IsData $)
-         if
-            {HasFeature @value ImAVariableOccurrence}
-         then
+         if {HasFeature @value ImAVariableOccurrence} then
             if IsData then _
             else   % dummy variable with right print name
                case {@variable getPrintName($)} of unit then _
@@ -4078,7 +4075,8 @@ define
       end
       meth getFullData(D IsData $)
          if IsData then self
-         else @value end
+         else @value
+         end
       end
       meth isRecordConstr($)
          false

@@ -27,8 +27,6 @@ fun
    {NewCompiler IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
-   \insert 'OP.env'
-   = IMPORT.'OP'
    \insert 'CP.env'
    = IMPORT.'CP'
 in

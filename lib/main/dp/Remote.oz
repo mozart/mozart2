@@ -137,19 +137,16 @@ define
          self.Ctrl = CtrlRet.1
       end
 
-      meth AsyncSend(Which What ?Ret)
-         OldS NewS
+      meth SyncSend(Which What)
+         OldS Answer NewS
       in
          lock
             OldS = (Which <- NewS)
             {Port.send self.Which What}
          end
-         %% mm2: OldS is a future, needs thread to be async!
-         thread Ret|NewS = OldS end
-      end
-
-      meth SyncSend(Which What)
-         case {self AsyncSend(Which What $)}
+         %% might block, since OldS might be future
+         Answer|NewS = OldS
+         case Answer
          of okay         then skip
          [] exception(E) then
             raise E end
@@ -177,7 +174,9 @@ define
       end
 
       meth close
-         ManagerProxy,AsyncSend(Ctrl close _)
+         lock
+            {Port.send self.Ctrl close}
+         end
          {self.Pipe close}
       end
 

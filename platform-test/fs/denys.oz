@@ -49,10 +49,55 @@ define
        end nil _}
       {FS.distribute naive L}
    end
+   fun {SetBounds S}
+      {FS.reflect.lowerBoundList S}#{FS.reflect.upperBoundList S}
+   end
    Return = fs([denys(entailed(proc {$}
                                   Ss={Search.base.all BugSolution}
                                in
                                   {Length Ss}=20
                                end)
-                      keys: [space fs])])
+                      keys: [space fs])
+                seq3(
+                   proc {$}
+                      case {Search.base.one
+                            proc {$ L}
+                               S1={FS.var.upperBound 1#5}
+                               S2={FS.var.upperBound 1#5}
+                               S3={FS.var.upperBound 1#5}
+                            in
+                               L=[S1 S2 S3]
+                               {FS.int.seq L}
+                               {FS.cardRange 1 5 S1}
+                               {FS.cardRange 1 5 S3}
+                            end}
+                      of [[S1 S2 S3]] then
+                         case {SetBounds S1}#{SetBounds S2}#{SetBounds S3}
+                         of (nil#[1 2 3 4])#(nil#[2 3 4])#(nil#[2 3 4 5])
+                         then skip else
+                            raise fs_denys_seq3 end
+                         end
+                      end
+                   end
+                   keys:[fs])
+                seq(
+                   proc {$}
+                      case {Search.base.one
+                            proc {$ L}
+                               S1={FS.var.upperBound 1#2}
+                               S2={FS.var.upperBound 1#2}
+                            in
+                               L=[S1 S2]
+                               {FS.cardRange 1 1 S1}
+                               {FS.cardRange 1 1 S2}
+                               {FS.int.seq [S1 S2]}
+                            end}
+                      of [[S1 S2]] then
+                         case {SetBounds S1}#{SetBounds S2}
+                         of ([1]#[1])#([2]#[2]) then skip
+                         else raise fs_denys_seq end end
+                      end
+                   end
+                   keys:[fs])
+               ])
 end

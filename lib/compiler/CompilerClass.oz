@@ -753,7 +753,7 @@ in
          end
       end
       meth TellQueue(Qs P)
-         if {IsDet Qs} then Id#M|Qr = Qs in
+         if {IsDet Qs} then Id#M#_|Qr = Qs in
             {Send P newQuery(Id M)}
             Engine, TellQueue(Qr P)
          end

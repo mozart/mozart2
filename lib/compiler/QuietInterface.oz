@@ -55,8 +55,18 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
             OutputVS = ""
          end
          case OutputVS of "" then skip
-         elsecase @Verbose then {System.printError OutputVS}
-         else AccVS <- @AccVS#OutputVS
+         elsecase @Verbose of true then
+            {System.printError OutputVS}
+         [] auto then
+            case @HasBeenTopped then
+               {System.printError @AccVS#OutputVS}
+               AccVS <- ""
+               Verbose <- true
+            else
+               AccVS <- @AccVS#OutputVS
+            end
+         else
+            AccVS <- @AccVS#OutputVS
          end
          CompilerInterfaceQuiet, Serve(Mr)
       end

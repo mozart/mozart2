@@ -8,5 +8,5 @@ export
    GetBuiltinName
    ConcatenateAtomAndInt
 body
-   \insert Misc
+   \insert 'Misc.oz'
 end

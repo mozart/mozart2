@@ -53,7 +53,7 @@ local
          % numbering must respect the partial order
          {ForAll Spec
           proc {$ A#B}
-             N2I.A >: N2I.B
+             {FD.less N2I.B N2I.A}
           end}
 
          % numbering must be one-one

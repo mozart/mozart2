@@ -277,7 +277,7 @@ in
    fun {GenChunkPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Ch>'
-      else '<Chunk: ' # {System.printName Term} # '>'
+      else '<Chunk>'
       end
    end
 
@@ -285,7 +285,7 @@ in
    fun {GenDictionaryPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Dict>'
-      else '<Dict: ' # {System.printName Term} # '>'
+      else '<Dict>'
       end
    end
 
@@ -293,7 +293,7 @@ in
    fun {GenArrayPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Array>'
-      else '<Array: ' # {System.printName Term} # '>'
+      else '<Array>'
       end
    end
 
@@ -301,7 +301,7 @@ in
    fun {GenPortPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Port>'
-      else '<Port: ' # {System.printName Term} # '>'
+      else '<Port>'
       end
    end
 
@@ -309,7 +309,7 @@ in
    fun {GenLockPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Lock>'
-      else '<Lock: ' # {System.printName Term} # '>'
+      else '<Lock>'
       end
    end
 
@@ -325,7 +325,7 @@ in
    fun {GenSpacePrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Space>'
-      else '<Space: ' # {System.printName Term} # '>'
+      else '<Space>'
       end
    end
 
@@ -335,7 +335,7 @@ in
    fun {GenObjPrintName Term Store}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.printName Term}
+         PN = {System.printName {Class.get Term}}
 
          %%
          case AreSmallNames then
@@ -449,24 +449,7 @@ in
          CN = {System.printName Term}
 
          %%
-         case AreSmallNames then
-            case CN
-            of '' then '<Cell>'
-            [] '_' then '<Cell>'
-            else PNS SN in
-               PNS = {Atom.toString CN}
-
-               %%
-               SN =
-               {StripName case PNS.1 of &` then {StripBQuotes PNS}
-                          else PNS
-                          end}
-
-               %%
-               case SN of nil then '<C>'
-               else '<Cell: ' # SN # '>'
-               end
-            end
+         case AreSmallNames then '<Cell>'
          else '<Cell @ ' # {AddrOf Term} # '>'
          end
       end

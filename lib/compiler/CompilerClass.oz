@@ -97,8 +97,7 @@ local
                               %%
                               runwithdebugger: false
                               debuginfocontrol: false
-                              debuginfovarnames: false
-                              debuginfonamevars: false)
+                              debuginfovarnames: false)
 
    InterruptException = {NewName}
 

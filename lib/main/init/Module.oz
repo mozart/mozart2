@@ -225,18 +225,21 @@ in
                 of system  then SystemHomeUrl
                 [] contrib then ContribHomeUrl
                 else raise badUrl end end
-                case {CondSelect Url path unit}
-                of abs(L) then
+                case {CondSelect Url path nil}
+                of (_|_)=L then
                    L1 = {Reverse L}
                    L2 =
-                   case L1 of (Last#Bool)|Prefix then
-                      if {Member &. Last} then L
-                      else {Reverse ({VirtualString.toString
-                                      Last#FunctorExt}#Bool)|Prefix} end
+                   case L1 of H|T then
+                      if {Member &. H} then L
+                      else {Reverse {VirtualString.toString
+                                     H#FunctorExt}|T} end
                    else raise badUrl end end
                 in
-                   {Adjoin Url url(scheme:unit authority:unit
-                                   path:rel(L2))}
+                   {Adjoin Url url(scheme    : unit
+                                   authority : unit
+                                   device    : unit
+                                   absolute  : false
+                                   path      : L2)}
                 else raise badUrl end end}
             catch badUrl then
                raise error(module(urlSyntax {UrlToAtom Url})) end
@@ -255,7 +258,7 @@ in
 
          meth GetSystemName(Url $)
             case {CondSelect Url path unit}
-            of abs([Name#false]) then
+            of [Name] then
                %% drop the extension of any
                {String.token Name &. $ _}
             else

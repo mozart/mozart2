@@ -33,28 +33,24 @@ local
 
    fun {Expand Base DIR Rel}
       %% Base should contain an absolute path
-      case {CondSelect Base path unit} of abs(L) then
-         N = {List.length L}
+      Path = {CondSelect Base path nil}
+   in
+      if {CondSelect Base absolute false} andthen Path\=unit
+      then
+         N = {List.length Path}
       in
          %% this path should usually be non-empty
          if N==0 then
             %% if empty, then Base dir is just "/"
-            {AdjoinAt Rel path abs(Rel.path.1)}
+            {AdjoinAt Rel absolute true}
          else
             %% the last component of this path needs special treatment
-            Front Last {List.takeDrop L N-1 Front [Last]}
-            Path =
-            case Last of C#false then
-               if C==nil then
-                  %% Base ends with a slash: drop the empty component
-                  {Append Front DIR}
-               else
-                  %% last component C must now be followed by a slash
-                  {Append Front (C#true)|DIR}
-               end
-            else raise urlbug end end
+            Front Last {List.takeDrop Path N-1 Front [Last]}
+            PATH = {Append Front
+                    %% if Base ends with a slash: drop the empty component
+                    if Last==nil then DIR else Last|DIR end}
          in
-            {AdjoinAt Rel path abs({UrlNormalizePath Path})}
+            {Adjoin Rel url(absolute:true path:{UrlNormalizePath PATH})}
          end
       else Rel end
    end
@@ -63,23 +59,18 @@ in
    fun {URL_expand Url}
       U = {UrlMake Url}
    in
-      if {HasFeature U scheme   } orelse
-         {HasFeature U authority} orelse
-         {HasFeature U device   }
+      if {CondSelect U scheme    unit}\=unit orelse
+         {CondSelect U authority unit}\=unit orelse
+         {CondSelect U device    unit}\=unit
       then U else
          case {CondSelect U path unit}
-         of rel((&~|USER)#_|DIR) then
-            {Expand
-             {UrlMake
-              if USER==nil then {GET 'user.home'}
-              else {OS.getpwnam USER}.dir end}
+         of (&~|USER)|DIR then
+            {Expand {UrlMake
+                     if USER==nil then {GET 'user.home'}
+                     else {OS.getpwnam USER}.dir end}
              DIR U}
-         elseof rel(DIR=((C#_)|_)) then
-            if C=="." orelse C==".." then
-               {Expand
-                {UrlMake {OS.getCWD}}
-                DIR U}
-            else U end
+         [] DIR=(H|_) andthen (H=="." orelse H=="..") then
+            {Expand {UrlMake {OS.getCWD}} DIR U}
          else U end
       end
    end

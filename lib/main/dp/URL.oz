@@ -1,52 +1,35 @@
-%%%
-%%% Author:
-%%%   Denys Duchier <duchier@ps.uni-sb.de>
-%%%   Christian Schulte <schulte@ps.uni-sb.de>
-%%%
-%%% Copyright:
-%%%   Denys Duchier, 1998
-%%%   Christian Schulte, 1998
-%%%
-%%% Last change:
-%%%   $Date$ by $Author$
-%%%   $Revision$
-%%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
-%%%    http://www.mozart-oz.org
-%%%
-%%% See the file "LICENSE" or
-%%%    http://www.mozart-oz.org/LICENSE.html
-%%% for information on usage and redistribution
-%%% of this file, and for a DISCLAIMER OF ALL
-%%% WARRANTIES.
-%%%
-
-
 %%% ==================================================================
-%%%                          URL LIBRARY
+%%%                           URL LIBRARY
 %%% ==================================================================
 %%%
-%%% This library provides facilities for the manipultion of URLs and
+%%% This library provides facilities for the manipulation of URLs and
 %%% filenames.  It supports both Unix and Windows syntax where they do
 %%% not conflict.  There are no plans to ever support VMS's strange
 %%% filename syntax.
 %%%
 %%% HISTORY
 %%%
-%%% The first implementation of such a library was written by
-%%% Christian Schulte for his `Module Manager' facility.  It has been
-%%% entirely rewritten by Denys Duchier to add various extensions such
-%%% as support for Windows-style filenames.  The new implementation
-%%% also improves the theoretical complexity, although not necessarily
-%%% the performance.
+%%% * 1ST IMPLEMENTATION
+%%% The 1st implementation of such a library was written by Christian
+%%% Schulte for his `Module Manager' facility.
+%%% * 2nd IMPLEMENTATION
+%%% It was entirely rewritten by Denys Duchier to add various
+%%% extensions such as support for Windows-style filenames.  That 2nd
+%%% implementation also improved the theoretical complexity, although
+%%% not necessarily the performance.  What was definitely improved was
+%%% the correctness: the library now conforms to URI syntax as defined
+%%% in the IETF draft (see below).
+%%% * 3rd IMPLEMENTATION
+%%% The 3rd implementation is a clean-up of the 2nd one.  The
+%%% representation is rationalized and simplified.  Minor problems are
+%%% fixed.  The performance is improved measurably.
 %%%
-%%% What is definitely improved is the correctness: the library now
-%%% fully conforms to URI syntax as defined in IETF draft "Uniform
-%%% Resource Identifiers (URI): Generic Syntax" by T. Berners-Lee,
-%%% R. Fielding, and L. Masinter, of June 4, 1998, available at
-%%% http://search.ietf.org/internet-drafts/draft-fielding-uri-syntax-03.txt
-%%% and passes all 5 test suites published by Roy Fielding.
+%%% The library fully conforms to URI syntax as defined in RFC 2396
+%%% "Uniform Resource Identifiers (URI): Generic Syntax" by T.
+%%% Berners-Lee, R. Fielding, and L. Masinter, of August 1998,
+%%% available at: ftp://ftp.isi.edu/in-notes/rfc2396.txt
+%%% and passes all 5 test suites published by Roy Fielding (see
+%%% http://www.ics.uci.edu/~fielding/url/test{1,2,3,4,5}.html)
 %%%
 %%% The only derogations to said specification are made to accommodate
 %%% Windows-style filenames: (1) a prefix of the form "C:" where C is
@@ -57,55 +40,65 @@
 %%% too is compatible since non-separator forward and backward slashes
 %%% ought to be otherwise `escape encoded'.
 %%%
-%%% There is additionally a further experimental extension: all urls
+%%% There is additionally a further expereimental extension: all urls
 %%% may be suffixed by a string of the form "{foo=a,bar=b}".  This
-%%% adds an info record to the parsed representation of the url.  This
+%%% adds an info record to the parsed representation or the url.  This
 %%% record is here info(foo:a bar:b).  Thus properties can be attached
 %%% to urls.  For example, we may indicate that a url denotes a native
 %%% functor thus: file:/foo/bar/baz.so{native}.  Here {native} is
-%%% equivalent to {native=}, i.e. info record is info(native:'').
+%%% equivalent to {native=}, i.e. the info record is info(native:'').
 %%%
-%%% INTERFACE
+%%% API
 %%%
 %%% {URL.make LOC}
 %%%     parses virtual string LOC according to the proposed URI syntax
 %%% modulo Windows-motivated derogations (see above).  Local filename
 %%% syntax is a special case of schemeless uri.  The parsed
-%%% representation of a url is a non-empty record whose features hold
-%%% the various parts or the url.  We speak of url records and url
-%%% vstrings: the former being the parsed representation of the latter.
-%%% A url record must be non-empty to distibguish it from the url
-%%% vstring consisting of the atom 'url'. The empty url record can be
-%%% written e.g. url(unit).  LOC may also be a url record, in which
-%%% case it is simply returned.
+%%% representation of a url is a record whose features hold the
+%%% various parts of the url.  We speak of url `records' and url
+%%% `vstrings': to former being the parsed representation of the
+%%% latter.  A url record has label 'url' and must be non-empty to
+%%% distinguish it from the the url vstring consisting of the atom
+%%% 'url'.  The empty url record can be written e.g. url(unit).  LOC
+%%% may also be a url record, in which case it is simply returned.
 %%%
 %%% {URL.is X}
-%%%     returns true iff X is a non-empty record labeled with 'url'.
+%%%     returns true iff X is a non-empty record with label 'url'.
 %%%
 %%% {URL.toVirtualString X}
-%%%     X may be a url record or vstring.  The corresponding normalized
-%%% vstring representation is returned. #FRAGMENT and {INFO} segments
-%%% are not included (see below).  This is appropriate for retrieval
-%%% since fragment and info sections are meant for client-side usage.
+%%%     X may be a url record or vstring.  The corresponding
+%%% normalized vstring representation is returned.  #FRAGMENT and
+%%% {INFO} sections are not included (see below).  This is appropriate
+%%% for retrieval since fragment and info sections are meant for
+%%% client-side usage.
 %%%
 %%% {URL.toVirtualStringExtended X HOW}
-%%%     Similar to the above, but HOW is a record with optional boolean
-%%% features `full' and `cache'.  `full:true' indicates that #FRAGMENT
-%%% and {INFO} sections should be included if present. `cache:true'
-%%% requests that cache-style syntax be used: the `:' following the
-%%% scheme and the `//' preceding the authority are both replaced by
-%%% single `/'.
+%%%     Similar to the above, but HOW is a record with optional
+%%% features to parametrize the conversion process.
+%%% `full:true'
+%%%     indicates that full information is desired, including
+%%%     #FRAGMENT and {INFO} sections.
+%%% `cache:true'
+%%%     indicates that a syntax appropriate for cache lookup is
+%%%     desired.  the `:' after the scheme and the '//' before the
+%%%     authority are in both cases replaced by a single `/'.
+%%% `raw:true'
+%%%     indicates that no encoding should take place, i.e. special
+%%%     url characters are not escaped
 %%%
 %%% {URL.toString X}
-%%%     calls URL.toVs and transforms the result to a string
+%%%     transforms the result of URL.toVirtualString to a string
 %%%
 %%% {URL.toAtom X}
-%%%     calls URL.toVs and transforms the result to an atom
+%%%     transforms the result of URL.toVirtualString to an atom
 %%%
 %%% {URL.resolve BASE REL}
 %%%     BASE and REL are url records or vstrings.  REL is resolved
 %%% relative to BASE and a new url record is returned with the
-%%% approprate fields filled in.
+%%% appropriate fields filled in.  If REL is not a relative url, it
+%%% is simply returned unchanged.  Otherwise, the full path is
+%%% computed by dropping the last component of BASE's path and
+%%% appending REL's path.
 %%%
 %%% BUGS AND LIMITATIONS
 %%%
@@ -119,13 +112,13 @@
 %%% CLARIFICATIONS
 %%%
 %%% The draft standard is ambiguous: in a relative uri, the leading
-%%% segment is allowed to contain occurrences of `;'.  Is the parameter
-%%% parsing semantics as usual or not?.  Roy Fielding provided a
-%%% clarification by email: it's business as usual.  The apparent
-%%% difference was intended to emphacize that the parameter is to be
-%%% treated like the rest of the segment when resolving relative uris.
-%%% ... in my opiniion, this makes things less clear rather than
-%%% clearer.
+%%% segment is allowed to contain occurrences of `;'.  Is the
+%%% parameter parsing semantics as usual or not?.  Roy Fielding
+%%% provided a clarification by email: it's business as usual.  The
+%%% apparent difference was intended to emphacize that the parameter
+%%% is to be treated like the rest of the segment when resolving
+%%% relative uris.  ... in my opiniion, this makes things less clear
+%%% rather than clearer.
 %%%
 %%% MISCELLANEOUS
 %%%
@@ -138,295 +131,54 @@
 %%%          DEVICE:PATH?QUERY#FRAGMENT{INFO}
 %%%
 %%% ==================================================================
-
 functor
-
 export
-   is:                      URL_is
-   make:                    URL_make
-   toVirtualString:         URL_toVS
-   toVirtualStringExtended: URL_VS
-   toString:                URL_toString
-   toAtom:                  URL_toAtom
-   resolve:                 URL_resolve
-   normalizePath:           NormalizePath
-   isAbsolute:              URL_isAbsolute
-   isRelative:              URL_isRelative
-   toBase:                  URL_toBase
-
+   is                           : URL_is
+   make                         : URL_make
+   toVirtualString              : URL_toVS
+   toVirtualStringExtended      : URL_vs
+   toString                     : URL_toString
+   toAtom                       : URL_toAtom
+   resolve                      : URL_resolve
+   normalizePath                : NormalizePath
+   isAbsolute                   : URL_isAbsolute
+   isRelative                   : URL_isRelative
+   toBase                       : URL_toBase
 prepare
-
-   CharToLower          = Char.toLower
-
-   %% a URL value is simply a record with label 'url' and at least one
-   %% feature: this is to distinguish the empty URL value and the
-   %% URL notation consisting of the single symbol url (i.e. to denote
-   %% a relative file named 'url').  For example, the empty URL value
-   %% can be written url(unit).
+   ToLower = Char.toLower
+   ToRecord = List.toRecord
+   Tokens = String.tokens
+   Token  = String.token
+   ToAtom = VirtualString.toAtom
+   ToString = VirtualString.toString
+   ToTuple = List.toTuple
+   fun {INFO_ELT S}
+      Prop Value
+   in
+      {Token S &= Prop Value}
+      {ToAtom Prop}#{ToAtom Value}
+   end
 
    fun {URL_is X}
-      {IsRecord X}      andthen
-      {Label    X}==url andthen
-      {Width    X} >0
+      %% a url record has label 'url' and must be non-empty to
+      %% distinguish it from the url vstring consisting of the
+      %% atom 'url'.  an empty url record can be written e.g.
+      %% url(unit)
+      X\=url andthen {IsRecord X} andthen {Label X}==url
    end
 
-   %% split a string at the 1st occurrence of a separator character.
-   %% return the 2 halves as Prefix and Suffix and the separator
-   %% character itself as Sep.  The set of admissible separator
-   %% characters is specified with a bitString.  If the input is
-   %% exhausted without finding a separator character, Prefix contains
-   %% the whole string, Suffix is nil, and Sep is unit.
+   LEVEL_START     = 4
+   LEVEL_AUTHORITY = 3
+   LEVEL_PATH      = 3
+   LEVEL_QUERY     = 2
+   LEVEL_FRAGMENT  = 1
 
-   proc {Split S Charset Prefix Suffix Sep}
-      case S of nil then Prefix=Suffix=nil Sep=unit
-      [] H|T then
-         if {BitString.get Charset H} then
-            Sep=H Prefix=nil Suffix=T
-         else More in
-            Prefix=H|More
-            {Split T Charset More Suffix Sep}
-         end
-      end
-   end
+   CharIsAlNum = Char.isAlNum
 
-   %% Christian's original parser used String.token repeatedly and
-   %% thus ended up traversing and copying the string several times.
-   %% This new parser traverses the string only once and uses character
-   %% sets represented as bit strings to recognize the crucial
-   %% characters that determine the breaking points in a url.
+define
 
-   %% This parser is a state machine, with 6 states, each of which is
-   %% implemented by a procedure:
-   %%
-   %% START             the initial state: what is at the front of the
-   %%                   url is disambiguated by the 1st separator we
-   %%                   find or the eos
-   %% AUTHORITY         entered when we encounter the // thing
-   %% PATH              recognize the next path component
-   %% QUERY             after `?'
-   %% FRAGMENT          after `#'
-   %% INFO              after `{'
-
-   Charset_START        = {BitString.make 256 "/\\:?#{"}
-   Charset_PATH         = {BitString.make 256  "/\\?#{"}
-   Charset_QUERY        = {BitString.make 256      "#{"}
-   Charset_FRAGMENT     = {BitString.make 256       "{"}
-
-
-   fun {URL_make LOC}
-      if {URL_is LOC} then LOC else
-
-         Data = {Dictionary.new}
-         %% Absolute indicates whether the path section of the url
-         %% begins with a slash
-         Absolute
-
-         proc {PUT Prop Value}
-            {Dictionary.put Data Prop Value}
-         end
-
-         proc {PUSHPath Value}
-            {Dictionary.put Data path
-             Value|{Dictionary.condGet Data path nil}}
-         end
-
-         proc {START L}
-            Prefix Suffix
-         in
-            case {Split L Charset_START Prefix Suffix}
-            of unit then
-               %% -- we hit the end without finding a separator
-               Absolute=false
-               {PUT path [{Decode Prefix}#false]}
-            [] &: then
-               %% -- we found the scheme or device separator
-               case Prefix of [C] then
-                  %% -- this is a device (1 char): downcase it
-                  {PUT device [{Char.toLower C}]}
-                  %% -- does the path begin with a slash?
-                  case Suffix of H|T then
-                     if H==&/ orelse H==&\\ then
-                        Absolute=true
-                        {PATH T}
-                     else
-                        Absolute=false
-                        {PATH Suffix}
-                     end
-                  else skip end
-               else
-                  %% -- it is a scheme: downcase it
-                  {PUT scheme {Map Prefix CharToLower}}
-                  %% -- check for //authority
-                  case Suffix of H1|T1 then
-                     if H1==&/ then
-                        case T1 of H2|T2 then
-                           if H2==&/ then
-                              %% -- found //, expect authority
-                              {AUTHORITY T2}
-                           else
-                              %% -- absolute path
-                              Absolute=true
-                              {PATH T1}
-                           end
-                        else
-                           %% -- empty path ends with a slash
-                           Absolute=true
-                        end
-                     else
-                        %% -- path does not begin with a slash
-                        Absolute=false
-                        {PATH Suffix}
-                     end
-                  else skip end %% nothing left
-               end
-            [] &/ then
-               %% -- Unix path separator
-               case Prefix of nil then
-                  %% -- slash at start: check for //authority
-                  case Suffix of H|T then
-                     if H==&/ then
-                        {AUTHORITY T}
-                     else
-                        Absolute=true
-                        {PATH Suffix}
-                     end
-                  else
-                     Absolute=true
-                  end
-               else
-                  %% -- prefix is 1st relative component
-                  Absolute=false
-                  {PUSHPath {Decode Prefix}#true}
-                  {PATH Suffix}
-               end
-            [] &\\ then
-               %% -- Windows path separator
-               case Prefix of nil then
-                  %% -- slash at front
-                  Absolute=true
-                  {PATH Suffix}
-               else
-                  %% -- prefix is 1st relative component
-                  Absolute=false
-                  {PUSHPath {Decode Prefix}#true}
-                  {PATH Suffix}
-               end
-            [] &? then
-               case Prefix of nil then skip else
-                  Absolute=false
-                  {PUSHPath {Decode Prefix}#false}
-               end
-               {QUERY Suffix}
-            [] &# then
-               case Prefix of nil then skip else
-                  Absolute=false
-                  {PUSHPath {Decode Prefix}#false}
-               end
-               {FRAGMENT Suffix}
-            [] &{ then
-               case Prefix of nil then skip else
-                  Absolute=false
-                  {PUSHPath {Decode Prefix}#false}
-               end
-               {INFO Suffix}
-            end
-         end
-
-         proc {AUTHORITY L}
-            Prefix Suffix Sep
-         in
-            {Split L Charset_PATH Prefix Suffix Sep}
-            {PUT authority {Map Prefix CharToLower}}
-            case Sep
-            of unit then skip
-            [] &/  then Absolute=true {PATH Suffix}
-            [] &\\ then Absolute=true {PATH Suffix}
-            [] &?  then {QUERY    Suffix}
-            [] &#  then {FRAGMENT Suffix}
-            [] &{  then {INFO     Suffix}
-            else raise urlbug end
-            end
-         end
-
-         proc {PATH L}
-            Prefix Suffix Sep Slash
-         in
-            {Split L Charset_PATH Prefix Suffix Sep}
-            {PUSHPath {Decode Prefix}#Slash}
-            case Sep
-            of unit then Slash=false
-            [] &/   then Slash=true  {PATH     Suffix}
-            [] &\\  then Slash=true  {PATH     Suffix}
-            [] &?   then Slash=false {QUERY    Suffix}
-            [] &#   then Slash=false {FRAGMENT Suffix}
-            [] &{   then Slash=false {INFO     Suffix}
-            else raise urlbug end
-            end
-         end
-
-         proc {QUERY L}
-            Prefix Suffix Sep
-         in
-            {Split L Charset_QUERY Prefix Suffix Sep}
-            {PUT query Prefix}
-            case Sep
-            of unit then skip
-            [] &#   then {FRAGMENT Suffix}
-            [] &{   then {INFO     Suffix}
-            else raise urlbug end
-            end
-         end
-
-         proc {FRAGMENT L}
-            Prefix Suffix Sep
-         in
-            {Split L Charset_FRAGMENT Prefix Suffix Sep}
-            {PUT fragment Prefix}
-            case Sep of unit then skip else
-               {INFO Suffix}
-            end
-         end
-
-         proc {INFO L}
-            case {Reverse L} of &}|L then
-               {PUT info
-                {List.toRecord info
-                 {Map {String.tokens {Reverse L} &,} INFO_elt}}}
-            else raise urlbad end end
-         end
-
-         fun {INFO_elt S}
-            Prop Value
-         in
-            {String.token S &= Prop Value}
-            {String.toAtom Prop}#{String.toAtom Value}
-         end
-
-         %% parse
-
-         {START {VirtualString.toString LOC}}
-
-         %% now normalize the results
-         if {IsDet Absolute} then
-            Path = {Dictionary.condGet Data path nil}
-            Lab  = if Absolute then abs else rel end
-         in
-            %% -- path was accumulated in reverse order
-            %% -- it also needs to be normalized with
-            %% -- respect to `.' and `..'
-            {Dictionary.put Data path
-                Lab({NormalizePath {Reverse Path}})}
-         end
-
-         URLValue = {Dictionary.toRecord url Data}
-
-      in
-         if URLValue==url then url(unit) else URLValue end
-      end
-   end
-
-   %% for truly normalizing a url, we need to `decode' the components
-   %% of its path
+   %% a url may contain occurrences of %XY escape sequences
+   %% Here is how to decode them
 
    local
       D = x(&0:0 &1:1 &2:2 &3:3 &4:4 &5:5 &6:6 &7:7 &8:8 &9:9
@@ -445,192 +197,374 @@ prepare
       end
    end
 
-   %% a path is represented by a sequence of COMP#SLASH where COMP is
-   %% a string and SLASH is a boolean indicating whether it was
-   %% followed by a slash.  Normalizing a path is the proce of
-   %% eliminating occurrences of path components "." and ".." by
-   %% interpreting them relative to the stack of path components.
-   %% This algorithm is due to Christian.  I modified it to handle
-   %% pairs COMP#SLASH and to not throw out a leading "." because
-   %% ./foo and foo should be treated differently: the first one
-   %% is really an absolute path, whereas the second one is relative.
+   proc {SPLIT S Level Prefix Sep Suffix}
+      case S
+      of nil      then Prefix=Suffix=nil Sep=unit
+      [] &{ |T    then Prefix=nil Sep=&{ Suffix=T
+      [] &# |T andthen Level>1 then Prefix=nil Sep=&#  Suffix=T
+      [] &? |T andthen Level>2 then Prefix=nil Sep=&?  Suffix=T
+      [] &\\|T andthen Level>2 then Prefix=nil Sep=&\\ Suffix=T
+      [] &/ |T andthen Level>2 then Prefix=nil Sep=&/  Suffix=T
+      [] &: |T andthen Level>3 then Prefix=nil Sep=&:  Suffix=T
+      [] H  |T    then More in
+         Prefix=H|More
+         {SPLIT T Level More Sep Suffix}
+      end
+   end
+
+   fun {PARSE S}
+      URL = {START {ToString S}
+             url(scheme    : unit
+                 authority : unit
+                 device    : unit
+                 absolute  : false
+                 path      : nil
+                 query     : unit
+                 fragment  : unit
+                 info      : unit)}
+   in
+      {AdjoinAt URL path {NormalizePath {Reverse URL.path}}}
+   end
+
+   fun {URL_make X}
+      if {URL_is X} then X else {PARSE X} end
+   end
+
+   fun {START L URL}
+      Prefix Sep Suffix
+   in
+      {SPLIT L LEVEL_START Prefix Sep Suffix}
+      case Sep
+      of unit then
+         %% we hit then end without finding a separator
+         {AdjoinAt URL path [{Decode Prefix}]}
+      [] &: then
+         %% we found the scheme or device separator
+         case Prefix of [C] then
+            %% this is a device (1 char)
+            URL2 = {AdjoinAt URL device {ToLower C}}
+         in
+            %% does the path begin with a slash?
+            case Suffix of H|T then
+               if H==&/ orelse H==&\\ then
+                  {PATH T {AdjoinAt URL2 absolute true}}
+               else
+                  {PATHDEV Suffix URL2}
+               end
+            else URL2 end
+         else
+            %% it is a scheme: downcase it
+            URL2 = {AdjoinAt URL scheme {Map Prefix ToLower}}
+         in
+            %% check for authority
+            case Suffix
+            of &/|&/|T then {AUTHORITY T URL2}
+            [] &/   |T then
+               {PATH T {AdjoinAt URL2 absolute true}}
+            else {PATHDEV Suffix URL2} end
+         end
+      [] &/ then
+         %% unix path separator
+         case Prefix of nil then
+            %% slash at start: check for //authority
+            case Suffix
+            of &/|T then {AUTHORITY T URL}
+            else
+               {PATH Suffix {AdjoinAt URL absolute true}}
+            end
+         else
+            %% Prefix is 1st relative component
+            {PATH Suffix {AdjoinAt URL path [{Decode Prefix}]}}
+         end
+      [] &\\ then
+         %% windows path separator
+         case Prefix of nil then
+            %% slash at front
+            {PATH Suffix {AdjoinAt URL absolute true}}
+         else
+            %% Prefix is 1st relative component
+            {PATH Suffix {AdjoinAt URL path [{Decode Prefix}]}}
+         end
+      [] &? then
+         {QUERY Suffix
+          if Prefix\=nil
+          then {AdjoinAt URL path [{Decode Prefix}]} else URL end}
+      [] &# then
+         {FRAGMENT Suffix
+          if Prefix==nil then URL
+          else {AdjoinAt URL path {Decode Prefix}|URL.path} end}
+      [] &{ then
+         {INFO Suffix
+          if Prefix\=nil
+          then {AdjoinAt URL path [{Decode Prefix}]} else URL end}
+      end
+   end
+
+   fun {AUTHORITY L URL}
+      Prefix Sep Suffix
+      {SPLIT L LEVEL_AUTHORITY Prefix Sep Suffix}
+      URL2 = {AdjoinAt URL authority {Map Prefix ToLower}}
+   in
+      case Sep
+      of unit then URL2
+      [] &/   then {PATH Suffix {AdjoinAt URL2 absolute true}}
+      [] &\\  then {PATH Suffix {AdjoinAt URL2 absolute true}}
+      [] &?   then {QUERY Suffix URL2}
+      [] &#   then {FRAGMENT Suffix URL2}
+      [] &{   then {INFO Suffix URL2}
+      else raise urlbug end
+      end
+   end
+
+   fun {PATHDEV L URL}
+      case L of C|&:|T then
+         {PATH T {AdjoinAt URL device {ToLower C}}}
+      else
+         {PATH L URL}
+      end
+   end
+
+   fun {PATH L URL}
+      Prefix Sep Suffix
+      {SPLIT L LEVEL_PATH Prefix Sep Suffix}
+      URL2 = {AdjoinAt URL path {Decode Prefix}|URL.path}
+   in
+      case Sep
+      of unit then URL2
+      [] &/   then {PATH Suffix URL2}
+      [] &\\  then {PATH Suffix URL2}
+      [] &?   then {QUERY Suffix URL2}
+      [] &#   then {FRAGMENT Suffix URL2}
+      [] &{   then {INFO Suffix URL2}
+      else raise urlbug end
+      end
+   end
+
+   fun {QUERY L URL}
+      Prefix Sep Suffix
+      {SPLIT L LEVEL_QUERY Prefix Sep Suffix}
+      URL2 = {AdjoinAt URL query Prefix}
+   in
+      case Sep
+      of unit then URL2
+      [] &# then {FRAGMENT Suffix URL2}
+      [] &{ then {INFO Suffix URL2}
+      else raise urlbug end
+      end
+   end
+
+   fun {FRAGMENT L URL}
+      Prefix Sep Suffix
+      {SPLIT L LEVEL_FRAGMENT Prefix Sep Suffix}
+      URL2 = {AdjoinAt URL fragment Prefix}
+   in
+      if Sep\=unit then {INFO Suffix URL2} else URL2 end
+   end
+
+   fun {INFO L URL}
+      case {Reverse L} of &}|L then
+         {AdjoinAt URL info
+          {ToRecord info
+           {Map {Tokens {Reverse L} &,} INFO_ELT}}}
+      else raise urlbad end end
+   end
+
+   %% a path is represented by a list of strings.  normalizing a path
+   %% is the process of eliminating occurrences of path components
+   %% "." and ".." by interpreting them relative to the stack of path
+   %% components.  This algorithm is due to Christian Schulte.  I
+   %% modified it to not throw out a leading "." because ./foo and foo
+   %% should be treated differently: ./foo is an absolute path, whereas
+   %% foo is a relative path.
 
    fun {NormalizePath Path}
       case Path
       of nil then nil
-      [] H|T then
-         if H.1=="."  then H|{NormalizeStack T nil}
-         else {NormalizeStack Path nil} end
-      end
+      [] ("."=H)|T then H|{NormalizeStack T nil}
+      else {NormalizeStack Path nil} end
    end
-
    fun {NormalizeStack Path Stack}
       case Path
       of nil then {Reverse Stack}
-      [] H|T then C=H.1 in
-         if     C=="."  then {NormalizeStack T Stack}
-         elseif C==".." then
-            case Stack of nil then
-               H|{NormalizeStack T nil}
+      [] H|T then
+         if     H=="."  then
+            if T==nil then
+               if Stack==nil then nil else {Reverse nil|Stack} end
+            else {NormalizeStack T Stack} end
+         elseif H==".." then
+            if T==nil then
+               case Stack
+               of nil then [H]
+               [] [_] then [nil]
+               [] _|Stack then {Reverse nil|Stack}
+               end
+            elsecase Stack
+            of nil then H|{NormalizeStack T nil}
             [] _|Stack then {NormalizeStack T Stack} end
          else {NormalizeStack T H|Stack} end
       end
    end
 
-   %% for producing really normalized url strings, we need to encode
-   %% its components.  Encode performs the `escape encoding' of a
-   %% string (e.g. a single path component).  It uses a bitString,
-   %% supplied as an argument, to recognize the characters that don't
-   %% need to be escape encoded.
+   %% URL_vs converts a url to a virtual string.  The 2nd argument is
+   %% a record whose features parametrize the conversion process.
+   %% `full:true'
+   %%   indicates that full information is desired, including #FRAGMENT
+   %%   and {INFO} sections.  Normally, the #FRAGMENT indicator is
+   %%   intended only for client-side usage.  Similarly, but even more
+   %%   so, the {INFO} section is a Mozart extension, where, for
+   %%   example, it is indicated whether the url denotes a native
+   %%   functor or not.  Thus, neither should be included when
+   %%   constructing a url for retrieval.
+   %% `cache:true'
+   %%   indicates that a syntax appropriate for cache lookup is desired.
+   %%   the `:' after the scheme and the '//' before the authority are
+   %%   in both cases replaced by a single `/'.
+   %% `raw:true'
+   %%   indicates that no encoding should take place, i.e. special url
+   %%   characters are not escaped.
 
-   local
-      D = x(0:&0 1:&1 2:&2 3:&3 4:&4 5:&5 6:&6 7:&7 8:&8 9:&9
-            10:&a 11:&b 12:&c 13:&d 14:&e 15:&f)
-   in
-      fun {Encode L Charset}
-         case L
-         of nil then nil
-         [] H|T then
-            if {BitString.get Charset H} then H|{Encode T Charset}
-            else
-               X1 = H div 16
-               X2 = H mod 16
-            in
-               &%|D.X1|D.X2|{Encode T Charset}
-            end
-         end
-      end
-   end
-
-   %% Here is the charset for encoding path segments.  It contains all
-   %% characters that don't need to be encoded.  BUGLET: ";" should
-   %% not be in there in principle; however, I am currently not parsing
-   %% parameters (note that there can be a parameter section for each
-   %% path component) but instead I leave them with the path component.
-   %% This means that it _must_ not be encoded.  The bug is that I
-   %% cannot distinguish between a semi-colon that was previously
-   %% encoded and one that actually delimited a parameter section.
-
-   Comp_Charset =
-   {BitString.make 256
-    ";abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():@&=+$,"}
-
-   %% CompToVS converts a parsed path component to a virtual string.
-   %% Slash indicates whether or not the path component should be
-   %% suffixed with a slash.  The string itself must be escape encoded
-   %% to produce a conforming url.  The result is prepended to the
-   %% Rest of the converted path.
-
-   fun {CompToVS Seg Rest}
-      case Seg of Comp#Slash then
-         {Encode Comp Comp_Charset}
-         # if Slash then '/' else nil end # Rest
-      else raise urlbug end end
-   end
-
-   fun {CompToVSRaw Seg Rest}
-      case Seg of Comp#Slash then
-         Comp # if Slash then '/' else nil end # Rest
-      else raise urlbug end end
-   end
-
-   %% URL_VS converts a url to a virtual string.  The second
-   %% argument is a record with optional boolean features `full' and
-   %% `cache'.  `full:true' indicates that a string with full
-   %% information is desired: including #FRAGMENT and {INFO} sections.
-   %% The #FRAGMENT indicator is intended for client-side usage.
-   %% Similarly, but even more so, for the experimental {INFO}
-   %% section.  Thus, neither should be included when constructing a
-   %% url string for retrieval. `cache:true' indicates that a syntax
-   %% appropriate for cache look up is desired: the `:' after the
-   %% scheme and the `//' before the authority are both replaced by
-   %% single `/'.
-   %%
-   %% new optional feature `raw'.  `raw:true' indicates that special
-   %% characters should not be escaped.
-
-   fun {URL_VS Url How}
+   fun {URL_vs Url How}
       U         = {URL_make Url}
       Full      = {CondSelect How full  false}
       Cache     = {CondSelect How cache false}
-      ToVS      = if {CondSelect How raw false} then CompToVSRaw else CompToVS end
-      ScheSep   = if Cache then '/' else ':'  end
-      AuthSep   = if Cache then nil else '//' end
-      Scheme    = {CondSelect U scheme    unit}
-      Device    = {CondSelect U device    unit}
+      Raw       = {CondSelect How raw   false}
+      CompAdd   =
+      if Cache then
+         if Raw then CompAdd_c_raw else CompAdd_c_enc end
+      else
+         if Raw then CompAdd_raw else CompAdd_enc end
+      end
+      Scheme    = {CondSelect U scheme unit}
+      Device    = {CondSelect U device unit}
       Authority = {CondSelect U authority unit}
-      Path      = {CondSelect U path      unit}
-      Query     = {CondSelect U query     unit}
-      Fragment  = {CondSelect U fragment  unit}
-      Info      = {CondSelect U info      unit}
+      Absolute  = {CondSelect U absolute false}
+      Path      = {CondSelect U path      nil}
+      Query     = {CondSelect U query unit}
+      Fragment  = if Full then {CondSelect U fragment unit} else unit end
+      Info      = if Full then {CondSelect U info unit} else unit end
+      %%
+      V1        = if Full andthen Info\=unit then
+                     {InfoPropsAdd {Record.toListInd Info} ['}'] true}
+                  else nil end
+      V2        = if Full andthen Fragment\=unit then
+                     "#"|Fragment|V1
+                  else V1 end
+      V3        = if Query==unit then V2 else '?'|Query|V2 end
+      V4        = {Append
+                   %% yes we want the nil here otherwise
+                   %%Slashit adds an erroneous slash
+                   {FoldR Path CompAdd nil} V3}
+      V5        = if Absolute then {Slashit V4} else V4 end
+      V6        = if Device==unit then V5
+                  else
+                     [Device]
+                     |if Cache then {Slashit V5} else ':'|V5 end
+                  end
+      V7        = if Authority==unit then V6
+                  elseif Cache then
+                     if Authority==nil then V6
+                     else Authority|{Slashit V6} end
+                  else
+                     '/'|'/'|Authority|{Slashit V6}
+                  end
+      V8        = if Scheme==unit then V7
+                  elseif Cache then Scheme|{Slashit V7}
+                  else Scheme|':'|V7 end
    in
-      case Scheme    of unit then nil else Scheme #ScheSep   end #
-      case Device    of unit then nil else Device #':'       end #
-      case Authority of unit then nil else AuthSep#Authority end #
-      case Path      of unit then nil else
-         case {Label Path} of abs then '/' else nil end          #
-         {List.foldR Path.1 ToVS nil}
-      end                                                        #
-      case Query     of unit then nil else '?'#Query      end    #
-      if Full then
-         case Fragment of unit then nil else "#"#Fragment end    #
-         case Info     of unit then nil else
-            '{'#{FoldR {Record.toListInd Info} InfoPropToVS nil}#'}'
-         end
-      else nil end
+      {ToTuple '#' V8}
    end
 
-   fun {InfoPropToVS P#V Rest} P#'='#V#Rest end
+   fun {Slashit L}
+      case L of nil then nil
+      [] '/'|_ then L
+      else '/'|L end
+   end
 
-   fun {URL_toVS         U} {URL_VS U true } end
-   fun {URL_toString     U} {VirtualString.toString {URL_VS U true }} end
-   fun {URL_toAtom       U} {VirtualString.toAtom   {URL_VS U true }} end
+   fun {InfoPropsAdd L Rest First}
+      case L of nil then '{'|Rest
+      [] (K#V)|T then
+         {InfoPropsAdd T
+          K|'='|V|if First then Rest else ','|Rest end
+          false}
+      end
+   end
+
+   fun {CompAdd_raw H L}
+      H|{Slashit L}
+   end
+
+   fun {CompAdd_enc H L}
+      {Encode H}|{Slashit L}
+   end
+
+   fun {CompAdd_c_raw H L}
+      if H==nil then L else H|{Slashit L} end
+   end
+
+   fun {CompAdd_c_enc H L}
+      if H==nil then L else {Encode H}|{Slashit L} end
+   end
+
+   fun {URL_toVS     U} {URL_vs U true} end
+   fun {URL_toString U} {ToString {URL_toVS U}} end
+   fun {URL_toAtom   U} {ToAtom   {URL_toVS U}} end
+
+   fun {URL_isAbsolute U}
+      U2 = {URL_make U}
+   in
+      {CondSelect U2 scheme unit}\=unit orelse
+      {CondSelect U2 device unit}\=unit orelse
+      {CondSelect U2 absolute false} orelse
+      case {CondSelect U2 path nil}
+      of (&~|_)|_ then true
+      [] "."   |_ then true
+      [] ".."  |_ then true
+      else false end
+   end
+
+   fun {URL_isRelative U} {Not {URL_isAbsolute U}} end
 
    %% resolving a relative url with respect to a base url
 
    fun {URL_resolve BASE REL}
-      Base = {URL_make BASE}
-      Rel  = {URL_make REL}
+      Rel = {URL_make REL}
    in
-      if {CondSelect Rel scheme unit}\=unit then Rel % already absolute
+      if {CondSelect Rel scheme unit}\=unit then Rel
       else
-         Fields = {Record.toDictionary Rel}
+         Base = {URL_make BASE}
+         Scheme = {CondSelect Base scheme unit}
+         Rel2 = if Scheme==unit then Rel
+                else {AdjoinAt Rel scheme Scheme} end
       in
-         try
-            Scheme = {CondSelect Base scheme unit}
-            case Scheme of unit then skip else
-               {Dictionary.put Fields scheme Scheme}
-            end
-            if {Dictionary.condGet Fields authority unit}\=unit
-            then raise done end end
+         if {CondSelect Rel2 authority unit}\=unit then Rel2
+         else
             Authority = {CondSelect Base authority unit}
-            case Authority of unit then skip else
-               {Dictionary.put Fields authority Authority}
-            end
-            if {Dictionary.condGet Fields device unit}\=unit
-            then raise done end end
-            Device = {CondSelect Base device unit}
-            case Device of unit then skip else
-               {Dictionary.put Fields device Device}
-            end
-            Path = {CondSelect Base path unit}
-            if Path==unit then raise done end else
-               Lab   = {Label Path}
-               RPath = {Dictionary.condGet Fields path unit}
+            Rel3 = if Authority==unit then Rel2
+                   else {AdjoinAt Rel2 authority Authority} end
+         in
+            if {CondSelect Rel3 device unit}\=unit then Rel3
+            else
+               Device = {CondSelect Base device unit}
+               Rel4 = if Device==unit then Rel3
+                      else {AdjoinAt Rel3 device Device} end
+               BPath = {CondSelect Base path unit}
+               RAbs  = {CondSelect Rel4 absolute false}
             in
-               case RPath
-               of unit then
-                  {Dictionary.put Fields path
-                   Lab({AtLast Path.1 [nil#false]})}
-               [] rel(L) then
-                  {Dictionary.put Fields path
-                   Lab({NormalizePath
-                        {AtLast Path.1
-                         case L of nil then [nil#false] else L end}})}
-               else skip end
+               if RAbs orelse BPath==unit then Rel4
+               else
+                  Rel5 = if {CondSelect Base absolute false}
+                         then {AdjoinAt Rel4 absolute true}
+                         else Rel4 end
+                  RPath = {CondSelect Rel path nil}
+               in
+                  {AdjoinAt Rel5 path
+                   {NormalizePath
+                    {AtLast BPath
+                     if RPath==unit orelse RPath==nil
+                     then [nil] else RPath end}}}
+               end
             end
-         in skip catch done then skip end
-         {Dictionary.toRecord url Fields}
+         end
       end
    end
 
@@ -643,44 +577,57 @@ prepare
       end
    end
 
-   fun {URL_isAbsolute Url}
-      U = {URL_make Url}
-   in
-      {HasFeature U scheme} orelse
-      {HasFeature U device} orelse
-      case {CondSelect U path unit}
-      of abs(_) then true
-      [] rel(L) then
-         case L of H|_ then
-            case H.1
-            of &~|_ then true
-            [] "."  then true
-            [] ".." then true
-            else false end
-         else false end
-      else false end
-   end
-
-   fun {URL_isRelative Url}
-      {Not {URL_isAbsolute Url}}
-   end
-
    %% turn a url into one that can safely be used as a base without
-   %% loosing its last component
+   %% loosing its last component.  we just add an empty component if
+   % the last one is not already empty.
 
-   fun {URL_toBase Url}
-      U = {URL_make Url}
-      Path = {CondSelect U path unit}
+   fun {URL_toBase U}
+      U2 = {URL_make U}
    in
-      if Path==unit orelse Path.1==nil then U else
-         case {List.last Path.1} of nil#false then U
-         elseof _#true then L = {Label Path} in
-            %% should not happen, but let's be robust
-            {AdjoinAt U path L({Append Path.1 [nil#false]})}
-         elseof C#false then L = {Label Path} in
-            %% C must now be followed by a slash and an empty component
-            {AdjoinAt U path L({AtLast Path.1 [C#true nil#false]})}
-         else raise urlbug end end
+      case {CondSelect U2 path nil}
+      of unit then U2
+      [] nil  then U2
+      [] L then
+         case {Reverse L}
+         of nil|_ then U2
+         else {AdjoinAt U2 path {Append L [nil]}} end
+      end
+   end
+
+   %% for producing really normalized url vstrings, we need to encode
+   %% its components.  Encode performs the `escape encoding' of a
+   %% string (e.g. a single path component).
+
+   local
+      D = x(0:&0 1:&1 2:&2 3:&3 4:&4 5:&5 6:&6 7:&7 8:&8 9:&9
+            10:&a 11:&b 12:&c 13:&d 14:&e 15:&f)
+   in
+      fun {Encode S}
+         case S of nil then nil
+         [] H|T then
+            if {CharIsAlNum H} orelse
+               H==&; orelse
+               H==&- orelse
+               H==&_ orelse
+               H==&. orelse
+               H==&! orelse
+               H==&~ orelse
+               H==&* orelse
+               H==&' orelse
+               H==&( orelse
+               H==&) orelse
+               H==&: orelse
+               H==&@ orelse
+               H==&& orelse
+               H==&= orelse
+               H==&+ orelse
+               H==&$ orelse
+               H==&,
+            then H|{Encode T} else
+               X1 = H div 16
+               X2 = H mod 16
+            in &%|D.X1|D.X2|{Encode T} end
+         end
       end
    end
 

@@ -140,10 +140,10 @@ local
       proc {$ Url Meth Msg}
          Path = {CondSelect Url path unit}
       in
-         if Path==unit orelse Path.1==nil then
+         if Path==unit orelse Path==nil then
             {Msg '...[not applicable] (all ' Base ')' nil nil}
          else
-            Rel=url(path:rel([{List.last Path.1}]))
+            Rel=url(path:[{List.last Path}])
             NewUrl = {URL_expand {UrlResolve Base Rel}}
          in
             {Msg '...[' NewUrl '] (all)' nil nil}
@@ -175,7 +175,7 @@ local
       Base = {UrlToBase DIR}
    in
       proc {$ Url Meth Msg}
-         if {HasFeature Url scheme} then
+         if {CondSelect Url scheme unit}\=unit then
             Rel = {UrlMake {UrlToVsExtended Url x(cache:true)}}
             NewUrl = {URL_expand {UrlResolve Base Rel}}
          in

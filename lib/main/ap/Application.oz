@@ -95,7 +95,17 @@
 %% (and only for these), single-character options are accepted.
 %%
 
-local
+functor
+import
+   System(exit)
+   OS(getEnv)
+   Open(file)
+   Property(get condGet)
+export
+   Exit
+   GetCgiArgs
+   GetCmdArgs
+prepare
    %%
    %% Closure avoidance access
    %%
@@ -608,103 +618,94 @@ local
           end
        end}
    end
-in
-   functor
-   import
-      System(exit)
-      OS(getEnv)
-      Open(file)
-      Property(get)
-   export
-      Exit
-      GetCgiArgs
-      GetCmdArgs
-   define
-      Exit = System.exit
+define
+   Exit = System.exit
 
-      %%
-      %% Access to Servlet parameters following CGI spec
-      %%
+   %%
+   %% Access to Servlet parameters following CGI spec
+   %%
 
+   local
       local
-         local
-            GetEnv = OS.getEnv
+         GetEnv = OS.getEnv
 
-            class StdIn from Open.file
-               prop final
-               meth init
-                  StdIn,dOpen(0 1)
-               end
-               meth get(N ?Is)
-                  Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
-               in
-                  Ir = if M<N then StdIn,get(N-M $) else nil end
-               end
+         class StdIn from Open.file
+            prop final
+            meth init
+               StdIn,dOpen(0 1)
             end
+            meth get(N ?Is)
+               Ir M=StdIn,read(list:?Is tail:?Ir size:N len:$)
+            in
+               Ir = if M<N then StdIn,get(N-M $) else nil end
+            end
+         end
 
-            fun {CgiRawGet}
-               case {String.toAtom {GetEnv 'REQUEST_METHOD'}}
-               of 'GET'  then {GetEnv 'QUERY_STRING'}
-               [] 'POST' then F in
-                  try
-                     F={New StdIn init}
-                     {F get({String.toInt {GetEnv 'CONTENT_LENGTH'}} $)}
-                  finally
-                     {F close}
-                  end
+         fun {CgiRawGet}
+            case {String.toAtom {GetEnv 'REQUEST_METHOD'}}
+            of 'GET'  then {GetEnv 'QUERY_STRING'}
+            [] 'POST' then F in
+               try
+                  F={New StdIn init}
+                  {F get({String.toInt {GetEnv 'CONTENT_LENGTH'}} $)}
+               finally
+                  {F close}
                end
-            end
-         in
-            fun {GetRawCgiArgs}
-               {Map {String.tokens {CgiRawGet} &&}
-                fun {$ S} S1 S2 in
-                   {String.token S &= ?S1 ?S2} S1#S2
-                end}
             end
          end
       in
-         fun {GetCgiArgs Spec}
-            RawArgs = {GetRawCgiArgs}
-         in
-            case {Label Spec} of plain then RawArgs
-            [] list then RawArgs
-            [] record then
-               {PostProcess
-                {CgiParse {CgiPreProcessArgs RawArgs} Spec} Spec}
-            [] single then NewSpec X in
-               NewSpec = {BackwardCompat Spec rightmost}
-               X = {PostProcess
-                    {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
-               {Adjoin X optRec(1: nil 2: X.1)}
-            [] multiple then NewSpec X in
-               NewSpec = {BackwardCompat Spec multiple}
-               X = {PostProcess
-                    {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
-               {Adjoin X optRec(1: nil 2: X.1)}
-            end
+         fun {GetRawCgiArgs}
+            {Map {String.tokens {CgiRawGet} &&}
+             fun {$ S} S1 S2 in
+                {String.token S &= ?S1 ?S2} S1#S2
+             end}
          end
       end
-
-      %%
-      %% Access to commandline arguments
-      %%
-
-      fun {GetCmdArgs Spec} Argv in
-         Argv = {Map {Property.get 'argv'} AtomToString}
-         case {Label Spec} of plain then Argv
-         [] list then
-            {CmdParse Argv Spec}
+   in
+      fun {GetCgiArgs Spec}
+         RawArgs = {GetRawCgiArgs}
+      in
+         case {Label Spec} of plain then RawArgs
+         [] list then RawArgs
          [] record then
-            {PostProcess {CmdParse Argv Spec} Spec}
-         [] single then X in
-            X = {PostProcess {CmdParse Argv Spec}
-                 {BackwardCompat Spec rightmost}}
+            {PostProcess
+             {CgiParse {CgiPreProcessArgs RawArgs} Spec} Spec}
+         [] single then NewSpec X in
+            NewSpec = {BackwardCompat Spec rightmost}
+            X = {PostProcess
+                 {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
             {Adjoin X optRec(1: nil 2: X.1)}
-         [] multiple then X in
-            X = {PostProcess {CmdParse Argv Spec}
-             {BackwardCompat Spec multiple}}
+         [] multiple then NewSpec X in
+            NewSpec = {BackwardCompat Spec multiple}
+            X = {PostProcess
+                 {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
             {Adjoin X optRec(1: nil 2: X.1)}
          end
+      end
+   end
+
+   %%
+   %% Access to commandline arguments
+   %%
+
+   fun {GetCmdArgs Spec} Argv in
+      Argv = case {Property.condGet 'ozd.argv' unit} of unit then
+                {Map {Property.get 'argv'} AtomToString}
+             elseof X then X
+             end
+      case {Label Spec} of plain then Argv
+      [] list then
+         {CmdParse Argv Spec}
+      [] record then
+         {PostProcess {CmdParse Argv Spec} Spec}
+      [] single then X in
+         X = {PostProcess {CmdParse Argv Spec}
+              {BackwardCompat Spec rightmost}}
+         {Adjoin X optRec(1: nil 2: X.1)}
+      [] multiple then X in
+         X = {PostProcess {CmdParse Argv Spec}
+              {BackwardCompat Spec multiple}}
+         {Adjoin X optRec(1: nil 2: X.1)}
       end
    end
 end

@@ -19,14 +19,14 @@
 %%% WARRANTIES.
 %%%
 
-class CompilerInterfaceQuiet from CompilerInterfaceGeneric
+class QuietInterface from GenericInterface
    prop final
    attr
       Verbose: false AccVS: "" SourceVS: ""
       HasErrors: false HasBeenTopped: false
    meth init(CompilerObject DoVerbose <= false)
       Verbose <- DoVerbose
-      CompilerInterfaceGeneric, init(CompilerObject Serve)
+      GenericInterface, init(CompilerObject Serve)
    end
    meth reset()
       lock
@@ -68,7 +68,7 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
          else
             AccVS <- @AccVS#OutputVS
          end
-         CompilerInterfaceQuiet, Serve(Mr)
+         QuietInterface, Serve(Mr)
       end
    end
 

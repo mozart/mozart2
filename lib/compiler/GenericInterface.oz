@@ -19,12 +19,12 @@
 %%% WARRANTIES.
 %%%
 
-class CompilerInterfaceGeneric
+class GenericInterface
    prop locking
    attr Compiler: unit Port: unit ServerThread: unit
    meth init(CompilerObject Serve)
       lock Ms in
-         CompilerInterfaceGeneric, exit()
+         GenericInterface, exit()
          Compiler <- CompilerObject
          Port <- {NewPort Ms}
          {CompilerObject register(@Port)}

@@ -302,7 +302,7 @@ in
    fun {GenObjPrintName Term Store}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.printName {Class.get Term}}
+         PN = {System.printName Term}
 
          %%
          case AreSmallNames then

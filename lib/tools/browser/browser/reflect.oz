@@ -268,7 +268,7 @@ in
                case {IsObject TermIn} then
                   {AtomConcatAll
                    ['<Object: '
-                    {System.printName {Class.get TermIn}} ' @ '
+                    {System.printName TermIn} ' @ '
                     {IntToAtom {AddrOf TermIn}} '>']}
                elsecase {IsClass TermIn} then
                   {AtomConcatAll

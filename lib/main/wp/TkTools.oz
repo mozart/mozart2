@@ -1213,18 +1213,18 @@ fun {NewTkTools Tk}
       end
    end
 
-   %% balloon help
-   local
-      F      = {System.get home} # '/lib/wish/tk/tools/BalloonHelp.tcl'
-      Exists = try {OS.stat F _} true
-               catch system(...) then false end
-   in
-      case Exists then
-         {Tk.send source(F)}
-      else
-         {System.showError 'TkTools: ' # F # ': can\'t read file'}
-      end
-   end
+%   %% balloon help
+%   local
+%      F      = {System.get home} # '/lib/wish/tk/tools/BalloonHelp.tcl'
+%      Exists = try {OS.stat F _} true
+%              catch system(...) then false end
+%   in
+%      case Exists then
+%        {Tk.send source(F)}
+%      else
+%        {System.showError 'TkTools: ' # F # ': can\'t read file'}
+%      end
+%   end
 
 in
 

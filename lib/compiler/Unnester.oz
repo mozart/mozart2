@@ -730,26 +730,36 @@ local
                Unnester,
                UnnestStatement(fStepPoint(FS 'definition' C) ?GS)
                GFrontEq|GS
-            else GV FV FS in
+            else GV1 GV2 FV1 FV2 FS1 CND FS2 in
                {@BA openScope()}
-               {@BA generate('ComputedFunctor' C ?GV)}
+               %--** enter all FRequire/FPrepare variables
+               {@BA generate('OuterFunctor' C ?GV1)}
+               {@BA generate('InnerFunctor' C ?GV2)}
                {@BA closeScope(_)}
-               FV = fVar({GV getPrintName($)} C)
-               %--** generate variable different from all FRequire/FPrepare;
-               %--** wrap {Module.link ...} around it
-               FS = fFunctor(FE [fImport(FRequire unit)
-                                 fExport([fExportItem(FV)] unit)
-                                 fDefine(fAnd(fLocal({CondSelect FPrepare 1
-                                                      fSkip(unit)}
-                                                     {CondSelect FPrepare 2
-                                                      fSkip(unit)} C)
-                                              fFunctor(FV
-                                                       [fImport(FImport unit)
-                                                        fExport(FExport unit)
-                                                        fDefine(FDefine1
-                                                                FDefine2
-                                                                unit)] C)))] C)
-               Unnester, UnnestStatement(FS $)
+               FV1 = fVar({GV1 getPrintName($)} C)
+               FV2 = fVar({GV2 getPrintName($)} C)
+               FS1 = fFunctor(FV1 [fImport(FRequire unit)
+                                   fExport([fExportItem(fColon(fAtom(inner
+                                                                     unit)
+                                                               FV2))] unit)
+                                   fDefine(fAnd({CondSelect FPrepare 1
+                                                 fSkip(unit)}
+                                                fFunctor(FV2
+                                                         [fImport(FImport unit)
+                                                          fExport(FExport unit)
+                                                          fDefine(FDefine1
+                                                                  FDefine2
+                                                                  unit)]
+                                                         C))
+                                           {CondSelect FPrepare 2 fSkip(unit)}
+                                           unit)] C)
+               % FE = {`ApplyFunctor` N FV1}.inner
+               CND = {CoordNoDebug C}
+               FS2 = fEq(FE fOpApply('.' [fOpApply('ApplyFunctor'
+                                                   [fAtom({CondSelect C 1 ''}
+                                                          unit) FV1] CND)
+                                          fAtom(inner unit)] CND) CND)
+               Unnester, UnnestStatement(fLocal(FV1 fAnd(FS1 FS2) C) $)
             end
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
@@ -1721,7 +1731,7 @@ local
             end
             fVar(PrintName C) = FV
             {@BA bind(PrintName C _)}
-            %--** possibility to specify a type different from `value'
+            %--** insert type derived by static analysis instead of `value'
             FExportArgs = fColon(FeatureName fAtom(value C))|FExportArgr
             FColons = fColon(FeatureName FV)|FColonr
             Unnester, AnalyseExports(Dr ?FExportArgr ?FColonr)

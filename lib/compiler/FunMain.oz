@@ -1,19 +1,20 @@
 functor prop once
 import
-   Debug            from 'x-oz://boot/Debug'
-   Parser           from 'x-oz://boot/Parser'
-   CompilerSupport  from 'x-oz://boot/CompilerSupport'
+   Debug           at 'x-oz://boot/Debug'
+   Parser          at 'x-oz://boot/Parser'
+   CompilerSupport at 'x-oz://boot/CompilerSupport'
    Property
-   System   %.{gcDo printName valueToVirtualString get property printError eq}
-   Error   %.{formatExc formatPos formatLine formatGeneric format dispatch msg}
-   ErrorRegistry   %.put
-   FS   %.{include var subset value reflect isIn}
-   FD   %.{int is less distinct distribute}
+   System   %(gcDo printName valueToVirtualString get property printError eq)
+   Error   %(formatExc formatPos formatLine formatGeneric format dispatch msg)
+   ErrorRegistry   %(put)
+   FS   %(include var subset value reflect isIn)
+   FD   %(int is less distinct distribute)
 \ifndef OZM
    Gump
    ProductionTemplates
 \endif
    RunTimeLibrary
+   Module   %(manager)
 export
    Engine
    ParseOzFile
@@ -65,7 +66,8 @@ body
       RT        = {FunRT.apply
                    c('System':                System
                      'Core':                  Core
-                     'RunTimeLibrary':        RunTimeLibrary)}
+                     'RunTimeLibrary':        RunTimeLibrary
+                     'Module':                Module)}
       Unnest    = {FunUnnest.apply
                    c('FD':                    FD
                      'Misc':                  Misc

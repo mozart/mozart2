@@ -345,8 +345,9 @@ in
          BatchCompiler = {New Compiler.compilerClass init()}
          UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
          {BatchCompiler enqueue(mergeEnv(Env))}
-         {BatchCompiler enqueue(setSwitch(threadedqueries false))}
+         {BatchCompiler enqueue(setSwitch(showdeclares false))}
          {BatchCompiler enqueue(setSwitch(warnunused true))}
+         {BatchCompiler enqueue(setSwitch(threadedqueries false))}
          Mode = {NewCell feedtoemulator}
          OutputFile = {NewCell unit}
          {ForAll Opts

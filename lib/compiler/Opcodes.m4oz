@@ -4,7 +4,7 @@ dnl   Ralf Scheidhauer <scheidhr@ps.uni-sb.de>
 dnl   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 dnl
 dnl Copyright:
-dnl   Ralf Scheidhauer and Leif Kornstaedt, 1997
+dnl   Ralf Scheidhauer and Leif Kornstaedt, 1997-1999
 dnl
 dnl Last change:
 dnl   $Date$ by $Author$
@@ -50,32 +50,50 @@ undefine(`twoRegs')
 %% Opcodes maps instructions with implicit addressing modes to integers
 %%
 
-define(noReg,
-'$1': {GetOpcode '$1'})
+pushdef(`writeArg',`ifelse($1,Register,W,$1)')
+pushdef(`readArg',`ifelse($1,Register,R,$1)')
+define(`getReg',`ifelse($1,W,W,$1,R,R,)')
+define(registers,`getReg($1)`'getReg($2)`'getReg($3)')
 
-define(oneReg,
-'$1':
+undefine(`instruction')
+changequote([,])
+define(instruction,[ifelse(registers($2,$3,$4),R,'$1':
    f(x: {GetOpcode '$1X'}
      y: {GetOpcode '$1Y'}
-     g: {GetOpcode '$1G'}))
-
-define(twoRegs,
-'$1': f(x: f(x: {GetOpcode '$1XX'}
-             y: {GetOpcode '$1XY'}
-             g: {GetOpcode '$1XG'})
-        y: f(x: {GetOpcode '$1YX'}
-             y: {GetOpcode '$1YY'}
-             g: {GetOpcode '$1YG'})
-        g: f(x: {GetOpcode '$1GX'}
-             y: {GetOpcode '$1GY'}
-             g: {GetOpcode '$1GG'})))
+     g: {GetOpcode '$1G'}),
+                registers($2,$3,$4),W,'$1':
+   f(x: {GetOpcode '$1X'}
+     y: {GetOpcode '$1Y'}),
+                registers($2,$3,$4),RR,'$1':
+   f(x: f(x: {GetOpcode '$1XX'}
+          y: {GetOpcode '$1XY'}
+          g: {GetOpcode '$1XG'})
+     y: f(x: {GetOpcode '$1YX'}
+          y: {GetOpcode '$1YY'}
+          g: {GetOpcode '$1YG'})
+     g: f(x: {GetOpcode '$1GX'}
+          y: {GetOpcode '$1GY'}
+          g: {GetOpcode '$1GG'})),
+                registers($2,$3,$4),RW,'$1':
+   f(x: f(x: {GetOpcode '$1XX'}
+          y: {GetOpcode '$1XY'})
+     y: f(x: {GetOpcode '$1YX'}
+          y: {GetOpcode '$1YY'})
+     g: f(x: {GetOpcode '$1GX'}
+          y: {GetOpcode '$1GY'})),
+                registers($2,$3,$4),WW,'$1':
+   f(x: f(x: {GetOpcode '$1XX'}
+          y: {GetOpcode '$1XY'})
+     y: f(x: {GetOpcode '$1YX'}
+          y: {GetOpcode '$1YY'})),
+                '$1': {GetOpcode '$1'})])
+changequote(`,')
 
 Opcodes =
 opcodes(include(EMUDIR/instrDefs.m4))
 
-undefine(`noReg')
-undefine(`oneReg')
-undefine(`twoRegs')
+popdef(`writeArg')
+popdef(`readArg')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%

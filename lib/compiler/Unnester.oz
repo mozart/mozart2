@@ -293,18 +293,6 @@ local
       end
    end
 
-   fun {IsIllegalCatchPattern FE}
-      % Return `true' if FE is an illegal catch pattern (i. e., one that
-      % does not specify a label, thus consisting only of equations and
-      % variables), else `false'.
-      case FE of fEq(E1 E2 _) then
-         {IsIllegalCatchPattern E1} andthen {IsIllegalCatchPattern E2}
-      [] fVar(_ _) then true
-      [] fWildcard(_) then true
-      else false
-      end
-   end
-
    proc {SortClassDescriptors FDescriptors Rep ?FFrom ?FProp ?FAttr ?FFeat}
       case FDescriptors of D|Dr then
          case D of fFrom(Fs C) then
@@ -665,19 +653,6 @@ local
             GS = {MakeDeclaration {@BA closeScope($)} GBody C}
             {New Core.threadNode init(GS C)}
          [] fTry(_ FCatch _ _) then
-            case {@switches getSwitch(catchall $)} then skip
-            elsecase FCatch of fCatch(FCaseClauses _) then
-               {ForAll FCaseClauses
-                proc {$ fCaseClause(FE _)}
-                   case {IsIllegalCatchPattern FE} then
-                      {@reporter
-                       error(coord: {CoordinatesOf FE} kind: SyntaxError
-                             msg: 'catch pattern must indicate a label')}
-                   else skip
-                   end
-                end}
-            [] fNoCatch then skip
-            end
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then
             Unnester, UnnestStatement(fApply(fVar('`Raise`' C) [FE] C) $)

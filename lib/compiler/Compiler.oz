@@ -47,7 +47,6 @@ local
                             %%
                             expression: false
                             system: true
-                            catchall: false
                             selfallowedanywhere: false
 
                             %% static analysis:

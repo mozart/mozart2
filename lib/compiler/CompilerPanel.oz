@@ -1023,13 +1023,6 @@ in
                             font: SwitchFont
                             variable: System
                             action: {MkAction Switch(system)})}
-         CatchAll = {New Tk.variable tkInit(false)}
-         CatchAllSw = {New Tk.checkbutton
-                       tkInit(parent: ParsingFrame
-                              text: 'Allow wildcard in catch patterns'
-                              font: SwitchFont
-                              variable: CatchAll
-                              action: {MkAction Switch(catchall)})}
 
          SAFrame = {New Tk.frame tkInit(parent: Column2
                                         highlightthickness: 0)}
@@ -1224,8 +1217,7 @@ in
                          side: left anchor: w)
                     pack(ParsingFrame SAFrame CoreFrame
                          padx: 24 pady: 8 anchor: w)
-                    pack(ParsingLabel ExpressionSw SystemSw CatchAllSw
-                         anchor: w)
+                    pack(ParsingLabel ExpressionSw SystemSw anchor: w)
                     pack(SALabel StaticAnalysisSw anchor: w)
                     pack(CoreLabel CoreSw RealCoreSw DebugValueSw DebugTypeSw
                          anchor: w)
@@ -1269,7 +1261,6 @@ in
                                    warnforward: WarnForward
                                    expression: Expression
                                    system: System
-                                   catchall: CatchAll
                                    staticanalysis: StaticAnalysis
                                    core: Core
                                    realcore: RealCore
@@ -1288,7 +1279,7 @@ in
                         self.MaxNumberOfErrors.entry DoMaxErrors
                         CompilerPassesSw ShowInsertSw EchoQueriesSw
                         WarnRedeclSw WarnUnusedSw WarnForwardSw ExpressionSw
-                        SystemSw CatchAllSw StaticAnalysisSw CoreSw RealCoreSw
+                        SystemSw StaticAnalysisSw CoreSw RealCoreSw
                         DebugValueSw DebugTypeSw CodeGenSw OutputCodeSw
                         FeedToEmulatorSw ThreadedQueriesSw ProfileSw
                         RunWithDebuggerSw DebugInfoControlSw

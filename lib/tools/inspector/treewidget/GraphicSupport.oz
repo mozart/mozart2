@@ -402,7 +402,7 @@ define
             CX = Tk.canvas, tkReturnInt(canvasx(X) $) div @fontX
             CY = Tk.canvas, tkReturnInt(canvasy(Y) $) %% y needs to be offset-adjusted (later)
          in
-            GraphicSupport, SearchNode(1 0 0 CX CY $)
+            if @maxPtr == 0 then nil else GraphicSupport, SearchNode(1 0 0 CX CY $) end
          end
          meth !GlobalCanvasHandler(Event)
             case Event

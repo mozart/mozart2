@@ -108,6 +108,9 @@ define
       meth atomicReplace(Val)
          skip
       end
+      meth getSelectionNode($)
+         @node
+      end
    end
 
    class RelationManager

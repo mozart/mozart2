@@ -131,6 +131,7 @@ define
                Frame ManagerFrame
             in
                Tk.toplevel, tkInit(title:    'Oz Inspector'
+                                   delete:   proc {$} {Port.send InspPort close} end
                                    width:    Width
                                    height:   Height
                                    withdraw: true)

@@ -118,6 +118,9 @@ in
          {Parent replace(@index Value replaceNormal)}
          {@next atomicReplace(Value)}
       end
+      meth getSelectionNode($)
+         {@value getSelectionNode($)}
+      end
    end
 end
 

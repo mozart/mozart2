@@ -171,12 +171,6 @@ S  ::=  <Statement>
      coord:         C
 
 
-% 'thread' statements 'end'
-<ThreadNode> from <Statement>
-     statements: S+
-     globalVars: V*
-
-
 % 'try' tryStatements 'catch' exception 'then' catchStatements 'end'
 <TryNode> from <Statement>
      tryStatements:   S+

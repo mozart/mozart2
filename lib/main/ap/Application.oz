@@ -93,11 +93,13 @@ import
    OS(getEnv)
    Open(file)
    Property(get condGet)
-   Gui(getGuiCmdArgs) at 'x-oz://contrib/ap/OptionSheet.ozf'
+   Gui(getGuiCmdArgs:GetGuiArgs) at 'x-oz://contrib/ap/OptionSheet.ozf'
 export
    Exit
    GetCgiArgs
    GetCmdArgs
+   GetGuiArgs
+   GetArgs
    PostProcess
 prepare
    %%
@@ -738,11 +740,13 @@ define
       [] list then
          {CmdParse Argv Spec}
       [] record then
-         if {OS.getEnv 'OZ_GUI'}==false then
-            {PostProcess {CmdParse Argv Spec} Spec}
-         else
-            {Gui.getGuiCmdArgs Spec}
-         end
+         {PostProcess {CmdParse Argv Spec} Spec}
       end
+   end
+
+   fun {GetArgs Spec}
+      if {Property.get 'application.gui'} then
+         {GetGuiArgs Spec}
+      else {GetCmdArgs Spec} end
    end
 end

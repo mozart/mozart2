@@ -227,6 +227,8 @@ local
             [] shallowGuard(L _) then AssemblerClass, declareLabel(L)
             [] shallowTest1(_ _ L _) then AssemblerClass, declareLabel(L)
             [] shallowTest2(_ _ _ L _) then AssemblerClass, declareLabel(L)
+            [] testLess(_ _ L _) then AssemblerClass, declareLabel(L)
+            [] testLessEq(_ _ L _) then AssemblerClass, declareLabel(L)
             [] testLiteral(_ _ L1 L2 _) then
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)

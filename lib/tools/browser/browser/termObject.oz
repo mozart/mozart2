@@ -2816,17 +2816,25 @@ in
 
 
       meth !GetName($)
-         {System.printName self.term}#'<Future>'
-      end
-
-      meth !GetWatchFun($)
-         proc {$ F ?U}
-            thread
-               {Value.waitQuiet F}
-               U=unit
-            end
+         AreExpVarNames = {self.store read(StoreExpVarNames $)}
+         PN = {System.printName self.term}
+      in
+         if AreExpVarNames then
+            PN # if {Value.isNeeded self.term} then '<future,needed>'
+                 else '<future,quiet>'
+                 end
+         else PN # '<future>'
          end
       end
+
+%      meth !GetWatchFun($)
+%        proc {$ F ?U}
+%           thread
+%              {Value.waitQuiet F}
+%              U=unit
+%           end
+%        end
+%      end
 
       meth makeTerm
 \ifdef DEBUG_TO

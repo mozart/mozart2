@@ -116,6 +116,9 @@ in
              end
           end nil}
       end
+      meth formatMessages(History $)
+         {HistoryToVS {Reverse History}}
+      end
       meth getSource($)
          @SourceVS
       end

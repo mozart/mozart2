@@ -11,41 +11,49 @@
 
 \ifdef SAVE
 declare
-   CP
+   NewCP
 in
 
-CP = cp('Search':     Search
-        'SearchOne':  SearchOne
-        'SearchAll':  SearchAll
-        'SearchBest': SearchBest
-        'FD':         FD
-        `::`
-        `:::`
+local
+   CP = cp('Search':       Search
+           'SearchOne':    SearchOne
+           'SearchAll':    SearchAll
+           'SearchBest':   SearchBest
+           'FD':           FD
+           '`::`':         `::`
+           '`:::`':        `:::`
+           '`GenSum`':     `GenSum`
+           '`GenSumC`':    `GenSumC`
+           '`GenSumCN`':   `GenSumCN`
+           '`PlusRel`':    `PlusRel`
+           '`TimesRel`':   `TimesRel`
+           '`Lec`':        `Lec`
+           '`Gec`':        `Gec`
+           '`Nec`':        `Nec`
+           '`Lepc`':       `Lepc`
+           '`Nepc`':       `Nepc`
+           '`Neq`':        `Neq`
+           '`GenSumR`':    `GenSumR`
+           '`GenSumCR`':   `GenSumCR`
+           '`GenSumCNR`':  `GenSumCNR`
+           '`::R`':        `::R`
+           '`:::R`':       `:::R`
+           '`CDHeader`':   `CDHeader`
+           '`CDBody`':     `CDBody`
+           '`GenSumCD`':   `GenSumCD`
+           '`GenSumCCD`':  `GenSumCCD`
+           '`GenSumCNCD`': `GenSumCNCD`
+           '`::CD`':       `::CD`
+           '`:::CD`':      `:::CD`
+           'FSET':         FSET)
+in
 
-        `GenSum`
-        `GenSumC`
-        `GenSumCN`
-        `PlusRel`
-        `TimesRel`
-        `Lec`
-        `Gec`
-        `Nec`
-        `Lepc`
-        `Nepc`
-        `Neq`
-        `GenSumR`
-        `GenSumCR`
-        `GenSumCNR`
-        `::R`
-        `:::R`
+   fun {NewCP}
+      CP
+   end
 
-        `CDHeader`
-        `CDBody`
-        `GenSumCD`
-        `GenSumCCD`
-        `GenSumCNCD`
-        `::CD`
-        `:::CD`
+end
+
 
 
 \endif

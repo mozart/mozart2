@@ -7,3 +7,16 @@
 
 \insert 'Tk.oz'
 \insert 'TkTools.oz'
+
+\ifdef SAVE
+declare NewWP in
+
+fun {NewWP Open}
+   Tk      = {NewTk Open}
+   TkTools = {NewTkTools Tk}
+in
+   wp('Tk':      Tk
+      'TkTools': TkTools)
+end
+
+\endif

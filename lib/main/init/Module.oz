@@ -70,14 +70,12 @@ prepare
             else
                {self trace('link [lazy]' Url)}
                {Dictionary.put ModMap Key
-                {ByNeed
+                {ByNeedFuture
                  fun {$}
-                    try
-                       if {CondSelect Url scheme unit}==OzScheme
-                       then {self SYSTEM(Url $)}
-                       else {self LOAD(  Url $)}
-                       end
-                    catch E then {Value.byNeedFail E} end
+                    if {CondSelect Url scheme unit}==OzScheme
+                    then {self SYSTEM(Url $)}
+                    else {self LOAD(  Url $)}
+                    end
                  end}}
             end
             Entry  = {Dictionary.get ModMap Key}
@@ -85,36 +83,30 @@ prepare
             if self.TypeCheckProc==unit then
                %% avoid laziness if possible
                if {IsDet Entry} then Entry.1
-               else {ByNeed
-                     fun {$}
-                        try Entry.1
-                        catch E then {Value.byNeedFail E} end
-                     end}
+               else {ByNeedFuture fun {$} Entry.1 end}
                end
             else
                %% this could easily be improved to avoid
                %% unnecessary laziness
-               {ByNeed
+               {ByNeedFuture
                 fun {$}
-                   try
-                      case Entry of Module#ActualType then
-                         case ExpectedType of !NOTYPE then Module
-                         elsecase ActualType of !NOTYPE then Module
-                         elsecase {Procedure.arity self.TypeCheckProc}
-                         of 3 andthen
-                            {self.TypeCheckProc ActualType ExpectedType}
-                         then Module
-                         [] 4 andthen
-                            {self.TypeCheckProc
-                             ActualType ExpectedType o(url: Key)} == ok
-                         then Module
-                         else
-                            {Value.byNeedFail
-                             system(module(typeMismatch Key
-                                           ActualType ExpectedType))}
-                         end
+                   case Entry of Module#ActualType then
+                      case ExpectedType of !NOTYPE then Module
+                      elsecase ActualType of !NOTYPE then Module
+                      elsecase {Procedure.arity self.TypeCheckProc}
+                      of 3 andthen
+                         {self.TypeCheckProc ActualType ExpectedType}
+                      then Module
+                      [] 4 andthen
+                         {self.TypeCheckProc
+                          ActualType ExpectedType o(url: Key)} == ok
+                      then Module
+                      else
+                         {Value.failed
+                          system(module(typeMismatch Key
+                                        ActualType ExpectedType))}
                       end
-                   catch E then {Value.byNeedFail E} end
+                   end
                 end}
             end
          end

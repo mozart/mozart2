@@ -30,7 +30,7 @@ export
 define
 
    Registry = {Dictionary.new}
-   Values   = {ByNeed fun {$} {UserDictionary} end}
+   Values   = {ByNeedFuture fun {$} {UserDictionary} end}
 
    proc {Register Option}
       Name = Option.1

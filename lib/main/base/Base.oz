@@ -69,16 +69,38 @@ prepare
    %%
    Wait         = Boot_Value.wait
    WaitOr       = Boot_Value.waitOr
+   WaitQuiet    = Boot_Value.waitQuiet
+   WaitNeeded   = Boot_Value.waitNeeded
+   MakeNeeded   = Boot_Value.makeNeeded
    IsFree       = Boot_Value.isFree
    IsKinded     = Boot_Value.isKinded
    IsFuture     = Boot_Value.isFuture
    IsFailed     = Boot_Value.isFailed
    IsDet        = Boot_Value.isDet
+   IsNeeded     = Boot_Value.isNeeded
    Max          = Boot_Value.max
    Min          = Boot_Value.min
    CondSelect   = Boot_Value.condSelect
    HasFeature   = Boot_Value.hasFeature
-   ByNeed       = Boot_Value.byNeed
+   FailedValue  = Boot_Value.failedValue
+   NewReadOnly  = Boot_Value.newReadOnly
+   BindReadOnly = Boot_Value.bindReadOnly
+   ByNeed       = proc {$ P X} thread {WaitNeeded X} {P X} end end
+   ByNeedFuture = proc {$ P X}
+                     R={NewReadOnly}
+                  in
+                     thread
+                        {WaitNeeded R}
+                        try Y in
+                           {MakeNeeded Y}
+                           {P Y}
+                           {WaitQuiet Y} {BindReadOnly R Y}
+                        catch E then
+                           {BindReadOnly R {FailedValue E}}
+                        end
+                     end
+                     X=R
+                  end
 
    %%
    %% Literal
@@ -334,16 +356,19 @@ export
    'Value'              : Value
    'Wait'               : Wait
    'WaitOr'             : WaitOr
+   'WaitNeeded'         : WaitNeeded
    'IsFree'             : IsFree
    'IsKinded'           : IsKinded
    'IsFuture'           : IsFuture
    'IsFailed'           : IsFailed
    'IsDet'              : IsDet
+   'IsNeeded'           : IsNeeded
    'Min'                : Min
    'Max'                : Max
    'CondSelect'         : CondSelect
    'HasFeature'         : HasFeature
    'ByNeed'             : ByNeed
+   'ByNeedFuture'       : ByNeedFuture
    %% Literal
    'Literal'            : Literal
    'IsLiteral'          : IsLiteral

@@ -2728,7 +2728,17 @@ in
 
                                      %%
                                      %% can be overloaded, if necessary;
-      meth !GetName($) {System.printName self.term} end
+      meth !GetName($)
+         AreExpVarNames = {self.store read(StoreExpVarNames $)}
+         PN = {System.printName self.term}
+      in
+         if AreExpVarNames then
+            PN # if {Value.isNeeded self.term} then '<needed>'
+                 else '<quiet>'
+                 end
+         else PN
+         end
+      end
 
       %%
       %%  ... can be also overloaded;

@@ -78,6 +78,7 @@ class FBrowserClass
            store(StoreFillStyle IFillStyle)
            store(StoreArityType IArityType)
            store(StoreSmallNames ISmallNames)
+           store(StoreExpVarNames IExpVarNames)
            store(StoreAreStrings IAreStrings)
            store(StoreAreVSs IAreVSs)
            store(StoreDepthInc IDepthInc)
@@ -719,6 +720,18 @@ class FBrowserClass
                     'Illegal value of parameter browser\'s "detailedNamesAndProcedurs" option'}
                 end
 
+             [] !BrowserExpVarNames            then
+                case M.F of true then
+                   %%
+                   {self.Store store(StoreExpVarNames true)}
+                elseof false then
+                   %%
+                   {self.Store store(StoreExpVarNames false)}
+                else
+                   {BrowserError
+                    'Illegal value of parameter browser\'s "detailedVarStatus" option'}
+                end
+
              [] !BrowserStrings                then
                 case M.F of true then
                    %%
@@ -873,6 +886,8 @@ class FBrowserClass
           {self.Store read(StoreArityType $)} == TrueArity)
        option(RepresentationON BrowserNamesAndProcs:
           {self.Store read(StoreSmallNames $)} == false)
+       option(RepresentationON BrowserExpVarNames:
+          {self.Store read(StoreExpVarNames $)})
        option(RepresentationON BrowserStrings:
           {self.Store read(StoreAreStrings $)})
        option(RepresentationON BrowserVirtualStrings:

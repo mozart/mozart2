@@ -2365,6 +2365,8 @@ in
                             {Tcl2Oz {ChunkVar tkReturnAtom($)}})}
             {WO.store store(StoreSmallNames
                             {Tcl2Oz {NameVar tkReturnAtom($)}})}
+            {WO.store store(StoreExpVarNames
+                            {Tcl2Oz {VarVar tkReturnAtom($)}})}
             {WO.store store(StoreAreStrings
                             {Tcl2Oz {StringsVar tkReturnAtom($)}})}
             {WO.store store(StoreAreVSs
@@ -2390,6 +2392,8 @@ in
                      tkInit({Oz2Tcl {WO.store read(StoreArityType $)}})}
          NameVar = {New Tk.variable
                     tkInit({Oz2Tcl {WO.store read(StoreSmallNames $)}})}
+         VarVar = {New Tk.variable
+                    tkInit({Oz2Tcl {WO.store read(StoreExpVarNames $)}})}
          VSsFrame = {New TkTools.textframe tkInit(parent: self
                                                   text:   'Type')}
          StringsVar = {New Tk.variable
@@ -2427,6 +2431,12 @@ in
                                  text: 'Names And Procedures'
                                  onvalue:{Oz2Tcl false}
                                  offvalue:{Oz2Tcl true}
+                                 anchor:w)}
+                         {New Tk.checkbutton
+                          tkInit(parent:DetailFrame.inner var:VarVar
+                                 text: 'Variable Status'
+                                 onvalue:{Oz2Tcl true}
+                                 offvalue:{Oz2Tcl false}
                                  anchor:w)}
                          fill:x)
                     pack(ModeFrame DetailFrame fill:x)

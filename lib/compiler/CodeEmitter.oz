@@ -62,6 +62,36 @@ local
    end
 
    local
+      proc {GetRegs VArgs Hd Tl}
+         case VArgs of VArg|VArgr then Inter in
+            case VArg of value(Reg) then
+               Hd = Reg|Inter
+            [] record(_ _ VArgs) then
+               {GetRegs VArgs Hd Inter}
+            else
+               Hd = Inter
+            end
+            {GetRegs VArgr Inter Tl}
+         [] nil then
+            Hd = Tl
+         end
+      end
+
+      fun {FilterNonlinearRegs Regs}
+         case Regs of Reg|Regr then
+            if {Member Reg Regr} then Reg|{FilterNonlinearRegs Regr}
+            else {FilterNonlinearRegs Regr}
+            end
+         [] nil then nil
+         end
+      end
+   in
+      fun {GetNonlinearRegs VArgs}
+         {FilterNonlinearRegs {GetRegs VArgs $ nil}}
+      end
+   end
+
+   local
       proc {Reserve Regs N W K}
          if N =< W then Reg in
             Reg = Regs.N
@@ -612,22 +642,21 @@ in
             if Emitter, TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity
                                           VArgs Cont $)
             then skip
-            else
-               Emitter, CreateNonlinearRegs(VArgs [Reg] _)
-               case Emitter, GetReg(Reg $) of none then
-                  if Emitter, IsLast(Reg $) then skip
-                  else R in
-                     Emitter, PredictReg(Reg ?R)
-                     Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
-                  end
-               elseof R then
-                  if Emitter, IsLast(Reg $) then
-                     if {OccursInVArgs VArgs Reg} then skip
-                     else Emitter, FreeReg(Reg)
-                     end
-                  end
-                  Emitter, EmitRecordRead(Literal RecordArity R VArgs)
+            elsecase Emitter, GetReg(Reg $) of none then
+               if Emitter, IsLast(Reg $) then skip
+               else R in
+                  Emitter, PredictReg(Reg ?R)
+                  Emitter, EmitRecordWrite(Literal RecordArity R
+                                           {GetNonlinearRegs VArgs} VArgs)
                end
+            elseof R then
+               if Emitter, IsLast(Reg $) then
+                  if {OccursInVArgs VArgs Reg} then skip
+                  else Emitter, FreeReg(Reg)
+                  end
+               end
+               Emitter, EmitRecordRead(Literal RecordArity R
+                                       {GetNonlinearRegs VArgs} VArgs)
             end
          [] vGetVariable(_ Reg _) then
             case Emitter, GetReg(Reg $) of none then
@@ -637,9 +666,6 @@ in
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(getVariable(R))
                end
-            elseof R then
-               %--** this can never happen!
-               Emitter, Emit(unifyValue(R))
             end
          [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
             BIInfo NewCont2
@@ -1155,11 +1181,13 @@ in
              [] record(Literal RecordArity VArgs) then
                 if {Dictionary.member @UsedX I - 1} then R in
                    Emitter, AllocateShortLivedReg(?R)
-                   Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
+                   Emitter, EmitRecordWrite(Literal RecordArity R
+                                            {GetNonlinearRegs VArgs} VArgs)
                    (~I|Regs)#((I - 1)#move(R x(I - 1))|ArgInits)
                 else X in
                    Emitter, AllocateThisShortLivedTemp(I - 1 ?X)
-                   Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
+                   Emitter, EmitRecordWrite(Literal RecordArity X
+                                            {GetNonlinearRegs VArgs} VArgs)
                    (~I|Regs)#((I - 1)#'skip'|ArgInits)
                 end
              end
@@ -1516,72 +1544,64 @@ in
          end
       end
 
-      meth CreateNonlinearRegs(VArgs Regs $)
+      meth EmitRecordWrite(Literal RecordArity R NonlinearRegs VArgs)
+         NewVArgs
+      in
+         %% Emit in write mode, i.e., bottom-up and using `set':
+         Emitter, EmitSubRecordWrites(VArgs NonlinearRegs ?NewVArgs)
+         Emitter, Emit(putRecord(Literal RecordArity R))
+         Emitter, EmitVArgsWrite(NewVArgs NonlinearRegs)
+      end
+      meth EmitSubRecordWrites(VArgs NonlinearRegs $)
          case VArgs of VArg|VArgr then
-            case VArg of value(Reg) then
-               case Emitter, GetReg(Reg $) of none then
-                  if {Member Reg Regs} then R in
-                     Emitter, PredictReg(Reg ?R)
-                     Emitter, Emit(createVariable(R))
-                     Emitter, CreateNonlinearRegs(VArgr Regs $)
-                  else
-                     Emitter, CreateNonlinearRegs(VArgr Reg|Regs $)
-                  end
-               else
-                  Emitter, CreateNonlinearRegs(VArgr Reg|Regs $)
-               end
-            [] record(_ _ VArgs) then Regs2 in
-               Emitter, CreateNonlinearRegs(VArgs Regs ?Regs2)
-               Emitter, CreateNonlinearRegs(VArgr Regs2 $)
-            else
-               Emitter, CreateNonlinearRegs(VArgr Regs $)
-            end
-         [] nil then Regs
+            case VArg of record(Literal RecordArity VArgs) then R in
+               Emitter, EmitRecordWrite(Literal RecordArity R
+                                        NonlinearRegs VArgs)
+               reg(R)
+            else VArg
+            end|Emitter, EmitSubRecordWrites(VArgr NonlinearRegs $)
+         [] nil then nil
          end
       end
-      meth EmitRecordWrite(Literal RecordArity R VArgs) IHd ITl in
-         %% Emit in write mode, i.e., bottom-up and using `set':
-         Emitter, EmitVArgsWrite(VArgs IHd ITl)
-         Emitter, Emit(putRecord(Literal RecordArity R))
-         Emitter, EmitMultiple(IHd ITl)
-      end
-      meth EmitVArgsWrite(VArgs IHd ITl)
-         case VArgs of VArg|VArgr then IInter in
+      meth EmitVArgsWrite(VArgs NonlinearRegs)
+         case VArgs of VArg|VArgr then
             case VArg of constant(Constant) then
-               IHd = setConstant(Constant)|IInter
+               Emitter, Emit(setConstant(Constant))
             [] predicateRef(PredicateRef) then
-               IHd = setPredicateRef(PredicateRef)|IInter
+               Emitter, Emit(setPredicateRef(PredicateRef))
             [] value(Reg) then
                case Emitter, GetReg(Reg $) of none then
-                  if Emitter, IsLast(Reg $) then
-                     IHd = setVoid(1)|IInter
+                  if Emitter, IsLast(Reg $)
+                     andthen {Not {Member Reg NonlinearRegs}}
+                  then
+                     Emitter, Emit(setVoid(1))
                   else R in
                      Emitter, PredictReg(Reg ?R)
-                     IHd = setVariable(R)|IInter
+                     Emitter, Emit(setVariable(R))
                   end
                elseof R then
-                  IHd = setValue(R)|IInter
+                  Emitter, Emit(setValue(R))
                end
-            [] record(Literal RecordArity VArgs) then R in
+            [] reg(R) then
                Emitter, AllocateShortLivedReg(?R)
-               Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
-               IHd = setValue(R)|IInter
+               Emitter, Emit(setValue(R))
             end
-            Emitter, EmitVArgsWrite(VArgr IInter ITl)
-         [] nil then
-            IHd = ITl
+            Emitter, EmitVArgsWrite(VArgr NonlinearRegs)
+         [] nil then skip
          end
       end
-      meth EmitRecordRead(Literal RecordArity R VArgs) SubRecords in
+      meth EmitRecordRead(Literal RecordArity R NonlinearRegs VArgs)
+         SubRecords
+      in
          %% Emit in read mode, i.e., top-down and using `unify':
          Emitter, Emit(getRecord(Literal RecordArity R))
-         Emitter, EmitVArgsRead(VArgs ?SubRecords nil)
+         Emitter, EmitVArgsRead(VArgs NonlinearRegs ?SubRecords nil)
          {ForAll SubRecords
           proc {$ R#record(Literal RecordArity VArgs)}
-             Emitter, EmitRecordRead(Literal RecordArity R VArgs)
+             Emitter, EmitRecordRead(Literal RecordArity R NonlinearRegs VArgs)
           end}
       end
-      meth EmitVArgsRead(VArgs SHd STl)
+      meth EmitVArgsRead(VArgs NonlinearRegs SHd STl)
          case VArgs of VArg|VArgr then SInter in
             case VArg of constant(Constant) then
                SHd = SInter
@@ -1597,7 +1617,9 @@ in
             [] value(Reg) then
                SHd = SInter
                case Emitter, GetReg(Reg $) of none then
-                  if Emitter, IsLast(Reg $) then
+                  if Emitter, IsLast(Reg $)
+                     andthen {Not {Member Reg NonlinearRegs}}
+                  then
                      Emitter, Emit(unifyVoid(1))
                   else R in
                      Emitter, PredictReg(Reg ?R)
@@ -1611,7 +1633,7 @@ in
                Emitter, Emit(unifyVariable(R))
                SHd = R#VArg|SInter
             end
-            Emitter, EmitVArgsRead(VArgr SInter STl)
+            Emitter, EmitVArgsRead(VArgr NonlinearRegs SInter STl)
          [] nil then
             SHd = STl
          end
@@ -2255,20 +2277,6 @@ in
          {System.show Instr}
 \endif
          @CodeTl = Instr|NewCodeTl
-         CodeTl <- NewCodeTl
-      end
-      meth EmitMultiple(Instrs NewCodeTl)
-\ifdef DEBUG_EMIT
-         proc {ShowAll Instrs}
-            if {IsDet Instrs} then I|Ir = Instrs in
-               {System.show I}
-               {ShowAll Ir}
-            end
-         end
-      in
-         {ShowAll Instrs}
-\endif
-         @CodeTl = Instrs
          CodeTl <- NewCodeTl
       end
    end

@@ -22,25 +22,45 @@
 
 functor prop once
 body
-   Getenv = {`Builtin` 'OS.getEnv'   2}
-   SET    = {`Builtin` 'PutProperty' 2}
-   GET    = {`Builtin` 'GetProperty' 2}
+
+   BootManager = {`Builtin` 'BootManager' 2}
+
+   OS       = {BootManager 'OS'}
+   Property = {BootManager 'Property'}
+
+   Getenv = OS.getEnv
+   SET    = Property.put
+   GET    = Property.get
    %% usual system initialization
-   local
+   URL = local
       \insert 'init/Prop.oz'
       \insert 'init/URL.oz'
    in
       {SET url URL}
-      {SET load URL.load}
+            {SET load URL.load}
+            URL
    end
    %% execute application
    local
       %% create module manager
       \insert 'init/Module.oz'
       Module = {NewModule}
+
+      %% Register some volatile modules
+
       UrlDefaults = \insert '../url-defaults.oz'
       FunExt      = UrlDefaults.'functor'
       MozartUrl   = UrlDefaults.'home'
+
+      {Module.enter 'x-oz-boot:OS' OS}
+      {Module.enter MozartUrl#'lib/OS'#FunExt OS}
+
+      {Module.enter 'x-oz-boot:Property' OS}
+      {Module.enter MozartUrl#'lib/Property'#FunExt Property}
+
+      {Module.enter MozartUrl#'lib/Module'#FunExt Module}
+      {Module.enter MozartUrl#'lib/URL'#FunExt    URL}
+
       %% create and install ErrorHandler module
       functor ErrorHandler prop once
       import

@@ -87,7 +87,7 @@ in
 
       Load  = {`Builtin` load 2}
 
-      Trace = case {{`Builtin` 'OS.getEnv' 2} 'OZ_TRACE_MODULE'}==false then
+      Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then
                  proc {$ _} skip end
               else
                  {`Builtin` 'System.printInfo'  1}
@@ -143,8 +143,6 @@ in
          {Func.'apply' IMPORT}
       end
 
-      StaticLoad = {`Builtin` 'BootManager'  2}
-
       proc {GetFunctor Url ?Mod}
          UrlKey = {RURL.urlToKey Url}
       in
@@ -152,7 +150,7 @@ in
             {Trace '[Module] Get:   '#UrlKey#'\n'}
          elsecase {CondSelect Url scheme ""}==BootScheme then
             {Trace '[Module] Boot:  '#UrlKey#'\n'}
-            Mod = {StaticLoad Url.path.1.1}
+            Mod = {BootManager Url.path.1.1}
          else
             {Trace '[Module] Sync: '#UrlKey#'\n'}
             Mod={ByNeed fun {$}
@@ -221,13 +219,6 @@ in
              {Module.system ModName MozartUrl#'lib/'#ModName#FunExt}
           end}
       end
-
-      %% Register some virtual modules
-      %% Hmm, still not independent: CS
-
-      {Module.enter MozartUrl#'lib/Module'#FunExt Module}
-      {Module.enter MozartUrl#'lib/URL'#FunExt
-       {{`Builtin` 'CondGetProperty' 3} url unit}}
 
    in
 

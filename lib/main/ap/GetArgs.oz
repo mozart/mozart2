@@ -25,7 +25,7 @@
 %%%
 
 functor
-import OS Open
+import OS Open Property
 export
    syslet  : Syslet
    applet  : Applet
@@ -91,7 +91,7 @@ body
    %% Access to commandline arguments
    %%
    fun {GetCmdArgs}
-      {Map {{`Builtin` 'GetProperty' 2} argv} AtomToString}
+      {Map {Property.get argv} AtomToString}
    end
 
 

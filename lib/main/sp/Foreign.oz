@@ -35,6 +35,8 @@ import
 
    ErrorRegistry.{put}
 
+   OS
+
 export
    pointer:    ForeignPointer
    dload:      DLoad
@@ -48,7 +50,7 @@ body
    DlClose        = {`Builtin` dlClose       1}
    FindFunction   = {`Builtin` findFunction  3}
    DlLoad         = {`Builtin` dlLoad        2}
-   Unlink         = {`Builtin` 'OS.unlink'   1}
+   Unlink         = OS.unlink
    %%
    %% If the URL service is available, then use it to create a
    %% localizer parametrized by environment variable OZ_DL_LOAD,

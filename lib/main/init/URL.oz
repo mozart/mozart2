@@ -111,8 +111,8 @@ URL_localize    = {`Builtin` 'URL.localize'      2}
 URL_open        = {`Builtin` 'URL.open'          2}
 URL_load        = {`Builtin` 'URL.load'          2}
 PrintError      = {`Builtin` 'System.printError' 1}
-Getpwnam        = {`Builtin` 'OS.getpwnam'       2}
-GetCWD          = {`Builtin` 'OS.getCWD'         1}
+Getpwnam        = OS.getpwnam
+GetCWD          = OS.getCWD
 
 Trace = {NewCell {GET 'oz.trace.load'}}
 

@@ -23,25 +23,19 @@
 
 declare
 NewSystem
-NewProperty
 NewForeign
 NewErrorRegistry
 NewError
 NewFS
 NewFD
 NewSearch
-NewOS
 NewOpen
 NewPickle
 NewCompiler
-NewModule
 UrlDefaults
 in
 \insert 'sp/System.oz'
 = NewSystem
-
-\insert 'sp/Property.oz'
-= NewProperty
 
 \insert 'sp/Foreign.oz'
 = NewForeign
@@ -61,9 +55,6 @@ in
 \insert 'cp/Search.oz'
 = NewSearch
 
-\insert 'op/OS.oz'
-= NewOS
-
 \insert 'op/Open.oz'
 = NewOpen
 
@@ -73,7 +64,6 @@ in
 \insert 'Compiler.oz'
 = NewCompiler
 
-\insert 'init/Module.oz'
 
 UrlDefaults = \insert '../url-defaults.oz'
 
@@ -88,14 +78,16 @@ UrlDefaults = \insert '../url-defaults.oz'
              'FDP':           FDP
              'FSP':           FSP
 
+             %% Volatile modules
+             'OS':            OS
+             'Property':      Property
+
              %% Plain functors
              'System':        System
-             'Property':      Property
              'Foreign':       Foreign
              'Error':         Error
              'ErrorRegistry': ErrorRegistry
              'FD':            FD
-             'OS':            OS
              'Open':          Open
              'URL':           'export'(open:unit)
              'FS':            FS
@@ -103,34 +95,34 @@ UrlDefaults = \insert '../url-defaults.oz'
              'Search':        Search)
     =IMPORT
 
-    local
-       StaticLoad = {`Builtin` 'BootManager'  2}
-    in
-       {ForAll ['Parser'# Parser
-                'FDP'#    FDP
-                'FSP'#    FSP]
-        proc {$ A#M}
-           M={StaticLoad A}
-        end}
-    end
+    BootManager = {`Builtin` 'BootManager'  2}
+
+    {ForAll ['Parser'#   Parser
+             'FDP'#      FDP
+             'FSP'#      FSP
+             'OS'#       OS
+             'Property'# Property]
+     proc {$ A#M}
+        M={BootManager A}
+     end}
 
     Compiler
 
     {ForAll [System        # NewSystem
-             Property      # NewProperty
              Foreign       # NewForeign
              ErrorRegistry # NewErrorRegistry
              Error         # NewError
              FD            # NewFD
              FS            # NewFS
              Search        # NewSearch
-             OS            # NewOS
              Open          # NewOpen
              Pickle        # NewPickle
              Compiler      # NewCompiler]
      proc {$ V#F}
         thread {F.apply IMPORT}=V end
      end}
+
+    \insert 'init/Module.oz'
 
     Module = {NewModule}
 

@@ -706,37 +706,6 @@ in
              [hint(l:'Fallback procedure not installed' m:A)]
              Exc}
 
-         elseof system(builtinUndefined A) then
-
-         % expected A: atom
-
-            {Error.format T
-             'Undefined builtin'
-             [hint(l:'Requested' m:A)]
-             Exc}
-
-         elseof system(builtinArity A F E) then
-
-         % expected A: atom, F: int, E: int
-
-            {Error.format T
-             'Illegal arity in Oz-declaration'
-             [hint(l:'Builtin' m:A)
-              hint(l:'Found' m:F)
-              hint(l:'Expected' m:E)]
-             Exc}
-
-         elseof system(inconsistentArity A F E) then
-
-         % expected A: atom, F: int, E: int
-
-            {Error.format T
-             'Illegal arity in emulator-declaration'
-             [hint(l:'Builtin' m:A)
-              hint(l:'Found' m:F)
-              hint(l:'Expected' m:E)]
-             Exc}
-
          elseof system(inconsistentFastcall) then
 
             {Error.format T

@@ -24,34 +24,34 @@ local
    ParseVirtualString = Parser.'virtualString'
 
    local
-      Prefixes = ["`SWITCHNAME'"#"switch name"
-                  "`OZATOM'"#"atom"
-                  "`ATOM_LABEL'"#"atom label"
-                  "`OZFLOAT'"#"float"
-                  "`OZINT'"#"integer"
-                  "`STRING'"#"string"
-                  "`AMPER'"#"`&'"
-                  "`VARIABLE'"#"variable"
-                  "`VARIABLE_LABEL'"#"variable label"
-                  "`DEFAULT'"#"`<='"
-                  "`CHOICE'"#"`[]'"
-                  "`LDOTS'"#"`...'"
-                  "`OOASSIGN'"#"`<-'"
-                  "`COMPARE'"#"comparison operator"
-                  "`FDCOMPARE'"#"finite domain comparison operator"
-                  "`FDIN'"#"finite domain inclusion operator"
-                  "`ADD'"#"`+' or `-'"
-                  "`FDMUL'"#"`*' or `/'"
-                  "`OTHERMUL'"#"`div' or `mod'"
-                  "`FALSE_LABEL'"#"`false' as label"
-                  "`TRUE_LABEL'"#"`true' as label"
-                  "`UNIT_LABEL'"#"`unit' as label"
-                  "`DOTINT'"#"`.' followed by an integer"
-                  "`DEREFF'"#"`!!'"
-                  "`ENDOFFILE'"#"end-of-file"
-                  "`REGEX'"#"regular expression"
-                  "`REDUCE'"#"`=>'"
-                  "`SEP'"#"`//'"]
+      Prefixes = ["`T_SWITCHNAME'"#"switch name"
+                  "`T_OZATOM'"#"atom"
+                  "`T_ATOM_LABEL'"#"atom label"
+                  "`T_OZFLOAT'"#"float"
+                  "`T_OZINT'"#"integer"
+                  "`T_STRING'"#"string"
+                  "`T_AMPER'"#"`&'"
+                  "`T_VARIABLE'"#"variable"
+                  "`T_VARIABLE_LABEL'"#"variable label"
+                  "`T_DEFAULT'"#"`<='"
+                  "`T_CHOICE'"#"`[]'"
+                  "`T_LDOTS'"#"`...'"
+                  "`T_OOASSIGN'"#"`<-'"
+                  "`T_COMPARE'"#"comparison operator"
+                  "`T_FDCOMPARE'"#"finite domain comparison operator"
+                  "`T_FDIN'"#"finite domain inclusion operator"
+                  "`T_ADD'"#"`+' or `-'"
+                  "`T_FDMUL'"#"`*' or `/'"
+                  "`T_OTHERMUL'"#"`div' or `mod'"
+                  "`T_FALSE_LABEL'"#"`false' as label"
+                  "`T_TRUE_LABEL'"#"`true' as label"
+                  "`T_UNIT_LABEL'"#"`unit' as label"
+                  "`T_DOTINT'"#"`.' followed by an integer"
+                  "`T_DEREFF'"#"`!!'"
+                  "`T_ENDOFFILE'"#"end-of-file"
+                  "`T_REGEX'"#"regular expression"
+                  "`T_REDUCE'"#"`=>'"
+                  "`T_SEP'"#"`//'"]
 
       fun {DetachPrefix P S}
          case P of C|Cr then
@@ -68,7 +68,7 @@ local
             case {DetachPrefix P S} of false then {BeautifyPrefix Pr S}
             elseof Rest then {Append R {Beautify Rest}}
             end
-         [] nil then S
+         [] nil then {Raise noBeautification} unit
          end
       end
 
@@ -76,21 +76,23 @@ local
          case S of nil then ""
          [] C|Cr then
             case C of &` then
-               case Cr of &_|Crr then KW Rest in   % e.g., "`_case_'"
-                  {List.takeDropWhile Crr fun {$ C} C \= &_ end ?KW ?Rest}
-                  case Rest of &_|&'|NewRest then
-                     &`|{Append KW &'|{Beautify NewRest}}
-                  else
-                     C|{Beautify Cr}
+               try
+                  {BeautifyPrefix Prefixes S}
+               catch noBeautification then
+                  case Cr of &T|&_|Crr then KW Rest in   % e.g., "`T_case'"
+                     {List.takeDropWhile Crr fun {$ C} C \= &' end ?KW ?Rest}
+                     case Rest of &'|NewRest then
+                        &`|{Append KW &'|{Beautify NewRest}}
+                     end
+                  elseof &'|Crr then Op Rest in   % e.g., "`'+''"
+                     {List.takeDropWhile Crr fun {$ C} C \= &' end ?Op ?Rest}
+                     case Rest of &'|&'|NewRest then
+                        &`|{Append Op &'|{Beautify NewRest}}
+                     else
+                        C|{Beautify Cr}
+                     end
+                  else S
                   end
-               elseof &'|Crr then Op Rest in   % e.g., "`'+''"
-                  {List.takeDropWhile Crr fun {$ C} C \= &' end ?Op ?Rest}
-                  case Rest of &'|&'|NewRest then
-                     &`|{Append Op &'|{Beautify NewRest}}
-                  else
-                     C|{Beautify Cr}
-                  end
-               else {BeautifyPrefix Prefixes S}
                end
             else C|{Beautify Cr}
             end

@@ -223,11 +223,11 @@ class GenericCreateObject
       Auto Fun
    in
       ProxyCreateObject, create(OldNode NewNode)
-      case {OpMan isKey(Type $)}
+      if {OpMan isKey(Type $)}
       then Auto#Fun#_ = {OpMan get(Type $)}
       else Auto = false
       end
-      case Auto
+      if Auto
       then
          NewNode = {Visual performCreation({Fun Value} Parent
                                            Index Depth $)}

@@ -24,7 +24,7 @@ class IntLayoutObject
       layoutType : normal %% Layout Type
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -43,7 +43,6 @@ class IntLayoutObject
          yDim <- 1
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 
@@ -59,7 +58,7 @@ class FloatLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -69,7 +68,6 @@ class FloatLayoutObject
          @color = {OpMan get(floatColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -84,7 +82,7 @@ class AtomLayoutObject
       layoutType : normal %% Layout Type
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -103,7 +101,6 @@ class AtomLayoutObject
          yDim <- 1
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 
@@ -119,7 +116,7 @@ class BoolLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -132,7 +129,6 @@ class BoolLayoutObject
          @color = {OpMan get(boolColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -147,7 +143,7 @@ class NameLayoutObject
       layoutType : normal %% LayoutType
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -166,7 +162,6 @@ class NameLayoutObject
          yDim <- 1
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 
@@ -189,7 +184,7 @@ class ProcedureLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
          Arity  = {Procedure.arity @value}
@@ -200,7 +195,6 @@ class ProcedureLayoutObject
          @color = {OpMan get(procedureColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end

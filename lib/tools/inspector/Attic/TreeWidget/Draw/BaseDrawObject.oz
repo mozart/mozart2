@@ -131,34 +131,32 @@ in
          menu    : nil   %% Menu Object Ptr
 
       meth draw(X Y)
-         case @dirty
+         if @dirty
          then
             xAnchor <- X
             yAnchor <- Y
             dirty   <- false
-            case @haveTag
+            if @haveTag
             then {@tag tkClose}
             else haveTag <- true
             end
             tag <- {New Tk.canvasTag
                     tkInit(parent: @canvas)}
             {@visual printXY(X Y @string @tag @color)}
-         else skip
          end
       end
 
       meth undraw
-         case @haveTag
+         if @haveTag
          then
             {@tag tkClose}
             dirty   <- true
             haveTag <- false
-         else skip
          end
       end
 
       meth moveNodeXY(X XF Y YF)
-         case @dirty
+         if @dirty
          then skip
          else
             xAnchor <- (@xAnchor + X)
@@ -168,12 +166,12 @@ in
       end
 
       meth reDraw(X Y)
-         case @dirty
+         if @dirty
          then
             xAnchor <- X
             yAnchor <- Y
             dirty   <- false
-            case @haveTag
+            if @haveTag
             then {@tag tkClose}
             else haveTag <- true
             end
@@ -202,7 +200,7 @@ in
       meth searchNode(Coord $)
          coord(X Y) = Coord
       in
-         case X =< @xDim andthen Y =< @yDim
+         if X =< @xDim andthen Y =< @yDim
          then self
          else nil
          end

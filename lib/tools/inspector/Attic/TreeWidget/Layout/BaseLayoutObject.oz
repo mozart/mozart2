@@ -26,13 +26,12 @@ class LayoutObject
       dazzle : true %% Layout Flag
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          xDim   <- 0
          yDim   <- 0
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 

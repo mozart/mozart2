@@ -26,7 +26,7 @@ class RecordLayoutObject
       lastXDim   %% X Dimension (Last Entry)
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          Label      = @label
          StopValue  = {@visual getStop($)}
@@ -43,7 +43,6 @@ class RecordLayoutObject
          end
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 
@@ -59,7 +58,7 @@ class RecordLayoutObject
       [] labelTuple   then layoutMode <- vertical
       [] list         then layoutMode <- vertical
       else
-         case I < @width
+         if I < @width
          then RecordLayoutObject, performLayoutCheck((I + 1))
          else layoutMode <- horizontal
          end
@@ -70,13 +69,13 @@ class RecordLayoutObject
       Label|Node = {Dictionary.get @items I}
       LabelXDim NodeXDim
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label layout}
          {Node layout}
          LabelXDim = {Label getXDim($)}
          NodeXDim  = {Node getXDim($)}
-         case I < @width
+         if I < @width
          then RecordLayoutObject,
             horizontalLayout((I + 1) (XDim + LabelXDim + NodeXDim) StopValue)
          else
@@ -95,13 +94,13 @@ class RecordLayoutObject
       Label|Node  = {Dictionary.get @items I}
       IXDim IYDim LabelXDim
    in
-      case {IsFree StopValue}
+      if {IsFree StopValue}
       then
          {Label layout}
          {Node layout}
          IXDim|IYDim = {Node getXYDim($)}
          LabelXDim   = {Label getXDim($)}
-         case I < @width
+         if I < @width
          then
             RecordLayoutObject,
             verticalLayout((I + 1) {Max XDim (LabelXDim + IXDim)}
@@ -149,7 +148,7 @@ class RecordCycleLayoutObject
       oldCycleCount  %% Previus CycleCount
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          case @cycleCount
          of 0 then oldCycleCount <- 0
@@ -167,7 +166,6 @@ class RecordCycleLayoutObject
             xDim     <- (XDim + @xDim)
             lastXDim <- (XDim + @lastXDim)
          end
-      else skip
       end
    end
 

@@ -71,12 +71,11 @@ class NullLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          xDim   <- 0
          yDim   <- 1
          dazzle <- false
-      else skip
       end
    end
 end
@@ -148,7 +147,7 @@ class InternalAtomLayoutObject
    meth layout
       TellNode = @tellNode
    in
-      case @dazzle
+      if @dazzle
       then
          String   = @value
       in
@@ -158,7 +157,6 @@ class InternalAtomLayoutObject
          @color  = black
          dazzle <- false
          dirty  <- true
-      else skip
       end
       case TellNode
       of nil then skip
@@ -178,13 +176,12 @@ class BitmapLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          @xDim  = 2
          @color = '#b22222'
          yDim   <- 1
          dazzle <- false
-      else skip
       end
    end
 end

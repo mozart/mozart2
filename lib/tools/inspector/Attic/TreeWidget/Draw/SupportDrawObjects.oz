@@ -128,7 +128,7 @@ class ProxyDrawObject
 
    meth draw(X Y)
       {@currentNode draw(X Y)}
-      case @expanded
+      if @expanded
       then {@currentNode setMenuStatus(expanded)}
       else {@currentNode setMenuStatus(normal)}
       end
@@ -152,7 +152,7 @@ class ProxyDrawObject
 
    meth reDraw(X Y)
       {@currentNode reDraw(X Y)}
-      case @expanded
+      if @expanded
       then {@currentNode setMenuStatus(expanded)}
       else {@currentNode setMenuStatus(normal)}
       end
@@ -211,31 +211,30 @@ class BitmapDrawObject
       DrawObject
 
    meth draw(X Y)
-      case @dirty
+      if @dirty
       then
          DrawObject, initMenu(@bitmapMode)
          xAnchor <- X
          yAnchor <- Y
          dirty   <- false
-         case @haveTag
+         if @haveTag
          then {@tag tkClose}
          else haveTag <- true
          end
          tag <- {New Tk.canvasTag
                  tkInit(parent: @canvas)}
          {@visual paintXY(X Y @value @tag @color)}
-      else skip
       end
    end
 
    meth reDraw(X Y)
-      case @dirty
+      if @dirty
       then
          DrawObject, initMenu(@bitmapMode)
          xAnchor <- X
          yAnchor <- Y
          dirty   <- false
-         case @haveTag
+         if @haveTag
          then {@tag tkClose}
          else haveTag <- true
          end

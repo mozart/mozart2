@@ -21,7 +21,7 @@ class ClassLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -31,7 +31,6 @@ class ClassLayoutObject
          @color = {OpMan get(classChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -43,7 +42,7 @@ class ObjectLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -53,7 +52,6 @@ class ObjectLayoutObject
          @color = {OpMan get(objectChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -65,7 +63,7 @@ class ArrayLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -75,7 +73,6 @@ class ArrayLayoutObject
          @color = {OpMan get(arrayChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -86,7 +83,7 @@ class DictionaryLayoutObject
    from
       LayoutObject
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -96,7 +93,6 @@ class DictionaryLayoutObject
          @color = {OpMan get(dictionaryChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -108,7 +104,7 @@ class PortLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -118,7 +114,6 @@ class PortLayoutObject
          @color = {OpMan get(portChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -130,7 +125,7 @@ class SpaceLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -140,7 +135,6 @@ class SpaceLayoutObject
          @color = {OpMan get(spaceChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end
@@ -152,7 +146,7 @@ class ChunkLayoutObject
       LayoutObject
 
    meth layout
-      case @dazzle
+      if @dazzle
       then
          String = @string
       in
@@ -162,7 +156,6 @@ class ChunkLayoutObject
          @color = {OpMan get(genericChunkColor $)}
          dazzle <- false
          dirty  <- true
-      else skip
       end
    end
 end

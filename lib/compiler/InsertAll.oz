@@ -105,7 +105,9 @@ in
       ParseOzVirtualString
 
       % Unnester
+      GetDirectives
       JoinQueries
+      MakeExpressionQuery
       UnnestQuery
 
       % Interface

@@ -279,17 +279,8 @@ local
             {@reporter logInterrupt()}
          end
       end
-      meth CheckReturn(Return)
-         Return = return(...)
-         case {List.sub {Record.reflectArity Return}
-               ['requiredInterfaces' 'result']}
-         then skip
-         else fail
-         end
-      end
 
       meth feedFile(FileName Return <= return)
-         CompilerEngine, CheckReturn(Return)
          CompilerEngine,
          CatchResult(proc {$}
                         CompilerEngine, FeedFileSub(FileName Return)
@@ -300,7 +291,6 @@ local
          CompilerEngine, Feed(ParseOzFile FileName Return)
       end
       meth feedVirtualString(VS Return <= return)
-         CompilerEngine, CheckReturn(Return)
          CompilerEngine,
          CatchResult(proc {$}
                         case CompilerStateClass, getSwitch(echoqueries $) then
@@ -321,7 +311,7 @@ local
       meth Feed(ParseOz Data Return)
          ExecutingThread <- {Thread.this}
          {@reporter clearErrors()}
-         try Queries0 Queries T in
+         try Queries0 Directives Queries1 Queries in
             {@reporter logPhase('parsing ...')}
             Queries0 = {ParseOz Data @reporter
                         CompilerStateClass, getSwitch(showinsert $)
@@ -331,52 +321,58 @@ local
                raise rejected end
             else skip
             end
+            {GetDirectives Queries0 ?Directives ?Queries1}
+            CompilerEngine, FeedSub(Directives return)
             Queries = case CompilerStateClass, getSwitch(ozma $) then
-                         {JoinQueries Queries0 @reporter}
+                         {JoinQueries Queries1 @reporter}
                       elsecase CompilerStateClass, getSwitch(expression $) then
-                         V = {New Core.variable init('`result`' putEnv unit)}
-                      in
-                         CompilerStateClass, enter(V _ false)
-                         {MakeExpressionQuery Queries0}
+                         case Queries1 of nil then Queries1
+                         else V in
+                            V = {New Core.variable
+                                 init('`result`' putEnv unit)}
+                            case {HasFeature Return result} then
+                               CompilerStateClass, enter(V Return.result false)
+                            else
+                               CompilerStateClass, enter(V _ false)
+                            end
+                            {MakeExpressionQuery Queries1}
+                         end
                       else
-                         Queries0
+                         Queries1
                       end
-            T = {Thread.this}
-            CompilerEngine,
-            ExecProtected(proc {$}
-                             try
-                                Is = {Map Queries
-                                      fun {$ Query}
-                                         CompilerEngine, CompileQuery(Query $)
-                                      end}
-                             in
-                                case {HasFeature Return requiredInterfaces}
-                                then Return.requiredInterfaces = Is
-                                else skip
-                                end
-                             catch tooManyErrors then
-                                {Thread.injectException T tooManyErrors}
-                             [] rejected then
-                                {Thread.injectException T rejected}
-                             [] aborted then
-                                {Thread.injectException T aborted}
-                             [] crashed then
-                                {Thread.injectException T crashed}
-                             end
-                          end true)
-            case {@reporter hasSeenError($)} then
-               raise rejected end
-            else skip
-            end
-            case CompilerStateClass, getSwitch(expression $) then
-               case {HasFeature Return result} then
-                  CompilerStateClass, lookupInEnv('`result`' ?Return.result)
-               else skip
-               end
-            else skip
-            end
+            CompilerEngine, FeedSub(Queries Return)
          finally
             ExecutingThread <- unit
+         end
+      end
+      meth FeedSub(Queries Return)
+         T = {Thread.this}
+      in
+         CompilerEngine,
+         ExecProtected(proc {$}
+                          try
+                             Is = {Map Queries
+                                   fun {$ Query}
+                                      CompilerEngine, CompileQuery(Query $)
+                                   end}
+                          in
+                             case {HasFeature Return requiredInterfaces}
+                             then Return.requiredInterfaces = Is
+                             else skip
+                             end
+                          catch tooManyErrors then
+                             {Thread.injectException T tooManyErrors}
+                          [] rejected then
+                             {Thread.injectException T rejected}
+                          [] aborted then
+                             {Thread.injectException T aborted}
+                          [] crashed then
+                             {Thread.injectException T crashed}
+                          end
+                       end true)
+         case {@reporter hasSeenError($)} then
+            raise rejected end
+         else skip
          end
       end
       meth CompileQuery(Query ?RequiredInterface)
@@ -536,13 +532,10 @@ local
                             Code}
                case CompilerStateClass, getSwitch(ozma $) then
                   case GPNs of nil then File VS in
-                     {@reporter logSubPhase('saving assembler code ...')}
+                     {@reporter logSubPhase('displaying assembler code ...')}
                      {Assembler output(?VS)}
-                     File = {New Open.file
-                             init(name: '/tmp/output.ozm'
-                                  flags: [write create truncate])}
-                     {File write(vs: VS)}
-                     {File close()}
+                     {@reporter
+                      displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
                   else
                      {@reporter error(kind: 'Ozma error'
                                       msg: ('No free variables allowed '#
@@ -841,9 +834,9 @@ in
                {self.Compiler M}
             catch failure(...) then Reporter in
                {self.Compiler getReporter(?Reporter)}
-               {Reporter warn(kind: 'warning'
-                              msg: 'execution of query raised failure'
-                              body: [hint(l: 'Query' m: oz(M))])}
+               {Reporter error(kind: 'error'
+                               msg: 'execution of query raised failure'
+                               body: [hint(l: 'Query' m: oz(M))])}
                {Reporter logReject()}
             end
             lock self.QueueLock then

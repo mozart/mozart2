@@ -21,7 +21,7 @@
 
 class CompilerInterfaceQuiet from CompilerInterfaceGeneric
    prop final
-   attr Verbose: false AccVS: "" HasErrors: false
+   attr Verbose: false AccVS: "" SourceVS: "" HasErrors: false
    meth init(CompilerObject DoVerbose <= false)
       Verbose <- DoVerbose
       CompilerInterfaceGeneric, init(CompilerObject Serve)
@@ -29,6 +29,7 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
    meth reset()
       lock
          AccVS <- ""
+         SourceVS <- ""
          HasErrors <- false
       end
    end
@@ -39,7 +40,8 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
          [] info(VS _) then
             OutputVS = VS
          [] displaySource(_ _ VS) then
-            OutputVS = VS
+            SourceVS <- VS
+            OutputVS = ""
          [] toTop() then
             HasErrors <- true
             OutputVS = ""
@@ -62,5 +64,8 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
    end
    meth getVS($)
       @AccVS
+   end
+   meth getSource($)
+      @SourceVS
    end
 end

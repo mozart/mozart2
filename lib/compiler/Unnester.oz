@@ -1828,6 +1828,10 @@ local
       end
    end
 in
+   fun {GetDirectives Queries ?Directives}
+      {List.takeDropWhile Queries IsDirective ?Directives}
+   end
+
    local
       fun {VariableMember PrintName Vs}
          case Vs of fVar(PrintName0 _)|Vr then
@@ -1878,11 +1882,14 @@ in
          {JoinQueriesSub OtherQueries ?NewQueries}
          case NewQueries of [fDeclare(P1 P2 C)] then
             {Append Directives [fLocal(P1 P2 C)]}
+         elseof [FE] then
+            {Append Directives NewQueries}
          elseof nil then
             Directives
          else
             {Reporter error(kind: ExpansionError
-                            msg: 'Ozma only supports one query in input')}
+                            msg: ('Ozma only supports at most one query '#
+                                  'per input'))}
             Directives
          end
       end

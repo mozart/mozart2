@@ -142,19 +142,6 @@ local
       {ForAll Vs proc {$ V} {V checkUse(Kind Rep)} end}
    end
 
-   local
-      fun {IsEnvCoordSub S}
-         case S == ".env" then true
-         elsecase S of _|R then {IsEnvCoordSub R}
-         [] nil then false
-         end
-      end
-   in
-      fun {IsEnvCoord Coord}
-         Coord == unit orelse {IsEnvCoordSub {Atom.toString Coord.1}}
-      end
-   end
-
    class AnnotateDefaults
       meth annotateGlobalVars(_ VsHd VsTl)
          VsHd = VsTl
@@ -768,7 +755,7 @@ local
          @use
       end
       meth checkUse(Kind Rep)
-         case @origin \= user orelse {IsEnvCoord @coord} then skip
+         case @origin \= user then skip
          elsecase @use of unused then
             {Rep warn(coord: @coord kind: BindingAnalysisWarning
                       msg: 'unused '#Kind#' '#pn(@printName))}

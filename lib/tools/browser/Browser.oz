@@ -511,7 +511,7 @@ in
    proc {DoCreateWindow}
       case {IsDeepGuard} then
          {Show 'BrowserModule.createWindow from a deep guard?'}
-      else {DefaultBrowser createWindows}
+      else {DefaultBrowser createBrowser}
       end
    end
 

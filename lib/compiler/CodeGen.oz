@@ -116,8 +116,12 @@ define
    end
 
    proc {MakeUnify Reg1 Reg2 VHd VTl}
-      if Reg1 == Reg2 then
-         %% If we left it in, it would create unnecessary Reg occurrences.
+      if {IsDet Reg1} andthen {IsDet Reg2} andthen Reg1 == Reg2 then
+         %% We omit the unification to avoid unnecessary Reg occurrences.
+         %% (Reg1 or Reg2 can be undetermined in SideConditions, see PR#634.
+         %% The reason is the the test is processed before the subpattern,
+         %% and registers are assigned to variables only when the subpattern
+         %% is processed.)
          VHd = VTl
       else
          VHd = vUnify(_ Reg1 Reg2 VTl)

@@ -1,9 +1,9 @@
 functor
 import
-   System.{property get gcDo printError}
-   Error.{formatPos msg formatLine formatExc dispatch format formatGeneric}
+   System   %--**.{property get gcDo printError}
+   Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}
    ErrorRegistry.put
-   Foreign.staticLoad
+   Foreign   %--**.staticLoad
    \insert Misc-new.env
    Core
    JoinQueries

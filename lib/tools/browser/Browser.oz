@@ -318,7 +318,7 @@ in
    %%
    %%
    proc {While Cond Body}
-      case {Cond} then {Body} {While Cond Body} else true end
+      case {Cond} then {Body} {While Cond Body} else skip end
    end
    proc {JobEnd Proc}
       local MyThr JobThr in
@@ -367,7 +367,7 @@ in
             %% Fairly to say, there are few things that can be caught
             %% this way: a browser object has an internal
             %% asynchronous worker which does the actual job ...
-            case {IsVar HasCrashed} then true
+            case {IsVar HasCrashed} then skip
             else Pl Hl in
                %%
                try
@@ -376,7 +376,7 @@ in
                   {JobEnd proc {$}
                              {Browser close} % try to give up gracefully;
                           end}
-               catch _ then true   % ignore faults in the current thread;
+               catch _ then skip   % ignore faults in the current thread;
                end
 
                %%
@@ -390,7 +390,7 @@ in
       %%
       %%
       meth equate(Term)
-         case @browserObj == InitValue then true
+         case @browserObj == InitValue then skip
          else {@browserObj equate(Term)}
          end
       end
@@ -398,7 +398,7 @@ in
       %%
       %%
       meth setPar(Par Val)
-         case @browserObj == InitValue then true
+         case @browserObj == InitValue then skip
          else {@browserObj setParameter(Par Val)}
          end
       end
@@ -406,7 +406,7 @@ in
       %%
       %%
       meth getPar(Par ?Val)
-         case @browserObj == InitValue then true
+         case @browserObj == InitValue then skip
          else {@browserObj getParameter(Par Val)}
          end
       end
@@ -428,7 +428,7 @@ in
             %%
             browserObj <- Browser
             {Browser createWindow}
-         else true
+         else skip
          end
       end
 

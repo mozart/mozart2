@@ -35,8 +35,8 @@ in
 local
    NewUniqueName = {`Builtin` 'NewUniqueName' 2}
 in
-   `true`  = {NewUniqueName 'NameTrue'}
-   `false` = {NewUniqueName 'NameFalse'}
+   `true`  = {NewUniqueName 'true'}
+   `false` = {NewUniqueName 'false'}
 end
 
 %%

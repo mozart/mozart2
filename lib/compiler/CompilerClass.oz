@@ -722,6 +722,12 @@ local
             case IsCompilerThread
                andthen CompilerStateClass, getSwitch(watchdog $)
             then
+               %--** the following line is needed because sadly
+               %--** the raiseOnBlock feature also raises exceptions
+               %--** when blocking on lazy variables or futures:
+               {Wait System}
+               {Wait Foreign}
+               {Wait Error}
                {Thread.setRaiseOnBlock {Thread.this} true}
             else skip
             end

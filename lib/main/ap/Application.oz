@@ -696,13 +696,11 @@ define
          fun {CgiRawGet}
             case {String.toAtom {GetEnv 'REQUEST_METHOD'}}
             of 'GET'  then {GetEnv 'QUERY_STRING'}
-            [] 'POST' then F in
-               try
-                  F={New StdIn init}
-                  {F get({String.toInt {GetEnv 'CONTENT_LENGTH'}} $)}
-               finally
-                  {F close}
-               end
+            [] 'POST' then
+               F={New StdIn init}
+            in
+               {F get({String.toInt {GetEnv 'CONTENT_LENGTH'}} $)}
+               %% NEVER ATTEMPT TO CLOSE!
             end
          end
       in

@@ -87,6 +87,7 @@ prepare
                      watchdog(type: bool)
                      warnredecl(type: bool)
                      warnunused(type: bool)
+                     warnunusedformals(type: bool)
                      warnforward(type: bool)
                      warnopt(type: bool)
                      expression(type: bool)

@@ -1816,13 +1816,17 @@ define
          {System.show assertTypes(BIName)}
 \endif
          I = {Builtins.getInfo BIName}
-         Types = I.types
-         Det   = I.det
       in
+         case I of noInformation then skip
+         else
+            Types = I.types
+            Det   = I.det
+         in
 \ifdef DEBUGSA
-         {System.show assert(BIName I @actualArgs)}
+            {System.show assert(BIName I @actualArgs)}
 \endif
-         SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
+            SABuiltinApplication, AssertTypes(Ctrl 1 @actualArgs Types Det)
+         end
       end
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
@@ -1929,7 +1933,21 @@ define
 \ifdef DEBUGSA
          {System.show checkArguments}
 \endif
-         case
+         if
+            BIInfo==noInformation
+         then
+            PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+         in
+            {Ctrl.rep error(coord: @coord
+                            kind:  SAGenError
+                            msg:   'application of unknown builtin'
+                            items: [hint(l:'Builtin' m:N)
+                                    hint(l:'Argument names'
+                                         m:{ApplToVS pn(N)|PNs})
+                                    hint(l:'Argument values'
+                                         m:{ApplToVS pn(N)|Vals})])}
+         elseif
             NumArgs==ProcArity
          then
             case

@@ -430,6 +430,15 @@ local
       end
    end
 
+   fun {IsPrefix Xs Ys}
+      case Xs of nil then true
+      [] X|Xr then
+         case Ys of nil then false
+         [] Y|Yr then X==Y andthen {IsPrefix Xr Yr}
+         end
+      end
+   end
+
 in
 
    List = list(make:          MakeList
@@ -536,6 +545,8 @@ in
                   proc {$ Xs F ?Ys ?Zs}
                      {TakeDropWhileInd Xs 1 F Ys Zs}
                   end
+               isPrefix:
+                  IsPrefix
               )
 
 end

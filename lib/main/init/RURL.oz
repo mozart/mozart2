@@ -105,7 +105,7 @@ local
                            end
                %% 3. Net location
                R3
-               Netloc    = case {String.isPrefix "//" R2} then S=R2.2.2 in
+               Netloc    = case {List.isPrefix "//" R2} then S=R2.2.2 in
                               case {Member &/ S} then R in
                                  R3=&/|R
                                  o(netloc:{Map {String.token S &/ $ ?R}

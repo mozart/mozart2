@@ -227,14 +227,15 @@ local
       class AssemblerClass
          prop final
          attr InstrsHd InstrsTl LabelDict Size
-         feat Profile
-         meth init(ProfileSwitch)
+         feat Profile DebugInfoControl
+         meth init(ProfileSwitch DebugInfoControlSwitch)
             InstrsHd <- 'skip'|@InstrsTl
             LabelDict <- {NewDictionary}
             Size <- InstructionSizes.'skip'
             % Code must not start at address 0, since this is interpreted as
             % NOCODE by the emulator - thus the dummy instruction 'skip'.
             self.Profile = ProfileSwitch
+            self.DebugInfoControl = DebugInfoControlSwitch
          end
          meth newLabel(?L)
             L = {NewName}
@@ -255,7 +256,7 @@ local
                {Dictionary.put @LabelDict L @Size}
             end
          end
-         meth append(Instr) NewTl in
+         meth append(Instr) NewTl NewInstr in
             case Instr
             of definition(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
@@ -266,9 +267,39 @@ local
             [] createCond(L _) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
             [] shallowGuard(L _) then AssemblerClass, declareLabel(L)
+            [] inlinePlus1(X1 X2 NLiveRegs) then
+               case self.DebugInfoControl then
+                  NewInstr = callBI('+1' [X1]#[X2] NLiveRegs)
+               else skip
+               end
+            [] inlineMinus1(X1 X2 NLiveRegs) then
+               case self.DebugInfoControl then
+                  NewInstr = callBI('-1' [X1]#[X2] NLiveRegs)
+               else skip
+               end
+            [] inlinePlus(X1 X2 X3 NLiveRegs) then
+               case self.DebugInfoControl then
+                  NewInstr = callBI('+' [X1 X2]#[X3] NLiveRegs)
+               else skip
+               end
+            [] inlineMinus(X1 X2 X3 NLiveRegs) then
+               case self.DebugInfoControl then
+                  NewInstr = callBI('-' [X1 X2]#[X3] NLiveRegs)
+               else skip
+               end
             [] testBI(_ _ L _) then AssemblerClass, declareLabel(L)
-            [] testLT(_ _ _ L _) then AssemblerClass, declareLabel(L)
-            [] testLE(_ _ _ L _) then AssemblerClass, declareLabel(L)
+            [] testLT(X1 X2 X3 L NLiveRegs) then
+               AssemblerClass, declareLabel(L)
+               case self.DebugInfoControl then
+                  NewInstr = testBI('<' [X1 X2]#[X3] L NLiveRegs)
+               else skip
+               end
+            [] testLE(X1 X2 X3 L NLiveRegs) then
+               AssemblerClass, declareLabel(L)
+               case self.DebugInfoControl then
+                  NewInstr = callBI('=<' [X1 X2]#[X3] L NLiveRegs)
+               else skip
+               end
             [] testLiteral(_ _ L1 L2 _) then
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
@@ -291,10 +322,11 @@ local
             [] lockThread(L _ _) then AssemblerClass, declareLabel(L)
             else skip
             end
-            @InstrsTl = Instr|NewTl
+            case {IsFree NewInstr} then NewInstr = Instr else skip end
+            @InstrsTl = NewInstr|NewTl
             InstrsTl <- NewTl
-            Size <- @Size + InstructionSizes.{Label Instr}
-            case Instr of definition(_ _ _ _ _) then
+            Size <- @Size + InstructionSizes.{Label NewInstr}
+            case NewInstr of definition(_ _ _ _ _) then
                case self.Profile then
                   AssemblerClass, append(profileProc)
                else skip
@@ -953,8 +985,9 @@ local
       end
    end
 in
-   proc {Assemble ProfileSwitch Code ?Assembler}
-      Assembler = {New AssemblerClass init(ProfileSwitch)}
+   proc {Assemble Code ProfileSwitch DebugInfoControlSwitch ?Assembler}
+      Assembler = {New AssemblerClass
+                   init(ProfileSwitch DebugInfoControlSwitch)}
       {Peephole Code Assembler}
    end
 end

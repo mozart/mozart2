@@ -579,8 +579,9 @@ local
                                   CompilerStateClass, getVars($) TopLevelGVs
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
-               Assembler = {Assemble CompilerStateClass, getSwitch(profile $)
-                            Code}
+               Assembler = {Assemble Code
+                            CompilerStateClass, getSwitch(profile $)
+                            CompilerStateClass, getSwitch(debuginfocontrol $)}
                case CompilerStateClass, getSwitch(ozma $) then
                   case GPNs of nil then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}

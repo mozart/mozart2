@@ -449,8 +449,8 @@ in
                                             false ?XsOut ?Unifies)
                Emitter, DebugEntry(Coord 'call' NLiveRegs)
                Emitter, Emit(callBI(Builtinname XsIn#XsOut NLiveRegs))
-               Emitter, DebugExit(Coord 'call' NLiveRegs)
                Emitter, EmitUnifies(Unifies)
+               Emitter, DebugExit(Coord 'call' @HighestUsedX + 1)
             end
          [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
@@ -1446,10 +1446,11 @@ in
             end
             Emitter, AllocateBuiltinArgs(Regr IModr ?Xr ?NLiveRegs
                                          IsTestBuiltin ?XsOut ?Unifies)
-         else
+         else NLiveRegs0 in
             XsIn = nil
-            NLiveRegs = @HighestUsedX + 1
+            NLiveRegs0 = @HighestUsedX + 1
             Emitter, AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
+            Emitter, MaxNLiveRegs(Unifies NLiveRegs0 ?NLiveRegs)
          end
       end
       meth AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
@@ -1469,6 +1470,17 @@ in
          [] nil then
             XsOut = nil
             Unifies = nil
+         end
+      end
+      meth MaxNLiveRegs(Unifies NLiveRegs0 $)
+         case Unifies of U|Ur then x(I)#_ = U in
+            case I > NLiveRegs0 then
+               Emitter, MaxNLiveRegs(Ur I $)
+            else
+               Emitter, MaxNLiveRegs(Ur NLiveRegs0 $)
+            end
+         [] nil then
+            NLiveRegs0
          end
       end
       meth EmitUnifies(Unifies)

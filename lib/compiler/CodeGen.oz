@@ -2146,7 +2146,7 @@ local
          Builtinname = {GetBuiltinName @value}
          BIInfo = {GetBuiltinInfo Builtinname}
       in
-         case BIInfo == noInformation orelse CS.debugInfoControlSwitch then
+         case BIInfo == noInformation then
             VHd = vCall(_ {Designator reg($)}
                         {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
                         {Designator getCoord($)} VTl)

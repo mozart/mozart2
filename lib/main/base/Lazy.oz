@@ -22,9 +22,11 @@
 
 declare
    Lazy
+   IsLazy
 in
 
 local
+
    LazyNew = {`Builtin` 'Lazy.new' 2}
 
    proc {LazyApply P X}
@@ -45,11 +47,12 @@ local
 
 in
 
-   Lazy = lazy(new    :LazyNew
-               apply  :LazyApply
-               request:LazyRequest
-               load   :LazyLoad
-               call   :LazyCall
-              )
-
+   IsLazy = {`Builtin` 'Lazy.is'  2}
+   Lazy   = lazy(new     : LazyNew
+                 is      : IsLazy
+                 apply   : LazyApply
+                 request : LazyRequest
+                 load    : LazyLoad
+                 call    : LazyCall
+                )
 end

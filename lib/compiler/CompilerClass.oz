@@ -38,6 +38,7 @@ local
                       fun {$ C}
                          case C of &. then &_ else C end
                       end} "Oz_"}
+
    DefaultSwitches = switches(%% global switches:
                               %%
                               compilerpasses: false
@@ -99,6 +100,9 @@ local
                               debuginfocontrol: false
                               debuginfovarnames: false)
 
+   DefaultOptions = options(maxNumberOfErrors: 17
+                            baseURL: unit)
+
    InterruptException = {NewName}
 
    fun {NormalizeCoord Coord}
@@ -112,9 +116,9 @@ local
       attr
          defines: unit
          switches: DefaultSwitches
+         options: DefaultOptions
          savedSwitches: nil
          localSwitches: unit
-         maxNumberOfErrors: 17
          productionTemplates: unit
 
          ParseFile: ParseOzFile
@@ -226,16 +230,24 @@ local
       end
 
       %%
-      %% Maximum Number of Errors
+      %% Options
       %%
 
       meth setMaxNumberOfErrors(N)
-         maxNumberOfErrors <- N
+         options <- {AdjoinAt @options maxNumberOfErrors N}
          {@narrator tell(maxNumberOfErrors(N))}
          {@reporter setMaxNumberOfErrors(N)}
       end
       meth getMaxNumberOfErrors($)
-         @maxNumberOfErrors
+         @options.maxNumberOfErrors
+      end
+      meth setBaseURL(V) A in
+         A = {VirtualString.toAtom V}
+         options <- {AdjoinAt @options baseURL A}
+         {@narrator tell(baseURL(A))}
+      end
+      meth getBaseURL($)
+         @options.baseURL
       end
 
       %%
@@ -351,7 +363,8 @@ local
          {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
                       ' playing Oz 3\n\n')}
          {Send P switches(@switches)}
-         {Send P maxNumberOfErrors(@maxNumberOfErrors)}
+         {Send P maxNumberOfErrors(@options.maxNumberOfErrors)}
+         {Send P baseURL(@options.baseURL)}
          {Send P env({Dictionary.toRecord env self.values})}
       end
 
@@ -794,9 +807,12 @@ in
                {TypeCheck IsBool M 2 'bool'}
             [] pushSwitches() then skip
             [] popSwitches() then skip
-            [] getMaxNumberOfErrors(_) then skip
             [] setMaxNumberOfErrors(_) then
                {TypeCheck IsInt M 1 'int'}
+            [] getMaxNumberOfErrors(_) then skip
+            [] setBaseURL(_) then
+               {TypeCheck IsVirtualString M 1 'virtual string'}
+            [] getBaseURL(_) then skip
             [] addToEnv(_ _) then
                {TypeCheck PrintName.is M 1 'print name'}
             [] lookupInEnv(_ _) then

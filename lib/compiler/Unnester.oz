@@ -487,14 +487,14 @@ define
          StateUsed           % true iff state has been accessed
          ArgCounter          % temporarily used while transforming method heads
          reporter
-         switches
+         state
 
       meth init(TopLevel Reporter State)
          BA <- {New BindingAnalysis init(TopLevel Reporter State)}
          CurrentImportFV <- unit
          AdditionalImports <- nil
          reporter <- Reporter
-         switches <- State
+         state <- State
       end
 
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
@@ -591,7 +591,7 @@ define
       meth UnnestStatement(FS $)
          case FS of fStepPoint(FS Kind C) then GS in
             Unnester, UnnestStatement(FS ?GS)
-            if {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -712,7 +712,7 @@ define
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            if {@switches getSwitch(debuginfovarnames $)} then
+            if {@state getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
@@ -739,7 +739,7 @@ define
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.functionDefinition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            if {@switches getSwitch(debuginfovarnames $)} then
+            if {@state getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
@@ -800,12 +800,12 @@ define
                                       [FImportDesc FExportDesc FunFV FV] CND)
                Unnester, UnnestStatement(FS ?GNewFunctor)
                GS = GFun|GNewFunctor
-               GFrontEq|if {@switches getSwitch(debuginfocontrol $)}
+               GFrontEq|if {@state getSwitch(debuginfocontrol $)}
                            andthen {IsStep C}
                         then {New Core.stepPoint init(GS 'definition' C)}
                         else GS
                         end
-            else GV1 GV2 FV1 FV2 FS1 CND FS2 in
+            else GV1 GV2 FV1 FV2 FS1 CND BaseURL FS2 in
                {@BA openScope()}
                %--** enter all FRequire/FPrepare variables
                {@BA generate('OuterFunctor' C ?GV1)}
@@ -832,9 +832,13 @@ define
                                            unit)] C)
                % FE = {`ApplyFunctor` N FV1}.inner
                CND = {CoordNoDebug C}
+               BaseURL = case {@state getBaseURL($)} of unit then
+                            {CondSelect C 1 ''}
+                         elseof A then A
+                         end
                FS2 = fEq(FE fOpApply('.' [fOpApply('ApplyFunctor'
-                                                   [fAtom({CondSelect C 1 ''}
-                                                          unit) FV1] CND)
+                                                   [fAtom(BaseURL unit) FV1]
+                                                   CND)
                                           fAtom(inner unit)] CND) CND)
                Unnester, UnnestStatement(fLocal(FV1 fAnd(FS1 FS2) C) $)
             end
@@ -892,17 +896,17 @@ define
             {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
             Flags = flags(prefix: Prefix
                           bestfit:
-                             {@switches getSwitch(gumpscannerbestfit $)}
+                             {@state getSwitch(gumpscannerbestfit $)}
                           caseless:
-                             {@switches getSwitch(gumpscannercaseless $)}
+                             {@state getSwitch(gumpscannercaseless $)}
                           nowarn:
-                             {@switches getSwitch(gumpscannernowarn $)}
+                             {@state getSwitch(gumpscannernowarn $)}
                           backup:
-                             {@switches getSwitch(gumpscannerbackup $)}
+                             {@state getSwitch(gumpscannerbackup $)}
                           perfreport:
-                             {@switches getSwitch(gumpscannerperfreport $)}
+                             {@state getSwitch(gumpscannerperfreport $)}
                           statistics:
-                             {@switches getSwitch(gumpscannerstatistics $)})
+                             {@state getSwitch(gumpscannerstatistics $)})
             {MyWaitGump transformScanner}
             FS#Is = {Gump.transformScanner
                      T From Prop Attr Feat Ms Rules C Flags
@@ -918,14 +922,14 @@ define
             {SortClassDescriptors Ds @reporter ?From ?Prop ?Attr ?Feat}
             Flags = flags(expect: Expect
                           outputSimplified:
-                             {@switches
+                             {@state
                               getSwitch(gumpparseroutputsimplified $)}
                           verbose:
-                             {@switches getSwitch(gumpparserverbose $)})
+                             {@state getSwitch(gumpparserverbose $)})
             {MyWaitGump transformParser}
             FS = {Gump.transformParser
                   T From Prop Attr Feat Ms Tokens Rules C Flags
-                  {@switches getProductionTemplates($)}
+                  {@state getProductionTemplates($)}
                   @reporter}
             Unnester, UnnestStatement(FS $)
 \else
@@ -956,10 +960,10 @@ define
                   Unnester, UnnestStatement(FS2 $))
             {MakeDeclaration {@BA closeScope($)} GS C}
          [] fBoolCase(FE FS1 FS2 C) then Lbl = {Label FE} in
-            if {Not {@switches getSwitch(debuginfovarnames $)}}
-               andthen {Not {@switches getSwitch(debuginfocontrol $)}}
-               andthen ({@switches getSwitch(staticanalysis $)}
-                        orelse {Not {@switches getSwitch(codegen $)}})
+            if {Not {@state getSwitch(debuginfovarnames $)}}
+               andthen {Not {@state getSwitch(debuginfocontrol $)}}
+               andthen ({@state getSwitch(staticanalysis $)}
+                        orelse {Not {@state getSwitch(codegen $)}})
                % Note:
                % a) debugging information breaks dead code elimination when
                %    sharing code segments with andthen/orelse optimization;
@@ -1114,7 +1118,7 @@ define
             {New Core.typeOf init(GV GVO)}
          [] fStepPoint(FE Kind C) then GS in
             Unnester, UnnestExpression(FE FV ?GS)
-            if {@switches getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -1887,7 +1891,7 @@ define
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          end
-         if {@switches getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
+         if {@state getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
          then
             {@BA generate('Message' C ?GVMsg)}
          end
@@ -1898,7 +1902,7 @@ define
             GMeth = {New Core.methodWithDesignator
                      init(GLabel GFormals IsOpen GVMsg GBody C)}
          end
-         if {@switches getSwitch(debuginfovarnames $)} then
+         if {@state getSwitch(debuginfovarnames $)} then
             {GMeth setAllVariables({@BA getAllVariables($)})}
          end
       end

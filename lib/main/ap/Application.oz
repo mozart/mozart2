@@ -27,8 +27,6 @@
 %%    Spec ::= plain
 %%          |  list([mode: Mode] Option ... Option)
 %%          |  record([mode: Mode] Option ... Option)
-%%          |  single([mode: Mode] Option ... Option)
-%%          |  multiple([mode: Mode] Option ... Option)
 %%    Mode ::= start | anywhere   % default: anywhere
 %%    Option ::= LongOpt(['char': Char] [type: Type]
 %%                       [1: Occ] [default: value] [optional: bool])
@@ -86,13 +84,6 @@
 %%
 %%    OptRec ::= optRec(1: OptionList
 %%                      LongOpt: value ... LongOpt: value)
-%%
-%% When using `single' or `multiple', the specification is preprocessed
-%% for backwards compatibility:  the `default' specification has a
-%% default value (false for boolean options, 0 for integers, 0.0 for
-%% floats, "" for strings, and '' for atoms) and all arguments have
-%% an `Occ' value of `rightmost' by default.  For single-letter LongOpts
-%% (and only for these), single-character options are accepted.
 %%
 
 functor
@@ -590,35 +581,8 @@ prepare
       {Dictionary.toRecord optRec Dict}
    end
 
-   %%
-   %% Backward Compatibility
-   %%
-
-   fun {BackwardCompat Spec Occ}
-      {Record.mapInd Spec
-       fun {$ F Option}
-          if {IsInt F} then NewOption in
-             NewOption =
-             if {HasFeature Option alias} then Option
-             else Type in
-                Type = {CondSelect Option type bool}
-                {Adjoin x(1: Occ
-                          default: case {Label Type} of bool then false
-                                   [] int then 0
-                                   [] float then 0.0
-                                   [] string then ""
-                                   [] atom then ''
-                                   end) Option}
-             end
-             case {Atom.toString {Label NewOption}} of [C] then
-                {Adjoin x(char: C) NewOption}
-             else NewOption
-             end
-          else Option
-          end
-       end}
-   end
 define
+
    Exit = System.exit
 
    %%
@@ -665,21 +629,12 @@ define
       fun {GetCgiArgs Spec}
          RawArgs = {GetRawCgiArgs}
       in
-         case {Label Spec} of plain then RawArgs
+         case {Label Spec}
+         of plain then RawArgs
          [] list then RawArgs
          [] record then
             {PostProcess
              {CgiParse {CgiPreProcessArgs RawArgs} Spec} Spec}
-         [] single then NewSpec X in
-            NewSpec = {BackwardCompat Spec rightmost}
-            X = {PostProcess
-                 {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
-            {Adjoin X optRec(1: nil 2: X.1)}
-         [] multiple then NewSpec X in
-            NewSpec = {BackwardCompat Spec multiple}
-            X = {PostProcess
-                 {CgiParse {CgiPreProcessArgs RawArgs} NewSpec} NewSpec}
-            {Adjoin X optRec(1: nil 2: X.1)}
          end
       end
    end
@@ -698,14 +653,6 @@ define
          {CmdParse Argv Spec}
       [] record then
          {PostProcess {CmdParse Argv Spec} Spec}
-      [] single then X in
-         X = {PostProcess {CmdParse Argv Spec}
-              {BackwardCompat Spec rightmost}}
-         {Adjoin X optRec(1: nil 2: X.1)}
-      [] multiple then X in
-         X = {PostProcess {CmdParse Argv Spec}
-              {BackwardCompat Spec multiple}}
-         {Adjoin X optRec(1: nil 2: X.1)}
       end
    end
 end

@@ -278,7 +278,7 @@ in
    proc {GenNamePrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {System.getPrintName Term}
+         PN = {System.printName Term}
 
          %%
          Name =
@@ -319,7 +319,7 @@ in
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
          %%  currently only '_';
-         PN = {System.getPrintName Term}
+         PN = {System.printName Term}
 
          %%
          Name =
@@ -349,7 +349,7 @@ in
 
          %%
          Name = case AreSmallNames then '<Ch>'
-                else '<' # {System.getPrintName Term} # '>'
+                else '<' # {System.printName Term} # '>'
                 end
       end
    end
@@ -360,7 +360,7 @@ in
    proc {GenObjPrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Class.printName {Class.get Term}}
+         PN = {System.printName {Class.get Term}}
 
          %%
          Name =
@@ -401,7 +401,7 @@ in
    proc {GenClassPrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Class.printName Term}
+         PN = {System.printName Term}
 
          %%
          Name =
@@ -442,7 +442,7 @@ in
    proc {GenProcPrintName Term Store ?Name}
       local AreSmallNames PN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         PN = {Procedure.printName Term}
+         PN = {System.printName Term}
 
          %%
          Name =
@@ -483,7 +483,7 @@ in
    proc {GenCellPrintName Term Store ?Name}
       local AreSmallNames CN in
          AreSmallNames = {Store read(StoreSmallNames $)}
-         CN = {System.getPrintName Term}
+         CN = {System.printName Term}
 
          %%
          Name =
@@ -1784,7 +1784,7 @@ in
       %%
       %%
       meth setName
-         name <- <<genLitPrintName({System.getPrintName self.label} $)>>
+         name <- <<genLitPrintName({System.printName self.label} $)>>
       end
 
       %%
@@ -2182,7 +2182,7 @@ in
       %%
       %%
       meth getVarName(?Name)
-         Name = {GenVarPrintName {System.getPrintName self.term}}
+         Name = {GenVarPrintName {System.printName self.term}}
       end
 
       %%
@@ -2310,7 +2310,7 @@ in
       %%
       %%
       meth getVarName(?Name)
-         Name = {GenVarPrintName {System.getPrintName self.term}}
+         Name = {GenVarPrintName {System.printName self.term}}
       end
 
       %%
@@ -2462,7 +2462,7 @@ in
       %%
       %%
       meth getVarName(?Name)
-         Name = {GenVarPrintName {System.getPrintName self.term}}
+         Name = {GenVarPrintName {System.printName self.term}}
       end
 
       %%

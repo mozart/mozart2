@@ -195,7 +195,7 @@ class FE_Generic    % to all FE-Term classes
       RefNumber
    %
    meth fE_getName( Name ?Back)
-      N = case {IsName Name} then {System.getPrintName Name}
+      N = case {IsName Name} then {System.printName Name}
           elsecase Name
           of nil then "nil"
           [] ''  then "''"

@@ -204,16 +204,16 @@ in
 
                      %%
                      TermOut =
-                     {AtomConcatAll [{System.getPrintName TermIn}
+                     {AtomConcatAll [{System.printName TermIn}
                                      '{' SubInts ' }']}
                   elsecase {IsMetaVar TermIn} then
                      %%
-                     TermOut = {AtomConcatAll [{System.getPrintName TermIn}
+                     TermOut = {AtomConcatAll [{System.printName TermIn}
                                                '<' {MetaGetNameAsAtom TermIn}
                                                ':' {MetaGetDataAsAtom TermIn}
                                                '>']}
                   else
-                     TermOut = {System.getPrintName TermIn }
+                     TermOut = {System.printName TermIn }
                   end
 
                   %%
@@ -230,7 +230,7 @@ in
                   elsecase TermIn == NameUnit then "<N: unit>"
                   else
                      {AtomConcatAll
-                      ['<Name: ' {System.getPrintName TermIn } ' @ '
+                      ['<Name: ' {System.printName TermIn } ' @ '
                        {IntToAtom {AddrOf TermIn}} '>']}
                   end
 
@@ -242,7 +242,7 @@ in
                   %%
                   TermOut = {AtomConcatAll
                              ['<Procedure: '
-                              {System.getPrintName TermIn } '/'
+                              {System.printName TermIn } '/'
                               {IntToAtom {Procedure.arity TermIn}} ' @ '
                               {IntToAtom {AddrOf TermIn}} '>']}
                    ListOut = TmpList
@@ -279,12 +279,12 @@ in
                   case {IsObject TermIn} then
                      {AtomConcatAll
                       ['<Object: '
-                       {Class.printName {Class.get TermIn}} ' @ '
+                       {System.printName {Class.get TermIn}} ' @ '
                        {IntToAtom {AddrOf TermIn}} '>']}
                   elsecase {IsClass TermIn} then
                      {AtomConcatAll
                       ['<Class: '
-                       {Class.printName TermIn} ' @ '
+                       {System.printName TermIn} ' @ '
                        {IntToAtom {AddrOf TermIn}} '>']}
                   elsecase {IsArray TermIn} then
                      {AtomConcatAll
@@ -295,7 +295,7 @@ in
                       ['<Dictionary: @ '
                        {IntToAtom {AddrOf TermIn}} '>']}
                   else
-                     {System.getPrintName TermIn}
+                     {System.printName TermIn}
                   end
 
                   %%

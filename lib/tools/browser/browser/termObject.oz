@@ -333,16 +333,16 @@ in
          local PM in
             PM = case {Value.type Message}
                  of atom then Message
-                 [] Name then {System.getPrintName Message}
+                 [] Name then {System.printName Message}
                  [] tuple then L in
                     L = {Label Message}
                     case {IsAtom L} then L
-                    else {System.getPrintName L}
+                    else {System.printName L}
                     end
                  [] record then L in
                     L = {Label Message}
                     case {IsAtom L} then L
-                    else {System.getPrintName L}
+                    else {System.printName L}
                     end
                  else
                     {BrowserError ['MetaGenericTermObject::processOtherwise?']}

@@ -54,6 +54,18 @@ prepare
                              '>:':   '=<:'
                              '\\=:': '=:')
 
+   FddOptVarMap = map(naive:   0
+                      size:    1
+                      min:     2
+                      max:     3
+                      nbSusps: 4)
+
+   FddOptValMap = map(min:      0
+                      mid:      1
+                      max:      2
+                      splitMin: 3
+                      splitMax: 4)
+
 
 import
    FDB at 'x-oz://boot/FDB'
@@ -193,12 +205,6 @@ define
    FdpSumCD = FDP.sum_CD
    FdpSumCCD = FDP.sumC_CD
    FdpSumCNCD = FDP.sumCN_CD
-
-   FddSelVarMin     = FDP.selVarMin
-   FddSelVarMax     = FDP.selVarMax
-   FddSelVarSize    = FDP.selVarSize
-   FddSelVarNaive   = FDP.selVarNaive
-   FddSelVarNbSusps = FDP.selVarNbSusps
 
    %%
    %% Telling Domains
@@ -539,13 +545,6 @@ define
                                    {FdReflect.mid V}+1#FdSup
                                 end)
 
-         %% Optimized only
-         OptSelVar = map(min:     FddSelVarMin
-                         max:     FddSelVarMax
-                         size:    FddSelVarSize
-                         naive:   FddSelVarNaive
-                         nbSusps: FddSelVarNbSusps)
-
          %% Generic only
          GenSelVar = map(naive:   fun {$ _ _}
                                      false
@@ -607,8 +606,8 @@ define
                        end
          in
             if IsOpt then
-               opt(order: OptSelVar.(FullSpec.order)
-                   value: SelVal.(FullSpec.value))
+               opt(order: FullSpec.order
+                   value: FullSpec.value)
             else
                gen(order:     {MapSelect GenSelVar FullSpec.order}
                    value:     {MapSelect SelVal FullSpec.value}
@@ -629,31 +628,15 @@ define
    in
 
       proc {FdDistribute RawSpec Vec}
-         {Space.waitStable}
-         if {Width Vec}>0 then
-            case {PreProcessSpec RawSpec}
-            of opt(value:SelVal order:SelVar) then
-               VecTuple = {MakeDistrTuple Vec}
-               proc {Do}
-                  V={SelVar VecTuple}
-                  D={SelVal V}
-               in
-                  choice {FdInt D        V}
-                  []     {FdInt compl(D) V}
-                  end
-                  {Space.waitStable}
-                  {Do}
-               end
-            in
-               try {Do}
-               catch ~1 then skip
-               end
-            [] gen(value:     SelVal
-                   order:     Order
-                   select:    Select
-                   filter:    Fil
-                   procedure: Proc) then
-
+         case {PreProcessSpec RawSpec}
+         of opt(value:SelVal order:SelVar) then
+            {Wait {FDP.distribute FddOptVarMap.SelVar FddOptValMap.SelVal Vec}}
+         [] gen(value:     SelVal
+                order:     Order
+                select:    Select
+                filter:    Fil
+                procedure: Proc) then
+            if {Width Vec}>0 then
                proc {Do Xs}
                   case {Filter Xs Fil} of nil then skip elseof Xs=X|Xr then
                      V={Select {Choose Xr X Order}}

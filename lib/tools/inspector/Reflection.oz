@@ -191,6 +191,14 @@ define
             {Manager register(cell Id {Reflect {Cell.access X} InRs NewRs})}
             Wrapper(Id)
          end
+         %% Port Reflection
+         fun {ReflPort X InRs NewRs}
+            Id = {MakeId}
+         in
+            InRs=NewRs
+            {Manager register(port Id nil)}
+            Wrapper(Id)
+         end
          %% Array Reflection
          fun {ReflArray X InRs NewRs}
             Id = {MakeId}
@@ -303,6 +311,7 @@ define
                          [] tuple      then {ReflRec X InRs NewRs}
                          [] record     then {ReflRec X InRs NewRs}
                          [] cell       then {ReflCell X InRs NewRs}
+                         [] port       then {ReflPort X InRs NewRs}
                          [] array      then {ReflArray X InRs NewRs}
                          [] dictionary then {ReflDict X InRs NewRs}
                          [] procedure  then {ReflProc X InRs NewRs}

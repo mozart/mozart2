@@ -27,10 +27,11 @@ import
    TkTools
    System(eq show)
 export
-   'class'   : InspectorClass
-   'object'  : InspectorObj
-   'inspect' : Inspect
-   'close'   : Close
+   'class'     : InspectorClass
+   'object'    : InspectorObj
+   'inspect'   : Inspect
+   'configure' : Configure
+   'close'     : Close
 define
    local
       InspPort
@@ -280,6 +281,12 @@ define
             end
             meth getOptions($)
                @options
+            end
+            meth configureEntry(Key Value)
+               Options = @options
+            in
+               {Dictionary.put Options Key Value}
+               InspectorClass, setOptions(Options)
             end
             meth setOptions(Options)
                options <- Options
@@ -531,6 +538,9 @@ define
       end
       proc {Inspect Value}
          {Port.send InspPort inspect(Value)}
+      end
+      proc {Configure Key Value}
+         {Port.send InspPort configureEntry(Key Value)}
       end
       proc {Close}
          {Port.send InspPort close}

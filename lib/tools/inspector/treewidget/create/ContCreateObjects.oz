@@ -105,14 +105,14 @@ in
                   NI = (I + 1)
                in
                   width <- NI
-                  {Dictionary.put Items I {New Helper.separator create('#' Visual Node)}}
+                  {Dictionary.put Items I {New Helper.separator create("#" Visual Node)}}
                   {Dictionary.put Items NI {New Helper.bitmap create(width self NI Visual)}}
                else
                   width <- I
                   {Dictionary.put Items I Node}
                end
             else
-               {Dictionary.put Items I {New Helper.separator create('#' Visual Node)}}
+               {Dictionary.put Items I {New Helper.separator create("#" Visual Node)}}
                HashTupleCreateObject, performInsertion((I + 1) Value Stop)
             end
          end
@@ -365,7 +365,7 @@ in
 
    class RecordCreateObject from LabelContainerCreateObject
       attr
-         arity                 %% Record Arity
+         arity                    %% Record Arity
          auxfeat : Helper.feature %% Aux Separator Class
       meth createContainer
          Visual = @visual

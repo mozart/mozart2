@@ -21,6 +21,10 @@
 %%%
 
 functor
+
+import
+   Space
+
 export
    Return
 
@@ -61,5 +65,18 @@ define
                                end}
                  end
                  keys:[future byNeed arity])
+           space(proc {$}
+                    X Y S Go
+                 in
+                    X=!!Y
+                    S={Space.new proc {$ R} X=1 end}
+                    thread
+                       _ = {Space.merge S}
+                       Go = unit
+                    end
+                    Y=1
+                    {Wait Go}
+                 end
+                 keys: [future space])
           ])
 end

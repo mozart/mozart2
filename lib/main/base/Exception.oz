@@ -24,44 +24,17 @@
 %% Global
 %%
 
-local
-   fun {FailureX D}
-      failure(debug:failure(info:D))
-   end
-
-   fun {PredefX E}
-      system(E debug:{Label E})
-   end
-
-   fun {PredefXD E D}
-      K
-   in
-      K = {Label E}
-      system(E debug:K(info:D))
-   end
-
-   fun {ErrorXD E D}
-      K
-   in
-      K = {Label E}
-      error(E debug:K(info:D))
-   end
-
-   fun {ErrorX E}
-      error(E debug:{Label E})
-   end
-
-in
-
-   Exception = exception('raise':       Raise
-                         raiseError:    `RaiseError`
-                         %%
-                         %% wrapper functions
-                         %%
-                         error:         ErrorX
-                         failure:       FailureX
-                         system:        PredefX
-                         errorDebug:    ErrorXD
-                         systemDebug:   PredefXD)
-
-end
+Exception = exception('raise':    Raise
+                      raiseError: `RaiseError`
+                      %%
+                      %% wrapper functions
+                      %%
+                      error:      fun {$ E}
+                                     error(E debug: unit)
+                                  end
+                      system:     fun {$ E}
+                                     system(E debug: unit)
+                                  end
+                      failure:    fun {$ D}
+                                     failure(debug: failure(info: [D]))
+                                  end)

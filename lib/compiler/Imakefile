@@ -29,7 +29,7 @@ $(COMPILER):
         $(INSTALL) -m 775 -d $@
 
 $(COMPILER)/%.oz: %.oz
-        $(INSTALL) -m 444 '$<' '$@'
+        $(INSTALLSRC)  '$<' '$@'
 
 tags::
         etags --language=none \

@@ -31,5 +31,23 @@ define
                            {Thread.resume {Thread.this}}
                         end
                         keys:['thread' 'resume' fixedBug])
+             termLock(entailed(proc {$}
+                                  ID L={NewLock}
+                                  S A
+                               in
+                                  thread
+                                     lock L then S=unit {Wait A} end
+                                  end
+                                  thread
+                                     ID={Thread.this}
+                                     lock L then skip end
+                                  end
+                                  {Wait ID}
+                                  %% Kill thread
+                                  {Thread.terminate ID}
+                                  A=1
+                                  lock L then skip end
+                               end)
+                      keys: ['thread' 'lock' 'injectExcpetion' 'raise'])
             ])
 end

@@ -24,10 +24,11 @@ FDLOCAL = \
         conference configuration diagnosis divmod \
         donald equations family fraction guards \
         zebra grocery pythagoras safe schur multiply \
-        tiling srat students hubert pigeon permutation \
+        srat students hubert pigeon permutation \
         kalotan knights houses warehouse bridge_noterm \
         queens mapcoloring magicsquare magicsequence \
         photo coins train pel
+# tiling removed
 
 FDOZF = $(FDLOCAL:%=./fd/%.ozf)
 

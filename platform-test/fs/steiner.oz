@@ -3,8 +3,6 @@ functor
 import
 
    FS
-   FD
-
    Search
 
 export

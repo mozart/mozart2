@@ -3,9 +3,6 @@ functor
 import
 
    FS
-
-   FD
-
    Search
 
    System(show: Show)

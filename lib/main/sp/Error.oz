@@ -1260,9 +1260,9 @@ in
              | {Map Xr fun {$ A#B} hint(m:{Rel A B}) end}
              Exc}
          elseof object(lookup C R) then
-            L1 = hint(l:'Class '  m:oz(C))
+            L1 = hint(l:'Class'   m:oz(C))
             L2 = hint(l:'Message' m:oz(R))
-            H  = {GiveHint 'Method undefined or no otherwise method given'}
+            H  = {GiveHint 'Method undefined and no otherwise method given'}
          in
             {FormatExc T
              'Method lookup in message sending'

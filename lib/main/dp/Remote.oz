@@ -83,26 +83,23 @@ define
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'
-      ModelArg  = '--'#if {Property.get 'perdio.minimal'} then ''
-                       else 'no'
-                       end#'minimal'
       PortArg   = '--port='#if PORT\=unit then PORT else 0 end
    in
       try
          CMD#ARGS = case Fork
                     of sh then
-                       Cmd # [Func DetachArg TicketArg ModelArg PortArg]
+                       Cmd # [Func DetachArg TicketArg PortArg]
                     [] virtual then Key={VirtualSite.newMailbox} in
 \ifdef DENYS_EVENTS
                        %% start VS threads
                        {Wait VirtualSiteAux}
 \endif
-                       Cmd # [Func TicketArg DetachArg ModelArg PortArg
+                       Cmd # [Func TicketArg DetachArg PortArg
                               '--shmkey='#Key]
                     else
                        Fork #
                        [Host ('exec '#Cmd#' '#Func#' '#
-                              DetachArg#' '#TicketArg#' '#ModelArg#
+                              DetachArg#' '#TicketArg#' '#
                               ' '#PortArg)]
                     end
       in

@@ -49,7 +49,6 @@ prepare
    ArgSpec = record(ticket(single type:atom)
                     shmkey(single type:atom default:'NONE')
                     detached(single type:bool default:false)
-                    minimal(single type:bool)
                     test(single type:bool default:false)
                     port(single type:int default:0))
 
@@ -62,9 +61,6 @@ define
       {System.showError 'Remote: Test succeeded...'}
       {Application.exit 0}
    end
-
-   %% Set the appropriate distribution model
-   {Property.put 'perdio.minimal' Args.minimal}
 
    %% Use a fix port number if desired
    case Args.port

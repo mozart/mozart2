@@ -28,7 +28,6 @@ functor
 import
    DPB                             at 'x-oz://boot/DPB'
    PID(get getCRC received toPort) at 'x-oz://boot/PID'
-   Distribution('export')          at 'x-oz://boot/Distribution'
 
    Error(registerFormatter)
    Fault(install installWatcher deInstall deInstallWatcher)
@@ -112,8 +111,7 @@ define
          {Adjoin ThisPid ticket(single:  IsSingle
                                 key:     {KeyCtr get($)}
                                 minor:   Minor
-                                major:   Major
-                                minimal: {Property.get 'perdio.minimal'})}
+                                major:   Major)}
       end
    end
 
@@ -139,8 +137,7 @@ define
                    &/|{IntToKey T.key}
                    &:|{IntToKey T.major}
                    &:|{IntToKey T.minor}
-                   [&: if T.single  then &s else &m end
-                    &: if T.minimal then &m else &f end]] nil}
+                   [&: if T.single  then &s else &m end]] nil}
       in
          {Append S &:|{IntToKey {PID.getCRC S}}}
       end
@@ -153,15 +150,14 @@ define
             [_ nil ProcPart KeyPart] = {String.tokens S &/}
             [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
             [KeyS MajorS MinorS
-             SingS MinimalS _]       = {String.tokens KeyPart  &:}
+             SingS _]       = {String.tokens KeyPart  &:}
             Ticket = ticket(host:    HostS
                             port:    {String.toInt PortS}
                             time:    {KeyToInt Stamp}#{KeyToInt Pid}
                             key:     {KeyToInt KeyS}
                             major:   {KeyToInt MajorS}
                             minor:   {KeyToInt MinorS}
-                            single:  SingS=="s"
-                            minimal: MinimalS=="m")
+                            single:  SingS=="s")
          in
             S={TicketToString Ticket}
             Ticket
@@ -197,7 +193,6 @@ define
    fun {Offer X}
       T={NewTicket true}
    in
-      {Distribution.'export' X}
       {Dictionary.put KeyDict T.key X}
       {String.toAtom {TicketToString T}}
    end
@@ -213,7 +208,6 @@ define
       meth init(X ?AT <= _)
          T={NewTicket false}
       in
-         {Distribution.'export' X}
          {Dictionary.put KeyDict T.key X}
          self.Ticket     = T
          self.TicketAtom = {String.toAtom {TicketToString T}}
@@ -250,9 +244,6 @@ define
          {Exception.raiseError connection(ticketToDeadSite V)}
       end
    in
-      if T.minimal\={Property.get 'perdio.minimal'} then
-         {Exception.raiseError connection(wrongModel V)}
-      end
       {Fault.installWatcher P [permFail] Watch true}
       {Fault.install P 'thread'(this) [permFail] Handle true}
       {Send P T#X}

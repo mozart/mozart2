@@ -987,7 +987,8 @@ in
          elseif Arity >= {Property.get 'limits.bytecode.xregisters'} then
             false
          elseif Emitter, IsFirst(Reg $) then
-            case Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
+            if {OccursInVArgs VArgs Reg} then false
+            elsecase Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
                if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)

@@ -650,16 +650,16 @@ in
          in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, newLabel(?Label1)
-            Emitter, DoInits(InitsRS v(InitsRS))
+            Emitter, DoInits(InitsRS ThisAddr)
             Emitter, Emit(exHandler(Label1))
-            Emitter, SaveAllRegisterMappings(?RegMap)
+            Emitter, SaveRegisterMapping(?RegMap)
             Emitter, KillAllTemporaries()
             Emitter, AllocateThisTemp(0 Reg _)
             OldLocalEnvsInhibited = @LocalEnvsInhibited
             LocalEnvsInhibited <- true
             Emitter, EmitAddr(Addr2)
             LocalEnvsInhibited <- OldLocalEnvsInhibited
-            Emitter, RestoreAllRegisterMappings(RegMap)
+            Emitter, RestoreRegisterMapping(RegMap)
             Emitter, Emit(lbl(Label1))
             Emitter, DebugEntry(Coord 'exception handler')
             Emitter, EmitAddr(Addr1)

@@ -145,7 +145,7 @@ sub write_oz_init_methods {
 
         print "}\n";
 
-        print "      Object, registerObject\n";
+        print "      {RegisterObject self}\n";
         print "   end\n";
     }
 }

@@ -30,6 +30,7 @@ import
 export
    Dispatcher
    GetObject
+   RegisterObject
 
    Object
 
@@ -47,6 +48,12 @@ define
 
    % stores GTK object --> OZ object corrospondence
    ObjectRegistry = {Dictionary.new $}
+
+   proc {RegisterObject Object}
+      NativeObj = {Object getNative($)}
+   in
+      {Dictionary.put ObjectRegistry {ForeignPointer.toInt NativeObj} Object}
+   end
 
    % Get the corrosponding Oz object from a GTK object
    proc {GetObject MyForeignPointer ?MyObject}
@@ -66,12 +73,7 @@ define
 
    class Object
       attr nativeObject
-      meth registerObject
-         {Dictionary.put
-          ObjectRegistry
-          {ForeignPointer.toInt @nativeObject}
-          self}
-      end
+
       meth getNative($) % get native GTK object from an Oz object
          @nativeObject
       end

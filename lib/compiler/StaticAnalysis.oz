@@ -28,7 +28,7 @@ import
    BootName at 'x-oz://boot/Name'
    CompilerSupport(newNamedName newCopyableName isCopyableName
                    newPredicateRef newCopyablePredicateRef
-                   nameVariable
+                   nameVariable chunkArity
                    isBuiltin
                    isLocalDet) at 'x-oz://boot/CompilerSupport'
    System(eq printName)
@@ -3627,8 +3627,12 @@ define
                   {New Core.lockToken init(Val)}
                [] port then
                   {New Core.portToken init(Val)}
-               [] chunk then
-                  {New Core.chunkToken init(Val)}
+               [] chunk then Rec RecRepr in
+                  Rec = {List.toRecord void
+                         {Map {CompilerSupport.chunkArity Val}
+                          fun {$ F} F#Val.F end}}
+                  SAVariable, RecordToSubst(Seen Depth Rec ?RecRepr)
+                  {New Core.chunkToken init({NewChunk {RecRepr getValue($)}})}
                [] space then
                   {New Core.spaceToken init(Val)}
                [] 'thread' then

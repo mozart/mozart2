@@ -327,7 +327,7 @@ local
       meth CodeGenRecord(Rec Clauses ?VHashTableEntry)
          CS = self.cs CondVInstr
       in
-         case Clauses of [LocalVars#Subpatterns#_#Body] then
+         case Clauses of [LocalVars#Subpatterns#Coord#Body] then
             % Generating unnecessary vShallowGuard instructions precludes
             % making good decisions during register allocation.  If the
             % subpatterns only consist of linear pattern variable occurrences,
@@ -369,6 +369,12 @@ local
                GetVariablesTl = vShallowGuard(_ GuardVHd BodyVInstr AltVInstr
                                               unit nil AllocatesRS _)
             else AltVInstr in
+               if {CS.switches getSwitch(warnopt $)} then
+                  {CS.reporter
+                   warn(coord: Coord kind: 'optimization warning'
+                        msg: ('translating deep pattern as '#
+                              'general conditional'))}
+               end
                GuardVTl = vAsk(_ nil)
                {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
                GetVariablesTl = vCreateCond(_ [_#GuardVHd#BodyVInstr]
@@ -415,6 +421,11 @@ local
                 _#GuardVInstr#BodyVInstr|In
              end nil}
             {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
+            if {CS.switches getSwitch(warnopt $)} then
+               {CS.reporter
+                warn(coord: Clauses.1.3 kind: 'optimization warning'
+                     msg: 'translating deep pattern as general conditional')}
+            end
             GetVariablesTl = vCreateCond(_ VClauses AltVInstr nil unit nil _)
          end
          if {IsTuple Rec} then
@@ -1147,6 +1158,11 @@ in
              proc {$ Clause} {Clause makeSwitchable(TestReg CS SHT)} end}
             {SHT codeGen(VHd VTl)}
          else AllocatesRS VClauses AltVInstr in
+            if {CS.switches getSwitch(warnopt $)} then
+               {CS.reporter
+                warn(coord: @coord kind: 'optimization warning'
+                     msg: 'translating `case\' as general conditional')}
+            end
             {CS makeRegSet(?AllocatesRS)}
             VClauses = {Map @clauses
                         fun {$ Clause}
@@ -1878,6 +1894,12 @@ in
          {CodeGenList @guard CS GuardVHd GuardVTl}
          if {GuardNeedsThread GuardVHd} then Coord in
             {@guard.1 getCoord(?Coord)}
+            if {CS.switches getSwitch(warnopt $)} then
+               {CS.reporter
+                warn(coord: Coord kind: 'optimization warning'
+                     msg: ('translating `cond\', `or\', `dis\' or `choice\' '#
+                           'clause with thread'))}
+            end
             GuardVTl = nil
             GuardVInstr = vThread(_ GuardVHd Coord VTl _)
          else

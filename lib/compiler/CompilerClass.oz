@@ -40,10 +40,10 @@ local
                             %%
                             compilerpasses: false
                             showinsert: false
-                            showcompiletime: false
-                            showcompilememory: false
                             echoqueries: true
                             showdeclares: true
+                            showcompiletime: false
+                            showcompilememory: false
                             watchdog: true
                             ozma: false
 
@@ -53,6 +53,7 @@ local
                             warnunused: false
                             warnunusedformals: false
                             warnforward: false
+                            warnopt: false
 
                             %% parsing and expanding:
                             %%

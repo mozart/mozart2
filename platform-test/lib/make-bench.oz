@@ -1,12 +1,13 @@
 %%%
 %%% Authors:
+%%%   Christian Schulte (schulte@dfki.de)
 %%%   Michael Mehl (mehl@dfki.de)
 %%%
 %%% Contributors:
-%%%   Christian Schulte (schulte@dfki.de)
 %%%   Tobias Mueller (tmueller@ps.uni-sb.de)
 %%%
 %%% Copyright:
+%%%   Christian Schulte, 1998
 %%%   Michael Mehl, 1998
 %%%
 %%% Last change:
@@ -29,34 +30,19 @@ local
               &p#propagate &s#system]
 
    fun {AppendAll Xss}
-      case Xss of nil then nil
-      [] Xs|Xss then
-         {Append Xs {AppendAll Xss}}
+      {FoldR Xss Append nil}
+   end
+
+   fun {IsIn Is Js}
+      %% Is is contained in Js
+      case Js of nil then false
+      [] J|Jr then
+         {List.isPrefix Is Js} orelse {IsIn Is Jr}
       end
    end
 
-   local
-      fun {IsPrefix Is Js}
-         %% Is is prefix of Js
-         case Is of nil then true
-         [] I|Ir then
-            case Js of nil then false
-            [] J|Jr then
-               I==J andthen {IsPrefix Ir Jr}
-            end
-         end
-      end
-   in
-      fun {IsIn Is Js}
-         %% Is is contained in Js
-         case Js of nil then false
-         [] J|Jr then
-            {IsPrefix Is Js} orelse {IsIn Is Jr}
-         end
-      end
-      fun {IsNotIn Is Js}
-         case {IsIn Is Js} then false else true end
-      end
+   fun {IsNotIn Is Js}
+      {Not {IsIn Is Js}}
    end
 
    local
@@ -157,7 +143,7 @@ local
          end
 
          fun {Run Argv}
-            case Argv.usage orelse Argv.help then
+            if Argv.usage orelse Argv.help then
                {System.printInfo \insert 'help-bench.oz'
                }
                0
@@ -277,12 +263,13 @@ in
 
    import
       System
-      Syslet.{Argv=args Exit=exit spec}
+      Application
       Module
       Pickle
 
    body
-      Syslet.spec = single(verbose(type:bool default:false))
+
+      Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
 
       fun {X2V X}
          {System.valueToVirtualString X 100 100}
@@ -291,9 +278,9 @@ in
       fun {GetAll S Ids Ls}
          LL = {Label S}
          LS = {Atom.toString LL}
-         L  = case Ls==nil then LS else {Append Ls &_|LS} end
+         L  = if Ls==nil then LS else {Append Ls &_|LS} end
       in
-         case {Width S}==1 andthen {IsList S.1} then
+         if {Width S}==1 andthen {IsList S.1} then
             {AppendAll
              {Map S.1 fun {$ S}
                          {GetAll S {Append Ids [LL]} L}
@@ -328,7 +315,7 @@ in
                     fun {$ Ks T}
                        {FoldL T.keys
                         fun {$ Ks K}
-                           case {Member K Ks} then Ks else K|Ks end
+                           if {Member K Ks} then Ks else K|Ks end
                         end Ks}
                     end nil}
               Value.'<'}
@@ -337,7 +324,7 @@ in
          Ys Zs
       in
          {List.takeDrop Xs 6 ?Ys ?Zs}
-         Ys|case Zs==nil then nil else {ChunkUp Zs} end
+         Ys|if Zs==nil then nil else {ChunkUp Zs} end
       end
 
    in
@@ -365,15 +352,15 @@ in
       in
          {Pickle.saveWithHeader
 
-          functor $ prop once
-          import Module Syslet
-          body
+          functor
+          import Module Application
+          define
 
              ModMan = {New Module.manager init}
 
-             Syslet.spec = TestOptions
+             Args = {Application.getCmdArgs TestOptions}
 
-             {Syslet.exit {{ModMan apply(url:'' Engine $)}.run Syslet.args}}
+             {Application.exit {{ModMan apply(url:'' Engine $)}.run Args}}
           end
           './ozbench'
           '#!/bin/sh\nexec ozengine $0 "$@"\n'
@@ -382,9 +369,10 @@ in
          {Pickle.save
           Engine
           './te.ozf'}
+
       end
 
-      {Exit 0}
+      {Application.exit 0}
 
    end
 

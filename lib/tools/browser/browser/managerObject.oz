@@ -67,7 +67,7 @@ in
          {Show 'BrowserManagerClass::close is applied'}
 \endif
          WindowManagerClass , closeWindow
-         Object.base , close
+         Object.closable , close
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::close is finished'}
 \endif

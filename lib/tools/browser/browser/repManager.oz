@@ -199,7 +199,7 @@ in
       meth setCursorAt(WO)
          {WO setCursorOffset(@mark @offset @indent)}
 \ifdef DEBUG_RM
-         Object.base , close
+         Object.closable , close
 \endif
       end
 

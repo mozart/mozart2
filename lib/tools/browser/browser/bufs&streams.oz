@@ -54,7 +54,7 @@ in
       end
       meth close
          @Tail = nil
-         Object.base , close
+         Object.closable , close
       end
 
       %%
@@ -249,7 +249,7 @@ in
          end
 
          %%
-         Object.base , close
+         Object.closable , close
       end
 
       %%

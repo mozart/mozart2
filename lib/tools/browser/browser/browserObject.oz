@@ -224,7 +224,7 @@ class BrowserClass from Object.base
 
       %% simply throw away everything else;
       %%
-      Object.base , close
+      Object.closable , close
 \ifdef DEBUG_BO
       {Show 'BrowserClass::close is finished'}
 \endif

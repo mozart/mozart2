@@ -644,7 +644,7 @@ in
          end
 
          %% reject all future messages;
-         Object.base , close
+         Object.closable , close
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::close is finished'}
 \endif
@@ -2237,7 +2237,7 @@ in
             {@window close}
 
             %%
-            Object.base , close
+            Object.closable , close
          end
       end
 

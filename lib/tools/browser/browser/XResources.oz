@@ -80,7 +80,7 @@ in
       %%  ... though it's never used;
       meth close
          {self.Toplevel close}
-         Object.base , close
+         Object.closable , close
       end
 
       %%

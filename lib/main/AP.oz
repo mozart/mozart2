@@ -24,7 +24,7 @@
 %%% This file creates the Open Programming Functor
 %%%
 
-fun instantiate {$ IMPORT}
+fun {$ IMPORT}
    \insert 'SP.env'
    = IMPORT.'SP'
    \insert 'OP.env'

@@ -40,5 +40,17 @@ body
                     in
                        _ = [{F1 X} {F2 X}]
                     end
-                    keys:[compiler unnesting fixedBug])])
+                    keys:[compiler unnesting fixedBug])
+             localEnvInThreads(proc {$}
+                                  fun {X Y} Y end
+                                  S
+                               in
+                                  {proc {$}
+                                      thread
+                                         case S of 1 then skip else skip end
+                                      end
+                                      {X {X S} _}
+                                   end}
+                               end
+                               keys:[compiler codeGen fixedBug])])
 end

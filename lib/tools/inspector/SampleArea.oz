@@ -14,17 +14,6 @@
 %%% Sample Area
 %%%
 
-declare
-
-%% Init Module Manager
-
-ModMan = {New Module.manager init}
-
-%% Init Inspector Module
-
-Inspector = {ModMan link(url:'file:///home/bruni/Inspector/Inspector.ozf' $)}
-Inspect   = Inspector.inspect
-
 %% Watch FD Propagators
 
 declare X Y Z

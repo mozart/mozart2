@@ -64,7 +64,7 @@ fun {ComputeTests Argv}
    end
 in
    {Map RunTests
-    fun {$ T}
+    fun lazy {$ T}
        S={GetTest T}.1
     in
        {Adjoin

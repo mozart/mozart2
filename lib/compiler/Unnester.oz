@@ -478,6 +478,7 @@ define
       meth init(TopLevel Reporter State)
          BA <- {New BindingAnalysis init(TopLevel Reporter)}
          CurrentImportFV <- nil
+         AdditionalImports <- unit
          reporter <- Reporter
          switches <- State
       end
@@ -889,7 +890,10 @@ define
             FS#Is = {Gump.transformScanner
                      T From Prop Attr Feat Ms Rules C Flags
                      @CurrentImportFV @reporter}
-            AdditionalImports <- {Append @AdditionalImports Is}
+            case Is of nil then skip
+            else
+               AdditionalImports <- {Append @AdditionalImports Is}
+            end
             Unnester, UnnestStatement(FS $)
          [] fParser(T Ds Ms Tokens Rules Expect C) then
             From Prop Attr Feat Flags FS

@@ -19,7 +19,18 @@
 %%% WARRANTIES.
 %%%
 
-local
+functor
+import
+   Module
+   Property(get)
+   System(printInfo printError)
+   Error(messageToVirtualString)
+   OS(putEnv getEnv system)
+   Open(file)
+   Pickle(saveWithHeader)
+   Compiler(engine interface)
+   Application(getArgs exit)
+prepare
    UsageError = 'command line option error'
    BatchCompilationError = 'batch compilation error'
 
@@ -156,286 +167,273 @@ local
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#
    '--baseurl=STRING              Set the base URL to resolve imports of\n'#
    '                              computed functors to STRING.\n'
-in
-   functor
-   import
-      Module
-      Property(get)
-      System(printInfo printError)
-      Error(messageToVirtualString)
-      OS(putEnv getEnv system)
-      Open(file)
-      Pickle(saveWithHeader)
-      Compiler(engine interface)
-      Application(getArgs exit)
-   define
-      local
-         fun {IsIDChar C}
-            {Char.isAlNum C} orelse C == &_
-         end
+define
+   local
+      fun {IsIDChar C}
+         {Char.isAlNum C} orelse C == &_
+      end
 
-         fun {IsQuotedVariable S}
-            case S of C1|Cr then
-               if C1 == &` andthen Cr == nil then true
-               elseif C1 == 0 then false
-               else {IsQuotedVariable Cr}
+      fun {IsQuotedVariable S}
+         case S of C1|Cr then
+            if C1 == &` andthen Cr == nil then true
+            elseif C1 == 0 then false
+            else {IsQuotedVariable Cr}
+            end
+         [] nil then false
+         end
+      end
+
+      fun {IsPrintName X}
+         {IsAtom X} andthen
+         local
+            S = {Atom.toString X}
+         in
+            case S of C|Cr then
+               case C of &` then
+                  {IsQuotedVariable Cr}
+               else
+                  {Char.isUpper C} andthen {All Cr IsIDChar}
                end
             [] nil then false
             end
          end
-
-         fun {IsPrintName X}
-            {IsAtom X} andthen
-            local
-               S = {Atom.toString X}
-            in
-               case S of C|Cr then
-                  case C of &` then
-                     {IsQuotedVariable Cr}
-                  else
-                     {Char.isUpper C} andthen {All Cr IsIDChar}
-                  end
-               [] nil then false
-               end
-            end
-         end
-
-         ModMan = {New Module.manager init()}
-      in
-         proc {IncludeFunctor S Compiler} Var URL VarAtom Export in
-            {String.token S &= ?Var ?URL}
-            VarAtom = {String.toAtom Var}
-            Export = case URL of nil then {ModMan link(name: Var $)}
-                     else {ModMan link(url: URL $)}
-                     end
-            if {IsPrintName VarAtom} then
-               {Compiler enqueue(mergeEnv(env(VarAtom: Export)))}
-            else
-               {Report
-                error(kind: UsageError
-                      msg: 'illegal variable identifier `'#Var#'\' specified'
-                      items: [hint(l: 'Hint'
-                                   m: ('Use --help to obtain '#
-                                       'usage information'))])}
-            end
-            {Compiler enqueue(mergeEnv({Record.filterInd Export
-                                        fun {$ P _} {IsPrintName P} end}))}
-         end
       end
 
-      fun {ChangeExtension X NewExt}
-         case X of ".oz" then NewExt
-         elseof ".ozg" then NewExt
-         elseof C|Cr then
-            C|{ChangeExtension Cr NewExt}
-         [] nil then NewExt
-         end
-      end
-
-      proc {Report E}
-         {System.printError {Error.messageToVirtualString E}}
-         raise error end
-      end
+      ModMan = {New Module.manager init()}
    in
-      try OptRec BatchCompiler UI IncDir FileNames in
-         try
-            OptRec = {Application.getArgs OptSpecs}
-         catch error(ap(usage VS) ...) then
-            {Report error(kind: UsageError
-                          msg: VS
-                          items: [hint(l: 'Hint'
-                                       m: ('Use --help to obtain '#
-                                           'usage information'))])}
-         end
-         case OptRec.mode of help then X in
-            X = {Property.get 'application.url'}
-            {System.printInfo 'Usage: '#X#' { [option] | [file] }\n'#Usage}
-            raise success end
-         else skip
-         end
-         BatchCompiler = {New Compiler.engine init()}
-         UI = {New Compiler.interface init(BatchCompiler OptRec.verbose)}
-         {BatchCompiler enqueue(setSwitch(showdeclares false))}
-         {BatchCompiler enqueue(setSwitch(threadedqueries false))}
-         IncDir = {NewCell nil}
-         FileNames =
-         {Filter OptRec.1
-          fun {$ Y}
-             case Y of Opt#X then
-                case Opt of 'define' then
-                   {ForAll X
-                    proc {$ D} {BatchCompiler enqueue(macroDefine(D))} end}
-                [] undefine then
-                   {ForAll X
-                    proc {$ D} {BatchCompiler enqueue(macroUndef(D))} end}
-                [] environment then
-                   {ForAll X proc {$ S} {IncludeFunctor S BatchCompiler} end}
-                [] incdir then
-                   {Assign IncDir X|{Access IncDir}}
-                [] include then
-                   {BatchCompiler enqueue(pushSwitches())}
-                   {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
-                   {BatchCompiler enqueue(feedFile(X return))}
-                   {BatchCompiler enqueue(popSwitches())}
-                   {UI sync()}
-                   if {UI hasErrors($)} then
-                      raise error end
-                   end
-                [] maxerrors then
-                   {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
-                [] baseurl then
-                   {BatchCompiler enqueue(setBaseURL(X))}
-                elseof SwitchName then
-                   {BatchCompiler enqueue(setSwitch(SwitchName X))}
-                end
-                false
-             else
-                true
-             end
-          end}
-         {OS.putEnv 'OZPATH'
-          {FoldL {Access IncDir}
-           fun {$ In S} {Append S &:|In} end
-           case {OS.getEnv 'OZPATH'} of false then "."
-           elseof S then S
-           end}}
-         if FileNames == nil then
-            {Report error(kind: UsageError
-                          msg: 'no input files given'
-                          items: [hint(l: 'Hint'
-                                       m: ('Use --help to obtain '#
-                                           'usage information'))])}
-         elseif OptRec.outputfile \= "-"
-            andthen OptRec.outputfile \= unit
-            andthen {Length FileNames} > 1
-         then
-            {Report error(kind: UsageError
-                          msg: ('only one input file allowed when '#
-                                'an output file name is given'))}
+      proc {IncludeFunctor S Compiler} Var URL VarAtom Export in
+         {String.token S &= ?Var ?URL}
+         VarAtom = {String.toAtom Var}
+         Export = case URL of nil then {ModMan link(name: Var $)}
+                  else {ModMan link(url: URL $)}
+                  end
+         if {IsPrintName VarAtom} then
+            {Compiler enqueue(mergeEnv(env(VarAtom: Export)))}
          else
-            {ForAll FileNames
-             proc {$ Arg} OFN R in
-                {UI reset()}
-                case OptRec.outputfile of unit then
-                   case OptRec.mode of core then
-                      OFN = {ChangeExtension Arg ".ozi"}
-                   [] outputcode then
-                      OFN = {ChangeExtension Arg ".ozm"}
-                   [] feedtoemulator then
-                      if OptRec.makedepend then
-                         {Report
-                          error(kind: UsageError
-                                msg: ('--makedepend with --feedtoemulator '#
-                                      'needs an --outputfile'))}
-                      end
-                      OFN = unit
-                   [] dump then
-                      OFN = {ChangeExtension Arg ".ozf"}
-                   [] executable then
-                      OFN = {ChangeExtension Arg ""}
-                   end
-                elseof "-" then
-                   if OptRec.mode == dump orelse OptRec.mode == executable
-                   then
-                      {Report
-                       error(kind: UsageError
-                             msg: 'dumping to stdout is not possible')}
-                   else
-                      OFN = stdout
-                   end
-                else
-                   if OptRec.mode == feedtoemulator
-                      andthen {Not OptRec.makedepend}
-                   then
-                      {Report
-                       error(kind: UsageError
-                             msg: ('no output file name must be '#
-                                   'specified for --feedtoemulator'))}
-                   else
-                      OFN = OptRec.outputfile
-                   end
-                end
+            {Report
+             error(kind: UsageError
+                   msg: 'illegal variable identifier `'#Var#'\' specified'
+                   items: [hint(l: 'Hint'
+                                m: ('Use --help to obtain '#
+                                    'usage information'))])}
+         end
+         {Compiler enqueue(mergeEnv({Record.filterInd Export
+                                     fun {$ P _} {IsPrintName P} end}))}
+      end
+   end
+
+   fun {ChangeExtension X NewExt}
+      case X of ".oz" then NewExt
+      elseof ".ozg" then NewExt
+      elseof C|Cr then
+         C|{ChangeExtension Cr NewExt}
+      [] nil then NewExt
+      end
+   end
+
+   proc {Report E}
+      {System.printError {Error.messageToVirtualString E}}
+      raise error end
+   end
+in
+   try OptRec BatchCompiler UI IncDir FileNames in
+      try
+         OptRec = {Application.getArgs OptSpecs}
+      catch error(ap(usage VS) ...) then
+         {Report error(kind: UsageError
+                       msg: VS
+                       items: [hint(l: 'Hint'
+                                    m: ('Use --help to obtain '#
+                                        'usage information'))])}
+      end
+      case OptRec.mode of help then X in
+         X = {Property.get 'application.url'}
+         {System.printInfo 'Usage: '#X#' { [option] | [file] }\n'#Usage}
+         raise success end
+      else skip
+      end
+      BatchCompiler = {New Compiler.engine init()}
+      UI = {New Compiler.interface init(BatchCompiler OptRec.verbose)}
+      {BatchCompiler enqueue(setSwitch(showdeclares false))}
+      {BatchCompiler enqueue(setSwitch(threadedqueries false))}
+      IncDir = {NewCell nil}
+      FileNames =
+      {Filter OptRec.1
+       fun {$ Y}
+          case Y of Opt#X then
+             case Opt of 'define' then
+                {ForAll X
+                 proc {$ D} {BatchCompiler enqueue(macroDefine(D))} end}
+             [] undefine then
+                {ForAll X
+                 proc {$ D} {BatchCompiler enqueue(macroUndef(D))} end}
+             [] environment then
+                {ForAll X proc {$ S} {IncludeFunctor S BatchCompiler} end}
+             [] incdir then
+                {Assign IncDir X|{Access IncDir}}
+             [] include then
                 {BatchCompiler enqueue(pushSwitches())}
-                if OptRec.makedepend then
-                   {BatchCompiler enqueue(setSwitch(unnest false))}
-                end
-                case OptRec.mode of core then
-                   {BatchCompiler enqueue(setSwitch(core true))}
-                   {BatchCompiler enqueue(setSwitch(codegen false))}
-                [] outputcode then
-                   {BatchCompiler enqueue(setSwitch(outputcode true))}
-                   {BatchCompiler
-                    enqueue(setSwitch(feedtoemulator false))}
-                [] feedtoemulator then
-                   {BatchCompiler
-                    enqueue(setSwitch(feedtoemulator true))}
-                else   % dump, executable
-                   {BatchCompiler enqueue(setSwitch(expression true))}
-                   {BatchCompiler
-                    enqueue(setSwitch(feedtoemulator true))}
-                end
-                {BatchCompiler enqueue(feedFile(Arg return(result: ?R)))}
+                {BatchCompiler enqueue(setSwitch(feedtoemulator true))}
+                {BatchCompiler enqueue(feedFile(X return))}
                 {BatchCompiler enqueue(popSwitches())}
                 {UI sync()}
                 if {UI hasErrors($)} then
                    raise error end
                 end
-                if OptRec.makedepend then File VS in
-                   File = {New Open.file init(name: stdout flags: [write])}
-                   VS = (OFN#':'#
-                         case {UI getInsertedFiles($)} of Ns=_|_ then
-                            {FoldL Ns fun {$ In X} In#' \\\n\t'#X end ""}
-                         [] nil then ""
-                         end#'\n')
-                   {File write(vs: VS)}
-                   {File close()}
-                else
-                   case OptRec.mode of dump then
-                      {Pickle.saveWithHeader R OFN '' OptRec.compress}
-                   [] executable then
-                      if {Functor.is R} then skip
-                      else
-                         {Report
-                          error(kind: BatchCompilationError
-                                msg: 'only functors can be made executable'
-                                items: [hint(l: 'Value found'
-                                             m: oz(R))])}
-                      end
-                      {Pickle.saveWithHeader
-                       R % Value
-                       OFN % Filename
-                       case {CondSelect OptRec execheader unit} of unit then
-                          case {CondSelect OptRec execpath unit} of unit then
-                             DefaultExecHeader
-                          elseof S then {MakeExecHeader S}
-                          end
-                       elseof S then S
-                       end % Header
-                       OptRec.compress % Compression level
-                      }
-                      case {OS.system 'chmod +x '#OFN}
-                      of 0 then skip elseof N then
-                         {Report
-                          error(kind: BatchCompilationError
-                                msg: 'writing executable functor failed'
-                                items: [hint(l: 'Error code' m: N)])}
-                      end
-                   [] feedtoemulator then skip
-                   else File in   % core, outputcode
-                      File = {New Open.file
-                              init(name: OFN
-                                   flags: [write create truncate])}
-                      {File write(vs: {UI getSource($)})}
-                      {File close()}
+             [] maxerrors then
+                {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
+             [] baseurl then
+                {BatchCompiler enqueue(setBaseURL(X))}
+             elseof SwitchName then
+                {BatchCompiler enqueue(setSwitch(SwitchName X))}
+             end
+             false
+          else
+             true
+          end
+       end}
+      {OS.putEnv 'OZPATH'
+       {FoldL {Access IncDir}
+        fun {$ In S} {Append S &:|In} end
+        case {OS.getEnv 'OZPATH'} of false then "."
+        elseof S then S
+        end}}
+      if FileNames == nil then
+         {Report error(kind: UsageError
+                       msg: 'no input files given'
+                       items: [hint(l: 'Hint'
+                                    m: ('Use --help to obtain '#
+                                        'usage information'))])}
+      elseif OptRec.outputfile \= "-"
+         andthen OptRec.outputfile \= unit
+         andthen {Length FileNames} > 1
+      then
+         {Report error(kind: UsageError
+                       msg: ('only one input file allowed when '#
+                             'an output file name is given'))}
+      else
+         {ForAll FileNames
+          proc {$ Arg} OFN R in
+             {UI reset()}
+             case OptRec.outputfile of unit then
+                case OptRec.mode of core then
+                   OFN = {ChangeExtension Arg ".ozi"}
+                [] outputcode then
+                   OFN = {ChangeExtension Arg ".ozm"}
+                [] feedtoemulator then
+                   if OptRec.makedepend then
+                      {Report
+                       error(kind: UsageError
+                             msg: ('--makedepend with --feedtoemulator '#
+                                   'needs an --outputfile'))}
                    end
+                   OFN = unit
+                [] dump then
+                   OFN = {ChangeExtension Arg ".ozf"}
+                [] executable then
+                   OFN = {ChangeExtension Arg ""}
                 end
-             end}
-         end
-         raise success end
-      catch error then
-         {Application.exit 1}
-      [] success then
-         {Application.exit 0}
+             elseof "-" then
+                if OptRec.mode == dump orelse OptRec.mode == executable
+                then
+                   {Report
+                    error(kind: UsageError
+                          msg: 'dumping to stdout is not possible')}
+                else
+                   OFN = stdout
+                end
+             else
+                if OptRec.mode == feedtoemulator
+                   andthen {Not OptRec.makedepend}
+                then
+                   {Report
+                    error(kind: UsageError
+                          msg: ('no output file name must be '#
+                                'specified for --feedtoemulator'))}
+                else
+                   OFN = OptRec.outputfile
+                end
+             end
+             {BatchCompiler enqueue(pushSwitches())}
+             if OptRec.makedepend then
+                {BatchCompiler enqueue(setSwitch(unnest false))}
+             end
+             case OptRec.mode of core then
+                {BatchCompiler enqueue(setSwitch(core true))}
+                {BatchCompiler enqueue(setSwitch(codegen false))}
+             [] outputcode then
+                {BatchCompiler enqueue(setSwitch(outputcode true))}
+                {BatchCompiler
+                 enqueue(setSwitch(feedtoemulator false))}
+             [] feedtoemulator then
+                {BatchCompiler
+                 enqueue(setSwitch(feedtoemulator true))}
+             else   % dump, executable
+                {BatchCompiler enqueue(setSwitch(expression true))}
+                {BatchCompiler
+                 enqueue(setSwitch(feedtoemulator true))}
+             end
+             {BatchCompiler enqueue(feedFile(Arg return(result: ?R)))}
+             {BatchCompiler enqueue(popSwitches())}
+             {UI sync()}
+             if {UI hasErrors($)} then
+                raise error end
+             end
+             if OptRec.makedepend then File VS in
+                File = {New Open.file init(name: stdout flags: [write])}
+                VS = (OFN#':'#
+                      case {UI getInsertedFiles($)} of Ns=_|_ then
+                         {FoldL Ns fun {$ In X} In#' \\\n\t'#X end ""}
+                      [] nil then ""
+                      end#'\n')
+                {File write(vs: VS)}
+                {File close()}
+             else
+                case OptRec.mode of dump then
+                   {Pickle.saveWithHeader R OFN '' OptRec.compress}
+                [] executable then
+                   if {Functor.is R} then skip
+                   else
+                      {Report
+                       error(kind: BatchCompilationError
+                             msg: 'only functors can be made executable'
+                             items: [hint(l: 'Value found'
+                                          m: oz(R))])}
+                   end
+                   {Pickle.saveWithHeader
+                    R % Value
+                    OFN % Filename
+                    case {CondSelect OptRec execheader unit} of unit then
+                       case {CondSelect OptRec execpath unit} of unit then
+                          DefaultExecHeader
+                       elseof S then {MakeExecHeader S}
+                       end
+                    elseof S then S
+                    end % Header
+                    OptRec.compress % Compression level
+                   }
+                   case {OS.system 'chmod +x '#OFN}
+                   of 0 then skip elseof N then
+                      {Report
+                       error(kind: BatchCompilationError
+                             msg: 'writing executable functor failed'
+                             items: [hint(l: 'Error code' m: N)])}
+                   end
+                [] feedtoemulator then skip
+                else File in   % core, outputcode
+                   File = {New Open.file
+                           init(name: OFN
+                                flags: [write create truncate])}
+                   {File write(vs: {UI getSource($)})}
+                   {File close()}
+                end
+             end
+          end}
       end
+      raise success end
+   catch error then
+      {Application.exit 1}
+   [] success then
+      {Application.exit 0}
    end
 end

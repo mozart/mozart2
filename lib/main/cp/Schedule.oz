@@ -370,16 +370,14 @@ define
                   end
                   {EnumFL ETTuple Start Dur '#'(H) Stream}
                else
-                  case {Space.register 2}
-                  of 1 then
+                  choice
                      case Mode of firsts then
                         {Before H RestTasks Tasks Start Dur}
                      else
                         {After H RestTasks Tasks Start Dur}
                      end
                      {EnumFL ETTuple Start Dur '#'(H) Stream}
-                  [] 2 then
-                     {Try T RestTasks Mode Tasks ETTuple Start Dur Stream}
+                  [] {Try T RestTasks Mode Tasks ETTuple Start Dur Stream}
                   end
                end
             end

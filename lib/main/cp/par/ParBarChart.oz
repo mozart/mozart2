@@ -30,9 +30,9 @@ export
    chart: BarChart
 
 require
-   ParFindLimit
-   ParGetColor
-   ParServer
+   FindLimit at 'ParFindLimit.ozf'
+   GetColor  at 'ParGetColor.ozf'
+   Server    at 'ParServer.ozf'
 
 
 prepare

@@ -24,9 +24,9 @@
 functor
 
 require
-   TraceSpace(plain best)
-   Logging(writer: LogWriter)
-   Server(new)
+   TraceSpace(plain best)     at 'ParTraceSpace.ozf'
+   Logging(writer: LogWriter) at 'ParLogging.ozf'
+   Server(new)                at 'ParServer.ozf'
 
 export
    plain: NewPlainWorker

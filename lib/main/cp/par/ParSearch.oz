@@ -23,12 +23,12 @@
 functor
 
 require
-   ParServer  at 'Server.ozf'
+   Server  at 'ParServer.ozf'
 
 import
-   ParProcess at 'Process.ozf'
-   ParLogging at 'Logging.ozf'
-   ParManager at 'Manager.ozf'
+   Process at 'ParProcess.ozf'
+   Logging at 'ParLogging.ozf'
+   Manager at 'ParManager.ozf'
 
 export
    Engine

@@ -24,7 +24,7 @@
 functor
 
 import
-   ParBarChart
+   BarChart at 'ParBarChart.ozf'
    Tk TkTools
 
 export

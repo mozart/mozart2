@@ -24,7 +24,7 @@
 functor
 
 import
-   ParStatistics
+   Statistics at 'ParStatistics.ozf'
    Property
 
 export

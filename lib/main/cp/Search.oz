@@ -21,7 +21,22 @@
 %%%
 
 
-local
+functor
+
+import
+   ParSearch(engine: ParallelEngine) at 'x-oz://system/ParSearch.ozf'
+
+export
+   one:      OneModule
+   all:      All
+   allS:     AllS
+   allP:     AllP
+   best:     BestModule
+   object:   SearchObject
+   base:     SearchBase
+   parallel: ParallelEngine
+
+prepare
 
    %% General help routines
    proc {NewKiller ?Killer ?KillFlag}
@@ -804,22 +819,5 @@ local
                      all:  SearchAll
                      best: SearchBest)
 
-in
-
-   functor
-
-   export
-      one:    OneModule
-      all:    All
-      allS:   AllS
-      allP:   AllP
-      best:   BestModule
-      object: SearchObject
-      base:   SearchBase
-   define
-
-      skip
-
-   end
 
 end

@@ -725,9 +725,7 @@ in
                                                onVar(VarLabel)|
                                                NewVHashTableEntries)))
                Emitter, Emit(lbl(VarLabel))
-               Emitter, DebugEntry(Coord 'call')
                Emitter, Emit(weakDet(R @HighestUsedX + 1))
-               Emitter, DebugExit(Coord 'call')
                Emitter, Emit(branch(StartLabel))
             end
             NewVHashTableEntries =

@@ -58,6 +58,7 @@ require
    Boot_Time            at 'x-oz://boot/Time'
    Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
+   Boot_SiteProperty    at 'x-oz://boot/SiteProperty'
 
 prepare
 
@@ -320,6 +321,7 @@ prepare
    \insert 'Functor.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
+   \insert 'SiteProperty'
 
 export
    %% Value
@@ -511,5 +513,10 @@ export
 
    %% Will be removed by the compiler
    'OoExtensions'       : OoExtensions
+
+\ifdef SITE_PROPERTY
+   %% SiteProperty
+   'SiteProperty'       : SiteProperty
+\endif
 
 end

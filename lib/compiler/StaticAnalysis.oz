@@ -2909,7 +2909,7 @@ define
          {System.show properties(@properties)}
 \endif
 
-         {AllUpTo @properties TypeTests.atom ?IllAtom ?TestAtom}
+         {AllUpTo @properties DetTypeTests.atom ?IllAtom ?TestAtom}
 
          %% type test
          if TestAtom then

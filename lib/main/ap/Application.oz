@@ -111,7 +111,7 @@
 %%% not cause the creation of a lazy interface; only the module itself
 %%% will be lazy.
 %%% ------------------------------------------------------------------
-%%% {Application.registry.exec R FILE SPEC FUNCTOR ARGSPEC}
+%%% {Application.registry.syslet R FILE SPEC FUNCTOR ARGSPEC}
 %%%
 %%% creates an executable component in FILE whose imports are specified
 %%% by SPEC.  FUNCTOR applied to the IMPORTS creates a function SCRIPT.
@@ -134,7 +134,7 @@
 %%% compatibility with Christian's interface.
 %%% {Application.register NAME x(src:SRC args:ARGS type:TYPE<=unit)}
 %%% {Application.plan SPEC ?PLAN}
-%%% {Application.exec FILE SPEC FUNCTOR ARGSPEC}
+%%% {Application.syslet FILE SPEC FUNCTOR ARGSPEC}
 %%% {Application.servlet  FILE SPEC FUNCTOR CGISPEC}
 %%% ==================================================================
 \ifdef FOOBAR
@@ -610,7 +610,7 @@ local
    %%
    %% Creation of an executable component
    %%
-   fun {RegistryMakeExecProc R CompSpec ArgSpec Functor}
+   fun {RegistryMakeSysletProc R CompSpec ArgSpec Functor}
       Loader  = {RegistryGetLoader R CompSpec}
       ArgProc = {Parser.cmd ArgSpec}
    in
@@ -665,9 +665,9 @@ local
       end
    end
    %%
-   proc {RegistryMakeExec R File CompSpec Functor ArgSpec}
+   proc {RegistryMakeSyslet R File CompSpec Functor ArgSpec}
       {MakeExec File
-       {RegistryMakeExecProc R CompSpec ArgSpec Functor}}
+       {RegistryMakeSysletProc R CompSpec ArgSpec Functor}}
    end
    %%
    proc {RegistryMakeServlet R File CompSpec Functor ArgSpec}
@@ -769,8 +769,8 @@ local
    end
    fun  {DefaultGetPlan   Spec} {RegistryGetPlan   DefaultRegistry Spec} end
    fun  {DefaultGetLoader Spec} {RegistryGetLoader DefaultRegistry Spec} end
-   proc {DefaultMakeExec File C F A}
-      {RegistryMakeExec DefaultRegistry File C F A}
+   proc {DefaultMakeSyslet File C F A}
+      {RegistryMakeSyslet DefaultRegistry File C F A}
    end
    proc {DefaultMakeServlet File C F A}
       {RegistryMakeServlet DefaultRegistry File C F A}
@@ -817,7 +817,7 @@ local
       try
          {Script write(vs:'#!/bin/sh\n')}
          {Script write(vs:': ${OZHOME='#{System.get home}#'}\n')}
-         {Script write(vs:('exec $OZHOME/bin/ozcs $0 "$@"\n'))}
+         {Script write(vs:('exec $OZHOME/bin/ozengine $0 "$@"\n'))}
          {Script close}
          {Save ExecProc TmpFile o(components: unit
                                   include:    unit
@@ -834,14 +834,15 @@ in
                              register: DefaultRegister
                              loader:   DefaultGetLoader
                              plan:     DefaultGetPlan
-                             exec:     DefaultMakeExec
+                             syslet:   DefaultMakeSyslet
+                             exec:     DefaultMakeSyslet
                              servlet:  DefaultMakeServlet
                              applet:   DefaultMakeApplet
                              registry: registry(new:      MakeDefaultRegistry
                                                 register: RegistryRegister
                                                 loader:   RegistryGetLoader
                                                 plan:     RegistryGetPlan
-                                                exec:     RegistryMakeExec
+                                                syslet:   RegistryMakeSyslet
                                                 servlet:  RegistryMakeServlet
                                                 applet:   RegistryMakeApplet)
                             )

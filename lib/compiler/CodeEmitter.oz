@@ -658,7 +658,7 @@ in
                case Cont of nil then RS = Addr2.1
                else
                   RS = {BitArray.clone Addr2.1}
-                  {BitArray.'or' RS Cont.1}
+                  {BitArray.disj RS Cont.1}
                end
             end
             Emitter, DoInits(InitsRS v(RS))

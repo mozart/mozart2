@@ -140,11 +140,11 @@ local
       % encodes type: V Pos and not & Neg
       proc {Constrain Pos Neg S}
          if {IsAtom Pos}
-         then {BitArray.'or' S Name2Bits.Pos}
+         then {BitArray.disj S Name2Bits.Pos}
          else {ForAll Pos
                proc {$ P}
                   if {HasFeature Name2Bits P}
-                  then {BitArray.'or' S Name2Bits.P}
+                  then {BitArray.disj S Name2Bits.P}
                   else {Exception.raiseError compiler(internal constrain)}
                   end
                end}
@@ -199,7 +199,7 @@ local
          decode:    Decode
          decl:      fun {$} {BitArray.new 1 N} end
          isMinimal: fun {$ T} {BitArray.card T} == 1 end
-         constrain: BitArray.and
+         constrain: BitArray.conj
          clash:     BitArray.disjoint
          clone:     BitArray.clone
          toList:    BitArray.toList

@@ -170,7 +170,7 @@ class CodeStore from Emitter
          end
          case VInstr of vStepPoint(_ Addr _ _ _) then RS1 in
             CodeStore, ComputeOccs(Addr ?RS1)
-            {BitArray.'or' RS RS1}
+            {BitArray.disj RS RS1}
          [] vMakePermanent(_ Regs _) then
             CodeStore, RegOccs(Regs RS)
          [] vClear(_ Regs _) then
@@ -225,13 +225,13 @@ class CodeStore from Emitter
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, RegOcc(Reg RS2)
             InitsRS = {BitArray.clone RS1}
-            {BitArray.'or' InitsRS RS2}
-            {BitArray.and InitsRS RS}
+            {BitArray.disj InitsRS RS2}
+            {BitArray.conj InitsRS RS}
             TempRS = {BitArray.clone RS1}
-            {BitArray.and TempRS RS2}
-            {BitArray.'or' InitsRS TempRS}
-            {BitArray.'or' RS RS1}
-            {BitArray.'or' RS RS2}
+            {BitArray.conj TempRS RS2}
+            {BitArray.disj InitsRS TempRS}
+            {BitArray.disj RS RS1}
+            {BitArray.disj RS RS2}
          [] vPopEx(_ _ _) then
             skip
          [] vCreateCond(_ VClauses Addr _ _ AllocatesRS InitsRS) then RS0 in
@@ -241,24 +241,24 @@ class CodeStore from Emitter
              proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
                 CodeStore, ComputeOccs(Addr1 ?RS1)
                 CodeStore, ComputeOccs(Addr2 ?RS2)
-                {BitArray.'or' InitsRS RS1}
-                {BitArray.'or' InitsRS RS2}
+                {BitArray.disj InitsRS RS1}
+                {BitArray.disj InitsRS RS2}
                 InitsRS0 = {BitArray.clone RS1}
-                {BitArray.and InitsRS0 RS2}
+                {BitArray.conj InitsRS0 RS2}
              end}
-            {BitArray.and InitsRS RS}
+            {BitArray.conj InitsRS RS}
             case AllocatesRS of nil then skip
             else
-               % We can't use BitArray.'or' here because the bounds of
+               % We can't use BitArray.disj here because the bounds of
                % AllocatesRS may be a strict subset of those of InitsRS:
                {ForAll {BitArray.toList AllocatesRS}
                 proc {$ Reg} {BitArray.set InitsRS Reg} end}
             end
-            {BitArray.'or' RS RS0}
+            {BitArray.disj RS RS0}
             {ForAll VClauses
              proc {$ _#Addr1#Addr2}
-                {BitArray.'or' RS CodeStore, GetOccs(Addr1 $)}
-                {BitArray.'or' RS CodeStore, GetOccs(Addr2 $)}
+                {BitArray.disj RS CodeStore, GetOccs(Addr1 $)}
+                {BitArray.disj RS CodeStore, GetOccs(Addr2 $)}
              end}
          [] vCreateOr(_ VClauses _ _ AllocatesRS InitsRS) then
             CodeStore, ComputeDisjunctionOccs(VClauses AllocatesRS
@@ -281,30 +281,30 @@ class CodeStore from Emitter
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
             InitsRS = {BitArray.clone RS1}
-            {BitArray.'or' InitsRS RS2}
-            {BitArray.'or' InitsRS RS3}
-            {BitArray.and InitsRS RS}
+            {BitArray.disj InitsRS RS2}
+            {BitArray.disj InitsRS RS3}
+            {BitArray.conj InitsRS RS}
             case AllocatesRS of nil then skip
             else
                {ForAll {BitArray.toList AllocatesRS}
                 proc {$ Reg} {BitArray.set InitsRS Reg} end}
             end
-            {BitArray.'or' RS RS1}
-            {BitArray.'or' RS RS2}
-            {BitArray.'or' RS RS3}
+            {BitArray.disj RS RS1}
+            {BitArray.disj RS RS2}
+            {BitArray.disj RS RS3}
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then
             RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
             InitsRS = {BitArray.clone RS1}
-            {BitArray.'or' InitsRS RS2}
-            {BitArray.'or' InitsRS RS3}
-            {BitArray.and InitsRS RS}
+            {BitArray.disj InitsRS RS2}
+            {BitArray.disj InitsRS RS3}
+            {BitArray.conj InitsRS RS}
             CodeStore, RegOcc(Reg RS)
-            {BitArray.'or' RS RS1}
-            {BitArray.'or' RS RS2}
-            {BitArray.'or' RS RS3}
+            {BitArray.disj RS RS1}
+            {BitArray.disj RS RS2}
+            {BitArray.disj RS RS3}
          [] vMatch(_ Reg Addr VHashTableEntries _ _ InitsRS) then
             RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
@@ -314,23 +314,23 @@ class CodeStore from Emitter
                 case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
-                {BitArray.'or' InitsRS CodeStore, ComputeOccs(Addr $)}
+                {BitArray.disj InitsRS CodeStore, ComputeOccs(Addr $)}
              end}
-            {BitArray.and InitsRS RS}
+            {BitArray.conj InitsRS RS}
             CodeStore, RegOcc(Reg RS)
-            {BitArray.'or' RS RS0}
+            {BitArray.disj RS RS0}
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
                 case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
-                {BitArray.'or' RS CodeStore, GetOccs(Addr $)}
+                {BitArray.disj RS CodeStore, GetOccs(Addr $)}
              end}
          [] vThread(_ Addr _ Cont InitsRS) then RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
             InitsRS = {BitArray.clone RS0}
-            {BitArray.and InitsRS RS}
-            {BitArray.'or' RS RS0}
+            {BitArray.conj InitsRS RS}
+            {BitArray.disj RS RS0}
          [] vLockThread(_ Reg _ _ _) then
             CodeStore, RegOcc(Reg RS)
          [] vLockEnd(_ _ _ _) then
@@ -344,12 +344,12 @@ class CodeStore from Emitter
        proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
           CodeStore, ComputeOccs(Addr1 ?RS1)
           CodeStore, ComputeOccs(Addr2 ?RS2)
-          {BitArray.'or' InitsRS RS1}
-          {BitArray.'or' InitsRS RS2}
+          {BitArray.disj InitsRS RS1}
+          {BitArray.disj InitsRS RS2}
           InitsRS0 = {BitArray.clone RS1}
-          {BitArray.and InitsRS0 RS2}
+          {BitArray.conj InitsRS0 RS2}
        end}
-      {BitArray.and InitsRS RS}
+      {BitArray.conj InitsRS RS}
       case AllocatesRS of nil then skip
       else
          {ForAll {BitArray.toList AllocatesRS}
@@ -357,8 +357,8 @@ class CodeStore from Emitter
       end
       {ForAll VClauses
        proc {$ _#Addr1#Addr2}
-          {BitArray.'or' RS CodeStore, GetOccs(Addr1 $)}
-          {BitArray.'or' RS CodeStore, GetOccs(Addr2 $)}
+          {BitArray.disj RS CodeStore, GetOccs(Addr1 $)}
+          {BitArray.disj RS CodeStore, GetOccs(Addr2 $)}
        end}
    end
    meth RegOcc(Reg RS)
@@ -389,7 +389,7 @@ class CodeStore from Emitter
    meth AddRegOccs(Addr AddRS)
       case Addr of nil then skip
       else VInstr AddRS2 in
-         {BitArray.'or' Addr.1 AddRS}
+         {BitArray.disj Addr.1 AddRS}
          VInstr = Addr
          case Continuations.{Label VInstr} of ~1 then
             AddRS2 = AddRS
@@ -431,7 +431,7 @@ class CodeStore from Emitter
             end
          [] vExHandler(_ Addr1 _ Addr2 _ _ _) then AddRS3 in
             AddRS3 = {BitArray.clone AddRS2}
-            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
+            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr2 $)}
             CodeStore, AddRegOccs(Addr1 AddRS3)
             CodeStore, AddRegOccs(Addr2 AddRS2)
          [] vPopEx(_ _ _) then skip
@@ -450,9 +450,9 @@ class CodeStore from Emitter
          [] vWaitTop(_ _) then skip
          [] vShallowGuard(_ Addr1 Addr2 Addr3 _ _ _ _) then AddRS3 in
             AddRS3 = {BitArray.clone AddRS2}
-            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr1 $)}
-            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
-            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr3 $)}
+            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr1 $)}
+            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr2 $)}
+            {BitArray.disj AddRS3 CodeStore, GetOccs(Addr3 $)}
             CodeStore, AddRegOccs(Addr1 AddRS3)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
@@ -483,7 +483,7 @@ class CodeStore from Emitter
       {ForAll VClauses
        proc {$ _#_#Addr2}
           CodeStore, AddRegOccs(Addr2 AddRS2)
-          {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
+          {BitArray.disj AddRS3 CodeStore, GetOccs(Addr2 $)}
        end}
       {FoldR VClauses
        fun {$ _#Addr1#_ AddRS}

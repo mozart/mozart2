@@ -75,6 +75,10 @@ define
          {StoreRegisterIndex CodeBlock Index}
       end
 
+      proc {StoreGRegisterIndex CodeBlock g(Index)}
+         {StoreRegisterIndex CodeBlock Index}
+      end
+
       local
          BIStoreLabel = CompilerSupport.storeLabel
       in
@@ -267,7 +271,7 @@ define
                 end
              end}
          end
-         meth append(Instr) NewTl in
+         meth append(Instr) NewTl NewInstr in
             case Instr
             of definition(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
@@ -302,10 +306,54 @@ define
             [] lockThread(L _) then AssemblerClass, declareLabel(L)
             else skip
             end
-            @InstrsTl = Instr|NewTl
+
+            % --**
+            case Instr of
+               getListValVar(R1 x(R2) R3)   then NewInstr = getListValVarX(R1 x(R2) R3)
+            [] unify(x(R1) x(R2))           then NewInstr = unifyXX(x(R1) x(R2))
+            [] unify(x(R1) y(R2))           then NewInstr = unifyXY(x(R1) y(R2))
+            [] unify(x(R1) g(R2))           then NewInstr = unifyXG(x(R1) g(R2))
+            [] getVarVar(x(R1) x(R2))       then NewInstr = getVarVarXX(x(R1) x(R2))
+            [] getVarVar(x(R1) y(R2))       then NewInstr = getVarVarXY(x(R1) y(R2))
+            [] getVarVar(y(R1) x(R2))       then NewInstr = getVarVarYX(y(R1) x(R2))
+            [] getVarVar(y(R1) y(R2))       then NewInstr = getVarVarYY(y(R1) y(R2))
+            [] move(x(R1) x(R2))            then NewInstr = moveXX(x(R1) x(R2))
+            [] move(x(R1) y(R2))            then NewInstr = moveXY(x(R1) y(R2))
+            [] move(y(R1) x(R2))            then NewInstr = moveYX(y(R1) x(R2))
+            [] move(y(R1) y(R2))            then NewInstr = moveYY(y(R1) y(R2))
+            [] move(g(R1) x(R2))            then NewInstr = moveGX(g(R1) x(R2))
+            [] move(g(R1) y(R2))            then NewInstr = moveGY(g(R1) y(R2))
+            [] putRecord(F Arity x(R))      then NewInstr = putRecordX(F Arity x(R))
+            [] putRecord(F Arity y(R))      then NewInstr = putRecordY(F Arity y(R))
+            [] putConstant(C x(R))          then NewInstr = putConstantX(C x(R))
+            [] putConstant(C y(R))          then NewInstr = putConstantY(C y(R))
+            [] putList(x(R))                then NewInstr = putListX(x(R))
+            [] putList(y(R))                then NewInstr = putListY(y(R))
+            [] setVariable(x(R))            then NewInstr = setVariableX(x(R))
+            [] setVariable(y(R))            then NewInstr = setVariableY(y(R))
+            [] getVariable(x(R))            then NewInstr = getVariableX(x(R))
+            [] getVariable(y(R))            then NewInstr = getVariableY(y(R))
+            [] unifyVariable(x(R))          then NewInstr = unifyVariableX(x(R))
+            [] unifyVariable(y(R))          then NewInstr = unifyVariableY(y(R))
+            [] unifyValVar(x(R1) x(R2))     then NewInstr = unifyValVarXX(x(R1) x(R2))
+            [] unifyValVar(x(R1) y(R2))     then NewInstr = unifyValVarXY(x(R1) y(R2))
+            [] unifyValVar(y(R1) x(R2))     then NewInstr = unifyValVarYX(y(R1) x(R2))
+            [] unifyValVar(y(R1) y(R2))     then NewInstr = unifyValVarYY(y(R1) y(R2))
+            [] unifyValVar(g(R1) x(R2))     then NewInstr = unifyValVarGX(g(R1) x(R2))
+            [] unifyValVar(g(R1) y(R2))     then NewInstr = unifyValVarGY(g(R1) y(R2))
+            [] tailCall(x(R) Arity)         then NewInstr = tailCallX(x(R) Arity)
+            [] tailCall(g(R) Arity)         then NewInstr = tailCallG(g(R) Arity)
+            [] createVariable(x(R))         then NewInstr = createVariableX(x(R))
+            [] createVariable(y(R))         then NewInstr = createVariableY(y(R))
+            [] createVariableMove(x(R1) R2) then NewInstr = createVariableMoveX(x(R1) R2)
+            [] createVariableMove(y(R1) R2) then NewInstr = createVariableMoveY(y(R1) R2)
+            else NewInstr = Instr
+            end
+
+            @InstrsTl = NewInstr|NewTl
             InstrsTl <- NewTl
-            Size <- @Size + InstructionSizes.{Label Instr}
-            case Instr of definition(_ _ _ _ _) andthen self.Profile then
+            Size <- @Size + InstructionSizes.{Label NewInstr}
+            case NewInstr of definition(_ _ _ _ _) andthen self.Profile then
                AssemblerClass, append(profileProc)
             [] definitionCopy(_ _ _ _ _) andthen self.Profile then
                AssemblerClass, append(profileProc)

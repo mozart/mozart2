@@ -346,25 +346,25 @@ define
             then
                VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
             end
-         [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
-            {Arg2 getCodeGenValue(?Value)}
-            if {{Arg1 getVariable($)} isToplevel($)}
-               andthen {IsDet Value} andthen {IsRecord Value}
-               andthen {Record.all Value
-                        fun {$ Arg}
-                           {Not {HasFeature Arg Core.imAVariableOccurrence}}
-                           orelse {IsDet {Arg reg($)}}
-                        end}
-            then RecordArity ActualArgs Regs Cont1 in
-               RecordArity = if {IsTuple Value} then {Width Value}
-                             else {Arity Value}
-                             end
-               ActualArgs = {Record.toList Value}
-               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-               Cont1 = vGenCall(_ {Arg1 reg($)}
-                                true {Label Value} RecordArity
-                                Regs Coord VTl)
-            end
+%        [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
+%           {Arg2 getCodeGenValue(?Value)}
+%           if {{Arg1 getVariable($)} isToplevel($)}
+%              andthen {IsDet Value} andthen {IsRecord Value}
+%              andthen {Record.all Value
+%                       fun {$ Arg}
+%                          {Not {HasFeature Arg Core.imAVariableOccurrence}}
+%                          orelse {IsDet {Arg reg($)}}
+%                       end}
+%           then RecordArity ActualArgs Regs Cont1 in
+%              RecordArity = if {IsTuple Value} then {Width Value}
+%                            else {Arity Value}
+%                            end
+%              ActualArgs = {Record.toList Value}
+%              {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+%              Cont1 = vGenCall(_ {Arg1 reg($)}
+%                               true {Label Value} RecordArity
+%                               Regs Coord VTl)
+%           end
          else skip
          end
          if {IsDet VHd} then skip
@@ -395,12 +395,12 @@ define
                andthen ({Value getDefinition(?Def)} Def \= unit)
             then
                {Def codeGenApply(Designator Coord NewActualArgs CS VInter VTl)}
-            elseif {{Designator getVariable($)} isToplevel($)}
-               andthen {Not CS.controlFlowInfoSwitch}
-            then
-               VInter = vGenCall(_ {Designator reg($)}
-                                 false '' {Length NewActualArgs}
-                                 {GetRegs NewActualArgs} Coord VTl)
+%           elseif {{Designator getVariable($)} isToplevel($)}
+%              andthen {Not CS.controlFlowInfoSwitch}
+%           then
+%              VInter = vGenCall(_ {Designator reg($)}
+%                                false '' {Length NewActualArgs}
+%                                {GetRegs NewActualArgs} Coord VTl)
             else
                VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
                               Coord VTl)

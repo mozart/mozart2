@@ -108,7 +108,7 @@ in
          proc {Syslet File Functor Arg}
             ArgParser = {Parser.cmd Arg}
 
-            functor Syslet prop once
+            functor Syslet
             export Args Exit
             body
                Args = {ArgParser}
@@ -122,7 +122,7 @@ in
          proc {Servlet File Functor Arg}
             ArgParser = {Parser.servlet Arg}
 
-            functor Servlet prop once
+            functor Servlet
             import OS Open
             export Args Exit
             body
@@ -137,7 +137,7 @@ in
          proc {Applet File Functor Arg}
             ArgParser = {Parser.applet Arg}
 
-            functor Applet prop once
+            functor Applet
             import Tk
             export Args Exit Toplevel
             body

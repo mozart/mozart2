@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -831,7 +830,7 @@ local
          {CodeGenList Nodes CS StartAddr nil}
          {CS endDefinition(StartAddr nil ?GRegs ?BodyCode0)}
          BodyCode0 = BodyCode1#BodyCode2
-         case {Switches get(runwithdebugger $)} then
+         case {Switches getSwitch(runwithdebugger $)} then
             BodyCode = callBuiltin('Debug.breakpoint' 0)|BodyCode1
          else
             BodyCode = BodyCode1

@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -20,67 +19,52 @@
 %%% WARRANTIES.
 %%%
 
-proc {NewCompilerInterfaceQuiet ?CompilerInterfaceQuiet}
-   class CompilerInterfaceQuiet
-      prop locking final
-      feat Compiler
-      attr AccVS: "" HasErrors: false
-      meth init()
-         self.Compiler = {New CompilerClass init(self)}
+class CompilerInterfaceQuiet from CompilerInterfaceGeneric
+   prop final
+   attr Verbose: false AccVS: "" HasErrors: false
+   meth init(CompilerObject)
+      CompilerInterfaceGeneric, init(CompilerObject Serve)
+   end
+   meth reset()
+      lock
+         AccVS <- ""
+         HasErrors <- false
       end
-
-      meth !SetSwitches(_)
-         skip
-      end
-      meth !SetMaxNumberOfErrors(_)
-         skip
-      end
-      meth !ShowInfo(VS _ <= unit)
-         AccVS <- @AccVS#VS
-      end
-      meth !DisplaySource(_ _ VS)
-         AccVS <- @AccVS#VS
-      end
-      meth !ToTop()
-         HasErrors <- true
-      end
-      meth !DisplayEnv(_)
-         skip
-      end
-      meth !AskAbort(?B)
-         B = true
-      end
-
-      meth hasErrors($)
-         lock @HasErrors end
-      end
-      meth getVS($)
-         lock @AccVS end
-      end
-      meth reset()
-         lock
-            AccVS <- ""
-            HasErrors <- false
+   end
+   meth Serve(Ms)
+      case Ms of M|Mr then OutputVS in
+         case M of info(VS) then
+            OutputVS = VS
+         [] info(VS _) then
+            OutputVS = VS
+         [] displaySource(_ _ VS) then
+            OutputVS = VS
+         [] toTop() then
+            HasErrors <- true
+            OutputVS = ""
+         else
+            OutputVS = ""
          end
+         case @Verbose then
+            File = {New Open.file init(name: stderr flags: [write])}
+         in
+            {File write(vs: OutputVS)}
+            {File close()}
+         elsecase OutputVS of "" then skip
+         else
+            AccVS <- @AccVS#OutputVS
+         end
+         CompilerInterfaceQuiet, Serve(Mr)
       end
-      meth interrupt()
-         {self.Compiler interrupt()}
-      end
+   end
 
-      meth putEnv(Env)
-         lock {self.Compiler putEnv(Env)} end
-      end
-      meth mergeEnv(Env)
-         lock {self.Compiler mergeEnv(Env)} end
-      end
-      meth getEnv(?Env)
-         lock {self.Compiler getEnv(?Env)} end
-      end
-      meth feedFile(FileName ?RequiredInterfaces <= _)
-         lock {self.Compiler feedFile(FileName ?RequiredInterfaces)} end
-      end
-      meth feedVirtualString(VS ?RequiredInterfaces <= _)
-         lock {self.Compiler feedVirtualString(VS ?RequiredInterfaces)} end
-      end
+   meth setVerbosity(B)
+      Verbose <- B
+   end
+   meth hasErrors($)
+      @HasErrors
+   end
+   meth getVS($)
+      @AccVS
    end
 end

@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Martin Mueller (mmueller@ps.uni-sb.de)
+%%% Author:
+%%%   Martin Mueller <mmueller@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Martin Mueller, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or

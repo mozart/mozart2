@@ -1,7 +1,7 @@
 dnl
 dnl Authors:
-dnl   Ralf Scheidhauer (scheidhr@ps.uni-sb.de)
-dnl   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+dnl   Ralf Scheidhauer <scheidhr@ps.uni-sb.de>
+dnl   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 dnl
 dnl Copyright:
 dnl   Ralf Scheidhauer and Leif Kornstaedt, 1997
@@ -10,8 +10,7 @@ dnl Last change:
 dnl   $Date$ by $Author$
 dnl   $Revision$
 dnl
-dnl This file is part of Mozart, an implementation
-dnl of Oz 3
+dnl This file is part of Mozart, an implementation of Oz 3:
 dnl    $MOZARTURL$
 dnl
 dnl See the file "LICENSE" or

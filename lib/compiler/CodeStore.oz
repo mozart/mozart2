@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -97,8 +96,8 @@ class CodeStore from Emitter
       Saved <- nil
       nextLabel <- 1
       sharedDone <- {NewDictionary}
-      self.debugInfoControlSwitch = {Switches get(debuginfocontrol $)}
-      self.debugInfoVarnamesSwitch = {Switches get(debuginfovarnames $)}
+      self.debugInfoControlSwitch = {Switches getSwitch(debuginfocontrol $)}
+      self.debugInfoVarnamesSwitch = {Switches getSwitch(debuginfovarnames $)}
       self.switches = Switches
       self.reporter = Reporter
    end

@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -20,7 +19,29 @@
 %%% WARRANTIES.
 %%%
 
-proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
+local
+   IsBuiltin = {`Builtin` 'isBuiltin' 2}
+
+   local
+      proc {EscapeVariableChar Hd C|Cr Tl}
+         case Cr of nil then Hd = C|Tl   % terminating quote
+         elsecase C == &` orelse C == &\\ then Hd = &\\|C|Tl
+         elsecase C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
+         elsecase C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
+         elsecase C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
+         elsecase C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
+         else Hd = C|Tl
+         end
+      end
+   in
+      fun {PrintNameToVirtualString PrintName}
+         case {Atom.toString PrintName} of &`|Sr then
+            &`|{FoldLTail Sr EscapeVariableChar $ nil}
+         else PrintName
+         end
+      end
+   end
+
    local
       Resources =
       resources(compilerTextFont:
@@ -134,8 +155,9 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
       end
    end
 
-   InstallNewColors = {NewName}
-   DoLoadVariable = {NewName}
+   InstallNewColors    = {NewName}
+   DoLoadVariable      = {NewName}
+   DoFeedVirtualString = {NewName}
 
    class VSEntryDialog from TkTools.dialog
       prop final
@@ -143,7 +165,8 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
          proc {DoFeed} VS in
             {Entry tkReturn(get p(1 0) 'end' ?VS)}
             TkTools.dialog, tkClose()
-            {Send Port feedVirtualString(VS)}
+            {Wait VS}
+            {Send Port DoFeedVirtualString(VS)}
          end
          proc {DoClear}
             {Entry tk(delete p(1 0) 'end')}
@@ -192,8 +215,7 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
          ColorDict TypeList ColorDisplay
          RedVariable GreenVariable BlueVariable
       meth init(Master Port Colors IsEnabled)
-         proc {DoSetColors} NewColors in
-            TkTools.dialog, tkClose()
+         proc {DoApply} NewColors in
             NewColors#_ = {FoldL Colors
                            fun {$ NewColors#I T#_} C in
                               C = {Dictionary.get self.ColorDict I}
@@ -202,11 +224,16 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
             {Send Port InstallNewColors(NewColors
                                         {EnableVariable tkReturnInt($)} == 1)}
          end
+         proc {DoOk}
+            TkTools.dialog, tkClose()
+            {DoApply}
+         end
          TkTools.dialog, tkInit(master: Master
                                 root: pointer
                                 title: 'Oz Compiler: Environment Colors'
-                                buttons: ['Ok'#DoSetColors
-                                          'Cancel'#tkClose()]
+                                buttons: ['Ok'#DoOk
+                                          'Apply'#DoApply
+                                          'Close'#tkClose()]
                                 default: 1
                                 focus: 1
                                 pack: false)
@@ -214,9 +241,13 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
                                                    text: 'Type')}
          ListFrame = {New Tk.frame tkInit(parent: TypeFrame.inner
                                           highlightthickness: 0)}
+         TextForeground = {Options get(compilerTextForeground $)}
+         TextBackground = {Options get(compilerTextBackground $)}
          TypeListHeight = {Options get(compilerTypeListHeight $)}
          self.TypeList = {New Tk.listbox tkInit(parent: ListFrame
                                                 selectmode: single
+                                                foreground: TextForeground
+                                                background: TextBackground
                                                 height: TypeListHeight)}
          Scrollbar = {New Tk.scrollbar tkInit(parent: ListFrame)}
          {Tk.addYScrollbar self.TypeList Scrollbar}
@@ -502,114 +533,233 @@ proc {NewCompilerInterfaceTk Tk TkTools Open Browse ?CompilerInterfaceTk}
    end
 
    fun {MakeSpaces N}
-      case N == 0 then ""
+      case N =< 0 then ""
       else & |{MakeSpaces N - 1}
       end
    end
+
+   fun {FormatQuery Id M} S in
+      S = {Int.toString Id}
+      {MakeSpaces 5 - {Length S}}#S#' '#
+      case M of macroDefine(X) then
+         'define macro '#{PrintNameToVirtualString X}
+      [] macroUndef(X) then
+         'undefine macro '#{PrintNameToVirtualString X}
+      [] getDefines(?Xs) then
+         'get defines'
+      [] getSwitch(SwitchName ?B) then
+         'get switch '#{System.valueToVirtualString SwitchName 0 0}
+      [] setSwitch(SwitchName B) then
+         'set switch '#{System.valueToVirtualString SwitchName 0 0}#
+         ' to '#{System.valueToVirtualString B 0 0}
+      [] pushSwitches() then
+         'push switches'
+      [] popSwitches() then
+         'pop switches'
+      [] getMaxNumberOfErrors(?N) then
+         'get maximal number of errors'
+      [] setMaxNumberOfErrors(N) then
+         'set maximal number of errors to '#{System.valueToVirtualString N 0 0}
+      [] addToEnv(PrintName Value) then
+         'add variable '#{PrintNameToVirtualString PrintName}#
+         ' to environment'
+      [] lookupInEnv(PrintName ?Value) then
+         'look up variable '#{PrintNameToVirtualString PrintName}#
+         ' in environment'
+      [] removeFromEnv(PrintName) then
+         'remove variable '#{PrintNameToVirtualString PrintName}#
+         ' from environment'
+      [] putEnv(Env) then
+         'set new environment'
+      [] mergeEnv(Env) then
+         'add bindings to environment'
+      [] getEnv(?Env) then
+         'get environment'
+      [] feedVirtualString(VS) then
+         'feed virtual string'
+      [] feedVirtualString(VS ?RequiredInterfaces) then
+         'feed virtual string'
+      [] feedFile(VS) then
+         'feed file "'#VS#'"'
+      [] feedFile(VS ?RequiredInterfaces) then
+         'feed file "'#VS#'"'
+      [] ping(?HereIAm) then
+         'ping'
+      else
+         'unknown query ('#{System.valueToVirtualString {Label M} 0 0}#')'
+      end
+   end
+
+   fun {RemoveQuery Hd Id I ?Pos}
+      case {IsDet Hd} then
+         case Hd.1 == Id then
+            Pos = I
+            Hd.2
+         else
+            Hd.1|{RemoveQuery Hd.2 Id I + 1 ?Pos}
+         end
+      else
+         Pos = ~1
+         Hd
+      end
+   end
 in
-   class CompilerInterfaceTk
+   class CompilerPanel from Compiler.genericInterface
       prop locking final
       attr
          ErrorTagCounter: 0
-         TaskQueueHd TaskQueueTl
          ColoringIsEnabled
          LastFeededVS LastURL EnvSelection ActionCount ValueDict TagDict
+         QueryIdsHd QueryIdsTl
       feat
          isClosed
-         TopLevel
-         EventPort Compiler ToGray InterruptButton
+         TopLevel ToGray InterruptMenuItem InterruptButton
+         %--** SuspendButton
+         DequeueQueryButton ClearQueueButton
          SystemVariables ColorDict
          Actions ActionVariable ActionDict NColsInEnv
          Book Messages Text ScrollToBottom
          EnvDisplay EditedVariable
          SwitchRec HasMaxErrorsEnabled MaxNumberOfErrors
+         CurrentQuery QueryList
 
       %%
       %% Method-provided User Functionality
       %%
 
-      meth init(ExistingCompiler <= unit)
-         lock
-            case {IsFree self.EventPort} then Q Xs in   % only init once
-               TaskQueueHd <- Q
-               TaskQueueTl <- Q
-               thread CompilerInterfaceTk, RunTaskQueue() end
-               self.EventPort = {NewPort Xs}
-               CompilerInterfaceTk, DoInit()
-               case ExistingCompiler == unit then
-                  self.Compiler = {New CompilerClass init(self)}
-               else
-                  self.Compiler = ExistingCompiler
-               end
-               thread CompilerInterfaceTk, Serve(Xs) end
-            else skip
+      meth init(CompilerObject)
+         Compiler.genericInterface, init(CompilerObject Serve)
+         CompilerPanel, DoInit()
+      end
+      meth exit()
+         thread   % so that we don't kill ourselves ;-)
+            lock
+               self.isClosed = unit
+               Compiler.genericInterface, exit()
+               {self.TopLevel tkClose()}
             end
          end
       end
-      meth Serve(Messages)
+      meth Serve(Ms)
          case {IsDet self.isClosed} then skip
-         elsecase Messages of M|Mr then
-            lock {self M} end
-            CompilerInterfaceTk, Serve(Mr)
+         elsecase Ms of M|Mr then
+            lock
+               case M of newQuery(Id M) then X in
+                  {self.QueryList tk(insert 'end' {FormatQuery Id M})}
+                  @QueryIdsTl = Id|X
+                  QueryIdsTl <- X
+                  {self.ClearQueueButton tk(configure state: normal)}
+               [] runQuery(Id M) then Pos in
+                  QueryIdsHd <- {RemoveQuery @QueryIdsHd Id 0 ?Pos}
+                  case {IsFree @QueryIdsHd} then
+                     {self.ClearQueueButton tk(configure state: disabled)}
+                  else skip
+                  end
+                  {self.QueryList tk(delete Pos)}
+                  case {self.QueryList tkReturnListInt(curselection $)}
+                  of nil then
+                     {self.DequeueQueryButton tk(configure state: disabled)}
+                  else skip
+                  end
+                  {self.CurrentQuery tk(configure state: normal)}
+                  {self.CurrentQuery tk(insert '0' {FormatQuery Id M})}
+                  {self.CurrentQuery tk(configure state: disabled)}
+               [] removeQuery(Id) then Pos in
+                  QueryIdsHd <- {RemoveQuery @QueryIdsHd Id 0 ?Pos}
+                  case Pos == ~1 then
+                     {self.CurrentQuery tk(configure state: normal)}
+                     {self.CurrentQuery tk(delete '0' 'end')}
+                     {self.CurrentQuery tk(configure state: disabled)}
+                  else
+                     {self.QueryList tk(delete Pos)}
+                     case {self.QueryList tkReturnListInt(curselection $)}
+                     of nil then
+                        {self.DequeueQueryButton tk(configure state: disabled)}
+                     else skip
+                     end
+                     case {IsFree @QueryIdsHd} then
+                        {self.ClearQueueButton tk(configure state: disabled)}
+                     else skip
+                     end
+                  end
+               [] busy() then
+                  CompilerPanel, SetWidgetsState(self.ToGray disabled)
+                  {self.InterruptButton tk(configure state: normal)}
+                  %--** {self.SuspendButton tk(configure state: normal)}
+                  {self.InterruptMenuItem tk(entryconfigure state: normal)}
+               [] idle() then
+                  CompilerPanel, SetWidgetsState(self.ToGray normal)
+                  {self.InterruptButton tk(configure state: disabled)}
+                  %--** {self.SuspendButton tk(configure state: disabled)}
+                  {self.InterruptMenuItem tk(entryconfigure state: disabled)}
+               [] switch(SwitchName B) then
+                  {self.SwitchRec.SwitchName tkSet(B)}
+               [] switches(Rec) then
+                  {Record.forAllInd self.SwitchRec
+                   proc {$ SwitchName Variable}
+                      {Variable tkSet(Rec.SwitchName)}
+                   end}
+               [] maxNumberOfErrors(N) then
+                  case N =< 0 then
+                     {self.HasMaxErrorsEnabled tkSet(false)}
+                  else
+                     {self.HasMaxErrorsEnabled tkSet(true)}
+                     {self.MaxNumberOfErrors tkSet(N)}
+                  end
+               [] env(Env) then
+                  ValueDict <- Env
+                  CompilerPanel, RedisplayEnv()
+               [] info(VS) then
+                  CompilerPanel, ShowInfo(VS)
+               [] info(VS Coord) then
+                  CompilerPanel, ShowInfo(VS Coord)
+               [] displaySource(Title _ VS) then
+                  {New SourceWindow init(self.TopLevel Title VS) _}
+               [] toTop() then
+                  {self.Book toTop(self.Messages)}
+               [] pong() then skip
+               else {self M}
+               end
+            end
+            CompilerPanel, Serve(Mr)
+         end
+      end
+      meth SetWidgetsState(Widgets State)
+         case Widgets of Widget|Rest then
+            {Widget tk(configure state: State)}
+            CompilerPanel, SetWidgetsState(Rest State)
+         [] nil then skip
+         end
+      end
+      meth ShowInfo(VS Coord <= unit)
+         {self.Text tk(configure state: normal)}
+         case Coord == unit then
+            {self.Text tk(insert 'end' VS)}
+         else File Line Column in
+            case Coord of pos(F L C) then File = F Line = L Column = C
+            [] pos(F L C _ _ _) then File = F Line = L Column = C
+            [] posNoDebug(F L C) then File = F Line = L Column = C
+            end
+            case File of 'nofile' then
+               {self.Text tk(insert 'end' VS)}
+            else Tag Action in
+               Tag = @ErrorTagCounter
+               ErrorTagCounter <- Tag + 1
+               {self.Text tk(insert 'end' VS Tag)}
+               Action = {New Tk.action
+                         tkInit(parent: self.Text
+                                action: (Compiler.genericInterface, getPort($)#
+                                         Goto(File Line Column)))}
+               {self.Text tk(tag bind Tag '<1>' Action)}
+            end
+         end
+         {self.Text tk(configure state: disabled)}
+         case {self.ScrollToBottom tkReturnInt($)} == 1 then
+            {self.Text tk(see 'end')}
+         else skip
          end
       end
 
-      meth feedFile(FileName ?RequiredInterfaces <= _)
-         lock
-            case {IsDet self.isClosed} then skip
-            else DoFeedFile in
-               proc {DoFeedFile}
-                  {self.Compiler feedFile(FileName ?RequiredInterfaces)}
-               end
-               CompilerInterfaceTk, EnqueueTask(DoFeedFile true)
-            end
-         end
-      end
-      meth feedVirtualString(VS ?RequiredInterfaces <= _)
-         lock
-            case {IsDet self.isClosed} then skip
-            else DoFeedVirtualString in
-               proc {DoFeedVirtualString}
-                  LastFeededVS <- VS
-                  {self.Compiler feedVirtualString(VS ?RequiredInterfaces)}
-               end
-               CompilerInterfaceTk, EnqueueTask(DoFeedVirtualString true)
-            end
-         end
-      end
-      meth putEnv(Env)
-         lock
-            case {IsDet self.isClosed} then skip
-            else DoPutEnv in
-               proc {DoPutEnv}
-                  {self.Compiler putEnv(Env)}
-               end
-               CompilerInterfaceTk, EnqueueTask(DoPutEnv false)
-            end
-         end
-      end
-      meth mergeEnv(Env)
-         lock
-            case {IsDet self.isClosed} then skip
-            else DoMergeEnv in
-               proc {DoMergeEnv}
-                  {self.Compiler mergeEnv(Env)}
-               end
-               CompilerInterfaceTk, EnqueueTask(DoMergeEnv false)
-            end
-         end
-      end
-      meth getEnv(?Env)
-         lock
-            case {IsDet self.isClosed} then skip
-            else DoGetEnv in
-               proc {DoGetEnv}
-                  {self.Compiler getEnv(?Env)}
-               end
-               CompilerInterfaceTk, EnqueueTask(DoGetEnv false)
-            end
-         end
-      end
       meth addAction(ActionName Proc)
          lock
             case {IsDet self.isClosed} then skip
@@ -632,13 +782,13 @@ in
 
       meth DoInit()
          fun {MkAction M}
-            self.EventPort#M
+            Compiler.genericInterface, getPort($)#M
          end
 
          self.TopLevel = {New Tk.toplevel
                           tkInit(title: 'Oz Compiler'
                                  'class': 'OzTools'
-                                 delete: {MkAction Close()}
+                                 delete: {MkAction exit()}
                                  highlightthickness: 0
                                  withdraw: true)}
          TextFont        = {Options get(compilerTextFont $)}
@@ -687,7 +837,7 @@ in
                                     separator
                                     command(label: 'Close window'
                                             key: ctrl(x)
-                                            action: {MkAction Close()})])
+                                            action: {MkAction exit()})])
                   menubutton(text: 'Options'
                              feature: options
                              menu: [checkbutton(label: 'Show system variables'
@@ -813,7 +963,7 @@ in
                                text: 'Stop after '
                                font: SwitchFont
                                variable: self.HasMaxErrorsEnabled
-                               action: {MkAction SetMaxErrors(_)})}
+                               action: {MkAction SetMaxErrorsCheck()})}
          self.MaxNumberOfErrors = {New TkTools.numberentry
                                    tkInit(parent: ErrorsFrame
                                           min: 1
@@ -821,7 +971,8 @@ in
                                           val: 17
                                           font: SwitchFont
                                           width: 3
-                                          action: {MkAction SetMaxErrors()})}
+                                          action:
+                                             {MkAction SetMaxErrorsCount()})}
          ErrorsLabel = {New Tk.label tkInit(parent: ErrorsFrame
                                             text: ' errors'
                                             font: SwitchFont)}
@@ -998,17 +1149,64 @@ in
                                        variable: DebugInfoVarnames
                                        action: {MkAction
                                                 Switch(debuginfovarnames)})}
+
+         Queue = {New TkTools.note tkInit(parent: self.Book
+                                          text: 'Query Queue')}
+         {self.Book add(Queue)}
+         self.CurrentQuery = {New Tk.entry tkInit(parent: Queue
+                                                  font: TextFont
+                                                  foreground: TextForeground
+                                                  background: TextBackground
+                                                  state: disabled)}
+         self.InterruptButton = {New Tk.button
+                                 tkInit(parent: Queue
+                                        text: 'Interrupt'
+                                        action: {MkAction Interrupt()})}
+         QueueFrame = {New Tk.frame tkInit(parent: Queue
+                                           highlightthickness: 0)}
+         self.QueryList = {New Tk.listbox tkInit(parent: QueueFrame
+                                                 selectmode: single
+                                                 font: TextFont
+                                                 foreground: TextForeground
+                                                 background: TextBackground
+                                                 width: MessagesWidth
+                                                 height: MessagesHeight - 4)}
+         {self.QueryList tkBind(event: '<1>'
+                                action: proc {$}
+                                           {self.DequeueQueryButton
+                                            tk(configure state: normal)}
+                                        end)}
+         QueueYScrollbar = {New Tk.scrollbar tkInit(parent: QueueFrame)}
+         {Tk.addYScrollbar self.QueryList QueueYScrollbar}
+         QueueControlFrame = {New Tk.frame tkInit(parent: Queue
+                                                  highlightthickness: 0)}
+         self.DequeueQueryButton = {New Tk.button
+                                    tkInit(parent: QueueControlFrame
+                                           text: 'Dequeue query'
+                                           state: disabled
+                                           action: {MkAction DequeueQuery()})}
+%--**    self.SuspendButton = {New Tk.checkbutton
+%--**                          tkInit(parent: QueueControlFrame
+%--**                                 text: 'Suspend')}
+         self.ClearQueueButton = {New Tk.button
+                                  tkInit(parent: QueueControlFrame
+                                         text: 'Clear queue'
+                                         state: disabled
+                                         action: {MkAction ClearTaskQueue()})}
       in
          {Tk.batch [pack(Menu fill: x)
                     pack(self.Book padx: 4 pady: 4)
+                    %% "Messages" note:
                     pack(MessageOptionsFrame side: bottom fill: x)
                     pack(ScrollToBottomButton side: left)
                     pack(Clear side: right)
                     pack(self.Text TextYScrollbar side: left fill: y)
+                    %% "Environment" note:
                     pack(EnvOptionsFrame side: bottom fill: x)
                     pack(Save Load Remove side: right)
                     pack(self.EditedVariable side: left fill: x expand: true)
                     pack(self.EnvDisplay EnvYScrollbar side: left fill: y)
+                    %% "Switches" note:
                     pack(Column1 Column2 Column3 side: left fill: y)
                     pack(GlobalFrame WarningsFrame padx: 8 pady: 8 anchor: w)
                     pack(WarningsLabel WarnRedeclSw WarnUnusedSw WarnForwardSw
@@ -1030,6 +1228,19 @@ in
                          ProfileSw anchor: w)
                     pack(DebuggerLabel RunWithDebuggerSw DebugInfoControlSw
                          DebugInfoVarnamesSw anchor: w)
+                    %% "Query Queue" note:
+                    grid(self.CurrentQuery row: 1 column: 1 sticky: nsew)
+                    grid(columnconfigure Queue 1 weight: 1)
+                    grid(self.InterruptButton row: 1 column: 2 sticky: nsew)
+                    grid(QueueFrame row: 2 column: 1 columnspan: 2
+                         sticky: nsew)
+                    pack(self.QueryList QueueYScrollbar
+                         side: left fill: both expand: true)
+                    grid(QueueControlFrame row: 3 column: 1 columnspan: 2
+                         sticky: nsew)
+                    pack(%--** self.SuspendButton
+                         self.DequeueQueryButton self.ClearQueueButton
+                         side: left fill: x expand: true)
                     update(idletasks)
                     wm(deiconify self.TopLevel)]}
          ColoringIsEnabled <- Tk.isColor
@@ -1073,11 +1284,15 @@ in
                         FeedToEmulatorSw ThreadedQueriesSw ProfileSw
                         RunWithDebuggerSw DebugInfoControlSw
                         DebugInfoVarnamesSw]
-         self.InterruptButton = Menu.compiler.interrupt
+         self.InterruptMenuItem = Menu.compiler.interrupt
          ValueDict <- {NewDictionary}
          TagDict <- {NewDictionary}
-         CompilerInterfaceTk, addAction('Show' Show)
-         CompilerInterfaceTk, addAction('Browse' Browse)
+         local X in
+            QueryIdsHd <- X
+            QueryIdsTl <- X
+         end
+         CompilerPanel, addAction('Show' Show)
+         CompilerPanel, addAction('Browse' Browse)
       end
 
       meth FeedFile() FileName in
@@ -1088,26 +1303,40 @@ in
                                                 q('All Files' '*')))}
          case FileName == "" then skip
          else
-            CompilerInterfaceTk, feedFile(FileName)
+            Compiler.genericInterface, enqueue(feedFile(FileName))
          end
       end
       meth FeedVirtualString()
-         {New VSEntryDialog init(self.TopLevel self.EventPort @LastFeededVS) _}
+         {New VSEntryDialog
+          init(self.TopLevel Compiler.genericInterface, getPort($)
+               @LastFeededVS) _}
+      end
+      meth !DoFeedVirtualString(VS)
+         case {IsDet self.isClosed} then skip
+         else
+            LastFeededVS <- VS
+            Compiler.genericInterface, enqueue(feedVirtualString(VS))
+         end
+      end
+      meth DequeueQuery()
+         case {self.QueryList tkReturnListInt(curselection $)}
+         of [N] then
+            {Compiler.genericInterface, getCompiler($)
+             dequeue({Nth @QueryIdsHd N + 1})}
+         else skip
+         end
       end
       meth Interrupt()
-         CompilerInterfaceTk, ClearTaskQueue()
+         {Compiler.genericInterface, getCompiler($) interrupt()}
       end
       meth Reset()
-         CompilerInterfaceTk, ClearTaskQueue()
-         CompilerInterfaceTk, ClearInfo()
-         {self.Compiler init()}
+         CompilerPanel, ClearTaskQueue()
+         CompilerPanel, Interrupt()
+         %--** CompilerPanel, ClearInfo()
+         %--** {self.Compiler init()}
       end
-      meth Close()
-         lock
-            self.isClosed = unit
-            CompilerInterfaceTk, ClearTaskQueue()   %--** suboptimal!
-            {self.TopLevel tkClose()}
-         end
+      meth ClearTaskQueue()
+         {Compiler.genericInterface, getCompiler($) clearQueue()}
       end
       meth AboutDialog()
          Dialog = {New TkTools.dialog tkInit(master: self.TopLevel
@@ -1199,10 +1428,12 @@ in
              {self.EnvDisplay tk(tag add q(PrintName) Ind1 Ind2)}
              Action1 = {New Tk.action
                         tkInit(parent: self.EnvDisplay
-                               action: self.EventPort#SelectEnv(PrintName))}
+                               action: (Compiler.genericInterface, getPort($)#
+                                        SelectEnv(PrintName)))}
              Action2 = {New Tk.action
                         tkInit(parent: self.EnvDisplay
-                               action: self.EventPort#ExecuteEnv(PrintName))}
+                               action: (Compiler.genericInterface, getPort($)#
+                                        ExecuteEnv(PrintName)))}
              {self.EnvDisplay tk(tag bind q(PrintName) '<1>' Action1)}
              {self.EnvDisplay tk(tag bind q(PrintName) '<Double-1>' Action2)}
              case @ColoringIsEnabled then
@@ -1229,7 +1460,7 @@ in
       end
       meth ConfigureColors()
          {New ColorConfigurationDialog
-          init(self.TopLevel self.EventPort
+          init(self.TopLevel Compiler.genericInterface, getPort($)
                {Map Colors fun {$ T#_} T#{Dictionary.get self.ColorDict T} end}
                @ColoringIsEnabled) _}
       end
@@ -1280,51 +1511,47 @@ in
              {Dictionary.get @ValueDict PrintName}}
          end
       end
-      meth RemoveVariable() PrintName DoRemoveVariable in
+      meth RemoveVariable() PrintName in
          {self.EditedVariable tkReturnAtom(get ?PrintName)}
-         proc {DoRemoveVariable}
-            case {self.Compiler isDeclared(PrintName $)} then
-               {self.Compiler undeclare(PrintName)}
-               CompilerInterfaceTk, RedisplayEnv()
-            else
-               {New TkTools.error
-                tkInit(master: self.TopLevel
-                       text: 'Non-existing variable "'#PrintName#'"') _}
-            end
+         case {Dictionary.member @ValueDict PrintName} then
+            %--** the above is an insufficient test, but workable for now
+            Compiler.genericInterface, enqueue(removeFromEnv(PrintName))
+         else
+            {New TkTools.error
+             tkInit(master: self.TopLevel
+                    text: 'Non-existing variable "'#PrintName#'"') _}
          end
-         CompilerInterfaceTk, EnqueueTask(DoRemoveVariable false)
       end
       meth LoadVariable() S in
          {self.EditedVariable tkReturnString(get ?S)}
          try PrintName in
             PrintName = {StringToPrintName S}
-            _ = {New URLEntryDialog
-                 init(self.TopLevel self.EventPort PrintName @LastURL)}
+            {New URLEntryDialog
+             init(self.TopLevel Compiler.genericInterface, getPort($)
+                  PrintName @LastURL) _}
          catch notAPrintName then
             {New TkTools.error
              tkInit(master: self.TopLevel
                     text: 'Illegal variable name syntax "'#S#'"') _}
          end
       end
-      meth !DoLoadVariable(PrintName URL) DoLoadVariable in
-         proc {DoLoadVariable}
-            LastURL <- URL
-            try Value in
-               Value = {Load URL}
-               {self.Compiler mergeEnv(env(PrintName: Value))}
-            catch error(...) then
-               {New TkTools.error
-                tkInit(master: self.TopLevel
-                       text: 'Load failed for URL "'#URL#'"') _}
-            end
+      meth !DoLoadVariable(PrintName URL) Value in
+         LastURL <- URL
+         try
+            Value = {Load URL}
+         catch error(...) then
+            {New TkTools.error
+             tkInit(master: self.TopLevel
+                    text: 'Load failed for URL "'#URL#'"') _}
          end
-         CompilerInterfaceTk, EnqueueTask(DoLoadVariable false)
+         Compiler.genericInterface,
+         enqueue(mergeEnv(env(PrintName: Value)))
       end
       meth SaveVariable() PrintName in
          {self.EditedVariable tkReturnAtom(get ?PrintName)}
-         case {self.Compiler isDeclared(PrintName $)} then Value in
+         case {Dictionary.member @ValueDict PrintName} then Value in
             Value = {Dictionary.get @ValueDict PrintName}
-            {Send self.EventPort DoSaveVariable(Value)}
+            {Send Compiler.genericInterface, getPort($) DoSaveVariable(Value)}
          else
             {New TkTools.error
              tkInit(master: self.TopLevel
@@ -1344,161 +1571,26 @@ in
 
       meth Switch(SwitchName)
          case {self.SwitchRec.SwitchName tkReturnInt($)} == 1 then
-            {self.Compiler setSwitch(on(SwitchName unit))}
+            {self.SwitchRec.SwitchName tkSet(false)}
+            Compiler.genericInterface, enqueue(setSwitch(SwitchName true))
          else
-            {self.Compiler setSwitch(off(SwitchName unit))}
+            {self.SwitchRec.SwitchName tkSet(true)}
+            Compiler.genericInterface, enqueue(setSwitch(SwitchName false))
          end
       end
-      meth SetMaxErrors(_)
-         case {self.HasMaxErrorsEnabled tkReturnInt($)} == 1 then
-            {self.Compiler setMaxNumberOfErrors(~1)}
-         else N in
+      meth SetMaxErrorsCheck()
+         case {self.HasMaxErrorsEnabled tkReturnInt($)} == 1 then N in
             {self.MaxNumberOfErrors tkReturnInt(?N)}
-            {self.Compiler setMaxNumberOfErrors(N)}
+            Compiler.genericInterface, enqueue(setMaxNumberOfErrors(N))
+         else
+            Compiler.genericInterface, enqueue(setMaxNumberOfErrors(~1))
          end
       end
-
-      %%
-      %% Methods Called by the Compiler Object
-      %%
-
-      meth !SetSwitches(Switches)
-         lock
-            {Record.forAllInd self.SwitchRec
-             proc {$ SwitchName Variable}
-                {Variable tkSet({Switches get(SwitchName $)})}
-             end}
-         end
-      end
-      meth !SetMaxNumberOfErrors(N)
-         lock
-            case N =< 0 then
-               {self.HasMaxErrorsEnabled tkSet(false)}
-            else
-               {self.HasMaxErrorsEnabled tkSet(true)}
-               {self.MaxNumberOfErrors tkSet(N)}
-            end
-         end
-      end
-      meth !ShowInfo(VS Coord <= unit)
-         lock
-            {self.Text tk(configure state: normal)}
-            case Coord == unit then
-               {self.Text tk(insert 'end' VS)}
-            else File Line Column in
-               case Coord of pos(F L C) then File = F Line = L Column = C
-               [] pos(F L C _ _ _) then File = F Line = L Column = C
-               [] posNoDebug(F L C) then File = F Line = L Column = C
-               end
-               case File of 'nofile' then
-                  {self.Text tk(insert 'end' VS)}
-               else Tag Action in
-                  Tag = @ErrorTagCounter
-                  ErrorTagCounter <- Tag + 1
-                  {self.Text tk(insert 'end' VS Tag)}
-                  Action = {New Tk.action
-                            tkInit(parent: self.Text
-                                   action: self.EventPort#Goto(File Line
-                                                               Column))}
-                  {self.Text tk(tag bind Tag '<1>' Action)}
-               end
-            end
-            {self.Text tk(configure state: disabled)}
-            case {self.ScrollToBottom tkReturnInt($)} == 1 then
-               {self.Text tk(see 'end')}
-            else skip
-            end
-         end
-      end
-      meth !DisplaySource(Title Ext VS)
-         {New SourceWindow init(self.TopLevel Title VS) _}
-      end
-      meth !ToTop()
-         {self.Book toTop(self.Messages)}
-      end
-      meth !DisplayEnv(TheValueDict)
-         lock
-            ValueDict <- TheValueDict
-            CompilerInterfaceTk, RedisplayEnv()
-         end
-      end
-      meth !AskAbort(?Result)
-         proc {DoIgnore}
-            Result = false
-            {Dialog tkClose()}
-         end
-         proc {DoAbort}
-            Result = true
-            {Dialog tkClose()}
-         end
-         Dialog = {New TkTools.dialog
-                   tkInit(master: self.TopLevel
-                          root: pointer
-                          title: 'Oz Compiler: Exception'
-                          buttons: ['Ignore'#DoIgnore
-                                    'Abort'#DoAbort]
-                          focus: 2
-                          default: 2
-                          pack: false)}
-         Bitmap = {New Tk.label tkInit(parent: Dialog
-                                       bitmap: question)}
-         Message = {New Tk.message
-                    tkInit(parent: Dialog
-                           text: '#'('Execution of the query threw an '
-                                     'uncaught exception.  Should this be '
-                                     'ignored?')
-                           aspect: 250)}
-      in
-         {Tk.send pack(Bitmap Message side: left padx: 4 pady: 4 expand: true)}
-         {Dialog tkPack()}
-      end
-
-      %%
-      %% Handle Task Queue
-      %%
-
-      meth EnqueueTask(P OwnThread) NewTaskQueueTl in
-         @TaskQueueTl = P#OwnThread|NewTaskQueueTl
-         TaskQueueTl <- NewTaskQueueTl
-      end
-      meth RunTaskQueue() OldTaskQueueHd NewTaskQueueHd in
-         OldTaskQueueHd = (TaskQueueHd <- NewTaskQueueHd)
-         case OldTaskQueueHd of P#OwnThread|Rest then
-            NewTaskQueueHd = Rest
-            case OwnThread then Done in
-               CompilerInterfaceTk, SetWidgetsState(self.ToGray disabled)
-               {self.InterruptButton tk(entryconfigure state: normal)}
-               thread
-                  try
-                     {P}
-                  finally
-                     Done = unit
-                  end
-               end
-               {Wait Done}
-               lock
-                  case {IsFree self.isClosed} then
-                     CompilerInterfaceTk, SetWidgetsState(self.ToGray normal)
-                     {self.InterruptButton tk(entryconfigure state: disabled)}
-                  else skip
-                  end
-               end
-            else
-               {P}
-            end
-            CompilerInterfaceTk, RunTaskQueue()
-         end
-      end
-      meth ClearTaskQueue()
-         {self.InterruptButton tk(entryconfigure state: disabled)}
-         TaskQueueHd <- @TaskQueueTl
-         {self.Compiler interrupt()}
-      end
-      meth SetWidgetsState(Widgets State)
-         case Widgets of Widget|Rest then
-            {Widget tk(configure state: State)}
-            CompilerInterfaceTk, SetWidgetsState(Rest State)
-         [] nil then skip
+      meth SetMaxErrorsCount(N)
+         case {self.HasMaxErrorsEnabled tkReturnInt($)} == 1 then
+            Compiler.genericInterface, enqueue(setMaxNumberOfErrors(N))
+         else
+            Compiler.genericInterface, enqueue(setMaxNumberOfErrors(~1))
          end
       end
    end

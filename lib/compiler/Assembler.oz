@@ -1,7 +1,7 @@
 %%%
 %%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
-%%%   Ralf Scheidhauer (scheidhr@ps.uni-sb.de)
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+%%%   Ralf Scheidhauer <scheidhr@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt and Ralf Scheidhauer, 1997
@@ -10,8 +10,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or

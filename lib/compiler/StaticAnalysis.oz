@@ -1,9 +1,9 @@
 %%%
-%%% Authors:
-%%%   Martin Mueller (mmueller@ps.uni-sb.de)
+%%% Author:
+%%%   Martin Mueller <mmueller@ps.uni-sb.de>
 %%%
 %%% Contributors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Martin Mueller, 1997
@@ -12,8 +12,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -1887,7 +1886,8 @@ local
             else
                TheName = {NewName}
             end
-            Top0 = Top andthen {Not {Ctrl.switches get(debuginfovarnames $)}}
+            Top0 = (Top andthen
+                    {Not {Ctrl.switches getSwitch(debuginfovarnames $)}})
             Token = {New Core.nameToken init(PrintName TheName Top0)}
             {BndVO unifyVal(Ctrl Top Token)}
             case Top then self.codeGenMakeEquateLiteral = TheName
@@ -2249,7 +2249,7 @@ local
                in
                   case
                      Final orelse
-                     {Ctrl.switches get(warnforward $)}
+                     {Ctrl.switches getSwitch(warnforward $)}
                   then
                      {Ctrl.rep
                       warn(coord: @coord

@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -375,7 +374,7 @@ local
       end
 
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
-         Stateful <- {@switches get(selfallowedanywhere $)}
+         Stateful <- {@switches getSwitch(selfallowedanywhere $)}
          case Query of fDeclare(FS1 FS2 C) then NewFS1 FVs GS0 GVs0 in
             NewFS1 = {MakeTrivialLocalPrefix FS1 ?FVs nil}
             {@BA openScope()}
@@ -609,9 +608,9 @@ local
             {MakeDeclaration {@BA closeScope($)} GS C}
          [] fBoolCase(FE FS1 FS2 C) then Lbl = {Label FE} in
             case
-               {Not {@switches get(debuginfovarnames $)}}
-               andthen ({@switches get(staticanalysis $)}
-                        orelse {Not {@switches get(codegen $)}})
+               {Not {@switches getSwitch(debuginfovarnames $)}}
+               andthen ({@switches getSwitch(staticanalysis $)}
+                        orelse {Not {@switches getSwitch(codegen $)}})
                % Note:
                % a) debugging information breaks dead code elimination when
                %    sharing code segments with andthen/orelse optimization;
@@ -679,7 +678,7 @@ local
             GS = {MakeDeclaration {@BA closeScope($)} GBody C}
             {New Core.threadNode init(GS C)}
          [] fTry(_ FCatch _ _) then
-            case {@switches get(catchall $)} then skip
+            case {@switches getSwitch(catchall $)} then skip
             elsecase FCatch of fNoCatch then skip
             else
                {ForAll FCatch
@@ -1362,7 +1361,8 @@ local
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          end
-         case {@switches get(debuginfocontrol $)} andthen {IsFree GVMsg} then
+         case {@switches getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
+         then
             {@BA generate('Message' C ?GVMsg)}
          else skip
          end

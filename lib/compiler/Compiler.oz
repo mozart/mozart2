@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -25,132 +24,186 @@ local
    %% Auxiliary classes
    %%
 
-   class Switches
-      prop final
-      attr state: state(%% global switches:
-                        %%
-                        compilerpasses: false
-                        showinsert: false
-                        showcompiletime: false
-                        showcompilememory: false
-                        echoqueries: false
-                        watchdog: true
-                        ozma: false
+   class CompilerStateClass
+      attr
+         defines: nil
+         switches: switches(%% global switches:
+                            %%
+                            compilerpasses: false
+                            showinsert: false
+                            showcompiletime: false
+                            showcompilememory: false
+                            echoqueries: false
+                            watchdog: true
+                            ozma: false
 
-                        %% warnings:
-                        %%
-                        warnredecl: false
-                        warnunused: false
-                        warnforward: false
+                            %% warnings:
+                            %%
+                            warnredecl: false
+                            warnunused: false
+                            warnforward: false
 
-                        %% parsing and expanding:
-                        %%
-                        system: true
-                        catchall: false
-                        selfallowedanywhere: false
+                            %% parsing and expanding:
+                            %%
+                            system: true
+                            catchall: false
+                            selfallowedanywhere: false
 
-                        %% static analysis:
-                        %%
-                        staticanalysis: true
+                            %% static analysis:
+                            %%
+                            staticanalysis: true
 
-                        %% outputting code in core syntax:
-                        %%
-                        core: false
-                        realcore: false
-                        debugvalue: false
-                        debugtype: false
+                            %% outputting code in core syntax:
+                            %%
+                            core: false
+                            realcore: false
+                            debugvalue: false
+                            debugtype: false
 
-                        %% code generation:
-                        %%
-                        codegen: true
-                        outputcode: false
+                            %% code generation:
+                            %%
+                            codegen: true
+                            outputcode: false
 
-                        %% feeding to the emulator:
-                        %%
-                        feedtoemulator: true
-                        threadedqueries: true
-                        profile: false
+                            %% feeding to the emulator:
+                            %%
+                            feedtoemulator: true
+                            threadedqueries: true
+                            profile: false
 
-                        %% debugger support:
-                        %%
-                        runwithdebugger: false
-                        debuginfocontrol: false
-                        debuginfovarnames: false)
+                            %% debugger support:
+                            %%
+                            runwithdebugger: false
+                            debuginfocontrol: false
+                            debuginfovarnames: false)
+         savedSwitches: nil
+         maxNumberOfErrors: 17
 
-      feat MyReporter
-      meth init(Reporter)
-         self.MyReporter = Reporter
-      end
-      meth on(S C) State = @state in
-         case S of verbose then
-            state <- {Adjoin State state(compilerpasses: true
-                                         showinsert: true)}
-         [] debuginfo then
-            state <- {Adjoin State state(runwithdebugger: true
-                                         debuginfocontrol: true
-                                         debuginfovarnames: true)}
-         elsecase {CondSelect State S unknown} \= unknown then
-            state <- {AdjoinAt State S true}
-         else
-            {self.MyReporter warn(coord: C kind: 'compiler directive warning'
-                                  msg: 'unknown switch `'#S#'\'')}
-         end
-      end
-      meth off(S C) State = @state in
-         case S of verbose then
-            state <- {Adjoin State state(compilerpasses: false
-                                         showinsert: false)}
-         [] debuginfo then
-            state <- {Adjoin State state(runwithdebugger: false
-                                         debuginfocontrol: false
-                                         debuginfovarnames: false)}
-         elsecase {CondSelect State S unknown} \= unknown then
-            state <- {AdjoinAt State S false}
-         else
-            {self.MyReporter warn(coord: C kind: 'compiler directive warning'
-                                  msg: 'unknown switch `'#S#'\'')}
-         end
-      end
-      meth get(S $)
-         @state.S
-      end
-      meth getMultiple(Rec) State = @state in
-         {Record.forAllInd Rec proc {$ Switch X} X = State.Switch end}
-      end
-      meth setMultiple(Rec)
-         state <- {Adjoin @state Rec}
-      end
-      meth show($)
-         '\n Current values of switches:\n\n'#
-         {Record.foldRInd @state
-          fun {$ Switch Value In}
-             '     '#case Value then '+' else '-' end#Switch#'\n'#In
-          end '\n\n'}
-      end
-   end
-
-   class TopLevelClass
-      prop final
       feat variables values
-      meth init()
+
+      meth init(Env)
          self.variables = {NewDictionary}
          self.values = {NewDictionary}
+         CompilerStateClass, putEnv(Env)
+      end
+
+      meth macroDefine(X) A in
+         A = {String.toAtom {VirtualString.toString X}}
+         case {Member A @defines} then skip
+         else defines <- A|@defines
+         end
+      end
+      meth macroUndef(X) A in
+         A = {String.toAtom {VirtualString.toString X}}
+         defines <- {Filter @defines fun {$ B} A \= B end}
+      end
+      meth getDefines($)
+         @defines
+      end
+
+      meth on(SwitchName C)
+         CompilerStateClass, setSwitch(SwitchName true C)
+      end
+      meth off(SwitchName C)
+         CompilerStateClass, setSwitch(SwitchName false C)
+      end
+      meth setSwitch(SwitchName B C <= unit)
+         case SwitchName of verbose then
+            switches <- {Adjoin @switches switches(compilerpasses: B
+                                                   showinsert: B)}
+            {@wrapper notify(switch(compilerpasses B))}
+            {@wrapper notify(switch(showinsert B))}
+         [] debuginfo then
+            switches <- {Adjoin @switches switches(runwithdebugger: B
+                                                   debuginfocontrol: B
+                                                   debuginfovarnames: B)}
+            {@wrapper notify(switch(runwithdebugger B))}
+            {@wrapper notify(switch(debuginfocontrol B))}
+            {@wrapper notify(switch(debuginfovarnames B))}
+         elsecase {HasFeature @switches SwitchName} then
+            switches <- {AdjoinAt @switches SwitchName B}
+            {@wrapper notify(switch(SwitchName B))}
+         else
+            {@reporter warn(coord: C kind: 'compiler directive warning'
+                            msg: 'unknown switch `'#SwitchName#'\'')}
+         end
+      end
+      meth getSwitch(SwitchName $)
+         @switches.SwitchName
+      end
+      meth getMultipleSwitches(Rec) Switches = @switches in
+         {Record.forAllInd Rec fun {$ SwitchName} Switches.SwitchName end}
+      end
+      meth setMultipleSwitches(Rec)
+         switches <- {Adjoin @switches Rec}
+         {@wrapper notify(switches(@switches))}
+      end
+      meth showSwitches($)
+         '%\n% Current values of switches:\n%\n'#
+         {Record.foldRInd @switches
+          fun {$ SwitchName B In}
+             '\\switch '#case B then '+' else '-' end#SwitchName#'\n'#In
+          end '%\n% Number of saved switch states: '#{Length @savedSwitches}#
+          '\n%\n'}
+      end
+      meth pushSwitches()
+         savedSwitches <- @switches|@savedSwitches
+      end
+      meth popSwitches()
+         case @savedSwitches of Switches|Rest then
+            switches <- Switches
+            {@wrapper notify(switches(@switches))}
+            savedSwitches <- Rest
+         [] nil then skip
+         end
+      end
+
+      meth setMaxNumberOfErrors(N)
+         maxNumberOfErrors <- N
+         {@wrapper notify(maxNumberOfErrors(N))}
+      end
+      meth getMaxNumberOfErrors($)
+         @maxNumberOfErrors
+      end
+
+      meth enter(V X <= _)
+         CompilerStateClass, Enter(V X)
+         {@wrapper notify(env(self.values))}
+      end
+      meth enterMultiple(Vs)
+         {ForAll Vs proc {$ V} CompilerStateClass, Enter(V _) end}
+         {@wrapper notify(env(self.values))}
+      end
+      meth Enter(V X) PrintName in
+         {V getPrintName(?PrintName)}
+         {Dictionary.put self.variables PrintName V}
+         {Dictionary.put self.values PrintName X}
+         case {IsDet X} then skip
+         else {NameVariable X PrintName}
+         end
+         {V setUse(multiple)}
+         {V setToplevel(true)}
       end
       meth putEnv(Env)
-         {ForAll {Dictionary.keys self.variables}
-          proc {$ PrintName}
-             {Dictionary.remove self.variables PrintName}
-             {Dictionary.remove self.values PrintName}
-          end}
-         TopLevelClass, mergeEnv(Env)
+         {Dictionary.removeAll self.variables}
+         {Dictionary.removeAll self.values}
+         CompilerStateClass, MergeEnv(Env)
+         {@wrapper notify(env(self.values))}
       end
       meth mergeEnv(Env)
+         CompilerStateClass, MergeEnv(Env)
+         {@wrapper notify(env(self.values))}
+      end
+      meth MergeEnv(Env)
          {Record.forAllInd Env
-          proc {$ PrintName Value} V in
-             case {IsPrintName PrintName} then
+          proc {$ PrintName Value}
+             case {IsPrintName PrintName} then V in
                 V = {New Core.variable init(PrintName putEnv unit)}
-                TopLevelClass, enter(V Value)
-             else skip   %--** issue a warning about this?
+                CompilerStateClass, Enter(V Value)
+             else
+                {@reporter warn(kind: 'warning'
+                                msg: ('tried to add variable with '#
+                                      'illegal print name to environment'))}
              end
           end}
       end
@@ -164,142 +217,122 @@ local
                              PrintName#{Interface.ofValue Value}
                           end}}
       end
-      meth getEnv($)
-         {List.toRecord env {Dictionary.entries self.values}}
+      meth getEnv(?Env)
+         Env = {Dictionary.toRecord env self.values}
       end
-      meth enter(V X <= _) PrintName = {V getPrintName($)} in
-         {Dictionary.put self.variables PrintName V}
-         {Dictionary.put self.values PrintName X}
-         case {IsDet X} then skip
-         else {NameVariable X PrintName}
-         end
-         {V setUse(multiple)}
-         {V setToplevel(true)}
-      end
-      meth lookup(PrintName $)
+      meth lookupVariableInEnv(PrintName $)
          {Dictionary.condGet self.variables PrintName undeclared}
       end
-      meth getValueOf(PrintName $)
+      meth lookupInEnv(PrintName $)
          {Dictionary.get self.values PrintName}
       end
-      meth undeclare(PrintName)
+      meth removeFromEnv(PrintName)
          {Dictionary.remove self.variables PrintName}
          {Dictionary.remove self.values PrintName}
+         {@wrapper notify(env(self.values))}
       end
       meth getVars($)
          {Dictionary.items self.variables}
       end
    end
 
-   BaseEnv = env('`Builtin`': {`Builtin` 'builtin' 3})
-in
-   %%
-   %% The CompilerClass does not do any locking.  This is due to the
-   %% fact that it is intended to be driven by an interface frontend,
-   %% which is supposed to ensure the necessary locking.
-   %%
-
-   class CompilerClass
+   class CompilerEngine from CompilerStateClass
       prop final
-      feat interface
-      attr switches reporter TopLevel ExecutingThread InterruptLock
-      meth init(Interface <= _)
-         MyReporter N
-         CompilerEnv = env('NewCompiler': NewCompiler
-                           '`Compiler`': Interface)
-      in
-         self.interface = Interface
-         switches <- {New Switches init(MyReporter)}
-         MyReporter = {New Reporter init(@switches Interface)}
-         reporter <- MyReporter
-         TopLevel <- {New TopLevelClass init()}
+      attr wrapper reporter ExecutingThread InterruptLock
+      meth init(WrapperObject)
+         wrapper <- WrapperObject
+         CompilerStateClass, init(env('`Builtin`': {`Builtin` 'builtin' 3}
+                                      '`Compiler`': WrapperObject))
+         reporter <- {New Reporter init(self WrapperObject)}
          ExecutingThread <- unit
          InterruptLock <- {NewLock}
-         {Interface ShowInfo('PS Oz Compiler '#OZVERSION#' of '#DATE#'\n\n')}
-         CompilerClass, putEnv(BaseEnv)
-         CompilerClass, mergeEnv(CompilerEnv)
-         {Interface SetSwitches(@switches)}
-         {@reporter getMaxNumberOfErrors(?N)}
-         {Interface SetMaxNumberOfErrors(N)}
       end
-      meth interrupt()
-         case @ExecutingThread of unit then skip
-         elseof T then
-            lock @InterruptLock then
-               {Thread.injectException T interrupt}
-            end
-         end
-      end
-      meth ExecuteUninterruptible(P)
-         lock @InterruptLock then {P} end
-      end
-      meth setSwitch(S)
-         {@switches S}
-      end
-      meth getSwitches($)
-         @switches
-      end
-      meth setMaxNumberOfErrors(N)
-         {@reporter setMaxNumberOfErrors(N)}
-      end
-      meth feedFile(FileName ?RequiredInterfaces)
-         {@reporter userInfo('%%% feeding file '#FileName#'\n')}
-         CompilerClass, Feed(ParseOzFile FileName ?RequiredInterfaces)
-      end
-      meth feedVirtualString(VS ?RequiredInterfaces)
-         case {@switches get(echoqueries $)} then
-            {@reporter userInfo(VS)}
-         else
-            {@reporter userInfo('%%% feeding virtual string\n')}
-         end
-         CompilerClass, Feed(ParseOzVirtualString VS ?RequiredInterfaces)
-      end
-      meth putEnv(Env)
-         {@TopLevel putEnv(Env)}
-         {self.interface DisplayEnv(@TopLevel.values)}
-         {@reporter userInfo('%%% installed new environment\n')}
-      end
-      meth mergeEnv(Env)
-         {@TopLevel mergeEnv(Env)}
-         {self.interface DisplayEnv(@TopLevel.values)}
-         {@reporter userInfo('%%% added new bindings to environment\n')}
-      end
-      meth getEnv($)
-         {@TopLevel getEnv($)}
-      end
-      meth isDeclared(PrintName $)
-         {@TopLevel lookup(PrintName $)} \= undeclared
-      end
-      meth undeclare(PrintName)
-         {@TopLevel undeclare(PrintName)}
-         {self.interface DisplayEnv(@TopLevel.values)}
-         {@reporter userInfo('%%% removed binding from environment\n')}
+      meth notifyOne(P)
+         {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
+                      ' playing Oz 3\n\n')}
+         {Send P switches(@switches)}
+         {Send P maxNumberOfErrors(@maxNumberOfErrors)}
+         {Send P env(self.values)}
       end
 
+      meth ping(X)
+         try
+            X = unit
+         catch failure(...) then skip
+         end
+         {@wrapper notify(pong())}
+      end
+      meth CatchResult(P)
+         try
+            {P}
+            {@reporter logAccept()}
+         catch tooManyErrors then
+            {@reporter userInfo('%** Too many errors, aborting compilation\n')}
+         [] rejected then
+            {@reporter logReject()}
+         [] aborted then
+            {@reporter logAbort()}
+         [] crashed then
+            {@reporter logCrash()}
+         [] interrupt then
+            {@reporter logInterrupt()}
+         end
+      end
+      meth feedFile(FileName ?RequiredInterfaces <= _)
+         CompilerEngine,
+         CatchResult(proc {$}
+                        CompilerEngine, FeedFileSub(FileName
+                                                    ?RequiredInterfaces)
+                     end)
+      end
+      meth FeedFileSub(FileName ?RequiredInterfaces)
+         {@reporter userInfo('%%% feeding file '#FileName#'\n')}
+         CompilerEngine, Feed(ParseOzFile FileName ?RequiredInterfaces)
+      end
+      meth feedVirtualString(VS ?RequiredInterfaces <= _)
+         CompilerEngine,
+         CatchResult(proc {$}
+                        case CompilerStateClass, getSwitch(echoqueries $) then
+                           {@reporter userInfo(VS)}
+                        else
+                           {@reporter userInfo('%%% feeding virtual string\n')}
+                        end
+                        CompilerEngine, Feed(ParseOzVirtualString VS
+                                             ?RequiredInterfaces)
+                     end)
+      end
+      meth FeedFileWithSwitches(FileName Switches) OldState in
+         OldState = {Record.map Switches fun {$ _} _ end}
+         CompilerStateClass, getMultipleSwitches(OldState)
+         CompilerStateClass, setMultipleSwitches(Switches)
+         CompilerEngine, Feed(ParseOzFile FileName _)
+         CompilerStateClass, setMultipleSwitches(OldState)
+      end
       meth Feed(ParseOz Data ?RequiredInterfaces)
          {@reporter clearErrors()}
          ExecutingThread <- {Thread.this}
          try Queries0 Queries T in
             {@reporter logPhase('parsing ...')}
             Queries0 = {ParseOz Data @reporter
-                        {@switches get(showinsert $)}
-                        {@switches get(system $)}}
+                        CompilerStateClass, getSwitch(showinsert $)
+                        CompilerStateClass, getSwitch(system $)
+                        CompilerStateClass, getDefines($)}
             case {@reporter hasSeenError($)} then
                raise rejected end
             else skip
             end
-            Queries = case {@switches get(ozma $)} then
+            Queries = case CompilerStateClass, getSwitch(ozma $) then
                          {JoinQueries Queries0 @reporter}
                       else
                          Queries0
                       end
             T = {Thread.this}
-            CompilerClass,
+            CompilerEngine,
             ExecProtected(proc {$}
                              try
                                 {Map Queries
                                  fun {$ Query}
-                                    CompilerClass, CompileQuery(Query $)
+                                    CompilerEngine, CompileQuery(Query $)
                                  end ?RequiredInterfaces}
                              catch tooManyErrors then
                                 {Thread.injectException T tooManyErrors}
@@ -315,47 +348,12 @@ in
                raise rejected end
             else skip
             end
-            {@reporter logAccept()}
-         catch tooManyErrors then
-            {@reporter userInfo('%** Too many errors, aborting compilation\n')}
-         [] rejected then
-            {@reporter logReject()}
-         [] aborted then
-            {@reporter logAbort()}
-         [] crashed then
-            {@reporter logCrash()}
-         [] interrupt then
-            {@reporter logInterrupt()}
          finally
             ExecutingThread <- unit
          end
       end
       meth CompileQuery(Query ?RequiredInterface)
-         case Query of dirHalt then OPICompiler in
-            OPICompiler = {{`Builtin` getOPICompiler 1}}
-            case OPICompiler == self.interface then ShutDownV in
-               {@reporter logHalt()}
-               ShutDownV = {@TopLevel lookup('`ShutDown`' $)}
-               case ShutDownV \= undeclared then ShutDown in
-                  ShutDown = {@TopLevel getValueOf('`ShutDown`' $)}
-                  case {IsDet ShutDown}
-                     andthen ({IsProcedure ShutDown}
-                              andthen {Procedure.arity ShutDown} == 1)
-                     orelse {IsObject ShutDown}
-                  then
-                     {ShutDown exit()}
-                  else
-                     {Exit 0}
-                  end
-               else
-                  {Exit 0}
-               end
-            elsecase {IsObject OPICompiler} then
-               {OPICompiler feedVirtualString('\\halt')}
-            else
-               {Exit 0}
-            end
-         [] dirHelp then
+         case Query of dirHelp then
             {@reporter
              userInfo('\n'#
                       ' The following compiler directives are supported\n'#
@@ -370,38 +368,45 @@ in
                       '     \\machine <file>      output emulator code\n'#
                       '\n\n')}
          [] dirSwitch(Ss) then
-            {ForAll Ss @switches}
-            {self.interface SetSwitches(@switches)}
+            {ForAll Ss self}
          [] dirShowSwitches then
-            {@reporter userInfo({@switches show($)})}
+            {@reporter userInfo(CompilerStateClass, showSwitches($))}
+         [] dirPushSwitches then
+            CompilerStateClass, pushSwitches()
+         [] dirPopSwitches then
+            CompilerStateClass, popSwitches()
          [] dirFeed(FileName) then
-            CompilerClass, feedFile(FileName _)
+            CompilerEngine, FeedFileSub(FileName _)
          [] dirThreadedFeed(FileName) then
-            CompilerClass, FeedFileWithSwitches(FileName
-                                                state(threadedqueries: true))
+            CompilerEngine,
+            FeedFileWithSwitches(FileName
+                                 state(threadedqueries: true))
          [] dirCore(FileName) then
-            CompilerClass, FeedFileWithSwitches(FileName
-                                                state(core: true
-                                                      codegen: false))
+            CompilerEngine,
+            FeedFileWithSwitches(FileName
+                                 state(core: true
+                                       codegen: false))
          [] dirMachine(FileName) then
-            CompilerClass, FeedFileWithSwitches(FileName
-                                                state(staticanalysis: true
-                                                      core: false
-                                                      codegen: true
-                                                      outputcode: true
-                                                      feedtoemulator: false))
+            CompilerEngine,
+            FeedFileWithSwitches(FileName
+                                 state(staticanalysis: true
+                                       core: false
+                                       codegen: true
+                                       outputcode: true
+                                       feedtoemulator: false))
          else TopLevelGVs GS FreeGVs in
             case Query of fDeclare(_ _ C) then
                {@reporter logDeclare(C)}
             else skip
             end
             {@reporter logPhase('transforming into graph representation ...')}
-            {UnnestQuery @TopLevel @reporter @switches Query
+            {UnnestQuery self @reporter self Query
              ?TopLevelGVs ?GS ?FreeGVs}
-            case {@switches get(warnredecl $)} then
+            case CompilerStateClass, getSwitch(warnredecl $) then
                {ForAll TopLevelGVs
                 proc {$ GV} PrintName = {GV getPrintName($)} in
-                   case {@TopLevel lookup(PrintName $)} of undeclared then skip
+                   case CompilerStateClass, lookupVariableInEnv(PrintName $)
+                   of undeclared then skip
                    elseof PreviousGV then C in
                       {PreviousGV getCoord(?C)}
                       {@reporter
@@ -423,9 +428,9 @@ in
                raise rejected end
             else skip
             end
-            case {@switches get(staticanalysis $)} then
+            case CompilerStateClass, getSwitch(staticanalysis $) then
                {@reporter logPhase('static analysis ...')}
-               {@TopLevel annotateEnv(FreeGVs ?RequiredInterface)}
+               CompilerStateClass, annotateEnv(FreeGVs ?RequiredInterface)
                {@reporter logSubPhase('determining nonlocal variables ...')}
                {ForAll TopLevelGVs
                 proc {$ V}
@@ -435,7 +440,7 @@ in
                {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
                {@reporter logSubPhase('value propagation ...')}
                case GS of GS|GSr then
-                  {GS staticAnalysis(@reporter @switches GSr)}
+                  {GS staticAnalysis(@reporter self GSr)}
                end
             else
                RequiredInterface = {List.toRecord interface
@@ -446,11 +451,11 @@ in
                raise rejected end
             else skip
             end
-            case {@switches get(warnunused $)} then
+            case CompilerStateClass, getSwitch(warnunused $) then
                {@reporter logPhase('classifying variable occurrences ...')}
-               case {@switches get(staticanalysis $)} then skip
+               case CompilerStateClass, getSwitch(staticanalysis $) then skip
                else
-                  {ForAll {@TopLevel getVars($)}
+                  {ForAll CompilerStateClass, getVars($)
                    proc {$ V} {V setUse(multiple)} end}
                   {ForAll TopLevelGVs
                    proc {$ V} {V setUse(multiple)} end}
@@ -459,11 +464,14 @@ in
                {ForAll GS proc {$ GS} {GS markFirst(@reporter)} end}
             else skip
             end
-            case {@switches get(core $)} then R1 R2 FS in
+            case CompilerStateClass, getSwitch(core $) then R1 R2 FS in
                {@reporter logPhase('writing core representation ...')}
-               R1 = debug(realcore: {@switches get(realcore $)}
-                          debugValue: {@switches get(debugvalue $)}
-                          debugType: {@switches get(debugtype $)})
+               R1 = debug(realcore:
+                             CompilerStateClass, getSwitch(realcore $)
+                          debugValue:
+                             CompilerStateClass, getSwitch(debugvalue $)
+                          debugType:
+                             CompilerStateClass, getSwitch(debugtype $))
                R2 = {AdjoinAt R1 realcore true}
                FS = case TopLevelGVs of nil then ""
                     else FSs in
@@ -479,9 +487,11 @@ in
                                         {FormatStringToVirtualString FS}#'\n')}
             else skip
             end
-            case {@switches get(codegen $)} then GPNs Code Assembler in
+            case CompilerStateClass, getSwitch(codegen $) then
+               GPNs Code Assembler
+            in
                {@reporter logPhase('generating code ...')}
-               case {@switches get(staticanalysis $)} then skip
+               case CompilerStateClass, getSwitch(staticanalysis $) then skip
                else
                   {@reporter logSubPhase('determining nonlocal variables ...')}
                   {ForAll TopLevelGVs
@@ -491,12 +501,13 @@ in
                    end}
                   {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
                end
-               {GS.1 startCodeGen(GS @switches @reporter
-                                  {@TopLevel getVars($)} TopLevelGVs
+               {GS.1 startCodeGen(GS self @reporter
+                                  CompilerStateClass, getVars($) TopLevelGVs
                                   ?GPNs ?Code)}
                {@reporter logSubPhase('assembling ...')}
-               Assembler = {Assemble {@switches get(profile $)} Code}
-               case {@switches get(ozma $)} then
+               Assembler = {Assemble CompilerStateClass, getSwitch(profile $)
+                            Code}
+               case CompilerStateClass, getSwitch(ozma $) then
                   case GPNs of nil then File VS in
                      {@reporter logSubPhase('saving assembler code ...')}
                      {Assembler output(?VS)}
@@ -511,7 +522,7 @@ in
                                             'when compiling for Ozma'))}
                   end
                else
-                  case {@switches get(outputcode $)} then VS in
+                  case CompilerStateClass, getSwitch(outputcode $) then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
                      VS = case GPNs of nil then '%% No Global Registers\n'
                           else
@@ -525,40 +536,37 @@ in
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
                   else skip
                   end
-                  case {@switches get(feedtoemulator $)} then Globals Proc P in
+                  case CompilerStateClass, getSwitch(feedtoemulator $) then
+                     Globals Proc P
+                  in
                      {@reporter logSubPhase('loading ...')}
                      proc {Proc}
                         case TopLevelGVs of nil then skip
                         else
-                           {ForAll TopLevelGVs
-                            proc {$ GV} {@TopLevel enter(GV)} end}
-                           {self.interface DisplayEnv(@TopLevel.values)}
+                           CompilerStateClass, enterMultiple(TopLevelGVs)
                         end
                         Globals = {Map GPNs
                                    fun {$ PrintName}
-                                      {@TopLevel getValueOf(PrintName $)}
+                                      CompilerStateClass,
+                                      lookupInEnv(PrintName $)
                                    end}
                         {Assembler load(Globals ?P)}
                      end
-                     CompilerClass, ExecuteUninterruptible(Proc)
-                     local
-                        OPICompiler = {{`Builtin` getOPICompiler 1}}
-                     in
-                        case OPICompiler == self.interface then
-                           %% terrible hack due to Benni
+                     CompilerEngine, ExecuteUninterruptible(Proc)
+                     case CompilerStateClass, getSwitch(threadedqueries $) then
+                        {@reporter
+                         logSubPhase('executing in an independent thread ...')}
+                        case {{`Builtin` getOPICompiler 1}} == @wrapper then
+                           % this helps Ozcar detect queries from the OPI:
                            {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
                         else skip
                         end
-                     end
-                     case {@switches get(threadedqueries $)} then
-                        {@reporter
-                         logSubPhase('executing in an independent thread ...')}
                         thread {P} end
                      else
                         {@reporter
                          logSubPhase('executing and waiting for '#
                                      'completion ...')}
-                        CompilerClass, ExecProtected(P false)
+                        CompilerEngine, ExecProtected(P false)
                      end
                   else skip
                   end
@@ -567,12 +575,17 @@ in
             end
          end
       end
-      meth FeedFileWithSwitches(FileName Switches) OldState in
-         OldState = {Record.map Switches fun {$ _} _ end}
-         {@switches getMultiple(OldState)}
-         {@switches setMultiple(Switches)}
-         CompilerClass, Feed(ParseOzFile FileName _)
-         {@switches setMultiple(OldState)}
+
+      meth interrupt()
+         case @ExecutingThread of unit then skip
+         elseof T then
+            lock @InterruptLock then
+               {Thread.injectException T interrupt}
+            end
+         end
+      end
+      meth ExecuteUninterruptible(P)
+         lock @InterruptLock then {P} end
       end
       meth ExecProtected(P IsCompilerThread)
          % This method executes {P} but protects the current thread
@@ -584,8 +597,15 @@ in
          T = {Thread.this}
          thread
             ExecutingThread <- {Thread.this}
-            case IsCompilerThread andthen {@switches get(watchdog $)} then
+            case IsCompilerThread
+               andthen CompilerStateClass, getSwitch(watchdog $)
+            then
                {Thread.setRaiseOnBlock {Thread.this} true}
+            else skip
+            end
+            case {{`Builtin` getOPICompiler 1}} == @wrapper then
+               % this helps Ozcar detect queries from the OPI:
+               {{`Builtin` 'Thread.setId' 2} {Thread.this} 1}
             else skip
             end
             try
@@ -605,10 +625,201 @@ in
          case {IsDet Exceptionless} then skip
          elsecase IsCompilerThread then
             raise crashed end
-         elsecase {self.interface AskAbort($)} then
+         else
             raise aborted end
+         end
+      end
+   end
+in
+   class CompilerClass
+      prop final
+      attr Registered: nil CurrentQuery: unit QueriesHd QueriesTl NextId: 1
+      feat RegistrationLock QueueLock Compiler
+      meth init() X in
+         self.RegistrationLock = {NewLock}
+         self.QueueLock = {NewLock}
+         QueriesHd <- X
+         QueriesTl <- X
+         self.Compiler = {New CompilerEngine init(self)}
+         thread
+            CompilerClass, RunQueue()
+         end
+      end
+
+      %%
+      %% Managing registration of interfaces
+      %%
+      %% An interface registers by providing a port onto which
+      %% the following notification messages will be sent:
+      %%
+      %%    newQuery(Id M)
+      %%    runQuery(Id M)
+      %%    removeQuery(Id)
+      %%
+      %%    busy()
+      %%    idle()
+      %%
+      %%    switch(SwitchName B)
+      %%    switches(Rec)
+      %%    maxNumberOfErrors(N)
+      %%    env(Env)   %--** is a dictionary, should be a record
+      %%
+      %%    info(VS Coord <= unit)
+      %%    displaySource(TitleVS ExtVS VS)
+      %%    toTop()
+      %%
+      %%    pong()
+      %%
+
+      meth register(P)
+         lock self.RegistrationLock then
+            Registered <- P|@Registered
+            {self.Compiler notifyOne(P)}
+            lock self.QueueLock then
+               case @CurrentQuery of unit then
+                  {Send P idle()}
+               elseof Id#M then
+                  {Send P busy()}
+                  {Send P runQuery(Id M)}
+               end
+               CompilerClass, NotifyQueue(@QueriesHd P)
+            end
+         end
+      end
+      meth NotifyQueue(Qs P)
+         case {IsDet Qs} then Id#M|Qr = Qs in
+            {Send P newQuery(Id M)}
+            CompilerClass, NotifyQueue(Qr P)
          else skip
          end
+      end
+      meth unregister(P)
+         lock self.RegistrationLock then
+            Registered <- {Filter @Registered fun {$ P0} P0 \= P end}
+         end
+      end
+      meth notify(M)
+         lock self.RegistrationLock then
+            {ForAll @Registered proc {$ P} {Send P M} end}
+         end
+      end
+
+      %%
+      %% Managing the query queue
+      %%
+      %% Each query is enqueued into the compilers query queue; the
+      %% enqueueing operation immediately returns.  The output variables
+      %% of information requesting queries become bound when the query
+      %% is actually executed.  In answer to state change requests, a
+      %% notification message is broadcast on all registered interface
+      %% ports.  Exceptions are raised on the thread that enqueued the
+      %% query.
+      %%
+      %% Each query is assigned a unique identification that is immediately
+      %% unified with Id when enqueueing.  This Id may be used to remove a
+      %% query from the queue.
+      %%
+
+      meth enqueue(M ?Id <= _)
+         lock self.QueueLock then NewTl in
+            case M of macroDefine(X) then skip
+            [] macroUndef(X) then skip
+            [] getDefines(?Xs) then skip
+            [] getSwitch(SwitchName ?B) then skip
+            [] setSwitch(SwitchName B) then skip
+            [] pushSwitches() then skip
+            [] popSwitches() then skip
+            [] getMaxNumberOfErrors(?N) then skip
+            [] setMaxNumberOfErrors(N) then skip
+            [] addToEnv(PrintName Value) then skip
+            [] lookupInEnv(PrintName ?Value) then skip
+            [] removeFromEnv(PrintName) then skip
+            [] putEnv(Env) then skip
+            [] mergeEnv(Env) then skip
+            [] getEnv(?Env) then skip
+            [] feedVirtualString(VS) then skip
+            [] feedVirtualString(VS ?RequiredInterfaces) then skip
+            [] feedFile(VS) then skip
+            [] feedFile(VS ?RequiredInterfaces) then skip
+            [] ping(?HereIAm) then skip
+            else
+               raise compiler(invalidQuery M) end
+            end
+            Id = @NextId
+            NextId <- Id + 1
+            @QueriesTl = Id#M|NewTl
+            QueriesTl <- NewTl
+            CompilerClass, notify(newQuery(Id M))
+         end
+      end
+      meth interrupt()
+         {self.Compiler interrupt()}
+      end
+      meth dequeue(Id)
+         lock self.QueueLock then
+            QueriesHd <- CompilerClass, Dequeue(@QueriesHd Id $)
+         end
+      end
+      meth clearQueue()
+         lock self.QueueLock then
+            CompilerClass, ClearQueue(@QueriesHd)
+         end
+      end
+      meth ClearQueue(Qs)
+         case {IsDet Qs} then Id#_|Qr = Qs in
+            CompilerClass, notify(removeQuery(Id))
+            CompilerClass, ClearQueue(Qr)
+         else
+            QueriesHd <- Qs
+         end
+      end
+      meth Dequeue(Qs Id ?NewQs)
+         case {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
+            case Id == Id0 then
+               NewQs = Qr
+               CompilerClass, notify(removeQuery(Id))
+            else NewQr in
+               NewQs = Q|NewQr
+               CompilerClass, Dequeue(Qr Id ?NewQr)
+            end
+         else
+            % make sure that no race conditions occur, since the
+            % queue is processed concurrently
+            NewQs = Qs
+         end
+      end
+
+      meth RunQueue()
+         case {IsFree @QueriesHd} then
+            CompilerClass, notify(idle())
+            {Wait @QueriesHd}
+            CompilerClass, notify(busy())
+         else skip
+         end
+         try
+            lock self.QueueLock then Qs in
+               Qs = @QueriesHd
+               case {IsDet Qs} then Id#M|Qr = Qs in
+                  QueriesHd <- Qr
+                  raise query(Id M) end   % unlock the QueueLock
+               else skip
+               end
+            end
+         catch query(Id M) then
+            lock self.QueueLock then
+               CompilerClass, notify(runQuery(Id M))
+               CurrentQuery <- Id#M
+            end
+            try
+               {self.Compiler M}
+            catch failure(...) then skip   % ignore, e.g., ping(true)
+            end
+            lock self.QueueLock then
+               CurrentQuery <- unit
+               CompilerClass, notify(removeQuery(Id))
+            end
+         end
+         CompilerClass, RunQueue()
       end
    end
 end

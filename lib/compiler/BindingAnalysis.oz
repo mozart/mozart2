@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -33,7 +32,7 @@ local
    fun {Generate Env TopLevel Origin N} PrintName in
       PrintName = {ConcatenateAtomAndInt Origin N}
       case {IsDeclared Env PrintName}
-         orelse {TopLevel lookup(PrintName $)} \= undeclared
+         orelse {TopLevel lookupVariableInEnv(PrintName $)} \= undeclared
       then
          {Generate Env TopLevel Origin N + 1}
       else
@@ -105,7 +104,7 @@ in
                V = X
             end
          [] nil then
-            {self.MyTopLevel lookup(PrintName ?V)}
+            {self.MyTopLevel lookupVariableInEnv(PrintName ?V)}
             case V of undeclared then skip
             else {Dictionary.put @freeVariablesOfQuery PrintName V}
             end

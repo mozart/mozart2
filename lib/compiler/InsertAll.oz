@@ -1,6 +1,6 @@
 %%%
-%%% Authors:
-%%%   Leif Kornstaedt (kornstae@ps.uni-sb.de)
+%%% Author:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -9,8 +9,7 @@
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
@@ -91,14 +90,6 @@ in
    end
 
    local
-      SetSwitches          = {NewName}
-      SetMaxNumberOfErrors = {NewName}
-      ShowInfo             = {NewName}
-      DisplaySource        = {NewName}
-      ToTop                = {NewName}
-      DisplayEnv           = {NewName}
-      AskAbort             = {NewName}
-
       % Version
       OZVERSION
       DATE
@@ -122,9 +113,6 @@ in
 
       % Assembler
       Assemble
-
-      % Compiler
-      CompilerClass
    in
       \insert Version
       \insert FormatStrings
@@ -156,8 +144,7 @@ in
       \insert Interface
       \insert Assembler
       \insert Compiler
-      \insert TkInterface
-      \insert EmacsInterface
+      \insert GenericInterface
       \insert QuietInterface
    end
 end

@@ -845,7 +845,7 @@ in
             end
             Id = @NextId
             NextId <- Id + 1
-            @QueriesTl = Id#M|NewTl
+            @QueriesTl = Id#M#_|NewTl
             QueriesTl <- NewTl
             Narrator.'class', tell(newQuery(Id M))
          end
@@ -864,7 +864,7 @@ in
          end
       end
       meth ClearQueue(Qs)
-         if {IsDet Qs} then Id#_|Qr = Qs in
+         if {IsDet Qs} then Id#_#_|Qr = Qs in
             Narrator.'class', tell(removeQuery(Id))
             Engine, ClearQueue(Qr)
          else
@@ -872,8 +872,9 @@ in
          end
       end
       meth Dequeue(Qs Id ?NewQs)
-         if {IsDet Qs} then (Q=Id0#_)|Qr = Qs in
+         if {IsDet Qs} then (Q=Id0#_#X)|Qr = Qs in
             if Id == Id0 then
+               X = dequeued
                NewQs = Qr
                Narrator.'class', tell(removeQuery(Id))
             else NewQr in
@@ -886,6 +887,21 @@ in
             NewQs = Qs
          end
       end
+      meth wait(Id $)
+         lock self.QueueLock then
+            Engine, FindId(@QueriesHd Id $)
+         end
+      end
+      meth FindId(Qs Id $)
+         if {IsDet Qs} then Id0#_#X|Qr = Qs in
+            if Id == Id0 then X
+            else
+               Engine, FindId(Qr Id $)
+            end
+         else
+            unknown
+         end
+      end
 
       meth RunQueue()
          if {IsFree @QueriesHd} then
@@ -896,12 +912,12 @@ in
          try
             lock self.QueueLock then Qs in
                Qs = @QueriesHd
-               if {IsDet Qs} then Id#M|Qr = Qs in
+               if {IsDet Qs} then Id#M#X|Qr = Qs in
                   QueriesHd <- Qr
-                  raise query(Id M) end   % unlock the QueueLock
+                  raise query(Id M X) end   % unlock the QueueLock
                end
             end
-         catch query(Id M) then
+         catch query(Id M X) then
             lock self.QueueLock then
                Narrator.'class', tell(runQuery(Id M))
                CurrentQuery <- Id#M
@@ -921,6 +937,7 @@ in
             end
             lock self.QueueLock then
                CurrentQuery <- unit
+               X = finished
                Narrator.'class', tell(removeQuery(Id))
             end
          end

@@ -61,9 +61,11 @@ local
 
       import
          System
-         Syslet.{Argv = args Exit = exit}
          Debug
          Module
+
+      export
+         Run
 
       body
          fun {X2V X}
@@ -73,10 +75,9 @@ local
 
          \insert 'engine.oz'
 
-
-         {Exit
-         case Argv.usage orelse Argv.help then
-            {System.printInfo \insert 'help-string.oz'
+         fun {Run Argv}
+            case Argv.usage orelse Argv.help then
+               {System.printInfo \insert 'help-string.oz'
             }
             0
          else
@@ -300,7 +301,8 @@ local
                {System.showInfo ''}
                0
             end
-         end}
+            end
+         end
 
       end
    end
@@ -401,10 +403,18 @@ in
        in
           {Application.syslet
            './oztest'
-           Engine
+
+           functor $ prop once
+           import Module Syslet
+           body
+              {Syslet.exit {{Module.link '' Engine}.run Syslet.args}}
+           end
+
            TestOptions}
 
-          {Pickle.save Engine './te.ozf'}
+          {Pickle.save
+           Engine
+           './te.ozf'}
        end
 
        {Exit 0}

@@ -2294,8 +2294,12 @@ define
          Self = {Ctrl getSelf($)}
          FeaV = {Nth @actualArgs 1}
          Fea  = {GetData FeaV}
-         Attrs= {Self getAttributes($)}
-         Props= {Self getProperties($)}
+         Attrs= case Self of unit then unit
+                else {Self getAttributes($)}
+                end
+         Props= case Self of unit then unit
+                else {Self getProperties($)}
+                end
       in
          case
             Attrs==unit

@@ -434,9 +434,13 @@ in
             %%
             WindowLocal =
             {New MyToplevel case Screen == InitValue
-                            then tkInit(withdraw:true delete:BObj#close)
-                            else tkInit(withdraw:true delete:BObj#close
-                                        screen:Screen)
+                            then tkInit('class': 'OzTools'
+                                        withdraw: true
+                                        delete: BObj#close)
+                            else tkInit('class': 'OzTools'
+                                        withdraw: true
+                                        delete: BObj#close
+                                        screen: Screen)
                             end}
 
             %%
@@ -515,7 +519,6 @@ in
                                        highlightthickness: 0)}
             FHS_HS = {New Tk.scrollbar tkInit(parent: FHS
                                               relief: IFrameRelief
-                                              bd: IBigBorder
                                               width: ISWidth
                                               orient: horizontal
                                               highlightthickness: 0)}
@@ -527,10 +530,7 @@ in
             BW = {New Tk.text tkInit(parent: W
                                      %% width: ITWWidth
                                      %% height: ITWHeight
-                                     bd: IBigBorder
                                      relief: ITextRelief
-                                     padx: ITWPad
-                                     pady: ITWPad
                                      wrap: none
                                      % insertontime: 0
                                      background: IBackGround
@@ -607,7 +607,6 @@ in
             %%
             VS = {New Tk.scrollbar tkInit(parent: W
                                           relief: IFrameRelief
-                                          bd: IBigBorder
                                           width: ISWidth
                                           highlightthickness: 0
                                           action: MyHandler # m)}
@@ -1844,10 +1843,11 @@ in
             %%
             Canvas = {New Tk.canvas tkInit(parent: BW
                                            width:  CWidth
-                                           height: YRes
+                                           bg:     IBackGround
+                                           height: YRes-1
                                            highlightthickness: 0)}
             {Canvas tk('create' line 0 LineBase (CWidth - 1) LineBase
-                           width: YRes stipple: gray25)}
+                           width: YRes-1 stipple: gray25)}
 
             %%
             {BW tk(window 'create' Mark window: Canvas)}

@@ -226,8 +226,8 @@ IBackGround   = 'white'
 IForeGround   = 'black'
 
 %% borders and scrollbars' sizes are in pixels;
-IBigBorder    = 3
-ISmallBorder  = 2
+IBigBorder    = 1
+ISmallBorder  = 1
 
 %% ext widgets are raised,
 %% while menus, buttons and scrollbars frames are sunken;

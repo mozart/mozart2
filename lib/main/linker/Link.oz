@@ -39,7 +39,7 @@ local
 
    in
 
-      fun {NewUrlFilter Args RootUrl}
+      fun {NewUrlFilter RootUrl Args}
          {Debug 'Root: '#{UrlToVs RootUrl}}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
          {Debug 'Base: '#{UrlToVs BaseUrl}}
@@ -321,7 +321,7 @@ local
 
    in
 
-      fun {Assemble RootUrl Args Info Order}
+      fun {Assemble RootUrl Order Info Args}
          {Debug 'Assembling ...'}
          RootUrlKey = {UrlToAtom RootUrl}
          Rewrite    = if Args.relative then
@@ -432,16 +432,17 @@ local
 in
 
    fun {Link RootUrl Args}
-      ToInclude = {NewUrlFilter Args RootUrl}
+      ToInclude = {NewUrlFilter RootUrl Args}
       Info      = {Find RootUrl ToInclude}
       Order     = {Schedule RootUrl Info Args}
+      Includes  = {Filter Order.1
+                   fun {$ Url} {HasFeature Info.include Url} end}
+      Linked    = {Assemble RootUrl Order Info Args}
    in
-      {Trace 'Include:\n'#{CommaList {Filter Order.1
-                                      fun {$ Url}
-                                         {HasFeature Info.include Url}
-                                      end}}}
-      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
-      {Assemble RootUrl Args Info Order}
+      {Trace 'Include:\n'#{CommaList Includes}}
+      {Trace 'Import:\n'#{CommaList {Map {Record.toList Linked.'import'}
+                                     fun {$ Info} Info.'from' end}}}
+      Linked
    end
 
 end

@@ -1,0 +1,39 @@
+@SET_MAKE@
+VPATH           = @srcdir@
+SRCDIR          = @srcdir@
+BUILDTOP        = @BUILDTOP@
+SRCTOP          = @SRCTOP@
+HOMEURL         = @HOMEURL@
+PLATFORM        = @PLATFORM@
+INSTALL_DIR     = @INSTALL_DIR@
+OZC             = @OZC@
+OZL             = @OZL@
+
+TARGETS         = copy speed
+
+all: $(TARGETS)
+
+bootstrap: boot-all
+
+$(TARGETS): % : %.ozf run.ozf
+        $(OZL) -x $< -o $@
+
+%.ozf: %.oz
+        $(OZC) -c $< -o $@
+
+install:
+
+include $(SRCTOP)/share/Makefile.boot
+
+Makefile: Makefile.in ../../config.status
+        cd ../.. && ./config.status
+
+../../config.status: ../../configure
+        cd ../.. && ./config.status --recheck
+
+depend:
+
+clean:
+        -rm -f *~ *.ozf *.so-* $(TARGETS)
+veryclean: clean
+distclean: veryclean

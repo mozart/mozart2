@@ -254,7 +254,7 @@ define
                CodeStore, RegOcc(Reg1 RS)
                CodeStore, RegOcc(Reg2 RS)
                CodeStore, RegOccs(GRegs RS)
-            [] vExHandler(_ Addr1 Reg Addr2 _ _ InitsRS) then RS1 RS2 TempRS in
+            [] vExHandler(_ Addr1 Reg Addr2 _ Cont InitsRS) then RS1 RS2 TempRS in
                CodeStore, ComputeOccs(Addr1 ?RS1)
                CodeStore, ComputeOccs(Addr2 ?RS2)
                CodeStore, RegOcc(Reg RS2)
@@ -266,6 +266,11 @@ define
                {BitArray.disj InitsRS TempRS}
                {BitArray.disj RS RS1}
                {BitArray.disj RS RS2}
+               case Cont of vShared(_ InitsRS _ _) then
+                  InitsRS = {BitArray.clone RS1}
+                  {BitArray.disj InitsRS RS2}
+               [] nil then skip
+               end
             [] vPopEx(_ _ _) then
                skip
             [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ Cont) then RS1 RS2 RS3 in

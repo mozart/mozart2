@@ -72,7 +72,7 @@ prepare
                    'EvalDialog'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
                    'GumpParser' 'ProductionTemplates'
-                   'Inspector'
+                   'Inspector' 'OPIServer'
                   ]
    in
       LibFuncs     = {MakeUrlTable Libs}

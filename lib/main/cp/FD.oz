@@ -1461,9 +1461,6 @@ in
           is:  IsFDB
         )
 
-   CompileDate = {FDP.init}
-   case {System.get standalone} then skip
-   else {System.showError 'Loaded Finite Domain Library of '#CompileDate#'.'}
-   end
+   _ = {FDP.init}
 
 end

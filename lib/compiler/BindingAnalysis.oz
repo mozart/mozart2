@@ -104,22 +104,6 @@ in
             V = X
          end
       end
-      meth bindExport(PrintName Coord ?V)
-         X Env = @env (D#G#Hd#Tl)|Dr = Env
-      in
-         X = {Dictionary.condGet D PrintName undeclared}
-         case X of undeclared then NewTl in
-            V = {New Core.variable init(PrintName user Coord)}
-            {Dictionary.put D PrintName V}
-            Tl = V|NewTl
-            env <- (D#G#Hd#NewTl)|Dr
-         else
-            {self.MyReporter
-             error(coord: Coord kind: BindingAnalysisError
-                   msg: 'variable '#pn(PrintName)#' declared more than once')}
-            V = X
-         end
-      end
       meth refer(PrintName Coord ?VO) V in
          BindingAnalysis, Refer(PrintName Coord @env ?V)
          case V of undeclared then

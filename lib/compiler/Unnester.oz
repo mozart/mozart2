@@ -929,13 +929,11 @@ define
              proc {$ FV}
                 case FV of fVar(PrintName C) then
                    {@BA bind(PrintName C _)}
-                elseof fDoImport(FI GV _) then
+                [] fDoImport(FI GV _) then
                    fImportItem(fVar(PrintName C) Fs _) = FI NewFs
                 in
                    {@BA bindImport(PrintName C NewFs ?GV)}
                    Unnester, UnnestImportFeatures(Fs ?NewFs)
-                elseof fExportItem(fVar(PrintName C)) then
-                   {@BA bindExport(PrintName C _)}
                 end
              end}
             GS = (Unnester, UnnestStatement(NewFS1 $)|
@@ -1337,14 +1335,11 @@ define
                              case FV of fVar(X C) then
                                 {@BA bind(X C _)}
                                 {Or In X == PrintName}
-                             elseof fDoImport(FI GV _) then
+                             [] fDoImport(FI GV _) then
                                 fImportItem(fVar(X C) Fs _) = FI NewFs
                              in
                                 {@BA bindImport(X C NewFs ?GV)}
                                 Unnester, UnnestImportFeatures(Fs ?NewFs)
-                                {Or In X == PrintName}
-                             elseof fExportItem(fVar(X C)) then
-                                {@BA bindExport(X C _)}
                                 {Or In X == PrintName}
                              end
                           end false}

@@ -1643,9 +1643,12 @@ local
       meth saDescend(Ctrl)
          Env = {GetGlobalEnv @globalVars}
       in
-         case {Member 'instantiate' @procFlags} then
+         case {Member 'instantiate' @procFlags} then Top in
             {Ctrl beginVirtualToplevel(@coord)}
-            SAStatement, saBody(Ctrl @body) %--** replaced Top for true; Leif, please explain
+            {Ctrl getTop(?Top)}
+            {Ctrl setTop(true)}
+            SAStatement, saBody(Ctrl @body)
+            {Ctrl setTop(Top)}
             toplevelNames <- {Ctrl endVirtualToplevel($)}
          else
             T N in

@@ -1353,7 +1353,7 @@ define
          [] fApply(FE1 FEs C) then N1 N2 FV in
             case FE1 of fSelf(_) then
                case FEs of [_] then skip else
-                  {@reporter error(coord:C kind:qExpansionError
+                  {@reporter error(coord:C kind: ExpansionError
                                    msg:'illegal application of self')}
                end
             else skip end

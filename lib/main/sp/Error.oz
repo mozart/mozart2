@@ -176,8 +176,7 @@ local
    %% current output: strings into emulator window
    %%
 
-   Output   = proc {$ X} {System.printError {VS2A X}} end
-   Alert    = proc {$} {System.printError ''} end
+   Output = System.printError
 
    %%
    %% parametrized output routines
@@ -187,8 +186,17 @@ local
       '%** ' # X # '\n'
    end
 
-   proc {LineOutput X}
-      {Output {AlmostVSToVS X}}
+   proc {LineOutput ErrorMsg Format} VSCell in
+      %% We have to call output a single time and not once per line
+      %% so that the alarm character to raise the buffer if running
+      %% under Emacs is only output once.
+      VSCell = {NewCell ""}
+      {ErrorMsg
+       proc {$ X}
+          {Assign VSCell {Access VSCell}#{AlmostVSToVS X}}
+       end
+       Format}
+      {Output {Access VSCell}}
    end
 
    proc {Repeat N C ?S}
@@ -525,7 +533,6 @@ in
    %%          loc:                  % added by the emulator
    %%          stack:                % added by the emulator
    %%          footer:               % yes/no
-   %%          alert:                % alert procedure
    %%         )
    %%  <line> ::= hint(l:AVS m:AVS)  % both fields optional
    %%             pos(A I I)
@@ -569,14 +576,6 @@ in
       end
 
       local
-         proc {ErrorAlert Format}
-            case {CondSelect Format alert unit}
-            of unit then skip
-            elseof Alert then
-               {Alert}
-            end
-         end
-
          proc {ErrorTitle Out Format}
             Kind = case {CondSelect Format kind unit}
                    of unit then ''
@@ -646,7 +645,6 @@ in
             of none then skip
             else
                {Out '\n'}
-               {ErrorAlert Format}
                {ErrorTitle Out Format}
                {ErrorMsgLine Out Format}
                {ErrorItems Out Format}
@@ -659,7 +657,6 @@ in
             of none then skip
             else
                {Out '\n'}
-               {ErrorAlert Format}
                {ErrorTitle Out Format}
                {ErrorMsgLine Out Format}
                {ErrorItems Out Format}
@@ -755,7 +752,7 @@ in
       %%
 
       proc {FormatExc Kind Msg Bs Exc E}
-         Fs = [items loc stack footer alert]
+         Fs = [items loc stack footer]
       in
          E = {Record.make error
               case Kind==unit then
@@ -779,7 +776,6 @@ in
          E.loc    = {DebugLoc Exc}
          E.stack  = {DebugStack Exc}
          E.footer = true
-         E.alert  = Alert
       end
 
       fun {GenericFormatter Msg Exc}
@@ -2004,8 +2000,8 @@ in
       end
 
       proc {ReRaise Exc ExcExc}
-         {ErrorMsgDebug
-          LineOutput
+         {LineOutput
+          ErrorMsgDebug
           error(title: 'Unable to Print Error Message'
                 items:[hint(l:'Initial exception' m:oz(Exc))
                        hint(l:'Format exception Kind'  m:{Label ExcExc})
@@ -2025,7 +2021,7 @@ in
          proc {DefExHdl Exc}
             try
                {Thread.setThisPriority high}
-               {ErrorMsgDebug LineOutput {FormatOzError Exc}}
+               {LineOutput ErrorMsgDebug {FormatOzError Exc}}
             catch X then
                {ReRaise Exc X}
             end

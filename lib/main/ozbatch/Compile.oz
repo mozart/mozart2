@@ -42,13 +42,14 @@ prepare
 
    OptSpecs = record(%% mode in which to run
                      mode(single
-                          type: atom(help core outputcode
-                                     feedtoemulator dump executable)
+                          type: atom(help core scode ecode execute
+                                     dump executable)
                           default: feedtoemulator)
                      help(char: [&h &?] alias: mode#help)
                      core(char: &E alias: mode#core)
-                     outputcode(char: &S alias: mode#outputcode)
-                     feedtoemulator(char: &e alias: mode#feedtoemulator)
+                     scode(char: &S alias: mode#scode)
+                     ecode(char: &s alias: mode#ecode)
+                     execute(char: &e alias: mode#execute)
                      dump(char: &c alias: mode#dump)
                      executable(char: &x alias: mode#executable)
 
@@ -120,18 +121,21 @@ prepare
    Usage =
    'You have to choose one of the following modes of operation:\n'#
    '-h, -?, --help                Output usage information and exit.\n'#
-   '-E, --core                    Transform a statement into core language\n'#
-   '                              (file extension: .ozi).\n'#
-   '-S, --outputcode              Compile a statement to assembly code\n'#
-   '                              (file extension: .ozm).\n'#
-   '-e, --feedtoemulator          Compile and execute a statement.\n'#
+   '-e, --execute, --mode=execute Compile and execute a statement.\n'#
    '                              This is the default mode.\n'#
-   '-c, --dump                    Compile and evaluate an expression,\n'#
+   '-c, --dump, --mode=dump       Compile and evaluate an expression,\n'#
    '                              pickling the result\n'#
    '                              (file extension: .ozf).\n'#
-   '-x, --executable              Compile and evaluate an expression,\n'#
+   '-x, --executable, --mode=executable\n'#
+   '                              Compile and evaluate an expression,\n'#
    '                              making result executable\n'#
    '                              (file extension: none).\n'#
+   '-E, --core, --mode=core       Compile a statement to core language\n'#
+   '                              (file extension: .ozi).\n'#
+   '-S, --scode, --mode=scode     Compile a statement to assembly code\n'#
+   '                              (file extension: .ozm).\n'#
+   '-s, --ecode, --mode=ecode     Compile an expression to assembly code\n'#
+   '                              (file extension: .ozm).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
    '-v, --verbose                 Display all compiler messages.\n'#
@@ -336,13 +340,15 @@ in
              case OptRec.outputfile of unit then
                 case OptRec.mode of core then
                    OFN = {ChangeExtension Arg ".ozi"}
-                [] outputcode then
+                [] scode then
                    OFN = {ChangeExtension Arg ".ozm"}
-                [] feedtoemulator then
+                [] ecode then
+                   OFN = {ChangeExtension Arg ".ozm"}
+                [] execute then
                    if OptRec.makedepend then
                       {Report
                        error(kind: UsageError
-                             msg: ('--makedepend with --feedtoemulator '#
+                             msg: ('--makedepend with --execute '#
                                    'needs an --outputfile'))}
                    end
                    OFN = unit
@@ -361,13 +367,11 @@ in
                    OFN = stdout
                 end
              else
-                if OptRec.mode == feedtoemulator
-                   andthen {Not OptRec.makedepend}
-                then
+                if OptRec.mode == execute andthen {Not OptRec.makedepend} then
                    {Report
                     error(kind: UsageError
                           msg: ('no output file name must be '#
-                                'specified for --feedtoemulator'))}
+                                'specified for --execute'))}
                 else
                    OFN = OptRec.outputfile
                 end
@@ -379,11 +383,16 @@ in
              case OptRec.mode of core then
                 {BatchCompiler enqueue(setSwitch(core true))}
                 {BatchCompiler enqueue(setSwitch(codegen false))}
-             [] outputcode then
-                {BatchCompiler enqueue(setSwitch(outputcode true))}
+             [] scode then
+                {BatchCompiler enqueue(setSwitch(scode true))}
                 {BatchCompiler
                  enqueue(setSwitch(feedtoemulator false))}
-             [] feedtoemulator then
+             [] ecode then
+                {BatchCompiler enqueue(setSwitch(scode true))}
+                {BatchCompiler enqueue(setSwitch(expression true))}
+                {BatchCompiler
+                 enqueue(setSwitch(feedtoemulator false))}
+             [] execute then
                 {BatchCompiler
                  enqueue(setSwitch(feedtoemulator true))}
              else   % dump, executable
@@ -437,8 +446,8 @@ in
                              msg: 'writing executable functor failed'
                              items: [hint(l: 'Error code' m: N)])}
                    end
-                [] feedtoemulator then skip
-                else File in   % core, outputcode
+                [] execute then skip
+                else File in   % core, scode, ecode
                    File = {New Open.file
                            init(name: OFN
                                 flags: [write create truncate])}

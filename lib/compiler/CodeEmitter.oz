@@ -645,24 +645,37 @@ in
                   Emitter, Emit(unify(X R))
                end
             end
-         [] vExHandler(_ Addr1 Reg Addr2 Coord Cont InitsRS) then
-            OldContLabels Label1 RegMap OldLocalEnvsInhibited
+         [] vExHandler(ThisRS Addr1 Reg Addr2 Coord Cont InitsRS) then
+            OldContLabels Label1 RS RegMap1 OldLocalEnvsInhibited RegMap2
          in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, newLabel(?Label1)
-            Emitter, DoInits(InitsRS ThisAddr)
+            case Addr2 of nil then
+               case Cont of nil then RS = {BitArray.new 0 0}
+               else RS = Cont.1
+               end
+            else
+               case Cont of nil then RS = Addr2.1
+               else
+                  RS = {BitArray.clone Addr2.1}
+                  {BitArray.'or' RS Cont.1}
+               end
+            end
+            Emitter, DoInits(InitsRS v(RS))
             Emitter, Emit(exHandler(Label1))
-            Emitter, SaveRegisterMapping(?RegMap)
+            Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, KillAllTemporaries()
             Emitter, AllocateThisTemp(0 Reg _)
             OldLocalEnvsInhibited = @LocalEnvsInhibited
             LocalEnvsInhibited <- true
             Emitter, EmitAddr(Addr2)
             LocalEnvsInhibited <- OldLocalEnvsInhibited
-            Emitter, RestoreRegisterMapping(RegMap)
+            Emitter, RestoreAllRegisterMappings(RegMap1)
             Emitter, Emit(lbl(Label1))
             Emitter, DebugEntry(Coord 'exception handler')
+            Emitter, SaveRegisterMapping(RegMap2)
             Emitter, EmitAddr(Addr1)
+            Emitter, RestoreRegisterMapping(RegMap2)
             Emitter, PopContLabel(OldContLabels)
          [] vPopEx(_ Coord _) then
             Emitter, DebugExit(Coord 'exception handler')

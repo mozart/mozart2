@@ -437,25 +437,24 @@ define
          E = {Error.dispatch Exc}
          T = 'Error: object system'
       in
-
          case E
          of object('<-' O A V) then
             {Error.format
-             T 'Assignment to unavailable attribute'
+             T 'Assignment to undefined attribute'
              [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
               hint(l:'Expected one of'
                    m:oz({OoExtensions.getAttrNames O}))]
              Exc}
          elseof object('@' O A) then
             {Error.format
-             T 'Access of unavailable attribute'
+             T 'Access of undefined attribute'
              [hint(l:'In statement' m:'_ = @' # oz(A))
               hint(l:'Expected one of'
                    m:oz({OoExtensions.getAttrNames O}))]
              Exc}
          elseof object(ooExch O A V) then
             {Error.format
-             T 'Exchange of unavailable attribute'
+             T 'Exchange of undefined attribute'
              [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
               hint(l:'Attribute' m:oz(A))
               hint(l:'Expected one of'
@@ -482,7 +481,7 @@ define
             H  = {Error.formatHint 'Method undefined and no otherwise method given'}
          in
             {Error.format T
-             'Method lookup in message sending'
+             'Undefined method'
              L1|L2|H
              Exc}
          elseof object(final CParent CChild) then
@@ -503,49 +502,34 @@ define
              Exc}
          elseof object(illegalProp Ps) then
             {Error.format T
-             'Illegal property value'
+             'Illegal property value in class definition'
              [hint(l:'Illegal values' m:oz(Ps))
               hint(l:'Expected one of' m:oz([final locking sited]))]
              Exc}
-         elseof object(arityMismatchDefaultMethod L)
-         then
+         elseof object(arityMismatchDefaultMethod L) then
             {Error.format T
              'Arity mismatch for method with defaults'
              [hint(l:'Unexpected feature' m:oz(L))]
              Exc}
-
-         elseof object(slaveNotFree)
-         then
-
+         elseof object(slaveNotFree) then
             {Error.format T
              'Method becomeSlave'
              [hint(l:'Slave is not free')]
              Exc}
-
          elseof object(slaveAlreadyFree) then
-
             {Error.format T
              'Method free'
              [hint(l:'Slave is already free')]
              Exc}
-
          elseof object(locking O) then
             {Error.format T
              'Attempt to lock unlockable object'
              [hint(l:'Object' m:oz(O))]
              Exc}
-
-         elseof object(fromFinalClass C O) then
-            {Error.format T 'Final class not allowed'
-             [hint(l:'Final class' m:C)
-              hint(l:'Operation'   m:O)]
-             Exc}
-
          elseof object(nonLiteralMethod L) then
             {Error.format T 'Method label is not a literal'
              [hint(l:'Method' m:L)]
              Exc}
-
          else
             {Error.formatGeneric T Exc}
          end

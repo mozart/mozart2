@@ -297,7 +297,7 @@ local
             {All NewProp IsAtom} andthen
             {List.sub {Sort NewProp Value.'<'} [final locking sited]}
          then skip else
-            {`RaiseError` object(unkownProp
+            {`RaiseError` object(illegalProp
                                  {FoldL NewProp fun {$ Ps P}
                                                    case P
                                                    of final then Ps

@@ -69,7 +69,7 @@ class FBrowserClass
    meth init(origWindow:       OrigWindow         <= InitValue
              screen:           Screen             <= InitValue)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::init is applied'}
+      {System.show 'FBrowserClass::init is applied'}
 \endif
       lock
          %%
@@ -128,7 +128,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::init is finished'}
+         {System.show 'FBrowserClass::init is finished'}
 \endif
       end
    end
@@ -142,7 +142,7 @@ class FBrowserClass
    %% has been processed;
    meth break
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::break is applied'}
+      {System.show 'FBrowserClass::break is applied'}
 \endif
       %%
       {self.Store store(StoreBreak true)}
@@ -152,7 +152,7 @@ class FBrowserClass
    %% Break + purge unprocessed suspensions + undraw everything;
    meth clear
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::clear is applied'}
+      {System.show 'FBrowserClass::clear is applied'}
 \endif
       lock
          %%
@@ -172,7 +172,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::clear is finished'}
+         {System.show 'FBrowserClass::clear is finished'}
 \endif
       end
    end
@@ -181,7 +181,7 @@ class FBrowserClass
    %%  ... and close the window;
    meth closeWindow
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::closeWindow is applied'}
+      {System.show 'FBrowserClass::closeWindow is applied'}
 \endif
       lock
          %%
@@ -193,7 +193,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::closeWindow is finished'}
+         {System.show 'FBrowserClass::closeWindow is finished'}
 \endif
       end
    end
@@ -201,21 +201,21 @@ class FBrowserClass
    %%
    meth closeMenus
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::closeMenus is applied'}
+      {System.show 'FBrowserClass::closeMenus is applied'}
 \endif
       %%
       {self.BrowserStream enq(closeMenus)}
 
       %%
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::closeMenus is finished'}
+      {System.show 'FBrowserClass::closeMenus is finished'}
 \endif
    end
 
    %%
    meth close
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::close is applied'}
+      {System.show 'FBrowserClass::close is applied'}
 \endif
       %%
       lock
@@ -237,7 +237,7 @@ class FBrowserClass
          %% That's not my problem if somebody will send messages here ;-)
          MyClosableObject , close
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::close is finished'}
+         {System.show 'FBrowserClass::close is finished'}
 \endif
       end
    end
@@ -245,7 +245,7 @@ class FBrowserClass
    %%
    meth createWindow
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::createWindow is applied'}
+      {System.show 'FBrowserClass::createWindow is applied'}
 \endif
       %%
       lock
@@ -262,7 +262,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::createWindow is finished'}
+         {System.show 'FBrowserClass::createWindow is finished'}
 \endif
       end
    end
@@ -270,7 +270,7 @@ class FBrowserClass
    %%
    meth createMenus
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::createMenus is applied'}
+      {System.show 'FBrowserClass::createMenus is applied'}
 \endif
       %%
       lock
@@ -299,7 +299,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::createMenus is finished'}
+         {System.show 'FBrowserClass::createMenus is finished'}
 \endif
       end
    end
@@ -307,7 +307,7 @@ class FBrowserClass
    %%
    meth toggleMenus
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::toggleMenus is applied'}
+      {System.show 'FBrowserClass::toggleMenus is applied'}
 \endif
       %%
       lock
@@ -316,7 +316,7 @@ class FBrowserClass
          else createMenus
          end
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::toggleMenus is finished'}
+         {System.show 'FBrowserClass::toggleMenus is finished'}
 \endif
       end
    end
@@ -324,20 +324,20 @@ class FBrowserClass
    %%
    meth focusIn
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::focusIn is applied'}
+      {System.show 'FBrowserClass::focusIn is applied'}
 \endif
       {self.BrowserStream enq(focusIn)}
 
       %%
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::focusIn is finished'}
+      {System.show 'FBrowserClass::focusIn is finished'}
 \endif
    end
 
    %%
    meth !ScrollTo(Obj Kind)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::ScrollTo is applied'}
+      {System.show 'FBrowserClass::ScrollTo is applied'}
 \endif
       %%
       lock
@@ -360,7 +360,7 @@ class FBrowserClass
                       end 'any'))}
             end
 \ifdef DEBUG_BO
-            {Show 'FBrowserClass::ScrollTo is finished'}
+            {System.show 'FBrowserClass::ScrollTo is finished'}
 \endif
          end
       end
@@ -373,7 +373,7 @@ class FBrowserClass
    %%
    meth browse(Term)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::browse is applied'#Term}
+      {System.show 'FBrowserClass::browse is applied'#Term}
 \endif
       local RootTermObj Sync ProceedProc DiscardProc in
          lock
@@ -424,7 +424,7 @@ class FBrowserClass
 
             %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::browse is finished'}
+         {System.show 'FBrowserClass::browse is finished'}
 \endif
          end
 
@@ -439,7 +439,7 @@ class FBrowserClass
    %% wakeup suspended 'Browse' threads;
    meth !SetBufferSize(NewSize)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SetBufferSize is applied'}
+      {System.show 'FBrowserClass::SetBufferSize is applied'}
 \endif
       %%
       lock
@@ -461,7 +461,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SetBufferSize is finished'}
+         {System.show 'FBrowserClass::SetBufferSize is finished'}
 \endif
       end
    end
@@ -469,7 +469,7 @@ class FBrowserClass
    %%
    meth !ChangeBufferSize(Inc)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::ChangeBufferSize is applied'}
+      {System.show 'FBrowserClass::ChangeBufferSize is applied'}
 \endif
       FBrowserClass
       , SetBufferSize({self.Store read(StoreBufferSize $)} + Inc)
@@ -479,7 +479,7 @@ class FBrowserClass
    %%
    meth rebrowse
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::rebrowse is applied'}
+      {System.show 'FBrowserClass::rebrowse is applied'}
 \endif
       %%
       lock
@@ -494,7 +494,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::rebrowse is finished'}
+         {System.show 'FBrowserClass::rebrowse is finished'}
 \endif
       end
    end
@@ -503,7 +503,7 @@ class FBrowserClass
    %%
    meth clearAllButLast
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::ClearAllButLast is applied'}
+      {System.show 'FBrowserClass::ClearAllButLast is applied'}
 \endif
       lock
          local CurrentSize in
@@ -521,7 +521,7 @@ class FBrowserClass
 
             %%
 \ifdef DEBUG_BO
-            {Show 'FBrowserClass::ClearAllButLast is finished'}
+            {System.show 'FBrowserClass::ClearAllButLast is finished'}
 \endif
          end
       end
@@ -534,7 +534,7 @@ class FBrowserClass
    %%
    meth Undraw(N)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::Undraw is applied'}
+      {System.show 'FBrowserClass::Undraw is applied'}
 \endif
       %%
       case N > 0 andthen {self.BrowserBuffer getSize($)} > 0 then
@@ -586,7 +586,7 @@ class FBrowserClass
 
       %%
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::Undraw is finished'}
+      {System.show 'FBrowserClass::Undraw is finished'}
 \endif
    end
 
@@ -594,7 +594,7 @@ class FBrowserClass
    %% Undraw a term when it becomes unselected (if it was at all);
    meth UndrawWait
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::UndrawWait is applied'}
+      {System.show 'FBrowserClass::UndrawWait is applied'}
 \endif
       %%
       lock
@@ -611,7 +611,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::UndrawWait is finished'}
+         {System.show 'FBrowserClass::UndrawWait is finished'}
 \endif
       end
    end
@@ -620,7 +620,7 @@ class FBrowserClass
    %%
    meth option(...)=M
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::option is applied'#M}
+      {System.show 'FBrowserClass::option is applied'#M}
 \endif
       %%
       case M.1
@@ -872,11 +872,11 @@ class FBrowserClass
                               case N of '' then 'NoLabel' else N end
                            end)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::add is applied'}
+      {System.show 'FBrowserClass::add is applied'}
 \endif
       {self.BrowserStream enq(addAction(Action Label))}
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::addProcessAction is finished'}
+      {System.show 'FBrowserClass::addProcessAction is finished'}
 \endif
    end
 
@@ -884,11 +884,11 @@ class FBrowserClass
    %%
    meth set(Action)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::setProcessAction is applied'}
+      {System.show 'FBrowserClass::setProcessAction is applied'}
 \endif
       {self.BrowserStream enq(setAction(Action))}
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::set is finished'}
+      {System.show 'FBrowserClass::set is finished'}
 \endif
    end
 
@@ -896,11 +896,11 @@ class FBrowserClass
    %%  Acepts 'all' as a special keyword;
    meth delete(Action)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::delete is applied'}
+      {System.show 'FBrowserClass::delete is applied'}
 \endif
       {self.BrowserStream enq(removeAction(Action))}
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::removeProcessAction is finished'}
+      {System.show 'FBrowserClass::removeProcessAction is finished'}
 \endif
    end
 
@@ -911,7 +911,7 @@ class FBrowserClass
    %%
    meth !SetSelected(Obj AreCommas)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SetSelected is applied'#Obj.term#Obj.type}
+      {System.show 'FBrowserClass::SetSelected is applied'#Obj.term#Obj.type}
 \endif
       %%
       lock
@@ -942,7 +942,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SetSelected is finished'}
+         {System.show 'FBrowserClass::SetSelected is finished'}
 \endif
       end
    end
@@ -951,7 +951,7 @@ class FBrowserClass
    %%
    meth !UnsetSelected
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::UnsetSelected is applied'}
+      {System.show 'FBrowserClass::UnsetSelected is applied'}
 \endif
       lock
          selected <- InitValue
@@ -964,7 +964,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::UnsetSelected is finished'}
+         {System.show 'FBrowserClass::UnsetSelected is finished'}
 \endif
       end
    end
@@ -973,7 +973,7 @@ class FBrowserClass
    %%
    meth !SelExpand
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SelExpand is applied'}
+      {System.show 'FBrowserClass::SelExpand is applied'}
 \endif
       %%
       lock
@@ -988,7 +988,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SelExpand is finished'}
+         {System.show 'FBrowserClass::SelExpand is finished'}
 \endif
       end
    end
@@ -997,7 +997,7 @@ class FBrowserClass
    %%
    meth !SelShrink
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SelShrink is applied'}
+      {System.show 'FBrowserClass::SelShrink is applied'}
 \endif
       %%
       lock
@@ -1012,7 +1012,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SelShrink is finished'}
+         {System.show 'FBrowserClass::SelShrink is finished'}
 \endif
       end
    end
@@ -1021,7 +1021,7 @@ class FBrowserClass
    %%
    meth !Process
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::Process is applied'}
+      {System.show 'FBrowserClass::Process is applied'}
 \endif
       %%
       local Selected in
@@ -1031,10 +1031,8 @@ class FBrowserClass
          case Selected == InitValue then skip
          else
             Action = {self.Store read(StoreProcessAction $)}
-            proc {CrashProc E T D}
-               {Show '*********************************************'}
-               {Show 'Exception occured in ProcessAction:'#E}
-               {Show 'ProcessAction was '#Action}
+            proc {CrashProc _ _ _}
+               skip
             end
          in
             %%
@@ -1051,7 +1049,7 @@ class FBrowserClass
 
       %%
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::Process is finished'}
+      {System.show 'FBrowserClass::Process is finished'}
 \endif
    end
 
@@ -1059,7 +1057,7 @@ class FBrowserClass
    %%
    meth !SelDeref
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SelDeref is applied'}
+      {System.show 'FBrowserClass::SelDeref is applied'}
 \endif
       %%
       lock
@@ -1074,7 +1072,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SelDeref is finished'}
+         {System.show 'FBrowserClass::SelDeref is finished'}
 \endif
       end
    end
@@ -1082,13 +1080,13 @@ class FBrowserClass
    %%
    meth !About
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::About is applied'}
+      {System.show 'FBrowserClass::About is applied'}
 \endif
       %%
       {self.BrowserStream enq(makeAbout)}
       %%
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::About is finished'}
+      {System.show 'FBrowserClass::About is finished'}
 \endif
    end
 
@@ -1166,7 +1164,7 @@ class FBrowserClass
    %% Updates (increases) depth&width of terms actually shown;
    meth !UpdateSizes
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::UpdateSizes is applied'}
+      {System.show 'FBrowserClass::UpdateSizes is applied'}
 \endif
       %%
       lock
@@ -1177,7 +1175,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::UpdateSizes is finished'}
+         {System.show 'FBrowserClass::UpdateSizes is finished'}
 \endif
       end
    end
@@ -1186,7 +1184,7 @@ class FBrowserClass
    %% Check the layout;
    meth refineLayout
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::checkLayt is applied'}
+      {System.show 'FBrowserClass::checkLayt is applied'}
 \endif
       lock
          local CLProc in
@@ -1198,7 +1196,7 @@ class FBrowserClass
             %%
             {ForAll {self.BrowserBuffer getContent($)} CLProc}
 \ifdef DEBUG_BO
-            {Show 'FBrowserClass::checkLayt is finished'}
+            {System.show 'FBrowserClass::checkLayt is finished'}
 \endif
          end
       end
@@ -1210,8 +1208,8 @@ class FBrowserClass
    %%
    meth !SetTWWidth(Width)
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::SetTWWidth is applied'}
-      thread {Wait Width} {Show '... Width = '#Width} end
+      {System.show 'FBrowserClass::SetTWWidth is applied'}
+      thread {Wait Width} {System.show '... Width = '#Width} end
 \endif
       %%
       {Wait Width}
@@ -1223,7 +1221,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::SetTWWidth is finished'}
+         {System.show 'FBrowserClass::SetTWWidth is finished'}
 \endif
       end
    end

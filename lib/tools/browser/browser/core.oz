@@ -49,7 +49,7 @@ end
 %% Since we don't have job...end anymore, they actually must present
 %% somewhere and somehow in Oz Kernel(?);
 IsVar =        fun {$ X} {Value.isDet X} == false end
-IsFdVar =      {`Builtin` 'fdIsVarB'      2}
+IsFdVar =      FDB.isVarB
 IsRecordCVar = {`Builtin` 'recordCIsVarB' 2}
 
 %%
@@ -91,15 +91,15 @@ AddrOf = {`Builtin` 'addr' 2}
 OnToplevel = {`Builtin` 'onToplevel' 1}
 
 %%
-FSetGetGlb = {`Builtin` fsGetGlb 2}
-FSetGetLub = {`Builtin` fsGetLub 2}
-FSetGetCard = {`Builtin` fsGetCard 2}
-IsFSetVar = {`Builtin` fsIsVarB 2}
+FSetGetGlb  = FSB.getGlb
+FSetGetLub  = FSB.getLub
+FSetGetCard = FSB.getCard
+IsFSetVar   = FSB.isVarB
 
 %%
-GetCtVarNameAsAtom       = {`Builtin` getCtVarNameAsAtom 2}
-GetCtVarConstraintAsAtom = {`Builtin` getCtVarConstraintAsAtom 2}
-IsCtVar                  = {`Builtin` isCtVarB 2}
+GetCtVarNameAsAtom       = CTB.getNameAsAtom
+GetCtVarConstraintAsAtom = CTB.getConstraintAsAtom
+IsCtVar                  = CTB.isB
 
 
 %%

@@ -123,9 +123,6 @@ in
                {Dictionary.put self.FontsCache Font R}
                R
             else
-               {Show '**************************************************'}
-               {Show 'X11ResourceCacheClass::tryFont: error!'}
-               {Show '**************************************************'}
                false
             end
          end
@@ -160,9 +157,6 @@ in
                {Dictionary.put self.FontResCache Font XRes#YRes}
                %%  ... is essential (because of 'tryFont');
             else
-               {Show '**************************************************'}
-               {Show 'X11ResourceCacheClass::getFontRes: error!'}
-               {Show '**************************************************'}
                XRes = YRes = 0
             end
          end
@@ -208,9 +202,6 @@ in
                {Dictionary.put self.CursorsCache CName R}
                R
             else
-               {Show '**************************************************'}
-               {Show 'X11ResourceCacheClass::tryCursor: error!'}
-               {Show '**************************************************'}
                false
             end
          end

@@ -36,11 +36,23 @@
 functor $ prop once
 
 import
+   CTB.{isB getConstraintAsAtom getNameAsAtom}
+      from 'x-oz-boot:CTB'
+
+   FDB.{isVarB}
+      from 'x-oz-boot:FDB'
+
+   FSB.{getGlb
+        getLub
+        getCard
+        isVarB}
+      from 'x-oz-boot:FSB'
+
    FD.{reflect}
 
    Search.{one}
 
-   System.{Show = 'Show'
+   System.{show
            valueToVirtualString
            printName
            eq}
@@ -383,9 +395,7 @@ in
    proc {ApplyBrowser Browser Cmd}
       local HasCrashed CrashProc in
          %%
-         proc {CrashProc E T D}
-            {Show '*********************************************'}
-            {Show 'Exception occured in browser:'#E#T#D}
+         proc {CrashProc _ _ _}
             HasCrashed = unit
          end
 

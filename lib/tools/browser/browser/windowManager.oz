@@ -98,7 +98,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          self.CleanUp = fun {$ A} A \= InitValue end
 
          %%
-         {Dictionary.put Actions 0 r(action:Show
+         {Dictionary.put Actions 0 r(action:System.show
                                      label:'Show'
                                      number:0)} % must be 0th;
          {Dictionary.put Actions 1 r(action:Browse
@@ -114,7 +114,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth createWindow
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::createWindow is applied'}
+      {System.show 'WindowManagerClass::createWindow is applied'}
 \endif
       %%
       case @window == InitValue then
@@ -136,7 +136,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 
       %%
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::createWindow is finished'}
+      {System.show 'WindowManagerClass::createWindow is finished'}
 \endif
    end
 
@@ -144,7 +144,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth createMenus
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::createMenus is applied'}
+      {System.show 'WindowManagerClass::createMenus is applied'}
 \endif
       %%
       case {self.store read(StoreAreMenus $)} then skip
@@ -358,7 +358,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 
       %%
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::createMenus is finished'}
+      {System.show 'WindowManagerClass::createMenus is finished'}
 \endif
    end
 
@@ -378,7 +378,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth resetWindowSize
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::resetWindowSize is applied'}
+      {System.show 'WindowManagerClass::resetWindowSize is applied'}
 \endif
       %%
       case @window == InitValue then skip
@@ -387,7 +387,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 
       %%
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::resetWindowSize is finished'}
+      {System.show 'WindowManagerClass::resetWindowSize is finished'}
 \endif
    end
 
@@ -395,11 +395,11 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth focusIn
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::focusIn is applied'}
+      {System.show 'WindowManagerClass::focusIn is applied'}
 \endif
       WindowManagerClass , WrapWindow(focusIn)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::focusIn is finished'}
+      {System.show 'WindowManagerClass::focusIn is finished'}
 \endif
    end
 
@@ -407,7 +407,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth closeMenus
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::closeMenus is applied'}
+      {System.show 'WindowManagerClass::closeMenus is applied'}
 \endif
       case
          @window \= InitValue andthen
@@ -420,7 +420,7 @@ class WindowManagerClass from MyClosableObject BatchObject
       else skip
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::closeMenus is finished'}
+      {System.show 'WindowManagerClass::closeMenus is finished'}
 \endif
    end
 
@@ -428,7 +428,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth closeWindow
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::closeWindow is applied'}
+      {System.show 'WindowManagerClass::closeWindow is applied'}
 \endif
       %%
       case @window == InitValue then skip
@@ -444,7 +444,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          {self.store store(StoreIsWindow false)}
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::closeWindow is finished'}
+      {System.show 'WindowManagerClass::closeWindow is finished'}
 \endif
    end
 
@@ -452,11 +452,11 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth makeAbout
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::makeAbout is applied'}
+      {System.show 'WindowManagerClass::makeAbout is applied'}
 \endif
       {New AboutDialogClass init(windowObj:@window) _}
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::makeAbout is finished'}
+      {System.show 'WindowManagerClass::makeAbout is finished'}
 \endif
    end
 
@@ -464,7 +464,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%  'Arg' is a list of entry names;
    meth entriesEnable(Arg)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::entriesEnable is applied'}
+      {System.show 'WindowManagerClass::entriesEnable is applied'}
 \endif
       %%
       local MEs Bs in
@@ -482,14 +482,14 @@ class WindowManagerClass from MyClosableObject BatchObject
          end
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::entriesEnable is finished'}
+      {System.show 'WindowManagerClass::entriesEnable is finished'}
 \endif
    end
 
    %%
    meth entriesDisable(Arg)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::entriesDisable is applied'}
+      {System.show 'WindowManagerClass::entriesDisable is applied'}
 \endif
       local MEs Bs in
          MEs = {Filter {Map Arg self.Entry2Path} self.CleanUp}
@@ -506,7 +506,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          end
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::entriesDisable is finished'}
+      {System.show 'WindowManagerClass::entriesDisable is finished'}
 \endif
    end
 
@@ -514,7 +514,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth addAction(Action Label)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::addProcessAction is applied'}
+      {System.show 'WindowManagerClass::addProcessAction is applied'}
 \endif
       %%
       local Actions N PA in
@@ -534,7 +534,7 @@ class WindowManagerClass from MyClosableObject BatchObject
          end
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::addProcessAction is finished'}
+      {System.show 'WindowManagerClass::addProcessAction is finished'}
 \endif
    end
 
@@ -542,7 +542,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth removeAction(Action)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::removeProcessAction is applied'}
+      {System.show 'WindowManagerClass::removeProcessAction is applied'}
 \endif
       %%
       local
@@ -618,7 +618,7 @@ class WindowManagerClass from MyClosableObject BatchObject
 
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::removeProcessAction is finished'}
+      {System.show 'WindowManagerClass::removeProcessAction is finished'}
 \endif
    end
 
@@ -626,7 +626,7 @@ class WindowManagerClass from MyClosableObject BatchObject
    %%
    meth setAction(Action)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::setAction is applied'}
+      {System.show 'WindowManagerClass::setAction is applied'}
 \endif
       %%
       local
@@ -655,29 +655,29 @@ class WindowManagerClass from MyClosableObject BatchObject
           end}
       end
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::setAction is finished'}
+      {System.show 'WindowManagerClass::setAction is finished'}
 \endif
    end
 
    %%
    meth setTWFont(Font ?Res)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::setTWFont is applied'}
+      {System.show 'WindowManagerClass::setTWFont is applied'}
 \endif
       WindowManagerClass , WrapWindow(setTWFont(Font Res))
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::setTWFont is finished'}
+      {System.show 'WindowManagerClass::setTWFont is finished'}
 \endif
    end
 
    %%
    meth unHighlightTerm
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::unHighlightTerm is applied'}
+      {System.show 'WindowManagerClass::unHighlightTerm is applied'}
 \endif
       WindowManagerClass , WrapWindow(unHighlightRegion)
 \ifdef DEBUG_WM
-      {Show 'WindowManagerClass::unHighlightTerm is finished'}
+      {System.show 'WindowManagerClass::unHighlightTerm is finished'}
 \endif
    end
 

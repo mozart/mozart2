@@ -74,7 +74,7 @@ sub gtk2oz_meth_name {
 }
 
 sub write_oz_class_header {
-#    print "class " . gtk2oz_class_name($$class{name});
+    # Classes are defined lazy
     print "X = \nclass \$ ";
     print 'from ' . gtk2oz_class_name($$class{super}) if $$class{super};
     print "\n";
@@ -128,6 +128,16 @@ sub write_oz_fields_wrappers {
 
 }
 
+sub write_inline_method_when_applicable_and_next {
+    my ($meth) = @_;
+
+    my $code = $$class{meths}{$meth}{code};
+    if ($code) {
+        print "$code\n";
+        next;
+    }
+}
+
 sub write_oz_init_methods {
     return unless $$class{inits};
 
@@ -136,6 +146,8 @@ sub write_oz_init_methods {
     my $inits = $$class{inits};
 
     foreach my $init (keys %$inits) {
+        write_inline_method_when_applicable_and_next($init);
+
         my $in  = $$class{inits}{$init}{in};  # list of input arguments
         my $out = $$class{inits}{$init}{out}; # the output value
 
@@ -170,6 +182,17 @@ sub write_oz_init_methods {
         print "}\n";
 
         print "      {RegisterObject self}\n";
+
+        # Handle implizit generated objects
+#       my $imp = $$class{inits}{$init}{imp};
+#       if ($imps) {
+#           foreach my $imp_class (keys %$imps) {
+#               my $imp_field = $$class{inits}{$init}{imp}{$imp};
+#               my $count = 1;
+#               print "      Class$count = {New Class" . $gtk2oz_class_name($imp_class) . " noop}\n";
+#           }
+#       }
+
         print "   end\n";
     }
 }
@@ -183,11 +206,7 @@ sub write_oz_meth_wrappers {
 
     foreach my $meth (keys %$meths) {
 
-        my $code = $$class{meths}{$meth}{code};
-        if ($code) {
-            print "$code\n";
-            next;
-        }
+        write_inline_method_when_applicable_and_next($meth);
 
         my $in  = $$class{meths}{$meth}{in};  # list of input arguments
         my $out = $$class{meths}{$meth}{out}; # the output value

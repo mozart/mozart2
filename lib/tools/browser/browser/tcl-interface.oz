@@ -248,10 +248,6 @@ in
             {Tk.returnInt winfo(screenwidth WindowLocal) RootXSize}
 
             %%
-            {Wait RootYSize}
-            {Wait RootXSize}
-
-            %%
             {Tk.batch
              [wm(maxsize WindowLocal (RootXSize) (RootYSize))
               wm(iconname WindowLocal IITitle)
@@ -430,6 +426,16 @@ in
             %% redefines 'command' for the scrollbar;
             %% {Tk.addYScrollbar BW VS}
             {BW tk(conf yscrollcommand: s(VS set))}
+
+            %%
+            %% An "interesting" thing: b2-motion does not work since
+            %% it handler expects immediate (forced through "update
+            %% idletasks") reaction from widget, which is impossible
+            %% in our case. So, i just disable it;
+            {Tk.batch [o(bindtags VS q(VS 'Scrollbar'))
+                       o(bind VS '<B2-Motion>' "break")]}
+
+            %%
             {Tk.addXScrollbar BW FHS_HS}
 
             %%
@@ -480,7 +486,10 @@ in
               %% 'xterm';
               %%
               %%  exclude '$w mark set insert @$x,$y';
-              o(pr#oc MyTkTextButton1 q(w x y)
+              o('proc' MyTkTextButton1 q(w x y)
+                    /*
+                 end            % sh$t!!!
+              */
                 q(
                    v('global tkPriv;')
                    v('set tkPriv(selectMode) char;')
@@ -1294,7 +1303,6 @@ in
 
             %%
             EndIndex = {Tk.return o(BW index 'end -1lines')}
-            {Wait {String.is EndIndex}}
 
             %%
             {BW tk(m s self.Cursor EndIndex)}

@@ -45,9 +45,6 @@ local
    AtomicFilter
 
    %%
-   IsThereAName
-
-   %%
    LimitedTermSize
 
    %%
@@ -482,18 +479,6 @@ in
          else {AtomicFilter R}
          end
       else nil
-      end
-   end
-
-   %%
-   %% Yields 'True' if there is a name;
-   fun {IsThereAName In}
-      case In
-      of E|R then
-         case {IsName E} then True
-         else {IsThereAName R}
-         end
-      else False
       end
    end
 
@@ -1782,7 +1767,7 @@ in
       end
 
       %%
-      %% Make a "|| _" tail of an incomplete/malformed(cyclic) list;
+      %% Make a " || _" tail of an incomplete/malformed(cyclic) list;
       meth CreateLTG
          local TL DP Desc in
             %%

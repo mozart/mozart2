@@ -58,7 +58,7 @@ local
    GetAuxSize       = {NewName}
    GetAuxSizeB      = {NewName}
    GetAuxSizeE      = {NewName}
-  %%
+   %%
    PutOP            = {NewName}
    PutCP            = {NewName}
    %%

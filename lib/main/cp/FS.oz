@@ -75,6 +75,7 @@ export
    reified:      FSReified
 
    monitorIn:    FSMonitorIn
+   monitorOut:   FSMonitorOut
 
    reflect:      FSReflect
 
@@ -701,6 +702,8 @@ body
 
 
    FSMonitorIn =    FSP.monitorIn
+
+   FSMonitorOut =   FSP.monitorOut
 
    FSReflect =   r( unknown:    FSGetUnknown
                     lowerBound:        FSGetGlb

@@ -148,8 +148,14 @@ define
                                          dis X=Y [] Y=X end
                                       end}
                              in
+                                {Space.inject S1 proc {$ Y}
+                                                    X=Y
+                                                 end}
                                 {DerefBlocked {Space.askVerbose S1}}=
-                                succeeded(suspended)
+                                succeeded(entailed)
+                                {Space.inject S2 proc {$ Y}
+                                                    X=Y
+                                                 end}
                                 {DerefBlocked {Space.askVerbose S2}}=
                                 alternatives(2)
                              end)

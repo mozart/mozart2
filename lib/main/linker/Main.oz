@@ -198,7 +198,8 @@ define
               end
               Args.compress}
              if Args.executable then
-                if {OS.system 'chmod +x '#Args.out}\=0 then
+                case {Property.get 'platform.os'} of win32 then skip
+                elseif {OS.system 'chmod +x '#Args.out}\=0 then
                    raise ar(saveExec) end
                 end
              end

@@ -1525,9 +1525,8 @@ local
          end
          FBody0 = case IsLazy then CND in
                      CND = {CoordNoDebug C}
-                     fOpApplyStatement('byNeed'
-                                       [fFun(fDollar(C) nil NewFS nil CND)]
-                                       CND)
+                     fOpApply('byNeed'
+                              [fFun(fDollar(C) nil NewFS nil CND)] CND)
                   else NewFS
                   end
          FBody = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FBody0}

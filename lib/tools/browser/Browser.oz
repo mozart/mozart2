@@ -20,32 +20,19 @@
 \undef     DEBUG_OPEN
 
 declare
-\ifndef NEWSAVE
-BrowserClass
-Browser
-Browse
-\endif
-\ifdef SAVE
-NewBrowser
-\endif
+   NewBrowser
 in
 
-\ifdef SAVE
 fun
 \ifdef NEWCOMPILER
    instantiate
 \endif
    {NewBrowser
-\ifdef NEWSAVE
      Standard
-\endif
      Search FD Tk TkTools}
-\endif
-\ifdef NEWSAVE
 \insert 'Standard.env'
    = Standard
 in
-\endif
 
 %%
 \ifdef DEBUG_OPEN
@@ -55,9 +42,7 @@ declare
 local
 \endif
 
-\ifdef SAVE
    BrowserClass Browser Browse
-\endif
 
    %%
    %%
@@ -505,16 +490,16 @@ in
    %%
    Browser = {New BrowserClass init}
    Browse = proc {$ X} {Browser browse(X)} end
-\ifdef SAVE
+
    \insert 'Browser.env'
-\endif
+
    %%
    %%
 \ifndef DEBUG_OPEN
 end
 \endif
-\ifdef SAVE
+
 end
-\endif
+
 
 \insert 'browser/undefs.oz'

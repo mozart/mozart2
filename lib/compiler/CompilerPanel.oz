@@ -1571,8 +1571,9 @@ in
          FileName =
          {Tk.return tk_getSaveFile(parent: self.TopLevel
                                    title: 'Oz Compiler: Save Variable'
-                                   filetypes: q(q('Oz Cluster Files' q('.ozc'))
-                                                q('All Files' '*')))}
+                                   filetypes:
+                                      q(q('Oz Component Files' q('.ozc'))
+                                        q('All Files' '*')))}
          case FileName == "" then skip
          else {Component.smartSave Value FileName _}
          end

@@ -48,6 +48,7 @@ declare
    `ooPrintName`         % Module Class
    `ooMeth`              % Module Class
    `ooLocking`           % Module Class
+   `ooNative`            % Module Class
    `ooUnFreeFeat`        % Module Class
 in
 
@@ -68,6 +69,7 @@ local
 in
    `ooMeth`           = {NewUniqueName 'ooMeth'}
    `ooLocking`        = {NewUniqueName 'ooLocking'}
+   `ooNative`         = {NewUniqueName 'ooNative'}
    `ooParents`        = {NewUniqueName 'ooParents'}
    `ooNoFastMethod`   = {NewUniqueName 'ooNoFastMethod'}
    `ooNoDefault`      = {NewUniqueName 'ooNoDefault'}
@@ -137,7 +139,7 @@ local
    %%
    %% Builtins needed for class creation
    %%
-   MakeClass = {`Builtin` makeClass 6}
+   MakeClass = {`Builtin` makeClass 7}
    MarkSafe  = {`Builtin` 'Dictionary.markSafe' 1}
 
    local
@@ -434,11 +436,11 @@ local
    end
 
    %%
-   %% Test whether at least one parent is locking
+   %% Test whether at least one parent has a certain property
    %%
-   fun {IsLockingParents Cs}
+   fun {HasPropertyParents Cs Prop}
       case Cs of nil then false
-      [] C|Cr then C.`ooLocking` orelse {IsLockingParents Cr}
+      [] C|Cr then C.Prop orelse {HasPropertyParents Cr Prop}
       end
    end
 
@@ -456,7 +458,8 @@ local
       %% To be computed for features
       Feat FreeFeat
       %% Misc
-      IsLocking = {Member locking NewProp} orelse {IsLockingParents Parents}
+      IsLocking = {Member locking NewProp} orelse {HasPropertyParents Parents `ooLocking`}
+      IsNative  = {Member native NewProp}  orelse {HasPropertyParents Parents `ooNative`}
       IsFinal   = {Member final   NewProp}
       TmpC = c(`ooId`:         {NewName}         % Name
                `ooParents`:    {Reverse Parents} % List of classes
@@ -477,6 +480,7 @@ local
                `ooPrintName`:  PrintName     % Atom
                `ooFallback`:   Fallback      % Record
                `ooLocking`:    IsLocking     % Bool
+               `ooNative`:     IsNative     % Bool
               )
    in
       case Parents of nil then
@@ -543,15 +547,17 @@ local
                       `ooDefaults`:   Defaults
                       `ooPrintName`:  PrintName
                       `ooLocking`:    IsLocking
+                      `ooNative`:     IsNative
                       `ooFallback`:   Fallback)
            else TmpC
            end
-           Feat Defaults IsLocking}
+           Feat Defaults IsLocking IsNative}
    end
    fun {!`extend` From NewFeat NewFreeFeat}
       %% Methods
       Defaults  = From.`ooDefaults`
       Locking   = From.`ooLocking`
+      Native    = From.`ooNative`
       Meth      = From.`ooMeth`
       FastMeth  = From.`ooFastMeth`
       %% Attributes
@@ -570,8 +576,9 @@ local
                             `ooDefaults`:   Defaults
                             `ooPrintName`:  PrintName
                             `ooLocking`:    Locking
+                            `ooNative`:     Native
                             `ooFallback`:   Fallback)
-       Feat Defaults Locking}
+       Feat Defaults Locking Native}
    end
 
    %% %%%%%%%%%%%%%%%%%%%%

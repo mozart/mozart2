@@ -89,9 +89,21 @@ in
                {Show 'BrowserManagerClass::ServeRequest: got it!'}
 \endif
                %%
-               %% The convension is that a request is just a manager
-               %% object's method;
-               BrowserManagerClass , Req
+               try
+                  %%
+                  %% The convension is that a request is just a manager
+                  %% object's method;
+                  BrowserManagerClass , Req
+               catch E then T = {Label E} I = E.1 in
+                  case T
+                  of !BEx then
+                     case I
+                     of 'alreadyClosed' then skip
+                     else fail
+                     end
+                  else {`raise` T I}
+                  end
+               end
             else
                %% is empty at the moment - do 'idle' step and sleep for
                %% a while;
@@ -111,6 +123,13 @@ in
             %% either a new request, or nothing if the last one was
             %% 'close';
             BrowserManagerClass , ServeRequest
+         end
+      end
+
+      %%
+      meth CheckObj(Obj)
+         case {Obj isClosed($)} then {`raise` BEx 'alreadyClosed'}
+         else skip
          end
       end
 
@@ -172,6 +191,7 @@ in
          {Show 'BrowserManagerClass::pick is applied'}
 \endif
          %% 'Obj' is a root term object;
+         BrowserManagerClass , CheckObj(Obj)
          {Obj pickPlace(Where How)}
       end
 
@@ -180,6 +200,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkTerm is applied'}
 \endif
+         BrowserManagerClass , CheckObj(Obj)
          {Obj CheckTerm}
 
          %%
@@ -194,6 +215,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::subtermSizeChanged is applied'}
 \endif
+         BrowserManagerClass , CheckObj(Obj)
          {Obj SubtermSizeChanged(ChildObj OldSize NewSize)}
 
          %%
@@ -208,6 +230,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::setRefName is applied'}
 \endif
+         BrowserManagerClass , CheckObj(ReferenceObj)
          {ReferenceObj SetRefName(MasterObj RefName)}
 
          %%
@@ -222,6 +245,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::genRefName is applied'}
 \endif
+         BrowserManagerClass , CheckObj(Obj)
          {Obj GenRefName(ReferenceObj Type)}
 
          %%
@@ -236,6 +260,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::subtermChanged is applied'}
 \endif
+         BrowserManagerClass , CheckObj(Obj)
          {Obj SubtermChanged(ChildObj)}
 
          %%
@@ -250,6 +275,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::changedDepth is applied'}
 \endif
+         BrowserManagerClass , CheckObj(Obj)
          {Obj ChangeDepth(ChildObj NewDepth)}
 
          %%
@@ -265,6 +291,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::undraw is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj Close}
 
          %%
@@ -280,6 +307,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::expandWidth is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj ExpandWidth(WidthInc)}
 
          %%
@@ -295,6 +323,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::expand is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj Expand}
 
          %%
@@ -310,6 +339,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::shrink is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj Shrink}
 
          %%
@@ -325,6 +355,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::deref is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj Deref}
 
          %%
@@ -340,6 +371,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::updateSize is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj UpdateSize}
 
          %%
@@ -355,6 +387,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkLayout is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {DoCheckLayout TermObj}
 
          %%
@@ -370,6 +403,7 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkLayoutReq is applied'}
 \endif
+         BrowserManagerClass , CheckObj(TermObj)
          {TermObj CheckLayoutReq}
 
          %%
@@ -391,6 +425,7 @@ in
           # Obj # Handler # Arg}
 \endif
          %%
+         BrowserManagerClass , CheckObj(Obj)
          {Obj Handler(Arg)}
 
          %%

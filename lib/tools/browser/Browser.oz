@@ -175,6 +175,10 @@ local
    BrowserManagerClass
 
    %%
+   %% Browser's exception type;
+   BEx = {NewName}
+
+   %%
    BrowserClass
 
    %%

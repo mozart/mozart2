@@ -1797,7 +1797,7 @@ in
             [] gt  then
                %% 'UsedIndentOut' ...
                {Token setIndent({Group.obj GetIndentOut($)})}
-            else false          % will fail ever before;
+            else fail           % will fail ever before;
             end
 
             %%

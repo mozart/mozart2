@@ -406,8 +406,10 @@ local
    fun {ComputeSystemURL BASENAME}
       {SystemURL}#BASENAME#'.ozc'
    end
-   Getenv = OS.getEnv
+
    fun {SystemURL}
+      Getenv = {`Builtin` 'OS.getEnv' 2}
+   in
       case {Getenv 'OZCOMPONENTS'} of false then
          'http://www.ps.uni-sb.de/ozhome/lib/'
       elseof URL then
@@ -423,12 +425,20 @@ local
    fun {RegistryMakeEagerLoader R Name}
       case {RegistryGetSrc R Name}
       of url(URL) then
-         fun {$ IMPORT} {{Load URL} IMPORT} end
+         fun {$ IMPORT}
+            Load = {`Builtin` load 2}
+         in
+            {{Load URL} IMPORT}
+         end
       [] value(FUN) then FUN
       [] path(PATH) then
          fun {$ IMPORT} {LookupPath IMPORT PATH} end
       [] system(BASENAME) then
-         fun {$ IMPORT} {{Load {ComputeSystemURL BASENAME}} IMPORT} end
+         fun {$ IMPORT}
+            Load = {`Builtin` load 2}
+         in
+            {{Load {ComputeSystemURL BASENAME}} IMPORT}
+         end
       end
    end
    %%
@@ -476,6 +486,7 @@ local
                % When a lazy variable is touched it will call ForwardRequest
                % and becomes a free variable again.
             R proc {ForwardRequest _} R=unit end
+            Load = {`Builtin` load 2}
          in
             EXPORT = {Record.make LABEL ARITY}
             {Record.forAllInd EXPORT
@@ -506,6 +517,8 @@ local
       case {RegistryGetSrc R Name}
       of url(URL) then
          fun {$ IMPORT}
+            Load = {`Builtin` load 2}
+         in
             {Lazy.new fun {$} {{Load URL} IMPORT} end}
          end
       [] value(FUN) then
@@ -518,6 +531,8 @@ local
          end
       [] system(BASENAME) then
          fun {$ IMPORT}
+            Load = {`Builtin` load 2}
+         in
             {Lazy.new fun {$} {{Load {ComputeSystemURL BASENAME}} IMPORT} end}
          end
       end
@@ -615,6 +630,8 @@ local
       ArgProc = {Parser.cmd ArgSpec}
    in
       proc {$}
+         Exit = {`Builtin` shutdown 1}
+      in
          try {Exit {{Functor {Loader}} {ArgProc}}}
                % provide some error message
          catch E then
@@ -629,6 +646,8 @@ local
       ArgProc = {Parser.servlet ArgSpec}
    in
       proc {$}
+         Exit = {`Builtin` shutdown 1}
+      in
          try {Exit {{Functor {Loader}} {ArgProc}}}
                % provide some error message
          catch E then
@@ -644,6 +663,8 @@ local
       SystemGet = System.get
    in
       proc {$}
+         Exit = {`Builtin` shutdown 1}
+      in
          try
             {{`Builtin` 'PutProperty' 2} 'internal.applet' true}
             Loaded    = {Loader}

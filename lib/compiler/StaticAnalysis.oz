@@ -417,6 +417,7 @@ in
             case {IsAtom S}
                orelse {IsInt S}
                orelse {IsFloat S}
+               orelse {IsByteString S}
                orelse {IsStringNow S}
             then true
             elsecase {IsTuple S}
@@ -488,6 +489,7 @@ in
                elsecase {IsAtom XX}
                   orelse {IsInt XX}
                   orelse {IsFloat XX}
+                  orelse {IsByteString XX}
                   orelse {MaybeString X}
                then true
                elsecase {IsTuple XX} andthen {Label XX}=='#'
@@ -3765,12 +3767,12 @@ in
                elsecase
                   {IsBitString Value}
                then
-                  SAVariable, setLastValue({New Core.bitStringToken init(Value)})
+                  SAVariable, setLastValue({New Core.bitStringNode init(Value unit)})
 
                elsecase
                   {IsByteString Value}
                then
-                  SAVariable, setLastValue({New Core.byteStringToken init(Value)})
+                  SAVariable, setLastValue({New Core.byteStringNode init(Value unit)})
 
                elsecase
                   {IsChunk Value}

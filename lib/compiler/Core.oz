@@ -95,6 +95,8 @@ export
    AtomNode
    IntNode
    FloatNode
+   BitStringNode
+   ByteStringNode
    Variable
    RestrictedVariable
    VariableOccurrence
@@ -117,8 +119,6 @@ export
    ThreadToken
    SpaceToken
    BitArrayToken
-   BitStringToken
-   ByteStringToken
 
 define
    \insert Annotate
@@ -1106,6 +1106,16 @@ define
       end
    end
 
+   class BitStringNode from ValueNode
+      prop final
+      feat kind: 'bitString'
+   end
+
+   class ByteStringNode from ValueNode
+      prop final
+      feat kind: 'byteString'
+   end
+
    class Variable
       from Annotate.variable StaticAnalysis.variable CodeGen.variable
       attr printName: unit origin: unit coord: unit isToplevel: false
@@ -1360,16 +1370,6 @@ define
    class BitArrayToken from ChunkToken
       prop final
       feat kind: 'bitArray'
-   end
-
-   class BitStringToken from ChunkToken
-      prop final
-      feat kind: 'bitString'
-   end
-
-   class ByteStringToken from ChunkToken
-      prop final
-      feat kind: 'byteString'
    end
 
    class ClassToken from ChunkToken

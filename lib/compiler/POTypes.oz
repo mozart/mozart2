@@ -272,7 +272,7 @@ local
                              'procedure/5'
                              'procedure/6'
                              'procedure/>6'])
-      def(virtualString     [number record])
+      def(virtualString     [number record byteString])
       def(procedureOrObject [procedure object])
       def(unaryProcOrObject ['procedure/1' object])
      ]

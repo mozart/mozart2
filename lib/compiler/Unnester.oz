@@ -641,8 +641,8 @@ local
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors FBody C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
-            FImportArgs ImportFS ExportFS FColons CND FBody2 FFun FImportType
-            FRecord GS
+            FImportArgs ImportFS FExportArgs ExportFS FColons CND FBody2 FFun
+            FImportDesc FExportDesc FRecord GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
             FV = fVar({{GVO getVariable($)} getPrintName($)}
@@ -651,19 +651,21 @@ local
              ?FImport ?FExport ?FProp}
             {@BA openScope()}
             Unnester, AnalyseImports(FImport ImportFV ?FImportArgs ?ImportFS)
-            Unnester, AnalyseExports(FExport ?ExportFS ?FColons)
+            Unnester, AnalyseExports(FExport ?FExportArgs ?ExportFS ?FColons)
             {@BA generate('IMPORT' C ?ImportGV)}
             {@BA closeScope(_)}
             ImportFV = fVar({ImportGV getPrintName($)} C)
             CND = {CoordNoDebug C}
             FBody2 = fLocal(fAnd(ImportFS ExportFS)
                             fAnd(FBody fRecord(fAtom('export' CND) FColons)) C)
-            FFun = fFun(fDollar(unit) [ImportFV] FBody2
+            FFun = fFun(fDollar(CND) [ImportFV] FBody2
                         fAtom('instantiate' C)|FProp C)
-            FImportType = fRecord(fAtom('import' unit) FImportArgs)
-            FRecord = fRecord(fAtom(f unit)
-                              [fColon(fAtom(apply unit) FFun)
-                               fColon(fAtom('import' unit) FImportType)])
+            FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
+            FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
+            FRecord = fRecord(fAtom(f CND)
+                              [fColon(fAtom(apply CND) FFun)
+                               fColon(fAtom('import' CND) FImportDesc)
+                               fColon(fAtom('export' CND) FExportDesc)])
             Unnester,
             UnnestStatement(fApply(fVar('`NewChunk`' C)
                                    [fLocal(fEq(FV FRecord CND) FV C) FV] CND)
@@ -1535,16 +1537,22 @@ local
 
       meth AnalyseImports(Ds ImportFV ?FImportArgs ?ImportFS)
          case Ds of D|Dr then
-            fImportItem(FV=fVar(PrintName C) Fs _) = D
-            FFsList FS FImportArgr ImportFS2
+            fImportItem(FV=fVar(PrintName C) Fs FFrom) = D
+            FFsList FS ImportFS2 FInfo FImportArgr
          in
             {@BA bind(PrintName C _)}
             Unnester, AnalyseImportFeatures(Fs FV ?FFsList ?FS)
-            %--** respect from clause
             %--** check that all features are distinct
             %--** read corresponding type description from pickle
             ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
-            FImportArgs = fColon(fAtom(PrintName C) FFsList)|FImportArgr
+            FInfo = fRecord(fAtom('info' C)
+                            fColon(fAtom('type' C) FFsList)|
+                            case FFrom of fFrom(FE) then
+                               %--** FE must be ground
+                               [fColon(fAtom('from' C) FE)]
+                            [] fNoFrom then nil
+                            end)
+            FImportArgs = fColon(fAtom(PrintName C) FInfo)|FImportArgr
             Unnester, AnalyseImports(Dr ImportFV ?FImportArgr ?ImportFS2)
          [] nil then
             FImportArgs = nil
@@ -1595,15 +1603,27 @@ local
             {New Core.equation init(LeftGVO RightGVO C)}
          end
       end
-      meth AnalyseExports(Ds ?ExportFS ?FColons)
+      meth AnalyseExports(Ds ?FExportArgs ?ExportFS ?FColons)
          case Ds of D|Dr then
-            fExportItem(FV=fVar(PrintName C)) = D ExportFS2 FColonr
+            fExportItem(FEI) = D FeatureName FV PrintName C
+            FeatureName FExportArgr ExportFS2 FColonr
          in
+            case FEI of fColon(X Y) then
+               FeatureName = X
+               FV = Y
+            [] fVar(PrintName _) then
+               FeatureName = fAtom({DowncasePrintName PrintName} C)
+               FV = FEI
+            end
+            fVar(PrintName C) = FV
             {@BA bind(PrintName C _)}
-            ExportFS = fAnd(D ExportFS2)
-            FColons = fColon(fAtom({DowncasePrintName PrintName} C) FV)|FColonr
-            Unnester, AnalyseExports(Dr ?ExportFS2 ?FColonr)
+            %--** possibility to specify a type different from `value'
+            FExportArgs = fColon(FeatureName fAtom(value C))|FExportArgr
+            ExportFS = fAnd(fExportItem(FV) ExportFS2)
+            FColons = fColon(FeatureName FV)|FColonr
+            Unnester, AnalyseExports(Dr ?FExportArgr ?ExportFS2 ?FColonr)
          [] nil then
+            FExportArgs = nil
             ExportFS = fSkip(unit)
             FColons = nil
          end

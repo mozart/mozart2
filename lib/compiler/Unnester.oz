@@ -664,7 +664,7 @@ local
          [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
             FImportArgs ImportFS FExportArgs FColons CND NewFBody FFun
-            FImportDesc FExportDesc FRecord GS
+            FImportDesc FExportDesc GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
             FV = fVar({{GVO getVariable($)} getPrintName($)}
@@ -685,14 +685,9 @@ local
                         fAtom('instantiate' C)|FProp C)
             FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
             FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
-            FRecord = fRecord(fAtom(f CND)
-                              [fColon(fAtom(apply CND) FFun)
-                               fColon(fAtom('import' CND) FImportDesc)
-                               fColon(fAtom('export' CND) FExportDesc)])
             Unnester,
-            UnnestStatement(fApply(fVar('`NewChunk`' C)
-                                   [fLocal(fEq(FV FRecord CND) FV C) FV] CND)
-                            ?GS)
+            UnnestStatement(fApply(fVar('`NewFunctor`' C)
+                                   [FImportDesc FExportDesc FFun FV] CND) ?GS)
             GFrontEq|GS
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO

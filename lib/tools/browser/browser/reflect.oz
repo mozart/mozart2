@@ -163,7 +163,7 @@ in
                   %%
                   %% TODO!!!
                   job
-                     L = {LabelC TermIn}
+                     L = {Label TermIn}
                   end
 
                   %%
@@ -179,7 +179,7 @@ in
                   {RecordReflectLoop KnownRArity TmpList
                    proc {$ F ListIn ListOut}
                       TermOut.F = {ReflectTerm
-                                   {SubtreeC TermIn F}
+                                   TermIn^F
                                    ListIn $ ListOut}
                    end
                    ListOut}

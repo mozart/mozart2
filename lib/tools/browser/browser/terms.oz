@@ -1772,7 +1772,7 @@ in
       from MetaRecordTermTermObject RecordSubtermsStore
       %%
       feat
-         label                  % == {LabelC self.term $}
+         label                  % == {Label self.term $}
 
       %%
       attr
@@ -1804,7 +1804,7 @@ in
             %%
             %%  This *must* be a job, and *not* a thread!
             job
-               OFSLab = {LabelC self.term}
+               OFSLab = {Label self.term}
             end
             self.label = OFSLab
 
@@ -1923,7 +1923,7 @@ in
             {FoldL TmpArity
              fun {$ I E}
                 %% PIC;
-                if Vp in {SubtreeC Term E _} then
+                if Vp in Term^E=_ then
                    I = E|Vp Vp
                 [] true then I
                 end
@@ -1944,7 +1944,7 @@ in
             tailVar <- TailVar
 
             %%
-            Subterms = {Map KnownArity proc {$ F S} {SubtreeC Term F S} end}
+            Subterms = {Map KnownArity proc {$ F S} Term^F=S end}
             subterms <- Subterms
 
             %%

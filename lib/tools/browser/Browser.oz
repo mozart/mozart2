@@ -37,6 +37,29 @@
 %\define    DEBUG_OPEN
 \undef     DEBUG_OPEN
 
+\ifdef LILO
+
+functor $
+
+import
+   SP.{System = 'System'
+       Show   = 'Show'}
+
+   CP.{FD     = 'FD'
+       Search = 'Search'}
+
+   WP.{Tk      = 'Tk'
+       TkTools = 'TkTools'}
+
+export
+   'BrowserClass': BrowserClass
+   'Browser':      Browser
+   'Browse':       Browse
+
+body
+
+\else
+
 fun instantiate {$ IMPORT}
    \insert 'SP.env'
       = IMPORT.'SP'
@@ -47,6 +70,8 @@ fun instantiate {$ IMPORT}
 
 in
 
+\endif
+
 %%
 \ifdef DEBUG_OPEN
 declare
@@ -55,7 +80,9 @@ declare
 local
 \endif
 
+\ifndef LILO
    BrowserClass Browser Browse
+\endif
 
    %%
    %%
@@ -426,7 +453,11 @@ in
    %%
    %% Moreover, this browser is a highlander - it cannot die :-)))
    %%
+\ifdef LILO
+   class !BrowserClass
+\else
    class BrowserClass
+\end
       from Object.base
       attr
          BrowserStream: InitValue % used for "deep" browsing;
@@ -507,8 +538,9 @@ in
    Browser = {New BrowserClass init}
    Browse = proc {$ X} {Browser browse(X)} end
 
+\ifndef LILO
    \insert 'Browser.env'
-
+\endif
    %%
    %%
 \ifndef DEBUG_OPEN

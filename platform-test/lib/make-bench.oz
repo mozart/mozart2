@@ -199,9 +199,6 @@ local
                       {System.gcDo}
                       T0 = {Property.get time}
                       N={ComputeMinTime T0 Argv.mintime Test}
-                      % results of first run discarded (lazy loading)
-                      %T1 = {Property.get time}
-                      %Result.1={DiffTime T0 T1 N}
                       {PV '(#'#N#')\n'}
                    in
                       {For 1 Repeat 1
@@ -217,9 +214,7 @@ local
                    {PV '-------------------------\n'}
                    local
                       Av = {Average Result}
-%                     {System.show Av}
                       Var={Variance Av Result}
-%                     {System.show Var}
                    in
                       {PI ' times (ms):'}
                       {ForAll TimeMap

@@ -52,8 +52,8 @@ export
    functionDefinition: CodeGenFunctionDefinition
    clauseBody: CodeGenClauseBody
    application: CodeGenApplication
-   boolCase: CodeGenBoolCase
-   boolClause: CodeGenBoolClause
+   ifNode: CodeGenIfNode
+   ifClause: CodeGenIfClause
    patternCase: CodeGenPatternCase
    patternClause: CodeGenPatternClause
    recordPattern: CodeGenRecordPattern
@@ -72,7 +72,7 @@ export
    objectLockNode: CodeGenObjectLockNode
    getSelf: CodeGenGetSelf
    failNode: CodeGenFailNode
-   ifNode: CodeGenIfNode
+   condNode: CodeGenCondNode
    choicesAndDisjunctions: CodeGenChoicesAndDisjunctions
    orNode: CodeGenOrNode
    disNode: CodeGenDisNode
@@ -958,7 +958,7 @@ define
       end
    end
 
-   class CodeGenBoolCase
+   class CodeGenIfNode
       meth codeGen(CS VHd VTl) Value in
          {@arbiter getCodeGenValue(?Value)}
          if {IsDet Value} andthen Value == true then
@@ -980,7 +980,7 @@ define
       end
    end
 
-   class CodeGenBoolClause
+   class CodeGenIfClause
       meth codeGen(CS VHd VTl)
          {CodeGenList @statements CS VHd VTl}
       end
@@ -1314,6 +1314,7 @@ define
             {CS startDefinition()}
             MessageVO = {NewPseudoVariableOccurrence CS}
             FormalRegs = [MessageVO.reg]
+            %--** use pattern matching instead?
             CodeGenMethod, makeArityCheck(MessageVO CS BodyVInstr Cont2)
             {FoldL @formalArgs
              proc {$ VHd Formal VTl}
@@ -1427,6 +1428,7 @@ define
             AllRegs = case @allVariables of nil then nil
                       else {Map @allVariables fun {$ V} {V reg($)} end}
                       end
+            %--** use pattern matching instead?
             if @isOpen then
                Cont2 = Cont3
             else
@@ -1555,7 +1557,7 @@ define
       end
    end
 
-   class CodeGenIfNode
+   class CodeGenCondNode
       meth codeGen(CS VHd VTl) AllocatesRS VClauses AltVInstr in
          {CS makeRegSet(?AllocatesRS)}
          VClauses = {Map @clauses

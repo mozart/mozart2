@@ -63,8 +63,8 @@ export
    FunctionDefinition
    ClauseBody
    Application
-   BoolCase
-   BoolClause
+   IfNode
+   IfClause
    PatternCase
    PatternClause
    RecordPattern
@@ -83,7 +83,7 @@ export
    ObjectLockNode
    GetSelf
    FailNode
-   IfNode
+   CondNode
    ChoicesAndDisjunctions
    OrNode
    DisNode
@@ -244,6 +244,7 @@ define
 
    class TypeOf
       from Statement Annotate.typeOf StaticAnalysis.typeOf CodeGen.typeOf
+      prop final
       attr arg: unit res: unit value: unit
       meth init(Arg Res)
          arg <- Arg
@@ -498,8 +499,8 @@ define
       end
    end
 
-   class BoolCase
-      from Statement Annotate.boolCase StaticAnalysis.boolCase CodeGen.boolCase
+   class IfNode
+      from Statement Annotate.ifNode StaticAnalysis.ifNode CodeGen.ifNode
       prop final
       attr arbiter: unit consequent: unit alternative: unit
       feat noBoolShared
@@ -515,8 +516,8 @@ define
       end
    end
 
-   class BoolClause
-      from Annotate.boolClause StaticAnalysis.boolClause CodeGen.boolClause
+   class IfClause
+      from Annotate.ifClause StaticAnalysis.ifClause CodeGen.ifClause
       prop final
       attr statements: unit
       meth init(Statements)
@@ -948,8 +949,8 @@ define
       end
    end
 
-   class IfNode
-      from Statement Annotate.ifNode StaticAnalysis.ifNode CodeGen.ifNode
+   class CondNode
+      from Statement Annotate.condNode StaticAnalysis.condNode CodeGen.condNode
       prop final
       attr clauses: unit alternative: unit
       meth init(Clauses Alternative Coord)
@@ -973,21 +974,21 @@ define
       end
    end
    class OrNode
-      from ChoicesAndDisjunctions Annotate.orNode CodeGen.orNode
+      from ChoicesAndDisjunctions CodeGen.orNode
       prop final
       meth output(R $)
          'or '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
       end
    end
    class DisNode
-      from ChoicesAndDisjunctions Annotate.disNode CodeGen.disNode
+      from ChoicesAndDisjunctions CodeGen.disNode
       prop final
       meth output(R $)
          'dis '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'
       end
    end
    class ChoiceNode
-      from ChoicesAndDisjunctions Annotate.choiceNode CodeGen.choiceNode
+      from ChoicesAndDisjunctions CodeGen.choiceNode
       prop final
       meth output(R $)
          'choice '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#'end'

@@ -243,7 +243,7 @@ local
       end
    end
 
-   class AnnotateBoolCase
+   class AnnotateIfNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter1 VsInter2 in
          {@arbiter annotateGlobalVars(Ls VsHd VsInter1)}
@@ -265,7 +265,7 @@ local
       end
    end
 
-   class AnnotateBoolClause
+   class AnnotateIfClause
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) Vs in
          {AnnotateGlobalVarsList @statements nil ?Vs nil}
@@ -604,7 +604,7 @@ local
    class AnnotateFailNode from AnnotateDefaults
    end
 
-   class AnnotateIfNode
+   class AnnotateCondNode
       attr globalVars: unit
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
          {FoldL @clauses
@@ -649,12 +649,6 @@ local
           WarnFormals Rep}
          {SetUses GlobalVars NewUses}
       end
-   end
-   class AnnotateOrNode
-   end
-   class AnnotateDisNode
-   end
-   class AnnotateChoiceNode
    end
 
    class AnnotateClause
@@ -780,8 +774,8 @@ in
                        functionDefinition: AnnotateFunctionDefinition
                        clauseBody: AnnotateClauseBody
                        application: AnnotateApplication
-                       boolCase: AnnotateBoolCase
-                       boolClause: AnnotateBoolClause
+                       ifNode: AnnotateIfNode
+                       ifClause: AnnotateIfClause
                        patternCase: AnnotatePatternCase
                        patternClause: AnnotatePatternClause
                        recordPattern: AnnotateRecordPattern
@@ -800,11 +794,8 @@ in
                        objectLockNode: AnnotateObjectLockNode
                        getSelf: AnnotateGetSelf
                        failNode: AnnotateFailNode
-                       ifNode: AnnotateIfNode
+                       condNode: AnnotateCondNode
                        choicesAndDisjunctions: AnnotateChoicesAndDisjunctions
-                       orNode: AnnotateOrNode
-                       disNode: AnnotateDisNode
-                       choiceNode: AnnotateChoiceNode
                        clause: AnnotateClause
                        valueNode: AnnotateValueNode
                        atomNode: AnnotateAtomNode

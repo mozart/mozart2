@@ -49,8 +49,8 @@ export
    construction:           SAConstruction
    definition:             SADefinition
    application:            SAApplication
-   boolCase:               SABoolCase
-   boolClause:             SABoolClause
+   ifNode:                 SAIfNode
+   ifClause:               SAIfClause
    patternCase:            SAPatternCase
    patternClause:          SAPatternClause
    recordPattern:          SARecordPattern
@@ -67,7 +67,7 @@ export
    methFormalWithDefault:  SAMethFormalWithDefault
    objectLockNode:         SAObjectLockNode
    getSelf:                SAGetSelf
-   ifNode:                 SAIfNode
+   condNode:               SACondNode
    choicesAndDisjunctions: SAChoicesAndDisjunctions
    clause:                 SAClause
    valueNode:              SAValueNode
@@ -1634,7 +1634,7 @@ define
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
          Msg     = {GetData MsgArg}
-         MsgData = {GetPrintData MsgArg}   %--** memory leak with named vars!
+         MsgData = {GetPrintData MsgArg}
 \ifdef DEBUG
          {System.show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
@@ -2540,7 +2540,7 @@ define
 
    end
 
-   class SABoolCase
+   class SAIfNode
       meth saDescend(Ctrl)
          %% descend with global environment
          %% will be saved and restored in clauses
@@ -2607,7 +2607,7 @@ define
          in
             {Ctrl.rep
              error(coord: @coord
-                   msg:   'Non-boolean arbiter in boolean case statement'
+                   msg:   'Non-boolean arbiter in `if\' statement'
                    kind:  SATypeError
                    items: hint(l:'Value' m:oz(Val))
                    | hint(l:'Type' m:{TypeToVS {@arbiter getType($)}})
@@ -2620,7 +2620,7 @@ define
       end
    end
 
-   class SABoolClause
+   class SAIfClause
       meth saDescendWithValue(Ctrl Arbiter Val)
          ArbV = {Arbiter getVariable($)}
          %% arbiter value unknown, hence also save arbiter value
@@ -3344,7 +3344,7 @@ define
       end
    end
 
-   class SAIfNode
+   class SACondNode
       meth saDescend(Ctrl)
          %% descend with global environment
          %% will be saved and restored in clauses

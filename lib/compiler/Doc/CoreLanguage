@@ -110,16 +110,16 @@ S  ::=  <Statement>
 
 
 % 'if' arbiter 'then' consequent alternative 'end'
-<BoolCase> from <Statement>
-     arbiter:       O
-     consequent:    <BoolClause>
-     alternative:   <AbstractElse>
-     coord:         C
-     globalVars:    V*   % those of all clauses (not arbiter)
+<IfNode> from <Statement>
+     arbiter:     O
+     consequent:  <BoolClause>
+     alternative: <AbstractElse>
+     coord:       C
+     globalVars:  V*   % those of all clauses (not arbiter)
 
 
 % statements
-<BoolClause>
+<IfClause>
      statements: S+
      globalVars: V*
 
@@ -247,7 +247,7 @@ S  ::=  <Statement>
 
 
 % 'cond' ( clause // '[]' ) alternative 'end'
-<IfNode> from <Statement>
+<CondNode> from <Statement>
      clauses:     <Clause>+
      alternative: <AbstractElse>
      coord:       C

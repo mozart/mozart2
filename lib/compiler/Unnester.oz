@@ -48,7 +48,6 @@ functor
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
 \ifndef NO_GUMP
-   Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Gump(transformParser transformScanner)
 \endif
    System(printName)
@@ -112,21 +111,6 @@ define
       else X
       end
    end
-
-\ifndef NO_GUMP
-   proc {MyWaitGump X}
-      T = {Thread.this}
-      RaiseOnBlock = {Debug.getRaiseOnBlock T}
-   in
-      {Debug.setRaiseOnBlock T false}
-      case X of transformScanner then
-         {Wait Gump.transformScanner}
-      [] transformParser then
-         {Wait Gump.transformParser}
-      end
-      {Debug.setRaiseOnBlock T RaiseOnBlock}
-   end
-\endif
 
    %% The following three functions (DollarsInScope, DollarCoord and
    %% ReplaceDollar) operate on the dollars in pattern position,
@@ -249,16 +233,17 @@ define
       end
    end
 
-   proc {MakeBoolCase GArbiter GCaseTrue GCaseFalse C NoBoolShared BA
-         ?GBoolCase} GT GF in
-      GT = {New Core.boolClause init(GCaseTrue)}
-      case GCaseFalse of noElse(C) then
+   proc {MakeIfNode GArbiter GIfTrue GIfFalse C NoBoolShared BA ?GIfNode}
+      GT GF
+   in
+      GT = {New Core.ifClause init(GIfTrue)}
+      case GIfFalse of noElse(C) then
          GF = {New Core.noElse init(C)}
       else
-         GF = {New Core.elseNode init(GCaseFalse)}
+         GF = {New Core.elseNode init(GIfFalse)}
       end
-      GBoolCase = {New Core.boolCase init(GArbiter GT GF C)}
-      GBoolCase.noBoolShared = NoBoolShared
+      GIfNode = {New Core.ifNode init(GArbiter GT GF C)}
+      GIfNode.noBoolShared = NoBoolShared
    end
 
    proc {SortNoColonsToFront Args IHd ITl FHd FTl}
@@ -921,7 +906,6 @@ define
                              {@state getSwitch(gumpscannerperfreport $)}
                           statistics:
                              {@state getSwitch(gumpscannerstatistics $)})
-            {MyWaitGump transformScanner}
             FS#Is = {Gump.transformScanner
                      T From Prop Attr Feat Ms Rules C Flags
                      @CurrentImportFV @reporter}
@@ -940,7 +924,6 @@ define
                               getSwitch(gumpparseroutputsimplified $)}
                           verbose:
                              {@state getSwitch(gumpparserverbose $)})
-            {MyWaitGump transformParser}
             FS = {Gump.transformParser
                   T From Prop Attr Feat Ms Tokens Rules C Flags
                   {@state getProductionTemplates($)}
@@ -1004,10 +987,10 @@ define
                                            ?GSFalseProc ?ApplyFalseProc)
                end
                GSTrueProc|GSFalseProc|GClauseBodies|
-               Unnester, UnnestBoolGuard(FE ApplyTrueProc ApplyFalseProc
+               Unnester, UnnestIfArbiter(FE ApplyTrueProc ApplyFalseProc
                                          _ ?GClauseBodies $)
             else GFrontEq GVO GBody GT GF in
-               Unnester, UnnestToVar(FE 'BoolGuard' ?GFrontEq ?GVO)
+               Unnester, UnnestToVar(FE 'IfArbiter' ?GFrontEq ?GVO)
                {@BA openScope()}
                Unnester, UnnestStatement(FS1 ?GBody)
                GT = {MakeDeclaration {@BA closeScope($)} GBody C}
@@ -1018,7 +1001,7 @@ define
                   Unnester, UnnestStatement(FS2 ?GBody)
                   GF = {MakeDeclaration {@BA closeScope($)} GBody C}
                end
-               GFrontEq|{MakeBoolCase GVO GT GF C _ @BA}
+               GFrontEq|{MakeIfNode GVO GT GF C _ @BA}
             end
          [] fCase(FE FClausess FS C) then GFrontEq GVO NewFClauses in
             Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
@@ -1075,7 +1058,7 @@ define
                Unnester, UnnestStatement(FElse ?GS)
                GElse = {New Core.elseNode init(GS)}
             end
-            {New Core.ifNode init(GClauses GElse C)}
+            {New Core.condNode init(GClauses GElse C)}
          [] fOr(FClauses Kind C) then GClauses in
             Unnester, UnnestClauses(FClauses Kind ?GClauses)
             case Kind of for then
@@ -1664,13 +1647,13 @@ define
       end
 
       meth UnnestProc(FEs FS IsLazy C ?GS)
-         FGuards FResultVars C2 NewFS FBody0 FBody GBody
+         FMatches FResultVars C2 NewFS FBody0 FBody GBody
       in
          %% each formal argument in FEs must be a basic constraint;
          %% all unnested formal arguments must be pairwise distinct variables
-         Unnester, UnnestProcFormals(FEs nil ?FGuards nil ?FResultVars nil)
+         Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         NewFS = {FoldR FGuards
+         NewFS = {FoldR FMatches
                   fun {$ FV#FE#C In}
                      fCase(FV [[fCaseClause(FE In)]] fNoElse(C) C)
                   end FS}
@@ -2036,36 +2019,36 @@ define
           end nil#GS1}
       end
 
-      meth UnnestBoolGuard(FE ApplyTrueProc ApplyFalseProc NoBoolShared
+      meth UnnestIfArbiter(FE ApplyTrueProc ApplyFalseProc NoBoolShared
                            ?GClauseBodies ?GS)
          %% optimization of `case E1 orelse E2 then S1 else S2 end'
          %% and the like
          case FE of fOrElse(FE1 FE2 C) then
             GClauseBodies1 GElse GClauseBody ApplyElseProc GClauseBodies2
          in
-            Unnester, UnnestBoolGuard(FE2 ApplyTrueProc ApplyFalseProc
+            Unnester, UnnestIfArbiter(FE2 ApplyTrueProc ApplyFalseProc
                                       NoBoolShared ?GClauseBodies1 ?GElse)
             Unnester, MakeClauseBody('FalseCase' GElse C ?GClauseBody
                                      ?ApplyElseProc)
             GClauseBodies = GClauseBodies1|GClauseBody|GClauseBodies2
-            Unnester, UnnestBoolGuard(FE1 ApplyTrueProc ApplyElseProc
+            Unnester, UnnestIfArbiter(FE1 ApplyTrueProc ApplyElseProc
                                       NoBoolShared ?GClauseBodies2 ?GS)
          [] fAndThen(FE1 FE2 C) then
             GClauseBodies1 GThen GClauseBody ApplyThenProc GClauseBodies2
          in
-            Unnester, UnnestBoolGuard(FE2 ApplyTrueProc ApplyFalseProc
+            Unnester, UnnestIfArbiter(FE2 ApplyTrueProc ApplyFalseProc
                                       NoBoolShared ?GClauseBodies1 ?GThen)
             Unnester, MakeClauseBody('TrueCase' GThen C ?GClauseBody
                                      ?ApplyThenProc)
             GClauseBodies = GClauseBodies1|GClauseBody|GClauseBodies2
-            Unnester, UnnestBoolGuard(FE1 ApplyThenProc ApplyFalseProc
+            Unnester, UnnestIfArbiter(FE1 ApplyThenProc ApplyFalseProc
                                       NoBoolShared ?GClauseBodies2 ?GS)
          else GFrontEq GVO C GS0 in
             {@BA openScope()}
-            Unnester, UnnestToVar(FE 'BoolGuard' ?GFrontEq ?GVO)
+            Unnester, UnnestToVar(FE 'IfArbiter' ?GFrontEq ?GVO)
             C = {CoordinatesOf FE}
             GClauseBodies = nil
-            GS0 = GFrontEq|{MakeBoolCase GVO {ApplyTrueProc} {ApplyFalseProc} C
+            GS0 = GFrontEq|{MakeIfNode GVO {ApplyTrueProc} {ApplyFalseProc} C
                             NoBoolShared @BA}
             GS = {MakeDeclaration {@BA closeScope($)} GS0 C}
          end
@@ -2250,7 +2233,8 @@ define
 
       meth UnnestClauses(FClauses Kind ?GClauses)
          case FClauses of FClause|FClauser then
-            FLocals FGuard FBody NewFS FVs GGuard K GBody GCr in
+            FLocals FGuard FBody NewFS FVs GGuard K GBody GCr
+         in
             fClause(FLocals FGuard FBody) = FClause
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FLocals ?FVs nil}

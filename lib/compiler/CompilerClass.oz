@@ -339,13 +339,8 @@ local
       end
       meth InitProductionTemplates()
          case @productionTemplates of unit then
-            T = {Thread.this}
-            RaiseOnBlock = {Debug.getRaiseOnBlock T}
-         in
-            {Debug.setRaiseOnBlock T false}
             productionTemplates <- {Gump.makeProductionTemplates}
             {@productionTemplates add(ProductionTemplates.default @reporter)}
-            {Debug.setRaiseOnBlock T RaiseOnBlock}
          else skip
          end
       end

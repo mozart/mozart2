@@ -750,7 +750,7 @@ in
                      msg: 'conditional suspends forever'
                      items: [hint(l: 'Hint'
                                   m: ('undetermined variable used '#
-                                      'as boolean guard'))])}
+                                      'as `if\' arbiter'))])}
                Emitter, AllocateAndInitializeAnyTemp(Reg ?R)
             elseof XYG then R = XYG
             end

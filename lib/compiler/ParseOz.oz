@@ -84,7 +84,7 @@ local
                   else
                      C|{Beautify Cr}
                   end
-               [] &'|Crr then Op Rest in   % e.g., "`'+''"
+               elseof &'|Crr then Op Rest in   % e.g., "`'+''"
                   {List.takeDropWhile Crr fun {$ C} C \= &' end ?Op ?Rest}
                   case Rest of &'|&'|NewRest then
                      &`|{Append Op &'|{Beautify NewRest}}

@@ -31,8 +31,8 @@ in
    functor
    import
       Compiler.evalExpression
-      GumpScanner.'class'
-      GumpParser.'class'
+      GumpScanner
+      GumpParser
       System
       Foreign
    export
@@ -44,7 +44,7 @@ in
           '\\gumpscannerprefix lambda\n'#
           '\\insert '#ExamplesDirectory#'LambdaScanner.ozg\n'#
           'in LambdaScanner\n'
-          env('GumpScanner': GumpScanner.'class'
+          env('GumpScanner': GumpScanner
               'System': System
               'Foreign': Foreign) _}
       end
@@ -56,7 +56,7 @@ in
           '\\gumpparserexpect 0\n'#
           '\\insert '#ExamplesDirectory#'LambdaParser.ozg\n'#
           'in LambdaParser\n'
-          env('GumpParser': GumpParser.'class'
+          env('GumpParser': GumpParser
               'System': System) _}
       end
 

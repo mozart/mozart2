@@ -57,8 +57,13 @@ in
          end
       end
       meth close
-         MyClosableObject , close
-         @Tail = nil
+         local T in
+            T = @Tail
+
+            MyClosableObject , close
+            Head <- T
+            T = nil
+         end
       end
 
       %%
@@ -108,6 +113,10 @@ in
             Size <- 0
             CoreBufferClass , init
          end
+      end
+      meth close
+         CoreBufferClass , close
+         Size <- 0
       end
 
       %%

@@ -425,7 +425,7 @@ in
 
          %%
          case WindowIn == InitValue then
-            WindowLocal XSize YSize CloseAction RootXSize RootYSize
+            WindowLocal XSize YSize RootXSize RootYSize
          in
             self.standAlone = true
             XSize = {self.store read(StoreXSize $)}

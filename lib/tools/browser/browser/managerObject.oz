@@ -148,7 +148,10 @@ in
 
       %%
       meth CheckObj(Obj)
-         case {Obj isClosed($)} then {Raise BEx(general)}
+         case
+            MyClosableObject , isClosed($) orelse  % discard everthing!
+            {Obj isClosed($)}
+         then {Raise BEx(general)}
          else skip
          end
       end

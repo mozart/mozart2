@@ -1,17 +1,15 @@
 %%%
 %%% Authors:
-%%%   Martin Mueller <mmueller@ps.uni-sb.de>
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
+%%%   Martin Mueller <mmueller@ps.uni-sb.de>
 %%%
 %%% Contributors:
-%%%   Denys Duchier <duchier@ps.uni-sb.de>
 %%%   Martin Henz <henz@iscs.nus.edu.sg>
 %%%   Benjamin Lorenz <lorenz@ps.uni-sb.de>
-%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Martin Mueller, 1997
 %%%   Leif Kornstaedt, 1998
+%%%   Martin Mueller, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -100,17 +98,26 @@
 
 functor
 import
-   Debug(setRaiseOnBlock) at 'x-oz://boot/Debug'
-   Property(get put condGet)
-   System(printName printError onToplevel)
-   Application(exit)
-   ErrorRegistry(get exists)
+   Property(get)
+   System(printName printError)
+   ErrorFormatters(kernel:  KernelFormatter
+                   object:  ObjectFormatter
+                   failure: FailureFormatter
+                   recordC: RecordCFormatter
+                   system:  SystemFormatter
+                   ap:      APFormatter
+                   dp:      DPFormatter
+                   os:      OSFormatter
+                   foreign: ForeignFormatter
+                   url:     URLFormatter
+                   module:  ModuleFormatter)
 
 export
    ExceptionToMessage
    MessageToVirtualString
    ExtendedVSToVS
    PrintException
+   RegisterFormatter
 
 prepare
 
@@ -231,7 +238,9 @@ define
    %%
 
    fun {GetExceptionDispatch Exc}
-      if {IsRecord Exc} then {CondSelect Exc 1 unit}
+      case Exc of error(DispatchField ...) then DispatchField
+      [] system(DispatchField ...) then DispatchField
+      elseif {IsRecord Exc} then Exc
       else unit
       end
    end
@@ -497,16 +506,12 @@ define
    in
       fun {ExceptionToMessage Exc}
          T = 'Error: unhandled exception'
+         E = {GetExceptionDispatch Exc}
       in
-         if {IsRecord Exc} then LL Key in
-            LL = {Label Exc}
-            Key = if LL == error orelse LL == system then
-                     {Label {GetExceptionDispatch Exc}}
-                  else LL
-                  end
-            if {ErrorRegistry.exists Key} then Message in
-               Message = {{ErrorRegistry.get Key} {GetExceptionDispatch Exc}}
-               {Extend Message Exc}
+         if E \= unit andthen {IsRecord E} then Key in
+            Key = {Label E}
+            if {Dictionary.member ErrorRegistry Key} then
+               {Extend {{Dictionary.get ErrorRegistry Key} E} Exc}
             else
                {GenericFormatter T Exc}
             end
@@ -522,11 +527,13 @@ define
 
    local
       fun {FormatReRaiseExc Exc ExcExc}
-         error(title: 'Unable to Print Error Message'
-               items: [hint(l:'Initial exception' m:oz(Exc))
-                       hint(l:'Format exception kind' m:{Label ExcExc})
+         error(kind: 'exception formatter error'
+               msg: 'unable to print error message'
+               items: [hint(l:'Initial exception'
+                            m:oz({GetExceptionDispatch Exc}))
                        hint(l:'Format exception'
                             m:oz({GetExceptionDispatch ExcExc}))
+                       unit
                        line(BugReport)]
                loc: {GetExceptionLocation Exc}
                stack: {GetExceptionStack Exc}
@@ -545,32 +552,24 @@ define
    end
 
    %%
-   %% The Error Handler
+   %% The Registry
    %%
 
-   local
-      proc {ExitError}
-         {Application.exit 1}
-      end
-   in
-      proc {ErrorHandler Exc}
-         %% ignore thread termination exception
-         case Exc of system(kernel(terminate) debug:_) then skip
-         else
-            {Thread.setThisPriority high}
-            {Debug.setRaiseOnBlock {Thread.this} true}
-            {PrintException Exc}
-            {Debug.setRaiseOnBlock {Thread.this} false}
-            %% terminate local computation
-            if {System.onToplevel} then
-               {{Property.condGet 'errors.toplevel' ExitError}}
-            elsecase Exc of failure(...) then fail
-            else
-               {{Property.condGet 'errors.subordinate' ExitError}}
-            end
-         end
-      end
+   ErrorRegistry = {NewDictionary}
+
+   proc {RegisterFormatter Key Formatter}
+      {Dictionary.put ErrorRegistry Key Formatter}
    end
 
-   {Property.put 'errors.handler' ErrorHandler}
+   {RegisterFormatter kernel  KernelFormatter}
+   {RegisterFormatter object  ObjectFormatter}
+   {RegisterFormatter failure FailureFormatter}
+   {RegisterFormatter recordC RecordCFormatter}
+   {RegisterFormatter system  SystemFormatter}
+   {RegisterFormatter ap      APFormatter}
+   {RegisterFormatter dp      DPFormatter}
+   {RegisterFormatter os      OSFormatter}
+   {RegisterFormatter foreign ForeignFormatter}
+   {RegisterFormatter url     URLFormatter}
+   {RegisterFormatter module  ModuleFormatter}
 end

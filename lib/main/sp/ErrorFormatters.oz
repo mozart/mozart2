@@ -32,9 +32,17 @@ import
    System(printName)
 
 export
-   put:     NewFormatter
-   get:     GetFormatter
-   exists:  ExFormatter
+   kernel:  KernelFormatter
+   object:  ObjectFormatter
+   failure: FailureFormatter
+   recordC: RecordCFormatter
+   system:  SystemFormatter
+   ap:      APFormatter
+   dp:      DPFormatter
+   os:      OSFormatter
+   foreign: ForeignFormatter
+   url:     URLFormatter
+   module:  ModuleFormatter
 
 prepare
    BugReport = 'Please send bug report to oz@ps.uni-sb.de'
@@ -639,7 +647,7 @@ define
    %% distributed programming
    %%
 
-   fun {DpFormatter E}
+   fun {DPFormatter E}
       T = 'Error: distributed programming'
    in
       case E
@@ -730,41 +738,4 @@ define
                items: [line(oz(E))])
       end
    end
-
-
-   %%
-   %% Error registry proper
-   %%
-
-   ErrorFormatter = {NewDictionary}
-
-   proc {NewFormatter Key P}
-      {Dictionary.put
-       ErrorFormatter
-       Key
-       P}
-   end
-
-   fun {GetFormatter Key}
-      {Dictionary.get
-       ErrorFormatter
-       Key}
-   end
-
-   fun {ExFormatter Key}
-      {Dictionary.member ErrorFormatter Key}
-   end
-
-   {NewFormatter kernel  KernelFormatter}
-   {NewFormatter object  ObjectFormatter}
-   {NewFormatter failure FailureFormatter}
-   {NewFormatter recordC RecordCFormatter}
-   {NewFormatter system  SystemFormatter}
-   {NewFormatter ap      APFormatter}
-   {NewFormatter dp      DpFormatter}
-   {NewFormatter os      OSFormatter}
-   {NewFormatter foreign ForeignFormatter}
-   {NewFormatter url     URLFormatter}
-   {NewFormatter module  ModuleFormatter}
-
 end

@@ -1621,6 +1621,13 @@ in
               hint(l:'Maybe due to previous toplevel failure')]
              Exc}
 
+         elseof system(onceOnlyFunctor) then
+
+            {FormatExc T
+             'Procedure definition with flag `once\' executed more than once'
+             nil
+             Exc}
+
          elseof system(fatal S) then
 
 \ifdef TYPE_DEBUG

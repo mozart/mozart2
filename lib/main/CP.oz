@@ -11,49 +11,7 @@
 
 \ifdef SAVE
 declare
-   NewCP
-in
-
-local
-   CP = cp('Search':       Search
-           'SearchOne':    SearchOne
-           'SearchAll':    SearchAll
-           'SearchBest':   SearchBest
-           'FD':           FD
-           '`::`':         `::`
-           '`:::`':        `:::`
-           '`GenSum`':     `GenSum`
-           '`GenSumC`':    `GenSumC`
-           '`GenSumCN`':   `GenSumCN`
-           '`PlusRel`':    `PlusRel`
-           '`TimesRel`':   `TimesRel`
-           '`Lec`':        `Lec`
-           '`Gec`':        `Gec`
-           '`Nec`':        `Nec`
-           '`Lepc`':       `Lepc`
-           '`Nepc`':       `Nepc`
-           '`Neq`':        `Neq`
-           '`GenSumR`':    `GenSumR`
-           '`GenSumCR`':   `GenSumCR`
-           '`GenSumCNR`':  `GenSumCNR`
-           '`::R`':        `::R`
-           '`:::R`':       `:::R`
-           '`CDHeader`':   `CDHeader`
-           '`CDBody`':     `CDBody`
-           '`GenSumCD`':   `GenSumCD`
-           '`GenSumCCD`':  `GenSumCCD`
-           '`GenSumCNCD`': `GenSumCNCD`
-           '`::CD`':       `::CD`
-           '`:::CD`':      `:::CD`
-           'FS':           FS)
-in
-
-   fun {NewCP}
-      CP
-   end
-
+fun {NewCP}
+\insert 'CP.env'
 end
-
-
-
 \endif

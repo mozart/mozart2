@@ -6,6 +6,7 @@ BUILDTOP=       @BUILDTOP@
 SRCTOP=         @SRCTOP@
 HOMEURL=        @HOMEURL@
 OZPLATFORM=     @PLATFORM@
+PLATFORM=       @PLATFORM@
 
 INSTALL_DIR     = @INSTALL_DIR@
 
@@ -90,7 +91,7 @@ OTHERS= dp/TestMisc.ozf
 COMPRESSLEVEL   = @oz_picklecompression@
 COMPRESSFLAGS   = --compress=$(COMPRESSLEVEL)
 
-OZE =
+OZENGINE =
 OZC = @OZC@
 OZFLAGS = $(COMPRESSFLAGS)
 OZTOOL = @OZTOOL@
@@ -99,36 +100,15 @@ OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c
 
 .PHONY: all bootstrap install check dirs clean veryclean distclean depend
-.PHONY: boot-check boot-all
 
 all: dirs oztest ozbench $(SONATIVES)
-
-boot-all:
-        BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
-        make all \
-        OZ_LOAD=prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=./=./:prefix=/=/:.:= \
-        OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
-        OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
-        OZE=$(SRCTOP)/share/lib/oze.sh
 
 BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
 CURDIRA   = $(BUILDTOPA)/share/test
 #OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
 PREFIX    = @prefix@
 
-boot-check: boot-all
-        PATH=$(SRCTOP)/share/bin:$(SRCDIR):$(PATH) \
-        BUILDTOP=$(BUILDTOP) SRCDIR=$(SRCDIR) \
-        make check \
-        OZ_LOAD=prefix=$(HOMEURL)/share/GumpScanner.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/GumpScanner.so:prefix=$(HOMEURL)/share/Bison.so-$(OZPLATFORM)=$(BUILDTOP)/platform/tools/gump/ozbison/Bison.so:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/lib/:prefix=$(HOMEURL)/share/=$(BUILDTOP)/share/tools/:prefix=$(HOMEURL)/contrib/=$(BUILDTOP)/contrib/:prefix=./=./:prefix=/=/:.:= \
-        OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
-        OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
-        OZE=$(SRCTOP)/share/lib/oze.sh \
-        OZTOOL="/bin/sh $(BUILDTOP)/platform/emulator/oztool.sh" \
-        OZTOOL_INCLUDES="-I$(SRCTOP)/platform/emulator -I$(SRCTOP)/platform/tools/gump" \
-        OZFLEX=$(BUILDTOP)/platform/tools/gump/ozflex/flex \
-        OZTESTOPTS="$(OZTESTOPTS) --ignores=dp" \
-        OZENGINE=$(SRCTOP)/share/lib/oze.sh
+boot-check: export OZTESTOPTS="$(OZTESTOPTS) --ignores=dp"
 
 bootstrap:
 
@@ -137,7 +117,7 @@ install:
 OZTESTOPTS = --verbose
 
 check: oztest
-        $(OZE) ./oztest $(OZTESTOPTS)
+        $(OZENGINE) ./oztest $(OZTESTOPTS)
 
 dirs:
         @ds="$(DIRS)"; for d in $$ds; do if test ! -d $$d; then $(INSTALL_DIR) $$d; fi; done && touch $@
@@ -146,16 +126,17 @@ dirs:
 # $(COMPONENTS): dirs
 
 TESTSRCS=make-test engine passed failed help-string compute-tests
-oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS)
-        $(OZC) $(OZFLAGS) -x lib/make-test.oz -o make-test
-        $(OZE) ./make-test --verbose $(TESTCOMPONENTS:%=`pwd`/%)
+oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS) make-test
+        $(OZENGINE) ./make-test --verbose $(TESTCOMPONENTS:%=`pwd`/%)
         chmod +x oztest
-        -rm -f ./make-test
+
+make-test: lib/make-test.oz
+        $(OZC) $(OZFLAGS) -x $< -o $@
 
 BENCHSRCS=make-bench engine compute-tests help-bench
 ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
-        $(OZE) ./make-bench --verbose $(BENCHCOMPONENTS:%=`pwd`/%)
+        $(OZENGINE) ./make-bench --verbose $(BENCHCOMPONENTS:%=`pwd`/%)
         chmod +x ozbench
         -rm -f ./make-bench
 

@@ -1206,7 +1206,12 @@ fun {MakeSearch}
                             end
 */
                          end
-                         rcd : 20
+                         rcd : 30
+                         %% rcd=20 3:18.89
+                         %% rcd=25 4:30.95
+                         %% rcd=28 2:21.88
+                         %% rcd=29 2:09.43
+                         %% rcd=30 2:25.16
                         )}
 end
 

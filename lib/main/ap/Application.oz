@@ -204,7 +204,7 @@ local
       %          but I don't think it is worth the bother]
       ArgsLstSorted =
       {Sort ArgsLst
-       fun {$ M1 M2} {Member M1 {Dictionary.get DepsMap M2}} end}
+       fun {$ M1 M2} {Not {Member M2 {Dictionary.get DepsMap M1}}} end}
       %
       % Now we compute the modes for all the required modules.
       % Each module Name in Spec is associated with a Mode.

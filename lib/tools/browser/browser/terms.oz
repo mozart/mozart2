@@ -2188,7 +2188,6 @@ in
             job
                ChVar = {TestVarFun self.term}
             end
-            %%
 
             %% Note that this conditional may not block the state;
             %% relational;

@@ -160,7 +160,8 @@ in
                   %%
                   %%  'RLabel' will be determined later!
                   RArity = {RecordC.monitorArity TermIn True}
-                  KnownRArity = {GetWFList RArity}
+                  KnownRArity = {Map {GetWFList RArity}
+                                 fun {$ FN} {ReflectTerm FN nil $ _} end}
 
                   %%
                   %% TODO!!!
@@ -171,7 +172,9 @@ in
                   %%
                   RLabel =
                   case {IsVar L} then '_...'
-                  else {String.toAtom {VirtualString.toString L#'...'}}
+                  else {String.toAtom
+                        {VirtualString.toString
+                         {ReflectTerm L nil $ _}#'...'}}
                   end
 
                   %%
@@ -260,23 +263,12 @@ in
                              ['<Cell: ' {System.getValue TermIn name} '>']}
                   ListOut = TmpList
                [] record then RArity L LabelOf in
-                  RArity = {Arity TermIn}
+                  RArity = {Map {Arity TermIn}
+                            fun {$ FN} {ReflectTerm FN nil $ _} end}
 
                   %%
                   L = {Label TermIn}
-                  LabelOf =
-                  case {IsName L} then
-                     case {IsBool TermIn} then
-                        case TermIn then '<Bool: true>'
-                        else '<Bool: false>'
-                        end
-                     else
-                        {AtomConcatAll
-                         ['<Name: ' {System.getPrintName TermIn } ' @ '
-                          {IntToAtom {System.getValue TermIn addr}} '>']}
-                     end
-                  else L
-                  end
+                  LabelOf = {ReflectTerm L nil $ _}
 
                   %%
                   %%
@@ -287,7 +279,8 @@ in
                    end
                   ListOut}
                [] chunk then RArity LabelOf in
-                  RArity = {`ChunkArity` TermIn} % all features;
+                  RArity = {Map {`ChunkArity` TermIn} % all features;
+                            fun {$ FN} {ReflectTerm FN nil $ _} end}
 
                   %%
                   %%  convert the chunk to a record...
@@ -302,8 +295,16 @@ in
                       ['<Class: '
                        {Class.printName TermIn} ' @ '
                        {IntToAtom {System.getValue TermIn addr}} '>']}
+                  elsecase {IsArray TermIn} then
+                     {AtomConcatAll
+                      ['<Array: @ '
+                       {IntToAtom {System.getValue TermIn addr}} '>']}
+                  elsecase {IsDictionary TermIn} then
+                     {AtomConcatAll
+                      ['<Dictionary: @ '
+                       {IntToAtom {System.getValue TermIn addr}} '>']}
                   else
-                     {System.getPrintName TermIn} % TODO: arrays, dicts
+                     {System.getPrintName TermIn}
                   end
 
                   %%

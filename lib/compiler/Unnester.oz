@@ -57,9 +57,10 @@ import
 export
    MakeExpressionQuery
    UnnestQuery
-require
-   FD(sup: FdSup)
+%--**require
+%--**   FD(sup: FdSup)
 prepare
+   FdSup = 134217726
    fun {IsFd I}
       I =< FdSup andthen I >= 0
    end
@@ -332,6 +333,7 @@ define
       case FE of fEq(_ _ _) then true
       [] fAtom(_ _) then true
       [] fVar(_ _) then true
+      [] fOcc(_) then true
       [] fWildcard(_) then true
       [] fEscape(_ _) then true
       [] fInt(_ _) then true
@@ -343,7 +345,7 @@ define
    end
 
    proc {SortFunctorDescriptors FDescriptors Rep
-         FRequire FPrepare FImport FExport FProp FDefine1 FDefine2}
+         FRequire FPrepare FImport FExport FDefine1 FDefine2}
       case FDescriptors of D|Dr then
          case D of fRequire(Rs C) then
             if {IsFree FRequire} then FRequire = Rs
@@ -373,13 +375,6 @@ define
                           msg: ('more than one `export\' descriptor '#
                                 'in functor definition'))}
             end
-         [] fProp(Ps C) then
-            if {IsFree FProp} then FProp = Ps
-            else
-               {Rep error(coord: C kind: SyntaxError
-                          msg: ('more than one `prop\' descriptor '#
-                                'in functor definition'))}
-            end
          [] fDefine(D1 D2 C) then
             if {IsFree FDefine1} then FDefine1 = D1 FDefine2 = D2
             else
@@ -389,13 +384,12 @@ define
             end
          end
          {SortFunctorDescriptors Dr Rep
-          FRequire FPrepare FImport FExport FProp FDefine1 FDefine2}
+          FRequire FPrepare FImport FExport FDefine1 FDefine2}
       [] nil then
          if {IsFree FRequire} then FRequire = unit end
          if {IsFree FPrepare} then FPrepare = unit end
          if {IsFree FImport} then FImport = nil end
          if {IsFree FExport} then FExport = nil end
-         if {IsFree FProp} then FProp = nil end
          if {IsFree FDefine1} then
             FDefine1 = fSkip(unit)
             FDefine2 = fSkip(unit)
@@ -515,18 +509,26 @@ define
          case FE of fVar(PrintName C) then
             GEqs = nil
             {@BA refer(PrintName C ?GVO)}
+         [] fOcc(V) then
+            GEqs = nil
+            {V occ({V getCoord($)} ?GVO)}
          [] fWildcard(C) then GV in
             GEqs = nil
             {@BA generate('Wildcard' C ?GV)}
             {GV occ(C ?GVO)}
-         [] fEscape(FV _) then fVar(PrintName C) = FV in
+         [] fEscape(fVar(PrintName C) _) then
             GEqs = nil
             {@BA refer(PrintName C ?GVO)}
-         [] fGetBinder(FV GV) then fVar(PrintName C) = FV in
+         [] fGetBinder(FV GV) then
             GEqs = nil
-            {@BA refer(PrintName C ?GVO)}
-            {GVO getVariable(?GV)}
-         else NewOrigin C = {CoordinatesOf FE} GV FV in
+            case FV of fVar(PrintName C) then
+               {@BA refer(PrintName C ?GVO)}
+               {GVO getVariable(?GV)}
+            [] fOcc(X) then
+               GV = X
+               {GV occ({GV getCoord($)} ?GVO)}
+            end
+         else NewOrigin C = {CoordinatesOf FE} GV in
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
                         [] fFun(_ _ _ _ _) then 'Fun'
@@ -537,8 +539,7 @@ define
                         else Origin
                         end
             {@BA generate(NewOrigin C ?GV)}
-            FV = fVar({GV getPrintName($)} C)
-            Unnester, UnnestExpression(FE FV ?GEqs)
+            Unnester, UnnestExpression(FE GV ?GEqs)
             {GV occ(C ?GVO)}
          end
       end
@@ -559,6 +560,19 @@ define
          {@BA generateForOuterScope(Origin C ?GV)}
          {@BA closeScope(_)}
       end
+      meth Refer(FV ?GVO)
+         case FV of fVar(PrintName C) then
+            {@BA refer(PrintName C ?GVO)}
+         [] fOcc(GV) then
+            {GV occ({GV getCoord($)} ?GVO)}
+         end
+      end
+      meth GetPrintName(FV $)
+         case FV of fVar(PrintName C) then PrintName
+         [] fOcc(GV) then
+            {GV getPrintName($)}
+         end
+      end
 
       meth UnnestStatement(FS $)
          case FS of fStepPoint(FS Kind C) then GS in
@@ -573,29 +587,34 @@ define
          [] fEq(FE1 FE2 C) then
             if {IsStep C} andthen
                {IsConstraint FE1} andthen {IsConstraint FE2}
-            then GV1 FV1 GV2 FV2 GFront1 GBack1 GFront2 GBack2 Equation in
+            then GV1 GV2 GFront1 GBack1 GFront2 GBack2 FS Equation in
                {@BA generate('Left' C ?GV1)}
-               FV1 = fVar({GV1 getPrintName($)} C)
-               {@BA generate('Left' C ?GV2)}
-               FV2 = fVar({GV2 getPrintName($)} C)
-               Unnester, UnnestConstraint(FE1 FV1 ?GFront1 ?GBack1)
-               Unnester, UnnestConstraint(FE2 FV2 ?GFront2 ?GBack2)
-               Unnester, UnnestStatement(fOpApplyStatement('=' [FV1 FV2] C)
-                                         ?Equation)
+               {@BA generate('Right' C ?GV2)}
+               Unnester, UnnestConstraint(FE1 GV1 ?GFront1 ?GBack1)
+               Unnester, UnnestConstraint(FE2 GV2 ?GFront2 ?GBack2)
+               FS = fOpApplyStatement('=' [fOcc(GV1) fOcc(GV2)] C)
+               Unnester, UnnestStatement(FS ?Equation)
                GFront1|GFront2|Equation|GBack1|GBack2
             else GFront GBack in
-               case FE2 of fVar(_ _) then
-                  Unnester, UnnestConstraint(FE1 FE2 ?GFront ?GBack)
-               elseof fEscape(FV=fVar(_ _) _) then
-                  Unnester, UnnestConstraint(FE1 FV ?GFront ?GBack)
-               elsecase FE1 of fVar(_ _) then
-                  Unnester, UnnestConstraint(FE2 FE1 ?GFront ?GBack)
-               elseof fEscape(FV=fVar(_ _) _) then
-                  Unnester, UnnestConstraint(FE2 FV ?GFront ?GBack)
-               else GV FV in
+               case FE2 of fVar(PrintName C) then GV in
+                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
+                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+               [] fOcc(GV) then
+                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+               [] fEscape(fVar(PrintName C) _) then GV in
+                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
+                  Unnester, UnnestConstraint(FE1 GV ?GFront ?GBack)
+               elsecase FE1 of fVar(PrintName C) then GV in
+                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
+                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+               [] fOcc(GV) then
+                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+               [] fEscape(fVar(PrintName C) _) then GV in
+                  {{@BA refer(PrintName C $)} getVariable(?GV)}   %--**
+                  Unnester, UnnestConstraint(FE2 GV ?GFront ?GBack)
+               else GV in
                   {@BA generate('Equation' C ?GV)}
-                  FV = fVar({GV getPrintName($)} C)
-                  Unnester, UnnestConstraint(FS FV ?GFront ?GBack)
+                  Unnester, UnnestConstraint(FS GV ?GFront ?GBack)
                end
                GFront|GBack
             end
@@ -716,40 +735,33 @@ define
             end
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors C) then
-            FRequire FPrepare FImport FExport FProp FDefine1 FDefine2
+            FRequire FPrepare FImport FExport FDefine1 FDefine2
          in
             {SortFunctorDescriptors FDescriptors @reporter
-             ?FRequire ?FPrepare ?FImport ?FExport ?FProp ?FDefine1 ?FDefine2}
+             ?FRequire ?FPrepare ?FImport ?FExport ?FDefine1 ?FDefine2}
             if FRequire == unit andthen FPrepare == unit then
-               GFrontEq GVO FV
-               ImportGV ImportFV ImportFeatures FImportArgs ImportFS
+               GFrontEq GVO ImportGV ImportFeatures FImportArgs ImportFS
                FExportArgs FColons CND NewFDefine
                FunGV FunFV FFun OldImportFV OldAdditionalImports GFun
                FImportDesc FExportDesc FS
                GNewFunctor GS
             in
                Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
-               FV = fVar({{GVO getVariable($)} getPrintName($)}
-                         {CoordinatesOf FE})
-               {@BA openScope()}
-               Unnester, AnalyseImports(FImport ImportFV
+               Unnester, AnalyseImports(FImport ImportGV
                                         ?ImportFeatures ?FImportArgs ?ImportFS)
                Unnester, AnalyseExports(FExport ?FExportArgs ?FColons)
-               {@BA generate('IMPORT' C ?ImportGV)}
-               {@BA closeScope(_)}
-               ImportFV = fVar({ImportGV getPrintName($)} C)
                CND = {CoordNoDebug C}
                NewFDefine = fLocal(fAnd(ImportFS FDefine1)
                                    fAnd(FDefine2
                                         fRecord(fAtom('export' CND) FColons))
                                    C)
                {@BA generate('Body' C ?FunGV)}
-               FunFV = fVar({FunGV getPrintName($)} C)
-               FFun = fFun(FunFV [ImportFV] NewFDefine
-                           fAtom('instantiate' C)|FProp CND)
+               FunFV = fOcc(FunGV)
+               FFun = fFun(FunFV [fAnonVar('IMPORT' C ImportGV)] NewFDefine
+                           [fAtom('instantiate' C)] CND)
                OldImportFV = @CurrentImportFV
                OldAdditionalImports = @AdditionalImports
-               CurrentImportFV <- ImportFV
+               CurrentImportFV <- fOcc(ImportGV)
                AdditionalImports <- nil
                Unnester, UnnestStatement(FFun ?GFun)
                FImportDesc = fRecord(fAtom('import' CND)
@@ -769,7 +781,8 @@ define
                CurrentImportFV <- OldImportFV
                FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
                FS = fOpApplyStatement('NewFunctor'
-                                      [FImportDesc FExportDesc FunFV FV] CND)
+                                      [FImportDesc FExportDesc FunFV
+                                       fOcc({GVO getVariable($)})] CND)
                Unnester, UnnestStatement(FS ?GNewFunctor)
                GS = GFun|GNewFunctor
                GFrontEq|if {@state getSwitch(debuginfocontrol $)}
@@ -778,13 +791,10 @@ define
                         else GS
                         end
             else GV1 GV2 FV1 FV2 FS1 CND BaseURL FS2 in
-               {@BA openScope()}
-               %--** enter all FRequire/FPrepare variables
                {@BA generate('OuterFunctor' C ?GV1)}
                {@BA generate('InnerFunctor' C ?GV2)}
-               {@BA closeScope(_)}
-               FV1 = fVar({GV1 getPrintName($)} C)
-               FV2 = fVar({GV2 getPrintName($)} C)
+               FV1 = fOcc(GV1)
+               FV2 = fOcc(GV2)
                FS1 = fFunctor(FV1 [fImport(case FRequire of unit then nil
                                            else FRequire
                                            end unit)
@@ -812,21 +822,21 @@ define
                                                    [fAtom(BaseURL unit) FV1]
                                                    CND)
                                           fAtom(inner unit)] CND) CND)
-               Unnester, UnnestStatement(fLocal(FV1 fAnd(FS1 FS2) C) $)
+               Unnester, UnnestStatement(FS1 $)|
+               Unnester, UnnestStatement(FS2 $)
             end
-         [] fDoImport(_ GV ImportFV) then
-            fVar(PrintName C) = ImportFV DotGVO ImportGVO
-            GFrontEqs FeatureGVO ResGVO CND
+         [] fDoImport(_ GV ImportGV) then
+            C DotGVO ImportGVO GFrontEqs FeatureGVO ResGVO CND
          in
+            {ImportGV getCoord(?C)}
             {RunTime.procs.'.' occ(C ?DotGVO)}
-            {@BA refer(PrintName C ?ImportGVO)}
+            {ImportGV occ(C ?ImportGVO)}
             Unnester, UnnestToVar(fAtom({GV getPrintName($)} C) 'Feature'
                                   ?GFrontEqs ?FeatureGVO)
             {GV occ(C ?ResGVO)}
             CND = {CoordNoDebug C}
-            GFrontEqs|
-            {New Core.application
-             init(DotGVO [ImportGVO FeatureGVO ResGVO] CND)}
+            GFrontEqs|{New Core.application
+                       init(DotGVO [ImportGVO FeatureGVO ResGVO] CND)}
          [] fClass(FE FDescriptors FMeths C) then
             GFrontEq GVO FPrivates GPrivates
             FFrom FProp FAttr FFeat
@@ -842,7 +852,7 @@ define
                          {FoldR FFeat PrivateAttrFeat
                           {FoldR FMeths PrivateMeth nil}}}
             {Map {UniqueVariables FPrivates}
-             fun {$ FV} fVar(PrintName C) = FV FS in
+             fun {$ FV=fVar(PrintName C)} FS in
                 {@BA bind(PrintName C _)}
                 FS = fOpApplyStatement('ooPrivate' [FV] C)
                 Unnester, UnnestStatement(FS $)
@@ -921,8 +931,8 @@ define
              proc {$ FV}
                 case FV of fVar(PrintName C) then
                    {@BA bind(PrintName C _)}
-                [] fDoImport(FI GV _) then
-                   fImportItem(fVar(PrintName C) Fs _) = FI NewFs
+                [] fDoImport(fImportItem(fVar(PrintName C) Fs _) GV _) then
+                   NewFs
                 in
                    {@BA bindImport(PrintName C NewFs ?GV)}
                    Unnester, UnnestImportFeatures(Fs ?NewFs)
@@ -978,10 +988,18 @@ define
                end
                GFrontEq|{MakeIfNode GVO GT GF C _ @BA}
             end
-         [] fCase(FE FClauses FS C) then GFrontEq GVO in
+         [] fCase(FE FClauses FElse C) then GFrontEq GVO GCs GElse in
             Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
-            GFrontEq|
-            Unnester, UnnestCase({GVO getVariable($)} FClauses FS C $)
+            Unnester, UnnestCaseClauses(FClauses ?GCs)
+            GElse = case FElse of fNoElse(C) then
+                       {New Core.noElse init(C)}
+                    else GBody0 GBody in
+                       {@BA openScope()}
+                       Unnester, UnnestStatement(FElse ?GBody0)
+                       GBody = {MakeDeclaration {@BA closeScope($)} GBody0 C}
+                       {New Core.elseNode init(GBody)}
+                    end
+            GFrontEq|{New Core.patternCase init(GVO GCs GElse C)}
          [] fLockThen(FE FS C) then GFrontEq GVO GS in
             Unnester, UnnestToVar(FE 'Lock' ?GFrontEq ?GVO)
             Unnester, UnnestStatement(FS ?GS)
@@ -1009,7 +1027,7 @@ define
             Unnester, UnnestStatement(fOpApplyStatement('Raise' [FE] C) $)
          [] fRaiseWith(FE1 FE2 C) then GFrontEqs GVO FV CND FS in
             Unnester, UnnestToVar(FE1 'Exception' ?GFrontEqs ?GVO)
-            FV = fVar({{GVO getVariable($)} getPrintName($)} C)
+            FV = fOcc({GVO getVariable($)})
             CND = {CoordNoDebug C}
             FS = fBoolCase(fOpApply('RaiseDebugCheck' [FV] CND)
                            fOpApplyStatement('RaiseDebugExtend' [FV FE2] C)
@@ -1027,8 +1045,10 @@ define
             Unnester, UnnestClauses(FClauses fif ?GClauses)
             case FElse of fNoElse(C) then
                GElse = {New Core.noElse init(C)}
-            else GS in
-               Unnester, UnnestStatement(FElse ?GS)
+            else GBody GS in
+               {@BA openScope()}
+               Unnester, UnnestStatement(FElse ?GBody)
+               GS = {MakeDeclaration {@BA closeScope($)} GBody C}
                GElse = {New Core.elseNode init(GS)}
             end
             {New Core.condNode init(GClauses GElse C)}
@@ -1055,18 +1075,17 @@ define
                        GFrontEq = GFrontEq1|GFrontEq2
                        NewFS = fFdCompare(Op NewFE1 NewFE2 C)
                     [] fFdIn(Op FE1 FE2 C) then
-                       GFrontEq1 NewFE1 GFrontEq2 GO GV NewFE2 in
-                       case Op of '::' then GO GV in
+                       GFrontEq1 NewFE1 GFrontEq2 GO NewFE2
+                    in
+                       case Op of '::' then
                           Unnester, UnnestToVar(FE1 'UnnestFDIn'
                                                 ?GFrontEq1 ?GO)
-                          GV = {GO getVariable($)}
-                          NewFE1 = fVar({GV getPrintName($)} {GV getCoord($)})
+                          NewFE1 = fOcc({GO getVariable($)})
                        [] ':::' then
                           Unnester, UnnestFDList(FE1 ?GFrontEq1 ?NewFE1)
                        end
                        Unnester, UnnestToVar(FE2 'UnnestDomain' ?GFrontEq2 ?GO)
-                       GV = {GO getVariable($)}
-                       NewFE2 = fVar({GV getPrintName($)} {GV getCoord($)})
+                       NewFE2 = fOcc({GO getVariable($)})
                        GFrontEq = GFrontEq1|GFrontEq2
                        NewFS = fFdIn(Op NewFE1 NewFE2 C)
                     end
@@ -1080,25 +1099,25 @@ define
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
             {@BA generate('Error' C ?GV)}
-            Unnester, UnnestExpression(FS fVar({GV getPrintName($)} C) $)
+            Unnester, UnnestExpression(FS GV $)
          end
       end
 
-      meth UnnestExpression(FE FV $) C = {CoordinatesOf FE} in
-         case FE of fTypeOf(GV) then fVar(PrintName C) = FV GVO in
-            {@BA refer(PrintName C ?GVO)}
+      meth UnnestExpression(FE ToGV $)
+         case FE of fTypeOf(GV) then GVO in
+            {ToGV occ({ToGV getCoord($)} ?GVO)}
             {New Core.typeOf init(GV GVO)}
          [] fStepPoint(FE Kind C) then GS in
-            Unnester, UnnestExpression(FE FV ?GS)
+            Unnester, UnnestExpression(FE ToGV ?GS)
             if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
          [] fAnd(FS1 FE2) then
             Unnester, UnnestStatement(FS1 $)|
-            Unnester, UnnestExpression(FE2 FV $)
-         [] fEq(FE1 FE2 C) then GFront GBack in
-            Unnester, UnnestConstraint(FE FV ?GFront ?GBack)
+            Unnester, UnnestExpression(FE2 ToGV $)
+         [] fEq(_ _ C) then GFront GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
             GFront|GBack
          [] fAssign(FE1 FE2 C) then FApply in
             if @Stateful then
@@ -1108,12 +1127,14 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'attribute exchange used outside of method')}
             end
-            FApply = fOpApplyStatement('ooExch' [FE1 FE2 FV] C)
+            FApply = fOpApplyStatement('ooExch' [FE1 FE2 fOcc(ToGV)] C)
             Unnester, UnnestStatement(FApply $)
-         [] fOrElse(FE1 FE2 C) then FS in
+         [] fOrElse(FE1 FE2 C) then FV FS in
+            FV = fOcc(ToGV)
             FS = fBoolCase(FE1 fEq(FV fAtom(true C) C) fEq(FV FE2 C) C)
             Unnester, UnnestStatement(FS $)
-         [] fAndThen(FE1 FE2 C) then FS in
+         [] fAndThen(FE1 FE2 C) then FV FS in
+            FV = fOcc(ToGV)
             FS = fBoolCase(FE1 fEq(FV FE2 C) fEq(FV fAtom(false C) C) C)
             Unnester, UnnestStatement(FS $)
          [] fOpApply(Op FEs C) then
@@ -1123,30 +1144,31 @@ define
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: OpKind#' operator cannot take $ as argument')}
             end
-            case FE of fOpApply('.' [fVar(X C2) FA=fAtom(Y _)] _) then
-               Unnester, OptimizeImportFeature(FV C X C2 Y FA $)
-            elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] _) then
-               Unnester, OptimizeImportFeature(FV C X C2 Y FI $)
+            case FE of fOpApply('.' [fVar(X C2) FA=fAtom(Y _)] C3) then
+               Unnester, OptimizeImportFeature(ToGV C X C2 Y FA C3 $)
+            elseof fOpApply('.' [fVar(X C2) FI=fInt(Y _)] C3) then
+               Unnester, OptimizeImportFeature(ToGV C X C2 Y FI C3 $)
             else GVO GFrontEqs1 GFrontEqs2 GTs GS in
                {RunTime.procs.Op occ(C ?GVO)}
-               Unnester, UnnestApplyArgs({Append FEs [FV]}
+               Unnester, UnnestApplyArgs({Append FEs [fOcc(ToGV)]}
                                          ?GFrontEqs1 ?GFrontEqs2 ?GTs)
                GS = {New Core.application init(GVO GTs C)}
                GFrontEqs1|GFrontEqs2|GS
             end
-         [] fUnoptimizedDot(FV2 FT) then
-            fVar(X C) = FV2 LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
+         [] fUnoptimizedDot(fVar(X C) FT) then
+            LeftGVO DotGVO GFrontEqs1 GFrontEqs2 GTs
          in
             {@BA referUnchecked(X C ?LeftGVO)}
             {RunTime.procs.'byNeedDot' occ(C ?DotGVO)}
-            Unnester, UnnestApplyArgs([FT FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+            Unnester, UnnestApplyArgs([FT fOcc(ToGV)]
+                                      ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}
          [] fFdCompare(Op FE1 FE2 C) then
             GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
-            FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C FV}
+            FS = {MakeFdCompareExpression Op NewFE1 NewFE2 C fOcc(ToGV)}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
          [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
             %% note: reverse arguments!
@@ -1157,7 +1179,7 @@ define
             FS = fApply(fOpApply('.' [fOpApply('.' [fVar('FD' C)
                                                     fAtom('reified' C)] C)
                                       fAtom(Feature C)] CND)
-                        [FE2 FE1 FV] C)
+                        [FE2 FE1 fOcc(ToGV)] C)
             Unnester, UnnestStatement(FS $)
          [] fObjApply(FE1 FE2 C) then NewFE2 in
             if @Stateful then
@@ -1183,9 +1205,9 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'object application used outside of method')}
             end
-            NewFE2 = {ReplaceDollar FE2 FV}
+            NewFE2 = {ReplaceDollar FE2 fOcc(ToGV)}
             Unnester, UnnestStatement(fOpApplyStatement(',' [FE1 NewFE2] C) $)
-         [] fAt(FE C) then
+         [] fAt(FE C) then FS in
             if @Stateful then
                StateUsed <- true
             else
@@ -1193,68 +1215,60 @@ define
                 error(coord: C kind: ExpansionError
                       msg: 'attribute access used outside of method')}
             end
-            Unnester, UnnestStatement(fOpApplyStatement('@' [FE FV] C) $)
-         [] fAtom(X C) then fVar(PrintName VC) = FV GVO in
-            {@BA refer(PrintName VC ?GVO)}
+            FS = fOpApplyStatement('@' [FE fOcc(ToGV)] C)
+            Unnester, UnnestStatement(FS $)
+         [] fAtom(X C) then GVO in
+            {ToGV occ(C ?GVO)}
             {New Core.equation init(GVO {New Core.atomNode init(X C)} C)}
-         [] fVar(PrintName C) then fVar(VPrintName VC) = FV GVO1 GVO2 in
-            {@BA refer(VPrintName VC ?GVO1)}
+         [] fVar(PrintName C) then GVO1 GVO2 in
+            {ToGV occ(C ?GVO1)}
             {@BA refer(PrintName C ?GVO2)}
+            {New Core.equation init(GVO1 GVO2 C)}
+         [] fOcc(GV) then C GVO1 GVO2 in
+            {ToGV getCoord(?C)}
+            {ToGV occ(C ?GVO1)}
+            {GV occ(C ?GVO2)}
             {New Core.equation init(GVO1 GVO2 C)}
          [] fWildcard(C) then
             {New Core.skipNode init(C)}
          [] fEscape(FV2 _) then
-            Unnester, UnnestExpression(FV2 FV $)
-         [] fSelf(C) then fVar(PrintName VC) = FV in
+            Unnester, UnnestExpression(FV2 ToGV $)
+         [] fSelf(C) then GVO in
             if @Stateful then
                StateUsed <- true
             else
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'self used outside of method')}
             end
-            {New Core.getSelf init({@BA refer(PrintName VC $)} C)}
+            {ToGV occ(C ?GVO)}
+            {New Core.getSelf init(?GVO C)}
          [] fDollar(C) then
             {@reporter error(coord: C kind: ExpansionError
                              msg: 'illegal use of nesting marker')}
             {New Core.skipNode init(C)}
-         [] fInt(X C) then fVar(PrintName VC) = FV GVO in
-            {@BA refer(PrintName VC ?GVO)}
+         [] fInt(X C) then GVO in
+            {ToGV occ(C ?GVO)}
             {New Core.equation init(GVO {New Core.intNode init(X C)} C)}
-         [] fFloat(X C) then fVar(PrintName VC) = FV GVO in
-            {@BA refer(PrintName VC ?GVO)}
+         [] fFloat(X C) then GVO in
+            {ToGV occ(C ?GVO)}
             {New Core.equation init(GVO {New Core.floatNode init(X C)} C)}
-         [] fRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GV RecordPrintName GRecord GBack
-         in
-            {@BA refer(PrintName C ?GVO)}
-            {GVO getVariable(?GV)}
-            RecordPrintName = case {GV getOrigin($)} of generated then ''
-                              else PrintName
-                              end
-            Unnester, UnnestRecord(RecordPrintName Label Args false
-                                   ?GRecord ?GBack)
-            {New Core.equation init(GVO GRecord C)}|GBack
-         [] fOpenRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GV RecordPrintName GRecord GBack
-         in
-            {@BA refer(PrintName C ?GVO)}
-            {GVO getVariable(?GV)}
-            RecordPrintName = case {GV getOrigin($)} of generated then ''
-                              else PrintName
-                              end
-            Unnester, UnnestRecord(RecordPrintName Label Args true
-                                   ?GRecord ?GBack)
-            {New Core.equation init(GVO GRecord C)}|GBack
-         [] fApply(FE1 FEs C) then N1 N2 in
+         [] fRecord(_ _) then GRecord GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
+            GRecord|GBack
+         [] fOpenRecord(Label Args) then GRecord GBack in
+            Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
+            GRecord|GBack
+         [] fApply(FE1 FEs C) then N1 N2 FV in
             N1 = {DollarsInScope FE1 0}
             N2 = {DollarsInScope FEs 0}
-            if N1 == 0 andthen N2 == 0 then NewFEs in
+            FV = fOcc(ToGV)
+            case N1#N2 of 0#0 then NewFEs in
                NewFEs = {Append FEs [FV]}
                Unnester, UnnestStatement(fApply(FE1 NewFEs C) $)
-            elseif N1 == 0 andthen N2 == 1 then NewFEs in
+            [] 0#1 then NewFEs in
                NewFEs = {ReplaceDollar FEs FV}
                Unnester, UnnestStatement(fApply(FE1 NewFEs C) $)
-            elseif N1 == 1 andthen N2 == 0 then NewFE1 NewFEs in
+            [] 1#0 then NewFE1 NewFEs in
                NewFE1 = {ReplaceDollar FE1 FV}
                NewFEs = {Append FEs [FV]}
                Unnester, UnnestStatement(fApply(NewFE1 NewFEs C) $)
@@ -1266,8 +1280,9 @@ define
                Unnester, UnnestStatement(FE $)
             end
          [] fProc(FE1 FEs FS ProcFlags C) then
-            case FE1 of fDollar(_) then
-               Unnester, UnnestStatement(fProc(FV FEs FS ProcFlags C) $)
+            case FE1 of fDollar(_) then NewFS in
+               NewFS = fProc(fOcc(ToGV) FEs FS ProcFlags C)
+               Unnester, UnnestStatement(NewFS $)
             else
                {@reporter error(coord: {CoordinatesOf FE1} kind: SyntaxError
                                 msg: ('nesting marker expected as designator '#
@@ -1275,8 +1290,9 @@ define
                Unnester, UnnestStatement(FE $)
             end
          [] fFun(FE1 FEs FE2 ProcFlags C) then
-            case FE1 of fDollar(_) then
-               Unnester, UnnestStatement(fFun(FV FEs FE2 ProcFlags C) $)
+            case FE1 of fDollar(_) then NewFS in
+               NewFS = fFun(fOcc(ToGV) FEs FE2 ProcFlags C)
+               Unnester, UnnestStatement(NewFS $)
             else
                {@reporter error(coord: {CoordinatesOf FE1} kind: SyntaxError
                                 msg: ('nesting marker expected as designator '#
@@ -1284,9 +1300,9 @@ define
                Unnester, UnnestStatement(FE $)
             end
          [] fFunctor(FE FDescriptors C) then
-            case FE of fDollar(_) then
-               Unnester,
-               UnnestStatement(fFunctor(FV FDescriptors C) $)
+            case FE of fDollar(_) then NewFS in
+               NewFS = fFunctor(fOcc(ToGV) FDescriptors C)
+               Unnester, UnnestStatement(NewFS $)
             else
                {@reporter
                 error(coord: {CoordinatesOf FE} kind: SyntaxError
@@ -1294,97 +1310,86 @@ define
                Unnester, UnnestStatement(FE $)
             end
          [] fClass(FE1 FDescriptors FMeths C) then
-            case FE1 of fDollar(_) then
-               Unnester, UnnestStatement(fClass(FV FDescriptors FMeths C) $)
+            case FE1 of fDollar(_) then NewFS in
+               NewFS = fClass(fOcc(ToGV) FDescriptors FMeths C)
+               Unnester, UnnestStatement(NewFS $)
             else
                {@reporter
                 error(coord: {CoordinatesOf FE1} kind: SyntaxError
                       msg: 'nesting marker expected in nested class')}
                Unnester, UnnestStatement(FE $)
             end
-         [] fScanner(FE1 Ds Ms Rules Prefix C) then
-            case FE1 of fDollar(_) then
-               Unnester, UnnestStatement(fScanner(FV Ds Ms Rules Prefix C) $)
-            else
-               {@reporter
-                error(coord: {CoordinatesOf FE1} kind: SyntaxError
-                      msg: 'nesting marker expected in nested scanner class')}
-            end
-         [] fParser(FE1 Ds Ms Tokens Rules Expect C) then
-            case FE1 of fDollar(_) then
-               Unnester,
-               UnnestStatement(fParser(FV Ds Ms Tokens Rules Expect C) $)
-            else
-               {@reporter
-                error(coord: {CoordinatesOf FE1} kind: SyntaxError
-                      msg: 'nesting marker expected in nested parser class')}
-            end
-         [] fLocal(FS FE C) then fVar(PrintName VC) = FV GVO NewFS FVs in
-            {@BA refer(PrintName VC ?GVO)}
+         [] fScanner(FE1 _ _ _ _ _) then
+            {@reporter
+             error(coord: {CoordinatesOf FE1} kind: SyntaxError
+                   msg: ('scanner definition not allowed '#
+                         'at expression position'))}
+         [] fParser(FE1 _ _ _ _ _ _) then
+            {@reporter
+             error(coord: {CoordinatesOf FE1} kind: SyntaxError
+                   msg: ('parser definition not allowed '#
+                         'at expression position'))}
+         [] fLocal(FS FE C) then PrintName NewFS FVs in
+            {ToGV getPrintName(?PrintName)}
             {@BA openScope()}
             NewFS = {MakeTrivialLocalPrefix FS FVs nil}
             if   % is a new temporary needed to avoid name clashes?
-               {FoldL FVs fun {$ In FV}
-                             case FV of fVar(X C) then
-                                {@BA bind(X C _)}
-                                {Or In X == PrintName}
-                             [] fDoImport(FI GV _) then
-                                fImportItem(fVar(X C) Fs _) = FI NewFs
-                             in
-                                {@BA bindImport(X C NewFs ?GV)}
-                                Unnester, UnnestImportFeatures(Fs ?NewFs)
-                                {Or In X == PrintName}
-                             end
-                          end false}
-            then NewGV NewFV GS in
+               {FoldL FVs
+                fun {$ In FV}
+                   case FV of fVar(X C) then
+                      {@BA bind(X C _)}
+                      {Or In X == PrintName}
+                   [] fDoImport(fImportItem(fVar(X C) Fs _) GV _) then NewFs in
+                      {@BA bindImport(X C NewFs ?GV)}
+                      Unnester, UnnestImportFeatures(Fs ?NewFs)
+                      {Or In X == PrintName}
+                   end
+                end false}
+            then GVO NewGV GS in
+               {ToGV occ(C ?GVO)}
                {@BA generateForOuterScope('AntiNameClash' C ?NewGV)}
-               NewFV = fVar({NewGV getPrintName($)} C)
                GS = (Unnester, UnnestStatement(NewFS $)|
-                     Unnester, UnnestExpression(FE NewFV $))
+                     Unnester, UnnestExpression(FE NewGV $))
                {New Core.equation init(GVO {NewGV occ(C $)} C)}|
                {MakeDeclaration {@BA closeScope($)} GS C}
             else GS in
                GS = (Unnester, UnnestStatement(NewFS $)|
-                     Unnester, UnnestExpression(FE FV $))
+                     Unnester, UnnestExpression(FE ToGV $))
                {MakeDeclaration {@BA closeScope($)} GS C}
             end
-         [] fBoolCase(FE1 FE2 FE3 C) then FElse C2 in
+         [] fBoolCase(FE1 FE2 FE3 C) then C2 FV FS in
             C2 = {LastCoordinatesOf FE2}
-            FElse = case FE3 of fNoElse(_) then FE3
-                    else fEq(FV FE3 {LastCoordinatesOf FE3})
-                    end
-            Unnester, UnnestStatement(fBoolCase(FE1 fEq(FV FE2 C2) FElse C) $)
-         [] fCase(FE1 FClauses FE2 C) then
-            PrintName GFrontEq GVO GV FV2 FVs FCase NewFV FS
-         in
-            PrintName = FV.1
-            Unnester, UnnestToVar(FE1 'Arbiter' ?GFrontEq ?GVO)
-            {GVO getVariable(?GV)}
-            FV2 = fVar({GV getPrintName($)} {GV getCoord($)})
+            FV = fOcc(ToGV)
+            FS = fBoolCase(FE1 fEq(FV FE2 C2)
+                           case FE3 of fNoElse(_) then FE3
+                           else fEq(FV FE3 {LastCoordinatesOf FE3})
+                           end C)
+            Unnester, UnnestStatement(FS $)
+         [] fCase(FE1 FClauses FE2 C) then FS NewFV FVs PrintName in
+            FS = fCase(FE1 {Map FClauses
+                            fun {$ fCaseClause(FE1 FE2)} C in
+                               C = {LastCoordinatesOf FE2}
+                               fCaseClause(FE1 fEq(NewFV FE2 C))
+                            end}
+                       case FE2 of fNoElse(_) then FE2
+                       else fEq(NewFV FE2 {LastCoordinatesOf FE2})
+                       end C)
             {FoldL FClauses
              fun {$ FVs fCaseClause(FE _)}
                 {GetPatternVariablesExpression FE FVs $}
              end FVs nil}
-            FCase = fCase(FV2 {Map FClauses
-                               fun {$ fCaseClause(FE1 FE2)} C in
-                                  C = {LastCoordinatesOf FE2}
-                                  fCaseClause(FE1 fEq(NewFV FE2 C))
-                               end}
-                          case FE2 of fNoElse(_) then FE2
-                          else fEq(FV FE2 {LastCoordinatesOf FE2})
-                          end C)
+            {ToGV getPrintName(?PrintName)}
             if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
                %% use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
-               NewFV = fVar({NewGV getPrintName($)} C)
-               FS = fAnd(fEq(NewFV FV C) FCase)
+               NewFV = fOcc(NewGV)
+               Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
             else
-               NewFV = FV
-               FS = FCase
+               NewFV = fOcc(ToGV)
+               Unnester, UnnestStatement(FS $)
             end
-            GFrontEq|Unnester, UnnestStatement(FS $)
          [] fLockThen(FE1 FE2 C) then
-            Unnester, UnnestStatement(fLockThen(FE1 fEq(FV FE2 C) C) $)
+            Unnester, UnnestStatement(fLockThen(FE1 fEq(fOcc(ToGV) FE2 C) C) $)
          [] fLock(FE C) then
             if @Stateful then
                StateUsed <- true
@@ -1392,52 +1397,47 @@ define
                {@reporter error(coord: C kind: ExpansionError
                                 msg: 'object lock used outside of method')}
             end
-            Unnester, UnnestStatement(fLock(fEq(FV FE C) C) $)
+            Unnester, UnnestStatement(fLock(fEq(fOcc(ToGV) FE C) C) $)
          [] fThread(FE C) then C2 in
             C2 = {LastCoordinatesOf FE}
-            Unnester, UnnestStatement(fThread(fEq(FV FE C2) C) $)
-         [] fTry(FE FCatch FFinally C) then GV2 FV2 TryFS in
+            Unnester, UnnestStatement(fThread(fEq(fOcc(ToGV) FE C2) C) $)
+         [] fTry(FE FCatch FFinally C) then FV GV2 FV2 TryFS in
+            FV = fOcc(ToGV)
             {@BA generate('TryResult' C ?GV2)}
-            FV2 = fVar({GV2 getPrintName($)} C)
+            FV2 = fOcc(GV2)
             TryFS = fAnd(fEq(FV2 FE C) fEq(FV FV2 C))
             case FCatch of fNoCatch then
                Unnester, UnnestStatement(fTry(TryFS fNoCatch FFinally C) $)
             [] fCatch(FCaseClauses C2) then FVs PrintName NewFV FS NewFCatch in
-               {FoldL FCaseClauses
-                fun {$ FVs fCaseClause(FE _)}
-                   {GetPatternVariablesExpression FE FVs $}
-                end FVs nil}
-               PrintName = FV.1
-               if {Some FVs fun {$ fVar(X _)} X == PrintName end} then GV in
-                  Unnester, GenerateNewVar(PrintName FVs C ?GV)
-                  NewFV = fVar({GV getPrintName($)} C)
-                  FS = fAnd(fEq(FV NewFV C) fTry(TryFS
-                                                 fCatch(NewFCatch C2)
-                                                 FFinally C))
-               else
-                  NewFV = FV
-                  FS = fTry(TryFS fCatch(NewFCatch C2) FFinally C)
-               end
+               FS = fTry(TryFS fCatch(NewFCatch C2) FFinally C)
                NewFCatch = {Map FCaseClauses
                             fun {$ fCaseClause(FE1 FE2)} C in
                                C = {CoordinatesOf FE2}
                                fCaseClause(FE1 fEq(NewFV FE2 C))
                             end}
-               Unnester, UnnestStatement(FS $)
+               {FoldL FCaseClauses
+                fun {$ FVs fCaseClause(FE _)}
+                   {GetPatternVariablesExpression FE FVs $}
+                end FVs nil}
+               {ToGV getPrintName(?PrintName)}
+               if {Some FVs fun {$ fVar(X _)} X == PrintName end} then GV in
+                  Unnester, GenerateNewVar(PrintName FVs C ?GV)
+                  NewFV = fOcc(GV)
+                  Unnester, UnnestStatement(fAnd(fEq(FV NewFV C) FS) $)
+               else
+                  NewFV = FV
+                  Unnester, UnnestStatement(FS $)
+               end
             end
          [] fRaise(_ C) then
             Unnester, UnnestStatement(FE $)
          [] fRaiseWith(_ _ C) then
             Unnester, UnnestStatement(FE $)
          [] fNot(FE C) then
-            Unnester, UnnestStatement(fNot(fEq(FV FE C) C) $)
+            Unnester, UnnestStatement(fNot(fEq(fOcc(ToGV) FE C) C) $)
          [] fFail(C) then
             {New Core.failNode init(C)}
-         [] fCond(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
-            {FoldL FClauses
-             fun {$ FVs fClause(FE _ _)}
-                {GetPatternVariablesExpression FE FVs $}
-             end FVs nil}
+         [] fCond(FClauses FE C) then PrintName FVs NewFV FS in
             FS = fCond({Map FClauses
                         fun {$ fClause(FVs FS FE)}
                            fClause(FVs FS fEq(NewFV FE C))
@@ -1445,20 +1445,21 @@ define
                        case FE of fNoElse(_) then FE
                        else fEq(NewFV FE C)
                        end C)
-            if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
-               %% use a temporary to avoid name clash
-               Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
-               NewFV = fVar({NewGV getPrintName($)} C)
-               Unnester, UnnestStatement(fAnd(fEq(NewFV FV C) FS) $)
-            else
-               NewFV = FV
-               Unnester, UnnestStatement(FS $)
-            end
-         [] fOr(FClauses Kind C) then fVar(PrintName _) = FV FVs NewFV FS in
             {FoldL FClauses
              fun {$ FVs fClause(FE _ _)}
                 {GetPatternVariablesExpression FE FVs $}
              end FVs nil}
+            {ToGV getPrintName(?PrintName)}
+            if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
+               %% use a temporary to avoid name clash
+               Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
+               NewFV = fOcc(NewGV)
+               Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
+            else
+               NewFV = fOcc(ToGV)
+               Unnester, UnnestStatement(FS $)
+            end
+         [] fOr(FClauses Kind C) then PrintName FVs NewFV FS in
             FS = fOr({Map FClauses
                       fun {$ fClause(FLocals FGuard FBody)}
                          case FBody of fNoThen(C) then
@@ -1471,16 +1472,21 @@ define
                             fClause(FLocals FGuard fEq(NewFV FBody C))
                          end
                       end} Kind C)
+            {FoldL FClauses
+             fun {$ FVs fClause(FE _ _)}
+                {GetPatternVariablesExpression FE FVs $}
+             end FVs nil}
+            {ToGV getPrintName(?PrintName)}
             if {Some FVs fun {$ fVar(X _)} X == PrintName end} then NewGV in
                %% use a temporary to avoid name clash
                Unnester, GenerateNewVar(PrintName FVs C ?NewGV)
-               NewFV = fVar({NewGV getPrintName($)} C)
-               Unnester, UnnestStatement(fAnd(fEq(NewFV FV C) FS) $)
+               NewFV = fOcc(NewGV)
+               Unnester, UnnestStatement(fAnd(fEq(NewFV fOcc(ToGV) C) FS) $)
             else
-               NewFV = FV
+               NewFV = fOcc(ToGV)
                Unnester, UnnestStatement(FS $)
             end
-         else
+         else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'statement at expression position')}
             Unnester, UnnestStatement(FE $)
@@ -1497,7 +1503,7 @@ define
             in
                C = {CoordinatesOf Label}
                {@BA generate('UnnestApply' C ?GV)}
-               Unnester, UnnestRecord('' Label Args false ?GRecord ?GBack)
+               Unnester, UnnestRecord(unit Label Args false ?GRecord ?GBack)
                GFrontEqs1 = GBack|GFrontEqr1
                GEquation = {New Core.equation init({GV occ(C $)} GRecord C)}
                GFrontEqs2 = GEquation|GFrontEqr2
@@ -1515,45 +1521,48 @@ define
             GTs = nil
          end
       end
-      meth UnnestConstraint(FE FV ?GFront ?GBack)
+      meth UnnestConstraint(FE ToGV ?GFront ?GBack)
          case FE of fEq(FE1 FE2 _) then GFront1 GBack1 GFront2 GBack2 in
-            Unnester, UnnestConstraint(FE1 FV ?GFront1 ?GBack1)
-            Unnester, UnnestConstraint(FE2 FV ?GFront2 ?GBack2)
+            Unnester, UnnestConstraint(FE1 ToGV ?GFront1 ?GBack1)
+            Unnester, UnnestConstraint(FE2 ToGV ?GFront2 ?GBack2)
             GFront = GFront1|GFront2
             GBack = GBack1|GBack2
-         [] fRecord(Label Args) then
-            fVar(PrintName C) = FV GRecord GVO
-         in
+         [] fRecord(Label Args) then C GVO PrintName GRecord in
+            C = {CoordinatesOf Label}
+            {ToGV occ(C ?GVO)}
+            {ToGV getPrintName(?PrintName)}
             Unnester, UnnestRecord(PrintName Label Args false ?GRecord ?GBack)
-            {@BA refer(PrintName C ?GVO)}
             GFront = {New Core.equation init(GVO GRecord C)}
-         [] fOpenRecord(Label Args) then
-            fVar(PrintName C) = FV GVO GRecord GVO
-         in
+         [] fOpenRecord(Label Args) then C GVO PrintName GRecord in
+            C = {CoordinatesOf Label}
+            {ToGV occ(C ?GVO)}
+            {ToGV getPrintName(?PrintName)}
             Unnester, UnnestRecord(PrintName Label Args true ?GRecord ?GBack)
-            {@BA refer(PrintName C ?GVO)}
             GFront = {New Core.equation init(GVO GRecord C)}
+         [] fOcc(_) then
+            GBack = nil
+            Unnester, UnnestExpression(FE ToGV ?GFront)
          [] fVar(_ _) then
             GBack = nil
-            Unnester, UnnestExpression(FE FV ?GFront)
+            Unnester, UnnestExpression(FE ToGV ?GFront)
          [] fWildcard(_) then
             GFront = nil
             GBack = nil
          [] fEscape(NewFE _) then
             GBack = nil
-            Unnester, UnnestExpression(NewFE FV ?GFront)
+            Unnester, UnnestExpression(NewFE ToGV ?GFront)
          [] fAtom(_ _) then
             GBack = nil
-            Unnester, UnnestExpression(FE FV ?GFront)
+            Unnester, UnnestExpression(FE ToGV ?GFront)
          [] fInt(_ _) then
             GBack = nil
-            Unnester, UnnestExpression(FE FV ?GFront)
+            Unnester, UnnestExpression(FE ToGV ?GFront)
          [] fFloat(_ _) then
             GBack = nil
-            Unnester, UnnestExpression(FE FV ?GFront)
+            Unnester, UnnestExpression(FE ToGV ?GFront)
          else
             GFront = nil
-            Unnester, UnnestExpression(FE FV ?GBack)
+            Unnester, UnnestExpression(FE ToGV ?GBack)
          end
       end
       meth UnnestRecord(PrintName Label Args IsOpen ?GRecord ?GBack)
@@ -1578,14 +1587,13 @@ define
                 FeatPrintName = {Access N}
                 {Assign N {Access N} + 1}
              end
-             case FE of fEq(_ _ C) then GV FV GFront0 GBack0 in
+             case FE of fEq(_ _ C) then GV GFront0 GBack0 in
                 {@BA generate('Equation' C ?GV)}
                 {GV occ(C ?GArg)}
-                FV = fVar({GV getPrintName($)} C)
-                Unnester, UnnestConstraint(FE FV ?GFront0 ?GBack0)
+                Unnester, UnnestConstraint(FE GV ?GFront0 ?GBack0)
                 NewGArgs#(GFront0|GBack|GBack0)
              [] fRecord(Label Args) then
-                NewPrintName = case PrintName of '' then ''
+                NewPrintName = case PrintName of unit then unit
                                else PrintName#'.'#FeatPrintName
                                end
                 GBack0
@@ -1594,7 +1602,7 @@ define
                                        ?GArg ?GBack0)
                 NewGArgs#(GBack|GBack0)
              [] fOpenRecord(Label Args) then
-                NewPrintName = case PrintName of '' then ''
+                NewPrintName = case PrintName of unit then unit
                                else PrintName#'.'#FeatPrintName
                                end
                 GBack0
@@ -1604,7 +1612,7 @@ define
                 NewGArgs#(GBack|GBack0)
              else GBack0 in
                 Unnester, UnnestToTerm(FE 'RecordArg' ?GBack0 ?GArg)
-                case PrintName of '' then skip
+                case PrintName of unit then skip
                 elsecase {GetLast GBack0} of nil then skip
                 elseof GS then
                    {GS setPrintName({VirtualString.toAtom
@@ -1620,13 +1628,15 @@ define
       meth UnnestProc(FEs FS IsLazy C ?GS)
          FMatches FResultVars C2 NewFS FBody0 FBody GBody
       in
-         %% each formal argument in FEs must be a basic constraint;
-         %% all unnested formal arguments must be pairwise distinct variables
+         %% each formal argument in FEs must be a pattern;
+         %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
          NewFS = {FoldR FMatches
                   fun {$ FV#FE#C In}
-                     fCase(FV [fCaseClause(FE In)] fNoElse(C) C)
+                     fCase(FV [fCaseClause(FE In)]
+                           fNoElse(C)   %--** raise a better exception here
+                           C)
                   end FS}
          FBody0 = if IsLazy then CND in
                      CND = {CoordNoDebug C}
@@ -1653,7 +1663,7 @@ define
             if {Member PrintName Occs} then GV in
                NewOccs = Occs
                {@BA generate('Formal' C ?GV)}
-               GdHd = fVar({GV getPrintName($)} C)#fEscape(FE C)#C|GdTl
+               GdHd = fOcc(GV)#fEscape(FE C)#C|GdTl
                RtHd = RtTl
             else
                {@BA bind(PrintName C _)}
@@ -1661,6 +1671,11 @@ define
                GdHd = GdTl
                RtHd = RtTl
             end
+         [] fAnonVar(PrintName C GV) then
+            {@BA generate(PrintName C ?GV)}
+            NewOccs = Occs
+            GdHd = GdTl
+            RtHd = RtTl
          [] fWildcard(C) then
             {@BA generate('Wildcard' C _)}
             NewOccs = Occs
@@ -1670,7 +1685,7 @@ define
             {@BA generate('Result' C ?GV)}
             NewOccs = Occs
             GdHd = GdTl
-            RtHd = fVar({GV getPrintName($)} C)|RtTl
+            RtHd = fOcc(GV)|RtTl
          else C GV in
             C = {CoordinatesOf FE}
             if {IsPattern FE} then skip
@@ -1679,20 +1694,17 @@ define
                 error(coord: C kind: SyntaxError
                       msg: 'only patterns in `proc\'/`fun\' head allowed')}
             end
-            {@BA generate('Formal' C ?GV)}
             NewOccs = Occs
-            GdHd = (fVar({GV getPrintName($)} C)#{EscapePattern FE Occs}#C|
-                    GdTl)
+            {@BA generate('Formal' C ?GV)}
+            GdHd = fOcc(GV)#{EscapePattern FE Occs}#C|GdTl
             RtHd = RtTl
          end
       end
 
-      meth AnalyseImports(Ds ImportFV ?ImportFeatures ?FImportArgs ?ImportFS)
-         case Ds of D|Dr then
-            fImportItem(FV=fVar(PrintName C) Fs FImportAt) = D
+      meth AnalyseImports(Ds ImportGV ?ImportFeatures ?FImportArgs ?ImportFS)
+         case Ds of (fImportItem(FV=fVar(PrintName C) Fs FImportAt)=D)|Dr then
             FFsList FS ImportFeaturesr FInfo FImportArgr ImportFS2
          in
-            {@BA bind(PrintName C _)}
             Unnester, AnalyseImportFeatures(Fs FV ?FFsList ?FS)
             %--** check that all features are distinct
             %--** read corresponding type description from pickle
@@ -1704,8 +1716,8 @@ define
                             [] fNoImportAt then nil
                             end)
             FImportArgs = fColon(fAtom(PrintName C) FInfo)|FImportArgr
-            ImportFS = fAnd(fAnd(fDoImport(D _ ImportFV) FS) ImportFS2)
-            Unnester, AnalyseImports(Dr ImportFV
+            ImportFS = fAnd(fAnd(fDoImport(D _ ImportGV) FS) ImportFS2)
+            Unnester, AnalyseImports(Dr ImportGV
                                      ?ImportFeaturesr ?FImportArgr ?ImportFS2)
          [] nil then
             ImportFeatures = nil
@@ -1715,8 +1727,7 @@ define
       end
       meth AnalyseImportFeatures(Fs FV ?FFsList ?FS)
          case Fs of X|Xr then F FFsListr FSr in
-            case X of (FFV=fVar(PrintName C))#F0 then
-               {@BA bind(PrintName C _)}
+            case X of (FFV=fVar(_ _))#F0 then
                F = F0
                FS = fAnd(fEq(FFV fUnoptimizedDot(FV F0) unit) FSr)
             else
@@ -1743,17 +1754,18 @@ define
          [] nil then nil
          end
       end
-      meth OptimizeImportFeature(FV C X C2 Y FF $) IsImport LeftGVO in
+      meth OptimizeImportFeature(GV C X C2 Y FF C3 $) IsImport LeftGVO in
          {@BA referImport(X C2 Y ?IsImport ?LeftGVO)}
          if {Not IsImport}
             orelse {{LeftGVO getVariable($)} isRestricted($)}
          then DotGVO GFrontEqs1 GFrontEqs2 GTs in
             {RunTime.procs.'.' occ(C ?DotGVO)}
-            Unnester, UnnestApplyArgs([FF FV] ?GFrontEqs1 ?GFrontEqs2 ?GTs)
+            Unnester, UnnestApplyArgs([FF fOcc(GV)]
+                                      ?GFrontEqs1 ?GFrontEqs2 ?GTs)
             GFrontEqs1|GFrontEqs2|
             {New Core.application init(DotGVO LeftGVO|GTs C)}
-         else fVar(Z C3) = FV RightGVO in
-            {@BA refer(Z C3 ?RightGVO)}
+         else RightGVO in
+            {GV occ(C3 ?RightGVO)}
             {New Core.equation init(LeftGVO RightGVO C)}
          end
       end
@@ -1840,18 +1852,17 @@ define
             Unnester, UnnestStatement(FP ?GS1)
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
-         else DollarC GV FV NewFFormals GFormals0 GS1 GS2 in
+         else DollarC GV NewFFormals GFormals0 GS1 GS2 in
             DollarC = {DollarCoord FFormals}
             if N > 1 then
                {@reporter error(coord: DollarC kind: SyntaxError
                                 msg: 'at most one $ in method head allowed')}
             end
             {@BA generate('Result' DollarC ?GV)}
-            FV = fVar({GV getPrintName($)} C)
-            NewFFormals = {ReplaceDollar FFormals FV}
+            NewFFormals = {ReplaceDollar FFormals fOcc(GV)}
             Unnester, UnnestMethFormals(NewFFormals ?GFrontEq ?GFormals0)
             {@BA openScope()}
-            Unnester, UnnestExpression(FP FV ?GS1)
+            Unnester, UnnestExpression(FP GV ?GS1)
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          end
@@ -1877,7 +1888,7 @@ define
             {@BA refer(PrintName C ?GLabel)}
             FFormals = nil
             IsOpen = false
-         [] fEscape(FV _) then fVar(PrintName C) = FV in
+         [] fEscape(fVar(PrintName C) _) then
             {@BA refer(PrintName C ?GLabel)}
             FFormals = nil
             IsOpen = false
@@ -1932,6 +1943,8 @@ define
                {@BA bind(PrintName C ?GV)}
             [] fWildcard(C) then
                {@BA generate('Wildcard' C ?GV)}
+            [] fOcc(X) then
+               GV = X
             end
             FDefault = FE
          [] fMethColonArg(FF0 FV FE) then
@@ -1948,6 +1961,8 @@ define
                {@BA bind(PrintName C ?GV)}
             [] fWildcard(C) then
                {@BA generate('Wildcard' C ?GV)}
+            [] fOcc(X) then
+               GV = X
             end
             FDefault = FE
          end
@@ -1960,25 +1975,20 @@ define
                GFrontEq = nil
                GFormal = {New Core.methFormalWithDefault init(GF GV unit)}
             else
-               if {IsGround FE} then DefaultGV DefaultFV in
+               if {IsGround FE} then DefaultGV in
                   {@BA generateForOuterScope('Default' C ?DefaultGV)}
-                  DefaultFV = fVar({DefaultGV getPrintName($)} C)
-                  Unnester, UnnestExpression(FE DefaultFV ?GFrontEq)
+                  Unnester, UnnestExpression(FE DefaultGV ?GFrontEq)
                   GFormal = {New Core.methFormalWithDefault
                              init(GF GV {DefaultGV occ(C $)})}
-               else FV in
-                  FV = fVar({GV getPrintName($)} C)
+               else
                   GFrontEq = nil
                   GFormal = ({New Core.methFormalOptional init(GF GV)}#
-                             FF#FV#FE)
+                             FF#fOcc(GV)#FE)
                end
             end
          end
       end
-      meth UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2) FVMsg in
-         if {IsDet GVMsg} then
-            FVMsg = fVar({GVMsg getPrintName($)} {GVMsg getCoord($)})
-         end
+      meth UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
          GFormals#GS2 =
          {FoldR GFormals0
           fun {$ GFormal0 GFormals#GS}
@@ -1988,14 +1998,13 @@ define
                 C = {CoordinatesOf FF}
                 if {IsFree GVMsg} then
                    {@BA generateForOuterScope('Message' C ?GVMsg)}
-                   FVMsg = fVar({GVMsg getPrintName($)} C)
                 end
                 {@BA generate('Arbiter' C ?ArbiterGV)}
-                ArbiterFV = fVar({ArbiterGV getPrintName($)} C)
+                ArbiterFV = fOcc(ArbiterGV)
                 {@BA generate('Temp' C ?TempGV)}
-                TempFV = fVar({TempGV getPrintName($)} C)
+                TempFV = fOcc(TempGV)
                 FS0 = fOpApplyStatement('Record.testFeature'
-                                        [FVMsg FF ArbiterFV TempFV] C)
+                                        [fOcc(GVMsg) FF ArbiterFV TempFV] C)
                 FS1 = fBoolCase(ArbiterFV fEq(FV TempFV C) fEq(FV FE C) C)
                 Unnester, UnnestStatement(FS0 ?GS0)
                 Unnester, UnnestStatement(FS1 ?GS1)
@@ -2048,19 +2057,6 @@ define
          end
       end
 
-      meth UnnestCase(GV FClauses FElse C ?GS) GCs GElse in
-         Unnester, UnnestCaseClauses(FClauses ?GCs)
-         GS = {New Core.patternCase init({GV occ(C $)} GCs GElse C)}
-         case FElse of fNoElse(C) then
-            GElse = {New Core.noElse init(C)}
-         else GBody0 GBody in
-            {@BA openScope()}
-            Unnester, UnnestStatement(FElse ?GBody0)
-            GBody = {MakeDeclaration {@BA closeScope($)} GBody0
-                     {CoordinatesOf FElse}}
-            GElse = {New Core.elseNode init(GBody)}
-         end
-      end
       meth UnnestCaseClauses(FCs ?GCs)
          case FCs of FC|FCr then fCaseClause(FPattern FS) = FC GCr in
             if {IsPattern FPattern} then PatternPNs GPattern GS0 GS GVs in
@@ -2125,7 +2121,7 @@ define
          [] fWildcard(C) then GV in
             {@BA generate('Wildcard' C ?GV)}
             {{GV occ(C $)} makeIntoPatternVariableOccurrence($)}
-         [] fEscape(FV _) then fVar(PrintName C) = FV in
+         [] fEscape(fVar(PrintName C) _) then
             if {Member PrintName PatternPNs} then
                {{@BA refer(PrintName C $)}
                 makeIntoPatternVariableOccurrence($)}
@@ -2165,13 +2161,12 @@ define
             Unnester, UnnestStatement(FS ?GBody)
             {MakeDeclaration {@BA closeScope($)} GBody C}
          elseof fTry(FS fNoCatch FFinally C) then
-            CND V FV X FX FException NewFS1 NewFS2
+            CND V FV FX FException NewFS1 NewFS2
          in
             CND = {CoordNoDebug C}
             {@BA generate('ReRaise' C ?V)}
-            FV = fVar({V getPrintName($)} C)
-            {@BA generate('Exception' C ?X)}
-            FX = fVar({X getPrintName($)} C)
+            FV = fOcc(V)
+            FX = fVar('X' C)
             FException = fRecord(fAtom('ex' C) [FX])
             NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit C) CND))
                           fCatch([fCaseClause(FX fEq(FV FException CND))] CND)
@@ -2191,8 +2186,10 @@ define
             GS = {MakeDeclaration {@BA closeScope($)} GBody C}
             {@BA openScope()}
             {@BA generate('Exception' C ?X)}
-            FX = fVar({X getPrintName($)} C)
+            FX = fOcc(X)
             case FCaseClauses of [fCaseClause(fVar(_ _) _)] then
+               FElse = fNoElse(C2)
+            [] [fCaseClause(fWildcard(_) _)] then
                FElse = fNoElse(C2)
             else
                FElse = fOpApplyStatement('Raise' [FX] C2)
@@ -2269,8 +2266,8 @@ define
                NewFE = fOpApply('~' [NewFE1] C)
             else GV in
                {@BA generate('UnnestFD' C ?GV)}
-               NewFE = fVar({GV getPrintName($)} C)
-               Unnester, UnnestExpression(FE NewFE ?GFrontEqs)
+               NewFE = fOcc(GV)
+               Unnester, UnnestExpression(FE GV ?GFrontEqs)
             end
          [] fVar(_ _) then
             GFrontEqs = nil
@@ -2280,19 +2277,18 @@ define
             NewFE = FE
          else C = {CoordinatesOf FE} GV in
             {@BA generate('UnnestFD' C ?GV)}
-            NewFE = fVar({GV getPrintName($)} C)
-            Unnester, UnnestExpression(FE NewFE ?GFrontEqs)
+            NewFE = fOcc(GV)
+            Unnester, UnnestExpression(FE GV ?GFrontEqs)
          end
       end
       meth UnnestFDList(FE ?GFrontEqs ?NewFE)
          case FE of fRecord(L=fAtom('|' _) [FE1 FE2]) then
-            GFrontEq1 GO GFrontEq2 GV NewFE1 NewFE2
+            GFrontEq1 GO GFrontEq2 NewFE1 NewFE2
          in
             Unnester, UnnestToVar(FE1 'UnnestFDList' ?GFrontEq1 ?GO)
             Unnester, UnnestFDList(FE2 ?GFrontEq2 ?NewFE2)
             GFrontEqs = GFrontEq1|GFrontEq2
-            GV = {GO getVariable($)}
-            NewFE1 = fVar({GV getPrintName($)} {GV getCoord($)})
+            NewFE1 = fOcc({GO getVariable($)})
             NewFE = fRecord(L [NewFE1 NewFE2])
          [] fAtom('nil' _) then
             GFrontEqs = nil

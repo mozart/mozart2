@@ -21,39 +21,74 @@
 
 %%
 %% This file defines some auxiliary functions operating on the tuple
-%% representation of Oz programs (described in Doc/TupleSyntax).
+%% representation of Oz programs.
 %%
 
 fun {CoordinatesOf P}
-   % Returns the coordinates of the outermost leftmost construct
-   % in a given phrase P.
-   case P
-   of fAnd(S _) then {CoordinatesOf S}
-   [] fEq(E _ _) then {CoordinatesOf E}
+   %% Returns the coordinates of the outermost leftmost construct
+   %% in a given phrase P.
+   case P of fStepPoint(_ _ C) then C
+   [] fAnd(S _) then {CoordinatesOf S}
+   [] fEq(E _ C) then
+      case {CoordinatesOf E} of unit then C
+      elseof C2 then C2
+      end
    [] fAssign(E _ _) then {CoordinatesOf E}
    [] fOrElse(E _ _) then {CoordinatesOf E}
    [] fAndThen(E _ _) then {CoordinatesOf E}
-   [] fOpApplyStatement(_ Es C) then
-      case Es of [_] then C   % prefix operator
-      else {CoordinatesOf Es.1}   % infix operator
-      end
    [] fOpApply(_ Es C) then
       case Es of [_] then C   % prefix operator
       else {CoordinatesOf Es.1}   % infix operator
       end
+   [] fOpApplyStatement(_ Es C) then
+      case Es of [_] then C   % prefix operator
+      else {CoordinatesOf Es.1}   % infix operator
+      end
    [] fUnoptimizedDot(_ _) then unit
-   [] fFdCompare(_ E _ _) then {CoordinatesOf E}
-   [] fFdIn(_ E _ _) then {CoordinatesOf E}
    [] fObjApply(E _ _) then {CoordinatesOf E}
+   [] fAt(_ C) then C
+   [] fAtom(_ C) then C
+   [] fVar(_ C) then C
+   [] fWildcard(C) then C
+   [] fEscape(_ C) then C
+   [] fSelf(C) then C
+   [] fDollar(C) then C
+   [] fInt(_ C) then C
+   [] fFloat(_ C) then C
    [] fRecord(L _) then {CoordinatesOf L}
    [] fOpenRecord(L _) then {CoordinatesOf L}
-   else P.{Width P}
+   [] fApply(_ _ C) then C
+   [] fProc(_ _ _ _ C) then C
+   [] fFun(_ _ _ _ C) then C
+   [] fFunctor(_ _ C) then C
+   [] fClass(_ _ _ C) then C
+   [] fLocal(_ _ C) then C
+   [] fBoolCase(_ _ _ C) then C
+   [] fCase(_ _ _ C) then C
+   [] fLockThen(_ _ C) then C
+   [] fLock(_ C) then C
+   [] fThread(_ C) then C
+   [] fTry(_ _ _ C) then C
+   [] fRaise(_ C) then C
+   [] fRaiseWith(_ _ C) then C
+   [] fSkip(C) then C
+   [] fFdCompare(_ E _ _) then {CoordinatesOf E}
+   [] fFdIn(_ E _ _) then {CoordinatesOf E}
+   [] fFail(C) then C
+   [] fNot(_ C) then C
+   [] fCond(_ _ C) then C
+   [] fOr(_ _ C) then C
+   [] fCondis(_ C) then C
+   [] fScanner(_ _ _ _ _ C) then C
+   [] fParser(_ _ _ _ _ _ C) then C
+   [] fOcc(_) then unit
+   [] fTypeOf(_) then unit
    end
 end
 
 proc {VarListSub Vs1 Vs2 VsHd VsTl}
-   % Place those elements from Vs2 that are not containted in Vs1
-   % in the difference list VsHd-VsTl (i. e. Vs2 \setminus Vs1).
+   %% Place those elements from Vs2 that are not containted in Vs1
+   %% in the difference list VsHd-VsTl (i.e., Vs2 \setminus Vs1).
    case Vs2 of V|Vr then fVar(X _) = V VsInter in
       if {Some Vs1 fun {$ fVar(Y _)} X == Y end} then VsHd = VsInter
       else VsHd = V|VsInter
@@ -72,14 +107,14 @@ end
 %% -- In expression position, both P1 and P2 are considered
 %%    pattern positions.
 %% Erroneous inputs are ignored in GetPatternVariablesStatement
-%% (i. e., expression at statement position) since it is used
+%% (i.e., expression at statement position) since it is used
 %% by GetPatternVariablesExpression as the default case.
 %%
 %% All variables are represented in tuple syntax.
 
 proc {GetPatternVariablesStatement S VsHd VsTl}
-   % Place the pattern variables of statement S in the difference list
-   % VsHd-VsTl.
+   %% Place the pattern variables of statement S in the difference list
+   %% VsHd-VsTl.
    case S of fVar(_ _) then
       VsHd = S|VsTl
    [] fEq(E _ _) then
@@ -119,8 +154,8 @@ proc {GetPatternVariablesStatement S VsHd VsTl}
 end
 
 proc {GetPatternVariablesExpression E VsHd VsTl}
-   % Place the pattern variables of expression E in the difference list
-   % VsHd-VsTl.
+   %% Place the pattern variables of expression E in the difference list
+   %% VsHd-VsTl.
    case E of fEq(E1 E2 _) then VsInter in
       {GetPatternVariablesExpression E1 VsHd VsInter}
       {GetPatternVariablesExpression E2 VsInter VsTl}

@@ -497,6 +497,32 @@ body
                     {FS.int.convex S} S = {FS.value.new nil}
                  then 1 else 0 end
               end}
+
+             {MiscTest 46
+              fun {$} S SV={FS.var.decl} E R
+              in
+                 R = thread cond SV = {FS.value.new [6#FS.sup]}
+                            then 1 else 0 end
+                     end
+                 {FS.monitorOut SV S}
+                 S = 0|1|2|3|4|5|E
+                 E = nil
+                 R
+              end}
+
+             {MiscTest 47
+              fun {$} S SV={FS.var.decl} R MaxCard = (FS.sup - FS.inf + 1)
+              in
+                 R = thread cond S = [_ _ _ _ _] then 1 else 0 end end
+                 {FS.monitorOut SV S}
+                 {FS.exclude 1 SV}
+                 {FS.exclude 2 SV}
+                 {FS.exclude 3 SV}
+                 {FS.exclude 4 SV}
+                 {FS.exclude 5 SV}
+                 {FS.card SV MaxCard - 5}
+                 R
+              end}
             ])
       ])
 

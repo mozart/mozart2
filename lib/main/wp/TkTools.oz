@@ -21,14 +21,18 @@
 %%% of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
    Tk
+   Compiler(engine quietInterface)
+   Property(get)
+   System(valueToVirtualString printInfo)
 
 export
    error:       Error
    dialog:      Dialog
+   evalDialog:  EvalDialog
    menubar:     MakeMenu
    popupmenu:   PopupMenu
    textframe:   Textframe
@@ -39,7 +43,7 @@ export
    images:      LoadImages
    smoother:    Smoother
 
-body
+define
 
    DefaultFont = local
                     T = {New Tk.toplevel
@@ -274,6 +278,7 @@ body
 
    end
 
+   \insert EvalDialog
 
    local
       BarRelief = raised

@@ -162,9 +162,16 @@ local
    fun {DoMerge X Xr Ys F}
       case Ys of nil then X|Xr
       [] Y|Yr then
-         if {F X Y} then X|{DoMerge Y Yr Xr F}
+         if {F X Y} then X|{DoMerge2 Y Xr Yr F}
          else Y|{DoMerge X Xr Yr F}
          end
+      end
+   end
+   fun {DoMerge2 Y Xs Yr F}
+      case Xs of nil then Y|Yr
+      [] X|Xr then
+         if {F X Y} then X|{DoMerge2 Y Xr Yr F}
+         else Y|{DoMerge X Xr Yr F} end
       end
    end
    fun {DoSort N Xs Ys P}

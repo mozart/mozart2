@@ -67,6 +67,7 @@ define
                IsActive <- true
                case M1 of error(...) then
                   HasErrors <- true
+               else skip
                end
                OutputMessage = M
             [] close() then

@@ -29,9 +29,6 @@
 
 local
    GetUsedHeap = {`Builtin` heapUsed 1}
-   ErrorMsg = Error.msg
-   ErrorFormatPos = Error.formatPos
-   ErrorFormatLine = Error.formatLine
 in
    class Reporter
       prop final
@@ -93,7 +90,7 @@ in
       meth logDeclare(Coord)
          case {self.Compiler getSwitch(compilerpasses $)} then VS in
             case Coord of pos(F L C) then
-               VS = {ErrorFormatPos F L C unit}
+               VS = {Error.formatPos F L C unit}
                {self.Wrapper notify(info('%%% processing query in '#VS#'\n'
                                          Coord))}
             else
@@ -161,8 +158,10 @@ in
             {self.Wrapper notify(toTop())}
          else skip
          end
-         {ErrorMsg
-          proc {$ X} {self.Wrapper notify(info({ErrorFormatLine X} Coord))} end
+         {Error.msg
+          proc {$ X}
+             {self.Wrapper notify(info({Error.formatLine X} Coord))}
+          end
           error(kind: Kind msg: Msg
                 body: case Coord == unit then Body
                       else {Append Body [Coord]}
@@ -179,8 +178,10 @@ in
                 kind: Kind <= unit
                 msg: Msg <= unit
                 body: Body <= nil)
-         {ErrorMsg
-          proc {$ X} {self.Wrapper notify(info({ErrorFormatLine X} Coord))} end
+         {Error.msg
+          proc {$ X}
+             {self.Wrapper notify(info({Error.formatLine X} Coord))}
+          end
           warn(kind: Kind msg: Msg
                body: case Coord == unit then Body
                      else {Append Body [Coord]}

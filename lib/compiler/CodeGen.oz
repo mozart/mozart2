@@ -1589,7 +1589,7 @@ local
             end
             {CS endDefinition(BodyVInstr FormalRegs nil ?GRegs ?Code)}
             {CS newReg(?SlowMeth)}
-            Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter2)
+            Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter2)
          end
          case self.hasDefaults then Args Constr VO VInter3 in
             Args = {Map @formalArgs
@@ -1715,7 +1715,7 @@ local
             end
             {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?SlowMeth)}
-            Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter1)
+            Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter1)
          end
          VInter1 = vEquateRecord(_ '|' 2 Reg
                                  [{@label makeRecordArgument(CS X X $)}

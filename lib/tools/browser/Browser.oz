@@ -145,6 +145,7 @@ local
    PrimObjectTermObject
    PrimClassTermObject
    ListTermObject
+   FConsTermObject
    TupleTermObject
    HashTupleTermObject
    RecordTermObject

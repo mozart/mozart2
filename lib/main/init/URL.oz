@@ -271,7 +271,10 @@ local
    end
 in
    fun {NormalizePath Path} L = {VirtualString.toString Path} in
-      {NoTildeOrDot {NoDoubling  L L}}
+      case L
+      of  &h|&t|&t|&p|&:|&/|&/|_ then L
+      elseof &f|&t|&p|&:|&/|&/|_ then L
+      else {NoTildeOrDot {NoDoubling  L L}} end
    end
 end
 
@@ -335,8 +338,7 @@ end
 %% default handler
 
 proc {DefaultHandler REP Meth MethName MSG}
-   PATH = case REP.type of file(_) then {NormalizePath REP.string}
-          else REP.string end
+   PATH = {NormalizePath REP.string}
 in
    {MSG '...['#PATH#'] (default)'}
    {HApply PATH Meth}

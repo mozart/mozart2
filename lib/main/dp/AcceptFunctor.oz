@@ -81,24 +81,38 @@ define
 
    proc{AcceptSelect FD}
       NewFD in
+      try
 \ifdef DBG
-      {System.showInfo 'AcceptedSelect on '#FD}
+         {System.showInfo 'AcceptedSelect on '#FD}
 \endif
-      {FDHandler getResource}
+         {FDHandler getResource}
 \ifdef DBG
-      {System.showInfo 'Got resource'}
+         {System.showInfo 'Got resource'}
 \endif
-      {OS.acceptSelect FD}
+         {OS.acceptSelect FD}
 \ifdef DBG
-      {System.showInfo 'After acceptSelect '#FD}
+         {System.showInfo 'After acceptSelect '#FD}
 \endif
-      {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
+         {OS.acceptNonblocking FD _ _ NewFD} %InAddress InIPPort NewFD}
 \ifdef DBG
-      {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'}
+         {System.showInfo 'Accepted channel (old '#FD#' new '#NewFD#')'}
 \endif
-      thread
-         {AcceptProc NewFD}
+         thread
+            {AcceptProc NewFD}
+            {FDHandler returnResource}
+         end
+\ifdef DBG
+      % If there is an exception here we can't do much but return the
+      % resources and close the socket. The most likely exception is
+      % a EPIPE on the new FD.
+      catch X then
+         {System.show exception_AcceptSelect(X)}
+\else
+      catch _ then
+         skip
+\endif
          {FDHandler returnResource}
+         {OS.close NewFD}
       end
       {AcceptSelect FD}
    end

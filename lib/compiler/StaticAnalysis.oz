@@ -370,7 +370,8 @@ local
          [] pair(T1 T2) then
             {DetTypeTests.pairOf T1 T2 X}
          else
-            raise illegalTypeDeclaration(T) end
+            {Exception.raiseError compiler(internal illegalTypeDeclaration(T))}
+            unit
          end
       end
    end
@@ -932,7 +933,7 @@ local
          case @'self'
          of _|S then 'self' <- S
          else
-            raise popEmptyStack end
+            {Exception.raiseError compiler(internal popEmptyStack)}
          end
       end
       meth getSelf($)
@@ -1707,7 +1708,7 @@ in
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
-               raise crashed end
+               {Exception.raiseError compiler(internal typeCheckN)}
             else skip end
             0
          [] VO|VOr then
@@ -1723,7 +1724,7 @@ in
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
-               raise crashed end
+               {Exception.raiseError compiler(internal typeCheckN)} unit
             end
          end
       end
@@ -1739,7 +1740,7 @@ in
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
-               raise crashed end
+               {Exception.raiseError compiler(internal detCheck)}
             else skip end
             true
          [] VO|VOr then
@@ -1753,7 +1754,7 @@ in
                 error(coord: @coord
                       kind:  SAFatalError
                       msg:   'builtin arity does not match declaration')}
-               raise crashed end
+               {Exception.raiseError compiler(internal detCheck)} unit
             end
          end
       end

@@ -27,7 +27,13 @@
     E = {Error.dispatch Exc}
     T = 'compiler engine error'
  in
-    case E of compiler(invalidQuery M) then
+    case E of compiler(internal X) then
+       {Error.format T
+        'Internal compiler error'
+        [hint(l: 'Additional information' m: oz(X))
+         line('please send a bug report to oz-bugs@ps.uni-sb.de')]
+        Exc}
+    elseof compiler(invalidQuery M) then
        {Error.format T
         'Invalid query'
         [hint(l: 'Query' m: oz(M))]

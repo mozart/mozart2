@@ -138,21 +138,23 @@ local
              proc {$ P}
                 case {HasFeature Name2Bits P}
                 then {BitArray.'or' S Name2Bits.P}
-                else raise crashed end end
+                else {Exception.raiseError compiler(internal constrain)}
+                end
              end}
          end
          {ForAll Neg
           proc {$ N}
              case {HasFeature Name2Bits N}
              then {BitArray.nimpl S Name2Bits.N}
-             else raise crashed end end
+             else {Exception.raiseError compiler(internal contrain)}
+             end
           end}
       end
 
       proc {Encode Pos Neg ?S}
          case Pos==nil
          then
-            raise illegalType end
+            {Exception.raiseError compiler(internal illegalType)}
          else
             S = {BitArray.new 1 N}
             {Constrain Pos Neg S}
@@ -192,7 +194,8 @@ local
           case
              {Member N Names}
           then
-             raise illegalPartialOrderSpecification end
+             {Exception.raiseError
+              compiler(internal illegalPartialOrderSpecification)}
           else
              Name2Bits.N = {Constrain Ns nil}
           end
@@ -228,7 +231,7 @@ in
        literal# tuple
        atom   # literal
        name   # literal
-       nil    # atom
+       nilAtom# atom
        cons   # tuple
        bool   # name
        'unit' # name
@@ -256,8 +259,8 @@ in
        def(comparable        [number atom])
        def(recordOrChunk     [record chunk])
        def(recordCOrChunk    [recordC chunk])
-       def(list              [nil cons])
-       def(string            [nil cons])
+       def(list              [nilAtom cons])
+       def(string            [nilAtom cons])
        def(procedure         ['procedure/0'
                               'procedure/1'
                               'procedure/2'
@@ -288,7 +291,7 @@ in
          elsecase {IsAtom V}
          then
             case V == nil
-            then {OzTypes.encode nil nil}
+            then {OzTypes.encode nilAtom nil}
             else {OzTypes.encode atom nil}
             end
          elsecase {IsName V}

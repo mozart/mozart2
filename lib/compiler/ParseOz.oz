@@ -25,41 +25,28 @@ local
    ParseVirtualString = ParserLib.parser_parseVirtualString
 in
    fun {ParseOzFile FileName Reporter GetSwitch Defines}
-      Res VS
+      Res#Messages = {ParseFile FileName
+                      options(gumpSyntax: {GetSwitch gump}
+                              systemVariables: {GetSwitch system}
+                              defines: Defines)}
    in
-      Res = {ParseFile FileName
-             options(showInsert: {GetSwitch showinsert}
-                     gumpSyntax: {GetSwitch gump}
-                     systemVariables: {GetSwitch system}
-                     defines: Defines
-                     errorOutput: ?VS)}
+      {ForAll {Reverse Messages} Reporter}
       case Res of fileNotFound then
          {Reporter error(kind: 'compiler directive error'
                          msg: ('could not open file "'#FileName#
                                '" for reading'))}
-      [] parseErrors(N) then
-         {Reporter addErrors(N)}
-         {Reporter userInfo(VS)}
-      else
-         {Reporter userInfo(VS)}
+      else skip
       end
       Res
    end
 
    fun {ParseOzVirtualString VS Reporter GetSwitch Defines}
-      Res VS2
+      Res#Messages = {ParseVirtualString VS
+                      options(gumpSyntax: {GetSwitch gump}
+                              systemVariables: {GetSwitch system}
+                              defines: Defines)}
    in
-      Res = {ParseVirtualString VS
-             options(showInsert: {GetSwitch showinsert}
-                     gumpSyntax: {GetSwitch gump}
-                     systemVariables: {GetSwitch system}
-                     defines: Defines
-                     errorOutput: ?VS2)}
-      case Res of parseErrors(N) then
-         {Reporter addErrors(N)}
-      else skip
-      end
-      {Reporter userInfo(VS2)}
+      {ForAll {Reverse Messages} Reporter}
       Res
    end
 end

@@ -952,7 +952,7 @@ local
          PredicateRef StateReg
       in
          {@designator getVariable(?V)}
-         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         case @coord of unit then FileName = '' Line = 1 Col = 0
          elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
          PrintName = case {V getOrigin($)} of generated then @printName
@@ -1537,7 +1537,7 @@ local
          end
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
-         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         case @coord of unit then FileName = '' Line = 1 Col = 0
          elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
          local PredId NLiveRegs FormalRegs AllRegs BodyVInstr GRegs Code in
@@ -1688,7 +1688,7 @@ local
       in
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
-         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         case @coord of unit then FileName = '' Line = 1 Col = 0
          elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
          local

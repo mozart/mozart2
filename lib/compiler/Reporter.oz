@@ -122,6 +122,13 @@ in
          else skip
          end
       end
+      meth logInsert(FileName)
+         case {self.Compiler getSwitch(showinsert $)} then
+            {self.Wrapper notify(info('%%%         inserted file "'#
+                                      FileName#'"\n'))}
+         else skip
+         end
+      end
       meth logPhase(VS)
          Reporter, ProfileEnd()
          Reporter, ProfileStart(phase)

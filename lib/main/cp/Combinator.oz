@@ -24,16 +24,10 @@ functor
 
 import
 
+   Space
+
    BootDictionary(waitOr: DictWaitOr)
    at 'x-oz://boot/Dictionary'
-
-   Space(waitStable: WaitStableSpace
-         merge:      MergeSpace
-         new:        NewSpace
-         discard:    DiscardSpace
-         choose:     ChooseSpace
-         askUnsafe:  AskSpace)
-
 
    FDB(int:           FdInt
        bool:          FdBool
@@ -86,17 +80,17 @@ define
    end
 
    fun {NewGuard C}
-      {NewSpace {Guardify C}}
+      {Space.new {Guardify C}}
    end
 
    proc {CommitGuard G}
-      {{MergeSpace G}}
+      {{Space.merge G}}
    end
 
    local
       proc {Init N C G A}
          if N>0 then NG={NewGuard C.N} in
-            G.N=NG {Dictionary.put A N {AskSpace NG}}
+            G.N=NG {Dictionary.put A N {Space.askVerbose NG}}
             {Init N-1 C G A}
          end
       end
@@ -110,7 +104,7 @@ define
 
    proc {DiscardGuards Is G}
       case Is of nil then skip
-      [] I|Ir then {DiscardSpace G.I} {DiscardGuards Ir G}
+      [] I|Ir then {Space.discard G.I} {DiscardGuards Ir G}
       end
    end
 
@@ -118,7 +112,7 @@ define
       proc {Cond1 C E}
          G={NewGuard C}
       in
-         case {Deref {AskSpace G}}
+         case {Deref {Space.askVerbose G}}
          of failed    then {E}
          [] entailed  then {CommitGuard G}
          [] suspended then {WUHFI}
@@ -135,11 +129,11 @@ define
                {Resolve G A N-1 B E}
             [] succeeded(suspended) then
                {Dictionary.remove A I}
-               {DiscardSpace G.I}
+               {Space.discard G.I}
                {Resolve G A N-1 true E}
             [] alternatives(_) then
                {Dictionary.remove A I}
-               {DiscardSpace G.I}
+               {Space.discard G.I}
                {Resolve G A N-1 true E}
             [] succeeded(entailed) then
                {Dictionary.remove A I}
@@ -210,12 +204,12 @@ define
    end
 
    proc {Choice C}
-      {C.{ChooseSpace {Width C}}}
+      {C.{Space.choose {Width C}}}
    end
 
    local
       proc {CommitOrDiscard G J I}
-         if I==J then {CommitGuard G} else {DiscardSpace G} end
+         if I==J then {CommitGuard G} else {Space.discard G} end
       end
       proc {Control G A J I}
          {WaitOr A I}
@@ -239,13 +233,13 @@ define
             {For 1 N 1 proc {$ J}
                           G={NewGuard C.J}
                        in
-                          thread {Control G {AskSpace G} J I} end
+                          thread {Control G {Space.askVerbose G} J I} end
                        end}
-            {WaitStableSpace}
+            {Space.waitStable}
             if {IsDet I} then skip else
                T={List.toTuple '#' {GetDomList I}}
             in
-               I=T.{ChooseSpace {Width T}}
+               I=T.{Space.choose {Width T}}
             end
          end
       end
@@ -255,7 +249,7 @@ define
       S={Space.new proc {$ X} X=unit {P} end}
    in
       thread
-         case {Deref {AskSpace S}}
+         case {Deref {Space.askVerbose S}}
          of failed    then skip
          [] entailed  then fail
          [] suspended then {WUHFI}
@@ -268,7 +262,7 @@ define
    in
       {FdBool B}
       thread
-         case {Deref {AskSpace S}}
+         case {Deref {Space.askVerbose S}}
          of failed    then B=0
          [] entailed  then B=1
          [] suspended then {WUHFI}

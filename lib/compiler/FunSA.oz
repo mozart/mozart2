@@ -4,7 +4,7 @@ import
    FS.{include var subset value reflect isIn}
    Search.{SearchOne='SearchOne'}
    Foreign.pointer
-   System.{eq valueToVirtualString}
+   System.{eq valueToVirtualString printName}
    \insert Misc-new.env
    ImAConstruction
    ImAValueNode

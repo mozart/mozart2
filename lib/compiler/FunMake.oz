@@ -66,6 +66,7 @@ in
                         'GetBuiltinInfo':        Builtins.getBuiltinInfo)}
          Code      = {FunCode.apply
                       c('Foreign':               Foreign
+                        'System':                System
                         'Misc':                  Misc
                         'ImAVariableOccurrence': ImAVariableOccurrence
                         'Core':                  Core.core

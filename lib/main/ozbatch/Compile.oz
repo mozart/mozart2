@@ -111,6 +111,7 @@ prepare
                      debuginfo(char: &g
                                alias: [controlflowinfo#true
                                        staticvarnames#true])
+                     dynamicvarnames(type: bool)
 
                      %% compiler options
                      maxerrors(type: int)
@@ -171,6 +172,7 @@ prepare
    '--(no)controlflowinfo         Include control flow information.\n'#
    '--(no)staticvarnames          Include static variable name information.\n'#
    '-g, --(no)debuginfo           The two switches above.\n'#
+   '--(no)dynamicvarnames         Dynamically assign variable names.\n'#
    '\n'#
    'The following compiler options can be set:\n'#
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#

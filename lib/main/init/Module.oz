@@ -2,7 +2,11 @@
 %%% Author:
 %%%   Christian Schulte <schulte@dfki.de>
 %%%
+%%% Contributor:
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%
 %%% Copyright:
+%%%   Denys Duchier, 1998
 %%%   Christian Schulte, 1998
 %%%
 %%% Last change:
@@ -22,21 +26,19 @@
 
 local
 
-   local
-      BootUrl   = {URL.make "x-oz://boot/DUMMY"}
-      SystemUrl = {URL.make "x-oz://system/DUMMY"}
-   in
-      OzScheme  = BootUrl.scheme = SystemUrl.scheme
-      %% BootLoc   = BootUrl.netloc
-      %% SystemLoc = SystemUrl.netloc
-   end
+   BootUrl    = {URL.make "x-oz://boot/DUMMY"}
+   SystemUrl  = {URL.make "x-oz://system/DUMMY"}
+   ContribUrl = {URL.make "x-oz://contrib/DUMMY"}
+   OzScheme  = BootUrl.scheme = SystemUrl.scheme
 
-  local
+   local
       UrlDefaults = \insert '../../url-defaults.oz'
    in
       FunExt     = UrlDefaults.'functor'
       MozartHome = UrlDefaults.'home'
       ContribHome= UrlDefaults.'contrib'
+      SystemHomeUrl  = {URL.toBase MozartHome}
+      ContribHomeUrl = {URL.toBase ContribHome}
    end
 
    proc {Swallow _}
@@ -49,14 +51,13 @@ local
 
    SystemModules = local
                       Functors = \insert '../../functor-defaults.oz'
-                      BaseUrl  = {URL.make "x-oz://system/DUMMY"}
                    in
                       {List.toRecord map
                        {Map {Append Functors.volatile
                              {Append Functors.lib Functors.tools}}
                         fun {$ ModName}
                            ModName #
-                           {URL.resolve BaseUrl
+                           {URL.resolve SystemUrl
                             {URL.make ModName}}
                         end}}
                    end
@@ -86,6 +87,8 @@ local
    Link  = {NewName}
    Apply = {NewName}
 
+   proc {TraceOFF _ _} skip end
+
    class BaseManager
       prop locking
       feat ModuleMap
@@ -95,7 +98,7 @@ local
       end
 
       meth !Link(Url ?Module)
-         {self trace(intLink({URL.toAtom Url}))}
+         {self trace('link' Url)}
          %% Return module from "Url"
          lock Key={URL.toAtom Url} ModMap=self.ModuleMap in
             case {Dictionary.member ModMap Key} then
@@ -116,7 +119,7 @@ local
       end
 
       meth !Apply(Url Func $)
-         {self trace(intApply({URL.toAtom Url}))}
+         {self trace('apply' Url)}
          %% Applies a functor and returns a module
          IM={Record.mapInd Func.'import'
              fun {$ ModName Info}
@@ -133,7 +136,7 @@ local
       end
 
       meth Enter(Url Module)
-         {self trace(intEnter({URL.toAtom Url}))}
+         {self trace('enter' Url)}
          %% Stores "Module" under "Url"
          lock Key={URL.toAtom Url} in
             if {Dictionary.member self.ModuleMap Key} then
@@ -187,21 +190,30 @@ in
    export
       root:    RM
       manager: Manager
+      trace:   ApiTrace
 
    body
 
-      Trace = case {OS.getEnv 'OZ_TRACE_MODULE'}==false then Swallow
-              else
-                 System.show
-              end
+      proc {TraceON X1 X2}
+         {System.printError 'Module manager: '#X1#' '#{URL.toVs X2}}
+      end
+
+      Trace = {NewCell
+               case {OS.getEnv 'OZ_TRACE_MODULE'}==false
+               then TraceOFF else TraceON end}
+      ApiTrace =
+      trace(set:proc {$ B}
+                   {Assign Trace if B then TraceON else TraceOFF end}
+                end
+            get:fun {$ B} {Access Trace}==TraceON end)
 
       PLATFORM = case {Property.get 'platform'} of Name#Cpu
                  then Name#'-'#Cpu else 'unknown' end
 
       class RootManager from BaseManager
 
-         meth trace(What)
-            {Trace What}
+         meth trace(M1 M2)
+            {{Access Trace} M1 M2}
          end
 
          meth load(Url $)
@@ -214,50 +226,64 @@ in
          end
 
          meth native(Url $)
-            {self trace(native({URL.toAtom Url}))}
+            {self trace('native module' Url)}
             {Foreign.load {URL.toVs Url}#'-'#PLATFORM}
          end
 
+         meth systemResolve(Auth Url $)
+            {URL.resolve
+             case Auth
+             of system  then SystemHomeUrl
+             [] contrib then ContribHomeUrl
+             else raise badUrl end end
+             case {CondSelect Url path unit}
+             of abs(L) then
+                L1 = {Reverse L}
+                L2 =
+                case L1 of (Last#Bool)|Prefix then
+                   if {Member &. Last} then L
+                   else {Reverse ({VirtualString.toString
+                                   Last#FunExt}#Bool)|Prefix} end
+                else raise badUrl end end
+             in
+                {Adjoin Url url(scheme:unit authority:unit
+                                path:rel(L2))}
+             else raise badUrl end end}
+         end
+
+         meth systemApply(Auth Url $)
+            U = {self systemResolve(Auth Url $)}
+         in
+            if {IsNative U}
+            then {self native(U $)}
+            else {self Apply(Url {Pickle.load U} $)} end
+         end
+
          meth system(Url $)
-            {self trace(systemOrBoot({URL.toAtom Url}))}
-            case {CondSelect Url path unit} of abs([Name#false]) then
-               %% drop the extension if any
-               ModName = {String.token Name &. $ _}
-            in
-               try
-                  Authority = {StringToAtom {CondSelect Url authority ""}}
-               in
-                  case Authority
-                  of boot then
-                     {self trace(boot({URL.toAtom Url}))}
-                     {Boot.manager ModName}
-                  [] system then
-                     {self trace(system({URL.toAtom Url}))}
-                     if {IsNative Url}
-                     then {self native(MozartHome#Name $)}
-                     else
-                        {self Apply(Url
-                                    {Pickle.load
-                                     MozartHome#ModName#FunExt} $)}
-                     end
-                  [] contrib then
-                     {self trace(contrib({URL.toAtom Url}))}
-                     if {IsNative Url}
-                     then {self native(ContribHome#Name $)}
-                     else
-                        {self Apply(Url
-                                    {Pickle.load
-                                     ContribHome#ModName#FunExt} $)}
-                     end
-                  else
-                     raise module(urlSyntax {URL.toAtom Url}) end
-                  end
-               catch error(url(load _) ...) then
-                  raise module(systemNotFound {URL.toAtom Url}) end
-               [] error(system(unknownBootModule _) ...) then
-                  raise module(bootNotFound {URL.toAtom Url}) end
-               end
-            else raise module(urlSyntax {URL.toAtom Url}) end end
+            {self trace('system method' Url)}
+            try
+               case {StringToAtom {CondSelect Url authority ""}}
+               of boot then
+                  {self trace('boot module' Url)}
+                  case {CondSelect Url path unit}
+                  of abs([Name#false]) then
+                     %% drop the extension of any
+                     {Boot.manager {String.token Name &. $ _}}
+                  else raise badUrl end end
+               [] system then
+                  {self trace('system module' Url)}
+                  {self systemApply(system Url $)}
+               [] contrib then
+                  {self trace('contrib module' Url)}
+                  {self systemApply(contrib Url $)}
+               else raise badUrl end end
+            catch error(url(load _) ...) then
+               raise module(systemNotFound {URL.toAtom Url}) end
+            [] error(system(unknownBootModule _) ...) then
+               raise module(bootNotFound {URL.toAtom Url}) end
+            [] badUrl then
+               raise module(urlSyntax {URL.toAtom Url}) end
+            end
          end
 
       end

@@ -567,7 +567,7 @@ local
       Base = {URL_make BASE}
       Rel  = {URL_make REL}
    in
-      if {HasFeature Rel scheme} then Rel % already absolute
+      if {CondSelect Rel scheme unit}\=unit then Rel % already absolute
       else
          Fields = {Record.toDictionary Rel}
       in
@@ -576,13 +576,13 @@ local
             case Scheme of unit then skip else
                {Dictionary.put Fields scheme Scheme}
             end
-            if {Dictionary.member Fields authority}
+            if {Dictionary.condGet Fields authority unit}\=unit
             then raise done end end
             Authority = {CondSelect Base authority unit}
             case Authority of unit then skip else
                {Dictionary.put Fields authority Authority}
             end
-            if {Dictionary.member Fields device}
+            if {Dictionary.condGet Fields device unit}\=unit
             then raise done end end
             Device = {CondSelect Base device unit}
             case Device of unit then skip else

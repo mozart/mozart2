@@ -96,7 +96,8 @@ in
          Foreign = {RM link(url:'x-oz://system/Foreign' $)}
 
          %% The real Module module
-         RealModule = 'export'(manager: Module.manager)
+         RealModule = 'export'(manager: Module.manager
+                               trace:   Module.trace)
       in
          %% Register boot modules
          {RM enter(url:'x-oz://boot/URL' BURL)}

@@ -89,11 +89,10 @@ local
          % minimize set values after proPagation
          {ForAll Names
           proc {$ Nam}
-             choice
-                S = N2S.Nam
-             in
-                S = {FS.value.make {FS.reflect.lowerBound S}}
-             end
+             S = N2S.Nam
+          in
+             {Space.waitStable}
+             S = {FS.value.make {FS.reflect.lowerBound S}}
           end}
       end
 

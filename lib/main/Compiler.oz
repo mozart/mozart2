@@ -30,12 +30,9 @@ in
    local
       \insert 'compiler/InsertAll.oz'
 
-      GetOPI = {`Builtin` 'getOPICompiler' 1}
-
       Compiler = compiler(compilerClass: CompilerClass
                           genericInterface: GenericInterface
-                          quietInterface: QuietInterface
-                          getOPI: GetOPI)
+                          quietInterface: QuietInterface)
    in
       \insert 'Compiler.env'
    end

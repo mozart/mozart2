@@ -40,7 +40,6 @@ import
    System(printName)
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
-   RunTime(procValues)
 export
    InternalAssemble
    Assemble
@@ -139,24 +138,6 @@ define
          IsCopyableName         = CompilerSupport.isCopyableName
          IsCopyablePredicateRef = CompilerSupport.isCopyablePredicateRef
 
-         local
-            fun {FindProcSub Xs P}
-               case Xs of X|Xr then
-                  if RunTime.procValues.X == P then
-                     '<R: '#{Value.toVirtualString X 0 0}#'>'
-                  else
-                     {FindProcSub Xr P}
-                  end
-               [] nil then
-                  {Value.toVirtualString P 0 0}
-               end
-            end
-         in
-            fun {FindProc P}
-               {FindProcSub {Arity RunTime.procValues} P}
-            end
-         end
-
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
                {ListToVirtualString Vr
@@ -212,8 +193,6 @@ define
                      {Value.toVirtualString Val 0 0}
                   end
                end
-            elseif {IsProcedure Val} then
-               {FindProc Val}
             elseif {ForeignPointer.is Val} then I in
                %% foreign pointers are assigned increasing integers
                %% in order of appearance so that diffs are sensible

@@ -58,7 +58,7 @@ body
       local GetNumber in
          fun{GetNumber CarInfo OpInfo}
             case OpInfo#CarInfo
-            of (H|R)#((C#Nb)|T) then if H=1
+            of (H|R)#((C#Nb)|T) then cond H=1
                                      then Nb+{GetNumber T R}
                                      else {GetNumber T R}
                                      end

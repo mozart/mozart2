@@ -47,12 +47,12 @@ body
                        X >:2 % unit-commit of second clause X in 6..10
                                % Y in 0..4
                        Y>:2    % X in 9..10
-                       if C=1 then 1 else 0 end
+                       cond C=1 then 1 else 0 end
                     end}
 
                    {MiscTest 2
                     fun {$}
-                       if Xs [X Y Z] = Xs
+                       cond Xs [X Y Z] = Xs
                        in Xs = {FD.dom 0#10}
 
                           condis X+4=<:Y
@@ -79,12 +79,12 @@ body
                        Y::5#10 Z::1#5
                        X=5
                        Z>:2
-                       if C=0 then 1 else 0 end
+                       cond C=0 then 1 else 0 end
                     end}
 
                    {MiscTest 4
                     fun {$}
-                       if Xs [X Y Z V]=Xs
+                       cond Xs [X Y Z V]=Xs
                           C
                        in Xs = {FD.dom 0#10}
                           C::0#1
@@ -118,7 +118,7 @@ body
                        end
 
                        S = {SEA CDProb}
-                       if {ForAll S proc{$ X} X.2 = entailed end} then
+                       cond {ForAll S proc{$ X} X.2 = entailed end} then
                           1
                        else
                           0
@@ -142,7 +142,7 @@ body
                           {FD.distribute ff S}
                        end
                        S = {SEA CDProb}
-                       if {ForAll S proc{$ X} X.2 = entailed end} then
+                       cond {ForAll S proc{$ X} X.2 = entailed end} then
                           1
                        else
                           0
@@ -160,7 +160,7 @@ body
                        [Y Z X] = {FD.dom  0#FD.sup}
 
                        X=Y X=Z
-                       if X=1 Y=1 Z=1 then
+                       cond X=1 Y=1 Z=1 then
                           1
                        else
                           0
@@ -177,7 +177,7 @@ body
                     in
                        local L1 L2 R in [L1 L2] = {FD.dom 0#10}
                           R = thread
-                                 if B in B :: 0#1  or B=1 L1+3>:L2
+                                 cond B in B :: 0#1  or B=1 L1+3>:L2
                                                       L2+4>:L1
                                                    [] B=0 {CDproc L1 L2 3 4}
                                                    end
@@ -189,7 +189,7 @@ body
                        end
                     end}
 
-% if Abs(X+1) = 1 then ...
+% cond Abs(X+1) = 1 then ...
                    {MiscTest 9
                     fun {$}
                        proc {Abs X Y D}
@@ -200,14 +200,14 @@ body
                        X Y R
                     in
                        [X Y] = {FD.dom 1#5}
-                       R = thread if {Abs X Y 1}
+                       R = thread cond {Abs X Y 1}
                                   then 1 else 0 end
                            end
                        X=1 Y=2
                        R
                     end}
 
-% if Abs(X+1) = 1 then ...
+% cond Abs(X+1) = 1 then ...
                    {MiscTest 10
                     fun {$}
                        proc {Abs X Y D}
@@ -218,7 +218,7 @@ body
                        X Y R
                     in
                        [X Y] = {FD.dom 1#5}
-                       R = thread if {Abs X Y 1} then 1 else 0 end end
+                       R = thread cond {Abs X Y 1} then 1 else 0 end end
                        X=4 Y=3
                        R
                     end}
@@ -234,7 +234,7 @@ body
                           then {Nth Board (I-1)*N + J} else OutOfBounds end
                        end
                     in
-                       if
+                       cond
 
                           Choices
                           = thread
@@ -269,12 +269,12 @@ body
 
                    {MiscTest 12
                     fun {$}
-                       if condis 7=:9 [] 0=:1 end then 0 else 1 end
+                       cond condis 7=:9 [] 0=:1 end then 0 else 1 end
                     end}
 
                    {MiscTest 13
                     fun {$}
-                       if condis 7=:7 [] 1=:1 end then 1 else 0 end
+                       cond condis 7=:7 [] 1=:1 end then 1 else 0 end
                     end}
 
                   ])

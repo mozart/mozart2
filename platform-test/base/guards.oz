@@ -38,25 +38,25 @@ body
    Return =
    guards(
          proc {$}
-            if skip then {Start 1} else fail end
+            cond skip then {Start 1} else fail end
             {Final 1}
 
-            if skip then {Start 1}
+            cond skip then {Start 1}
             [] fail then fail
             else fail
             end
             {Final 1}
 
-            if fail then fail
+            cond fail then fail
             [] skip then {Start 1}
             else fail
             end
             {Final 1}
 
-            if fail then fail else {Start 1} end
+            cond fail then fail else {Start 1} end
             {Final 1}
 
-            if fail then fail
+            cond fail then fail
             [] fail then fail
             else
                {Start 1}
@@ -66,7 +66,7 @@ body
             %% vars equal suspension
             local X Y Sync in
                thread
-                  if X=Y then {Next 1 2} Sync=1
+                  cond X=Y then {Next 1 2} Sync=1
                   else fail
                   end
                end
@@ -78,7 +78,7 @@ body
 
          local X Sync in
             thread
-               if X = 1 then {Next 1 2} Sync=1 end
+               cond X = 1 then {Next 1 2} Sync=1 end
             end
             {Start 1}
             X = 1
@@ -88,7 +88,7 @@ body
 
          local X Sync in
             thread
-               if X = 1 then {Next 1 2} Sync=1
+               cond X = 1 then {Next 1 2} Sync=1
                [] X = 2 then fail
                end
             end
@@ -100,7 +100,7 @@ body
 
          local X Sync in
             thread
-               if X = 1 then fail
+               cond X = 1 then fail
                [] X = 2 then {Next 1 2} Sync=1
                end
             end
@@ -112,7 +112,7 @@ body
 
 local X Sync in
    thread
-      if X = 1 then fail
+      cond X = 1 then fail
       else {Next 1 2} Sync=1
       end
    end
@@ -122,12 +122,12 @@ local X Sync in
 end
 {Final 2}
 
-if if _ = 1 then skip else fail end then {Start 1} else fail end
+cond cond _ = 1 then skip else fail end then {Start 1} else fail end
 {Final 1}
 
 % -- deep
-if
-   if fail then fail
+cond
+   cond fail then fail
    else fail
    end
 then fail
@@ -149,7 +149,7 @@ local X Sync in
 end
 {Final 2}
 
-if X in
+cond X in
    X = {Id 4}
    or X = 1 then fail
    [] X = 2 then fail
@@ -166,7 +166,7 @@ or skip
 end
 
 
-if or skip
+cond or skip
    [] skip then fail
    end
 then {Start 1}
@@ -183,8 +183,8 @@ local X in
 end
 
 local X in
-   if or X = 1
-      [] skip
+   cond or X = 1 then skip
+      [] skip then skip
       end
    then {Start 1}
    else fail
@@ -204,7 +204,7 @@ local X in
    X = 1
 end
 
-if X in
+cond X in
    thread
       or X = 1
       [] X = 2
@@ -225,7 +225,7 @@ local X in
    X = 2
 end
 
-if X in
+cond X in
    thread
       or X = 1
       [] X = 2
@@ -254,7 +254,7 @@ end
 local
    proc {Dummy} skip end
 in
-   if or skip then {Dummy}
+   cond or skip then {Dummy}
       [] fail
       end
    then {Start 1}
@@ -270,7 +270,7 @@ end
 local
    proc {Dummy} skip end
 in
-   if or fail
+   cond or fail then skip
       [] skip then {Dummy}
       end
    then {Start 1}
@@ -295,7 +295,7 @@ end
 local
    proc {Dummy} skip end
 in
-   if X in
+   cond X in
       thread
          or X = 1 then {Dummy}
          [] X = 2 then fail
@@ -320,7 +320,7 @@ local X Sync in
 end
 {Final 2}
 
-if X in
+cond X in
    thread
       or X = 1 then fail
       [] X = 2 then skip
@@ -332,19 +332,19 @@ else fail
 end
 {Final 1}
 
-if X in or thread X = 1 end [] fail end then skip else fail end
+cond X in or thread X = 1 end [] fail end then skip else fail end
 
-if X in  or X = 1 [] fail end then skip else fail end
+cond X in  or X = 1 [] fail end then skip else fail end
 
-if X in  thread or thread X = 1 end [] fail end end then skip else fail end
+cond X in  thread or thread X = 1 end [] fail end end then skip else fail end
 
-if X in  thread or X = 1 [] fail end end then skip else fail end
+cond X in  thread or X = 1 [] fail end end then skip else fail end
 
 local X Sync in
    thread
-      if
+      cond
          or
-            if X = 1 then skip else fail end
+            cond X = 1 then skip else fail end
          [] fail
          end
       then Sync=1
@@ -362,7 +362,7 @@ end
 local P Y Sync in
    proc {P A Y}
       thread
-         if Y = 1 then (A == ok)=true Sync=1
+         cond Y = 1 then (A == ok)=true Sync=1
          [] Y = 2 then fail
          else fail
          end
@@ -378,7 +378,7 @@ end
 local P Y Sync in
    proc {P A Y}
       thread
-         if Y = 1 then fail
+         cond Y = 1 then fail
          [] Y = 2 then (A==ok)=true Sync=1
          else fail
          end
@@ -394,7 +394,7 @@ end
 local P Y Sync in
    proc {P A Y}
       thread
-         if Y = 1 then fail
+         cond Y = 1 then fail
          else (A==ok)=true Sync=1
          end
       end
@@ -408,7 +408,7 @@ end
 
 local P in
    proc {P A B}
-      if A = f(_) then {Start 1}
+      cond A = f(_) then {Start 1}
       [] A = g(_) then {Next 1 2}
       else {Next 2 3}
       end
@@ -422,9 +422,9 @@ end
 % propagation test
 local X Y Sync in
    thread
-      if
-         if X = 1 then Y = 1 else fail end
-         if Y = 1 then skip else fail end
+      cond
+         cond X = 1 then Y = 1 else fail end
+         cond Y = 1 then skip else fail end
       then
          {Next 1 2} Sync=1
       else fail
@@ -432,8 +432,8 @@ local X Y Sync in
    end
    {Start 1}
    X = 1
-   {Thread.preempt {Thread.this}} % fire if
-   {Thread.preempt {Thread.this}} % fire if
+   {Thread.preempt {Thread.this}} % fire cond
+   {Thread.preempt {Thread.this}} % fire cond
    or Y = 1 [] fail end
    {Wait Sync}
    {Final 2}
@@ -441,10 +441,10 @@ end
 
 local X Y Sync in
    thread
-      if
+      cond
          thread
             or Z in X = 1 Y = 1
-               if Z = 1
+               cond Z = 1
                then skip
                else fail
                end
@@ -452,7 +452,7 @@ local X Y Sync in
             [] X = 2 Y = 2 then fail
             end
          end
-         if Y = 1 then skip
+         cond Y = 1 then skip
          else fail
          end
       then
@@ -472,7 +472,7 @@ or thread skip end [] thread fail end end
 or thread fail end [] thread skip end end
 
 % fail both
-if X Y in
+cond X Y in
    thread Y = go or X = 1 [] X = 2 end end
    {Wait Y} X=3
 then fail
@@ -483,8 +483,8 @@ end
 local
    proc {Loop} {Loop} end
 in
-   if X in
-      thread if X = 1 then raise a end else fail end end
+   cond X in
+      thread cond X = 1 then raise a end else fail end end
       X = 2
       {Loop}
    then

@@ -116,7 +116,7 @@ body
             {Loop.for 1 NumberOfPossibleGroups 1
              proc{$ G}
                 thread
-                   if O.G=:0
+                   cond O.G=:0
                    then {ForAll Ls proc{$ L} L\=:G end}
                    else skip
                    end

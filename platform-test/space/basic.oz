@@ -74,7 +74,7 @@ body
                                   S = thread
                                          {Space.new
                                           proc {$ X}
-                                             if X = 1 then U = 1 end
+                                             cond X = 1 then U = 1 end
                                           end}
                                       end
                                in
@@ -156,7 +156,7 @@ body
                                               [] Z = 2 then Y = 2
                                               end
                                            end
-                                           if Y = 1 D = 1 then F = 1
+                                           cond Y = 1 D = 1 then F = 1
                                            [] Y = 2 D = 1 then F = 2
                                            else fail
                                            end
@@ -226,7 +226,7 @@ body
                                        {SearchAll
                                         proc {$ X}
                                            U=1
-                                           if U=1 then skip end
+                                           cond U=1 then skip end
                                            thread
                                               dis X = 1
                                               []
@@ -250,7 +250,7 @@ body
                                         {SearchAll proc {$ X} H in
                                                       dis X=1
                                                       [] dis X=a
-                                                            if U1=1 then H=1
+                                                            cond U1=1 then H=1
                                                             else fail
                                                             end
                                                             dis H=1 [] V1=2 end
@@ -264,7 +264,7 @@ body
                                         {SearchAll proc {$ X} H in
                                                       dis X=1
                                                       [] dis X=a
-                                                            if U2=1 then H=1
+                                                            cond U2=1 then H=1
                                                             else fail
                                                             end
                                                             dis H=1 [] V2=2 end
@@ -410,7 +410,7 @@ body
                                                     [] X = 3
                                                     end
                                                  end
-                                                 if U = 1 then skip end
+                                                 cond U = 1 then skip end
                                               end} # Y
                                          dis Y=a [] Y=b end
                                       end}

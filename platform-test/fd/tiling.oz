@@ -21,9 +21,10 @@ body
 
 
    proc {StateConstraints Choice Xs Ys Ss SX SY}
-      if Choice = 1 then   Ss=[3 2 2 1 1 1] SX=5 SY=4
-      elseif Choice = 2 then Ss=[18 15 14 10 9 8 7 4 1] SX=32 SY=33
-      elseif Choice = 3 then  Ss=[50 42 37 35 33 29 27 25 24 19 18 17 16 15 11 9 8 7 6 4 2] SX=112 SY=112
+      case Choice
+      of 1 then   Ss=[3 2 2 1 1 1] SX=5 SY=4
+      [] 2 then Ss=[18 15 14 10 9 8 7 4 1] SX=32 SY=33
+      [] 3 then  Ss=[50 42 37 35 33 29 27 25 24 19 18 17 16 15 11 9 8 7 6 4 2] SX=112 SY=112
       else fail
       end
       {GenCoords Xs Ys Ss SX SY}
@@ -53,7 +54,7 @@ body
          local B SS in
             B :: 0#1
             thread
-               if X=<:Pos X>=:Pos-S+1 then B=1
+               cond X=<:Pos X>=:Pos-S+1 then B=1
                [] X>=:Pos+1 then B=0
                [] X=<:Pos-S then B=0
                [] B=1 then X=<:Pos  X>=:Pos-S+1

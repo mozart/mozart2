@@ -49,7 +49,7 @@ body
          end
       end
       fun {Take N Xs}
-         case N==0 then nil else Xs.1|{Take N-1 Xs.2} end
+         if N==0 then nil else Xs.1|{Take N-1 Xs.2} end
       end
    in
       proc {WP Xs Ys}
@@ -78,7 +78,7 @@ body
 
    fun {EQ X Y}
       R1 = thread
-              if X=Y then true else false end
+              cond X=Y then true else false end
            end
       R2 = thread
               X == Y
@@ -96,11 +96,11 @@ body
    end
 
    proc {MAT X F}
-      {WT thread if X={F} then true else false end end}
+      {WT thread cond X={F} then true else false end end}
    end
 
    proc {MAF X F}
-      {WF thread if X={F} then true else false end end}
+      {WF thread cond X={F} then true else false end end}
    end
 
    Return=
@@ -179,7 +179,7 @@ body
                     in
                        C^big=C1
                        thread
-                          if C^big=10 then R=true else R=false end
+                          cond C^big=10 then R=true else R=false end
                        end
                        C1=10
                        {WT R}
@@ -332,7 +332,7 @@ body
                      in
                         X^foo=X1
                         {WF thread
-                               if A in A^foo=23 X=A then true else false end
+                               cond A in A^foo=23 X=A then true else false end
                             end}
                         X1=24
                      end)
@@ -343,7 +343,7 @@ body
                      in
                         X^foo=X1
                         {WT thread
-                               if A in A^foo=23 X=A then true else false end
+                               cond A in A^foo=23 X=A then true else false end
                             end}
                         X1=23
                      end)
@@ -354,7 +354,7 @@ body
                      in
                         X^foo=X1
                         {WF thread
-                               if A in X=A A^foo=23 then true else false end
+                               cond A in X=A A^foo=23 then true else false end
                             end}
                         X1=24
                      end)
@@ -365,7 +365,7 @@ body
                      in
                         X^foo=X1
                         {WT thread
-                               if A in X=A A^foo=23 then true else false end
+                               cond A in X=A A^foo=23 then true else false end
                             end}
                         X1=23
                      end)
@@ -376,7 +376,7 @@ body
                      in
                         X^foo=X1
                         {WF thread
-                               if A in A^bar=100 A^foo=23 X=A then true
+                               cond A in A^bar=100 A^foo=23 X=A then true
                                else false
                                end
                             end}
@@ -390,7 +390,7 @@ body
                      in
                         X^foo=X1
                         {WT thread
-                               if A in A^bar=100 A^foo=23 X=A then true
+                               cond A in A^bar=100 A^foo=23 X=A then true
                                else false
                                end
                             end}
@@ -405,7 +405,7 @@ body
                         X^foo=X1
                         X^bar=101
                         {WF thread
-                               if A in A^bar=100 A^foo=23 X=A then true
+                               cond A in A^bar=100 A^foo=23 X=A then true
                                else false
                                end
                             end}
@@ -419,7 +419,7 @@ body
                         X^foo=X1
                         X^bar=100
                         {WT thread
-                               if A in A^bar=100 A^foo=23 X=A then true
+                               cond A in A^bar=100 A^foo=23 X=A then true
                                else false
                                end
                             end}
@@ -445,11 +445,11 @@ body
                         thread X^G=6 end
                         F=f
                         G=g
-                        if X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
                         else skip end
-                        if X^f=_ then {RFL X^f}='2'
+                        cond X^f=_ then {RFL X^f}='2'
                         else skip end
-                        if X^g=_ then {RFL X^g}='6'
+                        cond X^g=_ then {RFL X^g}='6'
                         else skip end
                      end)
             keys: [ofs record entailment])
@@ -461,13 +461,13 @@ body
                         thread X^G=6 end
                         F=f
                         G=g
-                        if X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
                         else skip end
-                        if X.f=_ X.g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X.f=_ X.g=_ then {RFL X}='_(f:2 g:6 ...)'
                         else skip end
-                        if X^f=_ then {RFL X^f}='2'
+                        cond X^f=_ then {RFL X^f}='2'
                         else skip end
-                        if X^g=_ then {RFL X^g}='6'
+                        cond X^g=_ then {RFL X^g}='6'
                         else skip end
                      end)
             keys: [ofs record entailment])
@@ -484,7 +484,7 @@ body
                         G=g
                         X^f=_
                         X^g=_
-                        if A B in X^f=A X^g=B {Wait A} {Wait B} then
+                        cond A B in X^f=A X^g=B {Wait A} {Wait B} then
                            {EQT X^f 2}
                            {EQT X^g 6}
                            {EQT {Label X} banzai}
@@ -515,14 +515,14 @@ body
         t31(entailed(proc {$}
                         X
                      in
-                        {WF if X^foo=_ X=cat(bar:_ baz:23) then true
+                        {WF cond X^foo=_ X=cat(bar:_ baz:23) then true
                             else false
                             end}
                      end)
             keys: [ofs record entailment])
 
         t32(entailed(proc {$}
-                        {WF if X in X^foo=_ X=cat(bar:_ baz:23) then true
+                        {WF cond X in X^foo=_ X=cat(bar:_ baz:23) then true
                             else false
                             end}
                      end)
@@ -722,43 +722,43 @@ body
                         A B C D
                         fun {T A}
                            [thread
-                               if A.a=12 A.b=13 then true
+                               cond A.a=12 A.b=13 then true
                                else false
                                end
                             end
                             thread
-                               if A.a=13 A.b=12 then true
+                               cond A.a=13 A.b=12 then true
                                else false
                                end
                             end
                             thread
-                               if A.a=12 A.b=12 then true
+                               cond A.a=12 A.b=12 then true
                                else false
                                end
                             end
                             thread
-                               if A.a=13 A.b=13 then true
+                               cond A.a=13 A.b=13 then true
                                else false
                                end
                             end
 
                             thread
-                               if A^a=12 A^b=13 then true
+                               cond A^a=12 A^b=13 then true
                                else false
                                end
                             end
                             thread
-                               if A^a=13 A^b=12 then true
+                               cond A^a=13 A^b=12 then true
                                else false
                                end
                             end
                             thread
-                               if A^a=12 A^b=12 then true
+                               cond A^a=12 A^b=12 then true
                                else false
                                end
                             end
                             thread
-                               if A^a=13 A^b=13 then true
+                               cond A^a=13 A^b=13 then true
                                else false
                                end
                             end]
@@ -849,15 +849,15 @@ body
                         X Y Z
                      in
                         X=foo(a:1 ...)
-                        thread if {DA X _} then skip end end
+                        thread cond {DA X _} then skip end end
                         X=foo(a:1)
 
                         Y=foo(a:1 ...)
-                        thread if {DA Y _} then skip end end
+                        thread cond {DA Y _} then skip end end
                         Y=foo(a:1 b:2)
 
                         Z=foo(a:1 ...)
-                        thread if {DA Z _} then skip end end
+                        thread cond {DA Z _} then skip end end
                         Z^b=2
                         Z^a=1
                         Z=foo(a:1 b:2)
@@ -1002,9 +1002,9 @@ body
                         {TellRecord foo X}
                         {WidthC X W}
                         X^a=1
-                        if W>:0 then
+                        cond W>:0 then
                            X^b=2
-                           if W>:1 then
+                           cond W>:1 then
                               W<:4
                               {Label X foo}
                               W=2
@@ -1022,7 +1022,7 @@ body
                         {WidthC X W}
                         X^a=1
                         W<:3
-                        if W::1#2 then
+                        cond W::1#2 then
                            W=2
                            {Label X foo}
                            X^b=2

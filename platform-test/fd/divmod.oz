@@ -36,7 +36,7 @@ body
    Return=
    fd([divmod([
                one(equal(fun {$}
-                            if {Map T fun {$ E} {FD.reflect.dom E} end}  =
+                            cond {Map T fun {$ E} {FD.reflect.dom E} end}  =
                                [
                                 [3#93]
                                 [10] [3] [6#100]

@@ -37,7 +37,7 @@ body
              {Loop.for I1 N-I1 1
               proc {$ I2}
                  local I3=!I1+!I2 in
-                    if  I1=I2
+                    cond  I1=I2
                     then skip
                     else
                        {Not {And M.I1 {And M.I2 M.I3}} 1}

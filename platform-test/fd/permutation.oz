@@ -17,7 +17,7 @@ body
 
    fun {SkipDet Xs}
       case Xs
-      of X|Xr then if {FD.reflect.size X}=1 then {SkipDet Xr}
+      of X|Xr then cond {FD.reflect.size X}=1 then {SkipDet Xr}
                    else Xs end
       [] nil then nil
       end
@@ -27,15 +27,17 @@ body
       case Xs
       of X|Xr then
          local SizeX={FD.reflect.size X} in
-            if SizeX=1 then
+            cond SizeX=1 then
                {Choose Xr HoleTail HoleHead MinYet SizeYet Min Ys}
-            elseif (SizeX<SizeYet) = true then
-               local NewHole in
-                  HoleTail=MinYet|HoleHead
-                  {Choose Xr Ys NewHole X SizeX Min NewHole}
-               end
             else
-               Ys=X|{Choose Xr HoleTail HoleHead MinYet SizeYet Min}
+               if (SizeX<SizeYet) then
+                  local NewHole in
+                     HoleTail=MinYet|HoleHead
+                     {Choose Xr Ys NewHole X SizeX Min NewHole}
+                  end
+               else
+                  Ys=X|{Choose Xr HoleTail HoleHead MinYet SizeYet Min}
+               end
             end
          end
       [] nil then Min=MinYet Ys=nil HoleTail=HoleHead

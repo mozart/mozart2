@@ -116,7 +116,7 @@ body
                    X = {New class $ from BaseObject
                                attr a
                                meth test
-                                  if thread skip end then skip end
+                                  cond thread skip end then skip end
                                end
                             end
                         noop}
@@ -164,7 +164,7 @@ body
                     keys:[fixedBug object space])
 
          bug(proc {$}
-                if Ele in
+                cond Ele in
                    Ele={Id a}
                    dis Ele=a then skip
                    [] Ele=b then Ele=b
@@ -243,8 +243,8 @@ body
 
          failure(
                  proc {$}
-                    if
-                       try or fail [] fail end
+                    cond
+                       try or fail then skip [] fail then skip end
                        catch failure(...) then skip end
                     then skip
                     end
@@ -255,7 +255,7 @@ body
                 proc {$}
                    X=1|X
                 in
-                   case {IsString X} then fail else skip end
+                   if {IsString X} then fail else skip end
                 end
                 keys:[fixedBug string])
 

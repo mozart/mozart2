@@ -39,7 +39,7 @@ body
    fun {SkipDet Xs}
       %% Skip all integers
       case Xs
-      of X|Xr then if {GetSize X}=1 then {SkipDet Xr} else Xs end
+      of X|Xr then cond {GetSize X}=1 then {SkipDet Xr} else Xs end
       [] nil then nil
       end
    end
@@ -50,15 +50,17 @@ body
       case Xs
       of X|Xr then
          local SizeX={GetSize X} in
-            if SizeX=1 then
+            cond SizeX=1 then
                {Choose Xr HoleTail HoleHead MinYet SizeYet Min Ys}
-            elseif (SizeX<SizeYet) = true then
-               local NewHole in
-                  HoleTail=MinYet|HoleHead
-                  {Choose Xr Ys NewHole X SizeX Min NewHole}
-               end
             else
-               Ys=X|{Choose Xr HoleTail HoleHead MinYet SizeYet Min}
+               if (SizeX<SizeYet) then
+                  local NewHole in
+                     HoleTail=MinYet|HoleHead
+                     {Choose Xr Ys NewHole X SizeX Min NewHole}
+                  end
+               else
+                  Ys=X|{Choose Xr HoleTail HoleHead MinYet SizeYet Min}
+               end
             end
          end
       [] nil then Min=MinYet Ys=nil HoleTail=HoleHead
@@ -107,7 +109,7 @@ body
    %% Reorder a list such that most centered elements are first
 
    proc {SplitHalf Xs N As Bs}
-      if N=0 then As={Reverse Xs} Bs=nil
+      cond N=0 then As={Reverse Xs} Bs=nil
       else
          local X Xr in
             Xs=X|Xr

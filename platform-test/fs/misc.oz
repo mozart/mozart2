@@ -31,7 +31,7 @@ body
    Return=
    fs([misc([{MiscTest 1
               fun {$}
-                 if {FS.intersect
+                 cond {FS.intersect
                      {FS.value.new [1]} {FS.value.new [2]}}
                     = FS.value.empty then 1 else 0 end
               end}
@@ -43,7 +43,7 @@ body
                  R
               in
                  R = thread
-                        if FSVar1 = {FS.value.new [1 3 5 7 9]}
+                        cond FSVar1 = {FS.value.new [1 3 5 7 9]}
                         then 1 else {Show no} 0 end
                      end
                  FSVar1 = FSVar2
@@ -57,7 +57,7 @@ body
                  R
               in
                  R = thread
-                        if FSVar1 = {MkFSetVar 6 6 [1 3 5 7 9] [10 12 14 15]}
+                        cond FSVar1 = {MkFSetVar 6 6 [1 3 5 7 9] [10 12 14 15]}
                         then 1 else 0 end
                      end
                  FSVar1 = FSVar2
@@ -70,7 +70,7 @@ body
                  R
               in
                  R = thread
-                        if FSVal = {FS.value.new [1 3 5 7 9]} in FSVal = FSVar
+                        cond FSVal = {FS.value.new [1 3 5 7 9]} in FSVal = FSVar
                         then 1 else 0 end
                      end
                  FSVar = {FS.value.new [1 3 5 7 9]}
@@ -79,12 +79,12 @@ body
 
              {MiscTest 5
               fun {$}
-                 if {FS.value.new [1 3 5 7 9]} = {FS.value.new [1 3 5 7 9]}
+                 cond {FS.value.new [1 3 5 7 9]} = {FS.value.new [1 3 5 7 9]}
                  then 1 else 0 end
               end}
 
              {MiscTest 6
-              fun {$} if {FS.value.new [1 3 5 7 9]} = 1
+              fun {$} cond {FS.value.new [1 3 5 7 9]} = 1
                       then 0 else 1 end
               end}
 
@@ -94,7 +94,7 @@ body
                  R
               in
                  R = thread
-                        if FSVar2 = {MkFSetVar 5 5 [5 7 9] [10 12 14]}
+                        cond FSVar2 = {MkFSetVar 5 5 [5 7 9] [10 12 14]}
                         in FSVar1 = FSVar2
                         then 1 else 0 end
                      end
@@ -108,7 +108,7 @@ body
                  R
               in
                  R = thread
-                        if FSVar2 = {MkFSetVar 7 7 [5 7 9 11] [10 12 14]}
+                        cond FSVar2 = {MkFSetVar 7 7 [5 7 9 11] [10 12 14]}
                         in FSVar1 = FSVar2
                         then 1 else 0 end
                      end
@@ -122,7 +122,7 @@ body
                  R
               in
                  R = thread
-                        if FSVar2 = {MkFSetVar 7 7 [1 3 5] [14 16 18]}
+                        cond FSVar2 = {MkFSetVar 7 7 [1 3 5] [14 16 18]}
                         in FSVar1 = FSVar2
                         then 1 else 0 end
                      end
@@ -132,7 +132,7 @@ body
 
              {MiscTest 10
               fun {$}
-                 if {MkFSetVar 2 2 nil [1]}={MkFSetVar 2 2 [1] nil}
+                 cond {MkFSetVar 2 2 nil [1]}={MkFSetVar 2 2 [1] nil}
                  then 0 else 1 end
               end}
 
@@ -141,7 +141,7 @@ body
                  X = {FS.var.new [1#3] [1#7]}
                  R
               in
-                 R = thread if {FS.reified.isIn 5 X 1} then 1 else 0 end end
+                 R = thread cond {FS.reified.isIn 5 X 1} then 1 else 0 end end
 
                  X = {FS.var.new [1#5] [1#5]}
                  R
@@ -152,7 +152,7 @@ body
                  X = {FS.var.new [1#3] [1#7]}
                  R
               in
-                 R = thread if {FS.reified.isIn 6 X 0} then 1 else 0 end end
+                 R = thread cond {FS.reified.isIn 6 X 0} then 1 else 0 end end
 
                  X = {FS.var.new [1#5] [1#5]}
                  R
@@ -161,31 +161,31 @@ body
              {MiscTest 13
               fun {$} X in
                  X = {FS.var.new [1#5] [1#7]}
-                 if {FS.reflect.lowerBound X} = [1#5] then 1 else 0 end
+                 cond {FS.reflect.lowerBound X} = [1#5] then 1 else 0 end
               end}
 
              {MiscTest 14
               fun {$} X in
                  X = {FS.var.new [1#5] [1#7]}
-                 if {FS.reflect.unknown X} = [6#7] then 1 else 0 end
+                 cond {FS.reflect.unknown X} = [6#7] then 1 else 0 end
               end}
 
              {MiscTest 15
               fun {$} Y in
                  Y = {FS.var.new [1#7] [1#7]}
-                 if {FS.reflect.unknown Y} = nil then 1 else 0 end
+                 cond {FS.reflect.unknown Y} = nil then 1 else 0 end
               end}
 
              {MiscTest 16
               fun {$} Y in
                  Y = {FS.var.new [1#7] [1#7]}
-                 if {FS.reflect.lowerBound Y} = [1#7] then 1 else 0 end
+                 cond {FS.reflect.lowerBound Y} = [1#7] then 1 else 0 end
               end}
 
              {MiscTest 17
               fun {$} X R in
                  X = {FS.var.new [1#5] [1#7]}
-                 R = thread if X = {FS.value.new [1#6]} then 1 else 0 end end
+                 R = thread cond X = {FS.value.new [1#6]} then 1 else 0 end end
                  {FS.include 6 X}
                  {FS.exclude 7 X}
                  R
@@ -194,7 +194,7 @@ body
              {MiscTest 18
               fun {$} X R in
                  X = {FS.var.new [1#5] [1#7]}
-                 R = thread if {FS.exclude 7 X} then 1 else 0 end end
+                 R = thread cond {FS.exclude 7 X} then 1 else 0 end end
 
                  {FS.include 6 X}
                  {FS.exclude 7 X}
@@ -205,7 +205,7 @@ body
               fun {$} X R
               in
                  X = {FS.var.new [1#5] [1#7]}
-                 R = thread if {FS.include 6 X} then 1 else 0 end end
+                 R = thread cond {FS.include 6 X} then 1 else 0 end end
 
                  {FS.include 6 X}
                  {FS.exclude 7 X}
@@ -266,28 +266,28 @@ body
 
              {MiscTest 22
               fun {$}
-                 if {FS.union {FS.var.upperBound [1#5]} FS.value.empty}
+                 cond {FS.union {FS.var.upperBound [1#5]} FS.value.empty}
                     = {FS.var.upperBound [1#5]}
                  then 1 else 0 end
               end}
 
              {MiscTest 23
               fun {$}
-                 if {FS.union FS.value.empty {FS.var.upperBound [1#5]}}
+                 cond {FS.union FS.value.empty {FS.var.upperBound [1#5]}}
                     = {FS.var.upperBound [1#5]}
                  then 1 else 0 end
               end}
 
              {MiscTest 24
               fun {$}
-                 if {FS.intersect FS.value.universal {FS.var.upperBound [1#5]}}
+                 cond {FS.intersect FS.value.universal {FS.var.upperBound [1#5]}}
                     = {FS.var.upperBound [1#5]}
                  then 1 else 0 end
               end}
 
              {MiscTest 25
               fun {$}
-                 if {FS.intersect {FS.var.upperBound [1#5]} FS.value.universal}
+                 cond {FS.intersect {FS.var.upperBound [1#5]} FS.value.universal}
                     = {FS.var.upperBound [1#5]}
                  then 1 else 0 end
               end}
@@ -352,7 +352,7 @@ body
               fun {$}  X Y R
               in
                  X = {FS.var.upperBound [1#10]} Y = {FS.var.upperBound [1#10]}
-                 R = thread if {FS.distinct X Y} then 1 else 0 end end
+                 R = thread cond {FS.distinct X Y} then 1 else 0 end end
                  {FS.include 1 X}
                  {FS.exclude 1 Y}
                  R
@@ -362,7 +362,7 @@ body
               fun {$} X Y R
               in
                  X = {FS.var.upperBound [1#10]} Y = {FS.var.upperBound [1#10]}
-                 R = thread if {FS.distinct X Y} then 0 else 1 end end
+                 R = thread cond {FS.distinct X Y} then 0 else 1 end end
                  X = {FS.value.new [1#10]} Y = {FS.value.new [1#10]}
                  R
               end}
@@ -370,7 +370,7 @@ body
              {MiscTest 31
               fun {$} X = {FS.var.decl} Y = {FS.var.decl} R
               in
-                 R = thread if {FS.subset X Y} then 1 else 0 end end
+                 R = thread cond {FS.subset X Y} then 1 else 0 end end
 
                  {FS.include 1 Y}
                  {FS.include 2 Y}
@@ -383,7 +383,7 @@ body
              {MiscTest 32
               fun {$} S SV={FS.var.decl} E R
               in
-                 R = thread if SV = {FS.value.new [1 2 3 4 5]}
+                 R = thread cond SV = {FS.value.new [1 2 3 4 5]}
                             then 1 else 0 end
                      end
                  {FS.monitorIn SV S}
@@ -395,7 +395,7 @@ body
              {MiscTest 33
               fun {$} S SV={FS.var.decl} R
               in
-                 R = thread if S = [_ _ _ _ _] then 1 else 0 end end
+                 R = thread cond S = [_ _ _ _ _] then 1 else 0 end end
                  {FS.monitorIn SV S}
                  {FS.include 1 SV}
                  {FS.include 2 SV}
@@ -409,7 +409,7 @@ body
              {MiscTest 34
               fun {$} D={FD.decl}  S={FS.var.decl} R= {FD.int 0#1} R
               in
-                 R = thread if R = 1 then 1 else 0 end end
+                 R = thread cond R = 1 then 1 else 0 end end
                  {FS.reified.include D S R}
 
                  D :: 1#2
@@ -421,7 +421,7 @@ body
              {MiscTest 35
               fun {$} D={FD.decl}  S={FS.var.decl} C= {FD.int 0#1} R
               in
-                 R = thread if C = 1 then 0 else 1 end end
+                 R = thread cond C = 1 then 0 else 1 end end
                  {FS.reified.include D S C}
 
                  D :: 1#2
@@ -433,7 +433,7 @@ body
              {MiscTest 36
               fun {$} D={FD.decl}  S={FS.var.decl} R
               in
-                 R = thread if {FS.include D S} then 1 else 0 end end
+                 R = thread cond {FS.include D S} then 1 else 0 end end
 
                  D :: 1#2
                  {FS.include 1 S}
@@ -446,7 +446,7 @@ body
               fun {$}
                  D={FD.decl}  S={FS.var.decl} R
               in
-                 R = thread if {FS.exclude D S} then 1 else 0 end end
+                 R = thread cond {FS.exclude D S} then 1 else 0 end end
 
                  D :: 1#2
                  {FS.exclude 1 S}
@@ -476,22 +476,22 @@ body
 
              {MiscTest 42
               fun {$}
-                 if {FS.int.convex {FS.value.new [1 2]}}  then 1 else 0 end
+                 cond {FS.int.convex {FS.value.new [1 2]}}  then 1 else 0 end
               end}
 
              {MiscTest 43
               fun {$}
-                 if {FS.int.convex {FS.value.new [1 2 4]}} then 0 else 1 end
+                 cond {FS.int.convex {FS.value.new [1 2 4]}} then 0 else 1 end
               end}
 
              {MiscTest 44
               fun {$}
-                 if {FS.int.convex {FS.value.new nil}}  then 1 else 0 end
+                 cond {FS.int.convex {FS.value.new nil}}  then 1 else 0 end
               end}
 
              {MiscTest 45
               fun {$}
-                 if
+                 cond
                     S = {FS.var.upperBound [1#5]}
                  in
                     {FS.int.convex S} S = {FS.value.new nil}

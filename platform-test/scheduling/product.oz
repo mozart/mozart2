@@ -112,8 +112,8 @@ body
    % Jobs must be scheduled continually
    proc {SC Jobs}
       thread
-         M1={FoldL Jobs fun{$ I J} if J.machine=1 then J|I else I end end nil}
-         M2={FoldL Jobs fun{$ I J} if J.machine=2 then J|I else I end end nil}
+         M1={FoldL Jobs fun{$ I J} cond J.machine=1 then J|I else I end end nil}
+         M2={FoldL Jobs fun{$ I J} cond J.machine=2 then J|I else I end end nil}
       in
          {FoldL M1 fun{$ I M} {FD.min M.start I} end FD.sup}
          + {FoldL M1 fun{$ I M} {FD.plus I {FD.plus M.dur M.ueb}} end 0}
@@ -195,7 +195,7 @@ body
             {ForAll Jobs proc{$ Job}
                             {FD.element Job.pred
                              {Reverse 0|{FoldL [n430 n730 l430 e464 e564 h764 h864 d464 d780]
-                                         fun{$ I J} if J=Job.name then NoPred|I
+                                         fun{$ I J} cond J=Job.name then NoPred|I
                                                     else Ueb.J.(Job.name)|I
                                                     end
                                          end
@@ -210,11 +210,11 @@ body
          M1Jobs M2Jobs
       in
          thread
-            M1Jobs = {FoldL Jobs fun{$ I J} if J.machine=1 then J|I else I end
+            M1Jobs = {FoldL Jobs fun{$ I J} cond J.machine=1 then J|I else I end
                                  end nil}
          end
          thread
-            M2Jobs = {FoldL Jobs fun{$ I J} if J.machine=2 then J|I else I end
+            M2Jobs = {FoldL Jobs fun{$ I J} cond J.machine=2 then J|I else I end
                                  end nil}
          end
          {ReduceDomains M1Uebergaenge M1Jobs}

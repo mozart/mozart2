@@ -247,6 +247,9 @@ local
          ExecutingThread <- unit
          InterruptLock <- {NewLock}
       end
+      meth getReporter($)
+         @reporter
+      end
       meth notifyOne(P)
          {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
                       ' playing Oz 3\n\n')}
@@ -256,11 +259,8 @@ local
       end
 
       meth ping(X)
-         try
-            X = unit
-         catch failure(...) then skip
-         end
          {@wrapper notify(pong())}
+         X = unit
       end
       meth CatchResult(P)
          try
@@ -812,7 +812,12 @@ in
             end
             try
                {self.Compiler M}
-            catch failure(...) then skip   % ignore, e.g., ping(true)
+            catch failure(...) then Reporter in
+               {self.Compiler getReporter(?Reporter)}
+               {Reporter warn(kind: 'warning'
+                              msg: 'execution of query raised failure'
+                              body: [hint(l: 'Query' m: oz(M))])}
+               {Reporter logReject()}
             end
             lock self.QueueLock then
                CurrentQuery <- unit

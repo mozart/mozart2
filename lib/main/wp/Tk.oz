@@ -24,6 +24,42 @@
 
 
 local
+
+   %%
+   %% Load & link wish interface
+   %%
+
+   local
+      WIF = {Foreign.staticLoad 'libwif.so'}
+   in
+      %%
+      %% Sending tickles
+      %%
+      TkInit         = WIF.wifInit
+      TkGetNames     = WIF.wifGetNames
+
+      TkSend         = WIF.wifWrite
+      TkBatch        = WIF.wifWriteBatch
+      TkReturn       = WIF.wifWriteReturn
+      TkReturnMess   = WIF.wifWriteReturnMess
+      TkSendTuple    = WIF.wifWriteTuple
+      TkSendTagTuple = WIF.wifWriteTagTuple
+      TkSendFilter   = WIF.wifWriteFilter
+
+      TkClose        = WIF.wifClose
+
+      %%
+      %% Generation of Identifiers
+      %%
+      GenTopName    = WIF.wifGenTopName
+      GenWidgetName = WIF.wifGenWidgetName
+      GenTagName    = WIF.wifGenTagName
+      GenVarName    = WIF.wifGenVarName
+      GenImageName  = WIF.wifGenImageName
+
+   end
+
+
    VoidEntry = {NewName}
 
    class Counter
@@ -265,8 +301,7 @@ local
       {Stream flush(how:[send])}
    end
 
-   RetStream = {{`Builtin` wifInit 3}
-                {Stream getDesc(_ $)} TkDict}
+   RetStream = {TkInit {Stream getDesc(_ $)} TkDict}
 
    local
       fun {GetArgs N Ps}
@@ -374,28 +409,6 @@ local
    end
 
    %%
-   %% Sending tickles
-   %%
-   TkSend         = {`Builtin` wifWrite           1}
-   TkBatch        = {`Builtin` wifWriteBatch      1}
-   TkReturn       = {`Builtin` wifWriteReturn     3}
-   TkReturnMess   = {`Builtin` wifWriteReturnMess 4}
-   TkSendTuple    = {`Builtin` wifWriteTuple      2}
-   TkSendTagTuple = {`Builtin` wifWriteTagTuple   3}
-   TkSendFilter   = {`Builtin` wifWriteFilter     5}
-
-   TkClose        = {`Builtin` wifClose           2}
-
-   %%
-   %% Generation of Identifiers
-   %%
-   GenTopName    = {`Builtin` wifGenTopName    1}
-   GenWidgetName = {`Builtin` wifGenWidgetName 2}
-   GenTagName    = {`Builtin` wifGenTagName    1}
-   GenVarName    = {`Builtin` wifGenVarName    1}
-   GenImageName  = {`Builtin` wifGenImageName  1}
-
-   %%
    %% Master slave mechanism for widgets
    %%
    AddSlave  = {`Builtin` addFastGroup    3}
@@ -406,7 +419,7 @@ local
    TkWidget       = {NewName}
 
    TclSlaves TclSlaveEntry TclName
-   {{`Builtin` wifGetNames 3} ?TclSlaves ?TclSlaveEntry ?TclName}
+   {TkGetNames ?TclSlaves ?TclSlaveEntry ?TclName}
 
    proc {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
       Fields = {GetFields Args}

@@ -364,7 +364,6 @@ class CodeStore from Emitter
                InitsRS = {BitArray.clone RS1}
                {BitArray.disj InitsRS RS2}
                {BitArray.disj InitsRS RS3}
-               {BitArray.conj InitsRS RS}
             [] nil then skip
             end
             CodeStore, RegOcc(Reg RS)
@@ -382,7 +381,6 @@ class CodeStore from Emitter
                 {BitArray.disj InitsRS CodeStore, ComputeOccs(Addr $)}
              end}
             case Cont of vShared(_ InitsRS0 _ _) then
-               {BitArray.conj InitsRS RS}
                InitsRS0 = InitsRS
             [] nil then skip
             end
@@ -516,11 +514,15 @@ class CodeStore from Emitter
          [] vAsk(_ _) then skip
          [] vWait(_ _) then skip
          [] vWaitTop(_ _) then skip
-         [] vTestBool(_ _ Addr1 Addr2 Addr3 _ _) then
+         [] vTestBool(_ _ Addr1 Addr2 Addr3 _ Cont) then
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
-         [] vMatch(_ _ Addr VHashTableEntries _ _) then
+            case Cont of vShared(_ InitsRS _ _) then
+               {BitArray.conj InitsRS AddRS2}
+            [] nil then skip
+            end
+         [] vMatch(_ _ Addr VHashTableEntries _ Cont) then
             CodeStore, AddRegOccs(Addr AddRS2)
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
@@ -529,6 +531,10 @@ class CodeStore from Emitter
                 end
                 CodeStore, AddRegOccs(Addr AddRS2)
              end}
+            case Cont of vShared(_ InitsRS _ _) then
+               {BitArray.conj InitsRS AddRS2}
+            [] nil then skip
+            end
          [] vThread(_ Addr _ _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
          [] vLockThread(_ _ _ _ _) then

@@ -111,7 +111,7 @@ OZCC = $(OZEE) -c
 
 .PHONY: all bootstrap install check dirs clean veryclean distclean depend
 
-all: dirs oztest ozbench $(SONATIVES)
+all: dirs oztest ozbench
 
 PREFIX    = @prefix@
 export OZTESTOPTS = --verbose
@@ -134,7 +134,7 @@ dirs:
 # $(COMPONENTS): dirs
 
 TESTSRCS=make-test engine passed failed help-string compute-tests
-oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS) make-test
+oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS) $(SONATIVES) make-test
         $(OZENGINE) ./make-test --verbose $(TESTCOMPONENTS)
         chmod +x oztest
 

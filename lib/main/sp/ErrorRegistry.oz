@@ -781,7 +781,7 @@ in
             {Error.format
              T
              'Registration of error formatter failed'
-             [hint(l:'Exception name already in use:' m:Key)]
+             [hint(l:'Exception name already in use' m:Key)]
              Exc}
 
          else

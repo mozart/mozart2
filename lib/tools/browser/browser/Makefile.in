@@ -26,9 +26,9 @@ realclean::
 install:: $(BROWSERLIB) $(LIBMODULES) $(AUXMODULES) bitmaps
 
 bitmaps: $(OZLIB)/bitmaps
-        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserMIcon.xbm $(OzLib)/bitmaps
-        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserIcon.xbm  $(OzLib)/bitmaps
-        $(INSTALLFILE) $(SRCDIR)/bitmaps/stop.xbm  $(OzLib)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserMIcon.xbm $(OZLIB)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/browserIcon.xbm  $(OZLIB)/bitmaps
+        $(INSTALLFILE) $(SRCDIR)/bitmaps/stop.xbm  $(OZLIB)/bitmaps
 
 $(BROWSERLIB) $(OZLIB)/bitmaps:
         $(INSTALLDIR) $@

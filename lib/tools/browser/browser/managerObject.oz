@@ -15,12 +15,21 @@
 %%%
 
 local
-   DoCheckLayout
-in
    %%
    proc {DoCheckLayout TermObj}
       {TermObj CheckLayout}
    end
+
+   %%
+   %% Waits until the 'Thr' becomes blocked;
+   proc {ThreadSync Thr}
+      case {Thread.state Thr} == blocked then skip
+      else
+         {Thread.preempt {Thread.this}} % yet delay?
+         {ThreadSync Thr}
+      end
+   end
+in
 
    %%
    %%
@@ -96,13 +105,32 @@ in
                   BrowserManagerClass , Req
                catch BEx(_) then skip
                end
-            else
+            else ManagerThr in
+               ManagerThr = {Thread.this}
                %% is empty at the moment - do 'idle' step and sleep for
                %% a while;
                BrowserManagerClass , DoIdle
 
                %%
                WindowManagerClass , entriesDisable([break pause])
+
+               %%
+               %% Now, spawn off a thread which will check whether
+               %% we really don't have any elements in the stream!
+               thread
+                  %%
+                  {ThreadSync ManagerThr}
+
+                  %%
+                  %% Now, the 'manager' thread at least *was* blocked
+                  %% (or it is still blocked). So, bombing it with the
+                  %% 'noop' can be redundant but seems to be the only
+                  %% way to make things really working;
+                  case {self.Stream getSize($)} > 0
+                  then {self.Stream enq(noop)} % my kludge ;-)
+                  else skip
+                  end
+               end
                {self.Stream waitElement}
 
                %%
@@ -175,6 +203,9 @@ in
          {Show 'BrowserManagerClass::browse is finished'}
 \endif
       end
+
+      %%
+      meth noop skip end
 
       %%
       meth pick(Obj Where How)

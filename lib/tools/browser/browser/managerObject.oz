@@ -94,7 +94,7 @@ in
                   %% The convension is that a request is just a manager
                   %% object's method;
                   BrowserManagerClass , Req
-               catch !BEx(_) then skip
+               catch BEx(_) then skip
                end
             else
                %% is empty at the moment - do 'idle' step and sleep for

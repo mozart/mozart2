@@ -33,16 +33,18 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vEquateRecord(OccsRS Atomname RecordArity Reg [VRecordArgument] Cont)
        | vGetVariable(OccsRS Reg Cont)
        | vCallBuiltin(OccsRS Builtinname [Reg] Coord Cont)
-       | vGenCall(OccsRS Reg IsMethod Atomname RecordArity [Reg] Coord Cont)
+       | vCallGlobal(OccsRS Reg [Reg] Coord Cont)
+       | vCallMethod(OccsRS Reg Atomname RecordArity [Reg] Coord Cont)
        | vCall(OccsRS Reg [Reg] Coord Cont)
-       | vFastCall(OccsRS PredicateRef2 [Reg] Coord Cont)
+       | vCallProcedureRef(OccsRS ProcedureRef [Reg] Coord Cont)
+       | vCallConstant(OccsRS value [Reg] Coord Cont)
        | vInlineDot(OccsRS Reg Feature Reg AlwaysSucceeds Coord Cont)
        | vInlineAt(OccsRS Feature Reg Cont)
        | vInlineAssign(OccsRS Feature Reg Cont)
        | vGetSelf(OccsRS Reg Cont)
        | vSetSelf(OccsRS Reg Cont)
-       | vDefinition(OccsRS Reg PredId PredicateRef1 GRegs Code Cont)
-       | vDefinitionCopy(OccsRS Reg Reg PredId PredicateRef1 GRegs Code Cont)
+       | vDefinition(OccsRS Reg PredId OptProcedureRef GRegs Code Cont)
+       | vDefinitionCopy(OccsRS Reg Reg PredId OptProcedureRef GRegs Code Cont)
        | vShared(OccsRS InitsRS Label Addr)
        | vExHandler(OccsRS Addr Reg Addr Coord Cont InitsRS)
        | vPopEx(OccsRS Coord Cont)
@@ -62,7 +64,7 @@ Atomname = atom
 RecordArity = int
             | [Feature]
 VRecordArgument = constant(Constant)
-                | predicateRef(PredicateRef1)
+                | procedureRef(ProcedureRef)
                 | value(Reg)
                 | record(Atomname RecordArity [VRecordArgument])
 Builtinname = atom
@@ -70,9 +72,9 @@ Feature = atom
         | name
         | int
 IsMethod = bool
-PredicateRef1 = foreignpointer
-PredicateRef2 = foreignpointer
-              | procedure
+ProcedureRef = foreignpointer
+OptProcedureRef = foreignPointer
+                | unit
 PredId = pid(Variablename Arity atom int)
 GRegs = [Reg]
 VClause = InitsRS#Addr#Addr

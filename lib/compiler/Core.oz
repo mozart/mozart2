@@ -381,7 +381,7 @@ define
          attr
             designator: unit formalArgs: unit statements: unit
             isStateUsing: unit procFlags: unit printName: '' toCopy: unit
-            allVariables: nil predicateRef: unit
+            allVariables: nil procedureRef: unit
          meth init(Designator FormalArgs Statements IsStateUsing ProcFlags
                    Coord)
             designator <- Designator
@@ -812,7 +812,7 @@ define
       prop final
       attr
          label: unit formalArgs: unit isOpen: unit messageDesignator: unit
-         statements: unit coord: unit allVariables: nil predicateRef: unit
+         statements: unit coord: unit allVariables: nil procedureRef: unit
       meth init(Label FormalArgs IsOpen MessageDesignator Statements Coord)
          label <- Label
          formalArgs <- FormalArgs

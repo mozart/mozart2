@@ -28,9 +28,11 @@ Continuations = c(vDebugExit: 4
                   vEquateRecord: 6
                   vGetVariable: 3
                   vCallBuiltin: 5
-                  vGenCall: 8
+                  vCallGlobal: 5
+                  vCallMethod: 7
                   vCall: 5
-                  vFastCall: 5
+                  vCallProcedureRef: 5
+                  vCallConstant: 5
                   vInlineDot: 7
                   vInlineAt: 4
                   vInlineAssign: 4
@@ -244,13 +246,18 @@ class CodeStore from Emitter
             CodeStore, RegOcc(Reg RS)
          [] vCallBuiltin(_ _ Regs _ _) then
             CodeStore, RegOccs(Regs RS)
-         [] vGenCall(_ Reg _ _ _ Regs _ _) then
+         [] vCallGlobal(_ Reg Regs _ _) then
+            CodeStore, RegOcc(Reg RS)
+            CodeStore, RegOccs(Regs RS)
+         [] vCallMethod(_ Reg _ _ Regs _ _) then
             CodeStore, RegOcc(Reg RS)
             CodeStore, RegOccs(Regs RS)
          [] vCall(_ Reg Regs _ _) then
             CodeStore, RegOcc(Reg RS)
             CodeStore, RegOccs(Regs RS)
-         [] vFastCall(_ _ Regs _ _) then
+         [] vCallProcedureRef(_ _ Regs _ _) then
+            CodeStore, RegOccs(Regs RS)
+         [] vCallConstant(_ _ Regs _ _) then
             CodeStore, RegOccs(Regs RS)
          [] vInlineDot(_ Reg1 _ Reg2 _ _ _) then
             CodeStore, RegOcc(Reg1 RS)
@@ -377,9 +384,11 @@ class CodeStore from Emitter
          [] vEquateRecord(_ _ _ _ _ _) then skip
          [] vGetVariable(_ _ _) then skip
          [] vCallBuiltin(_ _ _ _ _) then skip
-         [] vGenCall(_ _ _ _ _ _ _ _) then skip
+         [] vCallGlobal(_ _ _ _ _) then skip
+         [] vCallMethod(_ _ _ _ _ _ _) then skip
          [] vCall(_ _ _ _ _) then skip
-         [] vFastCall(_ _ _ _ _) then skip
+         [] vCallProcedureRef(_ _ _ _ _) then skip
+         [] vCallConstant(_ _ _ _ _) then skip
          [] vInlineDot(_ _ _ _ _ _ _) then skip
          [] vInlineAt(_ _ _ _) then skip
          [] vInlineAssign(_ _ _ _) then skip

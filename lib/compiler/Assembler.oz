@@ -56,7 +56,7 @@ define
       StoreConstant      = CompilerSupport.storeConstant
       StoreInt           = CompilerSupport.storeInt
       StoreRegisterIndex = CompilerSupport.storeRegisterIndex
-      StorePredicateRef  = CompilerSupport.storePredicateRef
+      StoreProcedureRef  = CompilerSupport.storeProcedureRef
       StoreRecordArity   = CompilerSupport.storeRecordArity
       StoreGRegRef       = CompilerSupport.storeGRegRef
       StoreLocation      = CompilerSupport.storeLocation
@@ -121,9 +121,8 @@ define
          BIStoreCallMethodInfo  = CompilerSupport.storeCallMethodInfo
       in
          proc {StoreCallMethodInfo CodeBlock
-               gci(g(Index) IsMethod Name IsTail RecordArity)}
-            {BIStoreCallMethodInfo
-             CodeBlock Index IsMethod Name IsTail RecordArity}
+               cmi(g(Index) Name IsTail RecordArity)}
+            {BIStoreCallMethodInfo CodeBlock Index Name IsTail RecordArity}
          end
       end
 
@@ -132,7 +131,7 @@ define
       local
          IsUniqueName           = CompilerSupport.isUniqueName
          IsCopyableName         = CompilerSupport.isCopyableName
-         IsCopyablePredicateRef = CompilerSupport.isCopyablePredicateRef
+         IsCopyableProcedureRef = CompilerSupport.isCopyableProcedureRef
 
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
@@ -180,8 +179,7 @@ define
                   [] ht then '\'ht\''
                   [] onScalar then '\'onScalar\''
                   [] onRecord then '\'onRecord\''
-                  [] gci then '\'gci\''
-                  [] ami then '\'ami\''
+                  [] cmi then '\'cmi\''
                   [] pos then '\'pos\''
                   else
                      {Value.toVirtualString Val 0 0}
@@ -191,7 +189,7 @@ define
                %% foreign pointers are assigned increasing integers
                %% in order of appearance so that diffs are sensible
                I = {ForeignPointer.toInt Val}
-               if {IsCopyablePredicateRef Val} then '<Q: '
+               if {IsCopyableProcedureRef Val} then '<Q: '
                else '<P: '
                end#
                case {Dictionary.condGet FPToIntMap I unit} of unit then N in
@@ -571,15 +569,15 @@ define
       case Instrs of lbl(I)|Rest then
          {Assembler setLabel(I)}
          {Peephole Rest Assembler}
-      [] definition(Register Label PredId PredicateRef GRegRef Code)|Rest then
+      [] definition(Register Label PredId ProcedureRef GRegRef Code)|Rest then
          {Assembler
-          append(definition(Register Label PredId PredicateRef GRegRef))}
+          append(definition(Register Label PredId ProcedureRef GRegRef))}
          {Peephole Code Assembler}
          {Peephole Rest Assembler}
-      [] definitionCopy(Register Label PredId PredicateRef GRegRef Code)|Rest
+      [] definitionCopy(Register Label PredId ProcedureRef GRegRef Code)|Rest
       then
          {Assembler
-          append(definitionCopy(Register Label PredId PredicateRef GRegRef))}
+          append(definitionCopy(Register Label PredId ProcedureRef GRegRef))}
          {Peephole Code Assembler}
          {Peephole Rest Assembler}
       [] clear(_)|_ then Clears Rest in
@@ -690,9 +688,15 @@ define
 %--**    else
             {Peephole Rest Assembler}
 %--**    end
-      [] genCall(GCI 0)|deAllocateL(I)|return|Rest then
+      [] callGlobal(G ArityAndIsTail)|deAllocateL(I)|return|Rest
+         andthen ArityAndIsTail mod 2 == 0
+      then
          {MakeDeAllocate I Assembler}
-         {Assembler append(genCall({AdjoinAt GCI 4 true} 0))}
+         {Assembler append(callGlobal(G ArityAndIsTail + 1))}
+         {EliminateDeadCode Rest Assembler}
+      [] callMethod(CMI 0)|deAllocateL(I)|return|Rest then
+         {MakeDeAllocate I Assembler}
+         {Assembler append(callMethod({AdjoinAt CMI 3 true} 0))}
          {EliminateDeadCode Rest Assembler}
       [] call(R Arity)|deAllocateL(I)|return|Rest then NewR in
          case R of y(_) then
@@ -703,20 +707,20 @@ define
          {MakeDeAllocate I Assembler}
          {Assembler append(tailCall(NewR Arity))}
          {EliminateDeadCode Rest Assembler}
-      [] genFastCall(PredicateRef ArityAndIsTail)|deAllocateL(I)|return|Rest
-         andthen ArityAndIsTail mod 2 == 0
+      [] callProcedureRef(ProcedureRef ArityAndIsTail)|
+         deAllocateL(I)|return|Rest andthen ArityAndIsTail mod 2 == 0
       then
          {MakeDeAllocate I Assembler}
-         {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
+         {Assembler append(callProcedureRef(ProcedureRef ArityAndIsTail + 1))}
          {EliminateDeadCode Rest Assembler}
-      [] marshalledFastCall(Abstraction ArityAndIsTail)|
+      [] callConstant(Abstraction ArityAndIsTail)|
          deAllocateL(I)|return|Rest
          andthen {IsDet Abstraction}
          andthen {IsProcedure Abstraction}
          andthen ArityAndIsTail mod 2 == 0
       then
          {MakeDeAllocate I Assembler}
-         {Assembler append(marshalledFastCall(Abstraction ArityAndIsTail + 1))}
+         {Assembler append(callConstant(Abstraction ArityAndIsTail + 1))}
          {EliminateDeadCode Rest Assembler}
       [] sendMsg(Literal R RecordArity Cache)|deAllocateL(I)|return|Rest
       then NewR in

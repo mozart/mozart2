@@ -346,25 +346,25 @@ define
             then
                VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
             end
-%        [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
-%           {Arg2 getCodeGenValue(?Value)}
-%           if {{Arg1 getVariable($)} isToplevel($)}
-%              andthen {IsDet Value} andthen {IsRecord Value}
-%              andthen {Record.all Value
-%                       fun {$ Arg}
-%                          {Not {HasFeature Arg Core.imAVariableOccurrence}}
-%                          orelse {IsDet {Arg reg($)}}
-%                       end}
-%           then RecordArity ActualArgs Regs Cont1 in
-%              RecordArity = if {IsTuple Value} then {Width Value}
-%                            else {Arity Value}
-%                            end
-%              ActualArgs = {Record.toList Value}
-%              {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-%              Cont1 = vGenCall(_ {Arg1 reg($)}
-%                               true {Label Value} RecordArity
-%                               Regs Coord VTl)
-%           end
+         [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
+            {Arg2 getCodeGenValue(?Value)}
+            if {{Arg1 getVariable($)} isToplevel($)}
+               andthen {IsDet Value} andthen {IsRecord Value}
+               andthen {Record.all Value
+                        fun {$ Arg}
+                           {Not {HasFeature Arg Core.imAVariableOccurrence}}
+                           orelse {IsDet {Arg reg($)}}
+                        end}
+            then RecordArity ActualArgs Regs Cont1 in
+               RecordArity = if {IsTuple Value} then {Width Value}
+                             else {Arity Value}
+                             end
+               ActualArgs = {Record.toList Value}
+               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+               Cont1 = vCallMethod(_ {Arg1 reg($)}
+                                   {Label Value} RecordArity
+                                   Regs Coord VTl)
+            end
          else skip
          end
          if {IsDet VHd} then skip
@@ -378,7 +378,7 @@ define
             Builtinname = {System.printName Value}
             {MakeBuiltinApplication Builtinname Coord ActualArgs CS VHd VTl}
          else
-            VHd = vFastCall(_ Value {GetRegs ActualArgs} Coord VTl)
+            VHd = vCallConstant(_ Value {GetRegs ActualArgs} Coord VTl)
          end
       end
    in
@@ -395,12 +395,11 @@ define
                andthen ({Value getDefinition(?Def)} Def \= unit)
             then
                {Def codeGenApply(Designator Coord NewActualArgs CS VInter VTl)}
-%           elseif {{Designator getVariable($)} isToplevel($)}
-%              andthen {Not CS.controlFlowInfoSwitch}
-%           then
-%              VInter = vGenCall(_ {Designator reg($)}
-%                                false '' {Length NewActualArgs}
-%                                {GetRegs NewActualArgs} Coord VTl)
+            elseif {{Designator getVariable($)} isToplevel($)}
+               andthen {Not CS.controlFlowInfoSwitch}
+            then
+               VInter = vCallGlobal(_ {Designator reg($)}
+                                    {GetRegs NewActualArgs} Coord VTl)
             else
                VInter = vCall(_ {Designator reg($)} {GetRegs NewActualArgs}
                               Coord VTl)
@@ -831,7 +830,7 @@ define
             end
             {CS endDefinition(BodyVInstr FormalRegs AllRegs2 ?GRegs ?Code
                               ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId @predicateRef
+            VInter = vDefinition(_ {V reg($)} PredId @procedureRef
                                  GRegs Code VTl0)
          else
             VInter FormalRegs AllRegs
@@ -881,7 +880,7 @@ define
                      ArgIn = {MakeCopyList Xr VHd VInter1}
                      {CS newReg(?ConsReg)}
                      ConsArg1 = if {ForeignPointer.is X} then
-                                   predicateRef(X)
+                                   procedureRef(X)
                                 elseif {IsName X} then
                                    constant(X)
                                 else
@@ -909,17 +908,17 @@ define
             OuterBodyVInter2 = vCall(_ InnerDefinitionReg nil unit nil)
             {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
                               ?OuterGRegs ?OuterCode ?OuterNLiveRegs)}
-            VInter = vDefinition(_ {V reg($)} PredId @predicateRef
+            VInter = vDefinition(_ {V reg($)} PredId @procedureRef
                                  OuterGRegs OuterCode VTl0)
          end
          {StepPoint @coord 'definition' VHd VTl VHd0 VTl0}
          statements <- unit   % hand them to the garbage collector
       end
       meth codeGenApply(Designator Coord ActualArgs CS VHd VTl)
-         case @predicateRef of unit then
+         case @procedureRef of unit then
             VHd = vCall(_ {Designator reg($)} {GetRegs ActualArgs} Coord VTl)
-         elseof ID then
-            VHd = vFastCall(_ ID {GetRegs ActualArgs} Coord VTl)
+         elseof ID andthen {ForeignPointer.is ID} then
+            VHd = vCallProcedureRef(_ ID {GetRegs ActualArgs} Coord VTl)
          end
       end
    end
@@ -1330,10 +1329,10 @@ define
                              {{Formal getVariable($)} reg($)}
                           end}
             Coord = {CoordNoDebug @coord}
-            case @predicateRef of unit then
+            case @procedureRef of unit then
                VInter = vCall(_ FastMeth FormalRegs Coord nil)
-            elseof ID then
-               VInter = vFastCall(_ ID FormalRegs Coord nil)
+            elseof ID andthen {ForeignPointer.is ID} then
+               VInter = vCallProcedureRef(_ ID FormalRegs Coord nil)
             end
             AllRegs = nil
          end
@@ -1433,7 +1432,7 @@ define
             CodeGenMethod, MakeBody(?AllRegs CS BodyVInstr nil)
             {CS endDefinition(BodyVInstr FormalRegs AllRegs
                               ?GRegs ?Code ?NLiveRegs)}
-            VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code VTl)
+            VHd = vDefinition(_ FastMeth PredId @procedureRef GRegs Code VTl)
          end
       end
       meth SortFormals(CS ?RecordArity) PairList Rec in

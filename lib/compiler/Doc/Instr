@@ -63,14 +63,14 @@ definition
    XRegister        register in which to store the created abstraction
    Label            address to jump to after abstraction creation
    PredId           print name, arity, source coordinates of the abstraction
-   PredicateRef     address of an AbstractionEntry or 0
+   OptProcedureRef  address of an AbstractionEntry or unit
    GRegRef          contents of abstraction's local G registers
 
 definitionCopy
    XRegister        both source and destination register
    Label            address to jump to after abstraction creation
    PredId           print name, arity, source coordinates of the abstraction
-   PredicateRef     address of an AbstractionEntry or 0
+   OptProcedureRef  address of an AbstractionEntry or unit
    GRegRef          contents of abstraction's local G registers
 
 profileProc
@@ -168,8 +168,8 @@ setVariable         == createVariable(Arg1) setValue(Arg1)
 setVoid
    Count            number of arguments to set to `_'
 
-setPredicateRef     used for definitionCopy
-   PredicateRef
+setProcedureRef     used for definitionCopy
+   ProcedureRef
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -363,25 +363,21 @@ tailCall            == call(Arg1 Arg2) return
    Register
    Arity
 
-marshalledFastCall
+callConstant
    Constant         procedure
    ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
 
-genFastCall
-   PredicateRef     address of an AbstractionEntry
+callProcedureRef
+   ProcedureRef     address of an AbstractionEntry
    ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
 
-fastCall
-   PredicateRef     address of an AbstractionEntry
-   Arity
+callGlobal
+   GRegister
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
 
-fastTailCall        == fastCall(Arg1 Arg2) return
-   PredicateRef     address of an AbstractionEntry
-   Arity
-
-genCall
-   GenCallInfo
-   Arity            must be 0
+callMethod
+   CallMethodInfo
+   Dummy            must be 0
 
 %%
 %%  Sending Messages
@@ -548,11 +544,12 @@ clearY
 %%  Definition of the Argument Types
 %%
 
-Register = x(RegisterIndex)
-         | y(RegisterIndex)
-         | g(RegisterIndex).
+Register = XRegister
+         | YRegister
+         | GRegister.
 XRegister = x(RegisterIndex).
 YRegister = y(RegisterIndex).
+GRegister = g(RegisterIndex).
 RegisterIndex = int.
 Label = int.
 PredId = pid(PrintName Arity Coord Flags NLiveRegs).
@@ -560,15 +557,14 @@ Coord = pos(FileName Line Column)
       | pos('' 1 0).
 Flags = [atom].   % only sited is recognized
 NLiveRegs = int.
-PredicateRef = int.
+ProcedureRef = foreignPointer.
+OptProcedureRef = foreignPointer
+                | unit.
 GRegRef = [Register].
 Arity = int.
-Literal = atom
-        | name.
-Number = int
-       | float.
-Feature = atom
-        | name
+Literal = literal.
+Number = number.
+Feature = literal
         | int.
 Variablename = atom.
 Count = int.
@@ -576,11 +572,10 @@ Dummy = int.   % ignored
 Location = [x(RegisterIndex)]#[x(RegisterIndex)].
 RecordArity = int   % must be > 0 and a smallInt
             | [Feature].
-GenCallInfo = gci(g(RegisterIndex) % register index of class/predicate
-                  IsMethod         % whether it corresponds to call or applMeth
-                  Name             % '' for a call, else message name
-                  IsTail           % whether this is a tailCall/tailApplMeth
-                  RecordArity).    % 0 for a call, else message's arity
+CallMethodInfo = cmi(g(RegisterIndex) % register index of class
+                     Name             % message name
+                     IsTail           % whether this is a tail call
+                     RecordArity).    % message's arity
 Builtinname = builtin.
 Cache = value.   % ignored
 HashTableRef = ht(Label [HashTableEntry]).
@@ -594,9 +589,7 @@ IsMethod = bool.
 IsTail = bool.
 HashTableEntry = onScalar(NumOrLit Label)
                | onRecord(Literal RecordArity Label).
-NumOrLit = atom
-         | name
-         | int
-         | float.
+NumOrLit = number
+         | literal.
 FileName = atom.
 Line = int.

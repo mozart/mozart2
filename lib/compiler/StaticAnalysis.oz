@@ -27,7 +27,7 @@ functor
 import
    BootName(newUnique) at 'x-oz://boot/Name'
    CompilerSupport(newNamedName newCopyableName
-                   newPredicateRef newCopyablePredicateRef
+                   newProcedureRef newCopyableProcedureRef
                    nameVariable chunkArity
                    isBuiltin
                    isLocalDet) at 'x-oz://boot/CompilerSupport'
@@ -1114,12 +1114,12 @@ define
             toCopy <- N|Xs
          end
       end
-      meth declareToplevelProcedure(?PredicateRef)
+      meth declareToplevelProcedure(?ProcedureRef)
          case @toCopy of unit then
-            PredicateRef = {CompilerSupport.newPredicateRef}
+            ProcedureRef = {CompilerSupport.newProcedureRef}
          elseof Xs then
-            PredicateRef = {CompilerSupport.newCopyablePredicateRef}
-            toCopy <- PredicateRef|Xs
+            ProcedureRef = {CompilerSupport.newCopyableProcedureRef}
+            toCopy <- ProcedureRef|Xs
          end
       end
       meth endVirtualToplevel(?Xs)
@@ -1430,7 +1430,7 @@ define
                andthen {Ctrl getTop($)}
                andthen {Not {Member 'dynamic' @procFlags}}
             then
-               predicateRef <- {Ctrl declareToplevelProcedure($)}
+               procedureRef <- {Ctrl declareToplevelProcedure($)}
             end
             {@designator unifyVal(Ctrl Value)}
          end
@@ -3183,7 +3183,7 @@ define
 
          {InstallGlobalEnv Env}
          if {Ctrl getTop($)} andthen {self isOptimizable($)} then
-            predicateRef <- {Ctrl declareToplevelProcedure($)}
+            procedureRef <- {Ctrl declareToplevelProcedure($)}
          end
       end
       meth preApplyEnvSubst(Ctrl)

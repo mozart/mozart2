@@ -107,13 +107,12 @@ define(instruction,
                numOfRegs($2,$3,$4),2,twoRegs($@),
                noReg($@))')
 
-define(RelBuiltinname,Builtinname)
-define(FunBuiltinname,Builtinname)
 define(Arity,Int)
 define(Count,Int)
 define(ArityAndIsTail,Int)
 define(Dummy,Int)
-define(ApplMethInfo,Int)
+define(PredicateRef,ProcedureRef)
+define(GenCallInfo,Int)
 
 changequote([,])
 define(arglist, [ifelse($1,1,'$2',

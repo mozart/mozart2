@@ -750,30 +750,31 @@ in
                Emitter, EmitUnifies(Unifies)
                Emitter, DebugExit(Coord 'call')
             end
-         [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
+         [] vCallGlobal(_ Reg Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
-               Instr = genCall(gci(R IsMethod Literal false RecordArity) 0)
+               Instr = callGlobal(R {Length Regs} * 2)
                Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
-            elsecase IsMethod of false then Instr R Arity Which in
+            else Instr R Arity Which in
                Instr = call(R Arity)
                Which = case @continuations of nil then non_y   % tailCall
                        else any
                        end
-               Emitter,
-               GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
+               Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
             end
+         [] vCallMethod(_ Reg Literal RecordArity Regs Coord _) then Instr R in
+            Instr = callMethod(cmi(R Literal false RecordArity) 0)
+            Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
          [] vCall(_ Reg Regs Coord _) then Instr R Arity Which in
             Instr = call(R Arity)
             Which = case @continuations of nil then non_y   % tailCall
                     else any
                     end
             Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
-         [] vFastCall(_ PredicateRef Regs Coord _) then Instr in
-            if {IsProcedure PredicateRef} then
-               Instr = marshalledFastCall(PredicateRef {Length Regs} * 2)
-            else
-               Instr = genFastCall(PredicateRef {Length Regs} * 2)
-            end
+         [] vCallProcedureRef(_ ProcedureRef Regs Coord _) then Instr in
+            Instr = callProcedureRef(ProcedureRef {Length Regs} * 2)
+            Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
+         [] vCallConstant(_ Constant Regs Coord _) then Instr in
+            Instr = callConstant(Constant {Length Regs} * 2)
             Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
          [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord _) then
             if AlwaysSucceeds then skip
@@ -822,9 +823,9 @@ in
          [] vSetSelf(_ Reg _) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, Emit(setSelf(X))
-         [] vDefinition(_ Reg PredId PredicateRef GRegs Code _) then
+         [] vDefinition(_ Reg PredId ProcedureRef GRegs Code _) then
             if Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
-               andthen PredicateRef == unit
+               andthen ProcedureRef == unit
             then skip
             else Rs X DoUnify StartLabel ContLabel Code1 Code2 in
                Rs = {Map GRegs
@@ -847,7 +848,7 @@ in
                Emitter, newLabel(?ContLabel)
                Code = Code1#Code2
                Emitter, Emit(definition(X ContLabel PredId
-                                        PredicateRef Rs Code1))
+                                        ProcedureRef Rs Code1))
                Emitter, Emit(endDefinition(StartLabel))
                {ForAll Code2 proc {$ Instr} Emitter, Emit(Instr) end}
                Emitter, Emit(lbl(ContLabel))
@@ -855,9 +856,9 @@ in
                   Emitter, Emit(unify(X Emitter, GetReg(Reg $)))
                end
             end
-         [] vDefinitionCopy(_ Reg1 Reg2 PredId PredicateRef GRegs Code _) then
+         [] vDefinitionCopy(_ Reg1 Reg2 PredId ProcedureRef GRegs Code _) then
             if Emitter, IsFirst(Reg2 $) andthen Emitter, IsLast(Reg2 $)
-               andthen PredicateRef == unit
+               andthen ProcedureRef == unit
             then skip
             else Rs X StartLabel ContLabel Code1 Code2 in
                Rs = {Map GRegs
@@ -874,7 +875,7 @@ in
                Emitter, newLabel(?ContLabel)
                Code = Code1#Code2
                Emitter, Emit(definitionCopy(X ContLabel PredId
-                                            PredicateRef Rs Code1))
+                                            ProcedureRef Rs Code1))
                Emitter, Emit(endDefinition(StartLabel))
                {ForAll Code2 proc {$ Instr} Emitter, Emit(Instr) end}
                Emitter, Emit(lbl(ContLabel))
@@ -1127,8 +1128,7 @@ in
                  end
       in
          if self.controlFlowInfoSwitch then false
-         elseif Arity >= {Property.get 'limits.bytecode.xregisters'} then
-            false
+         elseif Arity >= {Property.get 'limits.bytecode.xregisters'} then false
          elseif Emitter, IsFirst(Reg $) then
             if {OccursInVArgs VArgs Reg} then false
             elsecase Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
@@ -1138,7 +1138,7 @@ in
                   true
                else false
                end
-            [] vGenCall(_ ObjReg false _ _ [!Reg] Coord Cont2) then
+            [] vCallGlobal(_ ObjReg [!Reg] Coord Cont2) then
                if Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)
@@ -1568,8 +1568,8 @@ in
          case VArgs of VArg|VArgr then
             case VArg of constant(Constant) then
                Emitter, Emit(setConstant(Constant))
-            [] predicateRef(PredicateRef) then
-               Emitter, Emit(setPredicateRef(PredicateRef))
+            [] procedureRef(ProcedureRef) then
+               Emitter, Emit(setProcedureRef(ProcedureRef))
             [] value(Reg) then
                case Emitter, GetReg(Reg $) of none then
                   if Emitter, IsLast(Reg $)
@@ -2068,7 +2068,7 @@ in
             %% Check whether this will be optimized into a sendMsg instruction.
             case Cont2 of vCall(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
-            elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
+            elseof vCallGlobal(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3)
             then
@@ -2080,7 +2080,7 @@ in
             %% Check whether this will be optimized into a sendMsg instruction.
             case Cont2 of vCall(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
-            elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
+            elseof vCallGlobal(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             elseof vCallBuiltin(_ 'Object.new' [_ !MessageReg Reg0] _ Cont3)
             then
@@ -2094,11 +2094,15 @@ in
             else
                Emitter, PredictRegSub(Reg Cont ?R)
             end
-         [] vGenCall(_ _ _ _ _ Regs _ Cont) then
+         [] vCallGlobal(_ _ Regs _ Cont) then
+            Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
+         [] vCallMethod(_ _ _ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vCall(_ Reg0 Regs _ Cont) then
             Emitter, PredictRegForCall(Reg Reg0 Regs Cont ?R)
-         [] vFastCall(_ _ Regs _ Cont) then
+         [] vCallProcedureRef(_ _ Regs _ Cont) then
+            Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
+         [] vCallConstant(_ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vShared(_ _ _ _) then
             Emitter, AllocateAnyTemp(Reg ?R)

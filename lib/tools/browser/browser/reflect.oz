@@ -193,7 +193,7 @@ in
                case {IsFdVar TermIn} then
                   %%
                   TermOut =
-                  {String.toAtom {System.valueToVirtualString Atom 1 1}}
+                  {String.toAtom {System.valueToVirtualString TermIn 1 1}}
                elsecase {IsMetaVar TermIn} then
                   %%
                   TermOut = {AtomConcatAll [{System.printName TermIn}

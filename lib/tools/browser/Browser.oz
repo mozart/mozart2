@@ -256,7 +256,7 @@ in
       %%
       %% browser object - hidden methods, to be used by Browser's
       %% window manager and tcl/tk interface;
-      [Reset SetBufferSize ChangeBufferSize SetSelected UnsetSelected
+      [SetBufferSize ChangeBufferSize SetSelected UnsetSelected
        SelExpand SelShrink Process SelDeref About SetDepth
        SetWidth ChangeWidth SetDInc ChangeDInc SetWInc ChangeWInc
        UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}

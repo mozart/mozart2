@@ -126,9 +126,9 @@ class FBrowserClass
 
    %%
    %% Break + purge unprocessed suspensions + undraw everything;
-   meth !Reset
+   meth reset
 \ifdef DEBUG_BO
-      {Show 'FBrowserClass::Reset is applied'}
+      {Show 'FBrowserClass::reset is applied'}
 \endif
       lock
          %%
@@ -148,7 +148,7 @@ class FBrowserClass
 
          %%
 \ifdef DEBUG_BO
-         {Show 'FBrowserClass::Reset is finished'}
+         {Show 'FBrowserClass::reset is finished'}
 \endif
       end
    end
@@ -161,7 +161,7 @@ class FBrowserClass
 \endif
       lock
          %%
-         FBrowserClass , Reset
+         FBrowserClass , reset
          {self.BrowserStream enq(closeWindow)}
 
          %%

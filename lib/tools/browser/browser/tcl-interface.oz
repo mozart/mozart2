@@ -2517,13 +2517,13 @@ in
 
                     pack({New Tk.checkbutton
                           tkInit(parent:DetailFrame.inner var:ChunkVar
-                                 text:'Private Chunk Fields'
+                                 text:'Chunks'
                                  onvalue:{Oz2Tcl TrueArity}
                                  offvalue:{Oz2Tcl AtomicArity}
                                  anchor:w)}
                          {New Tk.checkbutton
                           tkInit(parent:DetailFrame.inner var:NameVar
-                                 text: 'Detailed Names And Procedures'
+                                 text: 'Names And Procedures'
                                  onvalue:{Oz2Tcl false}
                                  offvalue:{Oz2Tcl true}
                                  anchor:w)}

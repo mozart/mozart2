@@ -46,7 +46,6 @@ class WindowManagerClass from MyClosableObject BatchObject
          [] toggleMenus       then browser(toggleMenus)
          [] about             then browser(about)
          [] checkLayout       then browser(checkLayout)
-         [] reset             then browser(reset)
          [] close             then browser(close)
          [] clear             then browser(clear)
          [] clearAllButLast   then browser(clearAllButLast)
@@ -152,7 +151,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                             command(label:   'Clear'
                                  % key:     ctrl(u)
                                     acc:     '     C-u'
-                                    action:  BO#clear
+                                    action:  BO#reset
                                     feature: clear)
                             command(label:   'Clear All But Last'
                                     acc:     '     C-w'
@@ -166,10 +165,6 @@ class WindowManagerClass from MyClosableObject BatchObject
                                     acc:     '     C-l'
                                     action:  BO#checkLayout
                                     feature: checkLayout)
-                            command(label:   'Reset'
-                                    acc:     '     C-r'
-                                    action:  BO#Reset
-                                    feature: reset)
                             separator
 
                             %%
@@ -212,10 +207,10 @@ class WindowManagerClass from MyClosableObject BatchObject
                             separator
 
                             %%
-                            cascade(label:   'Action'
+                            cascade(label:   'Set Action'
                                     menu:    nil
                                     feature: action)
-                            command(label:   'Call Action'
+                            command(label:   'Apply Action'
                                     % key:     ctrl(p)
                                     acc:     '     C-p'
                                     action:  BO#Process
@@ -255,7 +250,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                                    width: IStopWidth
                                    fg:    IStopFG
                                    activeforeground:IStopAFG)
-                             "Terminate drawing ASAP")
+                             "Break")
                   createTkVar(1 % must be 0;
                               proc {$ V}
                                  Action = {Dictionary.get Actions
@@ -282,14 +277,13 @@ class WindowManagerClass from MyClosableObject BatchObject
             %%
             %% Key bindings;
             {Window [bindKey(key: ctrl(c)      action: BO#break)
-                     bindKey(key: ctrl(r)      action: BO#Reset)
                      bindKey(key: ctrl(b)      action: BO#rebrowse)
                      bindKey(key: ctrl(p)      action: BO#Process)
                      bindKey(key: ctrl(l)      action: BO#checkLayout)
                      bindKey(key: ctrl(alt(m)) action: BO#toggleMenus)
                      bindKey(key: ctrl(h)      action: BO#About)
                      bindKey(key: ctrl(x)      action: BO#close)
-                     bindKey(key: ctrl(u)      action: BO#clear)
+                     bindKey(key: ctrl(u)      action: BO#reset)
                      bindKey(key: ctrl(w)      action: BO#clearAllButLast)
                      bindKey(key: d            action: BO#SelDeref)
                      bindKey(key: e            action: BO#SelExpand)

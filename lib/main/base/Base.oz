@@ -257,7 +257,6 @@ prepare
    %% Other
    `ooPrintName` = {NewUniqueName 'ooPrintName'}
    `ooFallback`  = {NewUniqueName 'ooFallback'}
-   `ooLocking`   = {NewUniqueName 'ooLocking'}
 
    %%
    %% BitArray

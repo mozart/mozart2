@@ -433,7 +433,6 @@ local
                          `ooFastMeth`:   FastMeth
                          `ooDefaults`:   Defaults
                          `ooPrintName`:  PrintName
-                         `ooLocking`:    IsLocking
                          `ooFallback`:   Fallback)
               else
                  %% Mark these dictionaries safe as it comes to marshalling
@@ -442,7 +441,6 @@ local
                  {MarkSafe FeatSrc}
                  'class'(%% Information for methods
                          `ooMethSrc`:    MethSrc       % Dictionary
-                         `ooLocking`:    IsLocking
                          `ooMeth`:       Meth          % Dictionary
                          `ooFastMeth`:   FastMeth      % Dictionary
                          `ooDefaults`:   Defaults      % Dictionary

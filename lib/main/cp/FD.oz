@@ -24,15 +24,11 @@
 %%% WARRANTIES.
 %%%
 
-
-
 local
 
-   foreign(fdp_plus_rel:       FdpPlusRel
-           fdp_plus:           FdpPlus
+   foreign(fdp_plus:           FdpPlus
            fdp_minus:          FdpMinus
            fdp_times:          FdpTimes
-           fdp_times_rel:      FdpTimesRel
            fdp_power:          FdpPower
            fdp_divD:           FdpDivD
            fdp_divI:           FdpDivI
@@ -372,7 +368,9 @@ local
          thread
             case {FdIs Low} andthen {FdIs Up} then
                case {IsLiteral Ds} then
-                  or B=1 Low=0 [] B=0 Low>:0 end
+                  or B=1 Low=0
+                  [] B=0 {FD.int 1 FdSup Low}
+                  end
                else
                   {FdpCard {VectorToTuple Ds} Low Up B}
                end
@@ -614,11 +612,11 @@ local
                RightTask      = Tasks.(Right+1)
             in
                dis
-                  Start.LeftTask + Dur.LeftTask =<: Start.RightTask
+                  {FdpSum Start.LeftTask#Dur.LeftTask '=<:' Start.RightTask}
                then
                   {EnumTI ETTuple Start Dur Res#Left#Right NewStream}
                []
-                  Start.RightTask + Dur.RightTask =<: Start.LeftTask
+                  {FdpSum Start.RightTask#Dur.RightTask '=<:' Start.LeftTask}
                then
                   {EnumTI ETTuple Start Dur Res#Right#Left NewStream}
                end
@@ -633,7 +631,10 @@ local
             in
                {ForAll RT proc {$ T}
                              case Task==T then skip
-                             else StartTask+DurTask =<: Start.(Tasks.(1+T))
+                             else
+                                {FdpSum StartTask#DurTask '=<:'
+                                 Start.(Tasks.(1+T))}
+%                               StartTask+DurTask =<: Start.(Tasks.(1+T))
                              end
                           end}
             end
@@ -644,7 +645,9 @@ local
                {ForAll RT proc {$ T}
                              case Task==T then skip
                              else TaskId=Tasks.(1+T) in
-                                Start.TaskId + Dur.TaskId =<: StartTask
+                                {FdpSum Start.TaskId#Dur.TaskId '=<:'
+                                 StartTask}
+%                               Start.TaskId + Dur.TaskId =<: StartTask
                              end
                           end}
             end
@@ -1260,6 +1263,9 @@ in
                          end
          disjoint:       FdpDisjoint
 
+         %% Constructive disjunction support (compiler)
+         cd:             FdCD
+
          %% Scheduling
          schedule:       FdSchedule
 
@@ -1270,51 +1276,5 @@ in
          %% Miscellaneous
          sup:            FdSup
          is:             FdIs)
-
-   %%
-   %% Compiler support
-   %%
-
-   `::`           = FdInt
-   `:::`          = FdDom
-
-   `GenSum`       = FdpSum
-   `GenSumC`      = FdpSumC
-   `GenSumCN`     = FdpSumCN
-
-   `::R`          = FdReified.int
-   `:::R`         = FdReified.dom
-
-   `GenSumR`      = FdReified.sum
-   `GenSumCR`     = FdReified.sumC
-   `GenSumCNR`    = FdReified.sumCN
-
-   `Nepc`         = FdpNotEqOff
-   `Lepc`         = FdpLessEqOff
-   proc {`Neq` X Y}
-      {FdpNotEqOff X Y 0}
-   end
-   `Nec`          = `Neq`
-   proc {`Lec` X Y}
-      {FdInt 0#Y X}
-   end
-   proc {`Gec` X Y}
-      {FdInt Y#FdSup X}
-   end
-
-   `PlusRel`      = FdpPlusRel
-   `TimesRel`     = FdpTimesRel
-
-   %%
-   %% Constructive disjunction
-   %%
-
-   `CDHeader`     = FdCD.header
-   `CDBody`       = FdCD.'body'
-   `GenSumCD`     = FdCD.sum
-   `GenSumCCD`    = FdCD.sumC
-   `GenSumCNCD`   = FdCD.sumCN
-   `::CD`         = FdCD.int
-   `:::CD`        = FdCD.dom
 
 end

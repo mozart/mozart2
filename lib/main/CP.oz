@@ -39,14 +39,6 @@ export
    '`GenSum`':     `GenSum`
    '`GenSumC`':    `GenSumC`
    '`GenSumCN`':   `GenSumCN`
-   '`PlusRel`':    `PlusRel`   % NO
-   '`TimesRel`':   `TimesRel`  % NO
-   '`Lec`':        `Lec`       % NO
-   '`Gec`':        `Gec`       % NO
-   '`Nec`':        `Nec`       % NO
-   '`Lepc`':       `Lepc`      % NO
-   '`Nepc`':       `Nepc`      % NO
-   '`Neq`':        `Neq`       % NO
    '`GenSumR`':    `GenSumR`
    '`GenSumCR`':   `GenSumCR`
    '`GenSumCNR`':  `GenSumCNR`
@@ -65,6 +57,45 @@ body
    \insert 'cp/Search.oz'
    \insert 'cp/FD.oz'
    \insert 'cp/FS.oz'
+
+   %%
+   %% Compiler support
+   %%
+
+   `::`           = FD.int
+   `:::`          = FD.dom
+   `GenSum`       = FD.sum
+   `GenSumC`      = FD.sumC
+   `GenSumCN`     = FD.sumCN
+
+   local
+      FDR = FD.reified
+   in
+      `::R`          = FDR.int
+      `:::R`         = FDR.dom
+      `GenSumR`      = FDR.sum
+      `GenSumCR`     = FDR.sumC
+      `GenSumCNR`    = FDR.sumCN
+   end
+
+
+   %%
+   %% Constructive disjunction
+   %%
+
+   local
+      FDCD = FD.cd
+   in
+      `CDHeader`     = FDCD.header
+      `CDBody`       = FDCD.'body'
+      `GenSumCD`     = FDCD.sum
+      `GenSumCCD`    = FDCD.sumC
+      `GenSumCNCD`   = FDCD.sumCN
+      `::CD`         = FDCD.int
+      `:::CD`        = FDCD.dom
+   end
+
+
 end
 
 \else
@@ -78,7 +109,47 @@ in
       \insert 'cp/FD.oz'
       \insert 'cp/FS.oz'
    in
-      \insert 'CP.env'
+      local
+
+      %%
+      %% Compiler support
+      %%
+
+      `::`           = FD.int
+      `:::`          = FD.dom
+      `GenSum`       = FD.sum
+      `GenSumC`      = FD.sumC
+      `GenSumCN`     = FD.sumCN
+
+      local
+         FDR = FD.reified
+      in
+         `::R`          = FDR.int
+         `:::R`         = FDR.dom
+         `GenSumR`      = FDR.sum
+         `GenSumCR`     = FDR.sumC
+         `GenSumCNR`    = FDR.sumCN
+      end
+
+      %%
+      %% Constructive disjunction
+      %%
+
+      local
+         FDCD = FD.cd
+      in
+         `CDHeader`     = FDCD.header
+         `CDBody`       = FDCD.'body'
+         `GenSumCD`     = FDCD.sum
+         `GenSumCCD`    = FDCD.sumC
+         `GenSumCNCD`   = FDCD.sumCN
+         `::CD`         = FDCD.int
+         `:::CD`        = FDCD.dom
+      end
+
+      in
+         \insert 'CP.env'
+      end
    end
 end
 

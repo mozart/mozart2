@@ -93,7 +93,7 @@ local
       FSIsInR = FSP.isInR
    in
       proc {FSIsInReif E S B}
-         B::0#1
+         {FD.bool B}
          {FSIsInR E S B}
       end
    end
@@ -712,7 +712,7 @@ in
                            )
 
             reified:      r(isIn:     proc {$ E S B}
-                                         {`::` 0#1 B}
+                                         {FD.bool B}
                                          {FSIsInReif E S B}
                                       end
                             areIn:    proc {$ WList S BList}
@@ -722,7 +722,7 @@ in
                                             fun {$ E} {FSIsInReif E S} end}
                                       end
                             include:  proc {$ E S B}
-                                         {`::` 0#1 B}
+                                         {FD.bool B}
                                          {FSP.includeR E S B}
                                       end
                             bounds:   FSP.bounds

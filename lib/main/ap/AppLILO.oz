@@ -22,6 +22,7 @@
 
 
 local
+
    %%
    %% Creation of an executable component
    %%
@@ -42,22 +43,46 @@ local
       end
    end
 
-   fun {MkSyslet ArgSpec Body}
-      ArgProc = {Parser.cmd ArgSpec}
+   %%
+   %% Starting the business: link the root functor
+   %%
+
+   local
+      BaseURL = '.'
    in
-      proc {$}
-         Exit = {`Builtin` shutdown 1}
-         LILO = {NewLILO}
+      fun {RootLink Functor}
+         LILO   = {NewLILO Load}
+         EXPORT = {LILO.link Functor BaseURL}
+         FEAT   = {Arity Functor.'export'}.1
       in
-         try {Exit {{Functor {Loader}} {ArgProc}}}
-               % provide some error message
-         catch E then
-            {{{`Builtin` getDefaultExceptionHandler 1}} E}
-         finally {Exit 1} end
+         EXPORT.FEAT
       end
    end
+
    %%
-   fun {RegistryMakeServletProc R CompSpec ArgSpec Functor}
+   %% Creating application procedures
+   %%
+
+   fun {MkSyslet ArgSpec Functor}
+      ArgParser = {Parser.cmd ArgSpec}
+   in
+      proc {$}
+         Exit   = {`Builtin` shutdown 1}
+         Script = {RootLink Functor}
+      in
+         try
+            {Exit {Script {ArgParser}}}
+         catch E then
+            {{{`Builtin` getDefaultExceptionHandler 1}} E}
+         finally
+            {Exit 1}
+         end
+      end
+   end
+
+   fun {MkServlet ArgSpec Functor}
+      ArgParser = {Parser.cmd ArgSpec}
+   in
       Loader  = {RegistryGetLoader R
                  {Adjoin c('OP': eager) CompSpec}}
       ArgProc = {Parser.servlet ArgSpec}

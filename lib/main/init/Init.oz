@@ -94,7 +94,6 @@ prepare
       Event(getStream) at 'x-oz://boot/Event'
       Error(registerFormatter)
       EventSIGCHLD(handler) at 'x-oz://system/EventSIGCHLD'
-      EventSIGUSR2(handler) at 'x-oz://system/EventSIGUSR2'
       Timer(       handler) at 'x-oz://system/Timer'
    export
       put            : PutEventHandler
@@ -154,7 +153,6 @@ prepare
       %% register some handlers
 
       {PutEventHandler 'SIGCHLD' EventSIGCHLD.handler}
-      {PutEventHandler 'SIGUSR2' EventSIGUSR2.handler}
       {PutEventHandler 'timer'   Timer       .handler}
 
       %% start a high priority thread to process the event stream
@@ -239,7 +237,9 @@ define
 
 \ifdef DENYS_EVENTS
       %% Start event handling
-      {RM apply(name:'Event' Event)}
+      local M = {RM apply(name:'Event' Event $)} in
+         {RM enter(name:'Event' M)}
+      end
 \endif
 
       %% Link root functor (i.e. application)

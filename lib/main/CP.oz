@@ -34,67 +34,12 @@ export
    'SearchAll':    SearchAll
    'SearchBest':   SearchBest
    'FD':           FD
-   '`::`':         `::`
-   '`:::`':        `:::`
-   '`GenSum`':     `GenSum`
-   '`GenSumC`':    `GenSumC`
-   '`GenSumCN`':   `GenSumCN`
-   '`GenSumR`':    `GenSumR`
-   '`GenSumCR`':   `GenSumCR`
-   '`GenSumCNR`':  `GenSumCNR`
-   '`::R`':        `::R`
-   '`:::R`':       `:::R`
-   '`CDHeader`':   `CDHeader`
-   '`CDBody`':     `CDBody`
-   '`GenSumCD`':   `GenSumCD`
-   '`GenSumCCD`':  `GenSumCCD`
-   '`GenSumCNCD`': `GenSumCNCD`
-   '`::CD`':       `::CD`
-   '`:::CD`':      `:::CD`
    'FS':           FS
 body
 
    \insert 'cp/Search.oz'
    \insert 'cp/FD.oz'
    \insert 'cp/FS.oz'
-
-   %%
-   %% Compiler support
-   %%
-
-   `::`           = FD.int
-   `:::`          = FD.dom
-   `GenSum`       = FD.sum
-   `GenSumC`      = FD.sumC
-   `GenSumCN`     = FD.sumCN
-
-   local
-      FDR = FD.reified
-   in
-      `::R`          = FDR.int
-      `:::R`         = FDR.dom
-      `GenSumR`      = FDR.sum
-      `GenSumCR`     = FDR.sumC
-      `GenSumCNR`    = FDR.sumCN
-   end
-
-
-   %%
-   %% Constructive disjunction
-   %%
-
-   local
-      FDCD = FD.cd
-   in
-      `CDHeader`     = FDCD.header
-      `CDBody`       = FDCD.'body'
-      `GenSumCD`     = FDCD.sum
-      `GenSumCCD`    = FDCD.sumC
-      `GenSumCNCD`   = FDCD.sumCN
-      `::CD`         = FDCD.int
-      `:::CD`        = FDCD.dom
-   end
-
 
 end
 
@@ -109,47 +54,7 @@ in
       \insert 'cp/FD.oz'
       \insert 'cp/FS.oz'
    in
-      local
-
-      %%
-      %% Compiler support
-      %%
-
-      `::`           = FD.int
-      `:::`          = FD.dom
-      `GenSum`       = FD.sum
-      `GenSumC`      = FD.sumC
-      `GenSumCN`     = FD.sumCN
-
-      local
-         FDR = FD.reified
-      in
-         `::R`          = FDR.int
-         `:::R`         = FDR.dom
-         `GenSumR`      = FDR.sum
-         `GenSumCR`     = FDR.sumC
-         `GenSumCNR`    = FDR.sumCN
-      end
-
-      %%
-      %% Constructive disjunction
-      %%
-
-      local
-         FDCD = FD.cd
-      in
-         `CDHeader`     = FDCD.header
-         `CDBody`       = FDCD.'body'
-         `GenSumCD`     = FDCD.sum
-         `GenSumCCD`    = FDCD.sumC
-         `GenSumCNCD`   = FDCD.sumCN
-         `::CD`         = FDCD.int
-         `:::CD`        = FDCD.dom
-      end
-
-      in
-         \insert 'CP.env'
-      end
+      \insert 'CP.env'
    end
 end
 

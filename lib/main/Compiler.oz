@@ -31,8 +31,7 @@ import
 
    CP.{FS        = 'FS'
        FD        = 'FD'
-       SearchOne = 'SearchOne'
-       `GenSumC` = '`GenSumC`'}
+       SearchOne = 'SearchOne'}
 
    Gump
 

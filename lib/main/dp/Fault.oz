@@ -37,14 +37,62 @@ export
    getEntityCond:     GetEntityCond
 
 define
+   local
+      proc{DecodeConds Cond Rec}
+         case Cond of
+            handler('cond':perm) then
+            Rec = handler(
+                     'cond':      [permBlocked]
+                     once_only:   yes
+                     retry:       no
+                     basis:       perSite
+                     )
+         elseof permHandler then
+            Rec = handler(
+                     'cond':      [permBlocked]
+                     once_only:   yes
+                     retry:       no
+                     basis:       perSite
+                     )
+         elseof watcher('cond':permHome) then
+            Rec = watcher(
+                     'cond':      [permHome]
+                     once_only:   yes
+                     retry:       no
+                     basis:       perSite
+                     )
+         elseof permWatcher  then
+            Rec = watcher(
+                     'cond':      [permHome]
+                     once_only:   yes
+                     retry:       no
+                     basis:       perSite
+                     )
 
-   %%
-   %% Force linking of base library
-   %%
-   {Wait DPB}
+         else raise unknownHandlerSpec(Cond) end
+         end
+      end
+      %%
+      %% Force linking of base library
+      %%
+   in
+      {Wait DPB}
 
-   Install       = Fault.installHW
-   Deinstall     = Fault.deInstallHW
-   GetEntityCond = Fault.getEntityCond
+      Install       = proc{$ Entity Cond Proc}
+                         Rec = {DecodeConds Cond}
+                      in
+                         if {IsLock Entity} orelse
+                            {IsCell Entity} orelse
+                            {IsPort Entity} then
+                            {Fault.installHW Entity Rec Proc}
+                         else skip end
+                      end
 
+      Deinstall     = proc{$ Entity Cond Proc}
+                         Rec = {DecodeConds Cond}
+                      in
+                         {Fault.deInstallHW Entity Rec Proc}
+                      end
+      GetEntityCond = Fault.getEntityCond
+   end
 end

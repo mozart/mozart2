@@ -256,15 +256,18 @@ define
 
       case X#Y
       of no#_ then
+         {Fault.deinstall P watcher('cond':permHome) Watch}
+         {Fault.deinstall P handler('cond':perm)     Handle}
          {Exception.raiseError dp(connection(refusedTicket V))}
       [] _#no then
+         {Fault.deinstall P watcher('cond':permHome) Watch}
+         {Fault.deinstall P handler('cond':perm)     Handle}
          {Exception.raiseError dp(connection(ticketToDeadSite V))}
       [] yes(A)#_ then
+         {Fault.deinstall P watcher('cond':permHome) Watch}
+         {Fault.deinstall P handler('cond':perm)     Handle}
          Entity=A
       end
-
-      {Fault.deinstall P watcher('cond':permHome) Watch}
-      {Fault.deinstall P handler('cond':perm)     Handle}
    end
 
 end

@@ -106,7 +106,7 @@ define
    if {Not Args.detached} then
       {Fault.install
        RunRet
-       watcher('cond':permHome once_only:yes variable:no)
+       watcher('cond':permHome)
        proc {$ E C}
           {System.showError 'RemoteServer: client crashed.'}
           {Application.exit ExitErrorClient}

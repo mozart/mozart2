@@ -239,6 +239,26 @@ define
                  if SolLen  == 64 then 1 else 0 end
               end}
 
+             {MiscTest '20a'
+              fun {$}
+                 proc {SetPart Root}
+                    {FS.var.list.upperBound 3 1#3 Root}
+                    {ForAll Root
+                     proc{$ S}
+                        {FS.cardRange 1 3 S}
+                     end}
+
+                    {FS.disjointN Root}
+
+                    {FS.distribute naive Root}
+                 end
+                 Sol SolLen
+              in
+                 Sol = {Search.base.all SetPart}
+                 SolLen = {Length Sol}
+                 if SolLen  == 6 then 1 else 0 end
+              end}
+
              {MiscTest 21
               fun {$}
                  fun {SetPart N}

@@ -98,8 +98,21 @@ in
                           'Search':  Search
                          )}
     Module = {NewModule}
+    {ForAll ['System'#    System
+             'Foreign'#   Foreign
+             'Error'#     Error
+             'FD'#        FD
+             'FS'#        FS
+             'Search'#    Search
+             'OS'#        OS
+             'Open'#      Open
+             'Component'# Component
+             'Compiler'#  Compiler]
+     proc {$ A#M}
+        {Module.enter 'http://www.ps.uni-sb.de/ozhome/lib/'#A#'.ozf' M}
+     end}
 
-       \insert BatchCompile
+    \insert BatchCompile
  in
     {System.exit {BatchCompile {Map {System.get argv} Atom.toString}}}
  end 'ozc.ozc'}

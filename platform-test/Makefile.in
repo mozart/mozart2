@@ -13,9 +13,21 @@ CPPFLAGS        = @CPPFLAGS@
 LDFLAGS         = @LDFLAGS@
 
 OZLOADSEP       = @OZLOADSEP@
-CYG_SRCDIR      = $(shell $(SRCTOP)/share/lib/cygpath.sh "$(SRCDIR)")
 
-export OZPATH = .$(OZLOADSEP)$(CYG_SRCDIR)
+BUILDSHARE      = $(BUILDTOP)/share
+BUILDLIB        = $(BUILDSHARE)/lib
+BUILDTOOLS      = $(BUILDSHARE)/tools
+SOURCELIB       = $(SRCTOP)/share/lib
+SOURCETOOLS     = $(SRCTOP)/share/tools
+
+CYG_PATH        = $(SRCTOP)/share/lib/cygpath.sh
+CYG_SRCDIR      = $(shell $(CYG_PATH) "$(SRCDIR)")
+CYG_BUILDLIB    = $(shell $(CYG_PATH) "$(BUILDLIB)")
+CYG_BUILDTOOLS  = $(shell $(CYG_PATH) "$(BUILDTOOLS)")
+CYG_SOURCELIB   = $(shell $(CYG_PATH) "$(SOURCELIB)")
+CYG_SOURCETOOLS = $(shell $(CYG_PATH) "$(SOURCETOOLS)")
+
+export OZPATH = .$(OZLOADSEP)$(CYG_SRCDIR)$(OZLOADSEP)$(CYG_BUILDLIB)$(OZLOADSEP)$(CYG_BUILDTOOLS)$(OZLOADSEP)$(CYG_SOURCELIB)$(OZLOADSEP)$(CYG_SOURCETOOLS)
 export SRCDIR
 export OZPLATFORM
 

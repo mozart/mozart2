@@ -385,6 +385,7 @@ in
       Application
       Module
       Pickle
+      OS(getEnv putEnv)
 
    define
 
@@ -461,16 +462,19 @@ in
 
       local
          Engine = {MakeTestEngine Keys Tests}
+         OZPATH = {OS.getEnv 'OZPATH'}
       in
          {Pickle.saveWithHeader
           functor
-          import Module Application
+          import
+             Module(manager)
+             Application(getCmdArgs exit)
+             OS(getEnv putEnv)
+             System
           define
-
              ModMan = {New Module.manager init}
-
              Args = {Application.getCmdArgs TestOptions}
-
+             {OS.putEnv 'OZPATH' {OS.getEnv 'OZPATH'}#OZPATH}
              {Application.exit {{ModMan apply(url:'' Engine $)}.run
                                 Args}}
           end

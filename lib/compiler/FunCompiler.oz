@@ -15,13 +15,15 @@ export
    EvalExpression
    VirtualStringToValue
 body
-   \insert FormatStrings
-   \insert Reporter
-   \insert ParseOz
-   \insert Interface
-in
-   \insert CompilerClass
-   \insert GenericInterface
-   \insert QuietInterface
-   \insert Abstractions
+   local
+      \insert FormatStrings
+      \insert Reporter
+      \insert ParseOz
+      \insert Interface
+   in
+      \insert CompilerClass
+      \insert GenericInterface
+      \insert QuietInterface
+      \insert Abstractions
+   end
 end

@@ -8,8 +8,10 @@ import
 export
    CodeGen
 body
-   \insert CodeEmitter
-   \insert CodeStore
-in
-   \insert CodeGen
+   local
+      \insert CodeEmitter
+      \insert CodeStore
+   in
+      \insert CodeGen
+   end
 end

@@ -12,7 +12,9 @@ import
 export
    SA
 body
-   \insert POTypes
-in
-   \insert StaticAnalysis
+   local
+      \insert POTypes
+   in
+      \insert StaticAnalysis
+   end
 end

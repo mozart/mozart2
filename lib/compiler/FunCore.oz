@@ -12,7 +12,9 @@ export
    FlattenSequence
    Core
 body
-   \insert Annotate
-in
-   \insert CoreLanguage
+   local
+      \insert Annotate
+   in
+      \insert CoreLanguage
+   end
 end

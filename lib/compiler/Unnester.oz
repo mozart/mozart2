@@ -212,9 +212,6 @@ local
       [] fDoImport(_ _ _) then
          FVsHd = FS|FVsTl
          FS
-      [] fExportItem(_) then
-         FVsHd = FS|FVsTl
-         fSkip(unit)
       else
          {GetPatternVariablesStatement FS FVsHd FVsTl}
          FS
@@ -489,7 +486,7 @@ local
             NewOrigin = case FE of fSelf(_) then 'Self'
                         [] fProc(_ _ _ _ _) then 'Proc'
                         [] fFun(_ _ _ _ _) then 'Fun'
-                        [] fFunctor(_ _ _ _) then 'Functor'
+                        [] fFunctor(_ _ _ _ _) then 'Functor'
                         [] fClass(_ _ _ _) then 'Class'
                         [] fScanner(_ _ _ _ _ _) then 'Scanner'
                         [] fParser(_ _ _ _ _ _ _) then 'Parser'
@@ -570,7 +567,7 @@ local
             Unnester, UnnestFDExpression(FE2 ?GFrontEq2 ?NewFE2)
             FS = {MakeFdCompareStatement Op NewFE1 NewFE2 C}
             GFrontEq1|GFrontEq2|Unnester, UnnestStatement(FS $)
-         [] fFdIn(Op FE1 FE2 C) then Feature CND PrintName FS in
+         [] fFdIn(Op FE1 FE2 C) then Feature CND FS in
             % note: reverse arguments!
             Feature = case Op of '::' then 'int'
                       [] ':::' then 'dom'
@@ -664,9 +661,9 @@ local
             else skip
             end
             GFrontEq|GD   % Definition node must always be second element!
-         [] fFunctor(FE FDescriptors FBody C) then
+         [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
-            FImportArgs ImportFS FExportArgs ExportFS FColons CND FBody2 FFun
+            FImportArgs ImportFS FExportArgs FColons CND NewFBody FFun
             FImportDesc FExportDesc FRecord GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
@@ -676,14 +673,15 @@ local
              ?FImport ?FExport ?FProp}
             {@BA openScope()}
             Unnester, AnalyseImports(FImport ImportFV ?FImportArgs ?ImportFS)
-            Unnester, AnalyseExports(FExport ?FExportArgs ?ExportFS ?FColons)
+            Unnester, AnalyseExports(FExport ?FExportArgs ?FColons)
             {@BA generate('IMPORT' C ?ImportGV)}
             {@BA closeScope(_)}
             ImportFV = fVar({ImportGV getPrintName($)} C)
             CND = {CoordNoDebug C}
-            FBody2 = fLocal(fAnd(ImportFS ExportFS)
-                            fAnd(FBody fRecord(fAtom('export' CND) FColons)) C)
-            FFun = fFun(fDollar(CND) [ImportFV] FBody2
+            NewFBody = fLocal(fAnd(ImportFS FBody1)
+                              fAnd(FBody2 fRecord(fAtom('export' CND) FColons))
+                              C)
+            FFun = fFun(fDollar(CND) [ImportFV] NewFBody
                         fAtom('instantiate' C)|FProp C)
             FImportDesc = fRecord(fAtom('import' CND) FImportArgs)
             FExportDesc = fRecord(fAtom('export' CND) FExportArgs)
@@ -1146,9 +1144,10 @@ local
                                       'of nested function'))}
                Unnester, UnnestStatement(FE $)
             end
-         [] fFunctor(FE FDescriptors FBody C) then
+         [] fFunctor(FE FDescriptors FBody1 FBody2 C) then
             case FE of fDollar(_) then
-               Unnester, UnnestStatement(fFunctor(FV FDescriptors FBody C) $)
+               Unnester,
+               UnnestStatement(fFunctor(FV FDescriptors FBody1 FBody2 C) $)
             else
                {@reporter
                 error(coord: {CoordinatesOf FE} kind: SyntaxError
@@ -1643,10 +1642,10 @@ local
             {New Core.equation init(LeftGVO RightGVO C)}
          end
       end
-      meth AnalyseExports(Ds ?FExportArgs ?ExportFS ?FColons)
+      meth AnalyseExports(Ds ?FExportArgs ?FColons)
          case Ds of D|Dr then
             fExportItem(FEI) = D FeatureName FV PrintName C
-            FeatureName FExportArgr ExportFS2 FColonr
+            FeatureName FExportArgr FColonr
          in
             case FEI of fColon(X Y) then
                FeatureName = X
@@ -1659,12 +1658,10 @@ local
             {@BA bind(PrintName C _)}
             %--** possibility to specify a type different from `value'
             FExportArgs = fColon(FeatureName fAtom(value C))|FExportArgr
-            ExportFS = fAnd(fExportItem(FV) ExportFS2)
             FColons = fColon(FeatureName FV)|FColonr
-            Unnester, AnalyseExports(Dr ?FExportArgr ?ExportFS2 ?FColonr)
+            Unnester, AnalyseExports(Dr ?FExportArgr ?FColonr)
          [] nil then
             FExportArgs = nil
-            ExportFS = fSkip(unit)
             FColons = nil
          end
       end
@@ -2356,8 +2353,8 @@ in
          [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {FS C})
          [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {FS C})
          [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {FS C})
-         [] fFunctor(P1 Ds P2 C) then
-            fFunctor({NP P1} {Map Ds NP} {SP P2} {FS C})
+         [] fFunctor(P1 Ds P2 P3 C) then
+            fFunctor({NP P1} {Map Ds NP} {SP P2} {SP P3} {FS C})
          [] fImport(_ _) then P
          [] fExport(_ _) then P
          [] fClass(P Ds Ms C) then
@@ -2427,8 +2424,8 @@ in
          [] fApply(P Ps C) then fApply({NP P} {Map Ps NP} {CS C})
          [] fProc(P1 Ps P2 Fs C) then fProc({NP P1} Ps {SP P2} Fs {CS C})
          [] fFun(P1 Ps P2 Fs C) then fFun({NP P1} Ps {SP P2} Fs {CS C})
-         [] fFunctor(P1 Ds P2 C) then
-            fFunctor({NP P1} {Map Ds NP} {SP P2} {CS C})
+         [] fFunctor(P1 Ds P2 P3 C) then
+            fFunctor({NP P1} {Map Ds NP} {SP P2} {SP P3} {CS C})
          [] fClass(P Ds Ms C) then
             fClass({NP P} {Map Ds NP} {Map Ms SP} {CS C})
          [] fMeth(X P C) then fMeth(X {SP P} C)

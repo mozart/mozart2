@@ -335,7 +335,7 @@ define
             CombinedValues, create(Node Visual)
             @secTag = {Visual newTag($)}
             String  = if {IsAtom FeaVal}
-                      then {ConvertAtom FeaVal}
+                      then {ConvertAtomExternal FeaVal _}
                       elseif {IsName FeaVal}
                       then '<N:'#{System.printName FeaVal}#'>'
                       else FeaVal

@@ -594,9 +594,12 @@ define
                Name  = Class.OOPrint
                Attr  = {Record.arity Class.OOAttr}
                Feat  = {Record.arity Class.OOFeat}
-               Res   = {Record.make Name {Append Attr Feat}}
+               AttrR = {Record.make attributes Attr}
+               FeatR = {Record.make features Feat}
             in
-               {MapAttr Attr V Res} {MapFeat Feat V Res} Res
+               {MapAttr Attr V AttrR}
+               {MapFeat Feat V FeatR}
+               {List.toTuple Name [AttrR FeatR]}
             end
          end
          %% Chunk Specific Functions

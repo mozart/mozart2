@@ -20,7 +20,7 @@
 %%%
 
 local
-   ParserLib = {Foreign.staticLoad 'libparser.so'}
+   ParserLib = {Foreign.staticLoad 'libParser.so'}
    ParseFile          = ParserLib.'Parser.parseFile'
    ParseVirtualString = ParserLib.'Parser.parseVirtualString'
 in

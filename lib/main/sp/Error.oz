@@ -1820,7 +1820,7 @@ in
               hint(l:'At 3rd argument' m:Call.2.2.2.1)
               hint(l:'Expected' m:'virtual string or record')]
              Exc}
-         elseof dp(save(resources Filename Resources)) then
+         elseof dp(save resources Filename Resources) then
             {FormatExc
              'Resources found during save'
              unit
@@ -1848,6 +1848,19 @@ in
              [hint(l:'Pickle name'      m:ComponentName)
               hint(l:'Version expected' m:VerExpected)
               hint(l:'Version got'      m:VerGot)]
+             Exc}
+         elseof dp(load notComponent CompName) then
+            {FormatExc
+             'trying to load non-pickle'
+             unit
+             [hint(l:'File name'      m:CompName)]
+             Exc}
+         elseof dp(load open Err CompName) then
+            {FormatExc
+             'Operating system error when opening pickle'
+             unit
+             [hint(l:'File name'   m:CompName)
+              hint(l:'Description' m:Err)]
              Exc}
          elseof dp(send nogoods Value NoGoods) then
             {FormatExc

@@ -35,8 +35,11 @@ T={{Load './te.ozc'}
         usage:    false
         help:     false
         keys:     "all"
+        ignores:  "none"
         tests:    "all"
         do:       true
         time:     ""
         gc:       0
         threads:  1) _}
+
+{System.set messages(idle:true)}

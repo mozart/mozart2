@@ -23,6 +23,7 @@ functor
 import
    Pickle(save load saveCompressed)
    OS(tmpnam unlink)
+   FD
 export
    Return
 define
@@ -39,6 +40,7 @@ define
      [{NewCell 1}
       {NewPort _}
       _
+      _::0#1
       {New BaseObject noop}
       proc sited {$} skip end
       class $ prop sited end

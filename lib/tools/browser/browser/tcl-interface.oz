@@ -75,7 +75,7 @@ in
          case E
          of ctrl(R)    then 'Control-' # {MakeEventPattern R}
          [] shift(R)   then 'Shift-' # {MakeEventPattern R}
-         [] lock(R)    then 'Lock-' # {MakeEventPattern R}
+         [] 'lock'(R)    then 'Lock-' # {MakeEventPattern R}
          [] mod1(R)    then 'Mod1-' # {MakeEventPattern R}
          [] mod2(R)    then 'Mod2-' # {MakeEventPattern R}
          [] mod3(R)    then 'Mod3-' # {MakeEventPattern R}

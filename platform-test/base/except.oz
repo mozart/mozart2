@@ -16,7 +16,7 @@ define
       end
    in
       fun {AskVerbose S}
-         {Space.askVerbose S}
+         {Deref {Space.askVerbose S}}
       end
    end
 

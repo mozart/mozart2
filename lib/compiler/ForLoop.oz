@@ -88,6 +88,7 @@ define
           [] forPattern(X forGeneratorInt(E1 E2 E3)) then
              Lo = {MakeVar 'ForIntVarLo'}
              Hi = {MakeVar 'ForIntVarHi'}
+             XVar = case X of fWildcard(_) then {MakeVar 'ForIntVar'} else X end
              By
           in
              {Push 'outers' fEq(Lo E1 unit)}
@@ -98,10 +99,11 @@ define
                 By = {MakeVar 'ForIntVarBy'}
                 {Push 'outers' fEq(By E3 unit)}
              end
-             {Push 'args'  X}
+
+             {Push 'args'  XVar}
              {Push 'inits' Lo}
-             {Push 'tests' fOpApply('=<' [X Hi] unit)}
-             {Push 'nexts' fOpApply('+'  [X By] unit)}
+             {Push 'tests' fOpApply('=<' [XVar Hi] unit)}
+             {Push 'nexts' fOpApply('+'  [XVar By] unit)}
           [] forPattern(X forGeneratorC(E1 E2 unit)) then
              {Push 'args'  X}
              {Push 'inits' E1}

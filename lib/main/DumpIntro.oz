@@ -28,8 +28,14 @@
 
 \define DumpIntroLoaded
 
+\ifdef CompileBase
+
+\insert 'Base.oz'
+
+\else
+
 declare
-  Base Standard Dump
+  Base Standard
 in
 
 declare
@@ -49,6 +55,12 @@ in
    Base     = {Load ComDIR#'Base'#ComEXT}
    Standard = {Load ComDIR#'Standard'#ComEXT}
 end
+
+\endif
+
+declare
+   Dump
+in
 
 local
    \insert 'DumpSettings.oz'

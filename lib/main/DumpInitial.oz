@@ -29,24 +29,20 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-\insert 'Base.oz'
+\define CompileBase
+
+\insert 'DumpIntro.oz'
 
 local
-   \insert 'Dump.oz'
+   BASE = \insert 'Base.env'
 in
+   {Dump BASE 'Base'}
+end
 
-   local
-      BASE = \insert 'Base.env'
-   in
-      {Dump BASE 'Base'}
-   end
-
-   local
-      STD = \insert 'Standard.env'
-   in
-      {Dump STD 'Standard'}
-   end
-
+local
+   STD = \insert 'Standard.env'
+in
+   {Dump STD 'Standard'}
 end
 
 \insert 'DumpHalt.oz'

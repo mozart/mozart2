@@ -140,6 +140,7 @@ local
 
       local
          ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}
+         IsUniqueName        = {`Builtin` 'isUniqueName'        2}
 
          fun {ListToVirtualString Vs In FPToIntMap}
             case Vs of V|Vr then
@@ -166,7 +167,10 @@ local
 
          fun {MyValueToVirtualString Value FPToIntMap}
             case {IsName Value} then
-               case {IsUniqueName Value} then
+               case Value of true then 'true'
+               [] false then 'false'
+               [] unit then 'unit'
+               elsecase {IsUniqueName Value} then
                   %--** this only works if the name's print name is friendly
                   '<U: '#{System.printName Value}#'>'
                else
@@ -201,6 +205,9 @@ local
             elsecase Value of V1|Vr then
                {ListToVirtualString Vr
                 '['#{MyValueToVirtualString V1 FPToIntMap} FPToIntMap}#']'
+            [] V1#V2 then
+               {MyValueToVirtualString V1 FPToIntMap}#"#"#
+               {MyValueToVirtualString V2 FPToIntMap}
             elsecase {IsTuple Value} then
                {TupleToVirtualString Value FPToIntMap}
             else
@@ -259,10 +266,9 @@ local
             [] createCond(L _) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
             [] shallowGuard(L _) then AssemblerClass, declareLabel(L)
-            [] shallowTest1(_ _ L _) then AssemblerClass, declareLabel(L)
-            [] shallowTest2(_ _ _ L _) then AssemblerClass, declareLabel(L)
-            [] testLess(_ _ L _) then AssemblerClass, declareLabel(L)
-            [] testLessEq(_ _ L _) then AssemblerClass, declareLabel(L)
+            [] testBI(_ _ L _) then AssemblerClass, declareLabel(L)
+            [] testLT(_ _ _ L _) then AssemblerClass, declareLabel(L)
+            [] testLE(_ _ _ L _) then AssemblerClass, declareLabel(L)
             [] testLiteral(_ _ L1 L2 _) then
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
@@ -372,18 +378,15 @@ local
             [] shallowGuard(L X) then A in
                A = {Dictionary.get @LabelDict L}
                shallowGuard(A X)
-            [] shallowTest1(X1 X2 L X3) then A in
+            [] testBI(X1 X2 L X3) then A in
                A = {Dictionary.get @LabelDict L}
-               shallowTest1(X1 X2 A X3)
-            [] shallowTest2(X1 X2 X3 L X4) then A in
+               testBI(X1 X2 A X3)
+            [] testLT(X1 X2 X3 L X4) then A in
                A = {Dictionary.get @LabelDict L}
-               shallowTest2(X1 X2 X3 A X4)
-            [] testLess(X1 X2 L X3) then A in
+               testLT(X1 X2 X3 A X4)
+            [] testLE(X1 X2 X3 L X4) then A in
                A = {Dictionary.get @LabelDict L}
-               testLess(X1 X2 A X3)
-            [] testLessEq(X1 X2 L X3) then A in
-               A = {Dictionary.get @LabelDict L}
-               testLessEq(X1 X2 A X3)
+               testLE(X1 X2 X3 A X4)
             [] testLiteral(X1 X2 L1 L2 X3) then A1 A2 in
                A1 = {Dictionary.get @LabelDict L1}
                A2 = {Dictionary.get @LabelDict L2}
@@ -686,45 +689,31 @@ local
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] callBuiltin(Builtinname _) then
-            {Assembler append(I1)}
-            case {CondSelect {GetBuiltinInfo Builtinname} doesNotReturn false}
-            then {EliminateDeadCode Rest Assembler}
-            else {Peephole Rest Assembler}
-            end
-         [] inlineFun1(Fun X1 X2 NLiveRegs) then
-            case Fun of '+1' then
+         [] callBI(Builtinname Args NLiveRegs) then
+            BIInfo = {GetBuiltinInfo Builtinname}
+         in
+            case Builtinname of '+1' then [X1]#[X2] = Args in
                {Assembler append(inlinePlus1(X1 X2 NLiveRegs))}
-            [] '-1' then
+            [] '-1' then [X1]#[X2] = Args in
                {Assembler append(inlineMinus1(X1 X2 NLiveRegs))}
-            else
-               {Assembler append(I1)}
-            end
-            {Peephole Rest Assembler}
-         [] inlineFun2(Fun X1 X2 X3 NLiveRegs) then
-            case Fun of '+' then
+            [] '+' then [X1 X2]#[X3] = Args in
                {Assembler append(inlinePlus(X1 X2 X3 NLiveRegs))}
-            [] '-' then
+            [] '-' then [X1 X2]#[X3] = Args in
                {Assembler append(inlineMinus(X1 X2 X3 NLiveRegs))}
-            [] '>' then
-               {Assembler append(inlineFun2('<' X2 X1 X3 NLiveRegs))}
-            [] '>=' then
-               {Assembler append(inlineFun2('=<' X2 X1 X3 NLiveRegs))}
-            [] '^' then
+            [] '>' then [X1 X2]#Out = Args in
+               {Assembler append(callBI('<' [X2 X1]#Out NLiveRegs))}
+            [] '>=' then [X1 X2]#Out = Args in
+               {Assembler append(callBI('=<' [X2 X1]#Out NLiveRegs))}
+            [] '^' then [X1 X2]#[X3] = Args in
                {Assembler append(inlineUparrow(X1 X2 X3 NLiveRegs))}
             else
                {Assembler append(I1)}
             end
-            {Peephole Rest Assembler}
-         [] inlineRel2(Rel X1 X2 NLiveRegs) then
-            case Rel of '>Rel' then
-               {Assembler append(inlineRel2('<Rel' X2 X1 NLiveRegs))}
-            [] '>=Rel' then
-               {Assembler append(inlineRel2('=<Rel' X2 X1 NLiveRegs))}
+            case {CondSelect BIInfo doesNotReturn false} then
+               {EliminateDeadCode Rest Assembler}
             else
-               {Assembler append(I1)}
+               {Peephole Rest Assembler}
             end
-            {Peephole Rest Assembler}
          [] genCall(GCI Arity) then
             case Rest of deAllocateL(I)|return|Rest then
                {MakeDeAllocate I Assembler}
@@ -891,42 +880,19 @@ local
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
-         [] shallowTest2(Builtinname X1 X2 L1 NLiveRegs) then
-            case Rest of branch(L2)|lbl(!L1)|Rest1 then
-               case Builtinname of '<Rel' then
-                  {Assembler append(testLessEq(X2 X1 L2 NLiveRegs))}
-                  {Assembler setLabel(L1)}
-                  {Peephole Rest1 Assembler}
-               [] '>=Rel' then
-                  {Assembler append(testLess(X1 X2 L2 NLiveRegs))}
-                  {Assembler setLabel(L1)}
-                  {Peephole Rest1 Assembler}
-               [] '=<Rel' then
-                  {Assembler append(testLess(X2 X1 L2 NLiveRegs))}
-                  {Assembler setLabel(L1)}
-                  {Peephole Rest1 Assembler}
-               [] '>Rel' then
-                  {Assembler append(testLessEq(X1 X2 L2 NLiveRegs))}
-                  {Assembler setLabel(L1)}
-                  {Peephole Rest1 Assembler}
-               else
-                  {Assembler append(I1)}
-                  {Peephole Rest Assembler}
-               end
+         [] testBI(Builtinname Args L1 NLiveRegs) then
+            case Builtinname of '<' then [X1 X2]#[X3] = Args in
+               {Assembler append(testLT(X1 X2 X3 L1 NLiveRegs))}
+            [] '=<' then [X1 X2]#[X3] = Args in
+               {Assembler append(testLE(X1 X2 X3 L1 NLiveRegs))}
+            [] '>='then [X1 X2]#[X3] = Args in
+               {Assembler append(testLE(X2 X1 X3 L1 NLiveRegs))}
+            [] '>' then [X1 X2]#[X3] = Args in
+               {Assembler append(testLT(X2 X1 X3 L1 NLiveRegs))}
             else
-               case Builtinname of '<Rel' then
-                  {Assembler append(testLess(X1 X2 L1 NLiveRegs))}
-               [] '=<Rel' then
-                  {Assembler append(testLessEq(X1 X2 L1 NLiveRegs))}
-               [] '>=Rel' then
-                  {Assembler append(testLessEq(X2 X1 L1 NLiveRegs))}
-               [] '>Rel' then
-                  {Assembler append(testLess(X2 X1 L1 NLiveRegs))}
-               else
-                  {Assembler append(I1)}
-               end
-               {Peephole Rest Assembler}
+               {Assembler append(I1)}
             end
+            {Peephole Rest Assembler}
          [] testLiteral(_ _ _ _ _) then
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}

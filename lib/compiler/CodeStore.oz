@@ -29,7 +29,7 @@ Continuations = c(vMakePermanent: 3
                   vGetVariable: 3
                   vGetNumber: 3
                   vGetLiteral: 3
-                  vCallBuiltin: 4
+                  vCallBuiltin: 5
                   vGenCall: 8
                   vCall: 5
                   vFastCall: 5
@@ -53,7 +53,7 @@ Continuations = c(vMakePermanent: 3
                   vWaitTop: 2
                   vShallowGuard: 6
                   vTestBool: 7
-                  vShallowTest: 6
+                  vTestBuiltin: 6
                   vTestNumber: 7
                   vTestLiteral: 7
                   vSwitchOnTerm: 6
@@ -181,7 +181,7 @@ class CodeStore from Emitter
             skip
          [] vGetLiteral(_ _ _) then
             skip
-         [] vCallBuiltin(_ _ Regs _) then
+         [] vCallBuiltin(_ _ Regs _ _) then
             CodeStore, RegOccs(Regs RS)
          [] vGenCall(_ Reg _ _ _ Regs _ _) then
             CodeStore, RegOcc(Reg RS)
@@ -403,7 +403,7 @@ class CodeStore from Emitter
          [] vGetVariable(_ _ _) then skip
          [] vGetNumber(_ _ _) then skip
          [] vGetLiteral(_ _ _) then skip
-         [] vCallBuiltin(_ _ _ _) then skip
+         [] vCallBuiltin(_ _ _ _ _) then skip
          [] vGenCall(_ _ _ _ _ _ _ _) then skip
          [] vCall(_ _ _ _ _) then skip
          [] vFastCall(_ _ _ _ _) then skip

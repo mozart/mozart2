@@ -377,57 +377,118 @@ in
             Emitter, Emit(unifyNumber(Number))
          [] vGetLiteral(_ Literal _) then
             Emitter, Emit(unifyLiteral(Literal))
-         [] vCallBuiltin(OccsRS Builtinname Regs Cont) then BIInfo in
+         [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
+            BIInfo NewCont2
+         in
             BIInfo = {GetBuiltinInfo Builtinname}
-            case {CondSelect BIInfo inlineFun false} then
-               Emitter, EmitInlineFun(OccsRS Builtinname Regs Cont)
-            elsecase {CondSelect BIInfo inlineRel false} then
-               Emitter, EmitInlineRel(OccsRS Builtinname Regs Cont)
-            else Instr Arity ArgsSurvive in
-               Instr = callBuiltin(Builtinname Arity)
-               ArgsSurvive = {Not {CondSelect BIInfo destroysArguments false}}
-               Emitter, GenericEmitCall(none ~1 Regs Instr _ Arity
-                                        ArgsSurvive unit nil)
+            NewCont2 =
+            case {CondSelect BIInfo test false} then
+               Reg = {List.last Regs}
+            in
+               case Cont
+               of vTestBool(_ !Reg Addr1 Addr2 _ Coord NewCont InitsRS) then
+                  case {Not self.debugInfoControlSwitch}
+                     andthen Emitter, IsFirst(Reg $)
+                     andthen Emitter, DoesNotOccurIn(Reg Addr1 $)
+                     andthen Emitter, DoesNotOccurIn(Reg Addr2 $)
+                     andthen Emitter, DoesNotOccurIn(Reg NewCont $)
+                  then
+                     TestCont =
+                     case Builtinname of '==' then [Reg1 Reg2 _] = Regs in
+                        case {Dictionary.condGet @Temporaries Reg1 none}
+                        of vEquateNumber(_ Number _ _) then
+                           vTestNumber(OccsRS Reg2 Number Addr1 Addr2
+                                       Coord NewCont InitsRS)
+                        [] vEquateLiteral(_ Literal _ _) then
+                           vTestLiteral(OccsRS Reg2 Literal Addr1 Addr2
+                                        Coord NewCont InitsRS)
+                        elsecase {Dictionary.condGet @Temporaries Reg2 none}
+                        of vEquateNumber(_ Number _ _) then
+                           vTestNumber(OccsRS Reg1 Number Addr1 Addr2
+                                       Coord NewCont InitsRS)
+                        [] vEquateLiteral(_ Literal _ _) then
+                           vTestLiteral(OccsRS Reg1 Literal Addr1 Addr2
+                                        Coord NewCont InitsRS)
+                        else ~1
+                        end
+                     [] '\\=' then [Reg1 Reg2 _] = Regs in
+                        case {Dictionary.condGet @Temporaries Reg1 none}
+                        of vEquateNumber(_ Number _ _) then
+                           vTestNumber(OccsRS Reg2 Number Addr2 Addr1
+                                       Coord NewCont InitsRS)
+                        [] vEquateLiteral(_ Literal _ _) then
+                           vTestLiteral(OccsRS Reg2 Literal Addr2 Addr1
+                                        Coord NewCont InitsRS)
+                        elsecase {Dictionary.condGet @Temporaries Reg2 none}
+                        of vEquateNumber(_ Number _ _) then
+                           vTestNumber(OccsRS Reg1 Number Addr2 Addr1
+                                       Coord NewCont InitsRS)
+                        [] vEquateLiteral(_ Literal _ _) then
+                           vTestLiteral(OccsRS Reg1 Literal Addr2 Addr1
+                                        Coord NewCont InitsRS)
+                        else ~1
+                        end
+                     else ~1
+                     end
+                  in
+                     case TestCont \= ~1 then TestCont
+                     else
+                        vTestBuiltin(OccsRS Builtinname Regs Addr1 Addr2
+                                     NewCont InitsRS)
+                     end
+                  else ~1
+                  end
+               else ~1
+               end
+            else ~1
+            end
+            case NewCont2 \= ~1 then
+               continuations <- NewCont2|@continuations.2
+            else XsIn NLiveRegs XsOut Unifies in
+               Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn ?NLiveRegs
+                                            false ?XsOut ?Unifies)
+               Emitter, DebugEntry(Coord 'call' NLiveRegs)
+               Emitter, Emit(callBI(Builtinname XsIn#XsOut NLiveRegs))
+               Emitter, DebugExit(Coord 'call' NLiveRegs)
+               Emitter, EmitUnifies(Unifies)
             end
          [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
                Instr = genCall(gci(R IsMethod Literal false RecordArity) 0)
-               Emitter, GenericEmitCall(any Reg Regs Instr R _ false Coord nil)
+               Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
             elsecase IsMethod then Instr R Which in
                Instr = applMeth(ami(Literal RecordArity) R)
                Which = case @continuations == nil then non_y   % tailApplMeth
                        else any
                        end
-               Emitter, GenericEmitCall(any Reg Regs Instr R _ false Coord nil)
+               Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
             else Instr R Arity Which in
                Instr = call(R Arity)
                Which = case @continuations == nil then non_y   % tailCall
                        else any
                        end
-               Emitter, GenericEmitCall(Which Reg Regs Instr R Arity
-                                        false Coord nil)
+               Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
             end
          [] vCall(_ Reg Regs Coord _) then Instr R Arity Which in
             Instr = call(R Arity)
             Which = case @continuations == nil then non_y   % tailCall
                     else any
                     end
-            Emitter, GenericEmitCall(Which Reg Regs Instr R Arity
-                                     false Coord nil)
+            Emitter, GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
          [] vFastCall(_ PredicateRef Regs Coord _) then Instr in
             case {IsProcedure PredicateRef} then
                Instr = marshalledFastCall(PredicateRef {Length Regs} * 2)
             else
                Instr = genFastCall(PredicateRef 0)
             end
-            Emitter, GenericEmitCall(none ~1 Regs Instr _ _ false Coord nil)
+            Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
          [] vApplMeth(_ Reg Literal RecordArity Regs Coord _) then
             Instr R Which in
             Instr = applMeth(ami(Literal RecordArity) R)
             Which = case @continuations == nil then non_y   % tailApplMeth
                     else any
                     end
-            Emitter, GenericEmitCall(any Reg Regs Instr R _ false Coord nil)
+            Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
          [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord Cont) then
             case AlwaysSucceeds then skip
             elsecase Emitter, IsFirst(Reg1 $) then
@@ -442,7 +503,7 @@ in
                else X1 NLiveRegs X2 in
                   Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
                   NLiveRegs = @HighestUsedX + 1
-                  Emitter, PredictInlineFunResult(Reg2 ?X2)
+                  Emitter, PredictBuiltinOutput(Reg2 ?X2)
                   Emitter, Emit(inlineDot(X1 Feature X2 NLiveRegs cache))
                end
             elseof R then X1 X2 NLiveRegs in
@@ -456,7 +517,7 @@ in
          [] vInlineAt(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then NLiveRegs X in
                NLiveRegs = @HighestUsedX + 1
-               Emitter, PredictInlineFunResult(Reg ?X)
+               Emitter, PredictBuiltinOutput(Reg ?X)
                Emitter, Emit(inlineAt(Literal X NLiveRegs cache))
             elseof R then X NLiveRegs in
                NLiveRegs = @HighestUsedX + 1
@@ -681,8 +742,9 @@ in
             Emitter, RestoreRegisterMapping(RegMap3)
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord 'cond')
-         [] vShallowTest(_ Builtinname Regs Addr1 Addr2 Cont InitsRS) then
-            HasLocalEnv OldContLabels Label2 Dest2 RegMap1 RegMap2
+         [] vTestBuiltin(_ Builtinname Regs Addr1 Addr2 Cont InitsRS) then
+            HasLocalEnv OldContLabels Label2 Dest2 BIInfo XsIn NLiveRegs
+            XsOut RegMap1 RegMap2
          in
             Emitter, DoInits(InitsRS Cont)
             Emitter, PrepareShared(Addr1)
@@ -690,16 +752,10 @@ in
             Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
-            case Regs of [Reg1] then X1 NLiveRegs in
-               Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, Emit(shallowTest1(Builtinname X1 Dest2 NLiveRegs))
-            [] [Reg1 Reg2] then X1 X2 NLiveRegs in
-               Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, Emit(shallowTest2(Builtinname X1 X2 Dest2 NLiveRegs))
-            end
+            BIInfo = {GetBuiltinInfo Builtinname}
+            Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn ?NLiveRegs
+                                         true ?XsOut nil)
+            Emitter, Emit(testBI(Builtinname XsIn#XsOut Dest2 NLiveRegs))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -868,17 +924,18 @@ in
                   true
                else false
                end
-            elseof vCallBuiltin(_ 'New' [ClassReg !Reg ObjReg] Cont2) then
+            elseof vCallBuiltin(_ 'New' [ClassReg !Reg ObjReg] Coord Cont2)
+            then
                case Emitter, DoesNotOccurIn(Reg Cont2 $) then
                   X1 NLiveRegs X2
                in
                   Emitter, AllocateAndInitializeAnyTemp(ClassReg ?X1)
                   NLiveRegs = @HighestUsedX + 1
                   Emitter, PredictTemp(ObjReg ?X2)
-                  Emitter, Emit(inlineFun1('newObject' X1 X2 NLiveRegs))
+                  Emitter, Emit(callBI('newObject' [X1]#[X2] NLiveRegs))
                   %--** maybe X1 may die here?
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
-                                       VArgs unit Cont2)
+                                       VArgs Coord Cont2)
                   true
                else false
                end
@@ -909,10 +966,12 @@ in
                    Emitter, AllocateThisShortLivedTemp(I - 1 ?X)
                    Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
                    (~I|Regs)#((I - 1)#'skip'|ArgInits)
+                   %--** X is not freed
                 else X in
                    Emitter, AllocateShortLivedTemp(?X)
                    Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
                    (~I|Regs)#((I - 1)#move(X x(I - 1))|ArgInits)
+                   %--** X is not freed
                 end
              end
           end nil#nil}
@@ -920,13 +979,13 @@ in
          continuations <- case Cont of nil then OldContinuations
                           else Cont|OldContinuations
                           end
-         Emitter, GenericEmitCall(any ObjReg Regs Instr R _
-                                  false Coord ArgInits)
+         Emitter, GenericEmitCall(any ObjReg Regs Instr R _ Coord ArgInits)
          continuations <- Cont|OldContinuations
       end
 
-      meth GenericEmitCall(WhichReg Reg Regs Instr R Arity
-                           ArgsSurvive Coord ArgInits) R0 NLiveRegs in
+      meth GenericEmitCall(WhichReg Reg Regs Instr R Arity Coord ArgInits)
+         R0 NLiveRegs
+      in
          %%
          %% This method does everything that is required to set up the
          %% registers for a call.  WhichReg indicates whether the call
@@ -945,25 +1004,9 @@ in
          %% register is free).
          %%
          %
-         % The call instructions invalidate some temporary registers.
-         % ArgsSurvive tells us which:  If it is false, all temporaries
-         % die, if it is true, the argument registers survive.  So some
-         % registers may need to be made permanent before the call:
-         %
-         case @continuations of Cont|_ then RS in
-            case ArgsSurvive then
-               RS = {RegSet.copy Cont.1}
-               {ForAll Regs
-                proc {$ Reg}
-                   case Reg < @minReg then skip
-                   else {RegSet.remove RS Reg}
-                   end
-                end}
-            else RS = Cont.1
-            end
-            % RS now lists all the registers that are still required after
-            % the call but that do not survive it.  For each register, one
-            % of the following holds:
+         case @continuations of Cont|_ then
+            % For each register still required after the call, one of the
+            % following holds:
             % 1) it has no delayed initialization and is unallocated
             %    => nothing to be done
             % 2) it has a temporary, but no permanent
@@ -974,7 +1017,7 @@ in
             %    => emit it into a permanent
             % 5) it has a delayed initialization and is not an argument
             %    => delay it until after the call
-            {ForAll {RegSet.toList RS}
+            {ForAll {RegSet.toList Cont.1}
              proc {$ Reg} Result in
                 % We have to be careful not to emit any delayed initialization
                 % too soon, so we do not use GetTemp here:
@@ -1093,7 +1136,7 @@ in
          % Now we place the arguments in the correct locations and
          % emit the call instruction.
          %
-         Emitter, SetArguments(Arity ArgInits Regs ArgsSurvive)
+         Emitter, SetArguments(Arity ArgInits Regs)
          case self.debugInfoControlSwitch then
             case R0 of x(I) then
                % this test is needed to ensure correctness, since
@@ -1115,26 +1158,9 @@ in
          end
          Emitter, DebugEntry(Coord 'call' NLiveRegs)
          Emitter, Emit(Instr)
-         Emitter, DebugExit(Coord 'call'
-                            case ArgsSurvive then Arity else 0 end)
-         %
-         % At this point, all temporaries (except maybe the arguments)
-         % are dead, and we forgot about them.  If the argument registers
-         % survived, we have to reenter them.
-         %
-         case ArgsSurvive then
-            {List.forAllInd Regs
-             proc {$ I Reg}
-                case Reg < 0 then skip   % no associated register
-                elsecase Emitter, GetTemp(Reg $) of none then
-                   Emitter, AllocateThisTemp(I - 1 Reg _)
-                else skip   % Reg was used nonlinearly
-                end
-             end}
-         else skip
-         end
+         Emitter, DebugExit(Coord 'call' 0)
       end
-      meth SetArguments(TheArity ArgInits Regs ArgsSurvive)
+      meth SetArguments(TheArity ArgInits Regs)
          %%
          %% Regs is the list of argument registers to a call instruction.
          %% This method issues move instructions that place these registers
@@ -1206,8 +1232,6 @@ in
                              I|{Dictionary.condGet @AdjDict I nil}}
                             'skip'
                          end
-                      elsecase ArgsSurvive then
-                         createVariable(x(I))
                       elsecase Emitter, IsLast(Reg $) then   % 2)
                          createVariable(x(I))
                       else   % 3)
@@ -1236,10 +1260,7 @@ in
              end
           end}
          Emitter, KillAllTemporaries()
-         %--** here we should let unused registers die!
-         % For a test example where this actually matters, see
-         % Oz/lib/Object.oz, procedure Precedence:
-         % local environment size should decrease from 5 to 4.
+         %--** here we should let unused registers die
          {For 0 @Arity - 1 1
           proc {$ I}
              case {Dictionary.get @DelayedInitsDict I} of move(_ _) then skip
@@ -1355,6 +1376,7 @@ in
                Emitter, AllocateShortLivedTemp(?R)
                Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
                IHd = setValue(R)|IInter
+               %--** R is not freed
             end
             Emitter, EmitVArgsWrite(VArgr IInter ITl)
          [] nil then
@@ -1396,152 +1418,64 @@ in
                Emitter, AllocateShortLivedTemp(?R)
                Emitter, Emit(unifyVariable(R))
                SHd = R#VArg|SInter
+               %--** R is not freed
             end
             Emitter, EmitVArgsRead(VArgr SInter STl)
          [] nil then
             SHd = STl
          end
       end
-      meth EmitInlineFun(OccsRS Builtinname Regs Cont)
-         case Regs of [Reg1 Reg2] then Done in
-            case Cont of vTestBool(_ !Reg2 Addr1 Addr2 _ _ NewCont InitsRS)
-            then BIInfo = {GetBuiltinInfo Builtinname} in
-               case Emitter, IsFirst(Reg2 $)
-                  andthen Emitter, DoesNotOccurIn(Reg2 Addr1 $)
-                  andthen Emitter, DoesNotOccurIn(Reg2 Addr2 $)
-                  andthen Emitter, DoesNotOccurIn(Reg2 NewCont $)
-                  andthen {HasFeature BIInfo rel}
-               then NewCont2 in
-                  NewCont2 = vShallowTest(OccsRS BIInfo.rel [Reg1]
-                                          Addr1 Addr2 NewCont InitsRS)
-                  continuations <- NewCont2|@continuations.2
-                  true
-               else false
+      meth AllocateBuiltinArgs(Regs IMods ?XsIn ?NLiveRegs
+                               IsTestBuiltin ?XsOut ?Unifies)
+         case IMods of IMod|IModr then
+            Reg|Regr = Regs
+            X|Xr = XsIn
+         in
+            case IMod then
+               Emitter, AllocateShortLivedTemp(?X)
+               %--** X is not freed
+               case Emitter, GetReg(Reg $) of none then R in
+                  Emitter, PredictReg(Reg ?R)
+                  Emitter, Emit(createVariable(R))
+                  Emitter, Emit(move(R X))
+               elseof R then
+                  Emitter, Emit(move(R X))
                end
-            else false
-            end = Done
-            case Done then skip
-            elsecase Emitter, GetReg(Reg2 $) of none then X1 NLiveRegs X2 in
-               Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, PredictInlineFunResult(Reg2 ?X2)
-               Emitter, Emit(inlineFun1(Builtinname X1 X2 NLiveRegs))
-            elseof R then X1 NLiveRegs X2 in
-               Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, AllocateShortLivedTemp(?X2)
-               Emitter, Emit(inlineFun1(Builtinname X1 X2 NLiveRegs))
-               Emitter, Emit(unify(X2 R))
-               Emitter, FreeX(X2.1)
+            else
+               Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             end
-         [] [Reg1 Reg2 Reg3] then BIInfo NewCont2 in
-            BIInfo = {GetBuiltinInfo Builtinname}
-            case Cont of vTestBool(_ !Reg3 Addr1 Addr2 _ Coord NewCont InitsRS)
-            then
-               case {Not self.debugInfoControlSwitch}
-                  andthen Emitter, IsFirst(Reg3 $)
-                  andthen Emitter, DoesNotOccurIn(Reg3 Addr1 $)
-                  andthen Emitter, DoesNotOccurIn(Reg3 Addr2 $)
-                  andthen Emitter, DoesNotOccurIn(Reg3 NewCont $)
-               then
-                  case {HasFeature BIInfo rel} then
-                     vShallowTest(OccsRS BIInfo.rel [Reg1 Reg2] Addr1 Addr2
-                                  NewCont InitsRS)
-                  elsecase Builtinname of '==' then
-                     case {Dictionary.condGet @Temporaries Reg1 none}
-                     of vEquateNumber(_ Number _ _) then
-                        vTestNumber(OccsRS Reg2 Number Addr1 Addr2
-                                    Coord NewCont InitsRS)
-                     [] vEquateLiteral(_ Literal _ _) then
-                        vTestLiteral(OccsRS Reg2 Literal Addr1 Addr2
-                                     Coord NewCont InitsRS)
-                     elsecase {Dictionary.condGet @Temporaries Reg2 none}
-                     of vEquateNumber(_ Number _ _) then
-                        vTestNumber(OccsRS Reg1 Number Addr1 Addr2
-                                    Coord NewCont InitsRS)
-                     [] vEquateLiteral(_ Literal _ _) then
-                        vTestLiteral(OccsRS Reg1 Literal Addr1 Addr2
-                                     Coord NewCont InitsRS)
-                     else ~1
-                     end
-                  [] '\\=' then
-                     case {Dictionary.condGet @Temporaries Reg1 none}
-                     of vEquateNumber(_ Number _ _) then
-                        vTestNumber(OccsRS Reg2 Number Addr2 Addr1
-                                    Coord NewCont InitsRS)
-                     [] vEquateLiteral(_ Literal _ _) then
-                        vTestLiteral(OccsRS Reg2 Literal Addr2 Addr1
-                                     Coord NewCont InitsRS)
-                     elsecase {Dictionary.condGet @Temporaries Reg2 none}
-                     of vEquateNumber(_ Number _ _) then
-                        vTestNumber(OccsRS Reg1 Number Addr2 Addr1
-                                    Coord NewCont InitsRS)
-                     [] vEquateLiteral(_ Literal _ _) then
-                        vTestLiteral(OccsRS Reg1 Literal Addr2 Addr1
-                                     Coord NewCont InitsRS)
-                     else ~1
-                     end
-                  else ~1
-                  end
-               else ~1
-               end
-            else ~1
-            end = NewCont2
-            case NewCont2 \= ~1 then
-               continuations <- NewCont2|@continuations.2
-            else InstrLabel X1 X2 in
-               case {CondSelect BIInfo eqeq false} then
-                  InstrLabel = inlineEqEq
-               else
-                  InstrLabel = inlineFun2
-               end
-               Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-               case Emitter, GetReg(Reg3 $) of none then NLiveRegs X3 in
-                  NLiveRegs = @HighestUsedX + 1
-                  Emitter, PredictInlineFunResult(Reg3 ?X3)
-                  Emitter, Emit(InstrLabel(Builtinname X1 X2 X3 NLiveRegs))
-               elseof R then X3 NLiveRegs in
-                  NLiveRegs = @HighestUsedX + 1
-                  Emitter, AllocateShortLivedTemp(?X3)
-                  Emitter, Emit(InstrLabel(Builtinname X1 X2 X3 NLiveRegs))
-                  Emitter, Emit(unify(X3 R))
-                  Emitter, FreeX(X3.1)
-               end
-            end
-         [] [Reg1 Reg2 Reg3 Reg4] then X1 X2 X3 in
-            Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-            Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-            Emitter, AllocateAndInitializeAnyTemp(Reg3 ?X3)
-            case Emitter, GetReg(Reg4 $) of none then NLiveRegs X4 in
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, PredictInlineFunResult(Reg4 ?X4)
-               Emitter, Emit(inlineFun3(Builtinname X1 X2 X3 X4 NLiveRegs))
-            elseof R then X4 NLiveRegs in
-               NLiveRegs = @HighestUsedX + 1
-               Emitter, AllocateShortLivedTemp(?X4)
-               Emitter, Emit(inlineFun3(Builtinname X1 X2 X3 X4 NLiveRegs))
-               Emitter, Emit(unify(X4 R))
-               Emitter, FreeX(X4.1)
-            end
+            Emitter, AllocateBuiltinArgs(Regr IModr ?Xr ?NLiveRegs
+                                         IsTestBuiltin ?XsOut ?Unifies)
+         else
+            XsIn = nil
+            NLiveRegs = @HighestUsedX + 1
+            Emitter, AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
          end
       end
-      meth EmitInlineRel(_ Builtinname Regs Cont)
-         case Regs of [Reg1] then X1 NLiveRegs in
-            Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-            NLiveRegs = @HighestUsedX + 1
-            Emitter, Emit(inlineRel1(Builtinname X1 NLiveRegs))
-         [] [Reg1 Reg2] then X1 X2 NLiveRegs in
-            Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-            Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-            NLiveRegs = @HighestUsedX + 1
-            Emitter, Emit(inlineRel2(Builtinname X1 X2 NLiveRegs))
-         [] [Reg1 Reg2 Reg3] then X1 X2 X3 NLiveRegs in
-            Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-            Emitter, AllocateAndInitializeAnyTemp(Reg2 ?X2)
-            Emitter, AllocateAndInitializeAnyTemp(Reg3 ?X3)
-            NLiveRegs = @HighestUsedX + 1
-            Emitter, Emit(inlineRel3(Builtinname X1 X2 X3 NLiveRegs))
+      meth AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
+         case Regs of Reg|Regr then X|Xr = XsOut Ur in
+            case IsTestBuiltin then
+               Emitter, AllocateShortLivedTemp(?X)
+               %--** X is not freed
+               Unifies = Ur
+            elsecase Emitter, GetReg(Reg $) of none then
+               Emitter, PredictBuiltinOutput(Reg ?X)
+               Unifies = Ur
+            elseof R then
+               Emitter, AllocateShortLivedTemp(?X)
+               Unifies = X#R|Ur
+            end
+            Emitter, AllocateBuiltinOutputs(Regr IsTestBuiltin ?Xr ?Ur)
+         [] nil then
+            XsOut = nil
+            Unifies = nil
+         end
+      end
+      meth EmitUnifies(Unifies)
+         case Unifies of U|Ur then X#R = U in
+            Emitter, Emit(unify(X R))
+            Emitter, FreeX(X.1)
+         [] nil then skip
          end
       end
       meth EmitGuard(Addr)
@@ -1592,7 +1526,7 @@ in
          Emitter, MayAllocateEnvLocally(Cont ?HasLocalEnv)
          case Emitter, GetReg(Reg $) of none then
             {self.reporter
-             warn(coord: Coord hint: 'code generation warning'
+             warn(coord: Coord kind: 'code generation warning'
                   msg: 'conditional suspends forever'
                   body: [hint(l: 'Hint'
                               m: ('undetermined variable used '#
@@ -1881,14 +1815,8 @@ in
          {Dictionary.put @Temporaries Reg X=x(I)}
          {Dictionary.put @UsedX I 1}
       end
-      meth AllocateShortLivedTemp(?X) I in
-         I = @LowestFreeX
-         LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-         case @HighestUsedX >= I then skip
-         else HighestUsedX <- I
-         end
-         {Dictionary.put @UsedX I 1}
-         X = x(I)
+      meth AllocateShortLivedTemp(?X)
+         Emitter, AllocateThisShortLivedTemp(@LowestFreeX ?X)
       end
       meth AllocateThisShortLivedTemp(I ?X)
          % Precondition: X register index I is free
@@ -2003,12 +1931,13 @@ in
          end
       end
 
-      meth PredictInlineFunResult(Reg ?X)
+      meth PredictBuiltinOutput(Reg ?X)
          % Here we try to determine whether it would improve
          % register allocation to reuse one of the argument
          % registers as the result register, if possible.
          case @continuations of nil then
-            X = x(0)
+            Emitter, AllocateShortLivedTemp(?X)
+            %--** X is not freed
          [] Cont|_ then
             Emitter, LetDie(Cont.1)
             % This is needed so that LetDie works correctly:
@@ -2054,7 +1983,7 @@ in
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
-            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] Cont3) then
+            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)
@@ -2065,18 +1994,16 @@ in
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
-            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] Cont3) then
+            elseof vCallBuiltin(_ 'New' [_ !MessageReg Reg0] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             else
                Emitter, PredictRegSub(Reg Cont2 ?R)
             end
-         [] vCallBuiltin(_ _ Regs Cont) then
+         [] vCallBuiltin(_ _ Regs _ Cont) then
             case {Member Reg Regs} then
-               Emitter, PredictArgReg(Reg Regs 0 Cont ?R)
-            elsecase Cont \= nil andthen {RegSet.member Reg Cont.1} then
-               R = anyperm
-            else
                Emitter, AllocateAnyTemp(Reg ?R)
+            else
+               Emitter, PredictRegSub(Reg Cont ?R)
             end
          [] vGenCall(_ Reg0 _ _ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)

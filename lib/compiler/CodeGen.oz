@@ -831,7 +831,7 @@ local
          {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0)}
          BodyCode0 = BodyCode1#BodyCode2
          case {Switches getSwitch(runwithdebugger $)} then
-            BodyCode = callBuiltin('Debug.breakpoint' 0)|BodyCode1
+            BodyCode = callBI('Debug.breakpoint' nil#nil 0)|BodyCode1
          else
             BodyCode = BodyCode1
          end
@@ -999,7 +999,7 @@ local
          elsecase @toplevelNames of nil then Reg VTl1 in
             {CS newReg(?Reg)}
             VTl0 = vEquateLiteral(_ nil Reg VTl1)
-            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] VTl)
+            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] unit VTl)
          [] _|_ then
             fun {MakeNameList Names VHd VTl}
                case Names of N|Nr then ArgIn VInter ConsReg NewArg in
@@ -1016,7 +1016,7 @@ local
             Reg VTl1
          in
             value(Reg) = {MakeNameList @toplevelNames VTl0 VTl1}
-            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] VTl)
+            VTl1 = vCallBuiltin(_ 'setProcNames' [{V reg($)} Reg] unit VTl)
          end
       end
    end
@@ -2142,9 +2142,11 @@ local
    end
 
    class CodeGenBuiltinToken
-      meth codeGenApplication(Designator ActualArgs CS VHd VTl) Builtinname in
+      meth codeGenApplication(Designator ActualArgs CS VHd VTl)
          Builtinname = {GetBuiltinName @value}
-         case CS.debugInfoControlSwitch then
+         BIInfo = {GetBuiltinInfo Builtinname}
+      in
+         case BIInfo == noInformation orelse CS.debugInfoControlSwitch then
             VHd = vCall(_ {Designator reg($)}
                         {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
                         {Designator getCoord($)} VTl)
@@ -2221,15 +2223,17 @@ local
             % performed in the CodeEmitter:
             {CS newReg(?ObjReg)}
             VHd = vCallBuiltin(_ 'New' [{Arg1 reg($)} {Arg2 reg($)} ObjReg]
-                               Cont)
+                               {Designator getCoord($)} Cont)
             Cont = vUnify(_ ObjReg {Arg3 reg($)} VTl)
          [] '+' then [Arg1 Arg2 Arg3] = ActualArgs Value in
             {Arg1 getCodeGenValue(?Value)}
             case {IsDet Value} then
                case Value of 1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}] VTl)
+                  VHd = vCallBuiltin(_ '+1' [{Arg2 reg($)} {Arg3 reg($)}]
+                                     {Designator getCoord($)} VTl)
                [] ~1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}] VTl)
+                  VHd = vCallBuiltin(_ '-1' [{Arg2 reg($)} {Arg3 reg($)}]
+                                     {Designator getCoord($)} VTl)
                else skip
                end
             else skip
@@ -2240,10 +2244,10 @@ local
                case {IsDet Value} then
                   case Value of 1 then
                      VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        VTl)
+                                        {Designator getCoord($)} VTl)
                   [] ~1 then
                      VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
-                                        VTl)
+                                        {Designator getCoord($)} VTl)
                   else skip
                   end
                else skip
@@ -2253,9 +2257,11 @@ local
             {Arg2 getCodeGenValue(?Value)}
             case {IsDet Value} then
                case Value of 1 then
-                  VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}] VTl)
+                  VHd = vCallBuiltin(_ '-1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                     {Designator getCoord($)} VTl)
                [] ~1 then
-                  VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}] VTl)
+                  VHd = vCallBuiltin(_ '+1' [{Arg1 reg($)} {Arg3 reg($)}]
+                                     {Designator getCoord($)} VTl)
                else skip
                end
             else skip
@@ -2265,7 +2271,7 @@ local
          case {IsDet VHd} then skip
          else Regs in
             Regs = {Map ActualArgs fun {$ A} {A reg($)} end}
-            VHd = vCallBuiltin(_ Builtinname Regs VTl)
+            VHd = vCallBuiltin(_ Builtinname Regs {Designator getCoord($)} VTl)
          end
       end
    end

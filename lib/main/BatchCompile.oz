@@ -55,6 +55,7 @@ local
                    &o#"outputfile"#outputfile(type: string)
                    &l#"environment"#environment(type: string)
                    &I#"incdir"#incdir(type: string)
+                   &z#"compress"#compress(type:int)
                    unit#"include"#include(type: string)
                    unit#"sysletprefix"#sysletprefix(type: string)
                    unit#"maxerrors"#maxerrors(type: int)
@@ -116,6 +117,7 @@ local
    '                              before processing the remaining options.\n'#
    '--sysletprefix=STRING         Use STRING as prefix to syslets (default:\n'#
    '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").'#
+   '-z CLEV, --compress=CLEV      Use compression level CLEV for pickles.\n' #
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
    %% Note that the remaining options are not documented here on purpose.
@@ -391,7 +393,7 @@ in
    proc {BatchCompile Argv ?Status}
       try
          Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
-         MakeDepend IncDir SysletPrefix
+         MakeDepend IncDir SysletPrefix CompLevel
       in
          try
             {ParseArgs Argv ?Opts ?FileNames}
@@ -413,6 +415,7 @@ in
          MakeDepend = {NewCell false}
          IncDir = {NewCell nil}
          SysletPrefix = {NewCell unit}
+         CompLevel = {NewCell 0}
          {ForAll Opts
           proc {$ Opt#X}
              case Opt of help then X in
@@ -451,6 +454,8 @@ in
                                               m: ('Use --help to obtain '#
                                                   'usage information'))])}
                 end
+             [] compress then
+                {Assign CompLevel X}
              [] verbose then
                 skip   % has already been set
              [] mode then
@@ -576,7 +581,7 @@ in
                 else
                    case {Access Mode} of dump then
                       try
-                         {Pickle.saveWithHeader R OFN '' 0}
+                         {Pickle.saveWithHeader R OFN '' {Access CompLevel}}
                       catch E then
                          {Error.printExc E}
                          raise error end
@@ -598,7 +603,7 @@ in
                              DefaultSysletPrefix
                           elseof S then S
                           end % Header
-                          0 % Compression level
+                          {Access CompLevel} % Compression level
                          }
                          case {OS.system 'chmod +x '#OFN}
                          of 0 then skip elseof N then

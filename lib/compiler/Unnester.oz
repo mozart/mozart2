@@ -1351,10 +1351,8 @@ define
             [] 0#1 then NewFEs in
                NewFEs = {ReplaceDollar FEs FV}
                Unnester, UnnestStatement(fApply(FE1 NewFEs C) $)
-            [] 1#0 then NewFE1 NewFEs in
-               NewFE1 = {ReplaceDollar FE1 FV}
-               NewFEs = {Append FEs [FV]}
-               Unnester, UnnestStatement(fApply(NewFE1 NewFEs C) $)
+            [] 1#_ then
+               Unnester, UnnestStatement(FE $)   % reports an error
             else
                {@reporter
                 error(coord: {DollarCoord FE1|FEs} kind: ExpansionError

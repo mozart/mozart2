@@ -391,6 +391,7 @@ local
          catch tooManyErrors then
             {@reporter
              tell(info('%** Too many errors, aborting compilation\n'))}
+            {@reporter endBatch(rejected)}
          [] rejected then
             {@reporter endBatch(rejected)}
          [] aborted then

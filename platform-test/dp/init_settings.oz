@@ -3,6 +3,7 @@ import
    Remote
    Connection
    Pickle
+   System(show:Show)
 export
    Return
 define
@@ -11,6 +12,8 @@ define
           M={New Remote.manager Config}
       in
          {M apply(Check)}
+         {Delay 2000}
+         {M close}
       end
    end
 
@@ -31,22 +34,41 @@ define
              end}
 
    Port=proc{$}
-           {{CreateTest init(port:10101) functor
-                                         import
-                                            DPInit
-                                            Connection
-                                            Pickle
-                                         define
-                                            {DPInit.getSettings}.port=10101
-                                            {Pickle.save
-                                             {Connection.offer testatom}
-                                             '/tmp/afd'}
-                                         end}}
-           {Connection.take {Pickle.load '/tmp/afd'}}=testatom
+           thread
+              {{CreateTest init(port:10101) functor
+                                            import
+                                               DPInit
+                                               Connection
+                                               Pickle
+                                               OS
+                                            define
+                                               {DPInit.getSettings}.port=10101
+                                               {Pickle.save
+                                                {Connection.offer {OS.getPID}}
+                                                '/tmp/afd'}
+                                            end}}
+           end
+           {Delay 1000}
+           {Connection.take {Pickle.load '/tmp/afd'}}=_
         end
+
+   LoopbackIp={CreateTest init(ip:"127.0.0.1")
+               functor
+               import
+                  Remote
+               define
+                  M={New Remote.manager init}
+               in
+                  {M apply(functor
+                           define
+                              skip
+                           end)}
+                  {M close}
+               end}
 
    Return = dp([init_settings_plain(Plain keys:[remote])
                 init_settings_firewall(FireWall keys:[remote])
                 init_settings_port(Port keys:[remote])
+                init_settings_loopback_ip(LoopbackIp keys:[remote])
                ])
 end

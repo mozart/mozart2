@@ -249,7 +249,9 @@ define
 
       fun {InfoField Exc} D in
          D = {DebugField Exc}
-         if {IsRecord D} then {CondSelect D info unit}
+         case {Value.status D}
+         of det(record) then {CondSelect D info unit}
+         [] future then {CondSelect D info unit}
          else unit
          end
       end
@@ -276,10 +278,15 @@ define
          end
       end
 
-      fun {GetExceptionStack Exc} D in
+      fun {GetExceptionStack Exc}
          D = {DebugField Exc}
-         if {HasFeature D stack} andthen {Property.get 'errors.thread'} > 0
-         then D.stack
+         Dstatus = {Value.status D}
+      in
+         if Dstatus == det(record) orelse Dstatus == future then
+            if {HasFeature D stack} andthen {Property.get 'errors.thread'} > 0
+            then D.stack
+            else unit
+            end
          else unit
          end
       end

@@ -30,11 +30,12 @@ T={{New Module.manager init}
 {T argv(verbose:  true
         usage:    false
         help:     false
-        keys:     ["pel"]   % nil for `all' or a non-empty list of strings: ["fs"]
+        keys:     ["fs"]   % nil for `all' or a non-empty list of strings: ["fs"]
         ignores:  nil %["misc1_41"]   % nil for `none' or a non-empty list of strings
 %       tests:    ["prop_engine_lib_tasksOverlap_1" "prop_engine_lib_tasksOverlap_2" "prop_engine_lib_tasksOverlap_3" "prop_engine_lib_tasksOverlap_4"]
 %       tests:    ["prop_engine_lib_tasksOverlap_4" "prop_engine_lib_tasksOverlap_4" "prop_engine_lib_tasksOverlap_4e" "prop_engine_lib_tasksOverlap_4"]
-        tests:    nil
+%       tests:    nil
+        tests: ["fs_knapsack_one"]
         'do':       true
         time:     ""
         gc:       0

@@ -135,7 +135,11 @@ define
             Cont2 = VTl
          else
             VHd = vMakePermanent(_ Regs Cont1)
-            Cont2 = vClear(_ Regs VTl)
+            if CS.staticVarnamesSwitch then
+               Cont2 = vClear(_ Regs VTl)
+            else
+               Cont2 = VTl
+            end
          end
       else
          VHd = Cont1

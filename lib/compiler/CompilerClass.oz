@@ -783,29 +783,6 @@ in
       %%
       %% Managing registration of interfaces
       %%
-      %% An interface registers by providing a port onto which
-      %% the following notification messages will be sent:
-      %%
-      %%    newQuery(Id M)
-      %%    runQuery(Id M)
-      %%    removeQuery(Id)
-      %%
-      %%    busy()
-      %%    idle()
-      %%
-      %%    switch(SwitchName B)
-      %%    switches(Rec)
-      %%    maxNumberOfErrors(N)
-      %%    env(Env)
-      %%
-      %%    info(VS Coord <= unit)
-      %%    message(Record Coord)
-      %%    displaySource(TitleVS ExtVS VS)
-      %%    errorFound()
-      %%    toTop()
-      %%
-      %%    pong()
-      %%
 
       meth register(P)
          case {IsPort P} then skip

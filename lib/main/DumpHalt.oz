@@ -7,6 +7,12 @@
 
 \ifndef NOHALT
 
+local
+   Delay = {`Builtin` 'Delay' 1}
+in
+   {Delay 1000}
+end
+
 {{`Builtin` 'shutdown' 1} 0}
 
 \endif

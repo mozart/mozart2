@@ -7,6 +7,8 @@
 
 \ifndef DumpIntroLoaded
 
+\switch -threadedqueries
+
 \define DumpIntroLoaded
 
 declare

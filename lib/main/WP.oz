@@ -7,9 +7,9 @@
 
 declare
 
-fun {NewWP Standard Open}
+fun {NewWP IMPORT}
    \insert 'Standard.env'
-       = Standard
+       = IMPORT.'Standard'
    \insert 'Tk.oz'
    Tk      = {NewTk Open}
    \insert 'TkTools.oz'

@@ -6,9 +6,12 @@
 %%%  Version: $Revision$
 
 declare
-fun {NewDP Standard NewTk}
+
+fun {NewDP IMPORT}
    \insert 'Standard.env'
-       = Standard
+       = IMPORT.'Standard'
+   \insert 'WP.env'
+       = IMPORT.'WP'
 in
    local
       \insert 'Site.oz'

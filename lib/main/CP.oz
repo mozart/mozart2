@@ -7,9 +7,9 @@
 
 declare
 
-fun {NewCP Standard}
+fun {NewCP IMPORT}
    \insert 'Standard.env'
-       = Standard
+       = IMPORT.'Standard'
 in
    local
       \insert 'Search.oz'

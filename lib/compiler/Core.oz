@@ -528,7 +528,6 @@ define
       from Statement Annotate.ifNode StaticAnalysis.ifNode CodeGen.ifNode
       prop final
       attr arbiter: unit consequent: unit alternative: unit
-      feat noBoolShared
       meth init(Arbiter Consequent Alternative Coord)
          arbiter <- Arbiter
          consequent <- Consequent

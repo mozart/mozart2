@@ -233,7 +233,7 @@ define
       end
    end
 
-   proc {MakeIfNode GArbiter GIfTrue GIfFalse C NoBoolShared BA ?GIfNode}
+   fun {MakeIfNode GArbiter GIfTrue GIfFalse C BA}
       GT GF
    in
       GT = {New Core.ifClause init(GIfTrue)}
@@ -242,8 +242,7 @@ define
       else
          GF = {New Core.elseNode init(GIfFalse)}
       end
-      GIfNode = {New Core.ifNode init(GArbiter GT GF C)}
-      GIfNode.noBoolShared = NoBoolShared
+      {New Core.ifNode init(GArbiter GT GF C)}
    end
 
    proc {SortNoColonsToFront Args IHd ITl FHd FTl}
@@ -960,7 +959,7 @@ define
                end
                GSTrueProc|GSFalseProc|GClauseBodies|
                Unnester, UnnestIfArbiter(FE ApplyTrueProc ApplyFalseProc
-                                         _ ?GClauseBodies $)
+                                         ?GClauseBodies $)
             else GFrontEq GVO GBody GT GF in
                Unnester, UnnestToVar(FE 'IfArbiter' ?GFrontEq ?GVO)
                {@BA openScope()}
@@ -973,7 +972,7 @@ define
                   Unnester, UnnestStatement(FS2 ?GBody)
                   GF = {MakeDeclaration {@BA closeScope($)} GBody C}
                end
-               GFrontEq|{MakeIfNode GVO GT GF C _ @BA}
+               GFrontEq|{MakeIfNode GVO GT GF C @BA}
             end
          [] fCase(FE FClauses FElse C) then GFrontEq GVO GCs GElse in
             Unnester, UnnestToVar(FE 'Arbiter' ?GFrontEq ?GVO)
@@ -2040,37 +2039,36 @@ define
           end nil#GS1}
       end
 
-      meth UnnestIfArbiter(FE ApplyTrueProc ApplyFalseProc NoBoolShared
-                           ?GClauseBodies ?GS)
+      meth UnnestIfArbiter(FE ApplyTrueProc ApplyFalseProc ?GClauseBodies ?GS)
          %% optimization of `case E1 orelse E2 then S1 else S2 end'
          %% and the like
          case FE of fOrElse(FE1 FE2 C) then
             GClauseBodies1 GElse GClauseBody ApplyElseProc GClauseBodies2
          in
             Unnester, UnnestIfArbiter(FE2 ApplyTrueProc ApplyFalseProc
-                                      NoBoolShared ?GClauseBodies1 ?GElse)
+                                      ?GClauseBodies1 ?GElse)
             Unnester, MakeClauseBody('FalseCase' GElse C ?GClauseBody
                                      ?ApplyElseProc)
             GClauseBodies = GClauseBodies1|GClauseBody|GClauseBodies2
             Unnester, UnnestIfArbiter(FE1 ApplyTrueProc ApplyElseProc
-                                      NoBoolShared ?GClauseBodies2 ?GS)
+                                      ?GClauseBodies2 ?GS)
          [] fAndThen(FE1 FE2 C) then
             GClauseBodies1 GThen GClauseBody ApplyThenProc GClauseBodies2
          in
             Unnester, UnnestIfArbiter(FE2 ApplyTrueProc ApplyFalseProc
-                                      NoBoolShared ?GClauseBodies1 ?GThen)
+                                      ?GClauseBodies1 ?GThen)
             Unnester, MakeClauseBody('TrueCase' GThen C ?GClauseBody
                                      ?ApplyThenProc)
             GClauseBodies = GClauseBodies1|GClauseBody|GClauseBodies2
             Unnester, UnnestIfArbiter(FE1 ApplyThenProc ApplyFalseProc
-                                      NoBoolShared ?GClauseBodies2 ?GS)
+                                      ?GClauseBodies2 ?GS)
          else GFrontEq GVO C GS0 in
             {@BA openScope()}
             Unnester, UnnestToVar(FE 'IfArbiter' ?GFrontEq ?GVO)
             C = {CoordinatesOf FE}
             GClauseBodies = nil
-            GS0 = GFrontEq|{MakeIfNode GVO {ApplyTrueProc} {ApplyFalseProc} C
-                            NoBoolShared @BA}
+            GS0 = (GFrontEq|
+                   {MakeIfNode GVO {ApplyTrueProc} {ApplyFalseProc} C @BA})
             GS = {MakeDeclaration {@BA closeScope($)} GS0 C}
          end
       end

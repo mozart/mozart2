@@ -1014,13 +1014,8 @@ define
          else ThenAddr AltAddr ErrAddr in
             {@consequent codeGen(CS ThenAddr nil)}
             {@alternative codeGen(CS AltAddr nil)}
-            ErrAddr = self.noBoolShared
-            if {IsFree ErrAddr} then Label Addr in
-               {CS newLabel(?Label)}
-               ErrAddr = vShared(_ Label {NewCell 0} Addr)
-               {MakeException kernel boolCaseType @coord [@arbiter]
-                CS Addr nil}
-            end
+            {MakeException kernel boolCaseType @coord [@arbiter] CS
+             ErrAddr nil}
             VHd = vTestBool(_ {@arbiter reg($)} ThenAddr AltAddr ErrAddr
                             @coord VTl _)
          end

@@ -69,6 +69,7 @@ prepare
 import
    FDB at 'x-oz://boot/FDB'
    FDP at 'x-oz://boot/FDP'
+   Space(waitStable)
 
    Error(registerFormatter)
 

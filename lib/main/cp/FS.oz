@@ -36,6 +36,8 @@ import
    FSB at 'x-oz://boot/FSB'
    FSP at 'x-oz://boot/FSP'
 
+   Space(waitStable)
+
    FD(decl list sum)
 
    Error(registerFormatter)

@@ -23,8 +23,11 @@
 
 functor
 
-require
+import
    TraceSpace(plain best)     at 'ParTraceSpace.ozf'
+   Space(new ask)
+
+require
    Logging(writer: LogWriter) at 'ParLogging.ozf'
    Server(new)                at 'ParServer.ozf'
 

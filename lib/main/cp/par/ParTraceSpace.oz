@@ -23,11 +23,14 @@
 
 functor
 
+import
+   Space
+
 export
    plain: PlainSpace
    best:  BestSpace
 
-prepare
+define
 
    local
 

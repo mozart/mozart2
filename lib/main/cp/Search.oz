@@ -25,6 +25,7 @@ functor
 
 import
    ParSearch(engine: ParallelEngine) at 'x-oz://system/ParSearch.ozf'
+   Space
 
 export
    one:      OneModule
@@ -51,6 +52,8 @@ prepare
    fun {WrapS S}
       S
    end
+
+define
 
    fun {WrapP S}
       proc {$ X}

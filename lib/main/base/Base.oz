@@ -48,7 +48,6 @@ require
    Boot_Chunk           at 'x-oz://boot/Chunk'
    Boot_VirtualString   at 'x-oz://boot/VirtualString'
    Boot_Array           at 'x-oz://boot/Array'
-   Boot_Space           at 'x-oz://boot/Space'
    Boot_Object          at 'x-oz://boot/Object'
    Boot_Class           at 'x-oz://boot/Class'
    Boot_BitArray        at 'x-oz://boot/BitArray'
@@ -58,7 +57,6 @@ require
    Boot_Time            at 'x-oz://boot/Time'
    Boot_BitString       at 'x-oz://boot/BitString'
    Boot_ByteString      at 'x-oz://boot/ByteString'
-   Boot_Combinators     at 'x-oz://boot/Combinators'
 
 prepare
 
@@ -231,11 +229,6 @@ prepare
    Get          = Boot_Array.get
 
    %%
-   %% Space
-   %%
-   IsSpace      = Boot_Space.is
-
-   %%
    %% Object, Class, and OoExtensions
    %%
    IsObject      = Boot_Object.is
@@ -314,7 +307,6 @@ prepare
    \insert 'Chunk.oz'
    \insert 'VirtualString.oz'
    \insert 'Array.oz'
-   \insert 'Space.oz'
    \insert 'Object.oz'
    \insert 'BitArray.oz'
    \insert 'ForeignPointer.oz'
@@ -323,7 +315,6 @@ prepare
    \insert 'Functor.oz'
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
-   \insert 'Combinators.oz'
 
 export
    %% Value
@@ -480,9 +471,6 @@ export
    'NewArray'   : NewArray
    'Put'                : Put
    'Get'                : Get
-   %% Space
-   'Space'              : Space
-   'IsSpace'            : IsSpace
    %% Object
    'Object'             : Object
    'IsObject'   : IsObject
@@ -517,8 +505,5 @@ export
 
    %% Will be removed by the compiler
    'OoExtensions': OoExtensions
-
-   %% Deep Guard Combinators
-   'Combinators':  Combinators
 
 end

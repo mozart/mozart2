@@ -27,11 +27,15 @@ import
    BootDictionary(waitOr: DictWaitOr)
    at 'x-oz://boot/Dictionary'
 
-   BootSpace(askUnsafe: AskSpace
-             merge:     MergeSpace
-             discard:   DiscardSpace
-             new:       NewSpace)
+   BootSpace(askUnsafe: AskSpace)
    at 'x-oz://boot/Space'
+
+   Space(waitStable: WaitStableSpace
+         merge:      MergeSpace
+         new:        NewSpace
+         discard:    DiscardSpace
+         choose:     ChooseSpace)
+
 
    FDB(int:           FdInt
        'reflect.dom': FdReflectDom)
@@ -47,9 +51,6 @@ require
    CpSupport(expand:         Expand)
 
 prepare
-
-   WaitStableSpace = Space.waitStable
-   ChooseSpace     = Space.choose
 
    local
       proc {Skip}

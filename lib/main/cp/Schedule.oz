@@ -55,6 +55,8 @@ import
 
    Error(registerFormatter)
 
+   Space(waitStable)
+
 export
    %% Serialization propagators for unary propagators
    Serialized

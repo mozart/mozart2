@@ -155,6 +155,7 @@ import
    FSB('value.is': IsFSet
        'var.is':   IsFSetC)
    at 'x-oz://boot/FSB'
+   Space(is: IsSpace)
    System(printName)
 
 export

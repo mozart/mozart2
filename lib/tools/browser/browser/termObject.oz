@@ -2859,7 +2859,7 @@ in
 \endif
          %%
          case {IsDet self.term}
-         then
+         then % FSetValue
             Term Comp Le SubInts Name
          in
             Term = self.term
@@ -2886,8 +2886,7 @@ in
              end}
 
             %%
-            Name = (DLCBraceS # DLSBraceS # SubInts # DRSBraceS # DRCBraceS #
-                    "#" # {FSetGetCard Term})
+            Name = (DLCBraceS # SubInts # DRCBraceS # "#" # {FSetGetCard Term})
 
             %%
             RepManagerObject , insert(str: Name)
@@ -2940,13 +2939,13 @@ in
 
                %%
                Card = case {FSetGetCard Term}
-                      of L#U then DLSBraceS # L # "#" # U # DRSBraceS
+                      of L#U then DLCBraceS # L # "#" # U # DRCBraceS
                       [] C then C
                       end
 
-               Name = ({self GetName($)} # DLCBraceS # DLSBraceS #
-                       GlbSubInts # DRSBraceS # DDblPeriod # DLSBraceS #
-                       LubSubInts # DRSBraceS # DRCBraceS # "#" # Card)
+               Name = ({self GetName($)} # DLCBraceS # DLCBraceS #
+                       GlbSubInts # DRCBraceS # DDblPeriod # DLCBraceS #
+                       LubSubInts # DRCBraceS # DRCBraceS # "#" # Card)
 
                %%
                RepManagerObject , insert(str: Name)

@@ -37,7 +37,7 @@
 
 functor
 import
-   System(printName)
+   System(printName show)
    CompilerSupport at 'x-oz://boot/CompilerSupport'
    Builtins(getInfo)
 export
@@ -48,84 +48,6 @@ define
    InstructionSizes = {CompilerSupport.getInstructionSizes}
 
    local
-      GetOpcode          = CompilerSupport.getOpcode
-      AllocateCodeBlock  = CompilerSupport.allocateCodeBlock
-      AddDebugInfo       = CompilerSupport.addDebugInfo
-      StoreOpcode        = CompilerSupport.storeOpcode
-      StoreNumber        = CompilerSupport.storeNumber
-      StoreLiteral       = CompilerSupport.storeLiteral
-      StoreFeature       = CompilerSupport.storeFeature
-      StoreConstant      = CompilerSupport.storeConstant
-      StoreInt           = CompilerSupport.storeInt
-      StoreXRegIndex     = CompilerSupport.storeXRegisterIndex
-      StoreYRegIndex     = CompilerSupport.storeYRegisterIndex
-      StoreGRegIndex     = CompilerSupport.storeGRegisterIndex
-      StoreProcedureRef  = CompilerSupport.storeProcedureRef
-      StoreRecordArity   = CompilerSupport.storeRecordArity
-      StoreGRegRef       = CompilerSupport.storeGRegRef
-      StoreLocation      = CompilerSupport.storeLocation
-      StoreCache         = CompilerSupport.storeCache
-      StoreBuiltinname   = CompilerSupport.storeBuiltinname
-
-      proc {StoreXRegisterIndex CodeBlock x(Index)}
-         {StoreXRegIndex CodeBlock Index}
-      end
-
-      proc {StoreYRegisterIndex CodeBlock y(Index)}
-         {StoreYRegIndex CodeBlock Index}
-      end
-
-      proc {StoreGRegisterIndex CodeBlock g(Index)}
-         {StoreGRegIndex CodeBlock Index}
-      end
-
-      local
-         BIStoreLabel = CompilerSupport.storeLabel
-      in
-         proc {StoreLabel CodeBlock Lbl LabelDict}
-            {BIStoreLabel CodeBlock {Dictionary.get LabelDict Lbl}}
-         end
-      end
-
-      local
-         BIStorePredId = CompilerSupport.storePredId
-      in
-         proc {StorePredId CodeBlock pid(Name Arity Pos Flags NLiveRegs)}
-            {BIStorePredId CodeBlock {System.printName Name} Arity Pos Flags NLiveRegs}
-         end
-      end
-
-      local
-         BINewHashTable  = CompilerSupport.newHashTable
-      in
-         proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
-            {BINewHashTable
-             CodeBlock
-             {Dictionary.get LabelDict ElseLabel}
-             {Length List}
-             {Map List
-              fun {$ Entry}
-                 case Entry
-                 of onScalar(NumOrLit Lbl) then
-                    scalar(NumOrLit {Dictionary.get LabelDict Lbl})
-                 [] onRecord(Label RecordArity Lbl) then
-                    record(Label RecordArity {Dictionary.get LabelDict Lbl})
-                 end
-              end}}
-         end
-      end
-
-      local
-         BIStoreCallMethodInfo  = CompilerSupport.storeCallMethodInfo
-      in
-         proc {StoreCallMethodInfo CodeBlock
-               cmi(g(Index) Name IsTail RecordArity)}
-            {BIStoreCallMethodInfo CodeBlock Index Name IsTail RecordArity}
-         end
-      end
-
-      \insert compiler-Opcodes
-
       local
          IsUniqueName           = CompilerSupport.isUniqueName
          IsCopyableName         = CompilerSupport.isCopyableName
@@ -343,11 +265,10 @@ define
                VS = ""
             end
          end
-         meth load(Globals ?P) CodeBlock in
+         meth load(Globals $)
             AssemblerClass, MarkEnd()
-            {AllocateCodeBlock @Size Globals ?CodeBlock ?P}
-            {ForAll @InstrsHd
-             proc {$ Instr} {StoreInstr Instr CodeBlock @LabelDict} end}
+            {CompilerSupport.storeInstructions
+             @Size Globals @InstrsHd @LabelDict}
          end
          meth MarkEnd()
             @InstrsTl = nil

@@ -166,7 +166,7 @@ in
 
       %%
       fun {GenVS V}
-         case {Type.ofValue V}
+         case {Value.type V}
          of int then V
          [] float then V
          [] atom then
@@ -587,7 +587,7 @@ in
                 (SIn + {FullTermSize RLabel} + DSpace + DQSpace) SMax}
             else SIn + {FullTermSize Term}     % primitive;
             end
-         elsecase {Type.ofValue Term}
+         elsecase {Value.type Term}
          of tuple  then
             %%
             case Term

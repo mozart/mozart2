@@ -225,7 +225,7 @@ in
                TmpList
             end
          else
-            case {Type.ofValue TermIn}
+            case {Value.type TermIn}
             of name then
                TermOut =
                case {IsBool TermIn} then

@@ -67,9 +67,9 @@ local
       %% time being.  The general solution should not involve
       %% possible manipulations on the C++ side.  In fact there
       %% should be no C++ side.  It should all be done in Oz.
-      try {ObtainNative {UrlToVs U}}
+      try {ObtainNative false {UrlToVs U}}
       catch system(...) then
-         {ObtainNative {UrlToVsExtended U o(raw:true)}}
+         {ObtainNative false {UrlToVsExtended U o(raw:true)}}
       end
    end
    Meth_native = if PLATFORM_OS==win32

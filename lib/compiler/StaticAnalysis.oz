@@ -368,6 +368,8 @@ prepare
             'Value.catAssign'   : doCatAssignAccess
             'Value.catAccess'   : doCatAssignAccess
             'Value.catExchange' : doCatAssignAccess
+            'Value.dotAssign'   : doDotAssignExchange
+            'Value.dotExchange' : doDotAssignExchange
             'Bool.and'          : doAnd
             'Bool.or'           : doOr
             'Bool.not'          : doNot
@@ -2002,6 +2004,68 @@ define
                              hint(l:'Expected one of' m:{SetToVS {Ozify Attrs}})
                              line(Hint)])}
             end
+         end
+      end
+
+      meth doDotAssignExchange(Ctrl)
+         DictV = {Nth @actualArgs 1}
+         Dict  = {GetData DictV}
+         FeaV = {Nth @actualArgs 2}
+         Fea  = {GetData FeaV}
+         ValV = {Nth @actualArgs 3}
+      in
+         if {DetTests.det DictV} then
+            DictOz = {GetPrintData DictV}
+            FeaOz = {GetPrintData FeaV}
+            ValOz = {GetPrintData ValV}
+            Expr = DictOz#'.'#FeaOz#' := '#ValOz
+         in
+            %% First arg is known
+            if {Not {IsDictionary Dict} orelse {IsArray Dict}} then
+               {Ctrl.rep
+                error(coord: @coord
+                      kind : SAGenError
+                      msg  : 'expected a dictionary or array as 1st argument of <dict/array>.<feat> := <val>'
+                      items:[hint(l:'Statement' m:Expr)
+                             hint(l:'Value' m:{GetPrintData DictV})
+                             hint(l:'Type' m:oz({Value.type Dict}))])}
+            end
+            %% First element is array or dict. Check second arg
+            if {DetTests.det FeaV} then
+               %% Second element is known
+               if {IsArray Dict} andthen {Not {IsInt Fea}} then
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind : SAGenError
+                         msg  : 'expected an int as 2nd argument of <array>.<int> := <val>'
+                         items:[hint(l:'Statement' m:Expr)
+                                hint(l:'Value' m:{GetPrintData FeaV})
+                                hint(l:'Type' m:oz({Value.type Fea}))])}
+               end
+               if {IsDictionary Dict} andthen {Not {IsLiteral Fea} orelse {IsInt Fea}} then
+                  {Ctrl.rep
+                   error(coord: @coord
+                         kind : SAGenError
+                         msg  : 'expected a feature as 2nd argument of <dict>.<feat> := <val>'
+                         items:[hint(l:'Statement' m:Expr)
+                                hint(l:'Value' m:{GetPrintData FeaV})
+                                hint(l:'Type' m:oz({Value.type Fea}))])}
+               end
+            end
+         elseif {DetTests.det Fea} andthen {Not {IsLiteral Fea} orelse {IsInt Fea}} then
+            %% Dict/Array is unknown, 2nd arg is known but not literal or int
+            DictOz = {GetPrintData DictV}
+            FeaOz = {GetPrintData FeaV}
+            ValOz = {GetPrintData ValV}
+            Expr = DictOz#'.'#FeaOz#' := '#ValOz
+         in
+            {Ctrl.rep
+             error(coord: @coord
+                   kind : SAGenError
+                   msg  : 'expected a feature as 2nd argument of <dict/array>.<feat> := <val>'
+                   items:[hint(l:'Statement' m:Expr)
+                          hint(l:'Value' m:{GetPrintData FeaV})
+                          hint(l:'Type' m:oz({Value.type Fea}))])}
          end
       end
 

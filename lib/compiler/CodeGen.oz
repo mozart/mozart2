@@ -653,21 +653,14 @@ define
                Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
                       Label()}
             end
-            if {IsTuple Rec} then
-               RecordArity = {Width Rec}
-               VArgs#VInter = {ForThread RecordArity 1 ~1
-                               fun {$ In#VTl I} VArg VHd in
-                                  {Rec.I makeRecordArgument(CS VHd VTl ?VArg)}
-                                  (VArg|In)#VHd
-                               end nil#VTl}
-            else
-               RecordArity = {Arity Rec}
-               VArgs#VInter = {FoldR RecordArity
-                               fun {$ F In#VTl} VArg VHd in
-                                  {Rec.F makeRecordArgument(CS VHd VTl ?VArg)}
-                                  (VArg|In)#VHd
-                               end nil#VTl}
-            end
+            RecordArity = if {IsTuple Rec} then {Width Rec}
+                          else {Arity Rec}
+                          end
+            VArgs#VInter = {Record.foldR Rec
+                            fun {$ X In#VTl} VArg VHd in
+                               {X makeRecordArgument(CS VHd VTl ?VArg)}
+                               (VArg|In)#VHd
+                            end nil#VTl}
             VHd = vEquateRecord(_ Label RecordArity {VO reg($)} VArgs VInter)
          end
       end
@@ -1003,21 +996,14 @@ define
                   Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
                          Label()}
                end
-               if {IsTuple Rec} then
-                  RecordArity = {Width Rec}
-                  VArgs#VHd = {ForThread RecordArity 1 ~1
-                               fun {$ In#VTl I} VArg VHd in
-                                  {Rec.I makeRecordArgument(CS VHd VTl ?VArg)}
-                                  (VArg|In)#VHd
-                               end nil#VTl}
-               else
-                  RecordArity = {Arity Rec}
-                  VArgs#VHd = {FoldR RecordArity
-                               fun {$ F In#VTl} VArg VHd in
-                                  {Rec.F makeRecordArgument(CS VHd VTl ?VArg)}
-                                  (VArg|In)#VHd
-                               end nil#VTl}
-               end
+               RecordArity = if {IsTuple Rec} then {Width Rec}
+                             else {Arity Rec}
+                             end
+               VArgs#VHd = {Record.foldR Rec
+                            fun {$ X In#VTl} VArg VHd in
+                               {X makeRecordArgument(CS VHd VTl ?VArg)}
+                               (VArg|In)#VHd
+                            end nil#VTl}
                record(Label RecordArity VArgs)
             end
          else VO in
@@ -2340,14 +2326,10 @@ define
                   {Arg2 getCodeGenValue(?Value)}
                   if {IsDet Value} andthen {IsRecord Value} then
                      RecordArity ActualArgs Regs Cont1 in
-                     if {IsTuple Value} then
-                        RecordArity = {Width Value}
-                        ActualArgs = {ForThread RecordArity 1 ~1
-                                      fun {$ In I} Value.I|In end nil}
-                     else
-                        RecordArity = {Arity Value}
-                        ActualArgs = {Map RecordArity fun {$ I} Value.I end}
-                     end
+                     RecordArity = if {IsTuple Value} then {Width Value}
+                                   else {Arity Value}
+                                   end
+                     ActualArgs = {Record.toList Value}
                      {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
                      if {{Arg1 getVariable($)} isToplevel($)} then
                         Cont1 = vGenCall(_ {Arg1 reg($)} true

@@ -22,12 +22,51 @@
 
 %%
 %% -in
+
+
+
 %% -out
 %% -prefix
 %% -threads
 %% -verbose
-{Show Module}
+
 declare
+
+fun {IsPath Url}
+   {HasFeature Url path} andthen {Width Url}==1
+end
+
+fun {IsRelativePath Url}
+   {IsPath Url} andthen {Label Url.path}\=abs
+end
+
+fun {IsAbsolutePath Url}
+   {Not {IsRelativePath Url}}
+end
+
+fun {ToInclude Url}
+   %% Returns true, iff functor at Url is to be included
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \insert 'init/RURL.oz'
 
 declare

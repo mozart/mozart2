@@ -32,7 +32,7 @@ prepare
                            {URL.make 'images/'}}}
 
 import
-   Tk
+   Tk Property
 
 export
    error:       Error

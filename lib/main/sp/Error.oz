@@ -345,45 +345,48 @@ local
                       {CondSelect X line unit}
                       {CondSelect X column unit}
                       {CondSelect X 'PC' unit}}
+               Kind = case X.kind of 'call/c' then 'call'
+                      [] 'call/f' then 'call'
+                      [] 'lock/c' then 'lock'
+                      [] 'lock/f' then 'lock'
+                      [] 'exception handler/c' then 'exception handler'
+                      [] 'exception handler/f' then 'exception handler'
+                      [] 'conditional/c' then 'conditional'
+                      [] 'conditional/f' then 'conditional'
+                      [] 'definition/c' then 'definition'
+                      [] 'definition/f' then 'definition'
+                      [] 'skip/c' then 'skip'
+                      [] 'skip/f' then 'skip'
+                      [] 'fail/c' then 'fail'
+                      [] 'fail/f' then 'fail'
+                      [] 'thread/c' then 'thread'
+                      [] 'thread/f' then 'thread'
+                      elseof K then K
+                      end
             in
-               case {CondSelect X name unit} of unit then
-                  case X.kind of call then
-                     Data = {CondSelect X data unit}
+               case Kind of call then
+                  Data = X.data
+               in
+                  case {IsDet Data} then
+                     PN = {System.printName Data}
                   in
-                     case {IsDet Data} then
-                        case Data == unit then
-                           'procedure'
+                     case {IsObject Data} then
+                        case PN == '' then
+                           'object application'
                         else
-                           PN = {System.printName Data}
-                        in
-                           case {IsObject Data} then
-                              case PN == '' then
-                                 'object application'
-                              else
-                                 'object application of class \''#PN#'\''
-                              end
-                           else
-                              case PN == '' then
-                                 'procedure'
-                              else
-                                 'procedure \''#PN#'\''
-                              end
-                           end
+                           'object application of class \''#PN#'\''
                         end
                      else
-                        'procedure _'
+                        case PN == '' then
+                           'procedure'
+                        else
+                           'procedure \''#PN#'\''
+                        end
                      end
-                  [] 'lock' then 'lock'
-                  [] handler then 'exception handler'
-                  [] cond then 'conditional'
-                  elseof Kind then 'unknown task \''#Kind#'\''
-                  end
-               elseof Name then
-                  case Name == '' then
-                     'procedure'
                   else
-                     'procedure \''#Name#'\''
+                     'procedure _'
                   end
+               else Kind
                end#
                case Pos == "" then ""
                else ' in '#Pos

@@ -49,12 +49,14 @@ local
 
 in
 
-   Debug = debug(dumpThreads:  DumpThreads
-                 listThreads:  ListThreads
-                 breakpointAt: {`Builtin` 'Debug.breakpointAt' 4}
-                 breakpoint:   {`Builtin` 'Debug.breakpoint'   0}
-                 displayCode:  {`Builtin` 'Debug.displayCode'  2}
-                 print:        {`Builtin` 'Debug.print'        2}
-                 printLong:    {`Builtin` 'Debug.printLong'    2}
+   Debug = debug(dumpThreads:    DumpThreads
+                 listThreads:    ListThreads
+                 breakpointAt:   {`Builtin` 'Debug.breakpointAt'   4}
+                 breakpoint:     {`Builtin` 'Debug.breakpoint'     0}
+                 displayCode:    {`Builtin` 'Debug.displayCode'    2}
+                 print:          {`Builtin` 'Debug.print'          2}
+                 printLong:      {`Builtin` 'Debug.printLong'      2}
+                 procedureCode:  {`Builtin` 'Debug.procedureCode'  2}
+                 procedureCoord: {`Builtin` 'Debug.procedureCoord' 2}
                  )
 end

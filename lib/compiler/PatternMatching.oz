@@ -402,7 +402,6 @@ local
          end
       [] leaf(Statement Shared) then
          VHd = Shared
-         VTl = nil
          if {IsFree Shared} then Label VInstr in
             {CS newLabel(?Label)}
             Shared = vShared(_ Label {NewCell 0} VInstr)

@@ -227,7 +227,14 @@ in
                {ForAll Regs
                 proc {$ Reg}
                    case Emitter, GetPerm(Reg $) of none then skip
-                   elseof Y=y(_) then Emitter, Emit(clear(Y))
+                   elseof Y=y(_) then
+                      case Emitter, IsLast(Reg $) then skip
+                      else Y2 in
+                         Emitter, FreeReg(Reg)
+                         Emitter, AllocateUnnamedPerm(Reg ?Y2)
+                         Emitter, Emit(move(Y Y2))
+                      end
+                      Emitter, Emit(clear(Y))
                    end
                 end}
             end
@@ -1844,6 +1851,19 @@ in
                Emitter, Emit(move(YG X))
             end
          elseof X0 then X = X0
+         end
+      end
+      meth AllocateUnnamedPerm(Reg ?Y)
+         case Emitter, GetPerm(Reg $) of none then I in
+            I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
+                 @LowestFreeY}
+            {Dictionary.put @LocalVarnames I ''}
+            case @HighestEverY >= I then skip
+            else HighestEverY <- I
+            end
+            {Dictionary.put @Permanents Reg Y=y(I)}
+            {Dictionary.put @UsedY I 1}
+         elseof Y0 then Y = Y0
          end
       end
       meth AllocatePerm(Reg ?Y)

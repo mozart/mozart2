@@ -197,7 +197,7 @@ define
                   end
                end
             elseif {IsAtom Val} then
-               % the atom must not be mistaken for a token
+               %% the atom must not be mistaken for a token
                if {HasFeature InstructionSizes Val} then '\''#Val#'\''
                else
                   case Val of lbl then '\'lbl\''
@@ -215,8 +215,8 @@ define
             elseif {IsProcedure Val} then
                {FindProc Val}
             elseif {ForeignPointer.is Val} then I in
-               % foreign pointers are assigned increasing integers
-               % in order of appearance so that diffs are sensible
+               %% foreign pointers are assigned increasing integers
+               %% in order of appearance so that diffs are sensible
                I = {ForeignPointer.toInt Val}
                if {IsCopyablePredicateRef Val} then '<Q: '
                else '<P: '
@@ -263,8 +263,8 @@ define
             InstrsHd <- 'skip'|@InstrsTl
             LabelDict <- {NewDictionary}
             Size <- InstructionSizes.'skip'
-            % Code must not start at address 0, since this is interpreted as
-            % NOCODE by the emulator - thus the dummy instruction 'skip'.
+            %% Code must not start at address 0, since this is interpreted as
+            %% NOCODE by the emulator - thus the dummy instruction 'skip'.
             self.Profile = ProfileSwitch
             self.debugInfoControl = DebugInfoControlSwitch
          end

@@ -139,7 +139,7 @@ class CodeStore from Emitter
       {Dictionary.removeAll @sharedDone}
       Emitter, doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs ?NLiveRegs)
       {Dictionary.removeAll @sharedDone}
-      % restore enclosing definition's state:
+      %% restore enclosing definition's state:
       NextReg <- @minReg
       minReg <- OldMinReg
       Saved <- SavedRest
@@ -248,8 +248,8 @@ class CodeStore from Emitter
             {BitArray.conj InitsRS RS}
             case AllocatesRS of nil then skip
             else
-               % We can't use BitArray.disj here because the bounds of
-               % AllocatesRS may be a strict subset of those of InitsRS:
+               %% We can't use BitArray.disj here because the bounds of
+               %% AllocatesRS may be a strict subset of those of InitsRS:
                {ForAll {BitArray.toList AllocatesRS}
                 proc {$ Reg} {BitArray.set InitsRS Reg} end}
             end

@@ -87,7 +87,7 @@ in
          LocalEnvsInhibited
          continuations contLabels
 
-         % These are only needed temporarily for call argument initialization:
+         %% These are only needed temporarily for call argument initialization:
          AdjDict DelayedInitsDict DoneDict CurrentID Stack Arity
       meth init()
          GRegRef <- {NewDictionary}
@@ -129,9 +129,9 @@ in
          @CodeTl = nil
          if self.debugInfoVarnamesSwitch then
             if @HighestEverY == ~1 andthen GRegs == nil then
-               % Emitting at least one `...Varname' instruction
-               % flags this procedure as having been compiled with
-               % the switch +debuginfovarnames:
+               %% Emitting at least one `...Varname' instruction
+               %% flags this procedure as having been compiled with
+               %% the switch +debuginfovarnames:
                Code = @CodeHd#[localVarname('')]
             else
                Code =
@@ -151,7 +151,7 @@ in
             Code = @CodeHd#nil
          end
          NLiveRegs = @HighestEverX + 1
-         % free for garbage collection:
+         %% free for garbage collection:
          {Dictionary.removeAll @Temporaries}
          Temporaries <- unit
          {Dictionary.removeAll @Permanents}
@@ -245,7 +245,7 @@ in
          end
       end
       meth LetDie(AliveRS) RS = @LastAliveRS in
-         % Let all registers die that do not occur in AliveRS.
+         %% Let all registers die that do not occur in AliveRS.
          if RS \= AliveRS then
             LastAliveRS <- AliveRS
             {BitArray.nimpl RS AliveRS}
@@ -320,8 +320,8 @@ in
             elsecase R2 of none then skip
             else Emitter, Emit(unify(R1 R2))
             end
-            % If either register has no temporary, assign to it the other's
-            % temporary:
+            %% If either register has no temporary, assign to it the other's
+            %% temporary:
             case Emitter, GetTemp(Reg1 $) of none then
                case Emitter, GetTemp(Reg2 $) of none then skip
                elseof X2 then Emitter, CopyTemp(X2 Reg1)
@@ -332,8 +332,8 @@ in
                else skip
                end
             end
-            % If either register has no permanent, assign to it the other's
-            % permanent:
+            %% If either register has no permanent, assign to it the other's
+            %% permanent:
             case Emitter, GetPerm(Reg1 $) of none then
                case Emitter, GetPerm(Reg2 $) of none then skip
                elseof YG2 then Emitter, CopyPerm(YG2 Reg1)
@@ -359,7 +359,7 @@ in
          [] vEquateLiteral(_ Literal Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
                if self.debugInfoControlSwitch then R in
-                  % This is needed for 'name generation' step points:
+                  %% This is needed for 'name generation' step points:
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(putConstant(Literal R))
                elseif Emitter, IsLast(Reg $) then skip
@@ -403,6 +403,7 @@ in
                   Emitter, Emit(getVariable(R))
                end
             elseof R then
+               %--** this can never happen!
                Emitter, Emit(unifyValue(R))
             end
          [] vCallBuiltin(OccsRS Builtinname Regs Coord Cont) then
@@ -935,10 +936,10 @@ in
       end
 
       meth TryToUseAsSendMsg(ThisAddr Reg Literal RecordArity VArgs Cont $)
-         % If a vEquate{Number,Literal,Record} instruction is immediately
-         % followed by a unary vCall instruction with the same register as
-         % argument and this register is linear, we emit a sendMsg instruction
-         % for the sequence.
+         %% If a vEquate{Number,Literal,Record} instruction is immediately
+         %% followed by a unary vCall instruction with the same register as
+         %% argument and this register is linear, we emit a sendMsg instruction
+         %% for the sequence.
          if self.debugInfoControlSwitch then false
          elseif Emitter, IsFirst(Reg $) then
             case Cont of vCall(_ ObjReg [!Reg] Coord Cont2) then
@@ -1031,24 +1032,23 @@ in
          %% know which argument register they are to be placed in and this
          %% register is free).
          %%
-         %
          case @continuations of Cont|_ then
-            % For each register still required after the call, one of the
-            % following holds:
-            % 1) it has no delayed initialization and is unallocated
-            %    => nothing to be done
-            % 2) it has a temporary, but no permanent
-            %    => make it permanent
-            % 3) it already has a permanent
-            %    => nothing to be done
-            % 4) it has a delayed initialization and is an argument
-            %    => emit it into a permanent
-            % 5) it has a delayed initialization and is not an argument
-            %    => delay it until after the call
+            %% For each register still required after the call, one of the
+            %% following holds:
+            %% 1) it has no delayed initialization and is unallocated
+            %%    => nothing to be done
+            %% 2) it has a temporary, but no permanent
+            %%    => make it permanent
+            %% 3) it already has a permanent
+            %%    => nothing to be done
+            %% 4) it has a delayed initialization and is an argument
+            %%    => emit it into a permanent
+            %% 5) it has a delayed initialization and is not an argument
+            %%    => delay it until after the call
             {ForAll {BitArray.toList Cont.1}
              proc {$ Reg} Result in
-                % We have to be careful not to emit any delayed initialization
-                % too soon, so we do not use GetTemp here:
+                %% We have to be careful not to emit any delayed initialization
+                %% too soon, so we do not use GetTemp here:
                 Result = {Dictionary.condGet @Temporaries Reg none}
                 case Result of none then skip   % 1)
                 [] x(_) then
@@ -1059,10 +1059,10 @@ in
                    end
                 else
                    if {Member Reg Regs} then   % 4)
-                      % try to emit the delayed initialization into a permanent
-                      % (does not work for vGetSelf!):
+                      %% try to emit the delayed initialization into a
+                      %% permanent (does not work for vGetSelf!):
                       case Emitter, GetPerm(Reg $) of none then X Y in
-                         % the initialization needs a temporary as destination:
+                         %% initialization needs a temporary as destination:
                          Emitter, GetTemp(Reg ?X)   % ... emitting it
                          Emitter, AllocatePerm(Reg ?Y)
                          Emitter, Emit(move(X Y))
@@ -1074,25 +1074,25 @@ in
              end}
          [] nil then skip
          end
-         %
-         % Since possibly further temporaries will be allocated (for
-         % the reference to the abstraction and for intermediates while
-         % reordering the argument registers), we have to ensure that
-         % these will not interfere with the argument indices:
-         %
+         %%
+         %% Since possibly further temporaries will be allocated (for
+         %% the reference to the abstraction and for intermediates while
+         %% reordering the argument registers), we have to ensure that
+         %% these will not interfere with the argument indices:
+         %%
          Arity = {Length Regs}
          Emitter, ReserveTemps(Arity)
-         %
-         % Allocate Reg (if necessary) and place it in the kind of register
-         % it is required in; make it permanent if needed:
-         %
+         %%
+         %% Allocate Reg (if necessary) and place it in the kind of register
+         %% it is required in; make it permanent if needed:
+         %%
          case WhichReg of none then
             % The abstraction is not referenced by a register.
             R0 = none
          else
             case Emitter, GetReg(Reg $) of none then
-               % Reg has not yet been allocated.  Let's check whether
-               % it needs to be permanent.
+               %% Reg has not yet been allocated.  Let's check whether
+               %% it needs to be permanent.
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
                      msg: 'application suspends forever'
@@ -1107,11 +1107,11 @@ in
                Emitter, Emit(createVariable(R0))
             else
                if Emitter, IsLast(Reg $) then
-                  % Here we know: Reg has been allocated and is not needed
-                  % any longer after the call instruction.  Thus, either a
-                  % permanent or a temporary register is fine.
-                  % If it is a temporary however, it must not collide with
-                  % an argument index.
+                  %% Here we know: Reg has been allocated and is not needed
+                  %% any longer after the call instruction.  Thus, either a
+                  %% permanent or a temporary register is fine.
+                  %% If it is a temporary however, it must not collide with
+                  %% an argument index.
                   case Emitter, GetPerm(Reg $) of none then X in
                      Emitter, GetTemp(Reg ?X)
                      if X.1 < Arity then NewX in
@@ -1134,23 +1134,23 @@ in
                   end
                else
                   case Emitter, GetPerm(Reg $) of none then X Y in
-                     % Here we know: Reg has only been allocated as a temporary
-                     % but is still needed after the call instruction.  Thus,
-                     % we have to make it permanent.
+                     %% Here we know: Reg has only been allocated as a
+                     %% temporary but is still needed after the call
+                     %% instruction.  Thus, we have to make it permanent.
                      Emitter, GetTemp(Reg ?X)
                      Emitter, AllocatePerm(Reg ?Y)
                      Emitter, Emit(move(X Y))
                   else
-                     % Reg is already permanent.
+                     %% Reg is already permanent.
                      skip
                   end
                end
             end
             case WhichReg of non_y then
-               % The instruction requires Reg not to reside in a Y register:
+               %% The instruction requires Reg not to reside in a Y register:
                case Emitter, GetReg(Reg $) of Y=y(_) then
                   case Emitter, GetTemp(Reg $) of none then
-                     % move from permanent to temporary:
+                     %% move from permanent to temporary:
                      Emitter, AllocateAnyTemp(Reg ?R0)
                      Emitter, Emit(move(Y R0))
                   elseof X then
@@ -1160,20 +1160,20 @@ in
                   R0 = XG
                end
             [] any then
-               % Reg may reside in any register - which it does.
+               %% Reg may reside in any register - which it does.
                Emitter, GetReg(Reg ?R0)
             end
          end
-         %
-         % Now we place the arguments in the correct locations and
-         % emit the call instruction.
-         %
+         %%
+         %% Now we place the arguments in the correct locations and
+         %% emit the call instruction.
+         %%
          Emitter, SetArguments(Arity ArgInits Regs)
          if self.debugInfoControlSwitch then
             case R0 of x(I) then
-               % this test is needed to ensure correctness, since
-               % the emulator does not save X registers with
-               % indices > Arity:
+               %% this test is needed to ensure correctness, since
+               %% the emulator does not save X registers with
+               %% indices > Arity:
                if I > Arity then
                   Emitter, Emit(move(R0 R=x(Arity)))
                else
@@ -1243,15 +1243,15 @@ in
                 else X Instr in
                    Emitter, GetTemp(Reg ?X)
                    if X == x(I) then
-                      % Optimize the special case that the register
-                      % already is located in its destination.
+                      %% Optimize the special case that the register
+                      %% already is located in its destination.
                       'skip'
                    else
                       case Emitter, GetPerm(Reg $) of none then
                          case X of none then
                             {BitArray.set @LastAliveRS Reg}
                             if {Member Reg Regr} then NewX in
-                               % special handling for nonlinearities
+                               %% special handling for nonlinearities
                                Emitter, Emit(createVariable(NewX))
                                if Emitter, IsLast(Reg $) then skip
                                else Y in
@@ -1288,9 +1288,9 @@ in
                 end
              end
           end}
-         %
-         % Perform the depth-first search of the graph:
-         %
+         %%
+         %% Perform the depth-first search of the graph:
+         %%
          CurrentID <- 0
          Stack <- nil
          {For 0 @Arity - 1 1
@@ -1340,8 +1340,8 @@ in
                case Instr of move(_ _) then
                   Emitter, Emit(Instr)
                else
-                  % we delay all others to allow for the highest possible
-                  % amount of moveMove peephole optimizations.
+                  %% we delay all others to allow for the highest possible
+                  %% amount of moveMove peephole optimizations.
                   skip
                end
             elseof I1|Ir then X = x(@LowestFreeX) In in
@@ -1387,7 +1387,7 @@ in
          end
       end
       meth EmitRecordWrite(Literal RecordArity R VArgs)
-         % Emit in write mode, i.e., bottom-up and using `set':
+         %% Emit in write mode, i.e., bottom-up and using `set':
          IHd ITl
       in
          Emitter, EmitVArgsWrite(VArgs IHd ITl)
@@ -1424,7 +1424,7 @@ in
          end
       end
       meth EmitRecordRead(Literal RecordArity R VArgs)
-         % Emit in read mode, i.e., top-down and using `unify':
+         %% Emit in read mode, i.e., top-down and using `unify':
          SubRecords
       in
          Emitter, Emit(getRecord(Literal RecordArity R))
@@ -1510,7 +1510,7 @@ in
          end
       end
       meth EmitGuard(Addr)
-         % Ensure that no temporary dies in the guard:
+         %% Ensure that no temporary dies in the guard:
          OldContinuations = @continuations
          OldContLabels
          Cont = vDummy(case Addr of nil then nil
@@ -1586,8 +1586,8 @@ in
       end
 
       meth DoInits(InitsRS Cont) Regs in
-         % make all already initialized Registers occurring
-         % in the continuation permanent:
+         %% make all already initialized Registers occurring
+         %% in the continuation permanent:
          Regs = case Cont of nil then
                    case @continuations of Cont1|_ then
                       {BitArray.toList Cont1.1}
@@ -1606,7 +1606,7 @@ in
              else skip
              end
           end}
-         % allocate all registers in the InitsRS set as permanents:
+         %% allocate all registers in the InitsRS set as permanents:
          case InitsRS of nil then skip
          else
             {ForAll {BitArray.toList InitsRS}
@@ -1676,8 +1676,8 @@ in
             andthen @HighestEverY == ~1
             andthen {Not self.debugInfoControlSwitch}
          then
-            % This means that in a conditional, local environments may be
-            % allocated per branch instead of for the procedure as a whole.
+            %% This means that in a conditional, local environments may be
+            %% allocated per branch instead of for the procedure as a whole.
             @LocalEnvSize = 0   % cancel preceding allocateL instruction
             LocalEnvSize <- _
             true
@@ -1685,10 +1685,10 @@ in
          end
       end
       meth EmitAddrInLocalEnv(Addr HasLocalEnv)
-         % A call to this method must always be followed by a call to
-         % either RestoreRegisterMapping or RestoreAllRegisterMappings;
-         % else the attributes Permanents, UsedY and LowestFreeY do not
-         % contain correct values.
+         %% A call to this method must always be followed by a call to
+         %% either RestoreRegisterMapping or RestoreAllRegisterMappings;
+         %% else the attributes Permanents, UsedY and LowestFreeY do not
+         %% contain correct values.
          if HasLocalEnv then
             case Addr of vShared(_ _ _ _) then
                Emitter, EmitAddrInLocalEnvShared(Addr)
@@ -1762,9 +1762,9 @@ in
       end
 
       meth GetReg(Reg ?R) Result in
-         % Return Reg's permanent, if it has one; else return Reg's temporary
-         % or 'none'.  If it has a delayed initialization, emit this, deciding
-         % from the continuation which register to allocate it to.
+         %% Return Reg's permanent, if it has one; else return Reg's temporary
+         %% or 'none'.  If it has a delayed initialization, emit this, deciding
+         %% from the continuation which register to allocate it to.
          Result = {Dictionary.condGet @Permanents Reg none}
          case Result of none then
             if Reg < @minReg then I in
@@ -1789,9 +1789,9 @@ in
          end
       end
       meth GetPerm(Reg ?YG) Result in
-         % Return Reg's permanent, if it has one, or 'none'.  If it has a
-         % delayed initialization that can have a permanent as destination,
-         % emit this, allocating a permanent for it.
+         %% Return Reg's permanent, if it has one, or 'none'.  If it has a
+         %% delayed initialization that can have a permanent as destination,
+         %% emit this, allocating a permanent for it.
          Result = {Dictionary.condGet @Permanents Reg none}
          case Result of none then
             if Reg < @minReg then I in
@@ -1812,8 +1812,8 @@ in
          end
       end
       meth GetTemp(Reg ?X) Result in
-         % Return Reg's temporary, if it has one, or 'none'.  If it has a
-         % delayed initialization, emit this, allocating a temporary for it.
+         %% Return Reg's temporary, if it has one, or 'none'.  If it has a
+         %% delayed initialization, emit this, allocating a temporary for it.
          Result = {Dictionary.condGet @Temporaries Reg none}
          case Result of none then X = none
          [] x(_) then X = Result
@@ -1825,9 +1825,9 @@ in
          end
       end
       meth ReserveTemps(Index)
-         % All temporaries lower than Index are reserved; i.e., LowestFreeX
-         % and HighestEverX are set such that AllocateAnyTemp will not
-         % choose any conflicting index.
+         %% All temporaries lower than Index are reserved; i.e., LowestFreeX
+         %% and HighestEverX are set such that AllocateAnyTemp will not
+         %% choose any conflicting index.
          if @HighestEverX >= Index then
             if @LowestFreeX < Index then
                LowestFreeX <- {NextFreeIndex @UsedX Index}
@@ -1850,7 +1850,7 @@ in
          end
       end
       meth AllocateThisTemp(I Reg ?X)
-         % Precondition: X register index I is free
+         %% Precondition: X register index I is free
          if @LowestFreeX == I then
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
          end
@@ -1864,7 +1864,7 @@ in
          Emitter, AllocateThisShortLivedTemp(@LowestFreeX ?X)
       end
       meth AllocateThisShortLivedTemp(I ?X)
-         % Precondition: X register index I is free
+         %% Precondition: X register index I is free
          if @LowestFreeX == I then
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
          end
@@ -1973,14 +1973,14 @@ in
       end
 
       meth PredictBuiltinOutput(Reg ?X)
-         % Here we try to determine whether it would improve
-         % register allocation to reuse one of the argument
-         % registers as the result register, if possible.
+         %% Here we try to determine whether it would improve
+         %% register allocation to reuse one of the argument
+         %% registers as the result register, if possible.
          case @continuations of nil then
             Emitter, AllocateShortLivedTemp(?X)
          [] Cont|_ then
             Emitter, LetDie(Cont.1)
-            % This is needed so that LetDie works correctly:
+            %% This is needed so that LetDie works correctly:
             {BitArray.set Cont.1 Reg}
             Emitter, PredictTemp(Reg ?X)
          end
@@ -1990,8 +1990,8 @@ in
             Emitter, AllocateAnyTemp(Reg ?X)
          [] Cont|_ then
             case Emitter, PredictRegSub(Reg Cont $) of anyperm then
-               % This may be made permanent later.  But for now we
-               % absolutely need it in a temporary register anyway.
+               %% This may be made permanent later.  But for now we
+               %% absolutely need it in a temporary register anyway.
                Emitter, AllocateAnyTemp(Reg ?X)
             elseof X2 then
                X = X2
@@ -2010,7 +2010,7 @@ in
          end
       end
       meth PredictRegSub(Reg Cont ?R) VInstr = Cont in
-         % Precondition: Reg has not yet occurred
+         %% Precondition: Reg has not yet occurred
          case Cont of nil then
             Emitter, AllocateAnyTemp(Reg ?R)
          [] vMakePermanent(_ Regs Cont2) then
@@ -2018,7 +2018,7 @@ in
             else Emitter, PredictRegSub(Reg Cont2 ?R)
             end
          [] vEquateLiteral(_ _ MessageReg Cont2) then
-            % Check whether this will be optimized into a sendMsg instruction.
+            %% Check whether this will be optimized into a sendMsg instruction.
             case Cont2 of vCall(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 nil Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then
@@ -2029,7 +2029,7 @@ in
                Emitter, PredictRegSub(Reg Cont2 ?R)
             end
          [] vEquateRecord(_ _ _ MessageReg VArgs Cont2) then
-            % Check whether this will be optimized into a sendMsg instruction.
+            %% Check whether this will be optimized into a sendMsg instruction.
             case Cont2 of vCall(_ Reg0 [!MessageReg] _ Cont3) then
                Emitter, PredictRegForCall(Reg Reg0 VArgs Cont3 ?R)
             elseof vGenCall(_ Reg0 false _ _ [!MessageReg] _ Cont3) then

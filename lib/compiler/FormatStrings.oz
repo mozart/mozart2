@@ -148,7 +148,7 @@ local
          end
       end
       meth get(ResVS)
-         % this implicitly appends a `format(glue(""))' to the end of the input
+         %% implicitly appends a `format(glue(""))' to the end of the input
          Formatter, FormatLine()
          ResVS = (VS <- "")
       end
@@ -206,7 +206,7 @@ local
    end
 in
    fun {FormatStringToVirtualString FS} O in
-      % we use a width of 79 to avoid `\'-line breaks in Emacs
+      %% we use a width of 79 to avoid `\'-line breaks in Emacs
       O = {New Formatter init(width: 79)}
       {O append(FS)}
       {O get($)}

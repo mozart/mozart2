@@ -415,11 +415,11 @@ local
       meth Feed(ParseProc Data Return)
          ExecutingThread <- {Thread.this}
          {@reporter startBatch()}
-         try DoParse Queries0 in
+         try DoParse Queries in
             proc {DoParse}
-               Queries0 = {ParseProc Data @reporter
-                           fun {$ S} CompilerStateClass, getSwitch(S $) end
-                           @defines}
+               Queries = {ParseProc Data @reporter
+                          fun {$ S} CompilerStateClass, getSwitch(S $) end
+                          @defines}
             end
             if ParseProc == ParseOzFile
                orelse ParseProc == ParseOzVirtualString
@@ -431,25 +431,34 @@ local
                CompilerStateClass, ExecProtected(DoParse false)
                {@reporter startSubPhase('checking syntax tree for validity')}
                CompilerStateClass,
-               ExecProtected(proc {$} {CheckTupleSyntax Queries0} end true)
+               ExecProtected(proc {$} {CheckTupleSyntax Queries} end true)
             end
-            if {@reporter hasSeenError($)} orelse Queries0 == parseError then
+            if {@reporter hasSeenError($)} orelse Queries == parseError then
                raise rejected end
             end
-            if CompilerStateClass, getSwitch(unnest $) then Queries in
-               Queries = if CompilerStateClass, getSwitch(expression $) then
-                            case Queries0 of nil then Queries0
-                            else V in
-                               V = {New Core.userVariable
-                                    init('`result`' unit)}
-                               CompilerStateClass,
-                               enter(V {CondSelect Return result _} false)
-                               {Unnester.makeExpressionQuery Queries0}
-                            end
-                         else
-                            Queries0
-                         end
-               CompilerStateClass, FeedSub(Queries Return)
+            if CompilerStateClass, getSwitch(unnest $) then
+               if CompilerStateClass, getSwitch(expression $) then
+                  case Queries of nil then
+                     {@reporter error(kind: 'compiler directive error'
+                                      msg: 'file contains no expression')}
+                     raise rejected end
+                  else V in
+                     V = {New Core.userVariable
+                          init('`result`' unit)}
+                     CompilerStateClass,
+                     enter(V {CondSelect Return result _} false)
+                     case {Unnester.makeExpressionQuery Queries}
+                     of _#false then
+                        {@reporter error(kind: 'compiler directive error'
+                                         msg: 'file contains no expression')}
+                        raise rejected end
+                     elseof NewQueries#_ then
+                        CompilerStateClass, FeedSub(NewQueries Return)
+                     end
+                  end
+               else
+                  CompilerStateClass, FeedSub(Queries Return)
+               end
             end
          finally
             ExecutingThread <- unit

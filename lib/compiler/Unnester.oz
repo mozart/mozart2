@@ -2472,8 +2472,9 @@ define
          end
       end
    in
-      fun {MakeExpressionQuery Queries}
-         {MakeExpressionQuerySub Queries $ _}
+      fun {MakeExpressionQuery Queries} NewQueries Found in
+         {MakeExpressionQuerySub Queries ?NewQueries ?Found}
+         NewQueries#Found
       end
    end
 

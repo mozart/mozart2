@@ -31,13 +31,14 @@ import
    Distribution('export')          at 'x-oz://boot/Distribution'
 
    Error(registerFormatter)
-   Fault(injector removeInjector siteWatcher removeSiteWatcher)
+   Fault(install installWatcher)
    Property(get)
 
 export
    offer: Offer
    take:  Take
    gate:  Gate
+   takeWithTimer: TakeWithTimer
    offerMultiple: OfferMultiple
 
 prepare
@@ -239,15 +240,18 @@ define
       proc {Close} {G close} end
    end
 
-
-   proc {Take V Entity}
+   proc {TakeWithTimer V Time Entity}
       T = {VsToTicket V}
       P = {ToPort T}
-      X Y
-      proc {Watch E C}
-         Y=no(E C)
+      X Alarm
+      thread
+         {Delay Time}
+         Alarm=_#time
       end
-      proc {Handle _ _}
+      proc {Watch _ _}
+         Alarm=watch#_
+      end
+      proc {Handle _ _ _}
          {Exception.raiseError connection(ticketToDeadSite V)}
       end
    in
@@ -255,16 +259,13 @@ define
          {Exception.raiseError connection(wrongModel V)}
       end
 
-      {Fault.siteWatcher P  Watch}
-      {Fault.injector    P  Handle}
+      {Fault.installWatcher P [permFail] Watch true}
+      {Fault.install 'thread'(this) P [permFail] Handle true}
 
       {Send P T#X}
 
-      {Fault.removeInjector P Handle}
-
-      case {Record.waitOr X#Y}
+      case {Record.waitOr X#Alarm}
       of 1 then
-         {Fault.removeSiteWatcher P Watch}
          case X
          of no then
             {Exception.raiseError connection(refusedTicket V)}
@@ -272,10 +273,16 @@ define
             Entity=A
          end
       [] 2 then
-         case Y of no(E C) then
-            {Exception.raiseError connection(ticketToDeadSite V E C)}
+         case{Record.waitOr Alarm} of 1 then
+            {Exception.raiseError connection(ticketToDeadSite V)}
+         [] 2 then
+            {Exception.raiseError connection(ticketTakeTimeOut V)}
          end
       end
+   end
+
+   proc {Take V Entity}
+      {TakeWithTimer V 10000 Entity}
    end
 
 

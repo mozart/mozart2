@@ -25,105 +25,144 @@
 functor
 
 import
-   DPB
-   at 'x-oz://boot/DPB'
-   Fault(getEntityCond
-         distHandlerInstall
-         distHandlerDeInstall)
-   at 'x-oz://boot/Fault'
-
+   DPB at 'x-oz://boot/DPB'
+   Fault at 'x-oz://boot/Fault'
 export
-   install:           Install
-   deinstall:         Deinstall
    getEntityCond:     GetEntityCond
-   eInstall:          EInstall
-   eDeinstall:        EDeinstall
+   enable:            Enable
+   disable:           Disable
+   install:           Install
+   deInstall:         DeInstall
+   installWatcher:    InstallWatcher
+   deInstallWatcher:  DeInstallWatcher
+   defaultEnable:     DefaultEnable
+   defaultDisable:    DefaultDisable
 
-
-   injector:          Injector
-   removeInjector:    RmInjector
-
-   siteWatcher:       SiteWatcher
-   removeSiteWatcher: RmSiteWatcher
 define
    local
-      proc{ExceptionHandler Entity Cond}
-         {Exception.raiseError distribution(entity:Entity condition:Cond)}
+      proc{WrongFormat}
+         {Exception.raiseError
+          type(dp('incorrect fault format'))}
       end
 
+      proc{NotImplemented}
+         {Exception.raiseError
+          type(dp('note implmeneted'))}
+      end
 
-      proc{InjectorH T  E P}
-         TT Res in
-         if T == install then   TT = Install0
-         else TT = DeInstall0 end
-         Res={TT safeInjector('cond':[permBlocked]
-                      'thread':this
-                      entityType:single
-                          entity:E)  P}
-         if Res==false then
-            raise distribution('connection') end
+      proc{Except Entity Cond Op}
+         {Exception.raiseError
+          system(dp(entity:Entity condition:Cond op:Op))}
+      end
+
+      fun{DConvertToInj Cond}
+         injector(entityType:all 'thread':all 'cond':Cond)
+      end
+
+      fun{SConvertToInj Entity Cond}
+         injector(entityType:single entity:Entity 'thread':all 'cond':Cond)
+      end
+
+      fun{TConvertToInj Entity Cond Thread}
+         safeInjector(entityType:single entity:Entity
+                      'thread':Thread 'cond':Cond)
+      end
+
+      fun{GConvertToInj Entity Cond}
+         {NotImplemented}
+         false
+      end
+
+      fun{I_Impl Level Entity Cond Proc}
+         case Level of global then
+            {Fault.distHandlerInstall {GConvertToInj Entity Cond} Proc}
+         elseof site then
+            {Fault.distHandlerInstall {SConvertToInj Entity Cond} Proc}
+         elseof 'thread'(Th) then
+            {InterFault.interDistHandlerInstall
+             {TConvertToInj Entity Cond Th} Proc}
+         else
+            {WrongFormat}
+            false
          end
       end
 
-      proc{SiteWH T E P}
-         TT Res in
-         if T == install then   TT = Install0
-         else TT = DeInstall0 end
-         Res={TT siteWatcher('cond':[permWillBlock]
-                             entity:E) P}
-         if Res==false then
-            raise distribution('connection') end
+      fun{D_Impl Level Entity Cond Proc}
+         case Level of global then
+            {Fault.distHandlerDeInstall {GConvertToInj Entity any} Proc}
+         elseof site then
+            {Fault.distHandlerDeInstall {SConvertToInj Entity any} Proc}
+         elseof 'thread'(Th) then
+            {InterFault.interDistHandlerDeInstall
+             {TConvertToInj Entity any Th} Proc}
+         else
+            {WrongFormat}
+            false
          end
       end
 
-      proc{IsUnsafe Cond Out}
-        if {Record.is Cond} then
-           if {Record.hasLabel Cond}==injector then
-              Out=true
-           else
-              Out=false
-           end
-        else
-           Out=false
-        end
+      fun{DefaultEnableImpl Cond}
+         {Fault.distHandlerInstall {DConvertToInj Cond} Except}
       end
 
-      fun{Install0 Cond Proc}
-        if{IsUnsafe Cond} then
-            {Fault.distHandlerInstall Cond Proc}
-        else
-            {InterFault.interDistHandlerInstall Cond Proc}
-        end
+      fun{DefaultDisableImpl}
+         {Fault.distHandlerDeInstall {DConvertToInj any} any}
       end
 
-      fun{DeInstall0 Cond Proc}
-        if{IsUnsafe Cond} then
-            {Fault.distHandlerDeInstall Cond Proc}
-        else
-            {InterFault.interDistHandlerDeInstall Cond Proc}
-        end
+      fun{EnableImpl Level Entity Cond}
+         {I_Impl Level Entity Cond Except}
+      end
+
+      fun{InstallImpl Level Entity Cond Proc}
+         {I_Impl Level Entity Cond Proc}
+      end
+
+      fun{DisableImpl Level Entity}
+         {D_Impl Level Entity any any}
+      end
+
+      fun{DeInstallImpl Level Entity}
+         {D_Impl Level Entity any any}
+      end
+
+      fun{InstallWImpl Entity Cond Proc}
+         {InterFault.interDistHandlerInstall
+          watcher(entity:Entity 'cond':Cond) Proc}
+      end
+
+      fun{DeInstallWImpl Entity Proc}
+         {InterFault.interDistHandlerDeInstall
+          watcher(entity:Entity 'cond':any) Proc}
       end
 
    in
       {Wait DPB}
 
       GetEntityCond  = Fault.getEntityCond
-      Install        = Install0
-      Deinstall      = DeInstall0
 
-      EInstall      = fun{$ Cond}
-                         {Install0 Cond ExceptionHandler}
+      Enable        = fun{$ Level Entity Cond}
+                         {EnableImpl Level Entity Cond}
                       end
-
-      EDeinstall    = fun{$ Cond}
-                         {DeInstall0 Cond ExceptionHandler}
+      Disable       = fun{$ Level Entity}
+                         {DisableImpl Level Entity}
                       end
-
-      Injector      = proc{$ E P} {InjectorH install E P} end
-      RmInjector    = proc{$ E P} {InjectorH denstall E P} end
-
-      SiteWatcher   = proc{$ E P} {SiteWH install E P} end
-      RmSiteWatcher = proc{$ E P} {SiteWH deinstall E P} end
-
-   end
+      Install      = fun{$ Level Entity Cond Proc}
+                         {InstallImpl Level Entity Cond Proc}
+                      end
+      DeInstall    = fun{$ Level Entity}
+                         {DeInstallImpl Level Entity}
+                      end
+      DefaultEnable = fun{$ Cond}
+                         {DefaultEnableImpl Cond}
+                      end
+      DefaultDisable= fun{$}
+                         {DefaultDisableImpl}
+                      end
+      InstallWatcher= fun{$ Entity Cond Proc}
+                         {InstallWImpl Entity Cond Proc}
+                      end
+      DeInstallWatcher=fun{$ Entity Proc}
+                         {DeInstallWImpl Entity Proc}
+                       end
+    end
 end

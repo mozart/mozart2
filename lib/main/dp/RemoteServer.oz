@@ -106,11 +106,12 @@ define
       {OS.signal 'SIGHUP'  ignore}
       {OS.signal 'SIGTERM' ignore}
    else
-      {Fault.siteWatcher  RunRet
+      {Fault.installWatcher RunRet [permFail]
        proc {$ E C}
           {System.showError 'RemoteServer: client crashed.'}
           {Application.exit ExitErrorClient}
-       end}
+       end
+       true}
    end
 
    %% The module manager server

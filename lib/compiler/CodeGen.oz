@@ -895,7 +895,7 @@ local
             case Feats of nil then
                VHd = VTl
                literal(Label)
-            else PairList Rec RecordArity VArgs VInter in
+            else PairList Rec RecordArity VArgs in
                PairList = {List.zip Feats @args
                            fun {$ F Arg}
                               case Arg of _#T then F#T else F#Arg end

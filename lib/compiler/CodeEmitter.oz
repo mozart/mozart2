@@ -160,7 +160,27 @@ in
 
       meth EmitAddr(Addr)
 \ifdef DEBUG_EMIT
-         {ShowVInstr Addr}
+         local
+            proc {ShowVInstr VInstr}   % for debugging
+               L = {Label VInstr}
+               N = {Width VInstr}
+               NewVInstr = {MakeTuple L N}
+            in
+               {For 1 N 1
+                proc {$ I} X = VInstr.I in
+                   case {IsFree X} then X
+                   elsecase {IsChunk X} then {RegSet.toList X}
+                   elsecase {IsRecord X}
+                      andthen {HasFeature Continuations {Label X}}
+                   then {Label X}
+                   else X
+                   end = NewVInstr.I
+                end}
+               {Show NewVInstr}
+            end
+         in
+            {ShowVInstr Addr}
+         end
 \endif
          case Addr of nil then
             case @contLabels of ContLabel|_ then

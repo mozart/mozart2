@@ -25,8 +25,6 @@ local
    IsPrintName
    NameVariable
    NewNamedName
-   GetProcInfo
-   SetProcInfo
    IsBuiltin
    GetBuiltinName
    GenerateAbstractionTableID
@@ -77,7 +75,6 @@ in
 
          % CodeStore
          Continuations
-         ShowVInstr
          CodeStore
       in
          \insert RegSet
@@ -105,7 +102,6 @@ in
       ParseOzVirtualString
 
       % Unnester
-      GetDirectives
       JoinQueries
       MakeExpressionQuery
       UnnestQuery

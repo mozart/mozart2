@@ -61,23 +61,6 @@ Continuations = c(vMakePermanent: 3
                   vLockThread: 4
                   vLockEnd: 3)
 
-proc {ShowVInstr VInstr}   % for debugging
-   L = {Label VInstr}
-   N = {Width VInstr}
-   NewVInstr = {MakeTuple L N}
-in
-   {For 1 N 1
-    proc {$ I} X = VInstr.I in
-       case {IsFree X} then X
-       elsecase {IsChunk X} then {RegSet.toList X}
-       elsecase {IsRecord X} andthen {HasFeature Continuations {Label X}}
-       then {Label X}
-       else X
-       end = NewVInstr.I
-    end}
-   {Show NewVInstr}
-end
-
 class CodeStore from Emitter
    prop final
    attr
@@ -494,7 +477,7 @@ class CodeStore from Emitter
           {RegSet.union AddRS3 CodeStore, GetOccs(Addr2 $)}
        end}
       {FoldR VClauses
-       fun {$ _#Addr1#Addr2 AddRS}
+       fun {$ _#Addr1#_ AddRS}
           CodeStore, AddRegOccs(Addr1 AddRS)
           CodeStore, GetOccs(Addr1 $)
        end AddRS3 _}

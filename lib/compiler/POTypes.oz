@@ -20,10 +20,6 @@
 %%%
 
 local
-
-   S2A  = String.toAtom
-   VS2S = VirtualString.toString
-
    % add to list if no duplicate
    fun {Add X Ys}
       case {Member X Ys} then Ys else X|Ys end
@@ -46,8 +42,6 @@ local
 
       % define mapping names -> indexes
       proc {IdxMapping N2I}
-         Ds
-      in
          N2I = {Record.make n2i Names}
 
          % each name receives an integer between 1 and N
@@ -71,8 +65,6 @@ local
 
       % define mapping names -> sets
       proc {SetMapping N2S}
-         Ss
-      in
          N2S = {Record.make n2s Types}
 
          % each sort is encoded as a subset of {1..N}

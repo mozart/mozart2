@@ -1857,10 +1857,6 @@ local
       end
    end
 in
-   fun {GetDirectives Queries ?Directives}
-      {List.takeDropWhile Queries IsDirective ?Directives}
-   end
-
    local
       fun {VariableMember PrintName Vs}
          case Vs of fVar(PrintName0 _)|Vr then

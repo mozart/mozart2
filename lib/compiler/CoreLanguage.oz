@@ -503,7 +503,7 @@ in
                   {F output2(R ?FS01 ?FS02)}
                   {P outputPattern2(R Vs ?FS11 ?FS12)}
                   Start = [FS01#': '#FS11]#(FS02#FS12)
-               else FS01 FS02 FS11 FS12 in
+               else FS01 FS02 in
                   {X1 outputPattern2(R Vs ?FS01 ?FS02)}
                   Start = [FS01]#FS02
                end

@@ -41,6 +41,7 @@ local
                             %%
                             warnredecl: false
                             warnunused: false
+                            warnunusedformals: false
                             warnforward: false
 
                             %% parsing and expanding:
@@ -501,7 +502,9 @@ local
                raise rejected end
             else skip
             end
-            case CompilerStateClass, getSwitch(warnunused $) then
+            case CompilerStateClass, getSwitch(warnunused $)
+               orelse CompilerStateClass, getSwitch(warnunusedformals $)
+            then W in
                {@reporter logPhase('classifying variable occurrences ...')}
                case CompilerStateClass, getSwitch(staticanalysis $) then skip
                else
@@ -511,7 +514,8 @@ local
                    proc {$ V} {V setUse(multiple)} end}
                   {ForAll GS proc {$ GS} {GS annotateGlobalVars(nil _ _)} end}
                end
-               {ForAll GS proc {$ GS} {GS markFirst(@reporter)} end}
+               CompilerStateClass, getSwitch(warnunusedformals ?W)
+               {ForAll GS proc {$ GS} {GS markFirst(W @reporter)} end}
             else skip
             end
             case CompilerStateClass, getSwitch(core $) then R1 R2 FS in
@@ -558,7 +562,7 @@ local
                Assembler = {Assemble CompilerStateClass, getSwitch(profile $)
                             Code}
                case CompilerStateClass, getSwitch(ozma $) then
-                  case GPNs of nil then File VS in
+                  case GPNs of nil then VS in
                      {@reporter logSubPhase('displaying assembler code ...')}
                      {Assembler output(?VS)}
                      {@reporter
@@ -658,8 +662,13 @@ local
             try
                {P}
                Exceptionless = true
-            catch interrupt then
-               {Thread.injectException T interrupt}
+            catch E then
+               case E of interrupt then
+                  {Thread.injectException T interrupt}
+               else skip
+               end
+               {Show exception(E)}
+               raise E end
             finally
                ExecutingThread <- T
                Completed = true

@@ -75,9 +75,6 @@ NameVariable = {`Builtin` 'nameVariable' 2}
 NewNamedName = {`Builtin` 'newNamedName' 2}
 IsUniqueName = {`Builtin` 'isUniqueName' 2}
 
-GetProcInfo = {`Builtin` 'getProcInfo' 2}
-SetProcInfo = {`Builtin` 'setProcInfo' 2}
-
 IsBuiltin = {`Builtin` 'isBuiltin' 2}
 GetBuiltinName = {`Builtin` 'getBuiltinName' 2}
 GenerateAbstractionTableID = {`Builtin` 'generateAbstractionTableID' 2}

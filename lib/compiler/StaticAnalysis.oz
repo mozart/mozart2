@@ -45,11 +45,6 @@ local
 
    AnalysisDepth = 3
 
-   DPut = Dictionary.put
-   DGet = Dictionary.get
-   DNew = Dictionary.new
-   DCGet= Dictionary.condGet
-   DMem = Dictionary.member
    VS2S = VirtualString.toString
    IsVS = IsVirtualString
    Partition = List.partition
@@ -63,14 +58,6 @@ local
 
    fun {FirstOrId X}
       case X of F#_ then F else X end
-   end
-
-   fun {First F#_}
-      F
-   end
-
-   fun {Second _#S}
-      S
    end
 
 % assumes privacy of the following feature names
@@ -94,11 +81,6 @@ local
 
    fun {HasFeatureNow R F}
       {Member F {CurrentArity R}}
-   end
-
-   fun {KindedRecordToList R}
-      {FoldR {CurrentArity R}
-       fun {$ A In} R.A|In end nil}
    end
 
 %-----------------------------------------------------------------------
@@ -877,10 +859,6 @@ local
 
    fun {SetToVS Xs}
       {ListToVS Xs '{' ', ' '}'}
-   end
-
-   fun {SeqToVS Xs}
-      {ListToVS Xs '' ' ' ''}
    end
 
    fun {ProdToVS Xs}
@@ -2040,13 +2018,13 @@ local
          SABuiltinApplication, checkArguments(Ctrl 'Space.new' true B)
 
          case B then
-            Pred = {GetData {Nth @actualArgs 1}}
             Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
             BndVO= {Nth @actualArgs 2}
-         in
 \ifdef DEBUGSA
+            Pred = {GetData {Nth @actualArgs 1}}
             {Show space({{Nth @actualArgs 2} getPrintName($)} Pred)}
 \endif
+         in
             {BndVO unifyVal(Ctrl Top Token)}
          else skip end
       end
@@ -2508,7 +2486,6 @@ local
          else
             PN  = {@designator getPrintName($)}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Val = {GetPrintData @designator}
             Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
          in
             {Ctrl.rep

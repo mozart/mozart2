@@ -515,7 +515,7 @@ in
                   O = fAtom(Op C)
                   D = fInt(0 C2)
                   fApply(fVar('`GenSumCCD`' C) [A X O D B] C)
-               elsecase {AreLinearConstraints NewE} then Cs Vs X O D in
+               elsecase {AreLinearConstraints NewE} then Cs Vs in
                   {MakeTuples NewE ?Cs nil ?Vs nil}
                   case {FD.is Const} then X O D in
                      X = fRecord(fAtom('#' C) Vs)

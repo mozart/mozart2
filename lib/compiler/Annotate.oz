@@ -33,7 +33,7 @@
 %%    referenced by the node are placed in the difference list
 %%    VsHd-VsTl.
 %%
-%% meth markFirst(Rep)
+%% meth markFirst(WarnFormals Rep)
 %%    A recursive descent starting with the node is done.
 %%    The 'use' attribute of each variable is set.
 %%    In case of unused and single-occurrence variables,
@@ -72,29 +72,30 @@ local
        end VsHd VsTl}
    end
 
-   proc {MarkFirstList Nodes Rep}
+   proc {MarkFirstList Nodes WarnFormals Rep}
       case Nodes of Node|Noder then
-         {Node markFirst(Rep)}
-         {MarkFirstList Noder Rep}
+         {Node markFirst(WarnFormals Rep)}
+         {MarkFirstList Noder WarnFormals Rep}
       [] nil then skip
       end
    end
 
-   proc {MarkFirstClauses Clauses GlobalVars OldUses ?NewUses Rep}
+   proc {MarkFirstClauses Clauses GlobalVars OldUses ?NewUses WarnFormals Rep}
       Clause1|Clauser = Clauses NewUses1 in
-      {Clause1 markFirstClause(GlobalVars OldUses ?NewUses1 Rep)}
+      {Clause1 markFirstClause(GlobalVars OldUses ?NewUses1 WarnFormals Rep)}
       NewUses = {FoldL Clauser
                  fun {$ NewUses1 Clause} NewUses2 in
-                    {Clause markFirstClause(GlobalVars OldUses ?NewUses2 Rep)}
+                    {Clause markFirstClause(GlobalVars OldUses ?NewUses2
+                                            WarnFormals Rep)}
                     {UsesMax NewUses1 NewUses2}
                  end NewUses1}
    end
 
-   proc {MarkFirstExpansionOccs Node Rep}
+   proc {MarkFirstExpansionOccs Node WarnFormals Rep}
       {Record.forAll Node.expansionOccs
        proc {$ VO}
           case VO of undeclared then skip
-          else {VO markFirst(Rep)}
+          else {VO markFirst(WarnFormals Rep)}
           end
        end}
    end
@@ -141,11 +142,27 @@ local
       {ForAll Vs proc {$ V} {V checkUse(Kind Rep)} end}
    end
 
+   local
+      fun {IsEnvCoordSub S}
+         case S == ".env" then true
+         elsecase S of _|R then {IsEnvCoordSub R}
+         [] nil then false
+         end
+      end
+   in
+      fun {IsEnvCoord Coord}
+         case Coord of posNoDebug(F _ _) then {IsEnvCoordSub {Atom.toString F}}
+         [] pos(F _ _) then {IsEnvCoordSub {Atom.toString F}}
+         [] pos(F _ _ _ _ _) then {IsEnvCoordSub {Atom.toString F}}
+         end
+      end
+   end
+
    class AnnotateDefaults
       meth annotateGlobalVars(_ VsHd VsTl)
          VsHd = VsTl
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          skip
       end
    end
@@ -157,9 +174,9 @@ local
       meth annotateGlobalVars(Ls VsHd VsTl)
          {AnnotateGlobalVarsList @body {Append @localVars Ls} VsHd VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(unused)} end}
-         {MarkFirstList @body Rep}
+         {MarkFirstList @body WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
       end
    end
@@ -172,9 +189,9 @@ local
          {@left annotateGlobalVars(Ls VsHd VsInter)}
          {@right annotateGlobalVars(Ls VsInter VsTl)}
       end
-      meth markFirst(Rep)
-         {@left markFirst(Rep)}
-         {@right markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {@left markFirst(WarnFormals Rep)}
+         {@right markFirst(WarnFormals Rep)}
       end
    end
 
@@ -192,16 +209,16 @@ local
              end
           end VsInter2 VsTl}
       end
-      meth markFirst(Rep)
-         {MarkFirstExpansionOccs self Rep}
-         {@label markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {@label markFirst(WarnFormals Rep)}
          {ForAll @args
           proc {$ Arg}
              case Arg of F#T then
-                {F markFirst(Rep)}
-                {T markFirst(Rep)}
+                {F markFirst(WarnFormals Rep)}
+                {T markFirst(WarnFormals Rep)}
              else
-                {Arg markFirst(Rep)}
+                {Arg markFirst(WarnFormals Rep)}
              end
           end}
       end
@@ -220,12 +237,15 @@ local
              end
           end VsInter VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {SetUninitVars @globalVars}
-         {@designator markFirst(Rep)}
+         {@designator markFirst(WarnFormals Rep)}
          {ForAll @formalArgs proc {$ V} {V setUse(wildcard)} end}
-         {MarkFirstList @body Rep}
-         {CheckUses @formalArgs 'formal parameter' Rep}
+         {MarkFirstList @body WarnFormals Rep}
+         case WarnFormals then
+            {CheckUses @formalArgs 'formal parameter' Rep}
+         else skip
+         end
       end
    end
    class AnnotateFunctionDefinition
@@ -238,9 +258,9 @@ local
          {@designator annotateGlobalVars(Ls VsHd VsInter)}
          {AnnotateGlobalVarsList @actualArgs Ls VsInter VsTl}
       end
-      meth markFirst(Rep)
-         {@designator markFirst(Rep)}
-         {MarkFirstList @actualArgs Rep}
+      meth markFirst(WarnFormals Rep)
+         {@designator markFirst(WarnFormals Rep)}
+         {MarkFirstList @actualArgs WarnFormals Rep}
       end
    end
 
@@ -255,13 +275,15 @@ local
                         {@consequent getGlobalVars($)}
                         {@alternative getGlobalVars($)}}
       end
-      meth markFirst(Rep) OldUses NewUses1 NewUses2 in
+      meth markFirst(WarnFormals Rep) OldUses NewUses1 NewUses2 in
          {SetUninitVars @globalVars}
-         {MarkFirstExpansionOccs self Rep}
-         {@arbiter markFirst(Rep)}
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {@arbiter markFirst(WarnFormals Rep)}
          OldUses = {GetUses @globalVars}
-         {@consequent markFirstClause(@globalVars OldUses ?NewUses1 Rep)}
-         {@alternative markFirstClause(@globalVars OldUses ?NewUses2 Rep)}
+         {@consequent markFirstClause(@globalVars OldUses ?NewUses1
+                                      WarnFormals Rep)}
+         {@alternative markFirstClause(@globalVars OldUses ?NewUses2
+                                       WarnFormals Rep)}
          {SetUses @globalVars {UsesMax NewUses1 NewUses2}}
       end
    end
@@ -281,8 +303,8 @@ local
       meth getGlobalVars($)
          @globalVars
       end
-      meth markFirstClause(GlobalVars OldUses ?NewUses Rep)
-         {MarkFirstList @body Rep}
+      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
+         {MarkFirstList @body WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -302,13 +324,15 @@ local
                            {VariableUnion {Clause getGlobalVars($)} Vs}
                         end {@alternative getGlobalVars($)}}
       end
-      meth markFirst(Rep) GlobalVars OldUses NewUses1 NewUses2 in
+      meth markFirst(WarnFormals Rep) GlobalVars OldUses NewUses1 NewUses2 in
          GlobalVars = @globalVars
          {SetUninitVars GlobalVars}
-         {@arbiter markFirst(Rep)}
+         {@arbiter markFirst(WarnFormals Rep)}
          OldUses = {GetUses GlobalVars}
-         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses1 Rep}
-         {@alternative markFirstClause(GlobalVars OldUses ?NewUses2 Rep)}
+         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses1
+          WarnFormals Rep}
+         {@alternative markFirstClause(GlobalVars OldUses ?NewUses2
+                                       WarnFormals Rep)}
          {SetUses GlobalVars {UsesMax NewUses1 NewUses2}}
       end
    end
@@ -333,10 +357,10 @@ local
       meth getPatternGlobalVars($)
          @patternGlobalVars
       end
-      meth markFirstClause(GlobalVars OldUses ?NewUses Rep)
+      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(wildcard)} end}
-         {@pattern markFirst(Rep)}
-         {MarkFirstList @body Rep}
+         {@pattern markFirst(WarnFormals Rep)}
+         {MarkFirstList @body WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
@@ -357,16 +381,16 @@ local
              end
           end VsInter2 VsTl}
       end
-      meth markFirst(Rep)
-         {MarkFirstExpansionOccs self Rep}
-         {@label markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {@label markFirst(WarnFormals Rep)}
          {ForAll @args
           proc {$ Arg}
              case Arg of F#P then
-                {F markFirst(Rep)}
-                {P markFirst(Rep)}
+                {F markFirst(WarnFormals Rep)}
+                {P markFirst(WarnFormals Rep)}
              else
-                {Arg markFirst(Rep)}
+                {Arg markFirst(WarnFormals Rep)}
              end
           end}
       end
@@ -377,9 +401,9 @@ local
          {@left annotateGlobalVars(Ls VsHd VsInter)}
          {@right annotateGlobalVars(Ls VsInter VsTl)}
       end
-      meth markFirst(Rep)
-         {@left markFirst(Rep)}
-         {@right markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {@left markFirst(WarnFormals Rep)}
+         {@right markFirst(WarnFormals Rep)}
       end
    end
 
@@ -400,8 +424,8 @@ local
       meth getGlobalVars($)
          @globalVars
       end
-      meth markFirstClause(GlobalVars OldUses ?NewUses Rep)
-         {MarkFirstList @body Rep}
+      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
+         {MarkFirstList @body WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -413,8 +437,8 @@ local
       meth getGlobalVars($)
          nil
       end
-      meth markFirstClause(GlobalVars OldUses ?NewUses Rep)
-         {MarkFirstExpansionOccs self Rep}
+      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
+         {MarkFirstExpansionOccs self WarnFormals Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end
@@ -432,9 +456,9 @@ local
              end
           end VsHd VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {SetUninitVars @globalVars}
-         {MarkFirstList @body Rep}
+         {MarkFirstList @body WarnFormals Rep}
       end
    end
 
@@ -451,11 +475,11 @@ local
              end
           end VsHd VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {SetUninitVars @globalVars}
-         {MarkFirstList @tryBody Rep}
+         {MarkFirstList @tryBody WarnFormals Rep}
          {@exception setUse(wildcard)}
-         {MarkFirstList @catchBody Rep}
+         {MarkFirstList @catchBody WarnFormals Rep}
          {@exception checkUse('exception variable' Rep)}
       end
    end
@@ -465,9 +489,9 @@ local
          {@lockVar annotateGlobalVars(Ls VsHd VsInter)}
          {AnnotateGlobalVarsList @body Ls VsInter VsTl}
       end
-      meth markFirst(Rep)
-         {@lockVar markFirst(Rep)}
-         {MarkFirstList @body Rep}
+      meth markFirst(WarnFormals Rep)
+         {@lockVar markFirst(WarnFormals Rep)}
+         {MarkFirstList @body WarnFormals Rep}
       end
    end
 
@@ -507,30 +531,30 @@ local
              {Method annotateGlobalVars(Ls VsHd VsTl)}
           end VsInter6 VsTl}
       end
-      meth markFirst(Rep)
-         {MarkFirstExpansionOccs self Rep}
-         {@designator markFirst(Rep)}
-         {MarkFirstList @parents Rep}
-         {MarkFirstList @properties Rep}
+      meth markFirst(WarnFormals Rep)
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {@designator markFirst(WarnFormals Rep)}
+         {MarkFirstList @parents WarnFormals Rep}
+         {MarkFirstList @properties WarnFormals Rep}
          {ForAll @attributes
           proc {$ T}
              case T of T1#T2 then
-                {T1 markFirst(Rep)}
-                {T2 markFirst(Rep)}
+                {T1 markFirst(WarnFormals Rep)}
+                {T2 markFirst(WarnFormals Rep)}
              else
-                {T markFirst(Rep)}
+                {T markFirst(WarnFormals Rep)}
              end
           end}
          {ForAll @features
           proc {$ T}
              case T of T1#T2 then
-                {T1 markFirst(Rep)}
-                {T2 markFirst(Rep)}
+                {T1 markFirst(WarnFormals Rep)}
+                {T2 markFirst(WarnFormals Rep)}
              else
-                {T markFirst(Rep)}
+                {T markFirst(WarnFormals Rep)}
              end
           end}
-         {MarkFirstList @methods Rep}
+         {MarkFirstList @methods WarnFormals Rep}
       end
    end
 
@@ -555,14 +579,14 @@ local
              end
           end VsHd VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {ForAll @formalArgs
           proc {$ A} {{A getVariable($)} setUse(wildcard)} end}
          {SetUninitVars @globalVars}
-         {MarkFirstExpansionOccs self Rep}
-         {@label markFirst(Rep)}
-         {MarkFirstList @formalArgs Rep}
-         {MarkFirstList @body Rep}
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {@label markFirst(WarnFormals Rep)}
+         {MarkFirstList @formalArgs WarnFormals Rep}
+         {MarkFirstList @body WarnFormals Rep}
       end
    end
    class AnnotateMethodWithDesignator
@@ -586,21 +610,24 @@ local
              end
           end VsHd VsTl}
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          {ForAll @formalArgs
           proc {$ A} {{A getVariable($)} setUse(wildcard)} end}
          {@messageDesignator setUse(wildcard)}
          {SetUninitVars @globalVars}
-         {@label markFirst(Rep)}
-         {MarkFirstList @formalArgs Rep}
-         {MarkFirstList @body Rep}
-         {@messageDesignator checkUse('message designator' Rep)}
+         {@label markFirst(WarnFormals Rep)}
+         {MarkFirstList @formalArgs WarnFormals Rep}
+         {MarkFirstList @body WarnFormals Rep}
+         case WarnFormals then
+            {@messageDesignator checkUse('message designator' Rep)}
+         else skip
+         end
       end
    end
 
    class AnnotateMethFormal
-      meth markFirst(Rep)
-         {@feature markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {@feature markFirst(WarnFormals Rep)}
       end
    end
    class AnnotateMethFormalOptional
@@ -613,9 +640,9 @@ local
          {GetExpansionVars self VsHd VsInter}
          {AnnotateGlobalVarsList @body Ls VsInter VsTl}
       end
-      meth markFirst(Rep)
-         {MarkFirstExpansionOccs self Rep}
-         {MarkFirstList @body Rep}
+      meth markFirst(WarnFormals Rep)
+         {MarkFirstExpansionOccs self WarnFormals Rep}
+         {MarkFirstList @body WarnFormals Rep}
       end
    end
 
@@ -623,8 +650,8 @@ local
       meth annotateGlobalVars(Ls VsHd VsTl)
          {@destination annotateGlobalVars(Ls VsHd VsTl)}
       end
-      meth markFirst(Rep)
-         {@destination markFirst(Rep)}
+      meth markFirst(WarnFormals Rep)
+         {@destination markFirst(WarnFormals Rep)}
       end
    end
 
@@ -644,12 +671,14 @@ local
                            {VariableUnion {Clause getGlobalVars($)} Vs}
                         end {@alternative getGlobalVars($)}}
       end
-      meth markFirst(Rep) GlobalVars OldUses NewUses1 NewUses2 in
+      meth markFirst(WarnFormals Rep) GlobalVars OldUses NewUses1 NewUses2 in
          GlobalVars = @globalVars
          {SetUninitVars GlobalVars}
          OldUses = {GetUses GlobalVars}
-         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses1 Rep}
-         {@alternative markFirstClause(GlobalVars OldUses ?NewUses2 Rep)}
+         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses1
+          WarnFormals Rep}
+         {@alternative markFirstClause(GlobalVars OldUses ?NewUses2
+                                       WarnFormals Rep)}
          {SetUses GlobalVars {UsesMax NewUses1 NewUses2}}
       end
    end
@@ -666,11 +695,12 @@ local
                            {VariableUnion {Clause getGlobalVars($)} Vs}
                         end nil}
       end
-      meth markFirst(Rep) GlobalVars OldUses NewUses in
+      meth markFirst(WarnFormals Rep) GlobalVars OldUses NewUses in
          GlobalVars = @globalVars
          {SetUninitVars GlobalVars}
          OldUses = {GetUses GlobalVars}
-         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses Rep}
+         {MarkFirstClauses @clauses GlobalVars OldUses ?NewUses
+          WarnFormals Rep}
          {SetUses GlobalVars NewUses}
       end
    end
@@ -701,10 +731,10 @@ local
       meth getGuardGlobalVars($)
          @guardGlobalVars
       end
-      meth markFirstClause(GlobalVars OldUses ?NewUses Rep)
+      meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
          {ForAll @localVars proc {$ V} {V setUse(unused)} end}
-         {MarkFirstList @guard Rep}
-         {MarkFirstList @body Rep}
+         {MarkFirstList @guard WarnFormals Rep}
+         {MarkFirstList @body WarnFormals Rep}
          {CheckUses @localVars 'local clause variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
@@ -733,7 +763,8 @@ local
       end
       meth checkUse(Kind Rep)
          case @origin == user then
-            case @use of unused then
+            case {IsEnvCoord @coord} then skip
+            elsecase @use of unused then
                {Rep warn(coord: @coord kind: BindingAnalysisWarning
                          msg: 'unused '#Kind#' '#pn(@printName))}
             [] wildcard then
@@ -752,7 +783,7 @@ local
          else VsHd = V|VsTl
          end
       end
-      meth markFirst(Rep)
+      meth markFirst(WarnFormals Rep)
          case {@variable getUse($)} of unused then
             {@variable setUse(wildcard)}
          [] wildcard then

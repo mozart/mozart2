@@ -217,7 +217,8 @@ in
 
       fun {ChangeExtension X NewExt}
          case X of ".oz" then NewExt
-         elsecase X of C|Cr then
+         elseof ".ozg" then NewExt
+         elseof C|Cr then
             C|{ChangeExtension Cr NewExt}
          [] nil then NewExt
          end

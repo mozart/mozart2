@@ -20,11 +20,6 @@
 %%%
 
 local
-   Env = {Adjoin
-          \insert Base.env
-          \insert Standard.env
-         }
-
    UsageError = 'command line option error'
 
    local
@@ -348,7 +343,6 @@ in
          Verbose = {GetVerbose Opts}
          BatchCompiler = {New Compiler.compilerClass init()}
          UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
-         {BatchCompiler enqueue(mergeEnv(Env))}
          {BatchCompiler enqueue(setSwitch(showdeclares false))}
          {BatchCompiler enqueue(setSwitch(warnunused true))}
          {BatchCompiler enqueue(setSwitch(threadedqueries false))}

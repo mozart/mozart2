@@ -134,10 +134,13 @@ local
                   [] I|Ir then {FindTest Is {GetIt S.1 I}}
                   end
                end
+
+               ModMan = {New Module.manager init}
+
             in
                fun {GetTest TD}
                   TL = {Label TD}
-                  T  = {Module.load unit TD.url}.return
+                  T  = {ModMan link(url:TD.url $)}.return
                in
                   case {Dictionary.member TestDict TL} then skip
                   else {Dictionary.put TestDict TL {FindTest TD.id T}}
@@ -351,9 +354,11 @@ in
           end
        end
 
+       ModMan = {New Module.manager init}
+
        Tests = {AppendAll
                 {Map Argv.2 fun {$ C}
-                               S = {Module.load unit C}.return
+                               S = {ModMan link(url:C $)}.return
                             in
                                {Map {GetAll S nil nil}
                                 fun {$ T#Id#K}
@@ -408,8 +413,12 @@ in
            functor $ prop once
            import Module Syslet
            body
+
+              ModMan = {New Module.manager init}
+
               Syslet.spec = TestOptions
-              {Syslet.exit {{Module.link '' Engine}.run Syslet.args}}
+
+              {Syslet.exit {{ModMan apply(url:'' Engine $)}.run Syslet.args}}
            end}
 
           {Pickle.save

@@ -21,7 +21,8 @@
 %%%
 
 declare
-T={Module.load '' {OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf'}.run
+T={{New Module.manager init}
+   link(url:{OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf' $)}.run
 
 {T argv(verbose:  true
         usage:    false

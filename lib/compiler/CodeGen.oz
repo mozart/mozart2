@@ -2169,36 +2169,9 @@ local
             VHd = vCall(_ {Designator reg($)}
                         {Map ActualArgs fun {$ Arg} {Arg reg($)} end}
                         Coord VTl)
-         elsecase Builtinname of '.' then
-            [Arg1 Arg2 Arg3] = ActualArgs Feature in
-            {Arg2 getCodeGenValue(?Feature)}
-            case {IsDet Feature} andthen {IsFeature Feature} then
-               Value1 AlwaysSucceeds in
-               {Arg1 getCodeGenValue(?Value1)}
-               AlwaysSucceeds = ({IsDet Value1}
-                                 andthen {IsRecord Value1}
-                                 andthen {HasFeature Value1 Feature})
-               case AlwaysSucceeds
-                  andthen {IsObject Value1.Feature}
-                  andthen {HasFeature Value1.Feature ImAVariableOccurrence}
-                  andthen {IsDet {Value1.Feature reg($)}}
-               then
-                  % Evaluate by issuing an equation.
-                  % Note: {Value1.Feature reg($)} may be undetermined for
-                  % nested records annotated by valToSubst.
-                  {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
-               else
-                  % Because the static analyzer may annotate some
-                  % variable equality at Arg3, we cannot use the
-                  % (dereferencing) {Arg3 reg($)} call but have to
-                  % use the variable's original register:
-                  VHd = vInlineDot(_ {Arg1 reg($)} Feature
-                                   {{Arg3 getVariable($)} reg($)}
-                                   AlwaysSucceeds Coord VTl)
-               end
-            else skip
-            end
-         [] 'New' then [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont in
+         elsecase Builtinname of 'New' then
+            [Arg1 Arg2 Arg3] = ActualArgs ObjReg Cont
+         in
             % this ensures that the created object is always a fresh
             % register and that the message is sent before the new
             % object is unified with the output variable.  This is
@@ -2250,7 +2223,36 @@ local
             else skip
             end
          elsecase CS.debugInfoControlSwitch then skip
-         elsecase Builtinname of '@' then [Arg1 Arg2] = ActualArgs Atomname in
+         elsecase Builtinname of '.' then
+            [Arg1 Arg2 Arg3] = ActualArgs Feature in
+            {Arg2 getCodeGenValue(?Feature)}
+            case {IsDet Feature} andthen {IsFeature Feature} then
+               Value1 AlwaysSucceeds in
+               {Arg1 getCodeGenValue(?Value1)}
+               AlwaysSucceeds = ({IsDet Value1}
+                                 andthen {IsRecord Value1}
+                                 andthen {HasFeature Value1 Feature})
+               case AlwaysSucceeds
+                  andthen {IsObject Value1.Feature}
+                  andthen {HasFeature Value1.Feature ImAVariableOccurrence}
+                  andthen {IsDet {Value1.Feature reg($)}}
+               then
+                  % Evaluate by issuing an equation.
+                  % Note: {Value1.Feature reg($)} may be undetermined for
+                  % nested records annotated by valToSubst.
+                  {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
+               else
+                  % Because the static analyzer may annotate some
+                  % variable equality at Arg3, we cannot use the
+                  % (dereferencing) {Arg3 reg($)} call but have to
+                  % use the variable's original register:
+                  VHd = vInlineDot(_ {Arg1 reg($)} Feature
+                                   {{Arg3 getVariable($)} reg($)}
+                                   AlwaysSucceeds Coord VTl)
+               end
+            else skip
+            end
+         [] '@' then [Arg1 Arg2] = ActualArgs Atomname in
             {Arg1 getCodeGenValue(?Atomname)}
             case {IsDet Atomname} andthen {IsLiteral Atomname} then
                VHd = vInlineAt(_ Atomname {Arg2 reg($)} VTl)

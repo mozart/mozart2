@@ -25,5 +25,5 @@ $class =
     (
      { name  => 'GtkScrollbar',
 
-       super => 'GtkRange'
+       super => 'GtkRange' }
      );

@@ -41,7 +41,7 @@ class ProtoStore from UrObject
          DefValue = {NewName}
 
          %%
-         OutValue = {Value.matchDefault @store What DefValue}
+         OutValue = {SubtreeIf @store What DefValue}
 
          %%
          case OutValue

@@ -1,11 +1,3 @@
-/*
-   This test sends a number of large data structures to remote managers and
-   expects them to be returned.
-   The goal is to test the suspendable marshaler.
-   If the size is set large enough gc of continuations will happen and cause
-   more problems than using just fragmented messages
-*/
-
 functor
 import
    TestMisc

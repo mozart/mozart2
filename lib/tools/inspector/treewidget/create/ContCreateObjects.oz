@@ -136,6 +136,9 @@ in
             {Dictionary.put @items I Node}
          end
       end
+      fun {IsUnbound V}
+         {Value.isFree V} orelse {Value.isFuture V}
+      end
    in
       class PipeTupleCreateObject from LabelContainerCreateObject PipeShare
          meth createContainer
@@ -160,7 +163,7 @@ in
          in
             if I > @width orelse {IsDet Stop}
             then PipeShare, finalInsert(I {New Aux.bitmap create(width self I Visual)})
-            elseif {IsFree Vs}
+            elseif {IsUnbound Vs}
             then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
             elsecase Vs
             of V|Vr then

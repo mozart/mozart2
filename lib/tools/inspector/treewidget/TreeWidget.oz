@@ -88,7 +88,9 @@ define
    fun {FilterMenu Ss}
       {HasSub Ss "Menu"}
    end
-
+   fun {IsUnbound V}
+      {Value.isFree V} orelse {Value.isFuture V}
+   end
    class TreeWidget from StoreListener.'class' GraphicSupport.'class'
       attr
          widPort    %% TreeWidget Port
@@ -398,7 +400,7 @@ define
       meth listCreate(Val Parent Index RIndex Depth Width Stop $)
          if RIndex > Width orelse {IsDet Stop}
          then {New Aux.bitmap create(width Parent Index self)}
-         elseif {IsFree Val}
+         elseif {IsUnbound Val}
          then TreeWidget, treeCreate(Val Parent Index (Depth + 1) $)
          elsecase Val
          of _|_ then

@@ -677,13 +677,8 @@ local
             try
                {P}
                Exceptionless = true
-            catch E then
-               case E of interrupt then
-                  {Thread.injectException T interrupt}
-               else skip
-               end
-               {Show exception(E)}
-               raise E end
+            catch interrupt then
+               {Thread.injectException T interrupt}
             finally
                ExecutingThread <- T
                Completed = true

@@ -1,3 +1,3 @@
 declare
 \insert 'Base.env'
-= {{Load ComDIR#'Base'#ComEXT}}
+= {Load ComDIR#'Base'#ComEXT}

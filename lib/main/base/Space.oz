@@ -20,12 +20,25 @@
 %%% WARRANTIES.
 %%%
 
+local
+   Inject = Boot_Space.inject
 
-Space = space(is:         IsSpace
-              new:        Boot_Space.new
-              ask:        Boot_Space.ask
-              askVerbose: Boot_Space.askVerbose
-              clone:      Boot_Space.clone
-              merge:      Boot_Space.merge
-              inject:     Boot_Space.inject
-              commit:     Boot_Space.commit)
+   proc {Fail _} fail end
+in
+
+   Space = space(is:         IsSpace
+                 new:        Boot_Space.new
+                 ask:        Boot_Space.ask
+                 askVerbose: Boot_Space.askVerbose
+                 clone:      Boot_Space.clone
+                 merge:      Boot_Space.merge
+                 inject:     Inject
+                 commit:     Boot_Space.commit
+                 discard:    proc {$ S}
+                                {Inject Fail}
+                             end
+                 waitStable: proc {$}
+                                choice skip end
+                             end)
+
+end

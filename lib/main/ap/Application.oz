@@ -240,10 +240,12 @@ prepare
       end
 
       proc {CmdPreProcess Spec ?LongOptSpecs ?CharSpecRec}
-         LongOptSpecs0 CharSpecs SpecRec
+         LongOptSpecs0 CharSpecs SpecRec0 SpecRec
       in
          {BuildMaps Spec 1 false ?LongOptSpecs0 ?CharSpecs}
-         SpecRec = {List.toRecord specRec LongOptSpecs0}
+         SpecRec0 = {List.toRecord specRec LongOptSpecs0}
+         SpecRec = {List.toRecord specRec
+                    {DerefAliases LongOptSpecs0 SpecRec0}}
          LongOptSpecs = {Record.foldRInd SpecRec
                          fun {$ LongOpt Spec In}
                             {Atom.toString LongOpt}#Spec|In

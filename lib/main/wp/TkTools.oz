@@ -69,13 +69,14 @@ local
       feat toplevel tkClosed
 
       meth tkInit(title:   Title
-                  master:  Master <= NoArg
-                  root:    Root   <= master
+                  master:  Master     <= NoArg
+                  root:    Root       <= master
                   buttons: Buttons
-                  pack:    Pack   <= true
-                  focus:   Focus  <= 0
+                  pack:    Pack       <= true
+                  focus:   Focus      <= 0
                   bg:      Background <= NoArg
-                  default: Return <= 0)
+                  default: Return     <= 0
+                  delete:  Delete     <= NoArg)
          lock
             GeoX GeoY GeoXOffset GeoYOffset
             case Master==NoArg then skip else
@@ -102,13 +103,25 @@ local
                   GeoYOffset = 0
                end
             end
-            Toplevel  = {New Tk.toplevel case Master==NoArg then
-                                            tkInit(title:Title withdraw:true)
-                                         else
-                                            tkInit(parent:Master
-                                                   title:Title
-                                                   withdraw:true)
-                                         end}
+            Toplevel  = {New Tk.toplevel
+                         case Master==NoArg then
+                            case Delete==NoArg then
+                               tkInit(title:Title withdraw:true)
+                            else
+                               tkInit(title:Title withdraw:true delete:Delete)
+                            end
+                         else
+                            case Delete==NoArg then
+                               tkInit(parent:   Master
+                                      title:    Title
+                                      withdraw: true)
+                            else
+                               tkInit(parent:   Master
+                                      title:    Title
+                                      withdraw: true
+                                      delete:   Delete)
+                            end
+                         end}
             {Toplevel tkWM(transient
                            case Master==NoArg then v('')
                            else Master

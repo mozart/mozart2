@@ -110,21 +110,11 @@ end
 
 %% this removes some additional bindings which Motif doesn't
 %% have. Unfortunately, it also disables some of the more useful key
-%% bindings, see below...
-{Tk.send set(tk_strictMotif 1)}
+%% bindings...
+%{Tk.send set(tk_strictMotif 1)}
 
-%% we don't need this if tk_strictMotif = 1
-% {Tk.send bind('Checkbutton' '<Return>' '')}
-
-%% this has to be redefined if tk_strictMotif = 1
-{Tk.send bind('Entry' '<Control-f>'
-              'tkEntrySetCursor %W [expr [%W index insert] + 1]')}
-{Tk.send bind('Entry' '<Control-b>'
-              'tkEntrySetCursor %W [expr [%W index insert] - 1]')}
-{Tk.send bind('Entry' '<Control-a>' 'tkEntrySetCursor %W 0')}
-{Tk.send bind('Entry' '<Control-e>' 'tkEntrySetCursor %W end')}
-
-%% and some other handy stuff...
+{Tk.send bind('Checkbutton' '<Return>' '')}
+{Tk.send bind('Radiobutton' '<Return>' '')}
 {Tk.send bind('Entry' '<Control-u>' '%W delete 0 end')}
 
 

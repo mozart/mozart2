@@ -188,7 +188,7 @@ prepare
          'For.sum'           : Sum
          'For.multiply'      : Multiply
          'For.collect'       : Collect
-         'For.postpend'      : Postpend
+         'For.append'        : Postpend
          'For.prepend'       : Prepend
          'For.retintdefault' : RetIntDefault
          'For.retint'        : RetInt

@@ -25,7 +25,7 @@ local
    proc {SuckUp P}
       S={P read(list:$)}
    in
-      case S==nil then skip
+      case S==nil then skip else
          {System.showInfo S} {SuckUp P}
       end
    end

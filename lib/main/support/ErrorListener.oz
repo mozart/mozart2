@@ -108,6 +108,12 @@ define
       meth setVerbosity(B)
          Verbose <- B
       end
+      meth clear()
+         Verbose <- false
+         History <- nil
+         HasErrors <- false
+         IsActive <- false
+      end
       meth hasErrors($)
          @HasErrors
       end

@@ -1,5 +1,5 @@
 fun {$ IMPORT}
-   \insert './lib/import.oz'
+   \insert 'lib/import.oz'
    % tests may be performed (1) either at top-level or in a space
    % and (2) either width debugging on or off.
    local

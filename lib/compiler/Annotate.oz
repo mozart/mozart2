@@ -43,7 +43,49 @@
 %%    warnings are emitted to the Reporter object Rep.
 %%
 
-local
+functor
+
+export
+   typeOf: AnnotateTypeOf
+   stepPoint: AnnotateStepPoint
+   declaration: AnnotateDeclaration
+   skipNode: AnnotateDefaults
+   equation: AnnotateEquation
+   construction: AnnotateConstruction
+   definition: AnnotateDefinition
+   functionDefinition: AnnotateDefinition
+   clauseBody: AnnotateDefinition
+   application: AnnotateApplication
+   ifNode: AnnotateIfNode
+   ifClause: AnnotateIfClause
+   patternCase: AnnotatePatternCase
+   patternClause: AnnotatePatternClause
+   sideCondition: AnnotateSideCondition
+   recordPattern: AnnotateRecordPattern
+   equationPattern: AnnotateEquationPattern
+   elseNode: AnnotateElseNode
+   noElse: AnnotateNoElse
+   tryNode: AnnotateTryNode
+   lockNode: AnnotateLockNode
+   classNode: AnnotateClassNode
+   method: AnnotateMethod
+   methFormal: AnnotateMethFormal
+   methFormalOptional: AnnotateMethFormal
+   methFormalWithDefault: AnnotateMethFormalWithDefault
+   objectLockNode: AnnotateObjectLockNode
+   getSelf: AnnotateGetSelf
+   failNode: AnnotateDefaults
+   condNode: AnnotateCondNode
+   choicesAndDisjunctions: AnnotateChoicesAndDisjunctions
+   clause: AnnotateClause
+   valueNode: AnnotateValueNode
+   userVariable: AnnotateUserVariable
+   generatedVariable: AnnotateGeneratedVariable
+   restrictedVariable: AnnotateRestrictedVariable
+   variableOccurrence: AnnotateVariableOccurrence
+
+prepare
+
    BindingAnalysisWarning = 'binding analysis warning'
 
    fun {VariableUnion Vs Ws}
@@ -161,9 +203,6 @@ local
          {MarkFirstList @statements WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
       end
-   end
-
-   class AnnotateSkipNode from AnnotateDefaults
    end
 
    class AnnotateEquation
@@ -421,6 +460,7 @@ local
          {SetUses GlobalVars OldUses}
       end
    end
+
    class AnnotateNoElse
       meth annotateGlobalVars(_ VsHd VsTl)
          VsHd = VsTl
@@ -576,6 +616,7 @@ local
          {@feature annotateGlobalVars(Ls VsHd VsTl)}
       end
    end
+
    class AnnotateMethFormalWithDefault
       meth markFirst(WarnFormals Rep)
          {@feature markFirst(WarnFormals Rep)}
@@ -607,9 +648,6 @@ local
       meth markFirst(WarnFormals Rep)
          {@destination markFirst(WarnFormals Rep)}
       end
-   end
-
-   class AnnotateFailNode from AnnotateDefaults
    end
 
    class AnnotateCondNode
@@ -715,7 +753,7 @@ local
       end
    end
 
-   class AnnotateRestrictedVariable
+   class AnnotateRestrictedVariable from AnnotateUserVariable
       meth checkUse(Kind Rep)
          case @use of unused then
             {Rep warn(coord: @coord kind: BindingAnalysisWarning
@@ -774,42 +812,4 @@ local
          end
       end
    end
-in
-   Annotate = annotate(typeOf: AnnotateTypeOf
-                       stepPoint: AnnotateStepPoint
-                       declaration: AnnotateDeclaration
-                       skipNode: AnnotateSkipNode
-                       equation: AnnotateEquation
-                       construction: AnnotateConstruction
-                       definition: AnnotateDefinition
-                       functionDefinition: AnnotateDefinition
-                       clauseBody: AnnotateDefinition
-                       application: AnnotateApplication
-                       ifNode: AnnotateIfNode
-                       ifClause: AnnotateIfClause
-                       patternCase: AnnotatePatternCase
-                       patternClause: AnnotatePatternClause
-                       sideCondition: AnnotateSideCondition
-                       recordPattern: AnnotateRecordPattern
-                       equationPattern: AnnotateEquationPattern
-                       elseNode: AnnotateElseNode
-                       noElse: AnnotateNoElse
-                       tryNode: AnnotateTryNode
-                       lockNode: AnnotateLockNode
-                       classNode: AnnotateClassNode
-                       method: AnnotateMethod
-                       methFormal: AnnotateMethFormal
-                       methFormalOptional: AnnotateMethFormal
-                       methFormalWithDefault: AnnotateMethFormalWithDefault
-                       objectLockNode: AnnotateObjectLockNode
-                       getSelf: AnnotateGetSelf
-                       failNode: AnnotateFailNode
-                       condNode: AnnotateCondNode
-                       choicesAndDisjunctions: AnnotateChoicesAndDisjunctions
-                       clause: AnnotateClause
-                       valueNode: AnnotateValueNode
-                       userVariable: AnnotateUserVariable
-                       generatedVariable: AnnotateGeneratedVariable
-                       restrictedVariable: AnnotateRestrictedVariable
-                       variableOccurrence: AnnotateVariableOccurrence)
 end

@@ -1793,7 +1793,7 @@ define
       end
    end
 
-   class CodeGenPatternVariableOccurrence
+   class CodeGenPatternVariableOccurrence from CodeGenVariableOccurrence
       meth makePattern(Arbiter Pos Hd Tl Seen CS)
          case {@variable getPrintName($)} of unit then Xs in
             Xs = {Dictionary.condGet Seen 1 nil}
@@ -1832,7 +1832,7 @@ define
       end
    end
 
-   class CodeGenProcedureToken
+   class CodeGenProcedureToken from CodeGenToken
       meth getDefinition($)
          @definition
       end

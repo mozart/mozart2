@@ -41,10 +41,15 @@
 %%
 
 functor
+
+require
+   Annotate
+
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
    StaticAnalysis
    CodeGen
+
 export
    %% procedures:
    FlattenSequence
@@ -106,7 +111,6 @@ export
    ObjectToken
 
 prepare
-   \insert Annotate
 
    %% some format string auxiliaries for output
    IN = format(indent)
@@ -1062,263 +1066,290 @@ define
       end
    end
 
-   class Variable
-      from StaticAnalysis.variable CodeGen.variable
-      attr coord: unit isToplevel: false
-      meth isRestricted($)
-         false
-      end
-      meth isDenied(Feature ?GV $)
-         GV = unit
-         false
-      end
-      meth getCoord($)
-         @coord
-      end
-      meth setToplevel(T)
-         isToplevel <- T
-      end
-      meth isToplevel($)
-         @isToplevel
-      end
-      meth occ(Coord ?VO)
-         VO = {New VariableOccurrence init(self Coord)}
-      end
-      meth outputEscaped(R $)
-         '!'#{self output(R $)}
-      end
-      meth outputPattern(R Vs $)
-         if {Member self Vs} then
-            {self output(R $)}
-         else
-            {self outputEscaped(R $)}
+   local
+      class VariableBase
+         from StaticAnalysis.variable CodeGen.variable
+         attr coord: unit isToplevel: false
+         meth isRestricted($)
+            false
          end
-      end
-   end
-
-   class UserVariable
-      from Variable Annotate.userVariable
-      attr printName: unit
-      meth init(PrintName Coord)
-         printName <- PrintName
-         coord <- Coord
-         Variable, init()
-      end
-      meth getPrintName($)
-         @printName
-      end
-      meth output(R $) PN = @printName in
-         {Dictionary.put R.printNames PN true}
-         pn(PN)
-      end
-   end
-
-   class RestrictedVariable
-      from UserVariable Annotate.restrictedVariable
-      prop final
-      attr features: unit
-      meth init(PrintName Features Coord)
-         UserVariable, init(PrintName Coord)
-         features <- Features
-      end
-      meth isRestricted($)
-         @features \= nil
-      end
-      meth isDenied(Feature ?GV $) Fs = @features in
-         case Fs of nil then
+         meth isDenied(Feature ?GV $)
             GV = unit
             false
-         else
-            RestrictedVariable, IsDenied(Fs Feature ?GV $)
+         end
+         meth getCoord($)
+            @coord
+         end
+         meth setToplevel(T)
+            isToplevel <- T
+         end
+         meth isToplevel($)
+            @isToplevel
+         end
+         meth occ(Coord ?VO)
+            VO = {New VariableOccurrence init(self Coord)}
+         end
+         meth outputEscaped(R $)
+            '!'#{self output(R $)}
+         end
+         meth outputPattern(R Vs $)
+            if {Member self Vs} then
+               {self output(R $)}
+            else
+               {self outputEscaped(R $)}
+            end
          end
       end
-      meth IsDenied(Fs Feature ?GV $)
-         case Fs of X|Fr then
-            if Feature == X.1 then
-               X.3 = true
-               GV = case X of _#_#_#GV0 then GV0
-                    else unit
-                    end
+      class UserVariableBase
+         from VariableBase
+         attr printName: unit
+         meth init(PrintName Coord)
+            printName <- PrintName
+            coord <- Coord
+            VariableBase, init()
+         end
+         meth getPrintName($)
+            @printName
+         end
+         meth output(R $) PN = @printName in
+            {Dictionary.put R.printNames PN true}
+            pn(PN)
+         end
+      end
+   in
+      class Variable
+         from VariableBase
+         prop final
+      end
+
+      class UserVariable
+         prop final
+         from UserVariableBase Annotate.userVariable
+      end
+
+      class RestrictedVariable
+         from UserVariableBase Annotate.restrictedVariable
+         prop final
+         attr features: unit
+         meth init(PrintName Features Coord)
+            UserVariableBase, init(PrintName Coord)
+            features <- Features
+         end
+         meth isRestricted($)
+            @features \= nil
+         end
+         meth isDenied(Feature ?GV $) Fs = @features in
+            case Fs of nil then
+               GV = unit
                false
             else
-               RestrictedVariable, IsDenied(Fr Feature ?GV $)
+               RestrictedVariable, IsDenied(Fs Feature ?GV $)
             end
-         [] nil then
-            GV = unit
-            true
+         end
+         meth IsDenied(Fs Feature ?GV $)
+            case Fs of X|Fr then
+               if Feature == X.1 then
+                  X.3 = true
+                  GV = case X of _#_#_#GV0 then GV0
+                       else unit
+                       end
+                  false
+               else
+                  RestrictedVariable, IsDenied(Fr Feature ?GV $)
+               end
+            [] nil then
+               GV = unit
+               true
+            end
+         end
+      end
+
+      class GeneratedVariable
+         from VariableBase Annotate.generatedVariable
+         prop final
+         attr origin: unit
+         meth init(Origin Coord)
+            origin <- Origin
+            coord <- Coord
+            VariableBase, init()
+         end
+         meth getPrintName($)
+            unit
+         end
+         meth output(R $)
+            case @origin of FS=pn(_) then FS
+            elseof Origin then D X FS in
+               D = R.toGenerate
+               {Dictionary.put D Origin X|{Dictionary.condGet D Origin nil}}
+               FS = pn(X)
+               origin <- FS
+               FS
+            end
          end
       end
    end
 
-   class GeneratedVariable
-      from Variable Annotate.generatedVariable
-      prop final
-      attr origin: unit
-      meth init(Origin Coord)
-         origin <- Origin
-         coord <- Coord
-         Variable, init()
-      end
-      meth getPrintName($)
-         unit
-      end
-      meth output(R $)
-         case @origin of FS=pn(_) then FS
-         elseof Origin then D X FS in
-            D = R.toGenerate
-            {Dictionary.put D Origin X|{Dictionary.condGet D Origin nil}}
-            FS = pn(X)
-            origin <- FS
-            FS
+   local
+      class VariableOccurrenceBase
+         from Annotate.variableOccurrence StaticAnalysis.variableOccurrence
+         attr variable: unit coord: unit value: unit
+         feat !ImAVariableOccurrence: unit
+         meth init(Variable Coord)
+            variable <- Variable
+            coord <- Coord
+            value <- self
+         end
+         meth getCoord($)
+            @coord
+         end
+         meth getValue($)
+            @value
+         end
+         meth setValue(Value)
+            value <- Value
+         end
+         meth isConstruction($)
+            false
+         end
+         meth makeIntoPatternVariableOccurrence($)
+            {New PatternVariableOccurrence init(@variable @coord)}
+         end
+         meth getVariable($)
+            @variable
+         end
+         meth output2(R $ ?FS)
+            VariableOccurrenceBase, OutputValue(R ?FS)
+            {@variable output(R $)}
+         end
+         meth outputEscaped2(R $ ?FS)
+            VariableOccurrenceBase, OutputValue(R ?FS)
+            {@variable outputEscaped(R $)}
+         end
+         meth outputPattern2(R Vs $ ?FS)
+            VariableOccurrenceBase, OutputValue(R ?FS)
+            {@variable outputPattern(R Vs $)}
+         end
+         meth OutputValue(R $)
+            DebugOutputs =
+            {FilterUnitsToVS
+             if R.debugValue then
+                NL#'%    value: '#
+                StaticAnalysis.variableOccurrence, outputDebugValue($)
+             else unit
+             end|
+             if R.debugType then
+                [NL#'%    type: '#{@variable outputDebugType($)}
+                 case {@variable outputDebugProps($)} of unit then unit
+                 elseof Ps then
+                    NL#'%    prop: '#{Value.toVirtualString Ps 10 10}
+                 end
+                 case {@variable outputDebugAttrs($)} of unit then unit
+                 elseof As then
+                    NL#'%    attr: '#{Value.toVirtualString As 10 10}
+                 end
+                 case {@variable outputDebugFeats($)} of unit then unit
+                 elseof Fs then
+                    NL#'%    feat: '#{Value.toVirtualString Fs 10 10}
+                 end
+                 case {@variable outputDebugMeths($)} of unit then unit
+                 elseof Ms then
+                    NL#'%    meth: '#{Value.toVirtualString Ms 10 10}
+                 end]
+             else nil
+             end}
+         in
+            case DebugOutputs of nil then ""
+            else
+               NL#'% '#{@variable output({AdjoinAt R realcore true} $)}#':'#
+               DebugOutputs
+            end
          end
       end
+   in
+      class VariableOccurrence
+         from VariableOccurrenceBase CodeGen.variableOccurrence
+         prop final
+      end
+
+      class PatternVariableOccurrence
+         from VariableOccurrenceBase CodeGen.patternVariableOccurrence
+         prop final
+      end
    end
 
-   class VariableOccurrence
-      from Annotate.variableOccurrence StaticAnalysis.variableOccurrence
-         CodeGen.variableOccurrence
-      attr variable: unit coord: unit value: unit
-      feat !ImAVariableOccurrence: unit
-      meth init(Variable Coord)
-         variable <- Variable
-         coord <- Coord
-         value <- self
-      end
-      meth getCoord($)
-         @coord
-      end
-      meth getValue($)
-         @value
-      end
-      meth setValue(Value)
-         value <- Value
-      end
-      meth isConstruction($)
-         false
-      end
-      meth makeIntoPatternVariableOccurrence($)
-         {New PatternVariableOccurrence init(@variable @coord)}
-      end
-      meth getVariable($)
-         @variable
-      end
-      meth output2(R $ ?FS)
-         VariableOccurrence, OutputValue(R ?FS)
-         {@variable output(R $)}
-      end
-      meth outputEscaped2(R $ ?FS)
-         VariableOccurrence, OutputValue(R ?FS)
-         {@variable outputEscaped(R $)}
-      end
-      meth outputPattern2(R Vs $ ?FS)
-         VariableOccurrence, OutputValue(R ?FS)
-         {@variable outputPattern(R Vs $)}
-      end
-      meth OutputValue(R $)
-         DebugOutputs =
-         {FilterUnitsToVS
-          if R.debugValue then
-             NL#'%    value: '#
-             StaticAnalysis.variableOccurrence, outputDebugValue($)
-          else unit
-          end|
-          if R.debugType then
-             [NL#'%    type: '#{@variable outputDebugType($)}
-              case {@variable outputDebugProps($)} of unit then unit
-              elseof Ps then
-                 NL#'%    prop: '#{Value.toVirtualString Ps 10 10}
-              end
-              case {@variable outputDebugAttrs($)} of unit then unit
-              elseof As then
-                 NL#'%    attr: '#{Value.toVirtualString As 10 10}
-              end
-              case {@variable outputDebugFeats($)} of unit then unit
-              elseof Fs then
-                 NL#'%    feat: '#{Value.toVirtualString Fs 10 10}
-              end
-              case {@variable outputDebugMeths($)} of unit then unit
-              elseof Ms then
-                 NL#'%    meth: '#{Value.toVirtualString Ms 10 10}
-              end]
-          else nil
-          end}
-      in
-         case DebugOutputs of nil then ""
-         else
-            NL#'% '#{@variable output({AdjoinAt R realcore true} $)}#':'#
-            DebugOutputs
+   local
+      class TokenBase from StaticAnalysis.token
+         attr value: unit
+         feat !ImAToken: unit
+         meth init(Value)
+            value <- Value
+            StaticAnalysis.token, init()
+         end
+         meth getValue($)
+            @value
+         end
+         meth isConstruction($)
+            false
          end
       end
-   end
+   in
+      class Token
+         from TokenBase CodeGen.token
+         prop final
+      end
 
-   class PatternVariableOccurrence
-      from VariableOccurrence CodeGen.patternVariableOccurrence
-      prop final
-   end
+      class ProcedureToken
+         from TokenBase CodeGen.procedureToken
+         prop final
+         attr definition: unit
+         meth init(Value Definition)
+            definition <- Definition
+            TokenBase, init(Value)
+         end
+      end
 
-   class Token from StaticAnalysis.token CodeGen.token
-      attr value: unit
-      feat !ImAToken: unit
-      meth init(Value)
-         value <- Value
-         StaticAnalysis.token, init()
+      class ClassToken
+         from TokenBase CodeGen.token
+         prop final
+         attr props: unit attrs: unit feats: unit meths: unit
+         meth setProperties(Props)
+            props <- Props
+         end
+         meth getProperties($)
+            @props
+         end
+         meth setAttributes(Attrs)
+            attrs <- Attrs
+         end
+         meth getAttributes($)
+            @attrs
+         end
+         meth setFeatures(Feats)
+            feats <- Feats
+         end
+         meth getFeatures($)
+            @feats
+         end
+         meth setMethods(Meths)
+            meths <- Meths
+         end
+         meth getMethods($)
+            @meths
+         end
       end
-      meth getValue($)
-         @value
-      end
-      meth isConstruction($)
-         false
-      end
-   end
 
-   class ProcedureToken from Token CodeGen.procedureToken
-      prop final
-      attr definition: unit
-      meth init(Value Definition)
-         definition <- Definition
-         Token, init(Value)
-      end
-   end
-
-   class ClassToken from Token
-      prop final
-      attr props: unit attrs: unit feats: unit meths: unit
-      meth setProperties(Props)
-         props <- Props
-      end
-      meth getProperties($)
-         @props
-      end
-      meth setAttributes(Attrs)
-         attrs <- Attrs
-      end
-      meth getAttributes($)
-         @attrs
-      end
-      meth setFeatures(Feats)
-         feats <- Feats
-      end
-      meth getFeatures($)
-         @feats
-      end
-      meth setMethods(Meths)
-         meths <- Meths
-      end
-      meth getMethods($)
-         @meths
-      end
-   end
-
-   class ObjectToken from Token
-      prop final
-      attr classNode: unit
-      meth init(TheObject ClassNode)
-         value <- TheObject
-         StaticAnalysis.token, init()
-         classNode <- ClassNode
-      end
-      meth getClassNode($)
-         @classNode
+      class ObjectToken
+         from TokenBase CodeGen.token
+         prop final
+         attr classNode: unit
+         meth init(TheObject ClassNode)
+            value <- TheObject
+            StaticAnalysis.token, init()
+            classNode <- ClassNode
+         end
+         meth getClassNode($)
+            @classNode
+         end
       end
    end
 end

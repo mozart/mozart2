@@ -56,7 +56,7 @@ define
       % String
       St = {VirtualString.toString V}
       % Atom
-%      HAtom = {VirtualString.toAtom V}
+      % HAtom = {VirtualString.toAtom V}
       % Tuple
       Tup = {List.toTuple '#' L}
       % Record
@@ -64,7 +64,7 @@ define
       {List.forAllInd L2 proc {$ I X} X=I#I end}
       Rec = {List.toRecord rec L2}
       % Array
-           %   A = {Array.new 1 Size 1}
+      % A = {Array.new 1 Size 1}
       % Procedure
       fun {CodeGen N Size}
          if N=<Size then
@@ -94,9 +94,18 @@ define
       % ByteString
       ByteS = {ByteString.make V}
 
-      TestValues = [test#test list#L virtualstring#V string#St /*atom#HAtom*/
-                    tuple#Tup record#Rec /*array#A*/ procedure#Proc
-                    'class'#Cl object#Obj bytestring#ByteS]
+      TestValues = [test#test
+                    list#L
+                    virtualstring#V
+                    string#St
+                    %% atom#HAtom
+                    tuple#Tup
+                    record#Rec
+                    %% array#A
+                    procedure#Proc
+                    'class'#Cl
+                    object#Obj
+                    bytestring#ByteS]
    in
       try
          {Monitor enter}

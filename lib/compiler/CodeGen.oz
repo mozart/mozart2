@@ -497,7 +497,8 @@ define
                         end}
             try
                Rec = {List.toRecord Label PairList}
-            catch failure(...) then C = {TheLabel getCoord($)} in
+            catch error(kernel(recordConstruction ...) ...) then C in
+               {TheLabel getCoord(?C)}
                {CS.reporter
                 error(coord: C kind: 'code generation error'
                       msg: 'duplicate feature in record construction')}
@@ -677,7 +678,8 @@ define
                            end}
                try
                   Rec = {List.toRecord someLabel PairList}
-               catch failure(...) then C = {TheLabel getCoord($)} in
+               catch error(kernel(recordConstruction ...) ...) then C in
+                  {TheLabel getCoord(?C)}
                   {CS.reporter
                    error(coord: C kind: 'code generation error'
                          msg: 'duplicate feature in record construction')}
@@ -811,7 +813,8 @@ define
                            end}
                try
                   Rec = {List.toRecord Label PairList}
-               catch failure(...) then C = {@label getCoord($)} in
+               catch error(kernel(recordConstruction ...) ...) then C in
+                  {@label getCoord(?C)}
                   {CS.reporter
                    error(coord: C kind: 'code generation error'
                          msg: 'duplicate feature in record construction')}
@@ -1107,6 +1110,21 @@ define
       end
    end
 
+   fun {SortPairList PairList}
+      {Sort {Map PairList fun {$ F#_} F end}
+       fun {$ F1 F2}
+          if {IsObject F1} then
+             if {IsObject F2} then {F1 getPrintName($)} < {F2 getPrintName($)}
+             else false
+             end
+          else
+             if {IsObject F2} then true
+             else {CompilerSupport.featureLess F1 F2}
+             end
+          end
+       end}
+   end
+
    class CodeGenRecordPattern from CodeGenConstructionOrPattern
       meth makePattern(Arbiter Pos Hd Tl Seen CS)
          TheLabel IsNonBasic LabelV PairList Inter
@@ -1138,24 +1156,12 @@ define
             %% We sort the arity to improve the approximation for
             %% comparing partially known arities.  Variables are
             %% sorted to the back and by printname.
-            ArityV = {Sort {Map PairList fun {$ F#_} F end}
-                      fun {$ F1 F2}
-                         if {IsObject F1} then
-                            if {IsObject F2} then
-                               {F1 getPrintName($)} < {F2 getPrintName($)}
-                            else false
-                            end
-                         else
-                            if {IsObject F2} then true
-                            else {CompilerSupport.featureLess F1 F2}
-                            end
-                         end
-                      end}
+            ArityV = {SortPairList PairList}
             Hd = Pos#nonbasic(LabelV ArityV)|Inter
          else Rec RecordArity in
             try
                Rec = {List.toRecord TheLabel PairList}
-            catch failure(...) then Coord in
+            catch error(kernel(recordConstruction ...) ...) then Coord in
                {@label getCoord(?Coord)}
                {CS.reporter
                 error(coord: Coord kind: 'code generation error'
@@ -1406,7 +1412,8 @@ define
                           else {Arity Rec}
                           end
             formalArgs <- {Record.toList Rec}
-         catch failure(...) then C = {@label getCoord($)} in
+         catch error(kernel(recordConstruction ...)...) then C in
+            {@label getCoord(?C)}
             {CS.reporter
              error(coord: C kind: 'code generation error'
                    msg: 'duplicate feature in record construction')}
@@ -1509,6 +1516,8 @@ define
          if @isOpen then
             VHd = VTl
          elseif HasDefaults then
+            %--** when generating a pattern instead of statements:
+            %--**    Inter = Pos#expr(self)|Tl
             {MakeRunTimeProcApplication 'aritySublist' {CoordNoDebug @coord}
              [MessageVO self.MessagePatternVO] CS VHd VTl}
          else NArgs LabelValue in
@@ -1524,6 +1533,9 @@ define
                 [MessageVO VO] CS Cont1 VTl}
             end
          end
+      end
+      meth codeGenTest(ThenVInstr ElseVInstr VHd VTl CS)
+         skip   %--** when generating pattern instead of statements
       end
    end
 

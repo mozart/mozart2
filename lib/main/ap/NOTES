@@ -27,7 +27,9 @@ widget to invoke for modifying this option
 ** DEFAULT is the default value
 ** SET is a procedure to be called whenever the option is changed
 it is called with 2 args: the option name and new value
+*** if the option corresponds to a property, SET would set it
 ** INIT is similar to SET, but is called on the initial value
+maybe delay, maybe do additional work
 
 * looking up the value of an option
 
@@ -38,3 +40,11 @@ it is called with 2 args: the option name and new value
 some operations may need exclusive access to the custom module.
 
   lock Custom.lock then ... end
+
+* options are initialized from the user's custom database
+whose pathname is given by environment variable MOZART_CUSTOM_FILE
+or defaults to ~/.oz/CUSTOM
+
+Thus, if you want different customizations on different machines
+sharing the same file system, you should set MOZART_CUSTOM_FILE
+apprpriately on each machine.

@@ -2433,7 +2433,7 @@ in
          [] fPrepare(P1 P2 C) then fPrepare({SP P1} {SP P2} C)
          [] fImport(_ _) then P
          [] fExport(_ _) then P
-         [] fBody(P1 P2 C) then fBody({SP P1} {SP P2} C)
+         [] fDefine(P1 P2 C) then fDefine({SP P1} {SP P2} C)
          [] fClass(P Ds Ms C) then
             fClass({NP P} {Map Ds NP} {Map Ms SP} {FS C})
          [] fFrom(Ps C) then fFrom({Map Ps NP} C)

@@ -57,8 +57,6 @@ then
     TOPDIR=`(cd $srcdir; cd ..; pwd)`
 fi
 
-. $TOPDIR/VERSION
-
 dnl *****************************************************************
 dnl Checks for programs.
 dnl *****************************************************************
@@ -87,7 +85,6 @@ dnl *****************************************************************
 dnl substitutions variable
 AC_SUBST(INSTALLSRC)
 AC_SUBST(OZBATCH)
-AC_SUBST(OZVERSION)
 AC_SUBST(TOPDIR)
 
 dnl *****************************************************************

@@ -58,11 +58,16 @@ DP1= \
         mini
 DP = $(DP1:%=./dp/%.ozf)
 
-DIRS = core space fd fs scheduling dp
+FTOOLS = \
+        gump
+
+TOOLS = $(FTOOLS:%=./tools/%.ozf)
+
+DIRS = core space fd fs scheduling dp tools
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP)
+        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS)
 
 
 ####################################################
@@ -98,6 +103,7 @@ oztest: lib/make-test.oz lib/engine.oz \
 clean:
         -rm -f *~ ./*/*~ ./*/*/*~
         -rm -f $(COMPONENTS)
+        -rm -f LambdaScanner.* LambdaParser.*
         -rm -f make-test
         -rm -f te.ozf
 

@@ -37,10 +37,10 @@ local
 
    %% shorthands
 
-   S2A  = String.toAtom
+%   S2A  = String.toAtom
    VS2S = VirtualString.toString
    VSL  = VirtualString.length
-   VS2A = fun {$ X} {S2A {VS2S X}} end
+%   VS2A = fun {$ X} {S2A {VS2S X}} end
 
    IsNotNL = fun {$ X} X \= &\n end
    ToLower = fun {$ Xs} {Map {VS2S Xs} Char.toLower} end
@@ -73,7 +73,7 @@ local
       end
    end
 
-      fun {ListToVS Xs Sep}
+   fun {ListToVS Xs Sep}
       case Xs
       of nil then
          ''
@@ -122,7 +122,6 @@ local
       end
    end
 
-
    fun {StarLine X}
       '%** ' # X # '\n'
    end
@@ -140,121 +139,9 @@ local
       'Please send bug report to oz@ps.uni-sb.de'
    end
 
-
-   local
-      fun {DoFormatTypes Text S}
-         case S
-         of nil then nil
-         else
-            First Rest
-         in
-            {List.takeDropWhile S.2 IsNotNL First Rest}
-            case Text of '' then
-               hint(m:{ToLower First})
-            else
-               hint(l:Text m:{ToLower First})
-            end | {DoFormatTypes '' Rest}
-         end
-      end
-   in
-      fun {FormatTypes T}
-         {DoFormatTypes 'Expected type' &\n|{Atom.toString T}}
-      end
-   end
-
-   %%
-   %% output list of spaces
-   %%
-
-   fun {Location Spaces}
-      case Spaces ==  nil
-         orelse Spaces == unit
-      then nil else
-         [ ''
-           'Level: ' # {FoldR Spaces fun {$ I W} I # ' ' # W end ''} ]
-      end
-   end
-
-
-      %%
-      %% names of fd related builtins
-      %%
-
-   ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
-
-   BuiltinNames
-   = bi(fdp_twice:         [fdp_twice           ['FD.plus' 'FD.minus']]
-        fdp_square:        [fdp_square          ['FD.times']]
-        fdp_plus:          ['FD.plus'           ['FD.distance']]
-        fdp_plus_rel:      ['FD.plus'           ['FD.distance' '+']]
-        fdp_minus:         ['FD.minus'          nil]
-        fdp_times:         ['FD.times'          nil]
-        fdp_times_rel:     ['FD.plus'           ['FD.distance' '*']]
-        fdp_divD:          ['FD.divD'           nil]
-        fdp_divI:          ['FD.divI'           nil]
-        fdp_modD:          ['FD.modD'           nil]
-        fdp_modI:          ['FD.modI'           nil]
-        fdp_conj:          ['FD.conj'           nil]
-        fdp_disj:          ['FD.disj'           nil]
-        fdp_exor:          ['FD.exor'           nil]
-        fdp_impl:          ['FD.impl'           nil]
-        fdp_equi:          ['FD.equi'           nil]
-        fdp_nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
-        fdp_sumCR:         ['FD.reified.sumC'   ArithOps]
-        fdp_intR:          ['FD.refied.int'     ['FD.reified.dom']]
-        fdp_card:          ['FD.reified.card'   nil]
-        fdp_exactly:       ['FD.exactly'        nil]
-        fdp_atLeast:       ['FD.atLeast'        nil]
-        fdp_atMost:        ['FD.atMost'         nil]
-        fdp_element:       ['FD.element'        nil]
-        fdp_disjoint:      ['FD.disjoint'       nil]
-        fdp_disjointC:     ['FD.disjointC'      nil]
-        fdp_distance:      ['FD.distance'       nil]
-        fdp_notEqOff:      [fdp_notEqOff        ['FD.sumC' '\\=:']]
-        fdp_lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
-                                                 '>:' 'FD.min' 'FD.max'
-                                                 'FD.modD'
-                                                 'FD.modI' 'FD.disjoint'
-                                                 'FD.disjointC' 'FD.distance'
-                                                ]]
-        fdp_minimum:        ['FD.min'                   nil]
-        fdp_maximum:        ['FD.max'                   nil]
-        fdp_inter:          ['FD.inter'                 nil]
-        fdp_union:          ['FD.union'                 nil]
-        fdp_distinct:       ['FD.distinct'              nil]
-        fdp_distinctOffset: ['FD.distinctOffset'        nil]
-        fdp_subset:         [fdp_subset         ['FD.union' 'FD.inter']]
-        fdp_sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
-        fdp_sumCN:          ['FD.sumCN'         ArithOps]
-        fdp_sumAC:          ['FD.sumAC'         nil]
-
-        sched_disjoint_card:['FD.schedule.disjoint'             nil]
-        sched_cpIterate:    ['FD.schedule.serialized'           nil]
-        sched_disjunctive:  ['FD.schedule.serializedDisj'       nil]
-
-        fdGetMin:           ['FD.reflect.min'   nil]
-        fdGetMid:           ['FD.reflect.mid'   nil]
-        fdGetMax:           ['FD.reflect.max'   nil]
-        fdGetDom:           ['FD.reflect.dom'   ['FD.reflect.domList']]
-        fdGetCard:          ['FD.reflect.size'  nil]
-        fdGetNextSmaller:   ['FD.reflect.nextSmaller'   nil]
-        fdGetNextLarger:    ['FD.reflect.nextLarger'    nil]
-
-        fdWatchSize:        ['FD.watch.size'    nil]
-        fdWatchMin:         ['FD.watch.min'     nil]
-        fdWatchMax:         ['FD.watch.max'     nil]
-
-        fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
-        fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
-        fd_sumCD:           [fdp_sumCD          ['condis ... end']]
-        fd_sumCCD:          [fdp_sumCCD         ['condis ... end']]
-        fd_sumCNCD:         [fdp_sumCNCD        ['condis ... end']]
-       )
-
    Stars  = '%***'
    Dashes = '%**' # {Repeat WIDTH - 3 &-} # '\n'
    NumStarsLeft = {VSL Stars}
-
 
 in
 
@@ -284,92 +171,11 @@ in
 
       OnToplevel = {`Builtin` onToplevel 1}
 
-      %%
-      %% AlmostVSToVS: AlMostVS -> VS
-      %%
-
-      %%
-      %% an almost virtual string is a virtual string
-      %% which may contain embedded records:
-      %%
-      %% oz(X): some Oz value
-      %% pn(P): variable print name
-      %% list(Xs S): list of Oz values to be separated by VS S
-      %%
-
-      fun {AlmostVSToVS X}
-         case {IsDet X}
-            andthen {IsRecord X}
-         then
-            case X of oz(M) then
-               {OzValueToVS M}
-            [] pn(M) then
-               {PrintNameToVS M}
-            [] pos(F L C) then
-               {PosToVS F L C unit}
-            [] pos(F L C _ _ _) then
-               {PosToVS F L C unit}
-            [] fineStep(F L C) then
-               {PosToVS F L C unit}
-            [] fineStep(F L C _ _ _) then
-               {PosToVS F L C unit}
-            [] coarseStep(F L C) then
-               {PosToVS F L C unit}
-            [] coarseStep(F L C _ _ _) then
-               {PosToVS F L C unit}
-            [] list(Xs Sep) then
-               {AlmostVSToVS {ListToVS Xs Sep}}
-            elsecase
-               {IsTuple X}
-               andthen {Label X}=='#'
-            then
-               {Record.map X AlmostVSToVS}
-            else X end
-         else {OzValueToVS X} end
-      end
-
-      %%
-      %% some formatting routines for arguments, applications, etc.
-      %%
-
-      fun {FormatAppl A Xs}
-         P = {VS2A {OzValueToVS A}}
-      in
-         case Xs of nil then
-            '{' # pn(P) # '}'
-         else
-            '{' # pn(P) # ' ' # list(Xs ' ') # '}'
-         end
-      end
-
-      fun {OzValueToVS X}
-         P={System.get errors} in
-         {System.valueToVirtualString X P.depth P.width}
-      end
-
-      fun {AttachLeftSizes Xs}
-         {Map Xs
-          fun {$ X}
-             case X
-             of hint(l:L) then
-                {VSL {AlmostVSToVS L}} # X
-             [] hint(l:L m:M) then
-                {VSL {AlmostVSToVS L}} # X
-             else
-                0 # X
-             end
-          end}
-      end
-
-      %%
       %% current output: strings into emulator window
-      %%
 
       Output = System.printError
 
-      %%
       %% parametrized output routines
-      %%
 
       proc {LineOutput ErrorMsg Format} VSCell in
          %% We have to call output a single time and not once per line
@@ -416,34 +222,122 @@ in
           end}
       end
 
-      local
-         DebugMode = {`Builtin` 'Debug.mode' 1}
-      in
-         fun {Spaces N}
-            case {DebugMode}
-            then [& ]
-            else {Repeat N & }
-            end
-         end
-      end
+      %% some formatting routines for arguments, applications, etc.
 
       local
-         fun {DoGiveHint S}
-            case S of nil then nil
-            else First Rest in
+         fun {DoFormatTypes Text S}
+            case S
+            of nil then nil
+            else
+               First Rest
+            in
                {List.takeDropWhile S.2 IsNotNL First Rest}
-               line(First) | {DoGiveHint Rest}
+               case Text of '' then
+                  hint(m:{ToLower First})
+               else
+                  hint(l:Text m:{ToLower First})
+               end | {DoFormatTypes '' Rest}
             end
          end
       in
-         fun {GiveHint S}
-            case {System.get errors}.hints
-               andthen S \= nil
-            then unit|{DoGiveHint &\n|{VS2S S}}
-            else nil end
+         fun {FormatTypes T}
+            {DoFormatTypes 'Expected type' &\n|{Atom.toString T}}
          end
       end
 
+      fun {OzValueToVS X}
+         P={System.get errors} in
+         {System.valueToVirtualString X P.depth P.width}
+      end
+
+      fun {FormatPartialAppl A Xs N}
+         P = case {IsProcedure A}
+             then {System.printName A}
+             else A end
+      in
+         '{' # pn(P) #
+         case Xs of nil then '' else ' ' # list(Xs ' ') end #
+         ' ...<' # N # '>...' # '}'
+      end
+
+      fun {FormatAppl A Xs}
+         P = case {IsProcedure A}
+             then {System.printName A}
+             else A end
+      in
+         '{' # pn(P) #
+         case Xs of nil then '' else ' ' # list(Xs ' ') end #
+         '}'
+      end
+
+      %%
+      %% AlmostVSToVS: AlMostVS -> VS
+      %%
+      %% an almost virtual string is a virtual string
+      %% which may contain embedded records:
+      %%
+      %% oz(X): some Oz value
+      %% pn(P): variable print name
+      %% list(Xs S): list of Oz values to be separated by VS S
+      %%
+
+      fun {AlmostVSToVS X}
+         case {IsDet X}
+            andthen {IsRecord X}
+         then
+            case X of oz(M) then
+               {OzValueToVS M}
+            [] pn(M) then
+               {PrintNameToVS M}
+            [] pos(F L C) then
+               {PosToVS F L C unit}
+            [] pos(F L C _ _ _) then
+               {PosToVS F L C unit}
+            [] fineStep(F L C) then
+               {PosToVS F L C unit}
+            [] fineStep(F L C _ _ _) then
+               {PosToVS F L C unit}
+            [] coarseStep(F L C) then
+               {PosToVS F L C unit}
+            [] coarseStep(F L C _ _ _) then
+               {PosToVS F L C unit}
+            [] list(Xs Sep) then
+               {AlmostVSToVS {ListToVS Xs Sep}}
+            elsecase
+               {IsTuple X}
+               andthen {Label X}=='#'
+            then
+               {Record.map X AlmostVSToVS}
+            else X end
+         else {OzValueToVS X} end
+      end
+
+      fun {AttachLeftSizes Xs}
+         {Map Xs
+          fun {$ X}
+             case X
+             of hint(l:L) then
+                {VSL {AlmostVSToVS L}} # X
+             [] hint(l:L m:M) then
+                {VSL {AlmostVSToVS L}} # X
+             else
+                0 # X
+             end
+          end}
+      end
+
+      %%
+      %% output list of spaces
+      %%
+
+      fun {Location Spaces}
+         case Spaces ==  nil
+            orelse Spaces == unit
+         then nil else
+            [ ''
+              'Level: ' # {FoldR Spaces fun {$ I W} I # ' ' # W end ''} ]
+         end
+      end
 
       %%
       %% output call stack
@@ -522,45 +416,6 @@ in
          end
       end
 
-\ifdef TYPE_DEBUG
-      fun {IsBinaryProc P}
-         {IsProcedure P} andthen {Procedure.arity P}==2
-      end
-
-      AskBinaryProc = {Type.ask.generic IsBinaryProc 'binary procedure'}
-      AskChunkOrRec = {Type.ask.generic
-                       fun {$ CR} {IsChunk CR} orelse {IsRecord CR} end
-                       'chunk or record'}
-      AskProcOrObject={Type.ask.generic
-                       fun {$ P} {IsProcedure P} orelse {IsObject P} end
-                       'procedure or object'}
-\endif
-
-
-      fun {BIPrintName X}
-         case {IsAtom X}
-            andthen {HasFeature BuiltinNames X}
-         then BuiltinNames.X.1
-         else X end
-      end
-
-      fun {BIOrigin X}
-         BuiltinNames.X.2.1
-      end
-
-      fun {FormatOrigin A}
-         B = {BIPrintName A}
-      in
-         case {HasFeature BuiltinNames B}
-            andthen {BIOrigin B}\=nil
-         then
-            [unit
-             hint(l:'Possible Origin of Procedure' m:oz({BIPrintName B}))
-             line(oz({BIOrigin B}))]
-         else nil end
-      end
-
-      %%
       %% error messages have the following format
       %% (where all fields are optional)
       %%
@@ -594,6 +449,60 @@ in
       %% %** <loc>
       %% %**
       %% %************************** if <footer>
+
+      %%
+      %% return exception components
+      %%
+
+      fun {InfoField Exc}
+         D = {DebugField Exc}
+      in
+         case {IsRecord D}
+            andthen {HasFeature D info}
+         then D.info else unit end
+      end
+
+      fun {DebugField Exc}
+         case {IsRecord Exc}
+            andthen {HasFeature Exc debug}
+         then Exc.debug else unit end
+      end
+
+      fun {DispatchField Exc}
+         case {IsRecord Exc}
+            andthen {HasFeature Exc 1}
+         then Exc.1 else unit end
+      end
+
+      fun {HasDispatchField Exc}
+         {IsRecord Exc}
+         andthen {HasFeature Exc 1}
+         andthen {IsRecord Exc.1}
+      end
+
+      %%
+      %% return stack/location/info components
+      %%
+
+      fun {DebugInfo Exc}
+         Is = {InfoField Exc}
+      in
+         case Is
+         of unit then nil
+         [] nil then nil
+         [] I|Ir then
+            case I
+            of apply(X Xs) then
+               hint(l:'In statement' m:{FormatAppl X Xs})
+            [] fapply(X Xs N) then
+               hint(l:'In statement' m:{FormatPartialAppl X Xs N})
+            [] vs(V) then hint(l:V)
+            end
+            | {DebugInfo Ir}
+         else
+            nil
+         end
+      end
 
       fun {DebugLoc Exc}
          D = {DebugField Exc}
@@ -672,6 +581,15 @@ in
             then {Out Dashes}
             else skip end
          end
+
+         proc {ErrorInfo Out Format}
+            case {CondSelect Format info unit}
+            of unit then
+               skip
+            elseof Ts then
+               {Lines Out Ts}
+            end
+         end
       in
          proc {ErrorMsg Out Format}
             case Format
@@ -694,46 +612,62 @@ in
                {ErrorMsgLine Out Format}
                {ErrorItems Out Format}
                {ErrorLoc Out Format}
+               {ErrorInfo Out Format}
                {ErrorStack Out Format}
                {ErrorFooter Out Format}
             end
          end
       end
 
-      %%
-      %% register of error printers
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% specific error formatters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      ErrorFormatter = {NewDictionary}
-
-      fun {ExFormatter Key}
-         {Dictionary.member ErrorFormatter Key}
-      end
-
-      proc {NewFormatter Key P}
-\ifdef TYPE_DEBUG
-         {Type.ask.feature Key}
-         {AskBinaryProc P}
-\endif
-         case {ExFormatter Key}
-         then {`RaiseError` system(reinstallFormatter Key)}
-         else
-            {Dictionary.put
-             ErrorFormatter
-             Key
-             P}
+      local
+         DebugMode = {`Builtin` 'Debug.mode' 1}
+      in
+         fun {Spaces N}
+            case {DebugMode}
+            then [& ]
+            else {Repeat N & }
+            end
          end
       end
 
-      fun {GetFormatter Key}
-         {Dictionary.get
-          ErrorFormatter
-          Key}
+      local
+         fun {DoGiveHint S}
+            case S of nil then nil
+            else First Rest in
+               {List.takeDropWhile S.2 IsNotNL First Rest}
+               line(First) | {DoGiveHint Rest}
+            end
+         end
+      in
+         fun {GiveHint S}
+            case {System.get errors}.hints
+               andthen S \= nil
+            then unit|{DoGiveHint &\n|{VS2S S}}
+            else nil end
+         end
       end
 
-      %%
-      %% formatter for errors related to the kernel language
-      %%
+\ifdef TYPE_DEBUG
+      fun {IsBinaryProc P}
+         {IsProcedure P} andthen {Procedure.arity P}==2
+      end
+
+      AskBinaryProc = {Type.ask.generic IsBinaryProc 'binary procedure'}
+      AskChunkOrRec = {Type.ask.generic
+                       fun {$ CR} {IsChunk CR} orelse {IsRecord CR} end
+                       'chunk or record'}
+      AskProcOrObject={Type.ask.generic
+                       fun {$ P} {IsProcedure P} orelse {IsObject P} end
+                       'procedure or object'}
+\endif
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% kernel related errors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {LayoutDot R F X Op}
          case {IsDet R}
@@ -757,71 +691,10 @@ in
          [hint(l:'In statement' m:oz(X) # ' ' # Op # ' ' # oz(Y) # ' = ' # oz(Z))]
       end
 
-      %%
-      %% returning the dispatching
-      %% and the debugging info
-      %%
-
-      fun {DebugField Exc}
-         case {IsRecord Exc}
-            andthen {HasFeature Exc debug}
-         then Exc.debug else unit end
-      end
-
-      fun {DispatchField Exc}
-         case {IsRecord Exc}
-            andthen {HasFeature Exc 1}
-         then Exc.1 else unit end
-      end
-
-      fun {HasDispatchField Exc}
-         {IsRecord Exc}
-         andthen {HasFeature Exc 1}
-         andthen {IsRecord Exc.1}
-      end
-
-      %%
-      %% generic formatter for exceptions
-      %%
-
-      proc {FormatExc Kind Msg Bs Exc E}
-         Fs = [items loc stack footer]
-      in
-         E = {Record.make error
-              case Kind==unit then
-                 case Msg==unit
-                 then Fs
-                 else msg|Fs end
-              elsecase Msg==unit
-              then kind|Fs
-              else kind|msg|Fs
-              end}
-
-         case Kind \= unit
-         then E.kind = Kind
-         else skip end
-
-         case Msg \= unit
-         then E.msg = Msg
-         else skip end
-
-         E.items  = Bs
-         E.loc    = {DebugLoc Exc}
-         E.stack  = {DebugStack Exc}
-         E.footer = true
-      end
-
-      fun {GenericFormatter Msg Exc}
-         {FormatExc unit Msg [line(oz(Exc))] Exc}
-      end
-
-      %%
-      %% formatter for kernel related errors
-      %%
-
       fun {KernelFormatter Exc}
 
          E = {DispatchField Exc}
+
       in
 
          case E
@@ -979,7 +852,7 @@ in
              [hint(l:'In statement' m:{FormatAppl P Xs})
               hint(l:'Expected'
                    m:case {IsProcedure P} then {Procedure.arity P} else 1 end
-                     # ' argument(s)')
+                   # ' argument(s)')
               hint(l:'Found' m:{Length Xs})]
              Exc}
 
@@ -1280,22 +1153,21 @@ in
          end
       end
 
-
-      %%
-      %% failure formatter
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% failure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {FailureFormatter Exc}
-         D = {DebugField Exc}
+         I = {InfoField Exc}
          T = 'failure'
       in
 
-         case {Not {HasFeature D info}} then
+         case I
+         of unit then
 
             {GenericFormatter T Exc}
 
-         elsecase D.info
-         of 'fail' then
+         elseof 'fail' then
 
             {FormatExc
              T
@@ -1351,14 +1223,14 @@ in
 
             {FormatExc
              T unit
-             [hint(l:'??? ' m:oz(D.info))]
+             [hint(l:'??? ' m:oz(I))]
              Exc}
          end
       end
 
-      %%
-      %% formatter for object-related errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% objects
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {ObjectFormatter Exc}
          E = {DispatchField Exc}
@@ -1460,6 +1332,10 @@ in
          end
       end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ofs constraints
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       fun {OFSFormatter Exc}
          E = {DispatchField Exc}
          T = 'Error: records'
@@ -1485,9 +1361,9 @@ in
          end
       end
 
-      %%
-      %% formatter for search errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% search
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {SearchFormatter Exc}
          T = 'Error: Search'
@@ -1503,9 +1379,107 @@ in
          end
       end
 
-      %%
-      %% formatter for finite domain related errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% names and formatting routines for fd related builtins
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
+
+      BuiltinNames
+      = bi(fdp_twice:         [fdp_twice           ['FD.plus' 'FD.minus']]
+           fdp_square:        [fdp_square          ['FD.times']]
+           fdp_plus:          ['FD.plus'           ['FD.distance']]
+           fdp_plus_rel:      ['FD.plus'           ['FD.distance' '+']]
+           fdp_minus:         ['FD.minus'          nil]
+           fdp_times:         ['FD.times'          nil]
+           fdp_times_rel:     ['FD.plus'           ['FD.distance' '*']]
+           fdp_divD:          ['FD.divD'           nil]
+           fdp_divI:          ['FD.divI'           nil]
+           fdp_modD:          ['FD.modD'           nil]
+           fdp_modI:          ['FD.modI'           nil]
+           fdp_conj:          ['FD.conj'           nil]
+           fdp_disj:          ['FD.disj'           nil]
+           fdp_exor:          ['FD.exor'           nil]
+           fdp_impl:          ['FD.impl'           nil]
+           fdp_equi:          ['FD.equi'           nil]
+           fdp_nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
+           fdp_sumCR:         ['FD.reified.sumC'   ArithOps]
+           fdp_intR:          ['FD.refied.int'     ['FD.reified.dom']]
+           fdp_card:          ['FD.reified.card'   nil]
+           fdp_exactly:       ['FD.exactly'        nil]
+           fdp_atLeast:       ['FD.atLeast'        nil]
+           fdp_atMost:        ['FD.atMost'         nil]
+           fdp_element:       ['FD.element'        nil]
+           fdp_disjoint:      ['FD.disjoint'       nil]
+           fdp_disjointC:     ['FD.disjointC'      nil]
+           fdp_distance:      ['FD.distance'       nil]
+           fdp_notEqOff:      [fdp_notEqOff        ['FD.sumC' '\\=:']]
+           fdp_lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
+                                                    '>:' 'FD.min' 'FD.max'
+                                                    'FD.modD'
+                                                    'FD.modI' 'FD.disjoint'
+                                                    'FD.disjointC' 'FD.distance'
+                                                   ]]
+           fdp_minimum:        ['FD.min'                   nil]
+           fdp_maximum:        ['FD.max'                   nil]
+           fdp_inter:          ['FD.inter'                 nil]
+           fdp_union:          ['FD.union'                 nil]
+           fdp_distinct:       ['FD.distinct'              nil]
+           fdp_distinctOffset: ['FD.distinctOffset'        nil]
+           fdp_subset:         [fdp_subset         ['FD.union' 'FD.inter']]
+           fdp_sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
+           fdp_sumCN:          ['FD.sumCN'         ArithOps]
+           fdp_sumAC:          ['FD.sumAC'         nil]
+
+           sched_disjoint_card:['FD.schedule.disjoint'             nil]
+           sched_cpIterate:    ['FD.schedule.serialized'           nil]
+           sched_disjunctive:  ['FD.schedule.serializedDisj'       nil]
+
+           fdGetMin:           ['FD.reflect.min'   nil]
+           fdGetMid:           ['FD.reflect.mid'   nil]
+           fdGetMax:           ['FD.reflect.max'   nil]
+           fdGetDom:           ['FD.reflect.dom'   ['FD.reflect.domList']]
+           fdGetCard:          ['FD.reflect.size'  nil]
+           fdGetNextSmaller:   ['FD.reflect.nextSmaller'   nil]
+           fdGetNextLarger:    ['FD.reflect.nextLarger'    nil]
+
+           fdWatchSize:        ['FD.watch.size'    nil]
+           fdWatchMin:         ['FD.watch.min'     nil]
+           fdWatchMax:         ['FD.watch.max'     nil]
+
+           fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
+           fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
+           fd_sumCD:           [fdp_sumCD          ['condis ... end']]
+           fd_sumCCD:          [fdp_sumCCD         ['condis ... end']]
+           fd_sumCNCD:         [fdp_sumCNCD        ['condis ... end']]
+          )
+
+      fun {BIPrintName X}
+         case {IsAtom X}
+            andthen {HasFeature BuiltinNames X}
+         then BuiltinNames.X.1
+         else X end
+      end
+
+      fun {BIOrigin X}
+         BuiltinNames.X.2.1
+      end
+
+      fun {FormatOrigin A}
+         B = {BIPrintName A}
+      in
+         case {HasFeature BuiltinNames B}
+            andthen {BIOrigin B}\=nil
+         then
+            [unit
+             hint(l:'Possible Origin of Procedure' m:oz({BIPrintName B}))
+             line(oz({BIOrigin B}))]
+         else nil end
+      end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% fd constraints
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {FDFormatter Exc}
          E = {DispatchField Exc}
@@ -1551,9 +1525,9 @@ in
          end
       end
 
-      %%
-      %% formatter for errors related to the foreign function interface
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% foreign function interface
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {ForeignFormatter Exc}
          E = {DispatchField Exc}
@@ -1604,9 +1578,9 @@ in
          end
       end
 
-      %%
-      %% formatter for system related errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% system
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {SystemFormatter Exc}
 
@@ -1620,7 +1594,7 @@ in
             {FormatExc T
              unit
              [hint(l:'Illegal system parameter ' m:oz(P))]
-              Exc}
+             Exc}
 
          elseof system(limitInternal S) then
 
@@ -1752,9 +1726,9 @@ in
          end
       end
 
-      %%
-      %% formatter for tk related errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% tk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {TkFormatter Exc}
          E = {DispatchField Exc}
@@ -1790,7 +1764,7 @@ in
             {FormatExc T
              'Window already closed'
              [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
-              Exc}
+             Exc}
 
          elseof tk(alreadyClosed O) then
 \ifdef TYPE_DEBUG
@@ -1843,9 +1817,9 @@ in
          end
       end
 
-      %%
-      %% formatter for operating system programming errors
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% operating system
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {OSFormatter Exc}
          E = {DispatchField Exc}
@@ -1885,9 +1859,9 @@ in
          end
       end
 
-      %%
-      %% formatter for errors related to distributed programming
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% distributed programming
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {DPFormatter Exc}
          E = {DispatchField Exc}
@@ -1967,6 +1941,10 @@ in
          end
       end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% compiler
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       fun {CompilerFormatter Exc}
          E = {DispatchField Exc}
          T = 'compiler engine error'
@@ -1994,6 +1972,10 @@ in
          end
       end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% panel
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       fun {PanelFormatter Exc}
          E = {DispatchField Exc}
          T = 'error in Oz Panel'
@@ -2009,6 +1991,10 @@ in
             {GenericFormatter T Exc}
          end
       end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% explorer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {ExplorerFormatter Exc}
          E = {DispatchField Exc}
@@ -2030,6 +2016,10 @@ in
          end
       end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% gump
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       fun {GumpFormatter Exc}
          E = {DispatchField Exc}
          T = 'Gump Scanner error'
@@ -2044,9 +2034,76 @@ in
          end
       end
 
-      %%
-      %% error print manager
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% generic formatter for exceptions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      proc {FormatExc Kind Msg Bs Exc E}
+         Fs = [items loc stack footer info]
+      in
+         E = {Record.make error
+              case Kind==unit then
+                 case Msg==unit
+                 then Fs
+                 else msg|Fs end
+              elsecase Msg==unit
+              then kind|Fs
+              else kind|msg|Fs
+              end}
+
+         case Kind \= unit
+         then E.kind = Kind
+         else skip end
+
+         case Msg \= unit
+         then E.msg = Msg
+         else skip end
+
+         E.items  = Bs
+         E.loc    = {DebugLoc Exc}
+         E.stack  = {DebugStack Exc}
+         E.footer = true
+         E.info   = {DebugInfo Exc}
+      end
+
+      fun {GenericFormatter Msg Exc}
+         {FormatExc unit Msg [line(oz(Exc))] Exc}
+      end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% registry of error printers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      ErrorFormatter = {NewDictionary}
+
+      fun {ExFormatter Key}
+         {Dictionary.member ErrorFormatter Key}
+      end
+
+      proc {NewFormatter Key P}
+\ifdef TYPE_DEBUG
+         {Type.ask.feature Key}
+         {AskBinaryProc P}
+\endif
+         case {ExFormatter Key}
+         then {`RaiseError` system(reinstallFormatter Key)}
+         else
+            {Dictionary.put
+             ErrorFormatter
+             Key
+             P}
+         end
+      end
+
+      fun {GetFormatter Key}
+         {Dictionary.get
+          ErrorFormatter
+          Key}
+      end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% error print manager
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       fun {FormatOzError Exc}
          T = 'Error: unhandled exception'
@@ -2080,25 +2137,25 @@ in
          end
       end
 
-      proc {ReRaise Exc ExcExc}
-         {LineOutput
-          ErrorMsgDebug
-          error(title: 'Unable to Print Error Message'
-                items:[hint(l:'Initial exception' m:oz(Exc))
-                       hint(l:'Format exception Kind'  m:{Label ExcExc})
-                       hint(l:'Format exception' m:oz({DispatchField ExcExc}))
-                       line({BugReport})]
-                loc:   {DebugLoc Exc}
-                stack: {DebugStack Exc}
-               )}
-      end
-
-      %%
-      %% register procedure OzError as Handler in the emulator
-      %% and initialize builtin error Formatters
-      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% register procedure OzError as Handler in the emulator
+%%% and initialize builtin error Formatters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       local
+         proc {ReRaise Exc ExcExc}
+            {LineOutput
+             ErrorMsgDebug
+             error(title: 'Unable to Print Error Message'
+                   items:[hint(l:'Initial exception' m:oz(Exc))
+                          hint(l:'Format exception Kind'  m:{Label ExcExc})
+                          hint(l:'Format exception' m:oz({DispatchField ExcExc}))
+                          line({BugReport})]
+                   loc:   {DebugLoc Exc}
+                   stack: {DebugStack Exc}
+                  )}
+         end
+
          proc {DefExHdl Exc}
             try
                {Thread.setThisPriority high}

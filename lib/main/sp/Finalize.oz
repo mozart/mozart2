@@ -26,8 +26,6 @@ local
    proc {FinalizeEntry Value|Handler} {Handler Value} end
    proc {FinalizeHandler L} {ForAll L FinalizeEntry} end
 in
-   fun {NewFinalize}
-      {SetHandler FinalizeHandler}
-      finalize(register:Register setHandler:SetHandler)
-   end
+   {SetHandler FinalizeHandler}
+   Finalize = finalize(register:Register setHandler:SetHandler)
 end

@@ -35,9 +35,7 @@ fun
    \insert SP/Error
 \ifndef NOFINALIZATION
    \insert SP/Finalize
-   Finalize= {NewFinalize}
 \endif
-   Foreign = {NewForeign}
    Error   = {NewError}
 in
    \insert 'SP.env'

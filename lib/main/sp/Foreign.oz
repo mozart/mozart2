@@ -25,108 +25,77 @@
 
 
 local
-   BILinkObjectFiles  = {`Builtin` linkObjectFiles  2}
-   BIUnlinkObjectFile = {`Builtin` unlinkObjectFile 1}
-   BIdlOpen           = {`Builtin` dlOpen  2}
-   BIdlClose          = {`Builtin` dlClose 1}
-
-   fun {ToAtom File}
-      case {IsAtom File} then File
-      else {String.toAtom {VirtualString.toString File}} end
+   DlOpen               = {`Builtin` dlOpen       2}
+   DlClose              = {`Builtin` dlClose      1}
+   FindFunction         = {`Builtin` findFunction 3}
+   Unlink               = {`Builtin` 'OS.unlink'  1}
+   %%
+   %% If the URL service is available, then use it to create a
+   %% localizer parametrized by environment variable OZ_DL_LOAD,
+   %% otherwise use the `identity' localizer.  The localizer
+   %% is given a URL denoting a dynamic library and endeavors
+   %% to make this library available as a local file.  It returns
+   %% either old(FILE) or new(FILE): it returns new(FILE) iff
+   %% it just created FILE locally, e.g. by downloading it.  In
+   %% that case, the application should take care to unlink the
+   %% file (i.e. clean up).  The identity localizer always returns
+   %% old(FILE) without checking if the FILE actually exists.
+   %%
+   Resolver
+   Localize
+   case {Dictionary.condGet {{`Builtin` 'ServiceRegistry' 1}} url false}
+   of false then
+      !Resolver = unit
+      fun{!Localize PATH} old(PATH) end
+   elseof URL then
+      !Resolver = {URL.makeResolver foreign
+                   env('OZ_DL_LOAD'
+                       local
+                          HOME   = {{`Builtin` 'SystemGetHome'     1}}
+                          OS#CPU = {{`Builtin` 'SystemGetPlatform' 1}}
+                       in
+                          'root='#HOME#'/platform/'#OS#'-'#CPU
+                       end)}
+      !Localize = Resolver.localize
    end
 
-   BIFindFunction = {`Builtin` findFunction 3}
-
-   proc {FindFunction AName Ar Handle}
-      {Wait AName}
-      {Wait Ar}
-      case Handle==~1 then skip
-      else {BIFindFunction AName Ar Handle}
-      end
-   end
-
-   fun {LoadAux Spec Handle}
+   proc {LoadFromHandle Spec Handle Module}
       ModuleLabel  = {Label Spec}
-      ModuleString = {Atom.toString ModuleLabel}
       All          = {Arity Spec}
-      Module       = {MakeRecord ModuleLabel All}
    in
+      {MakeRecord ModuleLabel All Module}
       {ForAll All
        proc {$ AName}
           D = Spec.AName
-          N = {String.toAtom
-               {Append ModuleString
-                &_|{Atom.toString AName}}}
+          N = ModuleLabel#'_'#AName
        in
           {FindFunction N D Handle}
           Module.AName = {`Builtin` N D}
        end}
-      Module
    end
 
-   fun {LinkObjectFiles Files}
-      NewFiles={Map Files ToAtom}
-   in
-      {BILinkObjectFiles NewFiles}
+   proc {Link File Spec Module Handle}
+      case {Localize File}
+      of     old(FILE) then
+         {DlOpen Handle}
+         {LoadFromHandle Spec Handle Module}
+      elseof new(FILE) then
+         try
+            {DlOpen Handle}
+            {LoadFromHandle Spec Handle Module}
+         finally {Unlink FILE} end
+      end
    end
-
-   proc {UnlinkObjectFile File}
-      F={ToAtom File}
-   in
-      {BIUnlinkObjectFile F}
+   proc {Require File Spec Module} {Link File Spec Module _} end
+   proc {DLoad   File Spec CloseF Module} Handle in
+      {Link File Spec Module Handle}
+      proc {!CloseF} {DlClose Handle} end
    end
-   fun {Load Files Spec}
-      {LoadAux Spec {LinkObjectFiles Files}}
-   end
-
-   FindFile = {`Builtin` 'FindFile' 3}
-   EnvToTuple = {`Builtin` 'EnvToTuple' 2}
-
 in
 
-   fun
-      {NewForeign}
-      SearchPath = {NewCell path}
-      GetSearchPath SetSearchPath Require
-      Spath = {EnvToTuple 'OZ_FOREIGN_LIBS'}
-   in
-      case Spath==false then
-         OS#CPU = {System.get platform}
-      in
-         {Assign SearchPath
-          path('/project/ps/soft/oz-devel/oz/platform/'#OS#'-'#CPU)}
-      else
-         {Assign SearchPath Spath}
-      end
-
-      fun {GetSearchPath} {Access SearchPath} end
-      fun {SetSearchPath} {Assign SearchPath} end
-
-      fun {Require File Spec}
-         FullPath = {FindFile {Access SearchPath} File}
-      in
-         case FullPath==false then
-            raise error(fileNotFound(File) debug:debug) with debug end
-         else {LoadAux Spec {BIdlOpen FullPath}} end
-      end
-
-      foreign(reload:
-                 fun {$ Files Spec}
-                    {ForAll Files UnlinkObjectFile}
-                    {Load Files Spec}
-                 end
-              dload:
-                 fun {$ File Spec ?CloseF}
-                    Handle = {BIdlOpen File}
-                 in
-                    CloseF = proc {$} {BIdlClose Handle} end
-                    {LoadAux Spec Handle}
-                 end
-              load: Load
-              getSearchPath: GetSearchPath
-              setSearchPath: SetSearchPath
-              require: Require
-             )
-   end
-
+   Foreign = foreign(
+                     dload   : DLoad
+                     require : Require
+                     resolver: Resolver
+                    )
 end

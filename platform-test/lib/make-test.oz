@@ -62,7 +62,7 @@ local
       import
          Property
          System
-         Debug
+         Debug    from 'x-oz://boot/Debug'
          Module
 
       export

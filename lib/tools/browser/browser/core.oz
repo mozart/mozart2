@@ -67,9 +67,6 @@ TermSize = BrowserSupport.getTermSize
 GetsTouched = BrowserSupport.getsBoundB
 
 %%
-DeepFeed = BrowserSupport.deepFeed
-
-%%
 %% Yield arity/width of a chunk, suspend on variables,
 %% or rise type errors;
 

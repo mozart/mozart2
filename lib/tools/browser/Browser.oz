@@ -59,7 +59,6 @@ import
    BrowserSupport(recordCIsVarB
                   getTermSize
                   getsBoundB
-                  deepFeed
                   chunkArity
                   chunkWidth
                   addr)
@@ -118,7 +117,6 @@ define
    EQ             % pointers equality;
    TermSize       % size of a term's representation;
    GetsTouched    % fires when its argument is ever touched;
-   DeepFeed       % 'feed', but also from local computation spaces;
    ChunkArity     % yields chunk arity;
    ChunkHasFeatures % ... its width;
    AddrOf         %
@@ -466,7 +464,7 @@ in
       from Object.base
       attr
          BrowserStream: InitValue % used for "deep" browsing;
-         BrowserCell:   InitValue % ...
+         BrowserPort:   InitValue % ...
          InitMeth:      InitValue %
          RealBrowser:   InitValue %
 
@@ -475,7 +473,7 @@ in
       meth Make
          if @RealBrowser == InitValue then BS RB InternalBrowserLoop in
             BrowserStream <- BS
-            BrowserCell <- {NewCell @BrowserStream}
+            BrowserPort   <- {NewPort @BrowserStream}
             RB = {New FBrowserClass @InitMeth}
             RealBrowser <- RB
 
@@ -529,8 +527,10 @@ in
 
       %%
       meth otherwise(M)
-         if {IsDeepGuard} then {DeepFeed @BrowserCell {Reflect M}}
-         else {self CheckAndDo(M)}   % be transparent;
+         if {IsDeepGuard} then
+            {Port.send @BrowserPort {Reflect M}}
+         else
+            {self CheckAndDo(M)}   % be transparent;
          end
       end
 

@@ -31,8 +31,8 @@ $class =
                   'vadjustment'                   => 'GtkAdjustment*',
                   'shadow_type'                   => 'GtkShadowType' },
 
-       inits => { 'gtk_viewport_new'              => { in  => ['!GtkAdjustment*',
-                                                               '!GtkAdjustment*'],
+       inits => { 'gtk_viewport_new'              => { in  => ['^GtkAdjustment*',
+                                                               '^GtkAdjustment*'],
                                                        out => 'GtkWidget*' } },
 
        meths => { 'gtk_viewport_get_hadjustment'  => { in  => ['GtkViewport*'],

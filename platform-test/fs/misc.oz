@@ -567,6 +567,20 @@ define
                  R
               end}
 
+             {MiscTest 50
+              fun {$}
+                 S1 = {FS.var.upperBound [1]}
+                 S2 = {FS.var.upperBound [1]}
+                 R
+              in
+                 R = thread
+                        cond S2 = {FS.value.make nil} then 1 else 0 end
+                     end
+                 {FS.distinct S1 S2}
+                 {FS.include 1 S1}
+                 R
+              end}
+
             ])
       ])
 

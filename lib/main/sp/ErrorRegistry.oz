@@ -484,20 +484,24 @@ in
       in
 
          case E
-         of object('<-' State A V) then
+         of object('<-' O A V) then
             {Error.format
-             T unit
+             T 'Assignment to unavailable attribute'
              [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
-              hint(l:'Attribute does not exist' m:oz(A))
-              hint(l:'Expected Attribute(s)' m:list({Arity State} ' '))]
+              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
              Exc}
-
-         elseof object('@' State A) then
+         elseof object('@' O A) then
             {Error.format
-             T unit
-             [hint(l:'In statement' m:'@' # oz(A) # ' = _')
-              hint(l:'Attribute does not exist' m:oz(A))
-              hint(l:'Expected attribute(s)' m:list({Arity State} ' '))]
+             T 'Access of unavailable attribute'
+             [hint(l:'In statement' m:'_ = @' # oz(A))
+              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
+             Exc}
+         elseof object(ooExch O A V) then
+            {Error.format
+             T 'Exchange of unavailable attribute'
+             [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
+              hint(l:'Attribute' m:oz(A))
+              hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
              Exc}
          elseof object(sharing C1 C2 A L) then
             {Error.format T

@@ -459,15 +459,15 @@ define
          elseof object(final CParent CChild) then
             error(kind: T
                   msg: 'Inheritance from final class'
-                  items: [hint(l:'Final class used as parent' m:CParent)
-                          hint(l:'Class to be created' m:CChild)
+                  items: [hint(l:'Final class used as parent' m:oz(CParent))
+                          hint(l:'Class to be created' m:oz(CChild))
                           line('remove prop final from parent class '#
                                'or change inheritance relation')])
          elseof object(inheritanceFromNonClass CParent CChild) then
             error(kind: T
                   msg: 'Inheritance from non-class'
                   items: [hint(l:'Non-class used as parent' m:oz(CParent))
-                          hint(l:'Class to be created' m:CChild)])
+                          hint(l:'Class to be created' m:oz(CChild))])
          elseof object(illegalProp Ps) then
             error(kind: T
                   msg: 'Illegal property value in class definition'

@@ -64,7 +64,7 @@ local
 in
 
    fun {$ IMPORT}
-      \insert './lib/import.oz'
+      \insert 'lib/import.oz'
    in
 
       link(equal(local

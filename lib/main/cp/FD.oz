@@ -578,25 +578,33 @@ define
 
       proc {FdChoose RawSpec Vec ?V ?D}
          {Space.waitStable}
-         try
+%        try
             case {PreProcessSpec RawSpec}
-            of opt(value:Value order:Order) then
-               V={Choose {VectorToList Vec} GenSelVar.Order GenSelFil.undet}
-               if V==unit then raise ~1 end else D={SelVal.Value V} end
+            of opt(value:SelValSpec order:SelVarSpec) then
+               case {Filter {VectorToList Vec} GenSelFil.undet}
+               of nil then D=unit
+               [] X|Xs then
+                  {Choose Xs X {MapSelect GenSelVar SelVarSpec} V}
+                  {{MapSelect SelVal SelValSpec} V D}
+               end
             [] gen(value:     SelVal
                    order:     Order
                    select:    Select
                    filter:    Fil
-                   procedure: _) then
-               E={Choose {VectorToList Vec} Order Fil} in
-               if E==unit then raise ~1 end else V={Select E}end
-               D={SelVal V}
+                   procedure: _)
+            then
+               case {Filter {VectorToList Vec} Fil} of nil then
+                  D=unit
+               [] X|Xr then
+                  V={Select {Choose Xr X Order}}
+                  D={SelVal V}
+               end
             end
-         catch ~1 then
-            {Exception.raiseError
-             fd(noChoice 'FD.choose' [RawSpec Vec V D] 2
-                'Vector must contain non-determined elements.')}
-         end
+%        catch ~1 then
+%           {Exception.raiseError
+%            fd(noChoice 'FD.choose' [RawSpec Vec V D] 2
+%               'Vector must contain non-determined elements.')}
+%        end
       end
    end
 

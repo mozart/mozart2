@@ -2,7 +2,6 @@
 
 class C
    meth f(a1: X1 ... an: Xn b1: Y1 <= V1 ... bk: Yk <= Vk [...])=M
-      %% where either k > 0 or M open
       S
    end
 end
@@ -15,10 +14,10 @@ MessagePattern = messagePattern(a1: unit ... an: unit b1: unit ... bk: unit)
 GroundVi = Vi   % for all 1 =< i =< k with Vi ground
 
 proc {'C,f' M}
-   case M0 of f(a1: X1 ... an: Xn
-                ...   % if k > 0 or M open
-               )
-      andthen {`aritySublistFun` M MessagePattern}   % if k > 0 and M closed
+   case M of f(a1: X1 ... an: Xn
+               ...   % if k > 0 or M open
+              )
+      andthen {`aritySublist` M MessagePattern}   % if k > 0 and M closed
    then Y1 ... Yk M in
       if {`Record.testFeature` M b1 $ Y1} then skip
       else

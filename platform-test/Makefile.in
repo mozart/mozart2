@@ -166,3 +166,8 @@ Makefile: Makefile.in ../config.status
         cd .. && ./config.status --recheck
 
 depend:
+
+tools/gump.ozf: gump-examples
+
+gump-examples:
+        ln -s $(SRCDIR)/../tools/gump/examples $@

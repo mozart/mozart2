@@ -26,7 +26,7 @@ local
                'f c 7;\n'#
                '((f) c) 7\n')
 
-   ExamplesDirectory = '../tools/gump/examples/'
+   ExamplesDirectory = 'gump-examples/'
 in
    functor
    import

@@ -124,7 +124,7 @@ prepare
    SKIP  = 0     % alignment spaces
    WIDTH = 65    % width of error message output
 
-   BugReport = 'Please send bug report to oz@ps.uni-sb.de'
+   BugReport = 'Please send bug report to mozart-bugs@ps.uni-sb.de'
 
    %% some formatting routines
 

@@ -45,7 +45,7 @@ export
    module:  ModuleFormatter
 
 prepare
-   BugReport = 'Please send bug report to oz@ps.uni-sb.de'
+   BugReport = 'Please send bug report to mozart-bugs@ps.uni-sb.de'
 
    fun {LayoutDot R F X Op}
       if {IsDet R}

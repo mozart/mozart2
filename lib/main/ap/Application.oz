@@ -725,7 +725,8 @@ local
       'Compiler':       ['SP' 'CP' 'Gump'#lazy]
       'CompilerPanel':  ['SP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
       'Emacs':          ['OP' 'SP']
-      'Ozcar':          ['SP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
+      'Ozcar':          ['SP' 'CP'#lazy 'WP' 'Browser'#lazy
+                         'Compiler' 'Emacs'#lazy]
       'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
       'Gump':           ['SP' 'OP']
       'GumpScanner':    ['SP']

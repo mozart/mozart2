@@ -5,6 +5,26 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
+\ifdef NEWSAVE
+declare
+fun {NewWP Standard Open}
+\insert 'Standard.env'
+   = Standard
+in
+   local
+\insert 'Tk.oz'
+\insert 'TkTools.oz'
+   in
+      local
+         Tk = {NewTk Open}
+         TkTools = {NewTkTools Tk}
+      in
+\insert 'WP.env'
+      end
+   end
+end
+\else
+
 \insert 'Tk.oz'
 \insert 'TkTools.oz'
 
@@ -16,4 +36,5 @@ fun {NewWP Open}
 in
    \insert 'WP.env'
 end
+\endif
 \endif

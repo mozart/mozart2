@@ -5,6 +5,22 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
+\ifdef NEWSAVE
+declare
+fun {NewCP Standard}
+\insert 'Standard.env'
+   = Standard
+in
+   local
+\insert 'Search.oz'
+\insert 'FD.oz'
+\insert 'FSET.oz'
+   in
+      \insert 'CP.env'
+   end
+end
+\else
+
 \insert 'Search.oz'
 \insert 'FD.oz'
 \insert 'FSET.oz'
@@ -14,4 +30,5 @@ declare
 fun {NewCP}
 \insert 'CP.env'
 end
+\endif
 \endif

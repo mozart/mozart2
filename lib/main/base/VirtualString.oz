@@ -51,28 +51,36 @@ local
          end
       end
    in
-      fun {ToString V}
-         case {Value.type V}
-         of int then
-            if V<0 then &-|{Int.toString {Abs V}}
-            else {Int.toString V}
-            end
-         [] float then
-            {SignOzToOS {Float.toString V}}
-         [] atom then
-            case V
-            of '#' then nil
-            [] nil then nil
-            else {Atom.toString V}
-            end
-         [] byteString then
-            {Boot_ByteString.toString V}
-         [] tuple then
-            case {Label V}
-            of '#' then {AllToString {Flatten {Width V} V nil}}
-            [] '|' then V
-            end
-         end
+      proc {ToString V ?Res}
+         Res = case {Value.type V}
+               of int then
+                  if V<0 then &-|{Int.toString {Abs V}}
+                  else {Int.toString V}
+                  end
+               [] float then
+                  {SignOzToOS {Float.toString V}}
+               [] atom then
+                  case V
+                  of '#' then nil
+                  [] nil then nil
+                  else {Atom.toString V}
+                  end
+               [] byteString then
+                  {Boot_ByteString.toString V}
+               [] tuple then
+                  case {Label V}
+                  of '#' then {AllToString {Flatten {Width V} V nil}}
+                  [] '|' then V
+                  else
+                     {Exception.raiseError
+                      kernel(type 'VirtualString.toString'
+                             [V Res] virtualString 1 nil)} unit
+                  end
+               else
+                  {Exception.raiseError
+                   kernel(type 'VirtualString.toString'
+                          [V Res] virtualString 1 nil)} unit
+               end
       end
    end
 

@@ -67,9 +67,6 @@ in
       end
 
       local
-         % RegSet
-         RegSet
-
          % CodeEmitter
          IsStep
          Emitter
@@ -78,7 +75,6 @@ in
          Continuations
          CodeStore
       in
-         \insert RegSet
          \insert CodeEmitter
          \insert CodeStore
          \insert CodeGen

@@ -103,8 +103,7 @@ in
          Permanents <- {NewDictionary}
          CodeStore, makeRegSet(?RS)
          LastAliveRS <- RS
-         {ForAll FormalRegs
-          proc {$ Reg} {RegSet.adjoin RS Reg} end}
+         {ForAll FormalRegs proc {$ Reg} {BitArray.set RS Reg} end}
          ShortLivedTemps <- nil
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
@@ -182,7 +181,7 @@ in
                {For 1 N 1
                 proc {$ I} X = VInstr.I in
                    case {IsFree X} then X
-                   elsecase {IsChunk X} then {RegSet.toList X}
+                   elsecase {BitArray.is X} then {BitArray.toList X}
                    elsecase {IsRecord X}
                       andthen {HasFeature Continuations {Label X}}
                    then {Label X}
@@ -249,8 +248,8 @@ in
          case RS == AliveRS then skip
          else
             LastAliveRS <- AliveRS
-            {RegSet.subtract RS AliveRS}
-            Emitter, LetDieSub({RegSet.toList RS})
+            {BitArray.nimpl RS AliveRS}
+            Emitter, LetDieSub({BitArray.toList RS})
          end
       end
       meth LetDieSub(Regs)
@@ -1030,7 +1029,7 @@ in
             %    => emit it into a permanent
             % 5) it has a delayed initialization and is not an argument
             %    => delay it until after the call
-            {ForAll {RegSet.toList Cont.1}
+            {ForAll {BitArray.toList Cont.1}
              proc {$ Reg} Result in
                 % We have to be careful not to emit any delayed initialization
                 % too soon, so we do not use GetTemp here:
@@ -1202,7 +1201,7 @@ in
           proc {$ Position Reg|Regr} I = Position - 1 in
              case {Dictionary.member @DelayedInitsDict I} then
                 case Reg < 0 then skip
-                else {RegSet.adjoin @LastAliveRS Reg}
+                else {BitArray.set @LastAliveRS Reg}
                 end
              elsecase {Dictionary.condGet @Temporaries Reg none}
              of vEquateNumber(_ Number _ _) then   % 1)
@@ -1228,7 +1227,7 @@ in
                    'skip'
                 elsecase Emitter, GetPerm(Reg $) of none then
                    case X of none then
-                      {RegSet.adjoin @LastAliveRS Reg}
+                      {BitArray.set @LastAliveRS Reg}
                       case {Member Reg Regr} then
                          % special handling for nonlinearities:
                          case {Dictionary.member @UsedX I} then NewX J in
@@ -1492,7 +1491,9 @@ in
          % Ensure that no temporary dies in the guard:
          OldContinuations = @continuations
          OldContLabels
-         Cont = vDummy(case Addr of nil then nil else {RegSet.copy Addr.1} end)
+         Cont = vDummy(case Addr of nil then nil
+                       else {BitArray.clone Addr.1}
+                       end)
       in
          Emitter, PushContLabel(Cont ?OldContLabels)
          continuations <- Cont|OldContinuations
@@ -1566,10 +1567,11 @@ in
          % make all already initialized Registers occurring
          % in the continuation permanent:
          Regs = case Cont of nil then
-                   case @continuations of Cont1|_ then {RegSet.toList Cont1.1}
+                   case @continuations of Cont1|_ then
+                      {BitArray.toList Cont1.1}
                    [] nil then nil
                    end
-                else {RegSet.toList Cont.1}
+                else {BitArray.toList Cont.1}
                 end
          {ForAll Regs
           proc {$ Reg}
@@ -1585,7 +1587,7 @@ in
          % allocate all registers in the InitsRS set as permanents:
          case InitsRS of nil then skip
          else
-            {ForAll {RegSet.toList InitsRS}
+            {ForAll {BitArray.toList InitsRS}
              proc {$ Reg}
                 case Emitter, IsFirst(Reg $) then Y in
                    Emitter, AllocatePerm(Reg ?Y)
@@ -1710,14 +1712,14 @@ in
       meth IsLast(Reg $)
          case Reg < @minReg then false
          elsecase @continuations of Cont|_ then
-            {Not {RegSet.member Reg Cont.1}}
+            {Not {BitArray.test Cont.1 Reg}}
          else true
          end
       end
       meth DoesNotOccurIn(Reg Cont $)
          case Reg < @minReg then false
          elsecase Cont of nil then true
-         else {Not {RegSet.member Reg Cont.1}}
+         else {Not {BitArray.test Cont.1 Reg}}
          end
       end
 
@@ -1955,7 +1957,7 @@ in
          [] Cont|_ then
             Emitter, LetDie(Cont.1)
             % This is needed so that LetDie works correctly:
-            {RegSet.adjoin Cont.1 Reg}
+            {BitArray.set Cont.1 Reg}
             Emitter, PredictTemp(Reg ?X)
          end
       end
@@ -2095,7 +2097,7 @@ in
                Emitter, PredictArgReg(Reg RegRest I + 1 Cont ?R)
             end
          [] nil then
-            case Cont \= nil andthen {RegSet.member Reg Cont.1} then
+            case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
                R = anyperm
             else J in
                J = {NextFreeIndex @UsedX I}
@@ -2104,7 +2106,7 @@ in
          end
       end
       meth PredictRegForCall(Reg Reg0 Regs Cont ?R)
-         case Cont \= nil andthen {RegSet.member Reg Cont.1} then
+         case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
             R = anyperm
          elsecase Reg == Reg0 then I in
             I = {NextFreeIndex @UsedX {Length Regs}}
@@ -2114,7 +2116,7 @@ in
          end
       end
       meth PredictRegForInits(Reg InitsRS Addrs ?R)
-         case {RegSet.member Reg InitsRS} then
+         case {BitArray.test InitsRS Reg} then
             R = anyperm
          else
             Emitter, PredictRegForBranches(Addrs Reg ?R)
@@ -2122,7 +2124,7 @@ in
       end
       meth PredictRegForBranches(Addrs Reg ?R)
          case Addrs of Addr1|Addrr then
-            case Addr1 \= nil andthen {RegSet.member Reg Addr1.1} then
+            case Addr1 \= nil andthen {BitArray.test Addr1.1 Reg} then
                Emitter, PredictRegSub(Reg Addr1 ?R)
             else
                Emitter, PredictRegForBranches(Addrr Reg ?R)
@@ -2132,7 +2134,7 @@ in
          end
       end
       meth PredictPermReg(Reg Cont ?R)
-         case Cont \= nil andthen {RegSet.member Reg Cont.1} then
+         case Cont \= nil andthen {BitArray.test Cont.1 Reg} then
             R = anyperm
          else
             Emitter, AllocateAnyTemp(Reg ?R)
@@ -2142,7 +2144,7 @@ in
       meth SaveRegisterMapping($)
          Emitter, FlushShortLivedTemps()
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#@LowestFreeY#
-         {RegSet.copy @LastAliveRS}#@HighestUsedG
+         {BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreRegisterMapping(RegisterMapping)
          OldPermanents#OldUsedY#OldLowestFreeY#
@@ -2162,7 +2164,7 @@ in
          Emitter, FlushShortLivedTemps()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#
-         @LowestFreeX#@LowestFreeY#{RegSet.copy @LastAliveRS}#@HighestUsedG
+         @LowestFreeX#@LowestFreeY#{BitArray.clone @LastAliveRS}#@HighestUsedG
       end
       meth RestoreAllRegisterMappings(RegisterMapping)
          OldTemporaries#OldUsedX#OldPermanents#OldUsedY#

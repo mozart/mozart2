@@ -8,7 +8,6 @@ import
 export
    CodeGen
 body
-   \insert RegSet
    \insert CodeEmitter
    \insert CodeStore
 in

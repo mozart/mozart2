@@ -90,12 +90,19 @@ class CodeStore from Emitter
    end
 
    meth makeRegSet($)
-      {RegSet.new @minReg @NextReg - 1}
+      L = @minReg
+      H = @NextReg - 1
+   in
+      case L =< H then
+         {BitArray.new L H}
+      else
+         {BitArray.new L L}
+      end
    end
    meth enterVs(Vs RS)
       case Vs of V|Vr then Reg in
          {V reg(?Reg)}
-         case Reg >= @minReg then {RegSet.adjoin RS Reg}
+         case Reg >= @minReg then {BitArray.set RS Reg}
          else skip
          end
          CodeStore, enterVs(Vr RS)
@@ -129,7 +136,7 @@ class CodeStore from Emitter
       Saved0 = @Saved
       OldMinReg|SavedRest = Saved0
    in
-      EmptyRS <- {RegSet.new @minReg @NextReg - 1}
+      EmptyRS <- CodeStore, makeRegSet($)
       CodeStore, ComputeOccs(StartAddr _)
       CodeStore, AddRegOccs(StartAddr @EmptyRS)
       {Dictionary.removeAll @sharedDone}
@@ -159,13 +166,13 @@ class CodeStore from Emitter
       elseof VInstr then
          RS = VInstr.1
          case VInstr.(Continuations.{Label VInstr}) of nil then
-            RS = {RegSet.new @minReg @NextReg - 1}
+            CodeStore, makeRegSet(?RS)
          elseof Cont then
-            RS = {RegSet.copy CodeStore, ComputeOccs(Cont $)}
+            RS = {BitArray.clone CodeStore, ComputeOccs(Cont $)}
          end
          case VInstr of vStepPoint(_ Addr _ _ _) then RS1 in
             CodeStore, ComputeOccs(Addr ?RS1)
-            {RegSet.union RS RS1}
+            {BitArray.'or' RS RS1}
          [] vMakePermanent(_ Regs _) then
             CodeStore, RegOccs(Regs RS)
          [] vClear(_ Regs _) then
@@ -221,39 +228,41 @@ class CodeStore from Emitter
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, RegOcc(Reg RS2)
-            InitsRS = {RegSet.copy RS1}
-            {RegSet.union InitsRS RS2}
-            {RegSet.intersect InitsRS RS}
-            TempRS = {RegSet.copy RS1}
-            {RegSet.intersect TempRS RS2}
-            {RegSet.union InitsRS TempRS}
-            {RegSet.union RS RS1}
-            {RegSet.union RS RS2}
+            InitsRS = {BitArray.clone RS1}
+            {BitArray.'or' InitsRS RS2}
+            {BitArray.and InitsRS RS}
+            TempRS = {BitArray.clone RS1}
+            {BitArray.and TempRS RS2}
+            {BitArray.'or' InitsRS TempRS}
+            {BitArray.'or' RS RS1}
+            {BitArray.'or' RS RS2}
          [] vPopEx(_ _ _) then
             skip
          [] vCreateCond(_ VClauses Addr _ _ AllocatesRS InitsRS) then RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
-            InitsRS = {RegSet.copy RS0}
+            InitsRS = {BitArray.clone RS0}
             {ForAll VClauses
              proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
                 CodeStore, ComputeOccs(Addr1 ?RS1)
                 CodeStore, ComputeOccs(Addr2 ?RS2)
-                {RegSet.union InitsRS RS1}
-                {RegSet.union InitsRS RS2}
-                InitsRS0 = {RegSet.copy RS1}
-                {RegSet.intersect InitsRS0 RS2}
+                {BitArray.'or' InitsRS RS1}
+                {BitArray.'or' InitsRS RS2}
+                InitsRS0 = {BitArray.clone RS1}
+                {BitArray.and InitsRS0 RS2}
              end}
-            {RegSet.intersect InitsRS RS}
+            {BitArray.and InitsRS RS}
             case AllocatesRS of nil then skip
             else
-               {ForAll {RegSet.toList AllocatesRS}
-                proc {$ Reg} {RegSet.adjoin InitsRS Reg} end}
+               % We can't use BitArray.'or' here because the bounds of
+               % AllocatesRS may be a strict subset of those of InitsRS:
+               {ForAll {BitArray.toList AllocatesRS}
+                proc {$ Reg} {BitArray.set InitsRS Reg} end}
             end
-            {RegSet.union RS RS0}
+            {BitArray.'or' RS RS0}
             {ForAll VClauses
              proc {$ _#Addr1#Addr2}
-                {RegSet.union RS CodeStore, GetOccs(Addr1 $)}
-                {RegSet.union RS CodeStore, GetOccs(Addr2 $)}
+                {BitArray.'or' RS CodeStore, GetOccs(Addr1 $)}
+                {BitArray.'or' RS CodeStore, GetOccs(Addr2 $)}
              end}
          [] vCreateOr(_ VClauses _ _ AllocatesRS InitsRS) then
             CodeStore, ComputeDisjunctionOccs(VClauses AllocatesRS
@@ -275,57 +284,57 @@ class CodeStore from Emitter
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
-            InitsRS = {RegSet.copy RS1}
-            {RegSet.union InitsRS RS2}
-            {RegSet.union InitsRS RS3}
-            {RegSet.intersect InitsRS RS}
+            InitsRS = {BitArray.clone RS1}
+            {BitArray.'or' InitsRS RS2}
+            {BitArray.'or' InitsRS RS3}
+            {BitArray.and InitsRS RS}
             case AllocatesRS of nil then skip
             else
-               {ForAll {RegSet.toList AllocatesRS}
-                proc {$ Reg} {RegSet.adjoin InitsRS Reg} end}
+               {ForAll {BitArray.toList AllocatesRS}
+                proc {$ Reg} {BitArray.set InitsRS Reg} end}
             end
-            {RegSet.union RS RS1}
-            {RegSet.union RS RS2}
-            {RegSet.union RS RS3}
+            {BitArray.'or' RS RS1}
+            {BitArray.'or' RS RS2}
+            {BitArray.'or' RS RS3}
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then
             RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
-            InitsRS = {RegSet.copy RS1}
-            {RegSet.union InitsRS RS2}
-            {RegSet.union InitsRS RS3}
-            {RegSet.intersect InitsRS RS}
+            InitsRS = {BitArray.clone RS1}
+            {BitArray.'or' InitsRS RS2}
+            {BitArray.'or' InitsRS RS3}
+            {BitArray.and InitsRS RS}
             CodeStore, RegOcc(Reg RS)
-            {RegSet.union RS RS1}
-            {RegSet.union RS RS2}
-            {RegSet.union RS RS3}
+            {BitArray.'or' RS RS1}
+            {BitArray.'or' RS RS2}
+            {BitArray.'or' RS RS3}
          [] vMatch(_ Reg Addr VHashTableEntries _ _ InitsRS) then
             RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
-            InitsRS = {RegSet.copy RS0}
+            InitsRS = {BitArray.clone RS0}
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
                 case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
-                {RegSet.union InitsRS CodeStore, ComputeOccs(Addr $)}
+                {BitArray.'or' InitsRS CodeStore, ComputeOccs(Addr $)}
              end}
-            {RegSet.intersect InitsRS RS}
+            {BitArray.and InitsRS RS}
             CodeStore, RegOcc(Reg RS)
-            {RegSet.union RS RS0}
+            {BitArray.'or' RS RS0}
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
                 case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
-                {RegSet.union RS CodeStore, GetOccs(Addr $)}
+                {BitArray.'or' RS CodeStore, GetOccs(Addr $)}
              end}
          [] vThread(_ Addr _ Cont InitsRS) then RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
-            InitsRS = {RegSet.copy RS0}
-            {RegSet.intersect InitsRS RS}
-            {RegSet.union RS RS0}
+            InitsRS = {BitArray.clone RS0}
+            {BitArray.and InitsRS RS}
+            {BitArray.'or' RS RS0}
          [] vLockThread(_ Reg _ _ _) then
             CodeStore, RegOcc(Reg RS)
          [] vLockEnd(_ _ _ _) then
@@ -334,37 +343,37 @@ class CodeStore from Emitter
       end
    end
    meth ComputeDisjunctionOccs(VClauses AllocatesRS ?InitsRS RS)
-      InitsRS = {RegSet.copy @EmptyRS}
+      InitsRS = {BitArray.clone @EmptyRS}
       {ForAll VClauses
        proc {$ InitsRS0#Addr1#Addr2} RS1 RS2 in
           CodeStore, ComputeOccs(Addr1 ?RS1)
           CodeStore, ComputeOccs(Addr2 ?RS2)
-          {RegSet.union InitsRS RS1}
-          {RegSet.union InitsRS RS2}
-          InitsRS0 = {RegSet.copy RS1}
-          {RegSet.intersect InitsRS0 RS2}
+          {BitArray.'or' InitsRS RS1}
+          {BitArray.'or' InitsRS RS2}
+          InitsRS0 = {BitArray.clone RS1}
+          {BitArray.and InitsRS0 RS2}
        end}
-      {RegSet.intersect InitsRS RS}
+      {BitArray.and InitsRS RS}
       case AllocatesRS of nil then skip
       else
-         {ForAll {RegSet.toList AllocatesRS}
-          proc {$ Reg} {RegSet.adjoin InitsRS Reg} end}
+         {ForAll {BitArray.toList AllocatesRS}
+          proc {$ Reg} {BitArray.set InitsRS Reg} end}
       end
       {ForAll VClauses
        proc {$ _#Addr1#Addr2}
-          {RegSet.union RS CodeStore, GetOccs(Addr1 $)}
-          {RegSet.union RS CodeStore, GetOccs(Addr2 $)}
+          {BitArray.'or' RS CodeStore, GetOccs(Addr1 $)}
+          {BitArray.'or' RS CodeStore, GetOccs(Addr2 $)}
        end}
    end
    meth RegOcc(Reg RS)
       case Reg < @minReg then skip   % it's a global
-      else {RegSet.adjoin RS Reg}
+      else {BitArray.set RS Reg}
       end
    end
    meth RegOccs(Regs RS)
       case Regs of Reg|Regr then
          case Reg < @minReg then skip   % it's a global
-         else {RegSet.adjoin RS Reg}
+         else {BitArray.set RS Reg}
          end
          CodeStore, RegOccs(Regr RS)
       [] nil then skip
@@ -384,7 +393,7 @@ class CodeStore from Emitter
    meth AddRegOccs(Addr AddRS)
       case Addr of nil then skip
       else VInstr AddRS2 in
-         {RegSet.union Addr.1 AddRS}
+         {BitArray.'or' Addr.1 AddRS}
          VInstr = Addr
          case Continuations.{Label VInstr} of ~1 then
             AddRS2 = AddRS
@@ -425,8 +434,8 @@ class CodeStore from Emitter
                CodeStore, AddRegOccs(Addr AddRS2)
             end
          [] vExHandler(_ Addr1 _ Addr2 _ _ _) then AddRS3 in
-            AddRS3 = {RegSet.copy AddRS2}
-            {RegSet.union AddRS3 CodeStore, GetOccs(Addr2 $)}
+            AddRS3 = {BitArray.clone AddRS2}
+            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
             CodeStore, AddRegOccs(Addr1 AddRS3)
             CodeStore, AddRegOccs(Addr2 AddRS2)
          [] vPopEx(_ _ _) then skip
@@ -444,9 +453,9 @@ class CodeStore from Emitter
          [] vWait(_ _) then skip
          [] vWaitTop(_ _) then skip
          [] vShallowGuard(_ Addr1 Addr2 Addr3 _ _ _ _) then AddRS3 in
-            AddRS3 = {RegSet.copy AddRS2}
-            {RegSet.union AddRS3 CodeStore, GetOccs(Addr2 $)}
-            {RegSet.union AddRS3 CodeStore, GetOccs(Addr3 $)}
+            AddRS3 = {BitArray.clone AddRS2}
+            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
+            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr3 $)}
             CodeStore, AddRegOccs(Addr1 AddRS3)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
@@ -473,11 +482,11 @@ class CodeStore from Emitter
       end
    end
    meth AddRegOccsClauses(VClauses AddRS AddRS2) AddRS3 in
-      AddRS3 = {RegSet.copy AddRS}
+      AddRS3 = {BitArray.clone AddRS}
       {ForAll VClauses
        proc {$ _#_#Addr2}
           CodeStore, AddRegOccs(Addr2 AddRS2)
-          {RegSet.union AddRS3 CodeStore, GetOccs(Addr2 $)}
+          {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
        end}
       {FoldR VClauses
        fun {$ _#Addr1#_ AddRS}

@@ -24,8 +24,7 @@ functor $
 
 import
    Search.{SearchAll = 'SearchAll'}
-   System.{Show = 'Show'
-           apply}
+   System.{show apply}
 
 export
    Return
@@ -202,7 +201,7 @@ body
                                             X=Y
                                          end
                                          {Wait {GB X}}
-                                         {Show a}
+                                         {System.show a}
                                          case {IsFree X} then
                                             {P X}
                                          else skip
@@ -277,7 +276,7 @@ body
                           {FD.watch.size X 10 true
                            und hier kommen einfach zu viele argumente}
                           fail
-                       catch X then {Show X} end
+                       catch X then {System.show X} end
 
                     end
                     keys:[fixedBug arity application])

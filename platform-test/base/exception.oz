@@ -23,7 +23,7 @@
 functor $ prop once
 
 import
-   System.{Show = 'Show'}
+   System
 
 export Return
 
@@ -42,7 +42,7 @@ body
                               meth c
                                  lock
                                     {Delay 1000}
-                                    {Show '*** here i am'}
+                                    {System.show '*** here i am'}
                                  end
                               end
                            end

@@ -3,6 +3,7 @@ functor $ prop once
 import
    Property
    Open
+   System
 
 export
    Return
@@ -136,13 +137,13 @@ body
 
    % WITH2:     RAISE/WITH/END  (?debug ?toplevel)
    fun {WITH2 Debug TopLevel}
-      try (raise t(debug:d) with foo end)
+      try (raise t(debug:d(garg:_)) with foo end)
       catch F then
          case Debug then
-            case F of t(debug:d(info:foo loc:_ stack:_))
+            case F of t(debug:d(info:foo loc:_ stack:_ garg:_))
             then true else false end
          else
-            case F of t(debug:d)
+            case F of t(debug:d(garg:_))
             then true else false end
          end
       end

@@ -88,7 +88,7 @@ define
          relManDict    %% Relation Manager Dictionary
          curRelMan     %% Current Relation Manager
          curDefRel     %% Current Default Relation
-         stopPVar      %% Private Stop Variable (shields stop reactions from beeing interrupted.)
+         stopPVar      %% Private Stop Variable (shields stop reactions from beeing broken.)
          stopOVar      %% Open Stop Variable
          opDict        %% Option Dictionary
          colDict       %% Color Dictionary
@@ -97,23 +97,28 @@ define
          treeNodes     %% TreeWidget Node Container (used to fill (norm|rel)NodesDict)
          normNodesDict %% Normal Mode Nodes
          relNodesDict  %% Relation Mode Nodes
+         relGlobal     %% Global Relation Mode
+         globalRelMan  %% Global Relation Manager
          isAtomic      %% Atomic Test Function (must not be changed in Oz)
       meth create(Options Parent DspWidth DspHeight)
          StoreListener, create
          GraphicSupport, create(Parent DspWidth DspHeight)
-         @curY       = 0
-         @maxX       = 0
-         @maxPtr     = 0
-         @nodes      = {Dictionary.new}
-         @relManDict = {Dictionary.new}
-         @lines      = {Dictionary.new}
+         @curY         = 0
+         @maxX         = 0
+         @maxPtr       = 0
+         @relGlobal    = false
+         @globalRelMan = nil
+         @nodes        = {Dictionary.new}
+         @relManDict   = {Dictionary.new}
+         @lines        = {Dictionary.new}
          TreeWidget, setOptions(Options)
          GraphicSupport, initButtonHandler
       end
       meth resetAll
-         curY   <- 0
-         maxX   <- 0
-         maxPtr <- 0
+         curY         <- 0
+         maxX         <- 0
+         maxPtr       <- 0
+         globalRelMan <- nil
          {Dictionary.removeAll @nodes}
          {Dictionary.removeAll @relManDict}
          {Dictionary.removeAll @lines}
@@ -239,15 +244,19 @@ define
       meth getRootIndex(I $)
          if @dMode
          then
-            RelManDict = @relManDict
-            RelMan     = {Dictionary.condGet RelManDict I nil}
-         in
-            curRelMan <- case RelMan of nil then
-                            NewRM = {New RelationManager create(@curDefRel)}
-                         in
-                            {Dictionary.put RelManDict I NewRM} NewRM
-                         else RelMan
-                         end
+            if @relGlobal
+            then curRelMan <- @globalRelMan
+            else
+               RelManDict = @relManDict
+               RelMan     = {Dictionary.condGet RelManDict I nil}
+            in
+               curRelMan <- case RelMan of nil then
+                               NewRM = {New RelationManager create(@curDefRel)}
+                            in
+                               {Dictionary.put RelManDict I NewRM} NewRM
+                            else RelMan
+                            end
+            end
          end
          I
       end
@@ -290,10 +299,18 @@ define
          GraphicSupport, enableStop
          if @dMode
          then
-            RelMan = {New RelationManager create(@curDefRel)}
-         in
-            curRelMan <- RelMan
-            {Dictionary.put @relManDict MaxPtr RelMan}
+            if @relGlobal
+            then
+               curRelMan <- case @globalRelMan
+                            of nil       then {New RelationManager create(@curDefRel)}
+                            [] CurRelMan then CurRelMan
+                            end
+            else
+               RelMan = {New RelationManager create(@curDefRel)}
+            in
+               curRelMan <- RelMan
+               {Dictionary.put @relManDict MaxPtr RelMan}
+            end
          end
          stopPVar <- StopVar
          stopOVar <- StopVar
@@ -409,7 +426,7 @@ define
          in
             if {Entry isActive($)}
             then {New @treeNodes.variableRef create(Entry Parent Index self (Depth + 1))}
-            else {New @treeNodes.pipetupleGrS
+            else {New @treeNodes.pipeTupleGrS
                   create(Entry Val Parent Index RIndex self Depth Width Stop)}
             end
          else TreeWidget, treeCreate(Val Parent Index (Depth + 1) $)
@@ -427,7 +444,7 @@ define
          @treeNodes.variableRef
       end
       meth listNode($)
-         @treeNodes.pipetupleGr
+         @treeNodes.pipeTupleGr
       end
       meth getFSVHelperNode($)
          @treeNodes.fshelper

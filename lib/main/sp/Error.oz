@@ -115,7 +115,13 @@ local
             {PosToVS F L C unit}
          [] pos(F L C _ _ _) then
             {PosToVS F L C unit}
-         [] posNoDebug(F L C) then
+         [] fineStep(F L C) then
+            {PosToVS F L C unit}
+         [] fineStep(F L C _ _ _) then
+            {PosToVS F L C unit}
+         [] coarseStep(F L C) then
+            {PosToVS F L C unit}
+         [] coarseStep(F L C _ _ _) then
             {PosToVS F L C unit}
          [] list(Xs Sep) then
             {AlmostVSToVS {ListToVS Xs Sep}}
@@ -233,8 +239,6 @@ local
           [] pos(F L C) then
              {Out {StarLine 'in ' # {PosToVS F L C unit}}}
           [] pos(F L C _ _ _) then
-             {Out {StarLine 'in ' # {PosToVS F L C unit}}}
-          [] posNoDebug(F L C) then
              {Out {StarLine 'in ' # {PosToVS F L C unit}}}
           [] hint then
              {Out {StarLine ''}}
@@ -525,8 +529,11 @@ in
    %%         )
    %%  <line> ::= hint(l:AVS m:AVS)  % both fields optional
    %%             pos(A I I)
-   %%             pos(A I I _ _ _)
-   %%             posNoDebug(A I I)
+   %%             pos(A I I A I I)
+   %%             fineStep(A I I)
+   %%             fineStep(A I I A I I)
+   %%             coarseStep(A I I)
+   %%             coarseStep(A I I A I I)
    %%             line(AVS)          % full line
    %%             unit               % empty line
    %%

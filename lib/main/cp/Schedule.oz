@@ -35,16 +35,7 @@ require
              formatOrigin:   FormatOrigin)
 
 import
-   SCP(disjoint_card:      SchedDisjointCard
-       cpIterate:          SchedCpIterate
-       taskIntervals:      SchedTaskIntervals
-       disjunctive:        SchedDisjunctive
-       cpIterateCap:       SchedCpIterateCap
-       cumulativeTI:       SchedCumulativeTI
-       cpIterateCapUp:     SchedCpIterateCapUp
-       taskIntervalsProof: SchedTaskIntervalsProof
-       firstsLasts:        SchedFirstsLasts)
-   at 'x-oz://boot/Schedule'
+   SCP at 'x-oz://boot/Schedule'
 
    FD(bool
       is
@@ -83,6 +74,16 @@ define
    {Wait FD.bool}
 
    %% Propagators
+   SchedDisjointCard =       SCP.disjoint_card
+   SchedCpIterate =          SCP.cpIterate
+   SchedTaskIntervals =      SCP.taskIntervals
+   SchedDisjunctive =        SCP.disjunctive
+   SchedCpIterateCap =       SCP.cpIterateCap
+   SchedCumulativeTI =       SCP.cumulativeTI
+   SchedCpIterateCapUp =     SCP.cpIterateCapUp
+   SchedTaskIntervalsProof = SCP.taskIntervalsProof
+   SchedFirstsLasts =        SCP.firstsLasts
+
 
    proc {Cumulative Tasks Start Dur Use Capacities}
       {SchedCpIterateCap Tasks Start Dur Use Capacities 0}

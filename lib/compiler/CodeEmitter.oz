@@ -78,7 +78,7 @@ in
    class Emitter
       attr
          Temporaries Permanents
-         LastAliveRS ShortLivedTemps
+         LastAliveRS ShortLivedRegs
          UsedX LowestFreeX HighestEverX
          UsedY LowestFreeY HighestEverY
          GRegRef HighestUsedG
@@ -104,7 +104,7 @@ in
          CodeStore, makeRegSet(?RS)
          LastAliveRS <- RS
          {ForAll FormalRegs proc {$ Reg} {BitArray.set RS Reg} end}
-         ShortLivedTemps <- nil
+         ShortLivedRegs <- nil
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
          HighestEverX <- ~1
@@ -220,7 +220,7 @@ in
                end
             end
          elseof VInstr then
-            Emitter, FlushShortLivedTemps()
+            Emitter, FlushShortLivedRegs()
             Emitter, LetDie(VInstr.1)
             case VInstr.(Continuations.{Label VInstr}) of nil then
                Emitter, EmitVInstr(VInstr)
@@ -236,11 +236,15 @@ in
             end
          end
       end
-      meth FlushShortLivedTemps()
-         case @ShortLivedTemps of I|Ir then
-            Emitter, FreeX(I)
-            ShortLivedTemps <- Ir
-            Emitter, FlushShortLivedTemps()
+      meth FlushShortLivedRegs()
+         case @ShortLivedRegs of R|Rr then
+            case R of x(I) then
+               Emitter, FreeX(I)
+            [] y(I) then
+               Emitter, FreeY(I)
+            end
+            ShortLivedRegs <- Rr
+            Emitter, FlushShortLivedRegs()
          [] nil then skip
          end
       end
@@ -277,9 +281,11 @@ in
             Emitter, EmitAddr(Addr)
             Emitter, PopContLabel(OldContLabels)
             Emitter, DebugExit(Coord Kind)
-         [] vMakePermanent(_ Regs _) then S D in
+         [] vMakePermanent(_ Regs _) then S D TempX1 TempX2 in
             S = self.staticVarnamesSwitch
             D = self.dynamicVarnamesSwitch
+            Emitter, AllocateShortLivedTemp(?TempX2)
+            Emitter, AllocateShortLivedTemp(?TempX1)
             {ForAll Regs
              proc {$ Reg}
                 if S then
@@ -300,13 +306,13 @@ in
                          Emitter, PredictTemp(Reg ?X1)
                          Emitter, Emit(createVariable(X1))
                       elseof Y then
-                         Emitter, AllocateShortLivedTemp(?X1)
+                         X1 = TempX1
                          Emitter, Emit(move(Y X1))
                       end
                    elseof X then
                       X1 = X
                    end
-                   Emitter, AllocateShortLivedTemp(?X2)
+                   X2 = TempX2
                    Emitter, Emit(putConstant(N X2))
                    Emitter, Emit(callBI('Value.nameVariable' [X1 X2]#nil))
                 end
@@ -395,10 +401,10 @@ in
                   Emitter, Emit(getNumber(Constant R))
                elseif {IsLiteral Constant} then
                   Emitter, Emit(getLiteral(Constant R))
-               else X in
-                  Emitter, AllocateShortLivedTemp(?X)
-                  Emitter, Emit(putConstant(Constant X))
-                  Emitter, Emit(unify(R X))
+               else R2 in
+                  Emitter, AllocateShortLivedReg(?R2)
+                  Emitter, Emit(putConstant(Constant R2))
+                  Emitter, Emit(unify(R R2))
                end
             end
          [] vEquateRecord(_ Literal RecordArity Reg VArgs Cont) then
@@ -1040,10 +1046,10 @@ in
              [] value(Reg) then
                 (Reg|Regs)#ArgInits
              [] record(Literal RecordArity VArgs) then
-                if {Dictionary.member @UsedX I - 1} then X in
-                   Emitter, AllocateShortLivedTemp(?X)
-                   Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
-                   (~I|Regs)#((I - 1)#move(X x(I - 1))|ArgInits)
+                if {Dictionary.member @UsedX I - 1} then R in
+                   Emitter, AllocateShortLivedReg(?R)
+                   Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
+                   (~I|Regs)#((I - 1)#move(R x(I - 1))|ArgInits)
                 else X in
                    Emitter, AllocateThisShortLivedTemp(I - 1 ?X)
                    Emitter, EmitRecordWrite(Literal RecordArity X VArgs)
@@ -1454,7 +1460,7 @@ in
                   IHd = setValue(R)|IInter
                end
             [] record(Literal RecordArity VArgs) then R in
-               Emitter, AllocateShortLivedTemp(?R)
+               Emitter, AllocateShortLivedReg(?R)
                Emitter, EmitRecordWrite(Literal RecordArity R VArgs)
                IHd = setValue(R)|IInter
             end
@@ -1480,10 +1486,10 @@ in
                   Emitter, Emit(unifyNumber(Constant))
                elseif {IsLiteral Constant} then
                   Emitter, Emit(unifyLiteral(Constant))
-               else X in
-                  Emitter, AllocateShortLivedTemp(?X)
-                  Emitter, Emit(putConstant(Constant X))
-                  Emitter, Emit(unifyValue(X))
+               else R in
+                  Emitter, AllocateShortLivedReg(?R)
+                  Emitter, Emit(putConstant(Constant R))
+                  Emitter, Emit(unifyValue(R))
                end
             [] value(Reg) then
                SHd = SInter
@@ -1498,7 +1504,7 @@ in
                   Emitter, Emit(unifyValue(R))
                end
             [] record(_ _ _) then R in
-               Emitter, AllocateShortLivedTemp(?R)
+               Emitter, AllocateShortLivedReg(?R)
                Emitter, Emit(unifyVariable(R))
                SHd = R#VArg|SInter
             end
@@ -1855,12 +1861,13 @@ in
          elseof X0 then X = X0
          end
       end
-      meth SpillTemporary($) I in
+      meth SpillTemporary(?I)
          I = @LowestFreeX
          if I >= {Property.get 'limits.bytecode.xregisters'} then
-            %--** which one should we take?
-            {Exception.raiseError compiler(internal spillTemporary)} unit
-         else I
+            {self.reporter
+             error(kind: 'code generation limitation'
+                   msg: 'expression too complex; registers exhausted')}
+            {Exception.raiseError compiler(internal spillTemporary)}
          end
       end
       meth AllocateThisTemp(I Reg ?X)
@@ -1873,6 +1880,14 @@ in
          end
          {Dictionary.put @Temporaries Reg X=x(I)}
          {Dictionary.put @UsedX I 1}
+      end
+      meth AllocateShortLivedReg(?R)
+         if @LowestFreeX >= {Property.get 'limits.bytecode.xregisters'} then
+            %% no more temporaries available
+            Emitter, AllocateShortLivedPerm(?R)
+         else
+            Emitter, AllocateShortLivedTemp(?R)
+         end
       end
       meth AllocateShortLivedTemp(?X) I in
          Emitter, SpillTemporary(?I)
@@ -1888,7 +1903,17 @@ in
          end
          {Dictionary.put @UsedX I 1}
          X = x(I)
-         ShortLivedTemps <- I|@ShortLivedTemps
+         ShortLivedRegs <- X|@ShortLivedRegs
+      end
+      meth AllocateShortLivedPerm(?Y) I in
+         I = @LowestFreeY
+         LowestFreeY <- {NextFreeIndex @UsedY I + 1}
+         if I > @HighestEverY then
+            HighestEverY <- I
+         end
+         {Dictionary.put @UsedY I 1}
+         Y = y(I)
+         ShortLivedRegs <- Y|@ShortLivedRegs
       end
       meth AllocateAndInitializeAnyTemp(Reg ?X)
          case Emitter, GetTemp(Reg $) of none then
@@ -2184,7 +2209,7 @@ in
       end
 
       meth SaveRegisterMapping($)
-         Emitter, FlushShortLivedTemps()
+         Emitter, FlushShortLivedRegs()
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#@LowestFreeY#
          {BitArray.clone @LastAliveRS}#@HighestUsedG
       end
@@ -2203,7 +2228,7 @@ in
          Emitter, KillAllTemporaries()
       end
       meth SaveAllRegisterMappings($)
-         Emitter, FlushShortLivedTemps()
+         Emitter, FlushShortLivedRegs()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#
          @LowestFreeX#@LowestFreeY#{BitArray.clone @LastAliveRS}#@HighestUsedG
@@ -2228,7 +2253,7 @@ in
          UsedY <- OldUsedY
          LowestFreeX <- OldLowestFreeX
          LowestFreeY <- OldLowestFreeY
-         ShortLivedTemps <- nil
+         ShortLivedRegs <- nil
       end
       meth KillAllTemporaries() D = @Temporaries in
          {ForAll {Dictionary.keys D}
@@ -2239,7 +2264,7 @@ in
           end}
          {Dictionary.removeAll @UsedX}
          LowestFreeX <- 0
-         ShortLivedTemps <- nil
+         ShortLivedRegs <- nil
       end
 
       %%

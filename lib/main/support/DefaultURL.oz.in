@@ -60,7 +60,7 @@ prepare
                    'Timer' 'Perdio'
 \endif
                   ]
-      NatLibs   = ['Space']
+      NatLibs   = ['Space' 'OsTime']
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System'
 \ifdef DENYS_EVENTS

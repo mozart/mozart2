@@ -8,9 +8,9 @@ Query             = Phrase
                   | Directive
                   | fDeclare(Phrase Phrase Coordinates).
 Directive         = dirSwitch([Switch])
-                  | dirLocalSwitches
                   | dirPushSwitches
-                  | dirPopSwitches.
+                  | dirPopSwitches
+                  | dirLocalSwitches.
 Switch            = on(SwitchName Coordinates)
                   | off(SwitchName Coordinates).
 SwitchName        = atom.

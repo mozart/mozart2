@@ -86,6 +86,7 @@ local
    %%
    %%  'tcl-interface.oz';
    ProtoBrowserWindow
+   TermTag
    ProtoMessageWindow
    ProtoHelpWindow
 

@@ -162,15 +162,15 @@ define
    FdpImpl = FDP.impl
    FdpNega = FDP.nega
    FdpEqui = FDP.equi
-   FdpIntR = FDP.intR
-   FdpCard = FDP.card
+   FdpIntR = FDP.'reified.int'
+   FdpCard = FDP.'reified.card'
    FdpExactly = FDP.exactly
    FdpAtLeast = FDP.atLeast
    FdpAtMost = FDP.atMost
    FdpElement = FDP.element
    FdpLessEqOff = FDP.lessEqOff
-   FdpMinimum = FDP.minimum
-   FdpMaximum = FDP.maximum
+   FdpMinimum = FDP.min
+   FdpMaximum = FDP.max
 
    FdpDistinct = FDP.distinct
    FdpDistinct2 = FDP.distinct2
@@ -183,16 +183,16 @@ define
 
    FdpSum = FDP.sum
    FdpSumC = FDP.sumC
-   FdpDSum = FDP.dsum
-   FdpDSumC = FDP.dsumC
+   FdpDSum = FDP.sumD
+   FdpDSumC = FDP.sumCD
    FdpSumAC = FDP.sumAC
    FdpSumCN = FDP.sumCN
-   FdpSumR = FDP.sumR
-   FdpSumCR = FDP.sumCR
-   FdpSumCNR = FDP.sumCNR
-   FdpSumCD = FDP.sumCD
-   FdpSumCCD = FDP.sumCCD
-   FdpSumCNCD = FDP.sumCNCD
+   FdpSumR = FDP.'reified.sum'
+   FdpSumCR = FDP.'reified.sumC'
+   FdpSumCNR = FDP.'reified.sumCN'
+   FdpSumCD = FDP.sum_CD
+   FdpSumCCD = FDP.sumC_CD
+   FdpSumCNCD = FDP.sumCN_CD
 
    FddSelVarMin     = FDP.selVarMin
    FddSelVarMax     = FDP.selVarMax
@@ -205,7 +205,7 @@ define
    %%
 
    local
-      FdPutList = FDB.tellConstraint
+      FdPutList = FDB.'int'
 
       proc {ListDom Xs Dom}
          case Xs of nil then skip
@@ -227,8 +227,8 @@ define
       FdSup = {FDB.getLimits _}
 
       FdInt  = FdPutList
-      FdBool = FDB.tellBoolConstraint
-      FdDecl = FDB.tellDeclConstraint
+      FdBool = FDB.'bool'
+      FdDecl = FDB.'decl'
 
       proc {FdDom Dom Vec}
          case {VectorToType Vec}
@@ -253,7 +253,7 @@ define
       end
    end
 
-   FdIs = FDB.is
+   FdIs = FDB.'is'
 
 
    %%
@@ -261,14 +261,14 @@ define
    %%
 
    local
-      GetDomCompact = FDB.getDom
+      GetDomCompact = FDB.'reflect.dom'
    in
-      FdReflect = reflect(min:           FDB.getMin
-                          mid:           FDB.getMid
-                          max:           FDB.getMax
-                          nextLarger:    FDB.getNextLarger
-                          nextSmaller:   FDB.getNextSmaller
-                          size:          FDB.getCard
+      FdReflect = reflect(min:           FDB.'reflect.min'
+                          mid:           FDB.'reflect.mid'
+                          max:           FDB.'reflect.max'
+                          nextLarger:    FDB.'reflect.nextLarger'
+                          nextSmaller:   FDB.'reflect.nextSmaller'
+                          size:          FDB.'reflect.size'
                           nbSusps:       System.nbSusps
                           domList:       fun {$ X}
                                             {Expand {GetDomCompact X}}
@@ -707,9 +707,9 @@ define
    %% Watching variables
    %%
 
-   FdWatch = watch(size: FDB.watchSize
-                   min:  FDB.watchMin
-                   max:  FDB.watchMax)
+   FdWatch = watch(size: FDB.'watch.size'
+                   min:  FDB.'watch.min'
+                   max:  FDB.'watch.max')
 
 
    %%

@@ -34,15 +34,15 @@ require
              formatOrigin:   FormatOrigin)
 
 import
-   SCP(disjoint_card:      Disjoint
-       cpIterate:          SchedCpIterate
-       taskIntervals:      SchedTaskIntervals
-       disjunctive:        SchedDisjunctive
-       cpIterateCap:       SchedCpIterateCap
-       cumulativeTI:       SchedCumulativeTI
-       cpIterateCapUp:     SchedCpIterateCapUp
-       taskIntervalsProof: SchedTaskIntervalsProof
-       firstsLasts:        SchedFirstsLasts)
+   SCP(disjoint:                 Disjoint
+       serialized:               SchedCpIterate
+       taskIntervals:            SchedTaskIntervals
+       serializedDisj:           SchedDisjunctive
+       'cummulative{,EF}':       SchedCpIterateCap
+       cumulativeTI:             SchedCumulativeTI
+       cummulativeUp:            SchedCpIterateCapUp
+       'TaskIntervalsDist{P,O}': SchedTaskIntervalsProof
+       firstsLastsDist:          SchedFirstsLasts)
    at 'x-oz://boot/Schedule'
 
    FD(bool
@@ -150,7 +150,6 @@ define
 
    %% Force linking of finite domain module
    {Wait FD.bool}
-
 
    %% Serialization propagators for unary resources
    local
@@ -441,7 +440,6 @@ define
       LastsDist          = {NewDist SchedFirstsLasts EnumFL 2}
    end
 
-
    %%
    %% Register error formatter
    %%
@@ -463,5 +461,4 @@ define
                 items: [line(oz(E))])
        end
     end}
-
 end

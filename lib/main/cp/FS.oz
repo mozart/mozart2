@@ -88,31 +88,31 @@ export
 define
    FSIsIncl        = FSP.include
    FSIsExcl        = FSP.exclude
-   FSMatch         = FSP.match
-   FSMinN          = FSP.minN
-   FSMaxN          = FSP.maxN
-   FSSeq           = FSP.seq
+   FSMatch         = FSP.'ini.match'
+   FSMinN          = FSP.'int.minN'
+   FSMaxN          = FSP.'int.maxN'
+   FSSeq           = FSP.'int.seq'
    FSIsIn          = FSP.isIn
 
-   FSIsInReif      = FSP.isInR
-   FSEqualReif     = FSP.equalR
+   FSIsInReif      = FSP.'reified.isIn'
+   FSEqualReif     = FSP.'reified.equal'
 
-   FSSetValue      = FSB.setValue
-   FSSet           = FSB.set
+   FSSetValue      = FSB.'value.make'
+   FSSet           = FSB.'var.bounds'
    FSDisjoint      = FSP.disjoint
    FSDistinct      = FSP.distinct
    FSDistinctWith  = fun {$ S1} proc {$ S2} {FSDistinct S1 S2} end end
    FSUnion         = FSP.union
-   FSIntersect     = FSP.intersection
+   FSIntersect     = FSP.intersect
    FSSubset        = FSP.subsume
    FSDiff          = FSP.diff
-   FSMin           = FSP.min
-   FSMax           = FSP.max
-   FSConvex        = FSP.convex
+   FSMin           = FSP.'int.min'
+   FSMax           = FSP.'int.max'
+   FSConvex        = FSP.'int.convex'
 
-   FSisVar         = FSB.isVarB
-   FSisValue       = FSB.isValueB
-   FSvalueToString = FSB.valueToString
+   FSisVar         = FSB.'var.is'
+   FSisValue       = FSB.'value.is'
+   FSvalueToString = FSB.'value.toString'
 
    %%
    %% Distribution
@@ -382,21 +382,21 @@ define
    %%
 
    FSCard = FSP.card
-   FSCardRange     = FSB.cardRange
+   FSCardRange     = FSB.'cardRange'
 
-   FSGetUnknown    = FSB.getUnknown
-   FSGetGlb        = FSB.getGlb
-   FSGetLub        = FSB.getLub
+   FSGetUnknown    = FSB.'reflect.unknown'
+   FSGetGlb        = FSB.'reflect.lowerBound'
+   FSGetLub        = FSB.'reflect.upperBound'
 
-   FSGetCard       = FSB.getCard
+   FSGetCard       = FSB.'reflect.card'
 
-   FSGetNumOfGlb     = FSB.getNumOfKnownIn
+   FSGetNumOfGlb     = FSB.'reflect.cardOf.lowerBound'
    FSGetNumOfLub     = fun {$ S}
                           FSSup - FSInf + 1 - {FSB.getNumOfKnownNotIn S}
                        end
-   FSGetNumOfUnknown = FSB.getNumOfUnknown
+   FSGetNumOfUnknown = FSB.'reflect.cardOf.unknown'
 
-   FSSup           = {FSB.sup}
+   FSSup           = {FSB.'sup'}
    FSInf           = 0
    FSUniversalRefl = [0#FSSup]
    FSUniversal     = {FSSetValue FSUniversalRefl}
@@ -408,9 +408,9 @@ define
    end
 
    proc {FSUnionN Vs U}
-      {FSP.unionN Vs U}
       {FD.sum {Map {VectorToList Vs} fun {$ V} {FSCard V} end}
        '>=:' {FSCard U}}
+      {FSP.unionN Vs U}
    end
 
    FSDisjointN = FSP.disjointN
@@ -597,13 +597,13 @@ define
                              = {Map WList fun {$ E} {FSIsInReif E S} end}
                           end
                        include:
-                          FSP.includeR
+                          FSP.'reified.include'
                        bounds:
-                          FSP.bounds
+                          FSP.'reified.bounds'
                        boundsN:
-                          FSP.boundsN
+                          FSP.'reified.boundsN'
                        partition:
-                          FSP.partitionReified
+                          FSP.'reified.partition'
                        equal:
                           FSEqualReif)
 

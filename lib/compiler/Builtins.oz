@@ -545,14 +545,14 @@ local
                                  det: [det det]
                                  destroysArguments: true)
 
-         'Space.inject': builtin(types: [space 'unary procedure']
+         'Space.inject': builtin(types: [space 'procedure/1']
                                  det: [det det]
                                  destroysArguments: true)
 
          'Space.merge': builtin(types: [space value]
                                 det: [det any])
 
-         'Space.new': builtin(types: ['unary procedure' space]
+         'Space.new': builtin(types: ['procedure/1' space]
                               det: [det any(det)]
                               destroysArguments: true)
 
@@ -797,10 +797,10 @@ local
          'send': builtin(types: [record 'class' 'object']
                          det: [det det det])
 
-         'setDefaultExceptionHandler': builtin(types: ['unary procedure']
+         'setDefaultExceptionHandler': builtin(types: ['procedure/1']
                                                det: [det])
 
-         'setMethApplHdl': builtin(types: ['binary procedure']
+         'setMethApplHdl': builtin(types: ['procedure/2']
                                    det: [det])
 
          'setSelf': builtin(types: ['object']

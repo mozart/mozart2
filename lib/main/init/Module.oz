@@ -53,15 +53,11 @@ prepare
       skip
    end
 
-   fun {DefaultTypeCheckProcedure _ _}
-      true
-   end
-
    class UnsitedBaseManager
       prop locking
       feat ModuleMap TypeCheckProc
 
-      meth init(TypeChecker <= DefaultTypeCheckProcedure)
+      meth init(TypeChecker <= unit)
          self.ModuleMap = {Dictionary.new}
          self.TypeCheckProc = TypeChecker
       end
@@ -85,23 +81,31 @@ prepare
                  end}}
             end
             Entry = {Dictionary.get ModMap Key}
-            Module = {ByNeed
-                      fun {$}
-                         try
-                            case Entry of Module#ActualType then
-                               case ExpectedType of !NOTYPE then Module
-                               elsecase ActualType of !NOTYPE then Module
-                               elseif {self.TypeCheckProc ActualType ExpectedType}
-                               then Module
-                               else
-                                  raise
-                                     system(module(typeMismatch Key
-                                                   ActualType ExpectedType))
+            if self.TypeCheckProc==unit then
+               %% avoid the type checking "by need" which should also permit
+               %% optimized applications of "by need dot" when importing from
+               %% this module.  Note: the ByNeedDot below does not create a
+               %% future if Entry is determined.
+               Module = {Value.byNeedDot Entry 1}
+            else
+               Module = {ByNeed
+                         fun {$}
+                            try
+                               case Entry of Module#ActualType then
+                                  case ExpectedType of !NOTYPE then Module
+                                  elsecase ActualType of !NOTYPE then Module
+                                  elseif {self.TypeCheckProc ActualType ExpectedType}
+                                  then Module
+                                  else
+                                     raise
+                                        system(module(typeMismatch Key
+                                                      ActualType ExpectedType))
+                                     end
                                   end
                                end
-                            end
-                         catch E then {Value.byNeedFail E} end
-                      end}
+                            catch E then {Value.byNeedFail E} end
+                         end}
+            end
          end
       end
 

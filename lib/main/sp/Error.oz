@@ -327,28 +327,29 @@ define
                    end
          in
             case Kind of call then
-               Data = X.data
-            in
-               if {IsDet Data} then
-                  PN = {System.printName Data}
-               in
-                  if {IsObject Data} then
-                     case PN of '' then
-                        'object application'
+               if {HasFeature X data} then Data in
+                  Data = X.data
+                  if {IsDet Data} then
+                     PN = {System.printName Data}
+                  in
+                     if {IsObject Data} then
+                        case PN of '' then
+                           'object application'
+                        else
+                           'object application of class \''#PN#'\''
+                        end
                      else
-                        'object application of class \''#PN#'\''
+                        case PN of '' then
+                           'procedure'
+                        [] 'Toplevel abstraction' then
+                           'toplevel abstraction'
+                        else
+                           'procedure \''#PN#'\''
+                        end
                      end
-                  else
-                     case PN of '' then
-                        'procedure'
-                     [] 'Toplevel abstraction' then
-                        'toplevel abstraction'
-                     else
-                        'procedure \''#PN#'\''
-                     end
+                  else 'procedure _'
                   end
-               else
-                  'procedure _'
+               else 'procedure'
                end
             else Kind
             end#

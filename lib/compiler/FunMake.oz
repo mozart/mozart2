@@ -13,7 +13,7 @@ in
       = IMPORT.'SP'
       \insert 'CP.env'
       = IMPORT.'CP'
-      \insert 'Gump.env'
+      \insert '../tools/Gump.env'
       = IMPORT.'Gump'
    in
       local

@@ -248,6 +248,7 @@ local
          {Dictionary.items self.variables}
       end
 
+\ifndef OZM
       meth addProductionTemplates(Ps)
          CompilerStateClass, InitProductionTemplates()
          {@productionTemplates add(Ps @reporter)}
@@ -267,6 +268,7 @@ local
          else skip
          end
       end
+\endif
    end
 
    class CompilerEngine from CompilerStateClass
@@ -454,7 +456,12 @@ local
                                        outputcode: true
                                        feedtoemulator: false))
          [] fSynTopLevelProductionTemplates(Ps) then
+\ifndef OZM
             CompilerStateClass, addProductionTemplates(Ps)
+\else
+            {@reporter error(kind: 'bootstrap compiler restriction'
+                             msg: 'Gump definitions not supported')}
+\endif
          else TopLevelGVs GS FreeGVs in
             case Query of fDeclare(_ _ C) then
                {@reporter logDeclare(C)}

@@ -90,6 +90,7 @@ local
       end
    end
 
+\ifndef OZM
    proc {MyWaitGump X}
       T = {Thread.this}
       RaiseOnBlock = {Thread.getRaiseOnBlock T}
@@ -102,6 +103,7 @@ local
       end
       {Thread.setRaiseOnBlock T RaiseOnBlock}
    end
+\endif
 
    %% The following three functions (DollarsInScope, DollarCoord and
    %% ReplaceDollar) operate on the dollars in pattern position,
@@ -715,6 +717,7 @@ local
                       init(GVO GParents GProps GAttrs GFeats GMeths C)}
             {SetExpansionOccs GClass @BA}
             GFrontEq|{MakeDeclaration GVs GPrivates|GS1|GS2|GS3|GS4|GClass C}
+\ifndef OZM
          [] fScanner(T Ds Ms Rules Prefix C) then
             From Prop Attr Feat Flags FS
          in
@@ -752,6 +755,16 @@ local
                   {@switches getProductionTemplates($)}
                   @reporter}
             Unnester, UnnestStatement(FS $)
+\else
+         [] fScanner(T _ _ _ _ _) then C = {CoordinatesOf T} in
+            {@reporter error(coord: C kind: 'bootstrap compiler restriction'
+                             msg: 'Gump definitions not supported')}
+            {New Core.skipNode init(C)}
+         [] fParser(T _ _ _ _ _ _) then C = {CoordinatesOf T} in
+            {@reporter error(coord: C kind: 'bootstrap compiler restriction'
+                             msg: 'Gump definitions not supported')}
+            {New Core.skipNode init(C)}
+\endif
          [] fLocal(FS1 FS2 C) then NewFS1 FVs GS in
             {@BA openScope()}
             NewFS1 = {MakeTrivialLocalPrefix FS1 ?FVs nil}

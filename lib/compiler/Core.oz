@@ -93,8 +93,6 @@ export
    ChoiceNode
    Clause
    ValueNode
-   BitStringNode
-   ByteStringNode
    Variable
    UserVariable
    GeneratedVariable
@@ -1050,16 +1048,6 @@ define
       meth outputEscaped2(R $ ?FS)
          ValueNode, output2(R $ ?FS)
       end
-   end
-
-   class BitStringNode from ValueNode
-      prop final
-      feat kind: 'bitString'
-   end
-
-   class ByteStringNode from ValueNode
-      prop final
-      feat kind: 'byteString'
    end
 
    class Variable

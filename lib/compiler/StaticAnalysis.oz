@@ -3633,9 +3633,9 @@ define
                [] 'thread' then
                   {New Core.token init(Val)}
                [] byteString then
-                  {New Core.byteStringNode init(Val unit)}
+                  {New Core.valueNode init(Val unit)}
                [] bitString then
-                  {New Core.bitStringNode init(Val unit)}
+                  {New Core.valueNode init(Val unit)}
                else unit
                end
             else unit

@@ -20,7 +20,7 @@
 %% parameters for the Browser (such as actual sizes of windows, user
 %% preferences and so on).
 
-class StoreClass from UrObject
+class StoreClass from Object.base Object.batch
    %%
    feat
       SDict
@@ -58,6 +58,9 @@ class StoreClass from UrObject
       %%
       {Dictionary.get self.SDict What}
    end
+
+   %%
+   meth close skip end
 
    %%
 end

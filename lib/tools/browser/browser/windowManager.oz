@@ -47,7 +47,7 @@ class WindowManagerClass from MyClosableObject Object.batch
          of break             then browser(break)
          [] unselect          then browser(unselect)
          [] toggleMenus       then browser(toggleMenus)
-         [] help              then browser(help)
+         [] about             then browser(about)
          [] checkLayout       then browser(checkLayout)
          [] reset             then browser(reset)
          [] close             then browser(close)
@@ -136,9 +136,6 @@ class WindowManagerClass from MyClosableObject Object.batch
 
          %%
          {@window [setMinSize expose setWaitCursor]}
-
-         %%
-         {BrowserMessagesInit @window}
 
          %%
          {self.store store(StoreIsWindow true)}
@@ -311,11 +308,9 @@ class WindowManagerClass from MyClosableObject Object.batch
 %                           separator
 
                             %%
-                            command(label:   'Help'
-                                    % key:     ctrl(h)
-                                    acc:     '     C-h'
-                                    action:  BO#Help
-                                    feature: help)
+                            command(label:   'About'
+                                    action:  BO#About
+                                    feature: about)
                             separator
 
                             %%
@@ -655,7 +650,7 @@ class WindowManagerClass from MyClosableObject Object.batch
                      bindKey(key: ctrl(n)      action: BO#createNewView)
                      bindKey(key: ctrl(l)      action: BO#checkLayout)
                      bindKey(key: ctrl(alt(m)) action: BO#toggleMenus)
-                     bindKey(key: ctrl(h)      action: BO#Help)
+                     bindKey(key: ctrl(h)      action: BO#About)
                      bindKey(key: ctrl(x)      action: BO#close)
                      bindKey(key: ctrl(u)      action: BO#clear)
                      bindKey(key: z            action: BO#SelZoom)

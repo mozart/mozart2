@@ -82,7 +82,7 @@ in
    %%
 
    %%
-   class TermsStoreClass from UrObject
+   class TermsStoreClass from Object.base
       %%
       attr
          list: InitValue

@@ -76,7 +76,6 @@ local
    %%  'tcl-interface.oz';
    BrowserWindowClass
    MessageWindowClass
-   HelpWindowClass
 
    %%
    %%  'termsStore.oz';
@@ -88,8 +87,6 @@ local
 
    %%
    %%  'errors.oz';
-   BrowserMessagesInit
-   BrowserMessagesExit
    BrowserMessagesFocus
    BrowserMessagesNoFocus
    BrowserError
@@ -277,7 +274,7 @@ in
       %% browser object - hidden methods, to be used by Browser's
       %% window manager and tcl/tk interface;
       [Reset SetBufferSize ChangeBufferSize SetSelected UnsetSelected
-       SelExpand SelShrink SelShow SelZoom SelDeref Help SetDepth
+       SelExpand SelShrink SelShow SelZoom SelDeref About SetDepth
        SetWidth ChangeWidth SetDInc ChangeDInc SetWInc ChangeWInc
        UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
 
@@ -345,7 +342,7 @@ in
 
    %%
    %% DefaultBrowser: provides the passing of terms to be browsed;
-   class DefaultBrowserClass from UrObject
+   class DefaultBrowserClass from Object.base
       attr
          browserObj: InitValue
 

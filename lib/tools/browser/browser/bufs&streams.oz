@@ -40,7 +40,7 @@ in
    %%
    %% Core buffer. No limits and no suspensions - "pure logical";
    class CoreBufferClass
-      from UrObject
+      from MyClosableObject Object.batch
       prop locking
       %%
       attr
@@ -57,6 +57,7 @@ in
          end
       end
       meth close
+         MyClosableObject , close
          @Tail = nil
       end
 
@@ -241,7 +242,10 @@ in
       %%
       %% Note that it does not block the object state;
       meth waitElement
-         {Wait (CoreBufferClass , GetTail($))}
+         {Wait
+          case MyClosableObject , isClosed($) then _   % forever;
+          else CoreBufferClass , GetTail($)
+          end}
       end
 
       %%

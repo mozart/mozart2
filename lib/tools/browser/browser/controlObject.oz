@@ -1076,7 +1076,7 @@ in
    %%
    %% Generator of new reference names;
    %%
-   create NewRefNameGen from UrObject
+   create NewRefNameGen from Object.base
       %%
       attr number: 1
 

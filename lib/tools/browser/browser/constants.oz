@@ -151,11 +151,6 @@ DInfinite       = 1000000
 OzHome = {System.get home}
 
 %%
-%% Help file;
-%%
-IHelpFile   = !OzHome # '/lib/browser/help.txt'
-
-%%
 %% window(graphic) parameters;
 %%
 %%
@@ -171,13 +166,11 @@ IMHeight    = 5
 %%
 ITitle      = "Oz Browser"
 IVTitle     = "Oz Browser: View"
-IMTitle     = "Oz Browser: Warnings"
-IHTitle     = "Oz Browser: Help"
+IMTitle     = "Oz Browser: Messages"
 
 %%
 IITitle     = "Oz Browser"
 IMITitle    = "Messages"
-IHITitle    = "Help"
 
 %%
 IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
@@ -200,10 +193,6 @@ IYSize      = 350
 %%  ... for messages' window (but it is gridded, so - in chars);
 IMXMinSize  = 40
 IMYMinSize  = 5
-
-%%  ... for help window - the fixed size;
-IHXSize     = 550
-IHYSize     = 400
 
 %% colours on text widget;
 IBackGround   = 'white'

@@ -1095,34 +1095,16 @@ class BrowserClass
    end
 
    %%
-   meth !Help
+   meth !About
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::Help is applied'}
+      {Show 'BrowserClass::About is applied'}
 \endif
       %%
-      local HF Desc HelpWindow in
-         HF = {New Open.file init(name: IHelpFile flags: [read])}
-
-         %%
-         Desc = {HF [read(list: $ size: all) close]}
-
-         %%
-         HelpWindow =
-         {New HelpWindowClass
-          createHelpWindow(screen: {self.Store read(StoreScreen $)})}
-
-         %%
-         case {VirtualString.is Desc} then
-            {HelpWindow showIn(Desc)}
-         else
-            {BrowserError 'Non-virtual-string is read from a help.txt file?'}
-         end
-
-         %%
+      skip
+      %%
 \ifdef DEBUG_BO
-         {Show 'BrowserClass::Help is finished'}
+         {Show 'BrowserClass::About is finished'}
 \endif
-      end
    end
 
    %%

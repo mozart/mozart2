@@ -153,7 +153,7 @@ in
 %%%
    %%
    %%
-   class BrowserWindowClass from UrObject
+   class BrowserWindowClass from Object.base Object.batch
       %%
 
       %%
@@ -356,7 +356,7 @@ in
             %%
             %% scrollbars;
             SelfBWO = self
-            create MyHandler from UrObject
+            create MyHandler from Object.base
                meth m(...) = Mess
                   case Mess of m("moveto" F) then
                       %% "moveto Fraction" - just feed it further;
@@ -1878,343 +1878,31 @@ in
    %%
    %% Window(s) for messages (warnings, errors);
    %%
-   class MessageWindowClass from UrObject
-      %%
-      attr
-         window:            InitValue
-         messageWidget:     InitValue
-         fb:                InitValue
+   class MessageWindowClass
+      from TkTools.error
 
       %%
-      %%
-      meth createMessageWindow
+      %% If 'Leader' is the 'InitValue', then it's ignored;
+      meth make(leader:Leader message:Message)
 \ifdef DEBUG_TI
-         {Show 'MessageWindowClass::createMessageWindow'}
+         {Show 'MessageWindowClass::make' # Message}
 \endif
          %%
-         local
-            Window         %
-            MessageWidget  %  text widget for messages;
-            VS             %
-            FB             %  buttons' frame;
-            CloseAction    %
-         in
-            %%
-            window <- Window
-            messageWidget <- MessageWidget
-            fb <- FB
+         {New TkTools.error
+          case Leader == InitValue then
+             tkInit(title: IMTitle text:Message)
+          else
+             tkInit(title: IMTitle master: Leader text: Message)
+          end _}
 
-            %%
-            Window = {New MyToplevel tkInit(withdraw: true)}
-
-            %%
-            CloseAction = {New Tk.action
-                           tkInit(parent: Window
-                                  action: self # closeWindow)}
-
-            {Tk.batch
-             [wm(title(Window IMTitle))
-              wm(iconname(Window IMITitle))
-              wm(iconbitmap(Window '@'#IMIBitmap))
-              %%  {Tk.wm iconmask(Window '@'#IMIBMask)}
-              wm(minsize Window IMXMinSize IMYMinSize)
-              wm(protocol(Window 'WM_DELETE_WINDOW' CloseAction))]}
-
-            %%
-            MessageWidget = {New Tk.text tkInit(parent: Window
-                                                setgrid: 'true'
-                                                bd: IBigBorder
-                                                relief: ITextRelief
-                                                padx: ITWPad
-                                                pady: ITWPad
-                                                height: IMHeight
-                                                width: IMWidth
-                                                insertontime: 0
-                                                background: IBackGround
-                                                foreground: IForeGround
-                                                highlightthickness: 0)}
-
-            %%  choose a font;
-            {FoldL [ITWFont1 ITWFont2 ITWFont3]
-             fun {$ Proceed IFont}
-                case
-                   Proceed andthen
-                   {X11ResourceCache tryFont(IFont.font $)}
-                then
-                   {MessageWidget tk(conf font:IFont.font)}
-                   false
-                else Proceed
-                end
-             end
-             true _}
-
-            %%
-            VS = {New Tk.scrollbar tkInit(parent: Window
-                                          relief: IFrameRelief
-                                          bd: IBigBorder
-                                          width: ISWidth
-                                          highlightthickness: 0)}
-            FB = {New Tk.frame tkInit(parent: Window
-                                      relief: IFrameRelief
-                                      bd: ISmallBorder
-                                      highlightthickness: 0)}
-            {Tk.addYScrollbar MessageWidget VS}
-
-            %%
-            {Tk.batch
-             [pack(VS fill: y padx: IPad pady: IPad side: right)
-              pack(FB fill: y padx: IPad pady: IPad side: left)
-              pack(MessageWidget fill: both padx: IPad pady: IPad
-                   side: bottom expand: yes)
-              bindtags(MessageWidget q(MessageWidget))
-             ]}
-
-            %%
-\ifdef DEBUG_TI
-            {Show 'MessageWindowClass::createMessageWindow is finished'}
-\endif
-         end
-      end
-
-      %%
-      %% Put a new button on the buttons frame;
-      %% Note that a calling procedure should treat the 'Button'
-      %% as an atomic value and use it only for 'confButton' messages;
-      %%
-      meth pushButton(Text Action ?Button)
-         case @window == InitValue then Button = InitValue
-         else MessageWidget ResStr in
-            MessageWidget = @messageWidget
-
-            %%
-            Button = {New Tk.button tkInit(parent: @fb
-                                           text: Text
-                                           action: Action
-                                           width: IButtonWidth
-                                           relief: IButtonRelief
-                                           highlightthickness: 0
-                                           padx: IButtonPad
-                                           pady: IButtonPad
-                                           bd: ISmallBorder)}
-
-            %%  choose a font;
-            {FoldL [IBFont1 IBFont2 IBFont3 IReservedFont]
-             fun {$ Proceed IFont}
-                case
-                   Proceed andthen
-                   {X11ResourceCache tryFont(IFont $)}
-                then
-                   {MessageWidget tk(conf font:IFont)}
-                   false
-                else Proceed
-                end
-             end
-             true _}
-
-            %%
-            {Tk.send pack(Button side: top fill: x padx: IPad pady: IPad)}
-         end
-      end
-
-      %%
-      %%
-      meth showIn(VS)
-         case @window == InitValue then skip
-         else MyScreen LWScreen LeaderWindow RealLWindow
-            MW = @messageWidget
-         in
-            {MW tk(ins insert VS)}
-            {MW tk(ins insert '\n')}
-            {MW tk(yview 'insert-2lines')}
-
-            %%
-            %%  Now, let's try to move it to a (current) leader window;
-            LeaderWindow = @leaderWindow
-            case LeaderWindow == InitValue then
-               %%  leader is gone?
-               {Tk.batch [update wm(deiconify @window)]}
-            else
-               MyScreen = {Tk.return winfo(screen @window)}
-               LWScreen = {Tk.return winfo(screen LeaderWindow)}
-
-               %%
-               case MyScreen == LWScreen then
-                  %%  leave it where it is - we cannot move it anyway;
-                  {Tk.batch [update wm(deiconify @window)]}
-               else
-                  %%  the same screen;
-                  RealLWindow = {Tk.return winfo(toplevel LeaderWindow)}
-
-                  %%
-                  case {String.is RealLWindow} then Geom X Y in
-                     Geom = {Tk.return wm(geometry RealLWindow)}
-                     [_ X Y] = {GetStrs Geom &+ nil}
-
-                     %%
-                     {Tk.batch [update
-                                wm(geometry @window
-                                   '+'#(X + IMWXOffset)#
-                                   '+'#(Y + IMWYOffset))
-                                wm(deiconify @window)]}
-                  end
-               end
-            end
-         end
-      end
-
-      %%
-      %%
-      meth clear
-         case @window == InitValue then skip
-         else {@messageWidget tk(del p(1 0) insert)}
-         end
-      end
-
-      %%
-      %% close the top level widnow;
-      %%
-      meth closeWindow
-         case @window == InitValue then skip
-         else
-            {@window tkClose}
-
-            %%
-            window <- InitValue
-            messageWidget <- InitValue
-            fb <- InitValue
-         end
-      end
-   end
-
-   %%
-   %% Help Window;
-   %%
-   class HelpWindowClass from UrObject
-      %%
-      attr
-         window:            InitValue
-         messageWidget:     InitValue
-         fb:                InitValue
-
-      %%
-      %%
-      meth createHelpWindow(screen: Screen)
-\ifdef DEBUG_TI
-         {Show 'HelpWindowClass::createHelpWindow'}
-\endif
          %%
-         local
-            Window         %
-            MessageWidget  %  text widget;
-            VS             %
-            CloseAction    %
-         in
-            %%
-            window <- Window
-            messageWidget <- MessageWidget
-
-            %%
-            Window =
-            {New MyToplevel case Screen == InitValue
-                            then tkInit(withdraw:true)
-                            else tkInit(withdraw:true screen:Screen)
-                            end}
-
-            %%
-            CloseAction = {New Tk.action tkInit(parent: Window
-                                                action: self#close)}
-
-            %%
-            {Tk.batch
-             [wm(title(Window IHTitle))
-              wm(iconname(Window IHITitle))
-              wm(iconbitmap(Window '@'#IIBitmap))
-              %%  {Tk.wm iconmask(Window '@'#IMIBMask)}
-              wm(geometry Window IHXSize#x#IHYSize)
-              wm(protocol(Window 'WM_DELETE_WINDOW' CloseAction))]}
-
-            %%
-            MessageWidget = {New Tk.text tkInit(parent: Window
-                                % setgrid: 'true'
-                                                bd: IBigBorder
-                                % height: IMHeight
-                                % width: IMWidth
-                                                relief: ITextRelief
-                                                padx: ITWPad
-                                                pady: ITWPad
-                                                insertontime: 0
-                                                background: IBackGround
-                                                foreground: IForeGround
-                                                highlightthickness: 0)}
-
-            %%  choose a font;
-            {FoldL [ITWFont1 ITWFont2 ITWFont3]
-             fun {$ Proceed IFont}
-                case
-                   Proceed andthen
-                   {X11ResourceCache tryFont(IFont.font $)}
-                then
-                   {MessageWidget tk(conf font:IFont.font)}
-                   false
-                else Proceed
-                end
-             end
-             true _}
-
-            %%
-            VS = {New Tk.scrollbar tkInit(parent: Window
-                                          relief: IFrameRelief
-                                          bd: IBigBorder
-                                          width: ISWidth
-                                          highlightthickness: 0)}
-            {Tk.addYScrollbar MessageWidget VS}
-
-            %%
-            {Tk.batch
-             [pack(VS fill: y padx: IPad pady: IPad side: right)
-              pack(MessageWidget fill: both padx: IPad pady: IPad
-                   side: bottom expand: yes)
-              bindtags(MessageWidget q(MessageWidget))
-             ]}
-
-            %%
-            %% sync;
-            {Wait Window}
-            {Wait MessageWidget}
-
-            %%
-            {Tk.send wm(deiconify Window)}
-
-            %%
 \ifdef DEBUG_TI
-            {Show 'HelpWindowClass::createHelpWindow is finished'}
+         {Show 'MessageWindowClass::make is finished'}
 \endif
-         end
-      end
-
-      %%
-      %%
-      meth showIn(VS)
-         case @window == InitValue then skip
-         else MW=@messageWidget in
-            {MW tk(ins insert VS)}
-            {MW tk(ins insert '\n')}
-                             % tk(yview 'insert-2lines')
-         end
-      end
-
-      %%
-      %%
-      meth close
-         case @window == InitValue then skip
-         else {@window tkClose}
-         end
       end
 
       %%
    end
-   %%
-   %%
 
-   %%
+%%
 end

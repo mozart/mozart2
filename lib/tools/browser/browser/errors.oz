@@ -14,81 +14,41 @@
 %%%
 %%%
 
-local MessageWindowObject BrowserMessage in
+%%
+local MWManagerObject BrowserMessage in
    %%
-   thread
+   %% It has static extent;
+   create MWManagerObject
+      from Object.base
+      attr leaderWindow: !InitValue
+
       %%
-      %%  'MessageWindowClass' is not known yet (might be);
-      create MessageWindowObject from MessageWindowClass
-         %%
-         attr
-            leaderWindow: InitValue
-
-         %%
-         meth get(?MW)
-            case @window == InitValue then
-               MessageWindowClass , createMessageWindow
-               MessageWindowClass , pushButton(clear
-                                               proc {$} {self clear} end _)
-               MessageWindowClass , pushButton(close
-                                               proc {$} {self closeWindow}
-                                               end _)
-            else skip
-            end
-
-            %%
-            MW = self
-         end
-
-         %%
-         meth setLeaderWindow(BrowserWindow)
-            leaderWindow <- BrowserWindow
-         end
-
-         %%
-         meth unsetLeaderWindow
-            leaderWindow <- InitValue
-         end
-
-         %%
-         meth closedLeaderWindow(LW)
-            case LW == @leaderWindow then
-               leaderWindow <- InitValue
-            else skip
-            end
-         end
+      meth setLeaderWindow(W)
+         leaderWindow <- W
       end
-   end
-   %%
-
-   %%
-   proc {BrowserMessagesInit _} skip end
-
-   %%
-   proc {BrowserMessagesExit W}
-      thread {MessageWindowObject closedLeaderWindow(W)} end
+      meth getLeaderWindow($) @leaderWindow end
    end
 
    %%
    proc {BrowserMessagesFocus W}
-      thread {MessageWindowObject setLeaderWindow(W)} end
+      {MWManagerObject setLeaderWindow(W)}
    end
 
    %%
    proc {BrowserMessagesNoFocus}
-      thread {MessageWindowObject setLeaderWindow(InitValue)} end
+      {MWManagerObject setLeaderWindow(InitValue)}
    end
 
    %%
    proc {BrowserMessage Type Desc}
       thread
-         local MW Message in
-            MW = {MessageWindowObject get($)}
+         local Message in
+            Message = Type # Desc
 
             %%
-            Message = Type # Desc
-            {Show {String.toAtom {VirtualString.toString Message}}}
-            {MW showIn(Message)}
+            {New MessageWindowClass
+             make(leader:  {MWManagerObject getLeaderWindow($)}
+                  message: Message) _}
          end
       end
    end

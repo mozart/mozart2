@@ -188,6 +188,7 @@ local
                [] onRecord then '\'onRecord\''
                [] gci then '\'gci\''
                [] ami then '\'ami\''
+               [] pos then '\'pos\''
                else
                   {System.valueToVirtualString Value 0 0}
                end

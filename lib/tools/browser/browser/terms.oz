@@ -1912,6 +1912,7 @@ in
          %% meanwhile;
          case <<isProperOFS($)>> then
             Term Depth TailVar CancelVar SpecsObj
+            GotValue ChVar OFSWidth ChWidth
          in
             %%
             Term = self.term
@@ -1920,30 +1921,25 @@ in
             CancelReq <- CancelVar
             SpecsObj = <<getSpecsObjOutInfo($ _)>>
 
+            %%
+            job
+               GotValue = {IsValue TailVar}
+            end
+            %%
+            job
+               ChVar = {TestVarFun Term}
+            end
+            %%  should work without job...end too;
+            job
+               OFSWidth = {WidthC Term}
+            end
+            job
+               ChWidth = {IsValue OFSWidth}
+            end
+
             %% Note that this conditional should not block the state;
             %% relational;
-            thread
-               GotValue ChVar Cancel OFSWidth ChWidth
-            in
-               job
-                  GotValue = {IsValue TailVar}
-               end
-               %%
-               job
-                  ChVar = {TestVarFun Term}
-               end
-               %%
-               job
-                  Cancel = {IsValue CancelVar}
-               end
-               %%  should work without job...end too;
-               job
-                  OFSWidth = {WidthC Term}
-               end
-               job
-                  ChWidth = {IsValue OFSWidth}
-               end
-
+            job
                %%
                %% test: {SpecsObj drawOFSWidth(5)}
                if GotValue = True then
@@ -1964,7 +1960,7 @@ in
                   %%
                   %%  it has got a record probably...
                   {self extend}
-               [] Cancel = True then true
+               [] CancelVar = True then true
                end
             end
          else true              % nothing to do - it's a proper record;
@@ -2181,30 +2177,29 @@ in
 \ifdef DEBUG_TT
          {Show 'VariableTermTermObject::initTypeWatching: '#self.term}
 \endif
-         local CancelVar Depth NewName OldNameStr NewNameStr in
+         local
+            CancelVar Depth NewName OldNameStr NewNameStr ChVar
+         in
             %%
             Depth = @depth
             CancelReq <- CancelVar
 
-            %% Note that this conditional may not block the state;
-            thread
-               ChVar Cancel
-            in
-               job
-                  ChVar = {TestVarFun self.term}
-               end
-               %%
-               job
-                  Cancel = {IsValue CancelVar}
-               end
+            %%
+            job
+               ChVar = {TestVarFun self.term}
+            end
+            %%
 
-               %% relational;
+            %% Note that this conditional may not block the state;
+            %% relational;
+            job
                if ChVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] Cancel = True then true
+               [] CancelVar = True then true
                end
             end
 
+            %%
             %%  Check #1: is it still an (unconstrained) variable at all??
             case <<checkIsVar($)>> then
                %%
@@ -2338,27 +2333,24 @@ in
 \ifdef DEBUG_TT
          {Show 'FDVariableTermTermObject::initTypeWatching: '#self.term}
 \endif
-         local CancelVar Depth NewName OldNameStr NewNameStr in
+         local
+            CancelVar Depth NewName OldNameStr NewNameStr ChFDVar
+         in
             %%
             Depth = @depth
             CancelReq <- CancelVar
 
-            %% Note that this conditional may not block the state;
-            thread
-               ChFDVar Cancel
-            in
-               job
-                  ChFDVar = {TestFDVarFun self.term self.card}
-               end
-               %%
-               job
-                  Cancel = {IsValue CancelVar}
-               end
+            %%
+            job
+               ChFDVar = {TestFDVarFun self.term self.card}
+            end
 
-               %%
+            %%
+            %% Note that this conditional may not block the state;
+            job
                if ChFDVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] Cancel = True then true
+               [] CancelVar = True then true
                end
             end
 
@@ -2484,27 +2476,24 @@ in
 \ifdef DEBUG_TT
          {Show 'MetaVariableTermTermObject::initTypeWatching: '#self.term}
 \endif
-         local CancelVar Depth NewName OldNameStr NewNameStr in
+         local
+            CancelVar Depth NewName OldNameStr NewNameStr ChMetaVar
+         in
             %%
             Depth = @depth
             CancelReq <- CancelVar
 
-            %% Note that this conditional may not block the state;
-            thread
-               ChMetaVar Cancel
-            in
-               job
-                  ChMetaVar = {TestMetaVarFun self.term self.strength}
-               end
-               %%
-               job
-                  Cancel = {IsValue CancelVar}
-               end
+            %%
+            job
+               ChMetaVar = {TestMetaVarFun self.term self.strength}
+            end
 
-               %%
+            %%
+            %% Note that this conditional may not block the state;
+            job
                if ChMetaVar = True then
                   {self.parentObj renewNum(self Depth)}
-               [] Cancel = True then true
+               [] CancelVar = True then true
                end
             end
 

@@ -116,8 +116,9 @@ define
             end
          end
          meth listen(FutMode WidPort CurValue EntryObj)
+            {System.show 'StoreListener::list entered with'#FutMode}
             if FutMode
-            then {Value.waitQuiet CurValue}
+            then {Value.waitQuiet CurValue} {System.show 'StoreListener::listen: quit fired'}
             else {Wait {GetsBoundB CurValue}}
             end
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier

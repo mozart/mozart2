@@ -236,17 +236,9 @@ in
                            action: proc {$}
                                       {Port.send InspPort focusDn(false)}
                                    end)}
-            {Canvas tkBind(event:  '<KeyPress-f>'
+            {Canvas tkBind(event:  '<KeyPress-l>'
                            action: proc {$}
-                                      {Port.send InspPort focusDn(true)}
-                                   end)}
-            {Canvas tkBind(event:  '<KeyPress-a>'
-                           action: proc {$}
-                                      {Port.send InspPort addPane}
-                                   end)}
-            {Canvas tkBind(event:  '<KeyPress-d>'
-                           action: proc {$}
-                                      {Port.send InspPort delPane}
+                                      {Port.send InspPort clearAll(false)}
                                    end)}
             {Canvas tkBind(event: '<2>'
                            action: proc {$}

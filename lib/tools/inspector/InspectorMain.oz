@@ -173,6 +173,7 @@ define
                                                                        clearAll(
                                                                           Menu.inspector.myclear)}
                                                                    end
+                                                          key: ctrl(l)
                                                           feature: myclear)
                                                   separator
                                                   command(label:   'Iconify'
@@ -489,10 +490,16 @@ define
             meth clearAll(Menu)
                Finished
             in
-               {Menu tk(entryconf state: disabled)}
-               {@widget clearAll(Finished)}
-               {Wait Finished}
-               {Menu tk(entryconf state: normal)}
+               case Menu
+               of false then
+                  {@widget clearAll(Finished)}
+                  {Wait Finished}
+               [] Menu then
+                  {Menu tk(entryconf state: disabled)}
+                  {@widget clearAll(Finished)}
+                  {Wait Finished}
+                  {Menu tk(entryconf state: normal)}
+               end
             end
             meth selectionHandler(Mode)
                Menu = @selMenu

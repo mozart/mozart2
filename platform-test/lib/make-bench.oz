@@ -368,10 +368,6 @@ in
           '#!/bin/sh\nexec ozengine $0 "$@"\n'
           9}
 
-         {Pickle.save
-          Engine
-          './te.ozf'}
-
       end
 
       {Application.exit 0}

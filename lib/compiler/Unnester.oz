@@ -1132,6 +1132,20 @@ define
             Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fMacrolet(_ _) then
             Unnester, UnnestStatement({MacroExpand FS unit} $)
+         [] fDotAssign(Left Right C1) then
+            case Left
+            of fOpApply('.' [DB Key] _) then
+               Unnester,UnnestStatement(fOpApplyStatement('dotAssign'
+                                                          [DB Key Right] C1)
+                                        $)
+            else GV in
+               {@reporter error(coord: C1 kind: SyntaxError
+                                msg: 'expected dot expression to the left of :=')}
+               {@BA generate('Error' C1 ?GV)}
+               Unnester, UnnestExpression(Left GV _)
+               Unnester, UnnestExpression(Right GV _)
+               {New Core.skipNode init(C1)}
+            end
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
@@ -2623,6 +2637,7 @@ define
             fSynTemplateInstantiation(K {Map Es SP} C)
          [] fLoop(S C) then fLoop({SP S} {CS C})
          [] fMacro(Ss C) then fMacro({Map Ss SP} {CS C})
+         [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {CS C})
          end
       end
 
@@ -2696,6 +2711,7 @@ define
             fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {FS C})
          [] fLoop(S C) then fLoop({EP S} {FS C})
          [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
+         [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {FS C})
          end
       end
 

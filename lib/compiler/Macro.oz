@@ -224,6 +224,7 @@ define
       [] fLoop(_ _) then true
       [] fMacro(_ _) then true
       [] fMacrolet(_ _) then true
+      [] fDotAssign(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
       end
    end
 
@@ -438,6 +439,9 @@ define
       in
          if {ContainsMacro E2}
          then {FullMacroExpand E2 Env} else E2 end
+      [] fDotAssign(L R C) then
+         fDotAssign({FullMacroExpand L Env}
+                    {FullMacroExpand R Env} C)
       end
    end
 end

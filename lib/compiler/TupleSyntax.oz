@@ -87,6 +87,7 @@ fun {CoordinatesOf P}
    [] fLoop(_ C) then C
    [] fMacro(_ C) then C
    [] fMacrolet(_ E) then {CoordinatesOf E}
+   [] fDotAssign(_ _ C) then C
    end
 end
 

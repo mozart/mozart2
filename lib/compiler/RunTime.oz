@@ -51,9 +51,12 @@ require
 
    BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
+
+   BootValue(dotAssign) at 'x-oz://boot/Value'
 prepare
    ProcValues0 = env(%% Operators
                      '.': Value.'.'
+                     dotAssign: BootValue.dotAssign
                      '==': Value.'=='
                      '=': Value.'='
                      '\\=': Value.'\\='

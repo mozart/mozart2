@@ -35,11 +35,7 @@ import
    Property(get)
 
 export
-   offer: Offer
-   take:  Take
-   gate:  Gate
-   takeWithTimer: TakeWithTimer
-   offerMultiple: OfferMultiple
+   Offer OfferUnlimited Take Gate TakeWithTimer
 
 prepare
 
@@ -234,10 +230,8 @@ define
       end
    end
 
-   proc {OfferMultiple X ?Ticket ?Close}
-      G = {New Gate init(X Ticket)}
-   in
-      proc {Close} {G close} end
+   fun {OfferUnlimited X}
+      {{New Gate init(X)} getTicket($)}
    end
 
    proc {TakeWithTimer V Time Entity}

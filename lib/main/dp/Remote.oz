@@ -144,7 +144,8 @@ define
             OldS = (Which <- NewS)
             {Port.send self.Which What}
          end
-         Ret|NewS = OldS
+         %% mm2: OldS is a future, needs thread to be async!
+         thread Ret|NewS = OldS end
       end
 
       meth SyncSend(Which What)
@@ -181,6 +182,4 @@ define
       end
 
    end
-
-
 end

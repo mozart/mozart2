@@ -73,16 +73,6 @@ sub gtk2oz_meth_name {
     return lcfirst($name);
 }
 
-#sub gtk_class_name_2_function_prefix {
-#    my ($class_name) = @_;
-
-#      $class_name =~ s/^Gtk//s;
-#      $class_name =~ s/(.)([A-Z])/$1_$2/g;
-#      $class_name =~ tr/[A-Z]/[a-z]/;
-
-#      return $class_name;
-#  }
-
 sub write_oz_class_header {
 #    print "class " . gtk2oz_class_name($$class{name});
     print "X = \nclass \$ ";
@@ -141,7 +131,7 @@ sub write_oz_init_methods {
 
         print '      ';
         print 'nativeObject <- ';
-        print '{GtkNative.' . gtk2oz_meth_name($init);
+        print '{GtkNative.' . lcfirst(gtk2oz_name($init));
 
         ### Method invocation: Arguments
 
@@ -168,6 +158,13 @@ sub write_oz_meth_wrappers {
     my $meths = $$class{meths};
 
     foreach my $meth (keys %$meths) {
+
+        my $code = $$class{meths}{$meth}{code};
+        if ($code) {
+            print "$code\n";
+            next;
+        }
+
         my $in  = $$class{meths}{$meth}{in};  # list of input arguments
         my $out = $$class{meths}{$meth}{out}; # the output value
 
@@ -192,7 +189,7 @@ sub write_oz_meth_wrappers {
 
         print '      ';
         print 'Ret = ' if $out;
-        print '{GtkNative.' . gtk2oz_meth_name($meth) . ' @nativeObject';
+        print '{GtkNative.' . lcfirst(gtk2oz_name($meth)) . ' @nativeObject';
 
         ### Method invocation: Arguments
 

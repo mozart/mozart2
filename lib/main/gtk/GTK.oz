@@ -31,6 +31,8 @@ export
    Dispatcher
    GetObject
 
+   Object
+
    Exit
    Main
    MainQuit
@@ -55,6 +57,50 @@ define
           ObjectRegistry
           {ForeignPointer.toInt MyForeignPointer}
           MyObject}
+      end
+   end
+
+% -----------------------------------------------------------------------------
+% Object
+% -----------------------------------------------------------------------------
+
+   class Object
+      attr nativeObject
+      meth registerObject
+         {Dictionary.put
+          ObjectRegistry
+          {ForeignPointer.toInt @nativeObject}
+          self}
+      end
+      meth getNative($) % get native GTK object from an Oz object
+         @nativeObject
+      end
+      meth ref
+         {GtkNative.ref @nativeObject}
+      end
+      meth unref
+         {GtkNative.unref @nativeObject}
+      end
+
+% Signal (made part of Object)
+
+      meth signalConnect(Name Handler ?Id)
+         % TODO: support user data (maybe superfluous)
+         {Dispatcher registerHandler(Handler Id)}
+         {GtkNative.signalConnect @nativeObject Name Id _}
+      end
+      meth signalDisconnect(Id)
+         {Dispatcher unregisterSignal(Id)}
+         {GtkNative.signalDisconnect @nativeObject Id}
+      end
+      meth signalHandlerBlock(HandlerId)
+         {GtkNative.signalBlock @nativeObject HandlerId}
+      end
+      meth signalHandlerUnblock(HandlerId)
+         {GtkNative.signalUnblock @nativeObject HandlerId}
+      end
+      meth signalEmitByName(Name)
+         {GtkNative.signalEmitByName @nativeObject Name}
       end
    end
 

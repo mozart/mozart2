@@ -2184,7 +2184,7 @@ local
          BVO2 = {Nth @actualArgs 2}
       in
          {Ctrl setErrorMsg('equation failed')}
-         {Ctrl setUnifier(@left @right)}
+         {Ctrl setUnifier(BVO1 BVO2)}
 
          {BVO1 unify(Ctrl BVO2)}
 

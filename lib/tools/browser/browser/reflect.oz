@@ -295,6 +295,38 @@ in
                    TermOut.Num = {ReflectTerm ST ListIn $ ListOut}
                    Num + 1
                 end}
+            [] 'class' then
+               TermOut =
+               {AtomConcatAll ['<Class @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'object' then
+               TermOut =
+               {AtomConcatAll ['<Object @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'bitArray' then
+               TermOut =
+               {AtomConcatAll ['<BitArray @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'array' then
+               TermOut =
+               {AtomConcatAll ['<Array @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'dictionary' then
+               TermOut =
+               {AtomConcatAll ['<Dictionary @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'lock' then
+               TermOut =
+               {AtomConcatAll ['<Lock @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'space' then
+               TermOut =
+               {AtomConcatAll ['<Space @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] 'thread' then
+               TermOut =
+               {AtomConcatAll ['<Thread @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
             else
                TermOut = TermIn
                TmpList

@@ -442,55 +442,6 @@ popEx
 %%
 %%  Conditionals
 %%
-%%           createCond(LE)/createOr/createEnumOr
-%%  lbl(L1)  nextClause(L2)
-%%           clause
-%%           ...          % guard code: either a thread or a flat guard
-%%           ...          % (consisting only of get{Number,Literal,Record}
-%%           ...          % and argument unifiers, put{Constant,Record} and
-%%           ...          % argument initializers, unify and failure)
-%%           ask/wait/waitTop
-%%           ...
-%%           branch(LC)   % (typically)
-%%  lbl(Li)  nextClause(Li+1)
-%%           ...          % analogously for clauses 2 to n - 1
-%%  lbl(Ln)  lastClause
-%%           clause
-%%           ...
-%%           ask/wait/waitTop
-%%           ...
-%%           branch(LC)
-%%  lbl(LE)  ...          % `else' code
-%%  lbl(LC)
-%%
-
-createCond
-   Label            address of the `else' part
-
-createOr
-
-createEnumOr
-
-createChoice
-
-clause
-
-wait
-
-waitTop
-
-ask
-
-emptyClause         == clause wait
-
-nextClause
-   Label            address of the next clause if this one fails
-
-lastClause
-
-%%
-%%  Simple Conditionals
-%%
 
 testBI
    Builtinname

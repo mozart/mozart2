@@ -65,6 +65,12 @@ define
                                end}
                  end
                  keys:[future byNeed arity])
+           cycle(proc {$}
+                    A = {ByNeed fun {$} A end}
+                 in
+                    {Wait A}
+                 end
+                 keys:[future byNeed cycle bug])
            space(proc {$}
                     X Y S Go1 Go2
                  in

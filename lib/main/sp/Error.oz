@@ -1772,6 +1772,20 @@ in
          end
       end
 
+      fun {GumpFormatter Exc}
+         E = {DispatchField Exc}
+         T = 'Gump Scanner error'
+      in
+         case E of gump(fileNotFound FileName) then
+            {FormatExc T
+             'Could not open file'
+             [hint(l: 'File name' m: oz(FileName))]
+             Exc}
+         else
+            {GenericFormatter T Exc}
+         end
+      end
+
       %%
       %% error print manager
       %%
@@ -1831,10 +1845,8 @@ in
             try
                {Thread.setThisPriority high}
                {ErrorMsgDebug LineOutput {FormatOzError Exc}}
-            catch
-               failure(...) = X then {ReRaise Exc X}
-            [] error(...)   = X then {ReRaise Exc X}
-            [] system(...)  = X then {ReRaise Exc X}
+            catch X then
+               {ReRaise Exc X}
             end
             %% terminate local computation
             case {OnToplevel} then skip else fail end
@@ -1863,6 +1875,7 @@ in
       {NewFormatter dp          DPFormatter}
       {NewFormatter panel       PanelFormatter}
       {NewFormatter explorer    ExplorerFormatter}
+      {NewFormatter gump        GumpFormatter}
 
    in
 

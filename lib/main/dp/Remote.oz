@@ -26,7 +26,7 @@
 functor
 
 import
-   OS(getEnv exec wait)
+   OS(exec wait)
    Connection(offer)
    Property(get)
    Module(link)
@@ -57,8 +57,10 @@ define
                        [unit]
                     end
 
-   proc {ForkProcess Fork Host Ports Detach}
-      Cmd       = {OS.getEnv 'OZHOME'}#'/bin/ozengine'
+   HOME = {Property.get 'oz.home'}
+
+   proc {ForkProcess Fork Home Host Ports Detach}
+      Cmd       = Home#'/bin/ozengine'
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'
@@ -79,7 +81,7 @@ define
                               '--shmkey='#{VirtualSite.newMailbox}]
                     end
       in
-         {OS.exec CMD ARGS _}
+         {OS.exec CMD ARGS {Not Detach} _}
       catch E then
          {OS.wait _ _}
          raise E end
@@ -101,7 +103,8 @@ define
 
       meth init(host:   HostIn <= localhost
                 fork:   ForkIn <= automatic
-                detach: Detach <= false)
+                detach: Detach <= false
+                home:   Home   <= HOME)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
@@ -119,7 +122,7 @@ define
              end
           else rsh
           end
-          Host RunPort#CtrlPort Detach}
+          Home Host RunPort#CtrlPort Detach}
 
          Run        <- RunRet.2
          Ctrl       <- CtrlRet.2

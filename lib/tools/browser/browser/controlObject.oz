@@ -382,7 +382,7 @@ in
       %%
       meth processOtherwise(Type Message)
          local PM in
-            PM = case {Value.type Message}
+            PM = case {Type.ofValue Message}
                  of atom then Message
                  [] Name then {System.printName Message}
                  [] tuple then L in

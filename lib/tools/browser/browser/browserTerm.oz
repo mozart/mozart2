@@ -41,7 +41,7 @@ in
    in
       fun {IsVirtualString X}
          case {IsVar X} then False
-         elsecase {Value.type X}
+         elsecase {Type.ofValue X}
          of atom  then True
          [] int   then True
          [] float then True
@@ -70,7 +70,7 @@ in
          elsecase {IsMetaVar Term} then T_MetaVariable
          else T_Variable
          end
-      elsecase {Value.type Term}
+      elsecase {Type.ofValue Term}
       of atom    then T_Atom
       [] int     then T_Int
       [] float   then T_Float

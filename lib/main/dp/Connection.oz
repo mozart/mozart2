@@ -282,7 +282,7 @@ define
    end
 
    proc {Take V Entity}
-      {TakeWithTimer V 10000 Entity}
+      {TakeWithTimer V {Property.get 'perdio.timeout'} Entity}
    end
 
 

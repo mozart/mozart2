@@ -53,7 +53,7 @@ prepare
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'
                    'Open'
                    'Tk' 'TkTools'
-                   'Compiler'
+                   'Compiler' 'Macro'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'
 \ifdef DENYS_EVENTS

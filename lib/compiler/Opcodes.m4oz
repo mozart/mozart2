@@ -93,7 +93,6 @@ define(instruction,
 define(RelBuiltinname,Builtinname)
 define(FunBuiltinname,Builtinname)
 define(Arity,Int)
-define(NLiveRegs,Int)
 define(Count,Int)
 define(ArityAndIsTail,Int)
 define(Dummy,Int)
@@ -148,14 +147,13 @@ define(twoRegs,`   [] arglist($#,$1) then
 storeOperands($@)')
 
 proc {StoreInstr Instr CodeBlock LabelDict}
-   case Instr of debugEntry(File Line Column Comment NLiveRegs) then
+   case Instr of debugEntry(File Line Column Comment) then
       {AddDebugInfo CodeBlock File Line}
       {StoreOpcode CodeBlock Opcodes.'debugEntry'}
       {StoreLiteral CodeBlock File}
       {StoreNumber CodeBlock Line}
       {StoreNumber CodeBlock Column}
       {StoreLiteral CodeBlock Comment}
-      {StoreInt CodeBlock NLiveRegs}
 include(EMUDIR/instrDefs.m4)
    end
 end

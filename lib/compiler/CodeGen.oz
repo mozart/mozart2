@@ -822,15 +822,15 @@ local
 
    class CodeGenStatement
       meth startCodeGen(Nodes Switches Reporter OldVs NewVs ?GPNs ?Code)
-         CS StartAddr GRegs BodyCode0 BodyCode1 BodyCode2 BodyCode
-         StartLabel EndLabel
+         CS StartAddr GRegs BodyCode0 NLiveRegs
+         BodyCode1 BodyCode2 BodyCode StartLabel EndLabel
       in
          CS = {New CodeStore init(Switches Reporter)}
          {ForAll OldVs proc {$ V} {V setFreshReg(CS)} end}
          {ForAll NewVs proc {$ V} {V setFreshReg(CS)} end}
          {CS startDefinition()}
          {CodeGenList Nodes CS StartAddr nil}
-         {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0)}
+         {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0 ?NLiveRegs)}
          BodyCode0 = BodyCode1#BodyCode2
          case {Switches getSwitch(runwithdebugger $)} then
             BodyCode = callBI('Debug.breakpoint' nil#nil 0)|BodyCode1
@@ -842,7 +842,9 @@ local
          EndLabel = {NewName}
          Code =
          lbl(StartLabel)|
-         definition(x(0) EndLabel pid('Toplevel abstraction' 0 '' 0 false true)
+         definition(x(0) EndLabel
+                    pid('Toplevel abstraction' 0 pos('' 0 0) [native]
+                        NLiveRegs)
                     unit {List.mapInd GRegs fun {$ I _} g(I - 1) end}
                     BodyCode)|
          endDefinition(StartLabel)|
@@ -939,18 +941,20 @@ local
 
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
-         VHd0 VTl0 V FileName Line PrintName PredId PredicateRef StateReg
+         VHd0 VTl0 V FileName Line Col PrintName PredId OuterNLiveRegs
+         PredicateRef StateReg
       in
          {@designator getVariable(?V)}
-         case @coord of unit then FileName = 'nofile' Line = 1
-         elseof C then FileName = C.1 Line = C.2
+         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
          PrintName = case {V getOrigin($)} of generated then @printName
                      else {V getPrintName($)}
                      end
-         PredId = pid(PrintName {Length @formalArgs} FileName Line
-                      {Member 'once' @procFlags}
-                      {Member 'native' @procFlags})
+         PredId = pid(PrintName {Length @formalArgs} pos(FileName Line Col)
+                      {Filter @procFlags
+                       fun {$ F} F==once orelse F==native end}
+                      OuterNLiveRegs)
 \ifdef DEBUG_DEFS
          {Show PredId}
 \endif
@@ -988,14 +992,16 @@ local
                       end
             case StateReg of none then
                BodyVInstr = BodyVInter
-               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+                                 ?OuterNLiveRegs)}
                VHd0 = VInter
             else StateVO OOSetSelf in
                StateVO = {New PseudoVariableOccurrence init(StateReg)}
                OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
                {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
                 BodyVInstr BodyVInter}
-               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+                                 ?OuterNLiveRegs)}
                VHd0 = vGetSelf(_ StateReg VInter)
             end
             VInter = vDefinition(_ {V reg($)} PredId PredicateRef
@@ -1003,7 +1009,7 @@ local
          else
             VInter FormalRegs AllRegs
             InnerBodyVInter InnerBodyVInstr InnerGRegs InnerCode
-            InnerDefinitionReg InnerPredId
+            InnerDefinitionReg InnerPredId InnerNLiveRegs
             OuterBodyVInstr OuterBodyVInter2 OuterGRegs OuterCode
          in
             {CS startDefinition()}
@@ -1020,7 +1026,7 @@ local
             case StateReg of none then
                InnerBodyVInstr = InnerBodyVInter
                {CS endDefinition(InnerBodyVInstr nil AllRegs
-                                 ?InnerGRegs ?InnerCode)}
+                                 ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
                VHd0 = VInter
             else StateVO OOSetSelf in
                StateVO = {New PseudoVariableOccurrence init(StateReg)}
@@ -1028,12 +1034,13 @@ local
                {MakeApplication OOSetSelf {CoordNoDebug @coord} [StateVO] CS
                 InnerBodyVInstr InnerBodyVInter}
                {CS endDefinition(InnerBodyVInstr nil AllRegs
-                                 ?InnerGRegs ?InnerCode)}
+                                 ?InnerGRegs ?InnerCode ?InnerNLiveRegs)}
                VHd0 = vGetSelf(_ StateReg VInter)
             end
             {CS newReg(?InnerDefinitionReg)}
             InnerPredId = {Adjoin PredId
-                           pid({VirtualString.toAtom PrintName#'/body'} 0)}
+                           pid({VirtualString.toAtom PrintName#'/body'} 0
+                               5: InnerNLiveRegs)}
             case @toCopy of nil then Reg OuterBodyVInter1 in
                {CS newReg(?Reg)}
                OuterBodyVInstr = vEquateLiteral(_ nil Reg OuterBodyVInter1)
@@ -1069,7 +1076,7 @@ local
             end
             OuterBodyVInter2 = vCall(_ InnerDefinitionReg nil unit nil)
             {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
-                              ?OuterGRegs ?OuterCode)}
+                              ?OuterGRegs ?OuterCode ?OuterNLiveRegs)}
             VInter = vDefinition(_ {V reg($)} PredId PredicateRef
                                  OuterGRegs OuterCode VTl0)
          end
@@ -1507,7 +1514,7 @@ local
    class CodeGenMethod
       feat hasDefaults MessagePatternVO
       meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
-         FileName Line SlowMeth FastMeth VInter1 VInter2
+         FileName Line Col SlowMeth FastMeth VInter1 VInter2
          X = unit
       in
          local PairList Rec in
@@ -1528,14 +1535,15 @@ local
          end
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
-         case @coord of unit then FileName = 'nofile' Line = 1
-         elseof C then FileName = C.1 Line = C.2
+         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
-         local PredId FormalRegs AllRegs BodyVInstr GRegs Code in
+         local PredId NLiveRegs FormalRegs AllRegs BodyVInstr GRegs Code in
             PredId = pid({String.toAtom
                           {VirtualString.toString
                            PrintName#','#{@label methPrintName($)}#'/fast'}}
-                         {Length @formalArgs} FileName Line false false)
+                         {Length @formalArgs} pos(FileName Line Col) nil
+                         NLiveRegs)
 \ifdef DEBUG_DEFS
             {Show PredId}
 \endif
@@ -1563,18 +1571,20 @@ local
                {CodeGenList @statements CS BodyVInstr nil}
             end
             statements <- unit   % hand it to the garbage collector
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+                              ?NLiveRegs)}
             {CS newReg(?FastMeth)}
             VHd = vDefinition(_ FastMeth PredId @predicateRef GRegs Code
                               VInter1)
          end
          local
-            PredId MessageVO FormalRegs BodyVInstr GRegs Code Cont1 Cont2 Cont3
+            PredId NLiveRegs MessageVO FormalRegs BodyVInstr GRegs
+            Code Cont1 Cont2 Cont3
          in
             PredId = pid({String.toAtom
                           {VirtualString.toString
                            PrintName#','#{@label methPrintName($)}#'/slow'}}
-                         1 FileName Line false false)
+                         1 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
             {Show PredId}
 \endif
@@ -1603,7 +1613,8 @@ local
                      init({{Formal getVariable($)} reg($)})}
                  end} CS Cont3 nil}
             end
-            {CS endDefinition(BodyVInstr FormalRegs nil ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs nil ?GRegs ?Code
+                              ?NLiveRegs)}
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter2)
          end
@@ -1672,21 +1683,21 @@ local
    end
    class CodeGenMethodWithDesignator
       meth makeQuadruple(PrintName CS Reg IsToplevel VHd VTl)
-         FileName Line X = unit SlowMeth VInter1
+         FileName Line Col X = unit SlowMeth VInter1
       in
          self.hasDefaults = {Some @formalArgs
                              fun {$ Formal} {Formal hasDefault($)} end}
-         case @coord of unit then FileName = 'nofile' Line = 1
-         elseof C then FileName = C.1 Line = C.2
+         case @coord of unit then FileName = 'nofile' Line = 1 Col = 0
+         elseof C then FileName = C.1 Line = C.2 Col = C.3
          end
          local
-            PredId MessageReg MessageVO BodyVInstr
+            PredId NLiveRegs MessageReg MessageVO BodyVInstr
             FormalRegs AllRegs GRegs Code Cont1 Cont2 Cont3 Cont4 Cont5
          in
             PredId = pid({String.toAtom
                           {VirtualString.toString
                            PrintName#','#{@label methPrintName($)}}}
-                         1 FileName Line false false)
+                         1 pos(FileName Line Col) nil NLiveRegs)
 \ifdef DEBUG_DEFS
             {Show PredId}
 \endif
@@ -1728,7 +1739,8 @@ local
                BodyVInstr = Cont2
                Cont5 = nil
             end
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+                              ?NLiveRegs)}
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId unit GRegs Code VInter1)
          end

@@ -25,9 +25,6 @@
 %%     instruction must be directly followed by another instruction,
 %%     with no garbage bytes in-between.  Labels may only reference
 %%     the address of instructions, not of the operands.
-%%  -- If an instruction carries a Posint argument (number of live
-%%     X registers), then no X register with a greater index may
-%%     be read subsequently (unless reinitialized).
 %%  -- There may not be an instruction sequence that executes
 %%     infinitely without offering the possibility of thread
 %%     preemption.  Since `return' is an instruction offering
@@ -162,7 +159,7 @@ setVariable         == createVariable(Arg1) setValue(Arg1)
    Register
 
 setVoid
-   Posint           number of arguments to set to `_'
+   Count            number of arguments to set to `_'
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -218,7 +215,7 @@ unifyValVar         == unifyValue(Arg1) unifyVariable(Arg2)
    Register
 
 unifyVoid
-   Posint           number of arguments to unify with `_'
+   Count            number of arguments to unify with `_'
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -251,7 +248,7 @@ unify
 %%
 
 allocateL
-   Posint           size of local environment to allocate, must be \= 0
+   Count            size of local environment to allocate, must be \= 0
 
 allocateL1          == allocateL(1)
 
@@ -307,79 +304,50 @@ deAllocateL10
 
 callBuiltin
    Builtinname
-   Arity            number of argument X registers; these survive the call
-                    unless Builtinname == 'Delay'
+   Arity            number of argument X registers; these may survive the call
 
-inlineFun1
-   Builtinname      one of a number of special functional builtins to apply
-   XRegisterIndex   argument register
-   XRegisterIndex   output register
-   Posint           number of X registers to save on suspension
-
-inlineFun2
-   Builtinname      one of a number of special functional builtins to apply
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   output register
-   Posint           number of X registers to save on suspension
-
-inlineFun3
-   Builtinname      one of a number of special functional builtins to apply
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   argument #3 register
-   XRegisterIndex   output register
-   Posint           number of X registers to save on suspension
-
-inlineRel1
-   Builtinname      one of a number of special relational builtins to apply
-   XRegisterIndex   argument register
-   Posint           number of X registers to save on suspension
-
-inlineRel2
-   Builtinname      one of a number of special relational builtins to apply
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   Posint           number of X registers to save on suspension
-
-inlineRel3
-   Builtinname      one of a number of special relational builtins to apply
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   argument #3 register
-   Posint           number of X registers to save on suspension
-
-inlineEqEq
-   Builtinname      must be one of '==' or '\\='
-   XRegisterIndex   argument #1 register
-   XRegisterIndex   argument #2 register
-   XRegisterIndex   argument #3 register
-   Posint           number of X registers to save on suspension
+callBI
+   Builtinname
+   Location
 
 inlineDot
    XRegisterIndex   argument #1 register
    Feature          argument #2 value
    XRegisterIndex   argument #3 register
-   Posint           number of X registers to save on suspension
    Cache            ignored
 
 inlineUparrow
    XRegisterIndex   argument #1 register
    XRegisterIndex   argument #2 register
    XRegisterIndex   argument #3 register
-   Posint           number of X registers to save on suspension
 
 inlineAt
    Literal          attribute
    XRegisterIndex   destination register
-   Posint           number of X registers to save on suspension
    Cache            ignored
 
 inlineAssign
    Literal          attribute
    XRegisterIndex   source register
-   Posint           number of X registers to save on suspension
    Cache            ignored
+
+inlinePlus1
+   XRegisterIndex   argument register
+   XRegisterIndex   result register
+
+inlineMinus1
+   XRegisterIndex   argument register
+   XRegisterIndex   result register
+
+inlinePlus
+   XRegisterIndex   argument #1 register
+   XRegisterIndex   argument #2 register
+   XRegisterIndex   result register
+
+inlineMinus
+   XRegisterIndex   argument #1 register
+   XRegisterIndex   argument #2 register
+   XRegisterIndex   result register
 
 %%
 %%  Applying Procedures
@@ -390,28 +358,28 @@ genCall
    Arity            must be 0
 
 call
-   Register         if this is an X register, it must have index == Arity
+   Register
    Arity
 
 tailCall            == call(Arg1 Arg2) return
-   Register         if this is an X register, it must have index == Arity
+   Register
    Arity
 
 marshalledFastCall
    Constant         procedure
-   Posint           2 * arity + (isTailCall? 1: 0)
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
 
 genFastCall
    PredicateRef     address of an AbstractionEntry
-   Posint           a flag: 1 iff tail call
+   ArityAndIsTail   2 * arity + (isTailCall? 1: 0)
 
 fastCall
    PredicateRef     address of an AbstractionEntry
-   Posint           ignored
+   Dummy            ignored
 
 fastTailCall        == fastCall(Arg1 Arg2) return
    PredicateRef     address of an AbstractionEntry
-   Posint           ignored
+   Dummy            ignored
 
 %%
 %%  Sending Messages
@@ -419,13 +387,13 @@ fastTailCall        == fastCall(Arg1 Arg2) return
 
 sendMsg
    Literal          method label
-   Register         object; if an X register, it must have index == width
+   Register         object
    RecordArity      method arity
    Cache            ignored
 
 tailSendMsg         == sendMsg(Arg1 Arg2 Arg3 Arg4) return
    Literal          method label
-   Register         object; if an X register, it must have index == width
+   Register         object
    RecordArity      method arity
    Cache            ignored
 
@@ -457,10 +425,6 @@ return
 thread
    Label            address to jump to after thread creation
 
-threadX
-   Posint           number of X registers to inherit
-   Label            address to jump to after thread creation
-
 %%
 %%  Exception Handling
 %%
@@ -485,7 +449,7 @@ popEx
 %%
 %%  Conditionals
 %%
-%%           createCond(LE _)/createOr/createEnumOr
+%%           createCond(LE)/createOr/createEnumOr
 %%  lbl(L1)  nextClause(L2)
 %%           clause
 %%           ...          % guard code: either a thread or a flat guard
@@ -509,7 +473,6 @@ popEx
 
 createCond
    Label            address of the `else' part
-   Posint           number of X registers to save on suspension
 
 createOr
 
@@ -533,7 +496,7 @@ nextClause
 lastClause
 
 %%
-%%           shallowGuard(LE _)
+%%           shallowGuard(LE)
 %%           ...          % shallow guard instructions
 %%           ...          % (consisting only of get{Number,Literal,Record}
 %%           ...          % and argument unifiers, put{Constant,Record} and
@@ -547,7 +510,6 @@ lastClause
 
 shallowGuard
    Label            where to jump to for the `else' part
-   Posint           number of X registers to save on suspension
 
 shallowThen
 
@@ -555,39 +517,47 @@ shallowThen
 %%  Simple Conditionals
 %%
 
-shallowTest1
-   Builtinname      one of a number of special relational builtins to apply
-   XRegisterIndex   builtin argument X register
-   Label            address to jump to on failure
-   Posint           number of X registers to save on suspension
+testBI
+   Builtinname
+   Location
+   Label
 
-shallowTest2
-   Builtinname      one of a number of special relational builtins to apply
-   XRegisterIndex   builtin argument #1 register
-   XRegisterIndex   builtin argument #2 register
-   Label            address to jump to on failure
-   Posint           number of X registers to save on suspension
+testLT              % Arg3 = (Arg1 < Arg2); if Arg3 then goto Arg4
+   XRegisterIndex
+   XRegisterIndex
+   XRegisterIndex
+   Label
 
-testLiteral         % if Arg1 == Arg2 then goto Arg3 else goto Arg4
+testLE              % Arg3 = (Arg1 <= Arg2); if Arg3 then goto Arg4
+   XRegisterIndex
+   XRegisterIndex
+   XRegisterIndex
+   Label
+
+testLiteral         % if Arg1 \= Arg2 then goto Arg3
    Register
    Literal
-   Label            address to jump to if equal
    Label            address to jump to if not equal
-   Posint           number of X registers to save on suspension
 
-testNumber          % if Arg1 == Arg2 then goto Arg3 else goto Arg4
+testNumber          % if Arg1 \= Arg2 then goto Arg3
    Register
    Number
-   Label            address to jump to if equal
    Label            address to jump to if not equal
-   Posint           number of X registers to save on suspension
+
+testList
+   Register
+   Label
+
+testRecord
+   Register
+   Literal
+   RecordArity
+   Label
 
 testBool
    Register         value to test
-   Label            address to jump to if true
    Label            address to jump to if false
    Label            address to jump to if neither true nor false
-   Posint           number of X registers to save on suspension
 
 %%
 %%  Optimized Pattern-Matching Statements and Argument Fetching
@@ -599,7 +569,7 @@ testBool
 %%  code.
 %%
 
-switchOnTerm
+match
    Register         value to test
    HashTableRef     destinations to choose from
 
@@ -611,7 +581,7 @@ getVarVar           == getVariable(Arg1) getVariable(Arg2)
    Register
 
 getVoid
-   Posint           number of arguments for which to skip matching
+   Count            number of arguments for which to skip matching
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -633,28 +603,24 @@ failure
 lockThread
    Label            where to continue after the critical section
    XRegisterIndex   index of register pointing to lock
-   Posint           number of X registers to save on suspension
 
 getSelf
    XRegisterIndex   destination register
 
-weakDet
-   Register         value to watch until bound (even if to a variable)
-   Posint           number of X registers to save on suspension
+setSelf
+   XRegisterIndex   source register
 
 debugEntry
    Literal          file name
    Number           line number
    Number           column number
    Literal          comment
-   Posint           number of live registers
 
 debugExit
    Literal          file name
    Number           line number
    Number           column number
    Literal          comment
-   Posint           number of live registers
 
 clearY
    YRegisterIndex
@@ -672,8 +638,9 @@ XRegisterIndex = int.
 YRegisterIndex = int.
 GRegisterIndex = int.
 Label = int.
-PredId = pid(PrintName Arity FileName Line CopyOnce).
-CopyOnce = bool.
+PredId = pid(PrintName Arity FileName Line Flags NLiveRegs).
+Flags = int.   % copyOnce, native
+NLiveRegs = int.
 PredicateRef = int.
 GRegRef = [Register].
 Arity = int.
@@ -685,7 +652,9 @@ Feature = atom
         | name
         | int.
 Variablename = atom.
-Posint = int.
+Count = int.
+Dummy = int.   % ignored
+Location = [x(RegisterIndex)]#[x(RegisterIndex)].
 RecordArity = int   % must be > 0 and a smallInt
             | [Feature].
 GenCallInfo = gci(GRegisterIndex  % register index of class/predicate

@@ -79,7 +79,7 @@ in
       attr
          Temporaries Permanents
          LastAliveRS ShortLivedTemps
-         UsedX LowestFreeX HighestUsedX
+         UsedX LowestFreeX HighestEverX
          UsedY LowestFreeY HighestEverY
          GRegRef HighestUsedG
          LocalEnvSize LocalVarnames
@@ -96,7 +96,9 @@ in
          AdjDict <- {NewDictionary}
          DoneDict <- {NewDictionary}
       end
-      meth doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs) RS NewCodeTl in
+      meth doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs ?NLiveRegs)
+         RS NewCodeTl
+      in
          Temporaries <- {NewDictionary}
          Permanents <- {NewDictionary}
          CodeStore, makeRegSet(?RS)
@@ -106,7 +108,7 @@ in
          ShortLivedTemps <- nil
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
-         HighestUsedX <- ~1
+         HighestEverX <- ~1
          UsedY <- {NewDictionary}
          LowestFreeY <- 0
          HighestEverY <- ~1
@@ -149,6 +151,7 @@ in
          else
             Code = @CodeHd#nil
          end
+         NLiveRegs = @HighestEverX + 1
          % free for garbage collection:
          {Dictionary.removeAll @Temporaries}
          Temporaries <- unit
@@ -469,11 +472,11 @@ in
             end
             case NewCont2 \= ~1 then
                continuations <- NewCont2|@continuations.2
-            else XsIn NLiveRegs XsOut Unifies in
-               Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn ?NLiveRegs
+            else XsIn XsOut Unifies in
+               Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
                                             false ?XsOut ?Unifies)
-               Emitter, DebugEntry(Coord 'call' NLiveRegs)
-               Emitter, Emit(callBI(Builtinname XsIn#XsOut NLiveRegs))
+               Emitter, DebugEntry(Coord 'call')
+               Emitter, Emit(callBI(Builtinname XsIn#XsOut))
                Emitter, EmitUnifies(Unifies)
                Emitter, DebugExit(Coord 'call')
             end
@@ -525,33 +528,29 @@ in
             end
             case Emitter, GetReg(Reg2 $) of none then
                case AlwaysSucceeds andthen Emitter, IsLast(Reg2 $) then skip
-               else X1 NLiveRegs X2 in
+               else X1 X2 in
                   Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-                  NLiveRegs = @HighestUsedX + 1
                   Emitter, PredictBuiltinOutput(Reg2 ?X2)
-                  Emitter, Emit(inlineDot(X1 Feature X2 NLiveRegs cache))
+                  Emitter, Emit(inlineDot(X1 Feature X2 cache))
                end
-            elseof R then X1 X2 NLiveRegs in
+            elseof R then X1 X2 in
                Emitter, AllocateAndInitializeAnyTemp(Reg1 ?X1)
-               NLiveRegs = @HighestUsedX + 1
                Emitter, AllocateShortLivedTemp(?X2)
-               Emitter, Emit(inlineDot(X1 Feature X2 NLiveRegs cache))
+               Emitter, Emit(inlineDot(X1 Feature X2 cache))
                Emitter, Emit(unify(X2 R))
             end
          [] vInlineAt(_ Literal Reg Cont) then
-            case Emitter, GetReg(Reg $) of none then NLiveRegs X in
-               NLiveRegs = @HighestUsedX + 1
+            case Emitter, GetReg(Reg $) of none then X in
                Emitter, PredictBuiltinOutput(Reg ?X)
-               Emitter, Emit(inlineAt(Literal X NLiveRegs cache))
-            elseof R then X NLiveRegs in
-               NLiveRegs = @HighestUsedX + 1
+               Emitter, Emit(inlineAt(Literal X cache))
+            elseof R then X in
                Emitter, AllocateShortLivedTemp(?X)
-               Emitter, Emit(inlineAt(Literal X NLiveRegs cache))
+               Emitter, Emit(inlineAt(Literal X cache))
                Emitter, Emit(unify(X R))
             end
          [] vInlineAssign(_ Literal Reg Cont) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
-            Emitter, Emit(inlineAssign(Literal X @HighestUsedX + 1 cache))
+            Emitter, Emit(inlineAssign(Literal X cache))
          [] vGetSelf(_ Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
                case Emitter, IsLast(Reg $) then skip
@@ -658,7 +657,7 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
             Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(createCond(Dest 0))
+            Emitter, Emit(createCond(Dest))
             Emitter, KillAllTemporaries()
             {FoldLTail VClauses
              proc {$ GuardLabel InitsRS0#Addr1#Addr2|Rest ?NextLabel} RegMap in
@@ -710,7 +709,7 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr3 ?Label3 ?Dest3)
             Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(shallowGuard(Dest3 @HighestUsedX + 1))
+            Emitter, Emit(shallowGuard(Dest3))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitGuard(Addr1)
             Emitter, Emit(shallowThen)
@@ -726,7 +725,7 @@ in
             Emitter, DebugExit(Coord 'conditional')
          [] vTestBool(_ Reg Addr1 Addr2 Addr3 Coord Cont InitsRS) then
             LocalEnv1 LocalEnv2 LocalEnv3
-            HasLocalEnv R OldContLabels Label1 Dest1 Label2 Dest2 Label3 Dest3
+            HasLocalEnv R OldContLabels Label2 Dest2 Label3 Dest3
             RegMap1 RegMap2 RegMap3
          in
             Emitter, DoInits(InitsRS Cont)
@@ -746,12 +745,10 @@ in
             elseof XYG then R = XYG
             end
             Emitter, PushContLabel(Cont ?OldContLabels)
-            Emitter, Dereference(Addr1 ?Label1 ?Dest1)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
             Emitter, Dereference(Addr3 ?Label3 ?Dest3)
             Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(testBool(R Dest1 Dest2 Dest3 @HighestUsedX + 1))
-            Emitter, Emit(lbl(Label1))
+            Emitter, Emit(testBool(R Dest2 Dest3))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -767,7 +764,7 @@ in
             Emitter, DebugExit(Coord 'conditional')
          [] vTestBuiltin(_ Builtinname Regs Addr1 Addr2 Cont InitsRS) then
             LocalEnv1 LocalEnv2
-            HasLocalEnv OldContLabels Label2 Dest2 BIInfo XsIn NLiveRegs
+            HasLocalEnv OldContLabels Label2 Dest2 BIInfo XsIn
             XsOut RegMap1 RegMap2
          in
             Emitter, DoInits(InitsRS Cont)
@@ -778,9 +775,9 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr2 ?Label2 ?Dest2)
             BIInfo = {GetBuiltinInfo Builtinname}
-            Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn ?NLiveRegs
+            Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
                                          true ?XsOut nil)
-            Emitter, Emit(testBI(Builtinname XsIn#XsOut Dest2 NLiveRegs))
+            Emitter, Emit(testBI(Builtinname XsIn#XsOut Dest2))
             Emitter, SaveAllRegisterMappings(?RegMap1)
             Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
             Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -815,8 +812,7 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
             Emitter, DebugEntry(Coord 'conditional')
-            Emitter, Emit(match(R ht(Dest NewVHashTableEntries)
-                                @HighestUsedX + 1))
+            Emitter, Emit(match(R ht(Dest NewVHashTableEntries)))
             NewVHashTableEntries =
             {Map VHashTableEntries
              proc {$ VHashTableEntry ?NewEntry} Addr Label Dest RegMap in
@@ -867,7 +863,7 @@ in
             end
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, DebugEntry(Coord 'lock')
-            Emitter, Emit(lockThread(Dest X @HighestUsedX + 1))
+            Emitter, Emit(lockThread(Dest X))
          [] vLockEnd(_ Coord Cont Dest) then ContLabel Dest0 in
             Emitter, Dereference(Cont ?ContLabel ?Dest0)
             Dest = case self.debugInfoControlSwitch then ContLabel
@@ -885,8 +881,8 @@ in
       %% Auxiliary Methods
       %%
 
-      meth DebugEntry(Coord Comment NLiveRegs <= ~1)
-         case {IsStep Coord} then FileName Line Column Kind N in
+      meth DebugEntry(Coord Comment)
+         case {IsStep Coord} then FileName Line Column Kind in
             case Coord of fineStep(F L C) then
                FileName = F Line = L Column = C Kind = 'f'
             [] fineStep(F L C _ _ _) then
@@ -896,17 +892,14 @@ in
             [] coarseStep(F L C _ _ _) then
                FileName = F Line = L Column = C Kind = 'c'
             end
-            N = case NLiveRegs \= ~1 then NLiveRegs
-                else @HighestUsedX + 1
-                end
             Emitter,
             Emit(debugEntry(FileName Line Column
-                            {VirtualString.toAtom Comment#'/'#Kind} N))
+                            {VirtualString.toAtom Comment#'/'#Kind}))
          else skip
          end
       end
-      meth DebugExit(Coord Comment NLiveRegs <= ~1)
-         case {IsStep Coord} then FileName Line Column Kind N in
+      meth DebugExit(Coord Comment)
+         case {IsStep Coord} then FileName Line Column Kind in
             case Coord of fineStep(F L C) then
                FileName = F Line = L Column = C Kind = 'f'
             [] fineStep(_ _ _ F L C) then
@@ -916,12 +909,9 @@ in
             [] coarseStep(_ _ _ F L C) then
                FileName = F Line = L Column = C Kind = 'c'
             end
-            N = case NLiveRegs \= ~1 then NLiveRegs
-                else @HighestUsedX + 1
-                end
             Emitter,
             Emit(debugExit(FileName Line Column
-                           {VirtualString.toAtom Comment#'/'#Kind} N))
+                           {VirtualString.toAtom Comment#'/'#Kind}))
          else skip
          end
       end
@@ -950,12 +940,11 @@ in
             elseof vCallBuiltin(_ 'New' [ClassReg !Reg ObjReg] Coord Cont2)
             then
                case Emitter, DoesNotOccurIn(Reg Cont2 $) then
-                  X1 NLiveRegs X2
+                  X1 X2
                in
                   Emitter, AllocateAndInitializeAnyTemp(ClassReg ?X1)
-                  NLiveRegs = @HighestUsedX + 1
                   Emitter, PredictTemp(ObjReg ?X2)
-                  Emitter, Emit(callBI('newObject' [X1]#[X2] NLiveRegs))
+                  Emitter, Emit(callBI('newObject' [X1]#[X2]))
                   %--** maybe X1 may die here?
                   Emitter, EmitSendMsg(ObjReg Literal RecordArity
                                        VArgs Coord Cont2)
@@ -1177,9 +1166,9 @@ in
             R = R0
             NLiveRegs = Arity
          end
-         Emitter, DebugEntry(Coord 'call' NLiveRegs)
+         Emitter, DebugEntry(Coord 'call')
          Emitter, Emit(Instr)
-         Emitter, DebugExit(Coord 'call' 0)
+         Emitter, DebugExit(Coord 'call')
       end
       meth SetArguments(TheArity ArgInits Regs)
          %%
@@ -1446,8 +1435,7 @@ in
             SHd = STl
          end
       end
-      meth AllocateBuiltinArgs(Regs IMods ?XsIn ?NLiveRegs
-                               IsTestBuiltin ?XsOut ?Unifies)
+      meth AllocateBuiltinArgs(Regs IMods ?XsIn IsTestBuiltin ?XsOut ?Unifies)
          case IMods of IMod|IModr then
             Reg|Regr = Regs
             X|Xr = XsIn
@@ -1464,13 +1452,11 @@ in
             else
                Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             end
-            Emitter, AllocateBuiltinArgs(Regr IModr ?Xr ?NLiveRegs
+            Emitter, AllocateBuiltinArgs(Regr IModr ?Xr
                                          IsTestBuiltin ?XsOut ?Unifies)
-         else NLiveRegs0 in
+         else
             XsIn = nil
-            NLiveRegs0 = @HighestUsedX + 1
             Emitter, AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
-            Emitter, MaxNLiveRegs(Unifies NLiveRegs0 ?NLiveRegs)
          end
       end
       meth AllocateBuiltinOutputs(Regs IsTestBuiltin ?XsOut ?Unifies)
@@ -1490,17 +1476,6 @@ in
          [] nil then
             XsOut = nil
             Unifies = nil
-         end
-      end
-      meth MaxNLiveRegs(Unifies NLiveRegs0 $)
-         case Unifies of U|Ur then x(I)#_ = U in
-            case I > NLiveRegs0 then
-               Emitter, MaxNLiveRegs(Ur I $)
-            else
-               Emitter, MaxNLiveRegs(Ur NLiveRegs0 $)
-            end
-         [] nil then
-            NLiveRegs0
          end
       end
       meth EmitUnifies(Unifies)
@@ -1552,7 +1527,7 @@ in
       meth EmitTestConstant(InstrLabel Reg Constant Addr1 Addr2
                             Coord Cont InitsRS ThisAddr)
          LocalEnv1 LocalEnv2
-         HasLocalEnv R OldContLabels Label1 Dest1 Label2 Dest2 RegMap1 RegMap2
+         HasLocalEnv R OldContLabels Label2 Dest2 RegMap1 RegMap2
       in
          Emitter, DoInits(InitsRS Cont)
          Emitter, PrepareShared(Addr1 ?LocalEnv1)
@@ -1570,11 +1545,9 @@ in
          elseof XYG then R = XYG
          end
          Emitter, PushContLabel(Cont ?OldContLabels)
-         Emitter, Dereference(Addr1 ?Label1 ?Dest1)
          Emitter, Dereference(Addr2 ?Label2 ?Dest2)
          Emitter, DebugEntry(Coord 'conditional')
-         Emitter, Emit(InstrLabel(R Constant Dest1 Dest2 @HighestUsedX + 1))
-         Emitter, Emit(lbl(Label1))
+         Emitter, Emit(InstrLabel(R Constant Dest2))
          Emitter, SaveAllRegisterMappings(?RegMap1)
          Emitter, EmitAddrInLocalEnv(Addr1 HasLocalEnv)
          Emitter, RestoreAllRegisterMappings(RegMap1)
@@ -1820,15 +1793,15 @@ in
       end
       meth ReserveTemps(Index)
          % All temporaries lower than Index are reserved; i.e., LowestFreeX
-         % and HighestUsedX are set such that AllocateAnyTemp will not
+         % and HighestEverX are set such that AllocateAnyTemp will not
          % choose any conflicting index.
-         case @HighestUsedX >= Index then
+         case @HighestEverX >= Index then
             case @LowestFreeX < Index then
                LowestFreeX <- {NextFreeIndex @UsedX Index}
             else skip
             end
          else
-            HighestUsedX <- Index - 1
+            HighestEverX <- Index - 1
             LowestFreeX <- Index
          end
       end
@@ -1836,8 +1809,8 @@ in
          case Emitter, GetTemp(Reg $) of none then I in
             I = @LowestFreeX
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
-            case @HighestUsedX >= I then skip
-            else HighestUsedX <- I
+            case @HighestEverX >= I then skip
+            else HighestEverX <- I
             end
             {Dictionary.put @Temporaries Reg X=x(I)}
             {Dictionary.put @UsedX I 1}
@@ -1850,8 +1823,8 @@ in
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
          else skip
          end
-         case @HighestUsedX >= I then skip
-         else HighestUsedX <- I
+         case @HighestEverX >= I then skip
+         else HighestEverX <- I
          end
          {Dictionary.put @Temporaries Reg X=x(I)}
          {Dictionary.put @UsedX I 1}
@@ -1865,8 +1838,8 @@ in
             LowestFreeX <- {NextFreeIndex @UsedX I + 1}
          else skip
          end
-         case @HighestUsedX >= I then skip
-         else HighestUsedX <- I
+         case @HighestEverX >= I then skip
+         else HighestEverX <- I
          end
          {Dictionary.put @UsedX I 1}
          X = x(I)
@@ -1953,9 +1926,6 @@ in
             {Dictionary.remove @UsedX I}
             case @LowestFreeX < I then skip
             else LowestFreeX <- I
-            end
-            case I < @HighestUsedX then skip
-            else HighestUsedX <- {LastUsedIndex @UsedX I - 1}
             end
          elseof N then
             {Dictionary.put @UsedX I N - 1}
@@ -2189,13 +2159,12 @@ in
          Emitter, FlushShortLivedTemps()
          {Dictionary.clone @Temporaries}#{Dictionary.clone @UsedX}#
          {Dictionary.clone @Permanents}#{Dictionary.clone @UsedY}#
-         @LowestFreeX#@HighestUsedX#@LowestFreeY#
-         {RegSet.copy @LastAliveRS}#@HighestUsedG
+         @LowestFreeX#@LowestFreeY#{RegSet.copy @LastAliveRS}#@HighestUsedG
       end
       meth RestoreAllRegisterMappings(RegisterMapping)
          OldTemporaries#OldUsedX#OldPermanents#OldUsedY#
-         OldLowestFreeX#OldHighestUsedX#OldLowestFreeY#
-         OldLastAliveRS#OldHighestUsedG = RegisterMapping
+         OldLowestFreeX#OldLowestFreeY#OldLastAliveRS#OldHighestUsedG
+         = RegisterMapping
       in
          LastAliveRS <- OldLastAliveRS
          {Dictionary.removeAll @Temporaries}
@@ -2211,7 +2180,6 @@ in
          {Dictionary.removeAll @UsedY}
          UsedY <- OldUsedY
          LowestFreeX <- OldLowestFreeX
-         HighestUsedX <- OldHighestUsedX
          LowestFreeY <- OldLowestFreeY
          ShortLivedTemps <- nil
       end
@@ -2224,7 +2192,6 @@ in
           end}
          {Dictionary.removeAll @UsedX}
          LowestFreeX <- 0
-         HighestUsedX <- ~1
          ShortLivedTemps <- nil
       end
 

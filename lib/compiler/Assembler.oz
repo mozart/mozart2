@@ -49,7 +49,6 @@ local
       StoreFeature            = {`Builtin` storeFeature            2}
       StoreConstant           = {`Builtin` storeConstant           2}
       StoreInt                = {`Builtin` storeInt                2}
-      StoreVariablename       = {`Builtin` storeVariablename       2}
       StoreRegisterIndex      = {`Builtin` storeRegisterIndex      2}
       StorePredicateRef       = {`Builtin` storePredicateRef       2}
       StoreRecordArity        = {`Builtin` storeRecordArity        2}
@@ -87,16 +86,9 @@ local
 
       local
          BIStorePredId = {`Builtin` storePredId 6}
-         BIpredIdFlags = {`Builtin` predIdFlags 2}
-         NativeFlag
-         CopyOnceFlag
       in
-         {BIpredIdFlags CopyOnceFlag NativeFlag}
-         proc {StorePredId CodeBlock pid(Name Arity File Line CopyOnce Native)}
-            CopyFlag = case CopyOnce then CopyOnceFlag else 0 end
-            NatFlag  = case Native   then NativeFlag else 0 end
-         in
-            {BIStorePredId CodeBlock Name Arity File Line NatFlag+CopyFlag}
+         proc {StorePredId CodeBlock pid(Name Arity Pos Flags NLiveRegs)}
+            {BIStorePredId CodeBlock Name Arity Pos Flags NLiveRegs}
          end
       end
 
@@ -276,31 +268,26 @@ local
             [] branch(L) then AssemblerClass, declareLabel(L)
             [] 'thread'(L) then AssemblerClass, declareLabel(L)
             [] exHandler(L) then AssemblerClass, declareLabel(L)
-            [] createCond(L _) then AssemblerClass, declareLabel(L)
+            [] createCond(L) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
-            [] shallowGuard(L _) then AssemblerClass, declareLabel(L)
-            [] testBI(_ _ L _) then AssemblerClass, declareLabel(L)
-            [] testLT(X1 X2 X3 L NLiveRegs) then
+            [] shallowGuard(L) then AssemblerClass, declareLabel(L)
+            [] testBI(_ _ L) then AssemblerClass, declareLabel(L)
+            [] testLT(X1 X2 X3 L) then
                AssemblerClass, declareLabel(L)
-            [] testLE(X1 X2 X3 L NLiveRegs) then
+            [] testLE(X1 X2 X3 L) then
                AssemblerClass, declareLabel(L)
-            [] testLiteral(_ _ L1 L2 _) then
+            [] testLiteral(_ _ L) then
+               AssemblerClass, declareLabel(L)
+            [] testNumber(_ _ L) then
+               AssemblerClass, declareLabel(L)
+            [] testBool(_ L1 L2) then
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
-            [] testNumber(_ _ L1 L2 _) then
-               AssemblerClass, declareLabel(L1)
-               AssemblerClass, declareLabel(L2)
-            [] testBool(_ L1 L2 L3 _) then
-               AssemblerClass, declareLabel(L1)
-               AssemblerClass, declareLabel(L2)
-               AssemblerClass, declareLabel(L3)
-            [] testRecord(_ _ _ L1 L2 _) then
-               AssemblerClass, declareLabel(L1)
-               AssemblerClass, declareLabel(L2)
-            [] testList(_ L1 L2 _) then
-               AssemblerClass, declareLabel(L1)
-               AssemblerClass, declareLabel(L2)
-            [] match(_ HT NLiveRegs) then ht(L Cases) = HT in
+            [] testRecord(_ _ _ L) then
+               AssemblerClass, declareLabel(L)
+            [] testList(_ L) then
+               AssemblerClass, declareLabel(L)
+            [] match(_ HT) then ht(L Cases) = HT in
                AssemblerClass, declareLabel(L)
                {ForAll Cases
                 proc {$ Case}
@@ -309,7 +296,7 @@ local
                    [] onRecord(_ _ L) then AssemblerClass, declareLabel(L)
                    end
                 end}
-            [] lockThread(L _ _) then AssemblerClass, declareLabel(L)
+            [] lockThread(L _) then AssemblerClass, declareLabel(L)
             else skip
             end
             @InstrsTl = Instr|NewTl
@@ -392,46 +379,41 @@ local
             [] exHandler(L) then A in
                A = {Dictionary.get @LabelDict L}
                exHandler(A)
-            [] createCond(L X) then A in
+            [] createCond(L) then A in
                A = {Dictionary.get @LabelDict L}
-               createCond(A X)
+               createCond(A)
             [] nextClause(L) then A in
                A = {Dictionary.get @LabelDict L}
                nextClause(A)
-            [] shallowGuard(L X) then A in
+            [] shallowGuard(L) then A in
                A = {Dictionary.get @LabelDict L}
-               shallowGuard(A X)
-            [] testBI(X1 X2 L X3) then A in
+               shallowGuard(A)
+            [] testBI(X1 X2 L) then A in
                A = {Dictionary.get @LabelDict L}
-               testBI(X1 X2 A X3)
-            [] testLT(X1 X2 X3 L X4) then A in
+               testBI(X1 X2 A)
+            [] testLT(X1 X2 X3 L) then A in
                A = {Dictionary.get @LabelDict L}
-               testLT(X1 X2 X3 A X4)
-            [] testLE(X1 X2 X3 L X4) then A in
+               testLT(X1 X2 X3 A)
+            [] testLE(X1 X2 X3 L) then A in
                A = {Dictionary.get @LabelDict L}
-               testLE(X1 X2 X3 A X4)
-            [] testLiteral(X1 X2 L1 L2 X3) then A1 A2 in
+               testLE(X1 X2 X3 A)
+            [] testLiteral(X1 X2 L) then A in
+               A = {Dictionary.get @LabelDict L}
+               testLiteral(X1 X2 A)
+            [] testNumber(X1 X2 L) then A in
+               A = {Dictionary.get @LabelDict L}
+               testNumber(X1 X2 A)
+            [] testRecord(X1 X2 X3 L) then A in
+               A = {Dictionary.get @LabelDict L}
+               testRecord(X1 X2 X3 A)
+            [] testList(X1 L) then A in
+               A = {Dictionary.get @LabelDict L}
+               testList(X1 A)
+            [] testBool(X1 L1 L2) then A1 A2 in
                A1 = {Dictionary.get @LabelDict L1}
                A2 = {Dictionary.get @LabelDict L2}
-               testLiteral(X1 X2 A1 A2 X3)
-            [] testNumber(X1 X2 L1 L2 X3) then A1 A2 in
-               A1 = {Dictionary.get @LabelDict L1}
-               A2 = {Dictionary.get @LabelDict L2}
-               testNumber(X1 X2 A1 A2 X3)
-            [] testRecord(X1 X2 X3 L1 L2 X4) then A1 A2 in
-               A1 = {Dictionary.get @LabelDict L1}
-               A2 = {Dictionary.get @LabelDict L2}
-               testRecord(X1 X2 X3 A1 A2 X4)
-            [] testList(X1 L1 L2 X2) then A1 A2 in
-               A1 = {Dictionary.get @LabelDict L1}
-               A2 = {Dictionary.get @LabelDict L2}
-               testList(X1 A1 A2 X2)
-            [] testBool(X1 L1 L2 L3 X2) then A1 A2 A3 in
-               A1 = {Dictionary.get @LabelDict L1}
-               A2 = {Dictionary.get @LabelDict L2}
-               A3 = {Dictionary.get @LabelDict L3}
-               testBool(X1 A1 A2 A3 X2)
-            [] match(X HT NLiveRegs) then ht(L Cases) = HT A NewCases in
+               testBool(X1 A1 A2)
+            [] match(X HT) then ht(L Cases) = HT A NewCases in
                A = {Dictionary.get @LabelDict L}
                NewCases = {Map Cases
                            fun {$ Case}
@@ -443,10 +425,10 @@ local
                                  onRecord(X1 X2 A)
                               end
                            end}
-               match(X ht(A NewCases) NLiveRegs)
-            [] lockThread(L X1 X2) then A in
+               match(X ht(A NewCases))
+            [] lockThread(L X) then A in
                A = {Dictionary.get @LabelDict L}
-               lockThread(A X1 X2)
+               lockThread(A X)
             else
                Instr
             end
@@ -691,24 +673,24 @@ local
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] callBI(Builtinname Args NLiveRegs) then BIInfo in
+         [] callBI(Builtinname Args) then BIInfo in
             BIInfo = {GetBuiltinInfo Builtinname}
             case Assembler.debugInfoControl then
                {Assembler append(I1)}
             elsecase Builtinname of '+1' then [X1]#[X2] = Args in
-               {Assembler append(inlinePlus1(X1 X2 NLiveRegs))}
+               {Assembler append(inlinePlus1(X1 X2))}
             [] '-1' then [X1]#[X2] = Args in
-               {Assembler append(inlineMinus1(X1 X2 NLiveRegs))}
+               {Assembler append(inlineMinus1(X1 X2))}
             [] '+' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlinePlus(X1 X2 X3 NLiveRegs))}
+               {Assembler append(inlinePlus(X1 X2 X3))}
             [] '-' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineMinus(X1 X2 X3 NLiveRegs))}
+               {Assembler append(inlineMinus(X1 X2 X3))}
             [] '>' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('<' [X2 X1]#Out NLiveRegs))}
+               {Assembler append(callBI('<' [X2 X1]#Out))}
             [] '>=' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('=<' [X2 X1]#Out NLiveRegs))}
+               {Assembler append(callBI('=<' [X2 X1]#Out))}
             [] '^' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineUparrow(X1 X2 X3 NLiveRegs))}
+               {Assembler append(inlineUparrow(X1 X2 X3))}
             else
                {Assembler append(I1)}
             end
@@ -731,34 +713,27 @@ local
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
-         [] call(R Arity) then NewR in
-            % this test is needed to ensure correctness, since the emulator
-            % does not save X registers with indices > Arity:
-            case {Label R} == x andthen R.1 > Arity then
-               {Assembler append(move(R NewR=x(Arity)))}
-            else
-               NewR = R
-            end
-            case Rest of deAllocateL(I)|return|Rest then NewNewR in
-               case NewR of y(_) then
-                  {Assembler append(move(NewR NewNewR=x(Arity)))}
+         [] call(R Arity) then
+            case Rest of deAllocateL(I)|return|Rest then NewR in
+               case R of y(_) then
+                  {Assembler append(move(R NewR=x(Arity)))}
                else
-                  NewNewR = NewR
+                  NewR = R
                end
                {MakeDeAllocate I Assembler}
-               {Assembler append(tailCall(NewNewR Arity))}
+               {Assembler append(tailCall(NewR Arity))}
                {EliminateDeadCode Rest Assembler}
-            elseof lbl(_)|deAllocateL(I)|_ then NewNewR in
-               case NewR of y(_) then
-                  {Assembler append(move(NewR NewNewR=x(Arity)))}
+            elseof lbl(_)|deAllocateL(I)|_ then NewR in
+               case R of y(_) then
+                  {Assembler append(move(R NewR=x(Arity)))}
                else
-                  NewNewR = NewR
+                  NewR = R
                end
                {MakeDeAllocate I Assembler}
-               {Assembler append(tailCall(NewNewR Arity))}
+               {Assembler append(tailCall(NewR Arity))}
                {Peephole Rest Assembler}
             else
-               {Assembler append(call(NewR Arity))}
+               {Assembler append(call(R Arity))}
                {Peephole Rest Assembler}
             end
          [] genFastCall(PredicateRef ArityAndIsTail) then
@@ -799,37 +774,28 @@ local
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
-         [] sendMsg(Literal R RecordArity Cache) then NewR Arity in
-            % this test is needed to ensure correctness, since the emulator
-            % does not save X registers with indices > Arity:
+         [] sendMsg(Literal R RecordArity Cache) then Arity in
             Arity = {RecordArityWidth RecordArity}
-            case {Label R} == x andthen R.1 > Arity then
-               {Assembler append(move(R NewR=x(Arity)))}
-            else
-               NewR = R
-            end
-            case Rest of deAllocateL(I)|return|Rest then NewNewR in
-               case NewR of y(_) then
-                  {Assembler append(move(NewR NewNewR=x(Arity)))}
+            case Rest of deAllocateL(I)|return|Rest then NewR in
+               case R of y(_) then
+                  {Assembler append(move(R NewR=x(Arity)))}
                else
-                  NewNewR = NewR
+                  NewR = R
                end
                {MakeDeAllocate I Assembler}
-               {Assembler
-                append(tailSendMsg(Literal NewNewR RecordArity Cache))}
+               {Assembler append(tailSendMsg(Literal NewR RecordArity Cache))}
                {EliminateDeadCode Rest Assembler}
-            elseof lbl(_)|deAllocateL(I)|_ then NewNewR in
-               case NewR of y(_) then
-                  {Assembler append(move(NewR NewNewR=x(Arity)))}
+            elseof lbl(_)|deAllocateL(I)|_ then NewR in
+               case R of y(_) then
+                  {Assembler append(move(R NewR=x(Arity)))}
                else
-                  NewNewR = NewR
+                  NewR = R
                end
                {MakeDeAllocate I Assembler}
-               {Assembler
-                append(tailSendMsg(Literal NewNewR RecordArity Cache))}
+               {Assembler append(tailSendMsg(Literal NewR RecordArity Cache))}
                {Peephole Rest Assembler}
             else
-               {Assembler append(sendMsg(Literal NewR RecordArity Cache))}
+               {Assembler append(sendMsg(Literal R RecordArity Cache))}
                {Peephole Rest Assembler}
             end
          [] applMeth(AMI R) then
@@ -865,31 +831,27 @@ local
                {Assembler append(clause)}
                {Peephole Rest Assembler}
             end
-         [] shallowGuard(L1 NLiveRegs) then
+         [] shallowGuard(L1) then
             case Rest of shallowThen|Rest then
                {Peephole Rest Assembler}
-            elseof getNumber(Number R)|branch(L)|lbl(L)|shallowThen|Rest
-            then L2 in
-               {Assembler newLabel(?L2)}
-               {Assembler append(testNumber(R Number L2 L1 NLiveRegs))}
-               {Assembler setLabel(L2)}
+            elseof getNumber(Number R)|branch(L2)|lbl(L2)|shallowThen|Rest
+            then
+               {Assembler append(testNumber(R Number L1))}
                {Peephole Rest Assembler}
-            elseof getLiteral(Literal R)|branch(L)|lbl(L)|shallowThen|Rest
-            then L2 in
-               {Assembler newLabel(?L2)}
-               {Assembler append(testLiteral(R Literal L2 L1 NLiveRegs))}
-               {Assembler setLabel(L2)}
+            elseof getLiteral(Literal R)|branch(L2)|lbl(L2)|shallowThen|Rest
+            then
+               {Assembler append(testLiteral(R Literal L1))}
                {Peephole Rest Assembler}
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
-         [] testBI(Builtinname Args L1 NLiveRegs) then NewInstrs in
+         [] testBI(Builtinname Args L1) then NewInstrs in
             case Rest of branch(L2)|NewRest then BIInfo in
                BIInfo = {GetBuiltinInfo Builtinname}
                case {CondSelect BIInfo negated unit} of unit then skip
                elseof NegatedBuiltinname then
-                  NewInstrs = (testBI(NegatedBuiltinname Args L2 NLiveRegs)|
+                  NewInstrs = (testBI(NegatedBuiltinname Args L2)|
                                'skip'|branch(L1)|NewRest)
                end
             else skip
@@ -898,60 +860,54 @@ local
                {Peephole NewInstrs Assembler}
             else
                case Builtinname of '<' then [X1 X2]#[X3] = Args in
-                  {Assembler append(testLT(X1 X2 X3 L1 NLiveRegs))}
+                  {Assembler append(testLT(X1 X2 X3 L1))}
                [] '=<' then [X1 X2]#[X3] = Args in
-                  {Assembler append(testLE(X1 X2 X3 L1 NLiveRegs))}
+                  {Assembler append(testLE(X1 X2 X3 L1))}
                [] '>='then [X1 X2]#[X3] = Args in
-                  {Assembler append(testLE(X2 X1 X3 L1 NLiveRegs))}
+                  {Assembler append(testLE(X2 X1 X3 L1))}
                [] '>' then [X1 X2]#[X3] = Args in
-                  {Assembler append(testLT(X2 X1 X3 L1 NLiveRegs))}
+                  {Assembler append(testLT(X2 X1 X3 L1))}
                else
                   {Assembler append(I1)}
                end
                {Peephole Rest Assembler}
             end
-         [] testLiteral(_ _ _ _ _) then
-            {Assembler append(I1)}
-            {EliminateDeadCode Rest Assembler}
-         [] testNumber(_ _ _ _ _) then
-            {Assembler append(I1)}
-            {EliminateDeadCode Rest Assembler}
-         [] testRecord(R Literal Arity L1 L2 NLiveRegs) then
+         [] testRecord(R Literal Arity L) then
             case Literal == '|' andthen Arity == 2 then
-               {Assembler append(testList(R L1 L2 NLiveRegs))}
+               {Assembler append(testList(R L))}
             else
                {Assembler append(I1)}
             end
-            {EliminateDeadCode Rest Assembler}
-         [] testList(_ _ _ _) then
-            {Assembler append(I1)}
-            {EliminateDeadCode Rest Assembler}
-         [] testBool(_ _ _ _ _) then
-            {Assembler append(I1)}
-            {EliminateDeadCode Rest Assembler}
-         [] match(R HT NLiveRegs) then ht(ElseL Cases) = HT in
-            case Cases of [onScalar(true TrueL) onScalar(false FalseL)] then
-               {Assembler append(testBool(R TrueL FalseL ElseL NLiveRegs))}
-            elseof [onScalar(false FalseL) onScalar(true TrueL)] then
-               {Assembler append(testBool(R TrueL FalseL ElseL NLiveRegs))}
-            elseof [onScalar(X L)] then
-               case {IsNumber X} then
-                  {Assembler append(testNumber(R X L ElseL NLiveRegs))}
-               elsecase {IsLiteral X} then
-                  {Assembler append(testLiteral(R X L ElseL NLiveRegs))}
+           {Peephole Rest Assembler}
+         [] match(R HT) then ht(ElseL Cases) = HT in
+            case Cases of [onScalar(X L)] then
+               case Rest of lbl(!L)|_ then
+                  case {IsNumber X} then
+                     {Assembler append(testNumber(R X ElseL))}
+                  elsecase {IsLiteral X} then
+                     {Assembler append(testLiteral(R X ElseL))}
+                  end
+                  {Peephole Rest Assembler}
+               else
+                  {Assembler append(I1)}
+                  {EliminateDeadCode Rest Assembler}
                end
             elseof [onRecord(Label RecordArity L)] then
-               case Label == '|' andthen RecordArity == 2 then
-                  {Assembler
-                   append(testList(R L ElseL NLiveRegs))}
+               case Rest of lbl(!L)|_ then
+                  case Label == '|' andthen RecordArity == 2 then
+                     {Assembler append(testList(R ElseL))}
+                  else
+                     {Assembler append(testRecord(R Label RecordArity ElseL))}
+                  end
+                  {Peephole Rest Assembler}
                else
-                  {Assembler
-                   append(testRecord(R Label RecordArity L ElseL NLiveRegs))}
+                  {Assembler append(I1)}
+                  {EliminateDeadCode Rest Assembler}
                end
             else
                {Assembler append(I1)}
+               {EliminateDeadCode Rest Assembler}
             end
-            {EliminateDeadCode Rest Assembler}
          [] getVariable(R1) then
             case Rest of getVariable(R2)|Rest then
                {Assembler append(getVarVar(R1 R2))}

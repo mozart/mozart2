@@ -181,7 +181,7 @@ in
    functor NewModule prop once
 
    import
-      Pickle System OS Boot Native Property
+      System OS Boot Property Resolve
 
    export
       root:    RM
@@ -218,12 +218,15 @@ in
             if {IsNative Url}
                %% if yes, use the Foreign loader
             then {self native(Url $)}
-            else {self Apply(Url {Pickle.load {URL.toVs Url}} $)} end
+            else {self Apply(Url {Resolve.pickle.load Url} $)} end
          end
 
          meth native(Url $)
             {self trace('native module' Url)}
-            {Native.load {URL.toVs Url}#'-'#PLATFORM}
+            %% note that this method will not attempt to
+            %% localize. A derived class could redefine it
+            %% to attempt localization.
+            {Resolve.native.native {URL.toVs Url}#'-'#PLATFORM}
          end
 
          meth systemResolve(Auth Url $)
@@ -252,7 +255,7 @@ in
          in
             if {IsNative U}
             then {self native(U $)}
-            else {self Apply(Url {Pickle.load U} $)} end
+            else {self Apply(Url {Resolve.pickle.load U} $)} end
          end
 
          meth system(Url $)

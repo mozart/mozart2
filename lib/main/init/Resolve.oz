@@ -50,6 +50,7 @@ local
    BURL_localize        = BURL.localize
    BURL_open            = BURL.open
    BURL_load            = BURL.load
+   Native_load          = Native.load
    \insert UrlExpand.oz
 
    %% the default way of applying a method to a parsed URL: all system
@@ -62,13 +63,16 @@ local
       try {M {URL.toString U} V} OK=true
       catch system(...) then     OK=false
       [] error(dp(generic 'Error in URL handler' _) ...)
+      then                       OK=false
+      [] error(foreign(dlOpen _ _) ...)
       then                       OK=false end
-      case OK then raise found(V) end else skip end
+      if OK then raise found(V) end else skip end
    end
 
    Methods = m(localize : proc {$ U} {Do_Method BURL_localize U} end
                open     : proc {$ U} {Do_Method BURL_open     U} end
-               load     : proc {$ U} {Do_Method BURL_load     U} end)
+               load     : proc {$ U} {Do_Method BURL_load     U} end
+               native   : proc {$ U} {Do_Method Native_load   U} end)
 
    %% ----------------------------------------------------------------
    %% Tracing
@@ -380,6 +384,7 @@ local
       proc {Localize Url Value} {Get Url Value localize} end
       proc {Open     Url Value} {Get Url Value open    } end
       proc {Load     Url Value} {Get Url Value load    } end
+      proc {Native   Url Value} {Get Url Value native  } end
    in
       case Init
       of unit then skip
@@ -400,12 +405,14 @@ local
             addHandler  : AddHandler
             localize    : Localize
             open        : Open
-            load        : Load)
+            load        : Load
+            native      : Native)
    end
 
    %% create a resolver for loading
 
-   LoadResolver = {MakeResolver load vs(OZ_SEARCH_LOAD)}
+   LoadResolver   = {MakeResolver load vs(OZ_SEARCH_LOAD)}
+   NativeResolver = {MakeResolver native vs(OZ_SEARCH_DLOAD)}
 
 in
    Resolve = {Adjoin LoadResolver
@@ -424,5 +431,7 @@ in
                  makeResolver   : MakeResolver
                  make           : MakeResolver
                  expand         : URL_expand
+                 pickle         : LoadResolver
+                 native         : NativeResolver
                  )}
 end

@@ -80,12 +80,11 @@ in
       local
 
          %% create module manager
-         Module = {NewModule.apply 'import'('System':   System
-                                            'Pickle':   Pickle
-                                            'OS':       OS
-                                            'Boot':     Boot
-                                            'Property': Property
-                                            'Native':   Native)}
+         Module = {NewModule.apply 'import'('System'    : System
+                                            'OS'        : OS
+                                            'Boot'      : Boot
+                                            'Property'  : Property
+                                            'Resolve'   : Resolve)}
 
          %% The root module manager
          RM = Module.root

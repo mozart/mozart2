@@ -84,7 +84,7 @@ class FBrowserClass
            store(StoreWidthInc IWidthInc)
            store(StoreAreSeparators ISeparators)
            store(StoreRepMode IRepMode)
-           store(StoreTWFont ITWFontUnknown)     % first approximation;
+           store(StoreTWFont ITWFont1)           % first approximation;
            store(StoreBufferSize IBufferSize)
            store(StoreWithMenus true)            % hardwired;
            store(StoreIsWindow false)
@@ -213,10 +213,10 @@ class FBrowserClass
          FBrowserClass , break
 
          %%
-         {Wait {self.BrowserStream [enq(sync($)) enq(close)]}}
+         {self.BrowserBuffer purgeSusps}
 
          %%
-         {self.BrowserBuffer purgeSusps}
+         {Wait {self.BrowserStream [enq(sync($)) enq(close)]}}
 
          %%
          {self.BrowserStream close}
@@ -639,7 +639,7 @@ class FBrowserClass
                 end
 
              [] !BrowserYMinSize               then
-                if {IsInt M.F} andthen M.F > IYMinSize then
+                if {IsInt M.F} andthen M.F >= IYMinSize then
                    {self.Store store(StoreYMinSize M.F)}
                    {self.BrowserStream enq(resetWindowSize)}
                 else {BrowserError
@@ -790,12 +790,10 @@ class FBrowserClass
                 of [Font] then
                    %%
                    %%  must leave the object's state!
-                   thread
-                      if {self.BrowserStream enq(setTWFont(Font $))}
-                      then skip
-                      else {BrowserError
-                            'Illegal value of browser\'s "fontSize" option'}
-                      end
+                   if {self.BrowserStream enq(setTWFont(Font $))}
+                   then skip
+                   else {BrowserError
+                         'Illegal value of browser\'s "fontSize" option'}
                    end
                 else {BrowserError
                       'Illegal value of browser\'s "fontSize" option'}
@@ -814,12 +812,10 @@ class FBrowserClass
                 case Fonts
                 of [Font] then
                    %%
-                   thread
-                      if {self.BrowserStream enq(setTWFont(Font $))}
-                      then skip
-                      else {BrowserError
-                            'Illegal value of browser\'s "fontSize" option'}
-                      end
+                   if {self.BrowserStream enq(setTWFont(Font $))}
+                   then skip
+                   else {BrowserError
+                         'Illegal value of browser\'s "fontSize" option'}
                    end
                 else {BrowserError
                       'Illegal value of browser\'s "fontSize" option'}
@@ -847,6 +843,50 @@ class FBrowserClass
       end
 
       %%
+   end
+
+   %%
+   meth saveOptions($)
+\ifdef DEBUG_BO
+      {System.show 'FBrowserClass:: getOptions is applied'}
+      {self.Store read( $)}
+\endif
+      [option(SpecialON BrowserXSize:{self.Store read(StoreXSize $)})
+       option(SpecialON BrowserYSize:{self.Store read(StoreYSize $)})
+       option(SpecialON BrowserXMinSize:{self.Store read(StoreXMinSize $)})
+       option(SpecialON BrowserYMinSize:{self.Store read(StoreYMinSize $)})
+       option(BufferON BrowserBufferSize:
+          {self.Store read(StoreBufferSize $)} )
+       option(BufferON BrowserSeparators:
+          {self.Store read(StoreAreSeparators $)})
+       option(RepresentationON BrowserRepMode:
+          case {self.Store read(StoreRepMode $)}
+          of !TreeRep then tree
+          [] !GraphRep then graph
+          [] !MinGraphRep then minGraph
+          else
+             {BrowserError
+              'Illegal value of browser\'s (representation) mode'}
+             unit
+          end)
+       option(RepresentationON BrowserChunkFields:
+          {self.Store read(StoreArityType $)} == TrueArity)
+       option(RepresentationON BrowserNamesAndProcs:
+          {self.Store read(StoreSmallNames $)} == false)
+       option(RepresentationON BrowserStrings:
+          {self.Store read(StoreAreStrings $)})
+       option(RepresentationON BrowserVirtualStrings:
+          {self.Store read(StoreAreVSs $)})
+       option(DisplayON BrowserDepth:{self.Store read(StoreDepth $)})
+       option(DisplayON BrowserWidth:{self.Store read(StoreWidth $)})
+       option(DisplayON BrowserWidthInc:{self.Store read(StoreWidthInc $)})
+       option(DisplayON BrowserWidthInc:{self.Store read(StoreWidthInc $)})
+       option(LayoutON BrowserFontSize:
+          {self.Store read(StoreTWFont $)}.size)
+       option(LayoutON BrowserBold:
+          {self.Store read(StoreTWFont $)}.wght == bold)
+       option(LayoutON BrowserRecordFieldsAligned:
+          {self.Store read(StoreFillStyle $)} == Expanded)]
    end
 
    %%
@@ -903,7 +943,7 @@ class FBrowserClass
 
          %%
          selected <- Obj
-         thread {Obj Highlight} end
+         {self.BrowserStream enq(highlight(Obj))}
 
          %%
          {self.BrowserStream

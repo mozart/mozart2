@@ -242,20 +242,15 @@ IFrameRelief  = sunken
 ISWidth       = 13
 
 %%
-%% default font for text widgets, 'x' and 'y' resolutions for it;
-ITWFontUnknown = font(size:14 wght:medium
-                      font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
-                      xRes:0 yRes:0)   % these are just some values!
-%%
-ITWFont1       = font(size:14 wght:medium
-                      font:'-*-courier-medium-r-*-*-14-*-*-*-*-*-*-*'
-                      xRes:0 yRes:0)
-ITWFont2       = font(size:14 wght:medium
-                      font:'-*-*-*-r-*-*-14-*-*-*-*-*-*-*'
-                      xRes:0 yRes:0)
-ITWFont3       = font(size:14 wght:medium
-                      font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
-                      xRes:0 yRes:0)   % these are just some values!
+ITWFont1      = font(size:14 wght:medium
+                     font:'-*-courier-medium-r-*-*-14-*-*-*-*-*-*-*'
+                     xRes:0 yRes:0)
+ITWFont2      = font(size:14 wght:medium
+                     font:'-*-*-*-r-*-*-14-*-*-*-*-*-*-*'
+                     xRes:0 yRes:0)
+ITWFont3      = font(size:14 wght:medium
+                     font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
+                     xRes:0 yRes:0)   % these are just some values!
 
 %%
 %% Note: actually, precise dimentions of the courier fonts are not

@@ -650,7 +650,12 @@ class WindowManagerClass from MyClosableObject BatchObject
 \ifdef DEBUG_WM
       {System.show 'WindowManagerClass::setTWFont is applied'}
 \endif
-      WindowManagerClass , WrapWindow(setTWFont(Font Res))
+      if @window \= InitValue then
+         {@window setTWFont(Font Res)}
+      else
+         {self.store store(StoreTWFont Font)}
+         Res = true
+      end
 \ifdef DEBUG_WM
       {System.show 'WindowManagerClass::setTWFont is finished'}
 \endif

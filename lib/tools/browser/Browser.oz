@@ -471,14 +471,18 @@ in
          BrowserPort:   InitValue % ...
          InitMeth:      InitValue %
          RealBrowser:   InitValue %
+         Options:       nil       %
 
       %%
       %% A real make which does the work;
       meth Make
-         if @RealBrowser == InitValue then BS RB InternalBrowserLoop in
+         if @RealBrowser == InitValue then
+            BS RB InternalBrowserLoop
+         in
             BrowserStream <- BS
             BrowserPort   <- {NewPort @BrowserStream}
             RB = {New FBrowserClass @InitMeth}
+            {List.forAll @Options proc {$ M} {RB M} end}
             RealBrowser <- RB
 
             %%
@@ -502,12 +506,10 @@ in
             %% we cannot do anything here;
             thread
                {Wait RB.closed}
-               {self Drop}
+               Options <- {RB saveOptions($)}
+               RealBrowser <- InitValue
             end
          end
-      end
-      meth Drop
-         RealBrowser <- InitValue
       end
 
       %%

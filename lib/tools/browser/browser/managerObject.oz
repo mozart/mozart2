@@ -90,7 +90,7 @@ in
          {Show 'BrowserManagerClass::close is applied'}
 \endif
          WindowManagerClass , closeWindow
-         % Object.closable , close
+         MyClosableObject , close
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::close is finished'}
 \endif
@@ -230,6 +230,16 @@ in
          %% 'Obj' is a root term object;
          BrowserManagerClass , CheckObj(Obj)
          {Obj pickPlace(Where How)}
+      end
+
+      %%
+      meth highlight(Obj)
+\ifdef DEBUG_MO
+         {Show 'BrowserManagerClass::highlight is applied'}
+\endif
+         %% 'Obj' is an arbitrary term object;
+         BrowserManagerClass , CheckObj(Obj)
+         {Obj Highlight}
       end
 
       %%

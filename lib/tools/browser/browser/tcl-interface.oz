@@ -509,7 +509,10 @@ in
 
             %%
             %% Select a font from ITWFont?, and store it;
-            {Wait {FoldL_Obj self [ITWFont1 ITWFont2 ITWFont3] TryFont true}}
+            {Wait {FoldL_Obj self
+                   [{Store read(StoreTWFont $)} ITWFont1 ITWFont2 ITWFont3]
+                   TryFont
+                   true}}
 
             %%
             %% scrollbars;
@@ -768,19 +771,7 @@ in
       %%
       meth TryFont(Proceed IFont $)
          if Proceed then
-            %%
-            if BrowserWindowClass , setTWFont(IFont $) then
-               %%
-               %% Browser object will also send a request to select an
-               %% appropriate radio button;
-               thread   %
-                  {self.browserObj option(layout
-                                          size: IFont.size
-                                          bold: (IFont.wght=='bold'))}
-               end
-
-               %%
-               false
+            if BrowserWindowClass , setTWFont(IFont $) then false
             else true
             end
          else Proceed
@@ -855,25 +846,15 @@ in
             {Exception.raiseError browser('Closed window object is applied!')}
          end
 \endif
-         %%
-         local Font in
-            Font = {self.store read(StoreTWFont $)}
+         if BrowserWindowClass , tryFont(NewFont $) then
+            %%
+            {self.BrowseWidget tk(conf font:NewFont.font)}
+            {self.store store(StoreTWFont NewFont)}
+            BrowserWindowClass , resetTW
 
             %%
-            case NewFont
-            of !Font then true  %  have it already;
-            else
-               if BrowserWindowClass , tryFont(NewFont $) then
-                  %%
-                  {self.BrowseWidget tk(conf font:NewFont.font)}
-                  {self.store store(StoreTWFont NewFont)}
-                  BrowserWindowClass , resetTW
-
-                  %%
-                  true
-               else false
-               end
-            end
+            true
+         else false
          end
       end
 

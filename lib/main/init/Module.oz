@@ -80,15 +80,20 @@ prepare
                     catch E then {Value.byNeedFail E} end
                  end}}
             end
-            Entry = {Dictionary.get ModMap Key}
+            Entry  = {Dictionary.get ModMap Key}
+            Module =
             if self.TypeCheckProc==unit then
-               %% avoid the type checking "by need" which should also permit
-               %% optimized applications of "by need dot" when importing from
-               %% this module.  Note: the ByNeedDot below does not create a
-               %% future if Entry is determined.
-               Module = {Value.byNeedDot Entry 1}
+               %% avoid laziness if possible
+               if {IsDet Entry} then Entry.1
+               else {ByNeed
+                     fun {$}
+                        try Entry.1
+                        catch E then {Value.byNeedFail E} end
+                     end}
+               end
             else
-               Module =
+               %% this could easily be improved to avoid
+               %% unnecessary laziness
                {ByNeed
                 fun {$}
                    try
@@ -104,10 +109,9 @@ prepare
                              ActualType ExpectedType o(url: Key)} == ok
                          then Module
                          else
-                            raise
-                               system(module(typeMismatch Key
-                                             ActualType ExpectedType))
-                            end
+                            {Value.byNeedFail
+                             system(module(typeMismatch Key
+                                           ActualType ExpectedType))}
                          end
                       end
                    catch E then {Value.byNeedFail E} end

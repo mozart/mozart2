@@ -115,7 +115,7 @@ define
                 if HasVirtualSite then virtual
                 else sh
                 end
-             else rsh
+             else Fork
              end
           else rsh
           end

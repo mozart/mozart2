@@ -25,9 +25,8 @@ functor $
 import
    Search.base
    System.{show apply}
-   Browser.{getsBoundB}
-   from 'x-oz://boot/Browser'
-
+   Browser.{getsBoundB} from 'x-oz://boot/Browser'
+   FD
 export
    Return
 
@@ -306,5 +305,15 @@ body
                    {New C M _}
                 end
                 keys:[fixedBug object message])
+         unification(proc {$}
+                        proc {P L1 L2}
+                           X Y in X::1#10 Y::1#20 L1=[X a] L2=[Y b]
+                        end
+                        L1 L2
+                     in
+                        {P L1 L2}
+                        if L1==L2 then fail else skip end
+                     end
+                     keys:[fixedBug unification cvar])
         ])
 end

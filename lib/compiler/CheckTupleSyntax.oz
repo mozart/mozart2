@@ -115,6 +115,8 @@ local
          {Type.ask.int I} {Coord C}
       [] fLoop(E C) then {Phrase E} {Coord C}
       [] fMacro(Es C) then {ForAll Es Phrase} {Coord C}
+      [] fDotAssign(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
+      [] fColonEquals(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fFOR(Ds B C) then {ForAll Ds ForDecl} {Phrase B} {Coord C}
       else {FDExpression X}
       end

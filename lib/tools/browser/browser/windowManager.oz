@@ -300,7 +300,7 @@ class WindowManagerClass from MyClosableObject BatchObject
                                   'Browse' ActionVar 1)}
             {Dictionary.put Actions 0 r(action:Show number:0)} % must be 0;
             {Dictionary.put Actions 1 r(action:Browse number:1)} % must be 1;
-            {Store store(StoreProcessAction Show)}
+            {Store store(StoreProcessAction Browse)}
 
             %%
          end

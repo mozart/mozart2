@@ -34,7 +34,7 @@ body
                   {ForAll Cases
                    proc {$ C}
                       %% Type of
-                      {Type.ofValue C.1}={Label C}
+                      {Value.type C.1}={Label C}
                       %% IsT
                       {C.2 C.1}=true
                       %% IsT with thread

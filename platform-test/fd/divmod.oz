@@ -15,13 +15,13 @@ define
    in
       S = [X3 Y3 Z3 X4 Y4]
       [X3 Y3 Z3]:::1#100
-      {FD.modI X3 Y3 Z3}
+      thread {FD.modI X3 Y3 Z3} end
       Z3=3
       Y3=10
 %        {Show X3#Y3#Z3}
 
       [X4 Y4]:::1#100
-      {FD.divI X4 2 Y4}
+      thread {FD.divI X4 2 Y4} end
 %        {Show X4#Y4}
       Y4\=:36
       Y4>:2
@@ -36,7 +36,7 @@ define
                          in
                             cond {Map T fun {$ E} {FD.reflect.dom E} end}  =
                                [
-                                [3]
+                                [3#93]
                                 [10] [3] [6#100]
                                 [3#35 37#50]
                                ]

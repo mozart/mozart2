@@ -833,7 +833,7 @@ local
          {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0 ?NLiveRegs)}
          BodyCode0 = BodyCode1#BodyCode2
          case {Switches getSwitch(runwithdebugger $)} then
-            BodyCode = callBI('Debug.breakpoint' nil#nil 0)|BodyCode1
+            BodyCode = callBI('Debug.breakpoint' nil#nil)|BodyCode1
          else
             BodyCode = BodyCode1
          end

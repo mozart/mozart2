@@ -1,50 +1,48 @@
-OZLIB = $(OZHOME)/lib
+include ../Makefile.vars
+include $(TOPDIR)/Makefile.rules
+
 COMPILER = $(OZLIB)/compiler
 
 SOURCES = InsertAll.oz Compiler.oz Misc.oz Reporter.oz ParseOz.oz \
           FormatStrings.oz Builtins.oz CoreLanguage.oz Annotate.oz \
           StaticAnalysis.oz POTypes.oz RegSet.oz CodeGen.oz CodeStore.oz \
           CodeEmitter.oz BindingAnalysis.oz TupleSyntax.oz Unnester.oz \
-          UnnestFD.oz Assembler.oz Opcodes.m4oz Interface.oz \
+          UnnestFD.oz Assembler.oz Interface.oz \
           GenericInterface.oz QuietInterface.oz
 
 LIBSOURCES = $(SOURCES:%.oz=$(COMPILER)/%.oz) \
              $(COMPILER)/Opcodes.oz $(COMPILER)/Version.oz \
              $(COMPILER)/CompilerPanel.oz
+SRCS = $(SOURCES:%.oz=$(SRCDIR)/compiler/%.oz) $(SRCDIR)/compiler/Opcodes.m4oz
 
-all:: ../Compiler.oz ../CompilerPanel.oz
-
-../Compiler.oz:: $(SOURCES) Version.oz Opcodes.oz
-        touch ../Compiler.oz
-
-../CompilerPanel.oz:: CompilerPanel.oz
-        touch ../CompilerPanel.oz
-
-Version.oz: $(SOURCES)
-        (echo 'OZVERSION = '\'$(OZVERSION)\'; \
-        echo 'DATE = '\'`date '+%h %d 19%y (%T)'`\') > Version.oz
-
-Opcodes.oz: Opcodes.m4oz ../../include/instrDefs.m4
-        gm4 -DOZINCDIR=../../include < Opcodes.m4oz > Opcodes.oz
+all:: Version.oz Opcodes.oz
 
 install:: $(COMPILER) $(LIBSOURCES)
 
+Version.oz: $(SRCS)
+        ($(ECHO) 'OZVERSION = '\'$(OZVERSION)\'; \
+        $(ECHO) 'DATE = '\'`date '+%h %d 19%y (%T)'`\') > Version.oz
+
+Opcodes.oz: $(SRCDIR)/compiler/Opcodes.m4oz $(TOPDIR)/include/instrDefs.m4
+        $(M4) -DOZINCDIR=$(TOPDIR)/include \
+                < $(SRCDIR)/compiler/Opcodes.m4oz > Opcodes.oz
+
 $(COMPILER):
-        $(INSTALL) -m 775 -d $@
+        $(INSTALLDIR) $@
 
 $(COMPILER)/%.oz: %.oz
-        $(INSTALLSRC)  '$<' '$@'
+        $(INSTALLSRC) '$<' '$@'
 
-tags::
+tags:
         etags --language=none \
         --regex='/[ \t]*proc\>[^{\n]*{!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
         --regex='/[ \t]*fun\>[^{\n]*{!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
         --regex='/[ \t]*class[ \t]+!?\([A-Z][A-Za-z0-9_]*\|`.+`\)/\1/' \
         --regex='/[ \t]*meth\([ \t]+\|[ \t]*![ \t]*\)\([A-Za-z0-9][A-Za-z0-9_]*\|`.+`|'\''.+'\''\)/\2/' \
-        $(SOURCES)
+        $(SRCS)
 
 clean::
-        rm -f TAGS Makefile.bak
+        $(RM) TAGS
 
-veryclean::
-        rm -f Opcodes.oz Version.oz
+realclean::
+        $(RM) Opcodes.oz Version.oz

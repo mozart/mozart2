@@ -38,7 +38,7 @@ define(oneReg,'$1': {GetInstructionSize '$1X'})
 define(twoRegs,'$1': {GetInstructionSize '$1XX'})
 
 InstructionSizes =
-instructionSizes(include(`../../include/instrDefs.m4'))
+instructionSizes(include(OZINCDIR/instrDefs.m4))
 
 undefine(`noReg')
 undefine(`oneReg')
@@ -70,7 +70,7 @@ define(twoRegs,
              g: {GetOpcode '$1GG'})))
 
 Opcodes =
-opcodes(include(`../../include/instrDefs.m4'))
+opcodes(include(OZINCDIR/instrDefs.m4))
 
 undefine(`noReg')
 undefine(`oneReg')
@@ -155,6 +155,6 @@ proc {StoreInstr Instr CodeBlock LabelDict}
       {StoreNumber CodeBlock Column}
       {StoreLiteral CodeBlock Comment}
       {StoreInt CodeBlock NLiveRegs}
-include(`../../include/instrDefs.m4')
+include(OZINCDIR/instrDefs.m4)
    end
 end

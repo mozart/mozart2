@@ -39,6 +39,8 @@ in
    export
       engine:               CompilerEngine
       compilerClass:        CompilerEngine   %--** deprecated
+      parseOzFile:          ParseOzFile
+      parseOzVirtualString: ParseOzVirtualString
       genericInterface:     GenericInterface
       quietInterface:       QuietInterface
       evalExpression:       EvalExpression

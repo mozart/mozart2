@@ -349,8 +349,6 @@ in
                 {Out {StarLine H}}
              [] pos(F L C) then
                 {Out {StarLine 'in ' # {PosToVS F L C unit}}}
-             [] pos(F L C _ _ _) then
-                {Out {StarLine 'in ' # {PosToVS F L C unit}}}
              [] hint then
                 {Out {StarLine ''}}
              [] hint(l:Left) then

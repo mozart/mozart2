@@ -98,7 +98,7 @@ prepare
    %%
    IsCell       = Boot_Cell.is
    NewCell      = Boot_Cell.new
-   Exchange     = Boot_Cell.exchange
+   Exchange     = proc {$ C Old New} Old = {Boot_Cell.exchangeFun C New} end
    Assign       = Boot_Cell.assign
    Access       = Boot_Cell.access
 

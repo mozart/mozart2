@@ -83,7 +83,7 @@ local
    in
       fun {TicketToString T}
          Stamp#Pid = T.time
-         S = {App ["ozticket://"
+         S = {App ["x-ozticket://"
                    T.host
                    &:|{Int.toString T.port}
                    &:|{IntToKey Stamp}

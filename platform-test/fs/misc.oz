@@ -465,6 +465,30 @@ in
               fun {$}
                  case {FS.int.max {FS.value.new [2]}} == 2 then 1 else 0 end
               end}
+
+             {MiscTest 42
+              fun {$}
+                 if {FS.int.convex {FS.value.new [1 2]}}  then 1 else 0 end
+              end}
+
+             {MiscTest 43
+              fun {$}
+                 if {FS.int.convex {FS.value.new [1 2 4]}} then 0 else 1 end
+              end}
+
+             {MiscTest 44
+              fun {$}
+                 if {FS.int.convex {FS.value.new nil}}  then 1 else 0 end
+              end}
+
+             {MiscTest 45
+              fun {$}
+                 S = {FS.var.upperBound [1#5]}
+                 R = thread if {FS.int.convex S} then 1 else 0 end end
+              in
+                 S = {FS.value.new nil}
+                 R
+              end}
             ])
       ])
 

@@ -57,7 +57,8 @@ prepare
                       size:    1
                       min:     2
                       max:     3
-                      nbSusps: 4)
+                      nbSusps: 4
+                      width:   5)
 
    FddOptValMap = map(min:      0
                       mid:      1
@@ -275,6 +276,7 @@ define
                           nextLarger:    FDB.'reflect.nextLarger'
                           nextSmaller:   FDB.'reflect.nextSmaller'
                           size:          FDB.'reflect.size'
+                          width:         FDB.'reflect.width'
                           nbSusps:       System.nbSusps
                           domList:       fun {$ X}
                                             {Expand {GetDomCompact X}}
@@ -430,6 +432,9 @@ define
                                   end
                          size:    fun {$ X Y}
                                      {FdReflect.size X}<{FdReflect.size Y}
+                                  end
+                         width:   fun {$ X Y}
+                                     {FdReflect.width X}<{FdReflect.width Y}
                                   end
                          nbSusps: fun {$ X Y}
                                      L1={FdReflect.nbSusps X}

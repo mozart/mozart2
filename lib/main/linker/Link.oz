@@ -256,7 +256,7 @@ local
          %% Root functor goes last
          UrlToInt.RootKey = NoUrls
          %% Now the real stuff comes
-         {FD.distinct UrlToInt}
+         {FD.distinctD UrlToInt}
          {Record.forAllInd Info.include
           %% All modules that are included
           proc {$ UrlKey Spec}
@@ -270,7 +270,7 @@ local
                  end
               end}
           end}
-         {FD.distribute naive UrlToInt}
+         {FD.distribute ff UrlToInt}
       end
 
    in

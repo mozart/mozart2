@@ -60,7 +60,7 @@ import
    Pickle(load saveWithHeader)
    Application(exit getArgs)
    System(printError showError)
-   FD(record distinct distribute sumC)
+   FD(record distinctD distribute sumC)
    Search(base)
    OS(system)
    Resolve(expand)

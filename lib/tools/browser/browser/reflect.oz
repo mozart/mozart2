@@ -319,7 +319,7 @@ in
          %%
          case IsDeep then
             {ReflectTerm Term nil ReflectedTerm _}
-            S = {SearchOne proc {$ X} X = ReflectedTerm end}
+            S = {Search.one.depth proc {$ X} X = ReflectedTerm end 1 _}
 
             %%
             case S of [T] then T

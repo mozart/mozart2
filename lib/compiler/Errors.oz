@@ -24,7 +24,7 @@
 
 {Error.registerFormatter compiler
  fun {$ E}
-    BugReport = 'Please send bug report to mozart-bugs@ps.uni-sb.de'
+    BugReport = 'Please send bug report to bugs@mozart-oz.org'
     T = 'compiler engine error'
  in
     case E of compiler(internal X) then

@@ -28,8 +28,6 @@ fun
    instantiate
 \endif
    {NewBrowser IMPORT}
-   \insert 'Standard.env'
-      = IMPORT.'Standard'
    \insert 'SP.env'
       = IMPORT.'SP'
    \insert 'CP.env'

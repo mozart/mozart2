@@ -65,6 +65,7 @@ local
                     BaseUrl|{CondSelect Spec include nil}}
       in
          fun {$ Url}
+            {System.show checkInc({VirtualString.toAtom Url})}
             if {IsNativeUrl Url} then false
             elseif {ToExcl Url} then false
             elseif {ToIncl Url} then true

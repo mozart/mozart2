@@ -9,13 +9,13 @@ proc {NewCompilerInterfaceEmacs Open OS ?CompilerInterfaceEmacs}
 in
    class CompilerInterfaceEmacs
       prop locking final
-      feat Compiler
+      feat MyCompiler
       attr CompilerPanel: unit
       meth init()
-         self.Compiler = {New CompilerClass init(self)}
+         self.MyCompiler = {New CompilerClass init(self)}
          case {System.get standalone} then skip
          else
-            {self.Compiler setSwitch(on(echoqueries unit))}
+            {self.MyCompiler setSwitch(on(echoqueries unit))}
          end
       end
 
@@ -56,20 +56,19 @@ in
          end
       end
 
-      meth openPanel(Tk TkTools Open Browse)
+      meth openPanel()
          lock D in
             case @CompilerPanel == unit orelse {IsDet @CompilerPanel.isClosed}
             then
-               CompilerPanel <- {New {NewCompilerInterfaceTk
-                                      Tk TkTools Open Browse}
-                                 init(self.Compiler)}
+               CompilerPanel <- {New Compiler.interface.tk
+                                 init(self.MyCompiler)}
                D = {NewDictionary}
-               {ForAll {Record.toListInd {self.Compiler getEnv($)}}
+               {ForAll {Record.toListInd {self.MyCompiler getEnv($)}}
                 proc {$ V#Value}
                    {Dictionary.put D V Value}
                 end}
                {@CompilerPanel DisplayEnv(D)}
-               {@CompilerPanel SetSwitches({self.Compiler getSwitches($)})}
+               {@CompilerPanel SetSwitches({self.MyCompiler getSwitches($)})}
             else
                CompilerPanel <- unit
             end
@@ -78,31 +77,41 @@ in
       meth putEnv(Env)=M
          case CompilerInterfaceEmacs, DelegateToPanel(M $) then skip
          else
-            lock {self.Compiler putEnv(Env)} end
+            lock
+               {self.MyCompiler putEnv(Env)}
+            end
          end
       end
       meth mergeEnv(Env)=M
          case CompilerInterfaceEmacs, DelegateToPanel(M $) then skip
          else
-            lock {self.Compiler mergeEnv(Env)} end
+            lock
+               {self.MyCompiler mergeEnv(Env)}
+            end
          end
       end
       meth getEnv(?Env)=M
          case CompilerInterfaceEmacs, DelegateToPanel(M $) then skip
          else
-            lock {self.Compiler getEnv(?Env)} end
+            lock
+               {self.MyCompiler getEnv(?Env)}
+            end
          end
       end
       meth feedFile(FileName ?RequiredInterfaces <= _)=M
          case CompilerInterfaceEmacs, DelegateToPanel(M $) then skip
          else
-            lock {self.Compiler feedFile(FileName ?RequiredInterfaces)} end
+            lock
+               {self.MyCompiler feedFile(FileName ?RequiredInterfaces)}
+            end
          end
       end
       meth feedVirtualString(VS ?RequiredInterfaces <= _)=M
          case CompilerInterfaceEmacs, DelegateToPanel(M $) then skip
          else
-            lock {self.Compiler feedVirtualString(VS ?RequiredInterfaces)} end
+            lock
+               {self.MyCompiler feedVirtualString(VS ?RequiredInterfaces)}
+            end
          end
       end
 

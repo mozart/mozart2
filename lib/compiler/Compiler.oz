@@ -174,9 +174,7 @@ local
       end
    end
 
-   BaseEnv = {Adjoin
-              \insert Base.env
-              env('`Builtin`': `Builtin`)}
+   BaseEnv = env('`Builtin`': `Builtin`)
 in
    %%
    %% The CompilerClass does not do any locking.  This is due to the

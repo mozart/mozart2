@@ -23,7 +23,6 @@ functor
 import
    Pickle(save load saveCompressed)
    OS(tmpnam unlink)
-   FD
 export
    Return
 define

@@ -28,7 +28,6 @@ import
    Space
    System(show)
    Browser(getsBoundB) at 'x-oz://boot/Browser'
-   FD
 export
    Return
 

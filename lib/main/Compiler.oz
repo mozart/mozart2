@@ -68,7 +68,9 @@ in
             OZRC = {OS.getEnv 'OZRC'}
             case OZRC \= false then
                {Compiler feedFile(OZRC)}
-            elsecase {FileExists '~/.ozrc'} then
+            elsecase {FileExists '~/.oz/ozrc'} then
+               {Compiler feedFile('~/.oz/ozrc')}
+            elsecase {FileExists '~/.ozrc'} then   % note: deprecated
                {Compiler feedFile('~/.ozrc')}
             else
                skip

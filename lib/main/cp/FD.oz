@@ -387,7 +387,9 @@ define
                           dom:        FdDomR
                           sum:        GenSumR
                           sumC:       GenSumCR
-                          sumCN:      GenSumCNR
+                          sumCN:      proc {$ A B C D E}
+                                         thread {GenSumCNR A B C D E} end
+                                      end
                           sumAC:      GenSumACR
                           sumACN:     GenSumACNR
                           distance:   DistanceR

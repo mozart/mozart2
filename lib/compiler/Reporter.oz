@@ -120,7 +120,12 @@ in
          else skip
          end
       end
-      meth logInsert(FileName)
+      meth logInsert(FullName FileName <= unit Coord <= unit)
+         case FileName \= unit then
+            {self.Wrapper notify(insert(FileName))}
+         else
+            {self.Wrapper notify(insert(FullName))}
+         end
          case {self.Compiler getSwitch(showinsert $)} then
             Reporter, userInfo('%%%         inserted file "'#FileName#'"\n')
          else skip

@@ -109,6 +109,7 @@ in
       meth !GetTags(?Tags)
          Tags = nil
       end
+
       %%
       %%
       meth checkSize(Obj _ _)
@@ -116,16 +117,14 @@ in
          {Show 'PseudoTermTWObject::checkSize is applied'}
 \endif
          case Obj == @termObj then
-            local SyncVar in
-               %%
-               SyncVar = {@termObj checkLayout($)}
-               %%
-               {Wait SyncVar}
-               <<nil>>
-            end
+            {@termObj checkLayout}
+
+            %%
+            <<nil>>
          else true              % ignore irrelevant message;
          end
       end
+
       %%
       %%  STATELESS METHOD;
       meth isEnclosed(?Is)
@@ -157,17 +156,17 @@ in
          self.tag = {self.widgetObj genTkName($)}
       end
       %%
-      meth destroy(?Sync)
+      meth destroy
          <<close>>
-         Sync = True
       end
       %%
       meth getSize(?Size)
          Size = self.size
       end
+
       %%
-      meth checkLayout(?Sync)
-         Sync = True
+      meth checkLayout
+         true
       end
       %%
       meth draw(Mark ?Sync)
@@ -218,17 +217,17 @@ in
          self.parentObj = ParentObj
       end
       %%
-      meth destroy(?Sync)
+      meth destroy
          <<close>>
-         Sync = True
       end
       %%
       meth getSize(?Size)
          Size = self.size
       end
+
       %%
-      meth checkLayout(?Sync)
-         Sync = True
+      meth checkLayout
+         true
       end
       %%
       meth draw(Mark ?Sync)
@@ -275,17 +274,17 @@ in
          self.tag = {self.widgetObj genTkName($)}
       end
       %%
-      meth destroy(?Sync)
+      meth destroy
          <<close>>
-         Sync = True
       end
       %%
       meth getSize(?Size)
          Size = self.size
       end
+
       %%
-      meth checkLayout(?Sync)
-         Sync = True
+      meth checkLayout
+         true
       end
       %%
       meth draw(Mark ?Sync)
@@ -343,20 +342,21 @@ in
          end
       end
       %%
-      meth destroy(?Sync)
+      meth destroy
          %%
          {self.widgetObj exitBindings(self.tagId)}
+
          %%
          <<close>>
-         Sync = True
       end
       %%
       meth getSize(?Size)
          Size = self.size
       end
+
       %%
-      meth checkLayout(?Sync)
-         Sync = True
+      meth checkLayout
+         true
       end
       %%
       meth draw(Mark ?Sync)
@@ -506,9 +506,10 @@ in
       meth getSize(?Size)
          Size = @size
       end
+
       %%
-      meth checkLayout(?Sync)
-         Sync = True
+      meth checkLayout
+         true
       end
       %%
       meth pickPlace
@@ -1066,16 +1067,17 @@ in
             end
          end
       end
+
       %%
       %%  Generic 'checkLayout';
       %%
-      meth checkLayout(?Sync)
+      meth checkLayout
          case @shown then
             local ActualTWWidth StartOffset MetaSize in
                ActualTWWidth = {self.store read(StoreTWWidth $)}
                StartOffset = {self.widgetObj getTagFirst(self.tag $)}
                MetaSize = @size
-               %%
+
                %%
                %%  Attention!
                %%  These conditions seem to be a ***reasonable***
@@ -1104,7 +1106,6 @@ in
                   @shownTWWidth == ActualTWWidth
                then
                   <<nil>>
-                  Sync = True
                else
                   shownStartOffset <- StartOffset
                   shownMetaSize <- MetaSize
@@ -1140,21 +1141,22 @@ in
                      case {IsValue OutOffset}
                      then
                         <<nil>>
-                        Sync = True
                      end
                   end
                end
             end
          else
-            Sync = True         % ignore;
+            true                % ignore;
          end
       end
+
       %%
       %%
       %%  Generic 'adjustNameGlue' - nothing to do;
       meth adjustNameGlue(OffsetIn ?OffsetOut)
          OffsetOut = OffsetIn
       end
+
       %%
       %%  Generic 'AdjustGlue'. Should be used with 'mapObjIndArg';
       %%
@@ -1163,102 +1165,103 @@ in
          %% {Show 'MetaTupleTWTermObject::AdjustGlue is applied: '#
          %%  self.term#N#SubsOffset}
          %% \endif
-         case {IsValue {SObj checkLayout($)}} then
-            %%  two cases - last object (glueSize == 0) or not;
-            case <<isLastAny(N $)>> then
-               %% nothing more to do;
-               NewSubsOffset = SubsOffset
-               OutInfoOut = OutInfoIn
-            else
-               case SubsOffset == ~1 then
-                  %%  "One row" representation -
-                  %%  remove compound glues;
-                  case OutInfoIn.glueSize
-                  of 0 then
-                     {BrowserError ['...::AdjustTupleGlue: gluesSize = 0']}
-                     OutInfoOut = OutInfoIn
-                  [] !DSpace then
-                     OutInfoOut = OutInfoIn
-                  else
-                     {self.widgetObj
-                      deleteAfterMark(OutInfoIn.mark DSpace
-                                      (OutInfoIn.glueSize - DSpace))}
-                     %%
-                     OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
-                  end
-                  %%
-                  NewSubsOffset = SubsOffset
+         {SObj checkLayout}
+
+         %%  two cases - last object (glueSize == 0) or not;
+         case <<isLastAny(N $)>> then
+            %% nothing more to do;
+            NewSubsOffset = SubsOffset
+            OutInfoOut = OutInfoIn
+         else
+            case SubsOffset == ~1 then
+               %%  "One row" representation -
+               %%  remove compound glues;
+               case OutInfoIn.glueSize
+               of 0 then
+                  {BrowserError ['...::AdjustTupleGlue: gluesSize = 0']}
+                  OutInfoOut = OutInfoIn
+               [] !DSpace then
+                  OutInfoOut = OutInfoIn
                else
-                  %%  'Multirow' representation - there could be
-                  %% compound glues;
-                  local NextOutInfo RefSize GlueSize in
-                     <<getAnySubtermOutInfo((N + 1) NextOutInfo)>>
-                     GlueSize = OutInfoIn.glueSize
-                     RefSize = @ReferenceGSize
+                  {self.widgetObj
+                   deleteAfterMark(OutInfoIn.mark DSpace
+                                   (OutInfoIn.glueSize - DSpace))}
+                  %%
+                  OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
+               end
+               %%
+               NewSubsOffset = SubsOffset
+            else
+               %%  'Multirow' representation - there could be
+               %% compound glues;
+               local NextOutInfo RefSize GlueSize in
+                  <<getAnySubtermOutInfo((N + 1) NextOutInfo)>>
+                  GlueSize = OutInfoIn.glueSize
+                  RefSize = @ReferenceGSize
+                  %%
+                  case
+                     SubsOffset + OutInfoIn.size + NextOutInfo.size +
+                     DDSpace < @shownTWWidth
+                  then
                      %%
-                     case
-                        SubsOffset + OutInfoIn.size + NextOutInfo.size +
-                        DDSpace < @shownTWWidth
-                     then
-                        %%
-                        %%  Next one in the same row;
-                        NewSubsOffset = SubsOffset + OutInfoIn.size + DSpace
-                        %%
-                        case GlueSize == DSpace then
-                           OutInfoOut = OutInfoIn
-                        else
-                           %% truncate;
-                           {self.widgetObj
-                            deleteAfterMark(OutInfoIn.mark DSpace
-                                            (OutInfoIn.glueSize - DSpace))}
-                           %%
-                           OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
-                        end
+                     %%  Next one in the same row;
+                     NewSubsOffset = SubsOffset + OutInfoIn.size + DSpace
+                     %%
+                     case GlueSize == DSpace then
+                        OutInfoOut = OutInfoIn
                      else
+                        %% truncate;
+                        {self.widgetObj
+                         deleteAfterMark(OutInfoIn.mark DSpace
+                                         (OutInfoIn.glueSize - DSpace))}
                         %%
-                        %%  Next one on the next row;
-                        %%
-                        NewSubsOffset = RefSize - DSpace - 1
-                        %%
-                        case GlueSize == RefSize then
-                           %% offset, 'glue char' (DSpace) and '\n' (1);
-                           OutInfoOut = OutInfoIn
-                        else
-                           %%  adjust the glue;;
-                           case GlueSize > DSpace then
-                              case GlueSize < RefSize then
-                                 local Spaces in
-                                    Spaces = {CreateSpaces (RefSize - GlueSize)}
-                                    %%
-                                    {self.widgetObj
-                                     insertAfterMark(OutInfoIn.mark
-                                                     GlueSize
-                                                     Spaces)}
-                                 end
-                              else
+                        OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
+                     end
+                  else
+                     %%
+                     %%  Next one on the next row;
+                     %%
+                     NewSubsOffset = RefSize - DSpace - 1
+                     %%
+                     case GlueSize == RefSize then
+                        %% offset, 'glue char' (DSpace) and '\n' (1);
+                        OutInfoOut = OutInfoIn
+                     else
+                        %%  adjust the glue;;
+                        case GlueSize > DSpace then
+                           case GlueSize < RefSize then
+                              local Spaces in
+                                 Spaces = {CreateSpaces (RefSize - GlueSize)}
+                                 %%
                                  {self.widgetObj
-                                  deleteAfterMark(OutInfoIn.mark
-                                                  RefSize
-                                                  (GlueSize - RefSize))}
+                                  insertAfterMark(OutInfoIn.mark
+                                                  GlueSize
+                                                  Spaces)}
                               end
                            else
-                              %%  GlueSize == DSpace -
-                              %% insert exactly '@ReferenceGlue';
-                              %% (it seems to be a very frequent case;)
                               {self.widgetObj
-                               insertAfterMark(OutInfoIn.mark
-                                               GlueSize
-                                               @ReferenceGlue)}
+                               deleteAfterMark(OutInfoIn.mark
+                                               RefSize
+                                               (GlueSize - RefSize))}
                            end
-                           %%
-                           OutInfoOut = {AdjoinAt OutInfoIn glueSize RefSize}
+                        else
+                           %%  GlueSize == DSpace -
+                           %% insert exactly '@ReferenceGlue';
+                           %% (it seems to be a very frequent case;)
+                           {self.widgetObj
+                            insertAfterMark(OutInfoIn.mark
+                                            GlueSize
+                                            @ReferenceGlue)}
                         end
+                        %%
+                        OutInfoOut = {AdjoinAt OutInfoIn glueSize RefSize}
                      end
                   end
                end
             end
          end
       end
+
       %%
       %%
       meth insertRefVar
@@ -1655,30 +1658,32 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%
       meth getGlueChar(?GlueChar)
@@ -1828,29 +1833,30 @@ in
                %%
                shown <- True
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%
       meth getGlueChar(?GlueChar)
@@ -2245,30 +2251,32 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%
       meth getGlueChar(?GlueChar)
@@ -2441,30 +2449,32 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%
       meth getGlueChar(?GlueChar)
@@ -2643,30 +2653,32 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%  specially for flat lists;
       meth drawCommas
@@ -2896,106 +2908,108 @@ in
       %%  Generic (record) 'AdjustGlue'. Should be used with 'mapObjIndArg';
       %%
       meth !AdjustGlue(OutInfoIn N SObj SubsOffset ?NewSubsOffset ?OutInfoOut)
-         case {IsValue {SObj checkLayout($)}} then
-            %%  two cases - last object (glueSize == 0) or not;
-            case <<isLastAny(N $)>> then
-               %% nothing more to do;
-               NewSubsOffset = SubsOffset
-               OutInfoOut = OutInfoIn
-            else
-               case SubsOffset == ~1 then
-                  %%  "One row" representation -
-                  %%  remove compound glues;
-                  case OutInfoIn.glueSize
-                  of 0 then
-                     {BrowserError ['...::AdjustRecordGlue: gluesSize = 0']}
-                     OutInfoOut = OutInfoIn
-                  [] !DSpace then
-                     OutInfoOut = OutInfoIn
-                  else
-                     {self.widgetObj
-                      deleteAfterMark(OutInfoIn.mark DSpace
-                                      (OutInfoIn.glueSize - DSpace))}
-                     %%
-                     OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
-                  end
-                  %%
-                  NewSubsOffset = SubsOffset
+         {SObj checkLayout}
+
+         %%
+         %%  two cases - last object (glueSize == 0) or not;
+         case <<isLastAny(N $)>> then
+            %% nothing more to do;
+            NewSubsOffset = SubsOffset
+            OutInfoOut = OutInfoIn
+         else
+            case SubsOffset == ~1 then
+               %%  "One row" representation -
+               %%  remove compound glues;
+               case OutInfoIn.glueSize
+               of 0 then
+                  {BrowserError ['...::AdjustRecordGlue: gluesSize = 0']}
+                  OutInfoOut = OutInfoIn
+               [] !DSpace then
+                  OutInfoOut = OutInfoIn
                else
-                  %%  'Multirow' representation - there could be
-                  %% compound glues;
-                  local NextOutInfo RefSize GlueSize in
-                     <<getAnySubtermOutInfo((N + 1) NextOutInfo)>>
-                     GlueSize = OutInfoIn.glueSize
-                     RefSize = @ReferenceGSize
+                  {self.widgetObj
+                   deleteAfterMark(OutInfoIn.mark DSpace
+                                   (OutInfoIn.glueSize - DSpace))}
+                  %%
+                  OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
+               end
+               %%
+               NewSubsOffset = SubsOffset
+            else
+               %%  'Multirow' representation - there could be
+               %% compound glues;
+               local NextOutInfo RefSize GlueSize in
+                  <<getAnySubtermOutInfo((N + 1) NextOutInfo)>>
+                  GlueSize = OutInfoIn.glueSize
+                  RefSize = @ReferenceGSize
+                  %%
+                  case
+                     @recordsAligned orelse
+                     SubsOffset + OutInfoIn.size + NextOutInfo.size +
+                     OutInfoIn.prfxSize + NextOutInfo.prfxSize +
+                     DDSpace >= @shownTWWidth
+                  then
                      %%
-                     case
-                        @recordsAligned orelse
-                        SubsOffset + OutInfoIn.size + NextOutInfo.size +
-                        OutInfoIn.prfxSize + NextOutInfo.prfxSize +
-                        DDSpace >= @shownTWWidth
-                     then
-                        %%
-                        %%  Next one on the next row;
-                        %%
-                        NewSubsOffset = RefSize - DSpace - 1
-                        %%
-                        case GlueSize == RefSize then
-                           %% offset, 'glue char' (DSpace) and '\n' (1);
-                           OutInfoOut = OutInfoIn
-                        else
-                           %%  adjust the glue;;
-                           case GlueSize > DSpace then
-                              case GlueSize < RefSize then
-                                 local Spaces in
-                                    Spaces = {CreateSpaces (RefSize - GlueSize)}
-                                    %%
-                                    {self.widgetObj
-                                     insertAfterMark(OutInfoIn.mark
-                                                     GlueSize
-                                                     Spaces)}
-                                 end
-                              else
+                     %%  Next one on the next row;
+                     %%
+                     NewSubsOffset = RefSize - DSpace - 1
+                     %%
+                     case GlueSize == RefSize then
+                        %% offset, 'glue char' (DSpace) and '\n' (1);
+                        OutInfoOut = OutInfoIn
+                     else
+                        %%  adjust the glue;;
+                        case GlueSize > DSpace then
+                           case GlueSize < RefSize then
+                              local Spaces in
+                                 Spaces = {CreateSpaces (RefSize - GlueSize)}
+                                 %%
                                  {self.widgetObj
-                                  deleteAfterMark(OutInfoIn.mark
-                                                  RefSize
-                                                  (GlueSize - RefSize))}
+                                  insertAfterMark(OutInfoIn.mark
+                                                  GlueSize
+                                                  Spaces)}
                               end
                            else
-                              %%  GlueSize == DSpace -
-                              %% insert exactly '@ReferenceGlue';
-                              %% (it seems to be a very frequent case;)
                               {self.widgetObj
-                               insertAfterMark(OutInfoIn.mark
-                                               GlueSize
-                                               @ReferenceGlue)}
+                               deleteAfterMark(OutInfoIn.mark
+                                               RefSize
+                                               (GlueSize - RefSize))}
                            end
-                           %%
-                           OutInfoOut = {AdjoinAt OutInfoIn glueSize RefSize}
-                        end
-                     else
-                        %%
-                        %%  Next one in the same row;
-                        NewSubsOffset =
-                        SubsOffset + OutInfoIn.size + OutInfoIn.prfxSize +
-                        DSpace
-                        %%
-                        case GlueSize == DSpace then
-                           OutInfoOut = OutInfoIn
                         else
-                           %% truncate;
+                           %%  GlueSize == DSpace -
+                           %% insert exactly '@ReferenceGlue';
+                           %% (it seems to be a very frequent case;)
                            {self.widgetObj
+                            insertAfterMark(OutInfoIn.mark
+                                            GlueSize
+                                            @ReferenceGlue)}
+                        end
+                        %%
+                        OutInfoOut = {AdjoinAt OutInfoIn glueSize RefSize}
+                     end
+                  else
+                     %%
+                     %%  Next one in the same row;
+                     NewSubsOffset =
+                     SubsOffset + OutInfoIn.size + OutInfoIn.prfxSize +
+                     DSpace
+                     %%
+                     case GlueSize == DSpace then
+                        OutInfoOut = OutInfoIn
+                     else
+                        %% truncate;
+                        {self.widgetObj
                             deleteAfterMark(OutInfoIn.mark DSpace
                                             (OutInfoIn.glueSize - DSpace))}
-                           %%
-                           OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
-                        end
+                        %%
+                        OutInfoOut = {AdjoinAt OutInfoIn glueSize DSpace}
                      end
                   end
                end
             end
          end
       end
+
       %%
       %%  'insertRefVar' is inherited from 'MetaTupleTWTermObject';
       %%  'undraw' is inherited from 'MetaTupleTWTermObject';
@@ -3406,30 +3420,32 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
-                  %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
       end
+
       %%
       %%
       meth getGlueChar(?GlueChar)
@@ -3599,28 +3615,29 @@ in
                <<mapObjIndArg(AddSimpleGlue TmpMark _)>>
                %%
                shown <- True
+
                %%
-               case {IsValue <<checkLayout($)>>} then
-                  %%  Draw the subterms;
+               <<checkLayout>>
+
+               %%  Draw the subterms;
+               %%
+               %%  NOTE
+               %%  All the subterms are drawn concurrently, but after
+               %% finishing the 'checkLayout' for the term itself.
+               %% It means that some 'checkLayout' of subterms may use
+               %% invalid actual subterm offset (because its
+               %% predecessor is not yet drawn completely), but this is
+               %% not a problem: if there is more than one subterm in a
+               %% row, they fit altogether in this line (and, in turn,
+               %% all their glues are simple).
+               %%
+               <<mapObjIndArg(DrawSubterm nil SyncList)>>
+               case {All SyncList IsValue} then
+                  Sync = True
                   %%
-                  %%  NOTE
-                  %%  All the subterms are drawn concurrently, but after
-                  %% finishing the 'checkLayout' for the term itself.
-                  %% It means that some 'checkLayout' of subterms may use
-                  %% invalid actual subterm offset (because its
-                  %% predecessor is not yet drawn completely), but this is
-                  %% not a problem: if there is more than one subterm in a
-                  %% row, they fit altogether in this line (and, in turn,
-                  %% all their glues are simple).
+                  <<initTypeWatching>>
                   %%
-                  <<mapObjIndArg(DrawSubterm nil SyncList)>>
-                  case {All SyncList IsValue} then
-                     Sync = True
-                     %%
-                     <<initTypeWatching>>
-                     %%
-                     <<initBindings>>
-                  end
+                  <<initBindings>>
                end
             end
          end
@@ -3676,27 +3693,27 @@ in
                <<getAnySubtermObjOutInfo(TotalWidth SpecsObj SpecsOutInfo)>>
                <<getAnySubtermOutInfo((TotalWidth - 1) PreOutInfo)>>
                %%
-               case
-                  {IsValue {SpecsObj [getSize(SpecsSize)
-                                       undraw(_)
-                                       destroy($)]}}
-               then
-                  {self.widgetObj
-                   [deleteBeforeMark(SpecsOutInfo.mark PreOutInfo.glueSize)
-                    unsetMark(SpecsOutInfo.mark)]}
-                  %%
-                  NewPreOutInfo = {AdjoinAt PreOutInfo glueSize 0}
-                  %%
-                  <<setAnySubtermOutInfo((TotalWidth - 1) NewPreOutInfo)>>
-                  %%
-                  <<removeSpecs>>
-                  %%
-                  NewSize = OldSize - SpecsSize - PreOutInfo.glueSize
-                  size <- NewSize
-                  %%
-                  job
-                     {self.parentObj checkSize(self OldSize NewSize)}
-                  end
+               {SpecsObj [getSize(SpecsSize) undraw(_) destroy]}
+
+               %%
+               {self.widgetObj
+                [deleteBeforeMark(SpecsOutInfo.mark PreOutInfo.glueSize)
+                 unsetMark(SpecsOutInfo.mark)]}
+
+               %%
+               NewPreOutInfo = {AdjoinAt PreOutInfo glueSize 0}
+
+               %%
+               <<setAnySubtermOutInfo((TotalWidth - 1) NewPreOutInfo)>>
+               <<removeSpecs>>
+
+               %%
+               NewSize = OldSize - SpecsSize - PreOutInfo.glueSize
+               size <- NewSize
+
+               %%
+               job
+                  {self.parentObj checkSize(self OldSize NewSize)}
                end
             end
          else
@@ -3726,24 +3743,20 @@ in
                   UndrawMeth = nil
                   DrawMeth = nil
                end
+
                %%
-               case
-                  {IsValue {OldSpecsObj [getSize(OldSize)
-                                          UndrawMeth
-                                          destroy($)]}} andthen
-                  {IsValue {NewSpecsObj sync($)}}
-               then
-                  %% don't care about termination;
-                  {NewSpecsObj DrawMeth}
-                  %%
-                  <<setSpecsObj(NewSpecsObj)>>
-                  %%
-                  job
-                     {self.parentObj checkSize(self OldSize NewSize)}
-                  end
-                  %%
+               {OldSpecsObj [getSize(OldSize) UndrawMeth destroy]}
+
+               %% don't care about termination;
+               {NewSpecsObj DrawMeth}
+
+               %%
+               <<setSpecsObj(NewSpecsObj)>>
+
+               %%
+               job
+                  {self.parentObj checkSize(self OldSize NewSize)}
                end
-               %%
             end
          else
             {BrowserError ['ORecordTWTermObject::addQuestion: error!']}
@@ -3795,11 +3808,11 @@ in
       %%
       %%  'getSize' ...
       %%
-      meth checkLayout(?Sync)
+      meth checkLayout
          case self.isCompound then
-            <<RecordTWTermObject checkLayout(Sync)>>
+            <<RecordTWTermObject checkLayout>>
          else
-            <<NameTWTermObject checkLayout(Sync)>>
+            <<NameTWTermObject checkLayout>>
          end
       end
       %%

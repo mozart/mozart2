@@ -1465,7 +1465,7 @@ class WindowPrimary from UrObject
 
             %% relational!
             if TermObject in {Subtree Current termObject} = TermObject then
-               {TermObject updateSizes(Depth _)}
+               {TermObject updateSizes(Depth)}
             else
                {BrowserError ['termObject is not found for @curent (UpdateSizes)']}
             fi
@@ -1480,7 +1480,7 @@ class WindowPrimary from UrObject
                 if TermObject in
                    {Subtree TermRec termObject} = TermObject
                 then
-                   {TermObject updateSizes(Depth _)}
+                   {TermObject updateSizes(Depth)}
                 else
                    {BrowserError
                     ['termObject is not found for @curent (UpdateSizes)']}
@@ -1521,7 +1521,7 @@ class WindowPrimary from UrObject
             if TermObject in
                {Subtree Current termObject} = TermObject
             then
-               {TermObject checkLayout(_)}
+               {TermObject checkLayout}
             else
                {BrowserError ['termObject is not found for @curent (SetTWWidth)']}
             fi
@@ -1539,7 +1539,7 @@ class WindowPrimary from UrObject
                 proc {$ TermRec}
                    %% relational!
                    if Obj in {Subtree TermRec termObject} = Obj then
-                      {Obj checkLayout(_)}
+                      {Obj checkLayout}
                    else true    % can be if a new screen is open;
                    fi
                 end}
@@ -1555,7 +1555,7 @@ class WindowPrimary from UrObject
                if TermObject in
                   {Subtree Current termObject} = TermObject
                then
-                  {TermObject checkLayout(_)}
+                  {TermObject checkLayout}
                else {BrowserError
                      ['termObject is not found for @curent (SetTWWidth)']}
                fi

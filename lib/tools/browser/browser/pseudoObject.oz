@@ -24,17 +24,19 @@ class PseudoTermGenericObject
 \ifdef FEGRAMED
       FE_PseudoTermObject
 \endif
-   %%
+
    %%
    %%
    feat
       repType                   %
       type:   T_PSTerm          %
+
    %%
    %%
    attr
       mark: InitValue           % probably compound structure;
       termObj: InitValue
+
    %%
    %%
    meth init(repType: RepType
@@ -56,9 +58,10 @@ class PseudoTermGenericObject
          {IsValue TermsStore} andthen
          {IsValue BrowserObj}
       then
+         %%
+
          %%  These values must be already instantiated!
          %%  We avoid this way such checking in term object's methods;
-         %%
          self.repType = RepType
          %%
          self.term = Term
@@ -68,9 +71,11 @@ class PseudoTermGenericObject
          self.store = Store
          self.termsStore = TermsStore
          self.browserObj = BrowserObj
+
          %%
          shown <- False
          depth <- Depth + 1     % meta-depth;
+
          %%
          <<InitObj(repType: RepType
                    widgetObj: WidgetObj
@@ -84,6 +89,7 @@ class PseudoTermGenericObject
          {BrowserError ['PseudoTermObject::init: not In_Text_Widget?']}
       end
    end
+
    %%
    %%
    meth InitObj(repType: RepType
@@ -99,55 +105,58 @@ class PseudoTermGenericObject
 \endif
       case RepType
       of !In_Text_Widget then
-         local TermType EQCheck ObjClass TermObj RefObj in
+         TermType EQCheck ObjClass TermObj RefObj
+      in
+         %%
+         <<getTermType(Term 1 TermType)>>
+
+         %%
+         {self.termsStore needsCheck(TermType EQCheck)}
+         case EQCheck then
+            {self.termsStore checkANDStore(self Term TermObj RefObj)}
             %%
-            <<getTermType(Term 1 TermType)>>
-            %%
-            {self.termsStore needsCheck(TermType EQCheck)}
-            case EQCheck then
-               {self.termsStore checkANDStore(self Term TermObj RefObj)}
-               %%
-               case RefObj == InitValue then
-                  %% none found -- proceed;
-                  <<getObjClass(TermType ObjClass)>>
-                  %%
-               else
-                  {BrowserError
-                   ['PseudoTermObject::init: terms store is not empty?']}
-                  ObjClass = UnknownTermObject
-               end
-            else
+            case RefObj == InitValue then
+               %% none found -- proceed;
                <<getObjClass(TermType ObjClass)>>
+            else
+               %%
+               {BrowserError
+                ['PseudoTermObject::init: terms store is not empty?']}
+               ObjClass = UnknownTermObject
             end
-            %%
-            TermObj = {New ObjClass init(term: Term
-                                         depth: Depth
-                                         numberOf: 1
-                                         parentObj: self
-                                         widgetObj: WidgetObj
-                                         store: Store
-                                         termsStore: TermsStore
-                                         browserObj: BrowserObj)}
-            %%
-            termObj <- TermObj
+         else
+            <<getObjClass(TermType ObjClass)>>
          end
+
+         %%
+         TermObj = {New ObjClass init(term: Term
+                                      depth: Depth
+                                      numberOf: 1
+                                      parentObj: self
+                                      widgetObj: WidgetObj
+                                      store: Store
+                                      termsStore: TermsStore
+                                      browserObj: BrowserObj)}
+         %%
+         termObj <- TermObj
       end
    end
+
    %%
    %%
-   meth destroy(?Sync)
+   meth destroy
       local TermObj in
          TermObj = @termObj
          %%
-         case
-            TermObj \= InitValue andthen
-            {IsValue {@termObj destroy($)}}
-         then
+         case TermObj \= InitValue then
+            {@termObj destroy}
             %%
-            <<MetaGenericTermObject destroy(Sync)>>
+            <<MetaGenericTermObject destroy>>
+         else true
          end
       end
    end
+
    %%
    %%
    meth draw(?Sync)
@@ -157,32 +166,38 @@ class PseudoTermGenericObject
       %%
       case self.repType
       of !In_Text_Widget then
-         local Mark IsScrolling in
-            case @mark == InitValue then
-               %%  in a text widget a '\n' character is inserted after
-               %% the term's representation;
-               <<putNL(Mark)>>
-            else
-               Mark = @mark
-            end
-            %%
-            {@termObj draw(Mark Sync)}
-            case {IsValue Sync} then
-               %%
-               shown <- True
-               %%
-               IsScrolling = {self.store read(StoreScrolling $)}
-               case IsScrolling then
-                  <<scrollToTag(@termObj.tag)>>
-               else true
-               end
-            end
+         Mark IsScrolling TermObj
+      in
+         TermObj = @termObj
+
+         %%
+         case @mark == InitValue then
+            %%  in a text widget a '\n' character is inserted after
+            %% the term's representation;
+            <<putNL(Mark)>>
+         else
+            Mark = @mark
+         end
+
+         %%
+         {TermObj draw(Mark Sync)}
+
+         %%
+         {Wait Sync}
+         shown <- True
+
+         %%
+         IsScrolling = {self.store read(StoreScrolling $)}
+         case IsScrolling then
+            <<scrollToTag(TermObj.tag)>>
+         else true
          end
       else
          {BrowserError ['PseudoObject::draw: unknown representation type']}
          Sync = True
       end
    end
+
    %%
    %%
    meth undraw(?Sync)
@@ -194,53 +209,53 @@ class PseudoTermGenericObject
       of !In_Text_Widget then
          %%
          {@termObj undraw(Sync)}
-         case {IsValue Sync} then
-            shown <- False
-            <<delNL>>
-         end
+
+         %%
+         {Wait Sync}
+         shown <- False
+         <<delNL>>
       else
          {BrowserError ['PseudoObject::undraw: unknown representation type']}
          Sync = True
       end
    end
+
    %%
    %%
-   meth updateSizes(Depth Sync)
+   meth updateSizes(Depth)
 \ifdef DEBUG_TO
       {Show 'PTO::updateSizes: is applied: '#self.term}
 \endif
       %%
       case self.repType
       of !In_Text_Widget then
-         case {IsValue {@termObj updateSizes(Depth $)}}
-         then
-            Sync = True
-            <<nil>>
-         end
+         {@termObj updateSizes(Depth)}
+
+         %%
+         <<nil>>
       else
          {BrowserError ['PseudoObject::updateSizes: unknown representation type']}
-         Sync = True
       end
    end
+
    %%
    %%
-   meth checkLayout(Sync)
+   meth checkLayout
 \ifdef DEBUG_TO
       {Show 'PTO::checkLayout: is applied: '#self.term}
 \endif
       %%
       case self.repType
       of !In_Text_Widget then
-         case {IsValue {@termObj checkLayout($)}} then
-            Sync = True
-            <<nil>>
-         end
+         {@termObj checkLayout}
+
+         %%
+         <<nil>>
       else
          {BrowserError ['PseudoObject::checkLayout: unknown representation type']}
-         Sync = True
       end
    end
-   %%
+
    %%
    %%   ... and now - method(s), acepted from term objects;
    %%
@@ -251,43 +266,41 @@ class PseudoTermGenericObject
 \endif
       %%
       case Obj == @termObj then
-         local IsScrolling WasShown in
-            %%
-            case
-               {IsValue {@termObj [isShown(WasShown)
-                                    undraw(_)
-                                    destroy($)]}}
-            then
+         IsScrolling WasShown
+      in
+         %%
+         {@termObj [isShown(WasShown) undraw(_) destroy]}
+
+         %%
+         depth <- Depth + 1
+         <<InitObj(repType: self.repType
+                   widgetObj: self.widgetObj
+                   depth: Depth
+                   term: self.term
+                   store: self.store
+                   termsStore: self.termsStore
+                   browserObj: self.browserObj)>>
+
+         %%
+         %%  new '@termObj';
+         case WasShown then
+            case {IsValue {@termObj draw(@mark $)}} then
                %%
-               depth <- Depth + 1
-               %%
-               <<InitObj(repType: self.repType
-                         widgetObj: self.widgetObj
-                         depth: Depth
-                         term: self.term
-                         store: self.store
-                         termsStore: self.termsStore
-                         browserObj: self.browserObj)>>
-               %%
-               %%  new '@termObj';
-               case WasShown then
-                  case {IsValue {@termObj draw(@mark $)}} then
-                     %%
-                     IsScrolling = {self.store read(StoreScrolling $)}
-                     case IsScrolling then
-                        <<scrollToTag(@termObj.tag)>>
-                     else true
-                     end
-                  end
+               IsScrolling = {self.store read(StoreScrolling $)}
+               case IsScrolling then
+                  <<scrollToTag(@termObj.tag)>>
                else true
                end
             end
+         else true
          end
       else true                 % ignore - garbage;
       end
    end
+
    %%
 end
+
 %%
 %%
 class PseudoTermObject

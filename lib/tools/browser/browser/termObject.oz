@@ -171,14 +171,16 @@ in
       end
       %%
       %%
-      meth destroy(Sync)
+      meth destroy
 \ifdef DEBUG_TO
          {Show 'MetaGenericObject::destroy method for the term '#self.term}
 \endif
          {self.termsStore decNumberOfNodes}
+
+         %%
          <<closeOut>>
          <<UrObject close>>
-         Sync = True
+
          %%
          %%  Note that no term object can close itself, but only on
          %% request from the parent;
@@ -189,9 +191,8 @@ in
       %%
       %%
       %%  for atomic term objects;
-      meth updateSizes(Depth ?Sync)
+      meth updateSizes(Depth)
          depth <- Depth
-         Sync = ok
       end
       %%
       %%
@@ -399,13 +400,13 @@ in
       end
       %%
       %%  perform 'retract' in addition;
-      meth destroy(?Sync)
-         <<MetaGenericTermObject destroy(Sync)>>
+      meth destroy
          %%
+         <<MetaGenericTermObject destroy>>
+
          %%  Note: proper 'destroy' should go first, since
          %% now the object (self) must be already closed;
          <<retract>>
-         %%
       end
       %%
       %%
@@ -491,24 +492,24 @@ in
          else true
          end
       end
+
       %%
       %%
-      meth destroy(Sync)
+      meth destroy
 \ifdef DEBUG_TO
          {Show
           'MetaTupleGenericObject::destroy method for the term '#self.term}
 \endif
          {self.termsStore decNumberOfNodes}
+
          %%
-         case {IsValue <<[destroyChilds(_) closeOut sync($)]>>} then
-            <<UrObject close>>
-            %%
-            <<retract>>
-            %%
-            Sync = True
-            %%
-         end
+         <<[destroyChilds(_) closeOut]>>
+         <<UrObject close>>
+
+         %%
+         <<retract>>
       end
+
       %%
       %%
       meth retract
@@ -520,6 +521,7 @@ in
          %%
          refVarName <- ''
       end
+
       %%
       %%  Destroy all childs of this object;
       %%
@@ -529,17 +531,11 @@ in
           'MetaTupleTermTermObject::destroyChilds method for the term '#
           self.term#<<getTotalWidth($)>>}
 \endif
-         local SyncList in
-            <<sendMessagesArg(destroy SyncList)>>
-            %%
-            case {All SyncList IsValue} then
-               %%
-               %%  sets 'totalWidth' to zero;
-               <<removeAllSubterms>>
-               %%
-               Sync = ok
-            end
-         end
+         %%
+         <<sendMessages(destroy)>>
+
+         %%  sets 'totalWidth' to zero;
+         <<removeAllSubterms>>
       end
       %%
       %%
@@ -583,30 +579,30 @@ in
             StoredObj = <<getSubtermObj(N $)>>
             %%
             case Obj == StoredObj then
-               case
-                  {IsValue {Obj [isShown(WasShown)
-                                  getSize(OldSize)
-                                  undraw(_)
-                                  destroy($)]}}
-               then
-                  ActualDepth = @depth
-                  depth <- Depth + 1
-                  %%
-                  <<createSubtermObjs(N N [Obj.term])>>
-                  %%
-                  NewObj  = <<getSubtermObj(N $)>>
-                  %%
-                  NewSize = {NewObj getSize($)}
-                  %%
-                  case WasShown then
-                     <<drawSubterm(N)>>
-                  else true
-                  end
-                  %%
-                  depth <- ActualDepth
-                  %%
-                  <<checkSize(NewObj OldSize NewSize)>>
+               {Obj [isShown(WasShown) getSize(OldSize) undraw(_) destroy]}
+
+               %%
+               ActualDepth = @depth
+               depth <- Depth + 1
+
+               %%
+               <<createSubtermObjs(N N [Obj.term])>>
+
+               %%
+               NewObj  = <<getSubtermObj(N $)>>
+               NewSize = {NewObj getSize($)}
+
+               %%
+               case WasShown then
+                  <<drawSubterm(N)>>
+               else true
                end
+
+               %%
+               depth <- ActualDepth
+
+               %%
+               <<checkSize(NewObj OldSize NewSize)>>
             else true           % ignore - 'garbage' message;
             end
          end
@@ -685,13 +681,10 @@ in
                      local CommasObj in
                         <<makeLastSubterm(CommasObj)>>
                         %%
-                        case
-                           {IsValue {CommasObj [undraw(_) destroy($)]}}
-                        then
-                           %%
-                           %%  create a subterm;
-                           <<createSubtermObjs(NewWidth NewWidth RestOf)>>
-                        end
+                        {CommasObj [undraw(_) destroy]}
+
+                        %%  create a subterm;
+                        <<createSubtermObjs(NewWidth NewWidth RestOf)>>
                      end
                   else
                      <<addSubterm>>
@@ -719,16 +712,14 @@ in
       end
       %%
       %%  for compound objects;
-      meth updateSizes(Depth ?Sync)
+      meth updateSizes(Depth)
 \ifdef DEBUG_TO
          {Show 'MetaTupleGenericTermObject::updateSizes: term '#self.term#Depth}
 \endif
          case Depth == 0 then
             <<shrink>>
-            %%
-            Sync = True
          else
-            local Width ActWidth ObjsList Syncs NewDepth ToRenewFlag in
+            local Width ActWidth ObjsList NewDepth ToRenewFlag in
                %%
                depth <- Depth
                %%
@@ -756,31 +747,26 @@ in
                else
                   ToRenewFlag = False
                end
+
                %%
                case ToRenewFlag then
                   %%
                   thread
                      {self.parentObj renewNum(self Depth)}
                   end
-
-                  %%
-                  Sync = True
                else
                   %% second phase: update depth of subterms;
                   NewDepth = Depth - 1
+
                   %%
                   ObjsList = <<getObjsList($)>>
-                  {Map ObjsList
-                   proc {$ Obj Sync}
-                      {Obj updateSizes(NewDepth Sync)}
-                   end
-                   Syncs}
+                  {ForAll ObjsList
+                   proc {$ Obj}
+                      {Obj updateSizes(NewDepth)}
+                   end}
+
                   %%
-                  case {All Syncs IsValue} then
-                     <<nil>>
-                     Sync = True
-                  end
-                  %%
+                  <<nil>>
                end
             end
          end
@@ -944,10 +930,11 @@ in
                      job
                         {self.parentObj renewNum(self Depth)}
                      end
-                  elsecase
-                     {IsValue {RemovedObj [undraw(_) destroy($)]}}
+                  else
+                     {RemovedObj [undraw(_) destroy]}
                      %% remove the (former) tail variable's representation;
-                  then
+
+                     %%
                      OldSize = <<getSize($)>>
                      %%
                      %%  ('1' is the number of subterms which slots
@@ -1226,14 +1213,16 @@ in
       %%  'getObjClass' from MetaGenericTermObject;
       %%  'init' ...
       %%  'isShown' ...
+
       %%
-      meth destroy(?Sync)
+      meth destroy
          case self.isCompound then
-            <<RecordGenericTermObject destroy(Sync)>>
+            <<RecordGenericTermObject destroy>>
          else
-            <<NameGenericTermObject destroy(Sync)>>
+            <<NameGenericTermObject destroy>>
          end
       end
+
       %%
       meth retract
          case self.isCompound then
@@ -1244,11 +1233,11 @@ in
       end
       %%
       %%
-      meth updateSizes(Depth ?Sync)
+      meth updateSizes(Depth)
          case self.isCompound then
-            <<RecordGenericTermObject updateSizes(Depth Sync)>>
+            <<RecordGenericTermObject updateSizes(Depth)>>
          else
-            <<NameGenericTermObject updateSizes(Depth Sync)>>
+            <<NameGenericTermObject updateSizes(Depth)>>
          end
       end
       %%
@@ -1389,13 +1378,14 @@ in
          end
          %%
       end
+
       %%
       %%  perform 'retract' in addition;
-      meth destroy(?Sync)
-         <<MetaGenericTermObject destroy(Sync)>>
+      meth destroy
+         <<MetaGenericTermObject destroy>>
+
          %%
          <<retract>>
-         %%
       end
       %%
       %%
@@ -1449,13 +1439,14 @@ in
          end
          %%
       end
+
       %%
       %%  perform 'retract' in addition;
-      meth destroy(?Sync)
-         <<MetaGenericTermObject destroy(Sync)>>
+      meth destroy
+         <<MetaGenericTermObject destroy>>
+
          %%
          <<retract>>
-         %%
       end
       %%
       %%
@@ -1509,13 +1500,14 @@ in
          end
          %%
       end
+
       %%
       %%  perform 'retract' in addition;
-      meth destroy(?Sync)
-         <<MetaGenericTermObject destroy(Sync)>>
+      meth destroy
+         <<MetaGenericTermObject destroy>>
+
          %%
          <<retract>>
-         %%
       end
       %%
       %%
@@ -1606,12 +1598,10 @@ in
          type: T_Shrunken
       %%
       %%  for shrunken subterms;
-      meth updateSizes(Depth ?Sync)
+      meth updateSizes(Depth)
          thread
             {self.parentObj renewNum(self Depth)}
          end
-         %%
-         Sync = True
       end
       %%
       %%

@@ -32,22 +32,32 @@ define
    Return=
    dp([
        mini(
-            proc {$}
-               S={New Remote.manager init(host:{OS.uName}.nodename)}
-            in
-               {S ping}
-               {S apply(url:'' functor
-                               import
-                                  Property(put)
-                               export
-                                  Hallo
-                               define
-                                  {Property.put 'close.time' 1000}
-                                  Hallo=hallo
-                               end $)}.hallo=hallo
-               {S ping}
-               {S close}
-            end
-            keys:[remote])
+          proc {$}
+             {ForAll [true false]
+              proc {$ Detach}
+                 {ForAll [automatic sh rsh]
+                  proc {$ Fork}
+                     {ForAll [localhost {OS.uName}.nodename]
+                      proc {$ Host}
+                         S={New Remote.manager
+                            init(host:Host fork:Fork detach:Detach)}
+                      in
+                         {S ping}
+                         {S apply(url:'' functor
+                                         import
+                                            Property(put)
+                                         export
+                                            Hallo
+                                         define
+                                            {Property.put 'close.time' 1000}
+                                            Hallo=hallo
+                                         end $)}.hallo=hallo
+                         {S ping}
+                         {S close}
+                      end}
+                  end}
+              end}
+          end
+          keys:[remote])
       ])
 end

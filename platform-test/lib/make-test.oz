@@ -347,11 +347,17 @@ in
               end}
           end
 
-          {Application.exec
-           './oztest'
-           c('AP':eager 'CP':eager 'SP':eager 'OP':eager)
-           {MakeTestEngine Keys Tests}
-           TestOptions}
+          local
+             Engine =      {MakeTestEngine Keys Tests}
+          in
+             {Application.exec
+              './oztest'
+              c('AP':eager 'CP':eager 'SP':eager 'OP':eager)
+              Engine
+              TestOptions}
+
+             {Component.save Engine './te.ozc' './te.ozc'}
+          end
 
           0
        end

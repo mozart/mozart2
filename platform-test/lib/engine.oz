@@ -84,6 +84,8 @@ in
              {Ask S}
           end
           fun {$ X} X==succeeded(suspended) end}
+      else
+         {RawTest T fun {$ X} X end}
       end
    end
 

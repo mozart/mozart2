@@ -22,7 +22,8 @@
 class CompilerInterfaceQuiet from CompilerInterfaceGeneric
    prop final
    attr Verbose: false AccVS: "" HasErrors: false
-   meth init(CompilerObject)
+   meth init(CompilerObject DoVerbose <= false)
+      Verbose <- DoVerbose
       CompilerInterfaceGeneric, init(CompilerObject Serve)
    end
    meth reset()
@@ -45,14 +46,9 @@ class CompilerInterfaceQuiet from CompilerInterfaceGeneric
          else
             OutputVS = ""
          end
-         case @Verbose then
-            File = {New Open.file init(name: stderr flags: [write])}
-         in
-            {File write(vs: OutputVS)}
-            {File close()}
-         elsecase OutputVS of "" then skip
-         else
-            AccVS <- @AccVS#OutputVS
+         case OutputVS of "" then skip
+         elsecase @Verbose then {System.printError OutputVS}
+         else AccVS <- @AccVS#OutputVS
          end
          CompilerInterfaceQuiet, Serve(Mr)
       end

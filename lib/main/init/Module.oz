@@ -112,7 +112,9 @@ local
          Url = {NameOrUrlToUrl ModName UrlV}
       in
          Module = BaseManager,Link(Url $)
-         if {Not {HasFeature Message 1}} then {Wait Module} end
+         if {Not {HasFeature Message 1}} then
+            thread {Wait Module} end
+         end
       end
 
       meth apply(name: ModName <= NONE
@@ -122,7 +124,9 @@ local
          Url = {NameOrUrlToUrl ModName UrlV}
       in
          Module = BaseManager,Apply(Url Func $)
-         if {Not {HasFeature Message 2}} then {Wait Module} end
+         if {Not {HasFeature Message 2}} then
+            thread {Wait Module} end
+         end
       end
 
       meth enter(name: ModName <= NONE

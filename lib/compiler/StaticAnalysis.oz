@@ -1207,6 +1207,7 @@ define
          if self.isComplex then          % if this statement is complex
             skip                         % then terminate
          else
+            {Ctrl setCoord(@coord)}      % save coordinates for error messages
             {self saSimple(Ctrl)}
             if @next \= self then        % if there is another one
                {@next SaLookahead(Ctrl)}

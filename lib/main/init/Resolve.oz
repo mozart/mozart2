@@ -419,6 +419,8 @@ local
 in
    Resolve = {Adjoin LoadResolver
               resolve(
+                 trace(set      : SetTrace
+                       get      : GetTrace)
                  getTrace       : GetTrace
                  setTrace       : SetTrace
                  handler        :

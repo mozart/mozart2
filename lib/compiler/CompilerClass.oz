@@ -214,7 +214,8 @@ local
          {V getPrintName(?PrintName)}
          {Dictionary.put self.variables PrintName V}
          {Dictionary.put self.values PrintName X}
-         case {IsFree X} andthen NameIt then {Misc.nameVariable X PrintName}
+         case {Not {IsDet X}} andthen NameIt then
+            {Misc.nameVariable X PrintName}
          else skip
          end
          {V setUse(multiple)}

@@ -792,7 +792,7 @@ in
             in
                %% non-monotonic operation;
                job
-                  IsCVar = {RecordC.is Term}
+                  IsCVar = {Record.isC Term}
                end
 
                %%
@@ -1776,7 +1776,7 @@ in
             self.name = @name   % just some value - it should not be used here;
             %%
             %%  incomplete list;
-            %% {RecordC.monitorArity X K L}
+            %% {Record.monitorArity X K L}
             %%
             %% Constrains X to a record.  "Eagerly" constrains L to a list of all
             %% features of X, in some order. The order of the features will be "the
@@ -1795,7 +1795,7 @@ in
             %%
             %%  This *must* be a job, and *not* a thread!
             job
-               RecArity = {RecordC.monitorArity Term SelfClosed}
+               RecArity = {Record.monitorArity Term SelfClosed}
             end
 
             %%

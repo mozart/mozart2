@@ -159,7 +159,7 @@ in
                   %%  convert an OFS to the proper record non-monotonically;
                   %%
                   %%  'RLabel' will be determined later!
-                  RArity = {RecordC.monitorArity TermIn True}
+                  RArity = {Record.monitorArity TermIn True}
                   KnownRArity = {Map {GetWFList RArity}
                                  fun {$ FN} {ReflectTerm FN nil $ _} end}
 

@@ -171,14 +171,14 @@ local
       {X getData($)}
    end
 
-% GetPrintData: T -> <oz-term>
+% GetFullData: T -> <oz-term>
 % given a T node, returns the associated value
 % ie, an integer/float/atom/construction; or the
 % value associated with a token (proc/builtin/class etc.)
 % constructions are expanded recursively up to limited depth
 
-   fun {GetPrintData X}
-      {X getPrintData(PrintDepth $)}
+   fun {GetFullData X}
+      {X getFullData(PrintDepth $)}
    end
 
 %-----------------------------------------------------------------------
@@ -688,7 +688,7 @@ local
       then
          nil
       else
-         XD = {GetPrintData X}
+         XD = {GetFullData X}
       in
          case {X isVariableOccurrence($)}
          then [hint(l:Text m:pn({X getPrintName($)}) # ' = ' # oz(XD))]
@@ -715,8 +715,8 @@ local
                     andthen UnifRight \= unit
                  then
                     [hint(l:'Original assertion'
-                          m:oz({GetPrintData UnifLeft}) # ' = ' #
-                          oz({GetPrintData UnifRight}))]
+                          m:oz({GetFullData UnifLeft}) # ' = ' #
+                          oz({GetFullData UnifRight}))]
                  else nil end
                ]
       Body   = {FoldR Msgs Append nil}
@@ -759,8 +759,8 @@ local
               then
                  {Append Msgs
                   [hint(l:'Original assertion'
-                        m:oz({GetPrintData UnifLeft}) # ' = '
-                        # oz({GetPrintData UnifRight}))]}
+                        m:oz({GetFullData UnifLeft}) # ' = '
+                        # oz({GetFullData UnifRight}))]}
               else
                  Msgs
               end
@@ -1322,17 +1322,17 @@ local
          {self deref(self)}
          @value
       end
-      meth getPrintData(D $)
+      meth getFullData(D $)
          case
             D =< 0
          then
-            '_'
+            _
          else
             {self deref(self)}
             case
                {IsDet @value}
             then
-               {Record.map @value fun {$ X} {X getPrintData(D-1 $)} end}
+               {Record.map @value fun {$ X} {X getFullData(D-1 $)} end}
             elsecase
                {IsFree @value}
             then
@@ -1346,7 +1346,7 @@ local
                else skip end
                {ForAll {CurrentArity @value}
                 proc {$ F}
-                   Rec^F = {@value^F getPrintData(D-1 $)}
+                   Rec^F = {@value^F getFullData(D-1 $)}
                 end}
                Rec
             end
@@ -1739,7 +1739,7 @@ local
                else
                   PN  = pn({@designator getPrintName($)})
                   PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-                  Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+                  Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
                   Ts  = {Map @actualArgs fun {$ A} {TypeToVS {A getType($)}} end}
                in
                   {Ctrl.rep
@@ -1780,7 +1780,7 @@ local
 
       meth checkMessage(Ctrl MsgArg Meth Type PN)
          Msg     = {GetData MsgArg}
-         MsgData = {GetPrintData MsgArg}
+         MsgData = {GetFullData MsgArg}
 \ifdef DEBUG
          {Show checkingMsg(pn:PN arg:MsgArg msg:Msg met:Meth)}
 \endif
@@ -1899,7 +1899,7 @@ local
                Pos
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+               Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
                Ts  = {Map BIInfo.types fun {$ T} oz(T) end}
             in
                {Ctrl.rep error(coord: @coord
@@ -1914,7 +1914,7 @@ local
             end
          else
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
          in
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
@@ -2399,12 +2399,13 @@ local
 
       meth DoDetType(Test Ctrl)
 \ifdef DEBUGSA
+         {Show doDetType(Test @actualArgs)}
 \endif
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
       in
          case {DetTests.det BVO1} then
-            case {Test {GetPrintData BVO1}} then
+            case {Test {GetData BVO1}} then
                {BVO2 unifyVal(Ctrl
                               {New Core.nameToken
                                init('`true`' `true` true)})}
@@ -2423,7 +2424,7 @@ local
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
       in
-         case {ThreeValuedTest {GetPrintData BVO1}}
+         case {ThreeValuedTest {GetFullData BVO1}}
          of true then
             {BVO2 unifyVal(Ctrl
                            {New Core.nameToken
@@ -2440,10 +2441,9 @@ local
       meth DoKindedType(Test Ctrl)
          BVO1  = {Nth @actualArgs 1}
          BVO2  = {Nth @actualArgs 2}
-         Data  = {GetData BVO1}
       in
-         case {IsKinded Data} then
-            case {Test Data} then
+         case {DetTests.detOrKinded BVO1} then
+            case {Test {GetData BVO1}} then
                {BVO2 unifyVal(Ctrl
                               {New Core.nameToken
                                init('`true`' `true` true)})}
@@ -2478,7 +2478,7 @@ local
          else
             PN  = {@designator getPrintName($)}
             PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-            Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+            Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -2552,7 +2552,7 @@ local
                GotA \= ExpA
             then
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
-               Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
+               Vals= {Map @actualArgs fun {$ A} oz({GetFullData A}) end}
             in
                {Ctrl.rep
                 error(coord: @coord
@@ -2598,7 +2598,7 @@ local
          elsecase
             {DetTests.det @designator}
          then
-            Val = {GetPrintData @designator}
+            Val = {GetFullData @designator}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -2743,7 +2743,7 @@ local
             {Arbiter unifyVal(Ctrl Val)}
          else
             PN  = {Arbiter getPrintName($)}
-            Val = {GetPrintData Arbiter}
+            Val = {GetFullData Arbiter}
          in
             {Ctrl.rep
              error(coord: {@body.1 getCoord($)}
@@ -3136,7 +3136,7 @@ local
 \endif
 
          else
-            NoCls = {GetPrintData {Nth @parents NrClass}}
+            NoCls = {GetFullData {Nth @parents NrClass}}
          in
             {Ctrl.rep
              error(coord: @coord
@@ -3736,7 +3736,7 @@ local
       meth getDataObject($)
          @value
       end
-      meth getPrintData(D $)
+      meth getFullData(D $)
          @value
       end
    end
@@ -4309,7 +4309,7 @@ local
          {@variable deref(self)}
          {@value getValue($)}
       end
-      meth getPrintData(D $)
+      meth getFullData(D $)
          X % Leif's hack: dummy variable with right print name
       in
          {NameVariable X {self getPrintName($)}}
@@ -4527,8 +4527,8 @@ local
       meth getDataObject($)
          self % here is the key different to method getData
       end
-      meth getPrintData(D $)
-         self.kind
+      meth getFullData(D $)
+         self
       end
    end
 in

@@ -45,7 +45,7 @@ local
            '`GenSumCNCD`': `GenSumCNCD`
            '`::CD`':       `::CD`
            '`:::CD`':      `:::CD`
-           'FSET':         FSET)
+           'FS':           FS)
 in
 
    fun {NewCP}

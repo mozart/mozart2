@@ -15,8 +15,10 @@ fun {NewWP Open}
    Tk      = {NewTk Open}
    TkTools = {NewTkTools Tk}
 in
-   wp('Tk':      Tk
-      'TkTools': TkTools)
+   wp('Tk':         Tk
+      'NewTk':      NewTk
+      'TkTools':    TkTools
+      'NewTkTools': NewTkTools)
 end
 
 \endif

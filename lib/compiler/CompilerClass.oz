@@ -186,6 +186,7 @@ local
          [] X|Xr then
             switches <- X
             savedSwitches <- Xr
+            localSwitches <- unit
          end
       end
       meth pushSwitches()

@@ -125,10 +125,13 @@ local
       end
    end
 
-   IsThread = {`Builtin` 'Thread.is' 2}
+   IsBitArray = {`Builtin` 'BitArray.is' 2}
+   IsPromise  = {`Builtin` 'Promise.is'  2}
+   IsThread   = {`Builtin` 'Thread.is'   2}
 
    Is = is(array:               IsArray
            atom:                IsAtom
+           bitArray:            IsBitArray
            bool:                IsBool
            char:                IsChar
            chunk:               IsChunk
@@ -151,6 +154,7 @@ local
            pair:                IsPair
            port:                IsPort
            procedure:           IsProcedure
+           promise:             IsPromise
            propertyList:        IsPropList
            record:              IsRecord
            recordC:             IsRecordC
@@ -166,6 +170,7 @@ local
    Ask = ask(generic:           GenericAsk
              array:             {GenericAsk IsArray array}
              atom:              {GenericAsk IsAtom atom}
+             bitArray:          {GenericAsk IsBitArray bitArray}
              bool:              {GenericAsk IsBool bool}
              char:              {GenericAsk IsChar char}
              chunk:             {GenericAsk IsChunk chunk}
@@ -186,6 +191,7 @@ local
              pair:              {GenericAsk IsPair pair}
              port:              {GenericAsk IsPort port}
              procedure:         {GenericAsk IsProcedure procedure}
+             promise:           {GenericAsk IsPromise promise}
              propertyList:      {GenericAsk IsPropList propertyList}
              record:            {GenericAsk IsRecord record}
              recordC:           {GenericAsk IsRecordC recordC}

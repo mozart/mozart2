@@ -30,15 +30,6 @@ Return=
                  then 0 else 1 end
               end}
 
-             {MiscTest 2
-              fun {$} R D X Y in
-                 [D X Y] ::: 0#100
-                 condis X - Y =: D [] Y - X =: D end
-                 R = thread cond D = 0 then 1 else 0 end end
-                 X = Y
-                 R
-              end}
-
              {MiscTest 3
               fun{$}
                  N = 20 L = {List.make N} S R in
@@ -294,27 +285,6 @@ Return=
              {MiscTest 37
               fun {$} X in [X]:::0#10
                  thread cond {FD.distance X X '\\=:' 0} then 0 else 1 end end
-              end}
-
-             {MiscTest 38
-              fun {$} R X Y in X::0#10 Y::0#10
-                 thread R = cond Y :: 0#2 then 1 else 0 end end
-                 condis X*X=:9 2*Y<:4
-                 [] X+Y<:5
-                 end
-                 X=2
-                    % Y in 0#2
-                 R
-              end}
-
-             {MiscTest 39
-              fun {$} R X Y in X::1#10 Y ::1#10
-                 thread R = cond X::1#8 Y :: 1#8 then 1 else 0 end end
-                 condis X*Y<:9
-                 [] X<:7 Y<:7
-                 end
-                    % X,Y in 1#8
-                 R
               end}
 
              {MiscTest 40

@@ -37,7 +37,7 @@ AC_INIT(Standard.oz)
 
 AC_CANONICAL_HOST
 
-if test "x$oz_default_prefix" !=x && test -d $oz_default_prefix
+if test "x$oz_default_prefix" != x && test -d $oz_default_prefix
 then
   ac_default_prefix=$oz_default_prefix
 fi

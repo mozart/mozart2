@@ -566,7 +566,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 
-if test "x$oz_default_prefix" !=x && test -d $oz_default_prefix
+if test "x$oz_default_prefix" != x && test -d $oz_default_prefix
 then
   ac_default_prefix=$oz_default_prefix
 fi

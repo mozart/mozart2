@@ -75,11 +75,12 @@ in
                              Res = {GetTokens}
                              {MyScanner close()}
                           end
-                          [define#unit id#f '='#unit lambda#unit id#y '.'#unit
-                           lambda#unit id#z '.'#unit '('#unit id#add id#y id#z
-                           ')'#unit ';'#unit define#unit id#c '='#unit int#17
-                           ';'#unit id#f id#c int#7 ';'#unit '('#unit '('#unit
-                           id#f ')'#unit id#c ')'#unit int#7])
+                          ['define'#unit id#f '='#unit lambda#unit
+                           id#y '.'#unit lambda#unit id#z '.'#unit '('#unit
+                           id#add id#y id#z ')'#unit ';'#unit 'define'#unit
+                           id#c '='#unit int#17 ';'#unit id#f id#c int#7
+                           ';'#unit '('#unit '('#unit id#f ')'#unit id#c
+                           ')'#unit int#7])
                     keys: [tools gump scanner])
             parser(equal(fun {$}
                             LambdaScanner = {MakeScanner}

@@ -1,7 +1,6 @@
 functor prop once
 import
    System.{printName valueToVirtualString}
-   AssemblerSupport
    CompilerSupport
    Builtins.getInfo
 export

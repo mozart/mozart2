@@ -38,26 +38,26 @@
 local
    local
 \ifndef NO_ASSEMBLER
-      GetInstructionSize = AssemblerSupport.getInstructionSize
-      GetOpcode          = AssemblerSupport.getOpcode
-      NewCodeBlock       = AssemblerSupport.newCodeBlock
-      MakeProc           = AssemblerSupport.makeProc
-      AddDebugInfo       = AssemblerSupport.addDebugInfo
-      StoreOpcode        = AssemblerSupport.storeOpcode
-      StoreNumber        = AssemblerSupport.storeNumber
-      StoreLiteral       = AssemblerSupport.storeLiteral
-      StoreFeature       = AssemblerSupport.storeFeature
-      StoreConstant      = AssemblerSupport.storeConstant
-      StoreInt           = AssemblerSupport.storeInt
-      StoreRegisterIndex = AssemblerSupport.storeRegisterIndex
-      StorePredicateRef  = AssemblerSupport.storePredicateRef
-      StoreRecordArity   = AssemblerSupport.storeRecordArity
-      StoreGRegRef       = AssemblerSupport.storeGRegRef
-      StoreLocation      = AssemblerSupport.storeLocation
-      StoreCache         = AssemblerSupport.storeCache
+      GetInstructionSize = CompilerSupport.getInstructionSize
+      GetOpcode          = CompilerSupport.getOpcode
+      NewCodeBlock       = CompilerSupport.newCodeBlock
+      MakeProc           = CompilerSupport.makeProc
+      AddDebugInfo       = CompilerSupport.addDebugInfo
+      StoreOpcode        = CompilerSupport.storeOpcode
+      StoreNumber        = CompilerSupport.storeNumber
+      StoreLiteral       = CompilerSupport.storeLiteral
+      StoreFeature       = CompilerSupport.storeFeature
+      StoreConstant      = CompilerSupport.storeConstant
+      StoreInt           = CompilerSupport.storeInt
+      StoreRegisterIndex = CompilerSupport.storeRegisterIndex
+      StorePredicateRef  = CompilerSupport.storePredicateRef
+      StoreRecordArity   = CompilerSupport.storeRecordArity
+      StoreGRegRef       = CompilerSupport.storeGRegRef
+      StoreLocation      = CompilerSupport.storeLocation
+      StoreCache         = CompilerSupport.storeCache
 
       local
-         BIStoreBuiltinname = AssemblerSupport.storeBuiltinname
+         BIStoreBuiltinname = CompilerSupport.storeBuiltinname
       in
          proc {StoreBuiltinname CodeBlock Builtin}
             {BIStoreBuiltinname CodeBlock {`Builtin` Builtin ~1}}
@@ -77,7 +77,7 @@ local
       end
 
       local
-         BIStoreLabel = AssemblerSupport.storeLabel
+         BIStoreLabel = CompilerSupport.storeLabel
       in
          proc {StoreLabel CodeBlock Lbl LabelDict}
             {BIStoreLabel CodeBlock {Dictionary.get LabelDict Lbl}}
@@ -85,7 +85,7 @@ local
       end
 
       local
-         BIStorePredId = AssemblerSupport.storePredId
+         BIStorePredId = CompilerSupport.storePredId
       in
          proc {StorePredId CodeBlock pid(Name Arity Pos Flags NLiveRegs)}
             {BIStorePredId CodeBlock Name Arity Pos Flags NLiveRegs}
@@ -93,9 +93,9 @@ local
       end
 
       local
-         BINewHashTable  = AssemblerSupport.newHashTable
-         BIStoreHTScalar = AssemblerSupport.storeHTScalar
-         BIStoreHTRecord = AssemblerSupport.storeHTRecord
+         BINewHashTable  = CompilerSupport.newHashTable
+         BIStoreHTScalar = CompilerSupport.storeHTScalar
+         BIStoreHTRecord = CompilerSupport.storeHTRecord
       in
          proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
             Addr = {Dictionary.get LabelDict ElseLabel}
@@ -115,7 +115,7 @@ local
       end
 
       local
-         BIStoreGenCallInfo  = AssemblerSupport.storeGenCallInfo
+         BIStoreGenCallInfo  = CompilerSupport.storeGenCallInfo
       in
          proc {StoreGenCallInfo CodeBlock
                gci(g(Index) IsMethod Name IsTail RecordArity)}
@@ -125,7 +125,7 @@ local
       end
 
       local
-         BIStoreApplMethInfo = AssemblerSupport.storeApplMethInfo
+         BIStoreApplMethInfo = CompilerSupport.storeApplMethInfo
       in
          proc {StoreApplMethInfo CodeBlock ami(Name RecordArity)}
             {BIStoreApplMethInfo CodeBlock Name RecordArity}

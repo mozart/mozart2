@@ -1,7 +1,6 @@
 functor prop once
 import
    Parser           from 'x-oz-boot:Parser'
-   AssemblerSupport from 'x-oz-boot:AssemblerSupport'
    CompilerSupport  from 'x-oz-boot:CompilerSupport'
    Property
    System   %.{gcDo printName valueToVirtualString get property printError eq}
@@ -71,7 +70,6 @@ body
                     )}
       Assembler = {FunAssembler.apply
                    c('System':                System
-                     'AssemblerSupport':      AssemblerSupport
                      'CompilerSupport':       CompilerSupport
                      'Builtins':              Builtins)}
       CompilerF = {FunCompiler.apply

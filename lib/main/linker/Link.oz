@@ -1,16 +1,17 @@
 %%%
 %%% Authors:
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Christian Schulte, 1998
+%%%   Leif Kornstaedt, 2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    http://www.mozart-oz.org
 %%%
 %%% See the file "LICENSE" or
@@ -38,7 +39,7 @@ local
 
    in
 
-      fun {NewUrlFilter Spec RootUrl}
+      fun {NewUrlFilter Args RootUrl}
          {Debug 'Root: '#{UrlToVs RootUrl}}
          BaseUrl = {UrlToString {UrlResolve RootUrl nil}}
          {Debug 'Base: '#{UrlToVs BaseUrl}}
@@ -58,7 +59,7 @@ local
             {Debug 'Include/Exclude Specs:'}
             {ForAll AllSpecs
              proc {$ S}
-                {Debug '\t'#{Label S}#' '#S.1}
+                {Debug '   '#{Label S}#' '#S.1}
              end}
          end
       in
@@ -66,12 +67,12 @@ local
             if {IsNativeUrl Url} then false
             else
                try Str={UrlToString Url} in
-                  {Debug 'IMPORT '#Str}
+                  {Debug '   '#Str}
                   {ForAll AllSpecs
                    proc {$ S}
                       if {List.isPrefix S.1 Str}
                       then
-                         {Debug 'MATCH '#{Label S}#' '#S.1}
+                         {Debug '      matches '#{Label S}#'("'#S.1#'")'}
                          raise {Label S} end
                       end
                    end}
@@ -85,35 +86,94 @@ local
 
    end
 
-
-
-
    %%
-   %% First Step: Determine functors for both exclusion and inclusion
+   %% Determine functors for both exclusion and inclusion
+   %%
+   %% Result: o(include: Include exclude: Exclude functors: Functors)
+   %% where
+   %%    Include:
+   %%       is a record mapping the URL of every included functor
+   %%       to a simplified representation of its import.
+   %%       This import is represented as a record mapping every
+   %%       imported module name to its resolved URL (as an atom key
+   %%       suitable for accessing Include, Exclude, and Functors).
+   %%    Exclude:
+   %%       is a record mapping the URL of every excluded functor
+   %%       to its expected type.
+   %%    Functors:
+   %%       is a record mapping the URL of every included functor
+   %%       to the functor itself (with its import stripped of its types).
    %%
 
    local
-      proc {DoFind Url ToInclude InclMap ExclMap FuncMap}
+      %%
+      %% Type checking procedures
+      %%
+
+      CheckExpImp = {Property.condGet 'ozl.checkExpImp'
+                     fun {$ ExpType ImpType _}
+                        %% Must return either:
+                        %%    no(TypeConflictDescription)
+                        %%    ok
+                        ok
+                     end}
+
+      CheckImpImp = {Property.condGet 'ozl.checkImpImp'
+                     fun {$ ImpType1 ImpType2}
+                        %% Must return either:
+                        %%    no(TypeConflictDescription)
+                        %%    ok(IntersectionType)
+                        ok(ImpType1)
+                     end}
+
+      proc {DoFind Url Importer ImpType ToInclude InclMap ExclMap FuncMap}
          UrlKey = {UrlToAtom Url}
       in
          try
-            if {Dictionary.member InclMap UrlKey}
-               orelse {Dictionary.member ExclMap UrlKey} then
-               skip
-            else
-               if {ToInclude Url} then
-                  %% Load the functor
-                  Func Embed
-               in
-                  try
-                     Func = {Pickle.load UrlKey}
-                  catch _ then
-                     raise ar(load(nil)) end
-                  end
-                  {Dictionary.put FuncMap UrlKey Func}
-                  {Dictionary.put InclMap UrlKey incl(embed:Embed url:Url)}
-                  Embed={Record.mapInd Func.'import'
-                         fun {$ ModName Info}
+            if {Dictionary.member InclMap UrlKey} then ExpType in
+               %% Typecheck what the module manager would normally do
+               ExpType = {Dictionary.get FuncMap UrlKey}.'export'
+               case {CheckExpImp ExpType ImpType o(url: UrlKey)}
+               of ok then skip
+               [] no(Conflict) then
+                  raise ar(exportImport(Conflict UrlKey Importer)) end
+               end
+            elseif {Dictionary.member ExclMap UrlKey} then
+               %% Check for import <-> import matches
+               case {CheckImpImp ImpType {Dictionary.get ExclMap UrlKey}}
+               of ok(IntersectionType) then
+                  {Dictionary.put ExclMap UrlKey IntersectionType}
+               [] no(Conflict) then
+                  raise ar(importImport(Conflict UrlKey)) end
+               end
+            elseif {ToInclude Url} then Func Embed in
+               %% Load the functor
+               Func = try
+                         {Pickle.load UrlKey}
+                      catch _ then
+                         raise ar(load(nil)) end
+                      end
+               case ImpType of top then skip
+               elsecase {CheckExpImp Func.'export' ImpType o(url: UrlKey)}
+               of ok then skip
+               [] no(Conflict) then
+                  raise ar(exportImport(Conflict UrlKey Importer)) end
+               end
+               {Dictionary.put FuncMap UrlKey
+                case ImpType of top then Func
+                else
+                   %% Strip the functor of its import types
+                   %% (to make them subject to garbage collection)
+                   {Functor.new
+                    {Record.map Func.'import'
+                     fun {$ Info} {Record.subtract Info type} end}
+                    Func.'export' Func.apply}
+                end}
+               %% Not using Record.map produces garbage early:
+               {Dictionary.put InclMap UrlKey Embed}
+               Embed = {List.toRecord 'import'
+                        {Map {Record.toListInd Func.'import'}
+                         fun {$ ModName#Info}
                             EmbedUrl = if {HasFeature Info 'from'} then
                                           {UrlMake Info.'from'}
                                        else
@@ -121,187 +181,114 @@ local
                                        end
                             FullUrl  = {UrlResolve Url EmbedUrl}
                          in
-                            {DoFind FullUrl ToInclude InclMap ExclMap FuncMap}
-                            o(url:FullUrl key:{UrlToAtom FullUrl})
-                         end}
-               else
-                  {Dictionary.put ExclMap UrlKey Url}
-               end
+                            {DoFind FullUrl UrlKey {CondSelect Info type nil}
+                             ToInclude InclMap ExclMap FuncMap}
+                            ModName#{UrlToAtom FullUrl}
+                         end}}
+            else
+               {Dictionary.put ExclMap UrlKey
+                case ImpType of top then nil else ImpType end}
             end
          catch ar(load(Urls)) then
             raise ar(load(UrlKey|Urls)) end
          end
       end
-
    in
-
       fun {Find RootUrl UrlFilter}
+         {Debug 'Acquiring functors ...'}
          InclMap = {Dictionary.new}
          ExclMap = {Dictionary.new}
          FuncMap = {Dictionary.new}
+         {DoFind RootUrl unit top UrlFilter InclMap ExclMap FuncMap}
+         Include = {Dictionary.toRecord incl InclMap}
+         Exclude = {Dictionary.toRecord excl ExclMap}
+         Functors = {Dictionary.toRecord func FuncMap}
       in
-         {DoFind RootUrl UrlFilter InclMap ExclMap FuncMap}
-         o(include:  {Dictionary.toRecord incl InclMap}
-           exclude:  {Dictionary.toRecord excl ExclMap}
-           functors: {Dictionary.toRecord func FuncMap})
+         if {IsAtom Include} then
+            raise ar(nothingToLink) end
+         end
+         o(include: Include exclude: Exclude functors: Functors)
       end
-
-   end
-
-
-   %%
-   %% Type checking
-   %%
-
-   local
-
-      fun {CheckExpImp ExpType ImpType}
-         %% no(TypeConflictDescription)
-         ok
-      end
-
-      fun {CheckImpImp ImpType1 ImpType2}
-         %% no(TypeConflictDescription)
-         %% ok(CommonTyp)
-         ok(ImpType1)
-      end
-
-   in
-
-      fun {TypeCheck Info}
-         {Debug 'Type Checking'}
-         %%
-         %% Check for export -> import matches
-         %% Collect external import types
-         %%
-         ExclTypes = {Dictionary.new}
-         InclMap   = Info.include
-         FuncMap   = Info.functors
-      in
-         {Record.forAllInd InclMap
-          %% All modules that are included
-          proc {$ UrlKey Spec}
-             {Record.forAllInd Spec.embed
-              %% All imported modules
-              proc {$ ModName Imp}
-                 EmbedKey = {UrlToAtom Imp.url} % Imp.key
-                 ImpType  = FuncMap.UrlKey.'import'.ModName
-              in
-                 if {HasFeature InclMap EmbedKey} then
-                    %% Typecheck what the module manager would normally do
-                    ExpType = FuncMap.EmbedKey.'export'
-                 in
-                    case {CheckExpImp ExpType ImpType}
-                    of ok then skip
-                    [] no(Conflict) then
-                       raise ar(exportImport(Conflict
-                                             EmbedKey UrlKey))
-                       end
-                    end
-                 else
-                    %% Collect type
-                    {Dictionary.put ExclTypes EmbedKey
-                     (EmbedKey#ImpType)|
-                     {Dictionary.condGet ExclTypes EmbedKey nil}}
-                 end
-              end}
-          end}
-         %%
-         %% Check for import <-> import matches
-         %%
-         {ForAll {Dictionary.entries ExclTypes}
-          proc {$ UrlKey#(T|Tr)}
-             {Dictionary.put ExclTypes UrlKey
-              if Tr==nil then
-                 T.2
-              else
-                 {FoldL Tr
-                  fun {$ CurType EmbedKey#Type}
-                     case {CheckImpImp CurType Type}
-                     of ok(Type)     then Type
-                     [] no(Conflict) then
-                        raise ar(importImport(Conflict
-                                              EmbedKey))
-                        end
-                     end
-                  end T.2}
-              end}
-          end}
-         {Dictionary.toRecord types ExclTypes}
-      end
-
    end
 
    %%
    %% Schedule functors for application
    %%
+   %% Result: either acyclic(Urls) or cyclic(Urls)
+   %% where Urls is a list of URLs specifying functor evaluation order.
+   %%
+   %% The order of URLs has the following properties:
+   %%    Exclude functors come first;
+   %%    then the included functors;
+   %%    root functor comes last.
+   %%
 
-   fun {Schedule RootUrl Info Spec}
-      {Debug 'Scheduling'}
-      %% Map URLs to integers
-      %% Assumptions: Exclude functors come first.
-      %%              Then included.
-      %%              Root is last.
-      RootKey = {UrlToAtom RootUrl}
-      NoUrls  = {Width Info.exclude} + {Width Info.include}
-      AllUrls = {Append {Arity Info.exclude} {Arity Info.include}}
-
-      proc {Script UrlToInt}
-         UrlToInt = {FD.record urlToInt AllUrls 1#NoUrls}
-         %% Excluded functors go first
-         {List.forAllInd {Arity Info.exclude}
-          proc {$ I U}
-             UrlToInt.U = I
-          end}
-         %% Root functor goes last
-         UrlToInt.RootKey = NoUrls
-         %% Now the real stuff comes
-         {FD.distinctD UrlToInt}
-         {Record.forAllInd Info.include
-          %% All modules that are included
-          proc {$ UrlKey Spec}
-             {Record.forAll Spec.embed
-              %% All imported modules
-              proc {$ Imp}
-                 EmbedKey={UrlToAtom Imp.url}
-              in
-                 if {HasFeature Info.include EmbedKey} then
-                    UrlToInt.EmbedKey <: UrlToInt.UrlKey
-                 end
-              end}
-          end}
-         {FD.distribute ff UrlToInt}
+   local
+      fun {DepthFirst RootKey Map}
+         CurrentId = {NewCell 0}
+         Stack = {NewCell nil}
+         Done = {NewDictionary}
+         Sorted = {NewCell nil}
+         fun {GetCycle Key1|Keys Key}
+            if Key1 == Key then
+               {Assign Stack Keys}
+               [Key1]
+            else Key1|{GetCycle Keys Key}
+            end
+         end
+         proc {Visit Key ?MinId} Id in
+            Id = {Access CurrentId}
+            {Assign CurrentId Id + 1}
+            {Dictionary.put Done Key Id}
+            {Assign Stack Key|{Access Stack}}
+            MinId = {Record.foldL Map.Key
+                     fun {$ MinId Key2}
+                        if {HasFeature Map Key2} then
+                           {Min case {Dictionary.condGet Done Key2 unit}
+                                of unit then {Visit Key2}
+                                elseof Id then Id
+                                end MinId}
+                        else MinId
+                        end
+                     end Id}
+            if MinId == Id then
+               {Dictionary.put Done Key {Width Map}}
+               {Assign Sorted {GetCycle {Access Stack} Key}|{Access Sorted}}
+            end
+         end
+      in
+         _ = {Visit RootKey}
+         {Reverse {Access Sorted}}
       end
-
    in
-
-      case {Search.base.one Script}
-      of nil then
-         %% Naive fallback
-         if Spec.sequential then
-            {Trace 'Scheduling: Due to cyclic dependencies using fallback'}
+      fun {Schedule RootUrl Info Args}
+         {Debug 'Scheduling ...'}
+         RootKey = {UrlToAtom RootUrl}
+         Sorted = {DepthFirst RootKey Info.include}
+         Lab = if {All Sorted fun {$ Urls} Urls.2 == nil end} then acyclic
+               else cyclic
+               end
+         AllUrls = {Append {Arity Info.exclude}
+                    {Append {List.subtract {Flatten Sorted} RootKey}
+                     [RootKey]}}
+      in
+         if Args.sequential then
+            if Lab == cyclic then
+               {Trace
+                'Executing functor bodies concurrently '#
+                'due to cyclic dependencies.'}
+               {ForAll Sorted
+                proc {$ Urls}
+                   case Urls of [_] then skip
+                   else {Trace 'Cyclic dependency:\n'#{CommaList Urls}}
+                   end
+                end}
+            else
+               {Trace 'Executing functor bodies sequentially.'}
+            end
          end
-         cyclic({List.toRecord urllToInt
-                 {List.mapInd {Append {List.subtract AllUrls RootKey}
-                               [RootKey]}
-                  fun {$ I A}
-                     A#I
-                  end}})
-      [] [IntToUrl] then
-         if Spec.sequential then
-            {Trace 'Scheduling:\n'#
-             ({CommaList
-               {Record.toList
-                {List.toRecord ''
-                 {Map {Filter {Record.toListInd IntToUrl}
-                       fun {$ UrlKey#_} {HasFeature Info.include UrlKey} end}
-                  fun {$ UrlKey#I}
-                     I#UrlKey
-                  end}}}})}
-         end
-         acyclic(IntToUrl)
+         Lab(AllUrls)
       end
-
    end
 
    %%
@@ -314,33 +301,38 @@ local
          {StringToAtom &V|{IntToString I}}
       end
 
-      %% remove relative prefix
+      %% rewrite URL prefixes
 
-      NoRootPrefix =
-      if Args.relative then
-         fun {$ RootPrefix Key}
-            Str = {Atom.toString Key}
-         in
-            if {List.isPrefix RootPrefix Str}
-            then
-               {String.toAtom {Append RootPrefix $ Str}}
-            else
-               Key
+      fun {RewriteString S Rules}
+         case Rules of From#To|Rest then
+            if {List.isPrefix From S} then
+               To#{List.drop S {Length From}}
+            else {RewriteString S Rest}
             end
+         [] nil then S
          end
-      else
-         fun {$ _ Key} Key end
+      end
+
+      proc {RewriteFrom Url Rules ?NewUrl}
+         NewUrl = {VirtualString.toAtom
+                   {RewriteString {VirtualString.toString Url} Rules}}
+         {Debug Url#'\n\t=> '#NewUrl#'\n'}
       end
 
    in
 
-      fun {Assemble RootUrl BodiesSeq Info Types UrlToIntSpec}
-         {Debug 'Assembling'}
+      fun {Assemble RootUrl Args Info Order}
+         {Debug 'Assembling ...'}
          RootUrlKey = {UrlToAtom RootUrl}
-         RootPrefix = {VirtualString.toString
-                       {UrlToVs {UrlResolve RootUrl nil}}}
-         UrlToInt   = UrlToIntSpec.1
-         IsSeq      = BodiesSeq andthen {Label UrlToIntSpec}==acyclic
+         Rewrite    = if Args.relative then
+                         {Append Args.rewrite
+                          [{VirtualString.toString
+                            {UrlToVs {UrlResolve RootUrl nil}}}#""]}
+                      else Args.rewrite
+                      end
+         UrlToInt   = {List.toRecord urlToInt
+                       {List.mapInd Order.1 fun {$ I A} A#I end}}
+         IsSeq      = Args.sequential andthen {Label Order}==acyclic
       in
          %% Assemble
          local
@@ -350,8 +342,8 @@ local
               fun {$ UrlKey}
                  NewModName = {IntToVarName UrlToInt.UrlKey}
               in
-                 NewModName # {AdjoinAt Types.UrlKey 'from'
-                               {NoRootPrefix RootPrefix UrlKey}}
+                 NewModName # info(type: Info.exclude.UrlKey
+                                   'from': {RewriteFrom UrlKey Rewrite})
               end}}
 
             EXPORT =
@@ -366,9 +358,9 @@ local
                              {Map {Record.toListInd Info.include}
                               fun {$ UrlKey#Spec}
                                  (UrlToInt.UrlKey) #
-                                 {Record.mapInd Spec.embed
-                                  fun {$ ModName Imp}
-                                     UrlToInt.{UrlToAtom Imp.url}
+                                 {Record.mapInd Spec
+                                  fun {$ ModName EmbedKey}
+                                     UrlToInt.EmbedKey
                                   end}
                               end}}
 
@@ -394,7 +386,6 @@ local
 
                MAINAPPLY =
                if IsSeq then
-                  {Trace 'Executing bodies sequentially.'}
                   proc {$ ModMap}
                      {FOR NoExcl+1 NoExclIncl-1
                       proc {$ I}
@@ -440,20 +431,17 @@ local
 
 in
 
-
-   fun {Link RootUrl Spec}
-      ToInclude = {NewUrlFilter Spec RootUrl}
+   fun {Link RootUrl Args}
+      ToInclude = {NewUrlFilter Args RootUrl}
       Info      = {Find RootUrl ToInclude}
-
-      {Trace 'Include:\n'#{CommaList {Arity Info.include}}}
-      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
-
-      Types     = {TypeCheck Info}
-      UrlToInt  = {Schedule RootUrl Info Spec}
+      Order     = {Schedule RootUrl Info Args}
    in
-
-      {Assemble RootUrl Spec.sequential Info Types UrlToInt}
-
+      {Trace 'Include:\n'#{CommaList {Filter Order.1
+                                      fun {$ Url}
+                                         {HasFeature Info.include Url}
+                                      end}}}
+      {Trace 'Import:\n'#{CommaList {Arity Info.exclude}}}
+      {Assemble RootUrl Args Info Order}
    end
 
 end

@@ -7,13 +7,13 @@
 %%%
 %%% Copyright:
 %%%   Christian Schulte, 1998
+%%%   Leif Kornstaedt, 1998-2001
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
-%%% This file is part of Mozart, an implementation
-%%% of Oz 3
+%%% This file is part of Mozart, an implementation of Oz 3:
 %%%    http://www.mozart-oz.org
 %%%
 %%% See the file "LICENSE" or
@@ -57,13 +57,13 @@ prepare
 import
    Pickle(load saveWithCells)
    Application(exit getArgs)
-   System(printError showError)
+   System(show printError showError)
    FD(record distinctD distribute sumC)
    Search(base)
    OS(system)
    Resolve(expand)
    Open(file)
-   Property(get)
+   Property(get condGet)
 
 define
 
@@ -99,17 +99,27 @@ define
          {Append {Map L MakeExclude} Old New}
       end
    end
-   ArgSpec = record(include(accumulate(AddInclude)
-                            type: list(string) default: nil)
-                    exclude(accumulate(AddExclude)
-                            type: list(string) default: nil)
-                    relative(rightmost type: bool default: true)
 
-                    out(single char: &o type: string optional:true)
+   fun {StringPair S} From in
+      case {List.takeDropWhile S fun {$ C} C \= &= end ?From}
+      of &=|To then From#To
+      [] nil then
+         {Exception.raiseError
+          ap(usage 'expected rewrite rule of the form FROM=TO')} unit
+      end
+   end
+
+   ArgSpec = record(include(accumulate(AddInclude) type: list(string))
+                    exclude(accumulate(AddExclude) type: list(string))
+                    relative(rightmost type: bool default: true)
 
                     verbose(rightmost char: &v type: bool default: false)
                     quiet(char: &q alias: [verbose#false debug#false])
                     sequential(rightmost type: bool default: false)
+
+                    out(single char: &o type: string optional: true)
+                    rewrite(multiple type: list(StringPair) default: nil)
+
                     executable(rightmost char: &x type: bool default: false)
                     execheader(single type: string
                                validate:
@@ -130,7 +140,7 @@ define
                     compress(rightmost char: &z
                              type: int(min: 0 max: 9) default: 0)
 
-                    debug(rightmost type:bool default:false)
+                    debug(rightmost type: bool default: false)
                     usage(alias: help)
                     help(rightmost char: [&h &?] default: false))
 
@@ -146,7 +156,7 @@ define
        end
 
        RootUrl = case Args.1 of [GetInFile] then
-                   {UrlExpand {UrlResolve './' GetInFile}}
+                    {UrlExpand {UrlResolve './' GetInFile}}
                  else
                     raise ar(inputFile) end
                  end
@@ -239,21 +249,20 @@ define
            'ERROR: Type mismatch between included modules.'}
           {Swallow Conflict} {Swallow Url} {Swallow EmbedUrl}
           1
-       [] usage then
+       [] nothingToLink then
           {System.showError
-           'ERROR: Illegal usage: see below\n'#{Usage}}
-          1
+           'ERROR: Nothing to link; root functor has been excluded.'}
        [] inputFile then
           {System.showError
-           'No or multiple input file(s) given.\n'}
+           'Illegal usage: No or multiple input file(s) given.\n'}
           0
        [] exit then
           0
        end
     [] error(ap(usage VS) ...) then
        {System.showError
-        'Illegal usage: '#VS#'\n'#{Usage}}
-       1
+        'Illegal usage: '#VS#'.\n'#{Usage}}
+       2
     end}
 
 end

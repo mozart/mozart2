@@ -49,6 +49,7 @@ local
          System
          Debug at 'x-oz://boot/Debug'
          Module
+         Space
 
       export
          Run
@@ -240,6 +241,7 @@ in
       Application
       Module
       Pickle
+      Space
 
    define
 

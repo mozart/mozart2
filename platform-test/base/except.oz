@@ -3,6 +3,7 @@ functor
 import
    Property
    Open
+   Space
 
 export
    Return

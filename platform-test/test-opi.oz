@@ -21,7 +21,7 @@
 %%%
 
 declare DIR={OS.getEnv 'HOME'}#'/mozart/share/test'
-%declare DIR={OS.getEnv 'HOME'}#'/build/share/test'
+declare DIR={OS.getEnv 'HOME'}#'/devel/build/share/test'
 {OS.chDir DIR}
 
 declare
@@ -33,10 +33,11 @@ T={{New Module.manager init}
         help:     false
         keys:     nil   % nil for `all' or a non-empty list of strings: ["fs"]
         ignores:  nil   % nil for `none' or a non-empty list of strings
-        tests:    nil   % nil for `none' or a non-empty list of strings
+        tests:    ["money"]
         do:       true
         time:     ""
         gc:       0
         threads:  1) _}
+
 
 {Property.put 'messages.idle' true}

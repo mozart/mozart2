@@ -25,6 +25,7 @@ functor
 import
    FD
    Search
+   Space
 
 export
    Return

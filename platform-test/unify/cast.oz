@@ -20,17 +20,9 @@
 %%% WARRANTIES.
 %%%
 
-functor
 
-import
-   FD FS
-
-export
-   Return
-
-prepare
-
-   Types = [u simple future ext fd bool fs ofs]
+   declare
+   Types = [u simple future ext fd bool] % fs]% ofs]
 
    TTs = {FoldL Types
           fun {$ TTs T1}
@@ -67,7 +59,7 @@ prepare
       end
    end
 
-define
+% define
 
    fun {MakeVar Type}
       case Type
@@ -145,5 +137,3 @@ define
        {Space.inject S proc {$ Y} X=Y end}
        {AssertEntailed S}
     end}
-
-end

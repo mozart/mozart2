@@ -121,6 +121,7 @@ local
       functor
 
       import
+         Space
          Property
          System
          Debug at 'x-oz://boot/Debug'
@@ -263,6 +264,7 @@ in
    functor
 
    import
+      Space
       System
       Application
       Module

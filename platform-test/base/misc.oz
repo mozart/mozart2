@@ -24,6 +24,7 @@ functor
 
 import
    Search(base)
+   Space
    System(show)
    Browser(getsBoundB) at 'x-oz://boot/Browser'
    FD

@@ -653,48 +653,50 @@ define
          end
       end
 
+
    in
 
       proc {FdDistribute RawSpec Vec}
          {WaitStable}
-         case {PreProcessSpec RawSpec}
-         of opt(value:SelVal order:SelVar) then
-            VecTuple = {MakeDistrTuple Vec}
-            proc {Do}
-               V={SelVar VecTuple}
-               D={SelVal V}
-            in
-               choice {FdInt D V} [] {FdInt compl(D) V} end
-               {WaitStable}
-               {Do}
-            end
-         in
-            try {Do}
-            catch ~1 then skip
-            end
-         [] gen(value:     SelVal
-                order:     Order
-                select:    Select
-                filter:    Fil
-                procedure: Proc) then
-
-            proc {Do Xs}
-               case {Filter Xs Fil} of nil then skip elseof Xs=X|Xr then
-                  V={Select {Choose Xr X Order}}
+         if {Width Vec}>0 then
+            case {PreProcessSpec RawSpec}
+            of opt(value:SelVal order:SelVar) then
+               VecTuple = {MakeDistrTuple Vec}
+               proc {Do}
+                  V={SelVar VecTuple}
                   D={SelVal V}
                in
-                  {Proc}
-                  {WaitStable}
                   choice {FdInt D V} [] {FdInt compl(D) V} end
                   {WaitStable}
-                  {Do Xs}
+                  {Do}
                end
+            in
+               try {Do}
+               catch ~1 then skip
+               end
+            [] gen(value:     SelVal
+                   order:     Order
+                   select:    Select
+                   filter:    Fil
+                   procedure: Proc) then
+
+               proc {Do Xs}
+                  case {Filter Xs Fil} of nil then skip elseof Xs=X|Xr then
+                     V={Select {Choose Xr X Order}}
+                     D={SelVal V}
+                  in
+                     {Proc}
+                     {WaitStable}
+                     choice {FdInt D V} [] {FdInt compl(D) V} end
+                     {WaitStable}
+                     {Do Xs}
+                  end
+               end
+            in
+               {Do {VectorToList Vec}}
             end
-         in
-            {Do {VectorToList Vec}}
          end
       end
-
 
       proc {FdChoose RawSpec Vec ?V ?D}
          {WaitStable}

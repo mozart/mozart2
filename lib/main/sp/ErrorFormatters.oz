@@ -349,6 +349,11 @@ define
                msg: 'Space already merged'
                items: [hint(l:'Space' m:oz(S))])
 
+      elseof kernel(spaceDistributor) then
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg: 'Space already contains distributable thread')
+
       elseof kernel(spaceSuper S) then
          %% expected S: space
          error(kind: 'Error: Space'

@@ -248,7 +248,7 @@ define
          case {Width C}
          of 0 then fail
          [] 1 then {{{Guardify C.1}}}
-         [] N then I={FdInt 1#N} B A in
+         [] N then I={FdInt 1#N} B in
             {For 1 N 1 proc {$ J}
                           G={NewGuard C.J}
                        in

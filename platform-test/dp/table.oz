@@ -30,47 +30,48 @@ export
    Return
 
 define
+   proc{Locker Nr D S Lim}
+      L = {NewLock} in
+      if(Nr mod Lim == 0) then
+         thread {Wait S} lock L then skip end
+         end
+      end
+      {Send D store(L Nr)}
+   end
+
+   proc{Celler Nr D S Lim}
+      L = {NewCell Nr} in
+      if(Nr mod Lim == 0) then
+         thread {Wait S} {Access L} = Nr end
+      end
+      {Send D store(L Nr)}
+   end
+
+
+   proc{Variabler Nr D S Lim}
+      L in
+      if(Nr mod Lim == 0) then
+         thread {Wait S} L = Nr end
+      end
+      {Send D store(L Nr)}
+   end
+
+   proc{Porter Nr D S Lim}
+      St P= {NewPort St}   in
+      if(Nr mod Lim == 0) then
+         thread {Wait S} {Send P Nr} St.1 = Nr end
+      end
+      {Send D store(P Nr)}
+   end
+
+
    Return=
    dp([
-       table(
+       table_nofrag(
             proc {$}
                S={New Remote.manager init(host:{OS.uName}.nodename)}
                D
                Lim = 10000
-
-               proc{Locker Nr D S Lim}
-                  L = {NewLock} in
-                  if(Nr mod Lim == 0) then
-                     thread {Wait S} lock L then skip end
-                     end
-                  end
-                  {Send D store(L Nr)}
-               end
-
-               proc{Celler Nr D S Lim}
-                  L = {NewCell Nr} in
-                  if(Nr mod Lim == 0) then
-                     thread {Wait S} {Access L} = Nr end
-                  end
-                  {Send D store(L Nr)}
-               end
-
-
-               proc{Variabler Nr D S Lim}
-                  L in
-                  if(Nr mod Lim == 0) then
-                     thread {Wait S} L = Nr end
-                  end
-                  {Send D store(L Nr)}
-               end
-
-               proc{Porter Nr D S Lim}
-                  St P= {NewPort St}   in
-                  if(Nr mod Lim == 0) then
-                     thread {Wait S} {Send P Nr} St.1 = Nr end
-                  end
-                  {Send D store(P Nr)}
-               end
 
                proc{Stuffer PP}
                   S
@@ -128,6 +129,99 @@ define
                         Locker#45#locker
                         Locker#10000#locker
                         Celler#10000#celler
+                       ]
+
+                Stuffer}
+
+               {S close}
+            end
+            keys:[remote])
+
+       table_frag(
+            proc {$}
+               S={New Remote.manager init(host:{OS.uName}.nodename)}
+               D
+               Lim = 10000
+
+               proc{Stuffer PP}
+                  S
+                  PPP
+               in
+                  if(PP.1 == gc) then
+                     {Send D gcR(S PP.2)}
+                     {Wait S}
+                     {System.gcDo}
+                     {System.gcDo}
+                  else
+                     PPP  = proc{$ Nr} {PP.1 PP.4 D S 100} end
+                     {For 1 PP.2 1 PPP}
+                  end
+               end
+            in
+               {S ping}
+               {S apply(url:'' functor
+                               import
+                                  Property(put)
+                                  System
+                               export
+                                  PP
+                               define
+                                  S
+                                  P = {NewPort S}
+                                  C =o({NewCell nil}
+                                       {NewCell nil}
+                                       {NewCell nil}
+                                       {NewCell nil}
+                                       {NewCell nil})
+                                  proc{R X}
+                                     case X of
+                                        store(E Nr) then
+                                        {Assign C.Nr E|{Access C.Nr}}
+                                     elseof gc then
+                                        {System.gcDo}
+                                     elseof gcR(A Nr) then
+                                        {Assign C.Nr nil}
+                                        {System.gcDo}
+                                        A = unit
+                                     end
+                                  end
+
+
+                                  thread
+                                     {ForAll S R}
+                                  end
+                                  PP = P
+                               end $)}.pP = D
+
+               {ForAll [Celler#23#celler#1
+                        Locker#70#locker#2
+                        Celler#150#celler#3
+                        Porter#64#porter#4
+                        gc#2
+                        Locker#103#locker#5
+                        gc#4
+                        Celler#267#celler#2
+                        gc#1
+                        Variabler#120#variabler#1
+                        gc#2
+                        gc#5
+                        Celler#500#celler#2
+                        gc#1
+                        Locker#450#locker#4
+                        gc#1
+                        gc#2
+                        gc#3
+                        gc#4
+                        gc#5
+                        Locker#100#locker#1
+                        Locker#100#locker#2
+                        Locker#100#locker#3
+                        Locker#100#locker#4
+                        Locker#100#locker#5
+                        gc#1
+                        gc#3
+                        gc#5
+                        Locker#300#locker#3
                        ]
 
                 Stuffer}

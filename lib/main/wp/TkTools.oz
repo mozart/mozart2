@@ -880,7 +880,7 @@ local
       IncTime    = 100
       IncWait    = 500
       Border     = 1
-      BitMapDir  = '@'#{System.get home}#'/lib/bitmaps/'
+      BitMapDir  = '@'#{System.get home}#'/lib/images/'
 
       fun {CoerceAdd X Y}
          FX={IsFloat X} FY={IsFloat Y}

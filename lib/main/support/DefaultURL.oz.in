@@ -54,7 +54,6 @@ prepare
                    'Tk' 'TkTools'
                    'Compiler'
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
-                   'Misc'
                    'DefaultURL']
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System']

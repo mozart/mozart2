@@ -1233,60 +1233,87 @@ in
 
       end
 
+      local
+         URL   = {System.property.get url}
+         ImRes = {URL.makeResolver image
+                  vs('all=.:cache='#{OS.getEnv 'OZHOME'}#'/cache')}
+         {URL.setTrace true}
+      in
+         class TkImage
+            from ReturnClass
+            feat !TclName
+            attr ToUnlink: nil
 
-      class TkImage
-         from ReturnClass
-         feat !TclName
+            meth Resolve(Url $)
+               case {ImRes.localize Url}
+               of old(F) then F
+               [] new(F) then ToUnlink <- F|@ToUnlink F
+               end
+            end
 
-         meth tkInit(type:Type ...) = Message
-            ThisTclName = self.TclName
-            case {IsDet ThisTclName} then
-               {`RaiseError` tk(alreadyInitialized self Message)}
-            else skip end
-            NewTkName   = {GenImageName Session}
-         in
-            {TkSendFilter Session v('image create '#Type) NewTkName
-             Message [type] unit}
-            ThisTclName = NewTkName
-         end
-         meth tk(...) = M
-            {TkSendTuple Session self M}
-         end
-         meth tkImage(...) = M
-            {TkSendTagTuple Session image self M}
-         end
-         meth !TkReturnMethod(M Cast)
-            {TkReturnMess Session self M unit Cast}
-         end
-         meth tkImageReturn(...) = M
-            {TkReturnMess Session image M self TkStringToString}
-         end
-         meth tkImageReturnString(...) = M
-            {TkReturnMess Session image M self TkStringToString}
-         end
-         meth tkImageReturnAtom(...) = M
-            {TkReturnMess Session image M self TkStringToAtom}
-         end
-         meth tkImageReturnInt(...) = M
-            {TkReturnMess Session image M self TkStringToInt}
-         end
-         meth tkImageReturnFloat(...) = M
-            {TkReturnMess Session image M self TkStringToFloat}
-         end
-         meth tkImageReturnList(...) = M
-            {TkReturnMess Session image M self TkStringToListString}
-         end
-         meth tkImageReturnListString(...) = M
-            {TkReturnMess Session image M self TkStringToListString}
-         end
-         meth tkImageReturnListAtom(...) = M
-            {TkReturnMess Session image M self TkStringToListAtom}
-         end
-         meth tkImageReturnListInt(...) = M
-            {TkReturnMess Session image M self TkStringToListInt}
-         end
-         meth tkImageReturnListFloat(...) = M
-            {TkReturnMess Session image M self TkStringToListFloat}
+            meth tkInit(type:Type ...) = Message
+               ThisTclName = self.TclName
+               case {IsDet ThisTclName} then
+                  {`RaiseError` tk(alreadyInitialized self Message)}
+               else skip end
+               NewTkName   = {GenImageName Session}
+               MessUrl = case {HasFeature Message url} then
+                            {AdjoinAt Message file
+                             TkImage,Resolve(Message.url $)}
+                         else Message
+                         end
+               MessAll = case {HasFeature MessUrl maskurl} then
+                            {AdjoinAt MessUrl maskfile
+                             TkImage,Resolve(MessUrl.maskurl $)}
+                         else MessUrl
+                         end
+            in
+               {TkSendFilter Session v('image create '#Type) NewTkName
+                MessAll [maskurl type url] unit}
+               ThisTclName = NewTkName
+            end
+            meth tk(...) = M
+               {TkSendTuple Session self M}
+            end
+            meth tkImage(...) = M
+               {TkSendTagTuple Session image self M}
+            end
+            meth !TkReturnMethod(M Cast)
+               {TkReturnMess Session self M unit Cast}
+            end
+            meth tkImageReturn(...) = M
+               {TkReturnMess Session image M self TkStringToString}
+            end
+            meth tkImageReturnString(...) = M
+               {TkReturnMess Session image M self TkStringToString}
+            end
+            meth tkImageReturnAtom(...) = M
+               {TkReturnMess Session image M self TkStringToAtom}
+            end
+            meth tkImageReturnInt(...) = M
+               {TkReturnMess Session image M self TkStringToInt}
+            end
+            meth tkImageReturnFloat(...) = M
+               {TkReturnMess Session image M self TkStringToFloat}
+            end
+            meth tkImageReturnList(...) = M
+               {TkReturnMess Session image M self TkStringToListString}
+            end
+            meth tkImageReturnListString(...) = M
+               {TkReturnMess Session image M self TkStringToListString}
+            end
+            meth tkImageReturnListAtom(...) = M
+               {TkReturnMess Session image M self TkStringToListAtom}
+            end
+            meth tkImageReturnListInt(...) = M
+               {TkReturnMess Session image M self TkStringToListInt}
+            end
+            meth tkImageReturnListFloat(...) = M
+               {TkReturnMess Session image M self TkStringToListFloat}
+            end
+            meth tkClose
+               {ForAll @ToUnlink OS.unlink}
+            end
          end
       end
 

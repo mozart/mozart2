@@ -988,6 +988,7 @@ local
                              % (eventual execution) yes/no?
                              % if yes: more errors
          toCopy: unit        % list of things to copy in a virtual toplevel
+         savedToCopy: nil    % for managing nested virtual toplevels
          errorMsg: unit      % currently active error message
          unifierLeft: unit   % last unification requested
          unifierRight: unit  %
@@ -1000,6 +1001,7 @@ local
          top           <- true
          needed        <- true
          toCopy        <- unit
+         savedToCopy   <- nil
          errorMsg      <- unit
          unifierLeft   <- unit
          unifierRight  <- unit
@@ -1058,15 +1060,11 @@ local
       end
 
       meth beginVirtualToplevel(Coord)
-         case @toCopy == unit then
-            toCopy <- nil
-         else
-            %--** this should be allowed
-            {self.rep
-             error(coord: Coord
-                   kind:  SAGenError
-                   msg:   'nested procedures with virtual toplevels')}
+         case @toCopy of unit then skip
+         elseof Xs then
+            savedToCopy <- Xs|@savedToCopy
          end
+         toCopy <- nil
       end
       meth declareToplevelName(PrintName ?N)
          case @toCopy of unit then
@@ -1086,7 +1084,12 @@ local
       end
       meth endVirtualToplevel(?Xs)
          Xs = @toCopy
-         toCopy <- unit
+         case @savedToCopy of Ys1|Ysr then
+            toCopy <- Ys1
+            savedToCopy <- Ysr
+         [] nil then
+            toCopy <- unit
+         end
       end
 
       meth setErrorMsg(E)

@@ -30,6 +30,7 @@ functor
 
 import
    Connection % Do not request!
+   DPInit
 
    Application(exit getCmdArgs)
    Module(manager)
@@ -49,7 +50,9 @@ prepare
                     shmkey(single type:atom default:'NONE')
                     detached(single type:bool default:false)
                     test(single type:bool default:false)
-                    port(single type:int default:0))
+                    port(single type:int default:0)
+                    ip(single type:atom default:default)
+                    firewall(single type:bool default:false))
 
 define
 
@@ -61,16 +64,16 @@ define
       {Application.exit 0}
    end
 
-   %% Use a fix port number if desired
-/* case Args.port
-   of 0 then skip
-   [] P then {DPMisc.initIPConnection ipInfo(port:P) _}
-   end*/
-
-   %%
-   %% Force linking of base libraries
-   %%
-   {Wait Connection}
+   %% Initialize distribution with desired settings before Connection.take
+   local
+      S1=if Args.port==0 then settings else settings(port:Args.port) end
+      S2=if Args.ip==default then S1 else
+            {AtomToString {AdjoinAt S1 ip Args.ip}}
+         end
+      Settings={AdjoinAt S2 firewall Args.firewall}
+   in
+      {DPInit.init Settings}
+   end
 
    %% Module manager needed for
    ModMan = {New Module.manager init}

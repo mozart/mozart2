@@ -32,7 +32,7 @@ import
    Error(registerFormatter)
    Fault(install installWatcher deInstall deInstallWatcher)
    Property(get)
-   DPinit
+   DPInit
 export
    Offer OfferUnlimited Take Gate TakeWithTimer
 
@@ -85,7 +85,7 @@ define
    %% Force linking of base library
    %%
    {Wait DPB}
-   {DPinit.init connection_settings}
+   {DPInit.init connection_settings}
    %% ERIK
    %% Har skall varan connect starter kora!!!
    %%

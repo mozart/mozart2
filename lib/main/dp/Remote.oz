@@ -78,29 +78,32 @@ define
        elseof X then X end}
    else skip end
 
-   fun {ForkProcess Fork Host Ports Detach PORT}
+   fun {ForkProcess Fork Host Ports Detach PORT IP FW}
       Cmd       = {Property.get 'oz.engine'}
       Func      = 'x-oz://System/RemoteServer'
       TicketArg = '--ticket='#{Connection.offer Ports}
       DetachArg = '--'#if Detach then '' else 'no' end#'detached'
-      PortArg   = '--port='#if PORT\=unit then PORT else 0 end
+      PortArg   = '--port='#if PORT==default then 0 else PORT end
+      IPArg     = '--ip='#if IP==default then default else
+                             {VirtualString.toAtom IP} end
+      FWArg     = if FW then '--firewall' else '' end
    in
       try
          CMD#ARGS = case Fork
                     of sh then
-                       Cmd # [Func DetachArg TicketArg PortArg]
+                       Cmd # [Func DetachArg TicketArg PortArg IPArg FWArg]
                     [] virtual then Key={VirtualSite.newMailbox} in
 \ifdef DENYS_EVENTS
                        %% start VS threads
                        {Wait VirtualSiteAux}
 \endif
-                       Cmd # [Func TicketArg DetachArg PortArg
+                       Cmd # [Func TicketArg DetachArg PortArg IPArg FWArg
                               '--shmkey='#Key]
                     else
                        Fork #
                        [Host ('exec '#Cmd#' '#Func#' '#
                               DetachArg#' '#TicketArg#' '#
-                              ' '#PortArg)]
+                              ' '#PortArg#' '#IPArg#' '#FWArg)]
                     end
       in
          {OS.exec CMD ARGS {Not Detach}}
@@ -128,7 +131,9 @@ define
                 detach:  Detach  <= false
                 timeout: Timeout <= {Property.get 'dp.probeTimeout'}
                 pid:     PID     <= _
-                port:    PORT    <= unit)
+                port:    PORT    <= default
+                ip:      IP      <= default
+                firewall:FW      <= false)
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
@@ -148,7 +153,7 @@ define
               [] sh then sh
               else Fork
               end
-              Host RunPort#CtrlPort Detach PORT}
+              Host RunPort#CtrlPort Detach PORT IP FW}
 
          thread
             {Delay Timeout}

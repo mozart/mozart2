@@ -26,7 +26,7 @@
 declare
    Record IsRecord MakeRecord Label Width Adjoin Arity AdjoinList AdjoinAt
    IsRecordC WidthC TellRecord
-   `width` `adjoin` `^` `tellRecordSize` `aritySublist`
+   `width` `^` `tellRecordSize` `aritySublist`
    %% `record` already declared in Forward.oz
 in
 
@@ -60,8 +60,7 @@ end
 %%
 %% Compiler Support
 %%
-`width`          = {`Builtin` 'Width'      2} % The compiler: Width
-`adjoin`         = {`Builtin` 'Adjoin'     3} % is stupid.    Adjoin
+`width`          = Width
 `^`              = {`Builtin` '^'              3}
 `tellRecordSize` = {`Builtin` 'tellRecordSize' 3}
 local

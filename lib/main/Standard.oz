@@ -58,7 +58,6 @@
 \insert 'standard/Class.oz'
 \insert 'standard/Type.oz'
 \insert 'standard/Exception.oz'
-\insert 'standard/Match.oz'
 \insert 'standard/Thread.oz'
 \insert 'standard/Time.oz'
 \insert 'standard/Lazy.oz'
@@ -85,9 +84,7 @@ export
    '`=<`':               `=<`
    '`>=`':               `>=`
    '`>`':                `>`
-   '`condSelect`':       `condSelect`
    '`hasFeature`':       `hasFeature`
-   '`wait`':             `wait`
    %% Unit
    '`unit`':             `unit`
    %% Bool
@@ -107,7 +104,6 @@ export
    '`tuple`':            `tuple`
    %% Record
    '`width`':            `width`
-   '`adjoin`':           `adjoin`
    '`^`':                `^`
    '`tellRecordSize`':   `tellRecordSize`
    '`aritySublist`':     `aritySublist`
@@ -123,9 +119,6 @@ export
    '`ooGetLock`':        `ooGetLock`
    %% Class
    '`class`':            `class`
-   %% Match
-   '`isInstanceOf`':     `isInstanceOf`
-   '`chunkHasFeature`':  `chunkHasFeature`
    %% Exception
    '`RaiseDebugCheck`':  `RaiseDebugCheck`
    '`RaiseDebugExtend`': `RaiseDebugExtend`
@@ -296,7 +289,6 @@ export
    %% Class
    'Class':              Class
    'IsClass':            IsClass
-   'IsInstanceOf':       IsInstanceOf
    %% Thread
    'Thread':             Thread
    'IsThread':           IsThread

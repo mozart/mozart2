@@ -32,8 +32,7 @@
 
 declare
    Value Wait WaitOr IsFree IsKinded IsDet Min Max CondSelect HasFeature
-   `.` `==` `=` `\\=` `<` `=<` `>=` `>`
-   `condSelect` `hasFeature` `wait`
+   `.` `==` `=` `\\=` `<` `=<` `>=` `>` `hasFeature`
 in
 
 
@@ -62,9 +61,7 @@ HasFeature = {`Builtin` 'HasFeature' 3}
 `=<`         = {`Builtin` '=<'  3}
 `>=`         = {`Builtin` '>='  3}
 `>`          = {`Builtin` '>'   3}
-`condSelect` = CondSelect
 `hasFeature` = HasFeature
-`wait`       = Wait
 
 
 %%

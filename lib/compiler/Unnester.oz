@@ -54,6 +54,7 @@ import
    PrintName(downcase)
    Core
    RunTime(procs makeVar)
+   Macro(macroExpand:MacroExpand)
 export
    MakeExpressionQuery
    UnnestQuery
@@ -1090,6 +1091,12 @@ define
                                      fNoElse(C) CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
+         [] fLoop(_ _ _) then
+            Unnester, UnnestStatement({MacroExpand FS unit} $)
+         [] fMacro(_ _) then
+            Unnester, UnnestStatement({MacroExpand FS unit} $)
+         [] fMacrolet(_ _) then
+            Unnester, UnnestStatement({MacroExpand FS unit} $)
          else C = {CoordinatesOf FS} GV in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'expression at statement position')}
@@ -1477,6 +1484,12 @@ define
             NewFV = fOcc(ToGV)
             FS = fChoice({Map FEs fun {$ FE} fEq(NewFV FE C) end} C)
             Unnester, UnnestStatement(FS $)
+         [] fLoop(_ _ _) then
+            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
+         [] fMacro(_ _) then
+            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
+         [] fMacrolet(_ _) then
+            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'statement at expression position')}

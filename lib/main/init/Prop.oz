@@ -63,7 +63,7 @@ OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
 OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
                      case {Getenv 'OZ_LOAD'} of false then
                         case {Getenv 'OZLOAD'} of false then
-                           'cache=~/.oz/cache'#PATH_SEPARATOR#
+                           'cache=~/.oz/cache'#[PATH_SEPARATOR]#
                            'cache='#OZ_HOME#'/cache'
                         elseof V then V end
                      elseof V then V end
@@ -72,8 +72,8 @@ OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
 OZ_SEARCH_DLOAD = case {Getenv 'OZ_SEARCH_DLOAD'} of false then
                      case {Getenv 'OZ_DLOAD'} of false then
                         case {Getenv 'OZDLOAD'} of false then
-                           '.'#PATH_SEPARATOR#
-                           '~/.oz/platform/'#OS_NAME#'-'#OS_CPU#'/cache'#PATH_SEPARATOR
+                           '.'#[PATH_SEPARATOR]#
+                           '~/.oz/platform/'#OS_NAME#'-'#OS_CPU#'/cache'#[PATH_SEPARATOR]
                            #OZ_HOME#'/platform/'#OS_NAME#'-'#OS_CPU#'/cache'
                         elseof V then V end
                      elseof V then V end

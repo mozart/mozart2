@@ -35,4 +35,6 @@ Dictionary = dictionary(new:          NewDictionary
                         removeAll:    Boot_Dictionary.removeAll
                         clone:        Boot_Dictionary.clone
                         member:       Boot_Dictionary.member
-                        toRecord:     Boot_Dictionary.toRecord)
+                        toRecord:     Boot_Dictionary.toRecord
+                        weak:         WeakDictionary
+                       )

@@ -3905,7 +3905,7 @@ class BrowserClass
          case ArityType == AtomicArity then
             case @selected == InitValue then true
             else
-               {System.catch Proc Handle}
+               {System.'catch' Proc Handle}
             end
          else
             {BrowserWarning ['cannot equate: the private fields are shown']}

@@ -484,20 +484,12 @@ in
    %%
    proc {InternalBrowse S}
       case S
-      of Cmd|Tail then
-         local Proc Handle in
-            %%
-            Proc = proc {$} {BrowsersPool Cmd} end
-            Handle = proc {$ E}
-                        {Show '*********************************************'}
-                        {Show 'Exception occured in browser:'#E}
-                     end
-
-            %%
-            {System.catch Proc Handle}
+      of Cmd|Tail
+      then
+         try {BrowsersPool Cmd}
+         catch E then {Show '*********************************************'}
+                      {Show 'Exception occured in browser:'#E}
          end
-
-         %%
          {InternalBrowse Tail}
       else
          {BrowserError ['Browser channel is closed?']}

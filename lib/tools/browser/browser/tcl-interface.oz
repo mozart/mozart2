@@ -295,7 +295,7 @@ in
 
             %%  ... just ignore the result;
             {Wait {Tk.returnInt
-                   catch(q(BrowseWidget conf(cursor: ICursorName)))}}
+                   'catch'(q(BrowseWidget conf(cursor: ICursorName)))}}
 
             %% Select the font from ITWFont?, and store it;
             %%
@@ -305,7 +305,7 @@ in
                    %%
                    case
                       {Tk.returnInt
-                       catch(q(BrowseWidget conf(font: IFont.font)))} \= 0
+                       'catch'(q(BrowseWidget conf(font: IFont.font)))} \= 0
                    then True
                    else
                       %%
@@ -622,7 +622,7 @@ in
       %%  Yields 'True' if the font exists;
       %%
       meth tryFont(Font ?R)
-         R = {Tk.returnInt catch(q(@TestTW conf(font: Font)))} == 0
+         R = {Tk.returnInt 'catch'(q(@TestTW conf(font: Font)))} == 0
 
          %%
          <<UrObject nil>>
@@ -1429,7 +1429,7 @@ in
             {FoldL [IBFont1 IBFont2 IBFont3 IReservedFont]
              fun {$ Proceed IFont}
                 case Proceed then
-                   {Tk.returnInt catch(q(Button conf(font: IFont)))} \= 0
+                   {Tk.returnInt 'catch'(q(Button conf(font: IFont)))} \= 0
                 else Proceed
                 end
              end
@@ -1478,7 +1478,7 @@ in
             {FoldL [IMBFont1 IMBFont2 IMBFont3 IReservedFont]
              fun {$ Proceed IFont}
                 case Proceed then
-                   {Tk.returnInt catch(q(MenuButton conf(font: IFont)))} \= 0
+                   {Tk.returnInt 'catch'(q(MenuButton conf(font: IFont)))} \= 0
                 else Proceed
                 end
              end
@@ -1524,7 +1524,7 @@ in
                {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
                 fun {$ Proceed IFont}
                    case Proceed then
-                      {Tk.returnInt catch(q(Menu conf(font: IFont)))} \= 0
+                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
                    else Proceed
                    end
                 end
@@ -1544,7 +1544,7 @@ in
                {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
                 fun {$ Proceed IFont}
                    case Proceed then
-                      {Tk.returnInt catch(q(Menu conf(font: IFont)))} \= 0
+                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
                    else Proceed
                    end
                 end
@@ -1577,7 +1577,7 @@ in
                {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
                 fun {$ Proceed IFont}
                    case Proceed then
-                      {Tk.returnInt catch(q(Menu conf(font: IFont)))} \= 0
+                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
                    else Proceed
                    end
                 end
@@ -1597,7 +1597,7 @@ in
                {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
                 fun {$ Proceed IFont}
                    case Proceed then
-                      {Tk.returnInt catch(q(Menu conf(font: IFont)))} \= 0
+                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
                    else Proceed
                    end
                 end
@@ -1995,7 +1995,7 @@ in
              fun {$ Proceed IFont}
                 case Proceed then
                    {Tk.returnInt
-                    catch(q(MessageWidget conf(font: IFont.font)))} \= 0
+                    'catch'(q(MessageWidget conf(font: IFont.font)))} \= 0
                 else Proceed
                 end
              end
@@ -2056,7 +2056,7 @@ in
             {FoldL [IBFont1 IBFont2 IBFont3 IReservedFont]
              fun {$ Proceed IFont}
                 case Proceed then
-                   {Tk.returnInt catch(q(Button conf(font: IFont)))} \= 0
+                   {Tk.returnInt 'catch'(q(Button conf(font: IFont)))} \= 0
                 else Proceed
                 end
              end
@@ -2215,7 +2215,7 @@ in
              fun {$ Proceed IFont}
                 case Proceed then
                    {Tk.returnInt
-                    catch(q(MessageWidget conf(font: IFont.font)))} \= 0
+                    'catch'(q(MessageWidget conf(font: IFont.font)))} \= 0
                 else Proceed
                 end
              end

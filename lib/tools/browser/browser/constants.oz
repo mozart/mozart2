@@ -113,6 +113,8 @@ T_Variable      = {NewName}
 T_FDVariable    = {NewName}
 %%  ... and Meta variable;
 T_MetaVariable  = {NewName}
+%%  ... and generic constraint variable;
+T_CtVariable  = {NewName}
 %%  ... and finite set variable resp. finite set value;
 T_FSet          = {NewName}
 

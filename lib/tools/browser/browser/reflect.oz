@@ -211,6 +211,13 @@ in
                   %%
                   TermOut =
                   {String.toAtom {System.valueToVirtualString TermIn 1 1}}
+               elsecase {IsCtVar TermIn} then
+                  %%
+                  TermOut = {AtomConcatAll
+                             [{System.printName TermIn}
+                              '<' {GetCtVarNameAsAtom TermIn}
+                              ':' {GetCtVarConstraintAsAtom TermIn}
+                              '>']}
                elsecase {IsMetaVar TermIn} then
                   %%
                   TermOut = {AtomConcatAll [{System.printName TermIn}

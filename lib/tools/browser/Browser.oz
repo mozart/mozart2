@@ -75,11 +75,17 @@ body
    IsFdVar        % is a finite domain variable?
    IsFSetVar      % is a finite set variable?
    IsRecordCVar   % is an OFS?
+
+   GetCtVarNameAsAtom       % name of the constraint system
+   GetCtVarConstraintAsAtom % textual representation of the constraint
+   IsCtVar                  % test variable for generic constraint variable
+
    IsMetaVar      % is a Meta variable?
    WatchMetaVar   %
    MetaGetDataAsAtom % get the constraint data of the meta variable
    MetaGetNameAsAtom % get the name of the constraint system of a meta var
    MetaGetStrength   % get some measure of the informartion of meta var
+
    HasLabel       % non-monotonic test;
    EQ             % pointers equality;
    TermSize       % size of a term's representation;
@@ -91,7 +97,6 @@ body
    OnToplevel     %
    ForeignPointerToInt %
 
-   %% TMUELLER
    %% reflectives for finite sets
    FSetGetGlb
    FSetGetLub
@@ -193,6 +198,7 @@ body
    VariableTermObject
    FDVariableTermObject
    FSetTermObject
+   CtVariableTermObject
    MetaVariableTermObject
    UnknownTermObject
 

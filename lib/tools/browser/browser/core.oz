@@ -122,4 +122,10 @@ FSetGetCard = {`Builtin` fsGetCard 2}
 IsFSetVar = {`Builtin` fsIsVarB 2}
 
 %%
+GetCtVarNameAsAtom       = {`Builtin` getCtVarNameAsAtom 2}
+GetCtVarConstraintAsAtom = {`Builtin` getCtVarConstraintAsAtom 2}
+IsCtVar                  = {`Builtin` isCtVarB 2}
+
+
+%%
 ForeignPointerToInt = {`Builtin` 'ForeignPointerToInt' 2}

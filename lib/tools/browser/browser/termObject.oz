@@ -674,12 +674,12 @@ in
          ControlObject
          RepManagerObject
 
-      %%
-      %% generic "dummy" closeTerm (which is normally sufficient,
-      %% except variable-like objects);
-      %%  'makeTerm' methods are to be provided by specific
-      %% erm objects (as one would expect);
-      %%
+         %%
+         %% generic "dummy" closeTerm (which is normally sufficient,
+         %% except variable-like objects);
+         %%  'makeTerm' methods are to be provided by specific
+         %% erm objects (as one would expect);
+         %%
       meth closeTerm skip end
 
       %%
@@ -728,12 +728,12 @@ in
    %% Atoms;
    %%
    class AtomTermObject from MetaTermObject
-      %%
+                           %%
       feat
          type: T_Atom
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'AtomTermObject::makeTerm is applied' # self.term}
@@ -766,12 +766,12 @@ in
    %% Integers;
    %%
    class IntTermObject from MetaTermObject
-      %%
+                          %%
       feat
          type: T_Int
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'IntTermTermObject::makeTerm is applied'#self.term}
@@ -801,11 +801,11 @@ in
    %% Floats;
    %%
    class FloatTermObject from MetaTermObject
-      %%
+                            %%
       feat
          type: T_Float
 
-      %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'FloatTermObject::makeTerm is applied'#self.term}
@@ -836,12 +836,12 @@ in
    %% Names;
    %%
    class NameTermObject from MetaTermObject
-      %%
+                           %%
       feat
          type: T_Name
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'NameTermObject::makeTerm is applied'#self.term}
@@ -874,12 +874,12 @@ in
    %% Foreign Pointers;
    %%
    class ForeignPointerTermObject from MetaTermObject
-      %%
+                                     %%
       feat
          type: T_ForeignPointer
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'ForeignPointerTermObject::makeTerm is applied'#self.term}
@@ -906,12 +906,12 @@ in
    %% Promises;
    %%
    class PromiseTermObject from MetaTermObject
-      %%
+                              %%
       feat
          type: T_Promise
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'PromiseTermObject::makeTerm is applied'#self.term}
@@ -938,12 +938,12 @@ in
    %% Procedures;
    %%
    class ProcedureTermObject from MetaTermObject
-      %%
+                                %%
       feat
          type: T_Procedure
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'ProcedureTermObject::makeTerm is applied'#self.term}
@@ -970,12 +970,12 @@ in
    %% Cells;
    %%
    class CellTermObject from MetaTermObject
-      %%
+                           %%
       feat
          type: T_Cell
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'CellTermObject::makeTerm is applied'#self.term}
@@ -1003,12 +1003,12 @@ in
    %% Primitive chunks;
    %%
    class PrimChunkTermObject from MetaTermObject
-      %%
+                                %%
       feat
          type: T_PrimChunk
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'PrimChunkTermObject::makeTerm is applied'#self.term}
@@ -1035,12 +1035,12 @@ in
    %% Primitive objects;
    %%
    class PrimObjectTermObject from MetaTermObject
-      %%
+                                 %%
       feat
          type: T_PrimObject
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'PrimObjectTermObject::makeTerm is applied'#self.term}
@@ -1067,12 +1067,12 @@ in
    %% Primitive classes;
    %%
    class PrimClassTermObject from MetaTermObject
-      %%
+                                %%
       feat
          type: T_PrimClass
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'PrimClassTermObject::makeTerm is applied'#self.term}
@@ -1098,12 +1098,12 @@ in
    %% Dictionaries;
    %%
    class DictionaryTermObject from MetaTermObject
-      %%
+                                 %%
       feat
          type: T_Dictionary
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'DictionaryTermObject::makeTerm is applied'#self.term}
@@ -1129,12 +1129,12 @@ in
    %% Arrays;
    %%
    class ArrayTermObject from MetaTermObject
-      %%
+                            %%
       feat
          type: T_Array
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'ArrayTermObject::makeTerm is applied'#self.term}
@@ -1161,12 +1161,12 @@ in
    %% Bit Arrays;
    %%
    class BitArrayTermObject from MetaTermObject
-      %%
+                               %%
       feat
          type: T_BitArray
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'BitArrayTermObject::makeTerm is applied'#self.term}
@@ -1192,12 +1192,12 @@ in
    %% Ports;
    %%
    class PortTermObject from MetaTermObject
-      %%
+                           %%
       feat
          type: T_Port
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'PortTermObject::makeTerm is applied'#self.term}
@@ -1223,12 +1223,12 @@ in
    %% Locks;
    %%
    class LockTermObject from MetaTermObject
-      %%
+                           %%
       feat
          type: T_Lock
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'LockTermObject::makeTerm is applied'#self.term}
@@ -1254,12 +1254,12 @@ in
    %% First-class threads;
    %%
    class ThreadTermObject from MetaTermObject
-      %%
+                             %%
       feat
          type: T_Thread
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'ThreadTermObject::makeTerm is applied'#self.term}
@@ -1285,12 +1285,12 @@ in
    %% First-class computation spaces;
    %%
    class SpaceTermObject from MetaTermObject
-      %%
+                            %%
       feat
          type: T_Space
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'SpaceTermObject::makeTerm is applied'#self.term}
@@ -1329,54 +1329,54 @@ in
          CompoundControlObject
          CompoundRepManagerObject
 
-      %%
+         %%
       attr
-      %%
-      %% A list of term "elements" (It can be incomplete, but is never
-      %% malformed). In a simplest case that's just a (complete) list
-      %% of subterms (e.g. of a tuple). In the more sophisticated case
-      %% of records its elements are feature names (that is, NOT
-      %% subterms!);
-      %%
-      %% The idea behind this abstraction is that sometimes it's more
-      %% convenient to see subterms organised into entities that are
-      %% larger than a group. For instance, (feature, subterm) is an
-      %% "element" in a record;
+         %%
+         %% A list of term "elements" (It can be incomplete, but is never
+         %% malformed). In a simplest case that's just a (complete) list
+         %% of subterms (e.g. of a tuple). In the more sophisticated case
+         %% of records its elements are feature names (that is, NOT
+         %% subterms!);
+         %%
+         %% The idea behind this abstraction is that sometimes it's more
+         %% convenient to see subterms organised into entities that are
+         %% larger than a group. For instance, (feature, subterm) is an
+         %% "element" in a record;
          !Elements
-      %% This list can be constructed either right at the beginning
-      %% ('makeTerm'), or "lazily" by means of the 'GetElement'
-      %% method: every time a new element is required, this method is
-      %% called;
-      %%
-      %% There is an implicit notion of the "element number".
-      %% Elements are numbered from 1 (just per definition :-))
-      %%
-      %% This attribute isn't changed now (i.e. it could be just a
-      %% feature), but one can imagine a case when e.g. some subterms
-      %% are hidden etc.;
+         %% This list can be constructed either right at the beginning
+         %% ('makeTerm'), or "lazily" by means of the 'GetElement'
+         %% method: every time a new element is required, this method is
+         %% called;
+         %%
+         %% There is an implicit notion of the "element number".
+         %% Elements are numbered from 1 (just per definition :-))
+         %%
+         %% This attribute isn't changed now (i.e. it could be just a
+         %% feature), but one can imagine a case when e.g. some subterms
+         %% are hidden etc.;
 
-      %%
-      %% ... a tail list of it (may be a variable when it's (yet)
-      %% incomplete) which contains its elements that are not shown;
+         %%
+         %% ... a tail list of it (may be a variable when it's (yet)
+         %% incomplete) which contains its elements that are not shown;
          !NotShownElements
-      %%
-      %% Note that the 'NotShownElements' attribute is used in a
-      %% non-monotonic fashion, but it's still safe because it cannot
-      %% be changed somehow else than via certain object methods!
-      %%
-      %% Note also that each time the 'Elements' list is replaced
-      %% (it's an attribute), the 'NotShownElements' and 'ShownWidth'
-      %% attributes must be updated correspondingly;
+         %%
+         %% Note that the 'NotShownElements' attribute is used in a
+         %% non-monotonic fashion, but it's still safe because it cannot
+         %% be changed somehow else than via certain object methods!
+         %%
+         %% Note also that each time the 'Elements' list is replaced
+         %% (it's an attribute), the 'NotShownElements' and 'ShownWidth'
+         %% attributes must be updated correspondingly;
 
-      %%
-      %% a number of currently shown subterms, that is, the length of
-      %% the 'Elements'\'NotShownElements' list;
+         %%
+         %% a number of currently shown subterms, that is, the length of
+         %% the 'Elements'\'NotShownElements' list;
          !ShownWidth
-      %% Note that this is NOT the same as a number of all subterms:
-      %% lists, for instance, can have also a "list tail" group which
-      %% contain a subterm, but is not counted here;
+         %% Note that this is NOT the same as a number of all subterms:
+         %% lists, for instance, can have also a "list tail" group which
+         %% contain a subterm, but is not counted here;
 
-      %%
+         %%
       meth getShownWidth($)
          @ShownWidth
       end
@@ -1576,10 +1576,10 @@ in
    %% A common property is that 'elements' are just (sub)terms.
    %%
    class MetaTupleTermObject from MetaCompoundTermObject
-      %%
+                                %%
 
-      %%
-      %% An invariant is that there is one;
+                                %%
+                                %% An invariant is that there is one;
       meth !DrawElement
 \ifdef DEBUG_TO
          {Show 'MetaTupleTermObject::DrawElement'}
@@ -1625,25 +1625,25 @@ in
    %% List-like structures.
    %%
    class MetaListTermObject from MetaTupleTermObject
-      %%
+                               %%
       attr
-      %%
-      %% a "tail" list which is not yet seen. That's the whole list
-      %% when it's not yet shown; nil when the list is well-formend and
-      %% completely scanned. Note that a list may be malformed, of
-      %% course;
+         %%
+         %% a "tail" list which is not yet seen. That's the whole list
+         %% when it's not yet shown; nil when the list is well-formend and
+         %% completely scanned. Note that a list may be malformed, of
+         %% course;
          TailList
-      %% a tail list of 'Elements' which is not yet instantiated. It
-      %% gets bound when more list elements "arrives" at the
-      %% 'TailList';
+         %% a tail list of 'Elements' which is not yet instantiated. It
+         %% gets bound when more list elements "arrives" at the
+         %% 'TailList';
          TailElements
-      %%
-      %% Note that these attributes are updated only by means of the
-      %% 'GetElement', and can be used non-monotonically everywhere
-      %% else;
-      %%
+         %%
+         %% Note that these attributes are updated only by means of the
+         %% 'GetElement', and can be used non-monotonically everywhere
+         %% else;
+         %%
 
-      %%
+         %%
       meth !ListInit
          local EList in
             %%
@@ -1997,18 +1997,18 @@ in
    %% well-formed (and complete).
    %%
    class ListTermObject from MetaListTermObject
-      %%
+                           %%
       feat
          type: T_List
          delimiter:  DSpaceGlue
-      %% this indentation implies that there can be no glue in a first
-      %% group (otherwise, if the representation manager subobject
-      %% decides to make a compound glue, its size will be infinity -
-      %% that's an error;);
+         %% this indentation implies that there can be no glue in a first
+         %% group (otherwise, if the representation manager subobject
+         %% decides to make a compound glue, its size will be infinity -
+         %% that's an error;);
          indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'ListTermObject::makeTerm is applied' # self.term}
@@ -2079,14 +2079,14 @@ in
    %% The code is basically "replicated" from lists;
    %%
    class FConsTermObject from MetaListTermObject
-      %%
+                            %%
       feat
          type: T_List
          delimiter:  DVBarGlue
          indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'FConsTermObject::makeTerm is applied' # self.term}
@@ -2140,14 +2140,14 @@ in
    %% Tuples;
    %%
    class TupleTermObject from MetaTupleTermObject
-      %%
+                            %%
       feat
          type: T_Tuple
          delimiter:  DSpaceGlue
          indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 3)
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'TupleTermObject::makeTerm is applied' # self.term}
@@ -2208,14 +2208,14 @@ in
    %% "fits" within the 'width' constraint);
    %%
    class HashTupleTermObject from MetaTupleTermObject
-      %%
+                                %%
       feat
          type: T_HashTuple
          delimiter:  DHashGlue
          indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'HashTupleTermObject::makeTerm is applied' # self.term}
@@ -2265,15 +2265,15 @@ in
    %% An invariant is that 'elements' are feature names;
    %%
    class MetaRecordTermObject from MetaCompoundTermObject
-      %%
+                                 %%
       feat
          delimiter:  DSpaceGlue
          indentDesc: min('-'(st_indent(DMainBlock#2)
                              '+'(gr_size(DMainBlock#1) self_indent))
                          3)
 
-      %%
-      %% It draws both a feature name and a subterm under it;
+         %%
+         %% It draws both a feature name and a subterm under it;
       meth !DrawElement
          local
             T Store NewWidth CurrentLastGroup FN PrFN PrFNSize
@@ -2360,17 +2360,17 @@ in
    %% Records;
    %%
    class RecordTermObject from MetaRecordTermObject
-      %%
+                             %%
       feat
          type:  T_Record
          RLabel
 
-      %%
+         %%
       attr
          HasDetLabel: false
 
-      %%
-      %% this is the "simplest" case - no transformations;
+         %%
+         %% this is the "simplest" case - no transformations;
       meth !GetName($)
          local L in
             L = self.RLabel
@@ -2669,12 +2669,12 @@ in
 
    %%
    class CompChunkTermObject from MetaRecordTermObject
-      %%
+                                %%
       feat
          type: T_CompChunk
 
-      %%
-      %% ... can be overloaded;
+         %%
+         %% ... can be overloaded;
       meth !GetName($)
          {GenChunkPrintName self.term self.store}
       end
@@ -2747,11 +2747,11 @@ in
    %% Compound objects;
    %%
    class CompObjectTermObject from CompChunkTermObject
-      %%
+                                 %%
       feat
          type: T_CompObject
 
-      %%
+         %%
       meth !GetName($)
          {GenObjPrintName self.term self.store}
       end
@@ -2764,11 +2764,11 @@ in
    %% Compoumd classes;
    %%
    class CompClassTermObject from CompChunkTermObject
-      %%
+                                %%
       feat
          type: T_CompClass
 
-      %%
+         %%
       meth !GetName($)
          {GenClassPrintName self.term self.store}
       end
@@ -2785,10 +2785,10 @@ in
    %%
    %%
    class I_MetaVariableTermObject from MetaTermObject
-      %%
+                                     %%
 
-      %%
-      %% can be overloaded, if necessary;
+                                     %%
+                                     %% can be overloaded, if necessary;
       meth !GetName($) {System.printName self.term} end
 
       %%
@@ -2862,15 +2862,15 @@ in
    %% Variables;
    %%
    class VariableTermObject from I_MetaVariableTermObject
-      %%
+                               %%
       feat
          type: T_Variable
 
-      %%
-      %% Yields 'true' if it is still an (unconstrained!) variable;
-      %% It is not necessary any longer since the 'SetWatchPoint'
-      %% does not perform any "post-checks";
-      %%
+         %%
+         %% Yields 'true' if it is still an (unconstrained!) variable;
+         %% It is not necessary any longer since the 'SetWatchPoint'
+         %% does not perform any "post-checks";
+         %%
 %       meth !CheckIsVar($)
 %          local Term in
 %             Term = self.term
@@ -2889,8 +2889,8 @@ in
 %          end
 %       end
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'VariableTermObject::makeTerm is applied' # self.term}
@@ -2911,13 +2911,13 @@ in
    %% Finite domain variables;
    %%
    class FDVariableTermObject from I_MetaVariableTermObject
-      %%
+                                 %%
       feat
          type: T_FDVariable
 
-      %%
-      %% Yields 'true' if it is still a FD variable;
-      %%
+         %%
+         %% Yields 'true' if it is still a FD variable;
+         %%
 %       meth !CheckIsVar(?Is)
 %          %%
 %          %%  There could happen only one thing: it can get a value;
@@ -2925,8 +2925,8 @@ in
 %          Is = {IsVar self.term}
 %       end
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'FDVariableTermObject::makeTerm is applied' # self.term}
@@ -2975,12 +2975,12 @@ in
    %% Finite set variables;
    %%
    class FSetTermObject from I_MetaVariableTermObject
-      %%
+                           %%
       feat
          type: T_FSet
 
-      %%
-      %%
+         %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'FSetTermObject::makeTerm is applied' # self.term}
@@ -3027,7 +3027,7 @@ in
             in
                Term = self.term
 
-            %%
+               %%
                GlbComp = {FSetGetGlb Term}
                LubComp = {FSetGetLub Term}
                GlbLe = {Length GlbComp}
@@ -3037,7 +3037,7 @@ in
 
                %%
                {List.forAllInd GlbComp
-             %%
+                %%
                 proc {$ Num Interval}
                    local Tmp in
                       Tmp = case Interval of L#H then L#"#"#H
@@ -3085,16 +3085,58 @@ in
 
    %%
    %%
+   %% generic constraint variables;
+   %%
+   class CtVariableTermObject from I_MetaVariableTermObject
+                                 %%
+      feat
+         type: T_CtVariable
+
+         %%
+         %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'CtVariabelTermObject::makeTerm is applied' # self.term}
+\endif
+         %%
+         I_MetaVariableTermObject , SetWatchPoint
+
+         %%
+         local
+            Constraint ConstraintName Name Term
+         in
+            Term = self.term
+
+            %%
+            Constraint = {GetCtVarConstraintAsAtom Term}
+
+            %%
+            ConstraintName = {GetCtVarNameAsAtom Term}
+
+            %%
+            Name =
+            {self GetName($)} #
+            DLABraceS # ConstraintName # DColonS # Constraint # DRABraceS
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+      %%
+   end
+
+   %%
+   %%
    %% Meta variables;
    %%
    class MetaVariableTermObject from I_MetaVariableTermObject
-      %%
+                                   %%
       feat
          type: T_MetaVariable
 
-      %%
-      %% Yields 'true' if it is still a metavariable;
-      %%
+         %%
+         %% Yields 'true' if it is still a metavariable;
+         %%
 %       meth !CheckIsVar(?Is)
 %          %%
 %          %%  There could happen only one thing: it can get a value;
@@ -3102,12 +3144,12 @@ in
 %          IsVar = {IsVar self.term}
 %       end
 
-      %%
-      %% We still use here the "prehistoric" watching method,
-      %% including both 'GetsTouched' as well as 'WatchMetaVar'. This
-      %% is because it is not clear to me right now whether it's
-      %% enough just to use 'GetsTouched';
-      %%
+         %%
+         %% We still use here the "prehistoric" watching method,
+         %% including both 'GetsTouched' as well as 'WatchMetaVar'. This
+         %% is because it is not clear to me right now whether it's
+         %% enough just to use 'GetsTouched';
+         %%
       meth !GetWatchFun($)
          TestMetaVarFun
       end
@@ -3152,11 +3194,11 @@ in
 
    %%
    class UnknownTermObject from MetaTermObject
-      %%
+                              %%
       feat
          type: T_Unknown
 
-      %%
+         %%
       meth makeTerm
 \ifdef DEBUG_TO
          {Show 'UnknownTermObject::makeTerm is applied' # self.term}

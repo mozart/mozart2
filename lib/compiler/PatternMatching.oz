@@ -339,7 +339,7 @@ local
                     fun {$ Reg} {New PseudoVariableOccurrence init(Reg)} end}
          {MakeRunTimeProcApplication TestProc unit TestVOs CS
           TestVInter1 TestVInter2}
-         {MakeException boolCaseType unit [TestVOs.1] CS ElseVInstr nil}
+         {MakeException kernel boolCaseType unit [TestVOs.1] CS ElseVInstr nil}
          TestVInter2 = vTestBool(_ TestReg VInstr1 VInstr2 ElseVInstr
                                  unit TestVInter3 _)
          {StepPoint Coord 'conditional' TestVInstr VTl TestVInter1 TestVInter3}

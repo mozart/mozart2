@@ -37,7 +37,7 @@ require
                  location:        ThreadLocation)
    at 'x-oz://boot/Exception'
 
-   BootRecord(tellRecordSize test testLabel testFeature)
+   BootRecord(tellRecordSize test testLabel testFeature aritySublist)
    at 'x-oz://boot/Record'
 
    BootObject(ooGetLock ',' '@' '<-' ooExch)
@@ -57,25 +57,6 @@ prepare
                L(stack: {ThreadTaskStack}
                  loc:   {ThreadLocation}
                  info:  T2)}}}
-   end
-
-   local
-      proc {DescendArity Ls1 Ls2}
-         case Ls1 of nil then skip
-         [] L1|Lr1 then
-            case Ls2 of L2|Lr2 then
-               if L1 == L2 then {DescendArity Lr1 Lr2}
-               else {DescendArity Ls1 Lr2}
-               end
-            else
-               {Exception.raiseError object(arityMismatchDefaultMethod L1)}
-            end
-         end
-      end
-   in
-      proc {AritySublist R1 R2}
-         {DescendArity {Arity R1} {Arity R2}}
-      end
    end
 
    ProcValues = env(%% Operators
@@ -111,14 +92,14 @@ prepare
                     %% Record
                     'Record.width': Record.width
                     'Record.test': BootRecord.test
-                    'Record.testLabel':   BootRecord.testLabel
+                    'Record.testLabel': BootRecord.testLabel
                     'Record.testFeature': BootRecord.testFeature
 
                     %% Object
-                    'Object.\'@\'':     BootObject.'@'
-                    'Object.\'<-\'':    BootObject.'<-'
-                    'Object.exchange':  BootObject.ooExch
-                    'Object.\',\'':     BootObject.','
+                    'Object.\'@\'': BootObject.'@'
+                    'Object.\'<-\'': BootObject.'<-'
+                    'Object.exchange': BootObject.ooExch
+                    'Object.\',\'': BootObject.','
                     'Object.\'class\'': OoExtensions.'class'
 
                     %% Thread
@@ -133,13 +114,13 @@ prepare
                     %% Internal
                     'tellRecordSize': BootRecord.tellRecordSize
                     'ooGetLock': BootObject.ooGetLock
-                    'aritySublist': AritySublist
+                    'aritySublist': BootRecord.aritySublist
                     'Thread.create': BootThread.create
                     'RaiseDebugCheck': RaiseDebugCheck
                     'RaiseDebugExtend': RaiseDebugExtend)
 
-   LiteralValues = env('ooDefaultVar':  {NewUniqueName 'ooDefaultVar'}
-                       'ooFreeFlag':    {NewUniqueName 'ooFreeFlag'}
+   LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
+                       'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
                        'ooRequiredArg': {NewUniqueName 'ooRequiredArg'})
 
    TokenValues = env('true': true

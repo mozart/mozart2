@@ -138,7 +138,7 @@ in
          %% either with parentheses or not;
          self , MakeRep(isEnc:  case self.IsPrimitive then False
                                 else {BrowserTerm.delimiterLEQ
-                                      self.delimiter ParentObjIn.delmiter}
+                                      self.delimiter ParentObjIn.delimiter}
                                 end)
       end
 
@@ -416,7 +416,7 @@ in
       from ControlObject
       %%
       feat
-         IsPrimitive: False     % override the control object's value;
+         !IsPrimitive: False    % override the control object's value;
 
       %%
       %%

@@ -67,7 +67,7 @@ in
           S P={Port.new S}
        in
           try
-             {Connection.take Argv.gate P}
+             {Connection.take Argv.ticket P}
              thread
                 {ForAll S {MakeServer IMPORT Status}}
              end

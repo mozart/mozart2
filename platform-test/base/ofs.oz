@@ -446,7 +446,7 @@ define
                         thread X^G=6 end
                         F=f
                         G=g
-                        cond X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X^f=_ X^g=_ then {RFL X}='_<optimized>(f:2 g:6 ...)'
                         else skip end
                         cond X^f=_ then {RFL X^f}='2'
                         else skip end
@@ -462,9 +462,9 @@ define
                         thread X^G=6 end
                         F=f
                         G=g
-                        cond X^f=_ X^g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X^f=_ X^g=_ then {RFL X}='_<optimized>(f:2 g:6 ...)'
                         else skip end
-                        cond X.f=_ X.g=_ then {RFL X}='_(f:2 g:6 ...)'
+                        cond X.f=_ X.g=_ then {RFL X}='_<optimized>(f:2 g:6 ...)'
                         else skip end
                         cond X^f=_ then {RFL X^f}='2'
                         else skip end

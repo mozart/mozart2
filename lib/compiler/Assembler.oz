@@ -880,19 +880,32 @@ local
                {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
-         [] testBI(Builtinname Args L1 NLiveRegs) then
-            case Builtinname of '<' then [X1 X2]#[X3] = Args in
-               {Assembler append(testLT(X1 X2 X3 L1 NLiveRegs))}
-            [] '=<' then [X1 X2]#[X3] = Args in
-               {Assembler append(testLE(X1 X2 X3 L1 NLiveRegs))}
-            [] '>='then [X1 X2]#[X3] = Args in
-               {Assembler append(testLE(X2 X1 X3 L1 NLiveRegs))}
-            [] '>' then [X1 X2]#[X3] = Args in
-               {Assembler append(testLT(X2 X1 X3 L1 NLiveRegs))}
-            else
-               {Assembler append(I1)}
+         [] testBI(Builtinname Args L1 NLiveRegs) then NewInstrs in
+            case Rest of branch(L2)|NewRest then BIInfo in
+               BIInfo = {GetBuiltinInfo Builtinname}
+               case {CondSelect BIInfo negated unit} of unit then skip
+               elseof NegatedBuiltinname then
+                  NewInstrs = (testBI(NegatedBuiltinname Args L2 NLiveRegs)|
+                               'skip'|branch(L1)|NewRest)
+               end
+            else skip
             end
-            {Peephole Rest Assembler}
+            case {IsDet NewInstrs} then
+               {Peephole NewInstrs Assembler}
+            else
+               case Builtinname of '<' then [X1 X2]#[X3] = Args in
+                  {Assembler append(testLT(X1 X2 X3 L1 NLiveRegs))}
+               [] '=<' then [X1 X2]#[X3] = Args in
+                  {Assembler append(testLE(X1 X2 X3 L1 NLiveRegs))}
+               [] '>='then [X1 X2]#[X3] = Args in
+                  {Assembler append(testLE(X2 X1 X3 L1 NLiveRegs))}
+               [] '>' then [X1 X2]#[X3] = Args in
+                  {Assembler append(testLT(X2 X1 X3 L1 NLiveRegs))}
+               else
+                  {Assembler append(I1)}
+               end
+               {Peephole Rest Assembler}
+            end
          [] testLiteral(_ _ _ _ _) then
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}

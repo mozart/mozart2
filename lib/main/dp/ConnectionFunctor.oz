@@ -47,6 +47,8 @@ define
 \ifdef DBG
          {Show connect(P)}
          T0 = {Property.get 'time.total'}
+         {Property.put 'print.depth' 100}
+         {Property.put 'print.width' 100}
 \endif
          FD
          Address IPPort
@@ -105,7 +107,7 @@ define
 \endif
                   {ConnectionWrapper.writeSelect FD}
 \ifdef DBG
-            {System.show write}
+                  {System.show write}
 \endif
                   try
                      _={ConnectionWrapper.write FD "tcp"}
@@ -118,6 +120,15 @@ define
                         {ConnectionWrapper.close FD}
 \ifdef DBG
                         {System.show discovered_perm_2(FD Address IPPort)}
+\endif
+                        {ConnectionWrapper.freeConnGrant Grant}
+                        {ConnectionWrapper.connFailed perm}
+                        raise perm end
+                     [] system(os(_ _ _ "Connection refused") ...) then
+                        Done=failed
+                        {ConnectionWrapper.close FD}
+\ifdef DBG
+                        {System.show discovered_perm_3(FD Address IPPort)}
 \endif
                         {ConnectionWrapper.freeConnGrant Grant}
                         {ConnectionWrapper.connFailed perm}

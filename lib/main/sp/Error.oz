@@ -1481,7 +1481,7 @@ in
               hint(l:'Handle' m:H)]
              Exc}
 
-         [] foreign(dlOpen F S) then
+         elseof foreign(dlOpen F S) then
 \ifdef TYPE_DEBUG
             {Type.ask.virtualString F}
 \endif
@@ -1491,14 +1491,14 @@ in
               hint(l:'Error number' m:S)]
              Exc}
 
-         [] foreign(dlClose N) then
+         elseof foreign(dlClose N) then
 
             {FormatExc T
              'Cannot unload foreign function file'
              [hint(l:'File handle' m:oz(N))]
              Exc}
 
-         [] foreign(linkFiles As) then
+         elseof foreign(linkFiles As) then
 
             {FormatExc T
              'Cannot link object files'

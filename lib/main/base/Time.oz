@@ -108,7 +108,7 @@ local
          Repeat, setRepFinal(F)
          Repeat, setRepNum(N)
 
-         case DF of !DefaultFun
+         case DF == DefaultFun
          then Repeat, setRepDelay(D)
          else Repeat, setRepDelayFun(DF)
          end

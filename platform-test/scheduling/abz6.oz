@@ -172,5 +172,7 @@ body
 
                   end
                   true)
-            keys: [scheduling fd])
+            keys: [scheduling fd]
+            bench:true
+           )
 end

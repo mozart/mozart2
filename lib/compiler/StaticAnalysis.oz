@@ -497,11 +497,29 @@ local
       fun {MaybeString X}
          {MaybeListOf char X}
       end
+      fun {MaybeVirtualString X}
+         XX = {GetData X}
+      in
+         case {IsDet XX} then
+            case {IsObject XX}
+               andthen {HasFeature XX ImAVariableOccurrence}
+            then true
+            elsecase {IsAtom XX}
+               orelse {IsInt XX}
+               orelse {IsFloat XX}
+               orelse {MaybeString X}
+            then true
+            elsecase {IsTuple XX} andthen {Label XX}=='#'
+            then {Record.all XX MaybeVirtualString}
+            else false end
+         else true end
+      end
       DetTypeTests2
       = dtt(list: MaybeList
             listOf: MaybeListOf
             pairOf: MaybePairOf
-            string: MaybeString)
+            string: MaybeString
+            virtualString:MaybeVirtualString)
 
    in
       % flat type tests generalize to "isdet then type"

@@ -654,7 +654,7 @@ local
                       det: [detOrKinded det any]
                       inlineFun: true)
 
-         'builtin': builtin(types: [atom int procedure]
+         'builtin': builtin(types: [virtualString int procedure]
                             det: [det det any(det)])
 
          'div': builtin(types: [int int int]

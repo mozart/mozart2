@@ -69,6 +69,9 @@ define
          Func      = HOME#'/share/RemoteServer.ozf'
          TicketArg = '--ticket='#{Connection.offer Ports}
          DetachArg = '--'#if Detach then '' else 'no' end#'detached'
+         ModelArg  = '--'#if {Property.get 'perdio.minimal'} then ''
+                          else 'no'
+                          end#'minimal'
       in
          try
             Pipe = {New Open.pipe
@@ -77,12 +80,13 @@ define
                        init(cmd:  'rsh'
                             args: [Host
                                    ('exec '#Cmd#' '#Func#' '#
-                                    DetachArg#' '#TicketArg)])
+                                    DetachArg#' '#TicketArg#' '#ModelArg)])
                     [] virtual then
                        init(cmd:  Cmd
                             args: [Func
                                    TicketArg
                                    DetachArg
+                                   ModelArg
                                    '--shmkey='#{VirtualSite.newMailbox}])
                     end}
          in

@@ -32,7 +32,7 @@ local
             LengthStr
          in
             {self createRep(String LengthStr)}
-            XDim = case String of 39|_ then {System.show 'adding two'} 2 else {System.show 'adding zero'} 0 end + {VirtualString.length LengthStr}
+            XDim = case String of 39|_ then 2 else 0 end + {VirtualString.length LengthStr}
          end
       end
       meth layoutX($)

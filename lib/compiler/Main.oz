@@ -2,9 +2,6 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
-%%% Contributor:
-%%%   Christian Schulte <schulte@ps.uni-sb.de>
-%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1998
 %%%

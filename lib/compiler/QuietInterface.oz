@@ -67,7 +67,7 @@ in
                OutputMessage = M
             [] message(_ _) then
                OutputMessage = M
-            [] insert(VS) then
+            [] insert(VS _) then
                InsertedFiles <- VS|@InsertedFiles
                OutputMessage = unit
             [] displaySource(_ _ VS) then

@@ -26,7 +26,7 @@ oz('SP':             ['System' 'Exit' 'Print' 'Show' 'Foreign'
    'AP':             ['Application']
    'CP':             ['Search' 'SearchOne' 'SearchAll' 'SearchBest'
                       'FD' 'FS']
-   'WP':             ['Tk' 'NewTk' 'TkTools' 'NewTkTools']
+   'WP':             ['Tk' 'TkTools']
    'DP':             ['Connection' 'Remote']
    'Panel':          nil
    'Browser':        ['Browse']

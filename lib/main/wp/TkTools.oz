@@ -24,7 +24,7 @@
 %%%
 
 
-fun {NewTkTools Tk}
+local
    DefaultFont = local
                     T = {New Tk.toplevel
                          tkInit(withdraw:true 'class':'OzTools')}
@@ -1209,11 +1209,10 @@ fun {NewTkTools Tk}
          Ext Base
       in
          {Select Url Base Ext}
-         Base # case Ext
-                of gif then
-                   {New Tk.image tkInit(type:photo format:gif url:Url)}
-                [] xbm then
+         Base # case Ext==xbm then
                    {New Tk.image tkInit(type:bitmap url:Url)}
+                else
+                   {New Tk.image tkInit(type:photo format:Ext url:Url)}
                 end
       end
    in

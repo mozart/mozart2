@@ -325,10 +325,13 @@ in
                                PostProc = {GetPostProc
                                            plain(width(type:     int
                                                        optional: false
-                                                       default:  600)
+                                                       default:  ~1)
                                                  height(type:     int
                                                         optional: false
-                                                        default:  400))
+                                                        default:  ~1)
+                                                 title(type:      string
+                                                       optional:  false
+                                                       default:   "Oz Applet"))
                                            ArgSpec}
                             in
                                fun {$ S}

@@ -155,6 +155,7 @@ export
 
 define
 
+   {Wait Space.waitStable}
    {Wait FDB.int}
 
    FdpPlus = FDP.plus

@@ -89,6 +89,7 @@ export
 
 define
 
+   {Wait Space.waitStable}
    {Wait FSB.'var.is'}
 
    FSIsIncl        = FSP.include

@@ -422,7 +422,7 @@ local
                CompilerStateClass,
                ExecProtected(proc {$} {CheckTupleSyntax Queries0} end true)
             end
-            if {@reporter hasSeenError($)} then
+            if {@reporter hasSeenError($)} orelse Queries0 == parseError then
                raise rejected end
             end
             if CompilerStateClass, getSwitch(unnest $) then Queries in

@@ -71,6 +71,8 @@ define
          end
       end
       %%
+      NeedBreak
+      BreakExc
       {ForAll DECLS
        proc {$ DECL}
           case DECL
@@ -111,6 +113,27 @@ define
                 {Push 'tests' E2}
              end
              {Push 'nexts' E3}
+          [] forFrom(X G) then
+             GVar = {MakeVar 'ForGen'}
+             GApp = fTry(
+                       fApply(GVar nil unit)
+                       fCatch(
+                          [fCaseClause(fEq(fOpenRecord(fAtom(error unit) nil)
+                                           fVar('E' unit) unit)
+                                       fRaise(fVar('E' unit) unit))
+                           fCaseClause(fEq(fOpenRecord(fAtom(failure unit) nil)
+                                           fVar('E' unit) unit)
+                                       fRaise(fVar('E' unit) unit))
+                           fCaseClause(fWildcard(unit)
+                                       fRaise(BreakExc unit))]
+                          unit)
+                       fNoFinally unit)
+          in
+             NeedBreak=unit
+             {Push 'outers' fEq(GVar G unit)}
+             {Push 'args' X}
+             {Push 'inits' GApp}
+             {Push 'nexts' GApp}
           end
        end}
       %%
@@ -182,6 +205,15 @@ define
                                nil unit)}
           end
        end}
+      if {IsDet NeedBreak} then
+         if {Not {Dictionary.member D2 break}} then
+            E = {MakeVar 'ForBreak'}
+         in
+            VarD.'break' := E
+            {Push 'outers' fEq(E fOpApply('Name.new' nil unit) unit)}
+         end
+         BreakExc = VarD.'break'
+      end
       LoopProc = {MakeVar 'ForProc'}
       Loop1 = if {HasFeature D2 'continue'} then
                  fTry(BODY
@@ -211,7 +243,7 @@ define
               end
       {Push 'outers' fProc(LoopProc {Reverse D1.'args'} Loop3 nil COORDS_NODEBUG)}
       Main1 = fApply(LoopProc {Reverse D1.'inits'} COORDS_NODEBUG)
-      Main2 = if {HasFeature D2 'break'} then
+      Main2 = if {HasFeature D2 'break'} orelse {IsDet NeedBreak} then
                  fTry(Main1
                       fCatch(
                          [fCaseClause(

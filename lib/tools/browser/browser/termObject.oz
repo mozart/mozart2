@@ -564,6 +564,11 @@ in
                {AuxRecordSize Term {ChunkArity Term}
                 (SIn + ChLabelSize + DSpace) SMax}                  % '('
 
+            [] 'class' then
+               %%
+               {AuxRecordSize Term {ChunkArity Term}
+                (SIn + ChLabelSize + DSpace) SMax}                  % '('
+
             else
                %%
                %% Sizes of primitive values are taken as they are;

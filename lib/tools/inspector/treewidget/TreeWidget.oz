@@ -339,9 +339,11 @@ define
          stopPVar <- StopVar
          stopOVar <- StopVar
          case Mesg
-         of changeWidth(N) then {Node modifyWidth(Index N)}
-         [] changeDepth(N) then {Node modifyDepth(Index N)}
-         [] reinspect      then {Node reinspect}
+         of changeWidth(unlimited) then {Node modifyWidth(Index @dWidth)}
+         [] changeDepth(unlimited) then {Node modifyDepth(Index @dDepth)}
+         [] changeWidth(N)         then {Node modifyWidth(Index N)}
+         [] changeDepth(N)         then {Node modifyDepth(Index N)}
+         [] reinspect              then {Node reinspect}
          end
          TreeWidget, update(RI|nil RI)
       end

@@ -396,6 +396,11 @@ define
                               action: proc {$ X Y}
                                          {Port.send WidPort GlobalCanvasHandler(select(X Y))}
                                       end)
+            Tk.canvas, tkBind(event: '<Double-Button-2>'
+                              args:  [int(x) int(y)]
+                              action: proc {$ X Y}
+                                         {Port.send WidPort GlobalCanvasHandler(doublepress(X Y))}
+                                      end)
             Tk.canvas, tkBind(event:  '<3>'
                               args:   [int(x) int(y)]
                               action: proc {$ X Y}
@@ -448,6 +453,11 @@ define
                      GraphicSupport, clearSelection
                      GraphicSupport, createSelection(SelNode)
                   end
+               end
+            [] doublepress(X Y) then
+               case GraphicSupport, getDataNode(X Y $)
+               of nil  then skip
+               [] Node then {{Dictionary.get @opDict pressHandler} {Node getSelectionNode($)}}
                end
             [] adjust(W H) then
                curCX <- W

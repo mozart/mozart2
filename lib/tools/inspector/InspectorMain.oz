@@ -248,7 +248,14 @@ define
                              grid(row: 0 column: 0 MenuFrame sticky: nsew)
                              grid(columnconfigure MenuFrame 0 weight: 1)
                              grid(columnconfigure MenuFrame 1 weight: 0)]}
-                  {Dictionary.put Options selectionHandler proc {$ Mode} {Port.send InspPort selectionHandler(Mode)} end}
+                  {Dictionary.put Options selectionHandler
+                   proc {$ Mode}
+                      {Port.send InspPort selectionHandler(Mode)}
+                   end}
+                  {Dictionary.put Options pressHandler
+                   proc {$ Mode}
+                      {Port.send InspPort selectionHandler(double(Mode))}
+                   end}
                end
                ManagerFrame = FrameManager, create(Frame Width Height $)
                @widget      = {New TreeWidgetNode create(self Width Height)}
@@ -505,6 +512,12 @@ define
                [] shrink    then
                   {@widget selectionCall(@selNode changeDepth(~1))}
                [] reinspect then {@widget selectionCall(@selNode reinspect)}
+               [] double(Node) then
+                  case {Node getType($)}
+                  of widthbitmap then {@widget selectionCall(Node changeWidth(unlimited))}
+                  [] depthbitmap then {@widget selectionCall(Node changeDepth(unlimited))}
+                  [] _           then {@widget selectionCall(Node changeDepth(~1))}
+                  end
                [] Node      then
                   selNode <- Node
                   case {Node getType($)}

@@ -620,6 +620,7 @@ local
                   else skip
                   end
                   case CompilerStateClass, getSwitch(feedtoemulator $) then
+\ifndef NO_ASSEMBLER
                      Globals Proc P
                   in
                      {@reporter logSubPhase('loading ...')}
@@ -654,6 +655,11 @@ local
                                      'completion ...')}
                         CompilerEngine, ExecProtected(P false)
                      end
+\else
+                     {@reporter error(kind: 'compiler restriction'
+                                      msg: ('Cannot load code with '#
+                                            'this restricted compiler'))}
+\endif
                   else skip
                   end
                end

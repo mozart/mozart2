@@ -20,18 +20,20 @@ dnl of this file, and for a DISCLAIMER OF ALL
 dnl WARRANTIES.
 dnl
 
-define(instruction,
-        `ifelse(numOfRegs($2,$3,$4),1,oneReg($@),
-                numOfRegs($2,$3,$4),2,twoRegs($@),
-                noReg($@))')
 define(instructionsUnneededForNewCompiler,`divert(-1)')
 define(readArg,$1)
 define(writeArg,$1)
 
+\ifndef NO_ASSEMBLER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% InstructionSizes maps instr labels to integers
 %%
+
+define(instruction,
+        `ifelse(numOfRegs($2,$3,$4),1,oneReg($@),
+                numOfRegs($2,$3,$4),2,twoRegs($@),
+                noReg($@))')
 
 define(noReg,'$1': {GetInstructionSize '$1'})
 define(oneReg,'$1': {GetInstructionSize '$1X'})
@@ -157,3 +159,26 @@ proc {StoreInstr Instr CodeBlock LabelDict}
 include(EMUDIR/instrDefs.m4)
    end
 end
+\else
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% InstructionSizes maps instr labels to integers
+%%
+
+undefine(`instruction')
+undefine(`noReg')
+undefine(`oneReg')
+undefine(`twoRegs')
+
+define(instruction,
+        `ifelse(numOfRegs($2,$3,$4),1,oneReg($@),
+                numOfRegs($2,$3,$4),2,twoRegs($@),
+                noReg($@))')
+
+define(noReg,'$1': 1)
+define(oneReg,'$1': 1)
+define(twoRegs,'$1': 1)
+
+InstructionSizes =
+instructionSizes(include(EMUDIR/instrDefs.m4))
+\endif

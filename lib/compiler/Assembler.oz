@@ -37,8 +37,9 @@
 
 local
    local
-      GetOpcode               = {`Builtin` getOpcode               2}
+\ifndef NO_ASSEMBLER
       GetInstructionSize      = {`Builtin` getInstructionSize      2}
+      GetOpcode               = {`Builtin` getOpcode               2}
       NewCodeBlock            = {`Builtin` newCodeBlock            2}
       MakeProc                = {`Builtin` makeProc                3}
       AddDebugInfo            = {`Builtin` addDebugInfo            3}
@@ -138,6 +139,7 @@ local
             {BIStoreApplMethInfo CodeBlock Name RecordArity}
          end
       end
+\endif
 
       \insert compiler-Opcodes
 
@@ -358,6 +360,7 @@ local
                VS = ""
             end
          end
+\ifndef NO_ASSEMBLER
          meth load(Globals ?P) CodeBlock in
             AssemblerClass, MarkEnd()
             CodeBlock = {NewCodeBlock @Size}
@@ -365,6 +368,7 @@ local
              proc {$ Instr} {StoreInstr Instr CodeBlock @LabelDict} end}
             P = {MakeProc CodeBlock Globals}
          end
+\endif
          meth MarkEnd()
             @InstrsTl = nil
          end

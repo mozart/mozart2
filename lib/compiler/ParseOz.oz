@@ -23,14 +23,15 @@ local
    ParseFile          = {`Builtin` ozparser_parseFile          3}
    ParseVirtualString = {`Builtin` ozparser_parseVirtualString 3}
 in
-   fun {ParseOzFile FileName Reporter ShowInsert SystemVariables Defines}
+   fun {ParseOzFile FileName Reporter CompilerState}
       Res VS
    in
-      Res = {ParseFile FileName options(showInsert: ShowInsert
-                                        gumpSyntax: false
-                                        systemVariables: SystemVariables
-                                        defines: Defines
-                                        errorOutput: ?VS)}
+      Res = {ParseFile FileName
+             options(showInsert: {CompilerState getSwitch(showinsert $)}
+                     gumpSyntax: false
+                     systemVariables: {CompilerState getSwitch(system $)}
+                     defines: {CompilerState getDefines($)}
+                     errorOutput: ?VS)}
       case Res of fileNotFound then
          {Reporter userInfo(VS)}
          {Reporter error(kind: 'compiler directive error'
@@ -45,14 +46,15 @@ in
       Res
    end
 
-   fun {ParseOzVirtualString VS Reporter ShowInsert SystemVariables Defines}
+   fun {ParseOzVirtualString VS Reporter CompilerState}
       Res VS2
    in
-      Res = {ParseVirtualString VS options(showInsert: ShowInsert
-                                           gumpSyntax: false
-                                           systemVariables: SystemVariables
-                                           defines: Defines
-                                           errorOutput: ?VS2)}
+      Res = {ParseVirtualString VS
+             options(showInsert: {CompilerState getSwitch(showinsert $)}
+                     gumpSyntax: false
+                     systemVariables: {CompilerState getSwitch(system $)}
+                     defines: {CompilerState getDefines($)}
+                     errorOutput: ?VS2)}
       case Res of parseErrors(N) then
          {Reporter addErrors(N)}
       else skip

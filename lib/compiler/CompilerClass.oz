@@ -47,7 +47,6 @@ local
                             %%
                             expression: false
                             system: true
-                            selfallowedanywhere: false
 
                             %% static analysis:
                             %%
@@ -312,10 +311,7 @@ local
          {@reporter clearErrors()}
          try Queries0 Queries in
             {@reporter logPhase('parsing ...')}
-            Queries0 = {ParseOz Data @reporter
-                        CompilerStateClass, getSwitch(showinsert $)
-                        CompilerStateClass, getSwitch(system $)
-                        CompilerStateClass, getDefines($)}
+            Queries0 = {ParseOz Data @reporter self}
             case {@reporter hasSeenError($)} then
                raise rejected end
             else skip
@@ -438,7 +434,7 @@ local
                                       {GV getCoord($)}]
                                   else
                                      [{GV getCoord($)} unit
-                                      line('previous declaration was here') C]
+                                      line('previous declaration was') C]
                                   end)}
                    end
                 end}

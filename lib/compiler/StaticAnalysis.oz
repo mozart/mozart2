@@ -2216,54 +2216,47 @@ local
 
          case B then
             Self = {Ctrl getSelf($)}
+            Fea  = {GetData {Nth @actualArgs 1}}
+            CTok = {Self getValue($)}
+            Attrs= {CTok getAttributes($)}
+            Props= {CTok getProperties($)}
          in
             case
-               Self==unit   % this may happen with +selfallowedanywhere
+               Attrs==unit orelse {Member Fea Attrs}
             then
                skip
             else
-               Fea  = {GetData {Nth @actualArgs 1}}
-               CTok = {Self getValue($)}
-               Attrs= {CTok getAttributes($)}
-               Props= {CTok getProperties($)}
+               Val  = {GetData {Nth @actualArgs 2}}
+               Expr = case PName
+                      of '<-' then oz(Fea) # ' <- ' # oz(Val)
+                      elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
+                      end
+               Final = (Props\=unit andthen {Member final Props})
+               Hint = case Final
+                      then '(correct use requires method application)'
+                      else '(may be a correct forward declaration)'
+                      end
+               Cls  = case Final
+                      then 'In Final Class '
+                      else 'In Class '
+                      end
             in
                case
-                  Attrs==unit orelse {Member Fea Attrs}
+                  Final orelse
+                  {Ctrl.switches getSwitch(warnforward $)}
                then
-                  skip
-               else
-                  Val  = {GetData {Nth @actualArgs 2}}
-                  Expr = case PName
-                         of '<-' then oz(Fea) # ' <- ' # oz(Val)
-                         elseof '@' then '@' # oz(Fea) # ' = ' # oz(Val)
-                         end
-                  Final = (Props\=unit andthen {Member final Props})
-                  Hint = case Final
-                         then '(correct use requires method application)'
-                         else '(may be a correct forward declaration)'
-                         end
-                  Cls  = case Final
-                         then 'In Final Class '
-                         else 'In Class '
-                         end
-               in
-                  case
-                     Final orelse
-                     {Ctrl.switches getSwitch(warnforward $)}
-                  then
-                     {Ctrl.rep
-                      warn(coord: @coord
-                           kind:  SAGenWarn
-                           msg:   'applying ' # PName #
-                           ' to unavailable attribute'
-                           body:  [hint(l:'Expression' m:Expr)
-                                   hint(l:Cls
-                                        m:pn({{Self getDesignator($)}
-                                              getPrintName($)}))
-                                   hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
-                                   line(Hint)])}
-                  else skip end
-               end
+                  {Ctrl.rep
+                   warn(coord: @coord
+                        kind:  SAGenWarn
+                        msg:   'applying ' # PName #
+                        ' to unavailable attribute'
+                        body:  [hint(l:'Expression' m:Expr)
+                                hint(l:Cls
+                                     m:pn({{Self getDesignator($)}
+                                           getPrintName($)}))
+                                hint(l:'Expected' m:{SetToVS {Ozify Attrs}})
+                                line(Hint)])}
+               else skip end
             end
          else skip end
       end
@@ -2488,7 +2481,7 @@ local
              error(coord: @coord
                    kind:  SATypeError
                    msg:   'wrong arity in application of ' # pn(PN)
-                   body:  [hint(l:'Procedure type' m:{TypeToVS ProcType})
+                   body:  [hint(l:'Procedure type' m:{TypeToVS DesigType})
                            hint(l:'Application arity' m:{Length @actualArgs})
                            hint(l:'Application (names)'
                                 m:{ApplToVS pn(PN)|PNs})

@@ -336,7 +336,7 @@ local
    class Unnester
       attr
          BA             % this holds an instance of `BindingAnalysis'
-         Stateful: unit % true iff state access allowed (i. e., in method)
+         Stateful       % true iff state access allowed (i. e., in method)
          StateUsed      % true iff state has been accessed
          ArgCounter     % temporarily used while transforming method heads
          reporter
@@ -349,7 +349,7 @@ local
       end
 
       meth unnestQuery(Query ?GVs ?GS ?FreeGVs)
-         Stateful <- {@switches getSwitch(selfallowedanywhere $)}
+         Stateful <- false
          case Query of fDeclare(FS1 FS2 C) then NewFS1 FVs GS0 GVs0 in
             NewFS1 = {MakeTrivialLocalPrefix FS1 ?FVs nil}
             {@BA openScope()}

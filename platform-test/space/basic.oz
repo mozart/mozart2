@@ -355,7 +355,7 @@ define
                                    in
                                       X1.1=X2.1=LocalName
                                       X1.2=X2.2=PreName
-                                      not X1.3=X2.3 end
+                                      (X1.3\=X2.3) = true
                                    end
                                 end)
                        keys: [name clone space])
@@ -376,7 +376,7 @@ define
                                         in
                                            X1.1=X2.1=LocalProc
                                            X1.2=X2.2=PreProc
-                                           not X1.3=X2.3 end
+                                           (X1.3\=X2.3) = true
                                         end
                                      end)
                             keys: [procedure clone space])
@@ -391,7 +391,7 @@ define
                                    X2 = {Space.merge S2}
                                 in
                                    X1.1=X2.1=LocalCell
-                                   not X1.2=X2.2 end
+                                   (X1.2\=X2.2) = true
                                 end)
                        keys: [cell clone space])
 
@@ -408,7 +408,7 @@ define
                                     X2 = {Space.merge S2}
                                  in
                                     X1.1=X2.1=LocalSpace
-                                    not X1.2=X2.2 end
+                                    (X1.2\=X2.2) = true
                                  end)
                         keys: [space clone])])
 

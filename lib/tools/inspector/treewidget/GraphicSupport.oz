@@ -334,7 +334,7 @@ define
             H      = {Tk.returnInt winfo(reqheight self)}
          in
             Tk.canvas, tk(conf background: Col)
-            GraphicSupport, ComputeFontDim(Font Bitmap)
+            if Font \= @font then GraphicSupport, ComputeFontDim(Font Bitmap) end
             GraphicSupport, GlobalCanvasHandler(adjust(W H))
          end
          meth !ComputeFontDim(Font Bitmap)
@@ -367,6 +367,7 @@ define
             then
                Node = {Dictionary.get @nodes I}
             in
+               GraphicSupport, resetTags(I)
                {Node undraw}
                case {Node drawY(0 Y $)}
                of NewY then

@@ -345,20 +345,17 @@ in
    class KindedRecordCreateObject from RecordCreateObject
       attr
          monitorValue %% Monitor Value
-         hasLabel     %% HasLabelTag
       meth createContainer
-         Arity    = @arity
-         Visual   = @visual
-         Value    = @value
-         HasLabel = @hasLabel
+         Arity  = @arity
+         Visual = @visual
+         Value  = @value
       in
-         @type    = kindedrecord
-         HasLabel = {RecordC.hasLabel Value}
-         @label   = if HasLabel
-                    then {New Aux.label create({Label Value} '(' self Visual)}
-                    else {New Aux.label create('_' '(' self Visual)}
-                    end
-         @brace   = {New Aux.atom create(')' self 0 Visual internal)}
+         @type  = kindedrecord
+         @label = if {RecordC.hasLabel Value}
+                  then {New Aux.label create({Label Value} '(' self Visual)}
+                  else {New Aux.label create('_' '(' self Visual)}
+                  end
+         @brace = {New Aux.atom create(')' self 0 Visual internal)}
          {RecordC.monitorArity Value _ Arity}
          KindedRecordCreateObject, computeArityLength(Arity 1)
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
@@ -391,8 +388,9 @@ in
                    {New Aux.feature create(A Visual {Visual treeCreate(@value.A self I Depth $)})}}
                   KindedRecordCreateObject, performInsertion((I + 1) Ar Stop)
                [] nil then
-                  width <- (I - 1)
-                  type  <- record
+                  monitorValue <- nil
+                  width        <- (I - 1)
+                  type         <- record
                end
             elseif Width < @maxWidth
             then

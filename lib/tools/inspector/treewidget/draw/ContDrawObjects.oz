@@ -27,14 +27,12 @@ local
          case @dirty
          of false then {@visual move(X Y @tag {self getFirstItem($)})}
          else
-            Id = {@visual getTclId($)}
+            Visual = @visual
          in
             dirty <- false
-            {Tk.send v('Dn'#Id#' '#@tag)}
-%           {Visual tagTreeDown(@tag)}
+            {Visual tagTreeDown(@tag)}
             {self performDraw(X Y)}
-            {Tk.send v('Up'#Id)}
-%           {Visual tagTreeUp}
+            {Visual tagTreeUp}
          end
       end
       meth drawX(X Y $)
@@ -723,42 +721,29 @@ in
 
    local
       class KindedRecordShare
-         attr
-            labelVar %% Label Variable (Monitor)
-         meth watchLabel
-            LabelVar = @labelVar
-         in
-            if {IsFree LabelVar}
-            then
-               {@visual logVar(@label LabelVar false)}
-               thread LabelVar = {Label @value} end
-            end
-         end
          meth tell($)
             case @dirty
             of false then
-               Index    = @width
-               Node     = {Dictionary.get @items Index}
-               CurWidth = {@visual getWidth($)}
+               MyValue = @value
             in
-               {Node undraw}
-               KindedRecordCreateObject, computeArityLength(@arity 1)
-               RecordCreateObject, adjustWidth(CurWidth Index)
-               case {Value.status @value}
-               of det(record) then type <- record
-               else skip
+               if {IsDet @monitorValue} %% Arity changed
+               then
+                  Index    = @width
+                  Node     = {Dictionary.get @items Index}
+                  CurWidth = {@visual getWidth($)}
+               in
+                  {Node undraw}
+                  KindedRecordCreateObject, computeArityLength(@arity 1)
+                  RecordCreateObject, adjustWidth(CurWidth Index)
+                  case {Value.status MyValue}
+                  of det(record) then type <- record
+                  else skip
+                  end
+               else
+                  {@label undraw}
+                  label <- {New Aux.label create({Label MyValue} '(' self @visual)}
                end
                xDim <- _
-               {@parent getRootIndex(@index $)}
-            else true
-            end
-         end
-         meth tellLabel(Dirty $)
-            case Dirty
-            of false then
-               {@label undraw}
-               label <- {New Aux.label create(@labelVar '(' self @visual)}
-               xDim  <- _
                {@parent getRootIndex(@index $)}
             else true
             end
@@ -767,17 +752,19 @@ in
    in
       class KindedRecordDrawObject from LabelTupleDrawObject KindedRecordShare
          meth performDraw(X Y)
+            Value = @value
+         in
             LabelTupleDrawObject, performDraw(X Y)
-            {@visual logVar(self @monitorValue false)}
-            if @hasLabel then skip else KindedRecordShare, watchLabel end
+            if {IsKinded Value} then {@visual logVar(self Value false)} end
          end
       end
 
       class KindedRecordGrDrawObject from LabelTupleGrDrawObject KindedRecordShare
          meth performDraw(X Y)
+            Value = @value
+         in
             LabelTupleGrDrawObject, performDraw(X Y)
-            {@visual logVar(self @monitorValue false)}
-            if @hasLabel then skip else KindedRecordShare, watchLabel end
+            if {IsKinded Value} then {@visual logVar(self Value false)} end
          end
       end
    end

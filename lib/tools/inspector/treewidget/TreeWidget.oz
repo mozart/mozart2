@@ -254,15 +254,15 @@ define
       meth graphMode($)
          @dMode
       end
-%      meth display(Value)
+%       meth display(Value)
 %        A B
-%      in
+%       in
 %        A = {Property.get time}.total
 %        TreeWidget, doDisplay(Value)
 %        {Wait {Tk.return update(idletasks)}}
 %        B = {Property.get time}.total
 %        {System.show 'display time: '#(B - A)}
-%      end
+%       end
       meth display(Value)
          MaxPtr = (@maxPtr + 1)
          Nodes  = @nodes

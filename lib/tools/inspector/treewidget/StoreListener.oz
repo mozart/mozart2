@@ -112,12 +112,10 @@ define
             end
          end
          meth listen(FutMode WidPort CurValue EntryObj)
-%           {System.show 'listen is called'}
             if FutMode
             then {Value.waitQuiet CurValue}
-            else {WaitOr {GetsBoundB CurValue} CurValue} %% GBB Bug Workaround
+            else {Wait {GetsBoundB CurValue}}
             end
-%           {System.show 'listen notifies'}
             {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
             if {IsDet CurValue} %% Thats not really true but nothing stunning happens anyway
             then skip

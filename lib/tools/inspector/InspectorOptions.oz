@@ -21,7 +21,7 @@
 
 functor $
 import
-   System(eq)
+   System(eq show)
    Property(get)
    Tk(localize)
    BS(chunkArity) at 'x-oz://boot/Browser'
@@ -41,9 +41,57 @@ define
       end
 
       local
-         fun {StructEqual X Y}
-            ({IsDet X} andthen {IsDet Y} andthen X == Y)
-            orelse {System.eq X Y}
+         local
+            local
+               local
+                  fun {Eq X#Y PX#PY}
+                     {System.eq X PX} andthen {System.eq Y PY}
+                  end
+               in
+                  fun {IsMember V Set}
+                     case Set
+                     of P|Sr then ({Eq V P} orelse {IsMember V Sr})
+                     [] nil  then false
+                     end
+                  end
+               end
+               fun {IsRec X}
+                  {IsDet X} andthen {IsRecord X}
+               end
+               fun {SameArity X Y}
+                  {IsRec X} andthen {IsRec Y} andthen
+                  ({Label X} == {Label Y}) andthen ({Arity X} == {Arity Y})
+               end
+               fun {ArityPush As X Y S}
+                  case As
+                  of F|Ar then {ArityPush Ar X Y (X.F#Y.F)|S}
+                  [] nil  then S
+                  end
+               end
+            in
+               fun {DoUnify Stack Set}
+                  case Stack
+                  of (X#Y)|Sr then
+                     if {System.eq X Y}
+                     then {DoUnify Sr Set}
+                     elseif {IsMember X#Y Set}
+                     then {DoUnify Sr Set}
+                     elseif {SameArity X Y}
+                     then
+                        NewStack = {ArityPush {Arity X} X Y Stack}
+                        NewSet   = (X#Y)|(Y#X)|Set
+                     in
+                        {DoUnify NewStack NewSet}
+                     else false
+                     end
+                  [] nil then true
+                  end
+               end
+            end
+         in
+            fun {StructEqual X Y}
+               {DoUnify (X#Y)|nil nil}
+            end
          end
          fun {Root X}
             {Property.get 'oz.home'}#'/share/images/inspector/'#X
@@ -179,7 +227,7 @@ define
                OOAttr  = {BN.newUnique 'ooAttr'}
                OOFeat  = {BN.newUnique 'ooFeat'}
                OOPrint = {BN.newUnique 'ooPrintName'}
-%%             OOProp  = {BN.newUnique 'ooProperties'}
+               %%              OOProp  = {BN.newUnique 'ooProperties'}
                OOList  = [OOAttr OOFeat OOMeth]
             in
                fun {MapClass V}

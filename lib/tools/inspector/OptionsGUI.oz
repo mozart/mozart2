@@ -672,10 +672,12 @@ local
                SizeSelector = {New PopupSelector
                                create(FontInner 3 InitFSize SizeActive SizeHandler FontSizes)}
                BoldVar      = {New Tk.variable
-                               tkInit(InitFont.weight \= normal)}
+                               tkInit(InitFont.weight)}
                BoldButton   = {New Tk.checkbutton
                                tkInit(parent:   FontInner
                                       text:     'Bold'
+                                      onvalue:  bold
+                                      offvalue: normal
                                       font:     MediumFont
                                       variable: BoldVar
                                       anchor:   w)}
@@ -867,8 +869,7 @@ local
             {Dictionary.put OpDict
              widgetTreeFont font(family: 'courier'
                                  size:   @visualFontSize
-                                 weight: case {@visualFontBold tkReturnAtom($)}
-                                         of true then 'bold' else 'normal' end)}
+                                 weight: {@visualFontBold tkReturnAtom($)})}
          end
       end
    end

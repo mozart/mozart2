@@ -22,7 +22,6 @@
 functor $
 import
    System(printName)
-   Debug(breakpoint) at 'x-oz://boot/Debug'
 export
    convert   : ConvertAtom
    atom      : AtomNode
@@ -187,9 +186,6 @@ define
          end
          meth getMenuType($)
             {@parent getMenuType($)}
-         end
-         meth tell($)
-            {@parent tellLabel(@dirty $)}
          end
          meth getFirstItem($)
             @tag

@@ -236,7 +236,7 @@ in
                            action: proc {$}
                                       {Port.send InspPort focusDn(false)}
                                    end)}
-            {Canvas tkBind(event:  '<Control-KeyPress-Tab>'
+            {Canvas tkBind(event:  '<KeyPress-f>'
                            action: proc {$}
                                       {Port.send InspPort focusDn(true)}
                                    end)}
@@ -247,6 +247,10 @@ in
             {Canvas tkBind(event:  '<KeyPress-d>'
                            action: proc {$}
                                       {Port.send InspPort delPane}
+                                   end)}
+            {Canvas tkBind(event: '<1>'
+                           action: proc {$}
+                                      {Port.send InspPort changeFocus(self)}
                                    end)}
             ScrollX  = {New Tk.scrollbar
                         tkInit(parent:             Frame

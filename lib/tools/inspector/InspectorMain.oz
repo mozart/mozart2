@@ -192,7 +192,7 @@ define
                                                     end)}
                   StopN = {Tk.getTclName StopB}
                in
-                  {Tk.send v('proc O0 {} {'#StopN#' conf -state normal};proc F0 {} {'#StopN#' conf -state disabled}')}
+                  {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
                   @options = Options
                   {Menu.inspector tk(conf borderwidth: 1)}
                   {Menu.insoptions tk(conf borderwidth: 1)}
@@ -303,6 +303,13 @@ define
                NewIndex  = if Index == @NumItems then 1 else (Index + 2) end
                NewNode   = {Dictionary.get @Items NewIndex}
                NewCanvas = {NewNode getCanvas($)}
+               {Tk.send focus(NewCanvas)}
+               widget <- NewNode
+               {NewNode unfreeze}
+            end
+            meth changeFocus(NewNode)
+               NewCanvas = {NewNode getCanvas($)}
+            in
                {Tk.send focus(NewCanvas)}
                widget <- NewNode
                {NewNode unfreeze}

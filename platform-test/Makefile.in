@@ -35,7 +35,8 @@ FDLOCAL = \
         srat students hubert pigeon permutation \
         kalotan knights houses warehouse bridge_noterm \
         queens mapcoloring magicsquare magicsequence \
-        photo coins train pel college boundsdistinct
+        photo coins train pel college boundsdistinct \
+        filter
 
 # tiling removed
 

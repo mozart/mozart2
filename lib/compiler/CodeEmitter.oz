@@ -822,7 +822,7 @@ in
             end
          [] vSetSelf(_ Reg _) then
             case Emitter, GetPerm(Reg $) of G=g(_) then
-               Emitter, Emit(setSelfG(G))
+               Emitter, Emit(setSelf(G))
             end
          [] vDefinition(_ Reg PredId ProcedureRef GRegs Code _) then
             if Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)

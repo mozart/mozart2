@@ -318,11 +318,6 @@ inlineDot
    XRegister        argument #3 register
    Cache            ignored
 
-inlineUparrow
-   XRegister        argument #1 register
-   XRegister        argument #2 register
-   XRegister        argument #3 register
-
 inlineAt
    Literal          attribute
    XRegister        destination register
@@ -585,7 +580,6 @@ HashTableRef = ht(Label [HashTableEntry]).
 %%
 
 PrintName = atom.
-IsMethod = bool.
 IsTail = bool.
 HashTableEntry = onScalar(NumOrLit Label)
                | onRecord(Literal RecordArity Label).

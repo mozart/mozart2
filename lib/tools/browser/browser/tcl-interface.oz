@@ -460,16 +460,12 @@ in
               %%  exclude '$w mark set insert @$x,$y';
               o(pr#oc myTkTextButton1 q(w x y)
                 q(
-                   %% 'y0 \n'
-                   'global' 'tkPriv; \n\n'
-                   'y1 \n'
-                   'set' 'tkPriv(selectMode)' 'char \n'
-                   'set' 'tkPriv(mouseMoved)' '0 \n'
-                   'set' 'tkPriv(pressX)' '$x \n'
-                   '$w' 'mark' 'set' 'insert' '@$x,$y \n'
-                   '$w' 'mark' 'set' 'anchor' 'insert \n'
-                   'if' '{[$w' 'cget' '-state]' '==' '"normal"}'
-                       '{focus' '$w} \n'
+                   v('global tkPriv;')
+                   v('set tkPriv(selectMode) char;')
+                   v('set tkPriv(mouseMoved) 0;')
+                   v('set tkPriv(pressX) $x;')
+                   v('$w mark set anchor @$x,$y;')
+                   v('if {[$w cget -state] == "normal"} {focus $w};')
                  )
                 )
 

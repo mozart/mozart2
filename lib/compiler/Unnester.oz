@@ -662,7 +662,7 @@ define
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: 'at most one $ in procedure head allowed')}
             end
-            Unnester, UnnestProc(FEs FS false C ?GS)
+            Unnester, UnnestProc(FEs FS C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = (@StateUsed orelse
                             @Stateful andthen
@@ -674,35 +674,48 @@ define
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
-         [] fFun(FE1 FEs FE2 ProcFlags C) then
-            GFrontEq GVO OldStateUsed NewFEs ProcFlagAtoms LazyFlags RestFlags
-            GS GFormals IsStateUsing GD
-         in
-            Unnester, UnnestToVar(FE1 'Fun' ?GFrontEq ?GVO)
-            OldStateUsed = (StateUsed <- false)
-            ProcFlagAtoms = {Map ProcFlags fun {$ fAtom(A _)} A end}
-            {List.partition ProcFlagAtoms fun {$ A} A == 'lazy' end
+         [] fFun(FE1 FEs FE2 ProcFlags C) then LazyFlags RestFlags in
+            {List.partition ProcFlags fun {$ fAtom(A _)} A == 'lazy' end
              ?LazyFlags ?RestFlags}
-            {@BA openScope()}
-            if {DollarsInScope FEs 0} == 0 then
-               NewFEs = {Append FEs [fDollar(C)]}
-            else
+            if {DollarsInScope FEs 0} > 0 then
                {@reporter error(coord: {DollarCoord FEs} kind: SyntaxError
                                 msg: 'no $ in function head allowed')}
-               NewFEs = FEs
+               nil
+            elseif LazyFlags == nil then
+               GFrontEq GVO OldStateUsed NewFEs GS GFormals IsStateUsing GD
+            in
+               Unnester, UnnestToVar(FE1 'Fun' ?GFrontEq ?GVO)
+               OldStateUsed = (StateUsed <- false)
+               {@BA openScope()}
+               NewFEs = {Append FEs [fDollar(C)]}
+               Unnester, UnnestProc(NewFEs FE2 C ?GS)
+               {@BA closeScope(?GFormals)}
+               IsStateUsing = (@StateUsed orelse
+                               @Stateful andthen
+                               {@state getSwitch(staticvarnames $)})
+               StateUsed <- IsStateUsing orelse OldStateUsed
+               GD = {New Core.definition
+                     init(GVO GFormals GS IsStateUsing
+                          {Map RestFlags fun {$ fAtom(A _)} A end} C)}
+               if {@state getSwitch(staticvarnames $)} then
+                  {GD setAllVariables({@BA getAllVariables($)})}
+               end
+               GFrontEq|GD   % Definition node must always be second element!
+            else CND Formals NewFE NewFS in
+               CND = {CoordNoDebug C}
+               Formals#NewFE = {FoldR FEs
+                                fun {$ FE1 Formals#FE2} GV in
+                                   (fAnonVar('Result' C GV)|Formals)#
+                                   fCase(fOcc(GV) [fCaseClause(FE1 FE2)]
+                                         fNoElse(CND)   %--** better exception
+                                         CND)
+                                end nil#FE2}
+               NewFS = fFun(FE1 Formals
+                            fOpApply('Value.byNeed'
+                                     [fFun(fDollar(CND) nil NewFE nil CND)]
+                                     CND) RestFlags C)
+               Unnester, UnnestStatement(NewFS $)
             end
-            Unnester, UnnestProc(NewFEs FE2 LazyFlags \= nil C ?GS)
-            {@BA closeScope(?GFormals)}
-            IsStateUsing = (@StateUsed orelse
-                            @Stateful andthen
-                            {@state getSwitch(staticvarnames $)})
-            StateUsed <- IsStateUsing orelse OldStateUsed
-            GD = {New Core.definition
-                  init(GVO GFormals GS IsStateUsing RestFlags C)}
-            if {@state getSwitch(staticvarnames $)} then
-               {GD setAllVariables({@BA getAllVariables($)})}
-            end
-            GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors C) then
             FRequire FPrepare FImport FExport FDefine1 FDefine2
          in
@@ -1702,27 +1715,19 @@ define
          end
       end
 
-      meth UnnestProc(FEs FS IsLazy C ?GS)
-         FMatches FResultVars FS1 CND FS2 FS3 GBody
-      in
+      meth UnnestProc(FEs FS C ?GS) FMatches FResultVars FS1 FS2 GBody in
          %% each formal argument in FEs must be a pattern;
          %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
-         FS1 = {FoldR FMatches
+         FS1 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C) end FS}
+         FS2 = {FoldR FMatches
                 fun {$ FV#FE#C In}
                    fCase(FV [fCaseClause(FE In)]
-                         fNoElse(C)   %--** raise a better exception here
+                         fNoElse(C)   %--** better exception
                          C)
-                end FS}
-         CND = {CoordNoDebug C}
-         FS2 = if IsLazy then
-                  fOpApply('Value.byNeed'
-                           [fFun(fDollar(C) nil FS1 nil CND)] CND)
-               else FS1
-               end
-         FS3 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C) end FS2}
+                end FS1}
          {@BA openScope()}
-         Unnester, UnnestStatement(FS3 ?GBody)
+         Unnester, UnnestStatement(FS2 ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}
       end
       meth UnnestProcFormals(FEs Occs GdHd GdTl RtHd RtTl)

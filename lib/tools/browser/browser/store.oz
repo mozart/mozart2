@@ -1,80 +1,62 @@
-%  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Programming Systems Lab, University of Saarland,
+%  Geb. 45, Postfach 15 11 50, D-66041 Saarbruecken.
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
 %  Last modified: $Date$ by $Author$
 %  Version: $Revision$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
 %%%
-%%%  (Global) store for global parameters
+%%%  (Global) store for global parameters;
 %%%
 %%%
 %%%
 %%%
 
 %%
-%%  An object of this class is used for storing of all common parameters for the
-%% Browser (such as actual sizes of windows, user preferences and so on).
-%%
+%%  An object of this class is used for storing of all common
+%% parameters for the Browser (such as actual sizes of windows, user
+%% preferences and so on).
 
-class ProtoStore from UrObject
+class StoreClass from UrObject
    %%
-   attr
-      store: store
+   feat
+      SDict
 
    %%
-   %%  Add (or replace) some value to store;
-   %%
-   meth store(What Value)
-      %%
-      store <- {AdjoinAt @store What Value}
+   meth init
+      self.SDict = {Dictionary.new}
    end
 
    %%
-   %%  Extract some value from store;
+   %% Add (or replace) some value to store;
    %%
-   meth read(What ?OutValue)
+   meth store(What Value)
+      %%
+      {Dictionary.put self.SDict What Value}
+   end
+
+   %%
+   %% Extract some value from store;
+   %%
+   meth read(What $)
+\ifdef DEBUG_BO
       local DefValue in
          DefValue = {NewName}
 
          %%
-         OutValue = {SubtreeIf @store What DefValue}
-
-         %%
-         case OutValue
+         case {Dictionary.condGet self.SDict What DefValue}
          of !DefValue then
-            {BrowserError
-             ['Attempt to read undefined parameter in store']}
+            {BrowserError 'Attempt to read undefined parameter in store'}
          else true
          end
       end
-   end
+\endif
 
-   %%
-   %%  Is there such parameter?
-   %%
-   meth test(What ?Result)
-      Result = {Value.hasSubtreeAt @tore What}
-   end
-
-   %%
-   %%  Some debug methods;
-   %%
-   meth dShow(What)
-      {Show <<read(What $)>>}
-   end
-
-   %%
-   meth dShowAll
-      local Store in
-         Store = @store
-
-         %%
-         {ForAll {Arity Store} proc {$ Feature} {Show Store.Feature} end}
-      end
+      %%
+      {Dictionary.get self.SDict What}
    end
 
    %%

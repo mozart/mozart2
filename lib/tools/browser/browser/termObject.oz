@@ -1,581 +1,832 @@
-%  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Programming Systems Lab, University of Saarland,
+%  Geb. 45, Postfach 15 11 50, D-66041 Saarbruecken.
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
-%  Last modified: $Date$ by $Author$
+%  Last modified: $Date by $Author$
 %  Version: $Revision$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
 %%%
-%%%  'generic' term classes;
+%%%  Term objects;
 %%%
 %%%
-%%%
-%%%
+
 
 local
-   %%  'meta' objects in various flavors;
-   MetaTupleGenericTermObject
-   MetaRecordGenericTermObject
-   MetaChunkGenericTermObject
-
-   %%  Generator of reference names;
-   NewRefNameGen
+   MetaTermObject
+   MetaCompoundTermObject
+   MetaTupleTermObject
+   MetaRecordTermObject
+   I_MetaVariableTermObject
 
    %%
-   DiffRest
+   StripName
+   StripBQuotes
+   GenVSPrintName
+   GenAtomPrintName
+   GenNamePrintName
+   GenLitPrintName
+   GenChunkPrintName
+   GenObjPrintName
+   GenClassPrintName
+   GenProcPrintName
+   GenCellPrintName
+
+   %%
+   IsCyclicListDepth
+
+   %%
+   AtomicFilter
+
+   %%
+   IsThereAName
+
+   %%
+   LimitedTermSize
+
+   %%
+   TestMetaVarFun
+
+   %%
+   %% various "description procedures" and "descriptions;
+   CommasDP
+   CommasDesc
+   DBarDP
+   DBarDesc
+   EllipsesDP
+   EllipsesDesc
+
+   %%  ... and now, there are some local methods & attributes;
+   GetName          = {NewName} %  records (at the moment);
+   GetElement       = {NewName} %  compound objects only;
+   CanBeExpanded    = {NewName} %     --- / --- / ---
+   GetLastElNum     = {NewName} %     --- / --- / ---
+   DrawSubterms     = {NewName} %     --- / --- / ---
+   DrawElement      = {NewName} %     --- / --- / ---
+   RebrowseSubterm  = {NewName} %     --- / --- / ---
+   GetWatchFun      = {NewName} %  variables only;
+   SetWatchPoint    = {NewName} %  variables only;
+
+   %%
+   Elements         = {NewName}
+   NotShownElements = {NewName}
+   ShownWidth       = {NewName}
 in
+
+%%%
+%%%
+%%%  Various local auxiliary procedures;
+%%%
    %%
-   %%   Main philosophy: the browser should be *event-driven*.
-   %%  Simultaneously most common places for browser's operations are *terms*.
-   %%  So, every (sub)term is represented via some object which is bound
-   %%  with a tag (Tcl/Tk notion);
+   %%  ... There were also hand-made versions of these functions
+   %%  (to be found among "retired modern browsers" ;-));
    %%
-   %%   These objects build a structure that (weakly) corresponds to a term's
-   %%  structure; e.g. tree-like. Every object represents corresponding
-   %%  subterm;
-   %%
-   %%   Note that this structure is *always* tree-like despite rational tree
-   %%  constraint system. Recursive terms are whether considered as
-   %%  non-recursive (util predefined depth), or all "secondary entries" are
-   %%  detected and represented in a special way;
-   %%
-   %%   Each term can be shown or not. This is reflected by the value of
-   %%  an attribute 'shown'. Its values are 'True' or 'False';
-   %%
-   %%   Operation of every object can be devided in two phases: init and draw;
-   %%  During the 'init' phase the internal (tree of objects) representation is
-   %%  created; during the second one - a corresponding textual one;
-   %%
-   %%   Each term object carries number of attributes and features ('shown' is
-   %%  one of the attributes). Their semantic is clear (hopefully!) from their
-   %%  names;
-   %%
-   %%   Each term class inherits at least from three classes.
-   %%  These are 'generic' part, 'type' part and widget-specific part
-   %%  (currently only for text widgets). This file contains 'generic' part;
-   %%  This splitting is necessary to be able to encode other external
-   %%  representations and/or their medias (i.e., not in text widgets);
-   %%
-   %%   Note that there are different term classes for terms of different types.
-   %%  I.e., we have 'generic', 'type' and 'textWidget' classes separtely for
-   %%  atoms, integers, ... . We achieve this way
-   %%  - simplicity and orthogonality of design
-   %%    (you can add simply new term types if needed);
-   %%  - efficiency, because there is no need now to switch every time
-   %%    on a particular type of term;
-   %%  - memory efficiency, because every object carries only attributes/features
-   %%    which are necessary for terms of that type.
-   %%
-
-   %%
-   %%  GenericTermObject
-   %%  It defines the features/attributes which are common for all types of
-   %% generic term classes;
-   %%
-   class MetaGenericTermObject from UrObject Object.closedFeature
-      %%
-      feat
-         term                   % browsed term itself;
-      %% type field is added to particular objects (e.g. AtomObject);
-      %% type                   % type of;
-         numberOf               % sequential number in compound parent term;
-         parentObj              %
-         widgetObj              %
-         store                  % reference to the global store;
-         termsStore             % ... to 'terms' store (cyclic terms, etc.);
-         browserObj             % reference to 'browser' object;
-
-      %%
-      attr
-         depth: InitValue
-
-      %%
-      %%
-      meth getObjClass(Type ?ObjClass)
-\ifdef DEBUG_TO
-         {Show 'MetaGenericTermObject::getObjClass is applied: '#Type}
-\endif
-         ObjClass = case Type
-                    of !T_Atom       then AtomTermObject
-                    [] !T_Int        then IntTermObject
-                    [] !T_Float      then FloatTermObject
-                    [] !T_Name       then NameTermObject
-                    [] !T_Thread     then ThreadTermObject
-                    [] !T_Procedure  then ProcedureTermObject
-                    [] !T_Cell       then CellTermObject
-                    [] !T_Chunk      then ChunkTermObject
-                    [] !T_Object     then ObjectTermObject
-                    [] !T_Class      then ClassTermObject
-                    [] !T_WFList     then WFListTermObject
-                    [] !T_Tuple      then TupleTermObject
-                    [] !T_Record     then RecordTermObject
-                    [] !T_ORecord    then ORecordTermObject
-                    [] !T_List       then ListTermObject
-                    [] !T_FList      then FListTermObject
-                    [] !T_HashTuple  then HashTupleTermObject
-                    [] !T_Variable   then VariableTermObject
-                    [] !T_FDVariable then FDVariableTermObject
-                    [] !T_MetaVariable then MetaVariableTermObject
-                    [] !T_Shrunken   then ShrunkenTermObject
-                    [] !T_Reference  then ReferenceTermObject
-                    [] !T_Unknown    then UnknownTermObject
-                    [] !T_PSTerm     then
-                       {BrowserError
-                        ['T_PSTerm is met in TermObject::getObjClass.']}
-                       UnknownTermObject
-                    else
-                       {BrowserError
-                        ['Unknown type in TermObject::getObjClass: ']}
-                       UnknownTermObject
-                    end
-         %%
-      end
-
-      %%
-      %%  Generic 'init' method;
-      %%
-      meth init(term: Term
-                depth: Depth
-                numberOf: NumberOf
-                parentObj: ParentObj
-                widgetObj: WidgetObj
-                store: Store
-                termsStore: TermsStore
-                browserObj: BrowserObj)
-         %%
-         self.term = Term
-         self.numberOf = NumberOf
-         self.parentObj = ParentObj
-         self.widgetObj = WidgetObj
-         self.store = Store
-         self.termsStore = TermsStore
-         self.browserObj = BrowserObj
-
-         %%
-         depth <- Depth
-\ifdef DEBUG_TO
-         {Show 'GenericTermObject::init for the subterm '#self.term}
-\endif
-
-         %%
-         shown <- False
-
-         %%
-         <<initTerm>>
-         <<initOut>>
-      end
-
-      %%
-      %%
-      meth isShown(?IsShown)
-         IsShown = @shown
-      end
-
-
-      %%
-      %%
-      meth close
-         <<Object.closedFeature close>>
-      end
-
-      %%
-      %%
-      meth destroy
-\ifdef DEBUG_TO
-         {Show 'MetaGenericObject::destroy method for the term '#self.term}
-\endif
-         {self.termsStore decNumberOfNodes}
-
-         %%
-         <<closeOut>>
-         %%  actually, Tk.textTag::close closes the object too;
-         %% <<UrObject close>>
-
-         %%
-         %%  Note that no term object can close itself, but only on
-         %% request from the parent;
-         %%  It means that the parent object has the complete control over
-         %% closing process, and may not ask its child for something after
-         %% its closing;
-      end
-
-      %%
-      %%  for atomic term objects;
-      meth updateSizes(Depth)
-         depth <- Depth
-      end
-
-      %%
-      %%  Handler for key-press events;
-      %%
-      meth keysHandler(St)
-         local Char in
-            Char = {String.toAtom St}
-            %%
-            case Char
-\ifdef DEBUG_SHOW
-            of '?'         then <<debugShow>>
-            [] '>'         then <<expand>>
-\else
-            of '>'         then <<expand>>
-\endif DEBUG_SHOW
-            [] '<'         then <<shrink>>
-            [] '.'         then <<expand>>
-            [] ','         then <<shrink>>
-            [] 'e'         then <<expand>>
-            [] 's'         then <<shrink>>
-            [] 'z'         then {self.browserObj SelectAndZoom(self)}
-            [] 'd'         then <<deref>>
-            [] 'u'         then true    % tcl-interface: unzoom;
-            [] 't'         then true    % tcl-interface: top;
-            [] 'f'         then true    % tcl-interface: first;
-            [] 'l'         then true    % tcl-interface: last;
-            [] 'p'         then true    % tcl-interface: previous;
-            [] 'n'         then true    % tcl-interface: next;
-            [] 'a'         then true    % tcl-interface: all;
-               %%
-               %% ignore all non-printable symbols;
-               %% (aka control, shift, mod, etc.);
-            [] '{}'        then true
-            [] ''          then true
-               %%
-               %% all 'control-' actions processed by tk/tcl interface;
-               %% Note: there proper control characters in atom names;
-            [] ''        then true
-            [] ''        then true
-            [] ''        then true
-            [] ''        then true
-            [] ''        then true
-            [] ''        then true
-            [] '\\f'       then true    % '^L'
-            [] ''        then true
-            [] ''        then true
-            [] '\r'        then true    % control-mod-m;
-            else {BrowserWarning ['"' Char '": Undefined action for a term']}
-            end
-         end
-      end
-
-      %%
-      %%  Handler for buttons click events;
-      %%
-      meth buttonsHandler(NS)
-         local NA in
-            NA = {String.toAtom NS}
-
-            %%
-            case NA
-            of '1' then
-               {self.widgetObj tagHighlight(self)}
-               {self.browserObj SetSelected(self <<areCommas($)>>)}
-            [] '3' then true    % handled by tcl-interface directly;
-            [] '2' then true
-            end
-         end
-      end
-
-      %%
-      %%  Handler for buttons double-click events;
-      %%
-      meth dButtonsHandler(NS)
-         local NA in
-            NA = {String.toAtom NS}
-            %%
-            case NA
-            of '1' then <<expand>>
-            [] '2' then <<deref>>
-            [] '3' then <<shrink>>
-            end
-         end
-      end
-
-      %%
-      %%
-      meth show
-         {Show self.term}
-      end
-
-      %%
-      %%
-      meth expand
-         true
-         %% differs for shrunken and partially shrunken objects;
-      end
-
-      %%
-      %%
-      meth shrink
-\ifdef DEBUG_TO
-         {Show 'MetaGenericObject::shrink method for the term '#self.term#self.type}
-\endif
-         job
-            {self.parentObj renewNum(self 0)}
-         end
-      end
-
-      %%
-      %%
-      meth deref
-         true
-      end
-
-      %%
-      %%
-      meth getPTObject($)
-         {self.parentObj getPTObject($)}
-      end
-
-      %%
-      meth processOtherwise(Type Message)
-         local PM in
-            PM = case {Value.type Message}
-                 of atom then Message
-                 [] Name then {System.printName Message}
-                 [] tuple then L in
-                    L = {Label Message}
-                    case {IsAtom L} then L
-                    else {System.printName L}
-                    end
-                 [] record then L in
-                    L = {Label Message}
-                    case {IsAtom L} then L
-                    else {System.printName L}
-                    end
-                 else
-                    {BrowserError ['MetaGenericTermObject::processOtherwise?']}
-                    '???'
-                 end
-
-            %%
-            {BrowserError [Type PM '???']}
-         end
-      end
-
-      %%
+   fun {GenAtomPrintName Atom}
+      {System.valueToVirtualString Atom 1 1}
    end
 
    %%
-   %%  NOTE
-   %%  Actually, we could have a more elaborated hierarchy, for instance -
-   %% 'proto' classes for each group of types. But I think it's better
-   %% for debugging and possible further modifications;
    %%
-   %%  Atoms;
+   local
+      SetTab       = {Tuple.make tab 256}
+      SubstTab     = {Tuple.make tab 256}
+      ScanTab      = {Tuple.make tab 256}
+
+      %%
+      [ZeroChar] = "0"
+      %%
+      fun {OctString I}
+         [(I div 64) mod 8 + ZeroChar
+          (I div 8)  mod 8 + ZeroChar
+          I mod 8 + ZeroChar]
+      end
+
+      %%
+      {Record.forAllInd SetTab
+       fun {$ J} I=J-1 in
+          case {Char.isCntrl I} then
+             subst(case [I]
+                   of "\a" then "\\a"
+                   [] "\b" then "\\b"
+                   [] "\f" then "\\f"
+                   [] "\n" then "\\n"
+                   [] "\r" then "\\r"
+                   [] "\t" then "\\t"
+                   [] "\v" then "\\v"
+                   else {Append "\\" {OctString I}}
+                   end)
+          elsecase I =< 255 andthen 127 =< I then
+             subst({Append "\\" {OctString I}})
+          else
+             case [I] of "\"" then subst("\\\"")
+             elsecase [I] of "\\" then subst("\\\\")
+             else legal
+             end
+          end
+       end}
+
+      %%
+      ScanTab  = {Record.map SetTab fun {$ T} {Label T} end}
+      SubstTab = {Record.map SetTab
+                  fun {$ T}
+                     case {IsAtom T} then "" else T.1 end
+                  end}
+
+      %%
+      fun {QuoteString Is}
+         case Is of nil then nil
+         [] I|Ir then J=I+1 in
+            case ScanTab.J
+            of legal   then I|{QuoteString Ir}
+            [] subst   then {Append SubstTab.J {QuoteString Ir}}
+            end
+         end
+      end
+
+      %%
+      proc {HashVS I V1 V2}
+         V2.I={GenVS V1.I}
+         case I>1 then {HashVS I-1 V1 V2} else true end
+      end
+
+      %%
+      fun {GenVS V}
+         case {Value.type V}
+         of int then V
+         [] float then V
+         [] atom then
+            case V
+            of nil then ''
+            [] '#' then ''
+            [] '' then ''
+            else {QuoteString {AtomToString V}}
+            end
+         [] tuple then
+            case {Label V}
+            of '|' then {QuoteString V}
+            [] '#' then W={Width V} V2={Tuple.make '#' W} in
+               {HashVS W V V2} V2
+            end
+         end
+      end
+   in
+      %%
+      fun {GenVSPrintName V}
+         '"'#{GenVS V}#'"'
+      end
+   end
+
    %%
-   class AtomGenericTermObject
-      from MetaGenericTermObject
+   %%
+   %% Extract a 'meaningful' part out of a temporary name;
+   local ParseFun in
+      fun {ParseFun I CI E}
+         case E of !CNameDelimiter then I else CI end
+      end
+
+      %%
+      %% 'IStr' may not be the empty list (because of 'List.take');
+      fun {StripName IStr}
+         local Pos in
+            Pos = {List.foldLInd IStr ParseFun 0}
+
+            %%
+            case Pos of 0 then IStr else {List.take IStr Pos-1} end
+         end
+      end
+   end
+
+   %%
+   %%
+   fun {StripBQuotes IStr}
+      case IStr of nil then nil
+      else
+         case IStr.1 of !BQuote then {StripBQuotes IStr.2}
+         else IStr.1|{StripBQuotes IStr.2}
+         end
+      end
+   end
+
+   %%
+   %% Generate a printname for a name;
+   %% TODO : Currently optimized toplevel names are not optimized;
+   fun {GenNamePrintName Term Store}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.printName Term}
+
+         %%
+         case AreSmallNames then
+            case PN
+            of '' then '<N>'
+            [] '_' then '<N>'
+            else SPNS SSPNS in
+               SPNS = {StripName {Atom.toString PN}}
+
+               %%
+               SSPNS =
+               {StripName case SPNS.1 of !BQuote then {StripBQuotes SPNS}
+                          else SPNS
+                          end}
+
+               %%
+               case SSPNS of nil then '<N>'
+               else '<N: `' # SSPNS # '`>'
+               end
+            end
+         else
+            %%
+            case PN of '' then '<Name @ ' # {AddrOf Term} # '>'
+            else '<Name: ' # PN # ' @ ' # {AddrOf Term} # '>'
+            end
+         end
+      end
+   end
+
+   %%
+   fun {GenLitPrintName FN Store}
+      case {IsAtom FN} then {GenAtomPrintName FN}
+      elsecase {IsName FN} then {GenNamePrintName FN Store}
+      else FN
+      end
+   end
+
+   %%
+   %%
+   %% Generate a chunk's print name;
+   fun {GenChunkPrintName Term Store}
+      %%
+      case {Store read(StoreSmallNames $)} then '<Ch>'
+      else '<' # {System.printName Term} # '>'
+      end
+   end
+
+   %%
+   %%
+   %% Generate an object's print name;
+   fun {GenObjPrintName Term Store}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.printName {Class.get Term}}
+
+         %%
+         case AreSmallNames then
+            case PN
+            of '' then '<O>'
+            [] '_' then '<O>'
+            else PNS SN in
+               PNS = {Atom.toString PN}
+
+               %%
+               %%  I don't know what could here be at all.
+               %%  And i'm not keen on it, to be honest.
+               SN =
+               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+                          else PNS
+                          end}
+
+               %%
+               case SN of nil then '<O>'
+               else '<O: ' # SN # '>'
+               end
+            end
+         else
+            %%
+            case PN of '_' then '<Object @ ' # {AddrOf Term} # '>'
+            else '<Object: ' # PN # ' @ ' # {AddrOf Term} # '>'
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   %% Generate an class's print name;
+   fun {GenClassPrintName Term Store}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.printName Term}
+
+         %%
+         case AreSmallNames then
+            case PN
+            of '' then '<C>'
+            [] '_' then '<C>'
+            else PNS SN in
+               PNS = {Atom.toString PN}
+
+               %%
+               SN =
+               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+                          else PNS
+                          end}
+
+               %%
+               case SN of nil then '<C>'
+               else '<C: `' # SN # '`>'
+               end
+            end
+         else
+            %%
+            case PN of '_' then '<Class @ ' # {AddrOf Term} # '>'
+            else '<Class: ' # PN # ' @ ' # {AddrOf Term} # '>'
+            end
+         end
+      end
+   end
+
+   %%
+   %%
+   %% Generate a procedure's print name;
+   fun {GenProcPrintName Term Store}
+      local AreSmallNames PN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         PN = {System.printName Term}
+
+         %%
+         case AreSmallNames then
+            case PN
+            of '' then '<P/' # {Procedure.arity Term} # '>'
+            [] '_' then '<P/' # {Procedure.arity Term} # '>'
+            else PNS SN in
+               PNS = {Atom.toString PN}
+
+               %%
+               SN =
+               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+                          else PNS
+                          end}
+
+               %%
+               case SN of nil then
+                  '<P/' # {Procedure.arity Term} # '>'
+               else
+                  '<P/' # {Procedure.arity Term} # ' `' # SN # '`>'
+               end
+            end
+         else
+            %%
+            '<Procedure: ' # PN # '/' # {Procedure.arity Term} #
+            ' @ ' # {AddrOf Term} # '>'
+         end
+      end
+   end
+
+   %%
+   %%
+   %% Generate a cell's print name;
+   fun {GenCellPrintName Term Store}
+      local AreSmallNames CN in
+         AreSmallNames = {Store read(StoreSmallNames $)}
+         CN = {System.printName Term}
+
+         %%
+         case AreSmallNames then
+            case CN
+            of '' then '<Cell>'
+            [] '_' then '<Cell>'
+            else PNS SN in
+               PNS = {Atom.toString CN}
+
+               %%
+               SN =
+               {StripName case PNS.1 of !BQuote then {StripBQuotes PNS}
+                          else PNS
+                          end}
+
+               %%
+               case SN of nil then '<C>'
+               else '<Cell: `' # SN # '`>'
+               end
+            end
+         else '<Cell @ ' # {AddrOf Term} # '>'
+         end
+      end
+   end
+
+   %%
+   local DoInfList in
+      %%
+      %% 'IsCyclicListDepth' have to find *only* cycles over the
+      %% first list's element (though there are algorithms which
+      %% allow to find arbitrary cycles with similar complexity);
+      %%
+      %% 'Xs' must be a non-empty list, and, if the list is cyclic,
+      %% 'NNonCyclic' is the number of "non-cyclic" elements;
+
+      %%
+      fun {DoInfList L Xs NIn Depth}
+         case NIn > Depth then NIn
+         elsecase {IsVar Xs} then Depth + 1
+         elsecase Xs of _|Ts then NN in
+            NN = NIn + 1
+            %%
+            case {EQ L Ts} then NN
+            else {DoInfList L Ts NN Depth}
+            end
+         else Depth + 1
+         end
+      end
+
+      %%
+      fun {IsCyclicListDepth Xs Depth ?NNonCyclic}
+         NNonCyclic = {DoInfList Xs Xs 0 Depth}
+         NNonCyclic =< Depth
+      end
+   end
+
+   %%
+   %% Filter for chunks arity;
+   fun {AtomicFilter In}
+      case In
+      of E|R then
+         case {IsAtom E} then E|{AtomicFilter R}
+         else {AtomicFilter R}
+         end
+      else nil
+      end
+   end
+
+   %%
+   %% Yields 'True' if there is a name;
+   fun {IsThereAName In}
+      case In
+      of E|R then
+         case {IsName E} then True
+         else {IsThereAName R}
+         end
+      else False
+      end
+   end
+
+   %%
+   %% That's an interesting stuff.
+   %%
+   %% The 'LimitedTermSize' function yields a maximum of an estimated
+   %% term representation's size and a given number.
+   %%
+   %% Bascially, 'LimitedTermSize' traverses recursively subterms of a
+   %% compound term. But only as many as would "fit" within 'SMax'
+   %% characters. That is, it's worst-case complexity is O(SMax) and
+   %% does NOT depend on the size of a term.
+   %%
+   local FullTermSize ChLabelSize AuxTupleSize AuxRecordSize in
+      %% take a full size of it - though we'll supply to it only
+      %% primitive terms;
+      fun {FullTermSize T} {TermSize T DInfinite DInfinite} end
+      ChLabelSize = {VirtualString.length '<Ch>'}
+
+      %%
+      %% There are functions that traverse arguments of tuples and
+      %% records:
+      fun {AuxTupleSize T CN MN SIn SMax}
+         case SIn < SMax andthen CN =< MN then
+            {AuxTupleSize T (CN + 1) MN
+             {LimitedTermSize T.CN (SIn + DSpace) SMax} SMax}    % ' '
+         else SIn
+         end
+      end
+      fun {AuxRecordSize Term Arity SIn SMax}
+         case SIn >= SMax then SIn
+         elsecase Arity
+         of H|T then
+            {AuxRecordSize Term T
+             {LimitedTermSize H
+              ({LimitedTermSize Term.H (SIn + DDSpace) SMax})    % ':',' '
+              SMax}
+             SMax}
+         else SIn
+         end
+      end
+
+      %%
+      %% Take an estimated (by the 'TermSize') size of primitive
+      %% (sub)terms as it is, and traverse (recursively) subterms of
+      %% compound subterms until the accumulated size becomes equal
+      %% or greater than 'SMax';
+      %%
+      fun {LimitedTermSize Term SIn SMax}
+         case SIn >= SMax then SIn              % that's all;
+            %%
+            %% Note that 'SIn' may not be just added to a size of
+            %% (sub)term in order to get the new size: we have to
+            %% start at that value;
+         elsecase {IsVar Term} then
+            case {IsRecordCVar Term} then RArity RLabel in
+               %% we can see some structure in there;
+               %%
+               %% we don't care about non-monotonic changes that could
+               %% happen "in-between". To be precise, between
+               %% estimating of the size of an OFS (by means of
+               %% 'LimitedTermSize') and building up its
+               %% representation: the later can be bigger because it's
+               %% performed later. Anyway, 'LimitedTermSize' can only
+               %% *approximate* a size of a term's representation;
+               RArity = {Record.monitorArity Term Unit}
+               job RLabel = {Label Term} end
+
+               %%
+               %% <label> '(' <subterms> ' ...', where <subterms> due to
+               %% 'AuxRecordSize';
+               {AuxRecordSize Term RArity
+                (SIn + {FullTermSize RLabel} + DSpace + DQSpace) SMax}
+            else SIn + {FullTermSize Term}     % primitive;
+            end
+         elsecase {Value.type Term}
+         of tuple  then
+            %%
+            case Term
+            of H|T then
+               {LimitedTermSize T
+                {LimitedTermSize H (SIn + DSpace) SMax} SMax}         % '|'
+            else
+               {AuxTupleSize Term 1 {Width Term}
+                (SIn + {FullTermSize {Label Term}} + DSpace) SMax}    % '('
+            end
+
+         [] record then
+            %%
+            {AuxRecordSize Term {Record.arity Term}
+             (SIn + {FullTermSize {Label Term}} + DSpace) SMax}  % '('
+
+         [] chunk then
+            %%
+            {AuxRecordSize Term {ChunkArity Term}
+             (SIn + ChLabelSize + DSpace) SMax}                  % '('
+
+         else
+            %%
+            %% Sizes of primitive values are taken as they are;
+            SIn + {FullTermSize Term}
+         end
+      end
+   end
+
+   %%
+   %%
+   fun {TestMetaVarFun MV}
+      local ChMetaVar GotTouched in
+         %%
+         ChMetaVar = {WatchMetaVar MV {MetaGetStrength MV}}
+         GotTouched = {GetsTouched MV}
+
+         %%
+         %% suspends until either ...
+         if ChMetaVar = True then True
+         [] GotTouched = True then True
+         end
+      end
+   end
+
+   %%
+   %% "Glue descriptions" (have a look at 'Desc.txt');
+   %%
+   %% ",,,"
+   CommasDP  = fun {$ _ CP LS} DTSpace >= LS-CP end
+   CommasDesc = '>'('+'(current 3) line_size)
+
+   %%
+   %% "||"
+   DBarDP = fun {$ _ CP LS} DDSpace >= LS-CP end
+   DBarDesc = '>'('+'(current 2) line_size)
+
+   %%
+   %% '...'
+   EllipsesDP = !CommasDP
+   EllipsesDesc = !CommasDesc
+
+%%%
+%%%
+%%% All objects - 'meta-term';
+%%%
+%%%
+
+   %%
+   class MetaTermObject
+      from
+         ControlObject
+         RepManagerObject
+
+      %%
+      %% generic "dummy" closeTerm (which is normally sufficient,
+      %% except variable-like objects);
+      %%  'makeTerm' methods are to be provided by specific
+      %% erm objects (as one would expect);
+      %%
+      meth closeTerm true end
+
+      %%
+      %% ... whether there are more subterms than currently shown
+      %% (that is false for primitive terms);
+      meth !CanBeExpanded($) False end
+
+      %%
+      %% ... whether it has been "width" - restrained, that is,
+      %% there is a ",,," group;
+      %%
+      %% Note that if a term object has commas, it can be expanded,
+      %% but not vice versa. This is the reason why the contorl
+      %% object uses 'hasCommas' in order to tell the browser manager
+      %% about whether a term object has the 'expand' operation
+      %% defined on;
+      meth hasCommas($) False end
+
+      %%
+      %% The default action - just rebrowse myself (though for some
+      %% term objects this method is not necessary).
+      %%
+      %% This default action has to be replaced for records (if a
+      %% record is an open one, further subterms are awaited, etc.);
+      %%
+      meth checkTerm
+\ifdef DEBUG_TO
+         {Show 'MetaTermObject::checkTerm: ...'}
+\endif
+         %%
+         ControlObject , rebrowse
+      end
+
+
+   end
+
+%%%
+%%%
+%%%   There is a really "sparse" part - term classes for primitive
+%%%  objects;
+%%%
+%%%
+
+   %%
+   %%
+   %% Atoms;
+   %%
+   class AtomTermObject from MetaTermObject
       %%
       feat
          type: T_Atom
 
       %%
       %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'AtomTermObject::makeTerm is applied' # self.term}
+\endif
+         local Name in
+            Name = case {self.store read(StoreAreVSs $)}
+                   then {GenVSPrintName self.term}
+                   else {GenAtomPrintName self.term}
+                   end
+
+            %%
+            %%  we don't have to keep track of the print name;
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
       meth otherwise(Message)
-         <<processOtherwise('AtomObject::' Message)>>
+         ControlObject , processOtherwise('AtomObject::' Message)
       end
 
       %%
    end
 
    %%
-   %%  Integers;
    %%
-   class IntGenericTermObject
-      from MetaGenericTermObject
+   %% Integers;
+   %%
+   class IntTermObject from MetaTermObject
       %%
       feat
          type: T_Int
 
       %%
       %%
-      meth otherwise(Message)
-         <<processOtherwise('IntObject::' Message)>>
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'IntTermTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            %%
+            Name = case {self.store read(StoreAreVSs $)}
+                   then {GenVSPrintName self.term}
+                   else {VirtualString.changeSign self.term "~"}
+                   end
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
       end
 
       %%
       %%
-      meth checkTag
-         true
+      meth otherwise(Message)
+         ControlObject , processOtherwise('IntObject::' Message)
       end
+
       %%
    end
 
    %%
-   %%  Floats;
+   %% Floats;
    %%
-   class FloatGenericTermObject
-      from MetaGenericTermObject
+   class FloatTermObject from MetaTermObject
       %%
       feat
          type: T_Float
 
       %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'FloatTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            %%
+            Name = case {self.store read(StoreAreVSs $)}
+                   then {GenVSPrintName self.term}
+                   else {VirtualString.changeSign self.term "~"}
+                   end
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
       %%
       meth otherwise(Message)
-         <<processOtherwise('FloatObject::' Message)>>
+         ControlObject , processOtherwise('FloatObject::' Message)
       end
+
       %%
    end
 
    %%
-   %%  Names;
    %%
-   class NameGenericTermObject
-      from MetaGenericTermObject
+   %% Names;
+   %%
+   class NameTermObject from MetaTermObject
       %%
       feat
          type: T_Name
-      %%
-      %%
-      attr
-         refVarName:   ''       % prefix;
 
       %%
-      %%  Send to the 'Obj' a name of a reference (refVar);
-      %%  If none is yet defined, generate one via the NewRefNameGen;
       %%
-      meth getRefVar(Obj)
+      meth makeTerm
 \ifdef DEBUG_TO
-         {Show 'NameGenericTermObject::getRefVar: term '#self.term}
+         {Show 'NameTermObject::makeTerm is applied'#self.term}
 \endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
+         local Term Name in
+            Term = self.term
+            %%
+            Name = case {Bool.is Term} then
+                      case Term then "<B: true>" else "<B: false>" end
+                   else {GenNamePrintName Term self.store}
+                   end
 
             %%
-            {Obj setRefVar(self Ref)}
-
-            %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
+            RepManagerObject , insert(str: Name)
          end
-         %%
-      end
-
-      %%
-      %%  perform 'retract' in addition;
-      meth destroy
-         %%
-         <<MetaGenericTermObject destroy>>
-
-         %%  Note: proper 'destroy' should go first, since
-         %% now the object (self) must be already closed;
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'NameGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-
-         %%
-         refVarName <- ''
       end
 
       %%
       %%
       meth otherwise(Message)
-         <<processOtherwise('NameObject::' Message)>>
-      end
-      %%
-   end
-
-   %%
-   %%  First-Class threads;
-   %%
-   class ThreadGenericTermObject
-      from MetaGenericTermObject
-      %%
-      feat
-         type: T_Thread
-
-      %%
-      attr
-         refVarName:   ''       % prefix;
-
-      %%
-      %%  Send to the 'Obj' a name of a reference (refVar);
-      %%  If none is yet defined, generate one via the NewRefNameGen;
-      %%
-      meth getRefVar(Obj)
-\ifdef DEBUG_TO
-         {Show 'ThreadGenericTermObject::getRefVar: term '#self.term}
-\endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
-
-            %%
-            {Obj setRefVar(self Ref)}
-
-            %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
-         end
-         %%
+         ControlObject , processOtherwise('NameObject::' Message)
       end
 
-      %%
-      %%  perform 'retract' in addition;
-      meth destroy
-         %%
-         <<MetaGenericTermObject destroy>>
-
-         %%  Note: proper 'destroy' should go first, since
-         %% now the object (self) must be already closed;
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'ThreadGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-
-         %%
-         refVarName <- ''
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ThreadObject::' Message)>>
-      end
       %%
    end
 
    %%
    %%
-   %%  Procedures;
+   %% Procedures;
    %%
-   class ProcedureGenericTermObject
-      from NameGenericTermObject
+   class ProcedureTermObject from MetaTermObject
       %%
       feat
          type: T_Procedure
 
       %%
       %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'ProcedureTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenProcPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
       meth otherwise(Message)
-         <<processOtherwise('ProcedureObject::' Message)>>
+         ControlObject , processOtherwise('ProcedureObject::' Message)
       end
 
       %%
@@ -583,1035 +834,1615 @@ in
 
    %%
    %%
-   %%  Cells;
+   %% Cells;
    %%
-   class CellGenericTermObject
-      from NameGenericTermObject
+   class CellTermObject from MetaTermObject
       %%
       feat
          type: T_Cell
 
       %%
       %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'CellTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenCellPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
       meth otherwise(Message)
-         <<processOtherwise('CellObject::' Message)>>
+         ControlObject , processOtherwise('CellObject::' Message)
       end
 
       %%
    end
+
    %%
    %%
-   %%  'Meta' object for compound (tuple-like) term objects;
    %%
-   class MetaTupleGenericTermObject
-      from MetaGenericTermObject
+   %% Primitive chunks;
+   %%
+   class PrimChunkTermObject from MetaTermObject
+      %%
+      feat
+         type: T_PrimChunk
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'PrimChunkTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenChunkPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('PrimChunkObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Primitive objects;
+   %%
+   class PrimObjectTermObject from MetaTermObject
+      %%
+      feat
+         type: T_PrimObject
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'PrimObjectTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name =  {GenObjPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('ObjectObject::' Message)
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Primitive classes;
+   %%
+   class PrimClassTermObject from MetaTermObject
+      %%
+      feat
+         type: T_PrimClass
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'PrimClassTermObject::makeTerm is applied'#self.term}
+\endif
+         local Name in
+            Name = {GenClassPrintName self.term self.store}
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
+      end
+
+      %%
+      %%
+      meth otherwise(Message)
+         ControlObject , processOtherwise('ClassObject::' Message)
+      end
+
+      %%
+   end
+
+%%%
+%%%
+%%%  'Generic' compound object;
+%%%
+%%%  There are methods that provide for "intrinsic" compound term
+%%% objects functionality, and are not specific to particular term
+%%% types;
+%%%
+%%%
+
+   %%
+   class MetaCompoundTermObject
+      from
+         MetaTermObject
+         CompoundControlObject
+         CompoundRepManagerObject
+
       %%
       attr
-         refVarName:   ''       % prefix;
+      %%
+      %% A list of term "elements" (It can be incomplete, but is never
+      %% malformed). In a simplest case that's just a (complete) list
+      %% of subterms (e.g. of a tuple). In the more sophisticated case
+      %% of records its elements are feature names (that is, NOT
+      %% subterms!);
+      %%
+      %% The idea behind this abstraction is that sometimes it's more
+      %% convenient to see subterms organised into entities that are
+      %% larger than a group. For instance, (feature, subterm) is an
+      %% "element" in a record;
+         !Elements
+      %% This list can be constructed either right at the beginning
+      %% ('makeTerm'), or "lazily" by means of the 'GetElement'
+      %% method: every time a new element is required, this method is
+      %% called;
+      %%
+      %% There is an implicit notion of the "element number".
+      %% Elements are numbered from 1 (just per definition :-))
+      %%
+      %% This attribute isn't changed now (i.e. it could be just a
+      %% feature), but one can imagine a case when e.g. some subterms
+      %% are hidden etc.;
 
       %%
+      %% ... a tail list of it (may be a variable when it's (yet)
+      %% incomplete) which contains its elements that are not shown;
+         !NotShownElements
       %%
-      meth createSubtermObjs(N Max Subterms)
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericObject::createSubtermObjs method for the term '
-          #self.term#N#Max}
-\endif
-         case N =< Max then
-            ST RSubterms STType ObjClass Obj EQCheck RefObj
-         in
-            %%
-            Subterms = ST|RSubterms
+      %% Note that the 'NotShownElements' attribute is used in a
+      %% non-monotonic fashion, but it's still safe because it cannot
+      %% be changed somehow else than via certain object methods!
+      %%
+      %% Note also that each time the 'Elements' list is replaced
+      %% (it's an attribute), the 'NotShownElements' and 'ShownWidth'
+      %% attributes must be updated correspondingly;
+
+      %%
+      %% a number of currently shown subterms, that is, the length of
+      %% the 'Elements'\'NotShownElements' list;
+         !ShownWidth
+      %% Note that this is NOT the same as a number of all subterms:
+      %% lists, for instance, can have also a "list tail" group which
+      %% contain a subterm, but is not counted here;
+
+      %%
+      meth getShownWidth($)
+         @ShownWidth
+      end
+      %%
+      %% '0' if there are none so far;
+      meth !GetLastElNum($)
+         @ShownWidth
+      end
+
+      %%
+      %% It tries to get (instantiate into a 'Elements' list) a new
+      %% subterm. Note that nothing is said here about how it
+      %% can/will be implemented - obviously, a caller object must
+      %% keep track of an uninstantiated tail list by itself, etc.;
+      %%
+      %% ... by default - for "fixed-width" terms, there is no need
+      %% for 'GetElement', since all the subterms are got once (e.g.
+      %% as by means of the 'Record.arity' for fixed records);
+      %%
+      meth !GetElement true end
+
+      %%
+      %% ... it just checks whether there is a (just one!) further
+      %% element in a 'NotShownElements' list; Note that this is NOT
+      %% a "public" method;
+      meth !CanBeExpanded($)
+         local NotShownElementsHere in
+            NotShownElementsHere = @NotShownElements
 
             %%
-            <<getTermType(ST N STType)>>
-
-            %%
-            {self.termsStore needsCheck(STType EQCheck)}
-            case EQCheck then
-               {self.termsStore checkANDStore(self ST Obj RefObj)}
+            case {IsVar NotShownElementsHere}
+            then NotShownElementsHereAgain in
+               %%
+               %% as a last resort we have to lookup for one;
+               self , GetElement
+               NotShownElementsHereAgain = @NotShownElements
 
                %%
-               case RefObj == InitValue then
-                  %% none found -- proceed;
-                  <<getObjClass(STType ObjClass)>>
-               else
-                  ObjClass = ReferenceTermObject
+               case {IsVar NotShownElementsHereAgain} then False
+               else NotShownElementsHereAgain \= nil
                end
             else
-               <<getObjClass(STType ObjClass)>>
+               %%
+               NotShownElementsHere \= nil
+            end
+         end
+      end
+
+      %%
+      %% an obvious invariant is "hasCommas => CanBeExpanded" (but
+      %% not other way around);
+      meth hasCommas($)
+\ifdef DEBUG_TO
+         {Show 'MetaCompoundTermObject::hasCommas is applied'}
+\endif
+         %%
+         CompoundRepManagerObject
+         , isGroup(b:DCommasBlock ln:DCommasGroup is:$)
+      end
+
+      %%
+      %% Draws 'N' subterms (or as many as available) from the
+      %% 'NotShownElements' marker (which can also point at the
+      %% begging of the list). If 'N' is zero or negative, does not
+      %% draw anything. Drawing is performed within 'main' block;
+      %%
+      %% If the last of suberms is getting shown, a tail ",,," group
+      %% is removed. If any subterm(s) are left, but there is (still)
+      %% no ",,," group, it's created. The ',,,' group is created in
+      %% the 'commas' block;
+      %%
+      %% 'main' and 'commas' blocks are created even if no groups are
+      %% put;
+      %%
+      %% Note that it can happen that 'DrawSubterms' has put less than
+      %% 'N' subterms, but has put a ",,," group! Note that this is
+      %% still correct, but in some sense "incomplete" - and must be
+      %% handled by a caller method;
+      %%
+      %% Moreover, this method cannot be made complete (from the point
+      %% of view of a external observer): there is always a gap
+      %% between a last test in the method and a point at the "caller"
+      %% site where the completeness is observed. Basically, this is a
+      %% very general observation: if some method/procedure/whatever
+      %% is non-monotonic, it cannot be made "complete" in that sense;
+      %%
+      meth !DrawSubterms(N)
+\ifdef DEBUG_TO
+         {Show 'MetaCompoundTermObject::DrawSubterms is applied'
+          # self.term # N}
+\endif
+         %%
+         %% create/jump to the main block anyway (but it could be
+         %% optimized);
+         CompoundRepManagerObject , block(DMainBlock)
+
+         %%
+         %% An optimisation: don't try to set the cursor if no
+         %% subterms will be drawn;
+         case N > 0 andthen MetaCompoundTermObject , CanBeExpanded($)
+         then
+            %%
+            %% Invariant: the cursor is set already at a right
+            %% position;
+
+            %%
+            %% That's a local method wrt the 'MetaCompoundTermObject'
+            %% class (it is recursive - that's the reason why it's
+            %% here at all);
+            MetaCompoundTermObject , DrawElementsLoop(N)
+         else true
+         end
+
+         %%
+         %% Check the 'ltg' group;
+         CompoundRepManagerObject , block(DCommasBlock)
+
+         %%
+         %% Note that new terms can arrive between leaving the
+         %% 'DrawElements' and this point - see the comment above;
+         case MetaCompoundTermObject , CanBeExpanded($) then
+            %%
+            %% there are still terms that can be shown, but probably
+            %% there is still no ",,," group;
+            case MetaCompoundTermObject , hasCommas($) then true
+            else
+               CompoundRepManagerObject
+               , putG_SGS(ln:   DCommasGroup
+                          str:  self.delimiter
+                          str2: DNameUnshown
+                          dp:   CommasDP
+                          desc: CommasDesc)
+            end
+         else
+            %%
+            %% ... and vice versa;
+            case MetaCompoundTermObject , hasCommas($)
+            then CompoundRepManagerObject , removeG(ln:DCommasGroup)
+            else true
+            end
+         end
+
+         %%
+      end
+
+      %%
+      %% ... a local, recursive method (doesn't care about the cursor
+      %% location);
+      meth DrawElementsLoop(N)
+         case
+            N > 0 andthen
+            MetaCompoundTermObject , CanBeExpanded($) andthen
+            CompoundControlObject , mayContinue($)
+         then
+            %%
+            %% this is in some sense a "complementary" method for the
+            %% 'GetElement'. Note it also updates the 'ShownWidth'
+            %% counter;
+            self , DrawElement
+
+            %%
+            MetaCompoundTermObject , DrawElementsLoop(N - 1)
+         else true
+         end
+      end
+
+      %%
+      meth !RebrowseSubterm(N)
+\ifdef DEBUG_TO
+         {Show 'MetaCompoundTermObject::RebrowseSubterm: ' # N}
+\endif
+         local Term in
+            Term = CompoundRepManagerObject , getTermG(fn:N term:$)
+
+            %%
+            CompoundRepManagerObject , replaceTermG(fn:N term:Term)
+         end
+      end
+
+      %%
+      %% This is a general, the simplest case: just rebrowse it;
+      %% (It has to be overloaded now only for lists;)
+      %%
+      meth subtermChanged(N)
+\ifdef DEBUG_TO
+         {Show 'MetaCompoundTermObject::subtermChanged, self.term&N : '
+          # self.term # N}
+\endif
+         %%
+         MetaCompoundTermObject , RebrowseSubterm(N)
+      end
+
+      %%
+   end
+
+   %%
+   %% A common property is that 'elements' are just (sub)terms.
+   %%
+   class MetaTupleTermObject from MetaCompoundTermObject
+      %%
+
+      %%
+      %% An invariant is that there is one;
+      meth !DrawElement
+\ifdef DEBUG_TO
+         {Show 'MetaTupleTermObject::DrawElement'}
+\endif
+         local NewWidth ST NewNotShownElements DP Desc in
+            @NotShownElements = ST|NewNotShownElements
+            NewWidth = @ShownWidth + 1
+
+            %%
+            %% ... this is really a higher-order stuff;
+            DP = fun {$ _ CP LS} {LimitedTermSize ST CP LS} >= LS end
+            Desc = '>'('+'(current st_size(DMainBlock#NewWidth)) line_size)
+
+            %%
+            case NewWidth == 1 then
+               %%
+               CompoundRepManagerObject
+               , putG_GT(ln:       1
+                         dp:       DP
+                         desc:     Desc
+                         term:     ST)
+            else
+               %%
+               CompoundRepManagerObject
+               , putG_SGT(ln:       NewWidth
+                          str:      self.delimiter
+                          dp:       DP
+                          desc:     Desc
+                          term:     ST)
             end
 
             %%
-            Obj = {New ObjClass init(term: ST
-                                     depth: @depth - 1
-                                     numberOf: N
-                                     parentObj: self
-                                        widgetObj: self.widgetObj
-                                     store: self.store
-                                     termsStore: self.termsStore
-                                     browserObj: self.browserObj)}
+            NotShownElements <- NewNotShownElements
+            ShownWidth <- NewWidth
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Lists;
+   %%
+   class ListTermObject from MetaTupleTermObject
+      %%
+      feat
+         type: T_List
+         delimiter:  DSpaceGlue
+      %% this indentation implies that there can be no glue in a first
+      %% group (otherwise, if the representation manager subobject
+      %% decides to make a compound glue, its size will infinity -
+      %% that's an error;);
+         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
+
+      attr
+      %%
+      %% a "tail" list which is not yet seen. That's the whole list
+      %% when it's not yet shown; nil when the list is well-formend and
+      %% completely scanned. Note that a list may be malformed, of
+      %% course;
+         TailList
+      %% a tail list of 'Elements' which is not yet instantiated. It
+      %% gets bound when more list elements "arrives" at the
+      %% 'TailList';
+         TailElements
+      %%
+      %% Note that these attributes are updated only by means of the
+      %% 'GetElement', and can be used non-monotonically everywhere
+      %% else;
+      %%
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::makeTerm is applied' # self.term}
+\endif
+         local EList in
+            %%
+            %% originally, there are no "seen" subterms, all of them
+            %% are "not yet got";
+            Elements <- EList
+            NotShownElements <- EList
+            ShownWidth <- 0
 
             %%
-            case ObjClass == ReferenceTermObject then
-               thread
-                  {RefObj getRefVar(Obj)}
+            TailElements <- EList
+            TailList <- self.term
 
-                  %%  Note: 'RefObj' could get closed already.
-                  %% Let's check it;
-                  {Obj watchMaster(RefObj)}
+            %%
+            CompoundRepManagerObject
+            , block(DLeadingBlock)
+            , putG_S(ln:DLSBraceGroup str:DLSBraceS)
+
+            %%
+            %% Expand the list "from scratch" :-)
+            ListTermObject , expand({self.store read(StoreWidth $)})
+
+            %%
+            CompoundRepManagerObject
+            , block(DTailBlock)
+            , putG_S(ln:DBraceGroup str:DRSBraceS)
+
+            %%
+         end
+      end
+
+      %%
+      %% It must be redefined because subterms are got from the list
+      %% in a "lazy" fashion;
+      meth !GetElement
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::makeTerm: GetElement'
+          # @Elements # @NotShownElements # @ShownWidth
+          # @TailElements # @TailList}
+\endif
+         %%
+         %% Do something only if further subtrems are expected.
+         %%
+         %% Further subterms are NOT expected if either:
+         %% (a) it's a closed list (well- or malformed one);
+         %% (b) it's a cyclic list ('X=[a b c d || X]');
+         %% (c) its tail is a cyclic list. For instance,
+         %%     'a|b|c|(X=d|X)', which is represented like
+         %%     '[a b c || X=[d || X]]'
+         %%
+         %% Obviously, no further subterms are expected iff the
+         %% 'Elements' list is determined:
+         case {IsVar @TailElements} then TL TS in
+            TL = @TailList
+
+            %%
+            case {IsVar TL} then true
+               %% no new subterms (but they are still expected);
+            elsecase TL
+            of _|_ then
+               %%
+               %% There are three interesting cases when searching
+               %% for cycles is switched on:
+               %% (a) there is a cyclie over the new element, and
+               %%     that element is the first one - then pull all
+               %%     the elements before that "cyclic" one and close
+               %%     the list: the reference must be drawn in its
+               %%     tail;
+               %% (b) ... but the current element is not the first
+               %%     one - then just close the list: we need a new
+               %%     list;
+               %%
+               %% Note that the 'show minimal graph' mode is not
+               %% implemented here. That is, what is done is really
+               %% the list "cyclicity" based on the pointer equality;
+
+               %%
+               %% So, we have probably to check whether a tail list
+               %% is cyclic
+               case
+                  {self.store read(StoreShowGraph $)} orelse
+                  {self.store read(StoreShowMinGraph $)}
+               then MW NNonCyclic in
+                  MW = {self.store read(StoreWidth $)}
+
+                  %%
+                  case {IsCyclicListDepth TL MW NNonCyclic} then
+                     case {EQ @TailElements @Elements} then
+                        %% over the first element - pull elements
+                        %% up to the "cyclic" one. This must be done
+                        %% since there are other cycles - over
+                        %% all subsequent elements;
+                        ListTermObject , PullElements(NNonCyclic)
+                     else
+                        %% not the first element - a new list is
+                        %% necessary;
+                        true
+                     end
+
+                     %%
+                     %% in both cases, close up the list - a cyclie
+                     %% is detected;
+                     @TailElements = nil
+                  else
+                     %% there is no cycle going over this list
+                     %% constructor.
+                     ListTermObject , PullElement
+                  end
+               else
+                  %% the (a) case;
+                  ListTermObject , PullElement
                end
+            else
+               %% has got either a closed well-formed list, or a
+               %% malformed one;
+               @TailElements = nil
+            end
+         else
+            %%
+            %% Nothing to do.
+            %% In particular, the 'TailList' keeps its value;
+            true
+         end
+
+         %%
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::makeTerm: GetElement is finisehd'
+          # @Elements # @NotShownElements # @ShownWidth
+          # @TailElements # @TailList}
+\endif
+      end
+
+      %%
+      %% there must be one when called;
+      meth PullElement
+         local E T NewTailElements in
+            %%
+            @TailList = E|T
+
+            %%
+            @TailElements = E|NewTailElements
+            TailElements <- NewTailElements
+
+            %%
+            TailList <- T
+         end
+      end
+
+      %%
+      meth PullElements(N)
+         case N =< 0 then true
+         else ListTermObject , PullElement , PullElements(N-1)
+         end
+      end
+
+      %%
+      %% Approximates the "is a well-formed list" property. That is,
+      %% if the (term object's) list is wel-formed and completely
+      %% scanned ("got") then it yields 'True'; if it is not or not
+      %% yet - then it yields 'False';
+      %%
+      %% (that's a local method;)
+      meth IsWFList($)
+         %%
+         local TL in
+            TL = @TailList
+
+            %%
+            case {IsVar TL} then False
+            else TL == nil
+            end
+         end
+      end
+
+      %%
+      meth HasLTG($)
+\ifdef DEBUG_TO
+         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
+         then true
+         else {BrowserError 'ListTermObject::HasLTG: wrong block!'}
+         end
+\endif
+         %%
+         CompoundRepManagerObject
+         , isGroup(b:DSpecialBlock ln:DLTGroup is:$)
+      end
+
+      %%
+      %% It puts 'WidthInc' subterms, or as much as possible, and
+      %% after that it puts/removes tail groups ("||" and a tail
+      %% variable/term);
+      %%
+      %% Note that recursion must be handled with care: if no new
+      %% subterms are allowed to create, than 'DrawSubterms' will
+      %% not create any. That is, 'expand' must break such an endless
+      %% loop by itself;
+      %%
+      %% (that's a local method;)
+      meth expand(WidthInc)
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::expand is applied' # self.term}
+\endif
+         %%
+         local CurrentSWidth NewSWidth RestInc in
+            %%
+            CurrentSWidth = MetaCompoundTermObject , getShownWidth($)
+
+            %%
+            %% draw new subterms (God knows (here) how many!) while
+            %% respecting the 'width' constraint (a ",,," group at the
+            %% end is put/removed whenever necessary);
+            MetaCompoundTermObject , DrawSubterms(WidthInc)
+
+            %%
+            NewSWidth = MetaCompoundTermObject , getShownWidth($)
+            RestInc = WidthInc - (NewSWidth - CurrentSWidth)
+
+            %%
+            %% Note that there is a criticall section: first, we draw
+            %% all of *currently* available subterms, and after that
+            %% probably draw a "list tail" group. There is an
+            %% assumption that a tail drawn is not a sublist which (in
+            %% part?) must be used for expanding a list's
+            %% representation. This cannot be guaranteed, however
+            %% ... (since the list can grow between drawing of
+            %% subterms and drawing of its tail);
+            %%
+            %% As a solution of the problem, *after* an 'ltg' is
+            %% touched (whenever needed), we check again whether the
+            %% list can be expanded ('canBeExpanded'!), and if so a
+            %% new 'expand' iteration is initiated;
+            %%
+
+            %%
+            %% ... Now, we have to put "bar" and "list tail" (e.g. for
+            %% a list like 'a|b|c|_' which looks like '[a b c || _]')
+            %% groups if necessary. The 'if necessary' condition means
+            %% actually that these groups are put only when the list
+            %% is (currently) not complete or it's malformed, that is,
+            %% it cannot be expanded;
+            %%
+            CompoundRepManagerObject , block(DSpecialBlock)
+
+            %%
+            case
+               MetaCompoundTermObject , hasCommas($) orelse
+               ListTermObject , IsWFList($)
+            then
+               %%
+               %% In addition to the case above, there is also a case
+               %% when 'DrawSubterms' has put a ",,," group, but more
+               %% subterms can be shown now (see the comment for the
+               %% 'MetaCompoundTermObject::DrawSubterms');
+               case
+                  RestInc > 0 andthen
+                  MetaCompoundTermObject , CanBeExpanded($) andthen
+                  CompoundControlObject , mayContinue($)
+               then
+                  %% (Assertion: has commas!)
+                  %%
+                  %% Iterate. This iteration terminates because at
+                  %% every step at least one further subterm is
+                  %% added;
+                  ListTermObject , expand(RestInc)
+               else
+                  %%
+                  %% in both cases (there is a ",,," group *or* the
+                  %% list is a well-formed one) there can be no
+                  %% 'ltg';
+                  case ListTermObject , HasLTG($) then
+                     %% i.e. it was an incomplete list before;
+                     ListTermObject , RemoveLTG
+                  else true
+                  end
+               end
+
+               %%
+            else                % has no commas *and* is not well-formed;
+               %%
+               %% otherwise, we have to place an 'ltg';
+               case ListTermObject, HasLTG($) then
+                  %%
+                  %% if it is still an incomplete list, we replace the
+                  %% "tail" term object *unconditionally*. This can be
+                  %% an overkill when e.g. a tail variable is an open
+                  %% record (but that's brain dead anyway, isn't it?)
+                  CompoundRepManagerObject
+                  , replaceTermG(fn:DSpecialBlock#DLTGroup term:@TailList)
+               else
+                  %% i.e. it was either shown partially (with a ",,,"
+                  %% group), or it has to be shown the first time;
+                  ListTermObject , CreateLTG
+               end
+               %%
+               %% ***** 'LTG' is created/updated *****
+
+               %%
+               %% ... and now, if the list *became* meanwhile expandable
+               %% or well-formed:
+               case
+                  (ListTermObject , IsWFList($) orelse
+                   MetaCompoundTermObject , CanBeExpanded($)) andthen
+                  CompoundControlObject , mayContinue($)
+               then
+                  %%
+                  %% ... just iterate again;
+                  ListTermObject , expand(RestInc)
+               else true
+               end
+            end
+
+            %%
+         end
+      end
+
+      %%
+      %% Make a "|| _" tail of an incomplete/malformed(cyclic) list;
+      meth CreateLTG
+         local TL DP Desc in
+            %%
+            TL = @TailList
+            DP = fun {$ _ CP LS} {LimitedTermSize TL CP LS} >= LS end
+            Desc = '>'('+'(current st_size(DSpecialBlock#DLTGroup))
+                       line_size)
+
+            %%
+            %% note that the insertion cursor is located at a right
+            %% position now;
+            CompoundRepManagerObject
+            , putG_SGS(ln:   DDBarGroup
+                       str:  DSpaceGlue
+                       dp:   DBarDP
+                       desc: DBarDesc
+                       str2: DDBar)
+            , putG_SGT(ln:       DLTGroup
+                       str:      DSpaceGlue
+                       dp:       DP
+                       desc:     Desc
+                       term:     TL)
+
+            %%
+         end
+      end
+
+      %%
+      meth RemoveLTG
+         %%
+         CompoundRepManagerObject
+         , removeG(ln: DLTGroup)
+         , removeG(ln: DDBarGroup)
+      end
+
+      %%
+      %% ... probably, we have got it from the last 'var' subterm --
+      %% so, the representation should be expanded instead of
+      %% modifying that subterm;
+      %%
+      %% An assumption here is that if this is an "LTGroup", it is a
+      %% variable, and will be just rebrowsed;
+      meth subtermChanged(N)
+\ifdef DEBUG_TO
+         {Show 'ListTermObject::subtermChanged, self.term&N '
+          # self.term # N}
+\endif
+         %%
+         local Term in
+            Term = CompoundRepManagerObject , getTermG(fn:N term:$)
+
+            %%
+            case N == DSpecialBlock#DLTGroup then MaxWidth CurrentSWidth in
+               %%
+               %% presumably we face a growth of the list;
+               MaxWidth = {self.store read(StoreWidth $)}
+               CurrentSWidth = MetaCompoundTermObject , getShownWidth($)
+
+               %%
+               %% either to draw new elements, or just replace 'ltg'
+               %% by an ',,,' group (the difference can be negative,
+               %% of course);
+               ListTermObject , expand(MaxWidth - CurrentSWidth)
+            else
+               %%  fallback;
+               MetaCompoundTermObject , subtermChanged(N)
+            end
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Tuples;
+   %%
+   class TupleTermObject from MetaTupleTermObject
+      %%
+      feat
+         type: T_Tuple
+         delimiter:  DSpaceGlue
+         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 3)
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'TupleTermObject::makeTerm is applied' # self.term}
+\endif
+         local Term SWidth TWidth in
+            Term = self.term
+
+            %%
+            Elements <- {Record.toList Term}
+            NotShownElements <- @Elements
+            ShownWidth <- 0
+
+            %%
+            SWidth = {self.store read(StoreWidth $)}
+            TWidth = {Width Term}
+
+            %%
+            %% put label and a leading '(', and go into the second block;
+            CompoundRepManagerObject
+            , block(DLeadingBlock)
+            , putG_S(ln:  DLabelGroup
+                     str: {GenLitPrintName {Label Term} self.store})
+            , putG_S(ln:DLRBraceGroup str:DLRBraceS)
+
+            %%
+            TupleTermObject , expand({Max SWidth TWidth})
+
+            %%
+            CompoundRepManagerObject
+            , block(DTailBlock)
+            , putG_S(ln:DBraceGroup str:DRRBraceS)
+
+            %%
+         end
+      end
+
+      %%
+      meth expand(WidthInc)
+         MetaCompoundTermObject , DrawSubterms(WidthInc)
+
+         %%
+         %% create an empty special block;
+         CompoundRepManagerObject , block(DSpecialBlock)
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Hash tuples;
+   %%
+   %% Note that hash tuples cannot have a ",,," group (since a hash
+   %% tuple is represented by Browser as a hash tuple only if it
+   %% "fits" within the 'width' constraint);
+   %%
+   class HashTupleTermObject from MetaTupleTermObject
+      %%
+      feat
+         type: T_HashTuple
+         delimiter:  DHashGlue
+         indentDesc: min('-'(st_indent(DMainBlock#1) self_indent) 5)
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'HashTupleTermObject::makeTerm is applied' # self.term}
+\endif
+         local Term in
+            Term = self.term
+
+            %%
+            Elements <- {Record.toList Term}
+            NotShownElements <- @Elements
+            ShownWidth <- 0
+
+            %%
+            CompoundRepManagerObject , block(DLeadingBlock)
+
+            %%
+            HashTupleTermObject , expand({Width Term})
+
+            %%
+            CompoundRepManagerObject , block(DTailBlock)
+
+            %%
+         end
+      end
+
+      %%
+      meth expand(WidthInc)
+         MetaCompoundTermObject , DrawSubterms(WidthInc)
+
+         %%
+         CompoundRepManagerObject , block(DSpecialBlock)
+      end
+
+      %%
+   end
+
+%%%
+%%%
+%%%  Records in various flavours;
+%%%
+%%%
+
+   %%
+   %% These things are "record"-generic, that is, they are common for
+   %% both records and chunks.
+   %%
+   %% An invariant is that 'elements' are feature names;
+   %%
+   class MetaRecordTermObject from MetaCompoundTermObject
+      %%
+      feat
+         delimiter:  DSpaceGlue
+         indentDesc: min('-'(st_indent(DMainBlock#2)
+                             '+'(gr_size(DMainBlock#1) self_indent))
+                         3)
+
+      %%
+      %% It draws both a feature name and a subterm under it;
+      meth !DrawElement
+         local
+            T Store NewWidth CurrentLastGroup FN PrFN PrFNSize
+            ST NewNotShownElements DP Desc
+         in
+            T = self.term
+            Store = self.store
+            @NotShownElements = FN|NewNotShownElements
+            ST = T.FN
+            NewWidth = @ShownWidth + 1
+            CurrentLastGroup = @ShownWidth * 2
+
+            %%
+            PrFN = {GenLitPrintName FN Store}
+            PrFNSize = {VirtualString.length PrFN}
+
+            %%
+            %% there are two styles of record filling:
+            %% (a) a solid one, - similar to tuples, and
+            %% (b) an 'expanded' one, called 'record fields aligned'.
+            %%
+            case
+               case {Store read(StoreFillStyle $)}
+               of !Expanded then True
+               [] !Filled then False
+               else
+                  {BrowserError 'invalid fill style!'}
+                  False
+               end
+            then                % expanded (the default);
+               %%
+               %% ... just check either the whole term fits;
+               DP = fun {$ SI _ LS} {LimitedTermSize T SI LS} >= LS end
+               Desc = '>'('+'(self_indent self_size) line_size)
+            else                % filled;
+               %%
+               %%
+               %% That's a ~hack: the size of an "fn:st" is replaced
+               %% by the size of a hash-tuple "fn#st" :-))
+               local RT in
+                  RT = FN#ST
+                  DP = fun {$ _ CP LS} {LimitedTermSize RT CP LS} >= LS end
+               end
+
+               %%
+               Desc = '>'('+'('+'(current (DSpace + PrFNSize))
+                              st_size(DMainBlock#(CurrentLastGroup+2)))
+                          line_size)
+            end
+
+            %%
+            %% first - a group containing a feature name and a glue,
+            %% and after that - a glueless group with a subtree. Of
+            %% course, it's also possible to make the second group
+            %% "glueful", but i don't know whether it's necessary;
+            CompoundRepManagerObject
+            , case NewWidth == 1 then
+                 putG_GS(ln:       (CurrentLastGroup + 1)
+                         dp:       DP
+                         desc:     Desc
+                         str:      PrFN#DColonS)
+              else
+                 putG_SGS(ln:       (CurrentLastGroup + 1)
+                          str:      self.delimiter
+                          dp:       DP
+                          desc:     Desc
+                          str2:     PrFN#DColonS)
+              end
+            , putG_T(ln:       (CurrentLastGroup + 2)
+                     term:     ST)
+
+            %%
+            NotShownElements <- NewNotShownElements
+            ShownWidth <- NewWidth
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %% Records;
+   %%
+   class RecordTermObject from MetaRecordTermObject
+      %%
+      feat
+         type:  T_Record
+         RLabel
+
+      %%
+      attr
+         HasDetLabel: False
+
+      %%
+      %% this is the "simplest" case - no transformations;
+      meth !GetName($)
+         local L in
+            L = self.RLabel
+
+            %%
+            %% Note that this can be also OFS (yet) without a label -
+            %% reflect it non-monotonically;
+            case {IsVar L} then {System.printName L}
+            else
+               HasDetLabel <- True
+               {GenLitPrintName L self.store}
+            end
+         end
+      end
+
+      %%
+      %%
+      meth IsProperOFS($)
+         %%
+         %%  the point here is that it it's a variable, it can be
+         %% only an OFS (due to the construction principle);
+         {IsVar self.term}
+      end
+
+      %%
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'RecordTermObject::makeTerm is applied' # self.term}
+\endif
+         local Term Store in
+            %%
+            Term = self.term
+            Store = self.store
+
+            %%
+            %% *First* set a watchpoint!
+            %%
+            %% It must "watch" all changes that happen while a
+            %% representation is build up;
+            RecordTermObject , SetWatchPoint
+
+            %%
+            %% it is nicer to have a "job...end", but "thread...end"
+            %% is still correct (though less efficient - because
+            %% label will 'arrive' some time later);
+            job self.RLabel = {Label Term} end
+
+            %%
+            %% a label;
+            CompoundRepManagerObject
+            , block(DLeadingBlock)
+            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            , putG_S(ln:DLRBraceGroup str: DLRBraceS)
+
+            %%
+            %% 'MonitorArity' yields a closed list if the record is
+            %% closed;
+            Elements <- {Record.monitorArity Term self.closed}
+            NotShownElements <- @Elements
+            ShownWidth <- 0
+
+            %% ... "from scratch";
+            RecordTermObject , expand({Store read(StoreWidth $)})
+
+            %%
+            CompoundRepManagerObject
+            , block(DTailBlock)
+            , putG_S(ln:DBraceGroup str:DRRBraceS)
+
+            %%
+         end
+      end
+
+      %%
+      %% Note that 'GetElement' is not redefined here since that's
+      %% just a 'MonitorArity' output, and it cannot be malformed;
+
+      %%
+      %% Approximates the property (see the comments for the
+      %% 'ListTermObject::IsWFList');
+      meth IsClosedRecord($)
+         %%
+         case {IsVar @NotShownElements} then False
+         else @NotShownElements == nil
+         end
+      end
+
+      %%
+      meth HasEllipses($)
+\ifdef DEBUG_TO
+         case CompoundRepManagerObject , getBlock($) == DSpecialBlock
+         then true
+         else {BrowserError
+               'MetaCompoundTermObject::hasEllipses: wrong block!'}
+         end
+\endif
+         %%
+         CompoundRepManagerObject
+         , isGroup(b:DSpecialBlock ln:DEllipsesGroup is:$)
+      end
+
+      %%
+      %% It draws further subterms, and after that it checks whether
+      %% a '...' group must be here;
+      %%
+      %% This is very similar to the 'ListTermObject::expand', so it
+      %% does make sense to look at that and read comments there;
+      %%
+      meth expand(WidthInc)
+\ifdef DEBUG_TO
+         {Show 'RecordTermObject::expand is applied' # self.term}
+\endif
+         %%
+         MetaCompoundTermObject , DrawSubterms(WidthInc)
+
+         %%
+         %% now, check the '...' group;
+         CompoundRepManagerObject , block(DSpecialBlock)
+
+         %%
+         case
+            MetaCompoundTermObject , hasCommas($) orelse
+            RecordTermObject , IsClosedRecord($)
+         then
+            %%
+            %% no '...' group;
+            case RecordTermObject , HasEllipses($) then
+               %%
+               CompoundRepManagerObject , removeG(ln: DEllipsesGroup)
             else true
             end
 
             %%
-            <<setSubtermObj(N Obj)>>
-
+         else           % has no commas *and* is not yet closed;
             %%
-            <<createSubtermObjs((N+1) Max RSubterms)>>
-         else true
-         end
-      end
-
-      %%
-      %%
-      meth destroy
-\ifdef DEBUG_TO
-         {Show
-          'MetaTupleGenericObject::destroy method for the term '#self.term}
-\endif
-         {self.termsStore decNumberOfNodes}
-
-         %%
-         <<[destroyChilds(_) closeOut]>>
-         %% <<UrObject close>>
-
-         %%
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'MetaTupleGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-
-         %%
-         refVarName <- ''
-      end
-
-      %%
-      %%  Destroy all childs of this object;
-      %%
-      meth destroyChilds(Sync)
-\ifdef DEBUG_TO
-         {Show
-          'MetaTupleTermTermObject::destroyChilds method for the term '#
-          self.term#<<getTotalWidth($)>>}
-\endif
-         %%
-         <<sendMessages(destroy)>>
-
-         %%  sets 'totalWidth' to zero;
-         <<removeAllSubterms>>
-      end
-
-      %%
-      %%
-      %%  Send to the 'Obj' a name of a reference (refVar);
-      %%  If none is yet defined, generate one via the NewRefNameGen;
-      %%
-      meth getRefVar(Obj)
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::getRefVar: term '#self.term}
-\endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
-
-            %%
-            {Obj setRefVar(self Ref)}
-
-            %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
-         end
-      end
-
-      %%
-      %%  Create a new subterm object for the Nth subterm (Obj.numberOf),
-      %% with the depth of 'Depth';
-      %%  Perform also 'checkSize' "from" just created object;
-      %%
-      meth renewNum(Obj Depth)
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::renewNum: term '#Obj.term}
-\endif
-         local
-            N StoredObj WasShown OldSize NewSize ActualDepth NewObj
-         in
-            N = Obj.numberOf
-            StoredObj = <<getSubtermObj(N $)>>
-
-            %%
-            case Obj == StoredObj then
-               {Obj [isShown(WasShown) getSize(OldSize) undraw destroy]}
-
-               %%
-               ActualDepth = @depth
-               depth <- Depth + 1
-
-               %%
-               <<createSubtermObjs(N N [Obj.term])>>
-
-               %%
-               NewObj  = <<getSubtermObj(N $)>>
-               NewSize = {NewObj getSize($)}
-
-               %%
-               case WasShown then
-                  <<drawSubterm(N)>>
-               else true
-               end
-
-               %%
-               depth <- ActualDepth
-
-               %%
-               <<checkSize(NewObj OldSize NewSize)>>
-            else true           % ignore - 'garbage' message;
-            end
-         end
-      end
-
-      %%
-      %%  'redraw' + 'checkSize' from 'Obj';
-      %%
-      meth redrawNum(Obj)
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::redrawNum: term '#self.term}
-\endif
-         local N StoredObj OutInfo WasShown OldSize NewSize in
-            N = Obj.numberOf
-            %%
-            <<getSubtermObjOutInfo(N StoredObj OutInfo)>>
-            OldSize = OutInfo.size
-
-            %%
-            case Obj == StoredObj then
-               {Obj [isShown(WasShown) getSize(NewSize) undraw]}
-
-               %%
-               case WasShown then
-                  <<drawSubterm(N)>>
-               else true
-               end
-
-               %%
-               <<checkSize(Obj OldSize NewSize)>>
-            else true           % ignore - 'garbage' message;
-            end
-         end
-      end
-
-      %%
-      %%
-      meth expand
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::expand: term '#self.term}
-\endif
-         local WidthInc in
-            WidthInc = {self.store read(StoreWidthInc $)}
-
-            %%
-            <<ExpandWidthLoop(WidthInc)>>
-         end
-      end
-
-      %%
-      meth ExpandWidthLoop(N)
-         case N >= 1 then
-            <<expandWidthOne>>
-
-            %%
-            <<ExpandWidthLoop(N - 1)>>
-         else true
-         end
-      end
-
-      %%
-      %%  insert one further subterm (and remove commas if needed);
-      meth expandWidthOne
-\ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::expandWidthOne: term '#self.term}
-\endif
-         case @shown andthen <<areCommas($)>> then
-            Subterms RestOf ActWidth NewWidth OldSize NewSize
-         in
-            Subterms = <<getSubterms($)>>
-            ActWidth = @width
-            NewWidth = ActWidth + 1
-
-            %%
-            RestOf = {List.drop Subterms ActWidth}
-
-            %%
-            case RestOf == nil then true
+            case RecordTermObject , HasEllipses($) then true
             else
-               OldSize = <<getSize($)>>
-               %%  insert a slot for a new subterm;
-               case {Length RestOf} == 1 then
-                  CommasObj
-               in
-                  <<makeLastSubterm(CommasObj)>>
-
-                  %%
-                  {CommasObj [undraw destroy]}
-
-                  %%  create a subterm;
-                  <<createSubtermObjs(NewWidth NewWidth RestOf)>>
-               else
-                  <<addSubterm>>
-
-                  %%  create a subterm;
-                  <<createSubtermObjs(NewWidth NewWidth RestOf)>>
-
-                  %%  We have to init 'outInfoRec';
-                  <<initMoreOutInfo(NewWidth NewWidth)>>
-               end
-
-               %%  Draw it (and produce new glue, if needed);
-               %%  Updates also metasizes;
-               <<drawNewSubterm(NewWidth)>>
+               %%
+               %% note that the insertion cursor is located at a
+               %% right position now;
+               CompoundRepManagerObject
+               , putG_SGS(ln:   DEllipsesGroup
+                          str:  DSpaceGlue
+                          dp:   EllipsesDP
+                          desc: EllipsesDesc
+                          str2: DOpenFS)
 
                %%
-               NewSize = <<getSize($)>>
+            end
+            %%
+            %% ***** Ellipses have been created if necessary *****
+
+            %%
+            %% ... but now, all the changes that could take place
+            %% "inbetween", are covered by a (new!) watchpoint
+            %% already sitting on the (OFS) term!
+            %%
+            %% Note that the same trick does not work for lists since
+            %% their "tail" element is not known at the beginning
+            %% (therefore, one cannot set a watchpoint on it!);
+            %%
+         end
+      end
+
+      %%
+      %% Set a 'watchpoint';
+      %% Two things can basically happen: it gets further subterms,
+      %% or it gets bound to some other record (probably an open
+      %% one). Note that both can be watched just by means of the
+      %% 'GetsToched';
+      %%
+      %% A "first" watchpoint is set by the 'makeTerm', and "further"
+      %% ones - by the code placed in 'SetWatchPoint' itself;
+      %%
+      meth !SetWatchPoint
+\ifdef DEBUG_TO
+         {Show 'RecordTermObject::SetWatchPoint: ' # self.term}
+\endif
+         %%
+         case RecordTermObject , IsProperOFS($) then ObjClosed ChVar in
+            %%
+            ObjClosed = self.closed
+            ChVar = {GetsTouched self.term}
+
+            %%
+            %% Note that this conditional may not block the state;
+            thread
+               if ChVar = True then {self checkTermReq}
+               [] ObjClosed = True then true
+               end
+            end
+
+            %%
+            case @HasDetLabel then true
+            else GotLabel in
+               thread GotLabel = {Det self.RLabel} end
 
                %%
                thread
-                  {self.parentObj checkSize(self OldSize NewSize)}
+                  if GotLabel = Unit then {self checkTermReq}
+                  [] ObjClosed = True then true
+                  end
                end
             end
-         else true              % nothing to do;
+         else true              % nothing to do - it's a proper record;
          end
       end
 
       %%
-      %%  for compound objects;
-      meth updateSizes(Depth)
+      %% A local method which checks whether something has happend
+      %% with it *meanwhile*;
+      meth checkTerm
 \ifdef DEBUG_TO
-         {Show 'MetaTupleGenericTermObject::updateSizes: term '#self.term#Depth}
+         {Show 'RecordTermObject::checkTerm: ' # self.term}
 \endif
-         case Depth == 0 then
-            <<shrink>>
-         else
-            Width ActWidth ObjsList NewDepth ToRenewFlag
-         in
-            %%
-            depth <- Depth
-
-            %%  first phase: update width;
-            Width = {Min
-                     {self.store read(StoreWidth $)}
-                     ({Length <<getSubterms($)>>} + 1)}
-            ActWidth = @width
-
-            %%
-            case <<areCommas($)>> andthen ActWidth < Width then
-               %%
-               %%  kost@  22.11.95;
-               %%  Now, since Tcl/Tk process (wish) behaves suspiciously
-               %% under heavy loads (its performance depends *substantially*
-               %% from the frequence of commands issued by the user!!!),
-               %% i introduce *yet another hack*: :
-               %%  If the difference between actual and shown sizes is
-               %% bigger than the shown width, let's rebrowse!!!
-               case Width - ActWidth > ActWidth then
-                  ToRenewFlag = True
-               else
-                  <<ExpandWidthLoop(Width - ActWidth)>>
-                  ToRenewFlag = False
-               end
-            else
-               ToRenewFlag = False
-            end
-
-            %%
-            case ToRenewFlag then
-               %%
-               thread
-                  {self.parentObj renewNum(self Depth)}
-               end
-            else
-               %% second phase: update depth of subterms;
-               NewDepth = Depth - 1
-
-               %%
-               ObjsList = <<getObjsList($)>>
-               {ForAll ObjsList
-                proc {$ Obj}
-                   {Obj updateSizes(NewDepth)}
-                end}
-
-               %%
-               <<UrObject nil>>
-            end
-         end
-      end
-      %%
-   end
-
-   %%
-   %%
-   %%  Well-formed lists;
-   %%
-   class WFListGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      feat
-         type: T_WFList
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('WFListObject::' Message)>>
-      end
-      %%
-   end
-   %%
-   %%
-   %%  Tuples;
-   %%
-   class TupleGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      feat
-         type: T_Tuple
-      %%
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('TupleObject::' Message)>>
-      end
-      %%
-      %%
-   end
-   %%
-   %%
-   %%  Lists;
-   %%
-   class ListGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      feat
-         type: T_List
-      %%
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ListObject::' Message)>>
-      end
-      %%
-      %%
-   end
-   %%
-   %%
-   %%  Hash tuples;
-   %%
-   class HashTupleGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      feat
-         type: T_HashTuple
-      %%
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('HashTupleObject::' Message)>>
-      end
-      %%
-      %%
-   end
-   %%
-   %%
-   %%  Flat Lists;
-   %%
-   class FListGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      feat
-         type: T_FList
-      %%
-      %%
-      %%  ... probably, we have got it from the last 'var' subterm --
-      %% so, the flat list should be extended instead of modifying that
-      %% subterm;
-      meth renewNum(Obj Depth)
-\ifdef DEBUG_TO
-         {Show 'FListGenericTermObject::renewNum: term '#Obj.term#Obj.numberOf}
-\endif
-         local TailVarNum StoredObj ObjTerm CanBeExt in
-            StoredObj = <<getSubtermObj(Obj.numberOf $)>>
-            %%
-            case Obj == StoredObj then
-               TailVarNum = @tailVarNum
-               ObjTerm = Obj.term
-               CanBeExt = case {IsVar ObjTerm} then False
-                          elsecase  {IsTuple ObjTerm} then
-                             L
-                          in
-                             L = {Label ObjTerm} % no suspension;
-                             case L == '|' orelse L == nil then True
-                             else False
-                             end
-                          else False
-                          end
-               %%
-               %%
-               case
-                  TailVarNum == Obj.numberOf andthen CanBeExt
-               then
-                  <<extend>>
-               else
-                  <<MetaTupleGenericTermObject renewNum(Obj Depth)>>
-               end
-            else true           % ignore irrelevant message;
-            end
-         end
-      end
-      %%
-      %%  replace the tail variable with something;
-      meth extend
-\ifdef DEBUG_TO
-         {Show 'FListGenericTermObject::extend: term '#self.term}
-\endif
-         case @shown then
-            OldSubs OldSize NewSize NewSubs OldRest NewRest
-            ActWidth NewWidth RemovedObj Depth
-         in
-            OldSubs = <<getSubterms($)>>
-            Depth = @depth
-
-            %% updates 'subterms' attribute in place;
-            NewSubs = <<reGetSubterms($)>>
-            %%
-            case <<areCommas($)>> then
-               case <<isFWList($)>> then
-                  job
-                     {self.parentObj renewNum(self Depth)}
-                  end
-               else
-                  %%  width is already exceeded - nothing to do;
-                  true
-               end
-            else
-               ActWidth = @width
-               %%
-               {DiffRest OldSubs NewSubs OldRest NewRest}
-
-               %%
-               case {Length OldRest}
-               of 1 then
-                  %%
-                  %%  first case: variable -> many (>1) subterms;
-                  RemovedObj = <<getSubtermObj(ActWidth $)>>
-                  %%
-                  case <<isWFList($)>> then
-                     job
-                        {self.parentObj renewNum(self Depth)}
-                     end
-                  else
-                     {RemovedObj [undraw destroy]}
-                     %% remove the (former) tail variable's representation;
-
-                     %%
-                     OldSize = <<getSize($)>>
-
-                     %%  ('1' is the number of subterms which slots
-                     %% should be reused;)
-                     %%  ('NewWidth' is an output argument;)
-                     <<initMoreSubterms(ActWidth 1 NewRest NewWidth)>>
-
-                     %%  ('NewWidth' is an input argument here;)
-                     <<initMoreOutInfo((ActWidth + 1) NewWidth)>>
-
-                     %%
-                     <<drawNewSubterms(ActWidth NewWidth)>>
-
-                     %%
-                     case
-                        NewWidth - ActWidth + 1 < {Length NewRest}
-                        %% less subterms as available are shown;
-                     then <<drawCommas>>
-                     else true
-                     end
-
-                     %%
-                     NewSize = <<getSize($)>>
-
-                     %%
-                     job
-                        {self.parentObj checkSize(self OldSize NewSize)}
-                     end
-                  end
-               [] 0 then
-                  %%
-                  %% second case: variable --> value (not another variable!);
-                  %%
-                  case <<isWFList($)>> then
-                     job
-                        {self.parentObj renewNum(self Depth)}
-                     end
-                  else
-                     <<noTailVar>>
-
-                     %%  Actually incorrect - it forces subterm's depth
-                     %% to (@depth - 1);
-                     <<MetaTupleGenericTermObject
-                     renewNum(<<getSubtermObj(ActWidth $)>> (@depth - 1))>>
-                  end
-               else
-                  %%
-                  %%  Not optimized.
-                  %% It could mean, for instance, that we have feeded
-                  %% the following lines
-                  %%   declare X in
-                  %%   X = _|_|_
-                  %%   X.2 = X.2.2
-                  %%  This list is recursive, but not 'from the first cons';
-                  %%
-                  job
-                     {self.parentObj renewNum(self Depth)}
-                  end
-               end
-            end
-         else
-            Depth
-         in
-            Depth = @depth
-
-            %%  if it's not shown - just create a new one;
-            job
-               {self.parentObj renewNum(self Depth)}
-            end
-         end
-      end
-
-      %%
-      %%  Special op for expand: set the 'tailVar' and
-      %% 'tailVarNum' attributes;
-      meth expandWidthOne
-         <<MetaTupleGenericTermObject expandWidthOne>>
+         %%
+         %% "Zeroth": set a new watchpoint.  Note that setting a new
+         %% watchpoint is going ahead (like in the 'makeTerm' too). Of
+         %% course, some overhead can arise when the 'self' will be
+         %% closed soon, but: who cares?
+         RecordTermObject , SetWatchPoint
 
          %%
-         <<setTailVarNum(@width)>>
-      end
+         %% First, check the label:
+         case @HasDetLabel orelse {IsVar self.RLabel} then true
+         else
+            CompoundRepManagerObject
+            , block(DLeadingBlock)
+            , removeG(ln:DLRBraceGroup)
+            , removeG(ln:DLabelGroup)
+            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            , putG_S(ln:DLRBraceGroup str: DLRBraceS)
+         end
 
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('FListObject::' Message)>>
+         %%
+         %% First, take a shortcut: if there is a ',,,' group,
+         %% nothing must be done here (except setting up a new
+         %% watchpoint, what is done in 'SetWatchPoint');
+         case MetaCompoundTermObject , hasCommas($) then true
+         else
+            %%
+            %% The term could get coreferenced by some other term;
+            case self , isCoreferenced($) then
+               %%
+               %% This method enqueues a request for the 'checkTerm'
+               %% method - which will be (eventually, if object is not
+               %% closed until then) processed later;
+               ControlObject , rebrowse
+            else MaxWidth CurrentSWidth in
+               %%
+               %% otherwise, just try to expand it;
+               MaxWidth = {self.store read(StoreWidth $)}
+               CurrentSWidth = MetaCompoundTermObject , getShownWidth($)
+
+               %%
+               RecordTermObject , expand(MaxWidth - CurrentSWidth)
+            end
+         end
+
+         %%
+         %% Note that 'expand' does not handle the case when an OFS
+         %% "looses" features. This a non-monotonic, meta-kernel
+         %% functionality which is not available for "typical" Oz
+         %% programmers. In order to cope with this possibility, one
+         %% could try to access all the feature names already
+         %% instantiated in a MonitorArity's output, and if there are
+         %% ones that are *not* feature names any more - just rebrowse
+         %% everything, or what else ...
+         %%
+         %% %% Key-syllables:
+         %% %%   featur loos remov delet throw eras
       end
 
       %%
    end
 
-   %%
-   %%
-   %%  'Meta' object for compound (record-like) term objects;
-   %%
-   class MetaRecordGenericTermObject
-      from MetaTupleGenericTermObject
-      %%
-      %%  inherited from 'MetaTupleGenericTermObject';
-      %% attr
-      %% refVarName:   ''       % prefix;
-      %%
-      %%  'createSubtermObjs', 'destroy', 'destroyChilds', 'getRefVar,'
-      %% 'renewNum' and 'updateSizes' are inherited from
-      %% 'MetaTupleGenericTermObject';
-      %%
-      %%
-   end
+%%%
+%%%
+%%% Chunks;
+%%%
+%%%
 
    %%
-   %%
-   %%  Records;
-   %%
-   class RecordGenericTermObject
-      from MetaRecordGenericTermObject
+   class CompChunkTermObject from MetaRecordTermObject
       %%
       feat
-         type: T_Record
+         type: T_CompChunk
 
       %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('RecordObject::' Message)>>
+      %% ... can be overloaded;
+      meth !GetName($)
+         {GenChunkPrintName self.term self.store}
       end
-      %%
-      %%
-   end
-
-   %%
-   %%
-   %%  Open feature structures;
-   %%
-   class ORecordGenericTermObject
-      from MetaRecordGenericTermObject
-      %%
-      feat
-         type: T_ORecord
 
       %%
-      %%  add new features;
-      meth extend
+      %%
+      meth makeTerm
 \ifdef DEBUG_TO
-         {Show 'ORecordGenericTermObject::extend: term '#self.term}
+         {Show 'CompChunkTermObject::makeTerm is applied' # self.term}
 \endif
-         case @shown then
-            OldSubs OldSize NewSize NewSubs OldRest NewRest
-            ActWidth NewStart NewWidth RemovedObj Depth
-         in
-            OldSubs = <<getSubterms($)>>
-            Depth = @depth
-
-            %% updates 'subterms' attribute in place;
-            NewSubs = <<reGetSubterms($)>>
+         local Term Store AF FullArity in
+            %%
+            Term = self.term
+            Store = self.store
+            AF = {Store read(StoreArityType $)} == AtomicArity
 
             %%
-            case <<areCommas($)>> then
-               case <<isProperOFS($)>> then
-                  %%  width is already exceeded - nothing to do;
-                  true
-               else
-                  case @width > 0 then
-                     <<removeDots>>
-                  else
-                     {BrowserError
-                      ['ORecordGenericTermObject::extend: error!']}
-                  end
-               end
-            else
-               ActWidth = @width
-
-               %%
-               {DiffRest OldSubs NewSubs OldRest NewRest}
-
-               %%
-\ifdef DEBUG_TO
-               case {Length OldRest} == 0 then true
-               else
-                  {BrowserWarning ['ORecordGenericTermObject::extend: warning: OldRest != 0 !']}
-                  %%  see beneath;
-               end
-\endif
-
-               %%
-               case {Length NewRest}
-               of 0 then
-                  %% OFS gets a proper record;
-
-                  %%
-                  case <<isProperOFS($)>> then
-                     %%
-                     %%  nothing has changed in fact;
-                     true
-                  else
-                     case @width > 0 then
-                        <<removeDots>>
-                     else
-                        %% should be simply a literal;
-
-                        %%
-                        job
-                           {self.parentObj renewNum(self Depth)}
+            FullArity = {ChunkArity Term}
+            Elements <- case AF then {AtomicFilter FullArity}
+                        else FullArity
                         end
-                     end
-                  end
-               else
-                  %%
+            NotShownElements <- @Elements
+            ShownWidth <- 0
 
-                  %%
-                  case
-                     @width > 0 andthen {Length OldRest} == 0
-                     %%
-                     %%  An interesting point:
-                     %%  OldRest could be non-zero if somebody has
-                     %% used 'SetC' (destructive modification on
-                     %% records). That thing should not accessible to
-                     %% anyone else except Peter Van Roy and
-                     %% Martin Henz from PSL at DFKI;
-                  then
-                     OldSize = <<getSize($)>>
+            %%
+            %% a label;
+            CompoundRepManagerObject
+            , block(DLeadingBlock)
+            , putG_S(ln:DLabelGroup str:(self , GetName($)))
+            , putG_S(ln:DLRBraceGroup str: DLRBraceS)
 
-                     %%  additional features;
-                     NewStart = ActWidth + 1
+            %% ... "from scratch";
+            CompChunkTermObject , expand({Store read(StoreWidth $)})
 
-                     %%  ('0' is the number of subterms which slots
-                     %% should be reused;)
-                     %%  ('NewWidth' is an output argument;)
-                     <<initMoreSubterms(NewStart 0 NewRest NewWidth)>>
+            %%
+            %% The presense of the '?' is decided once, and here:
+            CompoundRepManagerObject
+            , block(DTailBlock)
+            , putG_S(ln:  DBraceGroup
+                     str: case
+                             AF andthen
+                             {Length @Elements} \= {Length FullArity}
+                          then DSpaceGlue#DUnshownPFs#DRRBraceS
+                          else DRRBraceS
+                          end)
 
-                     %%  ('NewWidth' is an input argument here;)
-                     <<initMoreOutInfo(NewStart NewWidth)>>
+            %%
+         end
+      end
 
-                     %%
-                     <<drawNewSubterms(NewStart NewWidth)>>
+      %%
+      %% there is nothing else to do except to draw elements :-)
+      meth expand(WidthInc)
+\ifdef DEBUG_TO
+         {Show 'CompChunkTermObject::expand is applied' # self.term}
+\endif
+         %%
+         MetaCompoundTermObject , DrawSubterms(WidthInc)
 
-                     %%
-                     case
-                        NewWidth - ActWidth < {Length NewRest}
-                        %% less subterms as available are shown;
-                     then <<drawCommas>>
-                     else true
-                     end
+         %%
+         CompoundRepManagerObject , block(DSpecialBlock)
+      end
 
-                     %%
-                     NewSize = <<getSize($)>>
+      %%
+   end
 
-                     %%
-                     job
-                        {self.parentObj checkSize(self OldSize NewSize)}
-                     end
+   %%
+   %%
+   %% Compound objects;
+   %%
+   class CompObjectTermObject from CompChunkTermObject
+      %%
+      feat
+         type: T_CompObject
 
-                     %%  Actually, OFS could get proper record meanwhile;
-                     case <<isProperOFS($)>> then true
-                     else
-                        <<removeDots>>
-                        %% it update size by itself;
-                     end
-                  else
-                     %%
+      %%
+      meth !GetName($)
+         {GenObjPrintName self.term self.store}
+      end
 
-                     %%
-                     job
-                        {self.parentObj renewNum(self Depth)}
-                     end
-                  end
+      %%
+   end
+
+   %%
+   %%
+   %% Compoumd classes;
+   %%
+   class CompClassTermObject from CompChunkTermObject
+      %%
+      feat
+         type: T_CompClass
+
+      %%
+      meth !GetName($)
+         {GenClassPrintName self.term self.store}
+      end
+
+      %%
+   end
+
+%%%
+%%%
+%%%  Special terms;
+%%%
+%%%
+
+   %%
+   %%
+   class I_MetaVariableTermObject from MetaTermObject
+      %%
+
+      %%
+      %% can be overloaded, if necessary;
+      meth !GetName($) {System.printName self.term} end
+
+      %%
+      %%  ... can be also overloaded;
+      meth !GetWatchFun($) GetsTouched end
+
+      %%
+      %% The default 'checkTerm' is kept (rebrowsing). Note that no
+      %% new watchpoint is ever needed in this case;
+      %%
+
+      %%
+      %% Set a 'watchpoint';
+      %%
+      %% Note that it should be installed before building a
+      %% representation has begun;
+      %%
+      meth !SetWatchPoint
+\ifdef DEBUG_TO
+         {Show 'I_MetaVariableTermObject::SetWatchPoint: ' # self.term}
+\endif
+         local WatchFun ObjClosed ChVar in
+            %%
+            WatchFun = self , GetWatchFun($)
+
+            %%
+            ObjClosed = self.closed
+            ChVar = {WatchFun self.term}
+
+            %%
+            %% Note that this conditional may not block the state;
+            thread
+               if ChVar = True then {self checkTermReq}
+               [] ObjClosed = True then true
                end
             end
 
             %%
-            <<stopTypeWatching>>
-            <<initTypeWatching>>
+            %% ... Otherwise, when a watchpoint is NOT installed
+            %% right at the beginning, we should check whether
+            %% something has happend with a variable *meanwhile*.
+            %% This could be done as follows (in addition, the
+            %% VariableTermObject must keep track of a print name;)
             %%
-         else
-            Depth
-         in
-            Depth = @depth
-
-            %%  if it's not shown - just create new one;
-            job
-               {self.parentObj renewNum(self Depth)}
-            end
+%             case
+%                %%
+%                %% Check #1: is it still a variable at all??
+%                self , CheckIsVar($) orelse
+%                %%
+%                %% Check #2: the printname (for the case when one
+%                %% variable is bound to another one);
+%                {VirtualString.toString self.name} ==
+%                {VirtualString.toString self , GetName($)} orelse
+%                %%
+%                %% Check #3: have we got coreferences between shown
+%                %% variables? Note that this case is not covered in
+%                %% general by the check #2;
+%                %%
+%                self , isCoreferenced($)
+%             then ControlObject , checkTermReq
+%             else true
+%             end
          end
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ORecordObject::' Message)>>
-      end
-      %%
-   end
-
-   %%
-   %%
-   %%
-   %%  Meta-objects for chunks (not only, though) in various flavors;
-   %%
-   %%
-   class MetaChunkGenericTermObject
-      from NameGenericTermObject RecordGenericTermObject
-
-      %%
-      %%  'getObjClass' from MetaGenericTermObject;
-      %%  'init' ...
-      %%  'isShown' ...
-
-      %%
-      meth destroy
-         case self.isCompound then
-            <<RecordGenericTermObject destroy>>
-         else
-            <<NameGenericTermObject destroy>>
-         end
-      end
-
-      %%
-      meth retract
-         case self.isCompound then
-            <<RecordGenericTermObject retract>>
-         else
-            <<NameGenericTermObject retract>>
-         end
-      end
-
-      %%
-      %%
-      meth updateSizes(Depth)
-         case self.isCompound then
-            <<RecordGenericTermObject updateSizes(Depth)>>
-         else
-            <<NameGenericTermObject updateSizes(Depth)>>
-         end
-      end
-
-      %%
-      %%  event handlers from 'MetaGenericTermObject';
-      %%  'show' ...
-
-      %%
-      meth expand
-         case self.isCompound then
-            <<RecordGenericTermObject expand>>
-         else
-            <<NameGenericTermObject expand>>
-         end
-      end
-      %%
-      %%  'shrink' from 'MetaGenericTermObject';
-      %%  'deref' ...
-
-      %%
-      meth getRefVar(Obj)
-         case self.isCompound then
-            <<RecordGenericTermObject getRefVar(Obj)>>
-         else
-            <<NameGenericTermObject getRefVar(Obj)>>
-         end
-      end
-      %%
-   end
-
-   %%
-   %%
-   %%  Chunks;
-   %%
-   class ChunkGenericTermObject
-      from MetaChunkGenericTermObject
-      %%
-      feat
-         type: T_Chunk
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ChunkObject::' Message)>>
       end
 
       %%
    end
 
    %%
+   %% Variables;
    %%
-   %%  Objects;
-   %%
-   class ObjectGenericTermObject
-      from MetaChunkGenericTermObject
-      %%
-      feat
-         type: T_Object
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ObjectObject::' Message)>>
-      end
-
-      %%
-   end
-
-   %%
-   %%
-   %%  Classes;
-   %%
-   class ClassGenericTermObject
-      from MetaChunkGenericTermObject
-      %%
-      feat
-         type: T_Class
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ClassObject::' Message)>>
-      end
-
-      %%
-   end
-
-   %%
-   %%
-   %%  Various special term objects;
-   %%
-   %%
-   %%  Variables;
-   %%
-   class VariableGenericTermObject
-      from MetaGenericTermObject
-      %%
+   class VariableTermObject from I_MetaVariableTermObject
       %%
       feat
          type: T_Variable
+
       %%
-      attr
-         refVarName:   ''       % prefix;
+      %% Yields 'True' if it is still an (unconstrained!) variable;
+      %% It is not necessary any longer since the 'SetWatchPoint'
+      %% does not perform any "post-checks";
+      %%
+%       meth !CheckIsVar($)
+%          local Term in
+%             Term = self.term
+%             %%
+%             %%  There could happen just everything: gets a value or
+%             %% some other (derived) type of variables;
+%
+%             case {IsVar Term} then
+%                case {IsRecordCVar Term} then False
+%                elsecase {IsFdVar Term} then False
+%                elsecase {IsMetaVar Term} then False
+%                else True
+%                end
+%             else False
+%             end
+%          end
+%       end
+
       %%
       %%
-      meth getRefVar(Obj)
+      meth makeTerm
 \ifdef DEBUG_TO
-         {Show 'VariableGenericTermObject::getRefVar: term '#self.term}
+         {Show 'VariableTermObject::makeTerm is applied' # self.term}
 \endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
-
-            %%
-            {Obj setRefVar(self Ref)}
-
-            %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
-         end
-      end
-
-      %%
-      %%  perform 'retract' in addition;
-      meth destroy
-         <<MetaGenericTermObject destroy>>
+         %%
+         %% *First*, set a watchpoint;
+         I_MetaVariableTermObject , SetWatchPoint
 
          %%
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'VariableGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-
-         %%
-         refVarName <- ''
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('VariableObject::' Message)>>
+         RepManagerObject , insert(str: (self , GetName($)))
       end
 
       %%
@@ -1619,67 +2450,63 @@ in
 
    %%
    %%
-   %%  Finite domain variables;
+   %% Finite domain variables;
    %%
-   class FDVariableGenericTermObject
-      from MetaGenericTermObject
-      %%
+   class FDVariableTermObject from I_MetaVariableTermObject
       %%
       feat
          type: T_FDVariable
 
       %%
-      attr
-         refVarName:   ''       % prefix;
+      %% Yields 'True' if it is still a FD variable;
+      %%
+%       meth !CheckIsVar(?Is)
+%          %%
+%          %%  There could happen only one thing: it can get a value;
+%          %%
+%          Is = {IsVar self.term}
+%       end
 
       %%
       %%
-      meth getRefVar(Obj)
+      meth makeTerm
 \ifdef DEBUG_TO
-         {Show 'FDVariableGenericTermObject::getRefVar: term '#self.term}
+         {Show 'FDVariableTermObject::makeTerm is applied' # self.term}
 \endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
+         %%
+         I_MetaVariableTermObject , SetWatchPoint
+
+         %%
+         local Term SubInts Le DomComp Name in
+            Term = self.term
 
             %%
-            {Obj setRefVar(self Ref)}
+            DomComp = {FD.reflect.dom Term}
+            Le = {Length DomComp}
+            SubInts = {Tuple.make '#' Le}
 
             %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
+            {List.forAllInd DomComp
+             %%
+             proc {$ Num Interval}
+                local Tmp in
+                   Tmp = case Interval of L#H then L#"#"#H
+                         else Interval
+                         end
+
+                   %%
+                   case Num == 1 then SubInts.1 = Tmp
+                   else SubInts.Num = " "#Tmp
+                   end
+                end
+             end}
+
+            %%
+            Name = (self , GetName($)) # DLCBraceS # SubInts # DRCBraceS
+
+            %%
+            RepManagerObject , insert(str: Name)
          end
-      end
-
-      %%
-      %%  perform 'retract' in addition;
-      meth destroy
-         <<MetaGenericTermObject destroy>>
-
-         %%
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'FDVariableGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-         %%
-         refVarName <- ''
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('FDVariableObject::' Message)>>
       end
 
       %%
@@ -1687,478 +2514,87 @@ in
 
    %%
    %%
-   %%  Meta variables;
+   %% Meta variables;
    %%
-   class MetaVariableGenericTermObject
-      from MetaGenericTermObject
-      %%
+   class MetaVariableTermObject from I_MetaVariableTermObject
       %%
       feat
          type: T_MetaVariable
 
       %%
-      attr
-         refVarName:   ''       % prefix;
+      %% Yields 'True' if it is still a metavariable;
+      %%
+%       meth !CheckIsVar(?Is)
+%          %%
+%          %%  There could happen only one thing: it can get a value;
+%          %%
+%          IsVar = {IsVar self.term}
+%       end
 
       %%
+      %% We still use here the "prehistoric" watching method,
+      %% including both 'GetsTouched' as well as 'WatchMetaVar'. This
+      %% is because it is not clear to me right now whether it's
+      %% enough just to use 'GetsTouched';
       %%
-      meth getRefVar(Obj)
-\ifdef DEBUG_TO
-         {Show 'MetaVariableGenericTermObject::getRefVar: term '#self.term}
-\endif
-         case @refVarName == '' then
-            RefNumber Ref OldSize NeedBraces
-         in
-            RefNumber = {NewRefNameGen gen($)}
-            Ref = self.termsStore.refType#RefNumber
-            refVarName <- Ref
-
-            %%
-            {Obj setRefVar(self Ref)}
-
-            %%
-            <<insertRefVar>>
-         else
-            {Obj setRefVar(self @refVarName)}
-         end
+      meth !GetWatchFun($)
+         TestMetaVarFun
       end
 
       %%
-      %%  perform 'retract' in addition;
-      meth destroy
-         <<MetaGenericTermObject destroy>>
-
+      %%
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'MetaVariableTermObject::makeTerm is applied' # self.term}
+\endif
          %%
-         <<retract>>
-      end
-
-      %%
-      %%
-      meth retract
-\ifdef DEBUG_TO
-         {Show
-          'MetaVariableGenericObject::retract method for the term '#self.term}
-\endif
-         {self.termsStore retract(self)}
-
-         %%
-         refVarName <- ''
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('MetaVariableObject::' Message)>>
-      end
-      %%
-   end
-
-   %%
-   %%
-   %%  References;
-   %%
-   class ReferenceGenericTermObject
-      from MetaGenericTermObject
-      %%
-      %%
-      feat
-         type: T_Reference
-
-      %%
-      attr
-         master: InitValue      % reference to a 'master' copy;
-
-      %%
-      %%
-      meth shrink
-         true                   % cannot be shrunken;
-      end
-
-      %%
-      %%
-      meth deref
-         local Master in
-            Master = @master
+         local Term Data MetaName Name in
+            Term = self.term
 
             %%
-            case Master == InitValue then true
-               %% i.e. cannot yet deref - simply ignore it;
-            else
-               {Master pickPlace}
-            end
-         end
-      end
-
-      %%
-      %%
-      meth checkRef
-\ifdef DEBUG_TO
-         {Show 'ReferenceGenericTermObject::checkRef for ref term '#self.term}
-\endif
-         Depth
-      in
-         Depth = @depth
-
-         %%
-         job
-            {self.parentObj renewNum(self Depth)}
-         end
-      end
-
-      %%
-      %%  STATELESS METHOD !!!
-      meth watchMaster(MasterObj)
-\ifdef DEBUG_TO
-         {Show 'ReferenceGenericTermObject::watchMaster for ref term '#self.term}
-\endif
-         case MasterObj.closed then
-            PTO IsAlivePTO Tmp
-         in
-            PTO = {self getPTObject($)}
-            job
-               Tmp = PTO.closed
-            end
+            I_MetaVariableTermObject , SetWatchPoint
 
             %%
-            IsAlivePTO = if Tmp = True then False
-                         [] true then True
-                         end
+            Data = {MetaGetDataAsAtom Term}
 
             %%
-            case IsAlivePTO then {self checkRef}
-            else true
-            end
-         end
-      end
+            MetaName = {MetaGetNameAsAtom Term}
 
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ReferenceObject::' Message)>>
+            %%
+            Name =
+            (self , GetName($)) #
+            DLABraceS # MetaName # DColonS # Data # DRABraceS
+
+            %%
+            RepManagerObject , insert(str: Name)
+         end
       end
 
       %%
    end
 
-   %%
-   %%
-   %%  Shrunken subterms (because of 'Depth' limit);
-   %%
-   class ShrunkenGenericTermObject
-      from MetaGenericTermObject
-      %%
-      feat
-         type: T_Shrunken
-
-      %%
-      %%  for shrunken subterms;
-      meth updateSizes(Depth)
-         %%
-         thread
-            {self.parentObj renewNum(self Depth)}
-         end
-      end
-
-      %%
-      %%
-      meth expand
-         local DepthInc in
-            DepthInc = {self.store read(StoreDepthInc $)}
-
-            %%
-            job
-               {self.parentObj renewNum(self DepthInc)}
-            end
-         end
-      end
-
-      %%
-      %%
-      meth shrink
-         true                   % overwrite proper 'shrink';
-      end
-
-      %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('ShrunkenObject::' Message)>>
-      end
-      %%
-   end
+%%%
+%%%
+%%%  Unknown terms;
+%%%
+%%%
 
    %%
-   %%
-   %%  Unknown term;
-   %%
-   class UnknownGenericTermObject
-      from MetaGenericTermObject
+   class UnknownTermObject from MetaTermObject
       %%
       feat
          type: T_Unknown
 
       %%
-      %%
-      meth otherwise(Message)
-         <<processOtherwise('UnknownObject::' Message)>>
-      end
-      %%
-   end
-
-   %%
-   %%
-   %%  Compare two lists and yield their different tail lists;
-   %%  Gert's version. And i'm so really stupid ...
-   %%
-   proc {DiffRest L1 L2 ?LOut1 ?LOut2}
-      %%
-      if H R1 R2 in
-         L1 = H|R1
-         L2 = H|R2
-      then
-         {DiffRest R1 R2 LOut1 LOut2}
-      [] true then
-         LOut1 = L1
-         LOut2 = L2
-      end
-   end
-
-%%%
-%%%
-%%%  Object classes declarations;
-%%%
-   %%
-   class AtomTermObject
-      from
-         AtomGenericTermObject AtomTermTermObject AtomTWTermObject
-\ifdef FEGRAMED
-         FE_AtomObject
+      meth makeTerm
+\ifdef DEBUG_TO
+         {Show 'UnknownTermObject::makeTerm is applied' # self.term}
 \endif
-   end
-
-   %%
-   class IntTermObject
-      from
-         IntGenericTermObject IntTermTermObject IntTWTermObject
-\ifdef FEGRAMED
-         FE_IntObject
-\endif
-   end
-
-   %%
-   class FloatTermObject
-      from
-         FloatGenericTermObject FloatTermTermObject FloatTWTermObject
-\ifdef FEGRAMED
-         FE_FloatObject
-\endif
-   end
-
-   %%
-   class NameTermObject
-      from
-         NameGenericTermObject NameTermTermObject NameTWTermObject
-\ifdef FEGRAMED
-         FE_NameObject
-\endif
-   end
-
-   %%
-   class ThreadTermObject
-      from
-         ThreadGenericTermObject ThreadTermTermObject ThreadTWTermObject
-\ifdef FEGRAMED
-         FE_ThreadObject
-\endif
-   end
-
-   %%
-   class ProcedureTermObject
-      from
-         ProcedureGenericTermObject ProcedureTermTermObject ProcedureTWTermObject
-\ifdef FEGRAMED
-         FE_ProcedureObject
-\endif
-   end
-
-   %%
-   class CellTermObject
-      from
-         CellGenericTermObject CellTermTermObject CellTWTermObject
-\ifdef FEGRAMED
-         FE_CellObject
-\endif
-   end
-
-   %%
-   class ChunkTermObject
-      from
-         ChunkGenericTermObject ChunkTermTermObject ChunkTWTermObject
-\ifdef FEGRAMED
-         FE_ChunkObject
-\endif
-   end
-
-   %%
-   class ObjectTermObject
-      from
-         ObjectGenericTermObject ObjectTermTermObject ObjectTWTermObject
-\ifdef FEGRAMED
-         FE_ObjectObject
-\endif
-   end
-
-   %%
-   class ClassTermObject
-      from
-         ClassGenericTermObject ClassTermTermObject ClassTWTermObject
-\ifdef FEGRAMED
-         FE_ClassObject
-\endif
-   end
-
-   %%
-   class WFListTermObject
-      from
-         WFListGenericTermObject WFListTermTermObject WFListTWTermObject
-\ifdef FEGRAMED
-         FE_WFlistObject
-\endif
-   end
-
-   %%
-   class TupleTermObject
-      from
-         TupleGenericTermObject TupleTermTermObject TupleTWTermObject
-\ifdef FEGRAMED
-         FE_TupleObject
-\endif
-   end
-
-   %%
-   class RecordTermObject
-      from
-         RecordGenericTermObject RecordTermTermObject RecordTWTermObject
-\ifdef FEGRAMED
-         FE_RecordObject
-\endif
-   end
-
-   %%
-   class ORecordTermObject
-      from
-         ORecordGenericTermObject ORecordTermTermObject ORecordTWTermObject
-\ifdef FEGRAMED
-         FE_ORecord
-\endif
-   end
-
-   %%
-   class ListTermObject
-      from
-         ListGenericTermObject ListTermTermObject ListTWTermObject
-\ifdef FEGRAMED
-         FE_ListObject
-\endif
-   end
-
-   %%
-   class FListTermObject
-      from
-         FListGenericTermObject FListTermTermObject FListTWTermObject
-\ifdef FEGRAMED
-         FE_FListObject
-\endif
-   end
-
-   %%
-   class HashTupleTermObject
-      from
-         HashTupleGenericTermObject HashTupleTermTermObject HashTupleTWTermObject
-\ifdef FEGRAMED
-         FE_HashTupleObject
-\endif
-   end
-
-   %%
-   class VariableTermObject
-      from
-         VariableGenericTermObject VariableTermTermObject VariableTWTermObject
-\ifdef FEGRAMED
-         FE_VariableObject
-\endif
-   end
-
-   %%
-   class FDVariableTermObject
-      from
-         FDVariableGenericTermObject FDVariableTermTermObject FDVariableTWTermObject
-\ifdef FEGRAMED
-         FE_FDVariableObject
-\endif
-   end
-
-   %%
-   class MetaVariableTermObject
-      from
-         MetaVariableGenericTermObject MetaVariableTermTermObject MetaVariableTWTermObject
-\ifdef FEGRAMED
-         FE_FDVariableObject
-\endif
-   end
-
-   %%
-   class ShrunkenTermObject
-      from
-         ShrunkenGenericTermObject ShrunkenTermTermObject ShrunkenTWTermObject
-\ifdef FEGRAMED
-         FE_ShrunkenObject
-\endif
-   end
-
-   %%
-   class ReferenceTermObject
-      from
-         ReferenceGenericTermObject ReferenceTermTermObject ReferenceTWTermObject
-\ifdef FEGRAMED
-         FE_ReferenceObject
-\endif
-   end
-
-   %%
-   class UnknownTermObject
-      from
-         UnknownGenericTermObject UnknownTermTermObject UnknownTWTermObject
-\ifdef FEGRAMED
-         FE_UnknownObject
-\endif
-   end
-
-%%%
-%%%
-%%%  Local auxiliary stuff;
-%%%
-   %%
-   %%
-   %%
-   %%  Generator of new reference names;
-   %%
-   create NewRefNameGen from UrObject
-      %%
-      attr number: 1
-
-      %%
-      %%
-      meth gen(?Number)
-         Number = @number
-         number <- @number + 1
+         %%
+         RepManagerObject , insert(str: '<UNKNOWN TERM>')
       end
 
       %%
-      %%  Special method: get the length of the current reference;
-      %%  We use it by the calculating of MetaSize;
-      meth getLen(?Len)
-         Len = {VSLength @number}
-      end
    end
 
    %%

@@ -1,22 +1,24 @@
-%  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Programming Systems Lab, University of Saarland,
+%  Geb. 45, Postfach 15 11 50, D-66041 Saarbruecken.
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
 %  Last modified: $Date$ by $Author$
 %  Version: $Revision$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
+%%% Checking whether the current blackboard is a deep one, and if yes,
+%%% reflect a term (i.e. replace all free vairables with atoms);
 %%%
-%%%   Checking whether the current blackboard is a deep one,
-%%%  and if yes, reflect a term (i.e. replace all free vairables with atoms);
-%%%
-%%%   Note: the equality of variables in reflected term is not detected!
+%%% Note: the equality of variables in reflected term is not detected!
 %%%
 %%%
 
 local
+   AtomConcat
+   AtomConcatAll
+   %%
    IsSeen
    TupleSubterms
    TupleReflectLoop
@@ -28,66 +30,81 @@ local
    %%
    NameUnit = {{`Builtin` getUnit noHandler}}
 in
-   %%
 
    %%
-   %%  Aux: check whether the actual blackboard is a deep one;
+   fun {AtomConcat A1 A2}
+      {String.toAtom {Append {Atom.toString A1} {Atom.toString A2}}}
+   end
+
+   %%
+   local
+      fun {All As}
+         case As of nil then nil
+         [] A|Ar then {Append {All A} {All Ar}}
+         else {Atom.toString As}
+         end
+      end
+   in
+      fun {AtomConcatAll As}
+         case {IsAtom As} then As else {String.toAtom {All As}} end
+      end
+   end
+
+   %%
+   %% Aux: check whether the actual blackboard is a deep one;
    %%
    fun {IsDeepGuard}
       {Not {OnToplevel}}
    end
 
    %%
-   %%  Check whether the given term (Term) was already seen.
-   %%  Otherwise insert it list of seen terms;
+   %% Check whether the given term (Term) was already seen.
+   %% Otherwise insert it list of seen terms;
    %%
-   proc {IsSeen Term ReflectedTerm ListOfSeen ?NewList ?Status}
+   fun {IsSeen Term ReflectedTerm ListOfSeen ?NewList}
+      %%
       %% ReflectedTerm is in/out both;
-      %% relational;
-      case {Some ListOfSeen
-            fun {$ X}
-               {EQ X.1 Term}
-
-               %%
-               %%< relational!
-               %%< if X.1 = Term then true
-               %%< [] true then False
-               %%< fi
-            end}
+      case
+         {Some ListOfSeen fun {$ X}
+                             {EQ X.1 Term}
+                             %%
+                             %%< if X.1 = Term then True
+                             %%< [] true then False
+                             %%< fi
+                          end}
       then
+         %%
+
+         %%
          {ForAll ListOfSeen
           proc {$ X}
              case {EQ X.1 Term} then X.2 = ReflectedTerm
              else true
              end
-
              %%
-             %% relational!
              %%< if X.1 = Term then X.2 = ReflectedTerm
              %%< [] true then true
              %%< fi
           end}
 
          %%
-         Status = True
          NewList = ListOfSeen
+         True
       else
-         Status = False
-         NewList = (Term#ReflectedTerm)|ListOfSeen
+         NewList = Term#ReflectedTerm | ListOfSeen
+         False
       end
    end
 
    %%
    %%
-   %%
    fun {TupleSubterms T}
       local ListOf in
-         ListOf = {MakeList {Width T}}
-         {FoldL ListOf
-          fun {$ Num E}
-             E = T.Num
-             Num + 1
-          end
+         ListOf = {List.make {Width T}}
+         {FoldL ListOf fun {$ Num E}
+                          E = T.Num
+                          Num + 1
+                       end
           1 _}
          ListOf
       end
@@ -95,42 +112,31 @@ in
 
    %%
    %%
-   %%  HO: run over the tuple subterms with a list of already seen subterms;
+   %% HO: run over the tuple subterms with a list of already seen subterms;
    %%
-   proc {TupleReflectLoop Subterms Num ListIn RProc ?ListOut}
+   fun {TupleReflectLoop Subterms Num ListIn RFun}
       %%
-      %% relational;
       case Subterms
-      of T|R then
-         TmpList NextNum in
-         NextNum = {RProc Num T ListIn TmpList}
-         {TupleReflectLoop R NextNum TmpList RProc ListOut}
-      else
-         ListOut = ListIn
+      of T|R then TmpList in
+         {TupleReflectLoop R {RFun Num T ListIn TmpList} TmpList RFun}
+      else ListIn
       end
    end
 
    %%
-   %%  HO: ... for records;
-   %%
-   proc {RecordReflectLoop RArity ListIn RProc ?ListOut}
+   %% HO: ... for records;
+   fun {RecordReflectLoop RArity ListIn RFun}
       %%
-      %% relational;
       case RArity
-      of F|R then
-         TmpList in
-         {RProc F ListIn TmpList}
-         {RecordReflectLoop R TmpList RProc ListOut}
-      else
-         ListOut = ListIn
+      of F|R then {RecordReflectLoop R {RFun F ListIn} RFun}
+      else ListIn
       end
    end
 
    %%
-   %%  Convert an incomplete list to the wf-list (non-monotonically);
+   %% Convert an incomplete list to the wf-list (non-monotonically);
    fun {GetWFList LIn}
       %%
-      %% relational;
       case LIn
       of E|R then E|{GetWFList R}
       [] _ then nil
@@ -138,196 +144,176 @@ in
    end
 
    %%
-   %%  The reflect function itself;
-   %%
-   proc {ReflectTerm TermIn ListIn ?TermOut ?ListOut}
+   %% The reflect function itself;
+   fun {ReflectTerm TermIn ListIn ?TermOut}
       local Status TmpList in
          Status = {IsSeen TermIn TermOut ListIn TmpList}
-         case Status then
-            ListOut = TmpList
-         else
-            case {IsVar TermIn} then
+
+         %%
+         case Status then TmpList
+         elsecase {IsVar TermIn} then
+            %%
+            %%
+            case {IsRecordCVar TermIn} then
+               RArity KnownRArity KnownRefRArity RLabel L
+            in
                %%
+               %%  convert an OFS to the proper record non-monotonically;
                %%
-               case {IsRecordCVar TermIn} then
-                  RArity KnownRArity RLabel L
-               in
-                  %%
-                  %%  convert an OFS to the proper record non-monotonically;
-                  %%
-                  %%  'RLabel' will be determined later!
-                  RArity = {Record.monitorArity TermIn True}
-                  KnownRArity = {Map {GetWFList RArity}
+               %%  'RLabel' will be determined later!
+               RArity = {Record.monitorArity TermIn True}
+               KnownRArity = {GetWFList RArity}
+               KnownRefRArity = {Map KnownRArity
                                  fun {$ FN} {ReflectTerm FN nil $ _} end}
 
-                  %%
-                  %% TODO!!!
-                  job
-                     L = {Label TermIn}
-                  end
+               %%
+               %% TODO! there must be either a non-monotonic
+               %% primitive saying whether an OFS has a label
+               %% already, or - even better? - a non-monotonic
+               %% version of 'Label' which never suspends;
+               job L = {Label TermIn} end
 
-                  %%
-                  RLabel =
-                  case {IsVar L} then '_...'
-                  else {String.toAtom
-                        {VirtualString.toString
-                         {ReflectTerm L nil $ _}#'...'}}
-                  end
-
-                  %%
-                  TermOut = {MakeRecord RLabel KnownRArity}
-                  {RecordReflectLoop KnownRArity TmpList
-                   proc {$ F ListIn ListOut}
-                      TermOut.F = {ReflectTerm
-                                   TermIn^F
-                                   ListIn $ ListOut}
-                   end
-                   ListOut}
-                  %%
-               else
-                  %%  a variable;
-                  case {IsFdVar TermIn} then
-                     SubInts
-                  in
-                     {Map
-                      {FD.reflect.dom TermIn}
-                      proc {$ Interval Atom}
-                         Atom = case Interval
-                                of L#H then
-                                   {AtomConcatAll
-                                    [' ' {IntToAtom L} '..' {IntToAtom H}]}
-                                else
-                                   {AtomConcat ' ' {IntToAtom Interval}}
-                                end
-                      end
-                      SubInts}
-
-                     %%
-                     TermOut =
-                     {AtomConcatAll [{System.printName TermIn}
-                                     '{' SubInts ' }']}
-                  elsecase {IsMetaVar TermIn} then
-                     %%
-                     TermOut = {AtomConcatAll [{System.printName TermIn}
-                                               '<' {MetaGetNameAsAtom TermIn}
-                                               ':' {MetaGetDataAsAtom TermIn}
-                                               '>']}
-                  else
-                     TermOut = {System.printName TermIn }
-                  end
-
-                  %%
-                  ListOut = TmpList
+               %%
+               RLabel =
+               case {IsVar L} then '_...'
+               else {String.toAtom
+                     {VirtualString.toString
+                      {ReflectTerm L nil $ _}#'...'}}
                end
+
+               %%
+               TermOut = {Record.make RLabel KnownRefRArity}
+               {RecordReflectLoop KnownRArity TmpList
+                fun {$ F ListIn} RF in
+                   RF = {ReflectTerm F nil $ _}
+                   {ReflectTerm TermIn.F ListIn TermOut.RF}
+                end}
             else
-               case {Value.type TermIn}
-               of name then
+               %%  a variable;
+               case {IsFdVar TermIn} then
+                  %%
                   TermOut =
-                  case {IsBool TermIn} then
-                     case TermIn then '<Bool: true>'
-                     else '<Bool: false>'
-                     end
-                  elsecase TermIn == NameUnit then "<N: unit>"
-                  else
-                     {AtomConcatAll
-                      ['<Name: ' {System.printName TermIn } ' @ '
-                       {IntToAtom {AddrOf TermIn}} '>']}
-                  end
-
+                  {String.toAtom {System.valueToVirtualString Atom 1 1}}
+               elsecase {IsMetaVar TermIn} then
                   %%
-                  ListOut = TmpList
-               [] procedure then
-                  %%
-
-                  %%
-                  TermOut = {AtomConcatAll
-                             ['<Procedure: '
-                              {System.printName TermIn } '/'
-                              {IntToAtom {Procedure.arity TermIn}} ' @ '
-                              {IntToAtom {AddrOf TermIn}} '>']}
-                   ListOut = TmpList
-               [] cell then
-                  %%
-
-                  %%
-                  TermOut = {AtomConcatAll
-                             ['<Cell: ' {AddrOf TermIn} '>']}
-                  ListOut = TmpList
-               [] record then RArity L LabelOf in
-                  RArity = {Map {Arity TermIn}
-                            fun {$ FN} {ReflectTerm FN nil $ _} end}
-
-                  %%
-                  L = {Label TermIn}
-                  LabelOf = {ReflectTerm L nil $ _}
-
-                  %%
-                  %%
-                  TermOut = {MakeRecord LabelOf RArity}
-                  {RecordReflectLoop RArity TmpList
-                   proc {$ F ListIn ListOut}
-                      TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
-                   end
-                  ListOut}
-               [] chunk then RArity LabelOf in
-                  RArity = {Map {ChunkArity TermIn} % all features;
-                            fun {$ FN} {ReflectTerm FN nil $ _} end}
-
-                  %%
-                  %%  convert the chunk to a record...
-                  LabelOf =
-                  case {IsObject TermIn} then
-                     {AtomConcatAll
-                      ['<Object: '
-                       {System.printName {Class.get TermIn}} ' @ '
-                       {IntToAtom {AddrOf TermIn}} '>']}
-                  elsecase {IsClass TermIn} then
-                     {AtomConcatAll
-                      ['<Class: '
-                       {System.printName TermIn} ' @ '
-                       {IntToAtom {AddrOf TermIn}} '>']}
-                  elsecase {IsArray TermIn} then
-                     {AtomConcatAll
-                      ['<Array: @ '
-                       {IntToAtom {AddrOf TermIn}} '>']}
-                  elsecase {IsDictionary TermIn} then
-                     {AtomConcatAll
-                      ['<Dictionary: @ '
-                       {IntToAtom {AddrOf TermIn}} '>']}
-                  else
-                     {System.printName TermIn}
-                  end
-
-                  %%
-                  TermOut = {MakeRecord LabelOf RArity}
-                  {RecordReflectLoop RArity TmpList
-                   proc {$ F ListIn ListOut}
-                      TermOut.F = {ReflectTerm TermIn.F ListIn $ ListOut}
-                   end
-                  ListOut}
-               [] tuple then Subterms in
-                  Subterms = {TupleSubterms TermIn}
-
-                  %%
-                  TermOut = {MakeTuple {Label TermIn} {Length Subterms}}
-                  {TupleReflectLoop Subterms 1 TmpList
-                   fun {$ Num ST ListIn ListOut}
-                      TermOut.Num = {ReflectTerm ST ListIn $ ListOut}
-                      Num + 1
-                   end
-                   ListOut}
-               else
-                  TermOut = TermIn
-                  ListOut = TmpList
+                  TermOut = {AtomConcatAll [{System.printName TermIn}
+                                            '<' {MetaGetNameAsAtom TermIn}
+                                            ':' {MetaGetDataAsAtom TermIn}
+                                            '>']}
+               else TermOut = {System.printName TermIn }
                end
+
+               %%
+               TmpList
+            end
+         else
+            case {Value.type TermIn}
+            of name then
+               TermOut =
+               case {IsBool TermIn} then
+                  case TermIn then '<Bool: true>'
+                  else '<Bool: false>'
+                  end
+               elsecase TermIn == NameUnit then "<N: unit>"
+               else
+                  {AtomConcatAll
+                   ['<Name: ' {System.printName TermIn } ' @ '
+                    {IntToAtom {AddrOf TermIn}} '>']}
+               end
+
+               %%
+               TmpList
+            [] procedure then
+               %%
+
+               %%
+               TermOut = {AtomConcatAll
+                          ['<Procedure: '
+                           {System.printName TermIn } '/'
+                           {IntToAtom {Procedure.arity TermIn}} ' @ '
+                           {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] cell then
+               %%
+
+               %%
+               TermOut =
+               {AtomConcatAll ['<Cell @ ' {IntToAtom {AddrOf TermIn}} '>']}
+               TmpList
+            [] record then RArity RefRArity L LabelOf in
+               RArity = {Arity TermIn}
+               RefRArity = {Map RArity
+                            fun {$ FN} {ReflectTerm FN nil $ _} end}
+
+               %%
+               L = {Label TermIn}
+               LabelOf = {ReflectTerm L nil $ _}
+
+               %%
+               %%
+               TermOut = {Record.make LabelOf RefRArity}
+               {RecordReflectLoop RArity TmpList
+                fun {$ F ListIn} RF in
+                   RF = {ReflectTerm F nil $ _}
+                   {ReflectTerm TermIn.F ListIn TermOut.RF}
+                end}
+            [] chunk then RArity RefRArity LabelOf in
+               RArity = {ChunkArity TermIn} % all features;
+               RefRArity = {Map RArity
+                            fun {$ FN} {ReflectTerm FN nil $ _} end}
+
+               %%
+               %%  convert the chunk to a record...
+               LabelOf =
+               case {IsObject TermIn} then
+                  {AtomConcatAll
+                   ['<Object: '
+                    {System.printName {Class.get TermIn}} ' @ '
+                    {IntToAtom {AddrOf TermIn}} '>']}
+               elsecase {IsClass TermIn} then
+                  {AtomConcatAll
+                   ['<Class: '
+                    {System.printName TermIn} ' @ '
+                    {IntToAtom {AddrOf TermIn}} '>']}
+               elsecase {IsArray TermIn} then
+                  {AtomConcatAll
+                   ['<Array: @ '
+                    {IntToAtom {AddrOf TermIn}} '>']}
+               elsecase {IsDictionary TermIn} then
+                  {AtomConcatAll
+                   ['<Dictionary: @ '
+                    {IntToAtom {AddrOf TermIn}} '>']}
+               else {System.printName TermIn}
+               end
+
+               %%
+               TermOut = {Record.make LabelOf RefRArity}
+               {RecordReflectLoop RArity TmpList
+                fun {$ F ListIn} RF in
+                   RF = {ReflectTerm F nil $ _}
+                   {ReflectTerm TermIn.F ListIn TermOut.RF}
+                end}
+            [] tuple then Subterms in
+               Subterms = {TupleSubterms TermIn}
+
+               %%
+               TermOut = {Tuple.make {Label TermIn} {Length Subterms}}
+               {TupleReflectLoop Subterms 1 TmpList
+                fun {$ Num ST ListIn ListOut}
+                   TermOut.Num = {ReflectTerm ST ListIn $ ListOut}
+                   Num + 1
+                end}
+            else
+               TermOut = TermIn
+               TmpList
             end
          end
       end
    end
 
    %%
-   %%  The 'final' reflect procedure;
-   %%  Should be used in a deep guard only;
+   %% The 'final' reflect procedure;
+   %% Should be used in a deep guard only;
    %%
    fun {Reflect Term}
       local IsDeep S ReflectedTerm in
@@ -338,7 +324,7 @@ in
             {ReflectTerm Term nil ReflectedTerm _}
             S = {SearchOne proc {$ X} X = ReflectedTerm end}
 
-            %% relational;
+            %%
             case S of [T] then T
             else 'error by the reflection'
             end

@@ -1,10 +1,11 @@
 OzLib      = $(OZHOME)/lib
 BrowserLib = $(OzLib)/browser
 
-LOCALMODULES = constants.oz tcl-interface.oz core.oz termObject.oz\
-               atoms&strings.oz errors.oz terms.oz reflect.oz\
-               termsStore.oz browserObject.oz store.oz textWidget.oz\
-               setParameter.oz pseudoObject.oz subterms.oz undefs.oz
+LOCALMODULES =  XResources.oz browserObject.oz browserTerm.oz \
+                bufs&streams.oz constants.oz controlObject.oz core.oz \
+                errors.oz managerObject.oz reflect.oz repManager.oz \
+                setParameter.oz store.oz tcl-interface.oz termObject.oz \
+                termsStore.oz undefs.oz windowManager.oz
 
 AUXFILES = help.txt
 
@@ -33,4 +34,4 @@ $(BrowserLib)/%.txt: %.txt
 
 undefs: constants.oz
         rm -f undefs.oz
-        grep '^\\define' constants.oz | sed -e '1,$$s/define/undef/g' > undefs.oz
+        egrep '^\\define' constants.oz | sed -e '1,$$s/define/undef/g' > undefs.oz

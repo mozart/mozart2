@@ -1,273 +1,317 @@
-%  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Programming Systems Lab, University of Saarland,
+%  Geb. 45, Postfach 15 11 50, D-66041 Saarbruecken.
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
 %  Last modified: $Date$ by $Author$
 %  Version: $Revision$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
 %%%
-%%%  tcl/tk (somewhat) interface to Oz (Modern) Browser;
+%%% Tcl/tk (somewhat) interface to Oz Browser;
+%%%
+%%% The idea behind these objects is not only to encapsulate the state
+%%% of windows etc. (though it's also a goal), but rather to provide
+%%% for an only place where things from Tk.oz are used;
 %%%
 %%%
-%%%
-
-%%
-%%  Prototype of browser's window;
-%%
-local
-   %%  synchronizing?
-   TkNewName
-   NullAction
-
-   %%
-   %% TagsListLoop   % not used now;
-   %% RemovePosition
-   %% %%   Parse a string of the form '<number><delim><number>...<number>'
-   %% %%  and get numbers in the list
-   %% GetNums
-
-   %%
-   class MyToplevel from Tk.toplevel end
-in
 
 %%%
 %%%   Local auxiliary functions;
 %%%
+local
    %%
-   %%  optimized: create Tags and Marks
+   MyToplevel
+
    %%
-   local C = {Cell.new 1} in
-      fun {TkNewName}
-         Val NewVal
-      in
-         Val = {Cell.exchange C $ NewVal}
-         NewVal = Val + 1
-         browser#Val
+   ProcessEntries
+   DerefEntry
+   %%
+   MakeEvent
+
+   %%
+   GetRepMarks
+   GetStrs
+
+   %%
+   CanvasFeat   = {NewName}     %
+   TagFeat      = {NewName}     %
+
+   %%
+in
+
+   %%
+   class MyToplevel from Tk.toplevel end
+
+   %%
+   %% Apply a command 'W' to elements of the list 'Es' augmented with
+   %% the menubar's widget name 'M'. It looks like
+   %%
+   %% {Process
+   %%  Menu
+   %%  [browser([show close]) buffer(clear)]
+   %%   tk(entryconf state:disabled)}
+   %%
+   %% This code has been stolen from the Explorer. Thanks to Christian!
+   %%
+   proc {ProcessEntries M Es W}
+      case Es of nil then true
+      [] E|Er then {ProcessEntries M E W} {ProcessEntries M Er W}
+      elsecase {IsAtom Es} then {M.Es W}
+      else {ProcessEntries M.{Label Es} Es.1 W}
+      end
+   end
+   fun {DerefEntry M E}
+      case {IsAtom E} then M.E
+      else {DerefEntry M.{Label E} E.1}
       end
    end
 
    %%
    %%
-   proc {NullAction}
-      true
-   end
-
-   /*
-   %%
-   %%
-   proc {TagsListLoop In OutList Tmp}
-      case In
-      of E|R then
-         NT in
-         case E == CharSpace then
-            OutList = Tmp|NT
-            {TagsListLoop R NT nil}
-         else
-            {TagsListLoop R OutList E|Tmp}
+   local MakeEventPattern in
+      fun {MakeEventPattern E}
+         case E
+         of ctrl(R)    then 'Control-' # {MakeEventPattern R}
+         [] shift(R)   then 'Shift-' # {MakeEventPattern R}
+         [] lock(R)    then 'Lock-' # {MakeEventPattern R}
+         [] mod1(R)    then 'Mod1-' # {MakeEventPattern R}
+         [] mod2(R)    then 'Mod2-' # {MakeEventPattern R}
+         [] mod3(R)    then 'Mod3-' # {MakeEventPattern R}
+         [] mod4(R)    then 'Mod4-' # {MakeEventPattern R}
+         [] mod5(R)    then 'Mod5-' # {MakeEventPattern R}
+         [] alt(R)     then 'Alt-' #  {MakeEventPattern R}
+         [] button1(R) then 'Button1-' # {MakeEventPattern R}
+         [] button2(R) then 'Button2-' # {MakeEventPattern R}
+         [] button3(R) then 'Button3-' # {MakeEventPattern R}
+         [] button4(R) then 'Button4-' # {MakeEventPattern R}
+         [] button5(R) then 'Button5-' # {MakeEventPattern R}
+         [] double(R)  then 'Double-' # {MakeEventPattern R}
+         [] triple(R)  then 'Triple-' # {MakeEventPattern R}
+         else E
          end
-      else OutList = [Tmp]
+      end
+
+      %%
+      fun {MakeEvent R}
+         '<' # {MakeEventPattern R} # '>'
       end
    end
 
    %%
-   %%
-   proc {RemovePosition Widget Pos STag Tags Sync}
-      %% relational;
-      case Tags
-      of T|R then
-         case STag == T then Sync = ok
-         else
-            {Widget tk(tag(remove T Pos))}
-            {RemovePosition Widget Pos STag R Sync}
-         end
-      else
-         {BrowserError [' RemovePosition: have not found itself']}
-         %%  since otherwise something has gone wrong;
-      end
-   end
-
-   %%
-   %%
-   fun {GetNums Str Delim ParRes}
-      local Ind in
-         Ind = {FindChar Str Delim}
+   %% It gets a previous mark to 'Index' until it escapes 'RefIndex';
+   fun {GetRepMarks BW Index RefIndex}
+      local M in
+         M = {Tk.return o(BW mark prev Index)}
 
          %%
-         case Ind == ~1 then
-            {Append ParRes [{String.toInt Str}]}
-         else
-            HeadOf TailOf
-         in
-            HeadOf = {String.toInt {Head Str Ind-1}}
-            TailOf = {Tail Str Ind+1}
-
-            %%
-            {GetNums TailOf Delim {Append ParRes [HeadOf]}}
+         case M == "" orelse {Tk.return o(BW index M)} \= RefIndex
+         then nil
+         else M|{GetRepMarks BW M RefIndex}
          end
       end
    end
-   */
+
+   %%
+   %% 'GetsStrs' extracts substrings delimited by 'Delim' out of 'Str';
+   local FindChar FindChar1 in
+      fun {FindChar S C} {FindChar1 S C 1} end
+      fun {FindChar1 S C N}
+         case S of H|R then
+            case H of !C then N
+            else {FindChar1 R C N+1}
+            end
+         else ~1
+         end
+      end
+
+      %%
+      %% Its input argument 'Str' may not be the empty list (because
+      %% of 'List.take');
+      fun {GetStrs Str Delim ParRes}
+         local Ind in
+            Ind = {FindChar Str Delim}
+            %%
+            case Ind == ~1 then {Append ParRes [Str]}
+            else HeadOf TailOf in
+               HeadOf = {List.take Str Ind-1}
+               TailOf = {List.drop Str Ind}
+
+               %%
+               {GetStrs TailOf Delim {Append ParRes [HeadOf]}}
+            end
+         end
+      end
+
+      %%
+   end
 
 %%%
 %%%
+%%%  Prototype of browser's window;
 %%%
    %%
    %%
-   class ProtoBrowserWindow from UrObject
+   class BrowserWindowClass from UrObject
+      %%
+
       %%
       feat
-         browserObj
-         store
-         standAlone
-         window
-         browseWidget
+      %% given by creation;
+         browserObj             %
+         store                  % cache it directly;
+         standAlone             % 'True'/'False';
+
+      %%
+      %% widgets;
+      %%
+      %% static, i.e. a 'BrowserWindowClass' cannot re-create
+      %% it's widget;
+         Window
+         BrowseWidget
+      %% We don't need the 'FrameHS' except for specifying the
+      %% placement order in the 'exposeMenuBar';
+         FrameHS
+      %%
+      %% The only mark where something can be inserted;
+         Cursor
+
+      %%
+      %% Tcl"s (low-level), and a map from Tcl"s to pairs
+      %% (<type>,<term object>).
+         TclBase
+         TclsMap                % a map mentioned above;
 
       %%
       attr
-         menusFrame: InitValue
-         buttonsFrame: InitValue
-         highlightTag: InitValue
-         HScrollbar: InitValue
+      %% these widgets can be triggered;
+         menuBar:      InitValue
+      %% Cursor's column #.
+         cursorCol:    InitValue
       %%
-         FrameHS: InitValue
-         FrameButtons: InitValue
-         FrameMenus: InitValue
-      %%  we don't need the last three normally,
-      %% but it's essential for the packing order and for close methods;
+         TclCN:        InitValue        % current tcl number;
+         TclsCache:    InitValue        % just a list of reusable Tcl"s;
+         TclsTail:     InitValue        % a tail of tcl"s cache;
       %%
-         TestTW: InitValue
-      %%  this is used by 'tryFont';
+         HighlightTag: InitValue
+      %%
+      %% optimized 'unsetMark': first, collect some of them into
+      %% 'o'-tuple, and, after that - unset them in one shot:
+         UnsetMarks
+
+%%%
+%%%
+%%%  Controlling a browser window, etc.
+%%%
 
       %%
       %%  ... store the given Window as a browser's "root" window or
-      %% make the new one if none is given;
-      meth init(window:        W
+      %% make a new one if none is given;
+      meth init(window:        WindowIn
                 browserObj:    BObj
                 store:         Store
-                standAlone:    StandAlone
                 screen:        Screen)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk::init'}
+         {Show 'BrowserWindowClass::init!'}
 \endif
          %%
          self.browserObj = BObj
          self.store = Store
-         self.standAlone = StandAlone
 
          %%
-         case StandAlone then
-            Window XSize YSize CloseAction RootXSize RootYSize
+         case WindowIn == InitValue then
+            WindowLocal XSize YSize CloseAction RootXSize RootYSize
          in
+            self.standAlone = True
             XSize = {self.store read(StoreXSize $)}
             YSize = {self.store read(StoreYSize $)}
 
             %%
-            case Screen == InitValue then
-               Window = {New MyToplevel tkInit(withdraw: True)}
-            else
-               Window = {New MyToplevel tkInit(withdraw: True
-                                               screen: Screen)}
-            end
+            WindowLocal =
+            {New MyToplevel case Screen == InitValue
+                            then tkInit(withdraw:True)
+                            else tkInit(withdraw:True screen:Screen)
+                            end}
 
             %%
-            CloseAction = {New Tk.action
-                           tkInit(parent: Window
-                                  action: proc {$}
-                                             case self.standAlone then
-                                                {self.browserObj close}
-                                             else true
-                                             end
-                                          end)}
+            CloseAction = {New Tk.action tkInit(parent: WindowLocal
+                                                action: BObj#close)}
 
             %%
             {Tk.send update(idletasks)}
-            {Tk.returnInt winfo(screenheight Window) RootYSize}
-            {Tk.returnInt winfo(screenwidth Window) RootXSize}
+            {Tk.returnInt winfo(screenheight WindowLocal) RootYSize}
+            {Tk.returnInt winfo(screenwidth WindowLocal) RootXSize}
 
             %%
             {Wait RootYSize}
             {Wait RootXSize}
+
             %%
             {Tk.batch
-             [wm(maxsize Window (RootXSize) (RootYSize))
-              %% wm(title Window ITitle)
-              wm(iconname Window IITitle)
-              wm(iconbitmap Window '@'#IIBitmap)
-              %% wm(iconmask Window '@'#IIBMask)
-              wm(geometry Window XSize#x#YSize)
-              wm(protocol Window "WM_DELETE_WINDOW" CloseAction)]}
+             [wm(maxsize WindowLocal (RootXSize) (RootYSize))
+              wm(iconname WindowLocal IITitle)
+              wm(iconbitmap WindowLocal '@'#IIBitmap)
+              %% wm(iconmask WindowLocal '@'#IIBMask)
+              wm(geometry WindowLocal XSize#x#YSize)
+              wm(protocol WindowLocal 'WM_DELETE_WINDOW' CloseAction)]}
 
             %%
-            case self.browserObj.IsView then
-               {Tk.send wm(title Window IVTitle)}
-            else
-               {Tk.send wm(title Window ITitle)}
-            end
+            {Tk.send wm(title WindowLocal
+                        case self.browserObj.IsView then IVTitle
+                        else ITitle
+                        end)}
 
             %%
-            self.window = Window
+            self.Window = WindowLocal
          else
-            self.window = W
+            self.standAlone = False
+            self.Window = WindowIn
             %%  Note that there is no control for this window;
-            %%  It means in particular, that the application giving this window
-            %% shouldn't do any *nonsese".
+            %%  It means in particular, that the application
+            %% giving this window shouldn't do any *nonsese".
          end
 
          %%
-         TestTW <- {New Tk.text tkInit(parent: self.window
-                                       width: 1
-                                       height: 1
-                                       bd: 0
-                                       exportselection: 0
-                                       highlightthickness: 0
-                                       padx: 0
-                                       pady: 0
-                                       selectborderwidth: 0
-                                       spacing1: 0
-                                       spacing2: 0
-                                       spacing3: 0)}
-
-         %% Added by Christian:
-         <<CreateBrowseWidget>>
-      end
-
-      %%
-      %%  close the top level widnow;
-      %%
-      meth close
 \ifdef DEBUG_TI
-         {Show 'tcl/tk::close'}
+         {Show 'BrowserWindowClass::init: toplevel complete;'}
 \endif
-         {self.window close}
-         %% if the window was given from aside, 'close' method should be provided too;
-         <<UrObject close>>
-         %% reject all future messages;
-      end
 
-      %%
-      %%  Create the text widget and all auxiliaries (such as scrollbars);
-      %%
-      meth CreateBrowseWidget()
+         %%
+         %% Initialize Tcl"s generator, and create a tcl"s map;
+         self.TclBase = {String.toAtom {Tk.getPrefix}}
+         self.TclsMap = {Dictionary.new}
+         TclCN <- 1             % '0' is used (for the cursor);
+         TclsCache <- _
+         TclsTail <- @TclsCache
+         UnsetMarks <- nil
+
+         %%
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: CreateBrowseWidget'}
+         {Show 'BrowserWindowClass::init: internals complete;'}
 \endif
+
+         %%
+         %% Now, we have a toplevel widget or its replacement in the
+         %% case of embedded browsers;
          local
-            Window         %  top level;
+            W              %  top level;
             FHS            %  frame for horizontal scrollbar and glue;
-            FHS_F          %  this frame servers as a glue (see previous line);
+            FHS_F          %  this frame servers as a glue
+                           % (see previous line);
             FHS_HS         %  horizontal scrollbar;
-            BrowseWidget   %
-            VS             %  vertical scrollbar bound with BrowseWidget directly;
-            FSSync
+            BW             %
+            VS             %  vertical scrollbar bound with the BW directly;
+
+            %%
+            ButtonClickAction
+            DButtonClickAction
          in
             %%
-            Window = self.window
+            W = self.Window
 
             %%
-            FHS = {New Tk.frame tkInit(parent: Window
+            FHS = {New Tk.frame tkInit(parent: W
                                        bd: 0
                                        highlightthickness: 0)}
             FHS_HS = {New Tk.scrollbar tkInit(parent: FHS
@@ -276,186 +320,92 @@ in
                                               width: ISWidth
                                               orient: horizontal
                                               highlightthickness: 0)}
-            FHS_F = {New Tk.frame tkInit(parent: FHS
-                                         width: (ISWidth + IBigBorder + IBigBorder)
-                                         height: (ISWidth + IBigBorder + IBigBorder)
-                                         highlightthickness: 0)}
-            BrowseWidget = {New Tk.text tkInit(parent: Window
-                                               % width: ITWWidth
-                                               % height: ITWHeight
-                                               bd: IBigBorder
-                                               relief: ITextRelief
-                                               padx: ITWPad
-                                               pady: ITWPad
-                                               wrap: none
-                                               insertontime: 0
-                                               background: IBackGround
-                                               foreground: IForeGround
-                                               highlightthickness: 0)}
-
-            %%  ... just ignore the result;
-            {Wait {Tk.returnInt
-                   'catch'(q(BrowseWidget conf(cursor: ICursorName)))}}
-
-            %% Select the font from ITWFont?, and store it;
-            %%
-            {FoldL [ITWFont1 ITWFont2 ITWFont3]
-             fun {$ Proceed IFont}
-                case Proceed then
-                   %%
-                   case
-                      {Tk.returnInt
-                       'catch'(q(BrowseWidget conf(font: IFont.font)))} \= 0
-                   then True
-                   else
-                      %%
-                      %%  This doesn't work 'cause we have to update the
-                      %% radio button too;
-                      %% {self.store store(StoreTWFont IFont)}
-                      job
-                         {self.browserObj
-                          setParameter(BrowserFont IFont.font)}
-                      end
-                      False
-                   end
-                else Proceed
-                end
-             end
-             True FSSync}
+            FHS_F = {New Tk.frame
+                     tkInit(parent: FHS
+                            width: (ISWidth + IBigBorder + IBigBorder)
+                            height: (ISWidth + IBigBorder + IBigBorder)
+                            highlightthickness: 0)}
+            BW = {New Tk.text tkInit(parent: W
+                                     %% width: ITWWidth
+                                     %% height: ITWHeight
+                                     bd: IBigBorder
+                                     relief: ITextRelief
+                                     padx: ITWPad
+                                     pady: ITWPad
+                                     wrap: none
+                                     insertontime: 0
+                                     background: IBackGround
+                                     foreground: IForeGround
+                                     highlightthickness: 0)}
 
             %%
-            {Wait FSSync}
+            %%  ... let's try to change the cursor shape
+            %% (asynchronously);
+            thread
+               {Tk.return 'catch'(q(BW conf(cursor: ICursorName))) _}
+            end
 
             %%
-            VS = {New Tk.scrollbar tkInit(parent: Window
+            self.BrowseWidget = BW
+            self.FrameHS = FHS
+
+            %%
+            %% Select a font from ITWFont?, and store it;
+            {Wait
+             (self , FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont True $))}
+
+            %%
+            %% scrollbars;
+            VS = {New Tk.scrollbar tkInit(parent: W
                                           relief: IFrameRelief
                                           bd: IBigBorder
                                           width: ISWidth
                                           highlightthickness: 0)}
-            {Tk.addYScrollbar BrowseWidget VS}
-            {Tk.addXScrollbar BrowseWidget FHS_HS}
+            {Tk.addYScrollbar BW VS}
+            {Tk.addXScrollbar BW FHS_HS}
+
+            %%
+\ifdef DEBUG_TI
+            {Show 'BrowserWindowClass::init: widgets complete;'}
+\endif
 
             %%
             %%  pack them;
             {Tk.batch
-             [pack(FHS o(side: bottom fill: x padx: 0 pady: 0))
-              pack(VS o(side: right fill: y padx: IPad pady: IPad))
-              pack(FHS_HS o(side: left fill: x expand: yes
-                            padx: IPad pady: IPad))
-              pack(FHS_F o(side: right fill: none padx: IPad pady: IPad))
-              pack(BrowseWidget o(fill: both expand: yes side: top
-                                  padx: IPad pady: IPad))
-              %%
-              o(pr#oc myNullProc '' '')
-              %%
-              %%
-
-              /*
-              %%
-              %%  Actually, not necessary any more - since all class bindigns
-              %% can be discarded with 'bindtags';
-              %%
-              %%  ... and now, discard ~all bindings from text widget,
-              %% as they are specified in 'lib/tk/text.tcl';
-              %%
-              %%  '<Enter>' and '<FocusIn>' are kept;
-              bind('Text' '<1>' myNullProc)
-              bind('Text' '<B1-Motion>' myNullProc)
-              bind('Text' '<Double-1>' myNullProc)
-              bind('Text' '<Triple-1>' myNullProc)
-              bind('Text' '<Shift-1>' myNullProc)
-              bind('Text' '<Double-Shift-1>' myNullProc)
-              bind('Text' '<Triple-Shift-1>' myNullProc)
-              bind('Text' '<B1-Leave>' myNullProc)
-              bind('Text' '<B1-Enter>' myNullProc)
-              bind('Text' '<ButtonRelease-1>' myNullProc)
-              bind('Text' '<Control-1>' myNullProc)
-              bind('Text' '<Left>' myNullProc)
-              bind('Text' '<Right>' myNullProc)
-              bind('Text' '<Up>' myNullProc)
-              bind('Text' '<Down>' myNullProc)
-              bind('Text' '<Shift-Left>' myNullProc)
-              bind('Text' '<Shift-Right>' myNullProc)
-              bind('Text' '<Shift-Up>' myNullProc)
-              bind('Text' '<Shift-Down>' myNullProc)
-              bind('Text' '<Control-Left>' myNullProc)
-              bind('Text' '<Control-Right>' myNullProc)
-              bind('Text' '<Control-Up>' myNullProc)
-              bind('Text' '<Control-Down>' myNullProc)
-              bind('Text' '<Shift-Control-Left>' myNullProc)
-              bind('Text' '<Shift-Control-Right>' myNullProc)
-              bind('Text' '<Shift-Control-Up>' myNullProc)
-              bind('Text' '<Shift-Control-Down>' myNullProc)
-              bind('Text' '<Prior>' myNullProc)
-              bind('Text' '<Shift-Prior>' myNullProc)
-              bind('Text' '<Control-Prior>' myNullProc)
-              bind('Text' '<Next>' myNullProc)
-              bind('Text' '<Shift-Next>' myNullProc)
-              bind('Text' '<Control-Next>' myNullProc)
-              bind('Text' '<Home>' myNullProc)
-              bind('Text' '<Shift-Home>' myNullProc)
-              bind('Text' '<Control-Home>' myNullProc)
-              bind('Text' '<Control-Shift-Home>' myNullProc)
-              bind('Text' '<End>' myNullProc)
-              bind('Text' '<Shift-End>' myNullProc)
-              bind('Text' '<Control-End>' myNullProc)
-              bind('Text' '<Control-Shift-End>' myNullProc)
-              bind('Text' '<Tab>' myNullProc)
-              bind('Text' '<Shift-Tab>' myNullProc)
-              bind('Text' '<Control-Tab>' myNullProc)
-              bind('Text' '<Control-Shift-Tab>' myNullProc)
-              bind('Text' '<Control-i>' myNullProc)
-              bind('Text' '<Return>' myNullProc)
-              bind('Text' '<Delete>' myNullProc)
-              bind('Text' '<BackSpace>' myNullProc)
-              bind('Text' '<Control-space>' myNullProc)
-              bind('Text' '<Select>' myNullProc)
-              bind('Text' '<Control-Shift-space>' myNullProc)
-              bind('Text' '<Shift-Select>' myNullProc)
-              bind('Text' '<Control-slash>' myNullProc)
-              bind('Text' '<Control-backslash>' myNullProc)
-              bind('Text' '<Insert>' myNullProc)
-              bind('Text' '<KeyPress>' myNullProc)
-              bind('Text' '<Alt-KeyPress>' myNullProc)
-              bind('Text' '<Meta-KeyPress>' myNullProc)
-              bind('Text' '<Control-KeyPress>' myNullProc)
-              bind('Text' '<Escape>' myNullProc)
-              bind('Text' '<>' myNullProc)
-              %%  some of emacs-like bindings;
-              %%  other fall in the 'KeyPress' cases;
-              bind('Text' '<2>' myNullProc)
-              bind('Text' '<B2-Motion>' myNullProc)
-              bind('Text' '<ButtonReleas-2>' myNullProc)
-              %%
-              */
+             [pack(FHS side: bottom fill: x padx: 0 pady: 0)
+              pack(VS side: right fill: y padx: IPad pady: IPad)
+              pack(FHS_HS side: left fill: x expand: yes
+                   padx: IPad pady: IPad)
+              pack(FHS_F side: right fill: none padx: IPad pady: IPad)
+              pack(BW fill: both expand: yes side: top
+                   padx: IPad pady: IPad)
 
               %%
-              %%
-              bindtags(BrowseWidget q(BrowseWidget))
-
-              %%  remove all 'KeyPress' bindings
-              %% (some of them will be reinstalled soon);
-              bind(BrowseWidget '<KeyPress>' myNullProc)
+              %%  Only bindings by the BrowseWidget itself are allowed;
+              bindtags(BW q(BW))
 
               %%
-              bind(BrowseWidget '<Shift-1>'
-                   "myTkTextButton1 %W %x %y; %W tag remove sel 0.0 end"
-                   %% "tkTextButton1 %W %x %y; %W tag remove sel 0.0 end"
-                  )
-              bind(BrowseWidget '<Shift-B1-Motion>'
-                   "tkTextSelectTo %W %x %y"
-                  )
-              bind(BrowseWidget '<Shift-3>'
-                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
-                  )
-              bind(BrowseWidget '<Shift-B3-Motion>'
-                   "tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y"
-                  )
+              bind(BW '<Shift-1>'
+                   q(v(
+                        'myTkTextButton1 %W %x %y; %W tag remove sel 0.0 end'
+                      )))
+              bind(BW '<Shift-B1-Motion>'
+                   q(v(
+                      'tkTextSelectTo %W %x %y'
+                    )))
+              bind(BW '<Shift-3>'
+                   q(v(
+                      'tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y'
+                    )))
+              bind(BW '<Shift-B3-Motion>'
+                   q(v(
+                        'tkTextResetAnchor %W @%x,%y; tkTextSelectTo %W %x %y'
+                    )))
 
               %%
-              %%  x11 selection - shift-buttons[move];
-              %% actually, they are not Motif-like, but somethings like
-              %% to the 'xterm';
+              %% X11 selection - shift-buttons[move];
+              %% actually, they are not Motif-like, but something like
+              %% 'xterm';
               %%
               %%  exclude '$w mark set insert @$x,$y';
               o(pr#oc myTkTextButton1 q(w x y)
@@ -470,213 +420,221 @@ in
                 )
 
               %%
-              focus(BrowseWidget)
+              focus(BW)
               %%
              ]}
 
             %%
-            %% some special bindings;
-            {BrowseWidget tkBind(event:'<Configure>'
-                                 action: proc {$}
-                                            {self resetTW}
-                                         end)}
-            {Window tkBind(event:'<FocusIn>'
-                           action: proc {$}
-                                      {self focusIn}
-                                      {BrowserMessagesFocus Window}
-                                   end)}
-            {Window tkBind(event:'<FocusOut>'
-                           action: proc {$}
-                                      %%  no special action;
-                                      {BrowserMessagesNoFocus}
-                                   end)}
-            {BrowseWidget tkBind(event:'<Control-x>'
-                                 action: proc {$}
-                                            case self.standAlone then
-                                               {self.browserObj close}
-                                            else true
-                                            end
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-h>'
-                                 action: proc {$}
-                                            {self.browserObj Help}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-z>'
-                                 action: proc {$}
-                                            {self.browserObj Iconify}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-n>'
-                                 action: proc {$}
-                                            {self.browserObj createNewView}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-u>'
-                                 action: proc {$}
-                                            {self.browserObj Unzoom}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-t>'
-                                 action: proc {$}
-                                            {self.browserObj Top}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-f>'
-                                 action: proc {$}
-                                            {self.browserObj first}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-l>'
-                                 action: proc {$}
-                                            {self.browserObj last}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-p>'
-                                 action: proc {$}
-                                            {self.browserObj previous}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-n>'
-                                 action: proc {$}
-                                            {self.browserObj next}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Key-a>'
-                                 action: proc {$}
-                                            {self.browserObj all}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-b>'
-                                 action: proc {$}
-                                            {self.browserObj rebrowse}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-l>'
-                                 action: proc {$}
-                                            {self.browserObj redraw}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-s>'
-                                 action: proc {$}
-                                            {self.store store(StoreNodeNumber 0)}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Control-u>'
-                                 action: proc {$}
-                                            {self.browserObj undraw}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Mod1-Control-m>'
-                                 action: proc {$}
-                                            {self.browserObj toggleMenus}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Mod2-Control-m>'
-                                 action: proc {$}
-                                            {self.browserObj toggleMenus}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Mod1-Control-b>'
-                                 action: proc {$}
-                                            {self.browserObj toggleButtons}
-                                         end)}
-            {BrowseWidget tkBind(event:'<Mod2-Control-b>'
-                                 action: proc {$}
-                                            {self.browserObj toggleButtons}
-                                         end)}
-            {BrowseWidget tkBind(event:'<3>'
-                                 action: proc {$}
-                                            {self tagUnHighlight}
-                                            {self.browserObj UnsetSelected}
-                                         end)}
+\ifdef DEBUG_TI
+            {Show 'BrowserWindowClass::init: widgets packed;'}
+\endif
 
             %%
-            self.browseWidget = BrowseWidget
-            HScrollbar <- FHS_HS
-            FrameHS <- FHS
-            <<setTWFont>>  % scrollincrement + resetTW;
+            %% 'ButtonPress' and 'Double-ButtonPress' actions;
+            local StreamObj Act in
+               StreamObj = {self.store read(StoreStreamObj $)}
+               %%
+               proc {Act Handler Arg X Y}
+                  local NewMark Pairs TargetObj in
+                     NewMark = {Tk.server tkGet($)}
+                     %% the default gravity is right...
+                     {BW tk(m s NewMark '@'#X#','#Y)}
+
+                     %%
+                     %% Now, figure out the target object.
+                     %%
+                     %% Note that this should be done now because later
+                     %% otherwise a wrong object must be pointed by
+                     %% the 'NewMark'. Note also that 'mapMark'
+                     %% should be atomic (therefore, it's implemented
+                     %% as a method);
+                     Pairs = {self mapMark(NewMark $)}
+                     TargetObj = {GetTargetObj Pairs}
+
+                     %%
+                     {StreamObj enq(processEvent(TargetObj Handler Arg))}
+                  end
+               end
+
+               %%
+               proc {ButtonClickAction B X Y}
+                  %% middle button is still free;
+                  case B of '3' then {self.browserObj UnsetSelected}
+                  else {Act ButtonsHandler B X Y}
+                  end
+               end
+               proc {DButtonClickAction B X Y}
+                  {Act DButtonsHandler B X Y}
+               end
+            end
+
+            %%
+            %%
+            {BW [tkBind(event:  '<ButtonPress>'
+                        action: ButtonClickAction
+                        args:   [atom('b') int('x') int('y')])
+                 tkBind(event:  '<Double-ButtonPress>'
+                        action: DButtonClickAction
+                        args:   [atom('b') int('x') int('y')])
+                 %%
+                 %%  some special bindings for browse text widget;
+                 tkBind(event:  '<Configure>'
+                        action: self#resetTW)]}
+
+            %%
+            %%  toplevel-widget;
+            {W [tkBind(event: '<FocusIn>'
+                       action: proc {$}
+                                  {self focusIn}
+                                  {BrowserMessagesFocus self.Window}
+                               end)
+                tkBind(event: '<FocusOut>'
+                       action: proc {$}
+                                  %%  no special action;
+                                  {BrowserMessagesNoFocus}
+                               end)]}
+
+            %%
+\ifdef DEBUG_TI
+            {Show 'BrowserWindowClass::init: bindings done;'}
+\endif
+
+            %%
+            %% Bind 'Cursor' to the Tk's 'insert' mark;
+            local IM in
+               IM = self.Cursor = self.TclBase # 0
+               {BW tk(m s IM insert)}
+            end
+         end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::init: complete!'}
+\endif
+      end
+
+      %%
+      %% Loop over list ('FoldL' fashion) with method applications;
+      meth FoldL_Obj(Xs P Z $)
+         case Xs
+         of X|Xr then self , FoldL_Obj(Xr P (self , P(Z X $)) $)
+         [] nil  then Z
          end
       end
 
       %%
+      meth TryFont(Proceed IFont $)
+         case Proceed then
+            %%
+            case BrowserWindowClass , setTWFont(IFont $) then
+               %%
+               %% Browser object will also send a request to select an
+               %% appropriate radio button;
+               thread   % job
+                  {self.browserObj
+                   setParameter(BrowserFont IFont.name)}
+               end
+               %%
+               False
+            else True
+            end
+         else Proceed
+         end
+      end
+
       %%
-      meth iconify
+      %% close the top level widnow;
+      %%
+      meth close
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: iconify'}
+         {Show 'BrowserWindowClass::close'}
 \endif
-         case self.standAlone then {Tk.send wm(iconify self.window)}
+         %%
+         %% external window must be closed by provider;
+         case self.standAlone then {self.Window close}
          else true
          end
+
+         %% reject all future messages;
+         Object.base , close
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::close is finished'}
+\endif
       end
 
       %%
       %%
       meth expose
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: iconify'}
+         {Show 'BrowserWindowClass::expose'}
 \endif
-         case self.standAlone then {Tk.send wm(deiconify self.window)}
+         case self.standAlone then {Tk.send wm(deiconify self.Window)}
          else true
          end
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::expose is finished'}
+\endif
       end
 
       %%
       %%
       meth focusIn
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: focusIn'}
+         {Show 'BrowserWindowClass::focusIn'}
 \endif
          true
          %%
          %%  Tk 4.0 does not require any special action;
-         %% {Tk.send focus(self.browseWidget)}
+         %% {Tk.send focus(self.BrowseWidget)}
          %%
       end
 
       %%
-      %%  Yields 'True' if the font exists;
-      %%
-      meth tryFont(Font ?R)
-         R = {Tk.returnInt 'catch'(q(@TestTW conf(font: Font)))} == 0
-
-         %%
-         <<UrObject nil>>
+      %% Yields 'True' if the font exists;
+      meth tryFont(Font $)
+         {X11ResourceCache tryFont(Font.font $)}
       end
 
       %%
-      %%  Yields height and width of the font given (or zeros if it
+      %% Yields height and width of the font given (or zeros if it
       %% doesn't exist at all);
-      %%
       meth getFontRes(Font ?XRes ?YRes)
-         %%
-         case <<tryFont(Font $)>> then
-            %%
-            YRes = {Tk.returnInt winfo(reqheight @TestTW)}
-            XRes = {Tk.returnInt winfo(reqwidth @TestTW)}
-
-            %%
-            {Wait XRes}
-            {Wait YRes}
-
-            %%
-            <<UrObject nil>>
-         else
-            %%
-            YRes = XRes = 0
-         end
+         {X11ResourceCache getFontRes(Font.font XRes YRes)}
       end
 
       %%
-      %%
-      meth setTWFont
+      %% Yields 'True' if a try was successful;
+      meth setTWFont(NewFont $)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: setTWFont'}
+         {Show 'BrowserWindowClass::setTWFont'#NewFont}
 \endif
+         %%
          local Font in
             Font = {self.store read(StoreTWFont $)}
 
             %%
-            case Font.name == '*startup*' then true   % skip it;
-            else
-               {self.browseWidget tk(configure(font: Font.font))}
-            end
+            case NewFont
+            of !Font then True  %  have it already;
+            elsecase BrowserWindowClass , tryFont(NewFont $) then
+               %%
+               {self.BrowseWidget tk(conf font:NewFont.font)}
+               {self.store store(StoreTWFont NewFont)}
+               BrowserWindowClass , resetTW
 
-            %%
-            <<resetTW>>
+               %%
+               True
+            else False
+            end
          end
       end
 
       %%
-      %%
+      %% A 'feedback' for browser providing for an actual tw width;
       meth resetTW
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: resetTWFont'}
+         {Show 'BrowserWindowClass::resetTW'}
 \endif
+         %%
          local Font TWWidthS TWWidth XRes in
             {self.store read(StoreTWFont Font)}
 
@@ -684,19 +642,18 @@ in
             {Tk.send update(idletasks)}
 
             %%
-            {Tk.return winfo(width self.browseWidget) TWWidthS}
+            {Tk.return winfo(width self.BrowseWidget) TWWidthS}
             TWWidth = {String.toInt TWWidthS}   % implicit sync;
 
             %%
-            case Font.xRes == 0 then
-               XRes = <<getFontRes(Font.font $ _)>>
-            else
-               XRes = Font.xRes
-            end
+            XRes = case Font.xRes == 0 then
+                      BrowserWindowClass , getFontRes(Font $ _)
+                   else Font.xRes
+                   end
 
             %%
             case XRes \= 0 then
-               job
+               thread           % job
                   {self.browserObj
                    SetTWWidth({`div`
                                (TWWidth - 2*ITWPad - 2*IBigBorder)
@@ -705,201 +662,122 @@ in
             else true           % we cannot do anything anyway;
             end
          end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::resetTW is finished'}
+\endif
+         touch
       end
 
       %%
-      %%  Set the geometry of a browser's window, provided it is not smaller
-      %% than minimal possible (and, of coarse, this is a 'stand alone' browser);
+      %% Set the geometry of a browser's window, provided it is
+      %% not smaller than a minimal possible one
+      %% (and, of course, this is a 'stand alone' browser);
       %%
       meth setXYSize(X Y)
-         case self.standAlone then
-            MinXSize MinYSize Sync
-         in
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setXYSize' # X # Y}
+\endif
+         %%
+         case self.standAlone then MinXSize MinYSize in
             {self.store [read(StoreXMinSize MinXSize)
                          read(StoreYMinSize MinYSize)]}
 
             %%
             case MinXSize =< X andthen MinYSize =< Y then
                %%
-               {Tk.send wm(geometry self.window X#'x'#Y)}
+               {Tk.send wm(geometry self.Window X#'x'#Y)}
 
+               %%
                %% synchronization;
                {Tk.send update(idletasks)}
+               {Wait {Tk.returnInt winfo(exists self.BrowseWidget)}}
 
                %%
-               {Tk.return winfo(exists self.browseWidget) Sync}
-
-               %%
-               {Wait {String.is Sync}}
-
-               %%
-               <<UrObject nil>>
-            else
-               {BrowserWarning ['Impossible window size wrt limits']}
+               touch
+            else {BrowserWarning 'Impossible window size wrt limits'}
             end
          else true
          end
-      end
 
-      %%
-      %%  Create the menus frame;
-      %%
-      meth createMenusFrame
+         %%
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: createMenusFrame'}
+         {Show 'BrowserWindowClass::setXYSize is finished'}
 \endif
-         case @menusFrame == InitValue then
-            MFT            %  template, y-fill
-            MenusFrame     %
-         in
-            %%
-            MFT = {New Tk.frame tkInit(parent: self.window
-                                       bd: ISmallBorder
-                                       relief: IFrameRelief)}
-            %% height: IMFHeight#c  % but: who cares? :))
-            MenusFrame = {New Tk.frame tkInit(parent: MFT bd: 0)}
-
-            %%  The packing order ('-before' option for packer)
-            %% is essential;
-            case @FrameButtons == InitValue then
-               {Tk.send pack(MFT o(side: top
-                              fill: x
-                              padx: IPad
-                              pady: IPad
-                              before: @FrameHS))}
-            else
-               {Tk.send pack(MFT o(side: top
-                              fill: x
-                              padx: IPad
-                              pady: IPad
-                              before: @FrameButtons))}
-            end
-
-            %%
-            menusFrame <- MenusFrame
-            FrameMenus <- MFT
-         else
-            {BrowserWarning ['can not create another menus frame']}
-         end
       end
 
       %%
-      %%  ... pack it;
-      meth exposeMenusFrame
+      %% create a menubar (i.e. a frame with menu buttons etc.)
+      meth createMenuBar(EL ER)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: exposeMenusFrame'}
+         {Show 'BrowserWindowClass::createMenuBar'}
 \endif
-         local MenusFrame in
-            MenusFrame = @menusFrame
-
-            %%
-            case MenusFrame == InitValue then true
-            else
-               {Tk.send pack(MenusFrame o(side: left))}
-            end
-         end
-      end
-
-      %%
-      %%
-      meth createButtonsFrame
+         menuBar <- {TkTools.menubar self.Window self.BrowseWidget EL ER}
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: CreateButtonsFrame'}
+         {Show 'BrowserWindowClass::createMenuBar is finished'}
 \endif
-         case @buttonsFrame == InitValue then
-            BFT            %  template, x-fill
-            ButtonsFrame   %
-         in
-            %%
-            BFT = {New Tk.frame tkInit(parent: self.window
-                                       bd: ISmallBorder
-                                       relief: IFrameRelief)}
-            %% width: IBFWidth#c
-            ButtonsFrame = {New Tk.frame tkInit(parent: BFT bd: 0)}
-
-            %%
-            %%  always before horizontal scrollbar;
-            {Tk.send pack(BFT o(side: left
-                           fill: y
-                           padx: IPad
-                           pady: IPad
-                           before: @FrameHS))}
-
-            %%
-            buttonsFrame <- ButtonsFrame
-            FrameButtons <- BFT
-         else
-            {BrowserWarning ['can not create another buttons frame']}
-         end
       end
 
       %%
-      %%
-      meth exposeButtonsFrame
+      %% Pack the menubar;
+      meth exposeMenuBar
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: exposeMenusFrame'}
+         {Show 'BrowserWindowClass::exposeMenuBar'}
 \endif
-         local ButtonsFrame in
-            ButtonsFrame = @buttonsFrame
-            %%
-            case ButtonsFrame == InitValue then true
-            else
-               {Tk.send pack(ButtonsFrame o(side: top))}
-            end
-         end
-      end
+         %%
+         case @menuBar \= InitValue then
+            {Tk.send pack(@menuBar
+                          side: top
+                          fill: x
+                          padx: IPad
+                          pady: IPad
+                          before: self.FrameHS)}
 
-      %%
-      %%  Remove the menus frame;
-      %%
-      meth closeMenusFrame
+            %%
+            touch
+         else true              %  may happen?
+         end
+
+         %%
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: closeMenusFrame'}
+         {Show 'BrowserWindowClass::exposeMenuBar is finished'}
 \endif
-         case @FrameMenus == InitValue then true
-         else
-            {@FrameMenus close}
-            %%  and therefore @buttonsFrame and all menus too;
-            %%
-
-            %%
-            menusFrame <- InitValue
-            FrameMenus <- InitValue
-         end
       end
 
       %%
-      %%  Remove the buttons frame;
-      %%
-      meth closeButtonsFrame
+      %% Remove the menubar;
+      meth closeMenuBar
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: closeButtonsFrame'}
+         {Show 'BrowserWindowClass::closeMenuBar'}
 \endif
-         case @FrameButtons == InitValue then true
-         else
-            {@FrameButtons close}
+         %%
+         case @menuBar \= InitValue then
+            %%
+            {@menuBar close}
 
             %%
-            buttonsFrame <- InitValue
-            FrameButtons <- InitValue
+            menuBar <- InitValue
+         else true
          end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::closeMenuBar is finished'}
+\endif
       end
 
       %%
-      %%  Set the minimal possible size of the window;
+      %% Set the minimal possible size of the window;
       %%
       meth setMinSize
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: setMinSize'}
+         {Show 'BrowserWindowClass::setMinSize'}
 \endif
-         case self.standAlone then
-            XMinSize YMinSize
-         in
+         %%
+         case self.standAlone then XMinSize YMinSize in
             %%
-            case
-               @FrameButtons == InitValue andthen
-               @FrameMenus == InitValue
-            then
+            case @menuBar == InitValue then
                %%
                {Tk.send update(idletasks)}
 
@@ -907,799 +785,733 @@ in
                XMinSize = {self.store read(StoreXMinSize $)}
                YMinSize = {self.store read(StoreYMinSize $)}
                %% don't use gridded text widget;
-            elsecase @FrameButtons == InitValue then
-               MFWidthS
-            in
+            else MFWidth in
+               %% regular (standard) configuration;
                %%
                {Tk.send update(idletasks)}
 
                %%
-               {Tk.return winfo(reqwidth @menusFrame) MFWidthS}
+               MFWidth = {Tk.returnInt winfo(reqwidth @menuBar)}
 
                %%
-               YMinSize = IYMinSize
-               XMinSize = {String.toInt MFWidthS} + 2*IPad + 2*ISmallBorder
-            elsecase @FrameMenus == InitValue then
-               BFHeightS
-            in
-               %%
-               {Tk.send update(idletasks)}
-
-               %%
-               {Tk.return winfo(reqheight @buttonsFrame) BFHeightS}
-
-               %%
-               XMinSize = IXMinSize
-               YMinSize = {String.toInt BFHeightS} + 2*IPad + 2*ISmallBorder
-            else
-               MFHeightS MFWidthS BFHeightS MFHeight MFWidth BFHeight
-            in
-               %%
-               {Tk.send update(idletasks)}
-
-               %%
-               {Tk.return winfo(reqheight @menusFrame) MFHeightS}
-               {Tk.return winfo(reqheight @buttonsFrame) BFHeightS}
-               {Tk.return winfo(reqwidth @menusFrame) MFWidthS}
-
-               %%
-               MFHeight = {String.toInt MFHeightS}
-               BFHeight = {String.toInt BFHeightS}
-               MFWidth = {String.toInt MFWidthS}
-
-               %%
-               YMinSize = 4*IPad + 4*ISmallBorder + MFHeight + BFHeight
                XMinSize = 2*IPad + 2*ISmallBorder + MFWidth
+               YMinSize = {self.store read(StoreYMinSize $)}
             end
-
-            %%
-            {Wait XMinSize}
-            {Wait YMinSize}
 
             %% force the minsize of the window;
-            local XSizeS YSizeS XSize YSize in
-               {Tk.return winfo(height self.window) YSizeS}
-               {Tk.return winfo(width self.window) XSizeS}
+            local XSize YSize in
+               YSize = {Tk.returnInt winfo(height self.Window)}
+               XSize = {Tk.returnInt winfo(width self.Window)}
 
                %%
-               {Wait {String.is YSizeS}}
-               {Wait {String.is XSizeS}}
-               %%
-               {Tk.send wm(minsize self.window XMinSize YMinSize)}
+               {Tk.send wm(minsize self.Window XMinSize YMinSize)}
 
                %%
-               XSize = {String.toInt XSizeS}
-               YSize = {String.toInt YSizeS}
-
-               %%
-               %% relational;
-               case XMinSize =< XSize andthen YMinSize =< YSize
-               then true
+               case XMinSize =< XSize andthen YMinSize =< YSize then true
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
-                  {Tk.send wm(geometry self.window XMinSize#'x'#YSizeS)}
+                  {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}
 
                   %%
-                  <<resetTW>>
+                  BrowserWindowClass , BrowserWindowClass , resetTW
                elsecase YSize < YMinSize andthen XMinSize =< XSize then
-                  {Tk.send wm(geometry self.window XSizeS#'x'#YMinSize)}
+                  {Tk.send wm(geometry self.Window XSize#'x'#YMinSize)}
 
                   %%
-                  <<resetTW>>
+                  BrowserWindowClass , resetTW
                else
-                  {Tk.send wm(geometry self.window XMinSize#'x'#YMinSize)}
+                  {Tk.send wm(geometry self.Window XMinSize#'x'#YMinSize)}
 
                   %%
-                  <<resetTW>>
+                  BrowserWindowClass , resetTW
                end
             end
          else true
          end
-      end
-
-      %%
-      %%  *must* yield a value (and not a variable);
-      meth genTkName(?Mark)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: genTkName:'}
-\endif
-         Mark = {TkNewName}
-      end
-
-      %%
-      %%
-      meth genTag(?TagObj)
-         TagObj = {New Tk.textTag tkInit(parent: self.browseWidget)}
-      end
-
-      %%
-      %%
-      meth closeTag(TagObj)
-         {TagObj close}
-      end
-
-      %%
-      %%  Insert the 'VS' into the text widget at the given mark;
-      %%
-      meth insert(Mark VS)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: insert:'#Mark}
-\endif
-         %%
-         {self.browseWidget tk(insert Mark VS)}
 
          %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Insert the 'Atom' just before the Tag,
-      %% and extend 'Tags' over inserted atom;
-      %%
-      meth insertBeforeTag(Tag Tags VS)
 \ifdef DEBUG_TI
-         {Show  'tcl/tk: insertBeforeTag:'#Tag#VS}
+         {Show 'BrowserWindowClass::setMinSize is finished'}
 \endif
-         {self.browseWidget tk(insert p(Tag first) VS q(b(Tags)))}
-
-         <<UrObject nil>>
       end
 
       %%
-      %%  Insert after the 'Mark' with the offset 'Offset';
-      %%
-      meth insertAfterMark(Mark Offset VS)
+      %% 'Key' is a key description of the form 'ctrl(alt(m))', and
+      %% 'Action' is a procedure without arguments or a description
+      %% of the form 'Object#Method', where, in turn, 'Method' is a
+      %% method without arguments;
+      meth bindKey(key:Key action:Action)
 \ifdef DEBUG_TI
-         {Show  'tcl/tk: insertAfterMark:'#Mark#Offset#VS}
+         {Show 'BrowserWindowClass::bindKey' # Key}
 \endif
          %%
-         {self.browseWidget tk(insert q(Mark '+' Offset 'chars') VS)}
+         {self.BrowseWidget tkBind(event:  {MakeEvent Key}
+                                   action: Action)}
+      end
 
+%%%
+%%%
+%%% Actual "interface" methods;
+%%%
+%%%
+
+      %%
+      %% 'Gravity' must be either 'left' or 'right';
+      %%
+      %% 'ToMapOn' should be (and could be, of course) a chunk.
+      %% De'facto it contains a mark type ('Type') and and object
+      %% 'Obj':
+      %%    Type#Obj
+      %%
+      %% 'Type' is either 'left' or 'right', stating whether the mark
+      %% is a "leading" or a "tail" one respectively. Note that this
+      %% mark attribute is permanent and cannot be changed.  'Obj' is
+      %% an object stored under 'NewMark' index in the internal
+      %% "TclsMap".
+      %%
+      meth putMark(Gravity ToMapOn ?NewMark)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::putMark' # Gravity}
+\endif
          %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Insert after the Tag.last;
-      %%
-      meth insertAfterTag(Tag Tags VS)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: insertJustAfterTag:'#Tag#VS}
-\endif
-         {self.browseWidget tk(insert p(Tag last) VS q(b(Tags)))}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Insert the 'VS' into the text widget at the given mark, and
-      %% create a new mark before this atom;
-      %%
-      meth insertWithMark(Mark VS ?NewMark)
-\ifdef DEBUG_TI
-         {Show  'tcl/tk: insertWithMark:'#Mark#VS}
-\endif
-         local SLength IS in
-            %%
-            SLength = {VSLength VS}
+         local BW MarkName in
+            BW = self.BrowseWidget
+            NewMark = BrowserWindowClass , GenTcl($)
+            MarkName = self.TclBase # NewMark
 
             %%
-            {self.browseWidget
-             [tk(insert Mark VS)
-              tk(mark set NewMark q(Mark '-' SLength 'chars'))]}
+            {BW tk(m s MarkName self.Cursor)}
 
             %%
-            <<UrObject nil>>
-         end
-      end
-
-      %%
-      %%  Insert the 'VS' into text widget at given mark, and
-      %% stretch 'PTag' over the just inserted atom;
-      %% 'PTag' (pseudo tag) is a list of tags;
-      %% - if it contains exactly one element, it (tag) is stretched over 'VS';
-      %% - otherwise 'VS' gets *only* tags from 'PTag';
-      %%
-      meth insertWithTag(Mark VS PTag)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: insertWithTag:'#Mark#VS}
-\endif
-         case PTag of [Tag] then
-            %%
-            {self.browseWidget
-             [tk(insert Mark VS)
-              tk(tag add Tag q(Mark '-' {VSLength VS}
-                               'chars') Mark)]}
-         else
-            {self.browseWidget tk(insert Mark VS s(b(PTag)))}
-         end
-            %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%
-      %%  ... with both (i.e. mark before atom and tag over it);
-      %%
-      meth insertWithBoth(Mark VS NewMark PTag)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: insertWithBoth:'#Mark#VS}
-\endif
-         local LengthVS NumOf StrT in
-            LengthVS = {VSLength VS}
-            NumOf = {Length PTag}
-
-            %%
-            case NumOf == 1 then
-               StrT = q(Mark '-' LengthVS 'chars')
-               %%
-               {self.browseWidget
-                [tk(insert Mark VS)
-                 tk(mark set NewMark StrT)
-                 tk(tag add PTag.1 StrT Mark)]}
-            else
-               %%
-               StrT = {MakeTuple s NumOf}
-               {List.forAllInd PTag proc {$ I T} StrT.I = T end}
-
-               %%
-               {self.browseWidget
-                [tk(insert Mark VS StrT)
-                 tk(mark set NewMark q(Mark '-' LengthVS 'chars'))]}
+            %% use the default: right gravity;
+            case Gravity \= right then {BW tk(m g MarkName Gravity)}
+            else true
             end
 
             %%
-            <<UrObject nil>>
+            %% That's so simple ...
+\ifdef DEBUG_TI
+            local NN in
+               NN = {NewName}
+
+               %%
+               case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
+               then {BrowserError 'BrowserWindowClass::putMark: error!'}
+               else true
+               end
+            end
+\endif
+            %%
+            {Dictionary.put self.TclsMap NewMark ToMapOn}
          end
-      end
 
-      %%
-      %%
-      meth lowerTag(ObjLow ObjHigh)
-         {self.browseWidget tk(tag lower ObjLow ObjHigh)}
-      end
-
-      %%
-      %%
-      meth getTagFirst(Tag ?Col)
+         %%
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: getTagFirst:'#Tag}
+         {Show 'BrowserWindowClass::putMark is finished:' # NewMark}
 \endif
-         local L in
-            %%
-            L = {Tk.return o(self.browseWidget index p(Tag first))}
+         touch
+      end
+
+      %%
+      %% a special version - put the mark somewhere before;
+      meth putMarkBefore(Offset ToMapOn ?NewMark)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::putMarkBefore' # Offset}
+\endif
+         %%
+         local BW MarkName in
+            BW = self.BrowseWidget
+            NewMark = BrowserWindowClass , GenTcl($)
+            MarkName = self.TclBase # NewMark
 
             %%
-            Col = {String.toInt {Tail L {FindChar L CharDot}+1}}
+            {BW tk(m s MarkName self.Cursor#'-'#Offset#'c')}
 
             %%
-            <<UrObject nil>>
+\ifdef DEBUG_TI
+            local NN in
+               NN = {NewName}
+
+               %%
+               case {Dictionary.condGet self.TclsMap NewMark NN} \= NN
+               then {BrowserError 'BrowserWindowClass::putMark: error!'}
+               else true
+               end
+            end
+\endif
+            %%
+            {Dictionary.put self.TclsMap NewMark ToMapOn}
          end
-      end
 
-      %%
-      %%  Delete all characters in range tag.first - tag.last
-      %%
-      meth delete(Tag)
+         %%
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: delete:'#Tag}
+         {Show 'BrowserWindowClass::putMarkBefore is finished:' # NewMark}
 \endif
-         %%
-         {self.browseWidget tk(delete p(Tag first) p(Tag last))}
-
-         %%
-         <<UrObject nil>>
+         touch
       end
 
       %%
-      %%
-      %%  Delete 'N' characters with offset 'Offset' after the 'Mark';
-      %%
-      meth deleteAfterMark(Mark Offset N)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: deleteAfterMark:'#Mark#Offset#N}
-\endif
-         %%
-         {self.browseWidget tk(delete
-                               q(Mark '+' Offset 'chars')
-                               q(Mark '+' (Offset + N) 'chars'))}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Delete 'N' characters before the 'Mark';
-      %%
-      meth deleteBeforeMark(Mark N)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: deleteBeforeMark:'#Mark#N}
-\endif
-         %%
-         {self.browseWidget tk(delete q(Mark '-' N 'chars') Mark)}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Delete tag;
-      %%
-      meth deleteTag(Tag)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: deleteTag:'#Tag}
-\endif
-         %%
-         {self.browseWidget tk(tag delete Tag)}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Unsert mark;
-      %%
+      %% ... in addition, the mapping from the mark to an object is
+      %% removed (this serves also as a strong consistency check:
+      %% once a mark is removed, it cannot be removed again);
       meth unsetMark(Mark)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: unsetMark:'#Mark}
+         {Show 'BrowserWindowClass::unsetMark' # Mark}
 \endif
          %%
-         {self.browseWidget tk(mark unset Mark)}
+         UnsetMarks <- Mark|@UnsetMarks
 
          %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Duplicate mark;
-      %%
-      meth duplicateMark(Mark NewMark)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: duplicateMark:'#Mark}
-\endif
-         %%
-         {self.browseWidget tk(mark set NewMark Mark)}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Set a mark to the left of the tag;
-      %%
-      meth setMarkOnTag(Tag NewMark)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: setMarkOnTag:'#Tag}
-\endif
-         %%
-         {self.browseWidget tk(mark set NewMark p(Tag last))}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Duplicate mark, but with left gravity;
-      %%
-      meth duplicateMarkLG(Mark NewMark)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: duplicateMarkLG:'#Mark}
-\endif
-         %%
-         {self.browseWidget [tk(mark set NewMark Mark)
-                             tk(mark gravity NewMark left)]}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%
-      meth setMarksGravity(Marks Gravity)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: setMarksGravity:'#Marks#Gravity}
-\endif
-         case Marks
-         of Mark|RestMarks then
-            {self.browseWidget tk(mark gravity Mark Gravity)}
+         local NN in
+            NN = {NewName}
 
             %%
-            <<setMarksGravity(RestMarks Gravity)>>
-         else true
-         end
-      end
-
-      %%
-      %%  Duplicate tag;
-      %%  Note that the 'Tag' is not actually duplicated, but a new tag
-      %% from 'Tag.first' to 'Tag.last' is created. In other words, it's
-      %% assumed that 'Tag' covers a permanent area in text widget;
-      %%
-      meth duplicateTag(Tag NewTag)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: duplicateTag:'#Tag}
-\endif
-         %%
-         {self.browseWidget tk(tag add NewTag p(Tag first) p(Tag last))}
-
-         %%
-         <<UrObject nil>>
-      end
-
-      %%
-      %%  Yields names of tags at 'X,Y' in text widget;
-      %%  ('X' and 'Y' are strings);
-      meth getTagsOnXY(X Y ?Tags)
-\ifdef DEEBUG_TI
-         {Show 'tcl/tk: getTagsOnXY: ...'}
-\endif
-         local RS in
-            RS = {Tk.return o(self.browseWidget tag names "@"#X#","#Y)}
-
-            %%
-            Tags = {GetStrs RS CharSpace nil}
-
-            %%
-            <<UrObject nil>>
-         end
-      end
-
-      %%
-      %%  ... on first tagged char;
-      meth getTagsOnTag(Tag ?Tags)
-         local RS in
-            RS = {Tk.return o(self.browseWidget tag names p(Tag first))}
-
-            %%
-            Tags = {GetStrs RS CharSpace nil}
-
-            %%
-            <<UrObject nil>>
-         end
-      end
-
-      %%
-      %%
-      meth getTW($)
-         self.browseWidget
-      end
-
-      %%
-      %%  Highlight the tag;
-      %%
-      meth tagHighlight(Tag)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: tagHighlight:'#Tag}
-\endif
-         <<tagUnHighlight>>
-         %%
-         local HighlightTag in
-            <<[genTkName(HighlightTag) duplicateTag(Tag HighlightTag)]>>
-            %%
-            {self.browseWidget
-             tk(tag config HighlightTag
-                    o(background:black foreground:white))}
-            highlightTag <- HighlightTag
-
-            %%
-            <<UrObject nil>>
-         end
-      end
-
-      %%
-      %%
-      meth tagUnHighlight
-\ifdef DEBUG_TI
-         {Show 'tcl/tk::tagUnHighlight'}
-\endif
-         case @highlightTag == InitValue then true
-         else
-            <<deleteTag(@highlightTag)>>
-            highlightTag <- InitValue
-         end
-      end
-
-      %%
-      %%  put a new button on the buttons frame;
-      %%  'ButtonProc' is an binary procedure, that can perform certain action on
-      %% this button;
-      %%
-      meth pushButton(Text Action ?ButtonProc)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: pushButton:'#
-          {String.toAtom {VirtualString.toString Text}}}
-\endif
-         %%
-         case @buttonsFrame == InitValue then
-            ButtonProc = proc {$ _ _} true end
-         else
-            Button
-         in
-            Button = {New Tk.button tkInit(parent: @buttonsFrame
-                                           text: Text
-                                           action: Action
-                                           width: IButtonWidth
-                                           relief: IButtonRelief
-                                           highlightthickness: 0
-                                           padx: IButtonPad
-                                           pady: IButtonPad
-                                           bd: ISmallBorder)}
-
-            %%
-            {FoldL [IBFont1 IBFont2 IBFont3 IReservedFont]
-             fun {$ Proceed IFont}
-                case Proceed then
-                   {Tk.returnInt 'catch'(q(Button conf(font: IFont)))} \= 0
-                else Proceed
-                end
-             end
-             True _}
-
-            %%
-            {Tk.send pack(Button o(side: top fill: x padx: IPad pady: IPad))}
-
-            %%
-            ButtonProc = proc {$ Action Arg}
-                            case Action
-                            of state then {Button tk(conf(state: Arg))}
-                            [] label then {Button tk(conf(label: Arg))}
-                            [] delete then {Button close}
-                            else
-                               {BrowserError ['undefined action for a button']}
-                            end
-                         end
-         end
-      end
-
-      %%
-      %%  Create a menu button and pack it on the menus frame;
-      %%
-      meth pushMenuButton(Text ?MenuButton ?MenuButtonProc)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: pushMenuButton:'#{String.toAtom {VirtualString.toString Text}}}
-\endif
-         %%
-         case @menusFrame == InitValue then
-            MenuButton = InitValue
-            MenuButtonProc = proc {$ _ _} true end
-         else
-            ResStr
-         in
-            MenuButton = {New Tk.menubutton tkInit(parent: @menusFrame
-                                                   text: Text
-                                                   width: IMBWidth
-                                                   relief: IButtonRelief
-                                                   highlightthickness: 0
-                                                   padx: IButtonPad
-                                                   pady: IButtonPad
-                                                   bd: ISmallBorder)}
-
-            %%
-            {FoldL [IMBFont1 IMBFont2 IMBFont3 IReservedFont]
-             fun {$ Proceed IFont}
-                case Proceed then
-                   {Tk.returnInt 'catch'(q(MenuButton conf(font: IFont)))} \= 0
-                else Proceed
-                end
-             end
-             True _}
-
-            %%
-            {Tk.send pack(MenuButton o(side: left
-                                  fill: none
-                                  padx: IPad
-                                  pady: IPad))}
-
-            %%
-            MenuButtonProc = proc {$ Action Arg}
-                                case Action
-                                of state then {MenuButton tk(conf(state: Arg))}
-                                [] label then {MenuButton tk(conf(label: Arg))}
-                                [] delete then {MenuButton close}
-                                else
-                                   {BrowserError ['undefined action for a menubutton']}
-                                end
-                             end
-         end
-      end
-
-      %%
-      %%  Create a menu with entries and actions;
-      %%  Note that 'ParentOf' can be both the menubutton or another menu;
-      %%
-      meth defineMenu(MenuButton PostProc ?Menu)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: defineMenu:'}
-\endif
-         case MenuButton == InitValue then
-            Menu = InitValue
-         else
-            case PostProc == True then
-               ResStr
-            in
-               Menu = {New Tk.menu tkInit(parent: MenuButton
-                                          bd: ISmallBorder)}
-
-               %%
-               {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
-                fun {$ Proceed IFont}
-                   case Proceed then
-                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
-                   else Proceed
-                   end
-                end
-                True _}
-               %%
-            else
-               MA ResStr
-            in
-               %% set up parent to Menu button ...
-               MA = {New Tk.action tkInit(parent: MenuButton
-                                          action: PostProc)}
-               Menu = {New Tk.menu tkInit(parent: MenuButton
-                                          bd: ISmallBorder
-                                          postcommand: MA)}
-
-               %%
-               {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
-                fun {$ Proceed IFont}
-                   case Proceed then
-                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
-                   else Proceed
-                   end
-                end
-                True _}
-               %%
-            end
-
-            %%
-            {MenuButton tk(conf(menu: Menu))}
-         end
-      end
-
-      %%
-      %%
-      meth defineSubMenu(ParentOf PostProc ?Menu)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: defineMenu:'}
-\endif
-         %%
-         case ParentOf == InitValue then
-            Menu = InitValue
-         else
-            case PostProc == True then
-               ResStr
-            in
-               Menu = {New Tk.menu tkInit(parent: ParentOf
-                                          bd: ISmallBorder)}
-
-               %%
-               {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
-                fun {$ Proceed IFont}
-                   case Proceed then
-                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
-                   else Proceed
-                   end
-                end
-                True _}
-               %%
-            else
-               MA ResStr
-            in
-               %%
-               MA = {New Tk.action tkInit(parent: ParentOf
-                                          action: PostProc)}
-               Menu = {New Tk.menu tkInit(parent: ParentOf
-                                          bd: ISmallBorder
-                                          postcommand: MA)}
-
-               %%
-               {FoldL [IMFont1 IMFont2 IMFont3 IReservedFont]
-                fun {$ Proceed IFont}
-                   case Proceed then
-                      {Tk.returnInt 'catch'(q(Menu conf(font: IFont)))} \= 0
-                   else Proceed
-                   end
-                end
-                True _}
-               %%
+            case {Dictionary.condGet self.TclsMap Mark NN} == NN
+            then {BrowserError 'BrowserWindowClass::unsetMark: error!'}
+            else true
             end
          end
-      end
-
-      %%
-      %%  Create a 'command' entry in the 'Menu';
-      %%  Note that the new label is given via 'EntryProc' must be matchable
-      %% with the old label and '*' (for instance, " Depth " --> " Depth(1) ");
-      %%
-      meth addCommandEntry(Menu Label Proc ?EntryProc)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: addCommandEntry:'#
-          {String.toAtom {VirtualString.toString Label}}}
 \endif
-         case Menu == InitValue then
-            EntryProc = proc {$ _ _} true end
-         else
-            L
-         in
-            %%
-            case Label
-            of _#_ then
-               L = {List.flatten [Label.1 "*"]}
-               {Menu tk(add(command(label: Label.1
-                                    accelerator: Label.2
-                                    command: {New Tk.action
-                                              tkInit(parent: Menu
-                                                     action: Proc)})))}
-            else
-               L = {List.flatten [Label "*"]}
-               {Menu tk(add(command(label: Label
-                                    command: {New Tk.action
-                                              tkInit(parent: Menu
-                                                     action: Proc)})))}
-            end
 
-            %%
-            EntryProc = proc {$ Action Arg}
-                           case Action
-                           of state then
-                              {Menu tk(entryconfig(L o(state: Arg)))}
-                           [] label then
-                              {Menu tk(entryconfig(L o(label: Arg)))}
-                           [] delete then {Menu tk(delete(L))}
-                           else
-                              {BrowserError ['undefined action for a menu entry']}
-                           end
-                        end
-         end
+         %%
+         %% Actually, it's freed when it's removed from the
+         %% dictionary;
+         {Dictionary.remove self.TclsMap Mark}
+         touch
       end
 
       %%
-      %%  Create a 'menu' entry in the 'Menu';
-      %%
-      meth addMenuEntry(Menu Label SubMenu ?EntryProc)
+      meth flushUnsetMarks
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: addMenuEntry:'#
-          {String.toAtom {VirtualString.toString Label}}}
+         {Show 'BrowserWindowClass::flushUnsetMarks'}
+\endif
+         local ListOf OT Base in
+            ListOf = @UnsetMarks
+            UnsetMarks <- nil
+
+            %%
+            %% free the object state;
+            OT = {Tuple.make 'o' {Length ListOf}}
+            Base = self.TclBase
+            {List.forAllInd ListOf
+             proc{$ N Mark}
+                OT.N = Base#Mark
+             end}
+
+            %%
+            {self.BrowseWidget tk(m u OT)}
+            BrowserWindowClass , FreeTcls(ListOf)
+         end
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::flushUnsetMarks is finished'}
+\endif
+      end
+
+      %%
+      %% 'Mark' is a full mark set by '*Action'. After execution of
+      %% the method it dissapears;
+      meth mapMark(Mark $)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::mapMark is applied' # Mark}
 \endif
          %%
-         case Menu == InitValue then true
-         else
-            L
-         in
-            {Menu tk(add(cascade(label: Label menu: SubMenu)))}
-            L = {List.flatten [Label "*"]}
+         local BW BaseLen DropBase TakeBase BaseStr FirstIndex AMark in
+            BW = self.BrowseWidget
+            BaseLen = {VirtualString.length self.TclBase}
+            fun {DropBase In} {List.drop In BaseLen} end
+            fun {TakeBase In} {List.take In BaseLen} end
+            BaseStr = {VirtualString.toString self.TclBase}
 
             %%
-            EntryProc =
-            proc {$ Action Arg}
-               case Action
-               of state then {Menu tk(entryconfig(L o(state: Arg)))}
-               [] label then {Menu tk(entryconfig(L o(label: Arg)))}
-               [] delete then {Menu tk(delete(L))}
-               else
-                  {BrowserError ['undefined action for a menu entry']}
+            %% if a previous mark is obtained like
+            %%    '.t mark prev 1.5'
+            %% then search starts just after the character to the left
+            %% of '1.5' - excluding all marks sitting between '1.5'
+            %% and '1.6'. But we want to get them, if any. So, as a
+            %% first location we take now an absolute index of a
+            %% next character:
+            FirstIndex = {Tk.return o(BW index q(Mark '+1c'))}
+            %% Note that the mark itself must be removed NOW;
+            {BW tk(m u Mark)}
+
+            %% 'AMark' is a mark among searched ones: we'll use its
+            %% index as a reference;
+            AMark = {Tk.return o(BW mark prev FirstIndex)}
+
+            %%
+            case AMark == "" then nil   % there are no marks;
+            else RefIndex Pairs in
+               %% 'RefIndex' is an index (not an empty string);
+               RefIndex = {Tk.return o(BW index AMark)}
+
+               %%
+               %% oooh... but it's basically simple: first, get all
+               %% the necessary marks, and map them to 'map values'
+               %% stored in 'TclsMap'. Note that some marks may absent
+               %% there: first, it's not said that all the marks must
+               %% be stored in there, and, second, there are auxiliary
+               %% marks of the argument category;
+               Pairs =
+               {Filter          % auxiliary marks, like the cursor;
+                {Map            % numbers(int)  -> pairs;
+                 {Map           % numbers(str)  -> numbers(int);
+                  {Map          % marks(str)    -> numbers(str);
+                   {Filter      % other marks (not 'self.TclBase#N');
+                    {GetRepMarks BW FirstIndex RefIndex}
+                    fun {$ E} {TakeBase E} == BaseStr end}
+                   DropBase}
+                  String.toInt}
+                 fun {$ M} {Dictionary.condGet self.TclsMap M InitValue} end}
+                fun {$ E} E \= InitValue end}
+
+               %%
+               case Pairs == nil then
+                  %%
+                  case RefIndex \= "1.0" then
+                     %%
+                     %% so, all the marks we have found were auxiliary -
+                     %% just repeat the procedure from a previous
+                     %% position:
+                     {BW tk(m s Mark q(RefIndex '-1c'))}
+
+                     %%
+                     BrowserWindowClass , mapMark(Mark $)
+                  else nil
+                  end
+               else Pairs
                end
             end
          end
       end
 
       %%
-      %%  Create a tcl/tk variable - for check&radio buttons/menu entries;
-      %%  UpdateProc is called every time when the value of the variable changes,
-      %% i.e. when user clicks the button;
-      %%  UpdateProc is an unary procedure that gets the (actual) value
+      %%
+      meth deleteRegion(M1 M2)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::deleteRegion' # M1 # M2}
+\endif
+         %%
+         local Base in
+            Base = self.TclBase
+
+            %%
+            {self.BrowseWidget tk(del Base#M1 Base#M2)}
+            touch
+         end
+      end
+
+      %%
+\ifdef DEBUG_RM
+      meth debugShowIndices(M1 M2)
+         local BW Base I1 I2 in
+            BW = self.BrowseWidget
+            Base = self.TclBase
+
+            %%
+            thread I1 = {Tk.return o(BW index Base#M1)} end
+            thread I2 = {Tk.return o(BW index Base#M2)} end
+
+            %%
+            {Show 'DEBUG: Indices: ' # {Map [I1 I2] String.toAtom}}
+         end
+      end
+\endif
+
+      %%
+      %%
+      meth deleteForward(N)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::deleteForward' # N}
+\endif
+         %%
+         case N > 0 then C in
+            C = self.Cursor
+
+            %%
+            {self.BrowseWidget tk(del C C#'+'#N#'c')}
+            touch
+         else true
+         end
+      end
+
+      %%
+      meth deleteBackward(N)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::deleteBackward' # N}
+\endif
+         %%
+         case N > 0 then C in
+            C = self.Cursor
+
+            %%
+            {self.BrowseWidget tk(del C#'-'#N#'c' C)}
+            touch
+         else true
+         end
+      end
+
+      %%
+      %%
+      meth setMarkGravity(Mark Gravity)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setMarkGravity' # Mark # Gravity}
+\endif
+         %%
+         {self.BrowseWidget tk(m g self.TclBase#Mark Gravity)}
+         touch
+      end
+
+      %%
+      %% Moves the cursor to 'Mark'
+      meth setCursor(Mark Column)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setCursor' # Mark}
+\endif
+         %%
+         {self.BrowseWidget tk(m s self.Cursor self.TclBase#Mark)}
+         cursorCol <- Column    % trust a given value;
+      end
+
+      %%
+      %% Moves the cursor to 'Mark'
+      meth setCursorOffset(Mark Offset Column)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setCursorOffset' # Mark # Offset}
+\endif
+         %%
+         {self.BrowseWidget
+          tk(m s self.Cursor self.TclBase#Mark#'+'#Offset#'c')}
+         cursorCol <- Column    % trust a given value;
+      end
+
+      %%
+      %%
+      meth advanceCursor(N)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::advanceCursor' # N}
+\endif
+         %%
+         case N \= 0 then
+            {self.BrowseWidget tk(m s self.Cursor self.Cursor#'+'#N#'c')}
+            cursorCol <- @cursorCol + N
+         else true
+         end
+      end
+
+      %%
+      meth getCursorCol($)
+         @cursorCol
+      end
+
+      %%
+      meth jumpEnd
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::jumpEnd'}
+\endif
+         %%
+         local BW EndIndex in
+            BW = self.BrowseWidget
+
+            %%
+            EndIndex = {Tk.return o(BW index 'end -1lines')}
+            {Wait {String.is EndIndex}}
+
+            %%
+            {BW tk(m s self.Cursor EndIndex)}
+            cursorCol <- 0              % per convention:
+         end
+      end
+
+      %%
+      %% Insert the 'VS' into the text widget at a cursor position;
+      %%
+      %% Note that 'VS' may not contain 'new line' characters.
+      %% Otherwise, the 'cursorCol' counter will contain a wrong
+      %% value;
+      %%
+      meth insert(VS ?Size)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::insert'
+          # {String.toAtom {VirtualString.toString VS}}}
+\endif
+         %%
+         {self.BrowseWidget tk(ins self.Cursor VS)}
+         Size = {VirtualString.length VS}
+         cursorCol <- @cursorCol + Size
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::insert is finished:' # Size}
+\endif
+      end
+
+      %%
+      %% Insert a new line character at a cursor position, and scroll
+      %% if needed;
+      meth insertNL
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::insertNL'}
+\endif
+         %%
+         {self.BrowseWidget tk(ins self.Cursor '\n')}
+         cursorCol <- 0
+
+         %%
+%        case {self.store read(StoreSmoothScrolling $)} then
+%           {self.BrowseWidget tk(see self.Cursor)}
+%           {Tk.send update(idletasks)}
+%        else true
+%        end
+      end
+
+      %%
+      meth removeNL
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::removeNL'}
+\endif
+         {self.BrowseWidget tk(del self.Cursor)}
+      end
+
+      %%
+      %% Scroll a line the mark given + 'x' scroll to a first char;
+      meth pickMark(Mark)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::pickMark' # Mark}
+\endif
+         %%
+         local M in
+            M = self.TclBase#Mark
+
+            %%
+            {self.BrowseWidget tk(see M)}
+                             % tk(yview scroll ~1 units)
+         end
+      end
+
+      %%
+      %% It *must* yield a value (and not a variable);
+      %%
+      %% Note: theoretically, an opaque object (that is, a chunk)
+      %% should be produced here which can be packed/unpacked only
+      %% within this Tcl/Tk interface (i.e. those methods are known
+      %% to this Tcl/Tk interface only).
+      %%
+      %% But: (a) efficiency! and (b) i'm "tet-a-tet" with the
+      %% Browser, i feel i may do such things;
+      %%
+      %% Note that a value returned is NOT a valid mark, but its's
+      %% suffix, and it must an integer;
+      %%
+      meth GenTcl($)
+\ifdef DEBUG_TI
+         local Out in Out =
+\endif
+            %%
+            %% if there is a freed tcl, then reuse it ...
+            case {IsVar @TclsCache} then N in
+               N = @TclCN
+               TclCN <- N + 1
+               N
+            else N R in
+               @TclsCache = N|R
+               TclsCache <- R
+               N
+            end
+
+            %%
+\ifdef DEBUG_TI
+            {Show 'BrowserWindowClass::GenTcl' # Out}
+            Out
+         end
+\endif
+      end
+
+      %%
+      meth FreeTcl(Tcl)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::FreeTcl' # Tcl}
+\endif
+         local NewTclsTail in
+            @TclsTail = Tcl|NewTclsTail
+            TclsTail <- NewTclsTail
+         end
+      end
+
+      %%
+      meth FreeTcls(Tcls)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::FreeTcl' # Tcls}
+\endif
+         local NewTclsTail in
+            @TclsTail = {Append Tcls NewTclsTail}
+            TclsTail <- NewTclsTail
+         end
+      end
+
+      %%
+      %% Highlight a region;
+      %%
+      meth highlightRegion(M1 M2)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::highlightRegion' # M1 # M2}
+\endif
+         %%
+         local TB Tag in
+            TB = self.TclBase
+            Tag = BrowserWindowClass , GenTcl($)
+
+            %%
+            BrowserWindowClass , unHighlightRegion
+            %%
+            {self.BrowseWidget
+             [tk(tag add TB#Tag TB#M1 TB#M2)
+              tk(tag conf TB#Tag o(background:black foreground:white))]}
+
+            %%
+            HighlightTag <- Tag
+         end
+      end
+
+      %%
+      %%
+      meth unHighlightRegion
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::unHighlightRegion'}
+\endif
+         %%
+         case @HighlightTag == InitValue then true
+         else Tag in
+            Tag = @HighlightTag
+
+            %%
+            {self.BrowseWidget tk(tag del self.TclBase#Tag)}
+            BrowserWindowClass , FreeTcl(Tag)
+
+            %%
+            HighlightTag <- InitValue
+         end
+      end
+
+      %%
+      %% Produce a graphical delimiter between lines at the cursor.
+      %% After that, the cursor stays at a new line;
+      meth makeUnderline(?Underline)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::makeUnderline'}
+\endif
+         %%
+         local
+            BW Mark SFont YRes TWWidth F1 F2 CWidth LineBase Canvas Tag T
+         in
+            BW = self.BrowseWidget
+            Mark = self.Cursor
+
+            %%
+            thread              % job
+               {X11ResourceCache getSmallestFont(SFont YRes)}
+            end
+
+            %%
+            %% we have to do this because text widget may be even not
+            %% yet mapped on the screen - and in this case 'winfo
+            %% width' will yield just 0;
+            {Tk.send update(idletasks)}
+
+            %%
+            %%  The 'highlightthickness' should be set to zero (while
+            %% these three components constitute the width 'overhead');
+            thread              % job
+               TWWidth =
+               {Tk.returnInt winfo(width BW)} - 2*ITWPad - 2*IBigBorder
+            end
+
+            %%
+            thread S1 S2 in     % job
+               [S1 S2] = {GetStrs {Tk.return o(BW xview)} CharSpace nil}
+
+               %%
+               F1 = case S1 of "0" then 0. else {String.toFloat S1} end
+               F2 = case S2 of "1" then 1. else {String.toFloat S2} end
+            end
+
+            %%
+            %%  In fact, this is not the same as we could want (?):
+            %% we should lookup lengths of all lines which can be visible
+            %% simultaneously with the underline produced here (given
+            %% a current window configuration).
+            CWidth = {Float.toInt ({Int.toFloat TWWidth} / (F2 - F1))}
+            LineBase = {`div` YRes 2}
+
+            %%
+            Canvas = {New Tk.canvas tkInit(parent: BW
+                                           width:  CWidth
+                                           height: YRes
+                                           highlightthickness: 0)}
+            {Canvas tk('create' line 0 LineBase (CWidth - 1) LineBase
+                           width: YRes stipple: gray25)}
+
+            %%
+            {BW tk(window 'create' Mark window: Canvas)}
+            {BW tk(ins Mark '\n')}
+
+            %%
+            Tag = BrowserWindowClass , GenTcl($)
+            T = self.TclBase # Tag
+            {BW tk(tag add T Canvas q(Canvas '+1lines'))}
+            {BW tk(tag conf T font:SFont)}
+
+            %%
+            Underline = {Chunk.new r(CanvasFeat:Canvas TagFeat:Tag)}
+\ifdef DEBUG_TI
+            {Show 'BrowserWindowClass::makeUnderline is finisehd'}
+\endif
+            touch
+         end
+      end
+
+      %%
+      %%   ... after that, a 'Underline' cannot be used anymore;
+      meth removeUnderline(Underline)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::removeUnderline'}
+\endif
+         %%
+         local Tag T in
+            Tag = Underline.TagFeat
+            T = self.TclBase # Tag
+
+            %%
+            %% it removes '\n' too;
+            {self.BrowseWidget
+             [tk(del p(T first) p(T last))
+              tk(tag delete T)]}
+            BrowserWindowClass , FreeTcl(Tag)
+
+            %%
+            touch
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::removeUnderline is finished'}
+\endif
+         end
+      end
+
+      %%
+      %% Create a tcl/tk variable - for check&radio buttons/menu entries;
+      %% UpdateProc is called every time when the cariable changes
+      %% its value, i.e. when user clicks a button that controls it;
+      %% UpdateProc is an unary procedure that gets the (actual) value
       %% of the variable as the string;
       %%
       meth createTkVar(FValue UpdateProc ?TkVar)
 \ifdef DEBUG_TI
-         {Show 'tck/tk: createTkVar (init):'#FValue}
+         {Show 'BrowserWindowClass::createTkVar'#FValue}
 \endif
+         %%
          local A in
             TkVar = {New Tk.variable tkInit(FValue)}
 
             %%
-            A = {New Tk.action tkInit(parent: self.window
+            A = {New Tk.action tkInit(parent: self.Window
                                       action: proc{$ _ _ _}
                                                  %% is not interesting;
                                                  local A in
@@ -1711,220 +1523,193 @@ in
             %%
             {Tk.send trace(variable TkVar w A)}
          end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::createTkVar is finished'}
+\endif
+         touch
       end
 
       %%
-      %%  Create a 'check' entry in the 'Menu';
-      %%  OnValue and OffValue are the corresponding values;
-      %%
-      meth addCheckEntry(Menu Label TkVar OnValue OffValue ?EntryProc)
+      meth setTkVar(Var Value)
 \ifdef DEBUG_TI
-         {Show 'tcl/tk: addCheckEntry:'#
+         {Show 'BrowserWindowClass::setTkVar'}
+\endif
+         {Var tkSet(Value)}
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setTkVar is finished'}
+\endif
+         touch
+      end
+
+      %%
+      %% Define a "postcommand" for a menu, which can be used in order
+      %% o change entries labels.
+      %%  'PProc' is an unary procedure which argument should be expected
+      %% o be a binary procedure provided by the interface.
+      %% Its first argument is a pattern ('*' is added at the end
+      %% automatically), and the second one is the new label;
+      %%  'Menu' is a menu path in the style 'menuA(subMenuB(subMenuC))';
+      meth setPostCommand(MenuDesc UserProc)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setPostCommand'}
+\endif
+         %%
+         case @menuBar \= InitValue then Menu SuppProc Action ActionProc in
+            Menu = {DerefEntry @menuBar MenuDesc}
+
+            %%
+            proc {SuppProc Pattern Label}
+               {Menu tk(entryconf Pattern#'*' label:Label)}
+            end
+            %%  Provide for an internal procedure since
+            %% there can be no arguments;
+            proc {ActionProc}
+               {UserProc SuppProc}
+            end
+
+            %%
+            Action = {New Tk.action tkInit(parent: Menu
+                                           action: ActionProc)}
+            {Menu tk(conf postcommand:Action)}
+         else true              % no menus;
+         end
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::setPostCommand is finished'}
+\endif
+         touch
+      end
+
+      %%
+      %% Create a 'radio' entry in the 'Menu'
+      %% (which is described in the style 'view(font(misc(menu)))');
+      %% Value is the 'active' value of this (particular) radio button;
+      %%
+      meth addRadioEntry(MenuDesc Label TkVar Value ?EntryProc)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::addRadioEntry'#
           {String.toAtom {VirtualString.toString Label}}}
 \endif
          %%
-         case Menu == InitValue then
+         case @menuBar == InitValue then
             EntryProc = proc {$ _ _} true end
-         else
-            L
-         in
+         else Menu in
             %%
-            {Menu tk(add(check(label: Label
-                               onvalue: OnValue
-                               offvalue: OffValue
-                               variable: TkVar)))}
-            L = {List.flatten [Label "*"]}
+            %%  This can be also done by 'Tk.menuentry.radiobutton',
+            %% but i do it so (as an example, if you want);
+
+            %%
+            Menu = {DerefEntry @menuBar MenuDesc}
+
+            %%
+            {Menu tk(add radio label:Label value:Value variable:TkVar)}
 
             %%
             EntryProc =
             proc {$ Action Arg}
                case Action
-               of state then {Menu tk(entryconfig(L o(state: Arg)))}
-               [] label then {Menu tk(entryconfig(L o(label: Arg)))}
-               [] delete then {Menu tk(delete(Label))}
-               else
-                  {BrowserError ['undefined action for a menu entry']}
+               of state  then {Menu tk(entryconf Label#'*' state: Arg)}
+               [] label  then {Menu tk(entryconf Label#'*' label: Arg)}
+               [] delete then {Menu tk(del Label#'*')}
+               else {BrowserError 'Undefined action for a menu entry'}
                end
             end
-         end
-      end
-
-      %%
-      %%  Create a 'radio' entry in the 'Menu';
-      %%  Value is the 'active' value of this (particular) radio button;
-      %%
-      meth addRadioEntry(Menu Label TkVar Value ?EntryProc)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: addRadioEntry:'#
-          {String.toAtom {VirtualString.toString Label}}}
-\endif
-         %%
-         case Menu == InitValue then
-            EntryProc = proc {$ _ _} true end
-         else
-            L
-         in
-            %%
-            {Menu tk(add(radio(label: Label
-                               value: Value
-                               variable: TkVar)))}
-            L = {List.flatten [Label "*"]}
 
             %%
-            EntryProc =
-            proc {$ Action Arg}
-               case Action
-               of state then {Menu tk(entryconfig(L o(state: Arg)))}
-               [] label then {Menu tk(entryconfig(L o(label: Arg)))}
-               [] delete then {Menu tk(delete(Label))}
-               else
-                  {BrowserError ['undefined action for a menu entry']}
-               end
-            end
+            touch
          end
-      end
 
-      %%
-      %%  Insert the 'separator' entry in the Menu;
-      %%
-      meth addSeparatorEntry(Menu)
-\ifdef DEBUG_TI
-         {Show 'tck/tk: addSeparatorEntry:'}
-\endif
-         case Menu == InitValue then true
-         else
-            {Menu tk(add(separator))}
-         end
-      end
-
-      %%
-      %%  Scroll to the first line of the tag + 'x' scroll to the first char;
-      %%
-      meth pickTagFirst(Tag)
-\ifdef DEBUG_TI
-         {Show 'tck/tk: pickTagFirst:'#Tag}
-\endif
          %%
-         {self.browseWidget [tk(see(p(Tag last)))
-                         tk(see(p(Tag first)))
-                         tk(see(p(Tag first '-' 1 'lines')))
-                         tk(see(p(Tag first '+' 1 'lines')))]}
-         %% tk(yview(scroll ~1 units))
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::addRadioEntry is finished'}
+\endif
       end
 
       %%
-      %%  Scroll to the last line of the tag;
-      %%
-      meth pickTagLast(Tag)
+      meth commandEntriesEnable(Arg)
 \ifdef DEBUG_TI
-         {Show 'tck/tk: pickTagLast:'#Tag}
+         {Show 'BrowserWindowClass::commandEntriesEnable'}
 \endif
+         {ProcessEntries @menuBar Arg tk(entryconf state:normal)}
+
          %%
-         {self.browseWidget [tk(see(p(Tag first)))
-                         tk(see(p(Tag last)))
-                         tk(see(p(Tag last '+' 1 'lines')))
-                         tk(see(p(Tag last '-' 1 'lines')))]}
-         %% tk(yview(scroll 1 units))
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::commandEntriesEnable is finished'}
+\endif
+         touch
       end
 
-             /*
-      %%  Special: get the list of tags covering the character at given
-      %%  *text widget* position;
-      %%  Actually not used too;
       %%
-      meth GetTagsList(Pos ?List)
+      meth commandEntriesDisable(Arg)
 \ifdef DEBUG_TI
-         {Show 'tck/tk: GetTagsList'#Pos}
+         {Show 'BrowserWindowClass::commandEntriesDisable'}
 \endif
+         {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+
          %%
-         local L in
-            {self.browseWidget tkReturn(tag(names Pos) L)}
-            {TagsListLoop {Reverse L} List nil}
-         end
-      end
-      %%
-             */
-
-      %%
-   end
-
-   %%
-   %%
-   %%
-   class TermTag from Tk.textTag
-      %%
-      %%  no features and attributes - that's only an interface;
-      %%  However, we reference here the 'self.browseWidget' feature;
-
-      %%
-      meth tagInit
 \ifdef DEBUG_TI
-         {Show 'TermTag::tagInit:'#self.term}
+         {Show 'BrowserWindowClass::commandEntriesDisable is finished'}
 \endif
-         <<tkInit(parent: {self.widgetObj getTW($)})>>
+         touch
       end
 
       %%
-      %%  Delete the tag, recover binding resources and close the
-      %% object itslef;
-      meth closeItself
+      meth buttonsEnable(Arg)
 \ifdef DEBUG_TI
-         {Show 'TermTag::closeItself:'#self.term}
+         {Show 'BrowserWindowClass::buttonsEnable'}
 \endif
-         <<Tk.textTag close>>
-         <<Object.closedFeature close>>
-      end
+         {ProcessEntries @menuBar Arg tk(conf state:normal)}
 
-      %%
-      %%  Bind any-key-press with the message 'Mess' wrt the Id;
-      %%
-      meth keysBind(KeysHandler)
-\ifdef DEBUG_TI
-         {Show 'TermTag::keysBind:'#self.term}
-\endif
          %%
-         %%  Note: it takes now ASCII-characters, not keysums;
-         %% (i.e. ',' instead of 'comma' for %K);
-         <<tkBind(event: '<KeyPress>'
-                  args: ['A']
-                  break: True
-                  action: self#KeysHandler)>>
-                  %% action: proc {$ KS}
-                  %%           {self KeysHandler(KS)}
-                  %%         end
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::buttonsEnable is finished'}
+\endif
+         touch
       end
 
       %%
-      %%  Bind the buttons events;
-      %%
-      meth buttonsBind(ButtonsHandler)
+      meth buttonsDisable(Arg)
 \ifdef DEBUG_TI
-         {Show 'TermTag::buttonsBind:'#self.term}
+         {Show 'BrowserWindowClass::buttonsDisable'}
 \endif
+         {ProcessEntries @menuBar Arg tk(conf state:disabled)}
+
          %%
-         %% discard effects of window-specific bindings (cut&paste);
-         <<[tkBind(event: '<Shift-ButtonPress>'
-                   action: NullAction)
-            tkBind(event: '<ButtonPress>'
-                   args: ['b']
-                   break: True
-                   action: self#ButtonsHandler)]>>
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::buttonsDisable is finished'}
+\endif
+         touch
       end
 
       %%
-      %%  Bind the buttons events;
-      %%
-      meth dButtonsBind(DButtonsHandler)
+      meth checkButtonOn(Arg)
 \ifdef DEBUG_TI
-         {Show 'TermTag::dButtonsBind:'#self.term}
+         {Show 'BrowserWindowClass::checkButtonOn'}
 \endif
+         {ProcessEntries @menuBar Arg tk(entryconf state:nornal)}
+
          %%
-         <<[tkBind(event: '<Shift-Double-ButtonPress>'
-                   action: NullAction)
-            tkBind(event: '<Double-ButtonPress>'
-                   args: ['b']
-                   break: True
-                   action: self#DButtonsHandler)]>>
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::checkButtonOn is finished'}
+\endif
+         touch
+      end
+
+      %%
+      meth checkButtonOff(Arg)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::checkButtonOff'}
+\endif
+         {ProcessEntries @menuBar Arg tk(entryconf state:disabled)}
+
+         %%
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::checkButtonOff is finished'}
+\endif
+         touch
       end
 
       %%
@@ -1932,9 +1717,9 @@ in
 
    %%
    %%
-   %%  Window(s) for messages (warnings, errors);
+   %% Window(s) for messages (warnings, errors);
    %%
-   class ProtoMessageWindow from UrObject
+   class MessageWindowClass from UrObject
       %%
       attr
          window:            InitValue
@@ -1945,8 +1730,9 @@ in
       %%
       meth createMessageWindow
 \ifdef DEBUG_TI
-         {Show 'tck/tk: createMessageWindow'}
+         {Show 'MessageWindowClass::createMessageWindow'}
 \endif
+         %%
          local
             Window         %
             MessageWidget  %  text widget for messages;
@@ -1965,16 +1751,15 @@ in
             %%
             CloseAction = {New Tk.action
                            tkInit(parent: Window
-                                  action: proc {$} {self closeWindow} end)}
+                                  action: self # closeWindow)}
 
             {Tk.batch
-             [%% wm(iconify Window)
-              wm(title(Window IMTitle))
+             [wm(title(Window IMTitle))
               wm(iconname(Window IMITitle))
               wm(iconbitmap(Window '@'#IMIBitmap))
               %%  {Tk.wm iconmask(Window '@'#IMIBMask)}
               wm(minsize Window IMXMinSize IMYMinSize)
-              wm(protocol(Window "WM_DELETE_WINDOW" CloseAction))]}
+              wm(protocol(Window 'WM_DELETE_WINDOW' CloseAction))]}
 
             %%
             MessageWidget = {New Tk.text tkInit(parent: Window
@@ -1990,12 +1775,15 @@ in
                                                 foreground: IForeGround
                                                 highlightthickness: 0)}
 
-            %%
+            %%  choose a font;
             {FoldL [ITWFont1 ITWFont2 ITWFont3]
              fun {$ Proceed IFont}
-                case Proceed then
-                   {Tk.returnInt
-                    'catch'(q(MessageWidget conf(font: IFont.font)))} \= 0
+                case
+                   Proceed andthen
+                   {X11ResourceCache tryFont(IFont.font $)}
+                then
+                   {MessageWidget tk(conf font:IFont.font)}
+                   False
                 else Proceed
                 end
              end
@@ -2015,32 +1803,31 @@ in
 
             %%
             {Tk.batch
-             [pack(VS o(fill: y padx: IPad pady: IPad side: right))
-              pack(FB o(fill: y padx: IPad pady: IPad side: left))
-              pack(MessageWidget o(fill: both padx: IPad pady: IPad
-                                   side: bottom expand: yes))
-              o(pr#oc myNullProc '' '')
-              %%
+             [pack(VS fill: y padx: IPad pady: IPad side: right)
+              pack(FB fill: y padx: IPad pady: IPad side: left)
+              pack(MessageWidget fill: both padx: IPad pady: IPad
+                   side: bottom expand: yes)
               bindtags(MessageWidget q(MessageWidget))
-              %%  i.e. nothing;
              ]}
 
             %%
-            <<UrObject nil>>
+\ifdef DEBUG_TI
+            {Show 'MessageWindowClass::createMessageWindow is finished'}
+\endif
+            touch
          end
       end
 
       %%
-      %%   Put a new button on the buttons frame;
-      %%  Note that a calling procedure should treat 'Button' as an atomic value
-      %%  and use it only for 'confButton' messages;
+      %% Put a new button on the buttons frame;
+      %% Note that a calling procedure should treat the 'Button'
+      %% as an atomic value and use it only for 'confButton' messages;
       %%
       meth pushButton(Text Action ?Button)
-         case @window == InitValue then
-            Button = InitValue
-         else
-            ResStr
-         in
+         case @window == InitValue then Button = InitValue
+         else MessageWidget ResStr in
+            MessageWidget = @messageWidget
+
             %%
             Button = {New Tk.button tkInit(parent: @fb
                                            text: Text
@@ -2052,63 +1839,64 @@ in
                                            pady: IButtonPad
                                            bd: ISmallBorder)}
 
-            %%
+            %%  choose a font;
             {FoldL [IBFont1 IBFont2 IBFont3 IReservedFont]
              fun {$ Proceed IFont}
-                case Proceed then
-                   {Tk.returnInt 'catch'(q(Button conf(font: IFont)))} \= 0
+                case
+                   Proceed andthen
+                   {X11ResourceCache tryFont(IFont $)}
+                then
+                   {MessageWidget tk(conf font:IFont)}
+                   False
                 else Proceed
                 end
              end
              True _}
 
             %%
-            {Tk.send pack(Button o(side: top fill: x padx: IPad pady: IPad))}
+            {Tk.send pack(Button side: top fill: x padx: IPad pady: IPad)}
          end
       end
-      %%
+
       %%
       %%
       meth showIn(VS)
          case @window == InitValue then true
-         else
-            G P X Y MyScreen LWScreen LeaderWindow RealLWindow
-         in
-            {@messageWidget [tk(insert(insert VS))
-                             tk(insert(insert "\n"))
-                             tk(yview("insert - 2 lines"))]}
+         else MyScreen LWScreen LeaderWindow RealLWindow in
+            {@messageWidget [tk(ins insert VS)
+                             tk(ins insert '\n')
+                             tk(yview 'insert-2lines')]}
 
             %%
+            %%  Now, let's try to move it to a (current) leader window;
             LeaderWindow = @leaderWindow
             case LeaderWindow == InitValue then
+               %%  leader is gone?
                {Tk.batch [update wm(deiconify @window)]}
             else
                MyScreen = {Tk.return winfo(screen @window)}
                LWScreen = {Tk.return winfo(screen LeaderWindow)}
 
                %%
-               case {DiffStrs MyScreen LWScreen} then
+               case MyScreen == LWScreen then
+                  %%  leave it where it is - we cannot move it anyway;
                   {Tk.batch [update wm(deiconify @window)]}
                else
                   %%  the same screen;
                   RealLWindow = {Tk.return winfo(toplevel LeaderWindow)}
 
                   %%
-                  {ForAll RealLWindow Wait}
-                  {Tk.return wm(geometry RealLWindow) G}
-                  P = {Tail G {FindChar G "+".1}}
-                  X = {String.toInt {Head P.2 ({FindChar P.2 "+".1} - 1)}}
-                  Y = {String.toInt {Tail P.2 ({FindChar P.2 "+".1} + 1)}}
+                  case {String.is RealLWindow} then Geom X Y in
+                     Geom = {Tk.return wm(geometry RealLWindow)}
+                     [_ X Y] = {GetStrs Geom &+ nil}
 
-                  %%
-                  %%  should wait before?
-                  {Wait X}
-                  {Wait Y}
-                  {Tk.batch [update
-                             wm(geometry @window
-                                '+'#(X + IMWXOffset)#
-                                '+'#(Y + IMWYOffset))
-                             wm(deiconify @window)]}
+                     %%
+                     {Tk.batch [update
+                                wm(geometry @window
+                                   '+'#(X + IMWXOffset)#
+                                   '+'#(Y + IMWYOffset))
+                                wm(deiconify @window)]}
+                  end
                end
             end
          end
@@ -2118,22 +1906,12 @@ in
       %%
       meth clear
          case @window == InitValue then true
-         else
-            {@messageWidget tk(delete(p(1 0) insert))}
+         else {@messageWidget tk(del p(1 0) insert)}
          end
       end
 
       %%
-      %%
-      meth iconify
-         case @window == InitValue then true
-         else
-            {Tk.send wm(iconify @window)}
-         end
-      end
-
-      %%
-      %%  close the top level widnow;
+      %% close the top level widnow;
       %%
       meth closeWindow
          case @window == InitValue then true
@@ -2149,9 +1927,9 @@ in
    end
 
    %%
-   %%  Help Window;
+   %% Help Window;
    %%
-   class ProtoHelpWindow from UrObject
+   class HelpWindowClass from UrObject
       %%
       attr
          window:            InitValue
@@ -2162,8 +1940,9 @@ in
       %%
       meth createHelpWindow(screen: Screen)
 \ifdef DEBUG_TI
-         {Show 'tck/tk: createHelpWindow'}
+         {Show 'HelpWindowClass::createHelpWindow'}
 \endif
+         %%
          local
             Window         %
             MessageWidget  %  text widget;
@@ -2175,17 +1954,15 @@ in
             messageWidget <- MessageWidget
 
             %%
-            case Screen == InitValue then
-               Window = {New MyToplevel tkInit(withdraw: True)}
-            else
-               Window = {New MyToplevel tkInit(withdraw: True
-                                               screen: Screen)}
-            end
+            Window =
+            {New MyToplevel case Screen == InitValue
+                            then tkInit(withdraw:True)
+                            else tkInit(withdraw:True screen:Screen)
+                            end}
 
             %%
-            CloseAction = {New Tk.action
-                           tkInit(parent: Window
-                                  action: proc {$} {self close} end)}
+            CloseAction = {New Tk.action tkInit(parent: Window
+                                                action: self#close)}
 
             %%
             {Tk.batch
@@ -2194,7 +1971,7 @@ in
               wm(iconbitmap(Window '@'#IIBitmap))
               %%  {Tk.wm iconmask(Window '@'#IMIBMask)}
               wm(geometry Window IHXSize#x#IHYSize)
-              wm(protocol(Window "WM_DELETE_WINDOW" CloseAction))]}
+              wm(protocol(Window 'WM_DELETE_WINDOW' CloseAction))]}
 
             %%
             MessageWidget = {New Tk.text tkInit(parent: Window
@@ -2210,12 +1987,15 @@ in
                                                 foreground: IForeGround
                                                 highlightthickness: 0)}
 
-            %%
+            %%  choose a font;
             {FoldL [ITWFont1 ITWFont2 ITWFont3]
              fun {$ Proceed IFont}
-                case Proceed then
-                   {Tk.returnInt
-                    'catch'(q(MessageWidget conf(font: IFont.font)))} \= 0
+                case
+                   Proceed andthen
+                   {X11ResourceCache tryFont(IFont.font $)}
+                then
+                   {MessageWidget tk(conf font:IFont.font)}
+                   False
                 else Proceed
                 end
              end
@@ -2231,24 +2011,25 @@ in
 
             %%
             {Tk.batch
-             [pack(VS o(fill: y padx: IPad pady: IPad side: right))
-              pack(MessageWidget o(fill: both padx: IPad pady: IPad
-                                   side: bottom expand: yes))
-              %%
-              o(pr#oc myNullProc '' '')
-              %%
+             [pack(VS fill: y padx: IPad pady: IPad side: right)
+              pack(MessageWidget fill: both padx: IPad pady: IPad
+                   side: bottom expand: yes)
               bindtags(MessageWidget q(MessageWidget))
-              %%  i.e. nothing;
              ]}
 
+            %%
             %% sync;
             {Wait Window}
             {Wait MessageWidget}
 
             %%
             {Tk.send wm(deiconify Window)}
+
             %%
-            <<UrObject nil>>
+\ifdef DEBUG_TI
+            {Show 'HelpWindowClass::createHelpWindow is finished'}
+\endif
+            touch
          end
       end
 
@@ -2256,10 +2037,8 @@ in
       %%
       meth showIn(VS)
          case @window == InitValue then true
-         else
-            {@messageWidget [tk(insert(insert VS))
-                             tk(insert(insert "\n"))]}
-                                % tk(yview("insert - 2 lines"))
+         else {@messageWidget [tk(ins insert VS) tk(ins insert '\n')]}
+                             % tk(yview 'insert-2lines')
          end
       end
 
@@ -2271,11 +2050,7 @@ in
             {@window close}
 
             %%
-            window <- InitValue
-            messageWidget <- InitValue
-
-            %%
-            <<UrObject close>>
+            Object.base , close
          end
       end
 

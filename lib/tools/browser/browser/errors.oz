@@ -1,12 +1,12 @@
-%  Programming Systems Lab, DFKI Saarbruecken,
-%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5337
+%  Programming Systems Lab, University of Saarland,
+%  Geb. 45, Postfach 15 11 50, D-66041 Saarbruecken.
 %  Author: Konstantin Popov & Co.
 %  (i.e. all people who make proposals, advices and other rats at all:))
 %  Last modified: $Date$ by $Author$
 %  Version: $Revision$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
 %%%
 %%%  Reporting any errors and warnings;
@@ -14,29 +14,23 @@
 %%%
 %%%
 
-local MessageWindowObject in
+local MessageWindowObject BrowserMessage in
    %%
-   job
-      %%  'ProtoMessageWindow' is not known yet;
-      create MessageWindowObject from ProtoMessageWindow
+   thread
+      %%
+      %%  'MessageWindowClass' is not known yet (might be);
+      create MessageWindowObject from MessageWindowClass
          %%
          attr
             leaderWindow: InitValue
-         %%
 
          %%
          meth get(?MW)
             case @window == InitValue then
-               <<[createMessageWindow
-                  pushButton(clear
-                             proc {$} {self clear} end
-                             _)
-                  %% pushButton(iconify
-                  %%         proc {$} {self iconify} end
-                  %%         _)
-                  pushButton(close
-                             proc {$} {self closeWindow} end
-                             _)]>>
+               MessageWindowClass
+               , createMessageWindow
+               , pushButton(clear proc {$} {self clear} end _)
+               , pushButton(close proc {$} {self closeWindow} end _)
             else true
             end
 
@@ -65,72 +59,42 @@ local MessageWindowObject in
    end
    %%
 
-   %%  ... And now, everywhere 'MessageWindowObject' is used, insert
-   %%  job ... end
    %%
-   proc {BrowserMessagesInit _}
-      true
-   end
+   proc {BrowserMessagesInit _} true end
 
    %%
    proc {BrowserMessagesExit W}
-      job
-         {MessageWindowObject closedLeaderWindow(W)}
-      end
+      thread {MessageWindowObject closedLeaderWindow(W)} end
    end
 
    %%
    proc {BrowserMessagesFocus W}
-      job
-         {MessageWindowObject setLeaderWindow(W)}
-      end
+      thread {MessageWindowObject setLeaderWindow(W)} end
    end
 
    %%
    proc {BrowserMessagesNoFocus}
-      job
-         {MessageWindowObject setLeaderWindow(InitValue)}
-      end
+      thread {MessageWindowObject setLeaderWindow(InitValue)} end
    end
 
    %%
-   proc {BrowserError Desc}
-      %%
-      {Show '************************************************************'}
-      {Show Desc}
-      {Show '************************************************************'}
-      %%
-      job
-         local MW HT L in
+   proc {BrowserMessage Type Desc}
+      thread
+         local MW Message in
             MW = {MessageWindowObject get($)}
+
             %%
-            %%
-            L = {Length Desc}
-            HT = {MakeTuple '#' L+1}
-            {Loop.for 2 L+1 1 proc {$ I} HT.I = {Nth Desc I-1} end}
-            HT.1 = 'ERROR: '
-            {Show {String.toAtom {VirtualString.toString HT}}}
-            {MW showIn(HT)}
+            Message = Type # Desc
+            {Show '!'#Message}
+            {Show {String.toAtom {VirtualString.toString Message}}}
+            {MW showIn(Message)}
          end
       end
    end
 
    %%
-   proc {BrowserWarning Desc}
-      %%
-      job
-         local MW HT L in
-            MW = {MessageWindowObject get($)}
-            %%
-            %%
-            L = {Length Desc}
-            HT = {MakeTuple '#' L+1}
-            {Loop.for 2 L+1 1 proc {$ I} HT.I = {Nth Desc I-1} end}
-            HT.1 = 'WARNING: '
-            {MW showIn(HT)}
-         end
-      end
-   end
+   proc {BrowserError Desc} {BrowserMessage 'ERROR: ' Desc} end
+   proc {BrowserWarning Desc} {BrowserMessage 'WARNING: ' Desc} end
 
    %%
 end

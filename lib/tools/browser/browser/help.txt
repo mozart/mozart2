@@ -206,9 +206,6 @@ obvious:
    much more efficient than a 'deep' one, but list
    constructors cannot be selected separately;
 
-'Primitive terms active' enables selection of primitive
-   subterms;
-
 'Width inc' and 'Depth inc' stand for width and depth
    increments correspondingly, and determine how many
    subtrees are added to a term's representation when

@@ -609,8 +609,7 @@ define
                   {CS.reporter
                    error(coord: C kind: 'code generation error'
                          msg: 'duplicate feature in record construction')}
-                  Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
-                         someLabel()}
+                  Rec = {AdjoinList someLabel() PairList}
                end
                if {IsTuple Rec} then VInter in
                   CodeGenRecord, MakeConstructionTuple(CS VO Rec VHd VInter)
@@ -650,8 +649,7 @@ define
                {CS.reporter
                 error(coord: C kind: 'code generation error'
                       msg: 'duplicate feature in record construction')}
-               Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
-                      Label()}
+               Rec = {AdjoinList Label() PairList}
             end
             RecordArity = if {IsTuple Rec} then {Width Rec}
                           else {Arity Rec}
@@ -993,8 +991,7 @@ define
                   {CS.reporter
                    error(coord: C kind: 'code generation error'
                          msg: 'duplicate feature in record construction')}
-                  Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
-                         Label()}
+                  Rec = {AdjoinList Label() PairList}
                end
                RecordArity = if {IsTuple Rec} then {Width Rec}
                              else {Arity Rec}
@@ -1306,8 +1303,7 @@ define
             {CS.reporter
              error(coord: C kind: 'code generation error'
                    msg: 'duplicate feature in record construction')}
-            Rec = {FoldL PairList fun {$ In F#T} {AdjoinAt In F T} end
-                   TheLabel()}
+            Rec = {AdjoinList TheLabel() PairList}
          end
          if {IsLiteral Rec} then
             addScalar(Rec LocalVars Body)

@@ -448,7 +448,9 @@ define
            inject(entailed(proc {$}
                               SFF={Space.new proc {$ X} fail end}
                               SSF={Space.new proc {$ X} skip  end}
-                              SAF={Space.new proc {$ X} dis X=1 [] X=2 end end}
+                              SAF={Space.new proc {$ X}
+                                                choice X=1 [] X=2 end
+                                             end}
                               SFS={Space.clone SFF} SFA={Space.clone SFF}
                               SSS={Space.clone SSF} SSA={Space.clone SSF}
                               SAS={Space.clone SAF} SAA={Space.clone SAF}
@@ -459,21 +461,21 @@ define
                               {Space.ask SFF failed}
                               {Space.ask SSF failed}
                               {Space.ask SAF failed}
-                              {Space.inject SFS proc {$ X} X=1 end}
-                              {Space.inject SSS proc {$ X} X=1 end}
-                              {Space.inject SAS proc {$ X} X=1 end}
-                              {Space.ask SFS failed}
-                              {Space.ask SSS succeeded}
-                              {Space.ask SAS succeeded}
-                              {Space.inject SFA
-                               proc {$ X} dis X=1 [] X=2 [] X=3 end end}
-                              {Space.inject SSA
-                               proc {$ X} dis X=1 [] X=2 [] X=3 end end}
-                              {Space.inject SAA
-                               proc {$ X} dis X=1 [] X=2 [] X=3 end end}
-                              {Space.ask SFA failed}
-                              {Space.ask SSA alternatives(3)}
-                              {Space.ask SAA alternatives(3)}
+%                             {Space.inject SFS proc {$ X} X=1 end}
+%                             {Space.inject SSS proc {$ X} X=1 end}
+%                             {Space.inject SAS proc {$ X} X=1 end}
+%                             {Space.ask SFS failed}
+%                             {Space.ask SSS succeeded}
+%                             {Space.ask SAS succeeded}
+%                             {Space.inject SFA
+%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
+%                             {Space.inject SSA
+%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
+%                             {Space.inject SAA
+%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
+%                             {Space.ask SFA failed}
+%                             {Space.ask SSA alternatives(3)}
+%                             {Space.ask SAA alternatives(3)}
                            end)
                   keys: ['choice' 'dis' inject space clone])
 

@@ -246,16 +246,16 @@ define
          Alarm=watch#_
       end
       proc {Handle _ _ _}
+         {Fault.deInstallWatcher P Watch _}
+         {Fault.deInstall P 'thread'(this) _}
          {Exception.raiseError connection(ticketToDeadSite V)}
       end
    in
       if T.minimal\={Property.get 'perdio.minimal'} then
          {Exception.raiseError connection(wrongModel V)}
       end
-
       {Fault.installWatcher P [permFail] Watch true}
       {Fault.install P 'thread'(this) [permFail] Handle true}
-
       {Send P T#X}
 
       case {Record.waitOr X#Alarm}

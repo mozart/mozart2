@@ -27,6 +27,7 @@ export
 define
    %% -- This should be placed within GraphicSupport.oz
    %% This functions handles some special Tcl Characters
+\ifndef INSPECTOR_GTK_GUI
    fun {TkQuoteStr Is}
       case Is
       of nil  then nil
@@ -48,6 +49,11 @@ define
          end
       end
    end
+\else
+   fun {TkQuoteStr Is}
+      Is
+   end
+\endif
    %% -- End of GraphicSupport.oz region
 
    proc {ConvertAtom V PrintStr LenStr}
@@ -877,7 +883,13 @@ define
                {@node eliminateFresh(I)}
             end
             meth undraw
-               if @dirty then skip else dirty <- true {@visual delete(@tag)} {@node undraw} end
+               if @dirty
+               then skip
+               else
+                  dirty <- true
+                  tag <- {@visual rectangleDelete(@tag $)}
+                  {@node undraw}
+               end
             end
             meth searchNode(XA YA X Y $)
                {@node searchNode(XA YA X Y $)}

@@ -1135,8 +1135,6 @@ in
             {Dictionary.put @visualColDict I Col}
             {Canvas tk(itemconfigure {Dictionary.get TagDict I} fill: Col)}
             InspectorGUIClass, handle(selCol(@visualSelection))
-%           {System.show 'sel type is: '#@visualCurType}
-%           {Dictionary.put @opDict {VirtualString.toAtom @visualCurType#'Color'} Col}
          end
       end
       meth tellClose

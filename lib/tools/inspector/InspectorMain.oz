@@ -25,9 +25,13 @@ import
                        'nodes' : TreeNodes) at 'TreeWidget.ozf'
    Reflection(reflect unreflect manager)
    InspectorOptions
-   Tk
-   TkTools
    System(eq show onToplevel)
+\ifndef INSPECTOR_GTK_GUI
+   Tk TkTools
+\else
+   GTK GTKCANVAS
+   GBuilder(create)
+\endif
 export
    'object'     : InspectorObj
    'inspect'    : Inspect
@@ -61,6 +65,11 @@ define
       Call       = {NewName}
       CallOne    = {NewName}
       \insert 'FrameManager.oz'
+
+\ifndef INSPECTOR_GTK_GUI
+      %%
+      %% Tk Based Inspector Stuff
+      %%
       \insert 'OptionsGUI.oz'
 
       class AboutWindow
@@ -128,29 +137,12 @@ define
             {Menu tk(entryconf state: normal)}
          end
       end
-   in
-      class InspectorClass from Tk.toplevel FrameManager AboutWindow
-         attr
-            options           %% Options Dictionary
-            isVisible : false %% Visibility Flag
-            widget            %% Current Active TreeWidget
-            aboutWin  : nil   %% About Window
-            configWin : nil   %% Configuration Window
-            selMenu           %% Selection Menu
-            selNode           %% Selection Node (exported from TreeWidget)
-            inspPort          %% Inspector Port Variable
-         prop
-            final
-         meth create(InspPort NewOptions)
-            Options = InspectorOptions.options
-            Width Height Frame ManagerFrame
+
+      class GuiInspectorClass from Tk.toplevel
+         meth create(InspPort Options Frame)
+            Width  = {Dictionary.get Options inspectorWidth}
+            Height = {Dictionary.get Options inspectorHeight}
          in
-            {Record.forAllInd NewOptions proc {$ F V}
-                                            {Dictionary.put Options F V}
-                                         end}
-            Width     = {Dictionary.get Options inspectorWidth}
-            Height    = {Dictionary.get Options inspectorHeight}
-            @inspPort = InspPort
             Tk.toplevel, tkInit(title:
                                    {Dictionary.get Options inspectorLanguage}#
                                 ' Inspector'
@@ -162,6 +154,7 @@ define
                      tkInit(parent:             self
                             borderwidth:        0
                             highlightthickness: 0)}
+
             local
                MenuFrame = {New Tk.frame
                             tkInit(parent:             Frame
@@ -171,41 +164,45 @@ define
                Menu =
                {TkTools.menubar MenuFrame MenuFrame
                 [menubutton(text: 'Inspector'
-                            menu: [command(label:  'About...'
-                                           action:  proc {$}
-                                                       {Port.send InspPort
-                                                        about(Menu.inspector.about)}
-                                                    end
-                                           feature: about)
-                                   separator
-                                   command(label: 'Add new Widget'
-                                           action: proc {$}
-                                                      {Port.send InspPort addPane}
-                                                   end)
-                                   command(label:  'Delete active Widget'
-                                           action: proc {$}
-                                                      {Port.send InspPort delPane}
-                                                   end)
-                                   separator
-                                   command(label:   'Clear all but Selection'
-                                           action:  proc {$}
-                                                       {Port.send InspPort
-                                                        clearAll(
-                                                           Menu.inspector.myclear)}
-                                                    end
-                                           key: ctrl(l)
-                                           feature: myclear)
-                                   separator
-                                   command(label:   'Iconify'
-                                           action:  proc {$}
-                                                       {Port.send InspPort iconify}
-                                                    end
-                                           feature: iconify)
-                                   command(label:   'Close'
-                                           action:  proc {$}
-                                                       {Port.send InspPort close}
-                                                    end
-                                           feature: close)]
+                            menu:
+                               [command(label: 'About...'
+                                        action:
+                                           proc {$}
+                                              {Port.send InspPort
+                                               about(Menu.inspector.about)}
+                                           end
+                                        feature: about)
+                                separator
+                                command(label: 'Add new Widget'
+                                        action: proc {$}
+                                                   {Port.send InspPort addPane}
+                                                end)
+                                command(label:  'Delete active Widget'
+                                        action: proc {$}
+                                                   {Port.send InspPort delPane}
+                                                end)
+                                separator
+                                command(label: 'Clear all but Selection'
+                                        action:
+                                           proc {$}
+                                              {Port.send InspPort
+                                               clearAll(
+                                                  Menu.inspector.myclear)}
+                                           end
+                                        key: ctrl(l)
+                                        feature: myclear)
+                                separator
+                                command(label: 'Iconify'
+                                        action:
+                                           proc {$}
+                                              {Port.send InspPort iconify}
+                                           end
+                                        feature: iconify)
+                                command(label:   'Close'
+                                        action:  proc {$}
+                                                    {Port.send InspPort close}
+                                                 end
+                                        feature: close)]
                             feature: inspector)
                  menubutton(text: 'Selection'
                             menu: [command(label:  'Expand'
@@ -232,56 +229,57 @@ define
                                            feature: reinspect)]
                             feature: selection)
                  menubutton(text: 'Options'
-                            menu: [command(label:  'Preferences...'
-                                           action:  proc {$}
-                                                       {Port.send InspPort
-                                                        preferences(
-                                                           Menu.insoptions.pref)}
-                                                    end
+                            menu: [command(label: 'Preferences...'
+                                           action:
+                                              proc {$}
+                                                 {Port.send InspPort
+                                                  preferences(
+                                                     Menu.insoptions.pref)}
+                                              end
                                            feature: pref)]
                             feature: insoptions)]
                 nil}
                StopB = {New Tk.button
                         tkInit(parent:           MenuFrame
-                               bitmap:           '@'#{Dictionary.get Options widgetStopBitmap}
+                               bitmap:
+                                  '@'#{Dictionary.get Options widgetStopBitmap}
                                foreground:       red
                                activeforeground: red
                                state:            disabled
                                borderwidth:      0
-                               action:           proc {$}
-                                                    {Port.send InspPort stopUpdate(1)}
-                                                 end)}
+                               action: proc {$}
+                                          {Port.send InspPort stopUpdate(1)}
+                                       end)}
                StopN = {Tk.getTclName StopB}
             in
-               {Tk.send v('proc O0 {} {'#StopN#' conf -state normal;update idletasks};proc F0 {} {'#StopN#' conf -state disabled}')}
-               @options = Options
-               {Dictionary.put Options widgetReflectMan Reflection.manager}
+               {Tk.send
+                v('proc O0 {} {'#StopN#
+                  ' conf -state normal;update idletasks};proc F0 {} {'#StopN#
+                  ' conf -state disabled}')}
                @selMenu = Menu.selection
                {Menu.inspector tk(conf borderwidth: 1)}
                {Menu.insoptions tk(conf borderwidth: 1)}
-               {Menu.inspector.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
-               {Menu.selection.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
+               {Menu.inspector.menu tk(conf tearoff: false borderwidth: 1
+                                       activeborderwidth: 1)}
+               {Menu.selection.menu tk(conf tearoff: false borderwidth: 1
+                                       activeborderwidth: 1)}
                {Menu.selection.expand tk(entryconf state:disabled)}
                {Menu.selection.shrink tk(entryconf state:disabled)}
                {Menu.selection.reinspect tk(entryconf state:disabled)}
                {Menu.insoptions.menu
                 tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
                {Tk.batch [grid(row: 0 column: 0 Menu sticky: ew)
-                          grid(row: 0 column: 1 StopB padx: 4 pady: 2 sticky: ne)
+                          grid(row: 0 column: 1 StopB
+                               padx: 4 pady: 2 sticky: ne)
                           grid(row: 0 column: 0 MenuFrame sticky: nsew)
                           grid(columnconfigure MenuFrame 0 weight: 1)
                           grid(columnconfigure MenuFrame 1 weight: 0)]}
-               {Dictionary.put Options selectionHandler
-                proc {$ Mode}
-                   {Port.send InspPort selectionHandler(Mode)}
-                end}
-               {Dictionary.put Options pressHandler
-                proc {$ Mode}
-                   {Port.send InspPort selectionHandler(double(Mode))}
-                end}
+               @expandItem    = Menu.selection.expand
+               @shrinkItem    = Menu.selection.shrink
+               @reinspectItem = Menu.selection.reinspect
             end
-            ManagerFrame = FrameManager, create(Frame Width Height $)
-            @widget      = {New TreeWidgetNode create(self Width Height)}
+         end
+         meth showItems(Frame ManagerFrame)
             {Tk.batch [grid(row: 1 column: 0 ManagerFrame sticky: nsew)
                        grid(rowconfigure Frame 1 weight: 1)
                        grid(columnconfigure Frame 0 weight: 1)
@@ -289,20 +287,262 @@ define
                        grid(rowconfigure self 0 weight: 1)
                        grid(columnconfigure self 0 weight: 1)]}
          end
+         meth topShow
+            {Tk.send wm(deiconify self)}
+         end
+         meth topHide
+            {Tk.send wm(withdraw self)}
+         end
+         meth iconify
+            {Tk.send wm(iconify self)}
+         end
+         meth winClose(Window)
+            {Window tkClose}
+         end
+         meth winFocus(Window)
+            {Tk.send focus(Window)}
+         end
+         meth winMinDimension(XDim YDim)
+            {Tk.send wm(minsize self XDim YDim)}
+         end
+         meth menuEnable(Menu)
+            {Menu tk(entryconf state: normal)}
+         end
+         meth menuDisable(Menu)
+            {Menu tk(entryconf state: disabled)}
+         end
+         meth setWinTitle(Title)
+            {Tk.send wm(title self Title)}
+         end
+         meth handlePanes
+            {self addPane}
+            {self performClose((@NumWidgets - 1))}
+         end
+      end
+\else
+      %%
+      %% Gtk Based Inspector Stuff
+      %%
+      \insert 'GtkOptionsGUI.oz'
+
+      class AboutWindow
+         meth about(Menu)
+            InspPort = @inspPort
+            T        = {New GTK.dialog new}
+            InspType = {Dictionary.get @options inspectorLanguage}#' Inspector'
+            L        = {New GTK.label
+                        new({VirtualString.toString
+                             "\n"#InspType#
+                             "\n\nThorsten Brunklaus\n"#
+                             "   (brunklaus@ps.uni-sb.de)   \n"})}
+            B        = {New GTK.button newWithLabel("Ok")}
+         in
+            {T setTitle("About Inspector")}
+            {B signalConnect('clicked'
+                             proc {$ _}
+                                {Port.send InspPort aboutClose(Menu T)}
+                             end _)}
+            {{T dialogGetFieldActionArea($)} add(B)}
+            {{T dialogGetFieldVbox($)} add(L)}
+            {Menu setSensitive(0)}
+            aboutWin <- T|Menu
+            {T showAll}
+         end
+         meth aboutClose(Menu D)
+            {D gtkClose}
+            aboutWin <- nil
+            {Menu setSensitive(1)}
+         end
+      end
+
+      class GuiInspectorClass from GTK.window
+         attr
+            toplevelMenu %% Gtk Toplevel Menu Structure
+            stopButton   %% Gtk Toplevel Menu Stop Button
+         meth create(InspPort Options Frame)
+            Title = {Dictionary.get Options inspectorLanguage}#' Inspector'
+            Menu  = @toplevelMenu
+         in
+            GTK.window, new(GTK.'WINDOW_TOPLEVEL')
+            GTK.window, setBorderWidth(0)
+            GTK.window, setTitle({VirtualString.toString Title})
+            {self signalConnect('delete-event'
+                                proc {$ Arg} {Port.send InspPort close} end
+                                _)}
+            Frame = {New GTK.vBox new(0 0)}
+            Menu  = {self internalMenu(InspPort Options $)}
+            {Frame packStart(Menu 0 0 0)}
+            GTK.window, add(Frame)
+         end
+         meth internalMenu(InspPort Options $)
+            AddPane ClearPane AboutMenu ClearMenu PrefMenu
+            InspectorMenu =
+            submenu(
+               menu(append(
+                       menuItem(label:    'About...'
+                                handle:   AboutMenu
+                                activate: InspPort # about(AboutMenu)))
+                    append(menuItem())
+                    append(
+                       menuItem(label:    'Add new Widget'
+                                handle:   AddPane
+                                activate: InspPort # addPane))
+                    append(
+                       menuItem(label:    'Delete active Widget'
+                                handle:   ClearPane
+                                activate: InspPort # delPane))
+                    append(menuItem())
+                    append(
+                       menuItem(label:    'Clear all but Selection'
+                                handle:   ClearMenu
+                                activate: InspPort # clearAll(ClearMenu)))
+                    append(menuItem())
+                    append(
+                       menuItem(label:    'Iconify'
+                                activate: InspPort # iconify))
+                    append(
+                       menuItem(label:    'Close'
+                                activate: InspPort # close))))
+            SelectionMenu =
+            submenu(
+               menu(append(
+                       menuItem(label:    'Expand'
+                                handle:   @expandItem
+                                activate: InspPort # selectionHandler(expand)))
+                    append(
+                       menuItem(label: 'Shrink'
+                                handle:  @shrinkItem
+                                activate: InspPort # selectionHandler(shrink)))
+                    append(
+                       menuItem(label: 'Reinspect'
+                                handle: @reinspectItem
+                                activate:
+                                   InspPort # selectionHandler(reinspect)))))
+            OptionsMenu =
+            submenu(
+               menu(append(
+                       menuItem(label: 'Preferences...'
+                                handle: PrefMenu
+                                activate: InspPort # preferences(PrefMenu)))))
+            MenuBarDesc =
+            menuBar(
+               append(menuItem(label: 'Inspector' InspectorMenu))
+               append(menuItem(label: 'Selection' SelectionMenu))
+               append(menuItem(label: 'Options' OptionsMenu))
+               append(menuItem(label: 'Stop'
+                               handle: @stopButton
+                               rightJustify: true
+                               activate: InspPort # stopUpdate(1))))
+            MenuBar     = {GBuilder.create MenuBarDesc}
+         in
+            {@stopButton setSensitive(0)}
+            {AddPane setSensitive(0)}
+            {ClearPane setSensitive(0)}
+            MenuBar
+         end
+         meth showItems(Frame ManagerFrame)
+            skip
+         end
+         meth topShow
+            GTK.window, showAll
+         end
+         meth topHide
+            GTK.window, hideAll
+         end
+         meth winClose(Window)
+            {Window gtkClose}
+         end
+         meth iconify
+            skip
+         end
+         meth winFocus(Window)
+            GTK.window, setFocus(Window)
+         end
+         meth winMinDimension(XDim YDim)
+            skip
+         end
+         meth menuEnable(Menu)
+            {Menu setSensitive(1)}
+         end
+         meth menuDisable(Menu)
+            {Menu setSensitive(0)}
+         end
+         meth setWinTitle(Title)
+            {self setTitle(Title)}
+         end
+         meth handlePanes
+            Finished
+         in
+            %% GTK only supports one widget
+            {@widget clearAll(Finished)}
+            {Wait Finished}
+         end
+         meth getStopButton($)
+            @stopButton
+         end
+      end
+\endif
+      %%
+      %% Generic Stuff comes here
+      %%
+   in
+      class InspectorClass from GuiInspectorClass FrameManager AboutWindow
+         attr
+            options           %% Options Dictionary
+            isVisible : false %% Visibility Flag
+            widget            %% Current Active TreeWidget
+            aboutWin  : nil   %% About Window
+            configWin : nil   %% Configuration Window
+            selMenu           %% Selection Menu
+            selNode           %% Selection Node (exported from TreeWidget)
+            inspPort          %% Inspector Port Variable
+            expandItem        %% Selection Menu Expand
+            shrinkItem        %% Selection Menu Shrink
+            reinspectItem     %% Selection Menu Reinspect
+         prop
+            final
+         meth create(InspPort NewOptions)
+            Options = InspectorOptions.options
+            Width Height Frame ManagerFrame
+         in
+            {Record.forAllInd NewOptions proc {$ F V}
+                                            {Dictionary.put Options F V}
+                                         end}
+            Width     = {Dictionary.get Options inspectorWidth}
+            Height    = {Dictionary.get Options inspectorHeight}
+            @inspPort = InspPort
+            @options  = Options
+            {Dictionary.put Options widgetReflectMan Reflection.manager}
+            {Dictionary.put Options selectionHandler
+             proc {$ Mode}
+                {Port.send InspPort selectionHandler(Mode)}
+             end}
+            {Dictionary.put Options pressHandler
+             proc {$ Mode}
+                {Port.send InspPort selectionHandler(double(Mode))}
+             end}
+            GuiInspectorClass, create(InspPort Options Frame)
+            ManagerFrame = FrameManager, create(Frame Width Height $)
+            @widget      = {New TreeWidgetNode create(self Width Height)}
+            GuiInspectorClass, showItems(Frame ManagerFrame)
+         end
          meth inspect(Value)
             if @isVisible
             then skip
-            else isVisible <- true {Tk.send wm(deiconify self)}
+            else
+               isVisible <- true
+               GuiInspectorClass, topShow
             end
             {@widget display(Value)}
          end
          meth inspectN(N Value)
             if @isVisible
             then skip
-            else isVisible <- true {Tk.send wm(deiconify self)}
+            else
+               isVisible <- true
+               GuiInspectorClass, topShow
             end
             {{Dictionary.get @Items (1 + (N * 2))} display(Value)}
-%           {{{Dictionary.get @Items (1 + (N * 2))} getCanvas($)} display(Value)}
          end
          meth !Call(P)
             {P}
@@ -316,7 +556,9 @@ define
          meth configureEntry(Key Value)
             Options = @options
          in
-            if Key == 'inspectorLanguage' then {Tk.send wm(title self Value#' Inspector')} end
+            if Key == 'inspectorLanguage'
+            then GuiInspectorClass, setWinTitle(Value#' Inspector')
+            end
             {Dictionary.put Options Key Value}
             InspectorClass, setOptions(Options)
          end
@@ -366,31 +608,31 @@ define
             if @isVisible
             then
                isVisible <- false
-               {Tk.send wm(withdraw self)}
+               GuiInspectorClass, topHide
             end
-            InspectorClass, addPane
-            InspectorClass, performClose((@NumWidgets - 1))
+            GuiInspectorClass, handlePanes
+            case @aboutWin
+            of nil then skip
+            elseof Win|Menu then
+               aboutWin <- nil
+               GuiInspectorClass, winClose(Win)
+               GuiInspectorClass, menuEnable(Menu)
+            end
+            case @configWin
+            of nil then skip
+            elseof Win|Menu then
+               configWin <- nil
+               {Win tellClose}
+               GuiInspectorClass, menuEnable(Menu)
+               end
          end
          meth performClose(I)
             if I > 0
-            then InspectorClass, delPane InspectorClass, performClose((I - 1))
-            else
-               case @aboutWin
-               of nil then skip
-               elseof Win|Menu then
-                  aboutWin <- nil {Win tkClose}
-                  {Menu tk(entryconf state: normal)}
-               end
-               case @configWin
-               of nil then skip
-               elseof Win|Menu then
-                  configWin <- nil {Win tellClose}
-                  {Menu tk(entryconf state: normal)}
-               end
+            then
+               InspectorClass, delPane
+               InspectorClass, performClose((I - 1))
+            else skip
             end
-         end
-         meth iconify
-            {Tk.send wm(iconify self)}
          end
          meth focusDn(Freeze)
             Widget = @widget
@@ -401,19 +643,21 @@ define
             NewIndex  = if Index == @NumItems then 1 else (Index + 2) end
             NewNode   = {Dictionary.get @Items NewIndex}
             NewCanvas = {NewNode getCanvas($)}
-            {Tk.send focus(NewCanvas)}
+            GuiInspectorClass, winFocus(NewCanvas)
             widget <- NewNode
             {NewNode unfreeze}
          end
          meth changeFocus(NewNode)
             NewCanvas = {NewNode getCanvas($)}
          in
-            {Tk.send focus(NewCanvas)}
+            GuiInspectorClass, winFocus(NewCanvas)
             widget <- NewNode
             {NewNode unfreeze}
          end
          meth enterFocus
-            if @isVisible then {Tk.send focus({@widget getCanvas($)})} end
+            if @isVisible
+            then GuiInspectorClass, winFocus({@widget getCanvas($)})
+            end
          end
          meth addPane
             XDim        = @Width
@@ -433,7 +677,7 @@ define
                InspectorClass, shrink(1 DeltaY {Int.toFloat ACSpace})
                _ = {New SashGrip create(self XDim 0)}
                _ = {New TreeWidgetNode create(self XDim NCSpace)}
-               {Tk.send wm(minsize self 120 YMin)}
+               GuiInspectorClass, winMinDimension(120 YMin)
             end
          end
          meth shrink(I DeltaY ACSpace)
@@ -486,17 +730,19 @@ define
                {Widget terminate} %% Enable garbage collecting
                {Pane undraw}
                widget <- NNode
-               {Tk.send focus(NCanvas)}
+               GuiInspectorClass, winFocus(NCanvas)
                FrameManager, MoveY((I + DeltaK) ~DeltaY)
                InspectorClass, adjustIndex((I + DeltaK))
                AddSpace = (DeltaY div @NumWidgets)
                FrameManager, TellNewXY(1 0 AddSpace)
-               {Tk.send wm(minsize self 120 YMin)}
+               GuiInspectorClass, winMinDimension(120 YMin)
             end
          end
          meth stopUpdate(I)
             if I =< @NumItems
-            then {{Dictionary.get @Items I} stopUpdate} InspectorClass, stopUpdate((I + 1))
+            then
+               {{Dictionary.get @Items I} stopUpdate}
+               InspectorClass, stopUpdate((I + 1))
             end
          end
          meth adjustIndex(I)
@@ -525,21 +771,19 @@ define
                {@widget clearAll(Finished)}
                {Wait Finished}
             [] Menu then
-               {Menu tk(entryconf state: disabled)}
+               GuiInspectorClass, menuDisable(Menu)
                {@widget clearAll(Finished)}
                {Wait Finished}
-               {Menu tk(entryconf state: normal)}
+               GuiInspectorClass, menuEnable(Menu)
             end
          end
          meth selectionHandler(Mode)
-            Menu = @selMenu
-         in
             case Mode
             of nil then
                selNode <- nil
-               {Menu.expand tk(entryconf state: disabled)}
-               {Menu.shrink tk(entryconf state: disabled)}
-               {Menu.reinspect tk(entryconf state: disabled)}
+               GuiInspectorClass, menuDisable(@expandItem)
+               GuiInspectorClass, menuDisable(@shrinkItem)
+               GuiInspectorClass, menuDisable(@reinspectItem)
             [] expand then
                Node = @selNode
             in
@@ -563,21 +807,21 @@ define
                selNode <- Node
                case {Node getType($)}
                of depthbitmap then
-                  {Menu.expand tk(entryconf state: normal)}
-                  {Menu.shrink tk(entryconf state: disabled)}
-                  {Menu.reinspect tk(entryconf state: disabled)}
+                  GuiInspectorClass, menuEnable(@expandItem)
+                  GuiInspectorClass, menuDisable(@shrinkItem)
+                  GuiInspectorClass, menuDisable(@reinspectItem)
                [] widthbitmap then
-                  {Menu.expand tk(entryconf state: normal)}
-                  {Menu.shrink tk(entryconf state: disabled)}
-                  {Menu.reinspect tk(entryconf state: disabled)}
+                  GuiInspectorClass, menuEnable(@expandItem)
+                  GuiInspectorClass, menuDisable(@shrinkItem)
+                  GuiInspectorClass, menuDisable(@reinspectItem)
                [] variableref then
-                  {Menu.expand tk(entryconf state: disabled)}
-                  {Menu.shrink tk(entryconf state: disabled)}
-                  {Menu.reinspect tk(entryconf state: disabled)}
+                  GuiInspectorClass, menuDisable(@expandItem)
+                  GuiInspectorClass, menuDisable(@shrinkItem)
+                  GuiInspectorClass, menuDisable(@reinspectItem)
                else
-                  {Menu.expand tk(entryconf state: disabled)}
-                  {Menu.shrink tk(entryconf state: normal)}
-                  {Menu.reinspect tk(entryconf state: normal)}
+                  GuiInspectorClass, menuDisable(@expandItem)
+                  GuiInspectorClass, menuEnable(@shrinkItem)
+                  GuiInspectorClass, menuEnable(@reinspectItem)
                end
             end
          end

@@ -27,7 +27,8 @@ import
    TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
    StoreListenerComponent('class' : StoreListener) at 'StoreListener.ozf'
    RelationManagerComponent('class' : RelationManager) at 'RelationManager.ozf'
-   GraphicSupportComponent('class' : GraphicSupport) at 'GraphicSupport.ozf'
+   GraphicSupportComponent('class': LowlevelSupport
+                           'menu' : LowlevelMenu) at 'GraphicSupport.ozf'
 export
    'class' : TreeWidget
    'nodes' : AllNodes
@@ -207,9 +208,231 @@ define
             case @mapEntries
             of Value|Sep|Fun then
                if Value
-               then {Sep tkClose} {Fun tkClose} mapEntries <- false|_|_
+               then
+                  {@menu deleteEntry(Sep)}
+                  {@menu deleteEntry(Fun)}
+                  mapEntries <- false|_|_
                end
             end
+         end
+      end
+   end
+
+   %%
+   %% GraphicSupport Abstract Class
+   %%
+   local
+      local
+         N = {NewName}
+      in
+         class Counter
+            attr
+               !N
+            prop
+               final
+               locking
+            meth create
+               @N = 0
+            end
+            meth inc($)
+               lock %% Not needed for inspector but for other apps
+                  N <- (@N + 1)
+               end
+            end
+         end
+      end
+      %% Only used for canvas creation
+      IdCounter = {New Counter create}
+   in
+      class GraphicSupport from LowlevelSupport
+         attr
+            fontX           %% Font X Dimension
+            fontY           %% Font Y Dimension
+            offY            %% Y Offset due to Separators
+            nIndex          %% SubNode MenuIndex
+            object          %% Current W/D Menu related Node
+            selTag          %% Selection Rectangle Tag
+            selObject : nil %% Selection Object
+         meth idCounter($)
+            IdCounter
+         end
+         meth adjustFonts(I Vs)
+            if I =< @maxPtr
+            then
+               Node  = {Dictionary.get @nodes I}
+               Value = {Node getValue($)}
+            in
+               {Node undraw}
+               LowlevelSupport, delete({Dictionary.get @lines I})
+               GraphicSupport, adjustFonts((I + 1) Value|Vs)
+            else
+               {self resetAll}
+               GraphicSupport, redisplay({Reverse Vs})
+            end
+         end
+         meth redisplay(Vs)
+            case Vs
+            of Value|Vr then
+               {self display(Value)}
+               GraphicSupport, redisplay(Vr)
+            [] nil then skip
+            end
+         end
+         meth changeDepth(N)
+            {@object modifyDepth(@nIndex N)}
+         end
+         meth changeWidth(N)
+            {@object modifyWidth(@nIndex N)}
+         end
+         meth map(F)
+            {@object map(@nIndex F)}
+         end
+         meth unmap
+            {@object unmap}
+         end
+         meth isMapped(Index $)
+            Node = {Dictionary.get @nodes Index}
+         in
+            {Node isProxy($)}
+         end
+         meth action(P)
+            {@object action(@nIndex P)}
+         end
+         meth getVisualData($)
+            self|@fontX|@fontY
+         end
+         meth getCanvas($)
+            self
+         end
+         meth getFontData($)
+            @fontX|@fontY
+         end
+         meth globalCanvasHandler(Event)
+            case Event
+            of menu(X Y) then
+               case LowlevelSupport, getDataNode(X Y $)
+               of nil  then skip %% No valid Tree on that Position
+               [] Node then LowlevelSupport, handleEvent(Node X Y)
+               end
+            [] select(X Y) then
+               case LowlevelSupport, getDataNode(X Y $)
+               of nil  then skip %% No valid Tree on that Position
+               [] Node then
+                  SelNode = {Node getSelectionNode($)}
+               in
+                  if {System.eq SelNode @selObject}
+                  then skip
+                  else
+                     GraphicSupport, clearSelection
+                     GraphicSupport, createSelection(SelNode)
+                  end
+               end
+            [] doublepress(X Y) then
+               case LowlevelSupport, getDataNode(X Y $)
+               of nil  then skip
+               [] Node then
+                  {{Dictionary.get @opDict pressHandler}
+                   {Node getSelectionNode($)}}
+               end
+            [] adjust(W H) then
+               curCX <- W
+               curCY <- H
+               offY  <- ({Max (@maxPtr - 1) 0} * 3)
+               GraphicSupport, adjustLines(1 0)
+               LowlevelSupport, adjustCanvasView
+            [] scrollX(Delta) then
+               LowlevelSupport, scrollCanvasX(Delta)
+            [] scrollY(Delta) then
+               LowlevelSupport, scrollCanvasY(Delta)
+            [] scrollYP(Delta) then
+               LowlevelSupport, scrollCanvasYP(Delta)
+            end
+         end
+         meth searchNode(I XA YA X CY $)
+            Node = {Dictionary.get @nodes I}
+            Y    = (CY - ((I - 1) * 3)) div @fontY
+         in
+            case Node
+            of nil then nil
+            elsecase {Node getXYDim($)}
+            of XDim|YDim then
+               XM = (XA + XDim)
+               YM = (YA + YDim)
+            in
+               if X >= XA andthen X < XM andthen Y >= YA andthen Y < YM
+               then {Node searchNode(XA YA X Y $)}
+               elseif I < @maxPtr
+               then GraphicSupport, searchNode((I + 1) XA YM X CY $)
+               else nil
+               end
+            end
+         end
+         meth getMenuType($)
+            inspector|_
+         end
+         meth getContextMenu(Type $)
+            MenuDict = @menuDict
+            MenuData = {Dictionary.condGet @opDict
+                        {VirtualString.toAtom Type#'Menu'} nil}
+         in
+            case {Dictionary.condGet MenuDict Type nil}
+            of nil then
+               case MenuData
+               of nil then nil
+               else
+                  ContextMenu = {self get(widgetContextMenuClass $)}
+                  Menu = {New ContextMenu
+                          create(self LowlevelMenu Type MenuData)}
+               in
+                  {Dictionary.put MenuDict Type Menu} Menu
+               end
+            [] Menu then {Menu updateMenu(MenuData)} Menu
+            end
+         end
+         meth createSelection(Node)
+            HP = {Dictionary.get @opDict selectionHandler}
+         in
+            selObject <- Node
+            {HP Node}
+            LowlevelSupport, drawSelectionRectangle(Node true)
+         end
+         meth adjustSelection
+            case @selObject
+            of nil  then skip
+            [] Node then
+               if {Node isDirty($)}
+               then GraphicSupport, clearSelection
+               else LowlevelSupport, drawSelectionRectangle(Node false)
+               end
+            end
+         end
+         meth clearSelection
+            HP = {Dictionary.get @opDict selectionHandler}
+         in
+            if @selObject == nil
+            then skip
+            else
+               selObject <- nil
+               GraphicSupport, delete(@selTag)
+            end
+            {HP nil}
+         end
+         meth adjustLines(I OldY)
+            if I =< @maxPtr
+            then
+               NewY
+            in
+               case {{Dictionary.get @nodes I} getXYDim($)}
+               of _|YDim then
+                  NewY = (OldY + YDim)
+                  offY <- ((I - 1) * 3)
+                  LowlevelSupport, moveLine({Dictionary.get @lines I} NewY)
+               end
+               GraphicSupport, adjustLines((I + 1) NewY)
+            end
+         end
+         meth exportSelectionNode($)
+            @selObject
          end
       end
    end
@@ -455,7 +678,8 @@ define
             if @relGlobal
             then
                curRelMan <- case @globalRelMan
-                            of nil       then {New RelationManager create(@curDefRel)}
+                            of nil then
+                               {New RelationManager create(@curDefRel)}
                             [] CurRelMan then CurRelMan
                             end
             else
@@ -815,6 +1039,7 @@ define
          {P}
       end
       meth clearAll(F)
+         GraphicSupport, enableStop
          TreeWidget, performClearAll(1)
          maxPtr <- 0
          maxX   <- 0

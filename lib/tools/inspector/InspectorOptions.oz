@@ -23,7 +23,11 @@ functor $
 import
    System(eq show)
    Property(get)
+\ifndef INSPECTOR_GTK_GUI
    Tk(localize)
+\else
+   Resolve(localize)
+\endif
    BS(chunkArity shortName) at 'x-oz://boot/Browser'
    BO(getClass send) at 'x-oz://boot/Object'
    BN(newUnique) at 'x-oz://boot/Name'
@@ -37,13 +41,13 @@ define
    %%
    %% Inspector Global Settings
    %%
-   InspectorDefaults = [
-                        inspectorWidth         # 600
-                        inspectorHeight        # 400
-                        inspectorLanguage      # 'Oz'     %% Value shown as Prefix
-                        inspectorOptionsFilter # fun {$ Mode Type} true end %% No Filtering
-                        inspectorOptionsRange  # 'active' %% 'active' or 'all'
-                       ]
+   InspectorDefaults =
+   [inspectorWidth         # 600
+    inspectorHeight        # 400
+    inspectorLanguage      # 'Oz' %% Value shown as Prefix
+    inspectorOptionsFilter # fun {$ Mode Type} true end %% No Filtering
+    inspectorOptionsRange  # 'active' %% 'active' or 'all'
+   ]
 
    %%
    %% TreeWidget Specific Settings
@@ -145,11 +149,22 @@ define
             end
          end
       in
+\ifndef INSPECTOR_GTK_GUI
          fun {Root X}
             F = {Tk.localize BitmapUrl#X}
          in
             {TranslateToUrl {VirtualString.toString {ShortName F}}}
          end
+\else
+         fun {Root X}
+            F = case {Resolve.localize BitmapUrl#X}
+                of old(F) then F
+                [] new(F) then F
+                end
+         in
+            {TranslateToUrl {VirtualString.toString {ShortName F}}}
+         end
+\endif
       end
       %% Context Menu Title Preparation Functions
       fun {MakeMenuTitle Type}
@@ -169,17 +184,26 @@ define
                         widgetNodesContainer   # default %% default or Interface Record
                         widgetNodeSets         # ((NormalNodes|RelationNodes)#
                                                   (NormalIndNodes|RelationIndNodes))
-                        widgetRelationList     # ['Structural Equality'(StructEqual)
-                                                  auto('Token Equality'(System.eq))]
+                        widgetRelationList     #
+                        ['Structural Equality'(StructEqual)
+                         auto('Token Equality'(System.eq))]
+\ifndef INSPECTOR_GTK_GUI
                         widgetWidthLimitBitmap # {Root 'width.xbm'}
                         widgetDepthLimitBitmap # {Root 'depth.xbm'}
+\else
+                        widgetWidthLimitBitmap # {Root 'width.jpg'}
+                        widgetDepthLimitBitmap # {Root 'depth.jpg'}
+\endif
                         widgetStopBitmap       # {Root 'stop.xbm'}
                         widgetSepBitmap        # {Root 'sep.xbm'}
-                        widgetTreeFont         # font(family:'courier' size:14 weight:normal)
-                        widgetContextMenuFont  # '-adobe-helvetica-bold-r-*-*-*-100-*'
+                        widgetTreeFont         #
+                        font(family:'courier' size:14 weight:normal)
+                        widgetContextMenuFont  #
+                        '-adobe-helvetica-bold-r-*-*-*-100-*'
                         widgetContextMenuABg   # '#d9d9d9'
                         widgetContextMenuTitle # MakeMenuTitle
-                        widgetAtomicTest       # default %% This must not be changed!!!!
+                        %% This must not be changed!!!!
+                        widgetAtomicTest       # default
                        ]
    end
 
@@ -664,53 +688,54 @@ define
 
    %% GUI Specific Conversion Table
 
-   ConversionTable = [
-                      typeConversion # [ procedure    # 'Procedure'
-                                         future       # 'Future'
-                                         free         # 'Logic Variable'
-                                         fdint        # 'Finite Domain Integer'
-                                         fset         # 'Finite Sets'
-                                         array        # 'Array'
-                                         dictionary   # 'Dictionary'
-                                         'class'      # 'Class'
-                                         object       # 'Object'
-                                         'lock'       # 'Lock'
-                                         int          # 'Integer'
-                                         float        # 'Floating Point Number'
-                                         port         # 'Port'
-                                         atom         # 'Atom'
-                                         variableref  # 'Co-Reference Usage'
-                                         hashtuple    # 'Hashtuple'
-                                         pipetuple    # 'Piped List'
-                                         cell         # 'Cell'
-                                         list         # 'Closed List'
-                                         labeltuple   # 'Tuple'
-                                         record       # 'Record'
-                                         kindedrecord # 'Feature Constraint'
-                                         'unit'       # 'Unit'
-                                         name         # 'Name'
-                                         colon        # 'Colon'
-                                         bytestring   # 'ByteString'
-                                         internal     # 'Internal'
-                                         braces       # 'Braces'
-                                         separator    # 'Pipe Symbol'
-                                         background   # 'TreeWidget Background'
-                                         proxy        # 'Mapped Background'
-                                         selection    # 'Selection Background'
-                                         ref          # 'Co-Reference Definition'
-                                         label        # 'Label'
-                                         feature      # 'Feature'
-                                         chunk        # 'Chunk'
-                                         bool         # 'Boolean'
-                                         generic      # 'Default Type'
-                                         depthbitmap  # 'Bitmap (Depthlimit)'
-                                         widthbitmap  # 'Bitmap (Widthlimit)'
-                                       ]
+   ConversionTable =
+   [typeConversion # [ procedure    # 'Procedure'
+                       future       # 'Future'
+                       free         # 'Logic Variable'
+                       fdint        # 'Finite Domain Integer'
+                       fset         # 'Finite Sets'
+                       array        # 'Array'
+                       dictionary   # 'Dictionary'
+                       'class'      # 'Class'
+                       object       # 'Object'
+                       'lock'       # 'Lock'
+                       int          # 'Integer'
+                       float        # 'Floating Point Number'
+                       port         # 'Port'
+                       atom         # 'Atom'
+                       variableref  # 'Co-Reference Usage'
+                       hashtuple    # 'Hashtuple'
+                       pipetuple    # 'Piped List'
+                       cell         # 'Cell'
+                       list         # 'Closed List'
+                       labeltuple   # 'Tuple'
+                       record       # 'Record'
+                       kindedrecord # 'Feature Constraint'
+                       'unit'       # 'Unit'
+                       name         # 'Name'
+                       colon        # 'Colon'
+                       bytestring   # 'ByteString'
+                       internal     # 'Internal'
+                       braces       # 'Braces'
+                       separator    # 'Pipe Symbol'
+                       background   # 'TreeWidget Background'
+                       proxy        # 'Mapped Background'
+                       selection    # 'Selection Background'
+                       ref          # 'Co-Reference Definition'
+                       label        # 'Label'
+                       feature      # 'Feature'
+                       chunk        # 'Chunk'
+                       bool         # 'Boolean'
+                       generic      # 'Default Type'
+                       depthbitmap  # 'Bitmap (Depthlimit)'
+                       widthbitmap  # 'Bitmap (Widthlimit)'
                      ]
+   ]
 
    %% Finally glue everthing together
    Options = {FoldL
-              {FoldL [InspectorDefaults WidgetDefaults ColorDefaults MenuDefaults ConversionTable]
+              {FoldL [InspectorDefaults WidgetDefaults
+                      ColorDefaults MenuDefaults ConversionTable]
                Append nil}
               fun {$ D O}
                  case O

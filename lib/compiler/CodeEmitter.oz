@@ -324,7 +324,6 @@ in
                Emitter, LetDie(VInstr)
                Emitter, EmitShared(OccsRS InitsRS Label Addr 'skip')
                continuations <- OldContinuations
-            [] vDummy(_)|_ then skip
             [] nil then
                Emitter, DeallocateAndReturn()
             end
@@ -2145,8 +2144,6 @@ in
             end
          [] vLockEnd(_ _ Cont _) then
             Emitter, PredictPermReg(Reg Cont ?R)
-         [] vDummy(_) then
-            Emitter, AllocateAnyTemp(Reg ?R)
          else NewCont in
             NewCont = VInstr.(Continuations.{Label VInstr})
             Emitter, PredictRegSub(Reg NewCont ?R)

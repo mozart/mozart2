@@ -73,6 +73,6 @@ $class =
                                                                 '%GdkJoinStyle'] },
                   'gdk_gc_set_dashes'              => { in  => ['GdkGC*',
                                                                 'gint',
-                                                                'gchar*',
+                                                                'gint8[]',
                                                                 'gint'] } }}
      );

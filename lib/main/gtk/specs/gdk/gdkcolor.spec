@@ -32,7 +32,8 @@ $class =
                    'green'                         => 'gushort',
                    'blue'                          => 'gushort' },
 
-       inits => { 'gdk_window_new'                 => { in  => ['gushort',
-                                                                'gushort',
-                                                                'gushort'] } }}
-     );
+#       inits => { 'gdk_color_new'                  => { in  => ['gushort',
+#                                                               'gushort',
+#                                                               'gushort'] } }
+     }
+    );

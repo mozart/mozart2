@@ -23,6 +23,16 @@
 
 functor $ prop once
 
+import
+   Fault.{installHW
+          deInstallHW
+          getEntityCond
+          setNetBufferSize
+          getNetBufferSize
+          tempSimulate}
+
+      from 'x-oz-boot:Fault'
+
 export
    install:           Install
    deinstall:         Deinstall
@@ -37,16 +47,16 @@ export
 
 body
 
-   Install   = {`Builtin` 'installHW' 3}
-   Deinstall = {`Builtin` 'deInstallHW' 3}
+   Install   = Fault.installHW
+   Deinstall = Fault.deInstallHW
 
-   GEC={`Builtin` 'getEntityCond' 2}
+   GEC=Fault.getEntityCond
 
-   GNBS={`Builtin` 'getNetBufferSize' 1}
-   SNBS={`Builtin` 'setNetBufferSize' 1}
+   GNBS=Fault.getNetBufferSize
+   SNBS=Fault.setNetBufferSize
 
    local
-      NP={`Builtin` 'tempSimulate' 2}
+      NP=Fault.tempSimulate
    in
       proc{BNP}
          Cur in

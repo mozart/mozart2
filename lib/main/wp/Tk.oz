@@ -22,16 +22,26 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+local
 
-import
-   WIF from 'x-oz-boot:Wif'
+   %%
+   %% Master slave mechanism for widgets
+   %%
+   AddSlave  = {`Builtin` addFastGroup    3}
+   DelSlave  = {`Builtin` delFastGroup    1}
 
-   Property.{get}
+in
 
-   System.{apply
-           showError
-           valueToVirtualString}
+   functor $ prop once
+
+   import
+      WIF from 'x-oz-boot:Wif'
+
+      Property.{get}
+
+      System.{apply
+              showError
+              valueToVirtualString}
 
    Error.{formatGeneric
           format
@@ -48,306 +58,306 @@ import
 
    URL.{makeResolver}
 
-export
-   send:          TkSend
-   batch:         TkBatch
+   export
+      send:          TkSend
+      batch:         TkBatch
 
-   return:           TkReturnString
-   returnString:     TkReturnString
-   returnAtom:       TkReturnAtom
-   returnInt:        TkReturnInt
-   returnFloat:      TkReturnFloat
-   returnList:       TkReturnListString
-   returnListString: TkReturnListString
-   returnListAtom:   TkReturnListAtom
-   returnListInt:    TkReturnListInt
-   returnListFloat:  TkReturnListFloat
+      return:           TkReturnString
+      returnString:     TkReturnString
+      returnAtom:       TkReturnAtom
+      returnInt:        TkReturnInt
+      returnFloat:      TkReturnFloat
+      returnList:       TkReturnListString
+      returnListString: TkReturnListString
+      returnListAtom:   TkReturnListAtom
+      returnListInt:    TkReturnListInt
+      returnListFloat:  TkReturnListFloat
 
-   getPrefix:        TkGetPrefix
-   getId:            TkGetId
-   getTclName:       TkGetTclName
+      getPrefix:        TkGetPrefix
+      getId:            TkGetId
+      getTclName:       TkGetTclName
 
-   invoke:        InvokeAction
+      invoke:        InvokeAction
 
-   button:        TkButton
-   canvas:        TkCanvas
-   checkbutton:   TkCheckbutton
-   entry:         TkEntry
-   frame:         TkFrame
-   label:         TkLabel
-   listbox:       TkListbox
-   menu:          TkMenu
-   menubutton:    TkMenubutton
-   message:       TkMessage
-   radiobutton:   TkRadiobutton
-   scale:         TkScale
-   scrollbar:     TkScrollbar
-   text:          TkText
-   toplevel:      TkToplevel
+      button:        TkButton
+      canvas:        TkCanvas
+      checkbutton:   TkCheckbutton
+      entry:         TkEntry
+      frame:         TkFrame
+      label:         TkLabel
+      listbox:       TkListbox
+      menu:          TkMenu
+      menubutton:    TkMenubutton
+      message:       TkMessage
+      radiobutton:   TkRadiobutton
+      scale:         TkScale
+      scrollbar:     TkScrollbar
+      text:          TkText
+      toplevel:      TkToplevel
 
-   menuentry:     TkMenuentries
+      menuentry:     TkMenuentries
 
-   image:         TkImage
+      image:         TkImage
 
-   textTag:       TkTextTag
-   textMark:      TkTextMark
-   canvasTag:     TkCanvasTag
+      textTag:       TkTextTag
+      textMark:      TkTextMark
+      canvasTag:     TkCanvasTag
 
-   action:        TkAction
-   variable:      TkVariable
-   string:        TkString
+      action:        TkAction
+      variable:      TkVariable
+      string:        TkString
 
-   isColor:       IsColor
+      isColor:       IsColor
 
-   addYScrollbar: AddYScrollbar
-   addXScrollbar: AddXScrollbar
+      addYScrollbar: AddYScrollbar
+      addXScrollbar: AddXScrollbar
 
-   defineUserCmd: DefineUserCmd
-   localize:      TkLocalize
+      defineUserCmd: DefineUserCmd
+      localize:      TkLocalize
 
-body
+   body
 
-   TkString = string(toInt:        TkStringToInt
-                     toFloat:      TkStringToFloat
-                     toListString: TkStringToListString
-                     toListAtom:   TkStringToListAtom
-                     toListInt:    TkStringToListInt
-                     toListFloat:  TkStringToListFloat)
+      TkString = string(toInt:        TkStringToInt
+                        toFloat:      TkStringToFloat
+                        toListString: TkStringToListString
+                        toListAtom:   TkStringToListAtom
+                        toListInt:    TkStringToListInt
+                        toListFloat:  TkStringToListFloat)
 
-   %%
-   %% Sending tickles
-   %%
-   TkInit         = WIF.init
-   TkGetNames     = WIF.getNames
+      %%
+      %% Sending tickles
+      %%
+      TkInit         = WIF.init
+      TkGetNames     = WIF.getNames
 
-   TkSend         = WIF.write
-   TkBatch        = WIF.writeBatch
-   TkReturn       = WIF.writeReturn
-   TkReturnMess   = WIF.writeReturnMess
-   TkSendTuple    = WIF.writeTuple
-   TkSendTagTuple = WIF.writeTagTuple
-   TkSendFilter   = WIF.writeFilter
+      TkSend         = WIF.write
+      TkBatch        = WIF.writeBatch
+      TkReturn       = WIF.writeReturn
+      TkReturnMess   = WIF.writeReturnMess
+      TkSendTuple    = WIF.writeTuple
+      TkSendTagTuple = WIF.writeTagTuple
+      TkSendFilter   = WIF.writeFilter
 
-   TkClose        = WIF.close
+      TkClose        = WIF.close
 
-   %%
-   %% Generation of Identifiers
-   %%
-   GenTopName    = WIF.genTopName
-   GenWidgetName = WIF.genWidgetName
-   GenTagName    = WIF.genTagName
-   GenVarName    = WIF.genVarName
-   GenImageName  = WIF.genImageName
+      %%
+      %% Generation of Identifiers
+      %%
+      GenTopName    = WIF.genTopName
+      GenWidgetName = WIF.genWidgetName
+      GenTagName    = WIF.genTagName
+      GenVarName    = WIF.genVarName
+      GenImageName  = WIF.genImageName
 
 
-   VoidEntry = {NewName}
+      VoidEntry = {NewName}
 
-   class Counter
-      prop locking final
-      attr n:0
-      meth get(?N)
-         lock N=@n n <- N+1 end
+      class Counter
+         prop locking final
+         attr n:0
+         meth get(?N)
+            lock N=@n n <- N+1 end
+         end
       end
-   end
 
-   %%
-   %% Printing error messages
-   %%
-   proc {TkError S Tcl}
-      P={Property.get errors}
-   in
-      {System.showError 'Tk Module: '#S#
-       case Tcl==unit then '' else '\n'#
-          {System.valueToVirtualString Tcl P.depth P.width}
-       end}
-   end
+      %%
+      %% Printing error messages
+      %%
+      proc {TkError S Tcl}
+         P={Property.get errors}
+      in
+         {System.showError 'Tk Module: '#S#
+          case Tcl==unit then '' else '\n'#
+             {System.valueToVirtualString Tcl P.depth P.width}
+          end}
+      end
 
-   %%
-   %% Some Character/String stuff
-   %%
-   local
-      fun {TkNum Is BI ?BO}
-         case Is of nil then BO=BI nil
+      %%
+      %% Some Character/String stuff
+      %%
+      local
+         fun {TkNum Is BI ?BO}
+            case Is of nil then BO=BI nil
+            [] I|Ir then
+               case I
+               of &- then &~|{TkNum Ir BI BO}
+               [] &. then &.|{TkNum Ir true BO}
+               [] &e then &e|{TkNum Ir true BO}
+               [] &E then &E|{TkNum Ir true BO}
+               else I|{TkNum Ir BI BO}
+               end
+            end
+         end
+      in
+         fun {TkStringToString S}
+            S
+         end
+
+         TkStringToAtom = StringToAtom
+
+         fun {TkStringToInt S}
+            %% Read a number and convert it to an integer
+            OS IsAFloat in OS={TkNum S false ?IsAFloat}
+            case IsAFloat andthen {String.isFloat OS} then
+               {FloatToInt {String.toFloat OS}}
+            elsecase {Not IsAFloat} andthen {String.isInt OS} then
+               {String.toInt OS}
+            else false
+            end
+         end
+
+         fun {TkStringToFloat S}
+            %% Read a number and convert it to a float
+            OS IsAFloat in OS={TkNum S false ?IsAFloat}
+            case IsAFloat andthen {String.isFloat OS} then
+               {String.toFloat OS}
+            elsecase {Not IsAFloat} andthen {String.isInt OS} then
+               {IntToFloat {String.toInt OS}}
+            else false
+            end
+         end
+
+         fun {TkStringToListString S}
+            {String.tokens S & }
+         end
+
+         fun {TkStringToListAtom S}
+            {Map {String.tokens S & } TkStringToAtom}
+         end
+
+         fun {TkStringToListInt S}
+            {Map {String.tokens S & } TkStringToInt}
+         end
+
+         fun {TkStringToListFloat S}
+            {Map {String.tokens S & } TkStringToFloat}
+         end
+      end
+
+
+      %% expand a quoted Tcl/Tk string
+      %%  \n     -> newline
+      %%  \<any> -> <any>
+      fun {Expand Is}
+         case Is of nil then nil
          [] I|Ir then
-            case I
-            of &- then &~|{TkNum Ir BI BO}
-            [] &. then &.|{TkNum Ir true BO}
-            [] &e then &e|{TkNum Ir true BO}
-            [] &E then &E|{TkNum Ir true BO}
-            else I|{TkNum Ir BI BO}
+            case I==&\\ then
+               case Ir of nil then nil
+               [] II|Irr then
+                  case II==&n then &\n else II end|{Expand Irr}
+               end
+            else I|{Expand Ir}
             end
          end
       end
-   in
-      fun {TkStringToString S}
-         S
-      end
 
-      TkStringToAtom = StringToAtom
-
-      fun {TkStringToInt S}
-         %% Read a number and convert it to an integer
-         OS IsAFloat in OS={TkNum S false ?IsAFloat}
-         case IsAFloat andthen {String.isFloat OS} then
-            {FloatToInt {String.toFloat OS}}
-         elsecase {Not IsAFloat} andthen {String.isInt OS} then
-            {String.toInt OS}
-         else false
-         end
-      end
-
-      fun {TkStringToFloat S}
-         %% Read a number and convert it to a float
-         OS IsAFloat in OS={TkNum S false ?IsAFloat}
-         case IsAFloat andthen {String.isFloat OS} then
-            {String.toFloat OS}
-         elsecase {Not IsAFloat} andthen {String.isInt OS} then
-            {IntToFloat {String.toInt OS}}
-         else false
-         end
-      end
-
-      fun {TkStringToListString S}
-         {String.tokens S & }
-      end
-
-      fun {TkStringToListAtom S}
-         {Map {String.tokens S & } TkStringToAtom}
-      end
-
-      fun {TkStringToListInt S}
-         {Map {String.tokens S & } TkStringToInt}
-      end
-
-      fun {TkStringToListFloat S}
-         {Map {String.tokens S & } TkStringToFloat}
-      end
-   end
-
-
-   %% expand a quoted Tcl/Tk string
-   %%  \n     -> newline
-   %%  \<any> -> <any>
-   fun {Expand Is}
-      case Is of nil then nil
-      [] I|Ir then
-         case I==&\\ then
-            case Ir of nil then nil
-            [] II|Irr then
-               case II==&n then &\n else II end|{Expand Irr}
+      local
+         proc {EnterMessageArgs As I T}
+            case As of nil then skip
+            [] A|Ar then T.I=A {EnterMessageArgs Ar I+1 T}
             end
-         else I|{Expand Ir}
          end
-      end
-   end
 
-   local
-      proc {EnterMessageArgs As I T}
-         case As of nil then skip
-         [] A|Ar then T.I=A {EnterMessageArgs Ar I+1 T}
-         end
-      end
-
-      proc {EnterPrefixArgs I MP M}
-         case I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M}
-         else skip
-         end
-      end
-
-      fun {MaxInt As M}
-         case As of nil then M
-         [] A|Ar then
-            {MaxInt Ar case {IsInt A} then {Max M A} else M end}
-         end
-      end
-
-      fun {NumberArgs As I}
-         case As of nil then nil
-         [] A|Ar then J=I+1 in J#A|{NumberArgs Ar J}
-         end
-      end
-   in
-      proc {InvokeAction Action Args NoArgs Thread}
-         case Action
-         of OP # M then SM in
-            case NoArgs==0 then SM=M
-            elsecase {IsTuple M} then W={Width M} in
-               SM = {MakeTuple {Label M} NoArgs + W}
-               {EnterPrefixArgs W M SM}
-               {EnterMessageArgs Args {Width M}+1 SM}
-            else
-               SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
+         proc {EnterPrefixArgs I MP M}
+            case I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M}
+            else skip
             end
-            case {IsPort OP} then {Send OP SM}
-            elsecase Thread then thread {OP SM} end
-            else {OP SM}
+         end
+
+         fun {MaxInt As M}
+            case As of nil then M
+            [] A|Ar then
+               {MaxInt Ar case {IsInt A} then {Max M A} else M end}
             end
-         else
-            case NoArgs==0 then
-               case Thread then
-                  thread {Action} end
-               else {Action}
+         end
+
+         fun {NumberArgs As I}
+            case As of nil then nil
+            [] A|Ar then J=I+1 in J#A|{NumberArgs Ar J}
+            end
+         end
+      in
+         proc {InvokeAction Action Args NoArgs Thread}
+            case Action
+            of OP # M then SM in
+               case NoArgs==0 then SM=M
+               elsecase {IsTuple M} then W={Width M} in
+                  SM = {MakeTuple {Label M} NoArgs + W}
+                  {EnterPrefixArgs W M SM}
+                  {EnterMessageArgs Args {Width M}+1 SM}
+               else
+                  SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
+               end
+               case {IsPort OP} then {Send OP SM}
+               elsecase Thread then thread {OP SM} end
+               else {OP SM}
                end
             else
-               case Thread then
-                  thread {System.apply Action Args} end
-               else {System.apply Action Args}
+               case NoArgs==0 then
+                  case Thread then
+                     thread {Action} end
+                  else {Action}
+                  end
+               else
+                  case Thread then
+                     thread {System.apply Action Args} end
+                  else {System.apply Action Args}
+                  end
                end
             end
          end
       end
-   end
 
-   fun {GetFields Ts}
-      case Ts of nil then ''
-      [] T|Tr then
-         ' %' # case T
-                of list(T) then
-                   case T
-                   of atom(A)   then A
+      fun {GetFields Ts}
+         case Ts of nil then ''
+         [] T|Tr then
+            ' %' # case T
+                   of list(T) then
+                      case T
+                      of atom(A)   then A
+                      [] int(I)    then I
+                      [] float(F)  then F
+                      [] string(S) then S
+                      else T
+                      end
+                   [] string(S) then S
+                   [] atom(A)   then A
                    [] int(I)    then I
                    [] float(F)  then F
-                   [] string(S) then S
                    else T
-                   end
-                [] string(S) then S
-                [] atom(A)   then A
-                [] int(I)    then I
-                [] float(F)  then F
-                else T
-                end # {GetFields Tr}
+                   end # {GetFields Tr}
+         end
       end
-   end
 
-   fun {GetCasts Ts}
-      case Ts of nil then nil
-      [] T|Tr then
-         case {Label T}
-         of list then
-            case {Label T.1}
-            of atom  then TkStringToListAtom
-            [] int   then TkStringToListInt
-            [] float then TkStringToListFloat
-            else          TkStringToString
-            end
-         [] atom  then TkStringToAtom
-         [] int   then TkStringToInt
-         [] float then TkStringToFloat
-         else TkStringToString
-         end | {GetCasts Tr}
+      fun {GetCasts Ts}
+         case Ts of nil then nil
+         [] T|Tr then
+            case {Label T}
+            of list then
+               case {Label T.1}
+               of atom  then TkStringToListAtom
+               [] int   then TkStringToListInt
+               [] float then TkStringToListFloat
+               else          TkStringToString
+               end
+            [] atom  then TkStringToAtom
+            [] int   then TkStringToInt
+            [] float then TkStringToFloat
+            else TkStringToString
+            end | {GetCasts Tr}
+         end
       end
-   end
 
-   IdCharacters = i(&a &b &c &d &e &f &g &h &i &j &k &l &m
-                    &n &o &p &q &r &s &t &u &v &w &x &y &z
-                    &A &B &C &D &E &F &G &H &I &J &K &L &M
-                    &N &O &P &Q &R &S &T &U &V &W &X &Y &Z)
+      IdCharacters = i(&a &b &c &d &e &f &g &h &i &j &k &l &m
+                       &n &o &p &q &r &s &t &u &v &w &x &y &z
+                       &A &B &C &D &E &F &G &H &I &J &K &L &M
+                       &N &O &P &Q &R &S &T &U &V &W &X &Y &Z)
 
-   IdNumber     = {Width IdCharacters}
+      IdNumber     = {Width IdCharacters}
 
-   fun {GenString N}
-      case N>=IdNumber then
-         IdCharacters.((N mod IdNumber) + 1)|{GenString N div IdNumber}
+      fun {GenString N}
+         case N>=IdNumber then
+            IdCharacters.((N mod IdNumber) + 1)|{GenString N div IdNumber}
       else [IdCharacters.N]
       end
    end
@@ -487,12 +497,6 @@ body
    fun {TkGetTclName W}
       {VirtualString.toString W.TclName}
    end
-
-   %%
-   %% Master slave mechanism for widgets
-   %%
-   AddSlave  = {`Builtin` addFastGroup    3}
-   DelSlave  = {`Builtin` delFastGroup    1}
 
    TkReturnMethod = {NewName}
    TkClass        = {NewName}
@@ -1408,5 +1412,7 @@ body
           {Error.formatGeneric T Exc}
       end
     end}
+
+end
 
 end

@@ -32,17 +32,16 @@ import
    Connection.{offer}
    OS.{getEnv}
 
+   VirtualSite.{newMailbox}
+      from 'oz-x-boot:VirtualSite'
+
+   Fault.{install}
+
 export
    server: VirtualSiteObject
 
    %%
 body
-   %%
-   local BINewVSMailbox = {`Builtin` 'VirtualSite.newMailbox' 1} in
-      fun {NewVSMailbox}
-         {BINewVSMailbox}
-      end
-   end
 
    %%
    %% 'P' is a pipe to be printed out;
@@ -75,7 +74,7 @@ body
                                              taskPort: self.TaskPort
                                              ctrlPort: self.CtrlPort)}
       in
-         self.VSMailbox = {NewVSMailbox}
+         self.VSMailbox = VirtualSite.newMailbox
          %%
          try
             self.PipeObj =
@@ -83,7 +82,6 @@ body
              init(cmd:{OS.getEnv 'OZHOME'}#'/bin/ozvsserver'
                   args:['--shmkey='#self.VSMailbox
                         '--ticket='#Ticket])}
-            %% {System.show 'Virtual site: '#{String.toAtom self.VSMailbox}#Ticket}
          in thread {ShowPipe self.PipeObj self.ClosedFlag} end
          catch _ then raise error end
          end
@@ -92,19 +90,13 @@ body
          {Wait self.TaskPort}
          {Wait self.CtrlPort}
 
-         %%
-         %% kost@ : to be replaced by 'Fault.install';
-         local
-            InstallHW = {`Builtin` 'installHW' 3}
-         in
-            {InstallHW
-             self.TaskPort
-             watcher(cond:permHome once_only:yes variable:no)
-             proc {$ E C}
-                {System.showInfo "VS: slave exited."}
-                {self close}
-             end}
-         end
+         {Fault.install
+          self.TaskPort
+          watcher(cond:permHome once_only:yes variable:no)
+          proc {$ E C}
+             {System.showInfo "VS: slave exited."}
+             {self close}
+          end}
       end
 
       %%

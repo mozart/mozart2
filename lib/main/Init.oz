@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
-%%%   Denys Duchier (duchier@ps.uni-sb.de)
+%%%   Denys Duchier     (duchier@ps.uni-sb.de)
+%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
 %%%   Denys Duchier, 1998
+%%%   Christian Schulte, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -21,9 +23,11 @@
 %%%
 
 functor prop once
+import
+   Boot.{manager}
 body
 
-   BootManager = {`Builtin` 'BootManager' 2}
+   BootManager = Boot.manager
 
    BURL     = {BootManager 'URL'}
 

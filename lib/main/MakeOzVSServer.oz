@@ -34,6 +34,8 @@ in
        Module.{link}
        Property.{get}
        System.{showInfo gcDo}
+       Fault.install
+       VirtualSite.initServer
 
        %%
     body
@@ -71,17 +73,13 @@ in
           {Wait WatchedEntity}  % but should be there already;
           %%
           %% kost@ : to be replaced by 'Fault.install';
-          local
-             InstallHW = {`Builtin` 'installHW' 3}
-          in
-             {InstallHW
-              WatchedEntity
-              watcher(cond:permHome once_only:yes variable:no)
-              proc {$ E C}
-                 {System.showInfo "VS: master is gone?"}
-                 {CloseProc}
-              end}
-          end
+          {Fault.install
+           WatchedEntity
+           watcher(cond:permHome once_only:yes variable:no)
+           proc {$ E C}
+              {System.showInfo "VS: master is gone?"}
+              {CloseProc}
+           end}
 
           %%
           {VSServer.engine CloseProc TaskPort CtrlPort}

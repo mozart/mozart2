@@ -35,6 +35,9 @@ import
 
    ErrorRegistry.{put}
 
+   Foreign.{dlOpen dlClose findFunction dlLoad}
+      from 'x-oz-boot:Foreign'
+
    OS
 
 export
@@ -45,10 +48,10 @@ export
    loadBI:     ForeignLoadBI
 
 body
-   DlOpen         = {`Builtin` dlOpen        2}
-   DlClose        = {`Builtin` dlClose       1}
-   FindFunction   = {`Builtin` findFunction  3}
-   DlLoad         = {`Builtin` dlLoad        2}
+   DlOpen         = Foreign.dlOpen
+   DlClose        = Foreign.dlClose
+   FindFunction   = Foreign.findFunction
+   DlLoad         = Foreign.dlLoad
    Unlink         = OS.unlink
    %%
    %% If the URL service is available, then use it to create a

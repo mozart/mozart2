@@ -73,11 +73,7 @@ local
    %%
 
    %%
-   proc {Init ShmId}
-      BIVSInitServer = {`Builtin` 'VirtualSite.initServer' 1}
-   in
-      {BIVSInitServer ShmId}
-   end
+   Init = VirtualSite.initServer
 
    %%
    %% Right now, there is no limitation/overloading of sub-modules

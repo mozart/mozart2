@@ -121,7 +121,12 @@ in
 
    import
       Fault.{install deinstall}
-      PID from 'x-oz-boot:PID'
+
+      PID.{get received toPort}
+          from 'x-oz-boot:PID'
+
+      Distribution.{'export'}
+          from 'x-oz-boot:Distribution'
 
    export
       offer: Offer
@@ -133,7 +138,8 @@ in
       %% Base Process Identifier package
       %%
 
-      ReqStream = {PID.received}
+             ReqStream = {PID.received}
+
       ThisPid   = {PID.get}
       fun {ToPort T}
          {PID.toPort T.host T.port T.time.1 T.time.2}
@@ -177,45 +183,41 @@ in
       end
 
 
-      local
-         Export = {`Builtin` 'export' 1}
+      %%
+      %% Single connections
+      %%
+      fun {Offer X}
+         T={NewTicket true}
       in
-         %%
-         %% Single connections
-         %%
-         fun {Offer X}
-            T={NewTicket true}
+         {Distribution.'export' X}
+         {Dictionary.put KeyDict T.key X}
+         {String.toAtom {TicketToString T}}
+      end
+
+      %%
+      %% Gates
+      %%
+      class Gate
+         feat
+            Ticket
+            TicketAtom
+
+         meth init(X ?AT <= _)
+            T={NewTicket false}
          in
-            {Export X}
+            {Distribution.'export' X}
             {Dictionary.put KeyDict T.key X}
-            {String.toAtom {TicketToString T}}
+            self.Ticket     = T
+            self.TicketAtom = {String.toAtom {TicketToString T}}
+            AT = self.TicketAtom
          end
 
-         %%
-         %% Gates
-         %%
-         class Gate
-            feat
-               Ticket
-               TicketAtom
+         meth getTicket($)
+            self.TicketAtom
+         end
 
-            meth init(X ?AT <= _)
-               T={NewTicket false}
-            in
-               {Export X}
-               {Dictionary.put KeyDict T.key X}
-               self.Ticket     = T
-               self.TicketAtom = {String.toAtom {TicketToString T}}
-               AT = self.TicketAtom
-            end
-
-            meth getTicket($)
-               self.TicketAtom
-            end
-
-            meth close
-               {Dictionary.remove KeyDict self.Ticket.key}
-            end
+         meth close
+            {Dictionary.remove KeyDict self.Ticket.key}
          end
       end
 

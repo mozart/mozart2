@@ -24,54 +24,67 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
-
-import
-   System.{gcDo}
-
-export
-   dumpThreads:    DumpThreads
-   listThreads:    ListThreads
-   breakpointAt:   BreakpointAt
-   breakpoint:     Breakpoint
-   displayDef:     DisplayDef
-   displayCode:    DisplayCode
-   print:          Print
-   printLong:      PrintLong
-   procedureCode:  ProcedureCode
-   procedureCoord: ProcedureCoord
-
-body
-
-   local
-      BIdumpThreads        = {`Builtin` 'Debug.dumpThreads' 0}
-      BIprepareDumpThreads = {`Builtin` 'Debug.prepareDumpThreads' 0}
-      BIlistThreads        = {`Builtin` 'Debug.listThreads' 1}
-      proc {Dummy}
-         skip
-      end
-   in
-      proc {DumpThreads}
-         {BIprepareDumpThreads}
-         {System.gcDo}
-         {Dummy} % force GC
-         {BIdumpThreads}
-      end
-      fun {ListThreads}
-         {BIprepareDumpThreads}
-         {System.gcDo}
-         {Dummy} % force GC
-         {BIlistThreads}
-      end
+local
+   proc {Dummy}
+      skip
    end
+in
+   functor $ prop once
 
-   BreakpointAt =   {`Builtin` 'Debug.breakpointAt'   4}
-   Breakpoint =     {`Builtin` 'Debug.breakpoint'     0}
-   DisplayDef =     {`Builtin` 'Debug.displayDef'     2}
-   DisplayCode =    {`Builtin` 'Debug.displayCode'    2}
-   Print =          {`Builtin` 'Debug.print'          2}
-   PrintLong =      {`Builtin` 'Debug.printLong'      2}
-   ProcedureCode =  {`Builtin` 'Debug.procedureCode'  2}
-   ProcedureCoord = {`Builtin` 'Debug.procedureCoord' 2}
+   import
+      System.{gcDo}
+
+      Debug.{dumpThreads
+             prepareDumpThreads
+             listThreads
+             breakpointAt
+             breakpoint
+             displayDef
+             displayCode
+             print
+             printLong
+             procedureCode
+             procedureCoord
+            }
+         from 'x-oz-boot:Debug'
+
+   export
+      dumpThreads:    DumpThreads
+      listThreads:    ListThreads
+      breakpointAt:   BreakpointAt
+      breakpoint:     Breakpoint
+      displayDef:     DisplayDef
+      displayCode:    DisplayCode
+      print:          Print
+      printLong:      PrintLong
+      procedureCode:  ProcedureCode
+      procedureCoord: ProcedureCoord
+
+   body
+
+      proc {DumpThreads}
+         {Debug.prepareDumpThreads}
+         {System.gcDo}
+         {Dummy} % force GC
+         {Debug.dumpThreads}
+      end
+
+      fun {ListThreads}
+         {Debug.prepareDumpThreads}
+         {System.gcDo}
+         {Dummy} % force GC
+         {Debug.listThreads}
+      end
+
+      BreakpointAt =   Debug.breakpointAt
+      Breakpoint =     Debug.breakpoint
+      DisplayDef =     Debug.displayDef
+      DisplayCode =    Debug.displayCode
+      Print =          Debug.print
+      PrintLong =      Debug.printLong
+      ProcedureCode =  Debug.procedureCode
+      ProcedureCoord = Debug.procedureCoord
+
+   end
 
 end

@@ -154,7 +154,7 @@ local
       proc {$ Url Meth Msg}
          if {HasFeature Url scheme} then
             Rel = {UrlMake {UrlToVsExtended Url x(cache:true)}}
-            NewUrl = {UrlResolve Base Rel}
+            NewUrl = {URL_expand {UrlResolve Base Rel}}
          in
             {Msg '...[' NewUrl '] (cache)' nil nil}
             {Meth NewUrl}

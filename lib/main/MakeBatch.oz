@@ -63,7 +63,7 @@ local
    OptSpecs = {ConvertBooleanOpts
                [&E#"core"#mode(value: core)
                 &S#"outputcode"#mode(value: outputcode)
-                0#"ozma"#mode(value: ozma)
+                &s#"ozma"#mode(value: ozma)
                 &e#"feedtoemulator"#mode(value: feedtoemulator)
                 &c#"dump"#mode(value: dump)
                 &h#"help"#help(value: unit)
@@ -72,7 +72,7 @@ local
                 &v#"verbose"#verbose(value: true)
                 &q#"quiet"#verbose(value: false)
                 &o#"outputfile"#outputfile(type: string)
-                0#"environment"#environment(type: string)
+                &l#"environment"#environment(type: string)
                 0#"include"#include(type: string)
                 0#"maxerrors"#maxerrors(type: int)
                 0#"compilerpasses"#compilerpasses(type: bool)
@@ -94,36 +94,49 @@ local
                 0#"debuginfocontrol"#debuginfocontrol(type: bool)
                 0#"debuginfovarnames"#debuginfovarnames(type: bool)]}
 
-   Usage = ('Usage: ozbatch [options] [file] ...\n'#
-            'You have to choose one of the following modes of operation:\n'#
-            '-E, --core                    Output core representation\n'#
-            '                              (default extension: .ozi).\n'#
-            '-S, --outputcode              Output assembly code\n'#
-            '                              (default extension: .ozm).\n'#
-            '--ozma                        Output code suitable for Ozma\n'#
-            '                              (default extension: .ozm).\n'#
-            '-e, --feedtoemulator          Execute a statement.\n'#
-            '                              (This is the default mode.)\n'#
-            '-c, --dump                    Evaluate an expression, dumping\n'#
-            '                              the result into a component\n'#
-            '                              (default extension: .ozc).\n'#
-            '\n'#
-            'Additionally, you may specify the following options:\n'#
-            '-h, --help                    Output usage information\n'#
-            '                              and exit.\n'#
-            '-D NAME, --define=NAME        Define macro name NAME.\n'#
-            '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
-            '-v, --verbose                 Display all compiler messages.\n'#
-            '-q, --quiet                   Inhibit compiler messages\n'#
-            '                              unless an error is encountered.\n'#
-            '-o FILE, --outputfile=FILE    Specify an output file name\n'#
-            '                              (`-\' means stdout).\n'#
-            '--environment=COMPONENT,...,COMPONENT\n'#
-            '                              Make the specified components\n'#
-            '                              available in the environment.\n'#
-            '--include=FILE                Compile and execute FILE before\n'#
-            '                              processing the remaining command\n'#
-            '                              line options.\n')
+   Usage =
+   'Usage: ozbatch [options] [file] ...\n'#
+   'You have to choose one of the following modes of operation:\n'#
+   '-E, --core                    Transform a statement into core language\n'#
+   '                              (file extension: .ozi).\n'#
+   '-S, --outputcode              Compile a statement to assembly code\n'#
+   '                              (file extension: .ozm).\n'#
+   '-s, --ozma                    Compile a statement to Ozma assembly code\n'#
+   '                              (file extension: .ozm).\n'#
+   '-e, --feedtoemulator          Compile and execute a statement.\n'#
+   '                              This is the default mode.\n'#
+   '-c, --dump                    Compile and evaluate an expression,\n'#
+   '                              dumping the result into a component\n'#
+   '                              (file extension: .ozc).\n'#
+   '\n'#
+   'Additionally, you may specify the following options:\n'#
+   '-h, --help                    Output usage information and exit.\n'#
+   '-D NAME, --define=NAME        Define macro name NAME.\n'#
+   '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
+   '-v, --verbose                 Display all compiler messages.\n'#
+   '-q, --quiet                   Inhibit compiler messages\n'#
+   '                              unless an error is encountered.\n'#
+   '-o FILE, --outputfile=FILE    Write output to FILE (`-\' for stdout).\n'#
+   '-l COMPS, --environment=COMPS Make components COMPS (a comma-separated\n'#
+   '                              list) available in the environment.\n'#
+   '--include=FILE                Compile and execute the statement in FILE\n'#
+   '                              before processing the remaining options.\n'#
+   '\n'#
+   'The following compiler switches have the described effects when set:\n'#
+   '--maxerrors=N                 Limit the number of errors reported to N.\n'#
+   '--(no)compilerpasses          Show compiler passes.\n'#
+   '--(no)warnredecl              Warn about top-level redeclarations.\n'#
+   '--(no)warnforward             Warn about oo forward declarations.\n'#
+   '--(no)system                  Allow use of system variables.\n'#
+   '--(no)catchall                Allow wildcard in catch patterns.\n'#
+   '--(no)staticanalysis          Run static analysis.\n'#
+   '--(no)realcore                Output the real non-fancy core syntax.\n'#
+   '--(no)debugvalue              Annotate variable values in core output.\n'#
+   '--(no)debugtype               Annotate variable types in core output.\n'#
+   '--(no)profile                 Include profiling information.\n'#
+   '--(no)runwithdebugger         Execute queries under debugger.\n'#
+   '--(no)debuginfocontrol        Include control flow information.\n'#
+   '--(no)debuginfovarnames       Include variable information.\n'
 in
    {Application.exec
     'ozbatch'
@@ -157,7 +170,7 @@ in
                    case {String.isInt S} then
                       Value = {String.toInt S}
                    else
-                         raise usage('integer argument expected') end
+                      raise usage('integer argument expected') end
                    end
                 [] float then S = {SignConvert Arg1} in
                    case {String.isFloat S} then

@@ -13,7 +13,7 @@
 functor $
 import
    System(printName)
-   Debug(breakpoint) at 'x-oz://boot/Debug.ozf'
+   Debug(breakpoint) at 'x-oz://boot/Debug'
 export
    convert   : ConvertAtom
    atom      : AtomNode
@@ -44,10 +44,7 @@ define
          [] A|Ar then
             T = {Char.type A}
          in
-            if (T == upper) orelse (T == lower) orelse (T == digit) orelse (A == 95)
-            then {IsAlphaNum Ar}
-            else false
-            end
+            ((T == upper) orelse (T == lower) orelse (T == digit) orelse (A == 95)) andthen {IsAlphaNum Ar}
          end
       end
    in

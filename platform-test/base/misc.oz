@@ -259,5 +259,27 @@ in
                        end
                     end
                     keys:[fixedBug adjoin record])
+\ifdef COMPILER_SHOULD_RAISE_ERROR
+         arityCheck(
+                    proc {$}
+
+                       try
+                          X in X::0#10
+                          {FD.watch.size X 10 true
+                           und hier kommen einfach zu viele argumente}
+                          fail
+                       catch X then {Show X} end
+
+                    end
+                    keys:[fixedBug arity application])
+\endif
+         biSuspend(proc {$}
+                      X Y
+                   in
+                      thread X=true end
+                      Y={FoldL [X] And true}
+                      case Y==true then skip end
+                   end
+                   keys:[fixedBug suspension builtin])
         ])
 end

@@ -3,7 +3,7 @@
 %%% <fielding@ics.uci.edu> at http://www.ics.uci.edu/~fielding/url/
 
 declare
-proc {TestFielding URI}
+proc {TestURI URI}
    OKALL
    proc {Run Test}
       {System.printInfo Test.title#' ['#Test.base#']\n'}
@@ -173,4 +173,4 @@ in
     case {IsDet OKALL} then 'FAILED!!!\n' else 'SUCCEEDED\n' end}
 end
 
-%{TestFielding URI}
+%{TestURI URI}

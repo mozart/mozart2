@@ -4,34 +4,54 @@
 %%%
 %%% This library provides utilities for the manipulation of URIs
 %%% (Uniform Resource Identifiers) and filenames.  It supports both
-%%% Unix and Windows syntax where they do not conflict.  Not attempt
-%%% is made to support VMS's strange filename syntax.
+%%% Unix and Windows syntax where they do not conflict.  There are no
+%%% plans to ever support VMS's strange filename syntax.
+%%%
+%%% HISTORY
+%%%
+%%% The first implementation of such a library was written by
+%%% Christian Schulte for his Module Manager.  It has been entirely
+%%% rewritten by Denys Duchier to add various extensions such as
+%%% support for Windows-style filenames.  The new implementation also
+%%% improves the theoretical complexity, although not necessarily the
+%%% performance.
+%%%
+%%% What is definitely improved is the correctness: the library now
+%%% fully conforms to URI syntax as defined in IETF draft "Uniform
+%%% Resource Identifiers (URI): Generic Syntax" by T. Berners- Lee,
+%%% R. Fielding, and L. Masinter, of June 4, 1998, available at
+%%% http://search.ietf.org/internet-drafts/draft-fielding-uri-syntax-03.txt
+%%% and passes all 5 test suites published by Roy Fielding.
+%%%
+%%% The only derogations to said specification are made to accommodate
+%%% Windows-style filenames: (1) a prefix of the form "C:" where C is
+%%% a single character is interpreted as Windows-style device notation
+%%% rather than as a uri scheme - in practice, this is a compatible
+%%% extension as there are no legal single character schemes, (2) path
+%%% segments may indifferently be separated by "/" or "\" - this too
+%%% is compatible since non-separator forward and back slashes ought
+%%% to be otherwise `escape encoded'.
+%%%
+%%% Actually, there is currently a further experimental extension: all
+%%% uris may be suffixed by a string of the form "{foo=a,bar=b}".  This
+%%% adds add an info record to the parsed representation of the uri:
+%%% this record is info(foo:a bar:b).  Eventually this should probably
+%%% be replaced by a notational facility to attach properties to imports
+%%%
+%%% INTERFACE
 %%%
 %%% {URI.make LOC}
 %%%
-%%%     parses LOC according to the syntax specified in IETF draft
-%%% "Uniform Resource Identifiers (URI): Generic Syntax" by T. Berners-
-%%% Lee, R. Fielding, and L. Masinter, of June 4, 1998, available at
-%%% http://search.ietf.org/internet-drafts/draft-fielding-uri-syntax-03.txt
-%%% The only derogation is that Windows-style paths are also supported,
-%%% which means (1) that a prefix of the form "C:" where C is a single
-%%% character is interpreted as Windows-style device notation rather
-%%% than as a uri scheme - this is fine as there are no legal one
-%%% character schemes - (2) that path segments may be indifferently
-%%% separated by "/" or "\".  Local filename syntax is a special case
-%%% of scheme-less uri. The parsed representation of a uri is a record.
+%%%     parses LOC according to the proposed URI syntax modulo
+%%% Windows-motivated derogation (see above).  Local filename syntax
+%%% is a special case of schemeless uri.  The parsed representation of
+%%% a uri is an opaque chunk.
 %%%
 %%% {URI.is X}
 %%%
-%%%     returns true iff X is a record labeled with 'uri'.  This is not
-%%% very secure. Perhaps a chunk would be better than a record.
-%%%
-%%% {URI.toVS U}
-%%%
-%%%     U must be the parsed representation of a uri. A virtual string
-%%% is returned for the external textual representation of that uri.
-%%% This is essentially the inverse of URI.make.
-%%% BUG: this should reencode the path.
+%%%     returns true iff X is the parsed representation of a uri, i.e.
+%%% if it is a chunk with the private feature that identifies uris.
+%%% this cannot be forged.
 %%%
 %%% {URI.resolve BASE REL}
 %%%
@@ -42,20 +62,37 @@
 %%% {URI.toString X}
 %%%
 %%%     X may be a string or a uri.  The corresponding normalized string
-%%% representation is returned.
+%%% representation is returned. This operation is optimized: the value
+%%% is computed on demand and saved in the parsed representation.
 %%%
 %%% {URI.toAtom X}
 %%%
-%%%     Same as above, but an atom is returned instead.
+%%%     Same as above, but an atom is returned instead.  This not
+%%% further optimized.
 %%%
-%%% ==================================================================
+%%% {URI.expand U}
 %%%
-%%% The first implementation of this library was written by Christian
-%%% Schulte.  It has been entirely rewritten by Denys Duchier, adding
-%%% Windows support, improving the complexity, and robustness.  This
-%%% library fully conforms to URI syntax draft 3 and passes all tests
-%%% published by Roy Fielding.
+%%%     U is a parsed URI.  If it is a relative uri, it is transformed
+%%% into an absolute uri as follows: if it begins with "~" then the
+%%% appropriate user home directory is pluged instead, else the current
+%%% directory is prepended.
 %%%
+%%% {URI.toRecord U}
+%%%
+%%%     U is a parsed uri.  A corresponding record is returned.  This
+%%% makes it easy to access e.g. the scheme or the info experimental
+%%% extension.
+%%%
+%%% BUGS AND LIMITATIONS
+%%%
+%%% Currently, parameters remain attached to their path component.
+%%% This maybe insufficient when an application needs access to these
+%%% parameters.
+%%%
+%%% The draft standard is ambiguous: in a relative uri, the leading
+%%% segment is allowed to contain occurrences of ";".  Is the parameter
+%%% parsing semantics as usual or not?  This is not clear and I should
+%%% ask Roy Fielding for a clarification.
 %%% ==================================================================
 
 declare
@@ -63,11 +100,12 @@ local
    %% -- needed builtins and other functions
    \insert init-defs.oz
 
-   %% -- a URI instance is simply a record with label uri.
-   %% -- that's not very secure
+   %% -- a URI instance is an opaque chunk with feature URI_
+
+   URI_ = {NewName}
 
    fun {URI_is X}
-      {IsRecord X} andthen {Label X}==uri
+      {IsChunk X} andthen {HasFeature X URI_}
    end
 
    %% -- split a string at the first occurrence of a separator character,
@@ -316,13 +354,20 @@ local
          case N of unit then skip else
             {Dictionary.put Data authority {Map N CharToLower}}
          end
-         %% -- add the string itself (maybe this should be normalized)
-         STR={Dictionary.put Data string}
-         REC={Dictionary.toRecord uri Data}
-         {URI_toString REC STR}
       in
-         REC
+         {URI_fromDict Data}
       end
+   end
+
+   fun {URI_fromDict D}
+      %% -- add the normalized string (to be computed on demand)
+      {Dictionary.put D string _}
+      {NewChunk x(URI_:{Dictionary.toRecord uri D})}
+   end
+
+   fun {URI_fromRec R}
+      %% -- add the normalized string (to be computed on demand)
+      {NewChunk x(URI_:{AdjoinAt R string _})}
    end
 
    %% -- unoptimized parser for experimental info in uri.
@@ -426,9 +471,10 @@ local
     ";abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():@&=+$,"
     proc {$ C} {BitArray.set CSOK C} end}
 
-   %% -- converting a uri instance to a virtual string
+   %% -- converting a uri record to a virtual string
 
-   fun {URI_toVS U}
+   fun {URI_toVS Chk}
+      U         = Chk.URI_
       Scheme    = {CondSelect U scheme    unit}
       Device    = {CondSelect U device    unit}
       Authority = {CondSelect U authority unit}
@@ -467,10 +513,10 @@ local
 
    %% -- resolving en Relative uri with respect to a Base uri.
 
-   fun {URI_resolve Base Rel}
-      case     Base==uri then Rel
-      elsecase Rel ==uri then Base
-      elsecase {HasFeature Rel scheme} then Rel
+   fun {URI_resolve BASE REL}
+      Base = BASE.URI_ Rel = REL.URI_
+   in
+      case {HasFeature Rel scheme} then REL
       else D = {Record.toDictionary Rel} in
          try
             %% -- Scheme
@@ -510,7 +556,7 @@ local
                    nil})}
             else skip end
          in skip catch done then skip end
-         {Dictionary.toRecord uri D}
+         {URI_fromDict D}
       end
    end
 
@@ -524,18 +570,70 @@ local
    end
 
    fun {URI_toString U}
-      {VSToString {URI_toVS U}}
+      STR = U.URI_.string
+   in
+      case {IsDet STR} then STR else
+         STR={VSToString {URI_toVS U}}
+      end
    end
 
    fun {URI_toAtom U}
       {VSToAtom {URI_toVS U}}
    end
 
+   %% -- TILDE and DOT NORMALIZATION -- when "~" or "." appear at the
+   %% -- front of a local relative filename, they can be expanded with
+   %% -- respectively a user home directory or the current directory.
+   %% -- However, "." never apears at the front of a path because it
+   %% -- has been normalized away: it is implicit in all relative paths
+   %% -- that do not begin with "~...".
+
+   fun {URI_expand Chk} U = Chk.URI_ in
+      case
+         {CondSelect U scheme    unit}==unit andthen
+         {CondSelect U authority unit}==unit andthen
+         {CondSelect U device    unit}==unit
+      then
+         try
+            case {CondSelect U path unit}
+            of rel(dir(&~|USER)|_) then
+               {URL_front true
+                case USER==nil then {GET 'user.home'}
+                else {Getpwnam USER}.dir end Chk}
+            elseof rel(_) then
+               {URL_front false {GetCWD} Chk}
+            else Chk end
+         catch _ then Chk end
+      else Chk end
+   end
+
+   %% -- if Skip1 is true, remove 1st segment of relative path in Chk.
+   %% -- prepend parsed Path. return new parsed uri. Skip1==true is
+   %% -- used to drop a leading ~USER component in the relative uri
+   %% -- parsed as Chk.
+
+   fun {URL_front Skip1 Path Chk}
+      %% -- oh hum! we need to add a trailing slash so that the Path
+      %% -- end with a directory component rather than a file
+      %% -- component.  This should be enforced by normalization.
+      Front = {URI_make Path#'/'}.URI_.path.1
+      Rec = Chk.URI_
+      Back= case Skip1 then Rec.path.(1).2 else Rec.path.1 end
+      Abs = {Normalize {Append Front Back} nil}
+   in
+      {URI_fromRec {AdjoinAt Rec path abs(Abs)}}
+   end
+
+   %% -- return the underlying record
+
+   fun {URI_toRecord Chk} Chk.URI_ end
+
 in
    URI = uri(is         : URI_is
              make       : URI_make
-             toVS       : URI_toVS
              resolve    : URI_resolve
              toString   : URI_toString
-             toAtom     : URI_toAtom)
+             toAtom     : URI_toAtom
+             expand     : URI_expand
+             toRecord   : URI_toRecord)
 end

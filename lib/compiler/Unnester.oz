@@ -1999,7 +1999,7 @@ local
                             'allowed')
                       items: [hint(l: 'Hint'
                                    m: ('to create a deep guard, use the '#
-                                       '`if\' conditional)'))])}
+                                       '`cond\' conditional)'))])}
                GCs = GCr
             end
             Unnester, UnnestCaseClauses(FCr ?GCr)

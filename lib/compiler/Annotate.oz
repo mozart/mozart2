@@ -316,9 +316,10 @@ local
 
    class AnnotatePatternClause
       attr globalVars: unit
-      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter in
+      meth annotateGlobalVars(Ls VsHd VsTl) Vs VsInter Ls1 in
          {@pattern annotateGlobalVars(@localVars Vs VsInter)}
-         {AnnotateGlobalVarsList @statements @localVars VsInter nil}
+         Ls1 = {Append {@pattern getLocalVars($)} @localVars}
+         {AnnotateGlobalVarsList @statements Ls1 VsInter nil}
          globalVars <- {VariableUnion Vs nil}
          {FoldL Vs
           proc {$ VsHd V VsTl}
@@ -331,7 +332,7 @@ local
          @globalVars
       end
       meth markFirstClause(GlobalVars OldUses ?NewUses WarnFormals Rep)
-         {ForAll @localVars proc {$ V} {V setUse(wildcard)} end}
+         {ForAll @localVars proc {$ V} {V setUse(unused)} end}
          {@pattern markFirst(WarnFormals Rep)}
          {MarkFirstList @statements WarnFormals Rep}
          {CheckUses @localVars 'local variable' Rep}
@@ -341,10 +342,14 @@ local
    end
 
    class AnnotateSideCondition
-      meth annotateGlobalVars(Ls VsHd VsTl) Ls1 VsInter in
-         Ls1 = {Append Ls @localVars}
-         {@pattern annotateGlobalVars(Ls1 VsHd VsInter)}
-         {AnnotateGlobalVarsList @statements Ls1 VsInter VsTl}
+      meth annotateGlobalVars(Ls VsHd VsTl) Ls1 VsInter1 VsInter2 in
+         Ls1 = {Append @localVars Ls}
+         {@pattern annotateGlobalVars(Ls1 VsHd VsInter1)}
+         {AnnotateGlobalVarsList @statements Ls1 VsInter1 VsInter2}
+         {@arbiter annotateGlobalVars(Ls1 VsInter2 VsTl)}
+      end
+      meth getLocalVars($)
+         @localVars
       end
       meth markFirst(WarnFormals Rep)
          {@pattern markFirst(WarnFormals Rep)}
@@ -368,6 +373,9 @@ local
              end
           end VsInter VsTl}
       end
+      meth getLocalVars($)
+         nil
+      end
       meth markFirst(WarnFormals Rep)
          {@label markFirst(WarnFormals Rep)}
          {ForAll @args
@@ -386,6 +394,9 @@ local
       meth annotateGlobalVars(Ls VsHd VsTl) VsInter in
          {@left annotateGlobalVars(Ls VsHd VsInter)}
          {@right annotateGlobalVars(Ls VsInter VsTl)}
+      end
+      meth getLocalVars($)
+         nil
       end
       meth markFirst(WarnFormals Rep)
          {@left markFirst(WarnFormals Rep)}
@@ -685,15 +696,9 @@ local
    end
 
    class AnnotateValueNode from AnnotateDefaults
-   end
-
-   class AnnotateAtomNode from AnnotateDefaults
-   end
-
-   class AnnotateIntNode from AnnotateDefaults
-   end
-
-   class AnnotateFloatNode from AnnotateDefaults
+      meth getLocalVars($)
+         nil
+      end
    end
 
    class AnnotateUserVariable
@@ -762,6 +767,9 @@ local
          else VsHd = V|VsTl
          end
       end
+      meth getLocalVars($)
+         nil
+      end
       meth markFirst(WarnFormals Rep)
          case {@variable getUse($)} of unused then
             {@variable setUse(wildcard)}
@@ -771,9 +779,6 @@ local
             {@variable setUse(multiple)}
          end
       end
-   end
-
-   class AnnotatePatternVariableOccurrence
    end
 in
    Annotate = annotate(statement: AnnotateStatement
@@ -810,13 +815,8 @@ in
                        choicesAndDisjunctions: AnnotateChoicesAndDisjunctions
                        clause: AnnotateClause
                        valueNode: AnnotateValueNode
-                       atomNode: AnnotateAtomNode
-                       intNode: AnnotateIntNode
-                       floatNode: AnnotateFloatNode
                        userVariable: AnnotateUserVariable
                        generatedVariable: AnnotateGeneratedVariable
                        restrictedVariable: AnnotateRestrictedVariable
-                       variableOccurrence: AnnotateVariableOccurrence
-                       patternVariableOccurrence:
-                          AnnotatePatternVariableOccurrence)
+                       variableOccurrence: AnnotateVariableOccurrence)
 end

@@ -1061,7 +1061,7 @@ define
    end
 
    class AtomNode
-      from ValueNode Annotate.atomNode CodeGen.atomNode
+      from ValueNode CodeGen.atomNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -1074,7 +1074,7 @@ define
    end
 
    class IntNode
-      from ValueNode Annotate.intNode CodeGen.intNode
+      from ValueNode CodeGen.intNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -1087,7 +1087,7 @@ define
    end
 
    class FloatNode
-      from ValueNode Annotate.floatNode CodeGen.floatNode
+      from ValueNode CodeGen.floatNode
       prop final
       meth output2(_ $ ?FS)
          FS = ""
@@ -1299,8 +1299,7 @@ define
    end
 
    class PatternVariableOccurrence
-      from VariableOccurrence Annotate.patternVariableOccurrence
-         CodeGen.patternVariableOccurrence
+      from VariableOccurrence CodeGen.patternVariableOccurrence
       prop final
    end
 

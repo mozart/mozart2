@@ -16,7 +16,7 @@ define
    Dist = 2     % minimal hamming distance
    Num  = 16    % number of variables
 
-   Top  = {FS.value.new [1#Bits]}
+   Top  = {FS.value.make [1#Bits]}
 
    proc {MinDist X Y}
       Common1s = {FS.intersect X Y}
@@ -47,22 +47,22 @@ define
    end
 
    HammingSol =
-   [[{FS.value.new [1#7]}
-     {FS.value.new [1#5]}
-     {FS.value.new [1#4 6]}
-     {FS.value.new [1#4 7]}
-     {FS.value.new [1#3 5#6]}
-     {FS.value.new [1#3 5 7]}
-     {FS.value.new [1#3 6#7]}
-     {FS.value.new [1#3]}
-     {FS.value.new [1#2 4#6]}
-     {FS.value.new [1#2 4#5 7]}
-     {FS.value.new [1#2 4 6#7]}
-     {FS.value.new [1#2 4]}
-     {FS.value.new [1#2 5#7]}
-     {FS.value.new [1#2 5]}
-     {FS.value.new [1#2 6]}
-     {FS.value.new [1#2 7]}
+   [[{FS.value.make [1#7]}
+     {FS.value.make [1#5]}
+     {FS.value.make [1#4 6]}
+     {FS.value.make [1#4 7]}
+     {FS.value.make [1#3 5#6]}
+     {FS.value.make [1#3 5 7]}
+     {FS.value.make [1#3 6#7]}
+     {FS.value.make [1#3]}
+     {FS.value.make [1#2 4#6]}
+     {FS.value.make [1#2 4#5 7]}
+     {FS.value.make [1#2 4 6#7]}
+     {FS.value.make [1#2 4]}
+     {FS.value.make [1#2 5#7]}
+     {FS.value.make [1#2 5]}
+     {FS.value.make [1#2 6]}
+     {FS.value.make [1#2 7]}
     ]]
 
    Return=

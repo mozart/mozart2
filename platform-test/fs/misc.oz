@@ -17,7 +17,7 @@ define
 
    MkFSetVar =
    proc {$ L U IN NIN V}
-      {FS.var.new IN {FS.reflect.lowerBound {FS.compl {FS.value.new NIN}}} V}
+      {FS.var.bounds IN {FS.reflect.lowerBound {FS.compl {FS.value.make NIN}}} V}
       {FS.cardRange L U V}
    end
 
@@ -32,7 +32,7 @@ define
    fs([misc([{MiscTest 1
               fun {$}
                  cond {FS.intersect
-                     {FS.value.new [1]} {FS.value.new [2]}}
+                     {FS.value.make [1]} {FS.value.make [2]}}
                     = FS.value.empty then 1 else 0 end
               end}
 
@@ -43,7 +43,7 @@ define
                  R
               in
                  R = thread
-                        cond FSVar1 = {FS.value.new [1 3 5 7 9]}
+                        cond FSVar1 = {FS.value.make [1 3 5 7 9]}
                         then 1 else {Show no} 0 end
                      end
                  FSVar1 = FSVar2
@@ -70,21 +70,21 @@ define
                  R
               in
                  R = thread
-                        cond FSVal = {FS.value.new [1 3 5 7 9]} in FSVal = FSVar
+                        cond FSVal = {FS.value.make [1 3 5 7 9]} in FSVal = FSVar
                         then 1 else 0 end
                      end
-                 FSVar = {FS.value.new [1 3 5 7 9]}
+                 FSVar = {FS.value.make [1 3 5 7 9]}
                  R
               end}
 
              {MiscTest 5
               fun {$}
-                 cond {FS.value.new [1 3 5 7 9]} = {FS.value.new [1 3 5 7 9]}
+                 cond {FS.value.make [1 3 5 7 9]} = {FS.value.make [1 3 5 7 9]}
                  then 1 else 0 end
               end}
 
              {MiscTest 6
-              fun {$} cond {FS.value.new [1 3 5 7 9]} = 1
+              fun {$} cond {FS.value.make [1 3 5 7 9]} = 1
                       then 0 else 1 end
               end}
 
@@ -98,7 +98,7 @@ define
                         in FSVar1 = FSVar2
                         then 1 else 0 end
                      end
-                 FSVar1 = {FS.value.new [1 3 5 7 9]}
+                 FSVar1 = {FS.value.make [1 3 5 7 9]}
                  R
               end}
 
@@ -138,54 +138,54 @@ define
 
              {MiscTest 11
               fun {$}
-                 X = {FS.var.new [1#3] [1#7]}
+                 X = {FS.var.bounds [1#3] [1#7]}
                  R
               in
                  R = thread cond {FS.reified.isIn 5 X 1} then 1 else 0 end end
 
-                 X = {FS.var.new [1#5] [1#5]}
+                 X = {FS.var.bounds [1#5] [1#5]}
                  R
               end}
 
              {MiscTest 12
               fun {$}
-                 X = {FS.var.new [1#3] [1#7]}
+                 X = {FS.var.bounds [1#3] [1#7]}
                  R
               in
                  R = thread cond {FS.reified.isIn 6 X 0} then 1 else 0 end end
 
-                 X = {FS.var.new [1#5] [1#5]}
+                 X = {FS.var.bounds [1#5] [1#5]}
                  R
               end}
 
              {MiscTest 13
               fun {$} X in
-                 X = {FS.var.new [1#5] [1#7]}
+                 X = {FS.var.bounds [1#5] [1#7]}
                  cond {FS.reflect.lowerBound X} = [1#5] then 1 else 0 end
               end}
 
              {MiscTest 14
               fun {$} X in
-                 X = {FS.var.new [1#5] [1#7]}
+                 X = {FS.var.bounds [1#5] [1#7]}
                  cond {FS.reflect.unknown X} = [6#7] then 1 else 0 end
               end}
 
              {MiscTest 15
               fun {$} Y in
-                 Y = {FS.var.new [1#7] [1#7]}
+                 Y = {FS.var.bounds [1#7] [1#7]}
                  cond {FS.reflect.unknown Y} = nil then 1 else 0 end
               end}
 
              {MiscTest 16
               fun {$} Y in
-                 Y = {FS.var.new [1#7] [1#7]}
+                 Y = {FS.var.bounds [1#7] [1#7]}
                  cond {FS.reflect.lowerBound Y} = [1#7] then 1 else 0 end
               end}
 
              {MiscTest 17
               fun {$} X R in
-                 X = {FS.var.new [1#5] [1#7]}
-                 R = thread cond X = {FS.value.new [1#6]} then 1 else 0 end end
+                 X = {FS.var.bounds [1#5] [1#7]}
+                 R = thread cond X = {FS.value.make [1#6]} then 1 else 0 end end
                  {FS.include 6 X}
                  {FS.exclude 7 X}
                  R
@@ -193,7 +193,7 @@ define
 
              {MiscTest 18
               fun {$} X R in
-                 X = {FS.var.new [1#5] [1#7]}
+                 X = {FS.var.bounds [1#5] [1#7]}
                  R = thread cond {FS.exclude 7 X} then 1 else 0 end end
 
                  {FS.include 6 X}
@@ -204,7 +204,7 @@ define
              {MiscTest 19
               fun {$} X R
               in
-                 X = {FS.var.new [1#5] [1#7]}
+                 X = {FS.var.bounds [1#5] [1#7]}
                  R = thread cond {FS.include 6 X} then 1 else 0 end end
 
                  {FS.include 6 X}
@@ -218,7 +218,7 @@ define
                     proc {$ Root}
                        Root = {MakeList N}
                        {ForAll Root proc {$ E}
-                                       {FS.var.new nil [1#N] E}
+                                       {FS.var.bounds nil [1#N] E}
                                   %{FS.cardRange 1 1 E}
                                     end}
 
@@ -245,7 +245,7 @@ define
                     proc {$ Root}
                        Root = {MakeList N}
                        {ForAll Root proc {$ E}
-                                       {FS.var.new nil [1#N] E}
+                                       {FS.var.bounds nil [1#N] E}
                                        {FS.cardRange 1 1 E}
                                     end}
 
@@ -306,7 +306,7 @@ define
                         {Max {FD.reflect.min CX} {FD.reflect.min CY}}
                      then 1 else 0 end
                  {Wait R}
-                 {ForAll [X Y] proc {$ E} {FS.value.new [1 2 3] E} end}
+                 {ForAll [X Y] proc {$ E} {FS.value.make [1 2 3] E} end}
                  R
               end}
 
@@ -325,7 +325,7 @@ define
                      then 1 else 0 end
 
                  {Wait R}
-                 {ForAll [X Y] proc {$ E} {FS.value.new [1 2 3] E} end}
+                 {ForAll [X Y] proc {$ E} {FS.value.make [1 2 3] E} end}
                  R
               end}
 
@@ -343,7 +343,7 @@ define
                         {Min {FD.reflect.max CX} {FD.reflect.max CY}}
                      then 1 else 0 end
                  {Wait R}
-                 {ForAll [X Y] proc {$ E} {FS.value.new [1 2 3] E} end}
+                 {ForAll [X Y] proc {$ E} {FS.value.make [1 2 3] E} end}
                  R
               end}
 
@@ -363,7 +363,7 @@ define
               in
                  X = {FS.var.upperBound [1#10]} Y = {FS.var.upperBound [1#10]}
                  R = thread cond {FS.distinct X Y} then 0 else 1 end end
-                 X = {FS.value.new [1#10]} Y = {FS.value.new [1#10]}
+                 X = {FS.value.make [1#10]} Y = {FS.value.make [1#10]}
                  R
               end}
 
@@ -375,7 +375,7 @@ define
                  {FS.include 1 Y}
                  {FS.include 2 Y}
 
-                 X = {FS.value.new [1#2]}
+                 X = {FS.value.make [1#2]}
 
                  R
               end}
@@ -383,7 +383,7 @@ define
              {MiscTest 32
               fun {$} S SV={FS.var.decl} E R
               in
-                 R = thread cond SV = {FS.value.new [1 2 3 4 5]}
+                 R = thread cond SV = {FS.value.make [1 2 3 4 5]}
                             then 1 else 0 end
                      end
                  {FS.monitorIn SV S}
@@ -456,37 +456,37 @@ define
 
              {MiscTest 38
               fun {$}
-                 case {FS.int.min {FS.value.new [1 2 3]}} == 1 then 1 else 0 end
+                 case {FS.int.min {FS.value.make [1 2 3]}} == 1 then 1 else 0 end
               end}
 
              {MiscTest 39
               fun {$}
-                 case {FS.int.max {FS.value.new [1 2 3]}} == 3 then 1 else 0 end
+                 case {FS.int.max {FS.value.make [1 2 3]}} == 3 then 1 else 0 end
               end}
 
              {MiscTest 40
               fun {$}
-                 case {FS.int.min {FS.value.new [2]}} == 2 then 1 else 0 end
+                 case {FS.int.min {FS.value.make [2]}} == 2 then 1 else 0 end
               end}
 
              {MiscTest 41
               fun {$}
-                 case {FS.int.max {FS.value.new [2]}} == 2 then 1 else 0 end
+                 case {FS.int.max {FS.value.make [2]}} == 2 then 1 else 0 end
               end}
 
              {MiscTest 42
               fun {$}
-                 cond {FS.int.convex {FS.value.new [1 2]}}  then 1 else 0 end
+                 cond {FS.int.convex {FS.value.make [1 2]}}  then 1 else 0 end
               end}
 
              {MiscTest 43
               fun {$}
-                 cond {FS.int.convex {FS.value.new [1 2 4]}} then 0 else 1 end
+                 cond {FS.int.convex {FS.value.make [1 2 4]}} then 0 else 1 end
               end}
 
              {MiscTest 44
               fun {$}
-                 cond {FS.int.convex {FS.value.new nil}}  then 1 else 0 end
+                 cond {FS.int.convex {FS.value.make nil}}  then 1 else 0 end
               end}
 
              {MiscTest 45
@@ -494,14 +494,14 @@ define
                  cond
                     S = {FS.var.upperBound [1#5]}
                  in
-                    {FS.int.convex S} S = {FS.value.new nil}
+                    {FS.int.convex S} S = {FS.value.make nil}
                  then 1 else 0 end
               end}
 
              {MiscTest 46
               fun {$} S SV={FS.var.decl} E R
               in
-                 R = thread cond SV = {FS.value.new [6#FS.sup]}
+                 R = thread cond SV = {FS.value.make [6#FS.sup]}
                             then 1 else 0 end
                      end
                  {FS.monitorOut SV S}

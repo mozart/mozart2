@@ -15,7 +15,7 @@ define
       LB = {FoldL Weights Number.'+' 0} div Capacity
       UB = {Length Weights}
       ItemList = {List.number 0 UB-1 1}
-      AllItems = {FS.value.new ItemList}
+      AllItems = {FS.value.make ItemList}
    in
       proc {$ Root}
          Len
@@ -44,10 +44,10 @@ define
 
    KnapSackSol =
    [[
-     {FS.value.new [0#1 9]}
-     {FS.value.new [2#3 8]}
-     {FS.value.new [4#5]}
-     {FS.value.new [6#7]}
+     {FS.value.make [0#1 9]}
+     {FS.value.make [2#3 8]}
+     {FS.value.make [4#5]}
+     {FS.value.make [6#7]}
     ]]
 
    Return=

@@ -55,18 +55,18 @@ define
 
    SteinerSol =
    [[
-     {FS.value.new [1#3]}
-     {FS.value.new [1 4#5]}
-     {FS.value.new [1 6#7]}
-     {FS.value.new [1 8#9]}
-     {FS.value.new [2 4 6]}
-     {FS.value.new [2 5 8]}
-     {FS.value.new [2 7 9]}
-     {FS.value.new [3#4 9]}
-     {FS.value.new [3 5 7]}
-     {FS.value.new [3 6 8]}
-     {FS.value.new [4 7#8]}
-     {FS.value.new [5#6 9]}
+     {FS.value.make [1#3]}
+     {FS.value.make [1 4#5]}
+     {FS.value.make [1 6#7]}
+     {FS.value.make [1 8#9]}
+     {FS.value.make [2 4 6]}
+     {FS.value.make [2 5 8]}
+     {FS.value.make [2 7 9]}
+     {FS.value.make [3#4 9]}
+     {FS.value.make [3 5 7]}
+     {FS.value.make [3 6 8]}
+     {FS.value.make [4 7#8]}
+     {FS.value.make [5#6 9]}
     ]]
 Return=
    fs([steiner([

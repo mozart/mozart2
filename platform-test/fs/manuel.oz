@@ -4,8 +4,6 @@ import
 
    FS
 
-   System(show: Show)
-
 export
    Return
 

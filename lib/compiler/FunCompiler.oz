@@ -14,6 +14,7 @@ in
       Unnest.{joinQueries makeExpressionQuery unnestQuery}
 \ifndef OZM
       Gump.makeProductionTemplates
+      ProductionTemplates.default
 \endif
       Assembler.assemble
    export

@@ -12,6 +12,7 @@ import
    Search   %.{SearchOne='SearchOne'}
 \ifndef OZM
    Gump
+   ProductionTemplates
 \endif
    RunTimeLibrary
 export
@@ -93,6 +94,7 @@ body
                      'Unnest':                Unnest
 \ifndef OZM
                      'Gump':                  Gump
+                     'ProductionTemplates':   ProductionTemplates
 \endif
                      'Assembler':             Assembler)}
    in

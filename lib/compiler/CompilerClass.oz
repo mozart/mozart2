@@ -287,6 +287,7 @@ local
          in
             {Thread.setRaiseOnBlock T false}
             productionTemplates <- {Gump.makeProductionTemplates}
+            {@productionTemplates add(ProductionTemplates.default @reporter)}
             {Thread.setRaiseOnBlock T RaiseOnBlock}
          else skip
          end

@@ -130,9 +130,10 @@ in
          {Reporter error(kind: 'compiler directive error'
                          msg: ('could not open file "'#FileName#
                                '" for reading'))}
-      else skip
+         parseError
+      else
+         Res
       end
-      Res
    end
 
    fun {ParseOzVirtualString VS Reporter GetSwitch Defines}

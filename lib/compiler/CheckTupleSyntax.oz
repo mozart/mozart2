@@ -24,7 +24,6 @@ local
 
    proc {File X}
       case X of parseError then skip
-      [] fileNotFound then skip
       else {ForAll X Query}
       end
    end

@@ -19,7 +19,7 @@ SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
 
 # Other tests
 OTHER = \
-        link
+        link guards
 OTHEROZC = $(OTHER:%=./%.ozc)
 
 

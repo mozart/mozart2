@@ -86,9 +86,16 @@ local
 
       local
          BIStorePredId = {`Builtin` storePredId 6}
+         BIpredIdFlags = {`Builtin` predIdFlags 2}
+         NativeFlag
+         CopyOnceFlag
       in
-         proc {StorePredId CodeBlock pid(Name Arity File Line CopyOnce)}
-            {BIStorePredId CodeBlock Name Arity File Line CopyOnce}
+         {BIpredIdFlags CopyOnceFlag NativeFlag}
+         proc {StorePredId CodeBlock pid(Name Arity File Line CopyOnce Native)}
+            CopyFlag = case CopyOnce then CopyOnceFlag else 0 end
+            NatFlag  = case Native   then NativeFlag else 0 end
+         in
+            {BIStorePredId CodeBlock Name Arity File Line NatFlag+CopyFlag}
          end
       end
 

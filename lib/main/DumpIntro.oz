@@ -1,12 +1,11 @@
 %%%
 %%% Authors:
-%%%   Author's name (Author's email address)
-%%%
-%%% Contributors:
-%%%   optional, Contributor's name (Contributor's email address)
+%%%   Denys Duchier (duchier@ps.uni-sb.de)
+%%%   Christian Schulte (schulte@dfki.de)
 %%%
 %%% Copyright:
-%%%   Organization or Person (Year(s))
+%%%   Denys Duchier, 1997
+%%%   Christian Schulte, 1997
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
@@ -22,12 +21,6 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
-%%%  Programming Systems Lab, DFKI Saarbruecken,
-%%%  Stuhlsatzenhausweg 3, D-66123 Saarbruecken, Phone (+49) 681 302-5312
-%%%  Author: Denys Duchier, Christian Schulte
-%%%  Email: duchier@ps.uni-sb.de, schulte@dfki.de
-%%%  Last modified: $Date$ by $Author$
-%%%  Version: $Revision$
 
 \ifndef DumpIntroLoaded
 
@@ -57,6 +50,33 @@ in
    Standard = {Load ComDIR#'Standard'#ComEXT}
 end
 
-\insert 'Dump.oz'
+local
+   \insert 'DumpSettings.oz'
+   SmartSave = {`Builtin` smartSave          6}
+   SPI       = {`Builtin` 'System.printInfo' 1}
+   `unit`    = {{`Builtin` 'NewUniqueName' 2} 'unit'}
+   proc {ALL Xs P}
+      case Xs of X|Xr then {P X} {ALL Xr P}
+      [] nil then skip
+      else skip
+      end
+   end
+in
+   proc {Dump X Name}
+      {{`Builtin` 'SystemSetPrint'  1} print(depth: 100 width: 100)}
+      {{`Builtin` 'SystemSetErrors' 1} print(depth: 100 width: 100)}
+
+      ExtNAME = Name   # ComEXT
+      ExtURL  = ComURL # ExtNAME
+      ExtPATH = ComDIR # ExtNAME
+   in
+      case {SmartSave X ExtPATH ExtURL unit _} of nil then skip
+      elseof Xs then
+         {ALL Xs {`Builtin` 'Wait' 1}}
+         {SmartSave X ExtPATH ExtURL unit _ nil}
+      end
+      {SPI 'Saved: '#ExtURL#'\n'}
+   end
+end
 
 \endif

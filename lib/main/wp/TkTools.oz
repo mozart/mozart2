@@ -25,48 +25,32 @@
 
 
 fun {NewTkTools Tk}
-   DefaultFont = {NewName}
+   DefaultFont = local
+                    T = {New Tk.toplevel
+                         tkInit(withdraw:true 'class':'OzTools')}
+                    L = {New Tk.label
+                         tkInit(parent:T)}
+                    F = {L tkReturnAtom(cget(font:unit) $)}
+                 in
+                    {T tkClose}
+                    F
+                 end
 
    local
-      FontCache  = {Dictionary.new}
-      TestTop    = {New Tk.toplevel tkInit(withdraw:true 'class':'OzTools')}
-      TestCanvas = {New Tk.canvas tkInit(parent:TestTop)}
-      TestText   = {New Tk.canvasTag tkInit(parent:TestCanvas)}
-
-      %% we need to create a label to determine the *real* default font,
-      %% as adjusted in the config file(s). Otherwise the canvas font
-      %% is 'a system-dependent font' (see canvas(n))... :-(
-      TestLabel  = {New Tk.label tkInit(parent:TestTop)}
-      TestFont   = {TestLabel tkReturn(cget '-font' $)}
-
-      FontLock   = {NewLock}
+      FontDict = {Dictionary.new}
+      FontLock = {Lock.new}
    in
-      {TestCanvas tk(crea text 0 0
-                     font:TestFont % this is important, see above
-                     text:{ForThread 1 255 1
-                           fun {$ Is I}
-                              case {Char.isGraph I} then I|Is else Is end
-                           end nil}
-                     tags:TestText)}
-
-      fun {GetFontHeight Font}
-         FontName = case {IsAtom Font} orelse {IsName Font} then Font
-                    else {String.toAtom {VirtualString.toString Font}}
-                    end
-      in
+      fun {GetFontHeight F}
          lock FontLock then
-            case {Dictionary.member FontCache FontName} then
-               {Dictionary.get FontCache FontName}
-            else
-               case FontName==DefaultFont then skip else
-                  {TestText tk(itemconf font:FontName)}
-               end
-               [_ Y1 _ Y2] = {TestCanvas tkReturnListInt(bbox(TestText) $)}
-               FontHeight = Y2 - Y1
-            in
-               {Dictionary.put FontCache FontName FontHeight}
-               FontHeight
+            AF = case {IsAtom F} then F else
+                    {String.toAtom {VirtualString.toString F}}
+                 end
+         in
+            case {Dictionary.member FontDict AF} then skip else
+               {Dictionary.put FontDict AF
+                {Tk.returnInt font(metrics AF linespace:unit)}}
             end
+            {Dictionary.get FontDict AF}
          end
       end
    end
@@ -462,12 +446,10 @@ fun {NewTkTools Tk}
                                          relief: ridge)}
             Lower = {New Tk.frame tkInit(parent: Inner
                                          height: {GetFontHeight Font} div 2+2)}
-            Real  = {New Tk.frame tkInit(parent:Inner)}
+            Real  = {New Tk.frame tkInit(parent: Inner)}
             Label = {New Tk.label tkInit(parent: self
                                          text:   Text
-                                         case Font==DefaultFont then unit else
-                                            o(font:Font)
-                                         end)}
+                                         font:   Font)}
          in
             self.inner = Real
             {Tk.batch [pack(Lower fill:x)

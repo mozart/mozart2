@@ -162,25 +162,27 @@ fun {NewTkTools Tk}
                                            [] tkClose then self # tkClose
                                            else Action
                                            end
-                            Parent = case Ind==Return then
-                                        ReturnAction = ButtonAction
-                                        ReturnButton = Button
-                                        {New Tk.frame
-                                         tkInit(parent: Bottom
-                                                relief: sunken
-                                                bd:     Border)}
-                                     else Bottom
-                                     end
                             Button = {New Tk.button
-                                      tkInit(parent: Parent
-                                             relief: raised
-                                             text:   Text
-                                             action: ButtonAction)}
+                                      tkInit(parent:  Bottom
+                                             relief:  raised
+                                             default: case Ind==Return then
+                                                         active
+                                                      else
+                                                         normal
+                                                      end
+                                             text:    Text
+                                             action:  ButtonAction)}
                          in
-                            case Ind==Focus then FocusButton=Button
+                            case Ind==Focus then
+                               FocusButton = Button
                             else skip
                             end
-                            case Ind==Return then Parent else Button end
+                            case Ind==Return then
+                               ReturnAction = ButtonAction
+                               ReturnButton = Button
+                            else skip
+                            end
+                            Button
                          end}
          in
             case Focus>0 then

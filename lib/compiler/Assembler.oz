@@ -674,7 +674,7 @@ define
             [] 8 then {Assembler append(allocateL8)}
             [] 9 then {Assembler append(allocateL9)}
             [] 10 then {Assembler append(allocateL10)}
-            else {Assembler append(allocateL(I))}
+            else {Assembler append(I1)}
             end
             {Peephole Rest Assembler}
          [] deAllocateL(I) then
@@ -743,7 +743,7 @@ define
             elseof lbl(_)|deAllocateL(I)|_ then
                {MakeDeAllocate I Assembler}
                {Assembler append(genCall({AdjoinAt GCI 4 true} Arity))}
-               {Peephole Rest Assembler}
+               {Peephole Rest Assembler}   %--** eliminate dead code
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}
@@ -766,9 +766,9 @@ define
                end
                {MakeDeAllocate I Assembler}
                {Assembler append(tailCall(NewR Arity))}
-               {Peephole Rest Assembler}
+               {Peephole Rest Assembler}   %--** eliminate dead code
             else
-               {Assembler append(call(R Arity))}
+               {Assembler append(I1)}
                {Peephole Rest Assembler}
             end
          [] genFastCall(PredicateRef ArityAndIsTail) then
@@ -785,7 +785,7 @@ define
                   {MakeDeAllocate I Assembler}
                   {Assembler
                    append(genFastCall(PredicateRef ArityAndIsTail + 1))}
-                  {Peephole Rest Assembler}
+                  {Peephole Rest Assembler}   %--** eliminate dead code
                else
                   {Assembler append(I1)}
                   {Peephole Rest Assembler}
@@ -804,7 +804,7 @@ define
                   {MakeDeAllocate I Assembler}
                   {Assembler
                    append(marshalledFastCall(Abstraction ArityAndIsTail + 1))}
-                  {Peephole Rest Assembler}
+                  {Peephole Rest Assembler}   %--** eliminate dead code
                else
                   {Assembler append(I1)}
                   {Peephole Rest Assembler}
@@ -832,7 +832,7 @@ define
                end
                {MakeDeAllocate I Assembler}
                {Assembler append(tailSendMsg(Literal NewR RecordArity Cache))}
-               {Peephole Rest Assembler}
+               {Peephole Rest Assembler}   %--** eliminate dead code
             else
                {Assembler append(sendMsg(Literal R RecordArity Cache))}
                {Peephole Rest Assembler}
@@ -857,7 +857,7 @@ define
                end
                {MakeDeAllocate I Assembler}
                {Assembler append(tailApplMeth(AMI NewR))}
-               {Peephole Rest Assembler}
+               {Peephole Rest Assembler}   %--** eliminate dead code
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}

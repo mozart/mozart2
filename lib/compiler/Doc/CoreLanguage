@@ -43,11 +43,11 @@ S  ::=  <Statement>
      next: S   % singly linked list terminated by self reference
 
 
-% 'local' localVars 'in' body 'end'
+% 'local' localVars 'in' statements 'end'
 <Declaration> from <Statement>
-     localVars: V+
-     body:      S+
-     coord:     C
+     localVars:  V+
+     statements: S+
+     coord:      C
 
 
 % 'skip' 'skip'
@@ -70,24 +70,24 @@ S  ::=  <Statement>
      expansionOccs: record
 
 
-% 'proc' '{' designator formalArgs '}' body 'end'
+% 'proc' '{' designator formalArgs '}' statements 'end'
 <Definition> from <Statement>
      designator:    O
      formalArgs:    V*
-     body:          S+
+     statements:    S+
      isStateUsing:  B
      coord:         C
      procFlags:     [atom]
      toplevelNames: [name] | unit
-     globalVars:    V*   % those of "local formalArgs in body end"
+     globalVars:    V*   % those of "local formalArgs in statements end"
      expansionOccs: record
 
 
-% 'proc' '{' designator formalArgs '}' body 'end'
+% 'proc' '{' designator formalArgs '}' statements 'end'
 <FunctionDefinition> from <Definition>
 
 
-% 'proc' '{' designator formalArgs '}' body 'end'
+% 'proc' '{' designator formalArgs '}' statements 'end'
 <ClauseBody> from <Definition>
 
 
@@ -109,10 +109,10 @@ S  ::=  <Statement>
      expansionOccs: record
 
 
-% body
+% statements
 <BoolClause>
-     body:        S+
-     globalVars:  V*
+     statements: S+
+     globalVars: V*
 
 
 % 'case' arbiter 'of' ( clause // '[]' ) alternative 'end'
@@ -124,12 +124,12 @@ S  ::=  <Statement>
      globalVars:  V*   % those of all clauses (not arbiter)
 
 
-% [ localVars 'in' ] pattern 'then' body
+% [ localVars 'in' ] pattern 'then' statements
 <PatternClause>
      localVars:         V*
      pattern:           P
-     body:              S+
-     globalVars:        V*   % those of body and pattern
+     statements:        S+
+     globalVars:        V*   % those of statements and pattern
      patternGlobalVars: V*   % those of pattern only
 
 
@@ -152,9 +152,9 @@ S  ::=  <Statement>
 <AbstractElse>
 
 
-% 'else' body
+% 'else' statements
 <ElseNode> from <AbstractElse>
-     body:       S+
+     statements: S+
      globalVars: V*
 
 
@@ -164,26 +164,26 @@ S  ::=  <Statement>
      expansionOccs: record
 
 
-% 'thread' body 'end'
+% 'thread' statements 'end'
 <ThreadNode> from <Statement>
-     body:       S+
+     statements: S+
      globalVars: V*
 
 
-% 'try' tryBody 'catch' exception 'then' catchBody 'end'
+% 'try' tryStatements 'catch' exception 'then' catchStatements 'end'
 <TryNode> from <Statement>
-     tryBody:    S+
-     exception:  V
-     catchBody:  S+
-     coord:      C
-     globalVars: V*   % those of tryBody and catchBody
+     tryStatements:   S+
+     exception:       V
+     catchStatements: S+
+     coord:           C
+     globalVars:      V*   % those of tryStatements and catchStatements
 
 
-% 'lock' lockVar 'then' body 'end'
+% 'lock' lockVar 'then' statements 'end'
 <LockNode> from <Statement>
-     lockVar: O
-     body:    S+
-     coord:   C
+     lockVar:    O
+     statements: S+
+     coord:      C
 
 
 % 'class' designator [ 'from' parents ] [ 'prop' properties ]
@@ -199,17 +199,18 @@ S  ::=  <Statement>
      isVirtualToplevel: bool
      expansionOccs:     record
 
-% 'meth' label '(' formalArgs ')' body 'end'
+% 'meth' label '(' formalArgs ')' statements 'end'
 <Method>
      label:         L
      formalArgs:    M*
-     body:          S+
+     statements:    S+
      coord:         C
-     globalVars:    V*   % only those of "local vars in label feats body end"
+     globalVars:    V*   % only of "local vars in label feats statements end"
      expansionOccs: record
 
 
-% 'meth' label '(' formalArgs [ '...' ] ')' '=' messageDesignator body 'end'
+% 'meth' label '(' formalArgs [ '...' ] ')' '=' messageDesignator
+% statements 'end'
 <MethodWithDesignator> from <Method>
      messageDesignator: V
 
@@ -230,9 +231,9 @@ S  ::=  <Statement>
      default: value   % must consist of int/float/atom/record exclusively
 
 
-% 'lock' body 'end'
+% 'lock' statements 'end'
 <ObjectLock> from <Statement>
-     body:          S+
+     statements:    S+
      coord:         C
      expansionOccs: record
 
@@ -274,14 +275,14 @@ S  ::=  <Statement>
 <ChoiceNode> from <ChoicesAndDisjunctions>
 
 
-% [ localVars 'in' ] guard 'then' body
+% [ localVars 'in' ] guard 'then' statements
 <Clause>
      localVars:       V*
      guard:           S+
      kind:            'ask' | 'wait' | 'waitTop'
-     body:            S+
-     globalVars:      V*   % those of guard and body
-     guardGlobalVars: V*   % those of body only
+     statements:      S+
+     globalVars:      V*   % those of guard and statements
+     guardGlobalVars: V*   % those of statements only
 
 
 % (never instantiated)

@@ -96,13 +96,13 @@ define
             [] Y1 >=: Y2+S2 C=4
             end
          end
-C
+         C
    end
 
    proc {Square P XCoord YCoord Sizes}
       local SX SY Cs in
          % SX and SY are global sizes
-         % The Coordinates give the statring point of the rectangles
+         % The Coordinates give the starting point of the rectangles
          {StateConstraints P XCoord YCoord Sizes SX SY}
          Cs={NoOverlap XCoord YCoord Sizes}
          {Capacity XCoord Sizes SX SY}

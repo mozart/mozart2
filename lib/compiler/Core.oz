@@ -48,7 +48,6 @@ export
    FlattenSequence
 
    % names:
-   ImAConstruction
    ImAValueNode
    ImAVariableOccurrence
    ImAToken
@@ -120,6 +119,7 @@ export
    BitArrayToken
    BitStringToken
    ByteStringToken
+
 define
    \insert Annotate
 
@@ -223,7 +223,6 @@ define
       end
    end
 
-   ImAConstruction       = StaticAnalysis.imAConstruction
    ImAValueNode          = StaticAnalysis.imAValueNode
    ImAVariableOccurrence = StaticAnalysis.imAVariableOccurrence
    ImAToken              = StaticAnalysis.imAToken
@@ -324,7 +323,6 @@ define
          CodeGen.construction
       prop final
       attr label: unit args: unit isOpen: unit
-      feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
          label <- Label
          args <- Args
@@ -333,12 +331,6 @@ define
       end
       meth getCoord($)
          {@label getCoord($)}
-      end
-      meth isVariableOccurrence($)
-         false
-      end
-      meth isConstruction($)
-         true
       end
       meth output2(R $ ?FS) FS1 FS2 in
          FS = FS1#FS2
@@ -372,6 +364,12 @@ define
             case @args of nil then '...' else GL#'...' end
          else ""
          end#')'#PO
+      end
+      meth isVariableOccurrence($)
+         false
+      end
+      meth isConstruction($)
+         true
       end
    end
 
@@ -573,7 +571,6 @@ define
          CodeGen.recordPattern
       prop final
       attr label: unit args: unit isOpen: unit
-      feat !ImAConstruction: unit
       meth init(Label Args IsOpen)
          label <- Label
          args <- Args
@@ -582,12 +579,6 @@ define
       end
       meth getCoord($)
          {@label getCoord($)}
-      end
-      meth isVariableOccurrence($)
-         false
-      end
-      meth isConstruction($)
-         true
       end
       meth output2(R $ ?FS) FS1 FS2 Args in
          FS = FS1#FS2
@@ -655,6 +646,12 @@ define
          else ""
          end#')'#PO
       end
+      meth isVariableOccurrence($)
+         false
+      end
+      meth isConstruction($)
+         true
+      end
    end
 
    class EquationPattern
@@ -670,12 +667,6 @@ define
       meth getCoord($)
          @coord
       end
-      meth isConstruction($)
-         {@right isConstruction($)}
-      end
-      meth isVariableOccurrence($)
-         {@right isVariableOccurrence($)}
-      end
       meth output2(R $ ?FS) FS1 FS2 in
          FS = FS1#FS2
          {@left output2(R $ ?FS1)}#'='#{@right output2(R $ ?FS2)}
@@ -684,6 +675,12 @@ define
          FS = FS1#FS2
          {@left outputPattern2(R Vs $ ?FS1)}#'='#
          {@right outputPattern2(R Vs $ ?FS2)}
+      end
+      meth isVariableOccurrence($)
+         false
+      end
+      meth isConstruction($)
+         {@right isConstruction($)}
       end
    end
 
@@ -1053,17 +1050,17 @@ define
          coord <- Coord
          StaticAnalysis.valueNode, init()
       end
-      meth isVariableOccurrence($)
-         false
-      end
-      meth isConstruction($)
-         false
-      end
       meth getCoord($)
          @coord
       end
       meth getValue($)
          @value
+      end
+      meth isVariableOccurrence($)
+         false
+      end
+      meth isConstruction($)
+         false
       end
       meth outputEscaped2(R $ ?FS)
          {self output2(R $ ?FS)}

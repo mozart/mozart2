@@ -562,7 +562,7 @@ define
                         else true
                         end
                      end}
-         then @value
+         then {@value getValue($)}
          else _
          end
       end

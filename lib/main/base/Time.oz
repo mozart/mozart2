@@ -22,6 +22,8 @@
 %%% WARRANTIES.
 %%%
 
+proc {Delay T} {Wait {Alarm T}} end
+
 local
 
    %%%

@@ -284,7 +284,6 @@ prepare
    %% Time
    %%
    Alarm        = Boot_Time.alarm
-   Delay        = Boot_Time.delay
 
    %%
    %% BitString ByteString

@@ -1,7 +1,7 @@
 %%%
 %%% Authors:
 %%%   Peter Van Roy <pvr@info.ucl.ac.be>
-%%%   Christian Schulte <schulte@dfki.de>
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Peter Van Roy, 1997

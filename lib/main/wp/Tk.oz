@@ -306,17 +306,9 @@ in
                local
                   Args = Applet.args
                in
-                  case
-                     {HasFeature Args width} andthen
-                     {HasFeature Args height}
-                  then
-                     {Applet tk(configure
-                                width:  Args.width
-                                height: Args.height)}
-                  else skip
-                  end
                   {Tk.batch [update(idletasks)
-                             wm(resizable Applet 0 0)
+                             wm(geometry  Applet Args.width#x#Args.height)
+                             wm(resizable Applet false false)
                              wm(deiconify Applet)]}
                end
             end

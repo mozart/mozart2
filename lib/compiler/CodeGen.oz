@@ -2,9 +2,6 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
-%%% Contributor:
-%%%   Christian Schulte <schulte@dfki.de>
-%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
 %%%
@@ -51,7 +48,7 @@ export
    skipNode: CodeGenSkipNode
    equation: CodeGenEquation
    construction: CodeGenConstruction
-   definition:         CodeGenDefinition
+   definition: CodeGenDefinition
    functionDefinition: CodeGenDefinition
    clauseBody: CodeGenClauseBody
    application: CodeGenApplication

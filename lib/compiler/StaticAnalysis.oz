@@ -45,6 +45,7 @@ export
    typeOf:                 SATypeOf
    stepPoint:              SAStepPoint
    declaration:            SADeclaration
+   skipNode:               SASkipNode
    equation:               SAEquation
    construction:           SAConstruction
    definition:             SADefinition
@@ -67,6 +68,7 @@ export
    methFormalWithDefault:  SAMethFormalWithDefault
    objectLockNode:         SAObjectLockNode
    getSelf:                SAGetSelf
+   failNode:               SAFailNode
    condNode:               SACondNode
    choicesAndDisjunctions: SAChoicesAndDisjunctions
    clause:                 SAClause
@@ -1255,6 +1257,9 @@ define
       meth saDescend(Ctrl)
          SAStatement, saBody(Ctrl @statements)
       end
+   end
+
+   class SASkipNode from SAStatement
    end
 
    class SADeclaration from SAStatement
@@ -3309,6 +3314,9 @@ define
       meth applyEnvSubst(Ctrl)
          {@destination applyEnvSubst(Ctrl)}
       end
+   end
+
+   class SAFailNode from SAStatement
    end
 
    class SACondNode from SAStatement

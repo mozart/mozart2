@@ -2,9 +2,6 @@
 %%% Author:
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
-%%% Contributor:
-%%%   Christian Schulte <schulte@dfki.de>
-%%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
 %%%
@@ -44,7 +41,6 @@
 %%
 
 functor
-
 export
    typeOf: AnnotateTypeOf
    stepPoint: AnnotateStepPoint
@@ -83,9 +79,7 @@ export
    generatedVariable: AnnotateGeneratedVariable
    restrictedVariable: AnnotateRestrictedVariable
    variableOccurrence: AnnotateVariableOccurrence
-
 prepare
-
    BindingAnalysisWarning = 'binding analysis warning'
 
    fun {VariableUnion Vs Ws}
@@ -460,7 +454,6 @@ prepare
          {SetUses GlobalVars OldUses}
       end
    end
-
    class AnnotateNoElse
       meth annotateGlobalVars(_ VsHd VsTl)
          VsHd = VsTl
@@ -616,7 +609,6 @@ prepare
          {@feature annotateGlobalVars(Ls VsHd VsTl)}
       end
    end
-
    class AnnotateMethFormalWithDefault
       meth markFirst(WarnFormals Rep)
          {@feature markFirst(WarnFormals Rep)}

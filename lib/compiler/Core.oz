@@ -4,7 +4,6 @@
 %%%
 %%% Contributors:
 %%%   Martin Mueller <mmueller@ps.uni-sb.de>
-%%%   Christian Schulte <schulte@dfki.de>
 %%%
 %%% Copyright:
 %%%   Leif Kornstaedt, 1997
@@ -41,15 +40,10 @@
 %%
 
 functor
-
-require
-   Annotate
-
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
    StaticAnalysis
    CodeGen
-
 export
    %% procedures:
    FlattenSequence
@@ -109,9 +103,9 @@ export
    ProcedureToken
    ClassToken
    ObjectToken
-
+require
+   Annotate
 prepare
-
    %% some format string auxiliaries for output
    IN = format(indent)
    EX = format(exdent)
@@ -119,7 +113,6 @@ prepare
    PO = format(pop)
    GL = format(glue(" "))
    NL = format(break)
-
 define
    fun {LI Xs Sep R}
       list({Map Xs fun {$ X} {X output(R $)} end} Sep)
@@ -313,7 +306,7 @@ define
    end
 
    class SkipNode
-      from Statement StaticAnalysis.statement Annotate.skipNode
+      from Statement StaticAnalysis.skipNode Annotate.skipNode
          CodeGen.skipNode
       prop final
       meth init(Coord)
@@ -436,7 +429,8 @@ define
          from DefinitionBase Annotate.definition CodeGen.definition
       end
       class FunctionDefinition
-         from DefinitionBase Annotate.functionDefinition CodeGen.functionDefinition
+         from DefinitionBase
+            Annotate.functionDefinition CodeGen.functionDefinition
          prop final
       end
       class ClauseBody
@@ -708,7 +702,6 @@ define
          {LI @statements NL R}#EX#NL
       end
    end
-
    class NoElse
       from Annotate.noElse StaticAnalysis.noElse CodeGen.noElse
       prop final
@@ -955,8 +948,8 @@ define
    end
 
    class FailNode
-      from Statement StaticAnalysis.statement
-         Annotate.failNode CodeGen.failNode
+      from Statement
+         StaticAnalysis.failNode Annotate.failNode CodeGen.failNode
       prop final
       meth init(Coord)
          coord <- Coord

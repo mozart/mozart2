@@ -1276,8 +1276,11 @@ local
             {TkSendFilter Session v('image create '#Type) NewTkName
              MessAll [maskurl type url] unit}
             ThisTclName = NewTkName
+            /*
+            Currently disbaled, because of synchronisation problems
             {Wait {TkReturnString update(idletasks)}}
             TkImage,Unlink(@ToUnlink)
+            */
             ToUnlink <- nil
          end
          meth tk(...) = M

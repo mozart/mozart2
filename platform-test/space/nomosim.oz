@@ -107,15 +107,15 @@ in
                            {SearchOne DoIt}
                         end
 
-                        [[o x x x o o o o]
-                         [x x o x o o o o]
-                         [o x x x o o x x]
-                         [o o x x o o x x]
-                         [o o x x x x x x]
-                         [x o x x x x x o]
-                         [x x x x x x o o]
-                         [o o o o x o o o]
-                         [o o o x x o o o]])
+                        [[[o x x x o o o o]
+                          [x x o x o o o o]
+                          [o x x x o o x x]
+                          [o o x x o o x x]
+                          [o o x x x x x x]
+                          [x o x x x x x o]
+                          [x x x x x x o o]
+                          [o o o o x o o o]
+                          [o o o x x o o o]]])
 
                   keys: [space search 'dis' 'thread' list])])
 end

@@ -1,8 +1,4 @@
-RM      = @RM@ -f
-OZBATCH = @OZBATCH@
-
-OZE = $(OZBATCH)
-OZC = $(OZBATCH) -c
+####################################################
 
 # Test for spaces
 SPACELOCAL = \
@@ -11,18 +7,39 @@ SPACEOZC = $(SPACELOCAL:%=./space/%.ozc)
 
 # Tests for finite domains
 FDLOCAL = \
-        distribute
+        distribute \
+        alpha
+
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
+
+# Tests for scheduling
+SCHEDLOCAL = \
+        abz6
+SCHEDOZC = $(SCHEDLOCAL:%=./scheduling/%.ozc)
+
+# Other tests
+OTHER = \
+        link
+OTHEROZC = $(OTHER:%=./%.ozc)
+
+
+# All tests
+COMPONENTS = \
+        $(SPACEOZC) $(FDOZC) $(SCHEDOZC) $(OTHEROZC)
+
 
 ####################################################
 
-COMPONENTS = \
-        $(SPACEOZC) $(FDOZC)
+RM      = @RM@ -f
+OZBATCH = @OZBATCH@
+
+OZE = $(OZBATCH)
+OZC = $(OZBATCH) -c
 
 all: test $(COMPONENTS)
 
 
-make-test: ./lib/make-test.oz
+make-test: ./lib/make-test.oz ./lib/engine.oz ./lib/passed.oz ./lib/failed.oz
         $(OZE) -l AP,SP ./lib/make-test.oz
 
 
@@ -38,6 +55,9 @@ veryclean: clean
         $(RM) $(COMPONENTS)
         $(RM) test
 
+distclean: veryclean
+        $(RM) config.cache config.log config.status
+        $(RM) Makefile
 
 .SUFFIXES: $SUFFIXES .ozc .oz
 

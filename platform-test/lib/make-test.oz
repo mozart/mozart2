@@ -64,6 +64,7 @@ local
             {System.valueToVirtualString X 100 100}
          end
 
+         \insert 'engine.oz'
 
       in
 
@@ -132,60 +133,47 @@ local
                end
 
                ToRun = {Map RunTests fun {$ T}
-                                        {AdjoinAt T script {GetTest T}}
+                                        {AdjoinAt
+                                         {Adjoin o(repeat:1)
+                                          T} script {GetTest T}.1}
                                      end}
 
-               fun {DerefAsk A}
-                  case A of blocked(A) then {DerefAsk A} else A end
+               proc {PV V}
+                  case Argv.verbose then {System.printInfo V}
+                  else skip end
                end
 
-               class RunEngine
-                  prop final
 
-                  meth test(P1 P2 $)
-                     thread E={P1} in {P2 E} end
+               proc {PT Ts}
+                  case Argv.verbose then
+                     {ForAll Ts
+                      proc {$ T}
+                         {System.printInfo
+                          ({X2V {Label T}} # ':\n' #
+                           '   where: ' # {X2V T.where} # '\n')}
+                      end}
+                  else
+                     fun {ChunkUp Xs}
+                        Ys Zs
+                     in
+                        {List.takeDrop Xs 3 ?Ys ?Zs}
+                        Ys|case Zs==nil then nil else {ChunkUp Zs} end
+                     end
+                  in
+                     {ForAll {ChunkUp Ts}
+                      proc {$ Ts}
+                         {System.printInfo '   '}
+                         {ForAll Ts
+                          proc {$ T}
+                             {System.printInfo {X2V {Label T}} # ', '}
+                          end}
+                         {System.showInfo ''}
+                      end}
                   end
-
-                  meth equal(P1 X $)
-                     RunEngine,test(P1 fun {$ E} E==X end)
-                  end
-
-                  meth entailed(P0 $)
-                     RunEngine,test(fun {$}
-                                       S={Space.new proc {$ _} P0 end}
-                                    in
-                                       {DerefAsk {Space.askVerbose S}}
-                                    end
-                                    fun {$ A}
-                                       A==succeeded(entailed)
-                                    end)
-                  end
-
-                  meth failed(P0 $)
-                     RunEngine,test(fun {$}
-                                       S={Space.new proc {$ _} P0 end}
-                                    in
-                                       {DerefAsk {Space.askVerbose S}}
-                                    end
-                                    fun {$ A}
-                                       A==failed
-                                    end)
-                  end
-
-                  meth suspended(P0 $)
-                     RunEngine,test(fun {$}
-                                       S={Space.new proc {$ _} P0 end}
-                                    in
-                                       {DerefAsk {Space.askVerbose S}}
-                                    end
-                                    fun {$ A}
-                                       A==succeeded(supended)
-                                    end)
-                  end
-
                end
 
             in
+
                case Argv.do then
                   %% Start garbage collection thread, if requested
                   case Argv.gc > 0 then
@@ -198,31 +186,61 @@ local
                   end
                   %% Go for it
 
-                  local
-                     Results =
-                  {ForAll ToRun proc {$ T}
+                  Results = {Map ToRun
+                             fun {$ T}
+                                {PV {Label T} # ': '}
+                                Bs={Map {MakeList Argv.threads}
+                                    fun {$ _}
+                                       thread
+                                          {ForThread 1 T.repeat 1
+                                           fun {$ B _}
+                                              B1={DoTest T.script}
+                                           in
+                                              {PV case B1 then '+' else '-' end}
+                                              B1 andthen B
+                                           end true}
+                                       end
+                                    end}
+                                B={FoldL Bs And true}
+                             in
+                                {Wait B}
+                                {PV '\n'}
+                                {AdjoinAt T result B}
+                             end}
+                  Goofed = {Filter Results fun {$ T}
+                                              {Not T.result}
+                                           end}
+               in
 
-                                end}
+                  case Goofed==nil then
+                     case Argv.verbose then
+                        {System.showInfo \insert 'passed.oz'
+                        }
+                     else
+                        {System.showInfo 'PASSED'}
+                     end
+                     0
+                  else
+                     case Argv.verbose then
+                        {System.showInfo \insert 'failed.oz'
+                        }
+                     else
+                        {System.showInfo 'FAILED'}
+                     end
+                     {System.showInfo ''}
+                     {System.showInfo 'The following test failed:'}
+                     {PT Goofed}
+                     1
+                  end
 
                else
                   %% Only print tests to be performed
                   {System.showInfo 'TESTS FOUND:'}
-                  case Argv.verbose then
-                     {ForAll ToRun proc {$ T}
-                                      {System.printInfo
-                                       ({X2V {Label T}} # ':\n' #
-                                        '   ' # {X2V T.script})}
-                                   end}
-                  else
-                     {ForAll ToRun proc {$ T}
-                                      {System.printInfo
-                                       {X2V {Label T}} # ', '}
-                                   end}
-                  end
+                  {PT ToRun}
                   {System.showInfo ''}
+                  0
                end
             end
-            0
          end
 
       end
@@ -234,10 +252,9 @@ local
           usage(type:bool default:false)
           verbose(type:bool default:false)
           gc(type:int optional:false default:0)
-          threads(type:int optional:false default:1)
           keys(type:string optional:true default:"all")
           tests(type:string optional:true default:"all")
-          repeat(type:int optional:false default:2))
+          threads(type:int optional:false default:1))
 
 in
    {Application.exec
@@ -274,13 +291,15 @@ in
 
           Tests = {AppendAll
                    {Map Argv.2 fun {$ C}
+                                  {Show {String.toAtom C}}
                                   S = {{Load C} IMPORT}
                                in
                                   {Map {GetAll S nil nil}
                                    fun {$ T#Id#K}
                                       L={String.toAtom T}
                                    in
-                                      L(id:Id keys:K url:{String.toAtom C})
+                                      L(id:Id keys:K url:{String.toAtom C}
+                                        where: '???')
                                    end}
                                end}}
 
@@ -293,18 +312,33 @@ in
                         end nil}
                   Value.'<'}
 
+          fun {ChunkUp Xs}
+             Ys Zs
+          in
+             {List.takeDrop Xs 6 ?Ys ?Zs}
+             Ys|case Zs==nil then nil else {ChunkUp Zs} end
+          end
+
        in
           case Argv.verbose then
              {System.showInfo 'TESTS FOUND:'}
              {ForAll Tests proc {$ T}
                               {System.showInfo
                                ({X2V {Label T}} # ':\n' #
-                                '   id:   ' # {X2V T.id} # '\n' #
-                                '   keys: ' # {X2V T.keys} # '\n' #
-                                '   url:  ' # T.url)}
+                                '   keys:  ' # {X2V T.keys} # '\n' #
+                                '   url:   ' # T.url # '\n' #
+                                '   where: ' # '???')}
                            end}
              {System.showInfo '\n\nKEYS FOUND:'}
-             {System.showInfo {X2V Keys}}
+             {ForAll {ChunkUp Keys}
+              proc {$ Ks}
+                 {System.printInfo '   '}
+                 {ForAll Ks
+                  proc {$ K}
+                     {System.printInfo {X2V K} # ', '}
+                  end}
+                 {System.showInfo ''}
+              end}
           end
 
           {Application.exec

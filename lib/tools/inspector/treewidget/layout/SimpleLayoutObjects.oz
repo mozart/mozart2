@@ -99,9 +99,10 @@ in
          in
             if {IsFree XDim}
             then
-               RepStr = {self createRep($)}
-               RepLen = {VirtualString.length RepStr}
+               RepStr RepLen
             in
+               {self createRep(RepStr _)}
+               RepLen = {VirtualString.length RepStr}
                string <- RepStr
                XDim    = if {@entry hasRefs($)}
                          then {@mode layoutX($)} + RepLen
@@ -119,8 +120,9 @@ in
    in
       local
          class FreeRep
-            meth createRep($)
-               {System.printName @value}
+            meth createRep(PrintStr LengthStr)
+               PrintStr  = {System.printName @value}
+               LengthStr = PrintStr
             end
          end
       in
@@ -130,8 +132,9 @@ in
 
       local
          class FutureRep
-            meth createRep($)
-               {System.printName @value}#'<Fut>'
+            meth createRep(PrintStr LengthStr)
+               PrintStr  = {System.printName @value}#'<Fut>'
+               LengthStr = PrintStr
             end
          end
       in

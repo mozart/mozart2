@@ -40,6 +40,8 @@ fun {Usage}
    '    Output the functor as executable.\n' #
    '--execheader=STR\n' #
    '    Use header STR for executables.\n' #
+   '--execpath=STR\n' #
+   '    Use path STR to ozengine in headers of executables.\n' #
    '--compress=N, -z N (N: 0..9, default 0)\n' #
    '    Use compression level N for created pickle.\n'
 end

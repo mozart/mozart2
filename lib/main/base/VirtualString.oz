@@ -49,6 +49,7 @@ local
             [] nil then nil
             else {Atom.toString V}
             end
+         [] byteString then V
          [] tuple then
             case {Label V}
             of '#' then {AllToString {Width V} V ""}
@@ -87,7 +88,7 @@ local
          of int then case V<0 then S#~V else V end
          [] float then {ChangeSignFloat {Float.toString V} S}
          [] atom then V
-         [] bytestring then V
+         [] byteString then V
          [] tuple then
             case {Label V}
             of '#' then W={Width V} NewV={MakeTuple '#' W} in
@@ -111,8 +112,7 @@ in
                                                 end
                                              end
                                  toAtom:     fun {$ V}
-                                                case {IsAtom V} then V
-                                                else
+                                                if {IsAtom V} then V else
                                                    {StringToAtom {ToString V}}
                                                 end
                                              end

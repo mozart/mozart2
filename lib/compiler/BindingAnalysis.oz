@@ -148,7 +148,8 @@ in
             case {V isDenied(Feature ?GV $)} then
                {self.MyReporter
                 error(coord: Coord kind: BindingAnalysisError
-                      msg: 'illegal use of imported variable '#pn(PrintName))}
+                      msg: 'illegal use of imported variable '#pn(PrintName)
+                      items: [hint(l: 'Unknown feature' m: oz(Feature))])}
             else skip
             end
             case GV \= unit then

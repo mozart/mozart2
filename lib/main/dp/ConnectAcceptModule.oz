@@ -89,6 +89,7 @@ define
            end
 
            proc{ConnFailed Reason}
+              {Obj freeResources}
               if {Dictionary.member OngoingRequests Obj.id} then
                  {DPMisc.connFailed Obj.requestor Reason}
               end
@@ -111,8 +112,7 @@ define
            end
 
            Socket=OS.socket
-%          Connect=OS.connectNonblocking % AN!
-           Connect=OS.connect
+           Connect=OS.connectNonblocking
            Write=OS.write
            Read=OS.read
            WriteSelect=OS.writeSelect
@@ -166,7 +166,7 @@ define
             skip
 \endif
          end
-         {self FreeResources}
+         {self freeResources}
       end
 
       meth getLocalState($) @localState end
@@ -185,7 +185,7 @@ define
                                   fun{$ RC} RC\=R end}
          end
       end
-      meth FreeResources
+      meth freeResources
          lock
             {ForAll @allocatedResources
              proc{$ R}

@@ -97,8 +97,33 @@ define
 \endif
             case Grant of grant(...) then
                try
+\ifdef DBG
+                  {System.show writeSelect}
+\endif
                   {ConnectionWrapper.writeSelect FD}
-                  _={ConnectionWrapper.write FD "tcp"}
+\ifdef DBG
+            {System.show write}
+\endif
+                  try
+                     _={ConnectionWrapper.write FD "tcp"}
+                  catch X then
+                     case X of system(os(_ _ 32 _) ...) then
+                        % This is EPIPE. It can be discussed wether this
+                        % is perm or not, but in the old system, an EPIPE
+                        % at this early stage was interpreted as such.
+                        Done=failed
+                        {ConnectionWrapper.close FD}
+\ifdef DBG
+                        {System.show discovered_perm_2(FD Address IPPort)}
+\endif
+                        {ConnectionWrapper.freeConnGrant Grant}
+                        {ConnectionWrapper.connFailed perm}
+                        raise perm end
+                     end
+                  end
+\ifdef DBG
+                  {System.show readSelect}
+\endif
 
                   {ConnectionWrapper.readSelect FD}
                   _ = {ConnectionWrapper.read FD 2 ReadS nil}
@@ -108,18 +133,20 @@ define
                   else
                      {ConnectionWrapper.freeConnGrant Grant}
                   end
-               % If we catch an exception here it means the connection
+               % If we catch an exception here (other than perm, se above)
+               % it means the connection
                % was somehow corrupted. Report this as a temp error and let
                % the requestor try again.
-\ifdef DBG
                catch X then
+\ifdef DBG
                   {System.show connect_caught(X)}
-\else
-               catch _ then
 \endif
-                  Done=failed
-                  {ConnectionWrapper.freeConnGrant Grant}
-                  {ConnectionWrapper.connFailed temp}
+                  case X of perm then skip
+                  else
+                     Done=failed
+                     {ConnectionWrapper.freeConnGrant Grant}
+                     {ConnectionWrapper.connFailed temp}
+                  end
                end
             else
                skip

@@ -37,7 +37,9 @@ define
               proc {$ Detach}
                  {ForAll [automatic sh rsh]
                   proc {$ Fork}
-                     {ForAll [localhost {OS.uName}.nodename]
+% Redhat does not allow rsh localhost by default
+%                    {ForAll [localhost {OS.uName}.nodename]
+                     {ForAll [{OS.uName}.nodename]
                       proc {$ Host}
                          S={New Remote.manager
                             init(host:Host fork:Fork detach:Detach)}

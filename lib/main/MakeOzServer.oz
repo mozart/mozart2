@@ -96,7 +96,7 @@ in
              {Show waiting(Argv.ticket)}
              {Show waiting(IMPORT)}
              RunRet # CtrlRet = {IMPORT.'DP'.'Connection'.take Argv.ticket}
-             {Show taken}
+             {Show taken(RunRet CtrlRet)}
           in
              {RemoteServer RunRet CtrlRet IMPORT proc {$}
                                                     Status = 0

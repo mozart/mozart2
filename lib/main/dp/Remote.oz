@@ -49,8 +49,8 @@ local
          Show = {`Builtin` 'Show' 1}
       in
          {StartRemote Host
-          {OS.getEnv 'HOME'}#'/Oz/lib/ozserver --ticket='#Ticket}
-         {Show started}
+          {OS.getEnv 'OZHOME'}#'/bin/ozserver --ticket='#Ticket}
+         {Show started(RunRet CtrlRet)}
          Run      <- RunRet.2
          {Show run}
          Ctrl     <- CtrlRet.2

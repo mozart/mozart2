@@ -247,7 +247,7 @@ fun {NewTkTools Tk}
 
    local
       BarRelief = raised
-      AccSpace  = '    '
+      AccSpace  = '  '
       AccCtrl   = 'C-'
       AccAlt    = 'A-'
       AccMeta   = 'M-'

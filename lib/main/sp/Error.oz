@@ -1916,6 +1916,28 @@ in
          end
       end
 
+      fun {CompilerFormatter Exc}
+         E = {DispatchField Exc}
+         T = 'compiler engine error'
+      in
+         case E
+         of compiler(invalidQuery M) then
+            {FormatExc T
+             'Invalid query'
+             [hint(l: 'Query' m: oz(M))]
+             Exc}
+         [] compiler(invalidQuery M I A) then
+            {FormatExc T
+             'Ill-typed query argument'
+             [hint(l: 'Query' m: oz(M))
+              hint(l: 'At argument' m: I)
+              hint(l: 'Expected type' m: A)]
+             Exc}
+         else
+            {GenericFormatter T Exc}
+         end
+      end
+
       fun {PanelFormatter Exc}
          E = {DispatchField Exc}
          T = 'error in Oz Panel'
@@ -2053,6 +2075,7 @@ in
       {NewFormatter system      SystemFormatter}
       {NewFormatter foreign     ForeignFormatter}
       {NewFormatter dp          DPFormatter}
+      {NewFormatter compiler    CompilerFormatter}
       {NewFormatter panel       PanelFormatter}
       {NewFormatter explorer    ExplorerFormatter}
       {NewFormatter gump        GumpFormatter}

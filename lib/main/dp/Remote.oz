@@ -23,7 +23,11 @@
 local
 
    proc {SuckUp P}
-      {System.showInfo {P read(list:$)}} {SuckUp P}
+      S={P read(list:$)}
+   in
+      case S==nil then skip
+         {System.showInfo S} {SuckUp P}
+      end
    end
 
    proc {StartRemote Host Cmd}

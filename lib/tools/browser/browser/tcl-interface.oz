@@ -1858,6 +1858,9 @@ in
 
       %%
       meth tagInit
+\ifdef DEBUG_TI
+         {Show 'TermTag::tagInit:'#self.term}
+\endif
          <<tkInit(parent: {self.widgetObj getTW($)})>>
       end
 
@@ -1865,6 +1868,9 @@ in
       %%  Delete the tag, recover binding resources and close the
       %% object itslef;
       meth closeItself
+\ifdef DEBUG_TI
+         {Show 'TermTag::closeItself:'#self.term}
+\endif
          <<Tk.textTag close>>
          <<Object.closedFeature close>>
       end

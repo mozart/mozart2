@@ -752,25 +752,16 @@ in
    end
 
    %%
-   %%  cut&paste ;-[
-   local
-      fun {IsAllB I V}
-         I==0 orelse ({IsVirtualString V.I} andthen {IsAllB I-1 V})
-      end
-   in
-      fun {IsVirtualString X}
-         case {IsVar X} then False
-         elsecase {Value.type X}
-         of atom then True
-         [] int then True
-         [] float then True
-         [] tuple then
-            case {Label X}
-            of '#' then {IsAllB {Width X} X}
-            [] '|' then {IsString X}
-            else False
-            end
-         else False
+   %%  'IsVirtualString' is redefined (to be non-monotonic);
+   fun {IsVirtualString VS}
+      local ProperIsVS in
+         job
+            ProperIsVS = {VirtualString.is VS}
+         end
+
+         %%
+         case {IsVar ProperIsVS} then False
+         else ProperIsVS
          end
       end
    end

@@ -371,19 +371,25 @@ in
    %%
    %%
    %% Actual browser - it handles also browsing from local spaces;
+   %%
+   %% Moreover, this browser is a highlander - it cannot die :-)))
+   %%
    class BrowserClass
       from Object.base
-      feat
-         RealBrowser            %
-         BrowserStream          % used for "deep" browsing;
-         BrowserCell            % ...
+      attr
+         BrowserStream: InitValue % used for "deep" browsing;
+         BrowserCell:   InitValue % ...
+         InitMeth:      InitValue %
+         RealBrowser:   InitValue %
 
       %%
-      %%
-      meth init(...)=M
-         local InternalBrowserLoop in
-            self.RealBrowser = {New FBrowserClass M}
-            self.BrowserCell = {NewCell self.BrowserStream}
+      %% A real make which does the work;
+      meth Make
+         case @RealBrowser == InitValue then BS RB InternalBrowserLoop in
+            BrowserStream <- BS
+            BrowserCell <- {NewCell @BrowserStream}
+            RB = {New FBrowserClass @InitMeth}
+            RealBrowser <- RB
 
             %%
             %% Spawn off the internal browsing loop picking up browser
@@ -391,21 +397,49 @@ in
             proc {InternalBrowserLoop S}
                case S
                of Cmd|Tail then
-                  {ApplyBrowser self.RealBrowser Cmd}
+                  {self CheckAndDo(Cmd)}
                   {InternalBrowserLoop Tail}
                else {BrowserError 'Browser channel is closed???'}
                end
             end
             thread
-               {InternalBrowserLoop self.BrowserStream}
+               {InternalBrowserLoop BS}
             end
+
+            %%
+            %% Watch the real object - and drop it.
+            %% Actually, some requests can fall out - but apparently
+            %% we cannot do anything here;
+            thread
+               {Wait RB.closed}
+               {self Drop}
+            end
+         else skip
+         end
+      end
+      meth Drop
+         RealBrowser <- InitValue
+      end
+
+      %%
+      %% It checks the browser's presence, and performs a command;
+      meth CheckAndDo(Cmd)
+         {self Make}
+         {ApplyBrowser @RealBrowser Cmd}
+      end
+
+      %%
+      %%
+      meth init(...)=M
+         case @InitMeth == InitValue then InitMeth <- M
+         else {BrowserError 'Cannot init a browser object twice!'}
          end
       end
 
       %%
       meth otherwise(M)
-         case {IsDeepGuard} then {DeepFeed self.BrowserCell {Reflect M}}
-         else {ApplyBrowser self.RealBrowser M}   % be transparent;
+         case {IsDeepGuard} then {DeepFeed @BrowserCell {Reflect M}}
+         else {self CheckAndDo(M)}   % be transparent;
          end
       end
 

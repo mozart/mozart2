@@ -75,7 +75,7 @@
 %%%     S will be created and the default handler added at the end. If
 %%%     S doesn't exist, only the default handlers is present.
 %%% env(S D)
-%%%     same as above except that if S doesn exist, virtual string D
+%%%     same as above except that if S doesn't exist, virtual string D
 %%%     is used as its missing value.
 %%% vs(S)
 %%%     S is a virtual string that will be treated just like the value
@@ -103,7 +103,7 @@
 %%% When the method is just DIR, it means root=DIR, and thus emulates
 %%% the usual search path mechanism.
 
-declare
+%declare
 local
 
 URL_localize    = {`Builtin` 'URL.localize'      2}

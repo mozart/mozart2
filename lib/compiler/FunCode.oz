@@ -1,7 +1,6 @@
 functor prop once
 import
    Foreign.pointer
-   System.valueToVirtualString
    \insert Misc-new.env
    GetBuiltinInfo
    ImAVariableOccurrence

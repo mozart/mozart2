@@ -33,8 +33,8 @@ in
       GetOPICompiler = {`Builtin` 'getOPICompiler' 1}
 
       Compiler = compiler(compilerClass: CompilerClass
-                          genericInterface: CompilerInterfaceGeneric
-                          quietInterface: CompilerInterfaceQuiet
+                          genericInterface: GenericInterface
+                          quietInterface: QuietInterface
                           getOPICompiler: GetOPICompiler)
    in
       \insert 'Compiler.env'

@@ -22,8 +22,32 @@
 %%% WARRANTIES.
 %%%
 
+
 local
 
+   %%
+   %% Base Process Identifier package
+   %%
+   local
+      PID = pid(get:      {`Builtin` 'PID.get'      1}
+                send:     {`Builtin` 'PID.send'     4}
+                received: {`Builtin` 'PID.received' 1}
+                close:    {`Builtin` 'PID.close'    0})
+   in
+      {PID.close}
+
+      ReqStream = {PID.received}
+      ThisPid   = {PID.get}
+
+      proc {SendToPid T X}
+         {PID.send T.host T.port T.time T#X}
+      end
+   end
+
+
+   %%
+   %% Mapping between integers and characters
+   %%
    local
       %% int -> char
       IntMap  = {List.toTuple '#'
@@ -57,90 +81,91 @@ local
          end
       end
 
-      fun {IsKey Is}
-         case Is of nil then true
-         [] I|Ir then {Char.isAlNum I} andthen {IsKey Ir}
-         end
-      end
-
       fun {KeyToInt Is}
          {ToInt {Reverse Is} 0}
       end
-
-      fun {IdToKey Id}
-         {List.take
-          {Append
-           {IntToKey {FoldL Id
-                      fun {$ N I}
-                         N + (I mod 13)
-                      end 0}} "aA1"} 3}
-      end
-
    end
 
 
-   {{`Builtin` 'CloseGate' 0}}
-
-   ReqStream = {{`Builtin` 'OpenGate'  1}}
-   ProcId    = {{`Builtin` 'GateId'    1}}
-   ProcKey   = {IdToKey {Atom.toString ProcId}}
-   ProcSend  = {`Builtin` 'SendGate'  2}
-
-   KeyDict   = {Dictionary.new}
-
+   %%
+   %% Creating and parsing ticket strings
+   %%
    local
-      IdCtr = {New class $
-                      prop final locking
-                      attr n:0
-                      meth get(N)
-                         lock N=@n n<-N+1 end
-                      end
-                   end get(_)}
-   in
-
-      proc {MakeTicket IsSingle ?Key ?Ticket}
-         Key    = {IdCtr get($)}
-         Ticket = {Append {VirtualString.toString ProcId}
-                   &@|{Append ProcKey
-                       case IsSingle then &s
-                       else &m end|{IntToKey Key}}}
+      fun {App Xss Ys}
+         case Xss of nil then Ys
+         [] Xs|Xsr then {Append Xs {App Xsr Ys}}
+         end
       end
-
-      proc {DeTicket Ticket ?ProcId ?IsSingle ?Key}
+      fun {CheckSum Is N}
+         case Is of nil then N mod 997
+         [] I|Ir then {CheckSum Ir N * 13 + I}
+         end
+      end
+   in
+      fun {TicketToString T}
+         S = {App ["ozticket://"
+                   T.host
+                   &:|{Int.toString T.port}
+                   &:|{IntToKey T.time}
+                   &/|{IntToKey T.key}
+                   [&: case T.single then &s else &m end]] nil}
+      in
+         {Append S &:|{IntToKey {CheckSum S 0}}}
+      end
+      fun {VsToTicket V}
          try
-            [PI R]           = {String.tokens Ticket &@}
-            PK1|PK2|PK3|IS|K = R
+            %% Raises an exception if has wrong checksum or if
+            %% syntactically illegal
+            S={VirtualString.toString V}
+            [_ nil ProcPart KeyPart]  = {String.tokens S &/}
+            [HostS PortS TimeS]       = {String.tokens ProcPart &:}
+            [KeyS SingS _]            = {String.tokens KeyPart  &:}
+            Ticket = ticket(host:   HostS
+                            port:   {String.toInt PortS}
+                            time:   {KeyToInt TimeS}
+                            key:    {KeyToInt KeyS}
+                            single: SingS=="s")
          in
-            {IdToKey PI}=[PK1 PK2 PK3]
-            ProcId   = PI
-            IsSingle = case IS
-                       of &s then true
-                       [] &m then false
-                       end
-            Key      = {KeyToInt K}
+            S={TicketToString Ticket}
+            Ticket
          catch _ then
-            {`RaiseError` connection(illegalTicket Ticket)}
+            {`RaiseError` connection(illegalTicket V)} _
          end
       end
    end
+
+   local
+      KeyCtr = {New class $
+                       prop final locking
+                       attr n:0
+                       meth get(N)
+                          lock N=@n n<-N+1 end
+                       end
+                    end get(_)}
+   in
+      fun {NewTicket IsSingle}
+         {Adjoin ThisPid ticket(single: IsSingle
+                                key:    {KeyCtr get($)})}
+      end
+   end
+
+
+   %% Mapping of Keys to values
+   KeyDict   = {Dictionary.new}
+
 
    thread
       {ForAll ReqStream
        proc {$ T#A}
-          try
-             IsSingle Key
-             {DeTicket {Atom.toString T} _ ?IsSingle ?Key}
-             Y = {Dictionary.get KeyDict Key}
-          in
-             case IsSingle then
-                {Dictionary.remove KeyDict Key}
-                A = yes(Y)
-             else Z in
-                A = yes(Z) {Port.send Y Z}
-             end
-          catch _ then
-             A = no
-          end
+          A = case
+                 T.time == ThisPid.time andthen
+                 {Dictionary.member KeyDict T.key}
+              then Y={Dictionary.get KeyDict T.key} in
+                 yes(case T.single then {Dictionary.remove KeyDict T.key} Y
+                     else Z in {Port.send Y Z} Z
+                     end)
+              else no
+              end
        end}
    end
 
@@ -150,29 +175,21 @@ local
    %%
 
    fun {Offer X}
-      %% return ticket
-      Ticket Key
+      T={NewTicket true}
    in
-      {MakeTicket true ?Key ?Ticket}
-      {Dictionary.put KeyDict Key X}
-      {String.toAtom Ticket}
+      {Dictionary.put KeyDict T.key X}
+      {String.toAtom {TicketToString T}}
    end
 
-   proc {Take TicketV X}
-      Ticket = {VirtualString.toString TicketV}
-      ProcId IsSingle
+   proc {Take V X}
+      T={VsToTicket V}
    in
-      {DeTicket Ticket ?ProcId ?IsSingle _}
-      case IsSingle then A in
-         {ProcSend ProcId {String.toAtom Ticket}#A}
-         case A
-         of no     then
-            {`RaiseError` connection(refusedTicket TicketV)}
-         [] yes(Y) then
-            X=Y
+      case T.single then
+         case {SendToPid T}
+         of no     then {`RaiseError` connection(refusedTicket V)}
+         [] yes(Y) then X=Y
          end
-      else
-         {`RaiseError` connection(illegalTicket TicketV)}
+      else {`RaiseError` connection(illegalTicket V)}
       end
    end
 
@@ -180,49 +197,47 @@ local
    %% One to many connections
    %%
    class Gate
-      feat Ticket Key
-      attr Stream
-      meth init
-         ThisTicket ThisKey
-         P = {Port.new @Stream}
+      feat
+         Ticket
+         TicketAtom
+      attr
+         Stream
+
+      meth init(AT <= _)
+         T={NewTicket false}
+         P={Port.new @Stream}
       in
-         {MakeTicket false ?ThisKey ?ThisTicket}
-         {Dictionary.put KeyDict ThisKey P}
-         self.Key    = ThisKey
-         self.Ticket = ThisTicket
+         {Dictionary.put KeyDict T.key P}
+         self.Ticket     = T
+         self.TicketAtom = {String.toAtom {TicketToString T}}
+         AT = self.TicketAtom
       end
+
       meth getTicket($)
-         {String.toAtom self.Ticket}
+         self.TicketAtom
       end
+
       meth receive(X)
          NS S
       in
          S = (Stream <- NS)
-         case S of Y|R then
-            NS=R X=Y
-         end
+         case S of Y|R then NS=R X=Y end
       end
+
       meth close
          Stream <- _
-         {Dictionary.remove KeyDict self.Key}
+         {Dictionary.remove KeyDict self.Ticket.key}
       end
    end
 
-   proc {Send TicketV X}
-      Ticket = {VirtualString.toString TicketV}
-      ProcId IsSingle
+   proc {Send V X}
+      T = {VsToTicket V}
    in
-      {DeTicket Ticket ?ProcId ?IsSingle _}
-      case IsSingle then
-         {`RaiseError` connection(illegalTicket TicketV)}
-      else A in
-         {ProcSend ProcId {String.toAtom Ticket}#A}
-         case A
-         of no     then
-            {`RaiseError` connection(illegalTicket TicketV)}
-         [] yes(Y) then
-            X=Y
-         end
+      case T.single then
+         {`RaiseError` connection(illegalTicket V)}
+      elsecase {SendToPid T}
+      of no then {`RaiseError` connection(illegalTicket V)}
+      [] yes(Y) then X=Y
       end
    end
 

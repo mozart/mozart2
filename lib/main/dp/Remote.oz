@@ -151,19 +151,20 @@ define
       in
          PID={ForkProcess
               local OFork =
-              case Fork
-              of automatic then
-                 if Host==localhost then
-                    if HasVirtualSite then virtual
-                    else sh
+                 case Fork
+                 of automatic then
+                    if Host==localhost then
+                       if HasVirtualSite then virtual
+                       else sh
+                       end
+                    else {Property.condGet 'oz.remote.fork' rsh}
                     end
-                 else {Property.condGet 'oz.remote.fork' rsh}
+                 [] sh then sh
+                 else Fork
                  end
-              [] sh then sh
-              else Fork
-              end
               in
-                 {System.showInfo Fork#' -> '#OFork} OFork end
+                 OFork
+              end
               Host RunPort#CtrlPort Detach PORT IP FW}
 
          thread

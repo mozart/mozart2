@@ -58,6 +58,7 @@ define
         2:    Append
         true: fun {$ X Y} X+Y end
         cycle: Goods)
+      {ByteString.make "bla"}
      ]
 
    Return =

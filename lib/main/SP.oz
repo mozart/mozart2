@@ -5,19 +5,22 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-declare
+%%%
+%%% This file creates the System Programming Functor
+%%%
 
-fun {NewCP IMPORT}
+declare
+fun {NewSP IMPORT}
    \insert 'Standard.env'
-       = IMPORT.'Standard'
-   \insert 'SP.env'
-       = IMPORT.'SP'
+   = IMPORT.'Standard'
+
+   \insert 'Foreign.oz'
+   \insert 'System.oz'
+   \insert 'Debug.oz'
+   \insert 'Error.oz'
+
+   Foreign = {NewForeign}
+   Error   = {NewError}
 in
-   local
-      \insert 'Search.oz'
-      \insert 'FD.oz'
-      \insert 'FS.oz'
-   in
-      \insert 'CP.env'
-   end
+   \insert 'SP.env'
 end

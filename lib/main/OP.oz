@@ -5,19 +5,23 @@
 %%%  Last modified: $Date$ by $Author$
 %%%  Version: $Revision$
 
-declare
+%%%
+%%% This file creates the Open Programming Functor
+%%%
 
-fun {NewCP IMPORT}
+\insert 'OS.oz'
+
+declare
+fun {NewOP IMPORT}
    \insert 'Standard.env'
-       = IMPORT.'Standard'
+   = IMPORT.'Standard'
    \insert 'SP.env'
-       = IMPORT.'SP'
+   = IMPORT.'SP'
+
+   \insert 'Open.oz'
+   \insert 'Component.oz'
+   \insert 'Application.oz'
+
 in
-   local
-      \insert 'Search.oz'
-      \insert 'FD.oz'
-      \insert 'FS.oz'
-   in
-      \insert 'CP.env'
-   end
+   \insert 'OP.env'
 end

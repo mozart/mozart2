@@ -10,6 +10,10 @@ declare
 fun {NewWP IMPORT}
    \insert 'Standard.env'
        = IMPORT.'Standard'
+   \insert 'OP.env'
+       = IMPORT.'OP'
+   \insert 'SP.env'
+       = IMPORT.'SP'
    \insert 'Tk.oz'
    Tk      = {NewTk Open}
    \insert 'TkTools.oz'

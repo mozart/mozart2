@@ -18,30 +18,6 @@ in
 
    {Dump NewStandard 'Standard'}
 
-   {Dump local
-            LOAD = {Application.loader
-                    c('Standard': eager
-                      'CP':       lazy
-                      'DP':       lazy
-                      'WP':       lazy
-                      'Panel':    lazy
-                      'Browser':  lazy
-                      'Explorer': lazy
-                      'Compiler': eager
-                      'Emacs':    lazy
-                      'Ozcar':    lazy
-                      'Profiler': lazy)}
-         in
-            proc {$}
-               ALL = {LOAD}
-            in
-               {ALL.'Compiler'.'Compiler'.start
-                {Record.foldL ALL Adjoin \insert Base.env
-                }}
-            end
-         end
-    'OPI'}
-
 end
 
 \insert 'DumpHalt.oz'

@@ -26,6 +26,7 @@
 %%
 %% Module
 %%
-Port = port(is:    IsPort
-            new:   NewPort
-            send:  Send)
+Port = port(is:       IsPort
+            new:      NewPort
+            send:     Send
+            sendRecv: SendRecv)

@@ -23,7 +23,6 @@
 %%%
 functor
 import
-   BootPort(newServiceVar:NewServiceVar) at 'x-oz://boot/Port'
    Error
 export
    Asynchronous
@@ -39,10 +38,7 @@ define
          catch E then {Error.printException E} end
       end
       fun {InvokeService Request}
-         Answer = {NewServiceVar P}
-      in
-         {Send P Request#Answer}
-         Answer
+         {Port.sendRecv P Request}
       end
    in
       thread {ForAll L ServiceHandler} end
@@ -76,10 +72,7 @@ define
          catch E then except(E) end
       end
       fun {InvokeService Request}
-         Reply = {NewServiceVar P}
-      in
-         {Send P Request#Reply}
-         case Reply
+         case {Port.sendRecv P Request}
          of answer(V) then V
          [] except(E) then raise E end end
       end

@@ -60,6 +60,7 @@ in
       local
          % POTypes
          OzTypes
+         TypeConstants
          OzValueToType
       in
          \insert POTypes

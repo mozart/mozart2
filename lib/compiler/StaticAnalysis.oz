@@ -375,6 +375,10 @@ local
         port:              IsPort
         space:             IsSpace
         'thread':          IsThread
+        foreignPointer:    Foreign.pointer.is
+        fset:              fun {$ X}
+                              {FS.value.is X} orelse {FS.var.is X}
+                           end
         virtualString:     IsVirtualString
         string:            IsString
         list:              IsList
@@ -1941,28 +1945,6 @@ local
             skip
          end
       end
-      meth doTclNames(Ctrl Top B)
-
-         SABuiltinApplication, checkArguments(Ctrl 'getTclNames' true B)
-
-         case B then
-            BVO1 = {Nth @actualArgs 1}
-            BVO2 = {Nth @actualArgs 2}
-            BVO3 = {Nth @actualArgs 3}
-            TclSlaves TclSlaveEntry TclName
-         in
-            {{`Builtin` getTclNames 3} ?TclSlaves ?TclSlaveEntry ?TclName}
-            {BVO1 unifyVal(Ctrl Top
-                           {New Core.nameToken
-                            init({BVO1 getPrintName($)} TclSlaves false)})}
-            {BVO2 unifyVal(Ctrl Top
-                           {New Core.nameToken
-                            init({BVO2 getPrintName($)} TclSlaveEntry false)})}
-            {BVO3 unifyVal(Ctrl Top
-                           {New Core.nameToken
-                            init({BVO3 getPrintName($)} TclName false)})}
-         else skip end
-      end
       meth doNewLock(Ctrl Top B)
 
          SABuiltinApplication, checkArguments(Ctrl 'NewLock' true B)
@@ -2617,8 +2599,6 @@ local
                SABuiltinApplication, doWidth(Ctrl Top ArgsOk)
             [] 'ProcedureArity' then
                SABuiltinApplication, doProcedureArity(Ctrl Top ArgsOk)
-            [] 'getTclNames'    then
-               SABuiltinApplication, doTclNames(Ctrl Top ArgsOk)
             [] '.'              then
                SABuiltinApplication, doDot(Ctrl Top ArgsOk)
             [] '^'              then

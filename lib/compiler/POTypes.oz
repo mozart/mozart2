@@ -234,6 +234,7 @@ in
    OzTypes = {PartialOrder
               ['thread' # value  space  # value
                chunk  # value    cell   # value
+               foreignPointer # value fset # value
                recordC# value
                record # recordC
                number # value
@@ -308,7 +309,9 @@ in
         port:     {OzTypes.new port nil}
         'lock':   {OzTypes.new 'lock' nil}
         space:    {OzTypes.new space nil}
-        'thread': {OzTypes.new 'thread' nil})
+        'thread': {OzTypes.new 'thread' nil}
+        foreignPointer: {OzTypes.new foreignPointer nil}
+        fset:     {OzTypes.new fset nil})
 
    % consistency check
    % all type constants should be set constants
@@ -317,7 +320,7 @@ in
     proc {$ N T}
        try {FS.cardRange 1 1 T}
        catch failure(...) then
-          raise nonBasicType(N T) end
+          {Exception.raiseError compiler(nonBasicType N T)}
        end
     end}
 

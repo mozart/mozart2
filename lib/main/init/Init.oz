@@ -1,7 +1,10 @@
 %%%
 %%% Authors:
-%%%   Denys Duchier     (duchier@ps.uni-sb.de)
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
+%%%
+%%% Contributor:
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Denys Duchier, 1998
@@ -51,26 +54,39 @@ prepare
    OzScheme       = {VirtualString.toString DefaultURL.ozScheme}
 
    functor ErrorHandler
-
    import
-      Error Property
-
+      Debug(setRaiseOnBlock) at 'x-oz://boot/Debug'
+      Property(put condGet)
+      System(onToplevel)
+      Application(exit)
+      Error(printException)
    define
-      {Property.put 'errors.handler'
-       proc {$ E}
-          %% cause Error to be instantiated, which installs
-          %% a new error handler as a side effect
-          {Wait Error}
-          %% invoke this new error handler
-          {{Property.get 'errors.handler'} E}
-          %% this whole procedure is invoked at most once
-          %% since instantiatingError causes the handler
-          %% to be replaced with a better one.
-       end}
+      proc {ExitError}
+         {Application.exit 1}
+      end
+
+      proc {ErrorHandler Exc}
+         %% ignore thread termination exception
+         case Exc of system(kernel(terminate) ...) then skip
+         else
+            {Thread.setThisPriority high}
+            {Debug.setRaiseOnBlock {Thread.this} true}
+            {Error.printException Exc}
+            {Debug.setRaiseOnBlock {Thread.this} false}
+            %% terminate local computation
+            if {System.onToplevel} then
+               {{Property.condGet 'errors.toplevel' ExitError}}
+            elsecase Exc of failure(...) then fail
+            else
+               {{Property.condGet 'errors.subordinate' ExitError}}
+            end
+         end
+      end
+
+      {Property.put 'errors.handler' ErrorHandler}
    end
 
    \insert 'init/Module.oz'
-
 
 import
    Boot at 'x-oz://boot/Boot'
@@ -140,8 +156,7 @@ define
       {RM enter(name:'Resolve'  Resolve)}
       {RM enter(name:'Module'   RealModule)}
 
-      %% Execute error handler that will replace itself by real
-      %% error handler on need
+      %% Install error handler
       {RM apply(ErrorHandler)}
 
       %% Link root functor (i.e. application)

@@ -284,10 +284,14 @@ local
          @reporter
       end
       meth notifyOne(P)
+         OZVERSION = {System.property.get 'oz.version'}
 \ifdef OZM
+      in
          {Send P info('Mozart Compiler '#OZVERSION#
                       ' playing Oz 3\n\n')}
 \else
+         \insert compiler-Version
+      in
          {Send P info('Mozart Compiler '#OZVERSION#' of '#DATE#
                       ' playing Oz 3\n\n')}
 \endif

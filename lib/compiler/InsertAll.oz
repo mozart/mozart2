@@ -87,10 +87,6 @@ in
    end
 
    local
-      % Version
-      OZVERSION
-      DATE
-
       % FormatStrings
       FormatStringToVirtualString
 
@@ -112,7 +108,6 @@ in
       % Assembler
       Assemble
    in
-      \insert compiler-Version
       \insert FormatStrings
       \insert Reporter
       \insert ParseOz

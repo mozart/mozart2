@@ -107,16 +107,16 @@ BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
 CURDIRA   = $(BUILDTOPA)/share/test
 #OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
 PREFIX    = @prefix@
+export OZTESTOPTS = --verbose
 
-boot-check: export OZTESTOPTS="$(OZTESTOPTS) --ignores=dp"
+boot-check:
+        $(MAKE) boot-zcheck OZTESTOPTS="$(OZTESTOPTS) --ignores=dp"
 
 bootstrap:
 
 install:
 
-OZTESTOPTS = --verbose
-
-check: oztest
+check zcheck: oztest
         $(OZENGINE) ./oztest $(OZTESTOPTS)
 
 dirs:

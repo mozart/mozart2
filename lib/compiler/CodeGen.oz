@@ -262,20 +262,13 @@ local
       attr
          coord: unit Scalars: nil Records: nil AltNode: unit
          Arbiter: unit WarnedCatchAll: false
-      feat Reg Variable cs
+      feat Reg cs
       meth init(Coord TestReg TheAltNode TheArbiter CS)
          coord <- Coord
          AltNode <- TheAltNode
          Arbiter <- TheArbiter
          self.Reg = TestReg
          self.cs = CS
-      end
-      meth addVariable(ElseNode)
-         case {IsFree self.Variable} then
-            self.Variable = ElseNode
-            AltNode <- ElseNode
-         else skip
-         end
       end
       meth addScalar(NumOrLit LocalVars Body)
          Scalars <- NumOrLit#LocalVars#Body|@Scalars
@@ -294,14 +287,8 @@ local
       end
 
       meth codeGen(VHd VTl)
-         CS = self.cs VariableTest NonvarTests RecordTests AltAddr
+         CS = self.cs NonvarTests RecordTests AltAddr
       in
-         case {IsDet self.Variable} then Addr in
-            {self.Variable codeGenShared(CS ?Addr nil)}
-            VariableTest = [onVar(Addr)]
-         else
-            VariableTest = nil
-         end
          NonvarTests = {FoldL @Scalars
                         case CS.debugInfoVarnamesSwitch then
                            fun {$ In NumOrLit#LocalVars#Body}
@@ -323,8 +310,7 @@ local
                            SwitchHashTable, CodeGenRecord(Rec Clauses $)
                         end}
          {@AltNode codeGenWithArbiterShared(CS @Arbiter AltAddr nil)}
-         VHd = vSwitchOnTerm(_ self.Reg AltAddr
-                             {Append VariableTest NonvarTests} @coord VTl _)
+         VHd = vMatch(_ self.Reg AltAddr NonvarTests @coord VTl _)
       end
       meth CodeGenRecord(Rec Clauses ?VHashTableEntry)
          CS = self.cs CondVInstr in
@@ -2105,11 +2091,7 @@ local
 
    class CodeGenPatternVariableOccurrence
       meth isSwitchable($)
-         true
-      end
-      meth makeSwitchable(Reg LocalVars Body CS $)
-         {@variable reg(Reg)}   % this has the effect of setting
-         addVariable({New Core.elseNode codeGenInit(LocalVars Body)})
+         false
       end
       meth makeGetArg(CS PatternVs V1Hd V1Tl V2Hd V2Tl ?NewPatternVs)
          V1Hd = vGetVariable(_ {self reg($)} V1Tl)

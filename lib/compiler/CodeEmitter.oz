@@ -770,7 +770,7 @@ in
          [] vTestLiteral(_ Reg Literal Addr1 Addr2 Coord Cont InitsRS) then
             Emitter, EmitTestConstant(testLiteral Reg Literal Addr1 Addr2
                                       Coord Cont InitsRS ThisAddr)
-         [] vSwitchOnTerm(_ Reg Addr VHashTableEntries Coord Cont InitsRS) then
+         [] vMatch(_ Reg Addr VHashTableEntries Coord Cont InitsRS) then
             HasLocalEnv R OldContLabels Label Dest NewVHashTableEntries RegMap
          in
             Emitter, DoInits(InitsRS Cont)
@@ -789,26 +789,12 @@ in
             Emitter, PushContLabel(Cont ?OldContLabels)
             Emitter, Dereference(Addr ?Label ?Dest)
             Emitter, DebugEntry(Coord 'cond')
-            case VHashTableEntries of onVar(_)|_ then
-               Emitter, Emit(switchOnTerm(R ht(Dest NewVHashTableEntries)))
-            else StartLabel VarLabel in
-               Emitter, newLabel(?StartLabel)
-               Emitter, newLabel(?VarLabel)
-               Emitter, Emit(lbl(StartLabel))
-               Emitter, Emit(switchOnTerm(R ht(Dest
-                                               onVar(VarLabel)|
-                                               NewVHashTableEntries)))
-               Emitter, Emit(lbl(VarLabel))
-               Emitter, Emit(weakDet(R @HighestUsedX + 1))
-               Emitter, Emit(branch(StartLabel))
-            end
+            Emitter, Emit(match(R ht(Dest NewVHashTableEntries)
+                                @HighestUsedX + 1))
             NewVHashTableEntries =
             {Map VHashTableEntries
              proc {$ VHashTableEntry ?NewEntry} Addr Label Dest RegMap in
-                case VHashTableEntry of onVar(A) then
-                   Addr = A
-                   NewEntry = onVar(Dest)
-                [] onScalar(X A) then
+                case VHashTableEntry of onScalar(X A) then
                    Addr = A
                    NewEntry = onScalar(X Dest)
                 [] onRecord(X1 X2 A) then
@@ -1361,6 +1347,8 @@ in
                IHd = setConstant(Number)|IInter
             [] literal(Literal) then
                IHd = setConstant(Literal)|IInter
+            [] predicateRef(PredicateRef) then
+               IHd = setPredicateRef(PredicateRef)|IInter
             [] value(Reg) then
                case Emitter, GetReg(Reg $) of none then
                   case Emitter, IsLast(Reg $) then
@@ -2057,11 +2045,10 @@ in
          [] vTestLiteral(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
-         [] vSwitchOnTerm(_ _ Addr VHashTableEntries _ Cont InitsRS) then
+         [] vMatch(_ _ Addr VHashTableEntries _ Cont InitsRS) then
             Addrs = {FoldR VHashTableEntries
                      fun {$ VHashTableEntry In}
-                        case VHashTableEntry of onVar(Addr) then Addr|In
-                        [] onScalar(_ Addr) then Addr|In
+                        case VHashTableEntry of onScalar(_ Addr) then Addr|In
                         [] onRecord(_ _ Addr) then Addr|In
                         end
                      end [Addr Cont]}

@@ -56,7 +56,7 @@ Continuations = c(vMakePermanent: 3
                   vTestBuiltin: 6
                   vTestNumber: 7
                   vTestLiteral: 7
-                  vSwitchOnTerm: 6
+                  vMatch: 6
                   vThread: 4
                   vLockThread: 4
                   vLockEnd: 3)
@@ -295,14 +295,13 @@ class CodeStore from Emitter
             {RegSet.union RS RS1}
             {RegSet.union RS RS2}
             {RegSet.union RS RS3}
-         [] vSwitchOnTerm(_ Reg Addr VHashTableEntries _ _ InitsRS) then
+         [] vMatch(_ Reg Addr VHashTableEntries _ _ InitsRS) then
             RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
             InitsRS = {RegSet.copy RS0}
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
-                case VHashTableEntry of onVar(A) then Addr = A
-                [] onScalar(_ A) then Addr = A
+                case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
                 {RegSet.union InitsRS CodeStore, ComputeOccs(Addr $)}
@@ -312,8 +311,7 @@ class CodeStore from Emitter
             {RegSet.union RS RS0}
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
-                case VHashTableEntry of onVar(A) then Addr = A
-                [] onScalar(_ A) then Addr = A
+                case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
                 {RegSet.union RS CodeStore, GetOccs(Addr $)}
@@ -450,12 +448,11 @@ class CodeStore from Emitter
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
-         [] vSwitchOnTerm(_ _ Addr VHashTableEntries _ _ _) then
+         [] vMatch(_ _ Addr VHashTableEntries _ _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
             {ForAll VHashTableEntries
              proc {$ VHashTableEntry} Addr in
-                case VHashTableEntry of onVar(A) then Addr = A
-                [] onScalar(_ A) then Addr = A
+                case VHashTableEntry of onScalar(_ A) then Addr = A
                 [] onRecord(_ _ A) then Addr = A
                 end
                 CodeStore, AddRegOccs(Addr AddRS2)

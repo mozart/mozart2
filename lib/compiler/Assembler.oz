@@ -94,10 +94,9 @@ local
       end
 
       local
-         BINewHashTable    = {`Builtin` newHashTable 4}
-         BIStoreHTVarLabel = {`Builtin` storeHTVarLabel 3}
-         BIStoreHTScalar   = {`Builtin` storeHTScalar 4}
-         BIStoreHTRecord   = {`Builtin` storeHTRecord 5}
+         BINewHashTable  = {`Builtin` newHashTable  4}
+         BIStoreHTScalar = {`Builtin` storeHTScalar 4}
+         BIStoreHTRecord = {`Builtin` storeHTRecord 5}
       in
          proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
             Addr = {Dictionary.get LabelDict ElseLabel}
@@ -105,10 +104,7 @@ local
          in
             {ForAll List
              proc {$ Entry}
-                case Entry of onVar(Lbl) then Addr in
-                   Addr = {Dictionary.get LabelDict Lbl}
-                   {BIStoreHTVarLabel CodeBlock HTable Addr}
-                [] onScalar(NumOrLit Lbl) then Addr in
+                case Entry of onScalar(NumOrLit Lbl) then Addr in
                    Addr = {Dictionary.get LabelDict Lbl}
                    {BIStoreHTScalar CodeBlock HTable NumOrLit Addr}
                 [] onRecord(Label RecordArity Lbl) then Addr in
@@ -183,7 +179,6 @@ local
                elsecase Value of lbl then '\'lbl\''
                [] pid then '\'pid\''
                [] ht then '\'ht\''
-               [] onVar then '\'onVar\''
                [] onScalar then '\'onScalar\''
                [] onRecord then '\'onRecord\''
                [] gci then '\'gci\''
@@ -311,12 +306,12 @@ local
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
                AssemblerClass, declareLabel(L3)
-            [] switchOnTerm(_ HT) then ht(L Cases) = HT in
+            [] match(_ HT NLiveRegs) then ht(L Cases) = HT in
                AssemblerClass, declareLabel(L)
                {ForAll Cases
                 proc {$ Case}
-                   case Case of onVar(L) then AssemblerClass, declareLabel(L)
-                   [] onScalar(_ L) then AssemblerClass, declareLabel(L)
+                   case Case
+                   of onScalar(_ L) then AssemblerClass, declareLabel(L)
                    [] onRecord(_ _ L) then AssemblerClass, declareLabel(L)
                    end
                 end}
@@ -433,14 +428,11 @@ local
                A2 = {Dictionary.get @LabelDict L2}
                A3 = {Dictionary.get @LabelDict L3}
                testBool(X1 A1 A2 A3 X2)
-            [] switchOnTerm(X HT) then ht(L Cases) = HT A NewCases in
+            [] match(X HT NLiveRegs) then ht(L Cases) = HT A NewCases in
                A = {Dictionary.get @LabelDict L}
                NewCases = {Map Cases
                            fun {$ Case}
-                              case Case of onVar(L) then A in
-                                 A = {Dictionary.get @LabelDict L}
-                                 onVar(A)
-                              [] onScalar(X L) then A in
+                              case Case of onScalar(X L) then A in
                                  A = {Dictionary.get @LabelDict L}
                                  onScalar(X A)
                               [] onRecord(X1 X2 L) then A in
@@ -448,7 +440,7 @@ local
                                  onRecord(X1 X2 A)
                               end
                            end}
-               switchOnTerm(X ht(A NewCases))
+               match(X ht(A NewCases) NLiveRegs)
             [] lockThread(L X1 X2) then A in
                A = {Dictionary.get @LabelDict L}
                lockThread(A X1 X2)
@@ -935,34 +927,21 @@ local
          [] testBool(_ _ _ _ _) then
             {Assembler append(I1)}
             {EliminateDeadCode Rest Assembler}
-         [] switchOnTerm(R HT) then
-            %--** it is not checked that
-            %     -- VarL == HT.1
-            %     -- the first argument to weakDet == R
-            %     -- the branch after the weakDet branches to the switchOnTerm
-            case Rest of lbl(VarL)|weakDet(_ NLiveRegs)|branch(_)|Rest1 then
-               ht(ElseL onVar(!VarL)|Cases) = HT
-            in
-               case {Length Cases} < 6 andthen {AllOnScalar Cases} then
-                  case Cases
-                  of [onScalar(true TrueL) onScalar(false FalseL)] then
-                     {Assembler
-                      append(testBool(R TrueL FalseL ElseL NLiveRegs))}
-                  elseof [onScalar(false FalseL) onScalar(true TrueL)] then
-                     {Assembler
-                      append(testBool(R TrueL FalseL ElseL NLiveRegs))}
-                  else
-                     {OnScalarsToTests Cases R ElseL NLiveRegs Assembler}
-                  end
-                  {EliminateDeadCode Rest1 Assembler}
+         [] match(R HT NLiveRegs) then ht(ElseL Cases) = HT in
+            case {Length Cases} < 6 andthen {AllOnScalar Cases} then
+               case Cases of [onScalar(true TrueL) onScalar(false FalseL)] then
+                  {Assembler
+                   append(testBool(R TrueL FalseL ElseL NLiveRegs))}
+               elseof [onScalar(false FalseL) onScalar(true TrueL)] then
+                  {Assembler
+                   append(testBool(R TrueL FalseL ElseL NLiveRegs))}
                else
-                  {Assembler append(I1)}
-                  {EliminateDeadCode Rest Assembler}
+                  {OnScalarsToTests Cases R ElseL NLiveRegs Assembler}
                end
             else
                {Assembler append(I1)}
-               {EliminateDeadCode Rest Assembler}
             end
+            {EliminateDeadCode Rest Assembler}
          [] getVariable(R1) then
             case Rest of getVariable(R2)|Rest then
                {Assembler append(getVarVar(R1 R2))}

@@ -15,7 +15,8 @@ FDLOCAL = \
         zebra grocery pythagoras safe schur multiply \
         tiling srat students hubert pigeon permutation \
         kalotan knights houses warehouse bridge_noterm \
-        queens
+        queens mapcoloring magicsquare magicsequence \
+        photo
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

@@ -136,7 +136,7 @@ in
             import OS Open
             export Args Exit
             body
-               Args = {ArgParser OS Open}
+               Args = {ArgParser Open OS}
                Exit = {`Builtin` shutdown 1}
             end
 

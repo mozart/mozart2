@@ -47,7 +47,6 @@ local
    PrintDepth    = 3 % output of analysed structure
 
    VS2S = VirtualString.toString
-   VS2A = VirtualString.toAtom
    IsVS = IsVirtualString
    Partition = List.partition
    FSClone = {`Builtin` fsClone 2}
@@ -64,11 +63,6 @@ local
 
    fun {LabelToVS X}
       case X=='#' then "#" else X end
-   end
-
-   fun {OzValueToVS X}
-      P={System.get errors} in
-      {System.valueToVirtualString X P.depth P.width}
    end
 
 % assumes privacy of the following feature names

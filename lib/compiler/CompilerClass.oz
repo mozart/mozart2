@@ -804,11 +804,8 @@ in
             [] getDefines(?Xs) then skip
             [] getSwitch(SwitchName ?B) then skip
             [] setSwitch(SwitchName B) then skip
-%--** the old compiler cannot compile this correctly?!
-%--**       [] pushSwitches() then skip
-%--**       [] popSwitches() then skip
-            [] pushSwitches then skip
-            [] popSwitches then skip
+            [] pushSwitches() then skip
+            [] popSwitches() then skip
             [] getMaxNumberOfErrors(?N) then skip
             [] setMaxNumberOfErrors(N) then skip
             [] addToEnv(PrintName Value) then skip

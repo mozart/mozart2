@@ -326,6 +326,10 @@ in
             end
          elsecase {IsCell V}
          then {OzTypes.encode cell nil}
+         elsecase {IsSpace V}
+         then {OzTypes.encode space nil}
+         elsecase {IsThread V}
+         then {OzTypes.encode 'thread' nil}
          elsecase {IsChunk V}
          then
             case {IsArray V}
@@ -347,10 +351,6 @@ in
                                         'object' 'lock' port
                                         bitArray]}
             end
-         elsecase {IsSpace V}
-         then {OzTypes.encode space nil}
-         elsecase {IsThread V}
-         then {OzTypes.encode 'thread' nil}
          else {OzTypes.encode value [int float record procedure
                                      cell chunk space 'thread']}
          end

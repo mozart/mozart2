@@ -3,7 +3,7 @@
 %%%   Kostantin Popov (popov@ps.uni-sb.de)
 %%%
 %%% Contributors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Konstantin Popov, 1997

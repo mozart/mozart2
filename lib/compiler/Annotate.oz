@@ -335,7 +335,7 @@ local
          {ForAll @localVars proc {$ V} {V setUse(unused)} end}
          {@pattern markFirst(WarnFormals Rep)}
          {MarkFirstList @statements WarnFormals Rep}
-         {CheckUses @localVars 'local variable' Rep}
+         {CheckUses @localVars 'pattern variable' Rep}
          NewUses = {GetUses GlobalVars}
          {SetUses GlobalVars OldUses}
       end

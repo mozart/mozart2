@@ -507,9 +507,9 @@ local
                   case NewCoord of pos(_ _ _) then VS in
                      VS = {Error.extendedVSToVS NewCoord}
                      {@reporter tell(info('%%% processing query in '#
-                                          VS#'\n' NewCoord))}
+                                          VS#' ...\n' NewCoord))}
                   else
-                     {@reporter tell(info('%%% processing query'))}
+                     {@reporter tell(info('%%% processing query ...\n'))}
                   end
                end
             else skip

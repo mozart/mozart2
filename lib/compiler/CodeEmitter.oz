@@ -2094,6 +2094,13 @@ in
          [] vTestBool(_ _ Addr1 Addr2 Addr3 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Addr3 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
+         [] vTestBuiltin(_ _ Regs Addr1 Addr2 Cont InitsRS) then
+            if {Member Reg Regs} then
+               Emitter, AllocateAnyTemp(Reg ?R)
+            else Addrs in
+               Addrs = [Addr1 Addr2 Cont]
+               Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)
+            end
          [] vTestNumber(_ _ _ Addr1 Addr2 _ Cont InitsRS) then Addrs in
             Addrs = [Addr1 Addr2 Cont]
             Emitter, PredictRegForInits(Reg InitsRS Addrs ?R)

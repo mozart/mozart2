@@ -292,8 +292,7 @@ class CodeStore from Emitter
             {BitArray.disj RS RS1}
             {BitArray.disj RS RS2}
             {BitArray.disj RS RS3}
-         [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then
-            RS1 RS2 RS3 in
+         [] vTestBool(_ Reg Addr1 Addr2 Addr3 _ _ InitsRS) then RS1 RS2 RS3 in
             CodeStore, ComputeOccs(Addr1 ?RS1)
             CodeStore, ComputeOccs(Addr2 ?RS2)
             CodeStore, ComputeOccs(Addr3 ?RS3)
@@ -305,6 +304,15 @@ class CodeStore from Emitter
             {BitArray.disj RS RS1}
             {BitArray.disj RS RS2}
             {BitArray.disj RS RS3}
+         [] vTestBuiltin(_ _ Regs Addr1 Addr2 _ InitsRS) then RS1 RS2 in
+            CodeStore, ComputeOccs(Addr1 ?RS1)
+            CodeStore, ComputeOccs(Addr2 ?RS2)
+            InitsRS = {BitArray.clone RS1}
+            {BitArray.disj InitsRS RS2}
+            {BitArray.conj InitsRS RS}
+            CodeStore, RegOccs(Regs RS)
+            {BitArray.disj RS RS1}
+            {BitArray.disj RS RS2}
          [] vMatch(_ Reg Addr VHashTableEntries _ _ InitsRS) then
             RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
@@ -460,6 +468,9 @@ class CodeStore from Emitter
             CodeStore, AddRegOccs(Addr1 AddRS2)
             CodeStore, AddRegOccs(Addr2 AddRS2)
             CodeStore, AddRegOccs(Addr3 AddRS2)
+         [] vTestBuiltin(_ _ _ Addr1 Addr2 _ _) then
+            CodeStore, AddRegOccs(Addr1 AddRS2)
+            CodeStore, AddRegOccs(Addr2 AddRS2)
          [] vMatch(_ _ Addr VHashTableEntries _ _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
             {ForAll VHashTableEntries

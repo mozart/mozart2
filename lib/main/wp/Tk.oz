@@ -112,7 +112,7 @@ export
 
 prepare
 
-   VoidEntry = {NewName}
+   Void = {NewName}
 
    class Counter
       prop locking final
@@ -355,14 +355,15 @@ prepare
       end
    end
 
-define
-
    TkString = string(toInt:        TkStringToInt
                      toFloat:      TkStringToFloat
                      toListString: TkStringToListString
                      toListAtom:   TkStringToListAtom
                      toListInt:    TkStringToListInt
                      toListFloat:  TkStringToListFloat)
+
+
+define
 
    %%
    %% Sending tickles
@@ -490,7 +491,7 @@ define
                Id     = {S2I {Stok Irr  & $ ?Irr1}}
                NoArgs = {S2I {Stok Irr1 & $ _}}
             in
-               case {Dictionary.condGet TkDict Id VoidEntry}
+               case {Dictionary.condGet TkDict Id Void}
                of O # M # Ps then
                   {InvokeAction O#M {GetArgs NoArgs Ps} NoArgs true}
                [] P # Ps then
@@ -763,7 +764,8 @@ define
             {DefineCommand Action Args ?ActionId ?Command}
             {AddSlave self.TclSlaves ActionId _}
             {TkSend o(self configure command: v(Command))}
-         else {TkSend o(self configure command:'')}
+         else
+            {TkSend o(self configure command:'')}
          end
       end
 
@@ -1087,59 +1089,28 @@ define
    %%
    %% Tcl/Tk variables
    %%
-   class TkVariable
+   class TkVariable from ReturnClass
       prop native
       feat !TclName
 
-      meth tkInit(...) = Message
+      meth tkInit(InitValue <= Void)
          MyTclName   = {GenVarName}
          ThisTclName = self.TclName
       in
          if {IsDet ThisTclName} then
-            {Exception.raiseError tk(alreadyInitialized self Message)}
+            {Exception.raiseError tk(alreadyInitialized self tkInit)}
          end
-         case {Width Message}
-         of 0 then skip
-         [] 1 then {TkSend set(v(MyTclName) Message.1)}
+         if InitValue\=Void then
+            {TkSend set(v(MyTclName) InitValue)}
          end
          ThisTclName = MyTclName
       end
-
       meth tkSet(X)
          {TkSend set(self X)}
       end
-
-      meth tkReturn($)
-         {TkReturn set(self) TkStringToString}
+      meth !TkReturnMethod(M C)
+         M.1={TkReturn set(self) C}
       end
-      meth tkReturnString($)
-         {TkReturn set(self) TkStringToString}
-      end
-      meth tkReturnAtom($)
-         {TkReturn set(self) TkStringToAtom}
-      end
-      meth tkReturnInt($)
-         {TkReturn set(self) TkStringToInt}
-      end
-      meth tkReturnFloat($)
-         {TkReturn set(self) TkStringToFloat}
-      end
-      meth tkReturnList($)
-         {TkReturn set(self) TkStringToListString}
-      end
-      meth tkReturnListString($)
-         {TkReturn set(self) TkStringToListString}
-      end
-      meth tkReturnListAtom($)
-         {TkReturn set(self) TkStringToListAtom}
-      end
-      meth tkReturnListInt($)
-         {TkReturn set(self) TkStringToListInt}
-      end
-      meth tkReturnListFloat($)
-         {TkReturn set(self) TkStringToListFloat}
-      end
-
    end
 
 

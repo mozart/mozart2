@@ -134,36 +134,7 @@ define(getReg,`ifelse($1,W,W,$1,R,R,)')
 define(registers,`getReg($1)`'getReg($2)`'getReg($3)')
 
 changequote([,])
-define(instruction,[ifelse(registers($2,$3,$4),R,'$1':
-   f(x: {GetOpcode '$1X'}
-     y: {GetOpcode '$1Y'}
-     g: {GetOpcode '$1G'}),
-                registers($2,$3,$4),W,'$1':
-   f(x: {GetOpcode '$1X'}
-     y: {GetOpcode '$1Y'}),
-                registers($2,$3,$4),RR,'$1':
-   f(x: f(x: {GetOpcode '$1XX'}
-          y: {GetOpcode '$1XY'}
-          g: {GetOpcode '$1XG'})
-     y: f(x: {GetOpcode '$1YX'}
-          y: {GetOpcode '$1YY'}
-          g: {GetOpcode '$1YG'})
-     g: f(x: {GetOpcode '$1GX'}
-          y: {GetOpcode '$1GY'}
-          g: {GetOpcode '$1GG'})),
-                registers($2,$3,$4),RW,'$1':
-   f(x: f(x: {GetOpcode '$1XX'}
-          y: {GetOpcode '$1XY'})
-     y: f(x: {GetOpcode '$1YX'}
-          y: {GetOpcode '$1YY'})
-     g: f(x: {GetOpcode '$1GX'}
-          y: {GetOpcode '$1GY'})),
-                registers($2,$3,$4),WW,'$1':
-   f(x: f(x: {GetOpcode '$1XX'}
-          y: {GetOpcode '$1XY'})
-     y: f(x: {GetOpcode '$1YX'}
-          y: {GetOpcode '$1YY'})),
-                '$1': {GetOpcode '$1'})])
+define(instruction,['$1': {GetOpcode '$1'}])
 changequote(`,')
 
 Opcodes =
@@ -298,11 +269,15 @@ proc {StoreInstr Instr CodeBlock LabelDict}
    [] 'setVariable'(X1=y(_)) then
       {StoreOpcode CodeBlock Opcodes.'setVariableY'}
       {StoreYRegisterIndex CodeBlock X1}
-   [] 'setValue'(X1) then
-      Opcode = Opcodes.'setValue'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'setValue'(X1=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'setValueX'}
+      {StoreXRegisterIndex CodeBlock X1}
+   [] 'setValue'(X1=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'setValueY'}
+      {StoreYRegisterIndex CodeBlock X1}
+   [] 'setValue'(X1=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'setValueG'}
+      {StoreGRegisterIndex CodeBlock X1}
    [] 'setConstant'(X1) then
       {StoreOpcode CodeBlock Opcodes.'setConstant'}
       {StoreConstant CodeBlock X1}
@@ -312,18 +287,30 @@ proc {StoreInstr Instr CodeBlock LabelDict}
    [] 'setVoid'(X1) then
       {StoreOpcode CodeBlock Opcodes.'setVoid'}
       {StoreInt CodeBlock X1}
-   [] 'getRecord'(X1 X2 X3) then
-      Opcode = Opcodes.'getRecord'.{Label X3}
-   in
-      {StoreOpcode CodeBlock Opcode}
+   [] 'getRecord'(X1 X2 X3=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getRecordX'}
       {StoreLiteral CodeBlock X1}
       {StoreRecordArity CodeBlock X2}
-      {StoreRegister CodeBlock X3}
-   [] 'getList'(X1) then
-      Opcode = Opcodes.'getList'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+      {StoreXRegisterIndex CodeBlock X3}
+   [] 'getRecord'(X1 X2 X3=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getRecordY'}
+      {StoreLiteral CodeBlock X1}
+      {StoreRecordArity CodeBlock X2}
+      {StoreYRegisterIndex CodeBlock X3}
+   [] 'getRecord'(X1 X2 X3=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getRecordG'}
+      {StoreLiteral CodeBlock X1}
+      {StoreRecordArity CodeBlock X2}
+      {StoreGRegisterIndex CodeBlock X3}
+   [] 'getList'(X1=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getListX'}
+      {StoreXRegisterIndex CodeBlock X1}
+   [] 'getList'(X1=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getListY'}
+      {StoreYRegisterIndex CodeBlock X1}
+   [] 'getList'(X1=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getListG'}
+      {StoreGRegisterIndex CodeBlock X1}
    [] 'getListValVar'(X1 X2 X3) then
       {StoreOpcode CodeBlock Opcodes.'getListValVarX'}
       {StoreXRegisterIndex CodeBlock X1}
@@ -335,11 +322,15 @@ proc {StoreInstr Instr CodeBlock LabelDict}
    [] 'unifyVariable'(X1=y(_)) then
       {StoreOpcode CodeBlock Opcodes.'unifyVariableY'}
       {StoreYRegisterIndex CodeBlock X1}
-   [] 'unifyValue'(X1) then
-      Opcode = Opcodes.'unifyValue'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'unifyValue'(X1=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'unifyValueX'}
+      {StoreXRegisterIndex CodeBlock X1}
+   [] 'unifyValue'(X1=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'unifyValueY'}
+      {StoreYRegisterIndex CodeBlock X1}
+   [] 'unifyValue'(X1=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'unifyValueG'}
+      {StoreGRegisterIndex CodeBlock X1}
    [] 'unifyValVar'(X1=x(_) X2=x(_)) then
       {StoreOpcode CodeBlock Opcodes.'unifyValVarXX'}
       {StoreXRegisterIndex CodeBlock X1}
@@ -373,18 +364,30 @@ proc {StoreInstr Instr CodeBlock LabelDict}
    [] 'unifyVoid'(X1) then
       {StoreOpcode CodeBlock Opcodes.'unifyVoid'}
       {StoreInt CodeBlock X1}
-   [] 'getLiteral'(X1 X2) then
-      Opcode = Opcodes.'getLiteral'.{Label X2}
-   in
-      {StoreOpcode CodeBlock Opcode}
+   [] 'getLiteral'(X1 X2=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getLiteralX'}
       {StoreLiteral CodeBlock X1}
-      {StoreRegister CodeBlock X2}
-   [] 'getNumber'(X1 X2) then
-      Opcode = Opcodes.'getNumber'.{Label X2}
-   in
-      {StoreOpcode CodeBlock Opcode}
+      {StoreXRegisterIndex CodeBlock X2}
+   [] 'getLiteral'(X1 X2=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getLiteralY'}
+      {StoreLiteral CodeBlock X1}
+      {StoreYRegisterIndex CodeBlock X2}
+   [] 'getLiteral'(X1 X2=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getLiteralG'}
+      {StoreLiteral CodeBlock X1}
+      {StoreGRegisterIndex CodeBlock X2}
+   [] 'getNumber'(X1 X2=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getNumberX'}
       {StoreNumber CodeBlock X1}
-      {StoreRegister CodeBlock X2}
+      {StoreXRegisterIndex CodeBlock X2}
+   [] 'getNumber'(X1 X2=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getNumberY'}
+      {StoreNumber CodeBlock X1}
+      {StoreYRegisterIndex CodeBlock X2}
+   [] 'getNumber'(X1 X2=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getNumberG'}
+      {StoreNumber CodeBlock X1}
+      {StoreGRegisterIndex CodeBlock X2}
    [] 'allocateL'(X1) then
       {StoreOpcode CodeBlock Opcodes.'allocateL'}
       {StoreInt CodeBlock X1}
@@ -438,11 +441,17 @@ proc {StoreInstr Instr CodeBlock LabelDict}
       {StoreOpcode CodeBlock Opcodes.'callGlobal'}
       {StoreGRegisterIndex CodeBlock X1}
       {StoreInt CodeBlock X2}
-   [] 'call'(X1 X2) then
-      Opcode = Opcodes.'call'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'call'(X1=x(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'callX'}
+      {StoreXRegisterIndex CodeBlock X1}
+      {StoreInt CodeBlock X2}
+   [] 'call'(X1=y(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'callY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreInt CodeBlock X2}
+   [] 'call'(X1=g(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'callG'}
+      {StoreGRegisterIndex CodeBlock X1}
       {StoreInt CodeBlock X2}
    [] 'tailCall'(X1=x(_) X2) then
       {StoreOpcode CodeBlock Opcodes.'tailCallX'}
@@ -460,20 +469,40 @@ proc {StoreInstr Instr CodeBlock LabelDict}
       {StoreOpcode CodeBlock Opcodes.'callProcedureRef'}
       {StoreProcedureRef CodeBlock X1}
       {StoreInt CodeBlock X2}
-   [] 'sendMsg'(X1 X2 X3 X4) then
-      Opcode = Opcodes.'sendMsg'.{Label X2}
-   in
-      {StoreOpcode CodeBlock Opcode}
+   [] 'sendMsg'(X1 X2=x(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'sendMsgX'}
       {StoreLiteral CodeBlock X1}
-      {StoreRegister CodeBlock X2}
+      {StoreXRegisterIndex CodeBlock X2}
       {StoreRecordArity CodeBlock X3}
       {StoreCache CodeBlock X4}
-   [] 'tailSendMsg'(X1 X2 X3 X4) then
-      Opcode = Opcodes.'tailSendMsg'.{Label X2}
-   in
-      {StoreOpcode CodeBlock Opcode}
+   [] 'sendMsg'(X1 X2=y(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'sendMsgY'}
       {StoreLiteral CodeBlock X1}
-      {StoreRegister CodeBlock X2}
+      {StoreYRegisterIndex CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreCache CodeBlock X4}
+   [] 'sendMsg'(X1 X2=g(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'sendMsgG'}
+      {StoreLiteral CodeBlock X1}
+      {StoreGRegisterIndex CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreCache CodeBlock X4}
+   [] 'tailSendMsg'(X1 X2=x(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'tailSendMsgX'}
+      {StoreLiteral CodeBlock X1}
+      {StoreXRegisterIndex CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreCache CodeBlock X4}
+   [] 'tailSendMsg'(X1 X2=y(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'tailSendMsgY'}
+      {StoreLiteral CodeBlock X1}
+      {StoreYRegisterIndex CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreCache CodeBlock X4}
+   [] 'tailSendMsg'(X1 X2=g(_) X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'tailSendMsgG'}
+      {StoreLiteral CodeBlock X1}
+      {StoreGRegisterIndex CodeBlock X2}
       {StoreRecordArity CodeBlock X3}
       {StoreCache CodeBlock X4}
    [] 'getSelf'(X1) then
@@ -506,56 +535,110 @@ proc {StoreInstr Instr CodeBlock LabelDict}
       {StoreOpcode CodeBlock Opcodes.'popEx'}
    [] 'return' then
       {StoreOpcode CodeBlock Opcodes.'return'}
-   [] 'getReturn'(X1) then
-      Opcode = Opcodes.'getReturn'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
-   [] 'funReturn'(X1) then
-      Opcode = Opcodes.'funReturn'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
-   [] 'testLiteral'(X1 X2 X3) then
-      Opcode = Opcodes.'testLiteral'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'getReturn'(X1=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getReturnX'}
+      {StoreXRegisterIndex CodeBlock X1}
+   [] 'getReturn'(X1=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getReturnY'}
+      {StoreYRegisterIndex CodeBlock X1}
+   [] 'getReturn'(X1=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'getReturnG'}
+      {StoreGRegisterIndex CodeBlock X1}
+   [] 'funReturn'(X1=x(_)) then
+      {StoreOpcode CodeBlock Opcodes.'funReturnX'}
+      {StoreXRegisterIndex CodeBlock X1}
+   [] 'funReturn'(X1=y(_)) then
+      {StoreOpcode CodeBlock Opcodes.'funReturnY'}
+      {StoreYRegisterIndex CodeBlock X1}
+   [] 'funReturn'(X1=g(_)) then
+      {StoreOpcode CodeBlock Opcodes.'funReturnG'}
+      {StoreGRegisterIndex CodeBlock X1}
+   [] 'testLiteral'(X1=x(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testLiteralX'}
+      {StoreXRegisterIndex CodeBlock X1}
       {StoreLiteral CodeBlock X2}
       {StoreLabel CodeBlock X3 LabelDict}
-   [] 'testNumber'(X1 X2 X3) then
-      Opcode = Opcodes.'testNumber'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'testLiteral'(X1=y(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testLiteralY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreLiteral CodeBlock X2}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'testLiteral'(X1=g(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testLiteralG'}
+      {StoreGRegisterIndex CodeBlock X1}
+      {StoreLiteral CodeBlock X2}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'testNumber'(X1=x(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testNumberX'}
+      {StoreXRegisterIndex CodeBlock X1}
       {StoreNumber CodeBlock X2}
       {StoreLabel CodeBlock X3 LabelDict}
-   [] 'testRecord'(X1 X2 X3 X4) then
-      Opcode = Opcodes.'testRecord'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'testNumber'(X1=y(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testNumberY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreNumber CodeBlock X2}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'testNumber'(X1=g(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testNumberG'}
+      {StoreGRegisterIndex CodeBlock X1}
+      {StoreNumber CodeBlock X2}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'testRecord'(X1=x(_) X2 X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'testRecordX'}
+      {StoreXRegisterIndex CodeBlock X1}
       {StoreLiteral CodeBlock X2}
       {StoreRecordArity CodeBlock X3}
       {StoreLabel CodeBlock X4 LabelDict}
-   [] 'testList'(X1 X2) then
-      Opcode = Opcodes.'testList'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'testRecord'(X1=y(_) X2 X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'testRecordY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreLiteral CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreLabel CodeBlock X4 LabelDict}
+   [] 'testRecord'(X1=g(_) X2 X3 X4) then
+      {StoreOpcode CodeBlock Opcodes.'testRecordG'}
+      {StoreGRegisterIndex CodeBlock X1}
+      {StoreLiteral CodeBlock X2}
+      {StoreRecordArity CodeBlock X3}
+      {StoreLabel CodeBlock X4 LabelDict}
+   [] 'testList'(X1=x(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'testListX'}
+      {StoreXRegisterIndex CodeBlock X1}
       {StoreLabel CodeBlock X2 LabelDict}
-   [] 'testBool'(X1 X2 X3) then
-      Opcode = Opcodes.'testBool'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'testList'(X1=y(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'testListY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreLabel CodeBlock X2 LabelDict}
+   [] 'testList'(X1=g(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'testListG'}
+      {StoreGRegisterIndex CodeBlock X1}
+      {StoreLabel CodeBlock X2 LabelDict}
+   [] 'testBool'(X1=x(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testBoolX'}
+      {StoreXRegisterIndex CodeBlock X1}
       {StoreLabel CodeBlock X2 LabelDict}
       {StoreLabel CodeBlock X3 LabelDict}
-   [] 'match'(X1 X2) then
-      Opcode = Opcodes.'match'.{Label X1}
-   in
-      {StoreOpcode CodeBlock Opcode}
-      {StoreRegister CodeBlock X1}
+   [] 'testBool'(X1=y(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testBoolY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreLabel CodeBlock X2 LabelDict}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'testBool'(X1=g(_) X2 X3) then
+      {StoreOpcode CodeBlock Opcodes.'testBoolG'}
+      {StoreGRegisterIndex CodeBlock X1}
+      {StoreLabel CodeBlock X2 LabelDict}
+      {StoreLabel CodeBlock X3 LabelDict}
+   [] 'match'(X1=x(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'matchX'}
+      {StoreXRegisterIndex CodeBlock X1}
+      {StoreHashTableRef CodeBlock X2 LabelDict}
+   [] 'match'(X1=y(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'matchY'}
+      {StoreYRegisterIndex CodeBlock X1}
+      {StoreHashTableRef CodeBlock X2 LabelDict}
+   [] 'match'(X1=g(_) X2) then
+      {StoreOpcode CodeBlock Opcodes.'matchG'}
+      {StoreGRegisterIndex CodeBlock X1}
       {StoreHashTableRef CodeBlock X2 LabelDict}
    [] 'getVariable'(X1=x(_)) then
       {StoreOpcode CodeBlock Opcodes.'getVariableX'}

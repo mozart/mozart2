@@ -234,6 +234,37 @@ prepare
    %%
    IsSpace      = Boot_Space.is
 
+\ifdef NEWINHERITANCE
+
+   %%
+   %% Object
+   %%
+   IsObject      = Boot_Object.is
+   New           = Boot_Object.new
+   %% Properties
+   `ooLocking`   = {NewUniqueName 'ooLocking'}
+   `ooNative`    = {NewUniqueName 'ooNative'}
+   %% Methods
+   `ooMeth`      = {NewUniqueName 'ooMeth'}
+   `ooFastMeth`  = {NewUniqueName 'ooFastMeth'}
+   `ooDefaults`  = {NewUniqueName 'ooDefaults'}
+   %% Attributes
+   `ooAttr`      = {NewUniqueName 'ooAttr'}
+   %% Features
+   `ooFreeFlag`  = {NewUniqueName 'ooFreeFlag'}
+   `ooUnFreeFeat`= {NewUniqueName 'ooUnFreeFeat'}
+   `ooFreeFeatR` = {NewUniqueName 'ooFreeFeatR'}
+   %% Inheritance related
+   `ooParents`   = {NewUniqueName 'ooParents'}
+   `ooMethSrc`   = {NewUniqueName 'ooMethSrc'}
+   `ooAttrSrc`   = {NewUniqueName 'ooAttrSrc'}
+   `ooFeatSrc`   = {NewUniqueName 'ooFeatSrc'}
+   %% Other
+   `ooPrintName` = {NewUniqueName 'ooPrintName'}
+   `ooFallback`  = {NewUniqueName 'ooFallback'}
+
+\else
+
    %%
    %% Object
    %%
@@ -255,6 +286,8 @@ prepare
    `ooDefaults`  = {NewUniqueName 'ooDefaults'}
    `ooFallback`  = {NewUniqueName 'ooFallback'}
    `ooId`        = {NewUniqueName 'ooId'}
+
+\endif
 
    %%
    %% Class

@@ -106,6 +106,9 @@ in
 
    Class = 'class'(is:           IsClass
                    get:          GetClass
+                   getPrintName: fun {$ C}
+                                    C.`ooPrintName`
+                                 end
                    methodNames:  MethodNames
                    attrNames:    AttrNames
                    featNames:    FeatNames

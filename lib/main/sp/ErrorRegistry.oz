@@ -478,6 +478,129 @@ in
       %% objects
       %%
 
+\ifdef NEWINHERITANCE
+
+      local
+         fun {FormatConf FCs}
+            case FCs of nil then nil
+            [] F#Cs|FCr then
+               hint(m:oz(F)#' defined by: '#oz({Map Cs Class.getPrintName}))|{FormatConf FCr}
+            end
+         end
+      in
+         fun {ObjectFormatter Exc}
+            E = {Error.dispatch Exc}
+            T = 'error in object system'
+         in
+
+            case E
+            of object('<-' O A V) then
+               {Error.format
+                T 'Assignment to unavailable attribute'
+                [hint(l:'In statement' m:oz(A) # ' <- ' # oz(V))
+                 hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
+                Exc}
+            elseof object('@' O A) then
+               {Error.format
+                T 'Access of unavailable attribute'
+                [hint(l:'In statement' m:'_ = @' # oz(A))
+                 hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
+                Exc}
+            elseof object(ooExch O A V) then
+               {Error.format
+                T 'Exchange of unavailable attribute'
+                [hint(l:'In statement' m:'_ = ' # oz(A) # ' <- ' # oz(V))
+                 hint(l:'Attribute' m:oz(A))
+                 hint(l:'Expected one of' m:oz({Class.attrNames {Class.get O}}))]
+                Exc}
+            elseof object(conflicts N 'meth':Ms 'attr':As 'feat':Fs) then
+               MMs = case {FormatConf Ms} of nil then nil
+                     [] M|Mr then {AdjoinAt M l 'Methods'}|Mr
+                     end
+               MAs = case {FormatConf As} of nil then nil
+                     [] A|Ar then {AdjoinAt A l 'Attributes'}|Ar
+                     end
+               MFs = case {FormatConf Fs} of nil then nil
+                     [] F|Fr then {AdjoinAt F l 'Features'}|Fr
+                     end
+            in
+               {Error.format T
+                'Unresolved conflicts in class definition'
+                (hint(l:'Class definition' m:N)|
+                 {Append MMs {Append MAs MFs}}) Exc}
+            elseof object(lookup C R) then
+               L1 = hint(l:'Class'   m:oz(C))
+               L2 = hint(l:'Message' m:oz(R))
+               H  = {Error.formatHint 'Method undefined and no otherwise method given'}
+            in
+               {Error.format T
+                'Method lookup in message sending'
+                L1|L2|H
+                Exc}
+            elseof object(final CParent CChild) then
+               L2 = hint(l:'Final class used as parent' m:CParent)
+               L3 = hint(l:'Class to be created' m:CChild)
+               H  = {Error.formatHint 'remove prop final from parent class or change inheritance relation'}
+            in
+               {Error.format T
+                'Inheritance from final class'
+                L2|L3|H
+                Exc}
+            elseof object(inheritanceFromNonClass
+                          CParent CChild) then
+               {Error.format T
+                'Inheritance from non-class'
+                [hint(l:'Non-class used as parent' m:oz(CParent))
+                 hint(l:'Class to be created' m:CChild)]
+                Exc}
+
+            elseof object(arityMismatchDefaultMethod L)
+            then
+               {Error.format T
+                'Arity mismatch for method with defaults'
+                [hint(l:'Unexpected feature' m:oz(L))]
+                Exc}
+
+            elseof object(slaveNotFree)
+            then
+
+               {Error.format T
+                'Method becomeSlave'
+                [hint(l:'Slave is not free')]
+                Exc}
+
+            elseof object(slaveAlreadyFree) then
+
+               {Error.format T
+                'Method free'
+                [hint(l:'Slave is already free')]
+                Exc}
+
+            elseof object(locking O) then
+               {Error.format T
+                'Attempt to lock unlockable object'
+                [hint(l:'Object' m:oz(O))]
+                Exc}
+
+            elseof object(fromFinalClass C O) then
+               {Error.format T 'Final class not allowed'
+                [hint(l:'Final class' m:C)
+                 hint(l:'Operation'   m:O)]
+                Exc}
+
+            elseof object(nonLiteralMethod L) then
+               {Error.format T 'Method label is not a literal'
+                [hint(l:'Method' m:L)]
+                Exc}
+
+            else
+               {Error.formatGeneric T Exc}
+            end
+         end
+      end
+
+
+\else
       fun {ObjectFormatter Exc}
          E = {Error.dispatch Exc}
          T = 'error in object system'
@@ -586,7 +709,7 @@ in
             {Error.formatGeneric T Exc}
          end
       end
-
+\endif
       %%
       %% failure
       %%

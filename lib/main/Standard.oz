@@ -62,3 +62,4 @@
 \insert Standard/Thread
 \insert Standard/Time
 \insert Standard/Lazy
+\insert Standard/Promise

@@ -579,20 +579,14 @@ in
                    {File write(vs: VS)}
                    {File close()}
                 else
-                   case {Access Mode} of dump then Exceptionless Done in
-                      thread
-                         try
-                            {Pickle.save R OFN}
-                            Exceptionless = true
-                         finally
-                            Done = unit
-                         end
-                      end
-                      {Wait Done}
-                      if {IsFree Exceptionless} then
+                   case {Access Mode} of dump then
+                      try
+                         {Pickle.save R OFN}
+                      catch E then
+                         {Error.printExc E}
                          raise error end
                       end
-                   [] syslet then Exceptionless Done in
+                   [] syslet then TmpFileName in
                       if {Functor.is R} then skip
                       else
                          {Report
@@ -601,38 +595,33 @@ in
                                 items: [hint(l: 'Value found'
                                              m: oz(R))])}
                       end
-                      thread TmpFileName in
-                         TmpFileName = {OS.tmpnam}
-                         try File VS in
-                            File = {New Open.file
-                                    init(name: OFN
-                                         flags: [write create truncate])}
-                            VS = case {Access SysletPrefix} of unit then
-                                    DefaultSysletPrefix
-                                 elseof S then S
-                                 end
-                            {File write(vs: VS)}
-                            {File close()}
-                            {Pickle.save R TmpFileName}
-                            case {OS.system
-                                  'cat '#TmpFileName#' >> '#OFN#'; '#
-                                  'chmod +x '#OFN}
-                            of 0 then skip
-                            elseof N then
-                               {Report
-                                error(kind: BatchCompilationError
-                                      msg: 'writing syslet failed'
-                                      items: [hint(l: 'Error code' m: N)])}
-                            end
-                            Exceptionless = true
-                         finally
-                            {OS.unlink TmpFileName}
-                            Done = unit
+                      TmpFileName = {OS.tmpnam}
+                      try File VS in
+                         File = {New Open.file
+                                 init(name: OFN
+                                      flags: [write create truncate])}
+                         VS = case {Access SysletPrefix} of unit then
+                                 DefaultSysletPrefix
+                              elseof S then S
+                              end
+                         {File write(vs: VS)}
+                         {File close()}
+                         {Pickle.save R TmpFileName}
+                         case {OS.system
+                               'cat '#TmpFileName#' >> '#OFN#'; '#
+                               'chmod +x '#OFN}
+                         of 0 then skip
+                         elseof N then
+                            {Report
+                             error(kind: BatchCompilationError
+                                   msg: 'writing syslet failed'
+                                   items: [hint(l: 'Error code' m: N)])}
                          end
-                      end
-                      {Wait Done}
-                      if {IsFree Exceptionless} then
+                      catch E then
+                         {Error.printExc E}
                          raise error end
+                      finally
+                         {OS.unlink TmpFileName}
                       end
                    [] feedtoemulator then skip
                    else File in   % core, outputcode, ozma

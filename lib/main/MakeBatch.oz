@@ -22,15 +22,15 @@
 functor prop once
 import
    Module
-   Property.{get}
-   System.{printInfo printError}
-   Error.{msg formatLine}
-   OS.{putEnv getEnv system unlink tmpnam}
-   Open.file
-   Pickle.save
-   Compiler.{engine quietInterface}
-   Syslet.{spec args exit}
-body
+   Property(get)
+   System(printInfo printError)
+   Error(msg formatLine printExc)
+   OS(putEnv getEnv system unlink tmpnam)
+   Open(file)
+   Pickle(save)
+   Compiler(engine quietInterface)
+   Syslet(spec args exit)
+define
    Syslet.spec = plain
    \insert BatchCompile
    {Syslet.exit {BatchCompile Syslet.args}}

@@ -56,9 +56,6 @@ in
                     setThisPriority:    SetThisPriority
                     getThisPriority:    GetThisPriority
                     this:               ThisThread
-                    setId:              {`Builtin` 'Thread.setId'           2}
-                    id:                 {`Builtin` 'Thread.id'              2}
-                    parentId:           {`Builtin` 'Thread.parentId'        2}
                     is:                 IsThread
                     suspend:            {`Builtin` 'Thread.suspend'         1}
                     resume:             {`Builtin` 'Thread.resume'          1}
@@ -70,12 +67,6 @@ in
                                         end
                     injectException:    {`Builtin` 'Thread.injectException' 2}
                     state:              {`Builtin` 'Thread.state'           2}
-                    isSuspended:        {`Builtin` 'Thread.isSuspended'     2}
-                    setRaiseOnBlock:    {`Builtin` 'Thread.setRaiseOnBlock' 2}
-                    getRaiseOnBlock:    {`Builtin` 'Thread.getRaiseOnBlock' 2}
-
-                    taskStack:          {`Builtin` 'Thread.taskStack'       4}
-                    frameVariables:     {`Builtin` 'Thread.frameVariables'  3}
-                    location:           {`Builtin` 'Thread.location'        2})
+                    isSuspended:        {`Builtin` 'Thread.isSuspended'     2})
 
 end

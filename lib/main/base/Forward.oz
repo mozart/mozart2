@@ -33,8 +33,8 @@ declare
 \endif
 in
 
-`Raise`      = {`Builtin` 'raise'      1}
-`RaiseError` = {`Builtin` 'raiseError' 1}
+`Raise`      = {`Builtin` 'Exception.raise'      1}
+`RaiseError` = {`Builtin` 'Exception.raiseError' 1}
 `record`     = {`Builtin` 'record'     3}
 
 local

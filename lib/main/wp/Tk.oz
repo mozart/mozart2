@@ -473,7 +473,6 @@ in
 
       %% Start reading wish's output
       thread
-         {Thread.setId {Thread.this} 2}
          {Thread.setThisPriority high}
          {TkReadLoop RetStream}
       end

@@ -684,8 +684,8 @@ local
          end
       end
 
-      proc {RaiseNYI _}
-         raise system(search(nyi)) end
+      proc {Dummy _}
+         skip
       end
 
    in
@@ -695,7 +695,7 @@ local
             locking
          attr
             RCD:     1
-            MyAgent: RaiseNYI
+            MyAgent: Dummy
 
          meth script(P ...) = M
             lock
@@ -771,7 +771,7 @@ local
          meth clear
             lock
                {@MyAgent stop}
-               MyAgent <- RaiseNYI
+               MyAgent <- Dummy
             end
          end
 
@@ -793,17 +793,13 @@ local
       {BestModule.bab P O 1 _}
    end
 
+   SearchBase = base(one:  SearchOne
+                     all:  SearchAll
+                     best: SearchBest)
+
 in
 
    functor $ prop once
-
-   import
-
-      Error.{formatGeneric
-             dispatch
-             format}
-
-      ErrorRegistry.{put}
 
    export
       one:    OneModule
@@ -812,29 +808,14 @@ in
       allP:   AllP
       best:   BestModule
       object: SearchObject
+      base:   SearchBase
 
       'SearchOne':  SearchOne
       'SearchAll':  SearchAll
       'SearchBest': SearchBest
    body
 
-      {ErrorRegistry.put
-
-       search
-
-       fun {$ Exc}
-          T = 'Error: Search'
-       in
-          case {Error.dispatch Exc}
-          of search(nyi) then
-             {Error.format T
-              'Object not yet initialized'
-              nil
-              Exc}
-          else
-             {Error.formatGeneric T Exc}
-          end
-      end}
+      skip
 
    end
 

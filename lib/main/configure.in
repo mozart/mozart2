@@ -56,7 +56,6 @@ AC_CHECK_PROGS(RMDIR, rmdir true)
 AC_CHECK_PROGS(ECHO, echo)
 AC_CHECK_PROGS(M4, gm4 m4)
 AC_CHECK_PROGS(TRUE, true)
-AC_CHECK_PROGS(PERL, perl, perl)
 
 SRCPATH=.:$srcdir
 AC_PATH_PROG(ENV2TYPE, env2type, , $SRCPATH)
@@ -79,23 +78,6 @@ else
 fi
 AC_SUBST(COMPILER_FUN)
 AC_SUBST(COMPILER_BIG)
-
-AC_MSG_CHECKING(for oz.emulator.bin and ozma.so)
-if test -z "$OZ_EMULATOR_DIR"
-then
-    OZ_EMULATOR_DIR=$TOPDIR/Emulator
-    for d in $TOPDIR/Emulator/`$OZPLATFORM` \
-             /usr/local/oz/platform/`$OZPLATFORM`
-    do
-        if test -r $d/ozma.so && test -x $d/oz.emulator.bin
-        then
-            OZ_EMULATOR_DIR=$d
-            break
-        fi
-    done
-fi
-AC_SUBST(OZ_EMULATOR_DIR)
-AC_MSG_RESULT($OZ_EMULATOR_DIR)
 
 dnl *****************************************************************
 dnl FINALIZE

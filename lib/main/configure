@@ -918,46 +918,12 @@ fi
 test -n "$TRUE" && break
 done
 
-for ac_prog in perl
-do
-# Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:927: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_PERL'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  if test -n "$PERL"; then
-  ac_cv_prog_PERL="$PERL" # Let the user override the test.
-else
-  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in $PATH; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_PERL="$ac_prog"
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-fi
-fi
-PERL="$ac_cv_prog_PERL"
-if test -n "$PERL"; then
-  echo "$ac_t""$PERL" 1>&6
-else
-  echo "$ac_t""no" 1>&6
-fi
-
-test -n "$PERL" && break
-done
-test -n "$PERL" || PERL="perl"
-
 
 SRCPATH=.:$srcdir
 # Extract the first word of "env2type", so it can be a program name with args.
 set dummy env2type; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:961: checking for $ac_word" >&5
+echo "configure:927: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_ENV2TYPE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -990,7 +956,7 @@ fi
     # Extract the first word of "ozinstallsrc", so it can be a program name with args.
 set dummy ozinstallsrc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:994: checking for $ac_word" >&5
+echo "configure:960: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_INSTALLSRC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1028,7 +994,7 @@ fi
     # Extract the first word of "ozplatform", so it can be a program name with args.
 set dummy ozplatform; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1032: checking for $ac_word" >&5
+echo "configure:998: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_OZPLATFORM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1066,7 +1032,7 @@ fi
     # Extract the first word of "ozbatch", so it can be a program name with args.
 set dummy ozbatch; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1070: checking for $ac_word" >&5
+echo "configure:1036: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_OZBATCH'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1102,7 +1068,7 @@ fi
 
 
 echo $ac_n "checking for --enable-fun""... $ac_c" 1>&6
-echo "configure:1106: checking for --enable-fun" >&5
+echo "configure:1072: checking for --enable-fun" >&5
 # Check whether --enable-fun or --disable-fun was given.
 if test "${enable_fun+set}" = set; then
   enableval="$enable_fun"
@@ -1120,24 +1086,6 @@ else
 fi
 
 
-
-echo $ac_n "checking for oz.emulator.bin and ozma.so""... $ac_c" 1>&6
-echo "configure:1126: checking for oz.emulator.bin and ozma.so" >&5
-if test -z "$OZ_EMULATOR_DIR"
-then
-    OZ_EMULATOR_DIR=$TOPDIR/Emulator
-    for d in $TOPDIR/Emulator/`$OZPLATFORM` \
-             /usr/local/oz/platform/`$OZPLATFORM`
-    do
-        if test -r $d/ozma.so && test -x $d/oz.emulator.bin
-        then
-            OZ_EMULATOR_DIR=$d
-            break
-        fi
-    done
-fi
-
-echo "$ac_t""$OZ_EMULATOR_DIR" 1>&6
 
 
 trap '' 1 2 15
@@ -1300,14 +1248,12 @@ s%@RMDIR@%$RMDIR%g
 s%@ECHO@%$ECHO%g
 s%@M4@%$M4%g
 s%@TRUE@%$TRUE%g
-s%@PERL@%$PERL%g
 s%@ENV2TYPE@%$ENV2TYPE%g
 s%@INSTALLSRC@%$INSTALLSRC%g
 s%@OZPLATFORM@%$OZPLATFORM%g
 s%@OZBATCH@%$OZBATCH%g
 s%@COMPILER_FUN@%$COMPILER_FUN%g
 s%@COMPILER_BIG@%$COMPILER_BIG%g
-s%@OZ_EMULATOR_DIR@%$OZ_EMULATOR_DIR%g
 
 CEOF
 EOF

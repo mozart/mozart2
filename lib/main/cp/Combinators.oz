@@ -27,14 +27,12 @@ import
    BootDictionary(waitOr: DictWaitOr)
    at 'x-oz://boot/Dictionary'
 
-   BootSpace(askUnsafe: AskSpace)
-   at 'x-oz://boot/Space'
-
    Space(waitStable: WaitStableSpace
          merge:      MergeSpace
          new:        NewSpace
          discard:    DiscardSpace
-         choose:     ChooseSpace)
+         choose:     ChooseSpace
+         askUnsafe:  AskSpace)
 
 
    FDB(int:           FdInt
@@ -208,6 +206,10 @@ define
       end
    end
 
+   proc {Choice C}
+      {C.{ChooseSpace {Width C}}}
+   end
+
    local
       proc {CommitOrDiscard G J I}
          if I==J then {CommitGuard G} else {DiscardSpace G} end
@@ -238,14 +240,12 @@ define
                        end}
             {WaitStableSpace}
             if {IsDet I} then skip else
-               I={ChooseSpace {List.toTuple '#' {GetDomList I}}}
+               T={List.toTuple '#' {GetDomList I}}
+            in
+               I=T.{ChooseSpace {Width T}}
             end
          end
       end
-   end
-
-   proc {Choice C}
-      {{ChooseSpace C}}
    end
 
 end

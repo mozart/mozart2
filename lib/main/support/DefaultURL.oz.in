@@ -47,7 +47,8 @@ prepare
 
    local
       Libs      = ['Application'
-                   'Search' 'FD' 'Schedule' 'FS' 'Combinators' 'Space'
+                   'Search' 'FD' 'Schedule' 'FS' 'Combinators'
+                   'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'
                    'Open'
@@ -59,6 +60,7 @@ prepare
                    'Timer' 'Perdio'
 \endif
                   ]
+      NatLibs   = ['Space']
       Volatiles = ['Module'
                    'Resolve' 'OS' 'Property' 'Pickle' 'System'
 \ifdef DENYS_EVENTS
@@ -74,12 +76,12 @@ prepare
 \endif
                   ]
    in
-      LibFuncs    = {MakeUrlTable Libs}
-      VolFuncs    = {MakeUrlTable Volatiles}
-      ToolFuncs   = {MakeUrlTable Tools}
-      SystemFuncs = {Adjoin LibFuncs {Adjoin VolFuncs ToolFuncs}}
-
-      FunctorNames = {Append Volatiles {Append Tools Libs}}
+      LibFuncs     = {MakeUrlTable Libs}
+      NatLibFuncs  = {MakeUrlTable NatLibs}
+      VolFuncs     = {MakeUrlTable Volatiles}
+      ToolFuncs    = {MakeUrlTable Tools}
+      SystemFuncs  = {FoldL [LibFuncs NatLibFuncs VolFuncs] Adjoin ToolFuncs}
+      FunctorNames = {FoldR [Libs NatLibs Volatiles Tools] Append nil}
    end
 
 
@@ -105,6 +107,7 @@ prepare
       end
 
       IsLibName      = {NewNameTest LibFuncs}
+      IsNatLibName   = {NewNameTest NatLibFuncs}
       IsVolatileName = {NewNameTest VolFuncs}
       IsToolsName    = {NewNameTest ToolFuncs}
       IsSystemName   = {NewNameTest SystemFuncs}
@@ -116,6 +119,7 @@ export
 
    IsSystemName
    IsLibName
+   IsNatLibName
    IsVolatileName
    IsToolsName
 

@@ -98,10 +98,6 @@ prepare
       {IsRecord X} orelse {IsChunk X}
    end
 
-   fun {IsRecordCOrChunk X}
-      {IsRecordC X} orelse {IsChunk X}
-   end
-
    fun {IsProcedureOrObject X}
       {IsProcedure X} orelse {IsObject X}
    end
@@ -156,6 +152,7 @@ import
        'var.is':   IsFSetC)
    at 'x-oz://boot/FSB'
    Space(is: IsSpace)
+   RecordC(is: IsRecordC)
    System(printName)
 
 export
@@ -163,6 +160,10 @@ export
    ask:     Ask
 
 define
+
+   fun {IsRecordCOrChunk X}
+      {IsRecordC X} orelse {IsChunk X}
+   end
 
    fun {IsFDVector X}
       case X of _|_ then

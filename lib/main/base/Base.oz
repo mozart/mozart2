@@ -205,9 +205,6 @@ prepare
    Adjoin       = Boot_Record.adjoin
    AdjoinList   = Boot_Record.adjoinList
    AdjoinAt     = Boot_Record.adjoinAt
-   IsRecordC    = Boot_Record.isC
-   WidthC       = Boot_Record.widthC
-   TellRecord   = Boot_Record.tellRecord
 
    %%
    %% Chunk
@@ -364,11 +361,11 @@ export
    'Bool'               : Bool
    'IsBool'             : IsBool
    'And'                : And
-   'Or'         : Or
+   'Or'                 : Or
    'Not'                : Not
    %% String
    'String'             : String
-   'IsString'   : IsString
+   'IsString'           : IsString
    'StringToAtom'       : StringToAtom
    'StringToInt'        : StringToInt
    'StringToFloat'      : StringToFloat
@@ -381,7 +378,7 @@ export
    'IsNat'              : IsNat
    'IsOdd'              : IsOdd
    'IsEven'             : IsEven
-   'IntToFloat' : IntToFloat
+   'IntToFloat'         : IntToFloat
    'IntToString'        : IntToString
    %% Float
    'Float'              : Float
@@ -399,20 +396,20 @@ export
    'Atan'               : Atan
    'Atan2'              : Atan2
    'Round'              : Round
-   'FloatToInt' : FloatToInt
+   'FloatToInt'         : FloatToInt
    'FloatToString'      : FloatToString
    %% Number
    'Number'             : Number
-   'IsNumber'   : IsNumber
+   'IsNumber'           : IsNumber
    'Pow'                : Pow
    'Abs'                : Abs
    %% Tuple
    'Tuple'              : Tuple
    'IsTuple'            : IsTuple
-   'MakeTuple'  : MakeTuple
+   'MakeTuple'          : MakeTuple
    %% List
    'List'               : List
-   'MakeList'   : MakeList
+   'MakeList'           : MakeList
    'IsList'             : IsList
    'Append'             : Append
    'Member'             : Member
@@ -422,11 +419,11 @@ export
    'Map'                : Map
    'FoldL'              : FoldL
    'FoldR'              : FoldR
-   'FoldLTail'  : FoldLTail
-   'FoldRTail'  : FoldRTail
+   'FoldLTail'          : FoldLTail
+   'FoldRTail'          : FoldRTail
    'ForAll'             : ForAll
    'All'                : All
-   'ForAllTail' : ForAllTail
+   'ForAllTail'         : ForAllTail
    'AllTail'            : AllTail
    'Some'               : Some
    'Filter'             : Filter
@@ -434,76 +431,73 @@ export
    'Merge'              : Merge
    'Flatten'            : Flatten
    %% Procedure
-   'Procedure'  : Procedure
+   'Procedure'          : Procedure
    'IsProcedure'        : IsProcedure
    'ProcedureArity'     : ProcedureArity
    %% Loop
    'Loop'               : Loop
    'For'                : For
-   'ForThread'  : ForThread
+   'ForThread'          : ForThread
    %% Record
    'Record'             : Record
-   'IsRecord'   : IsRecord
+   'IsRecord'           : IsRecord
    'Arity'              : Arity
    'Label'              : Label
    'Width'              : Width
    'Adjoin'             : Adjoin
-   'AdjoinList' : AdjoinList
-   'AdjoinAt'   : AdjoinAt
-   'IsRecordC'  : IsRecordC
-   'WidthC'             : WidthC
-   'TellRecord' : TellRecord
-   'MakeRecord' : MakeRecord
+   'AdjoinList'         : AdjoinList
+   'AdjoinAt'           : AdjoinAt
+   'MakeRecord'         : MakeRecord
    %% Chunk
    'Chunk'              : Chunk
    'IsChunk'            : IsChunk
-   'NewChunk'   : NewChunk
+   'NewChunk'           : NewChunk
    %% VirtualString
    'VirtualString'      : VirtualString
    'IsVirtualString'    : IsVirtualString
    %% Dictionary
-   'Dictionary' : Dictionary
+   'Dictionary'         : Dictionary
    'IsDictionary'       : IsDictionary
    'NewDictionary'      : NewDictionary
    %% Array
    'Array'              : Array
    'IsArray'            : IsArray
-   'NewArray'   : NewArray
+   'NewArray'           : NewArray
    'Put'                : Put
    'Get'                : Get
    %% Object
    'Object'             : Object
-   'IsObject'   : IsObject
-   'BaseObject' : BaseObject
+   'IsObject'           : IsObject
+   'BaseObject'         : BaseObject
    'New'                : New
    %% Class
    'Class'              : Class
    'IsClass'            : IsClass
    %% Thread
    'Thread'             : Thread
-   'IsThread'   : IsThread
+   'IsThread'           : IsThread
    %% Time
    'Time'               : Time
    'Alarm'              : Alarm
    'Delay'              : Delay
    %% Exception
-   'Exception'  : Exception
+   'Exception'          : Exception
    'Raise'              : Raise
    %% Functor
    'Functor'            : Functor
    %% BitArray
-   'BitArray'   : BitArray
-   'IsBitArray' : IsBitArray
+   'BitArray'           : BitArray
+   'IsBitArray'         : IsBitArray
    %% ForeignPointer
    'ForeignPointer'     : ForeignPointer
-   'IsForeignPointer': IsForeignPointer
+   'IsForeignPointer'   : IsForeignPointer
    %% BitString
-   'BitString'  : BitString
-   'ByteString' : ByteString
+   'BitString'          : BitString
+   'ByteString'         : ByteString
    'IsBitString'        : IsBitString
    'IsByteString'       : IsByteString
 
    %% Will be removed by the compiler
-   'OoExtensions': OoExtensions
+   'OoExtensions'       : OoExtensions
 
 end

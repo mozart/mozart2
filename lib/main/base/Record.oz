@@ -33,21 +33,6 @@ MakeRecord = Boot_Record.make
 %% Module
 %%
 local
-   local
-      BIMonitorArity = Boot_Record.monitorArity
-   in
-      proc {MonitorArity R P S}
-         U in
-         {BIMonitorArity R U S}
-         proc {P} U=unit end
-      end
-
-      proc {ReflectArity R S}
-         {BIMonitorArity R unit S}
-      end
-   end
-
-
    fun {MakePairs As R}
       case As of nil then nil
       [] A|Ar then A#R.A|{MakePairs Ar R}
@@ -342,14 +327,6 @@ in
 
                    label:        Label
                    width:        Width
-
-                   isC:          IsRecordC
-                   tell:         TellRecord
-                   '^':          Boot_Record.'^'
-                   widthC:       WidthC
-                   monitorArity: MonitorArity
-                   reflectArity: ReflectArity
-                   hasLabel:     Boot_Record.hasLabel
 
                    arity:        Arity
                    adjoin:       Adjoin

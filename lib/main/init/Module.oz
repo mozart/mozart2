@@ -253,27 +253,37 @@ in
             end
          end
 
+         meth GetSystemName(Url $)
+            case {CondSelect Url path unit}
+            of abs([Name#false]) then
+               %% drop the extension of any
+               {String.token Name &. $ _}
+            else
+               raise error(module(urlSyntax {UrlToAtom Url})) end
+            end
+         end
+
+         meth GetSystemBoot(Name $)
+            {self trace('boot module' Name)}
+            try
+               {Boot.obtain true Name}
+            catch system(foreign(dlOpen _) ...) then
+               raise system(module(notFound system {UrlToAtom Name})) end
+            end
+         end
+
          meth system(Url $)
             {self trace('system method' Url)}
             case {StringToAtom {CondSelect Url authority ""}}
             of boot then
-               {self trace('boot module' Url)}
-               try
-                  case {CondSelect Url path unit}
-                  of abs([Name#false]) then
-                     %% drop the extension of any
-                     {Boot.obtain true {String.token Name &. $ _}}
-                  else
-                     raise badUrl end
-                  end
-               catch system(foreign(dlOpen _) ...) then
-                  raise system(module(notFound system {UrlToAtom Url})) end
-               [] badUrl then
-                  raise error(module(urlSyntax {UrlToAtom Url})) end
-               end
-            [] system then
+               {self GetSystemBoot({self GetSystemName(Url $)} $)}
+            [] system then Name={self GetSystemName(Url $)} in
                {self trace('system module' Url)}
-               {self systemApply(system Url $)}
+               if {IsNatSystemName Name} then
+                  {self GetSystemBoot(Name $)}
+               else
+                  {self systemApply(system Url $)}
+               end
             [] contrib then
                {self trace('contrib module' Url)}
                {self systemApply(contrib Url $)}

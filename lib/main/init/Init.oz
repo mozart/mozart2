@@ -41,10 +41,11 @@ require
        toVirtualStringExtended: UrlToVsExtended)
 
    DefaultURL(ozScheme
-              functorExt:  FunctorExt
-              homeUrl:     MozartHome
-              contribUrl:  ContribHome
-              nameToUrl:   ModNameToUrl)
+              functorExt:   FunctorExt
+              homeUrl:      MozartHome
+              contribUrl:   ContribHome
+              nameToUrl:    ModNameToUrl
+              isNatLibName: IsNatSystemName)
 
 prepare
 

@@ -88,6 +88,9 @@ export
 
 
 define
+
+   {Wait FSB.'var.is'}
+
    FSIsIncl        = FSP.include
    FSIsExcl        = FSP.exclude
    FSMatch         = FSP.'ini.match'

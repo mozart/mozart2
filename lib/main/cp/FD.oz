@@ -155,6 +155,8 @@ export
 
 define
 
+   {Wait FDB.int}
+
    FdpPlus = FDP.plus
    FdpMinus = FDP.minus
    FdpTimes = FDP.times

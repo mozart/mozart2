@@ -778,7 +778,7 @@ in
          %%
          %% ... and now, set the cursor at the begin: a kind of
          %% 'block(0)' emulation:
-         {self  SetCursorAt}
+         {self SetCursorAt}
          {self SkipAuxBegin}
          {self.WidgetObj advanceCursor(@Size)}
       end
@@ -939,11 +939,23 @@ in
       end
 
       %%
+      meth !BeginUpdate
+\ifdef DEBUG_RM
+         {Show 'CompoundRepManagerObject::BeginUpdate is applied'}
+\endif
+         %%
+         MetaRepManagerObject , BeginUpdate
+\ifdef DEBUG_RM
+         {Show 'CompoundRepManagerObject::BeginUpdate is finished'}
+\endif
+      end
+
+      %%
       %% {Begin,End}UpdateSubterm groups - for recursive preparing
       %% for updating;
       meth !BeginUpdateSubterm(N)
 \ifdef DEBUG_RM
-         {Show 'CompoundRepManagerObject::BeginUpdateSubterm is aplied'
+         {Show 'CompoundRepManagerObject::BeginUpdateSubterm is applied'
           # N}
 \endif
          %%
@@ -964,7 +976,7 @@ in
       %%
       meth !EndUpdateSubterm(N)
 \ifdef DEBUG_RM
-         {Show 'CompoundRepManagerObject::EndUpdateSubterm is aplied'
+         {Show 'CompoundRepManagerObject::EndUpdateSubterm is applied'
           # N}
 \endif
          %%
@@ -1722,12 +1734,18 @@ in
                %% is something still missing?
                %%
                case {Token gotMark($)} then skip
-               else {Token setMark(self.HeadMark)}
+               else
+                  AuxSizeB = CompoundRepManagerObject , GetAuxSizeB($)
+               in
+                  {Token setMarkIncOffset(self.HeadMark AuxSizeB)}
                end
 
                %%
                case {Token gotIndent($)} then skip
-               else {Token setIndent(@UsedIndentIn)}
+               else
+                  AuxSizeB = CompoundRepManagerObject , GetAuxSizeB($)
+               in
+                  {Token setIndent(@UsedIndentIn + AuxSizeB)}
                end
             else skip           % both anchor and its offset are here;
             end

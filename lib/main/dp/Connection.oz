@@ -112,8 +112,12 @@ define
                     end get(_)}
    in
       fun {NewTicket IsSingle}
+         Major#Minor = {Property.get 'perdio.version'}
+      in
          {Adjoin ThisPid ticket(single:  IsSingle
                                 key:     {KeyCtr get($)}
+                                minor:   Minor
+                                major:   Major
                                 minimal: {Property.get 'perdio.minimal'})}
       end
    end
@@ -138,6 +142,8 @@ define
                    &:|{IntToKey Stamp}
                    &:|{IntToKey Pid}
                    &/|{IntToKey T.key}
+                   &:|{IntToKey T.major}
+                   &:|{IntToKey T.minor}
                    [&: if T.single  then &s else &m end
                     &: if T.minimal then &m else &f end]] nil}
       in
@@ -151,11 +157,14 @@ define
             S={VirtualString.toString V}
             [_ nil ProcPart KeyPart] = {String.tokens S &/}
             [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
-            [KeyS SingS MinimalS _]  = {String.tokens KeyPart  &:}
+            [KeyS MajorS MinorS
+             SingS MinimalS _]       = {String.tokens KeyPart  &:}
             Ticket = ticket(host:    HostS
                             port:    {String.toInt PortS}
                             time:    {KeyToInt Stamp}#{KeyToInt Pid}
                             key:     {KeyToInt KeyS}
+                            major:   {KeyToInt MajorS}
+                            minor:   {KeyToInt MinorS}
                             single:  SingS=="s"
                             minimal: MinimalS=="m")
          in

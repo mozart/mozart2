@@ -303,7 +303,7 @@ define
    fun {AUTHORITY L URL}
       Prefix Sep Suffix
       {SPLIT L LEVEL_AUTHORITY Prefix Sep Suffix}
-      URL2 = {AdjoinAt URL authority Prefix}
+      URL2 = {AdjoinAt URL authority {Map Prefix ToLower}}
    in
       case Sep
       of unit then URL2

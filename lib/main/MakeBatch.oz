@@ -46,11 +46,13 @@ local
           \insert Standard.env
          }
 
+   UsageError = 'command line option error'
+
    fun {ConvertBooleanOpts OptSpecs}
       case OptSpecs of OptSpec|OptSpecr then C#S#Spec = OptSpec in
          case {CondSelect Spec type unit} of bool then
             C#S#{AdjoinAt Spec value true}|
-            0#(&n|&o|S)#{AdjoinAt Spec value false}|
+            unit#(&n|&o|S)#{AdjoinAt Spec value false}|
             {ConvertBooleanOpts OptSpecr}
          else
             OptSpec|{ConvertBooleanOpts OptSpecr}
@@ -66,33 +68,33 @@ local
                 &s#"ozma"#mode(value: ozma)
                 &e#"feedtoemulator"#mode(value: feedtoemulator)
                 &c#"dump"#mode(value: dump)
-                &h#"help"#help(value: unit)
+                &h#"help"#help(value: unit) &?#unit#help(value: unit)
                 &D#"define"#define(type: atom)
                 &U#"undefine"#undef(type: atom)
                 &v#"verbose"#verbose(value: true)
                 &q#"quiet"#verbose(value: false)
                 &o#"outputfile"#outputfile(type: string)
                 &l#"environment"#environment(type: string)
-                0#"include"#include(type: string)
-                0#"maxerrors"#maxerrors(type: int)
-                0#"compilerpasses"#compilerpasses(type: bool)
-                0#"showinsert"#showinsert(type: bool)
-                0#"showcompiletime"#showcompiletime(type: bool)
-                0#"showcompilememory"#showcompilememory(type: bool)
-                0#"echoqueries"#echoqueries(type: bool)
-                0#"watchdog"#watchdog(type: bool)
-                0#"warnredecl"#warnredecl(type: bool)
-                0#"warnforward"#warnforward(type: bool)
-                0#"system"#system(type: bool)
-                0#"catchall"#catchall(type: bool)
-                0#"staticanalysis"#staticanalysis(type: bool)
-                0#"realcore"#realcore(type: bool)
-                0#"debugvalue"#debugvalue(type: bool)
-                0#"debugtype"#debugtype(type: bool)
-                0#"profile"#profile(type: bool)
-                0#"runwithdebugger"#runwithdebugger(type: bool)
-                0#"debuginfocontrol"#debuginfocontrol(type: bool)
-                0#"debuginfovarnames"#debuginfovarnames(type: bool)]}
+                unit#"include"#include(type: string)
+                unit#"maxerrors"#maxerrors(type: int)
+                unit#"compilerpasses"#compilerpasses(type: bool)
+                unit#"showinsert"#showinsert(type: bool)
+                unit#"showcompiletime"#showcompiletime(type: bool)
+                unit#"showcompilememory"#showcompilememory(type: bool)
+                unit#"echoqueries"#echoqueries(type: bool)
+                unit#"watchdog"#watchdog(type: bool)
+                unit#"warnredecl"#warnredecl(type: bool)
+                unit#"warnforward"#warnforward(type: bool)
+                unit#"system"#system(type: bool)
+                unit#"catchall"#catchall(type: bool)
+                unit#"staticanalysis"#staticanalysis(type: bool)
+                unit#"realcore"#realcore(type: bool)
+                unit#"debugvalue"#debugvalue(type: bool)
+                unit#"debugtype"#debugtype(type: bool)
+                unit#"profile"#profile(type: bool)
+                unit#"runwithdebugger"#runwithdebugger(type: bool)
+                unit#"debuginfocontrol"#debuginfocontrol(type: bool)
+                unit#"debuginfovarnames"#debuginfovarnames(type: bool)]}
 
    Usage =
    'Usage: ozbatch [options] [file] ...\n'#
@@ -110,7 +112,7 @@ local
    '                              (file extension: .ozc).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
-   '-h, --help                    Output usage information and exit.\n'#
+   '-h, -?, --help                Output usage information and exit.\n'#
    '-D NAME, --define=NAME        Define macro name NAME.\n'#
    '-U NAME, --undefine=NAME      Undefine macro name NAME.\n'#
    '-v, --verbose                 Display all compiler messages.\n'#
@@ -123,6 +125,7 @@ local
    '                              before processing the remaining options.\n'#
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
+   %% Note that the remaining options are not documented here on purpose.
    '--maxerrors=N                 Limit the number of errors reported to N.\n'#
    '--(no)compilerpasses          Show compiler passes.\n'#
    '--(no)warnredecl              Warn about top-level redeclarations.\n'#
@@ -232,7 +235,8 @@ in
                 S Spec1 Exact1 Value1
              in
                 _#S#Spec1 = OptSpec
-                case {IsPrefix LongOpt S ?Exact1 ?Value1} then
+                case S \= unit andthen {IsPrefix LongOpt S ?Exact1 ?Value1}
+                then
                    case Exact1 then
                       Exact = true
                       Value = Value1
@@ -357,7 +361,7 @@ in
                 try
                    {ParseArgs Argv ?Opts ?FileNames}
                 catch usage(VS) then
-                   {Report error(kind: 'command line error'
+                   {Report error(kind: UsageError
                                  msg: VS
                                  body: [hint(l: 'Hint'
                                              m: ('Use --help to obtain '#
@@ -401,8 +405,18 @@ in
                     end
                  end}
                 case FileNames of nil then
-                   {Report error(kind: 'command line error'
-                                 msg: 'no input files given')}
+                   {Report error(kind: UsageError
+                                 msg: 'no input files given'
+                                 body: [hint(l: 'Hint'
+                                             m: ('Use --help to obtain '#
+                                                 'usage information'))])}
+                elsecase {Access OutputFile} \= "-"
+                   andthen {Access OutputFile} \= unit
+                   andthen {Length FileNames} > 1
+                then
+                   {Report error(kind: UsageError
+                                 msg: ('only one input file allowed when '#
+                                       'an output file name is given'))}
                 else
                    {ForAll FileNames
                     proc {$ Arg} OFN R in
@@ -421,14 +435,14 @@ in
                        elsecase {Access OutputFile} == "-" then
                           case {Access Mode} of dump then
                              {Report
-                              error(kind: 'compiler directive error'
+                              error(kind: UsageError
                                     msg: 'dumping to stdout is not possible')}
                           else
                              OFN = stdout
                           end
                        elsecase {Access Mode} of feedtoemulator then
                           {Report
-                           error(kind: 'compiler directive error'
+                           error(kind: UsageError
                                  msg: ('no output file name must be '#
                                        'specified for feedtoemulator'))}
                        else
@@ -466,7 +480,7 @@ in
                           elseof Vs then
                              {OS.unlink OFN}
                              {Report
-                              error(kind: 'dump error'
+                              error(kind: UsageError
                                     msg: 'saved value is not stateless'
                                     body: [hint(l: 'Stateful values'
                                                 m: oz(Vs))])}
@@ -481,7 +495,7 @@ in
                        end
                     end}
                 end
-                Status = 0
+                raise success end
              catch error then
                 Status = 1
              [] success then

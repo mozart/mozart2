@@ -29,13 +29,13 @@ define
 
    end
 
-   S = {Search.base.one ModDivProb}
-   T = S.1
-
 
    Return=
    fd([divmod([
                one(equal(fun {$}
+                            S = {Search.base.one ModDivProb}
+                            T = S.1
+                         in
                             cond {Map T fun {$ E} {FD.reflect.dom E} end}  =
                                [
                                 [3#93]

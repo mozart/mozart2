@@ -252,7 +252,8 @@ in
                          proc {$ ModName UrlV}
                             {Trace '[Module] System Map: '#ModName#':='#UrlV#'\n'}
                             {SystemMap.put ModName {RURL.vsToUrl UrlV}}
-                         end)
+                         end
+                      resolve: ModNameToUrl)
 
       %%
       %% Register System defaults

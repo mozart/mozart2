@@ -163,7 +163,7 @@ define
                end>>
       end
       LocalEnv =
-      o(for      : ForExpander
+      o('for'    : ForExpander
         leave    : LeaveExpander
         next     : NextExpander
         collect  : CollectExpander
@@ -200,15 +200,15 @@ define
          case
             case L
             of nil then
-               for(X init:E while:TRUE next:X)
+               'for'(X init:E while:TRUE next:X)
             [] [fAtom('while' _) W fAtom('next' _) N] then
-               for(X init:E while:W next:N)
+               'for'(X init:E while:W next:N)
             [] [fAtom('while' _) W] then
-               for(X init:E while:W next:X)
+               'for'(X init:E while:W next:X)
             [] [fAtom('next' _) N] then
-               for(X init:E while:TRUE next:N)
+               'for'(X init:E while:TRUE next:N)
             end
-         of for(X init:Init while:While next:Next) then
+         of 'for'(X init:Init while:While next:Next) then
             iterator(
                var:X init:Init while:While next:Next lvars:SKIP)
          end
@@ -217,34 +217,34 @@ define
          case
             case L
             of [fAtom('from' _) I fAtom('to' _) J fAtom('by' _) K] then
-               for(X 'from':I to:J by:K)
+               'for'(X 'from':I to:J by:K)
             [] [fAtom('from' _) I fAtom('by' _) K] then
-               for(X 'from':I to:SKIP by:K)
+               'for'(X 'from':I to:SKIP by:K)
             [] [fAtom('from' _) I fAtom('to' _) J] then
-               for(X 'from':I to:J by:ONE)
+               'for'(X 'from':I to:J by:ONE)
             [] [fAtom('from' _) I] then
-               for(X 'from':I to:SKIP by:ONE)
+               'for'(X 'from':I to:SKIP by:ONE)
             [] [fAtom('to' _) J fAtom('by' _) K] then
-               for(X 'from':ONE to:J by:K)
+               'for'(X 'from':ONE to:J by:K)
             [] [fAtom('to' _) J] then
-               for(X 'from':ONE to:J by:ONE)
+               'for'(X 'from':ONE to:J by:ONE)
                %%
             [] [fAtom('from' _) I fAtom('downto' _) J fAtom('by' _) K] then
-               for(X 'from':I downto:J by:K)
+               'for'(X 'from':I downto:J by:K)
             [] [fAtom('downfrom' _) I fAtom('to' _) J fAtom('by' _) K] then
-               for(X 'from':I downto:J by:K)
+               'for'(X 'from':I downto:J by:K)
             [] [fAtom('downfrom' _) I fAtom('downto' _) J fAtom('by' _) K] then
-               for(X 'from':I downto:J by:K)
+               'for'(X 'from':I downto:J by:K)
             [] [fAtom('downfrom' _) I fAtom('by' _) K] then
-               for(X 'from':I downto:SKIP by:K)
+               'for'(X 'from':I downto:SKIP by:K)
             [] [fAtom('downfrom' _) I fAtom('to' _) J] then
-               for(X 'from':I downto:J by:ONE)
+               'for'(X 'from':I downto:J by:ONE)
             [] [fAtom('downfrom' _) I fAtom('downto' _) J] then
-               for(X 'from':I downto:J by:ONE)
+               'for'(X 'from':I downto:J by:ONE)
             [] [fAtom('downfrom' _) I] then
-               for(X 'from':I downto:SKIP by:ONE)
+               'for'(X 'from':I downto:SKIP by:ONE)
             end
-         of for(X 'from':I to:J by:K) then
+         of 'for'(X 'from':I to:J by:K) then
             II = {NewNamedVar 'I'}
             JJ = {NewNamedVar 'J'}
             KK = {NewNamedVar 'K'}
@@ -259,7 +259,7 @@ define
                next     : <<'`' <<',' X>> + <<',' KK>>>>
                lvars    : SKIP
                )
-         [] for(X 'from':I downto:J by:K) then
+         [] 'for'(X 'from':I downto:J by:K) then
             II = {NewNamedVar 'I'}
             JJ = {NewNamedVar 'J'}
             KK = {NewNamedVar 'K'}

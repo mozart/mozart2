@@ -253,7 +253,17 @@ in
                             {Trace '[Module] System Map: '#ModName#':='#UrlV#'\n'}
                             {SystemMap.put ModName {RURL.vsToUrl UrlV}}
                          end
-                      resolve: ModNameToUrl)
+                      resolve: ModNameToUrl
+                      getUrl:
+                         fun {$ ModName From}
+                            case {SystemMap.member ModName} then
+                               {SystemMap.get ModName}
+                            else
+                               {ToUrl case From==unit then ModName#'.ozf'
+                                      else From
+                                      end}
+                            end
+                         end)
 
       %%
       %% Register System defaults

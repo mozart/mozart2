@@ -79,7 +79,7 @@ local
       {Filter
        [case F == '' then "" else 'file "'#F#'"' end
         case L == unit then "" else 'line '#L end
-        case C == unit then "" else 'column '#C end
+        case C of unit then "" [] ~1 then "" else 'column '#C end
         case PC == unit then "" else 'PC = '#PC end]
        fun {$ X} X \= "" end}
    in

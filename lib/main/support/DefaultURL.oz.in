@@ -94,7 +94,8 @@ prepare
       VolFuncs     = {MakeUrlTable Volatiles}
       ToolFuncs    = {MakeUrlTable Tools}
       SystemFuncs  = {FoldL [LibFuncs NatLibFuncs VolFuncs] Adjoin ToolFuncs}
-      FunctorNames = {FoldR [Libs NatLibs Volatiles Tools] Append nil}
+      FunctorNames = {Map {FoldR [Libs NatLibs Volatiles Tools] Append nil}
+                      fun {$ X} case X of A#_ then A else X end end}
    end
 
 

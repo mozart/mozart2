@@ -403,12 +403,15 @@ define
    end
 
    fun {DotPrintName PrintName FeatPrintName}
-      {VirtualString.toAtom
-       {System.printName PrintName}#'.'#{Value.toVirtualString FeatPrintName 0 0}}
+      if {IsName PrintName} then unit
+      else
+         {VirtualString.toAtom
+          PrintName#'.'#{Value.toVirtualString FeatPrintName 0 0}}
+      end
    end
 
    proc {SetPrintName GBack0 PrintName FeatPrintName}
-      case PrintName of unit then skip
+      if {IsName PrintName} then skip
       elsecase {GetLast GBack0} of nil then skip
       elseof GS then
          {GS setPrintName({DotPrintName PrintName FeatPrintName})}
@@ -1676,16 +1679,12 @@ define
                 Unnester, UnnestConstraint(FE GV ?GFront0 ?GBack0)
                 GFront#NewGArgs#(GFront0|GBack|GBack0)
              [] fRecord(Label Args) then NewPrintName GFront0 GBack0 in
-                NewPrintName = case PrintName of unit then unit
-                               else {DotPrintName PrintName FeatPrintName}
-                               end
+                NewPrintName = {DotPrintName PrintName FeatPrintName}
                 Unnester, UnnestRecord(NewPrintName Label Args false
                                        ?GFront0 ?GArg ?GBack0)
                 (GFront|GFront0)#NewGArgs#(GBack|GBack0)
              [] fOpenRecord(Label Args) then NewPrintName GFront0 GBack0 in
-                NewPrintName = case PrintName of unit then unit
-                               else {DotPrintName PrintName FeatPrintName}
-                               end
+                NewPrintName = {DotPrintName PrintName FeatPrintName}
                 Unnester, UnnestRecord(NewPrintName Label Args true
                                        ?GFront0 ?GArg ?GBack0)
                 (GFront|GFront0)#NewGArgs#(GBack|GBack0)

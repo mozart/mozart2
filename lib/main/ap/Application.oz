@@ -835,7 +835,6 @@ in
                              loader:   DefaultGetLoader
                              plan:     DefaultGetPlan
                              syslet:   DefaultMakeSyslet
-                             exec:     DefaultMakeSyslet
                              servlet:  DefaultMakeServlet
                              applet:   DefaultMakeApplet
                              registry: registry(new:      MakeDefaultRegistry

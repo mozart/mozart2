@@ -178,7 +178,7 @@ class PseudoTermGenericObject
          %%
          IsScrolling = {self.store read(StoreScrolling $)}
          case IsScrolling then
-            <<scrollToTag(TermObj.tag)>>
+            <<scrollToTag(TermObj)>>
          else true
          end
       else
@@ -280,7 +280,7 @@ class PseudoTermGenericObject
             %%
             IsScrolling = {self.store read(StoreScrolling $)}
             case IsScrolling then
-               <<scrollToTag(@termObj.tag)>>
+               <<scrollToTag(@termObj)>>
             else true
             end
          else true

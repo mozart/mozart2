@@ -231,6 +231,7 @@ in
                %% ignore all non-printable symbols;
                %% (aka control, shift, mod, etc.);
             [] '{}'        then true
+            [] ''          then true
                %%
                %% all 'control-' actions processed by tk/tcl interface;
                %% Note: there proper control characters in atom names;
@@ -255,10 +256,11 @@ in
       meth buttonsHandler(NS)
          local NA in
             NA = {String.toAtom NS}
+
             %%
             case NA
             of '1' then
-               {self.widgetObj tagHighlight(self.tag)}
+               {self.widgetObj tagHighlight(self)}
                {self.browserObj SetSelected(self <<areCommas($)>>)}
             [] '3' then true    % handled by tcl-interface directly;
             [] '2' then true
@@ -1758,12 +1760,37 @@ in
          job S2 = {NoNumber.matchDefault L2 1 InitValue} end
 
          %%
-         if S1 = S2 then
+         case
+            case {IsVar S1} orelse {IsVar S2} then
+               %% can tweak this case:
+               {EQ S1 S2}
+
+               %% "canonical" version:
+               %% R
+               %%   in
+               %% job
+               %%   R = S1 == S2
+               %% end
+               %%
+               %% case {IsVar R} then False
+               %% else R
+               %% end
+            elsecase S1 == InitValue orelse S2 == InitValue then False
+            else R in
+               job
+                  R = S1 == S2
+               end
+               %%
+               case {IsVar R} then False
+               else R
+               end
+            end
+         then
             {DiffRest L1.2 L2.2 LOut1 LOut2}
-         [] true then
+         else
             LOut1 = L1
             LOut2 = L2
-         fi
+         end
       end
    end
    %%

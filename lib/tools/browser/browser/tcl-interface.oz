@@ -48,7 +48,7 @@ in
       end
    end
 
-             /*
+   /*
    %%
    %%
    proc {TagsListLoop In OutList Tmp}
@@ -102,7 +102,7 @@ in
          end
       end
    end
-             */
+   */
 
 %%%
 %%%
@@ -115,11 +115,11 @@ in
          browserObj
          store
          standAlone
+         window
+         browseWidget
 
       %%
       attr
-         window: InitValue
-         browseWidget: InitValue
          menusFrame: InitValue
          buttonsFrame: InitValue
          highlightTag: InitValue
@@ -197,16 +197,16 @@ in
             end
 
             %%
-            window <- Window
+            self.window = Window
          else
-            window <- W
+            self.window = W
             %%  Note that there is no control for this window;
             %%  It means in particular, that the application giving this window
             %% shouldn't do any *nonsese".
          end
 
          %%
-         TestTW <- {New Tk.text tkInit(parent: @window
+         TestTW <- {New Tk.text tkInit(parent: self.window
                                        width: 1
                                        height: 1
                                        bd: 0
@@ -230,7 +230,7 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk::close'}
 \endif
-         {@window close}
+         {self.window close}
          %% if the window was given from aside, 'close' method should be provided too;
          <<UrObject close>>
          %% reject all future messages;
@@ -253,7 +253,7 @@ in
             FSSync
          in
             %%
-            Window = @window
+            Window = self.window
 
             %%
             FHS = {New Tk.frame tkInit(parent: Window
@@ -564,7 +564,7 @@ in
                                          end)}
 
             %%
-            browseWidget <- BrowseWidget
+            self.browseWidget = BrowseWidget
             HScrollbar <- FHS_HS
             FrameHS <- FHS
             <<setTWFont>>  % scrollincrement + resetTW;
@@ -577,7 +577,7 @@ in
 \ifdef DEBUG_TI
          {Show 'tcl/tk: iconify'}
 \endif
-         case self.standAlone then {Tk wm(iconify @window)}
+         case self.standAlone then {Tk wm(iconify self.window)}
          else true
          end
       end
@@ -591,7 +591,7 @@ in
          true
          %%
          %%  Tk 4.0 does not require any special action;
-         %% {Tk focus(@browseWidget)}
+         %% {Tk focus(self.browseWidget)}
          %%
       end
 
@@ -636,7 +636,7 @@ in
             %%
             case Font.name == '*startup*' then true   % skip it;
             else
-               {@browseWidget tk(configure(font: Font.font))}
+               {self.browseWidget tk(configure(font: Font.font))}
             end
 
             %%
@@ -657,7 +657,7 @@ in
             {Tk update(idletasks)}
 
             %%
-            {Tk.return winfo(width @browseWidget) TWWidthS}
+            {Tk.return winfo(width self.browseWidget) TWWidthS}
             TWWidth = {String.toInt TWWidthS}
 
             %%
@@ -694,13 +694,13 @@ in
             %%
             case MinXSize =< X andthen MinYSize =< Y then
                %%
-               {Tk wm(geometry @window X#'x'#Y)}
+               {Tk wm(geometry self.window X#'x'#Y)}
 
                %% synchronization;
                {Tk update(idletasks)}
 
                %%
-               {Tk.return winfo(exists @browseWidget) Sync}
+               {Tk.return winfo(exists self.browseWidget) Sync}
 
                %%
                {Wait {String.toAtom Sync}}
@@ -726,7 +726,7 @@ in
             MenusFrame     %
          in
             %%
-            MFT = {New Tk.frame tkInit(parent: @window
+            MFT = {New Tk.frame tkInit(parent: self.window
                                        bd: ISmallBorder
                                        relief: IFrameRelief)}
             %% height: IMFHeight#c  % but: who cares? :))
@@ -784,7 +784,7 @@ in
             ButtonsFrame   %
          in
             %%
-            BFT = {New Tk.frame tkInit(parent: @window
+            BFT = {New Tk.frame tkInit(parent: self.window
                                        bd: ISmallBorder
                                        relief: IFrameRelief)}
             %% width: IBFWidth#c
@@ -931,9 +931,9 @@ in
 
             %% force the minsize of the window;
             local XSizeS YSizeS XSize YSize in
-               {Tk.return winfo(height @window) YSizeS}
-               {Tk.return winfo(width @window) XSizeS}
-               {Tk wm(minsize @window XMinSize YMinSize)}
+               {Tk.return winfo(height self.window) YSizeS}
+               {Tk.return winfo(width self.window) XSizeS}
+               {Tk wm(minsize self.window XMinSize YMinSize)}
 
                %%
                XSize = {String.toInt XSizeS}
@@ -944,17 +944,17 @@ in
                case XMinSize =< XSize andthen YMinSize =< YSize
                then true
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
-                  {Tk wm(geometry @window XMinSize#'x'#YSizeS)}
+                  {Tk wm(geometry self.window XMinSize#'x'#YSizeS)}
 
                   %%
                   <<resetTW>>
                elsecase YSize < YMinSize andthen XMinSize =< XSize then
-                  {Tk wm(geometry @window XSizeS#'x'#YMinSize)}
+                  {Tk wm(geometry self.window XSizeS#'x'#YMinSize)}
 
                   %%
                   <<resetTW>>
                else
-                  {Tk wm(geometry @window XMinSize#'x'#YMinSize)}
+                  {Tk wm(geometry self.window XMinSize#'x'#YMinSize)}
 
                   %%
                   <<resetTW>>
@@ -974,6 +974,18 @@ in
       end
 
       %%
+      %%
+      meth genTag(?TagObj)
+         TagObj = {New Tk.textTag tkInit(parent: self.browseWidget)}
+      end
+
+      %%
+      %%
+      meth closeTag(TagObj)
+         {TagObj close}
+      end
+
+      %%
       %%  Insert the 'VS' into the text widget at the given mark;
       %%
       meth insert(Mark VS)
@@ -981,7 +993,7 @@ in
          {Show 'tcl/tk: insert:'#Mark}
 \endif
          %%
-         {@browseWidget tk(insert(Mark VS))}
+         {self.browseWidget tk(insert(Mark VS))}
 
          %%
          <<nil>>
@@ -1001,7 +1013,7 @@ in
             {List.forAllInd Tags proc {$ I T} StrT.I = T end}
 
             %%
-            {@browseWidget tk(insert(p(Tag first) VS StrT))}
+            {self.browseWidget tk(insert(p(Tag first) VS StrT))}
 
             %%
             <<nil>>
@@ -1016,7 +1028,7 @@ in
          {Show  'tcl/tk: insertAfterMark:'#Mark#Offset#VS}
 \endif
          %%
-         {@browseWidget tk(insert(q(Mark '+' Offset 'chars') VS))}
+         {self.browseWidget tk(insert(q(Mark '+' Offset 'chars') VS))}
 
          %%
          <<nil>>
@@ -1035,7 +1047,7 @@ in
             {List.forAllInd Tags proc {$ I T} StrT.I = T end}
 
             %%
-            {@browseWidget tk(insert(p(Tag last) VS StrT))}
+            {self.browseWidget tk(insert(p(Tag last) VS StrT))}
 
             %%
             <<nil>>
@@ -1055,7 +1067,7 @@ in
             SLength = {VSLength VS}
 
             %%
-            {@browseWidget
+            {self.browseWidget
              [tk(insert(Mark VS))
               tk(mark(set NewMark q(Mark '-' SLength 'chars')))]}
 
@@ -1081,17 +1093,17 @@ in
             %%
             case NumOf == 1 then
                %%
-               {@browseWidget
+               {self.browseWidget
                 [tk(insert(Mark VS))
                  tk(tag(add PTag.1 q(Mark '-' {VSLength VS}
-                                         'chars') Mark))]}
+                                     'chars') Mark))]}
             else
                %%
                StrT = {Tuple s NumOf}
                {List.forAllInd PTag proc {$ I T} StrT.I = T end}
 
                %%
-               {@browseWidget tk(insert(Mark VS StrT))}
+               {self.browseWidget tk(insert(Mark VS StrT))}
             end
 
             %%
@@ -1115,7 +1127,7 @@ in
             case NumOf == 1 then
                StrT = q(Mark '-' LengthVS 'chars')
                %%
-               {@browseWidget
+               {self.browseWidget
                 [tk(insert(Mark VS))
                  tk(mark(set NewMark StrT))
                  tk(tag(add PTag.1 StrT Mark))]}
@@ -1125,7 +1137,7 @@ in
                {List.forAllInd PTag proc {$ I T} StrT.I = T end}
 
                %%
-               {@browseWidget
+               {self.browseWidget
                 [tk(insert(Mark VS StrT))
                  tk(mark(set NewMark q(Mark '-' LengthVS 'chars')))]}
             end
@@ -1137,13 +1149,19 @@ in
 
       %%
       %%
+      meth lowerTag(ObjLow ObjHigh)
+         {self.browseWidget tk(tag lower ObjLow ObjHigh)}
+      end
+
+      %%
+      %%
       meth getTagFirst(Tag ?Col)
 \ifdef DEBUG_TI
          {Show 'tcl/tk: getTagFirst:'#Tag}
 \endif
          local L in
             %%
-            L = {@browseWidget tkReturn(index(p(Tag first)) $)}
+            L = {self.browseWidget tkReturn(index(p(Tag first)) $)}
 
             %%
             <<nil>>
@@ -1161,7 +1179,7 @@ in
          {Show 'tcl/tk: delete:'#Tag}
 \endif
          %%
-         {@browseWidget tk(delete(p(Tag first) p(Tag last)))}
+         {self.browseWidget tk(delete(p(Tag first) p(Tag last)))}
 
          %%
          <<nil>>
@@ -1176,7 +1194,7 @@ in
          {Show 'tcl/tk: deleteAfterMark:'#Mark#Offset#N}
 \endif
          %%
-         {@browseWidget tk(delete(q(Mark '+' Offset 'chars')
+         {self.browseWidget tk(delete(q(Mark '+' Offset 'chars')
                                   q(Mark '+' (Offset + N) 'chars')))}
 
          %%
@@ -1191,7 +1209,7 @@ in
          {Show 'tcl/tk: deleteBeforeMark:'#Mark#N}
 \endif
          %%
-         {@browseWidget tk(delete(q(Mark '-' N 'chars') Mark))}
+         {self.browseWidget tk(delete(q(Mark '-' N 'chars') Mark))}
 
          %%
          <<nil>>
@@ -1205,7 +1223,7 @@ in
          {Show 'tcl/tk: deleteTag:'#Tag}
 \endif
          %%
-         {@browseWidget tk(tag(delete Tag))}
+         {self.browseWidget tk(tag(delete Tag))}
 
          %%
          <<nil>>
@@ -1219,7 +1237,7 @@ in
          {Show 'tcl/tk: unsetMark:'#Mark}
 \endif
          %%
-         {@browseWidget tk(mark(unset Mark))}
+         {self.browseWidget tk(mark(unset Mark))}
 
          %%
          <<nil>>
@@ -1233,7 +1251,7 @@ in
          {Show 'tcl/tk: duplicateMark:'#Mark}
 \endif
          %%
-         {@browseWidget tk(mark(set NewMark Mark))}
+         {self.browseWidget tk(mark(set NewMark Mark))}
 
          %%
          <<nil>>
@@ -1247,8 +1265,8 @@ in
          {Show 'tcl/tk: duplicateMarkLG:'#Mark}
 \endif
          %%
-         {@browseWidget [tk(mark(set NewMark Mark))
-                         tk(mark(gravity NewMark left))]}
+         {self.browseWidget [tk(mark(set NewMark Mark))
+                             tk(mark(gravity NewMark left))]}
 
          %%
          <<nil>>
@@ -1262,7 +1280,7 @@ in
 \endif
          case Marks
          of Mark|RestMarks then
-            {@browseWidget tk(mark(gravity Mark Gravity))}
+            {self.browseWidget tk(mark(gravity Mark Gravity))}
 
             %%
             <<setMarksGravity(RestMarks Gravity)>>
@@ -1281,7 +1299,7 @@ in
          {Show 'tcl/tk: duplicateTag:'#Tag}
 \endif
          %%
-         {@browseWidget tk(tag(add NewTag p(Tag first) p(Tag last)))}
+         {self.browseWidget tk(tag(add NewTag p(Tag first) p(Tag last)))}
 
          %%
          <<nil>>
@@ -1295,7 +1313,7 @@ in
          {Show 'tcl/tk: getTagsOnXY: ...'}
 \endif
          local RS in
-            RS = {Tk.return o(@browseWidget tag names "@"#X#","#Y)}
+            RS = {Tk.return o(self.browseWidget tag names "@"#X#","#Y)}
 
             %%
             Tags = {GetStrs RS CharSpace nil}
@@ -1306,7 +1324,7 @@ in
       %%  ... on first tagged char;
       meth getTagsOnTag(Tag ?Tags)
          local RS in
-            RS = {Tk.return o(@browseWidget tag names p(Tag first))}
+            RS = {Tk.return o(self.browseWidget tag names p(Tag first))}
 
             %%
             Tags = {GetStrs RS CharSpace nil}
@@ -1314,85 +1332,9 @@ in
       end
 
       %%
-      %%  Yields 'False' if tags are the equal (i.e. the same);
-      meth diffTags(T1 T2 ?Result)
-         %%
-         %% depends on 'TkNewName' (see at the bottom of this file);
-         Result = {DiffStrs
-                   {VirtualString.toString T1}
-                   {VirtualString.toString T2}}
-      end
-
       %%
-      %%  Get the id for the tag for calling object;
-      %%  *must* yield a value (and not a variable);
-      %%
-      meth initBindings(Obj ?Id)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: initBindings: ...'}
-\endif
-         %%
-         Id = {`TkIdServer` new(Obj $)}
-      end
-
-      %%
-      %%  Destroy the id for the object;
-      %%
-      meth exitBindings(Id)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: exitBindings'#Id}
-\endif
-         %%
-         {`TkIdServer` delete(Id)}
-      end
-
-      %%
-      %%  Bind any-key-press with the message 'Mess' wrt the Id;
-      %%
-      meth keysBind(Tag TagId KeysHandler)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: keysBind:'#Tag#TagId}
-\endif
-         %%
-         %%  Note: it takes now ASCII-characters, not keysums;
-         %% (i.e. ',' instead of 'comma' for %K);
-         {@browseWidget
-          tk(tag bind Tag '<KeyPress>'
-             {`TkTranslateMessage` TagId KeysHandler q('%A' '%x' '%y')})}
-      end
-
-      %%
-      %%  Bind the buttons events;
-      %%
-      meth buttonsBind(Tag TagId ButtonsHandler)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: buttonsBind:'#Tag#TagId}
-\endif
-         %%
-         %% discard effects of window-specific bindings (cut&paste);
-         {@browseWidget
-          [tk(tag bind Tag '<Shift-ButtonPress>' myNullProc)
-           tk(tag bind Tag '<ButtonPress>'
-              {`TkTranslateMessage` TagId ButtonsHandler '%b %x %y'})]}
-
-         %%
-         <<nil>>
-      end
-
-      %%
-      %%  Bind the buttons events;
-      %%
-      meth dButtonsBind(Tag TagId DButtonsHandler)
-\ifdef DEBUG_TI
-         {Show 'tcl/tk: dButtonsBind:'#Tag#TagId}
-\endif
-         %%
-         {@browseWidget
-          tk(tag bind Tag '<Double-ButtonPress>'
-             {`TkTranslateMessage` TagId DButtonsHandler '%b %x %y'})}
-
-         %%
-         <<nil>>
+      meth getTW($)
+         self.browseWidget
       end
 
       %%
@@ -1407,7 +1349,7 @@ in
          local HighlightTag in
             <<[genTkName(HighlightTag) duplicateTag(Tag HighlightTag)]>>
             %%
-            {@browseWidget
+            {self.browseWidget
              tk(tag(config HighlightTag
                     o(background:black foreground:white)))}
             highlightTag <- HighlightTag
@@ -1730,7 +1672,7 @@ in
             TkVar = {New Tk.variable tkInit(FValue)}
 
             %%
-            A = {New Tk.action tkInit(parent: @window
+            A = {New Tk.action tkInit(parent: self.window
                                       action: proc{$ _ _ _}
                                                  %% is not interesting;
                                                  local A in
@@ -1836,10 +1778,10 @@ in
          {Show 'tck/tk: pickTagFirst:'#Tag}
 \endif
          %%
-         {@browseWidget [tk(see(p(Tag last)))
-                        tk(see(p(Tag first)))
-                        tk(see(p(Tag first '-' 1 'lines')))
-                        tk(see(p(Tag first '+' 1 'lines')))]}
+         {self.browseWidget [tk(see(p(Tag last)))
+                         tk(see(p(Tag first)))
+                         tk(see(p(Tag first '-' 1 'lines')))
+                         tk(see(p(Tag first '+' 1 'lines')))]}
          %% tk(yview(scroll ~1 units))
       end
 
@@ -1851,10 +1793,10 @@ in
          {Show 'tck/tk: pickTagLast:'#Tag}
 \endif
          %%
-         {@browseWidget [tk(see(p(Tag first)))
-                           tk(see(p(Tag last)))
-                           tk(see(p(Tag last '+' 1 'lines')))
-                           tk(see(p(Tag last '-' 1 'lines')))]}
+         {self.browseWidget [tk(see(p(Tag first)))
+                         tk(see(p(Tag last)))
+                         tk(see(p(Tag last '+' 1 'lines')))
+                         tk(see(p(Tag last '-' 1 'lines')))]}
          %% tk(yview(scroll 1 units))
       end
 
@@ -1869,7 +1811,7 @@ in
 \endif
          %%
          local L in
-            {@browseWidget tkReturn(tag(names Pos) L)}
+            {self.browseWidget tkReturn(tag(names Pos) L)}
             {TagsListLoop {Reverse L} List nil}
          end
       end
@@ -1877,11 +1819,71 @@ in
              */
 
       %%
-      %%  DEBUG:
-      %%  Get the text widget object;
+   end
+
+   %%
+   %%
+   %%
+   class TermTag from Tk.textTag
       %%
-      meth getTW(?TW)
-         TW = @browseWidget
+      %%  no features and attributes - that's only an interface;
+      %%  However, we reference here the 'self.browseWidget' feature;
+
+      %%
+      meth tagInit
+         <<tkInit(parent: {self.widgetObj getTW($)})>>
+      end
+
+      %%
+      %%  Bind any-key-press with the message 'Mess' wrt the Id;
+      %%
+      meth keysBind(KeysHandler)
+\ifdef DEBUG_TI
+         {Show 'TermTag::keysBind:'#self.term}
+\endif
+         %%
+         %%  Note: it takes now ASCII-characters, not keysums;
+         %% (i.e. ',' instead of 'comma' for %K);
+         <<tkBind(event: '<KeyPress>'
+                  args: ['A']
+                  break: True
+                  action: self#KeysHandler)>>
+                  %% action: proc {$ KS}
+                  %%           {self KeysHandler(KS)}
+                  %%         end
+      end
+
+      %%
+      %%  Bind the buttons events;
+      %%
+      meth buttonsBind(ButtonsHandler)
+\ifdef DEBUG_TI
+         {Show 'TermTag::buttonsBind:'#self.term}
+\endif
+         %%
+         %% discard effects of window-specific bindings (cut&paste);
+         <<[tkBind(event: '<Shift-ButtonPress>'
+                   args: ['b']
+                   break: True
+                   action: self#ButtonsHandler)
+            tkBind(event: '<ButtonPress>'
+                   args: ['b']
+                   break: True
+                   action: self#ButtonsHandler)]>>
+      end
+
+      %%
+      %%  Bind the buttons events;
+      %%
+      meth dButtonsBind(DButtonsHandler)
+\ifdef DEBUG_TI
+         {Show 'TermTag::dButtonsBind:'#self.term}
+\endif
+         %%
+         <<tkBind(event: '<Double-ButtonPress>'
+                  args: ['b']
+                  break: True
+                  action: self#DButtonsHandler)>>
       end
 
       %%
@@ -1980,7 +1982,7 @@ in
               %%
               bindtags(MessageWidget q(MessageWidget))
               %%  i.e. nothing;
-              ]}
+             ]}
 
             %%
             <<nil>>
@@ -2202,7 +2204,7 @@ in
               %%
               bindtags(MessageWidget q(MessageWidget))
               %%  i.e. nothing;
-              ]}
+             ]}
 
             %% sync;
             {Wait Window}

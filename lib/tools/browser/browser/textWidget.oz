@@ -133,15 +133,6 @@ in
    class PseudoTermTWObject
       from UrObject
       %%
-      %%
-      feat
-         tag: InitValue         % unique value;
-      %% self.tag is needed in 'pseudo' object since there is a procedure
-      %% which collects parents tags up to the root (which is necessary,
-      %% in turn, since it's necessary sometimes to stretch parent tags
-      %% to the child (first and last arguments of lists and hash-tuples;)
-
-      %%
       attr
          shown: InitValue
 
@@ -213,12 +204,11 @@ in
    %%  Pseudo objects for various filling character sequences;
    %%
    class PseudoTermTWDots
-      from UrObject
+      from UrObject TermTag
       %%
       feat
          widgetObj
          parentObj
-         tag
          term: InitValue        % unique value;
          name: DOpenFS
          size: {VSLength DOpenFS}
@@ -230,7 +220,7 @@ in
          self.parentObj = ParentObj
 
          %%
-         self.tag = {self.widgetObj genTkName($)}
+         <<tagInit>>
       end
 
       %%
@@ -253,7 +243,7 @@ in
          %%
          %%  Note: we don't need to stretch parent's tag explicitly,
          %% since records are "enclosed" structures;
-         {self.widgetObj insertWithTag(Mark self.name [self.tag])}
+         {self.widgetObj insertWithTag(Mark self.name [self])}
 
          %%
          Sync = True
@@ -262,17 +252,12 @@ in
       %%
       %%
       meth undraw
-         local Tag in
-            Tag = self.tag
-
-            %%
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
-         end
+         {self.widgetObj [delete(self) deleteTag(self)]}
       end
 
       %%
       meth setUndrawn
-         {self.widgetObj deleteTag(self.tag)}
+         {self.widgetObj deleteTag(self)}
       end
 
       %%
@@ -352,12 +337,11 @@ in
    %%
    %%
    class PseudoTermTWDotsQuestion
-      from UrObject
+      from UrObject TermTag
       %%
       feat
          widgetObj
          parentObj
-         tag
          term: InitValue        % unique value;
          name: DOpenFS#DUnshownPFs
          size: {VSLength DOpenFS#DUnshownPFs}
@@ -368,7 +352,7 @@ in
          self.widgetObj = ParentObj.widgetObj
          self.parentObj = ParentObj
          %%
-         self.tag = {self.widgetObj genTkName($)}
+         <<tagInit>>
       end
 
       %%
@@ -391,7 +375,7 @@ in
          %%
          %%  Note: we don't need to stretch parent's tag explicitly,
          %% since records are "enclosed" structures;
-         {self.widgetObj insertWithTag(Mark self.name [self.tag])}
+         {self.widgetObj insertWithTag(Mark self.name [self])}
 
          %%
          Sync = True
@@ -400,17 +384,13 @@ in
       %%
       %%
       meth undraw
-         local Tag in
-            Tag = self.tag
-
-            %%
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
-         end
+         %%
+         {self.widgetObj [delete(self) deleteTag(self)]}
       end
 
       %%
       meth setUndrawn
-         {self.widgetObj deleteTag(self.tag)}
+         {self.widgetObj deleteTag(self)}
       end
 
       %%
@@ -425,13 +405,11 @@ in
    %%
    %%
    class PseudoTermTWCommas
-      from UrObject
+      from UrObject TermTag
       %%
       feat
          widgetObj
          parentObj
-         tag
-         tagId
          term: InitValue        % unique value;
          name: DNameUnshown
          size: {VSLength DOpenFS}
@@ -445,16 +423,12 @@ in
             %%
             self.widgetObj = WidgetObj
             self.parentObj = ParentObj
-            self.tag = {WidgetObj genTkName($)}
-            self.tagId = {WidgetObj initBindings(self $)}
+            <<tagInit>>
          end
       end
 
       %%
       meth destroy
-         %%
-         {self.widgetObj exitBindings(self.tagId)}
-
          %%
          <<close>>
       end
@@ -475,16 +449,12 @@ in
          %%  Note: In this case (',,,') it's possible that commas don't get
          %% tagged by all necessary tags. So, we have to stretch them
          %% explicitly.
-         local IsEnclosed Tag TagId in
-            %%
-            Tag = self.tag
-            TagId = self.tagId
-
+         local IsEnclosed in
             %%
             {CallMethod self.parentObj isEnclosed(IsEnclosed)}
             case IsEnclosed then
                %% no problems;
-               {self.widgetObj insertWithTag(Mark self.name [Tag])}
+               {self.widgetObj insertWithTag(Mark self.name [self])}
 
                %%
                Sync = True
@@ -502,9 +472,9 @@ in
             end
 
             %%  init bindings;
-            {self.widgetObj [keysBind(Tag TagId keysHandlerPC)
-                             buttonsBind(Tag TagId buttonsHandlerPC)
-                             dButtonsBind(Tag TagId dButtonsHandlerPC)]}
+            <<[keysBind(keysHandlerPC)
+               buttonsBind(buttonsHandlerPC)
+               dButtonsBind(dButtonsHandlerPC)]>>
          end
       end
 
@@ -513,99 +483,58 @@ in
       %%  Yields a list of parents tags in descending order
       %% (i.e. the tag of a top-level term is the last one);
       meth !GetTags(?Tags)
-         Tags = self.tag|{CallMethod self.parentObj GetTags($)}
+         Tags = self|{CallMethod self.parentObj GetTags($)}
       end
 
       %%
       %%
       meth keysHandlerPC(InStr)
          %%
-         %%  Hack: let's execute 'TW' handlers of *all* relevant objects
-         %% in one thread - it's probable that all objects get the same
-         %% list of tags under '@x,y' in text widget;
-         %%  Actually, we don't need tags there!
+         {Wait {String.is InStr}}
+
          %%
-         local KC X Y Tags in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
-
+         thread
             %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
-
-            %%
-            case {All Tags IsValue} then
-               %%
-               %%  for the case if 'Tags' are returned immediately;
-               thread
-                  {self.parentObj keysHandler(KC)}
-                  %%
-                  %%  pending events are postponed;
-               end
-
-               %%
-               <<nil>>
-            end
+            %%  just forward the message to the parent...
+            {self.parentObj keysHandler(InStr)}
          end
       end
 
       %%
       %%
       meth buttonsHandlerPC(InStr)
-         local KC X Y Tags in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
-            %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
+         %%
+         {Wait {String.is InStr}}
 
-            %%
-            case {All Tags IsValue} then
-               %%
-               thread
-                  {self.parentObj buttonsHandler(KC)}
-                  %%
-               end
-
-               %%
-               <<nil>>
-            end
+         %%
+         thread
+            {self.parentObj buttonsHandler(InStr)}
          end
       end
 
       %%
       %%
       meth dButtonsHandlerPC(InStr)
-         local KC X Y Tags in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
-            %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
+         %%
+         {Wait {String.is InStr}}
 
-            %%
-            case {All Tags IsValue} then
-               %%
-               thread
-                  {self.parentObj dButtonsHandler(KC)}
-                  %%
-               end
-
-               %%
-               <<nil>>
-            end
+         %%
+         thread
+            {self.parentObj dButtonsHandler(InStr)}
          end
       end
 
       %%
       %%
       meth undraw
-         local Tag in
-            Tag = self.tag
-
-            %%
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
-         end
+         %%
+         {self.widgetObj [delete(self) deleteTag(self)]}
       end
 
       %%
       %%
       meth setUndrawn
-         {self.widgetObj deleteTag(self.tag)}
+         {self.widgetObj deleteTag(self)}
       end
 
       %%
@@ -624,12 +553,7 @@ in
    %% and, therefore, they are saved as features;
    %%
    class MetaTWTermObject
-      from UrObject
-      %%
-      feat
-         tag                    % (tcl/tk) tag;
-         tagId                  % tag identification (Oz Tcl/Tk);
-
+      from UrObject TermTag
       %%
       attr
          shown: InitValue
@@ -650,7 +574,7 @@ in
       %%
       meth pickPlace
          case @shown then
-            {self.widgetObj pickTagFirst(self.tag)}
+            {self.widgetObj pickTagFirst(self)}
             %% ... just simulate the first mouse button's click;
             <<buttonsHandler("1")>>
          else
@@ -660,119 +584,25 @@ in
 
       %%
       %%
+      meth isActive($)
+         True
+      end
+
+      %%
+      %%
       meth initBindings
-         local TagId in
-            TagId = self.tagId
-
+         case <<isActive($)>> then
             %%
-            case TagId == InitValue then true
+            case self.parentObj.type == T_PSTerm then true
             else
-               Tag
-            in
-               Tag = self.tag
-
-               %%
-               {self.widgetObj [keysBind(Tag TagId keysHandlerTW)
-                                buttonsBind(Tag TagId buttonsHandlerTW)
-                                dButtonsBind(Tag TagId dButtonsHandlerTW)]}
+               {self.widgetObj lowerTag(self self.parentObj)}
             end
-         end
-      end
-
-      %%
-      %%
-      %%  figures out whether 'keysHandler' should be called;
-      meth keysHandlerTW(InStr)
-\ifdef DEBUG_TW
-         {Show 'MetaTermTWObject::keysHandlerTW is applied'#self.term}
-\endif
-         local KC X Y Tags NumOf in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
 
             %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
-            NumOf = {Length Tags}
-            {Show '!'#{Map Tags String.toAtom}#NumOf#self.tag}
-
-            %%
-            case
-               {self.widgetObj diffTags({Nth Tags NumOf} self.tag $)}
-            then
-               true             % not my own tag;
-                                % this could be used in the future;
-            else
-               %%
-               %%  produce a new thread - let other handler start;
-               thread
-                  %%
-                  {self keysHandler(KC)}
-                  %%
-                  %%  pending events are postponed;
-               end
-
-               %%
-               <<nil>>
-            end
-         end
-      end
-
-      %%
-      %%  figures out whether 'keysHandler' should be called;
-      meth buttonsHandlerTW(InStr)
-\ifdef DEBUG_TW
-         {Show 'MetaTermTWObject::buttonsHanderTW is applied'#self.term}
-\endif
-         local KC X Y Tags NumOf in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
-
-            %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
-            NumOf = {Length Tags}
-
-            %%
-            case {self.widgetObj diffTags({Nth Tags NumOf} self.tag $)} then
-               true             % no my own tag;
-                                % this could be used in the future;
-            else
-               %%
-               thread
-                  {self buttonsHandler(KC)}
-               end
-
-               %%
-               <<nil>>
-            end
-         end
-      end
-
-      %%
-      %%  figures out whether 'keysHandler' should be called;
-      meth dButtonsHandlerTW(InStr)
-\ifdef DEBUG_TW
-         {Show 'MetaTermTWObject::dButtonsHanderTW is applied'#self.term}
-\endif
-         local KC X Y Tags NumOf in
-            [KC X Y] = {GetStrs InStr CharSpace nil}
-
-            %%
-            Tags = {self.widgetObj getTagsOnXY(X Y $)}
-            NumOf = {Length Tags}
-
-            %%
-            case
-               {self.widgetObj diffTags({Nth Tags NumOf} self.tag $)}
-            then
-               true             % no my own tag;
-                                % this could be used in the future;
-            else
-               %%
-               thread
-                  {self dButtonsHandler(KC)}
-               end
-
-               %%
-               <<nil>>
-            end
+            <<[keysBind(keysHandler)
+               buttonsBind(buttonsHandler)
+               dButtonsBind(dButtonsHandler)]>>
+         else true
          end
       end
 
@@ -781,7 +611,7 @@ in
       %%  Yields a list of parents tags in descending order
       %% (i.e. the tag of a top-level term is the last one);
       meth !GetTags(?Tags)
-         Tags = self.tag|{CallMethod self.parentObj GetTags($)}
+         Tags = self|{CallMethod self.parentObj GetTags($)}
       end
 
       %%
@@ -792,7 +622,7 @@ in
       %% necessary tags;
       meth getTagInfo(?PseudoTag)
          PseudoTag = case {CallMethod self.parentObj isEnclosed($)} then
-                        [self.tag]
+                        [self]
                      else
                         <<GetTags($)>>
                      end
@@ -807,22 +637,17 @@ in
          else true
          end
 \endif
-         %%
-         case self.tagId == InitValue then true
-         else {self.widgetObj exitBindings(self.tagId)}
-         end
+         true
       end
 
       %%
       %%
       meth undraw
          case @shown then
-            Tag
-         in
-            Tag = self.tag
+            %%
+            {self.widgetObj [delete(self) deleteTag(self)]}
 
             %%
-            {self.widgetObj [delete(Tag) deleteTag(Tag)]}
             shown <- False
          else true
          end
@@ -831,7 +656,7 @@ in
       %%
       %%
       meth setUndrawn
-         {self.widgetObj deleteTag(self.tag)}
+         {self.widgetObj deleteTag(self)}
 
          %%
          shown <- False
@@ -860,23 +685,18 @@ in
 \ifdef DEBUG_TW
          {Show 'AtomObject::initOut method for the term '#self.term}
 \endif
-         local AreInactive Tag TagId in
-            AreInactive = {self.store read(StoreAreInactive $)}
-            %%
-            Tag = {self.widgetObj genTkName($)}
+         %%
+         <<tagInit>>
 
-            %%
-            TagId = case AreInactive then InitValue
-                    else
-                       {self.widgetObj initBindings(self $)}
-                    end
+         %%
+         size <- {VSLength self.name}
+         shown <- False
+      end
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
-         end
+      %%
+      %%
+      meth isActive($)
+         {self.store read(StoreAreInactive $)} == False
       end
 
       %%
@@ -890,6 +710,8 @@ in
 
             %%
             {self.widgetObj insertWithTag(Mark self.name PTag)}
+
+            %%
             shown <- True
             Sync = True
 
@@ -916,24 +738,18 @@ in
 \ifdef DEBUG_TW
          {Show 'IntObject::initOut method for the term '#self.term}
 \endif
-         local AreInactive Tag TagId in
-            AreInactive = {self.store read(StoreAreInactive $)}
+         %%
+         <<tagInit>>
 
-            %%
-            {self.widgetObj genTkName(Tag)}
+         %%
+         size <- {VSLength self.name}
+         shown <- False
+      end
 
-            %%
-            TagId = case AreInactive then InitValue
-                    else
-                       {self.widgetObj initBindings(self $)}
-                    end
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
-         end
+      %%
+      %%
+      meth isActive($)
+         {self.store read(StoreAreInactive $)} == False
       end
 
       %%
@@ -947,6 +763,8 @@ in
 
             %%
             {self.widgetObj insertWithTag(Mark self.name PTag)}
+
+            %%
             shown <- True
             Sync = True
 
@@ -972,24 +790,18 @@ in
 \ifdef DEBUG_TW
          {Show 'FloatObject::initOut method for the term '#self.term}
 \endif
-         local AreInactive Tag TagId in
-            AreInactive = {self.store read(StoreAreInactive $)}
+         %%
+         <<tagInit>>
 
-            %%
-            {self.widgetObj genTkName(Tag)}
+         %%
+         size <- {VSLength self.name}
+         shown <- False
+      end
 
-            %%
-            TagId = case AreInactive then InitValue
-                    else
-                       {self.widgetObj initBindings(self $)}
-                    end
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
-         end
+      %%
+      %%
+      meth isActive($)
+         {self.store read(StoreAreInactive $)} == False
       end
 
       %%
@@ -1003,6 +815,8 @@ in
 
             %%
             {self.widgetObj insertWithTag(Mark self.name PTag)}
+
+            %%
             shown <- True
             Sync = True
 
@@ -1028,31 +842,25 @@ in
 \ifdef DEBUG_TW
          {Show 'NameObject::initOut method for the term '#self.term}
 \endif
-         local AreInactive Tag TagId in
-            AreInactive = {self.store read(StoreAreInactive $)}
+         %%
+         <<tagInit>>
 
-            %%
-            {self.widgetObj genTkName(Tag)}
+         %%
+         size <- {VSLength self.name}
+         shown <- False
 
-            %%
-            TagId = case AreInactive then InitValue
-                    else
-                       {self.widgetObj initBindings(self $)}
-                    end
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
-
-            %%
-            case @refVarName == '' then true
-            else
-               size <- @size + DSpace + {VSLength @refVarName} +
-               case <<needsBracesRef($)>> then DDSpace else 0 end
-            end
+         %%
+         case @refVarName of '' then true
+         else
+            size <- @size + DSpace + {VSLength @refVarName} +
+            case <<needsBracesRef($)>> then DDSpace else 0 end
          end
+      end
+
+      %%
+      %%
+      meth isActive($)
+         {self.store read(StoreAreInactive $)} == False
       end
 
       %%
@@ -1095,11 +903,13 @@ in
       %%
       %%
       meth insertRefVar
+\ifdef DEBUG_TW
+         {Show 'NameObject::insertRefVar method for the term '#self.term}
+\endif
          case @shown then
-            Tag Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
+            Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            Tag = self.tag
             <<GetTags(Tags)>>
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
@@ -1107,15 +917,15 @@ in
 
             %%
             case <<needsBracesRef($)>> then
-               {self.widgetObj [insertBeforeTag(Tag Tags
+               {self.widgetObj [insertBeforeTag(self Tags
                                                 DLRBraceS#RefVarName#DEqualS)
-                                insertAfterTag(Tag Tags DRRBraceS)]}
+                                insertAfterTag(self Tags DRRBraceS)]}
 
                %%
                PrfxSize = DDSpace + RefVarNameLen
                SfxSize = DSpace
             else
-               {self.widgetObj insertBeforeTag(Tag Tags RefVarName#DEqualS)}
+               {self.widgetObj insertBeforeTag(self Tags RefVarName#DEqualS)}
 
                %%
                PrfxSize = DSpace + RefVarNameLen
@@ -1267,7 +1077,7 @@ in
             ActualTWWidth StartOffset MetaSize
          in
             ActualTWWidth = {self.store read(StoreTWWidth $)}
-            StartOffset = {self.widgetObj getTagFirst(self.tag $)}
+            StartOffset = {self.widgetObj getTagFirst(self $)}
             MetaSize = @size
 
             %%
@@ -1469,11 +1279,13 @@ in
       %%
       %%
       meth insertRefVar
+\ifdef DEBUG_TW
+         {Show 'MetaTupleTWTermObject::insertRefVar: '#self.term}
+\endif
          case @shown then
-            Tag Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
+            Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            Tag = self.tag
             <<GetTags(Tags)>>
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
@@ -1481,15 +1293,15 @@ in
 
             %%
             case <<needsBracesRef($)>> then
-               {self.widgetObj [insertBeforeTag(Tag Tags
+               {self.widgetObj [insertBeforeTag(self Tags
                                                 DLRBraceS#RefVarName#DEqualS)
-                                insertAfterTag(Tag Tags DRRBraceS)]}
+                                insertAfterTag(self Tags DRRBraceS)]}
 
                %%
                PrfxSize = DDSpace + RefVarNameLen
                SfxSize = DSpace
             else
-               {self.widgetObj insertBeforeTag(Tag Tags RefVarName#DEqualS)}
+               {self.widgetObj insertBeforeTag(self Tags RefVarName#DEqualS)}
 
                %%
                PrfxSize = DSpace + RefVarNameLen
@@ -1539,18 +1351,18 @@ in
       %%
       meth undraw
          case @shown then
-            Tag TmpTag
+            TmpTag
          in
-            Tag = self.tag
-
             %%
-            {self.widgetObj [genTkName(TmpTag) duplicateTag(Tag TmpTag)]}
+            {self.widgetObj [genTag(TmpTag) duplicateTag(self TmpTag)]}
 
             %%
             <<setUndrawn>>
 
             %%
-            {self.widgetObj [delete(TmpTag) deleteTag(TmpTag)]}
+            %%  closeTag both deletes the tag and closes the object;
+            {self.widgetObj [delete(TmpTag)
+                             closeTag(TmpTag)]}
 
             %%
             <<nil>>
@@ -1568,7 +1380,7 @@ in
          <<mapObjInd(RemoveMark)>>
 
          %%
-         {self.widgetObj deleteTag(self.tag)}
+         {self.widgetObj deleteTag(self)}
 
          %%
          shown <- False
@@ -1793,45 +1605,38 @@ in
 \ifdef DEBUG_TW
          {Show 'WFListObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
+         %%
+         shown <- False
 
+         %%
+         case <<areCommas($)>> then
             %%
-            shown <- False
-
-            %%
-            case <<areCommas($)>> then
-               %%
-               %% commas;
-               Obj
+            %% commas;
+            Obj
             in
-               Obj = {New PseudoTermTWCommas init(parentObj: self)}
-
-               %%
-               <<setCommasObj(Obj)>>
-            else true
-            end
-
-            %% '[]' + (TotalWidth - DSpace), i.e. without subterms so far;
-            size <- DSpace + <<getTotalWidth($)>>
+            Obj = {New PseudoTermTWCommas init(parentObj: self)}
 
             %%
-            case @refVarName == '' then true
-            else
-               size <- @size + DSpace + {VSLength @refVarName} +
-               case <<needsBracesRef($)>> then DSpace else 0 end
-            end
-
-            %%  sets both subterm sizes and global size ('@size');
-            <<mapObjInd(InitOutInfoRec)>>
-            %%
+            <<setCommasObj(Obj)>>
+         else true
          end
+
+         %% '[]' + (TotalWidth - DSpace), i.e. without subterms so far;
+         size <- DSpace + <<getTotalWidth($)>>
+
+         %%
+         case @refVarName == '' then true
+            else
+            size <- @size + DSpace + {VSLength @refVarName} +
+            case <<needsBracesRef($)>> then DSpace else 0 end
+         end
+
+         %%  sets both subterm sizes and global size ('@size');
+         <<mapObjInd(InitOutInfoRec)>>
+         %%
       end
 
       %%
@@ -1894,6 +1699,9 @@ in
             %%
             <<checkLayout>>
 
+            %%
+            <<initBindings>>
+
             %%  Draw the subterms;
             %%
             %%  NOTE
@@ -1909,8 +1717,7 @@ in
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -1961,21 +1768,15 @@ in
 \ifdef DEBUG_TW
          {Show 'TupleObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId NameGlueMark Name NameLen in
+         local Name NameLen in
             Name = self.name
             NameLen = {VSLength Name}
 
             %%
-            Tag = {self.widgetObj genTkName($)}
-            NameGlueMark = {self.widgetObj genTkName($)}
+            <<tagInit>>
 
             %%
-            TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            self.nameGlueMark = NameGlueMark
+            self.nameGlueMark = {self.widgetObj genTkName($)}
 
             %%
             shown <- False
@@ -2076,23 +1877,14 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -2220,11 +2012,13 @@ in
       %%
       %%  special edition (since we should insert probable parentheses);
       meth insertRefVar
+\ifdef DEBUG_TW
+         {Show 'MetaListTWTermObject::insertRefVar: '#self.term}
+\endif
          case @shown then
-            Tag Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
+            Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            Tag = self.tag
             <<GetTags(Tags)>>
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
@@ -2236,9 +2030,9 @@ in
                   %%
                   %%  we have already '(<E1>|...|<En>)';
                   {self.widgetObj
-                   [insertBeforeTag(Tag Tags
+                   [insertBeforeTag(self Tags
                                     DLRBraceS#RefVarName#DEqualS)
-                    insertAfterTag(Tag Tags DRRBraceS)]}
+                    insertAfterTag(self Tags DRRBraceS)]}
 
                   %%
                   PrfxSize = DDSpace + RefVarNameLen
@@ -2257,9 +2051,9 @@ in
                   case {All RightMostMarks IsValue} then
                      {self.widgetObj
                       [setMarksGravity(RightMostMarks left)
-                       insertBeforeTag(Tag Tags
+                       insertBeforeTag(self Tags
                                        DLRBraceS#RefVarName#DEqualS#DLRBraceS)
-                       insertAfterTag(Tag Tags DRRBraceS)
+                       insertAfterTag(self Tags DRRBraceS)
                        setMarksGravity(RightMostMarks right)]}
 
                      %%
@@ -2272,8 +2066,8 @@ in
                end
             else
                case <<needsBracesGen($)>> then
-                     %%
-                  {self.widgetObj insertBeforeTag(Tag Tags RefVarName#DEqualS)}
+                  %%
+                  {self.widgetObj insertBeforeTag(self Tags RefVarName#DEqualS)}
 
                   %%
                   PrfxSize = DSpace + RefVarNameLen
@@ -2291,8 +2085,8 @@ in
                   case {All RightMostMarks IsValue} then
                      {self.widgetObj
                       [setMarksGravity(RightMostMarks left)
-                       insertBeforeTag(Tag Tags RefVarName#DEqualS#DLRBraceS)
-                       insertAfterTag(Tag Tags DRRBraceS)
+                       insertBeforeTag(self Tags RefVarName#DEqualS#DLRBraceS)
+                       insertAfterTag(self Tags DRRBraceS)
                        setMarksGravity(RightMostMarks right)]}
 
                      %%
@@ -2390,36 +2184,28 @@ in
 \ifdef DEBUG_TW
          {Show 'ListObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
+         %%
+         shown <- False
 
-            %%
-            shown <- False
+         %%  single '|';
+         size <- DSpace
 
-            %%  single '|';
-            size <- DSpace
-
-            %%
-            case @refVarName == '' then
-               %%
-               case <<needsBracesGen($)>> then
-                  size <- @size + DDSpace
-               else true
-               end
-            else
-               size <- @size + DSpace + {VSLength @refVarName} +
-               case <<needsBracesRef($)>> then DQSpace else DDSpace end
+         %%
+         case @refVarName == '' then
+            case <<needsBracesGen($)>> then
+               size <- @size + DDSpace
+            else true
             end
-
-            %%  sets both subterm sizes and global size ('@size');
-            <<mapObjInd(InitOutInfoRec)>>
+         else
+            size <- @size + DSpace + {VSLength @refVarName} +
+            case <<needsBracesRef($)>> then DQSpace else DDSpace end
          end
+
+         %%  sets both subterm sizes and global size ('@size');
+         <<mapObjInd(InitOutInfoRec)>>
       end
 
       %%
@@ -2523,23 +2309,14 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -2593,49 +2370,41 @@ in
 \ifdef DEBUG_TW
          {Show 'HashTupleObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
+         %%
+         <<tagInit>>
+
+         %%
+         shown <- False
+
+         %%
+         case <<areCommas($)>> then
+            Obj
+         in
             %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+            %% commas;
+            Obj = {New PseudoTermTWCommas init(parentObj: self)}
 
             %%
-            self.tag = Tag
-            self.tagId = TagId
+            <<setCommasObj(Obj)>>
+         else true
+         end
 
-            %%
-            shown <- False
+         %%  (simple) glues _between_ subterms;
+         size <- <<getTotalWidth($)>> - DSpace
 
-            %%
-            case <<areCommas($)>> then
-               Obj
-            in
-               %%
-               %% commas;
-               Obj = {New PseudoTermTWCommas init(parentObj: self)}
-
-               %%
-               <<setCommasObj(Obj)>>
+         %%
+         case @refVarName == '' then
+            case <<needsBracesGen($)>> then
+               size <- @size + DDSpace
             else true
             end
-
-            %%  (simple) glues _between_ subterms;
-            size <- <<getTotalWidth($)>> - DSpace
-
-            %%
-            case @refVarName == '' then
-               %%
-               case <<needsBracesGen($)>> then
-                  size <- @size + DDSpace
-               else true
-               end
-            else
-               size <- @size + DSpace + {VSLength @refVarName} +
-               case <<needsBracesRef($)>> then DQSpace else DDSpace end
-            end
-
-            %%  sets both subterm sizes and global size ('@size');
-            <<mapObjInd(InitOutInfoRec)>>
+         else
+            size <- @size + DSpace + {VSLength @refVarName} +
+            case <<needsBracesRef($)>> then DQSpace else DDSpace end
          end
+
+         %%  sets both subterm sizes and global size ('@size');
+         <<mapObjInd(InitOutInfoRec)>>
       end
 
       %%
@@ -2731,23 +2500,14 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -2801,49 +2561,41 @@ in
 \ifdef DEBUG_TW
          {Show 'HashTupleObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
+         %%
+         <<tagInit>>
+
+         %%
+         shown <- False
+
+         %%
+         case <<areCommas($)>> then
+            Obj
+         in
             %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+            %% commas;
+            Obj = {New PseudoTermTWCommas init(parentObj: self)}
 
             %%
-            self.tag = Tag
-            self.tagId = TagId
+            <<setCommasObj(Obj)>>
+         else true
+         end
 
-            %%
-            shown <- False
+         %%  (simple) glues _between_ subterms;
+         size <- <<getTotalWidth($)>> - DSpace
 
-            %%
-            case <<areCommas($)>> then
-               Obj
-            in
-               %%
-               %% commas;
-               Obj = {New PseudoTermTWCommas init(parentObj: self)}
-
-               %%
-               <<setCommasObj(Obj)>>
+         %%
+         case @refVarName == '' then
+            case <<needsBracesGen($)>> then
+               size <- @size + DDSpace
             else true
             end
-
-            %%  (simple) glues _between_ subterms;
-            size <- <<getTotalWidth($)>> - DSpace
-
-            %%
-            case @refVarName == '' then
-               %%
-               case <<needsBracesGen($)>> then
-                  size <- @size + DDSpace
-               else true
-               end
-            else
-               size <- @size + DSpace + {VSLength @refVarName} +
-               case <<needsBracesRef($)>> then DQSpace else DDSpace end
-            end
-
-            %%  sets both subterm sizes and global size ('@size');
-            <<mapObjInd(InitOutInfoRec)>>
+         else
+            size <- @size + DSpace + {VSLength @refVarName} +
+            case <<needsBracesRef($)>> then DQSpace else DDSpace end
          end
+
+         %%  sets both subterm sizes and global size ('@size');
+         <<mapObjInd(InitOutInfoRec)>>
       end
 
       %%
@@ -2946,23 +2698,14 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -3643,21 +3386,15 @@ in
 \ifdef DEBUG_TW
          {Show 'RecordObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId NameGlueMark Name NameLen in
+         local Name NameLen in
             Name = self.name
             NameLen = {VSLength Name}
 
             %%
-            Tag = {self.widgetObj genTkName($)}
-            NameGlueMark = {self.widgetObj genTkName($)}
+            <<tagInit>>
 
             %%
-            TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            self.nameGlueMark = NameGlueMark
+            self.nameGlueMark = {self.widgetObj genTkName($)}
 
             %%
             shown <- False
@@ -3775,23 +3512,14 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
-               %%
-               <<initBindings>>
+               <<nil>>
             end
          end
       end
@@ -3844,22 +3572,18 @@ in
 \ifdef DEBUG_TW
          {Show 'ORecordObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId NameGlueMark Name NameLen in
+         local Name NameLen in
             Name = @name
             NameLen = {VSLength Name}
 
             %%
-            Tag = {self.widgetObj genTkName($)}
+            <<tagInit>>
+
+            %%
             self.labelMark = {self.widgetObj genTkName($)}
-            NameGlueMark = {self.widgetObj genTkName($)}
 
             %%
-            TagId = {self.widgetObj initBindings(self $)}
-
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            self.nameGlueMark = NameGlueMark
+            self.nameGlueMark = {self.widgetObj genTkName($)}
 
             %%
             shown <- False
@@ -3985,25 +3709,15 @@ in
             %%
             <<checkLayout>>
 
-            %%  Draw the subterms;
             %%
-            %%  NOTE
-            %%  All the subterms are drawn concurrently, but after
-            %% finishing the 'checkLayout' for the term itself.
-            %% It means that some 'checkLayout' of subterms may use
-            %% invalid actual subterm offset (because its
-            %% predecessor is not yet drawn completely), but this is
-            %% not a problem: if there is more than one subterm in a
-            %% row, they fit altogether in this line (and, in turn,
-            %% all their glues are simple).
+            <<initBindings>>
+
             %%
             <<mapObjIndArg(DrawSubterm nil SyncList)>>
             case {All SyncList IsValue} then
                Sync = True
                %%
                <<initTypeWatching>>
-               %%
-               <<initBindings>>
             end
          end
       end
@@ -4199,6 +3913,15 @@ in
       end
       %%
       %%  'pickPlace' ...
+
+      meth isActive($)
+         case self.isCompound then
+            <<RecordTWTermObject isActive($)>>
+         else
+            <<NameTWTermObject isActive($)>>
+         end
+      end
+
       %%  'initBindings' ... (and all the 'TW' handlers;)
       %%  'getTags' ...
       %%  'getTagInfo' ...
@@ -4311,26 +4034,21 @@ in
 \ifdef DEBUG_TW
          {Show 'VariableObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
+         %%
+         size <- {VSLength self.name}
+         shown <- False
 
-            %%
-            case {self.store read(StoreHeavyVars $)} then
-               size <- DInfinite   % heavy enough ;)))))
+         %%
+         case {self.store read(StoreHeavyVars $)} then
+            size <- DInfinite   % heavy enough ;)))))
+         else
+            case @refVarName == '' then true
             else
-               case @refVarName == '' then true
-               else
-                  size <- @size + DSpace + {VSLength @refVarName} +
-                  case <<needsBracesRef($)>> then DDSpace else 0 end
-               end
+               size <- @size + DSpace + {VSLength @refVarName} +
+               case <<needsBracesRef($)>> then DDSpace else 0 end
             end
          end
       end
@@ -4343,6 +4061,7 @@ in
 \endif
          local PTag in
             PTag = <<getTagInfo($)>>
+
             %%
             case @refVarName == '' then
                {self.widgetObj insertWithTag(Mark self.name PTag)}
@@ -4377,11 +4096,13 @@ in
       %%
       %%
       meth insertRefVar
+\ifdef DEBUG_TW
+         {Show 'VariableObject::insertRefVar method for the term '#self.term}
+\endif
          case @shown then
-            Tag Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
+            Tags RefVarName RefVarNameLen Size NewSize PrfxSize SfxSize
          in
             %%
-            Tag = self.tag
             <<GetTags(Tags)>>
             RefVarName = @refVarName
             RefVarNameLen = {VSLength RefVarName}
@@ -4389,15 +4110,15 @@ in
 
             %%
             case <<needsBracesRef($)>> then
-               {self.widgetObj [insertBeforeTag(Tag Tags
+               {self.widgetObj [insertBeforeTag(self Tags
                                                 DLRBraceS#RefVarName#DEqualS)
-                                insertAfterTag(Tag Tags DRRBraceS)]}
+                                insertAfterTag(self Tags DRRBraceS)]}
 
                %%
                PrfxSize = DDSpace + RefVarNameLen
                SfxSize = DSpace
             else
-               {self.widgetObj insertBeforeTag(Tag Tags RefVarName#DEqualS)}
+               {self.widgetObj insertBeforeTag(self Tags RefVarName#DEqualS)}
 
                %%
                PrfxSize = DSpace + RefVarNameLen
@@ -4481,17 +4202,12 @@ in
 \ifdef DEBUG_TW
          {Show 'ReferenceObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength @name}
-            shown <- False
-         end
+         %%
+         size <- {VSLength @name}
+         shown <- False
       end
 
       %%
@@ -4530,17 +4246,12 @@ in
 \ifdef DEBUG_TW
          {Show 'ShrunkenObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- DTSpace
-            shown <- False
-         end
+         %%
+         size <- DTSpace
+         shown <- False
       end
 
       %%
@@ -4580,19 +4291,12 @@ in
 \ifdef DEBUG_TW
          {Show 'UnknownObject::initOut method for the term '#self.term}
 \endif
-         local Tag TagId in
-            %%
-            Tag = {self.widgetObj genTkName($)}
-            %%
-            %%  ... are always active (to be able to 'Show' them);
-            TagId = {self.widgetObj initBindings(self $)}
+         %%
+         <<tagInit>>
 
-            %%
-            self.tag = Tag
-            self.tagId = TagId
-            size <- {VSLength self.name}
-            shown <- False
-         end
+         %%
+         size <- {VSLength self.name}
+         shown <- False
       end
 
       %%
@@ -4603,6 +4307,7 @@ in
 \endif
          local PTag in
             PTag = <<getTagInfo($)>>
+
             %%
             {self.widgetObj insertWithTag(Mark self.name PTag)}
             shown <- True

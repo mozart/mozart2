@@ -1008,6 +1008,7 @@ define
 
 
       class TkMenuentry
+         from ReturnClass
          prop
             sited
          feat
@@ -1072,6 +1073,14 @@ define
          in
             lock Parent.EntryLock then
                {TkSendTagTuple Parent self M}
+            end
+         end
+
+         meth !TkReturnMethod(M Cast)
+            Parent = self.TkWidget
+         in
+            lock Parent.EntryLock then
+               {TkReturnMess Parent M self Cast}
             end
          end
 

@@ -29,7 +29,10 @@ import
    OS(getEnv exec wait)
    Connection(offer)
    Property(get)
-   Module(manager)
+   Module(link)
+   Error(formatGeneric format dispatch)
+   ErrorRegistry(put)
+
 
 export
    manager: ManagerProxy
@@ -46,14 +49,13 @@ define
 
    HasVirtualSite = {Property.get 'distribution.virtualsites'}
 
-   VirtualSite = if HasVirtualSite then
-                    %% Now we know that there is in fact virtual site
-                    %% support in our emulator, go and get it.
-                    {{New Module.manager init}
-                     link(name: 'x-oz://boot/VirtualSite' $)}
-                 else
-                    unit
-                 end
+   [VirtualSite]  = if HasVirtualSite then
+                       %% Now we know that there is in fact virtual site
+                       %% support in our emulator, go and get it.
+                       {Module.link ['x-oz://boot/VirtualSite']}
+                    else
+                       [unit]
+                    end
 
    proc {ForkProcess Fork Host Ports Detach}
       Cmd       = {OS.getEnv 'OZHOME'}#'/bin/ozengine'
@@ -93,18 +95,19 @@ define
          Ctrl
 
       attr
-         Run:  nil
-         Ctrl: nil
+         Run:    nil
+         Ctrl:   nil
+         Status: okay
 
       meth init(host:   HostIn <= localhost
                 fork:   ForkIn <= automatic
                 detach: Detach <= false)
-
          RunRet  RunPort  = {Port.new RunRet}
          CtrlRet CtrlPort = {Port.new CtrlRet}
 
          Host = {VirtualString.toAtom HostIn}
          Fork = {VirtualString.toAtom ForkIn}
+
       in
          {ForkProcess
           if Host==localhost then
@@ -118,18 +121,22 @@ define
           end
           Host RunPort#CtrlPort Detach}
 
-         Run      <- RunRet.2
-         Ctrl     <- CtrlRet.2
-         self.Run  = RunRet.1
-         self.Ctrl = CtrlRet.1
+         Run        <- RunRet.2
+         Ctrl       <- CtrlRet.2
+         self.Run    = RunRet.1
+         self.Ctrl   = CtrlRet.1
       end
 
       meth SyncSend(Which What)
          OldS Answer NewS
       in
          lock
-            OldS = (Which <- NewS)
-            {Port.send self.Which What}
+            if @Status==okay then
+               OldS = (Which <- NewS)
+               {Port.send self.Which What}
+            else
+               {Exception.raiseError remote(alreadyClosed self What)}
+            end
          end
          %% might block, since OldS might be future
          Answer|NewS = OldS
@@ -162,13 +169,38 @@ define
 
       meth close
          lock
-            {Port.send self.Ctrl close}
-            thread
-               {Delay WaitDelay}
-               {OS.wait _ _}
+            if @Status==okay then
+               Status <- closed
+               {Port.send self.Ctrl close}
+               thread
+                  {Delay WaitDelay}
+                  {OS.wait _ _}
+               end
             end
          end
       end
 
    end
+
+
+   %%
+   %% Register error formatter
+   %%
+
+   {ErrorRegistry.put remote
+    fun {$ Exc}
+       E = {Error.dispatch Exc}
+       T = 'Error: remote module manager'
+    in
+       case E
+       of remote(alreadyClosed O M) then
+          {Error.format T
+           'Remote manager already closed'
+           [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
+           Exc}
+       else
+          {Error.formatGeneric T Exc}
+       end
+    end}
+
 end

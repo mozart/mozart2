@@ -118,7 +118,6 @@
 %%% {Application.cgi  FILE SPEC FUNCTOR CGISPEC}
 %%% ==================================================================
 \ifdef FOOBAR
-\s +catchall
 declare
 \endif
 local

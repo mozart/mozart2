@@ -237,7 +237,7 @@ local
       class AssemblerClass
          prop final
          attr InstrsHd InstrsTl LabelDict Size
-         feat Profile DebugInfoControl
+         feat Profile debugInfoControl
          meth init(ProfileSwitch DebugInfoControlSwitch)
             InstrsHd <- 'skip'|@InstrsTl
             LabelDict <- {NewDictionary}
@@ -245,7 +245,7 @@ local
             % Code must not start at address 0, since this is interpreted as
             % NOCODE by the emulator - thus the dummy instruction 'skip'.
             self.Profile = ProfileSwitch
-            self.DebugInfoControl = DebugInfoControlSwitch
+            self.debugInfoControl = DebugInfoControlSwitch
          end
          meth newLabel(?L)
             L = {NewName}
@@ -266,7 +266,7 @@ local
                {Dictionary.put @LabelDict L @Size}
             end
          end
-         meth append(Instr) NewTl NewInstr in
+         meth append(Instr) NewTl in
             case Instr
             of definition(_ L _ _ _) then AssemblerClass, declareLabel(L)
             [] definitionCopy(_ L _ _ _) then AssemblerClass, declareLabel(L)
@@ -277,39 +277,11 @@ local
             [] createCond(L _) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
             [] shallowGuard(L _) then AssemblerClass, declareLabel(L)
-            [] inlinePlus1(X1 X2 NLiveRegs) then
-               case self.DebugInfoControl then
-                  NewInstr = callBI('+1' [X1]#[X2] NLiveRegs)
-               else skip
-               end
-            [] inlineMinus1(X1 X2 NLiveRegs) then
-               case self.DebugInfoControl then
-                  NewInstr = callBI('-1' [X1]#[X2] NLiveRegs)
-               else skip
-               end
-            [] inlinePlus(X1 X2 X3 NLiveRegs) then
-               case self.DebugInfoControl then
-                  NewInstr = callBI('+' [X1 X2]#[X3] NLiveRegs)
-               else skip
-               end
-            [] inlineMinus(X1 X2 X3 NLiveRegs) then
-               case self.DebugInfoControl then
-                  NewInstr = callBI('-' [X1 X2]#[X3] NLiveRegs)
-               else skip
-               end
             [] testBI(_ _ L _) then AssemblerClass, declareLabel(L)
             [] testLT(X1 X2 X3 L NLiveRegs) then
                AssemblerClass, declareLabel(L)
-               case self.DebugInfoControl then
-                  NewInstr = testBI('<' [X1 X2]#[X3] L NLiveRegs)
-               else skip
-               end
             [] testLE(X1 X2 X3 L NLiveRegs) then
                AssemblerClass, declareLabel(L)
-               case self.DebugInfoControl then
-                  NewInstr = callBI('=<' [X1 X2]#[X3] L NLiveRegs)
-               else skip
-               end
             [] testLiteral(_ _ L1 L2 _) then
                AssemblerClass, declareLabel(L1)
                AssemblerClass, declareLabel(L2)
@@ -338,11 +310,10 @@ local
             [] lockThread(L _ _) then AssemblerClass, declareLabel(L)
             else skip
             end
-            case {IsFree NewInstr} then NewInstr = Instr else skip end
-            @InstrsTl = NewInstr|NewTl
+            @InstrsTl = Instr|NewTl
             InstrsTl <- NewTl
-            Size <- @Size + InstructionSizes.{Label NewInstr}
-            case NewInstr of definition(_ _ _ _ _) then
+            Size <- @Size + InstructionSizes.{Label Instr}
+            case Instr of definition(_ _ _ _ _) then
                case self.Profile then
                   AssemblerClass, append(profileProc)
                else skip
@@ -695,6 +666,8 @@ local
                {MakeDeAllocate I Assembler}
                {Peephole Rest Assembler}
             end
+         [] 'skip' then
+            {Peephole Rest Assembler}
          [] failure then
             case Rest of deAllocateL(I)|Rest then
                {MakeDeAllocate I Assembler}
@@ -714,10 +687,11 @@ local
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] callBI(Builtinname Args NLiveRegs) then
+         [] callBI(Builtinname Args NLiveRegs) then BIInfo in
             BIInfo = {GetBuiltinInfo Builtinname}
-         in
-            case Builtinname of '+1' then [X1]#[X2] = Args in
+            case Assembler.debugInfoControl then
+               {Assembler append(I1)}
+            elsecase Builtinname of '+1' then [X1]#[X2] = Args in
                {Assembler append(inlinePlus1(X1 X2 NLiveRegs))}
             [] '-1' then [X1]#[X2] = Args in
                {Assembler append(inlineMinus1(X1 X2 NLiveRegs))}

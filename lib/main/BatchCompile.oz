@@ -330,7 +330,10 @@ local
    end
 in
    proc {BatchCompile Argv ?Status}
-      try Opts FileNames Verbose BatchCompiler UI Mode OutputFile IncDir in
+      try
+         Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
+         IncDir
+      in
          try
             {ParseArgs Argv ?Opts ?FileNames}
          catch usage(VS) then
@@ -381,7 +384,16 @@ in
              [] verbose then
                 skip   % has already been set
              [] mode then
-                {Assign Mode X}
+                case {IsDet ModeGiven} then
+                   {Report error(kind: UsageError
+                                 msg: 'mode specified multiply on command line'
+                                 items: [hint(l: 'Hint'
+                                              m: ('Use --help to obtain '#
+                                                  'usage information'))])}
+                else
+                   {Assign Mode X}
+                   ModeGiven = true
+                end
              [] outputfile then
                 {Assign OutputFile X}
              [] debuginfo then

@@ -28,7 +28,7 @@ local
 
    BootUrl    = {URL.make "x-oz://boot/DUMMY"}
    SystemUrl  = {URL.make "x-oz://system/DUMMY"}
-   ContribUrl = {URL.make "x-oz://contrib/DUMMY"}
+   %ContribUrl = {URL.make "x-oz://contrib/DUMMY"}
    OzScheme  = BootUrl.scheme = SystemUrl.scheme
 
    local
@@ -39,10 +39,6 @@ local
       ContribHome= UrlDefaults.'contrib'
       SystemHomeUrl  = {URL.toBase MozartHome}
       ContribHomeUrl = {URL.toBase ContribHome}
-   end
-
-   proc {Swallow _}
-      skip
    end
 
    %%
@@ -195,7 +191,7 @@ in
    body
 
       proc {TraceON X1 X2}
-         {System.printError 'Module manager: '#X1#' '#{URL.toVs X2}}
+         {System.printError 'Module manager: '#X1#' '#{URL.toVs X2}#'\n'}
       end
 
       Trace = {NewCell

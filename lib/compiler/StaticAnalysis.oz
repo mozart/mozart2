@@ -1294,7 +1294,7 @@ local
                else
                   {ListToVS
                    '(' | {Map {Record.toListInd @value}
-                          fun {$ X F} F # ': ' # {X getPrintType(D-1 $)} end}
+                          fun {$ F#X} F # ': ' # {X getPrintType(D-1 $)} end}
                    {LabelToVS {Label @value}} ' ' ' )'}
                end
             elsecase

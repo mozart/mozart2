@@ -27,14 +27,14 @@ functor
 
 require
    Search(base)
-
-   FD(less distinct distribute record)
-
+   FD(less distinct distribute record sup)
    FS(var value include subset reflect monitorIn)
 
 prepare
 
    \insert POTypes
+
+   FdSup = FD.sup
 
 
 import
@@ -44,7 +44,6 @@ import
                    newPredicateRef newCopyablePredicateRef
                    nameVariable isBuiltin) at 'x-oz://boot/CompilerSupport'
 
-   FD(is)
    System(eq printName show)
    Type(is)
    Core
@@ -94,10 +93,6 @@ export
 
 define
 
-   %% this is a hack that should disappear once the treatment
-   %% of sequential threads and lazy linking is compatible
-   {Wait FD.is}
-
    %%-----------------------------------------------------------------------
    %% this translation routine is here since it depends on FD and hence
    %% refers to a resource. no other reason: logically, it belongs to POTypes
@@ -108,34 +103,36 @@ define
       OTE = OzTypes.encode
    in
       fun {OzValueToType V}
-         if {IsDet V} then
-            if {IsInt V} then
+         case {Value.status V}
+         of det(T) then
+            case T
+            of int then
                {OTE if {IsChar V} then char
-                    elseif {FD.is V} then fdIntC
+                    elseif V=<FdSup andthen V>=0 then fdIntC
                     else int
                     end nil}
-            elseif {IsFloat V} then
+            [] float then
                {OTE float nil}
-            elseif {IsAtom V} then
+            [] atom then
                {OTE if V==nil then nilAtom
                     else atom
                     end nil}
-            elseif {IsName V} then
+            [] name then
                {OTE case V
                     of true  then bool
                     [] false then bool
                     [] unit  then 'unit'
                     else name
                     end nil}
-            elseif {IsTuple V} then
+            [] tuple then
                {OTE case V
                     of _|_ then cons
                     [] _#_ then pair
                     else tuple
                     end nil}
-            elseif {IsRecord V} then
+            [] record then
                {OTE record nil}
-            elseif {IsProcedure V} then
+            [] procedure then
                {OTE case {ProcedureArity V}
                     of 0 then 'procedure/0'
                     [] 1 then 'procedure/1'
@@ -146,49 +143,48 @@ define
                     [] 6 then 'procedure/6'
                     else 'procedure/>6'
                     end nil}
-            elseif {IsCell V} then
+            [] cell then
                {OTE cell nil}
-            elseif {IsSpace V} then
+            [] space then
                {OTE space nil}
-            elseif {IsThread V} then
+            [] 'thread' then
                {OTE 'thread' nil}
-            elseif {IsBitString V} then
+            [] bitString then
                {OTE bitString nil}
-            elseif {IsByteString V} then
+            [] byteString then
                {OTE byteString nil}
-            elseif {IsChunk V} then
-               if {IsArray V} then
-                  {OTE array nil}
-               elseif {IsDictionary V} then
-                  {OTE dictionary nil}
-               elseif {IsClass V} then
-                  {OTE 'class' nil}
-               elseif {IsObject V} then
-                  {OTE object nil}
-               elseif {IsLock V} then
-                  {OTE 'lock' nil}
-               elseif {IsPort V} then
-                  {OTE port nil}
-               elseif {BitArray.is V} then
-                  {OTE bitArray nil}
-               else
-                  {OTE chunk [array dictionary 'class'
-                              'object' 'lock' port
-                              bitArray]}
-               end
+            [] array then
+               {OTE array nil}
+            [] dictionary then
+               {OTE dictionary nil}
+            [] 'class' then
+               {OTE 'class' nil}
+            [] object then
+               {OTE object nil}
+            [] 'lock' then
+               {OTE 'lock' nil}
+            [] port then
+               {OTE port nil}
+            [] bitArray then
+               {OTE bitArray nil}
+            [] chunk then
+               {OTE chunk [array dictionary 'class'
+                           'object' 'lock' port
+                           bitArray]}
             else
                {OTE value [int float record procedure
                            cell chunk space 'thread']}
             end
-         elseif {IsKinded V} then
-            if {FD.is V} then
+         [] kinded(T) then
+            case T
+            of int then
                {OTE fdIntC nil}
-            elseif {IsRecordC V} then
+            [] record then
                {OTE recordC nil}
             else
                {OTE value [fdIntC recordC]}
             end
-         else
+         [] free then
             {OTE value nil}
          end
       end

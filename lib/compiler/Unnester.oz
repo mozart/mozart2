@@ -45,13 +45,26 @@
 %%
 
 functor
+
+require
+   FD(sup)
+
+prepare
+
+   local
+      FdSup = FD.sup
+   in
+      fun {IsFd I}
+         I=<FdSup andthen I>=0
+      end
+   end
+
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
 \ifndef NO_GUMP
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
    Gump(transformParser transformScanner)
 \endif
-   FD(is)
    System(printName)
    PrintName(downcase)
    Core

@@ -318,7 +318,7 @@ in
       else
          if {AreLinearConstraints NewE} then Cs Vs in
             {MakeTuples NewE ?Cs nil ?Vs nil}
-            if {FD.is ~Const} then X O D in
+            if {IsFd ~Const} then X O D in
                X = fRecord(fAtom('#' C) Vs)
                O = fAtom(NewOp C)
                D = fInt(~Const C)
@@ -340,7 +340,7 @@ in
             end
          else Cs Vs A X O D in
             {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-            if {FD.is ~Const} then
+            if {IsFd ~Const} then
                A = fRecord(fAtom('#' C) Cs)
                X = fRecord(fAtom('#' C) Vs)
                O = fAtom(NewOp C)
@@ -376,7 +376,7 @@ in
       else
          if {AreLinearConstraints NewE} then Cs Vs in
             {MakeTuples NewE ?Cs nil ?Vs nil}
-            if {FD.is ~Const} then X O D in
+            if {IsFd ~Const} then X O D in
                X = fRecord(fAtom('#' C) Vs)
                O = fAtom(NewOp C)
                D = fInt(~Const C)
@@ -404,7 +404,7 @@ in
             end
          else Cs Vs A X O D in
             {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-            if {FD.is ~Const} then
+            if {IsFd ~Const} then
                A = fRecord(fAtom('#' C) Cs)
                X = fRecord(fAtom('#' C) Vs)
                O = fAtom(NewOp C)
@@ -541,7 +541,7 @@ in
                else
                   if {AreLinearConstraints NewE} then Cs Vs in
                      {MakeTuples NewE ?Cs nil ?Vs nil}
-                     if {FD.is Const} then X O D in
+                     if {IsFd Const} then X O D in
                         X = fRecord(fAtom('#' C) Vs)
                         O = fAtom(Op C)
                         D = fInt(Const C)
@@ -569,7 +569,7 @@ in
                      end
                   else Cs Vs A X O D in
                      {MakeTupleTuples NewE ?Cs nil ?Vs nil}
-                     if {FD.is Const} then
+                     if {IsFd Const} then
                         A = fRecord(fAtom('#' C) Cs)
                         X = fRecord(fAtom('#' C) Vs)
                         O = fAtom(Op C)

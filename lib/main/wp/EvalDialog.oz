@@ -206,7 +206,7 @@ in
                else E in
                   E = {Property.get errors}
                   {self.Result tk(conf fg: DefaultForeground
-                                  text: {System.valueToVirtualString R
+                                  text: {Value.toVirtualString R
                                          E.depth E.width})}
                end
                EvalThread <- unit

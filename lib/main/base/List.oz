@@ -459,7 +459,7 @@ in
                takeDrop:      TakeDrop
 
                toTuple:       ToTuple
-               toRecord:      Boot_Record.record
+               toRecord:      Boot_List.toRecord
 
                map:           Map
                foldL:         FoldL

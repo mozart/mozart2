@@ -27,7 +27,7 @@
 %% Module
 %%
 Float = float(is:       IsFloat
-              '/':      Boot_Number.'/'
+              '/':      Boot_Float.'/'
               exp:      Exp
               log:      Log
               sqrt:     Sqrt

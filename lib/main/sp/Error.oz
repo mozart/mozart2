@@ -115,7 +115,6 @@ in
 
       System(printName
              printError
-             valueToVirtualString
              onToplevel)
 
       ErrorRegistry(get
@@ -275,7 +274,7 @@ in
 
       fun {OzValueToVS X}
          P={Property.get errors} in
-         {System.valueToVirtualString X P.depth P.width}
+         {Value.toVirtualString X P.depth P.width}
       end
 
       fun {AlmostVSToVS X}

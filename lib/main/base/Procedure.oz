@@ -27,4 +27,5 @@
 %% Module
 %%
 Procedure = procedure(is:    IsProcedure
-                      arity: ProcedureArity)
+                      arity: ProcedureArity
+                      apply: Boot_Procedure.apply)

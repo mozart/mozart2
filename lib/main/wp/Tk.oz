@@ -43,9 +43,7 @@ in
 
       Property(get)
 
-      System(apply
-             showError
-             valueToVirtualString)
+      System(showError)
 
       Error(formatGeneric
             format
@@ -170,7 +168,7 @@ in
       in
          {System.showError 'Tk Module: '#S#
           if Tcl==unit then '' else '\n'#
-             {System.valueToVirtualString Tcl P.depth P.width}
+             {Value.toVirtualString Tcl P.depth P.width}
           end}
       end
 
@@ -300,8 +298,8 @@ in
                   end
                else
                   if Thread then
-                     thread {System.apply Action Args} end
-                  else {System.apply Action Args}
+                     thread {Procedure.apply Action Args} end
+                  else {Procedure.apply Action Args}
                   end
                end
             end

@@ -26,28 +26,31 @@
 %% Module
 %%
 
-Value = value(wait:       Wait
-              waitOr:     WaitOr
+Value = value(wait:            Wait
+              waitOr:          WaitOr
 
-              '=<':       Boot_Value.'=<'
-              '<':        Boot_Value.'<'
-              '>=':       Boot_Value.'>='
-              '>':        Boot_Value.'>'
-              '==':       Boot_Value.'=='
-              '=':        Boot_Value.'='
-              '\\=':      Boot_Value.'\\='
-              max:        Max
-              min:        Min
+              '=<':            Boot_Value.'=<'
+              '<':             Boot_Value.'<'
+              '>=':            Boot_Value.'>='
+              '>':             Boot_Value.'>'
+              '==':            Boot_Value.'=='
+              '=':             Boot_Value.'='
+              '\\=':           Boot_Value.'\\='
+              max:             Max
+              min:             Min
 
-              '.':        Boot_Record.'.'
-              hasFeature: HasFeature
-              condSelect: CondSelect
+              '.':             Boot_Value.'.'
+              hasFeature:      HasFeature
+              condSelect:      CondSelect
 
-              isFree:     IsFree
-              isKinded:   IsKinded
-              isDet:      IsDet
-              status:     Boot_Value.status
-              type:       Boot_Value.type
-              '!!':       Boot_Value.future
-              byNeed:     ByNeed
+              isFree:          IsFree
+              isKinded:        IsKinded
+              isDet:           IsDet
+              status:          Boot_Value.status
+              type:            Boot_Value.type
+
+              '!!':            Boot_Value.'!!'
+              byNeed:          ByNeed
+
+              toVirtualString: Boot_Value.toVirtualString
              )

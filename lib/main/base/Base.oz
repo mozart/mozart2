@@ -22,7 +22,7 @@
 %%% WARRANTIES.
 %%%
 
-%%% NOTE: this file must be compiled with -l StandardBuiltins
+%%% NOTE: this file must be compiled with -l BaseBuiltins
 
 local
    %%

@@ -27,7 +27,7 @@ import
    Tk
    Compiler(engine quietInterface)
    Property(get)
-   System(valueToVirtualString printInfo)
+   System(printInfo)
 
 export
    error:       Error

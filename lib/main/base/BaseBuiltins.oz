@@ -45,6 +45,7 @@ import
    Boot_Float           at 'x-oz://boot/Float'
    Boot_Number          at 'x-oz://boot/Number'
    Boot_Tuple           at 'x-oz://boot/Tuple'
+   Boot_List            at 'x-oz://boot/List'
    Boot_Procedure       at 'x-oz://boot/Procedure'
    Boot_Dictionary      at 'x-oz://boot/Dictionary'
    Boot_Record          at 'x-oz://boot/Record'
@@ -183,6 +184,10 @@ export
    'Boot_Tuple'         : Boot_Tuple
    'MakeTuple'          : MakeTuple
    'IsTuple'            : IsTuple
+   %%
+   %% List
+   %%
+   'Boot_List'          : Boot_List
    %%
    %% Procedure
    %%

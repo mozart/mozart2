@@ -57,6 +57,26 @@ local
       {Dictionary.keys C.`ooMeth`}
    end
 
+   fun {AttrNames C}
+      {AssertClass C 'Class.attrNames'}
+      {Arity C.`ooAttr`}
+   end
+
+   fun {FeatNames C}
+      {AssertClass C 'Class.featNames'}
+      {Arity C.`ooFreeFeatR`}
+   end
+
+   fun {PropNames C}
+      {AssertClass C 'Class.propNames'}
+      case {Not {HasFeature C `ooParents`}}
+      then
+         final | case C.`ooLocking` then [locking] else nil end
+      else
+         case C.`ooLocking` then [locking] else nil end
+      end
+   end
+
    fun {HasProperty C P}
       {AssertClass C 'Class.property'}
       case P
@@ -91,6 +111,9 @@ in
    Class = 'class'(is:           IsClass
                    get:          GetClass
                    methodNames:  MethodNames
+                   attrNames:    AttrNames
+                   featNames:    FeatNames
+                   propNames:    PropNames
                    hasProperty:  HasProperty
                    parents:      GetParents
                    extendFeatures: `extend`

@@ -43,9 +43,11 @@ declare
    `ooParents`           % Module Class
    `ooPrintName`         % Module Class
    `ooMeth`              % Module Class
+   `ooAttr`              % Module Class
    `ooLocking`           % Module Class
    `ooNative`            % Module Class
    `ooUnFreeFeat`        % Module Class
+   `ooFreeFeatR`         % Module Class
 in
 
 IsObject      = {`Builtin` 'IsObject'    2}
@@ -62,6 +64,7 @@ local
    NewUniqueName = {`Builtin` 'NewUniqueName' 2}
 in
    `ooMeth`           = {NewUniqueName 'ooMeth'}
+   `ooAttr`           = {NewUniqueName 'ooAttr'}
    `ooLocking`        = {NewUniqueName 'ooLocking'}
    `ooNative`         = {NewUniqueName 'ooNative'}
    `ooParents`        = {NewUniqueName 'ooParents'}
@@ -70,6 +73,7 @@ in
    `ooRequiredArg`    = {NewUniqueName 'ooRequiredArg'}
    `ooPrintName`      = {NewUniqueName 'ooPrintName'}
    `ooUnFreeFeat`     = {NewUniqueName 'ooUnFreeFeat'}
+   `ooFreeFeatR`      = {NewUniqueName 'ooFreeFeatR'}
 end
 
 %%
@@ -85,8 +89,6 @@ local
       `ooNewFeat`        = {NewUniqueName 'ooNewFeat'}
       `ooFastMeth`       = {NewUniqueName 'ooFastMeth'}
       `ooNewMeth`        = {NewUniqueName 'ooNewMeth'}
-      `ooAttr`           = {NewUniqueName 'ooAttr'}
-      `ooFreeFeatR`      = {NewUniqueName 'ooFreeFeatR'}
       `ooDefaults`       = {NewUniqueName 'ooDefaults'}
       `ooFallback`       = {NewUniqueName 'ooFallback'}
       `ooId`             = {NewUniqueName 'ooId'}

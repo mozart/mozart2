@@ -552,6 +552,7 @@ local
    end
    fun {RegistryGetLoader R Spec}
       NSpec    = {Record.mapInd Spec NormalizeSpec}
+      IsFull   = {Label Spec}==full
       Plan     = {RegistryGetPlan R NSpec}
       LoadPlan = {Map Plan
                   fun {$ Name#Mode}
@@ -576,10 +577,20 @@ local
    in
       fun {$}
          MODULES = {Record.make 'import' Modules}
-         ARGS    = {Record.make 'import' Args   }
+         ARGS
       in
          {InstallErrorHandler MODULES}
-         {ForAll Args proc {$ A} ARGS.A = MODULES.(NSpec.A.1) end}
+         %% If really everything is required that is loaded
+         %% provide that, otherwise project on Args
+         case IsFull then
+            ARGS=MODULES
+         else
+            ARGS={Record.make 'import' Args}
+            {ForAll Args proc {$ A}
+                            ARGS.A = MODULES.(NSpec.A.1)
+                         end}
+         end
+
          {ForAll LoadPlan
           % for each required module
           proc {$ Name#Loader#Args}

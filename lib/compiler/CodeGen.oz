@@ -44,6 +44,7 @@ import
    Core
    RunTime(literals procValues)
    CodeStore('class')
+   RecordC(reflectArity)
 export
    %% mixin classes for the abstract syntax:
    typeOf: CodeGenTypeOf
@@ -317,16 +318,36 @@ define
             {Arg2 getCodeGenValue(?Feature)}
             if {IsDet Feature}
                andthen ({IsLiteral Feature} orelse {IsInt Feature})
-            then Value1 AlwaysSucceeds in
+            then Value1 ValueF AlwaysSucceeds in
                {Arg1 getCodeGenValue(?Value1)}
-               AlwaysSucceeds = ({IsDet Value1}
-                                 andthen {IsRecord Value1}
-                                 andthen {HasFeature Value1 Feature})
+               if {IsDet Value1} then
+                  if {IsRecord Value1} andthen
+                     {HasFeature Value1 Feature}
+                  then
+                     AlwaysSucceeds = true
+                     ValueF = Value1.Feature
+                  else
+                     AlwaysSucceeds = false
+                  end
+               elsecase {Value.status Value1}
+               of kinded(record) andthen
+                  {Member Feature {RecordC.reflectArity Value1}}
+               then
+                  %% When the record was very large and exceeded the width
+                  %% limit, then SA approximated it with an OFS instead.
+                  %% We check here if the feature is present.  This is
+                  %% the additional case that we need in order to optimize
+                  %% away references to e.g. List.last.
+                  AlwaysSucceeds = true
+                  ValueF = Value1^Feature
+               else
+                  AlwaysSucceeds = false
+               end
                if AlwaysSucceeds
-                  andthen {IsObject Value1.Feature}
-                  andthen {HasFeature Value1.Feature
+                  andthen {IsObject ValueF}
+                  andthen {HasFeature ValueF
                            Core.imAVariableOccurrence}
-                  andthen {IsDet {Value1.Feature reg($)}}
+                  andthen {IsDet {ValueF reg($)}}
                then
                   %% Evaluate by issuing an equation.
                   %% Note: {Value1.Feature reg($)} may be undetermined

@@ -1663,12 +1663,16 @@ define
                    {List.mapInd GArgs
                     fun {$ I GArg} Feat Subtree in
                        Feat#Subtree =
-                       case GArg of F#T then Feat in
-                          {F getValue(?Feat)}
-                          if {IsLiteral Feat} then
-                             fAtom(Feat CND)
-                          else   % if {IsInt Feat} then
-                             fInt(Feat CND)
+                       case GArg of F#T then
+                          if {HasFeature F Core.imAVariableOccurrence} then
+                             fOcc({F getVariable($)})
+                          else Feat in
+                             {F getValue(?Feat)}
+                             if {IsLiteral Feat} then
+                                fAtom(Feat CND)
+                             else   % if {IsInt Feat} then
+                                fInt(Feat CND)
+                             end
                           end#fOcc({T getVariable($)})
                        elseof T then
                           fInt(I CND)#fOcc({T getVariable($)})

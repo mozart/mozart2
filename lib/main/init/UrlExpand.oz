@@ -36,8 +36,11 @@ local
       case {CondSelect Base path unit} of abs(L) then
          N = {List.length L}
       in
-         %% this path should be non-empty
-         if L==0 then Rel else
+         %% this path should usually be non-empty
+         if N==0 then
+            %% if empty, then Base dir is just "/"
+            {AdjoinAt Rel path abs(Rel.path.1)}
+         else
             %% the last component of this path needs special treatment
             Front Last {List.takeDrop L N-1 Front [Last]}
             Path =

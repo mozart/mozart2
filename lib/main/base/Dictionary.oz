@@ -40,6 +40,6 @@ in
               clone:        Boot_Dictionary.clone
               member:       Boot_Dictionary.member
               toRecord:     fun {$ L D}
-                               {Boot_Record.record L {Entries D}}
+                               {Boot_List.toRecord L {Entries D}}
                             end)
 end

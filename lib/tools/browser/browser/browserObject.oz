@@ -23,8 +23,9 @@
 %%% as event handlers in window manager (aka e.g. 'Help');
 %%%
 %%%
-class BrowserClass from Object.base
-   %%
+class BrowserClass
+   from Object.base
+   prop locking
    feat
    %% some constants;
       !IsDefaultBrowser         %
@@ -53,72 +54,73 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::init is applied'}
 \endif
-      %%
-      %% additional security because fools (like me);
-      self.IsDefaultBrowser = IsIsDefaultBrowser
-      self.IsView = IsIsView
+      lock
+         %%
+         %% additional security because fools (like me);
+         self.IsDefaultBrowser = IsIsDefaultBrowser
+         self.IsView = IsIsView
 
-      %%
-      self.Store =
-      {New StoreClass
-       [init
-        store(StoreXSize IXSize)
-        store(StoreYSize IYSize)
-        store(StoreXMinSize IXMinSize)
-        store(StoreYMinSize IYMinSize)
-        store(StoreTWWidth 0)
-        store(StoreDepth IDepth)
-        store(StoreWidth IWidth)
-        store(StoreFillStyle IFillStyle)
-        store(StoreArityType IArityType)
-        store(StoreSmallNames ISmallNames)
-        store(StoreAreVSs IAreVSs)
-        store(StoreDepthInc IDepthInc)
-        store(StoreWidthInc IWidthInc)
+         %%
+         self.Store =
+         {New StoreClass
+          [init
+           store(StoreXSize IXSize)
+           store(StoreYSize IYSize)
+           store(StoreXMinSize IXMinSize)
+           store(StoreYMinSize IYMinSize)
+           store(StoreTWWidth 0)
+           store(StoreDepth IDepth)
+           store(StoreWidth IWidth)
+           store(StoreFillStyle IFillStyle)
+           store(StoreArityType IArityType)
+           store(StoreSmallNames ISmallNames)
+           store(StoreAreVSs IAreVSs)
+           store(StoreDepthInc IDepthInc)
+           store(StoreWidthInc IWidthInc)
 %       store(StoreSmoothScrolling ISmoothScrolling)
-        store(StoreShowGraph IShowGraph)
-        store(StoreShowMinGraph IShowMinGraph)
-        store(StoreTWFont ITWFontUnknown)     % first approximation;
-        store(StoreBufferSize IBufferSize)
-        store(StoreWithMenus case WithMenus == true
-                             then true else false
-                             end)
-        store(StoreIsWindow false)
-        store(StoreAreMenus false)
-        store(StoreBrowserObj self)
-        store(StoreStreamObj self.BrowserStream)
-        store(StoreOrigWindow OrigWindow)
-        store(StoreScreen Screen)
-        store(StoreBreak false)
-        store(StoreSeqNum 0)]}
-
-      %%
-      self.BrowserBuffer = {New BrowserBufferClass init(IBufferSize)}
-
-      %%
-      %% 'ManagerObject' is not directly accessible - but it can be
-      %% closed by means of queuing of 'close' message;
-      local Stream ManagerObject in
-         %%
-         %% only 'getContent' functionality is delegated to the
-         %% manager object. A list of term objects is necessary in
-         %% order to perform 'check layout' step when idle;
-         self.GetTermObjs = fun {$} {self.BrowserBuffer getContent($)} end
+           store(StoreShowGraph IShowGraph)
+           store(StoreShowMinGraph IShowMinGraph)
+           store(StoreTWFont ITWFontUnknown)     % first approximation;
+           store(StoreBufferSize IBufferSize)
+           store(StoreWithMenus case WithMenus == true
+                                then true else false
+                                end)
+           store(StoreIsWindow false)
+           store(StoreAreMenus false)
+           store(StoreBrowserObj self)
+           store(StoreStreamObj self.BrowserStream)
+           store(StoreOrigWindow OrigWindow)
+           store(StoreScreen Screen)
+           store(StoreBreak false)
+           store(StoreSeqNum 0)]}
 
          %%
-         Stream = self.BrowserStream = {New BrowserStreamClass init}
+         self.BrowserBuffer = {New BrowserBufferClass init(IBufferSize)}
 
          %%
-         ManagerObject =
-         {New BrowserManagerClass init(store:          self.Store
-                                       getTermObjsFun: self.GetTermObjs)}
-      end
+         %% 'ManagerObject' is not directly accessible - but it can be
+         %% closed by means of queuing of 'close' message;
+         local Stream ManagerObject in
+            %%
+            %% only 'getContent' functionality is delegated to the
+            %% manager object. A list of term objects is necessary in
+            %% order to perform 'check layout' step when idle;
+            self.GetTermObjs = fun {$} {self.BrowserBuffer getContent($)} end
 
-      %%
+            %%
+            Stream = self.BrowserStream = {New BrowserStreamClass init}
+
+            %%
+            ManagerObject =
+            {New BrowserManagerClass init(store:          self.Store
+                                          getTermObjsFun: self.GetTermObjs)}
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::init is finished'}
+         {Show 'BrowserClass::init is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -142,26 +144,27 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::Reset is applied'}
 \endif
-      %%
-      BrowserClass , break
+      lock
+         %%
+         BrowserClass , break
 
-      %%
-      BrowserClass , UnsetSelected
+         %%
+         BrowserClass , UnsetSelected
 
-      %% everything pending is cancelled;
-      {self.BrowserBuffer purgeSusps}
+         %% everything pending is cancelled;
+         {self.BrowserBuffer purgeSusps}
 
-      %%  'BrowserClass::Undraw' is an "in-thread" method;
-      BrowserClass , Undraw({self.BrowserBuffer getSize($)})
+         %%  'BrowserClass::Undraw' is an "in-thread" method;
+         BrowserClass , Undraw({self.BrowserBuffer getSize($)})
 
-      %%
-      {Wait {self.BrowserStream enq(sync($))}}
+         %%
+         {Wait {self.BrowserStream enq(sync($))}}
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::Reset is finished'}
+         {Show 'BrowserClass::Reset is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -170,15 +173,16 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::closeWindow is applied'}
 \endif
-      %%
-      BrowserClass , Reset
-      {self.BrowserStream enq(closeWindow)}
+      lock
+         %%
+         BrowserClass , Reset
+         {self.BrowserStream enq(closeWindow)}
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::closeWindow is finished'}
+         {Show 'BrowserClass::closeWindow is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -193,7 +197,6 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::closeMenus is finished'}
 \endif
-      touch
    end
 
    %%
@@ -202,32 +205,34 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::close is applied'}
 \endif
       %%
-      BrowserClass , break
+      lock
+         BrowserClass , break
 
-      %%
-      {Wait {self.BrowserStream [enq(sync($)) enq(close)]}}
+         %%
+         {Wait {self.BrowserStream [enq(sync($)) enq(close)]}}
 
-      %%
-      {self.BrowserBuffer purgeSusps}
+         %%
+         {self.BrowserBuffer purgeSusps}
 
-      %%
-      {self.BrowserStream close}
-      {self.BrowserBuffer close}
-      {self.Store close}
+         %%
+         {self.BrowserStream close}
+         {self.BrowserBuffer close}
+         {self.Store close}
 
-      %%
-      %%  'DefaultBrowser' is an object from the 'Browser.oz';
-      %% That's the only occurence of it in browser/*.oz !
-      case self.IsDefaultBrowser then {DefaultBrowser removeBrowser}
-      else skip
-      end
+         %%
+         %%  'DefaultBrowser' is an object from the 'Browser.oz';
+         %% That's the only occurence of it in browser/*.oz !
+         case self.IsDefaultBrowser then {DefaultBrowser removeBrowser}
+         else skip
+         end
 
-      %% simply throw away everything else;
-      %%
-      Object.closable , close
+         %% simply throw away everything else;
+         %% That's not my problem if somebody will send messages here ;-)
+         % Object.closable , close
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::close is finished'}
+         {Show 'BrowserClass::close is finished'}
 \endif
+      end
    end
 
    %%
@@ -236,22 +241,23 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::createWindow is applied'}
 \endif
       %%
-      case {self.Store read(StoreIsWindow $)} then skip
-      else
-         {self.BrowserStream enq(createWindow)}
+      lock
+         case {self.Store read(StoreIsWindow $)} then skip
+         else
+            {self.BrowserStream enq(createWindow)}
+
+            %%
+            case {self.Store read(StoreWithMenus $)} then
+               BrowserClass , createMenus
+            else skip
+            end
+         end
 
          %%
-         case {self.Store read(StoreWithMenus $)} then
-            BrowserClass , createMenus
-         else skip
-         end
-      end
-
-      %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::createWindow is finished'}
+         {Show 'BrowserClass::createWindow is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -260,20 +266,21 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::createMenus is applied'}
 \endif
       %%
-      case {self.Store read(StoreAreMenus $)} then skip
-      else
-         {self.BrowserStream
-          [enq(createMenus)
-           enq(entriesDisable([unselect rebrowse showOPI newView
-                               clear clearAllButLast
-                               expand shrink zoom deref]))]}
-      end
+      lock
+         case {self.Store read(StoreAreMenus $)} then skip
+         else
+            {self.BrowserStream
+             [enq(createMenus)
+              enq(entriesDisable([unselect rebrowse showOPI newView
+                                  clear clearAllButLast
+                                  expand shrink zoom deref]))]}
+         end
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::createMenus is finished'}
+         {Show 'BrowserClass::createMenus is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -282,13 +289,15 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::toggleMenus is applied'}
 \endif
       %%
-      BrowserClass ,
-      case {self.Store read(StoreAreMenus $)} then closeMenus
-      else createMenus
-      end
+      lock
+         BrowserClass ,
+         case {self.Store read(StoreAreMenus $)} then closeMenus
+         else createMenus
+         end
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::toggleMenus is finished'}
+         {Show 'BrowserClass::toggleMenus is finished'}
 \endif
+      end
    end
 
    %%
@@ -302,7 +311,6 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::focusIn is finished'}
 \endif
-      touch
    end
 
    %%
@@ -311,28 +319,30 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::ScrollTo is applied'}
 \endif
       %%
-      local RootTermObj NN in
-         RootTermObj = {GetRootTermObject Obj}
-         NN =
-         RootTermObj.seqNumber + case Kind of 'forward' then 1 else ~1 end
+      lock
+         local RootTermObj NN in
+            RootTermObj = {GetRootTermObject Obj}
+            NN =
+            RootTermObj.seqNumber + case Kind of 'forward' then 1 else ~1 end
 
-         %%
-         case {Filter {self.GetTermObjs} fun {$ TO} TO.seqNumber == NN end}
-         of [NewRootTO] then
             %%
-            {self.BrowserStream enq(pick(NewRootTO 'begin' 'top'))}
-         else
-            %% there is none - move to the top/bottom;
-            {self.BrowserStream
-             enq(pick(RootTermObj
-                      case Kind of 'forward' then 'end'
+            case {Filter {self.GetTermObjs} fun {$ TO} TO.seqNumber == NN end}
+            of [NewRootTO] then
+               %%
+               {self.BrowserStream enq(pick(NewRootTO 'begin' 'top'))}
+            else
+               %% there is none - move to the top/bottom;
+               {self.BrowserStream
+                enq(pick(RootTermObj
+                         case Kind of 'forward' then 'end'
                       else 'begin'
                       end 'any'))}
+            end
+\ifdef DEBUG_BO
+            {Show 'BrowserClass::ScrollTo is finished'}
+\endif
          end
       end
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::ScrollTo is finished'}
-\endif
    end
 
    %%
@@ -345,59 +355,60 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::browse is applied'#Term}
 \endif
       local RootTermObj Sync ProceedProc DiscardProc ToEnable in
-         %%
-         BrowserClass , createWindow    % check it;
-
-         %%
-         ToEnable = case self.IsView then noop
-                    else enq(entriesEnable([clear]))
-                    end
-
-         %%
-         case
-            {self.BrowserBuffer getSize($)} >=
-            {self.Store read(StoreBufferSize $)}
-         then
-            %% Startup a thread which eventually cleans up some place
-            %% in the buffer;
-            thread
-               {self UndrawWait}
-            end
-         else skip              % just put a new one;
-         end
-
-         %%
-         proc {ProceedProc}
-            %%  spawns drawing work;
-            {self.BrowserStream [enq(browse(Term RootTermObj)) ToEnable]}
+         lock
+            %%
+            BrowserClass , createWindow    % check it;
 
             %%
-            Sync = unit
-         end
-         %%
-         proc {DiscardProc}
-            Sync = unit
-         end
+            ToEnable = case self.IsView then noop
+                       else enq(entriesEnable([clear]))
+                       end
 
-         %%
-         %%  allocate a slot inside of the buffer;
-         %%  RootTermObj is yet a variable;
-         {self.BrowserBuffer enq(RootTermObj ProceedProc DiscardProc)}
+            %%
+            case
+               {self.BrowserBuffer getSize($)} >=
+               {self.Store read(StoreBufferSize $)}
+            then
+               %% Startup a thread which eventually cleans up some place
+               %% in the buffer;
+               thread
+                  {self UndrawWait}
+               end
+            else skip           % just put a new one;
+            end
 
-         %%
-         %% it might be a little bit too early, but it *must* be
-         %% inside the "touched" region (since e.g. 'BrowserBuffer'
-         %% can be closed already when it's applied);
-         case {self.BrowserBuffer getSize($)} > 1 then
-            {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
-         else skip
-         end
+            %%
+            proc {ProceedProc}
+               %%  spawns drawing work;
+               {self.BrowserStream [enq(browse(Term RootTermObj)) ToEnable]}
 
-         %%
-         touch
+               %%
+               Sync = unit
+            end
+            %%
+            proc {DiscardProc}
+               Sync = unit
+            end
+
+            %%
+            %%  allocate a slot inside of the buffer;
+            %%  RootTermObj is yet a variable;
+            {self.BrowserBuffer enq(RootTermObj ProceedProc DiscardProc)}
+
+            %%
+            %% it might be a little bit too early, but it *must* be
+            %% inside the "touched" region (since e.g. 'BrowserBuffer'
+            %% can be closed already when it's applied);
+            case {self.BrowserBuffer getSize($)} > 1 then
+               {self.BrowserStream enq(entriesEnable([clearAllButLast]))}
+            else skip
+            end
+
+            %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::browse is finished'}
+         {Show 'BrowserClass::browse is finished'}
 \endif
+         end
 
          %%
          %% the object state is free;
@@ -413,27 +424,28 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::SetBufferSize is applied'}
 \endif
       %%
-      case {IsInt NewSize} andthen NewSize > 0 then CurrentSize in
-         {self.Store store(StoreBufferSize NewSize)}
-         CurrentSize = {self.BrowserBuffer getSize($)}
+      lock
+         case {IsInt NewSize} andthen NewSize > 0 then CurrentSize in
+            {self.Store store(StoreBufferSize NewSize)}
+            CurrentSize = {self.BrowserBuffer getSize($)}
 
-         %%
-         {self.BrowserBuffer resize(NewSize)}
-
-         %%
-         case NewSize < CurrentSize then
             %%
-            BrowserClass , Undraw(CurrentSize - NewSize)
-         else skip
-         end
-      else {BrowserError 'Illegal size of the browser buffer'}
-      end
+            {self.BrowserBuffer resize(NewSize)}
 
-      %%
+            %%
+            case NewSize < CurrentSize then
+               %%
+               BrowserClass , Undraw(CurrentSize - NewSize)
+            else skip
+            end
+         else {BrowserError 'Illegal size of the browser buffer'}
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SetBufferSize is finished'}
+         {Show 'BrowserClass::SetBufferSize is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -451,23 +463,25 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::createNewView is applied'}
 \endif
-      case @selected == InitValue then skip
-      else NewBrowser Selection in
-         %%
-         NewBrowser =
-         {New BrowserClass
-          init(withMenus:  {self.Store read(StoreWithMenus $)}
-               IsView:     true)}       % protected feature;
-
-         %%
-         {NewBrowser browse(@selected.term)}
-      end
-
       %%
+      lock
+         case @selected == InitValue then skip
+         else NewBrowser Selection in
+            %%
+            NewBrowser =
+            {New BrowserClass
+             init(withMenus:  {self.Store read(StoreWithMenus $)}
+                  IsView:     true)}       % protected feature;
+
+            %%
+            {NewBrowser browse(@selected.term)}
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::createNewView is finished'}
+         {Show 'BrowserClass::createNewView is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -476,20 +490,22 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::rebrowse is applied'}
 \endif
-      case @selected == InitValue then skip
-      else Obj in
-         Obj = @selected
+      %%
+      lock
+         case @selected == InitValue then skip
+         else Obj in
+            Obj = @selected
+
+            %%
+            {self.BrowserStream enq(subtermChanged(Obj.ParentObj Obj))}
+            BrowserClass , UnsetSelected
+         end
 
          %%
-         {self.BrowserStream enq(subtermChanged(Obj.ParentObj Obj))}
-         BrowserClass , UnsetSelected
-      end
-
-      %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::rebrowse is finished'}
+         {Show 'BrowserClass::rebrowse is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -500,22 +516,23 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::clear is applied'}
 \endif
       %%
-      case self.IsView then skip
-      else CurrentSize in
-         CurrentSize = {self.BrowserBuffer getSize($)}
+      lock
+         case self.IsView then skip
+         else CurrentSize in
+            CurrentSize = {self.BrowserBuffer getSize($)}
+
+            %%
+            BrowserClass , Undraw(CurrentSize)
+
+            %%
+            {self.BrowserStream enq(entriesDisable([clear clearAllButLast]))}
+         end
 
          %%
-         BrowserClass , Undraw(CurrentSize)
-
-         %%
-         {self.BrowserStream enq(entriesDisable([clear clearAllButLast]))}
-      end
-
-      %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::clear is finished'}
+         {Show 'BrowserClass::clear is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -524,25 +541,26 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::ClearAllButLast is applied'}
 \endif
-      local CurrentSize in
-         %%
-         CurrentSize = {self.BrowserBuffer getSize($)}
+      lock
+         local CurrentSize in
+            %%
+            CurrentSize = {self.BrowserBuffer getSize($)}
 
-         %%
-         case CurrentSize > 1 then
-            BrowserClass , Undraw(CurrentSize - 1)
-         else skip
-         end
+            %%
+            case CurrentSize > 1 then
+               BrowserClass , Undraw(CurrentSize - 1)
+            else skip
+            end
 
-         %%
-         {self.BrowserStream enq(entriesDisable([clearAllButLast]))}
-      end
+            %%
+            {self.BrowserStream enq(entriesDisable([clearAllButLast]))}
 
-      %%
+            %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::ClearAllButLast is finished'}
+            {Show 'BrowserClass::ClearAllButLast is finished'}
 \endif
-      touch
+         end
+      end
    end
 
    %%
@@ -577,25 +595,27 @@ class BrowserClass from Object.base
          %%
          {Wait Sync}
 
-         %%
-         %% becomes empty...
-         case {self.BrowserBuffer getSize($)}
-         of 0 then {self.BrowserStream
-                    enq(entriesDisable([clear clearAllButLast]))}
-         [] 1 then {self.BrowserStream
-                    enq(entriesDisable([clearAllButLast]))}
-         else skip
-         end
+         lock
+            %%
+            %% becomes empty...
+            case {self.BrowserBuffer getSize($)}
+            of 0 then {self.BrowserStream
+                       enq(entriesDisable([clear clearAllButLast]))}
+            [] 1 then {self.BrowserStream
+                       enq(entriesDisable([clearAllButLast]))}
+            else skip
+            end
 
-         %%
-         %% Unselect it if it was;
-         case {GetRootTermObject @selected} == RootTermObj
-         then BrowserClass , UnsetSelected
-         else skip
-         end
+            %%
+            %% Unselect it if it was;
+            case {GetRootTermObject @selected} == RootTermObj
+            then BrowserClass , UnsetSelected
+            else skip
+            end
 
-         %%
-         BrowserClass , Undraw(N-1)
+            %%
+            BrowserClass , Undraw(N-1)
+         end
       else skip
       end
 
@@ -612,25 +632,27 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::UndrawWait is applied'}
 \endif
       %%
-      case {self.BrowserBuffer getSize($)} > 0 then RootTermObj in
-         %%
-         case
-            {self.BrowserBuffer getFirstEl(RootTermObj $)} andthen
-            {GetRootTermObject @selected} == RootTermObj
-         then {Wait @UnselectSync}
-         else skip
+      lock
+         case {self.BrowserBuffer getSize($)} > 0 then RootTermObj in
+            %%
+            case
+               {self.BrowserBuffer getFirstEl(RootTermObj $)} andthen
+               {GetRootTermObject @selected} == RootTermObj
+            then {Wait @UnselectSync}
+            else skip
+            end
+
+            %%
+            %% state is free already;
+            {self Undraw(1)}
+         else {BrowserError 'BrowserClass::UndrawWait: no terms??!'}
          end
 
          %%
-         %% state is free already;
-         {self Undraw(1)}
-      else {BrowserError 'BrowserClass::UndrawWait: no terms??!'}
-      end
-
-      %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::UndrawWait is finished'}
+         {Show 'BrowserClass::UndrawWait is finished'}
 \endif
+      end
    end
 
    %%
@@ -639,44 +661,45 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::setParameter is applied'#NameOf#ValueOf}
 \endif
-      case NameOf
-      of !BrowserXSize                  then
-         case {IsInt ValueOf} andthen ValueOf > 1 then
-            {self.Store store(StoreXSize ValueOf)}
-            {self.BrowserStream enq(resetWindowSize)}
-         else {BrowserError 'Illegal value of parameter BrowserXSize'}
-         end
+      lock
+         case NameOf
+         of !BrowserXSize                  then
+            case {IsInt ValueOf} andthen ValueOf > 1 then
+               {self.Store store(StoreXSize ValueOf)}
+               {self.BrowserStream enq(resetWindowSize)}
+            else {BrowserError 'Illegal value of parameter BrowserXSize'}
+            end
 
-      [] !BrowserYSize                  then
-         case {IsInt ValueOf} andthen ValueOf > 1 then
-            {self.Store store(StoreYSize ValueOf)}
-            {self.BrowserStream enq(resetWindowSize)}
-         else {BrowserError 'Illegal value of parameter BrowserYSize'}
-         end
+         [] !BrowserYSize                  then
+            case {IsInt ValueOf} andthen ValueOf > 1 then
+               {self.Store store(StoreYSize ValueOf)}
+               {self.BrowserStream enq(resetWindowSize)}
+            else {BrowserError 'Illegal value of parameter BrowserYSize'}
+            end
 
-      [] !BrowserXMinSize               then
-         case {IsInt ValueOf} andthen ValueOf > 1 then
-            {self.Store store(StoreXMinSize ValueOf)}
-         else {BrowserError 'Illegal value of parameter BrowserXMinSize'}
-         end
+         [] !BrowserXMinSize               then
+            case {IsInt ValueOf} andthen ValueOf > 1 then
+               {self.Store store(StoreXMinSize ValueOf)}
+            else {BrowserError 'Illegal value of parameter BrowserXMinSize'}
+            end
 
-      [] !BrowserYMinSize               then
-         case {IsInt ValueOf} andthen ValueOf > 1 then
-            {self.Store store(StoreYMinSize ValueOf)}
-         else {BrowserError 'Illegal value of parameter BrowserYMinSize'}
-         end
+         [] !BrowserYMinSize               then
+            case {IsInt ValueOf} andthen ValueOf > 1 then
+               {self.Store store(StoreYMinSize ValueOf)}
+            else {BrowserError 'Illegal value of parameter BrowserYMinSize'}
+            end
 
-       [] !BrowserDepth                  then
-         BrowserClass , SetDepth(ValueOf)
+         [] !BrowserDepth                  then
+            BrowserClass , SetDepth(ValueOf)
 
-      [] !BrowserWidth                  then
-         BrowserClass , SetWidth(ValueOf)
+         [] !BrowserWidth                  then
+            BrowserClass , SetWidth(ValueOf)
 
-      [] !BrowserDepthInc               then
-         BrowserClass , SetDInc(ValueOf)
+         [] !BrowserDepthInc               then
+            BrowserClass , SetDInc(ValueOf)
 
-      [] !BrowserWidthInc               then
-         BrowserClass , SetWInc(ValueOf)
+         [] !BrowserWidthInc               then
+            BrowserClass , SetWInc(ValueOf)
 
 %      [] !BrowserSmoothScrolling        then
 %        case ValueOf of true then
@@ -690,117 +713,117 @@ class BrowserClass from Object.base
 %            'Illegal value of parameter BrowserSmoothScrolling'}
 %        end
 
-      [] !BrowserShowGraph              then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreShowGraph true)}
-            {self.BrowserStream enq(setVarValue(showGraph true))}
-         elseof false then
-            %%
-            {self.Store store(StoreShowGraph false)}
-            {self.BrowserStream enq(setVarValue(showGraph false))}
-         else
-            {BrowserError
-             'Illegal value of parameter BrowserCoreferences'}
-         end
+         [] !BrowserShowGraph              then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreShowGraph true)}
+               {self.BrowserStream enq(setVarValue(showGraph true))}
+            elseof false then
+               %%
+               {self.Store store(StoreShowGraph false)}
+               {self.BrowserStream enq(setVarValue(showGraph false))}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserCoreferences'}
+            end
 
-      [] !BrowserShowMinGraph           then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreShowMinGraph true)}
-            {self.BrowserStream enq(setVarValue(showMinGraph true))}
-         elseof false then
-            %%
-            {self.Store store(StoreShowMinGraph false)}
-            {self.BrowserStream enq(setVarValue(showMinGraph false))}
-         else
-            {BrowserError 'Illegal value of parameter BrowserCycles'}
-         end
+         [] !BrowserShowMinGraph           then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreShowMinGraph true)}
+               {self.BrowserStream enq(setVarValue(showMinGraph true))}
+            elseof false then
+               %%
+               {self.Store store(StoreShowMinGraph false)}
+               {self.BrowserStream enq(setVarValue(showMinGraph false))}
+            else
+               {BrowserError 'Illegal value of parameter BrowserCycles'}
+            end
 
-      [] !BrowserChunkFields            then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreArityType TrueArity)}
-            {self.BrowserStream enq(setVarValue(arityType TrueArity))}
-         elseof false then
-            %%
-            {self.Store store(StoreArityType AtomicArity)}
-            {self.BrowserStream enq(setVarValue(arityType AtomicArity))}
-         else
-            {BrowserError
-             'Illegal value of parameter BrowserPrivateFields'}
-         end
+         [] !BrowserChunkFields            then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreArityType TrueArity)}
+               {self.BrowserStream enq(setVarValue(arityType TrueArity))}
+            elseof false then
+               %%
+               {self.Store store(StoreArityType AtomicArity)}
+               {self.BrowserStream enq(setVarValue(arityType AtomicArity))}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserPrivateFields'}
+            end
 
-      [] !BrowserVirtualStrings         then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreAreVSs true)}
-            {self.BrowserStream enq(setVarValue(areVSs true))}
-         elseof false then
-            %%
-            {self.Store store(StoreAreVSs false)}
-            {self.BrowserStream enq(setVarValue(areVSs false))}
-         else
-            {BrowserError
-             'Illegal value of parameter BrowserVirtualStrings'}
-         end
+         [] !BrowserVirtualStrings         then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreAreVSs true)}
+               {self.BrowserStream enq(setVarValue(areVSs true))}
+            elseof false then
+               %%
+               {self.Store store(StoreAreVSs false)}
+               {self.BrowserStream enq(setVarValue(areVSs false))}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserVirtualStrings'}
+            end
 
-      [] !BrowserRecordFieldsAligned    then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreFillStyle Expanded)}
-            {self.BrowserStream enq(setVarValue(fillStyle Expanded))}
-         elseof false then
-            %%
-            {self.Store store(StoreFillStyle Filled)}
-            {self.BrowserStream enq(setVarValue(fillStyle Filled))}
-         else
-            {BrowserError
-             'Illegal value of parameter BrowserRecordFieldsAligned'}
-         end
+         [] !BrowserRecordFieldsAligned    then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreFillStyle Expanded)}
+               {self.BrowserStream enq(setVarValue(fillStyle Expanded))}
+            elseof false then
+               %%
+               {self.Store store(StoreFillStyle Filled)}
+               {self.BrowserStream enq(setVarValue(fillStyle Filled))}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserRecordFieldsAligned'}
+            end
 
-      [] !BrowserNamesAndProcsShort     then
-         case ValueOf of true then
-            %%
-            {self.Store store(StoreSmallNames true)}
-            {self.BrowserStream enq(setVarValue(smallNams true))}
-         elseof false then
-            %%
-            {self.Store store(StoreSmallNames false)}
-            {self.BrowserStream enq(setVarValue(smallNames false))}
-         else
-            {BrowserError
-             'Illegal value of parameter BrowserNamesAndProcsShort'}
-         end
+         [] !BrowserNamesAndProcsShort     then
+            case ValueOf of true then
+               %%
+               {self.Store store(StoreSmallNames true)}
+               {self.BrowserStream enq(setVarValue(smallNams true))}
+            elseof false then
+               %%
+               {self.Store store(StoreSmallNames false)}
+               {self.BrowserStream enq(setVarValue(smallNames false))}
+            else
+               {BrowserError
+                'Illegal value of parameter BrowserNamesAndProcsShort'}
+            end
 
-      [] !BrowserFont                   then Fonts in
-         Fonts = {Filter
-                  {Append IKnownMiscFonts IKnownCourFonts}
-                  fun {$ F} F.name == ValueOf end}
+         [] !BrowserFont                   then Fonts in
+            Fonts = {Filter
+                     {Append IKnownMiscFonts IKnownCourFonts}
+                     fun {$ F} F.name == ValueOf end}
+
+            %%
+            case Fonts
+            of [Font] then
+               %%
+               %%  must leave the object's state!
+               thread
+                  case {self.BrowserStream enq(setTWFont(Font $))}
+                  then {self.BrowserStream enq(setFont(Font))}
+                  else {BrowserError 'Illegal value of parameter BrowserFont'}
+                  end
+               end
+            else {BrowserError 'Illegal value of parameter BrowserFont'}
+            end
+
+         [] !BrowserBufferSize             then
+            BrowserClass , SetBufferSize(ValueOf)
+
+         else
+            {BrowserError 'Unknown parameter in setParameter'}
+         end
 
          %%
-         case Fonts
-         of [Font] then
-            %%
-            %%  must leave the object's state!
-            thread
-               case {self.BrowserStream enq(setTWFont(Font $))}
-               then {self.BrowserStream enq(setFont(Font))}
-               else {BrowserError 'Illegal value of parameter BrowserFont'}
-               end
-            end
-         else {BrowserError 'Illegal value of parameter BrowserFont'}
-         end
-
-      [] !BrowserBufferSize             then
-         BrowserClass , SetBufferSize(ValueOf)
-
-      else
-         {BrowserError 'Unknown parameter in setParameter'}
       end
-
-      %%
-      touch
    end
 
    %%
@@ -809,44 +832,47 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::getParameter is applied'#NameOf}
 \endif
-      case NameOf
-      of !BrowserXSize                  then
-         {self.Store read(StoreXSize $)}
-      [] !BrowserYSize                  then
-         {self.Store read(StoreYSize $)}
-      [] !BrowserXMinSize               then
-         {self.Store read(StoreXMinSize $)}
-      [] !BrowserYMinSize               then
-         {self.Store read(StoreYMinSize $)}
-      [] !BrowserDepth                  then
-         {self.Store read(StoreDepth $)}
-      [] !BrowserWidth                  then
-         {self.Store read(StoreWidth $)}
-      [] !BrowserDepthInc               then
-         {self.Store read(StoreDepthInc $)}
-      [] !BrowserWidthInc               then
-         {self.Store read(StoreWidthInc $)}
+      %%
+      lock
+         case NameOf
+         of !BrowserXSize                  then
+            {self.Store read(StoreXSize $)}
+         [] !BrowserYSize                  then
+            {self.Store read(StoreYSize $)}
+         [] !BrowserXMinSize               then
+            {self.Store read(StoreXMinSize $)}
+         [] !BrowserYMinSize               then
+            {self.Store read(StoreYMinSize $)}
+         [] !BrowserDepth                  then
+            {self.Store read(StoreDepth $)}
+         [] !BrowserWidth                  then
+            {self.Store read(StoreWidth $)}
+         [] !BrowserDepthInc               then
+            {self.Store read(StoreDepthInc $)}
+         [] !BrowserWidthInc               then
+            {self.Store read(StoreWidthInc $)}
 %      [] !BrowserSmoothScrolling        then
 %        {self.Store read(StoreSmoothScrolling $)}
-      [] !BrowserShowGraph              then
-         {self.Store read(StoreShowGraph $)}
-      [] !BrowserShowMinGraph           then
-         {self.Store read(StoreShowMinGraph $)}
-      [] !BrowserChunkFields            then
-         {self.Store read(StoreArityType $)} == TrueArity
-      [] !BrowserVirtualStrings         then
-         {self.Store read(StoreAreVSs $)}
-      [] !BrowserRecordFieldsAligned    then
-         {self.Store read(StoreFillStyle $)} == Expanded
-      [] !BrowserNamesAndProcsShort     then
-         {self.Store read(StoreSmallNames $)}
-      [] !BrowserFont                   then
-         {self.Store read(StoreTWFont $)}.name
-      [] !BrowserBufferSize             then
-         {self.Store read(StoreBufferSize $)}
-      else
-         {BrowserError 'Unknown parameter in setParameter'}
-         {NewName}
+         [] !BrowserShowGraph              then
+            {self.Store read(StoreShowGraph $)}
+         [] !BrowserShowMinGraph           then
+            {self.Store read(StoreShowMinGraph $)}
+         [] !BrowserChunkFields            then
+            {self.Store read(StoreArityType $)} == TrueArity
+         [] !BrowserVirtualStrings         then
+            {self.Store read(StoreAreVSs $)}
+         [] !BrowserRecordFieldsAligned    then
+            {self.Store read(StoreFillStyle $)} == Expanded
+         [] !BrowserNamesAndProcsShort     then
+            {self.Store read(StoreSmallNames $)}
+         [] !BrowserFont                   then
+            {self.Store read(StoreTWFont $)}.name
+         [] !BrowserBufferSize             then
+            {self.Store read(StoreBufferSize $)}
+         else
+            {BrowserError 'Unknown parameter in setParameter'}
+            {NewName}
+         end
       end
    end
 
@@ -860,37 +886,38 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::SetSelected is applied'#Obj.term#Obj.type}
 \endif
       %%
-      BrowserClass , UnsetSelected
+      lock
+         BrowserClass , UnsetSelected
 
-      %%
-      selected <- Obj
-      UnselectSync <- _
-      thread {Obj Highlight} end
+         %%
+         selected <- Obj
+         UnselectSync <- _
+         thread {Obj Highlight} end
 
-      %%
-      {self.BrowserStream
-       enq(entriesEnable([unselect rebrowse showOPI newView zoom]))}
+         %%
+         {self.BrowserStream
+          enq(entriesEnable([unselect rebrowse showOPI newView zoom]))}
 
-      %%
-      case Obj.type of !T_Shrunken then
-         {self.BrowserStream [enq(entriesDisable([deref shrink]))
-                              enq(entriesEnable([expand]))]}
-      elseof !T_Reference then
-         {self.BrowserStream [enq(entriesDisable([expand shrink]))
-                              enq(entriesEnable([deref]))]}
-      elsecase AreCommas then
-         {self.BrowserStream [enq(entriesDisable([deref]))
-                              enq(entriesEnable([expand shrink]))]}
-      else
-         {self.BrowserStream [enq(entriesDisable([expand deref]))
-                              enq(entriesEnable([shrink]))]}
-      end
+         %%
+         case Obj.type of !T_Shrunken then
+            {self.BrowserStream [enq(entriesDisable([deref shrink]))
+                                 enq(entriesEnable([expand]))]}
+         elseof !T_Reference then
+            {self.BrowserStream [enq(entriesDisable([expand shrink]))
+                                 enq(entriesEnable([deref]))]}
+         elsecase AreCommas then
+            {self.BrowserStream [enq(entriesDisable([deref]))
+                                 enq(entriesEnable([expand shrink]))]}
+         else
+            {self.BrowserStream [enq(entriesDisable([expand deref]))
+                                 enq(entriesEnable([shrink]))]}
+         end
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SetSelected is finished'}
+         {Show 'BrowserClass::SetSelected is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -899,20 +926,21 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::UnsetSelected is applied'}
 \endif
-      selected <- InitValue
-      @UnselectSync = unit
+      lock
+         selected <- InitValue
+         @UnselectSync = unit
 
-      %%
-      {self.BrowserStream
-       [enq(unHighlightTerm)
-        enq(entriesDisable([unselect rebrowse showOPI newView
-                            expand shrink zoom deref]))]}
+         %%
+         {self.BrowserStream
+          [enq(unHighlightTerm)
+           enq(entriesDisable([unselect rebrowse showOPI newView
+                               expand shrink zoom deref]))]}
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::UnsetSelected is finished'}
+         {Show 'BrowserClass::UnsetSelected is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -921,19 +949,22 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelExpand is applied'}
 \endif
-      case @selected == InitValue then skip
-      else
-         %%
-         {self.BrowserStream enq(expand(@selected))}
-
-         %%
-         BrowserClass , UnsetSelected
-      end
-
       %%
+      lock
+         case @selected == InitValue then skip
+         else
+            %%
+            {self.BrowserStream enq(expand(@selected))}
+
+            %%
+            BrowserClass , UnsetSelected
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SelExpand is finished'}
+         {Show 'BrowserClass::SelExpand is finished'}
 \endif
+      end
    end
 
    %%
@@ -942,19 +973,22 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelShrink is applied'}
 \endif
-      case @selected == InitValue then skip
-      else
-         %%
-         {self.BrowserStream enq(shrink(@selected))}
-
-         %%
-         BrowserClass , UnsetSelected
-      end
-
       %%
+      lock
+         case @selected == InitValue then skip
+         else
+            %%
+            {self.BrowserStream enq(shrink(@selected))}
+
+            %%
+            BrowserClass , UnsetSelected
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SelShrink is finished'}
+         {Show 'BrowserClass::SelShrink is finished'}
 \endif
+      end
    end
 
    %%
@@ -963,17 +997,20 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelShow is applied'}
 \endif
-      case @selected == InitValue then skip
-      else {Show @selected.term}
+      %%
+      lock
+         case @selected == InitValue then skip
+         else {Show @selected.term}
 \ifdef DEBUG_RM
-         {@selected debugShow}
+            {@selected debugShow}
+\endif
+         end
+
+         %%
+\ifdef DEBUG_BO
+         {Show 'BrowserClass::SelShow is finished'}
 \endif
       end
-
-      %%
-\ifdef DEBUG_BO
-      {Show 'BrowserClass::SelShow is finished'}
-\endif
    end
 
    %%
@@ -984,14 +1021,16 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::SelZoom is applied'}
 \endif
       %%
-      case @selected == InitValue then skip
-      else BrowserClass , browse(@selected.term)
-      end
+      lock
+         case @selected == InitValue then skip
+         else BrowserClass , browse(@selected.term)
+         end
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SelZoom is finished'}
+         {Show 'BrowserClass::SelZoom is finished'}
 \endif
+      end
    end
 
    %%
@@ -1000,19 +1039,22 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::SelDeref is applied'}
 \endif
-      case @selected == InitValue then skip
-      else
-         %%
-         {self.BrowserStream enq(deref(@selected))}
-
-         %%
-         BrowserClass , UnsetSelected
-      end
-
       %%
+      lock
+         case @selected == InitValue then skip
+         else
+            %%
+            {self.BrowserStream enq(deref(@selected))}
+
+            %%
+            BrowserClass , UnsetSelected
+         end
+
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SelDeref is finished'}
+         {Show 'BrowserClass::SelDeref is finished'}
 \endif
+      end
    end
 
    %%
@@ -1022,31 +1064,34 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::equate is applied'#Term}
 \endif
       %%
-      case @selected == InitValue then skip
-      else ArityType SelectedTerm in
-         ArityType = {self.Store read(StoreArityType $)}
+      lock
+         case @selected == InitValue then skip
+         else ArityType SelectedTerm in
+            ArityType = {self.Store read(StoreArityType $)}
+
+            %%
+            case ArityType == AtomicArity then
+               SelectedTerm = @selected.term
+               %%
+               try SelectedTerm = Term
+               catch failure(...) then
+                  {Show '**************************************************'}
+                  {Show 'Failure occured while Browse.equate.'}
+                  {Show
+                   '... was trying to equate '#Term#' and '#SelectedTerm}
+                  {Show '**************************************************'}
+               end
+            else
+               {BrowserWarning
+                'May not equate: the private fields are shown!'}
+            end
+         end
 
          %%
-         case ArityType == AtomicArity then
-            SelectedTerm = @selected.term
-            %%
-            try SelectedTerm = Term
-            catch failure(...) then
-               {Show '**************************************************'}
-               {Show 'Failure occured while Browse.equate.'}
-               {Show '... was trying to equate '#Term#' and '#SelectedTerm}
-               {Show '**************************************************'}
-            end
-         else
-            {BrowserWarning 'May not equate: the private fields are shown!'}
-         end
-      end
-
-      %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::equate is finished'}
+         {Show 'BrowserClass::equate is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -1072,67 +1117,82 @@ class BrowserClass from Object.base
          else
             {BrowserError 'Non-virtual-string is read from a help.txt file?'}
          end
-      end
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::Help is finished'}
+         {Show 'BrowserClass::Help is finished'}
 \endif
-      touch
+      end
    end
 
    %%
    meth !SetDepth(Depth)
-      case {IsInt Depth} andthen Depth > 0 then
-         {self.Store store(StoreDepth Depth)}
-         BrowserClass , UpdateSizes
-      else {BrowserError 'Illegal value of parameter BrowserDepth'}
+      lock
+         case {IsInt Depth} andthen Depth > 0 then
+            {self.Store store(StoreDepth Depth)}
+            BrowserClass , UpdateSizes
+         else {BrowserError 'Illegal value of parameter BrowserDepth'}
+         end
       end
    end
 
    %%
    meth !ChangeDepth(Inc)
-      BrowserClass , SetDepth({self.Store read(StoreDepth $)} + Inc)
+      lock
+         BrowserClass , SetDepth({self.Store read(StoreDepth $)} + Inc)
+      end
    end
 
    %%
    meth !SetWidth(Width)
-      case {IsInt Width} andthen Width > 1 then
-         {self.Store store(StoreWidth Width)}
-         BrowserClass , UpdateSizes
-      else {BrowserError 'Illegal value of parameter BrowserWidth'}
+      lock
+         case {IsInt Width} andthen Width > 1 then
+            {self.Store store(StoreWidth Width)}
+            BrowserClass , UpdateSizes
+         else {BrowserError 'Illegal value of parameter BrowserWidth'}
+         end
       end
    end
 
    %%
    meth !ChangeWidth(Inc)
-      BrowserClass , SetWidth({self.Store read(StoreWidth $)} + Inc)
+      lock
+         BrowserClass , SetWidth({self.Store read(StoreWidth $)} + Inc)
+      end
    end
 
    %%
    meth !SetDInc(DI)
-      case {IsInt DI} andthen DI > 0 then
-         {self.Store store(StoreDepthInc DI)}
-      else {BrowserError 'Illegal value of parameter BrowserDepthInc'}
+      lock
+         case {IsInt DI} andthen DI > 0 then
+            {self.Store store(StoreDepthInc DI)}
+         else {BrowserError 'Illegal value of parameter BrowserDepthInc'}
+         end
       end
    end
 
    %%
    meth !ChangeDInc(Inc)
-      BrowserClass , SetDInc({self.Store read(StoreDepthInc $)} + Inc)
+      lock
+         BrowserClass , SetDInc({self.Store read(StoreDepthInc $)} + Inc)
+      end
    end
 
    %%
    meth !SetWInc(WI)
-      case {IsInt WI} andthen WI > 0 then
-         {self.Store store(StoreWidthInc WI)}
-      else {BrowserError 'Illegal value of parameter BrowserWidthInc'}
+      lock
+         case {IsInt WI} andthen WI > 0 then
+            {self.Store store(StoreWidthInc WI)}
+         else {BrowserError 'Illegal value of parameter BrowserWidthInc'}
+         end
       end
    end
 
    %%
    meth !ChangeWInc(Inc)
-      BrowserClass , SetWInc({self.Store read(StoreWidthInc $)} + Inc)
+      lock
+         BrowserClass , SetWInc({self.Store read(StoreWidthInc $)} + Inc)
+      end
    end
 
    %%
@@ -1142,16 +1202,17 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::UpdateSizes is applied'}
 \endif
       %%
-      {ForAll {self.BrowserBuffer getContent($)}
-       proc {$ RootTermObj}
-          {self.BrowserStream enq(updateSize(RootTermObj))}
-       end}
+      lock
+         {ForAll {self.BrowserBuffer getContent($)}
+          proc {$ RootTermObj}
+             {self.BrowserStream enq(updateSize(RootTermObj))}
+          end}
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::UpdateSizes is finished'}
+         {Show 'BrowserClass::UpdateSizes is finished'}
 \endif
-      touch
+      end
    end
 
    %%
@@ -1160,18 +1221,20 @@ class BrowserClass from Object.base
 \ifdef DEBUG_BO
       {Show 'BrowserClass::checkLayt is applied'}
 \endif
-      local CLProc in
-         %%
-         proc {CLProc RootTermObj}
-            {self.BrowserStream enq(checkLayoutReq(RootTermObj))}
-         end
+      lock
+         local CLProc in
+            %%
+            proc {CLProc RootTermObj}
+               {self.BrowserStream enq(checkLayoutReq(RootTermObj))}
+            end
 
-         %%
-         {ForAll {self.BrowserBuffer getContent($)} CLProc}
-      end
+            %%
+            {ForAll {self.BrowserBuffer getContent($)} CLProc}
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::checkLayt is finished'}
+            {Show 'BrowserClass::checkLayt is finished'}
 \endif
+         end
+      end
    end
 
    %%
@@ -1185,16 +1248,17 @@ class BrowserClass from Object.base
 \endif
       %%
       {Wait Width}
-      {self.Store store(StoreTWWidth Width)}
+      lock
+         {self.Store store(StoreTWWidth Width)}
 
-      %%
-      {self  checkLayout}
+         %%
+         {self  checkLayout}
 
-      %%
+         %%
 \ifdef DEBUG_BO
-      {Show 'BrowserClass::SetTWWidth is finished'}
+         {Show 'BrowserClass::SetTWWidth is finished'}
 \endif
-      touch
+      end
    end
 
    %%

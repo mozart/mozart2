@@ -39,7 +39,9 @@ in
 
    %%
    %% Core buffer. No limits and no suspensions - "pure logical";
-   class CoreBufferClass from UrObject
+   class CoreBufferClass
+      from UrObject
+      prop locking
       %%
       attr
          Tail                   %  where to put in;
@@ -48,26 +50,31 @@ in
       %%  ... as "reinit" too;
       meth init
          local Start in
-            Tail <- Start
-            Head <- Start
+            lock
+               Tail <- Start
+               Head <- Start
+            end
          end
       end
       meth close
          @Tail = nil
-         Object.closable , close
       end
 
       %%
       meth enq(El)
          local NewTail in
-            @Tail = El|NewTail
-            Tail <- NewTail
+            lock
+               @Tail = El|NewTail
+               Tail <- NewTail
+            end
          end
       end
       meth deq(?El)
          local NewHead in
-            @Head = El|NewHead
-            Head <- NewHead
+            lock
+               @Head = El|NewHead
+               Head <- NewHead
+            end
          end
       end
 
@@ -85,25 +92,32 @@ in
 
    %%
    %% The only addition is that its elements are numbered;
-   class NumBufferClass from CoreBufferClass
+   class NumBufferClass
+      from CoreBufferClass
       %%
       attr
          Size                   %
 
       %%  ... as "reinit" too;
       meth init
-         Size <- 0
-         CoreBufferClass , init
+         lock
+            Size <- 0
+            CoreBufferClass , init
+         end
       end
 
       %%
       meth enq(El)
-         CoreBufferClass , enq(El)
-         Size <- @Size + 1
+         lock
+            CoreBufferClass , enq(El)
+            Size <- @Size + 1
+         end
       end
       meth deq(?El)
-         CoreBufferClass , deq(El)
-         Size <- @Size - 1
+         lock
+            CoreBufferClass , deq(El)
+            Size <- @Size - 1
+         end
       end
 
       %%
@@ -112,7 +126,9 @@ in
       %%
       %%  Yields a list of enqueued entries;
       meth getContent($)
-         {Take (CoreBufferClass , GetHead($)) @Size}
+         lock
+            {Take (CoreBufferClass , GetHead($)) @Size}
+         end
       end
 
       %%
@@ -121,15 +137,18 @@ in
    %%
    %% This one can store only a limited number of elements. Requests
    %% that cannot be server at the moment are rejected;
-   class LimitedBufferClass from NumBufferClass
+   class LimitedBufferClass
+      from NumBufferClass
       %%
       attr
          MaxSize                %
 
       %%  ... as "reinit" too;
       meth init(SizeIn)
-         MaxSize <- SizeIn
-         NumBufferClass , init
+         lock
+            MaxSize <- SizeIn
+            NumBufferClass , init
+         end
       end
 
       %%
@@ -137,29 +156,37 @@ in
 
       %%
       meth hasPlace($)
-         NumBufferClass , getSize($) < @MaxSize
+         lock
+            NumBufferClass , getSize($) < @MaxSize
+         end
       end
 
       %%
       meth isNotEmpty($)
-         NumBufferClass , getSize($) > 0
+         lock
+            NumBufferClass , getSize($) > 0
+         end
       end
 
       %%
       meth enq(El $)
-         case LimitedBufferClass , hasPlace($) then
-            NumBufferClass , enq(El)
-            true
-         else false
+         lock
+            case LimitedBufferClass , hasPlace($) then
+               NumBufferClass , enq(El)
+               true
+            else false
+            end
          end
       end
 
       %%
       meth getFirstEl(?El $)
-         case LimitedBufferClass , isNotEmpty($) then
-            CoreBufferClass , getFirstEl(El)
-            true
-         else false
+         lock
+            case LimitedBufferClass , isNotEmpty($) then
+               CoreBufferClass , getFirstEl(El)
+               true
+            else false
+            end
          end
       end
 
@@ -167,10 +194,12 @@ in
       %%  Note that it can hold more elements than the MaxSize
       %% (because of 'resize');
       meth deq(?El $)
-         case LimitedBufferClass , isNotEmpty($) then
-            NumBufferClass , deq(El)
-            true
-         else false
+         lock
+            case LimitedBufferClass , isNotEmpty($) then
+               NumBufferClass , deq(El)
+               true
+            else false
+            end
          end
       end
 
@@ -187,7 +216,8 @@ in
    %% suspends until the stream becomes non-empty.  Note that a
    %% subsequent 'deq' needs not to yield some element: it can be,
    %% e.g., already dequeued by some other agent.
-   class BrowserStreamClass from NumBufferClass
+   class BrowserStreamClass
+      from NumBufferClass
       %%
       %% 'init'/'close' are inherited from 'NumBufferClass';
 
@@ -197,12 +227,14 @@ in
       %% necessary.
       %%
       meth deq(?Req $)
-         case NumBufferClass , getSize($) > 0 then
-            NumBufferClass , deq(Req)
-            true
-         else
-            Req = InitValue
-            false
+         lock
+            case NumBufferClass , getSize($) > 0 then
+               NumBufferClass , deq(Req)
+               true
+            else
+               Req = InitValue
+               false
+            end
          end
       end
 
@@ -218,7 +250,9 @@ in
    %%
    %%
    %%
-   class BrowserBufferClass from Object.base
+   class BrowserBufferClass
+      from Object.base
+      prop locking
       %%
       feat
          CoreBuffer             %  carries enqueued entries;
@@ -234,72 +268,79 @@ in
 
       %%
       meth close
-         %%  there are probably some suspended enq"s;
-         case {self.ToEnqueue getSize($)} > 0 then L in
-            L = {self.ToEnqueue getContent($)}
-            {ForAll L proc {$ E} {E.discardAction} end}
-         else skip
-         end
+         lock
+            %%  there are probably some suspended enq"s;
+            case {self.ToEnqueue getSize($)} > 0 then L in
+               L = {self.ToEnqueue getContent($)}
+               {ForAll L proc {$ E} {E.discardAction} end}
+            else skip
+            end
 
-         %%  ... deq"s?
-         case {self.ToDequeue getSize($)} > 0 then L in
-            L = {self.ToDequeue getContent($)}
-            {ForAll L proc {$ E} {E.discardAction} end}
-         else skip
-         end
+            %%  ... deq"s?
+            case {self.ToDequeue getSize($)} > 0 then L in
+               L = {self.ToDequeue getContent($)}
+               {ForAll L proc {$ E} {E.discardAction} end}
+            else skip
+            end
 
-         %%
-         Object.closable , close
+            %%
+         end
       end
 
       %%
       meth CheckDequeue
-         case
-            {self.CoreBuffer isNotEmpty($)} andthen
-            {self.ToDequeue getSize($)} > 0
-         then Entry in
-            %%  process the first of them;
-            Entry = {self.ToDequeue deq($)}
-            Entry.elem = {self.CoreBuffer deq($ _)}
-            {Entry.proceedAction}
+         lock
+            case
+               {self.CoreBuffer isNotEmpty($)} andthen
+               {self.ToDequeue getSize($)} > 0
+            then Entry in
+               %%  process the first of them;
+               Entry = {self.ToDequeue deq($)}
+               Entry.elem = {self.CoreBuffer deq($ _)}
+               {Entry.proceedAction}
 
-            %%
-            BrowserBufferClass , CheckDequeue
-         else skip
+               %%
+               BrowserBufferClass , CheckDequeue
+            else skip
+            end
          end
       end
 
       %%
       meth CheckEnqueue
-         case
-            {self.CoreBuffer hasPlace($)} andthen
-            {self.ToEnqueue getSize($)} > 0
-         then Entry in
-            Entry = {self.ToEnqueue deq($)}
-            {self.CoreBuffer enq(Entry.elem _)}
-            {Entry.proceedAction}
+         lock
+            case
+               {self.CoreBuffer hasPlace($)} andthen
+               {self.ToEnqueue getSize($)} > 0
+            then Entry in
+               Entry = {self.ToEnqueue deq($)}
+               {self.CoreBuffer enq(Entry.elem _)}
+               {Entry.proceedAction}
 
-            %%
-            BrowserBufferClass , CheckEnqueue
-         else skip
+               %%
+               BrowserBufferClass , CheckEnqueue
+            else skip
+            end
          end
       end
 
       %%
       meth enq(El ProceedAction DiscardAction)
-         case {self.CoreBuffer enq(El $)} then
-            {ProceedAction}
+         lock
+            case {self.CoreBuffer enq(El $)} then
+               {ProceedAction}
 
-            %%  check whether we have some pending deq"s;
-            BrowserBufferClass , CheckDequeue
-         else ToEnqueueEntry in
-            ToEnqueueEntry =
-            toEnqueueEntry(elem: El
-                           proceedAction: ProceedAction
-                           discardAction: DiscardAction)
+               %%  check whether we have some pending deq"s;
+               BrowserBufferClass , CheckDequeue
+            else ToEnqueueEntry in
+               ToEnqueueEntry =
+               toEnqueueEntry(elem: El
+                              proceedAction: ProceedAction
+                              discardAction: DiscardAction)
 
-            %%
-            {self.ToEnqueue enq(ToEnqueueEntry)}
+               %%
+               {self.ToEnqueue enq(ToEnqueueEntry)}
+            end
          end
       end
 
@@ -319,19 +360,21 @@ in
       %% lead to a deadlock.
       %%
       meth deq(?El ProceedAction DiscardAction)
-         case {self.CoreBuffer deq(El $)} then
-            {ProceedAction}
+         lock
+            case {self.CoreBuffer deq(El $)} then
+               {ProceedAction}
 
-            %%
-            BrowserBufferClass , CheckEnqueue
-         else ToDequeueEntry in
-            ToDequeueEntry =
-            toDequeueEntry(elem: El
-                           proceedAction: ProceedAction
-                           discardAction: DiscardAction)
+               %%
+               BrowserBufferClass , CheckEnqueue
+            else ToDequeueEntry in
+               ToDequeueEntry =
+               toDequeueEntry(elem: El
+                              proceedAction: ProceedAction
+                              discardAction: DiscardAction)
 
-            %%
-            {self.ToDequeue enq(ToDequeueEntry)}
+               %%
+               {self.ToDequeue enq(ToDequeueEntry)}
+            end
          end
       end
 
@@ -343,14 +386,16 @@ in
       %%
       meth resize(NewMaxSize)
          local CurrentMaxSize in
-            CurrentMaxSize = {self.CoreBuffer getMaxSize($)}
-            {self.CoreBuffer resize(NewMaxSize)}
+            lock
+               CurrentMaxSize = {self.CoreBuffer getMaxSize($)}
+               {self.CoreBuffer resize(NewMaxSize)}
 
-            %%
-            case NewMaxSize > CurrentMaxSize then
-               BrowserBufferClass , CheckEnqueue
-            else skip
-               %% no special action when getting smaller;
+               %%
+               case NewMaxSize > CurrentMaxSize then
+                  BrowserBufferClass , CheckEnqueue
+               else skip
+                  %% no special action when getting smaller;
+               end
             end
          end
       end
@@ -359,14 +404,16 @@ in
       %%  Throws away "to-be-{en,de}queued" requests;
       meth purgeSusps
          local P in
-            %%
-            P = proc {$ Entry} {Entry.discardAction} end
-            {ForAll {self.ToDequeue getContent($)} P}
-            {ForAll {self.ToEnqueue getContent($)} P}
+            lock
+               %%
+               P = proc {$ Entry} {Entry.discardAction} end
+               {ForAll {self.ToDequeue getContent($)} P}
+               {ForAll {self.ToEnqueue getContent($)} P}
 
-            %%
-            {self.ToDequeue init}
-            {self.ToEnqueue init}
+               %%
+               {self.ToDequeue init}
+               {self.ToEnqueue init}
+            end
          end
       end
 

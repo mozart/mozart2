@@ -76,10 +76,24 @@ in
    end
 
 %%%
+%%%
+%%%
+   class MyClosableObject
+      from Object.base
+      feat closed
+      meth close
+         self.closed = true
+      end
+      meth isClosed($)
+         {IsDet self.closed}
+      end
+   end
+
+%%%
 %%%   "Generic" part of "master" term objects.
 %%%
 %%%
-   class ControlObject from UrObject Object.closedFeature
+   class ControlObject from MyClosableObject
       %%
       feat
          term                   % browsed term itself;
@@ -134,7 +148,7 @@ in
          {Show 'ControlObject::Close method for the term ' # self.term}
 \endif
          %%
-         Object.closable , close
+         MyClosableObject , close
 
          %%  overloaded depending on the "primitiveness" :-)
          %%
@@ -152,7 +166,7 @@ in
           # self.term}
 \endif
          %%
-         Object.closable , close
+         MyClosableObject , close
          %%
          {self  closeTerm}
 
@@ -762,10 +776,11 @@ in
          {Show 'RootTermObject::Close is applied: ' # self.term}
 \endif
          %%
-         Object.closable , close
+         MyClosableObject , close
 
          %% ... + removes a representation;
-         {@termObj [SetCursorAt Close]}
+         {@termObj SetCursorAt}
+         {@termObj Close}
 
          %%
          {self.WidgetObj [removeNL removeUnderline(self.underline)]}
@@ -836,7 +851,8 @@ in
          %%
          case Obj.numberOf == DRootGroup andthen Obj == @termObj then
             %%
-            {@termObj [SetCursorAt Close]}
+            {@termObj SetCursorAt}
+            {@termObj Close}
 
             %%
             %% purge everything - it must be already empty anyway;
@@ -956,7 +972,9 @@ in
             %%
             case Master == InitValue then skip
                %% i.e. cannot yet deref - simply ignore it;
-            else {Master [pickPlace('begin' 'any') SetSelected]}
+            else
+               {Master pickPlace('begin' 'any')}
+               {Master SetSelected}
             end
          end
       end

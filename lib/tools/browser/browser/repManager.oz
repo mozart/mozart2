@@ -199,7 +199,7 @@ in
       meth setCursorAt(WO)
          {WO setCursorOffset(@mark @offset @indent)}
 \ifdef DEBUG_RM
-         Object.closable , close
+         % Object.closable , close
 \endif
       end
 
@@ -471,7 +471,6 @@ in
 \ifdef DEBUG_RM
          {Show 'MetaRepManagerObject::BeginUpdate is finished'}
 \endif
-         touch
       end
 
       %%
@@ -2715,7 +2714,11 @@ in
 
             %%
             %% ... but before, set the cursor at a right position;
-            OldSize = {OldGroup.obj [GetSize($) SetCursorAt Close]}
+            local OGObj = OldGroup.obj in
+               OldSize = {OGObj GetSize($)}
+               {OGObj SetCursorAt}
+               {OGObj Close}
+            end
 
             %%
             %% the cursor has been moved - the 'CurrentBlock' is
@@ -2787,15 +2790,17 @@ in
             case {Label Group}
             of e   then 0
 
-            [] t   then
-               {Group.obj [GetSize($) Close]}
+            [] t   then Size GObj = Group.obj in
+               Size = {GObj GetSize($)}
+               {GObj Close}
 
             [] s   then
                {WO deleteBackward(Group.strSize)}
                Group.strSize
 
-            [] st  then ObjSize in
-               ObjSize = {Group.obj [GetSize($) Close]}
+            [] st  then GObj = Group.obj ObjSize in
+               ObjSize = {GObj GetSize($)}
+               {GObj Close}
                {WO deleteBackward(Group.strSize)}
                ObjSize + Group.strSize
 
@@ -2804,8 +2809,9 @@ in
                {WO deleteBackward(Size + Group.glueSize)}
                Size
 
-            [] sgt then ObjSize in
-               ObjSize = {Group.obj [GetSize($) Close]}
+            [] sgt then GObj = Group.obj ObjSize in
+               ObjSize = {GObj GetSize($)}
+               {GObj Close}
                {WO deleteBackward(Group.glueSize + Group.strSize)}
                ObjSize + Group.strSize
 
@@ -2813,8 +2819,9 @@ in
                {WO deleteBackward(Group.glueSize + Group.strSize)}
                Group.strSize
 
-            [] gt  then ObjSize in
-               ObjSize = {Group.obj [GetSize($) Close]}
+            [] gt  then GObj = Group.obj ObjSize in
+               ObjSize = {GObj GetSize($)}
+               {GObj Close}
                {WO deleteBackward(Group.glueSize)}
                ObjSize
 

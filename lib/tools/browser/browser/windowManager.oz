@@ -16,7 +16,7 @@
 %%%
 
 %%
-class WindowManagerClass from UrObject
+class WindowManagerClass from MyClosableObject Object.batch
    %%
    feat
    %% There is a number of object-depended procedures:
@@ -149,7 +149,6 @@ class WindowManagerClass from UrObject
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::createWindow is finished'}
 \endif
-      touch
    end
 
    %%
@@ -771,7 +770,6 @@ class WindowManagerClass from UrObject
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::createMenus is finished'}
 \endif
-      touch
    end
 
    %%
@@ -793,7 +791,6 @@ class WindowManagerClass from UrObject
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::resetWindowSize is finished'}
 \endif
-      touch
    end
 
    %%

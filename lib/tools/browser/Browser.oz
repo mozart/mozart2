@@ -119,6 +119,7 @@ local
 
    %%
    %% control part;
+   MyClosableObject
    ControlObject
    CompoundControlObject
    %%
@@ -357,7 +358,7 @@ in
             Browser = @browserObj
 
             %%
-            proc {CrashProc E}
+            proc {CrashProc E T D}
                {Show '*********************************************'}
                {Show 'Exception occured in browser:'#E}
                HasCrashed = unit
@@ -368,9 +369,9 @@ in
                %%  Actually, this might block the thread
                %% (for instance, if the browser's buffer is full);
                {Browser browse(Term)}
-            catch E=failure(...) then {CrashProc E}
-            [] E=error(...) then {CrashProc E}
-            [] E=system(...) then {CrashProc E}
+            catch failure(debug:D) then {CrashProc failure unit D}
+            [] error(T debug:D) then {CrashProc error T D}
+            [] system(T debug:D) then {CrashProc system T D}
             end
 
             %%
@@ -389,9 +390,9 @@ in
 
                   %%
                   %% ignore faults in the current thread;
-               catch failure(...) then skip
-               [] error(...) then skip
-               [] system(...) then skip
+               catch failure(debug:_) skip
+               [] error(_ debug:_) then skip
+               [] system(_ debug:_) then skip
                end
 
                %%

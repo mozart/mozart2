@@ -643,8 +643,8 @@ in
          else skip
          end
 
-         %% reject all future messages; TODO ?
-         Object.closable , close
+         %%
+         % Object.closable , close
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::close is finished'}
 \endif
@@ -755,7 +755,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::resetTW is finished'}
 \endif
-         touch
       end
 
       %%
@@ -781,9 +780,6 @@ in
                %% synchronization;
                {Tk.send update(idletasks)}
                {Wait {Tk.returnInt winfo(exists self.BrowseWidget)}}
-
-               %%
-               touch
             else {BrowserWarning 'Impossible window size wrt limits'}
             end
          else skip
@@ -821,9 +817,6 @@ in
                           padx: IPad
                           pady: IPad
                           before: self.FrameHS)}
-
-            %%
-            touch
          else skip              %  may happen?
          end
 
@@ -996,7 +989,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMark is finished:' # NewMark}
 \endif
-         touch
       end
 
       %%
@@ -1034,7 +1026,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::putMarkBefore is finished:' # NewMark}
 \endif
-         touch
       end
 
       %%
@@ -1065,7 +1056,6 @@ in
          %% Actually, it's freed when it's removed from the
          %% dictionary;
          {Dictionary.remove self.TclsMap Mark}
-         touch
       end
 
       %%
@@ -1184,7 +1174,6 @@ in
 
             %%
             {self.BrowseWidget tk(del Base#M1 Base#M2)}
-            touch
          end
       end
 
@@ -1217,7 +1206,6 @@ in
 
             %%
             {self.BrowseWidget tk(del C C#'+'#N#'c')}
-            touch
          else skip
          end
       end
@@ -1233,7 +1221,6 @@ in
 
             %%
             {self.BrowseWidget tk(del C#'-'#N#'c' C)}
-            touch
          else skip
          end
       end
@@ -1246,7 +1233,6 @@ in
 \endif
          %%
          {self.BrowseWidget tk(m g self.TclBase#Mark Gravity)}
-         touch
       end
 
       %%
@@ -1587,7 +1573,6 @@ in
 \ifdef DEBUG_TI
             {Show 'BrowserWindowClass::makeUnderline is finisehd'}
 \endif
-            touch
          end
       end
 
@@ -1609,7 +1594,6 @@ in
             BrowserWindowClass , FreeTcl(Tag)
 
             %%
-            touch
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::removeUnderline is finished'}
 \endif
@@ -1649,7 +1633,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::createTkVar is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1661,7 +1644,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTkVar is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1701,7 +1683,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setPostCommand is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1740,7 +1721,6 @@ in
             end
 
             %%
-            touch
          end
 
          %%
@@ -1762,7 +1742,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesEnable is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1778,7 +1757,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::commandEntriesDisable is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1831,7 +1809,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1847,7 +1824,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsDisable is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1863,7 +1839,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOn is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1879,7 +1854,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::checkButtonOff is finished'}
 \endif
-         touch
       end
 
       %%
@@ -1895,7 +1869,6 @@ in
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::noTearOff is finished'}
 \endif
-         touch
       end
 
       %%
@@ -2000,7 +1973,6 @@ in
 \ifdef DEBUG_TI
             {Show 'MessageWindowClass::createMessageWindow is finished'}
 \endif
-            touch
          end
       end
 
@@ -2217,7 +2189,6 @@ in
 \ifdef DEBUG_TI
             {Show 'HelpWindowClass::createHelpWindow is finished'}
 \endif
-            touch
          end
       end
 
@@ -2236,11 +2207,7 @@ in
       %%
       meth close
          case @window == InitValue then skip
-         else
-            {@window tkClose}
-
-            %%
-            Object.closable , close
+         else {@window tkClose}
          end
       end
 

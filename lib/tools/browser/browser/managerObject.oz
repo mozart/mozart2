@@ -67,7 +67,7 @@ in
          {Show 'BrowserManagerClass::close is applied'}
 \endif
          WindowManagerClass , closeWindow
-         Object.closable , close
+         % Object.closable , close
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::close is finished'}
 \endif
@@ -80,7 +80,7 @@ in
          {Show 'BrowserManagerClass::ServeRequest ...'}
 \endif
          %%
-         case Object.closable , isClosed($) then skip
+         case MyClosableObject , isClosed($) then skip
          else Req in
             %%
             case {self.Stream deq(Req $)} then
@@ -94,7 +94,7 @@ in
                   %% The convension is that a request is just a manager
                   %% object's method;
                   BrowserManagerClass , Req
-               catch !BEx then skip
+               catch !BEx(_) then skip
                end
             else
                %% is empty at the moment - do 'idle' step and sleep for
@@ -120,7 +120,7 @@ in
 
       %%
       meth CheckObj(Obj)
-         case {Obj isClosed($)} then {Raise BEx}
+         case {Obj isClosed($)} then {Raise BEx(general)}
          else skip
          end
       end
@@ -174,7 +174,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::browse is finished'}
 \endif
-         touch
       end
 
       %%
@@ -199,7 +198,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkTerm is finished'}
 \endif
-         touch
       end
 
       %%
@@ -214,7 +212,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::subtermSizeChanged is finished'}
 \endif
-         touch
       end
 
       %%
@@ -229,7 +226,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::setRefName is finished'}
 \endif
-         touch
       end
 
       %%
@@ -244,7 +240,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::genRefName is finished'}
 \endif
-         touch
       end
 
       %%
@@ -259,7 +254,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::subtermChanged is finished'}
 \endif
-         touch
       end
 
       %%
@@ -274,7 +268,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::changedDepth is finished'}
 \endif
-         touch
       end
 
       %%
@@ -290,7 +283,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::undraw is finished'}
 \endif
-         touch
       end
 
       %%
@@ -306,7 +298,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::expandWidth is finished'}
 \endif
-         touch
       end
 
       %%
@@ -322,7 +313,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::expand is finished'}
 \endif
-         touch
       end
 
       %%
@@ -338,7 +328,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::shrink is finished'}
 \endif
-         touch
       end
 
       %%
@@ -354,7 +343,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::deref is finished'}
 \endif
-         touch
       end
 
       %%
@@ -370,7 +358,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::updateSize is finished'}
 \endif
-         touch
       end
 
       %%
@@ -386,7 +373,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkLayout is finished'}
 \endif
-         touch
       end
 
       %%
@@ -402,7 +388,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkLayoutReq is finished'}
 \endif
-         touch
       end
 
       %%
@@ -424,7 +409,6 @@ in
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::processEvent is finished'}
 \endif
-         touch
       end
 
       %%

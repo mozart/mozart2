@@ -301,6 +301,8 @@ local
 \endif
    end
 
+   InterruptException = {NewName}
+
    class CompilerInternal from CompilerStateClass
       prop final
       attr
@@ -377,7 +379,7 @@ local
             {@reporter logAbort()}
          [] crashed then
             {@reporter logCrash()}
-         [] interrupt then
+         [] !InterruptException then
             {@reporter logInterrupt()}
          end
       end
@@ -680,7 +682,7 @@ local
          case @ExecutingThread of unit then skip
          elseof T then
             lock @InterruptLock then
-               {Thread.injectException T interrupt}
+               {Thread.injectException T InterruptException}
             end
          end
       end
@@ -720,8 +722,8 @@ local
             try
                {P}
                Exceptionless = true
-            catch interrupt then
-               {Thread.injectException T interrupt}
+            catch !InterruptException then
+               {Thread.injectException T InterruptException}
             finally
                ExecutingThread <- T
                Completed = true

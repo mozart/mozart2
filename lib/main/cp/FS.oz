@@ -619,12 +619,25 @@ define
 
    FSMonitorOut = FSP.monitorOut
 
+
    FSReflect = reflect(unknown:
                           FSGetUnknown
+                       unknownList:
+                          fun {$ S}
+                             {ExpandList {FSGetUnknown S}}
+                          end
                        lowerBound:
                           FSGetGlb
+                       lowerBoundList:
+                          fun {$ S}
+                             {ExpandList {FSGetGlb S}}
+                          end
                        upperBound:
                           FSGetLub
+                       upperBoundList:
+                          fun {$ S}
+                             {ExpandList {FSGetLub S}}
+                          end
                        card:
                           FSGetCard
                        cardOf:

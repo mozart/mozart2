@@ -15,16 +15,14 @@
 %%%
 
 functor $
-   prop
-      once
 
 import
-   System.{eq}
+   System(eq)
 
 export
    cycleManager : CycleManager
 
-body
+define
    class CycleManager
       from
          BaseObject

@@ -15,8 +15,6 @@
 %%%
 
 functor $
-   prop
-      once
 
 import
    CreateObjects
@@ -51,7 +49,7 @@ export
    fDIntTreeNode             : FDIntTreeNode
    fSSetTreeNode             : FSSetTreeNode
 
-body
+define
    %% Simple Types
 
    class IntTreeNode

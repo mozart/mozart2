@@ -15,12 +15,10 @@
 %%%
 
 functor $
-   prop
-      once
 
 import
    SupportNodes
-   System.{printName}
+   System(printName)
 
 export
    intLayoutObject               : IntLayoutObject
@@ -50,7 +48,7 @@ export
    fDIntLayoutObject             : FDIntLayoutObject
    fSSetLayoutObject             : FSSetLayoutObject
 
-body
+define
    OpMan       = SupportNodes.options
    EmbraceNode = SupportNodes.embraceNode
 

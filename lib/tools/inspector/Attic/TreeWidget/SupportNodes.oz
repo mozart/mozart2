@@ -1,9 +1,23 @@
+%%%
+%%% Author:
+%%%   Thorsten Brunklaus <bruni@ps.uni-sb.de>
+%%%
+%%% Copyright:
+%%%   Thorsten Brunklaus, 1998
+%%%
+%%% Last Change:
+%%%   $Date$ by $Author$
+%%%   $Revision$
+%%%
+
+%%%
+%%% SupportNodes Functor
+%%%
+
 functor $
-   prop
-      once
 
 import
-   Tk.{canvasTag menu menuentry}
+   Tk(canvasTag menu menuentry)
 
 export
    options          : OpMan
@@ -13,7 +27,7 @@ export
    bitmapTreeNode   : BitmapTreeNode
    internalAtomNode : InternalAtomNode
 
-body
+define
    class OptionManager
       from
          BaseObject

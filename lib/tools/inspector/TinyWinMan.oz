@@ -628,6 +628,10 @@ class ScrollCanvasNode
    meth unfreeze
       @freezeVar = unit
    end
+
+   meth terminate
+      {Thread.terminate @wThread}
+   end
 end
 
 %% SashGrip

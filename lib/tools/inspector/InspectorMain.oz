@@ -71,10 +71,11 @@ define
          WinToplevel
 
       attr
-         mNode %% InspectorMenuNode
-         bNode %% ButtonFrameNode
-         cNode %% (Scroll)CanvasNode
-         uArea %% Used Area
+         visible : true %% Inspector is Visible
+         mNode          %% InspectorMenuNode
+         bNode          %% ButtonFrameNode
+         cNode          %% (Scroll)CanvasNode
+         uArea          %% Used Area
 
       meth create
          XDim  = {OpMan get(inspectorWidth $)}
@@ -90,6 +91,12 @@ define
       end
 
       meth inspect(Value)
+         case @visible
+         then skip
+         else
+            {Tk.send wm(deiconify @toplevel)}
+            visible <- true
+         end
          {@cNode display(Value)}
       end
 
@@ -136,9 +143,19 @@ define
       end
 
       meth close
-         {Server freeze}
-         {@toplevel tkClose}
-         toplevel <- nil
+         {Tk.send wm(withdraw @toplevel)}
+         visible <- false
+         Inspector, addPane
+         Inspector, performClose((@divCount - 1))
+      end
+
+      meth performClose(I)
+         case I
+         of 0 then skip
+         else
+            Inspector, delPane
+            Inspector, performClose((I - 1))
+         end
       end
 
       meth iconify
@@ -335,8 +352,9 @@ define
                DeltaK = 1
             end
             NCanvas = {NNode getCanvas($)}
-            {CNode freeze(FreezeVar)}
+            {CNode freeze(FreezeVar)} %% Disable data processing
             {CNode undraw}
+            {CNode terminate} %% Enable garbage collecting
             {Pane undraw}
             cNode <- NNode
             {Tk.batch [focus(NCanvas)]}

@@ -15,14 +15,12 @@
 %%%
 
 functor $
-   prop
-      once
 
 import
    SupportNodes
-   CreateObjects.{kindedRecordCreateObject kindedRecordCycleCreateObject}
+   CreateObjects(kindedRecordCreateObject kindedRecordCycleCreateObject)
    TreeNodes
-   Tk.{canvasTag menu menuentry}
+   Tk(canvasTag menu menuentry)
 
 export
    intDrawObject               : IntDrawObject
@@ -52,7 +50,7 @@ export
    fDIntDrawObject             : FDIntDrawObject
    fSSetDrawObject             : FSSetDrawObject
 
-body
+define
    OpMan                         = SupportNodes.options
    ProxyNode                     = SupportNodes.proxyNode
    BitmapTreeNode                = SupportNodes.bitmapTreeNode

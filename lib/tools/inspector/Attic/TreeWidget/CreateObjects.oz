@@ -15,15 +15,13 @@
 %%%
 
 functor $
-   prop
-      once
 
 import
    SupportNodes
    TreeNodes
-   FD.{reflect}
-   FS.{reflect}
-   System.{printName eq}
+   FD(reflect)
+   FS(reflect)
+   System(printName eq)
 
 export
    intCreateObject               : IntCreateObject
@@ -53,7 +51,7 @@ export
    fDIntCreateObject             : FDIntCreateObject
    fSSetCreateObject             : FSSetCreateObject
 
-body
+define
    NullNode         = SupportNodes.nullNode
    BitmapTreeNode   = SupportNodes.bitmapTreeNode
    InternalAtomNode = SupportNodes.internalAtomNode

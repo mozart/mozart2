@@ -1779,8 +1779,14 @@ define
          VHd = VTl
          VO = self
       end
-      meth makePattern(Arbiter Pos Hd Tl Seen CS)
-         Hd = Pos#constant(self)|Tl
+      meth makePattern(Arbiter Pos Hd Tl Seen CS) Value in
+         CodeGenVariableOccurrence, getCodeGenValue(?Value)
+         if {IsDet Value} andthen ({IsNumber Value} orelse {IsLiteral Value})
+         then
+            Hd = Pos#scalar(Value)|Tl
+         else
+            Hd = Pos#constant(self)|Tl
+         end
       end
       meth assignRegs(Pos Mapping)
          skip

@@ -842,6 +842,12 @@ in
              unit
              {Map Hints fun {$ L#M} hint(l:L  m:oz(M)) end}
              Exc}
+         elseof dp(modelChoose) then
+            {Error.format
+             'Cannot change distribution model: distribution layer already started'
+             unit
+             nil
+             Exc}
          elseof dp(connection(illegalTicket V)) then
             {Error.format
              'Illegal ticket for connection'

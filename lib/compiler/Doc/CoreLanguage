@@ -43,6 +43,12 @@ S  ::=  <Statement>
      next: S   % singly linked list terminated by self reference
 
 
+% res = ...   % typeof arg
+<TypeOf> from <Statement>
+     arg: V
+     res: O
+
+
 % statements
 <StepPoint> from <Statement>
      kind:       atom

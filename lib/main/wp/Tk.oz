@@ -1297,7 +1297,7 @@ define
          Home  = {Property.get 'oz.home'}
       in
          ImRes = {Resolve.makeResolver image
-                  vs('all=.'#[Sep]#'cache='#Home#'/cache')}
+                  vs('all=.'#[Sep]#'root='#Home#[Sep]#'cache='#Home#'/cache')}
       end
 
       PathStore = {New class $

@@ -526,6 +526,18 @@ define
             {System.show {Dictionary.toRecord currentTemporaries @Temporaries}}
             {System.show {Dictionary.toRecord targetTemporaries Ts}}
 \endif
+            %%--** this reordering is not correct; consider the following:
+            %%   proc {F Foo Bar} X in
+            %%      if Bar == 1 orelse {Member 1 nil} then X = 3
+            %%      else X = Bar
+            %%      end
+            %%      {System.show Foo}
+            %%      {System.show X}
+            %%   end
+            %%   {F foo bar}
+            %%
+            %% At the first application of System.show,
+            %% registers x(0) and y(0) must actually be swapped.
             {ForAll {Dictionary.entries Ps}
              proc {$ Reg#YG}
                 case YG of (Y=y(_))#I then

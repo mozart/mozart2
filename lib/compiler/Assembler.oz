@@ -53,6 +53,7 @@ local
       StorePredicateRef  = {`Builtin` storePredicateRef  2}
       StoreRecordArity   = {`Builtin` storeRecordArity   2}
       StoreGRegRef       = {`Builtin` storeGRegRef       2}
+      StoreLocation      = {`Builtin` storeLocation      2}
       StoreCache         = {`Builtin` storeCache         2}
 
       local

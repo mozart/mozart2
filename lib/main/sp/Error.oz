@@ -1826,12 +1826,17 @@ in
              unit
              [hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
-         elseof dp(portSend nogoods Port NoGoods) then
+         elseof dp(send nogoods NoGoods) then
             {FormatExc
              'Trying to send non-distributables to port'
              unit
-             [hint(l:'Port'    m:oz(Port))
-              hint(l:'Non-distributables' m:oz(NoGoods))]
+             [hint(l:'Non-distributables' m:oz(NoGoods))]
+             Exc}
+         elseof dp(unify nogoods NoGoods) then
+            {FormatExc
+             'Trying to unify distributed variable with non-distributables'
+             unit
+             [hint(l:'Non-distributables' m:oz(NoGoods))]
              Exc}
          elseof dp(connection(illegalTicket V)) then
             {FormatExc

@@ -21,6 +21,9 @@
 
 local
    UsageError = 'command line option error'
+   BatchCompilationError = 'batch compilation error'
+
+   DefaultSysletPrefix = '#!/bin/sh\nexec ozengine $0 "$@"\n'
 
    local
       fun {ConvertBooleanOpts OptSpecs}
@@ -43,6 +46,7 @@ local
                    &s#"ozma"#mode(value: ozma)
                    &e#"feedtoemulator"#mode(value: feedtoemulator)
                    &c#"dump"#mode(value: dump)
+                   &x#"syslet"#mode(value: syslet)
                    &h#"help"#help(value: unit) &?#unit#help(value: unit)
                    &D#"define"#define(type: atom)
                    &U#"undefine"#undef(type: atom)
@@ -52,6 +56,7 @@ local
                    &l#"environment"#environment(type: string)
                    &I#"incdir"#incdir(type: string)
                    unit#"include"#include(type: string)
+                   unit#"sysletprefix"#sysletprefix(type: string)
                    unit#"maxerrors"#maxerrors(type: int)
                    unit#"compilerpasses"#compilerpasses(type: bool)
                    unit#"showinsert"#showinsert(type: bool)
@@ -90,6 +95,9 @@ local
    '-c, --dump                    Compile and evaluate an expression,\n'#
    '                              pickling the result\n'#
    '                              (file extension: .ozp).\n'#
+   '-x, --syslet                  Compile and evaluate an expression,\n'#
+   '                              making a syslet of the result\n'#
+   '                              (file extension: none).\n'#
    '\n'#
    'Additionally, you may specify the following options:\n'#
    '-h, -?, --help                Output usage information and exit.\n'#
@@ -105,6 +113,8 @@ local
    '-I DIR, --incdir=DIR          Add DIR to the head of OZPATH.\n'#
    '--include=FILE                Compile and execute the statement in FILE\n'#
    '                              before processing the remaining options.\n'#
+   '--sysletprefix=STRING         Use STRING as prefix to syslets (default:\n'#
+   '                              "#!/bin/sh\\nexec ozengine $0 "$@"\\n").'#
    '\n'#
    'The following compiler switches have the described effects when set:\n'#
    %% Note that the remaining options are not documented here on purpose.
@@ -381,7 +391,7 @@ in
    proc {BatchCompile Argv ?Status}
       try
          Opts FileNames Verbose BatchCompiler UI Mode ModeGiven OutputFile
-         IncDir
+         IncDir SysletPrefix
       in
          try
             {ParseArgs Argv ?Opts ?FileNames}
@@ -401,6 +411,7 @@ in
          Mode = {NewCell feedtoemulator}
          OutputFile = {NewCell unit}
          IncDir = {NewCell nil}
+         SysletPrefix = {NewCell unit}
          {ForAll Opts
           proc {$ Opt#X}
              case Opt of help then
@@ -429,6 +440,16 @@ in
                    else skip
                    end
                 else skip
+                end
+             [] sysletprefix then
+                case {Access SysletPrefix} == unit then
+                   {Assign SysletPrefix X}
+                else
+                   {Report error(kind: UsageError
+                                 msg: 'syslet prefix may only be given once'
+                                 items: [hint(l: 'Hint'
+                                              m: ('Use --help to obtain '#
+                                                  'usage information'))])}
                 end
              [] verbose then
                 skip   % has already been set
@@ -486,9 +507,13 @@ in
                       OFN = unit
                    [] dump then
                       OFN = {ChangeExtension Arg ".oz" ".ozp"}
+                   [] syslet then
+                      OFN = {ChangeExtension Arg ".oz" ""}
                    end
                 elsecase {Access OutputFile} == "-" then
-                   case {Access Mode} of dump then
+                   case {Access Mode} == dump
+                      orelse {Access Mode} == syslet
+                   then
                       {Report
                        error(kind: UsageError
                              msg: 'dumping to stdout is not possible')}
@@ -516,7 +541,7 @@ in
                 [] feedtoemulator then
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator true))}
-                [] dump then
+                else   % dump, syslet
                    {BatchCompiler enqueue(setSwitch(expression true))}
                    {BatchCompiler
                     enqueue(setSwitch(feedtoemulator true))}
@@ -538,13 +563,39 @@ in
                       {Pickle.save R OFN}
                    catch error(dp(save resources Filename Vs) ...) then
                       {Report
-                       error(kind: UsageError
+                       error(kind: BatchCompilationError
                              msg: 'saved value is not stateless'
                              items: [hint(l: 'Stateful values'
                                           m: oz(Vs))])}
                    end
+                [] syslet then TmpFileName in
+                   TmpFileName = {OS.tmpnam}
+                   try File VS in
+                      File = {New Open.file
+                              init(name: OFN
+                                   flags: [write create truncate])}
+                      VS = case {Access SysletPrefix} of unit then
+                              DefaultSysletPrefix
+                           elseof S then S
+                           end
+                      {File write(vs: VS)}
+                      {File close()}
+                      {Pickle.save R TmpFileName}
+                      case
+                         {OS.system
+                          'cat '#TmpFileName#' >> '#OFN#'; '#'chmod +x '#OFN}
+                      of 0 then skip
+                      elseof N then
+                         {Report
+                          error(kind: BatchCompilationError
+                                msg: 'writing syslet failed'
+                                items: [hint(l: 'Error code' m: N)])}
+                      end
+                   finally
+                      {OS.unlink TmpFileName}
+                   end
                 [] feedtoemulator then skip
-                else File in
+                else File in   % core, outputcode, ozma
                    File = {New Open.file
                            init(name: OFN
                                 flags: [write create truncate])}

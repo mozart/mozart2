@@ -180,6 +180,7 @@ in
         )
 
       Error(registerFormatter)
+      ZlibIO(compressedFile:CompressedFile) at 'x-oz://system/ZlibIO.ozf'
 
       Resolve(open)
 
@@ -189,6 +190,7 @@ in
       socket: Socket
       pipe:   Pipe
       html:   Html
+      compressedFile: CompressedFile
 
    define
 

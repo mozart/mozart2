@@ -54,6 +54,7 @@ Value = value(wait:            Wait
               '!!':            Boot_Value.'!!'
               byNeed:          ByNeed
               byNeedDot:       Boot_Value.'byNeedDot'
+              byNeedFail:      Boot_Value.'byNeedFail'
 
               toVirtualString: Boot_Value.toVirtualString
              )

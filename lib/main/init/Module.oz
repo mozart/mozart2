@@ -76,27 +76,31 @@ prepare
                {Dictionary.put ModMap Key
                 {ByNeed
                  fun {$}
-                    if {CondSelect Url scheme unit}==OzScheme
-                    then {self SYSTEM(Url $)}
-                    else {self LOAD(  Url $)}
-                    end
+                    try
+                       if {CondSelect Url scheme unit}==OzScheme
+                       then {self SYSTEM(Url $)}
+                       else {self LOAD(  Url $)}
+                       end
+                    catch E then {Value.byNeedFail E} end
                  end}}
             end
             Entry = {Dictionary.get ModMap Key}
             Module = {ByNeed
                       fun {$}
-                         case Entry of Module#ActualType then
-                            case ExpectedType of !NOTYPE then Module
-                            elsecase ActualType of !NOTYPE then Module
-                            elseif {self.TypeCheckProc ActualType ExpectedType}
-                            then Module
-                            else
-                               raise
-                                  system(module(typeMismatch Key
-                                                ActualType ExpectedType))
+                         try
+                            case Entry of Module#ActualType then
+                               case ExpectedType of !NOTYPE then Module
+                               elsecase ActualType of !NOTYPE then Module
+                               elseif {self.TypeCheckProc ActualType ExpectedType}
+                               then Module
+                               else
+                                  raise
+                                     system(module(typeMismatch Key
+                                                   ActualType ExpectedType))
+                                  end
                                end
                             end
-                         end
+                         catch E then {Value.byNeedFail E} end
                       end}
          end
       end

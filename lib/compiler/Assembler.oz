@@ -93,6 +93,8 @@ define
          end
       end
 
+      /*
+
       local
          BINewHashTable  = CompilerSupport.newHashTable
          BIStoreHTScalar = CompilerSupport.storeHTScalar
@@ -112,6 +114,27 @@ define
                    {BIStoreHTRecord CodeBlock HTable Label RecordArity Addr}
                 end
              end}
+         end
+      end
+      */
+
+      local
+         BINewHashTable  = CompilerSupport.newHashTable
+      in
+         proc {StoreHashTableRef CodeBlock ht(ElseLabel List) LabelDict}
+            {BINewHashTable
+             CodeBlock
+             {Dictionary.get LabelDict ElseLabel}
+             {Length List}
+             {Map List
+              fun {$ Entry}
+                 case Entry
+                 of onScalar(NumOrLit Lbl) then
+                    scalar(NumOrLit {Dictionary.get LabelDict Lbl})
+                 [] onRecord(Label RecordArity Lbl) then
+                    record(Label RecordArity {Dictionary.get LabelDict Lbl})
+                 end
+              end}}
          end
       end
 

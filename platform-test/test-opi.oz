@@ -20,8 +20,7 @@
 %%% WARRANTIES.
 %%%
 
-declare DIR={OS.getEnv 'HOME'}#'/mozart/share/test'
-declare DIR={OS.getEnv 'HOME'}#'/devel/build/share/test'
+declare DIR={OS.getEnv 'HOME'}#'/mozart.build/share/test'
 {OS.chDir DIR}
 
 declare
@@ -31,10 +30,11 @@ T={{New Module.manager init}
 {T argv(verbose:  true
         usage:    false
         help:     false
-        keys:     nil   % nil for `all' or a non-empty list of strings: ["fs"]
-        ignores:  nil   % nil for `none' or a non-empty list of strings
-        tests:    ["money"]
-        do:       true
+        keys:     ["fd"]   % nil for `all' or a non-empty list of strings: ["fs"]
+        ignores:  nil %["misc1_41"]   % nil for `none' or a non-empty list of strings
+%       tests:    ["prop_engine_lib_tasksOverlap_2"]
+        tests:    nil
+        'do':       true
         time:     ""
         gc:       0
         threads:  1) _}

@@ -601,7 +601,38 @@ define
                  R
               end}
 
+             {MiscTest 51
+              fun {$}
+                 R L [S1 S2 S3]=L
+              in
+                 {FS.var.list.upperBound 3 1#3 L}
+                 {FS.disjointN L}
+                 R = thread cond S1=FS.value.empty then 1 else 0 end end
+                 S1=S3
+                 R
+              end}
+
+             {MiscTest 52
+              fun {$}
+                 R L [S1 S2 S3]=L
+              in
+                 {FS.var.list.upperBound 3 1#3 L}
+                 R = thread cond {FS.disjointN L} then 0 else 1 end end
+                 {FS.include 1 S1}
+                 {FS.include 1 S3}
+                 R
+              end}
+
+             {MiscTest 53
+              fun {$}
+                 R L [S1 S2]=L
+              in
+                 {FS.var.list.upperBound 2 0#10 L}
+                 R = thread cond {FS.disjointN L} then 1 else 0 end end
+                 {FS.var.upperBound [0#5] S1}
+                 {FS.var.upperBound [6#10] S2}
+                 R
+              end}
             ])
       ])
-
 end

@@ -484,24 +484,6 @@ nextClause
 lastClause
 
 %%
-%%           shallowGuard(LE)
-%%           ...          % shallow guard instructions
-%%           ...          % (consisting only of get{Number,Literal,Record}
-%%           ...          % and argument unifiers, put{Constant,Record} and
-%%           ...          % argument initializers, unify and certain builtins)
-%%           shallowThen
-%%           ...
-%%           branch(LC)   % (typically)
-%%  lbl(LE)  ...          % `else' code
-%%  lbl(LC)
-%%
-
-shallowGuard
-   Label            where to jump to for the `else' part
-
-shallowThen
-
-%%
 %%  Simple Conditionals
 %%
 

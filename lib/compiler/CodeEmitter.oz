@@ -538,7 +538,7 @@ in
                     else any
                     end
             Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
-         [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord Cont) then
+         [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord _) then
             if AlwaysSucceeds then skip
             elseif Emitter, IsFirst(Reg1 $) then
                {self.reporter
@@ -559,7 +559,7 @@ in
                Emitter, Emit(inlineDot(X1 Feature X2 cache))
                Emitter, Emit(unify(X2 R))
             end
-         [] vInlineAt(_ Literal Reg Cont) then
+         [] vInlineAt(_ Literal Reg _) then
             case Emitter, GetReg(Reg $) of none then X in
                Emitter, PredictBuiltinOutput(Reg ?X)
                Emitter, Emit(inlineAt(Literal X cache))
@@ -568,10 +568,10 @@ in
                Emitter, Emit(inlineAt(Literal X cache))
                Emitter, Emit(unify(X R))
             end
-         [] vInlineAssign(_ Literal Reg Cont) then X in
+         [] vInlineAssign(_ Literal Reg _) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, Emit(inlineAssign(Literal X cache))
-         [] vGetSelf(_ Reg Cont) then
+         [] vGetSelf(_ Reg _) then
             case Emitter, GetReg(Reg $) of none then
                if Emitter, IsLast(Reg $) then skip
                else
@@ -583,10 +583,10 @@ in
                Emitter, Emit(getSelf(X))
                Emitter, Emit(unify(X R))
             end
-         [] vSetSelf(_ Reg Cont) then X in
+         [] vSetSelf(_ Reg _) then X in
             Emitter, AllocateAndInitializeAnyTemp(Reg ?X)
             Emitter, Emit(setSelf(X))
-         [] vDefinition(_ Reg PredId PredicateRef GRegs Code Cont) then
+         [] vDefinition(_ Reg PredId PredicateRef GRegs Code _) then
             if Emitter, IsFirst(Reg $) andthen Emitter, IsLast(Reg $)
                andthen PredicateRef == unit
             then skip
@@ -619,8 +619,7 @@ in
                   Emitter, Emit(unify(X Emitter, GetReg(Reg $)))
                end
             end
-         [] vDefinitionCopy(_ Reg1 Reg2 PredId PredicateRef GRegs Code Cont)
-         then
+         [] vDefinitionCopy(_ Reg1 Reg2 PredId PredicateRef GRegs Code _) then
             if Emitter, IsFirst(Reg2 $) andthen Emitter, IsLast(Reg2 $)
                andthen PredicateRef == unit
             then skip
@@ -651,7 +650,7 @@ in
                   Emitter, Emit(unify(X R))
                end
             end
-         [] vExHandler(ThisRS Addr1 Reg Addr2 Coord Cont InitsRS) then
+         [] vExHandler(_ Addr1 Reg Addr2 Coord Cont InitsRS) then
             OldContLabels Label1 RS RegMap1 OldLocalEnvsInhibited RegMap2
          in
             Emitter, PushContLabel(Cont ?OldContLabels)
@@ -874,7 +873,7 @@ in
             Emitter, RestoreAllRegisterMappings(RegMap)
             Emitter, Emit(lbl(ContLabel))
             Emitter, DebugExit(Coord 'thread')
-         [] vLockThread(_ Reg Coord Cont Dest) then X in
+         [] vLockThread(_ Reg Coord _ Dest) then X in
             if Emitter, IsFirst(Reg $) then
                {self.reporter
                 warn(coord: Coord kind: 'code generation warning'
@@ -2046,13 +2045,13 @@ in
             else
                Emitter, PredictRegSub(Reg Cont ?R)
             end
-         [] vGenCall(_ Reg0 _ _ _ Regs _ Cont) then
+         [] vGenCall(_ _ _ _ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vCall(_ Reg0 Regs _ Cont) then
             Emitter, PredictRegForCall(Reg Reg0 Regs Cont ?R)
          [] vFastCall(_ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
-         [] vApplMeth(_ Reg0 _ _ Regs _ Cont) then
+         [] vApplMeth(_ _ _ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vShared(_ _ _ _) then
             Emitter, AllocateAnyTemp(Reg ?R)

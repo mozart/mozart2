@@ -306,9 +306,9 @@ define
             [] createCond(L) then AssemblerClass, declareLabel(L)
             [] nextClause(L) then AssemblerClass, declareLabel(L)
             [] testBI(_ _ L) then AssemblerClass, declareLabel(L)
-            [] testLT(X1 X2 X3 L) then
+            [] testLT(_ _ _ L) then
                AssemblerClass, declareLabel(L)
-            [] testLE(X1 X2 X3 L) then
+            [] testLE(_ _ _ L) then
                AssemblerClass, declareLabel(L)
             [] testLiteral(_ _ L) then
                AssemblerClass, declareLabel(L)
@@ -336,14 +336,10 @@ define
             @InstrsTl = Instr|NewTl
             InstrsTl <- NewTl
             Size <- @Size + InstructionSizes.{Label Instr}
-            case Instr of definition(_ _ _ _ _) then
-               if self.Profile then
-                  AssemblerClass, append(profileProc)
-               end
-            [] definitionCopy(_ _ _ _ _) then
-               if self.Profile then
-                  AssemblerClass, append(profileProc)
-               end
+            case Instr of definition(_ _ _ _ _) andthen self.Profile then
+               AssemblerClass, append(profileProc)
+            [] definitionCopy(_ _ _ _ _) andthen self.Profile then
+               AssemblerClass, append(profileProc)
             else skip
             end
          end
@@ -542,14 +538,8 @@ define
 
    fun {SkipDeadCode Instrs Assembler}
       case Instrs of I1|Rest then
-         case I1 of lbl(I) then
-            if {Assembler isLabelUsed(I $)} then Instrs
-            else {SkipDeadCode Rest Assembler}
-            end
-         [] endDefinition(I) then
-            if {Assembler isLabelUsed(I $)} then Instrs
-            else {SkipDeadCode Rest Assembler}
-            end
+         case I1 of lbl(I) andthen {Assembler isLabelUsed(I $)} then Instrs
+         [] endDefinition(I) andthen {Assembler isLabelUsed(I $)} then Instrs
          [] globalVarname(_) then Instrs
          [] localVarname(_) then Instrs
          else {SkipDeadCode Rest Assembler}
@@ -663,34 +653,31 @@ define
       [] return|Rest then
          {Assembler append(return)}
          {EliminateDeadCode Rest Assembler}
-      [] (callBI(Builtinname Args)=I1)|Rest then
-         if Assembler.debugInfoControl then
+      [] (callBI(Builtinname Args)=I1)|Rest
+         andthen {Not Assembler.debugInfoControl}
+      then BIInfo in
+         BIInfo = {Builtins.getInfo Builtinname}
+         case Builtinname of 'Int.\'+1\'' then [X1]#[X2] = Args in
+            {Assembler append(inlinePlus1(X1 X2))}
+         [] 'Int.\'-1\'' then [X1]#[X2] = Args in
+            {Assembler append(inlineMinus1(X1 X2))}
+         [] 'Number.\'+\'' then [X1 X2]#[X3] = Args in
+            {Assembler append(inlinePlus(X1 X2 X3))}
+         [] 'Number.\'-\'' then [X1 X2]#[X3] = Args in
+            {Assembler append(inlineMinus(X1 X2 X3))}
+         [] 'Value.\'>\'' then [X1 X2]#Out = Args in
+            {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
+         [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
+            {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
+         [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
+            {Assembler append(inlineUparrow(X1 X2 X3))}
+         else
             {Assembler append(I1)}
+         end
+         if {CondSelect BIInfo doesNotReturn false} then
+            {EliminateDeadCode Rest Assembler}
+         else
             {Peephole Rest Assembler}
-         else BIInfo in
-            BIInfo = {Builtins.getInfo Builtinname}
-            case Builtinname of 'Int.\'+1\'' then [X1]#[X2] = Args in
-               {Assembler append(inlinePlus1(X1 X2))}
-            [] 'Int.\'-1\'' then [X1]#[X2] = Args in
-               {Assembler append(inlineMinus1(X1 X2))}
-            [] 'Number.\'+\'' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlinePlus(X1 X2 X3))}
-            [] 'Number.\'-\'' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineMinus(X1 X2 X3))}
-            [] 'Value.\'>\'' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
-            [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
-               {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
-            [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
-               {Assembler append(inlineUparrow(X1 X2 X3))}
-            else
-               {Assembler append(I1)}
-            end
-            if {CondSelect BIInfo doesNotReturn false} then
-               {EliminateDeadCode Rest Assembler}
-            else
-               {Peephole Rest Assembler}
-            end
          end
       [] genCall(GCI 0)|deAllocateL(I)|return|Rest then
          {MakeDeAllocate I Assembler}
@@ -705,38 +692,21 @@ define
          {MakeDeAllocate I Assembler}
          {Assembler append(tailCall(NewR Arity))}
          {EliminateDeadCode Rest Assembler}
-      [] (genFastCall(PredicateRef ArityAndIsTail)=I1)|Rest then
-         if ArityAndIsTail mod 2 == 1 then
-            {Assembler append(I1)}
-            {Peephole Rest Assembler}
-         else
-            case Rest of deAllocateL(I)|return|Rest then
-               {MakeDeAllocate I Assembler}
-               {Assembler
-                append(genFastCall(PredicateRef ArityAndIsTail + 1))}
-               {EliminateDeadCode Rest Assembler}
-            else
-               {Assembler append(I1)}
-               {Peephole Rest Assembler}
-            end
-         end
-      [] (marshalledFastCall(Abstraction ArityAndIsTail)=I1)|Rest then
-         if {IsDet Abstraction} andthen {IsProcedure Abstraction}
-            andthen (ArityAndIsTail mod 2 == 0)
-         then
-            case Rest of deAllocateL(I)|return|Rest then
-               {MakeDeAllocate I Assembler}
-               {Assembler
-                append(marshalledFastCall(Abstraction ArityAndIsTail + 1))}
-               {EliminateDeadCode Rest Assembler}
-            else
-               {Assembler append(I1)}
-               {Peephole Rest Assembler}
-            end
-         else
-            {Assembler append(I1)}
-            {Peephole Rest Assembler}
-         end
+      [] genFastCall(PredicateRef ArityAndIsTail)|deAllocateL(I)|return|Rest
+         andthen ArityAndIsTail mod 2 == 0
+      then
+         {MakeDeAllocate I Assembler}
+         {Assembler append(genFastCall(PredicateRef ArityAndIsTail + 1))}
+         {EliminateDeadCode Rest Assembler}
+      [] marshalledFastCall(Abstraction ArityAndIsTail)|
+         deAllocateL(I)|return|Rest
+         andthen {IsDet Abstraction}
+         andthen {IsProcedure Abstraction}
+         andthen ArityAndIsTail mod 2 == 0
+      then
+         {MakeDeAllocate I Assembler}
+         {Assembler append(marshalledFastCall(Abstraction ArityAndIsTail + 1))}
+         {EliminateDeadCode Rest Assembler}
       [] sendMsg(Literal R RecordArity Cache)|deAllocateL(I)|return|Rest
       then NewR in
          case R of y(_) then

@@ -1015,7 +1015,7 @@ define
                                                         CND)]
                                                  CND) 'thread' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fTry(_ FCatch _ _) then
+         [] fTry(_ _ _ _) then
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then
             Unnester, UnnestStatement(fOpApplyStatement('Raise' [FE] C) $)
@@ -1110,7 +1110,7 @@ define
          [] fAnd(FS1 FE2) then
             Unnester, UnnestStatement(FS1 $)|
             Unnester, UnnestExpression(FE2 ToGV $)
-         [] fEq(_ _ C) then GFront GBack in
+         [] fEq(_ _ _) then GFront GBack in
             Unnester, UnnestConstraint(FE ToGV ?GFront ?GBack)
             GFront|GBack
          [] fAssign(FE1 FE2 C) then FApply in
@@ -1249,7 +1249,7 @@ define
          [] fRecord(_ _) then GRecord GBack in
             Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
             GRecord|GBack
-         [] fOpenRecord(Label Args) then GRecord GBack in
+         [] fOpenRecord(_ _) then GRecord GBack in
             Unnester, UnnestConstraint(FE ToGV ?GRecord ?GBack)
             GRecord|GBack
          [] fApply(FE1 FEs C) then N1 N2 FV in
@@ -1423,9 +1423,9 @@ define
                   Unnester, UnnestStatement(FS $)
                end
             end
-         [] fRaise(_ C) then
+         [] fRaise(_ _) then
             Unnester, UnnestStatement(FE $)
-         [] fRaiseWith(_ _ C) then
+         [] fRaiseWith(_ _ _) then
             Unnester, UnnestStatement(FE $)
          [] fNot(FE C) then
             Unnester, UnnestStatement(fNot(fEq(fOcc(ToGV) FE C) C) $)
@@ -1572,8 +1572,8 @@ define
                 FE = FE0
                 NewGArgs = GF#GArg|GArgs
                 FeatPrintName = case FF of fAtom(X _) then {System.printName X}
-                                [] fVar(PrintName C) then PrintName
-                                [] fInt(X C) then X
+                                [] fVar(PrintName _) then PrintName
+                                [] fInt(X _) then X
                                 end
              else
                 FE = Arg
@@ -1903,7 +1903,7 @@ define
          {ForAll FFormals
           proc {$ FFormal} FV in
              FV = case FFormal of fMethArg(FV0 _) then FV0
-                  [] fMethColonArg(FF FV0 _) then FV0
+                  [] fMethColonArg(_ FV0 _) then FV0
                   end
              case FV of fVar(PrintName C) then
                 if {@BA isBoundLocally(PrintName $)} then
@@ -2106,15 +2106,15 @@ define
       meth TranslatePattern(FPattern PatternPNs PVAllowed $)
          %% Precondition: {IsPattern FPattern} == true.
          case FPattern of fEq(FE1 FE2 C) then
-            case FE1 of fVar(PrintName C) then GVO GPattern in
-               {{@BA refer(PrintName C $)}
+            case FE1 of fVar(PrintName C2) then GVO GPattern in
+               {{@BA refer(PrintName C2 $)}
                 makeIntoPatternVariableOccurrence(?GVO)}
                Unnester, TranslatePattern(FE2 PatternPNs true ?GPattern)
                {New Core.equationPattern init(GVO GPattern C)}
             [] fWildcard(_) then
                Unnester, TranslatePattern(FE2 PatternPNs true $)
-            elsecase FE2 of fVar(PrintName C) then GVO GPattern in
-               {{@BA refer(PrintName C $)}
+            elsecase FE2 of fVar(PrintName C2) then GVO GPattern in
+               {{@BA refer(PrintName C2 $)}
                 makeIntoPatternVariableOccurrence(?GVO)}
                Unnester, TranslatePattern(FE1 PatternPNs true ?GPattern)
                {New Core.equationPattern init(GVO GPattern C)}

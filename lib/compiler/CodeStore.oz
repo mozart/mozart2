@@ -154,7 +154,7 @@ class CodeStore from Emitter
    meth ComputeOccs(Addr ?RS)
       case Addr of nil then
          RS = @EmptyRS
-      [] vShared(RS0 Label Count Addr1) then
+      [] vShared(RS0 _ Count Addr1) then
          {Assign Count {Access Count} + 1}
          if {IsDet RS0} then skip
          else CodeStore, ComputeOccs(Addr1 ?RS0)
@@ -316,7 +316,7 @@ class CodeStore from Emitter
                 end
                 {BitArray.disj RS CodeStore, GetOccs(Addr $)}
              end}
-         [] vThread(_ Addr _ Cont InitsRS) then RS0 in
+         [] vThread(_ Addr _ _ InitsRS) then RS0 in
             CodeStore, ComputeOccs(Addr ?RS0)
             InitsRS = {BitArray.clone RS0}
             {BitArray.conj InitsRS RS}
@@ -454,7 +454,7 @@ class CodeStore from Emitter
                 end
                 CodeStore, AddRegOccs(Addr AddRS2)
              end}
-         [] vThread(_ Addr _ Cont _) then
+         [] vThread(_ Addr _ _ _) then
             CodeStore, AddRegOccs(Addr AddRS2)
          [] vLockThread(_ _ _ _ _) then
             skip

@@ -384,7 +384,7 @@ local
    end
 
    proc {CodeGenPattern Tree Mapping VHd VTl Coord CS}
-      case Tree of node(Pos Test ThenTree ElseTree Count Shared) then
+      case Tree of node(_ _ _ _ Count Shared) then
          case {Access Count} of 0 then
             {CodeGenSub Tree Mapping VHd VTl Coord CS}
          else

@@ -777,7 +777,7 @@ in
             [] getDefines(_) then skip
             [] getSwitch(_ _) then
                {TypeCheck IsAtom M 1 'atom'}
-            [] setSwitch(SwitchName B) then
+            [] setSwitch(_ _) then
                {TypeCheck IsAtom M 1 'atom'}
                {TypeCheck IsBool M 2 'bool'}
             [] pushSwitches() then skip
@@ -804,7 +804,7 @@ in
                {TypeCheck IsProcedure5 M 2 'procedure/5'}
             [] feedVirtualString(_) then
                {TypeCheck IsVirtualString M 1 'virtual string'}
-            [] feedVirtualString(VS Return) then
+            [] feedVirtualString(_ _) then
                {TypeCheck IsVirtualString M 1 'virtual string'}
                {TypeCheck IsRecord M 2 'record'}
             [] feedFile(_) then

@@ -476,7 +476,7 @@ in
       local
          local
             fun {Assoc Xs GV}
-               case Xs of !GV#FV|Xr then FV
+               case Xs of !GV#FV|_ then FV
                [] _#_|Xr then {Assoc Xr GV}
                end
             end

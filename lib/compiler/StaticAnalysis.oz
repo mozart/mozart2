@@ -1212,27 +1212,18 @@ define
          end
       end
       meth SaLookahead(Ctrl)
-         if
-            self.isComplex               % if this statement is complex
-         then
+         if self.isComplex then          % if this statement is complex
             skip                         % then terminate
          else
             {self saSimple(Ctrl)}
-
-            if
-               @next\=self               % if there is another one
-            then
+            if @next \= self then        % if there is another one
                {@next SaLookahead(Ctrl)}
             end
          end
       end
 
       meth saBody(Ctrl Ss)
-         case
-            Ss
-         of
-            S|Sr
-         then
+         case Ss of S|_ then
             {S SaDo(Ctrl true)}          % new lookahead in bodies
          end
       end
@@ -1574,10 +1565,10 @@ define
          of nil then skip
          elseof A|Ar then
             case Types # Det
-            of (T|Tr) # (D|Dr)
+            of (T|Tr) # (_|Dr)
             then
 \ifdef DEBUG
-               {System.show asserting(A T D)}
+               {System.show asserting(A T)}
 \endif
                if
                   {ConstrainTypes
@@ -3896,7 +3887,7 @@ define
                LData = {O getLabel($)}
                FData = {List.mapInd NArgs
                         fun {$ I Arg}
-                           case Arg of F#T then Arg else I#Arg end
+                           case Arg of _#_ then Arg else I#Arg end
                         end}
                Rec
             in

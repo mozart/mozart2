@@ -341,7 +341,7 @@ define
    local
       fun {MakeAttrFeatSub Xs CS}
          case Xs of X|Xr then
-            case X of F#VO then X
+            case X of _#_ then X
             else VO in
                VO = {NewPseudoVariableOccurrence CS}
                VO.value = RunTime.literals.ooFreeFlag
@@ -1746,7 +1746,7 @@ define
    end
 
    fun {Assoc Xs V}
-      case Xs of !V#Pos|Xr then Pos
+      case Xs of !V#Pos|_ then Pos
       [] _#_|Xr then {Assoc Xr V}
       [] nil then unit
       end

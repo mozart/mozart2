@@ -175,7 +175,7 @@ define
       Color7 = '#b22222'
       Color8 = '#b886b0'
       Color9 = '#ffffff'
-      BackC  = '#00FF00'%'#f5f5f5'
+      BackC  = '#f5f5f5'
    in
       ColorDefaults = [
                        backgroundColor  # Color9

@@ -79,12 +79,16 @@ in
          LengthStr = PrintStr
       end
    end
-
+   local X in  {Inspect {System.printName X}} end
    class ProcedureLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          Value = @value
+         Arity = {Procedure.arity Value}
       in
-         PrintStr  = '<P/'#{Procedure.arity Value}#' '#{System.printName Value}#'>'
+         PrintStr =case {System.printName Value}
+                   of ''   then '<P/'#Arity#'>'
+                   [] Name then '<P/'#Arity#' '#Name#'>'
+                   end
          LengthStr = PrintStr
       end
       meth isVert($)

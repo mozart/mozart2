@@ -6,4 +6,5 @@ byteString(
    append       : Boot_ByteString.append
    slice        : Boot_ByteString.slice
    width        : Boot_ByteString.width
-   toString     : Boot_ByteString.toString)
+   toString     : Boot_ByteString.toString
+   )

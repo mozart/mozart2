@@ -87,6 +87,7 @@ local
          of int then case V<0 then S#~V else V end
          [] float then {ChangeSignFloat {Float.toString V} S}
          [] atom then V
+         [] bytestring then V
          [] tuple then
             case {Label V}
             of '#' then W={Width V} NewV={MakeTuple '#' W} in
@@ -115,6 +116,13 @@ in
                                                    {StringToAtom {ToString V}}
                                                 end
                                              end
+
+                                 toByteString:
+                                    fun {$ Vs}
+                                       {Boot_VirtualString.toByteString
+                                        Vs 0 Vs}
+                                    end
+
                                  changeSign: ChangeSign
                                  length:     fun {$ V}
                                                 {BiLength V 0}

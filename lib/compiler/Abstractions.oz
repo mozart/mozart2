@@ -16,7 +16,7 @@ proc {EvalExpression VS Env ?Kill ?Result} E I S in
       {Wait {E enqueue(ping($))}}
       case {I hasErrors($)} then Ms in
          {I getMessages(?Ms)}
-         {Exception.raiseError compiler(evalExpression VS ?Ms)}
+         {Exception.raiseError compiler(evalExpression VS Ms)}
       else skip
       end
       S = unit

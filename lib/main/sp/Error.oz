@@ -711,6 +711,11 @@ in
          end
       end
 
+      fun {LayoutComma C M}
+         [hint(l:'In statement' m:'C, '#oz(M))
+          hint(l:'Class value' m:oz(C))]
+      end
+
       fun {LayoutBin X Y Z Op}
          [hint(l:'In statement' m:oz(X) # ' ' # Op # ' ' # oz(Y) # ' = ' # oz(Z))]
       end
@@ -802,6 +807,11 @@ in
 
                      elseof '^' # [R F X] then
                         Ls = {LayoutDot R F X '^'}
+                     in
+                        {Append Ls {GiveHint S}}
+
+                     elseof ',' # [C M] then
+                        Ls = {LayoutComma C M}
                      in
                         {Append Ls {GiveHint S}}
 

@@ -51,12 +51,14 @@ define
    % Start the specified procedure at a remote manager
    proc {StartRemSite Manager InS OutP RemoteTestProc}
       {Manager apply(url:'' functor
+                            import
+                               Connection
                             define
                                proc {Start InS OutP}
-                                  {Send OutP started}
-                                  {RemoteTestProc InS OutP}
+                                  % Must provide connection here to use
+                                  % the right one.
+                                  {RemoteTestProc Connection InS OutP}
                                end
-                                  {Send OutP starting}
 
                                thread {Start InS OutP} end
                             end)}
@@ -104,7 +106,7 @@ define
       {Assert {IsDet WS}#'Nothing on stream'}
    end
 
-   proc {RemoteVariableBind InS OutP}
+   proc {RemoteVariableBind Connection InS OutP}
       % Wait for variable to arrive and to be bound
       {Wait {Connection.take InS.1}}
    end
@@ -123,7 +125,7 @@ define
       {Assert {IsDet WS}#'Nothing on stream'}
    end
 
-   proc {RemoteCellDrop InS OutP}
+   proc {RemoteCellDrop Connection InS OutP}
       % Wait for cell to arrive, then drop it
       {Wait {Connection.take InS.1}}
    end

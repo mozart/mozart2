@@ -3,407 +3,420 @@
 %%%   Thorsten Brunklaus <bruni@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Thorsten Brunklaus, 1998
+%%%   Thorsten Brunklaus, 1999
 %%%
 %%% Last Change:
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
 
-%%%
-%%% Inspector Functor
-%%%
-
 functor $
-
 import
    InspectorOptions
-   SupportNodes('options')
-   TreeWidget('treeWidget')
+   TreeWidget
    Tk
    TkTools
-
+   System(eq show)
 export
-   'class'     : Inspector
-   'object'    : Server
-   'inspect'   : Inspect
-   'configure' : Configure
-   'auto'      : Auto
-   'close'     : Close
-
+   'class'   : InspectorClass
+   'object'  : InspectorObj
+   'inspect' : Inspect
+   'close'   : Close
 define
-   {InspectorOptions.configure}
-
-   Server
-
-   fun {NewServer C I}
-      S
-      O = {New C I}
-      P = {NewPort S}
-      Id
+   local
+      InspPort
    in
-      thread
-         Id = {Thread.this}
-         {ForAll S O}
-      end
-      proc {$ M}
-         {Port.send P M}
-      end|(O|Id)
-   end
-
-   OpMan      = SupportNodes.'options'
-   TrWidget   = TreeWidget.treeWidget
-
-   \insert 'TinyWinMan.oz'
-
-   class Inspector
-      from
-         WinToplevel
-
-      attr
-         mNode %% InspectorMenuNode
-         bNode %% ButtonFrameNode
-         cNode %% (Scroll)CanvasNode
-         uArea %% Used Area
-
-      meth create
-         XDim  = {OpMan get(inspectorWidth $)}
-         YDim  = {OpMan get(inspectorHeight $)}
-         UArea = @uArea
+      fun {NewServer O}
+         S P
       in
-         WinToplevel, create(XDim YDim 'Oz Inspector')
-         WinToplevel, hide
-         @mNode = {New InspectorMenuNode create(self XDim 0)}
-         @bNode = {New ButtonFrameNode create(self XDim 0 self)}
-         UArea  = ({@mNode getYDim($)} + {@bNode getYDim($)})
-         @cNode = {New ScrollCanvasNode create(self XDim (YDim - UArea))}
-         %% {Assign WidgetCell {@cNode getWidget($)}}
-      end
-
-      meth inspect(Value)
-         WinToplevel, unhide
-         {@cNode display(Value)}
-      end
-
-      meth configure(Option Value)
-         {OpMan set(Option Value)}
-      end
-
-      meth setauto(Option Value)
-         _#Fun#LsValue = {OpMan get(Option $)}
-      in
-         {OpMan set(Option Value#Fun#LsValue)}
-      end
-
-      meth getType($)
-         Inspector
-      end
-
-      meth about(Win)
-         D L1 L2
-      in
-         {Win tk(entryconfigure state:disabled)}
-         D = {New TkTools.dialog
-              tkInit(title:   'About'
-                     buttons: ['Ok' # proc {$}
-                                         {Server aboutClose(Win D)}
-                                      end]
-                     default: 1)}
-
-         L1 = {New Tk.label
-               tkInit(parent:     D
-                      text:       'Oz Inspector'
-                      font:       '-adobe-helvetica-bold-r-*-*-*-140-*'
-                      foreground: 'blue4'
-                      justify:     center)}
-         L2 = {New Tk.label
-               tkInit(parent:     D
-                      text:       'Thorsten Brunklaus\n(bruni@ps.uni-sb.de)'
-                      foreground: 'black'
-                      justify:    'center')}
-
-         {Tk.batch [grid(L1 row:0 column:0
-                         sticky: nsew pady: 5)
-                    grid(L2 row:1 column:0
-                         sticky: nsew pady: 5)]}
-      end
-
-      meth aboutClose(Win D)
-         {D tkClose}
-         {Win tk(entryconfigure state:normal)}
-      end
-
-      meth freeze
-         {Wait _}
-      end
-
-      meth close
-         {Tk.send wm(withdraw @toplevel)}
-         visible <- false
-         Inspector, addPane
-         Inspector, performClose((@divCount - 1))
-      end
-
-      meth performClose(I)
-         if I\= 0 then
-            Inspector, delPane
-            Inspector, performClose((I - 1))
+         P = {NewPort S}
+         thread
+            {ForAll S O}
          end
+         P
       end
+      TreeWidgetClass = TreeWidget.'class'
+      local
+         Items      = {NewName}
+         NumItems   = {NewName}
+         NumWidgets = {NewName}
+         Width      = {NewName}
+         Height     = {NewName}
+         MoveY      = {NewName}
+         TellNewXY  = {NewName}
+         Call       = {NewName}
+         CallOne    = {NewName}
+         \insert 'FrameManager.oz'
+         \insert 'OptionsGUI.oz'
 
-      meth iconify
-         {Tk.send wm(iconify @toplevel)}
-      end
+         class AboutWindow
+            meth about(Menu)
+               T       = {New Tk.toplevel
+                          tkInit(title:    'About Inspector'
+                                 withdraw: true)}
+               UpFrame = {New Tk.frame
+                          tkInit(parent:             T
+                                 borderwidth:        1
+                                 highlightthickness: 0
+                                 relief:             raised)}
+               DnFrame = {New Tk.frame
+                          tkInit(parent:             T
+                                 borderwidth:        1
+                                 highlightthickness: 0
+                                 relief:              raised)}
+               Button  = {New Tk.button
+                          tkInit(parent:      DnFrame
+                                 text:        'Ok'
+                                 width:       6
+                                 borderwidth: 1
+                                 action:      proc {$}
+                                                 {Port.send InspPort aboutClose(Menu T)}
+                                              end)}
 
-      meth preferences(Win)
-         D L1 L2 E1 E2
-      in
-         {Win tk(entryconfigure state:disabled)}
-         D = {New TkTools.dialog
-              tkInit(title:   'Preferences'
-                     buttons: ['Query'  # proc {$}
-                                             {Server queryOptions(E1 E2)}
-                                          end
-                               'Set'    # proc {$}
-                                             {Server setOptions(E1 E2)}
-                                          end
-                               'Cancel' # proc {$}
-                                             {Server updateOptions(Win D)}
-                                          end]
-                     default: 1)}
-
-         L1 = {New Tk.label
-               tkInit(parent:     D
-                      text:       'Option:'
-                      foreground: 'blue4')}
-         L2 = {New Tk.label
-               tkInit(parent:     D
-                      text:       'Value:'
-                      foreground: 'blue4')}
-         E1 = {New Tk.entry
-               tkInit(parent: D
-                      background: ivory
-                      width: 30)}
-         E2 = {New Tk.entry
-               tkInit(parent: D
-                      background: ivory
-                      width: 30)}
-
-         {Tk.batch [grid(L1 row: 0 column: 0
-                         sticky: nsew pady: 2)
-                    grid(E1 row: 0 column: 1
-                         sticky: nsew pady: 2)
-                    grid(L2 row: 1 column: 0
-                         sticky: nsew pady: 2)
-                    grid(E2 row: 1 column: 1
-                         sticky: nsew pady: 2)
-                    focus(E1)]}
-      end
-
-      meth queryOptions(E1 E2)
-         Key = {E1 tkReturnAtom(get $)}
-         Value TkVal
-      in
-         Value = if {OpMan isKey(Key $)}
-                 then {OpMan get(Key $)}
-                 else 'ERROR: unkown key'
-                 end
-         TkVal = if {IsAtom Value}
-                 then {Atom.toString Value}
-                 elseif {IsInt Value}
-                 then {Int.toString Value}
-                 elseif {IsFloat Value}
-                 then {Float.toString Value}
-                 elseif Value==true  then 'true'
-                 elseif Value==false then 'false'
-                 else 'Sorry: unable to display value"'
-                 end
-
-         {E2 tk(delete '@0' 'end')}
-         {E2 tk(insert 'end' TkVal)}
-      end
-
-      meth setOptions(E1 E2)
-         Key   = {E1 tkReturnAtom(get $)}
-         Value = {E2 tkReturnString(get $)}
-         DBVal
-      in
-         DBVal = if {String.isInt Value}
-                 then {String.toInt Value}
-                 elseif {String.isFloat Value}
-                 then {String.toFloat Value}
-                 elseif Value == "true"
-                 then true
-                 elseif Value == "false"
-                 then false
-                 elseif {String.isAtom Value}
-                 then {String.toAtom Value}
-                 else Value
-                 end
-         {OpMan set(Key DBVal)}
-      end
-
-      meth updateOptions(Win D)
-         {{@cNode getWidget($)} queryDB}
-         {D tkClose}
-         {Win tk(entryconfigure state:normal)}
-      end
-
-      meth help
-         skip
-      end
-
-      meth focusDn(Freeze)
-         CNode  = @cNode
-         Index  = {CNode getIndex($)}
-         NIndex NNode NCanvas
-         FreezeVar
-      in
-         if Freeze then
-            {CNode freeze(FreezeVar)}
-         end
-         NIndex  = if Index == @maxPtr then 3 else (Index + 2) end
-         NNode   = {Dictionary.get @items NIndex}
-         NCanvas = {NNode getCanvas($)}
-         {Tk.batch [focus(NCanvas)]}
-         cNode <- NNode
-         {NNode unfreeze}
-         %% {Assign WidgetCell {NNode getWidget($)}}
-      end
-
-      meth enterFocus
-         case @toplevel
-         of nil then skip
-         else
-            Canvas = {@cNode getCanvas($)}
-         in
-            {Tk.batch [focus(Canvas)]}
-         end
-      end
-
-      meth addPane
-         XDim     = @width
-         YDim     = @height
-         UArea    = @uArea
-         DivCount = @divCount
-         PArea    = 10 * (@maxPtr - DivCount - 2)
-         SArea    = (YDim - UArea - PArea)
-         SCSpace  = SArea div DivCount
-         NCSpace  = (SArea - 10) div (DivCount + 1)
-         DeltaY   = {Int.toFloat (NCSpace - SCSpace)}
-      in
-         Inspector, shrink(3 DeltaY {Int.toFloat SCSpace})
-         _ = {New SashGrip create(self XDim 0)}
-         _ = {New ScrollCanvasNode create(self XDim NCSpace)}
-      end
-
-      meth shrink(I DeltaY SCSpace)
-         if I =< @maxPtr
-         then
-            Node = {Dictionary.get @items I}
-            Type = {Node getType($)}
-         in
-            if Type==canvasNode then
-               YDim      = {Int.toFloat {Node getYDim($)}}
-               DDim      = {Float.toInt ((YDim / SCSpace) * DeltaY)}
-               ConsumedY = {Node tellNewXY(0 DDim $)}
+               L1      = {New Tk.label
+                          tkInit(parent:     UpFrame
+                                 text:       'Oz Inspector'
+                                 width:      20
+                                 font:       '-adobe-helvetica-bold-r-*-*-*-140-*'
+                                 foreground: 'blue4'
+                                 justify:     center)}
+               L2      = {New Tk.label
+                          tkInit(parent:     UpFrame
+                                 text:       'Thorsten Brunklaus\n(bruni@ps.uni-sb.de)'
+                                 foreground: 'black'
+                                 justify:    'center')}
             in
-               if ConsumedY\= 0 then
-                  WinToplevel, moveY((I + 1) ConsumedY)
+               {Menu tk(entryconf state: disabled)}
+               aboutWin <- T|Menu
+               {Tk.batch [grid(row: 0 column: 0 L1 padx: 0 pady: 4 sticky: nsew)
+                          grid(row: 1 column: 0 L2 padx: 0 pady: 4 sticky: nsew)
+                          grid(row: 0 column: 0 Button padx: 4 pady: 6 sticky: e)
+                          grid(row: 0 column: 0 UpFrame padx: 0 pady: 0 sticky: nsew)
+                          grid(row: 1 column: 0 DnFrame padx: 0 pady: 0 sticky: nsew)
+                          wm(resizable T false false)
+                          update(idletasks)
+                          wm(deiconify T)]}
+            end
+            meth aboutClose(Menu D)
+               {D tkClose}
+               aboutWin <- nil
+               {Menu tk(entryconf state: normal)}
+            end
+         end
+      in
+         class InspectorClass from Tk.toplevel FrameManager AboutWindow
+            attr
+               options           %% Options Dictionary
+               isVisible : false %% Visibility Flag
+               widget            %% Current Active TreeWidget
+               aboutWin  : nil   %% About Window
+               configWin : nil   %% Configuration Window
+            prop
+               final
+            meth create(Options)
+               Width  = {Dictionary.get Options inspectorWidth}
+               Height = {Dictionary.get Options inspectorHeight}
+               Frame ManagerFrame
+            in
+               Tk.toplevel, tkInit(title:    'Oz Inspector'
+                                   width:    Width
+                                   height:   Height
+                                   withdraw: true)
+               Frame = {New Tk.frame
+                        tkInit(parent:             self
+                               borderwidth:        0
+                               highlightthickness: 0)}
+               local
+                  MenuFrame = {New Tk.frame
+                               tkInit(parent:             Frame
+                                      borderwidth:        1
+                                      relief:             raised
+                                      highlightthickness: 0)}
+                  Menu      = {TkTools.menubar MenuFrame MenuFrame
+                               [menubutton(text:      'Inspector'
+                                           menu: [command(label:  'About...'
+                                                          action:  proc {$}
+                                                                      {Port.send InspPort
+                                                                       about(Menu.inspector.about)}
+                                                                   end
+                                                          feature: about)
+                                                  separator
+                                                  command(label: 'Add Pane'
+                                                          action: proc {$}
+                                                                     {Port.send InspPort addPane}
+                                                                  end)
+                                                  command(label:  'Delete Pane'
+                                                          action: proc {$}
+                                                                     {Port.send InspPort delPane}
+                                                                  end)
+                                                  separator
+                                                  command(label:   'Iconify'
+                                                          action:  proc {$}
+                                                                      {Port.send InspPort iconify}
+                                                                   end
+                                                          feature: iconify)
+                                                  command(label:   'Close'
+                                                          action:  proc {$}
+                                                                      {Port.send InspPort close}
+                                                                   end
+                                                          feature: close)]
+                                           feature: inspector)
+                                menubutton(text: 'Options'
+                                           menu: [command(label:  'Preferences...'
+                                                          action:  proc {$}
+                                                                      {Port.send InspPort
+                                                                       preferences(
+                                                                          Menu.insoptions.pref)}
+                                                                   end
+                                                          feature: pref)]
+                                           feature: insoptions)]
+                               nil}
+                  StopB = {New Tk.button
+                           tkInit(parent:           MenuFrame
+                                  bitmap:           '@'#{Dictionary.get Options widgetStopBitmap}
+                                  foreground:       red
+                                  activeforeground: red
+                                  state:            disabled
+                                  borderwidth:      0
+                                  action:           proc {$}
+                                                       {Port.send InspPort stopUpdate(1)}
+                                                    end)}
+                  StopN = {Tk.getTclName StopB}
+               in
+                  {Tk.send v('proc O0 {} {'#StopN#' conf -state normal};proc F0 {} {'#StopN#' conf -state disabled}')}
+                  @options = Options
+                  {Menu.inspector tk(conf borderwidth: 1)}
+                  {Menu.insoptions tk(conf borderwidth: 1)}
+                  {Menu.inspector.menu tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
+                  {Menu.insoptions.menu
+                   tk(conf tearoff: false borderwidth: 1 activeborderwidth: 1)}
+                  {Tk.batch [grid(row: 0 column: 0 Menu sticky: ew)
+                             grid(row: 0 column: 1 StopB padx: 4 pady: 2 sticky: ne)
+                             grid(row: 0 column: 0 MenuFrame sticky: nsew)
+                             grid(columnconfigure MenuFrame 0 weight: 1)
+                             grid(columnconfigure MenuFrame 1 weight: 0)]}
+               end
+               ManagerFrame = FrameManager, create(Frame Width Height $)
+               @widget      = {New TreeWidgetNode create(self Width Height)}
+               {Tk.batch [grid(row: 1 column: 0 ManagerFrame sticky: nsew)
+                          grid(rowconfigure Frame 1 weight: 1)
+                          grid(columnconfigure Frame 0 weight: 1)
+                          grid(row: 0 column: 0 Frame sticky: nsew)
+                          grid(rowconfigure self 0 weight: 1)
+                          grid(columnconfigure self 0 weight: 1)]}
+            end
+            meth inspect(Value)
+               if @isVisible
+               then skip
+               else isVisible <- true {Tk.send wm(deiconify self)}
+               end
+               {@widget display(Value)}
+            end
+            meth !Call(P)
+               {P}
+            end
+            meth !CallOne(P V)
+               {P V}
+            end
+            meth getOptions($)
+               @options
+            end
+            meth setOptions(Options)
+               options <- Options
+               case {Dictionary.get Options optionsRange}
+               of 'all' then InspectorClass, performSetOptions(1 Options)
+               else {@widget setOptions(Options)}
                end
             end
-            Inspector, shrink((I + 1) DeltaY SCSpace)
-         end
-      end
-
-      meth delPane
-         CNode  = @cNode
-         Items  = @items
-         I      = {CNode getIndex($)}
-         DeltaY = 10 + {CNode getYDim($)}
-         AddSpace Pane NNode NCanvas DeltaK
-         FreezeVar
-      in
-         case @divCount
-         of 1 then skip
-         else
-            case I
-            of 3 then
-               Pane   = {Dictionary.get Items (I + 1)}
-               NNode  = {Dictionary.get Items (I + 2)}
-               DeltaK = 2
-            else
-               Pane   = {Dictionary.get Items (I - 1)}
-               NNode  = {Dictionary.get Items (I - 2)}
-               DeltaK = 1
+            meth performSetOptions(I Options)
+               if I =< @NumItems
+               then
+                  {{Dictionary.get @Items I} setOptions(Options)}
+                  InspectorClass, performSetOptions((I + 1) Options)
+               end
             end
-            NCanvas = {NNode getCanvas($)}
-            {CNode freeze(FreezeVar)} %% Disable data processing
-            {CNode undraw}
-            {CNode terminate} %% Enable garbage collecting
-            {Pane undraw}
-            cNode <- NNode
-            {Tk.batch [focus(NCanvas)]}
-            %% {Assign WidgetCell {NNode getWidget($)}}
-            WinToplevel, moveY((I + DeltaK) ~DeltaY)
-            Inspector, adjustIndex((I + DeltaK))
-            AddSpace = (DeltaY div @divCount)
-            WinToplevel, tellNewXY(3 0 AddSpace)
-         end
-      end
-
-      meth stopUpdate(I)
-         if I =< @maxPtr
-         then
-            Node = {Dictionary.get @items I}
-            Type = {Node getType($)}
-         in
-            case Type
-            of canvasNode then
-               {Node stopUpdate}
-            else skip
+            meth configure(O V)
+               Options = @options
+            in
+               {Dictionary.put Options O V}
+               case {Dictionary.get Options optionsRange}
+               of 'all' then InspectorClass, performConfigure(1 O V)
+               else {@widget optionConfigure(O V)}
+               end
             end
-            Inspector, stopUpdate((I + 1))
+            meth performConfigure(I O V)
+               if I =< @NumItems
+               then
+                  {{Dictionary.get @Items I} optionConfigure(O V)}
+                  InspectorClass, performConfigure((I + 1) O V)
+               end
+            end
+            meth preferences(WinEntry)
+               RealDict = {@widget getOptions($)}
+            in
+               configWin <- {New InspectorGUIClass create(WinEntry RealDict)}|WinEntry
+            end
+            meth freeze
+               {Wait _}
+            end
+            meth close
+               if @isVisible then isVisible <- false {Tk.send wm(withdraw self)} end
+               InspectorClass, addPane
+               InspectorClass, performClose((@NumWidgets - 1))
+            end
+            meth performClose(I)
+               if I > 0
+               then InspectorClass, delPane InspectorClass, performClose((I - 1))
+               else
+                  case @aboutWin
+                  of nil then skip
+                  elseof Win|Menu then
+                     aboutWin <- nil {Win tkClose}
+                     {Menu tk(entryconf state: normal)}
+                  end
+                  case @configWin
+                  of nil then skip
+                  elseof Win|Menu then
+                     configWin <- nil {Win tkClose}
+                     {Menu tk(entryconf state: normal)}
+                  end
+               end
+            end
+            meth iconify
+               {Tk.send wm(iconify self)}
+            end
+            meth focusDn(Freeze)
+               Widget = @widget
+               Index  = {Widget getIndex($)}
+               NewIndex NewNode NewCanvas
+            in
+               if Freeze then {Widget freeze(_)} end
+               NewIndex  = if Index == @NumItems then 1 else (Index + 2) end
+               NewNode   = {Dictionary.get @Items NewIndex}
+               NewCanvas = {NewNode getCanvas($)}
+               {Tk.send focus(NewCanvas)}
+               widget <- NewNode
+               {NewNode unfreeze}
+            end
+            meth enterFocus
+               if @isVisible then {Tk.send focus({@widget getCanvas($)})} end
+            end
+            meth addPane
+               XDim        = @Width
+               YDim        = @Height
+               Widgets     = @NumWidgets
+               SingleGripY = 10
+               GripArea    = SingleGripY * (@NumItems - Widgets)
+               CanvasArea  = (YDim - GripArea)
+               ACSpace     = CanvasArea div Widgets %% Average Canvas Size
+               NCSpace     = (CanvasArea - SingleGripY) div (Widgets + 1) %% New Canvas Size
+               DeltaY      = {Int.toFloat (NCSpace - ACSpace)}
+            in
+               if  NCSpace > 60 %% at least av 60 Pts for Canvas
+               then
+                  YMin = 60 * (Widgets + 1) + (GripArea + SingleGripY)
+               in
+                  InspectorClass, shrink(1 DeltaY {Int.toFloat ACSpace})
+                  _ = {New SashGrip create(self XDim 0)}
+                  _ = {New TreeWidgetNode create(self XDim NCSpace)}
+                  {Tk.send wm(minsize self 120 YMin)}
+               end
+            end
+            meth shrink(I DeltaY ACSpace)
+               if I =< @NumItems
+               then
+                  Node = {Dictionary.get @Items I}
+               in
+                  case {Node getType($)}
+                  of canvasNode then
+                     YDim = {Int.toFloat {Node getYDim($)}}
+                     DDim = {Float.toInt ((YDim / ACSpace) * DeltaY)}
+                  in
+                     case {Node tellNewXY(0 DDim $)}
+                     of 0             then skip
+                     elseof ConsumedY then FrameManager, MoveY((I + 1) ConsumedY)
+                     end
+                  else skip
+                  end
+                  InspectorClass, shrink((I + 1) DeltaY ACSpace)
+               end
+            end
+            meth delPane
+               Widget      = @widget
+               MyItems     = @Items
+               SingleGripY = 10
+               Widgets     = @NumWidgets
+               I           = {Widget getIndex($)}
+               DeltaY      = (SingleGripY + {Widget getYDim($)})
+               GripArea    = (@Height - ((@NumItems - Widgets) * SingleGripY))
+               AddSpace Pane NNode NCanvas DeltaK
+               FreezeVar
+            in
+               if Widgets > 1
+               then
+                  YMin = (60 * (Widgets - 1)) + (GripArea - SingleGripY)
+               in
+                  case I
+                  of 1 then
+                     Pane   = {Dictionary.get MyItems (I + 1)}
+                     NNode  = {Dictionary.get MyItems (I + 2)}
+                     DeltaK = 2
+                  else
+                     Pane   = {Dictionary.get MyItems (I - 1)}
+                     NNode  = {Dictionary.get MyItems (I - 2)}
+                     DeltaK = 1
+                  end
+                  NCanvas = {NNode getCanvas($)}
+                  {Widget freeze(FreezeVar)} %% Disable data processing
+                  {Widget undraw}
+                  {Widget terminate} %% Enable garbage collecting
+                  {Pane undraw}
+                  widget <- NNode
+                  {Tk.send focus(NCanvas)}
+                  FrameManager, MoveY((I + DeltaK) ~DeltaY)
+                  InspectorClass, adjustIndex((I + DeltaK))
+                  AddSpace = (DeltaY div @NumWidgets)
+                  FrameManager, TellNewXY(1 0 AddSpace)
+                  {Tk.send wm(minsize self 120 YMin)}
+               end
+            end
+            meth stopUpdate(I)
+               if I =< @NumItems
+               then {{Dictionary.get @Items I} stopUpdate} InspectorClass, stopUpdate((I + 1))
+               end
+            end
+            meth adjustIndex(I)
+               MaxNum  = @NumItems
+               MyItems = @Items
+            in
+               if I =< MaxNum
+               then
+                  Node = {Dictionary.get MyItems I}
+                  NI   = (I - 2)
+               in
+                  {Node setIndex(NI)}
+                  {Dictionary.put MyItems NI Node}
+                  InspectorClass, adjustIndex((I + 1))
+               else
+                  NumItems <- (MaxNum - 2)
+                  {Dictionary.remove MyItems (MaxNum - 1)}
+                  {Dictionary.remove MyItems MaxNum}
+               end
+            end
          end
       end
 
-      meth adjustIndex(I)
-         MaxPtr = @maxPtr
+      local
+         RealInspectorObj = {New InspectorClass create({InspectorOptions.'options'})}
       in
-         if I =< MaxPtr
-         then
-            Items = @items
-            Node  = {Dictionary.get Items I}
-            NI    = (I - 2)
-         in
-            {Node setIndex(NI)}
-            {Dictionary.put Items NI Node}
-            Inspector, adjustIndex((I + 1))
-         else
-            Items = @items
-         in
-            maxPtr <- (MaxPtr - 2)
-            {Dictionary.remove Items (MaxPtr - 1)}
-            {Dictionary.remove Items MaxPtr}
-         end
+         InspPort     = {NewServer RealInspectorObj}
+         InspectorObj = proc {$ M} {Port.send InspPort M} end
       end
-   end
-
-   Server|_ = {NewServer Inspector create}
-
-   proc {Inspect Value}
-      {Server inspect(Value)}
-   end
-
-   proc {Configure O V}
-      {Server configure(O V)}
-   end
-
-   proc {Auto O V}
-      {Server setauto(O V)}
-   end
-
-   proc {Close}
-      {Server close}
+      proc {Inspect Value}
+         {Port.send InspPort inspect(Value)}
+      end
+      proc {Close}
+         {Port.send InspPort close}
+      end
    end
 end

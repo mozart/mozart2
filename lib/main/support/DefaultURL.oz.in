@@ -72,9 +72,7 @@ prepare
                    'EvalDialog'
                    'Emacs' 'Ozcar' 'Profiler' 'Gump' 'GumpScanner'
                    'GumpParser' 'ProductionTemplates'
-\ifdef INSPECTOR
                    'Inspector'
-\endif
                   ]
    in
       LibFuncs     = {MakeUrlTable Libs}

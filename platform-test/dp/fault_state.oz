@@ -65,70 +65,78 @@ define
       {InjectorInstall  Lo Inj}
    end
 
-proc{WatchWat Ce Lo E}
+   proc{WatchWat Ce Lo E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
-in
-   E = o(cell:_ lokk:_)
-   {SiteWatcherInstall Ce {Inj E.cell}}
-   {SiteWatcherInstall Lo {Inj E.lokk}}
+   in
+      E = o(cell:_ lokk:_)
+      {SiteWatcherInstall Ce {Inj E.cell}}
+      {SiteWatcherInstall Lo {Inj E.lokk}}
 
-end
+   end
 
 
-proc{InjectInj2 Ce Lo E}
+   proc{InjectInj2 Ce Lo E}
       Inj = proc{$ A B} B = proc{$ _ _ _} A = unit end end
-in
-   E = o(cell:_ lokk:_)
-   {InjectorInstall Ce {Inj E.cell}}
-   {InjectorInstall Lo {Inj E.lokk}}
+   in
+      E = o(cell:_ lokk:_)
+      {InjectorInstall Ce {Inj E.cell}}
+      {InjectorInstall Lo {Inj E.lokk}}
 
-end
+   end
 
-proc{CheckWat E}
-   CC = {NewCell false}
-in
-   try
-      E.cell = port
-      {Assign CC true}
-   catch _ then skip end
-   try
-      E.lokk = port
-      {Assign CC true}
-   catch _ then skip end
-   {Access CC false}
-end
+   proc{CheckWat E}
+      CC = {NewCell false}
+   in
+      try
+         E.cell = port
+         {Assign CC true}
+      catch _ then skip end
+      try
+         E.lokk = port
+         {Assign CC true}
+      catch _ then skip end
+      {Access CC false}
+   end
 
-proc{CheckWatM E}
-   CC = {NewCell unit}
-in
-   try
-      E.cell = port
-      {Assign CC true}
-   catch _ then skip end
-   try
-      E.lokk = port
-      {Assign CC false}
-   catch _ then skip end
-   {Access CC false}
-end
+   proc{CheckWatM E}
+      CC = {NewCell unit}
+   in
+      try
+         E.cell = port
+         {Assign CC true}
+      catch _ then skip end
+      try
+         E.lokk = port
+         {Assign CC false}
+      catch _ then skip end
+      {Access CC false}
+   end
 
 
-proc{TryCell C}
+   proc{TryCell C}
       try
          {Access C _}
          raise abort end
       catch injector then skip
       end
    end
-
-/*
+   /*
    proc{TryLock L}
       try
          lock L then skip end
          raise abort end
       catch injector then skip end
    end
-*/
+   */
+   proc{WaitPerm P}
+      try
+         {Send P hi}
+         {Delay 10}
+         {WaitPerm P}
+      catch system(dp(conditions:[permFail] ...) ...) then
+         skip
+      end
+   end
 
    Return=
    dp([
@@ -138,7 +146,6 @@ proc{TryCell C}
              CC = {NewCell false}
              Sync
              DistCell = {NewCell Sync}
-
           in
              {S ping}
              {S apply(url:'' functor
@@ -147,13 +154,13 @@ proc{TryCell C}
                              define
                                 {Property.put  'close.time' 0}
                                 {Wait DistCell}
-                                {Access DistCell} = unit
+                                {Access DistCell} = {NewPort _}
                                 {Assign DistCell skit}
                              end)}
              {S ping}
              {Wait Sync}
              {S close}
-             {Delay 1000}
+             {WaitPerm Sync}
              try
                 {Access DistCell _}
                 {Assign CC true}
@@ -178,7 +185,7 @@ proc{TryCell C}
                              define
                                 {Property.put  'close.time' 0}
                                 {Wait DistCell}
-                                {Access DistCell} = unit
+                                {Access DistCell} = {NewPort _}
                                 {Assign DistCell skit}
                                 lock DistLock then skip end
                              end)}
@@ -186,11 +193,11 @@ proc{TryCell C}
              {Wait Sync}
              {InjectInj DistCell DistLock}
              {S close}
-             {Delay 100}
+             {WaitPerm Sync}
              {TryCell DistCell}
           end
           keys:[fault])
-/*
+
        fault_state_manager_injector_dead(
           proc {$}
              S={New Remote.manager init(host:TestMisc.localHost)}
@@ -206,13 +213,13 @@ proc{TryCell C}
                              define
                                 {Property.put  'close.time' 0}
                                 {Wait DistCell}
-                                {Access DistCell} = unit
+                                {Access DistCell} = {NewPort _}
                                 {Assign DistCell skit}
                              end)}
              {S ping}
              {Wait Sync}
              {S close}
-             {Delay 100}
+             {WaitPerm Sync}
              {InjectInj DistCell DistLock}
              {TryCell DistCell}
           end
@@ -234,7 +241,7 @@ proc{TryCell C}
                              define
                                 {Property.put  'close.time' 0}
                                 {Wait DistCell}
-                                {Access DistCell} = unit
+                                {Access DistCell} = {NewPort _}
                                 {Assign DistCell skit}
                                 lock DistLock then skip end
                              end)}
@@ -242,18 +249,17 @@ proc{TryCell C}
              {Wait Sync}
 % Swap these two lines
 % and it doesn't work
-%            {InjectInj DistCell DistLock}
-             {WatchWat DistCell DistLock AA}
              {InjectInj DistCell DistLock}
+             {WatchWat DistCell DistLock AA}
+%            {InjectInj DistCell DistLock}
 %
              AA.lokk = unit
              {S close}
-             {Delay 100}
+             {WaitPerm Sync}
              {TryCell DistCell}
              {CheckWat AA}
           end
           keys:[fault])
-*/
 
        fault_state_manager_watcher_dead(
           proc {$}
@@ -271,14 +277,14 @@ proc{TryCell C}
                              define
                                 {Property.put  'close.time' 0}
                                 {Wait DistCell}
-                                {Access DistCell} = unit
+                                {Access DistCell} = {NewPort _}
                                 {Assign DistCell skit}
                                 lock DistLock then skip end
                              end)}
              {S ping}
              {Wait Sync}
              {S close}
-             {Delay 100}
+             {WaitPerm Sync}
              {InjectInj2 DistCell DistLock AA}
              try
                 {Access DistCell _}
@@ -294,6 +300,7 @@ proc{TryCell C}
           proc {$}
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
+             P2
              Sync
              DistCell
              Inj = proc{$ A B C} raise injector end end
@@ -301,22 +308,26 @@ proc{TryCell C}
              {S1 ping}
              {S1 apply(url:'' functor
                               export MyCell
-                              define MyCell = {NewCell apa}
-                              end $)}.myCell = DistCell
+                              define
+                                 MyCell = {NewCell apa}
+                              end $)}.myCell=DistCell
 
              {S2 ping}
              {S2 apply(url:'' functor
+                              export
+                                 MyPort
                               import Property
                               define
+                                 MyPort = {NewPort _}
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
                                  !Sync = unit
-                              end)}
+                              end $)}.myPort=P2
 
              {Wait Sync}
              {InjectorInstall DistCell Inj}
              {S2 close}
-             {Delay 1000}
+             {WaitPerm P2}
              {TryCell DistCell}
              {S1 close}
           end
@@ -327,6 +338,7 @@ proc{TryCell C}
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
              _ = {NewCell false}
+             P2
              Sync
              DistCell
              Inj = proc{$ A B C} raise injector end end
@@ -340,29 +352,29 @@ proc{TryCell C}
 
              {S2 ping}
              {S2 apply(url:'' functor
+                              export MyPort
                               import Property
                               define
+                                 MyPort={NewPort _}
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
                                  !Sync = unit
-                              end)}
+                              end $)}.myPort=P2
 
              {Wait Sync}
              {InjectorInstall DistCell Inj}
              {S2 close}
-             {Delay 1000}
+             {WaitPerm P2}
              {TryCell DistCell}
              {S1 close}
           end
           keys:[fault])
 
-
-
-/*
        fault_state_proxy_tokenLost_live_watcher(
           proc {$}
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
+             P1 P2
              CC = {NewCell false}
              Sync
              DistCell
@@ -370,31 +382,31 @@ proc{TryCell C}
           in
              {S1 ping}
              {S1 apply(url:'' functor
-                              export MyCell
+                              export MyCell MyPort
                               define
+                                 MyPort={NewPort _}
                                  MyCell = {NewCell apa}
-                              end $)}.myCell = DistCell
+                              end $)}='export'(myCell:DistCell myPort:P1)
 
              {S2 ping}
              {S2 apply(url:'' functor
+                              export MyPort
                               import Property
                               define
+                                 MyPort={NewPort _}
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
                                  !Sync = unit
-                              end)}
+                              end $)}.myPort=P2
 
              {Wait Sync}
              {SiteWatcherInstall DistCell proc{$ A B}
                                              {Assign CC true}
                                           end}
              {S2 close}
-             {Delay 2000}
              {S1 close}
-             try
-                {S1 ping} {S2 ping}
-             catch X then {Show X} end
-             {Delay 2000}
+             {WaitPerm P2}
+             {WaitPerm P1}
              {Access CC true}
           end
           keys:[fault])
@@ -404,6 +416,7 @@ proc{TryCell C}
           proc {$}
              S1={New Remote.manager init(host:TestMisc.localHost)}
              S2={New Remote.manager init(host:TestMisc.localHost)}
+             P1 P2
              CC = {NewCell false}
              Sync
              DistCell
@@ -411,28 +424,30 @@ proc{TryCell C}
           in
              {S1 ping}
              {S1 apply(url:'' functor
-                              export MyCell
+                              export MyCell MyPort
                               define
+                                 MyPort={NewPort _}
                                  MyCell = {NewCell apa}
-                              end $)}.myCell = DistCell
-
+                              end $)}='export'(myCell:DistCell myPort:P1)
              {S2 ping}
              {S2 apply(url:'' functor
+                              export MyPort
                               import Property
                               define
+                                 MyPort={NewPort _}
                                  {Property.put  'close.time' 0}
                                  {Assign DistCell unit}
                                  !Sync = unit
-                              end)}
+                              end $)}.myPort=P2
 
              {Wait Sync}
              {S2 close}
-             {Delay 1000}
+             {WaitPerm P2}
              {SiteWatcherInstall DistCell proc{$ B C}
-                                            {Assign CC true}
-                                         end}
-             {Delay 1000}
+                                             {Assign CC true}
+                                          end}
              {S1 close}
+             {WaitPerm P1}
              {Access CC true}
           end
           keys:[fault])
@@ -470,7 +485,6 @@ proc{TryCell C}
 
 
              {Wait Sync2}
-             {Delay 100}
              {S2 close}
              {NetWatcherInstall DistLock
               proc{$ A B}
@@ -486,7 +500,6 @@ proc{TryCell C}
                               end)}
 
              {S3 ping}
-             {Delay 1000}
 
              thread
                 {Delay 3000}
@@ -551,7 +564,6 @@ proc{TryCell C}
               proc{$ A B}
                  {Assign CC true}
               end}
-             {Delay 100}
              {S2 close}
 
              {S3 apply(url:'' functor
@@ -564,9 +576,6 @@ proc{TryCell C}
                               end)}
 
              {S3 ping}
-             {Delay 1000}
-
-
 
              thread
                 {Delay 3000}
@@ -592,6 +601,6 @@ proc{TryCell C}
              {Access CC true}
 
           end
-          keys:[fault])*/
+          keys:[fault])
       ])
 end

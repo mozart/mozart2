@@ -39,7 +39,7 @@ define
    proc{InjectorDeInstall Entity Proc}
       {Fault.deInstall Entity 'thread'(this) true}
    end
-*/
+   */
 
    proc{InjectInj S}
       Inj = proc{$ A B C} raise injector end end
@@ -124,7 +124,17 @@ define
       catch injector then skip end
    end
 
-   proc{StartServer S E}
+   proc{WaitPerm P}
+      try
+         {Send P hi}
+         {Delay 10}
+         {WaitPerm P}
+      catch system(dp(conditions:[permFail] ...) ...) then
+         skip
+      end
+   end
+
+   proc{StartServer S E CtrlPort}
       S={New Remote.manager init(host:TestMisc.localHost)}
       {S ping}
       {S apply(url:'' functor
@@ -146,8 +156,8 @@ define
                                              meth write(A) lock a<-A end end
                                           end
                                       c}
-                              var:_)
-                      end $)}.my = E
+                              var:_)#{NewPort _}
+                      end $)}.my = E#CtrlPort
       {S ping}
    end
 
@@ -155,121 +165,121 @@ define
    dp([
        fault_inject_live_cell(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 2000}
+             {WaitPerm P}
              {TryCell Deads.cell}
           end
           keys:[fault])
 
        fault_inject_live_var(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryVar Deads.var}
           end
           keys:[fault])
 
        fault_inject_live_lokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryLock Deads.lokk}
           end
           keys:[fault])
 
        fault_inject_live_port(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryPort Deads.port}
           end
           keys:[fault])
 
        fault_inject_live_object_code(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectCode Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_object_feat(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectFeat Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_object_state(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectState Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_object_lokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectLock Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_object_touchedState(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectTouchedState Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_object_touchedLokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectTouchedLock Deads.object}
           end
           keys:[fault])
 
        fault_inject_live_all(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryPort Deads.port}
              {TryVar Deads.var}
              {TryCell Deads.cell}
@@ -285,151 +295,151 @@ define
 
        fault_inject_dead_cell(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryCell Deads.cell}
           end
           keys:[fault])
 
        fault_inject_dead_var(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryVar Deads.var}
           end
           keys:[fault])
 
        fault_inject_dead_lokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {InjectInj Deads}
              {S close}
-             {Delay 1000}
+             {WaitPerm P}
              {TryLock Deads.lokk}
           end
           keys:[fault])
        fault_inject_dead_port(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryPort Deads.port}
           end
           keys:[fault])
 
        fault_inject_dead_code(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
           end
           keys:[fault])
        fault_inject_dead_feat(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
           end
           keys:[fault])
        fault_inject_dead_state(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
           end
           keys:[fault])
        fault_inject_dead_lokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
           end
           keys:[fault])
        fault_inject_dead_object_code(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectCode Deads.object}
           end
           keys:[fault])
        fault_inject_dead_object_feat(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
           end
           keys:[fault])
        fault_inject_dead_object_state(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectState Deads.object}
              {TryObjectFeat Deads.object}
           end
           keys:[fault])
        fault_inject_dead_object_lokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectLock Deads.object}
           end
           keys:[fault])
        fault_inject_dead_object_touchedState(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectTouchedState Deads.object}
           end
           keys:[fault])
        fault_inject_dead_object_touchedLokk(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryObjectTouchedLock Deads.object}
           end
           keys:[fault])
 
        fault_inject_dead_all(
           proc {$}
-             S Deads in
-             {StartServer S Deads}
+             S Deads P in
+             {StartServer S Deads P}
              {S close}
              {InjectInj Deads}
-             {Delay 1000}
+             {WaitPerm P}
              {TryPort Deads.port}
              {TryVar Deads.var}
              {TryCell Deads.cell}

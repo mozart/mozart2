@@ -898,9 +898,10 @@ local
          [] fFail(C) then
             {New Core.failNode init(C)}
          [] fNot(FS C) then NewFS in
-            NewFS = fThread(fIf([fClause(fSkip(C) FS fFail(C))] fSkip(C) C) C)
+            NewFS = fThread(fCond([fClause(fSkip(C) FS fFail(C))]
+                                  fSkip(C) C) C)
             Unnester, UnnestStatement(NewFS $)
-         [] fIf(FClauses FElse C) then GClauses GElse in
+         [] fCond(FClauses FElse C) then GClauses GElse in
             Unnester, UnnestClauses(FClauses fif ?GClauses)
             case FElse of fNoElse(C) then
                GElse = {New Core.noElse init(C)}
@@ -1317,16 +1318,18 @@ local
             Unnester, UnnestExpression(fVar('`unit`' C) FV $)   %--**
          [] fNot(FE C) then
             Unnester, UnnestStatement(fNot(fEq(FV FE C) C) $)
-         [] fIf(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
+         [] fCond(FClauses FE C) then fVar(PrintName _) = FV FVs NewFV FS in
             {FoldL FClauses
              fun {$ FVs fClause(FE _ _)}
                 {GetPatternVariablesExpression FE FVs $}
              end FVs nil}
-            FS = fIf({Map FClauses
-                      fun {$ fClause(FVs FS FE)}
-                         fClause(FVs FS fEq(NewFV FE C))
-                      end}
-                     case FE of fNoElse(_) then FE else fEq(NewFV FE C) end C)
+            FS = fCond({Map FClauses
+                        fun {$ fClause(FVs FS FE)}
+                           fClause(FVs FS fEq(NewFV FE C))
+                        end}
+                       case FE of fNoElse(_) then FE
+                       else fEq(NewFV FE C)
+                       end C)
             case {Some FVs fun {$ fVar(X _)} X == PrintName end} then
                NewGV NewFV in
                % use a temporary to avoid name clash
@@ -1521,9 +1524,9 @@ local
              ?FVs nil}
             case FVs of FV1|FVr then FLocals in
                FLocals = {FoldL FVr fun {$ X Y} fAnd(X Y) end FV1}
-               NewFS = fIf([fClause(FLocals FGuard FS)] fNoElse(C) C)
+               NewFS = fCond([fClause(FLocals FGuard FS)] fNoElse(C) C)
             [] nil then
-               NewFS = fIf([fClause(fSkip(C) FGuard FS)] fNoElse(C) C)
+               NewFS = fCond([fClause(fSkip(C) FGuard FS)] fNoElse(C) C)
             end
          else
             NewFS = FS
@@ -2386,7 +2389,7 @@ in
          [] fSkip(_) then P
          [] fFail(_) then P
          [] fNot(P C) then fNot({NP P} {FS C})
-         [] fIf(Cs P C) then fIf({Map Cs NP} {NP P} {FS C})
+         [] fCond(Cs P C) then fCond({Map Cs NP} {NP P} {FS C})
          [] fClause(P1 P2 P3) then fClause({NP P1} {NP P2} {NP P3})
          [] fNoThen(_) then P
          [] fOr(Cs X C) then fOr({Map Cs NP} X {FS C})
@@ -2454,7 +2457,7 @@ in
          [] fSkip(C) then fSkip({CS C})
          [] fFail(C) then fFail({CS C})
          [] fNot(P C) then fNot({SP P} {CS C})
-         [] fIf(Cs P C) then fIf({Map Cs SP} {SP P} {CS C})
+         [] fCond(Cs P C) then fCond({Map Cs SP} {SP P} {CS C})
          [] fClause(P1 P2 P3) then NewP1 Vs in
             NewP1 = {MakeTrivialLocalPrefix P1 ?Vs nil}
             fClause({VsToFAnd Vs} {SP fAnd(NewP1 P2)} {SP P3})

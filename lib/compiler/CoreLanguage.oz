@@ -409,7 +409,7 @@ in
          coord <- Coord
       end
       meth output(R $) FS in
-         'case '#{@arbiter output2(R $ ?FS)}#' then'#IN#NL#
+         'if '#{@arbiter output2(R $ ?FS)}#' then'#IN#NL#
          {@consequent output(R $)}#EX#NL#{@alternative output(R $)}#'end'#FS
       end
    end
@@ -873,7 +873,7 @@ in
          coord <- Coord
       end
       meth output(R $)
-         'if '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#
+         'cond '#IN#{LI @clauses EX#NL#'[] '#IN R}#EX#NL#
          {@alternative output(R $)}#'end'
       end
    end

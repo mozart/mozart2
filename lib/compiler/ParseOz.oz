@@ -25,8 +25,8 @@ local
 in
    fun {ParseOzFile FileName Reporter GetSwitch Defines}
       Res#Messages = {ParseFile FileName
-                      options(gumpSyntax: {GetSwitch gump}
-                              systemVariables: {GetSwitch system}
+                      options(gump: {GetSwitch gump}
+                              allowdeprecated: {GetSwitch allowdeprecated}
                               defines: Defines)}
    in
       {ForAll {Reverse Messages} Reporter}
@@ -41,8 +41,8 @@ in
 
    fun {ParseOzVirtualString VS Reporter GetSwitch Defines}
       Res#Messages = {ParseVirtualString VS
-                      options(gumpSyntax: {GetSwitch gump}
-                              systemVariables: {GetSwitch system}
+                      options(gump: {GetSwitch gump}
+                              allowdeprecated: {GetSwitch allowdeprecated}
                               defines: Defines)}
    in
       {ForAll {Reverse Messages} Reporter}

@@ -57,7 +57,7 @@ local
                             %% parsing and expanding:
                             %%
                             expression: false
-                            system: true
+                            allowdeprecated: true
 
                             %% gump:
                             gump: false

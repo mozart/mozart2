@@ -77,7 +77,10 @@ fun {CoordinatesOf P}
    [] fFail(C) then C
    [] fNot(_ C) then C
    [] fCond(_ _ C) then C
-   [] fOr(_ _ C) then C
+   [] fOr(_ _ C) then C   %--** remove
+   [] fOr(_ C) then C
+   [] fDis(_ C) then C
+   [] fChoice(_ C) then C
    [] fCondis(_ C) then C
    [] fScanner(_ _ _ _ _ C) then C
    [] fParser(_ _ _ _ _ _ C) then C

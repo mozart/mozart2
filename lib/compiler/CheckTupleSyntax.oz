@@ -97,12 +97,18 @@ local
       [] fFail(C) then {Coord C}
       [] fNot(P C) then {Phrase P} {Coord C}
       [] fCond(Cs E C) then {ForAll Cs Clause} {OptElse E} {Coord C}
-      [] fOr(Cs X C) then
+      [] fOr(Cs X C) then   %--** remove
          case X of for then {ForAll Cs ClauseOptThen}
          [] fdis then {ForAll Cs ClauseOptThen}
          [] fchoice then {ForAll Cs Clause}
          end
          {Coord C}
+      [] fOr(Cs C) then
+         {ForAll Cs ClauseOptThen} {Coord C}
+      [] fDis(Cs C) then
+         {ForAll Cs ClauseOptThen} {Coord C}
+      [] fChoice(Ps C) then
+         {ForAll Ps Phrase} {Coord C}
       [] fCondis(FEss C) then
          {ForAll FEss proc {$ FEs} {ForAll FEs FDExpression} end} {Coord C}
       [] fScanner(V Cs Ms Rs A C) then

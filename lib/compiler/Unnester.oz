@@ -1013,7 +1013,7 @@ define
                                                   FElseProc] CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fOr(FClauses X C) then
+         [] fOr(FClauses X C) then   %--** remove
             case X of fchoice then FSs CND N NewFS in
                %% choice S1 [] ... [] Sn end
                %% =>
@@ -1054,6 +1054,39 @@ define
                                                     CND) 'combinator' C)
                Unnester, UnnestStatement(NewFS $)
             end
+         [] fOr(FClauses C) then FClauseProcs CND NewFS in
+            Unnester, UnnestClauses(FClauses ?FClauseProcs)
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'or\''
+                                                 [fRecord(fAtom('#' C)
+                                                          FClauseProcs)]
+                                                 CND) 'combinator' C)
+            Unnester, UnnestStatement(NewFS $)
+         [] fDis(FClauses C) then FClauseProcs CND NewFS in
+            Unnester, UnnestClauses(FClauses ?FClauseProcs)
+            CND = {CoordNoDebug C}
+            NewFS = fStepPoint(fOpApplyStatement('Combinators.\'dis\''
+                                                 [fRecord(fAtom('#' C)
+                                                          FClauseProcs)]
+                                                 CND) 'combinator' C)
+            Unnester, UnnestStatement(NewFS $)
+         [] fChoice(FSs C) then CND N NewFS in
+            %% choice S1 [] ... [] Sn end
+            %% =>
+            %% case {Space.choose n} of 1 then S1
+            %% [] ...
+            %% [] n then Sn
+            %% end
+            CND = {CoordNoDebug C}
+            N = {Length FSs}
+            NewFS = fStepPoint(fCase(fOpApply('Space.choose' [fInt(N C)] CND)
+                                     {List.mapInd FSs
+                                      fun {$ I FS}
+                                         fCaseClause(fInt(I C) FS)
+                                      end}
+                                     fNoElse(C) CND)
+                               'combinator' C)
+            Unnester, UnnestStatement(NewFS $)
          [] fCondis(FClauses C) then GFrontEqCell NewFClauses GS in
             {@BA openScope()}
             GFrontEqCell = {NewCell nil}
@@ -1456,11 +1489,11 @@ define
                NewFV = fOcc(ToGV)
                Unnester, UnnestStatement(FS $)
             end
-         [] fOr(FClauses X C) then
+         [] fOr(FClauses X C) then   %--** remove
             case X of for then
-               Unnester, TransformExpressionOr(X FClauses C ToGV $)
+               Unnester, TransformExpressionOr(fOr FClauses C ToGV $)
             [] fdis then
-               Unnester, TransformExpressionOr(X FClauses C ToGV $)
+               Unnester, TransformExpressionOr(fDis FClauses C ToGV $)
             [] fchoice then NewFV FS in
                NewFV = fOcc(ToGV)
                FS = fOr({Map FClauses
@@ -1469,6 +1502,14 @@ define
                          end} X C)
                Unnester, UnnestStatement(FS $)
             end
+         [] fOr(FClauses C) then
+            Unnester, TransformExpressionOr(fOr FClauses C ToGV $)
+         [] fDis(FClauses C) then
+            Unnester, TransformExpressionOr(fDis FClauses C ToGV $)
+         [] fChoice(FEs C) then NewFV FS in
+            NewFV = fOcc(ToGV)
+            FS = fChoice({Map FEs fun {$ FE} fEq(NewFV FE C) end} C)
+            Unnester, UnnestStatement(FS $)
          else C = {CoordinatesOf FE} in
             {@reporter error(coord: C kind: SyntaxError
                              msg: 'statement at expression position')}
@@ -2305,7 +2346,7 @@ define
       meth TransformExpressionOr(Label FClauses C ToGV $)
          PrintName FVs NewFV FS
       in
-         FS = fOr({Map FClauses
+         FS = Label({Map FClauses
                      fun {$ fClause(FLocals FGuard FBody)}
                         case FBody of fNoThen(C) then
                            {@reporter
@@ -2316,7 +2357,7 @@ define
                         else
                            fClause(FLocals FGuard fEq(NewFV FBody C))
                         end
-                     end} Label C)
+                     end} C)
          {FoldL FClauses
           fun {$ FVs fClause(FE _ _)}
              {GetPatternVariablesExpression FE FVs $}

@@ -82,7 +82,7 @@ in
          SubstTab     = {MakeTuple tab 255}
 
          %%
-         {Tuple.forAllInd SetTab
+         {Record.forAllInd SetTab
           fun {$ I}
              case {Char.isAlNum I} then legal
              elsecase [I] of "_"   then legal
@@ -108,8 +108,8 @@ in
           end}
 
          %%
-         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
-         SubstTab = {Tuple.map SetTab
+         ScanTab  = {Record.map SetTab fun {$ T} {Label T} end}
+         SubstTab = {Record.map SetTab
                      fun {$ T}
                         case {IsAtom T} then nil else T.1 end
                      end}
@@ -164,7 +164,7 @@ in
          ScanTab      = {MakeTuple tab 256}
 
          %%
-         {Tuple.forAllInd SetTab
+         {Record.forAllInd SetTab
           fun {$ J} I=J-1 in
              case {Char.isCntrl I} then
                 subst(case [I]
@@ -188,8 +188,8 @@ in
           end}
 
          %%
-         ScanTab  = {Tuple.map SetTab fun {$ T} {Label T} end}
-         SubstTab = {Tuple.map SetTab
+         ScanTab  = {Record.map SetTab fun {$ T} {Label T} end}
+         SubstTab = {Record.map SetTab
                      fun {$ T}
                         case {IsAtom T} then "" else T.1 end
                      end}
@@ -1250,7 +1250,7 @@ in
 
             %%
             self.name = <<genLitPrintName({Label Term} $)>>
-            Subterms = {Tuple.toList Term}
+            Subterms = {Record.toList Term}
             self.subterms = Subterms
 
             %%
@@ -1357,7 +1357,7 @@ in
             Term = self.term
 
             %%
-            Subterms = {Tuple.toList Term}
+            Subterms = {Record.toList Term}
             self.subterms = Subterms
 
             %%

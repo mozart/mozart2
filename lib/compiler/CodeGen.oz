@@ -1086,12 +1086,12 @@ local
 
    class CodeGenApplication
       meth codeGen(CS VHd VTl)
-         case {IsDet self.codeGenMakeEquateLiteral} then
+         case {IsDet self.codeGenMakeEquateLiteral} then VHd0 VTl0 in
             % the application is either a toplevel application of NewName
             % or any application of NewUniqueName:
-            %--** Coordinates for step point
-            VHd = vEquateLiteral(_ self.codeGenMakeEquateLiteral
-                                 {{List.last @actualArgs} reg($)} VTl)
+            VHd0 = vEquateLiteral(_ self.codeGenMakeEquateLiteral
+                                  {{List.last @actualArgs} reg($)} VTl0)
+            {StepPoint @coord 'name generation' VHd VTl VHd0 VTl0}
          else
             {MakeApplication @designator @coord @actualArgs CS VHd VTl}
          end

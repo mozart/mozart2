@@ -66,7 +66,9 @@ in
 
    class AtomLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         {Helper.convert @value PrintStr LengthStr}
+         MaxLen = {@visual get(widgetInternalAtomSize $)}
+      in
+         {Helper.convert MaxLen @value PrintStr LengthStr}
       end
    end
 
@@ -238,17 +240,20 @@ in
 
    class ByteStringLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         {Helper.convert @value PrintStr LengthStr}
+         MaxLen = {@visual get(widgetInternalAtomSize $)}
+      in
+         {Helper.convert MaxLen @value PrintStr LengthStr}
       end
    end
 
    class GenericLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         Val  = @value
-         Type = {Value.status Val}.1
+         Val    = @value
+         Type   = {Value.status Val}.1
+         MaxLen = {@visual get(widgetInternalAtomSize $)}
       in
          type <- Type
-         {Helper.convert Val PrintStr LengthStr}
+         {Helper.convert MaxLen Val PrintStr LengthStr}
       end
    end
 

@@ -56,9 +56,34 @@ define
 \endif
    %% -- End of GraphicSupport.oz region
 
-   proc {ConvertAtom V PrintStr LenStr}
-      LenStr   = {Value.toVirtualString V ~1 ~1}
-      PrintStr = {TkQuoteStr LenStr}
+   local
+      proc {CutString Ls Ms Marker ?R}
+         if Ls == 0
+         then
+            case Ms
+            of _|_ then R = Marker
+            [] nil then R = nil
+            end
+         elsecase Ms
+         of M|Mr then
+            NewR
+         in
+            R = M|NewR
+            {CutString (Ls - 1) Mr Marker NewR}
+         [] nil then R = nil
+         end
+      end
+   in
+      proc {ConvertAtom MaxLen V PrintStr LenStr}
+         Str    = {Value.toVirtualString V ~1 ~1}
+         Marker = case Str
+                  of 39|_ then "...'"
+                  [] _    then "..."
+                  end
+      in
+         LenStr   = {CutString MaxLen Str Marker}
+         PrintStr = {TkQuoteStr LenStr}
+      end
    end
 
    local
@@ -243,9 +268,11 @@ define
          in
             if {IsFree XDim}
             then
+               MaxLen   = {@visual get(widgetInternalAtomSize $)}
                PrintStr = @string
             in
-               XDim = ({VirtualString.length {ConvertAtom @value PrintStr}} + 1)
+               XDim = ({VirtualString.length
+                        {ConvertAtom MaxLen @value PrintStr}} + 1)
             end
             XDim
          end
@@ -318,7 +345,9 @@ define
             @secTag = {Visual newTag($)}
             if {IsAtom FeaVal}
             then
-              @sDim = {VirtualString.length {ConvertAtom FeaVal String}}
+               MaxLen = {@visual get(widgetInternalAtomSize $)}
+            in
+               @sDim = {VirtualString.length {ConvertAtom MaxLen FeaVal String}}
             else
                String  = if {IsName FeaVal}
                          then '<N:'#{System.printName FeaVal}#'>'

@@ -151,10 +151,11 @@ define
                if {Not {IsFuture CurValue}} orelse {IsFailedFut CurValue}
                then skip
                else
-                  Action
-               in
-                  thread {WaitFuture CurValue Action} end
-                  {Wait Action}
+%                 Action
+%              in
+%                 thread {WaitFuture CurValue Action} end
+%                 {Wait Action}
+                  {Value.waitQuiet CurValue}
                   {Port.send WidPort notifyNodes(EntryObj)} %% Re-enter sync barrier
                   StoreListener, listen(FutMode WidPort CurValue EntryObj)
                end

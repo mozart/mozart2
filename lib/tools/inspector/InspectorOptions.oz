@@ -180,6 +180,7 @@ define
                         widgetTreeDepth        # 15
                         widgetTreeDisplayMode  # true
                         widgetShowStrings      # false
+                        widgetInternalAtomSize # 1000
                         widgetUseNodeSet       # 1 %% Select the used node-set (1,2)
                         widgetNodesContainer   # default %% default or Interface Record
                         widgetNodeSets         # ((NormalNodes|RelationNodes)#

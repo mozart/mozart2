@@ -1926,7 +1926,7 @@ in
              'Invalid query'
              [hint(l: 'Query' m: oz(M))]
              Exc}
-         [] compiler(invalidQuery M I A) then
+         elseof compiler(invalidQuery M I A) then
             {FormatExc T
              'Ill-typed query argument'
              [hint(l: 'Query' m: oz(M))

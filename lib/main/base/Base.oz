@@ -247,9 +247,9 @@ prepare
    %% Attributes
    `ooAttr`      = {NewUniqueName 'ooAttr'}
    %% Features
+   `ooFeat`      = {NewUniqueName 'ooFeat'}
+   `ooFreeFeat`  = {NewUniqueName 'ooFreeFeat'}
    `ooFreeFlag`  = {NewUniqueName 'ooFreeFlag'}
-   `ooUnFreeFeat`= {NewUniqueName 'ooUnFreeFeat'}
-   `ooFreeFeatR` = {NewUniqueName 'ooFreeFeatR'}
    %% Inheritance related
    `ooMethSrc`   = {NewUniqueName 'ooMethSrc'}
    `ooAttrSrc`   = {NewUniqueName 'ooAttrSrc'}

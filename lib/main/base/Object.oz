@@ -68,9 +68,8 @@ local
       %%
       %% Builtins needed for class creation
       %%
-      MarkSafe  = Boot_Dictionary.markSafe
-      MakeClass = Boot_Object.makeClass
-
+      MarkSafe   = Boot_Dictionary.markSafe
+      BuildClass = Boot_Class.new
 
       %%
       %% Inheritance does very little, it just determines the classes
@@ -361,13 +360,13 @@ local
             end
             %% Features
             if AsNewFeat==nil then
-               Feat     = P.`ooUnFreeFeat`
-               FreeFeat = P.`ooFreeFeatR`
+               Feat     = P.`ooFeat`
+               FreeFeat = P.`ooFreeFeat`
                if IsFinal then skip else
                   FeatSrc = P.`ooFeatSrc`
                end
             else
-               Feat     = {Adjoin P.`ooUnFreeFeat` NewFeat}
+               Feat     = {Adjoin P.`ooFeat` NewFeat}
                FreeFeat = {MakeFree Feat}
                if IsFinal then skip else
                   FeatSrc = {Dictionary.clone P.`ooFeatSrc`}
@@ -424,7 +423,7 @@ local
                TmpFeat={Dictionary.new}
             in
                {CollectOther {Dictionary.keys FeatSrc} FeatSrc
-                `ooUnFreeFeat` TmpFeat}
+                `ooFeat` TmpFeat}
                {SetOther AsNewFeat NewFeat TmpFeat}
                {DefOther AsNewFeat FeatSrc C}
                Feat    ={Dictionary.toRecord 'feat' TmpFeat}
@@ -438,11 +437,11 @@ local
          {MarkSafe Defaults}
 
          %% Create the real class
-         C = {MakeClass FastMeth
+         C = {BuildClass
               if IsFinal then
                  'class'(`ooAttr`:       Attr
-                         `ooFreeFeatR`:  FreeFeat
-                         `ooUnFreeFeat`: Feat
+                         `ooFeat`:       Feat
+                         `ooFreeFeat`:   FreeFeat
                          `ooMeth`:       Meth
                          `ooFastMeth`:   FastMeth
                          `ooDefaults`:   Defaults
@@ -463,14 +462,13 @@ local
                          `ooAttr`:       Attr          % Record
                          %% Information for features
                          `ooFeatSrc`:    FeatSrc       % Dictionary
-                         `ooUnFreeFeat`: Feat          % Record
-                                                       % also free features
-                         `ooFreeFeatR`:  FreeFeat      % Record
+                         `ooFeat`:       Feat          % Record
+                         `ooFreeFeat`:   FreeFeat      % Record
                          %% Other info
                          `ooPrintName`:  PrintName     % Atom
                          `ooFallback`:   Fallback)     % Record
               end
-              Feat Defaults IsLocking IsSited}
+              IsLocking IsSited}
       end
 
       fun {NewClass Parents AttrSpec FeatSpec Prop}
@@ -487,7 +485,7 @@ local
    %% Oo Extensions
    %%
 
-   GetClass = Boot_Class.get
+   GetClass = Boot_Object.getClass
 
    fun {GetC OC}
       if {IsObject OC} then {GetClass OC} else OC end
@@ -514,7 +512,7 @@ in
                                       {Arity {GetC OC}.`ooAttr`}
                                    end
                      getFeatNames: fun {$ OC}
-                                      {Arity {GetC OC}.`ooUnFreeFeat`}
+                                      {Arity {GetC OC}.`ooFeat`}
                                    end
                      getProps:     fun {$ OC}
                                       C={GetC OC}

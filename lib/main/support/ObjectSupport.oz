@@ -25,7 +25,7 @@ functor
 
 require
    BootName(newUnique: NewUniqueName) at 'x-oz://boot/Name'
-   BootClass(get: GetClass)           at 'x-oz://boot/Class'
+   BootObject(getClass: GetClass)     at 'x-oz://boot/Object'
 
 export
    master:  MasterObject
@@ -98,9 +98,9 @@ prepare
    end
 
    local
-      PRIVATE       = {NewName}
-      `ooAttr`      = {NewUniqueName 'ooAttr'}
-      `ooFreeFeatR` = {NewUniqueName 'ooFreeFeatR'}
+      PRIVATE      = {NewName}
+      `ooAttr`     = {NewUniqueName 'ooAttr'}
+      `ooFreeFeat` = {NewUniqueName 'ooFreeFeat'}
    in
       class ReflectObject
 
@@ -123,7 +123,7 @@ prepare
              c(PRIVATE:
                   o('class': C
                     'attr':  {self GetAttr({Arity C.`ooAttr`} $)}
-                    'feat':  {self GetFeat({Arity C.`ooFreeFeatR`} $)}))}
+                    'feat':  {self GetFeat({Arity C.`ooFreeFeat`} $)}))}
          end
 
          meth SetAttr(AXs)
@@ -150,7 +150,7 @@ prepare
             C = {GetClass self}
             O = {New C SetAttr({self GetAttr({Arity C.`ooAttr`} $)})}
          in
-            {O SetFeat({self GetFeat({Arity C.`ooFreeFeatR`} $)})}
+            {O SetFeat({self GetFeat({Arity C.`ooFreeFeat`} $)})}
             O
          end
       end

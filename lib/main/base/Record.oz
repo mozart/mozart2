@@ -435,7 +435,7 @@ in
                    foldL:
                       fun {$ R P Z}
                          case {IsTuple R} then
-                            case {IsAtom R} then Z
+                            case {IsLiteral R} then Z
                             else {FoldLT 1 {Width R} R P Z}
                             end
                          else {FoldL {Arity R} R P Z}
@@ -444,7 +444,7 @@ in
                    foldR:
                       fun {$ R P Z}
                          case {IsTuple R} then
-                            case {IsAtom R} then Z
+                            case {IsLiteral R} then Z
                             else {FoldRT 1 {Width R} R P Z}
                             end
                          else {FoldR {Arity R} R P Z}
@@ -511,7 +511,7 @@ in
                    foldLInd:
                       fun {$ R P Z}
                          case {IsTuple R} then
-                            case {IsAtom R} then Z
+                            case {IsLiteral R} then Z
                             else {FoldLIndT 1 {Width R} R P Z}
                             end
                          else {FoldLInd {Arity R} R P Z}
@@ -520,7 +520,7 @@ in
                    foldRInd:
                       fun {$ R P Z}
                          case {IsTuple R} then
-                            case {IsAtom R} then Z
+                            case {IsLiteral R} then Z
                             else {FoldRIndT 1 {Width R} R P Z}
                             end
                          else {FoldRInd {Arity R} R P Z}

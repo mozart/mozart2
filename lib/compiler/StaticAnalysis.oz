@@ -1899,7 +1899,7 @@ define
                BndVO = {Nth @actualArgs 3}
             in
 \ifdef DEBUGSA
-               {System.show dotSelectionFromRecord}
+               {System.show dotSelectionFromRecord(RecOrCh.F)}
 \endif
                {Ctrl setErrorMsg('feature selection (.) on record failed')}
                {Ctrl setUnifier(BndVO RecOrCh.F)}
@@ -3650,6 +3650,8 @@ define
                [] dictionary then
                   {New Core.valueNode init(Val unit)}
                [] bitArray then
+                  {New Core.valueNode init(Val unit)}
+               [] fset then
                   {New Core.valueNode init(Val unit)}
                [] 'class' then
                   Cls = {New Core.classToken init(Val)}

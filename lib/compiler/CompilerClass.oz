@@ -37,7 +37,7 @@ local
                      {Map {Atom.toString {Property.get 'oz.version'}}
                       fun {$ C}
                          case C of &. then &_ else C end
-                      end} "Oz_"}
+                      end} "Mozart_"}
 
    DefaultSwitches = switches(%% global switches:
                               %%

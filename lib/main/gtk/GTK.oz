@@ -23,7 +23,7 @@
 functor
 
 import
-   GtkNative at 'GTK.so{native}'
+   Native at 'GTK.so{native}'
    System
 
 export
@@ -99,10 +99,10 @@ define
       end
 
       meth ref
-         {GtkNative.ref @nativeObject}
+         {Native.ref @nativeObject}
       end
       meth unref
-         {GtkNative.unref @nativeObject}
+         {Native.unref @nativeObject}
       end
 
 % Signal (made part of Object)
@@ -110,20 +110,20 @@ define
       meth signalConnect(Name Handler ?Id)
          % TODO: support user data (maybe superfluous)
          {Dispatcher registerHandler(Handler Id)}
-         {GtkNative.signalConnect @nativeObject Name Id _}
+         {Native.signalConnect @nativeObject Name Id _}
       end
       meth signalDisconnect(Id)
          {Dispatcher unregisterSignal(Id)}
-         {GtkNative.signalDisconnect @nativeObject Id}
+         {Native.signalDisconnect @nativeObject Id}
       end
       meth signalHandlerBlock(HandlerId)
-         {GtkNative.signalBlock @nativeObject HandlerId}
+         {Native.signalBlock @nativeObject HandlerId}
       end
       meth signalHandlerUnblock(HandlerId)
-         {GtkNative.signalUnblock @nativeObject HandlerId}
+         {Native.signalUnblock @nativeObject HandlerId}
       end
       meth signalEmitByName(Name)
-         {GtkNative.signalEmitByName @nativeObject Name}
+         {Native.signalEmitByName @nativeObject Name}
       end
    end
 
@@ -143,14 +143,14 @@ define
             fillerThread
          meth init
             proc {FillStream}
-               {GtkNative.handlePendingEvents} % Send all pending GTK events to the Oz port
+               {Native.handlePendingEvents} % Send all pending GTK events to the Oz port
                {Time.delay PollingIntervall}
                {FillStream}
             end
          in
             registry <- {Dictionary.new}
             port     <- {Port.new @stream}
-            {GtkNative.initializeSignalPort @port} % Tell the 'C side' about the signal port
+            {Native.initializeSignalPort @port} % Tell the 'C side' about the signal port
             thread
                fillerThread <- {Thread.this $}
                {FillStream}
@@ -191,16 +191,16 @@ define
 % -----------------------------------------------------------------------------
 
    proc {Main}
-      {GtkNative.main}
+      {Native.main}
    end
 
    proc {MainQuit}
       {Dispatcher exit}
-      {GtkNative.mainQuit}
+      {Native.mainQuit}
    end
 
    proc {Exit}
-      {GtkNative.exit 0}
+      {Native.exit 0}
       {Dispatcher exit}
    end
 

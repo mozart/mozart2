@@ -99,7 +99,7 @@ sub write_oz_fields_wrappers {
         $native = lcfirst $native;
 
         print '   meth ' . $meth . "(\$)\n";
-        print '      {GtkNative.' . $native . " \@nativeObject}\n";
+        print '      {Native.' . $native . " \@nativeObject}\n";
         print "   end\n";
     }
 
@@ -116,7 +116,7 @@ sub write_oz_fields_wrappers {
         $native = lcfirst $native;
 
         print '   meth ' . $meth . "(Arg)\n";
-        print '      {GtkNative.' . $native . ' @nativeObject';
+        print '      {Native.' . $native . ' @nativeObject';
         if ($$in[$i] =~ m/^\!/s) {
             print ' {Arg getNative($)}';
         } else {
@@ -161,7 +161,7 @@ sub write_oz_init_methods {
 
         print '      ';
         print 'nativeObject <- ';
-        print '{GtkNative.' . lcfirst(gtk2oz_name($init));
+        print '{Native.' . lcfirst(gtk2oz_name($init));
 
         ### Method invocation: Arguments
 
@@ -230,7 +230,7 @@ sub write_oz_meth_wrappers {
 
         print '      ';
         print 'Ret = ' if $out;
-        print '{GtkNative.' . lcfirst(gtk2oz_name($meth)) . ' @nativeObject';
+        print '{Native.' . lcfirst(gtk2oz_name($meth)) . ' @nativeObject';
 
         ### Method invocation: Arguments
 

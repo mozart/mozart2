@@ -42,21 +42,25 @@
 functor $ prop once
 
 import
-   FD.{watch}
+   FD.{reflect}
 
-   Search.{a}
+   Search.{one}
 
-   System.{a
-           Show = 'Show'}
+   System.{Show = 'Show'
+           valueToVirtualString
+           printName
+           get
+           eq}
 
-   Tk.{a}
+   Tk
 
-   TkTools.{a}
+   TkTools
 
 export
    'BrowserClass': BrowserClass
    'Browser':      Browser
    'Browse':       Browse
+   browse:       Browse
 
 body
 
@@ -455,11 +459,7 @@ in
    %%
    %% Moreover, this browser is a highlander - it cannot die :-)))
    %%
-\ifdef LILO
-   class !BrowserClass
-\else
    class BrowserClass
-\end
       from Object.base
       attr
          BrowserStream: InitValue % used for "deep" browsing;

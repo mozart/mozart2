@@ -82,9 +82,8 @@ MetaGetStrength = {`Builtin` metaGetStrength 2}
 %% suspends;
 HasLabel = {`Builtin` hasLabel 2}
 
-%%
-%% Equality on terms using their physical location (pointers);
-EQ = !System.eq
+
+EQ = {fun {$ X} X end System.eq}
 
 %%
 %% it takes three arguments - a term, depth and width has to be

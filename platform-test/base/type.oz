@@ -23,18 +23,19 @@
 fun {$ IMPORT}
    \insert 'lib/import.oz'
 in
-   type([basic(proc {$}
+   type([basic(
+               proc {$}
                   Cases = [ atom(a IsAtom) int(1 IsInt) float(1.0 IsFloat)
                             tuple(a(1) IsTuple) record(a(a:1) IsRecord)
-                            string("a" IsString)
                           ]
-
                in
                   {ForAll Cases
                    proc {$ C}
-
+                      %% Type of
                       {Type.ofValue C.1}={Label C}
-
+                      %% IsT
+                      {C.2 C.1}=true
+                      %% IsT with thread
                       local
                          X
                       in

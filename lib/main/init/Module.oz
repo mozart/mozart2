@@ -218,8 +218,10 @@ in
                   {self Apply(Url {Pickle.load
                                    MozartHome#ModName#FunExt} $)}
                end
-            catch _ then
+            catch error(url(load _) ...) then
                raise module(systemNotFound {URL.toAtom Url}) end
+            [] error(system(unknownBootModule _) ...) then
+               raise module(bootNotFound {URL.toAtom Url}) end
             end
          end
 

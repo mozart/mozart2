@@ -48,8 +48,7 @@ define
    local
       GetInstructionSize = CompilerSupport.getInstructionSize
       GetOpcode          = CompilerSupport.getOpcode
-      NewCodeBlock       = CompilerSupport.newCodeBlock
-      MakeProc           = CompilerSupport.makeProc
+      AllocateCodeBlock  = CompilerSupport.allocateCodeBlock
       AddDebugInfo       = CompilerSupport.addDebugInfo
       StoreOpcode        = CompilerSupport.storeOpcode
       StoreNumber        = CompilerSupport.storeNumber
@@ -382,10 +381,9 @@ define
          end
          meth load(Globals ?P) CodeBlock in
             AssemblerClass, MarkEnd()
-            CodeBlock = {NewCodeBlock @Size}
+            {AllocateCodeBlock @Size Globals ?CodeBlock ?P}
             {ForAll @InstrsHd
              proc {$ Instr} {StoreInstr Instr CodeBlock @LabelDict} end}
-            P = {MakeProc CodeBlock Globals}
          end
          meth MarkEnd()
             @InstrsTl = nil

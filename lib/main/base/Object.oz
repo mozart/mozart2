@@ -35,7 +35,7 @@ local
       in
          case {Dictionary.condGet Meth L false} of false then
             case {Dictionary.condGet Meth otherwise false} of false then
-               {`RaiseError` object(lookup C Mess)}
+               {Exception.raiseError object(lookup C Mess)}
             elseof M then {M otherwise(Mess)}
             end
          elseof M then {M Mess}
@@ -131,7 +131,7 @@ local
             L   = One.1
          in
             if {IsLiteral L} then skip else
-               {`RaiseError` object(nonLiteralMethod L)}
+               {Exception.raiseError object(nonLiteralMethod L)}
             end
             {Dictionary.put Meth L One.2}
             if {HasFeature One fast} then
@@ -260,10 +260,11 @@ local
          [] C|Cr then
             if {IsClass C} then
                if {ClassIsFinal C} then
-                  {`RaiseError` object(final C PrintName)}
+                  {Exception.raiseError object(final C PrintName)}
                end
             else
-               {`RaiseError` object(inheritanceFromNonClass C PrintName)}
+               {Exception.raiseError
+                object(inheritanceFromNonClass C PrintName)}
             end
             {CheckParents Cr PrintName}
          end
@@ -310,15 +311,16 @@ local
             {All NewProp IsAtom} andthen
             {List.sub {Sort NewProp Value.'<'} [final locking sited]}
          then skip else
-            {`RaiseError` object(illegalProp
-                                 {FoldL NewProp fun {$ Ps P}
-                                                   case P
-                                                   of final then Ps
-                                                   [] locking then Ps
-                                                   [] sited then Ps
-                                                   else P|Ps
-                                                   end
-                                                end nil})}
+            {Exception.raiseError
+             object(illegalProp
+                    {FoldL NewProp fun {$ Ps P}
+                                      case P
+                                      of final then Ps
+                                      [] locking then Ps
+                                      [] sited then Ps
+                                      else P|Ps
+                                      end
+                                   end nil})}
          end
          %% Methods
          MCs=case {FindDefs Parents `ooMethSrc`}
@@ -467,8 +469,8 @@ local
              end
       in
          if MCs\=nil orelse ACs\=nil orelse FCs\=nil then
-            {`RaiseError` object(conflicts PrintName
-                                 'meth':MCs 'attr':ACs 'feat':FCs)}
+            {Exception.raiseError object(conflicts PrintName
+                                         'meth':MCs 'attr':ACs 'feat':FCs)}
          end
          %% Mark these dictionaries safe as it comes to marshalling
          {MarkSafe Meth}

@@ -25,7 +25,7 @@
 %%
 
 Exception = exception('raise':    Raise
-                      raiseError: `RaiseError`
+                      raiseError: Boot_Exception.raiseError
                       %%
                       %% wrapper functions
                       %%

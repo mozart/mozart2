@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
 %%%   Michael Mehl (mehl@dfki.de)
+%%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Michael Mehl, 1998
+%%%   Christian Schulte, 1999
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$

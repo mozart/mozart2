@@ -50,6 +50,7 @@ export
    union:        FSUnion
    unionN:       FSUnionN
    subset:       FSSubset
+   subseteq:     FSSubset
 
    disjoint:     FSDisjoint
    disjointN:    FSDisjointN

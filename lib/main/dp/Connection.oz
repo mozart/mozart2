@@ -22,7 +22,6 @@
 %%% WARRANTIES.
 %%%
 
-
 local
 
    %%
@@ -30,21 +29,16 @@ local
    %%
    local
       PID = pid(get:      {`Builtin` 'PID.get'      1}
-                send:     {`Builtin` 'PID.send'     4}
                 received: {`Builtin` 'PID.received' 1}
-                close:    {`Builtin` 'PID.close'    0})
-   in
-      {PID.close}
+                toPort:   {`Builtin` 'PID.toPort' 4})
 
+   in
       ReqStream = {PID.received}
       ThisPid   = {PID.get}
-
-      proc {SendToPid T X}
-         X = {Promise.new}
-         {PID.send T.host T.port T.time T#X}
+      proc{ToPort T P}
+         {PID.toPort T.host T.port T.time P}
       end
    end
-
 
    %%
    %% Mapping between integers and characters
@@ -158,17 +152,21 @@ local
    thread
       {ForAll ReqStream
        proc {$ T#A}
-          A := case
-                  T.time == ThisPid.time andthen
-                  {Dictionary.member KeyDict T.key}
-               then Y={Dictionary.get KeyDict T.key} in
-                  case T.single then {Dictionary.remove KeyDict T.key}
-                  else skip
-                  end
-                  yes(Y)
-               else
-                  no
-               end
+          case
+             T.time == ThisPid.time andthen
+             {Dictionary.member KeyDict T.key}
+          then Y={Dictionary.get KeyDict T.key} in
+             case T.single then {Dictionary.remove KeyDict T.key}
+             else skip
+             end
+             thread
+                A:=yes(Y)
+             end
+          else
+             thread
+                A:=no
+             end
+          end
        end}
    end
 
@@ -194,8 +192,6 @@ local
       feat
          Ticket
          TicketAtom
-      attr
-         Stream
 
       meth init(X ?AT <= _)
          T={NewTicket false}
@@ -212,15 +208,35 @@ local
       end
 
       meth close
-         Stream <- _
          {Dictionary.remove KeyDict self.Ticket.key}
       end
    end
 
-   proc {Take V X}
-      case !!{SendToPid {VsToTicket V}}
-      of no     then {`RaiseError` dp(connection(refusedTicket V))}
-      [] yes(Y) then X=Y
+   proc {Take V Entity}
+      T = {VsToTicket V}
+      P={ToPort T}
+      X = {Promise.new}
+   in
+      {{`Builtin` 'installHW' 3}  P watcher(cond:permHome)
+       proc{$ E C}
+          try
+             X:=error
+          catch XX then
+             skip
+          end
+       end}
+      {{`Builtin` 'installHW' 3}  P handler(cond:perm) proc{$ E C}
+                                                          {`RaiseError` dp(connection(ticketToDeadSite V))}
+             end}
+      {Send P T#X}
+      case !!X of no then
+        {`RaiseError` dp(connection(refusedTicket V))}
+      elseof error then
+         {`RaiseError` dp(connection(ticketToDeadSite V))}
+      elseof yes(A) then
+         Entity=A
+      else
+         skip
       end
    end
 

@@ -280,51 +280,42 @@ define
       end
    end
 
-   fun {IsPattern FE}
-      %% Returns `true' if FE is a pattern as allowed in case and
-      %% catch patterns and in proc/fun heads, else `false'.
-      %% (Variables are allowed in label and feature position.)
-      case FE of fEq(E1 E2 _) then
-         case E1 of fVar(_ _) then {IsPattern E2}
-         [] fWildcard(_) then {IsPattern E2}
-         elsecase E2 of fVar(_ _) then {IsPattern E1}
-         [] fWildcard(_) then {IsPattern E1}
+   local
+      fun {IsPatternSub As AllowDollar}
+         case As of A|Ar then
+            case A of fColon(_ E) then {IsPattern E AllowDollar}
+            else {IsPattern A AllowDollar}
+            end
+            andthen {IsPatternSub Ar AllowDollar}
+         [] nil then true
+         end
+      end
+   in
+      fun {IsPattern FE AllowDollar}
+         %% Returns `true' if FE is a pattern as allowed in case and
+         %% catch patterns and in proc/fun heads, else `false'.
+         %% (Variables are allowed in label and feature position.)
+         case FE of fEq(E1 E2 _) then
+            case E1 of fVar(_ _) then {IsPattern E2 AllowDollar}
+            [] fWildcard(_) then {IsPattern E2 AllowDollar}
+            elsecase E2 of fVar(_ _) then {IsPattern E1 AllowDollar}
+            [] fWildcard(_) then {IsPattern E1 AllowDollar}
+            else false
+            end
+         [] fAtom(_ _) then true
+         [] fVar(_ _) then true
+         [] fAnonVar(_ _ _) then true
+         [] fWildcard(_) then true
+         [] fDollar(_) then AllowDollar
+         [] fEscape(_ _) then true
+         [] fInt(_ _) then true
+         [] fFloat(_ _) then true
+         [] fRecord(_ As) then
+            {IsPatternSub As AllowDollar}
+         [] fOpenRecord(_ As) then
+            {IsPatternSub As AllowDollar}
          else false
          end
-      [] fAtom(_ _) then true
-      [] fVar(_ _) then true
-      [] fWildcard(_) then true
-      [] fEscape(_ _) then true
-      [] fInt(_ _) then true
-      [] fFloat(_ _) then true
-      [] fRecord(_ As) then   % label is always legal due to syntax rules
-         {All As IsPattern}
-      [] fOpenRecord(_ As) then   % label is always legal due to syntax rules
-         {All As IsPattern}
-      [] fColon(_ E) then   % feature is always legal due to syntax rules
-         {IsPattern E}
-      else false
-      end
-   end
-
-   fun {EscapePattern FE PrintNames}
-      case FE of fEq(E1 E2 C) then
-         fEq({EscapePattern E1 PrintNames} {EscapePattern E2 PrintNames} C)
-      [] fAtom(_ _) then FE
-      [] fVar(PrintName C) then
-         if {Member PrintName PrintNames} then fEscape(FE C)
-         else FE
-         end
-      [] fWildcard(_) then FE
-      [] fEscape(_ _) then FE
-      [] fInt(_ _) then FE
-      [] fFloat(_ _) then FE
-      [] fRecord(L As) then
-         fRecord(L {Map As fun {$ A} {EscapePattern A PrintNames} end})
-      [] fOpenRecord(L As) then
-         fOpenRecord(L {Map As fun {$ A} {EscapePattern A PrintNames} end})
-      [] fColon(F E) then   % feature is always legal due to syntax rules
-         fColon(F {EscapePattern E PrintNames})
       end
    end
 
@@ -1625,27 +1616,27 @@ define
       end
 
       meth UnnestProc(FEs FS IsLazy C ?GS)
-         FMatches FResultVars C2 NewFS FBody0 FBody GBody
+         FMatches FResultVars C2 FS1 FS2 FS3 GBody
       in
          %% each formal argument in FEs must be a pattern;
          %% all pattern variables must be pairwise distinct
          Unnester, UnnestProcFormals(FEs nil ?FMatches nil ?FResultVars nil)
          C2 = {LastCoordinatesOf FS}
-         NewFS = {FoldR FMatches
-                  fun {$ FV#FE#C In}
-                     fCase(FV [fCaseClause(FE In)]
-                           fNoElse(C)   %--** raise a better exception here
-                           C)
-                  end FS}
-         FBody0 = if IsLazy then CND in
-                     CND = {CoordNoDebug C}
-                     fOpApply('Value.byNeed'
-                              [fFun(fDollar(C) nil NewFS nil CND)] CND)
-                  else NewFS
-                  end
-         FBody = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FBody0}
+         FS1 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS C2) end FS}
+         FS2 = {FoldR FMatches
+                fun {$ FV#FE#C In}
+                   fCase(FV [fCaseClause(FE In)]
+                         fNoElse(C)   %--** raise a better exception here
+                         C)
+                end FS1}
+         FS3 = if IsLazy then CND in
+                  CND = {CoordNoDebug C}
+                  fOpApply('Value.byNeed'
+                           [fFun(fDollar(C) nil FS2 nil CND)] CND)
+               else FS2
+               end
          {@BA openScope()}
-         Unnester, UnnestStatement(FBody ?GBody)
+         Unnester, UnnestStatement(FS3 ?GBody)
          GS = {MakeDeclaration {@BA closeScope($)} GBody C}
       end
       meth UnnestProcFormals(FEs Occs GdHd GdTl RtHd RtTl)
@@ -1687,16 +1678,53 @@ define
             RtHd = fOcc(GV)|RtTl
          else C GV in
             C = {CoordinatesOf FE}
-            if {IsPattern FE} then skip
+            {@BA generate('Formal' C ?GV)}
+            NewOccs = Occs
+            if {IsPattern FE true} then NewPattern in
+               Unnester, EscapePattern(FE Occs RtHd RtTl ?NewPattern)
+               GdHd = fOcc(GV)#NewPattern#C|GdTl
             else
                {@reporter
                 error(coord: C kind: SyntaxError
                       msg: 'only patterns in `proc\'/`fun\' head allowed')}
+               GdHd = GdTl
+               RtHd = RtTl
             end
-            NewOccs = Occs
-            {@BA generate('Formal' C ?GV)}
-            GdHd = fOcc(GV)#{EscapePattern FE Occs}#C|GdTl
+         end
+      end
+      meth EscapePattern(FE PrintNames RtHd RtTl $)
+         case FE of fEq(E1 E2 C) then RtInter in
+            fEq(Unnester, EscapePattern(E1 PrintNames RtHd RtInter $)
+                Unnester, EscapePattern(E2 PrintNames RtInter RtTl $) C)
+         [] fVar(PrintName C) then
             RtHd = RtTl
+            if {Member PrintName PrintNames} then fEscape(FE C)
+            else FE
+            end
+         [] fDollar(C) then GV in
+            RtHd = fOcc(GV)|RtTl
+            fAnonVar('Result' C GV)
+         [] fRecord(L As) then NewAs in
+            Unnester, EscapePatternSub(As PrintNames RtHd RtTl ?NewAs)
+            fRecord(L NewAs)
+         [] fOpenRecord(L As) then NewAs in
+            Unnester, EscapePatternSub(As PrintNames RtHd RtTl ?NewAs)
+            fOpenRecord(L NewAs)
+         else
+            RtHd = RtTl
+            FE
+         end
+      end
+      meth EscapePatternSub(As PrintNames RtHd RtTl $)
+         case As of A|Ar then RtInter in
+            case A of fColon(F E) then
+               fColon(F Unnester, EscapePattern(E PrintNames RtHd RtInter $))
+            else
+               Unnester, EscapePattern(A PrintNames RtHd RtInter $)
+            end|Unnester, EscapePatternSub(Ar PrintNames RtInter RtTl $)
+         [] nil then
+            RtHd = RtTl
+            nil
          end
       end
 
@@ -2061,7 +2089,7 @@ define
             FPattern = case FPattern0 of fSideCondition(FP _ _ _) then FP
                        else FPattern0
                        end
-            if {IsPattern FPattern} then PatternPNs GPattern in
+            if {IsPattern FPattern false} then PatternPNs GPattern in
                {@BA openScope()}
                PatternPNs = {Map {GetPatternVariablesExpression FPattern $ nil}
                              fun {$ fVar(PrintName C)}
@@ -2109,7 +2137,7 @@ define
          end
       end
       meth TranslatePattern(FPattern PatternPNs PVAllowed $)
-         %% Precondition: {IsPattern FPattern} == true.
+         %% Precondition: {IsPattern FPattern false} == true.
          case FPattern of fEq(FE1 FE2 C) then
             case FE1 of fVar(PrintName C2) then GVO GPattern in
                {{@BA refer(PrintName C2 $)}
@@ -2142,6 +2170,9 @@ define
             else
                {@BA refer(PrintName C $)}
             end
+         [] fAnonVar(Origin C GV) then
+            {@BA generate(Origin C ?GV)}
+            {{GV occ(C $)} makeIntoPatternVariableOccurrence($)}
          [] fWildcard(C) then GV in
             {@BA generate('Wildcard' C ?GV)}
             {{GV occ(C $)} makeIntoPatternVariableOccurrence($)}

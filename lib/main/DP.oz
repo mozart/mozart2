@@ -8,19 +8,8 @@
 \insert 'Site.oz'
 
 \ifdef SAVE
-declare NewDP in
-
+declare
 fun {NewDP}
-   dp('Site':           Site
-      'Load':           Load
-      'SmartSave':      SmartSave
-      'Save':           Save
-      'NewGate':        NewGate
-      'Server':         Server
-      'NewServer':      NewServer
-      'NewAgenda':      NewAgenda
-      'ComputeServer':  ComputeServer
-      'LinkToNetscape': LinkToNetscape
-      'RunApplets':     RunApplets)
+   \insert 'DP.env'
 end
 \endif

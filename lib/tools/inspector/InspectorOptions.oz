@@ -381,6 +381,17 @@ define
                              kindedrecord#kindedrecordGrInd fdint#fdintGr
                              fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
                              byteString#bytestring]
+         NormalSMLNodes   = [int#int word#wordSML float#float atom#atom name#nameSML
+                             procedure#procedure
+                             hashtuple#tupleSML pipetuple#listSML labeltuple#vectorSML
+                             record#recordSML kindedrecord#kindedrecordInd fdint#fdint cell#cellSML
+                             fset#fsval fsvar#fsvar free#free future#future byteString#bytestring]
+         RelationSMLNodes = [int#int float#float atom#atom name#name procedure#procedure
+                             hashtuple#hashtupleGr pipetuple#pipetupleGrM
+                             labeltuple#labeltupleGrInd record#recordGrInd
+                             kindedrecord#kindedrecordGrInd fdint#fdintGr
+                             fset#fsvalGr fsvar#fsvarGr free#freeGr future#futureGr
+                             byteString#bytestring]
       in
          DefaultValues =
          [inspectorWidth         # 600
@@ -390,8 +401,10 @@ define
           widgetTreeWidth        # 50
           widgetTreeDepth        # 15
           widgetTreeDisplayMode  # true
-          widgetUseNodeSet       # 1 %% Select the used node-set (1 or 2)
-          widgetNodeSets         # ((NormalNodes|RelationNodes)#(NormalIndNodes|RelationIndNodes))
+          widgetUseNodeSet       # 1 %% Select the used node-set (1,2 or 3)
+          widgetNodeSets         # ((NormalNodes|RelationNodes)#
+                                    (NormalIndNodes|RelationIndNodes)#
+                                    (NormalSMLNodes|RelationSMLNodes))
           widgetRelationList     # ['Structural Equality'(StructEqual)
                                    auto('Token Equality'(System.eq))]
           widgetWidthLimitBitmap # {Root 'width.xbm'}
@@ -453,13 +466,13 @@ define
           atomMenu               # nil
           atomrefMenu            # nil
           hashtupleMenu          # menu(WidthList DepthList
-                                        [auto('Show VirtualString'(ShowVirtualString))
+                                        ['Show VirtualString'(ShowVirtualString) %% auto disabled
                                          'Prune Odd'(TupPruneOdd)
                                          'Prune Even'(TupPruneEven)
                                          'Split Odd/Even'(TupSplitOddEven)]
                                         nil)
           pipetupleMenu          # menu(WidthList DepthList
-                                        [auto('Show String'(ShowString))
+                                        ['Show String'(ShowString) # auto disabled
                                          'Prune Odd'(PipPruneOdd)
                                          'Prune Even'(PipPruneEven)
                                          'Split Odd/Even'(PipSplitOddEven)]
@@ -501,9 +514,9 @@ define
           lockMenu               # nil
           portMenu               # nil
           chunkMenu              # menu(nil nil [auto('Show Entries'(MapChunk))] nil)
-          cellMenu               # menu(nil nil [auto('Show Entries'(ShowCellCont))] nil)
+          cellMenu               # menu(nil nil ['Show Entries'(ShowCellCont)] nil) %% auto dis
 
-          %% This is to enable Human readable Selections in OptionsGUI
+          %% This is to provide Human readable Selections in OptionsGUI
           typeConversion         # [ procedure    # 'Procedure'
                                      future       # 'Future'
                                      free         # 'Logic Variable'

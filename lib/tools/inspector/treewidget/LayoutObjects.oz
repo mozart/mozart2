@@ -22,6 +22,7 @@
 functor $
 import
    System(show printName)
+   Word(toInt) at 'x-oz://boot/Word.ozf'
    Aux
 export
    layoutObject                : LayoutObject
@@ -29,6 +30,7 @@ export
    floatLayoutObject           : FloatLayoutObject
    atomLayoutObject            : AtomLayoutObject
    nameLayoutObject            : NameLayoutObject
+   nameSMLLayoutObject         : NameSMLLayoutObject
    procedureLayoutObject       : ProcedureLayoutObject
    recordLayoutObject          : RecordLayoutObject
    recordIndLayoutObject       : RecordIndLayoutObject
@@ -53,6 +55,9 @@ export
    fSVarGrLayoutObject         : FSVarGrLayoutObject
    genericLayoutObject         : GenericLayoutObject
    atomRefLayoutObject         : AtomRefLayoutObject
+   tupleSMLLayoutObject        : TupleSMLLayoutObject
+   listSMLLayoutObject         : ListSMLLayoutObject
+   wordSMLLayoutObject         : WordSMLLayoutObject
 define
    class LayoutObject
       attr

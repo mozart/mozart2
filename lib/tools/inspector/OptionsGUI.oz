@@ -147,7 +147,7 @@ local
          MyCanvas = {New Tk.canvas
                      tkInit(parent:             MyNote
                             width:              400
-                            height:             350 %% former 400
+                            height:             360 %% former 400
                             borderwidth:        0
                             highlightthickness: 0)}
          MyFrame  = {New Tk.frame
@@ -238,7 +238,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             350 %% former 400
+                               height:             360 %% former 400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -604,6 +604,7 @@ local
             visualGreen
             visualBlue
             visualRecAlign
+            visualSMLMode
          meth create
             MyBook   = @book
             MyNote   = {New TkTools.note
@@ -612,7 +613,7 @@ local
             MyCanvas = {New Tk.canvas
                         tkInit(parent:             MyNote
                                width:              400
-                               height:             350 %% former 400
+                               height:             360 %% former 400
                                borderwidth:        0
                                highlightthickness: 0)}
             MyFrame  = {New Tk.frame
@@ -717,19 +718,47 @@ local
                                tkInit(parent: MyFrame
                                       text:   'Record Alignment')}
                RecordInner  = RecordFrame.inner
-               RecordVar    = {New Tk.variable
-                               tkInit({Dictionary.get OpDict widgetUseNodeSet})}
+               RecordVar    = local
+                                 Val    = {Dictionary.get OpDict widgetUseNodeSet}
+                                 NewVal = if Val == 3 then 1 else Val end
+                              in
+                                 {New Tk.variable tkInit(NewVal)}
+                              end
                RecordButton = {New Tk.checkbutton
-                               tkInit(parent:RecordInner
+                               tkInit(parent:   RecordInner
                                       text:     'Use Fixed Width Indent'
                                       onvalue:  2
                                       offvalue: 1
                                       font:     MediumFont
                                       variable: RecordVar
-                                      anchor: w)}
+                                      anchor:   w)}
                RecordFillC  = {New Tk.canvas
                                tkInit(parent:             RecordInner
                                       width:              221 % 220
+                                      height:             0
+                                      borderwidth:        0
+                                      highlightthickness: 0)}
+               SMLFrame     = {New TkTools.textframe
+                               tkInit(parent: MyFrame
+                                      text:   'Node Syntax')}
+               SMLInner     = SMLFrame.inner
+               SMLVar       = local
+                                 Val    = {Dictionary.get OpDict widgetUseNodeSet}
+                                 NewVal = if Val == 3 then 1 else 0 end
+                              in
+                                 {New Tk.variable tkInit(NewVal)}
+                              end
+               SMLButton    = {New Tk.checkbutton
+                               tkInit(parent:   SMLInner
+                                      text:     'Use SML Syntax'
+                                      onvalue:  1
+                                      offvalue: 0
+                                      font:      MediumFont
+                                      variable: SMLVar
+                                      anchor:   w)}
+               SMLFillC     = {New Tk.canvas
+                               tkInit(parent:             SMLInner
+                                      width:              251
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
@@ -743,6 +772,7 @@ local
                @visualFontBold = BoldVar
                @visualFontSize = InitFSize
                @visualRecAlign = RecordVar
+               @visualSMLMode  = SMLVar
                {self handle(selCol(VisualNote, MatchColor(1 GetColor $)))}
                {Tk.batch [grid(row: 0 column: 0 TypeLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 TypeSelector padx: 4 pady: 4 sticky: nw)
@@ -757,7 +787,10 @@ local
                           grid(row: 1 column: 0 FontFrame padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 0 RecordButton padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 1 RecordFillC padx:0 pady:0 sticky: nw)
-                          grid(row: 2 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)]}
+                          grid(row: 2 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)
+                          grid(row: 0 column: 0 SMLButton padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 1 SMLFillC padx: 0 pady:0 sticky: nw)
+                          grid(row: 3 column: 0 SMLFrame padx: 4 pady: 4 sticky: nw)]}
             end
             {Tk.send pack(MyCanvas anchor: nw padx: 0 pady: 0)}
          end
@@ -925,7 +958,11 @@ local
              widgetTreeFont font(family: 'courier'
                                  size:   @visualFontSize
                                  weight: {@visualFontBold tkReturnAtom($)})}
-            {Dictionary.put OpDict widgetUseNodeSet {@visualRecAlign tkReturnInt($)}}
+            {Dictionary.put OpDict widgetUseNodeSet
+             if {@visualSMLMode tkReturnInt($)} == 1
+             then 3
+             else {@visualRecAlign tkReturnInt($)}
+             end}
          end
       end
    end

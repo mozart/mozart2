@@ -219,6 +219,12 @@ in
       end
    end
 
+   class ListSMLLayoutObject from PipeTupleLayoutObject
+      meth noSep($)
+         true
+      end
+   end
+
    class PipeTupleGrLayoutObject from ContainerLayoutObject NormalAdjust
       meth layout
          if {IsFree @xDim}
@@ -327,6 +333,12 @@ in
    class RecordIndLayoutObject from LabelTupleIndLayoutObject end
    class RecordGrLayoutObject from LabelTupleGrLayoutObject end
    class RecordGrIndLayoutObject from LabelTupleGrIndLayoutObject end
+
+   class TupleSMLLayoutObject from LabelTupleLayoutObject
+      meth noSep($)
+         true
+      end
+   end
 
    class FDIntLayoutObject from LabelTupleLayoutObject
       meth checkHorzMode(I)

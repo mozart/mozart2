@@ -61,6 +61,12 @@ export
    fSVarGrCreateObject           : FSVarGrCreateObject
    genericCreateObject           : GenericCreateObject
    atomRefCreateObject           : AtomRefCreateObject
+   tupleSMLCreateObject          : TupleSMLCreateObject
+   vectorSMLCreateObject         : VectorSMLCreateObject
+   listSMLCreateObject           : ListSMLCreateObject
+   recordSMLCreateObject         : RecordSMLCreateObject
+   cellSMLCreateObject           : CellSMLCreateObject
+   wordSMLCreateObject           : WordSMLCreateObject
 define
    class CreateObject
       attr

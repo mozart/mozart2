@@ -79,54 +79,50 @@ local
       end
    end
 in
-   local
-      HV = {Atom.toString '#'}
-   in
-      class HashTupleCreateObject from ContainerCreateObject
-         meth createContainer
-            @type     = hashtuple
-            @maxWidth = {Width @value}
-            ContainerCreateObject, adjustWidth({@visual getWidth($)} 1)
-         end
-         meth performInsertion(I Value Stop)
-            Items  = @items
-            Visual = @visual
-            Depth  = @depth
-            Width  = @width
+   class HashTupleCreateObject from ContainerCreateObject
+      meth createContainer
+         @type     = hashtuple
+         @maxWidth = {Width @value}
+         ContainerCreateObject, adjustWidth({@visual getWidth($)} 1)
+      end
+      meth performInsertion(I Value Stop)
+         Items  = @items
+         Visual = @visual
+         Depth  = @depth
+         Width  = @width
+      in
+         if I > Width orelse {IsDet Stop}
+         then
+            width <- I
+            {Dictionary.put Items I {New Aux.bitmap create(width self I Visual)}}
+         else
+            Node = {Visual treeCreate(Value.I self I Depth $)}
          in
-            if I > Width orelse {IsDet Stop}
+            if I == Width
             then
-               width <- I
-               {Dictionary.put Items I {New Aux.bitmap create(width self I Visual)}}
-            else
-               Node = {Visual treeCreate(Value.I self I Depth $)}
-            in
-               if I == Width
+               if Width < @maxWidth
                then
-                  if Width < @maxWidth
-                  then
-                     NI = (I + 1)
-                  in
-                     width <- NI
-                     {Dictionary.put Items I {New Aux.separator create(HV Visual Node)}}
-                     {Dictionary.put Items NI {New Aux.bitmap create(width self NI Visual)}}
-                  else
-                     width <- I
-                     {Dictionary.put Items I Node}
-                  end
+                  NI = (I + 1)
+               in
+                  width <- NI
+                  {Dictionary.put Items I {New Aux.separator create('#' Visual Node)}}
+                  {Dictionary.put Items NI {New Aux.bitmap create(width self NI Visual)}}
                else
-                  {Dictionary.put Items I {New Aux.separator create(HV Visual Node)}}
-                  HashTupleCreateObject, performInsertion((I + 1) Value Stop)
+                  width <- I
+                  {Dictionary.put Items I Node}
                end
+            else
+               {Dictionary.put Items I {New Aux.separator create('#' Visual Node)}}
+               HashTupleCreateObject, performInsertion((I + 1) Value Stop)
             end
          end
-         meth isInfix($)
-            true
-         end
       end
-
-      class HashTupleGrCreateObject from HashTupleCreateObject GraphCreate InfixModeShare end
+      meth isInfix($)
+         true
+      end
    end
+
+   class HashTupleGrCreateObject from HashTupleCreateObject GraphCreate InfixModeShare end
 
    local
       class PipeShare
@@ -155,7 +151,7 @@ in
             NewValue = ContainerCreateObject, seekPos(I @value $)
          in
             width <- CurWidth
-            PipeTupleCreateObject, performInsertion(I NewValue {@visual getStopVar($)})
+            {self performInsertion(I NewValue {@visual getStopVar($)})}
          end
          meth performInsertion(I Vs Stop)
             Visual = @visual
@@ -207,6 +203,62 @@ in
                   {Dictionary.put Items I {New Aux.separator create('|' @visual Node)}}
                   PipeTupleCreateObject, addSeparators((I + 1) Width)
                end
+            end
+         end
+      end
+
+      class ListSMLCreateObject from PipeTupleCreateObject
+         meth performInsertion(I Vs Stop)
+            Visual = @visual
+            Depth  = @depth
+         in
+            if I > @width orelse {IsDet Stop}
+            then PipeShare, finalInsert(I {New Aux.bitmap create(width self I Visual)})
+            elseif {IsUnbound Vs}
+            then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
+            elsecase Vs
+            of V|Vr then
+               Node = {Visual treeCreate(V self I Depth $)}
+            in
+               {Dictionary.put @items I {New Aux.separatorSML create('::' Visual Node)}}
+               ListSMLCreateObject, performInsertion((I + 1) Vr Stop)
+            [] nil  then
+               width <- (I - 1)
+               case @type
+               of pipetuple then
+                  type  <- list
+                  label <- {New Aux.atom create('[' self 0 Visual internal)}
+                  brace <- {New Aux.atom create(']' self 0 Visual internal)}
+                  ListSMLCreateObject, removeSeparators(1)
+               else skip
+               end
+            else PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
+            end
+         end
+         meth removeSeparators(I)
+            Items = @items
+            Node  = {Dictionary.get Items I}
+         in
+            {{Dictionary.get Items I} changeSep(',')}
+            if I < @width
+            then
+               {Node changeSep(',')}
+               ListSMLCreateObject, removeSeparators((I + 1))
+            else {Dictionary.put Items I {Node remove($)}}
+            end
+         end
+         meth addSeparators(I Width)
+            if I =< Width
+            then
+               Items = @items
+               Node  = {Dictionary.get Items I}
+            in
+               if {Node isSep($)}
+               then {Node changeSep('::')}
+               else
+                  {Dictionary.put Items I {New Aux.separatorSML create('::' @visual Node)}}
+               end
+               ListSMLCreateObject, addSeparators((I + 1) Width)
             end
          end
       end
@@ -292,6 +344,23 @@ in
       end
    end
 
+   class CellSMLCreateObject from LabelTupleCreateObject
+      attr
+         savedValue %% Saved value before Transformation
+      meth createContainer
+         Visual = @visual
+         Value  = @value
+      in
+         @maxWidth   = 1
+         @type       = cell
+         @label      = {New Aux.label create('ref' '(' self Visual)}
+         @brace      = {New Aux.atom create(')' self 0 Visual internal)}
+         @savedValue = Value
+         value <- ref({Access Value})
+         ContainerCreateObject, adjustWidth({Visual getWidth($)} 1)
+      end
+   end
+
    class LabelTupleGrCreateObject from LabelTupleCreateObject GraphCreate LabelModeShare end
 
    class RecordCreateObject from LabelContainerCreateObject
@@ -341,11 +410,62 @@ in
             {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
          end
       end
+      meth isLast(Node $)
+         {Node getIndex($)} == @width %% Needed for SML-like "Features"
+      end
    end
 
    class RecordIndCreateObject from RecordCreateObject
       attr
          auxfeat : Aux.featureInd
+   end
+
+   class TupleSMLCreateObject from RecordCreateObject
+      attr
+         auxfeat : Aux.tupleSML %% Aux Separator Class
+      meth createContainer
+         Visual = @visual
+         Value  = @value
+      in
+         @type     = labeltuple
+         @maxWidth = {Width Value}
+         @arity    = {Record.arity Value}
+         @label    = {New Aux.atom create('(' self 0 Visual internal)}
+         @brace    = {New Aux.atom create(')' self 0 Visual internal)}
+         RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
+      end
+   end
+
+   class VectorSMLCreateObject from RecordCreateObject
+      attr
+         auxfeat : Aux.tupleSML %% Aux Separator Class
+      meth createContainer
+         Visual = @visual
+         Value  = @value
+      in
+         @type     = vector
+         @maxWidth = {Width Value}
+         @arity    = {Record.arity Value}
+         @label    = {New Aux.atom create('#[' self 0 Visual internal)}
+         @brace    = {New Aux.atom create(']' self 0 Visual internal)}
+         RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
+      end
+   end
+
+   class RecordSMLCreateObject from RecordCreateObject
+      attr
+         auxfeat : Aux.recordSML %% Aux Separator Class
+      meth createContainer
+         Visual = @visual
+         Value  = @value
+      in
+         @type     = record
+         @maxWidth = {Width Value}
+         @arity    = {Record.arity Value}
+         @label    = {New Aux.atom create('{' self 0 Visual internal)}
+         @brace    = {New Aux.atom create('}' self 0 Visual internal)}
+         RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
+      end
    end
 
    class RecordGrCreateObject from RecordCreateObject GraphCreate LabelModeShare end

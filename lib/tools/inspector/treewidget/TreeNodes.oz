@@ -29,6 +29,7 @@ export
    float             : Float
    atom              : Atom
    name              : Name
+   nameSML           : NameSML
    procedure         : Procedure
    record            : Record
    recordInd         : RecordInd
@@ -59,7 +60,12 @@ export
    fshelper          : FSHelper
    fsvar             : FSVar
    fsvarGr           : FSVarGr
-
+   tupleSML          : TupleSML
+   vectorSML         : VectorSML
+   listSML           : ListSML
+   recordSML         : RecordSML
+   cellSML           : CellSML
+   wordSML           : WordSML
    generic           : Generic
    atomRef           : AtomRef
 define
@@ -94,6 +100,15 @@ define
       from
          CreateObjects.nameCreateObject
          LayoutObjects.nameLayoutObject
+         DrawObjects.drawObject
+      prop
+         final
+   end
+
+   class NameSML
+      from
+         CreateObjects.nameCreateObject
+         LayoutObjects.nameSMLLayoutObject
          DrawObjects.drawObject
       prop
          final
@@ -365,6 +380,60 @@ define
          CreateObjects.fSVarGrCreateObject
          LayoutObjects.fSVarGrLayoutObject
          DrawObjects.fDIntGrDrawObject
+      prop
+         final
+   end
+
+   class TupleSML
+      from
+         CreateObjects.tupleSMLCreateObject
+         LayoutObjects.tupleSMLLayoutObject
+         DrawObjects.labelTupleDrawObject
+      prop
+         final
+   end
+
+   class VectorSML
+      from
+         CreateObjects.vectorSMLCreateObject
+         LayoutObjects.tupleSMLLayoutObject
+         DrawObjects.labelTupleDrawObject
+      prop
+         final
+   end
+
+   class ListSML
+      from
+         CreateObjects.listSMLCreateObject
+         LayoutObjects.listSMLLayoutObject
+         DrawObjects.pipeTupleDrawObject
+      prop
+         final
+   end
+
+   class RecordSML
+      from
+         CreateObjects.recordSMLCreateObject
+         LayoutObjects.tupleSMLLayoutObject
+         DrawObjects.labelTupleDrawObject
+      prop
+         final
+   end
+
+   class CellSML
+      from
+         CreateObjects.cellSMLCreateObject
+         LayoutObjects.labelTupleLayoutObject
+         DrawObjects.labelTupleDrawObject
+      prop
+         final
+   end
+
+   class WordSML
+      from
+         CreateObjects.wordSMLCreateObject
+         LayoutObjects.wordSMLLayoutObject
+         DrawObjects.drawObject
       prop
          final
    end

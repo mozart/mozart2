@@ -39,6 +39,13 @@ in
       end
    end
 
+   class WordSMLCreateObject from SimpleCreateObject
+      meth create(Value Parent Index Visual Depth)
+         @type = word
+         CreateObject, create(Value Parent Index Visual Depth)
+      end
+   end
+
    class FloatCreateObject from SimpleCreateObject
       meth create(Value Parent Index Visual Depth)
          @type = float

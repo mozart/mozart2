@@ -23,18 +23,21 @@ functor $
 import
    System(show printName)
 export
-   quoteString : QuoteStr
-   convert     : ConvertAtom
-   atom        : AtomNode
-   label       : LabelNode
-   feature     : FeatureNode
-   featureInd  : FeatureIndNode
-   separator   : SeparatorNode
-   bitmap      : BitmapNode
-   proxy       : ProxyNode
-   embraced    : EmbracedNode
-   box         : BoxedNode
-   empty       : EmptyNode
+   quoteString  : QuoteStr
+   convert      : ConvertAtom
+   atom         : AtomNode
+   label        : LabelNode
+   separator    : SeparatorNode
+   separatorSML : SeparatorSMLNode
+   feature      : FeatureNode
+   featureInd   : FeatureIndNode
+   bitmap       : BitmapNode
+   proxy        : ProxyNode
+   embraced     : EmbracedNode
+   box          : BoxedNode
+   empty        : EmptyNode
+   tupleSML     : TupleSMLNode
+   recordSML    : RecordSMLNode
 define
    QuoteStr
    local
@@ -340,6 +343,10 @@ define
                       end
             @sDim   = {VirtualString.length String}
          end
+         meth smlCreate(FeaVal Visual Node)
+            sepString <- '='
+            FeatureNode, create(FeaVal Visual Node)
+         end
          meth isInfix($)
             {@node isInfix($)}
          end
@@ -412,8 +419,6 @@ define
       end
 
       class FeatureIndNode from FeatureNode
-         prop
-            final
          meth layout
             FeaX = (@sDim + 1)
             Node = @node
@@ -474,10 +479,8 @@ define
       end
 
       class SeparatorNode from CombinedValues GetType
-         prop
-            final
-         meth create(FeaVal Visual Node)
-            @string = FeaVal
+         meth create(SepVal Visual Node)
+            @string = SepVal
             CombinedValues, create(Node Visual)
          end
          meth getIndex($)
@@ -556,6 +559,182 @@ define
          end
          meth getSelectionNode($)
             {@node getParent($)}
+         end
+      end
+
+      class SeparatorSMLNode from SeparatorNode
+         meth layout
+            Node = @node
+         in
+            case {Node layoutY($)}
+            of XDim|YDim then
+               LXDim = ({Node getLastXDim($)} + {VirtualString.length @string})
+            in
+               xDim     <- {Max XDim LXDim}
+               yDim     <- YDim
+               lastXDim <- LXDim
+            end
+         end
+         meth layoutX($)
+            SeparatorSMLNode, layout @xDim
+         end
+         meth layoutY($)
+            SeparatorSMLNode, layout @xDim|@yDim
+         end
+         meth draw(X Y)
+            Visual = @visual
+            Node   = @node
+            NewY   = ({Node drawY(X Y $)} - 1)
+            String = @string
+            NewX   = (X + @lastXDim - {VirtualString.length String})
+         in
+            if @dirty
+            then dirty <- false {Visual printXY(NewX NewY String @tag separator)}
+            else {Visual place(NewX NewY @tag)}
+            end
+         end
+         meth drawX(X Y $)
+            SeparatorSMLNode, draw(X Y) (X + @xDim)
+         end
+         meth drawY(X Y $)
+            SeparatorSMLNode, draw(X Y) (Y + @yDim)
+         end
+         meth searchNode(XA YA X Y $)
+            Node   = @node
+            XSep   = (XA + @lastXDim)
+            SepDim = {VirtualString.length @string}
+         in
+            if ((SepDim == 2 andthen (X == (XSep - 1) orelse X == (XSep - 2)))
+                orelse (SepDim == 1 andthen X == (XSep - 1)))
+               andthen Y == (YA + @yDim - 1)
+            then self
+            elsecase {Node getXYDim($)}
+            of XDim|YDim then
+               YM = (YA + YDim)
+            in
+               if Y >= YA andthen Y < YM andthen X >= XA andthen X < (XA + XDim)
+               then {Node searchNode(XA YA X Y $)}
+               else nil
+               end
+            end
+         end
+         meth changeSep(SepVal)
+            if @dirty then skip else dirty <- true {@visual delete(@tag)} end string <- SepVal
+         end
+      end
+
+      class TupleSMLNode from SeparatorNode
+         meth create(FeaVal Visual Node)
+            @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
+            CombinedValues, create(Node Visual)
+         end
+         meth layout
+            Node = @node
+         in
+            case {Node layoutY($)}
+            of XDim|YDim then
+               DeltaX = {VirtualString.length @string}
+               LXDim  = ({Node getLastXDim($)} + DeltaX)
+            in
+               xDim     <- {Max XDim LXDim}
+               yDim     <- YDim
+               lastXDim <- LXDim
+            end
+         end
+         meth layoutX($)
+            TupleSMLNode, layout @xDim
+         end
+         meth layoutY($)
+            TupleSMLNode, layout @xDim|@yDim
+         end
+         meth draw(X Y)
+            Visual = @visual
+            Node   = @node
+            NewY   = ({Node drawY(X Y $)} - 1)
+            NewX   = (X + @lastXDim - 1)
+            String = @string
+         in
+            case String
+            of '' then skip
+            elseif @dirty
+            then dirty <- false {Visual printXY(NewX NewY String @tag separator)}
+            else {Visual place(NewX NewY @tag)}
+            end
+         end
+         meth drawX(X Y $)
+            TupleSMLNode, draw(X Y) (X + @xDim)
+         end
+         meth drawY(X Y $)
+            TupleSMLNode, draw(X Y) (Y + @yDim)
+         end
+         meth undraw
+            if @dirty
+            then skip
+            else
+               dirty <- true
+               case @string of '' then skip else {@visual delete(@tag)} end
+            end
+            {@node undraw}
+         end
+         meth searchNode(XA YA X Y $)
+            Node = @node
+         in
+            if {VirtualString.length @string} == 1 andthen
+               X == (XA + @lastXDim - 1) andthen Y == (YA + @yDim - 1)
+            then self
+            elsecase {Node getXYDim($)}
+            of XDim|YDim then
+               YM = (YA + YDim)
+            in
+               if Y >= YA andthen Y < YM andthen X >= XA andthen X < (XA + XDim)
+               then {Node searchNode(XA YA X Y $)}
+               else nil
+               end
+            end
+         end
+         meth remove($)
+            if @dirty orelse @string == '' then skip else {@visual delete(@tag)} end
+            @node
+         end
+      end
+
+
+      local
+         class FeatureSMLNode from FeatureNode
+            meth draw(X Y)
+               Visual = @visual
+               SDim   = @sDim
+            in
+               if @dirty
+               then
+                  dirty <- false
+                  {Visual printXY(X Y @string @tag feature)}
+                  {Visual printXY((X + SDim) Y '=' @secTag colon)}
+               else {Visual doublePlace(X Y SDim @tag @secTag)}
+               end
+               {@node draw((X + SDim + 1) Y)}
+            end
+            meth drawX(X Y $)
+               FeatureSMLNode, draw(X Y) (X + @xDim)
+            end
+            meth drawY(X Y $)
+               FeatureSMLNode, draw(X Y) (Y + @yDim)
+            end
+            meth getParent($)
+               {@node getParent($)}
+            end
+         end
+      in
+         class RecordSMLNode from TupleSMLNode
+            meth create(FeaVal Visual Node)
+               NewNode = {New FeatureSMLNode create(FeaVal Visual Node)}
+            in
+               @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
+               CombinedValues, create(NewNode Visual)
+            end
+            meth change(Node)
+               {@node change(Node)}
+            end
          end
       end
 

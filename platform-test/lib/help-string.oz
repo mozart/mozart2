@@ -24,4 +24,14 @@ The following options are supported:
         is in <string> the corresponding information is printed:
             r:run g:gc s:system c:copy p:propagate l:load t:total
         Example: "time=rgs" prints the run, gc and system time.
+--memory=<string>         [default=""]
+        Print memory consumption. If one of the following keys
+        is in <string> the corresponding information is printed:
+            v:virtual memory
+            h:heap (active size)
+            a:byte for atoms
+            c:atoms for code
+            f:bytes in free lists
+            n:bytes for names
+        Example: "time=rgs" prints the run, gc and system time.
 '

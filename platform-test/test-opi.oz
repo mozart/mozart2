@@ -37,9 +37,11 @@ T={{New Module.manager init}
 %       tests:    nil
         tests: ["fs_knapsack_one"]
         'do':       true
-        time:     ""
+        time:     "" % "rgscplt"
+        memory:   "" % "vhacfn"
         gc:       0
-        threads:  1) _}
+        threads:  1
+        repeat:   1) _}
 
 
 {Property.put 'messages.idle' true}

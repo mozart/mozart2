@@ -50,6 +50,8 @@ local
          Debug at 'x-oz://boot/Debug'
          Module
          Space
+         OS(getPID)
+         Open(file)
 
       export
          Run
@@ -120,33 +122,139 @@ local
                      thread {GcLoop} end
                   else skip
                   end
-                  %% Go for it
 
                   if Argv.time \= nil then
                      {Property.put 'time.detailed' true}
                   else skip
                   end
 
-                  StartTime = {Property.get time}
+                  ProcStat
+
+                  %%
+                  StartTime StartVMem StartPropMEM StartPropGC
+                  if Argv.time \= nil then
+                     StartTime = {Property.get time}
+                  else skip
+                  end
+                  %%
+                  if Argv.memory \= nil then
+                     try
+                        Fn = "/proc/"#{Int.toString {OS.getPID}}#"/stat"
+                     in
+                        ProcStat = {New Open.file init(name:Fn flags:[read])}
+                     catch _ then
+                        ProcStat = unit
+                     end
+                     {For 1 {Property.get 'gc'}.codeCycles 1
+                      proc {$ _} {System.gcDo} end}
+                     StartVMem =
+                     if ProcStat == unit then 0
+                     else PStat in
+                        {ProcStat seek()}
+                        PStat = {ProcStat read(list:$)}
+                        {String.toInt
+                         {List.nth
+                          {String.tokens PStat & } 23}}
+                     end
+                     StartPropMEM = {Property.get 'memory'}
+                     StartPropGC = {Property.get 'gc'}
+                  else skip
+                  end
+
+                  %% go for it;
                   Results = {Map ToRun
                              fun {$ T}
-                                T0={Property.get time}
-                                {PV {Label T} # ': '}
-                                Bs={Map {MakeList Argv.threads}
-                                    fun {$ _}
-                                       thread
-                                          {ForThread 1 T.repeat 1
-                                           fun {$ B _}
-                                              B1={DoTest T.script}
-                                           in
-                                              {PV if B1 then '+' else '-' end}
-                                              B1 andthen B
-                                           end true}
+                                %% time & memory profiles;
+                                T0
+                                VMem0 PropMEM0 PropGC0
+                                VMem1 PropMEM1 PropGC1
+                                Bs Bs1 Bs2 B
+                             in
+                                %%
+                                if Argv.time \= nil then
+                                   T0 = {Property.get time}
+                                else skip
+                                end
+                                %%
+                                if Argv.memory \= nil then
+                                   {For 1 {Property.get 'gc'}.codeCycles 1
+                                    proc {$ _} {System.gcDo} end}
+                                   VMem0 =
+                                   if ProcStat == unit then 0
+                                   else PStat in
+                                      {ProcStat seek()}
+                                      PStat = {ProcStat read(list:$)}
+                                      {String.toInt
+                                       {List.nth
+                                        {String.tokens PStat & } 23}}
+                                   end
+                                   PropMEM0 = {Property.get 'memory'}
+                                   PropGC0 = {Property.get 'gc'}
+
+                                   %%
+                                   {PV '>' # {Label T} # ': '}
+                                   Bs1 =
+                                   [thread B1 in %% just one iteration;
+                                       B1 = {DoTest T.script}
+                                       {PV if B1 then '+' else '-' end}
+                                       B1
+                                    end]
+                                   {Wait Bs1.1}
+
+                                   {For 1 PropGC0.codeCycles 1
+                                    proc {$ _} {System.gcDo} end}
+                                   VMem1 =
+                                   if ProcStat == unit then 0
+                                   else PStat in
+                                      {ProcStat seek()}
+                                      PStat = {ProcStat read(list:$)}
+                                      {String.toInt
+                                       {List.nth
+                                        {String.tokens PStat & } 23}}
+                                   end
+                                   PropMEM1 = {Property.get 'memory'}
+                                   PropGC1 = {Property.get 'gc'}
+                                   {PV ' ('}
+                                   {ForAll
+                                    [if ProcStat == unit then 0 else &v end
+                                     #(VMem1 - VMem0)
+                                     &h#(PropGC1.size - PropGC0.size)
+                                     &a#(PropMEM1.atoms - PropMEM0.atoms)
+                                     &c#(PropMEM1.code - PropMEM0.code)
+                                     &f#(PropMEM1.freelist - PropMEM0.freelist)
+                                     &n#(PropMEM1.names - PropMEM0.names)]
+                                    proc {$ C#V}
+                                       if {Member C Argv.memory} then
+                                          {PV ' '#[C]#':'#(V div 1024)#' kb'}
+                                       else skip
                                        end
                                     end}
-                                B={FoldL Bs And true}
-                             in
+                                   {PV ' )\n:'}
+                                else
+                                   Bs1 = nil
+                                end
+
+                                {PV {Label T} # ': '}
+                                Bs2 =
+                                {Map {MakeList Argv.threads}
+                                 fun {$ _}
+                                    thread
+                                       {ForThread 1 T.repeat 1
+                                        fun {$ B _}
+                                           B1={DoTest T.script}
+                                        in
+                                           {PV if B1 then '+' else '-' end}
+                                           B1 andthen B
+                                        end true}
+                                    end
+                                 end}
+
+                                %%
+                                Bs = {Append Bs1 Bs2}
+                                B = {FoldL Bs And true}
                                 {Wait B}
+
+                                %%
                                 if Argv.time \= nil then
                                    T1={Property.get time}
                                    proc {PT C#F}
@@ -164,6 +272,43 @@ local
                                    {PV ' )'}
                                 else skip
                                 end
+
+                                %%
+                                if Argv.memory \= nil then
+                                   %% drop garbage first - have to
+                                   %% repeat the gc 'codeCycles' times;
+                                   {For 1 PropGC0.codeCycles 1
+                                    proc {$ _} {System.gcDo} end}
+                                   VMem2 =
+                                   if ProcStat == unit then 0
+                                   else PStat in
+                                      {ProcStat seek()}
+                                      PStat = {ProcStat read(list:$)}
+                                      {String.toInt
+                                       {List.nth
+                                        {String.tokens PStat & } 23}}
+                                   end
+                                   PropMEM2 = {Property.get 'memory'}
+                                   PropGC2 = {Property.get 'gc'}
+                                in
+                                   {PV ' ('}
+                                   {ForAll
+                                    [if ProcStat == unit then 0 else &v end
+                                     #(VMem2 - VMem1)
+                                     &h#(PropGC2.size - PropGC1.size)
+                                     &a#(PropMEM2.atoms - PropMEM1.atoms)
+                                     &c#(PropMEM2.code - PropMEM1.code)
+                                     &f#(PropMEM2.freelist - PropMEM1.freelist)
+                                     &n#(PropMEM2.names - PropMEM1.names)]
+                                    proc {$ C#V}
+                                       if {Member C Argv.memory} then
+                                          {PV ' '#[C]#':'#(V div 1024)#' kb'}
+                                       else skip
+                                       end
+                                    end}
+                                   {PV ' )'}
+                                end
+
                                 {PV '\n'}
                                 {AdjoinAt T result B}
                              end}
@@ -173,6 +318,8 @@ local
                in
                   {Wait Goofed}
                   StopGcThread = unit
+
+                  %%
                   if Argv.time \= nil then
                      T1={Property.get time}
                      proc {PT C#F}
@@ -189,6 +336,42 @@ local
                       PT}
                      {PV '\n'}
                   else skip
+                  end
+
+                  %%
+                  if Argv.memory \= nil then
+                     %% drop garbage first - have to
+                     %% repeat the gc 'codeCycles' times;
+                     {For 1 StartPropGC.codeCycles 1
+                      proc {$ _} {System.gcDo} end}
+                     VMem1 =
+                     if ProcStat == unit then 0
+                     else PStat in
+                        {ProcStat seek()}
+                        PStat = {ProcStat read(list:$)}
+                        {String.toInt
+                         {List.nth
+                          {String.tokens PStat & } 23}}
+                     end
+                     PropMEM1 = {Property.get 'memory'}
+                     PropGC1 = {Property.get 'gc'}
+                  in
+                     {PV 'Total memory: '}
+                     {ForAll
+                      [if ProcStat == unit then 0 else &v end
+                       #(VMem1 - StartVMem)
+                       &h#(PropGC1.size - StartPropGC.size)
+                       &a#(PropMEM1.atoms - StartPropMEM.atoms)
+                       &c#(PropMEM1.code - StartPropMEM.code)
+                       &f#(PropMEM1.freelist - StartPropMEM.freelist)
+                       &n#(PropMEM1.names - StartPropMEM.names)]
+                      proc {$ C#V}
+                         if {Member C Argv.memory} then
+                            {PV ' '#[C]#':'#(V div 1024)#' kb'}
+                         else skip
+                         end
+                      end}
+                     {PV '\n'}
                   end
 
                   if Goofed==nil then
@@ -235,6 +418,7 @@ local
           keys(multiple type: list(string) default: nil)
           tests(multiple type: list(string) default: nil)
           time(single type: string default: "")
+          memory(single type: string default: "")
           threads(rightmost type: int(min: 1) default: 1)
           repeat(rightmost type: int(min: 1) default: 1))
 

@@ -12,10 +12,10 @@ C  ::=  pos(atom int int)
      |  unit
 
 % terms
-T  ::=  <AtomNode> | <IntNode> | <FloatNode> | O | <Construction>
+T  ::=  <ValueNode> | <Construction> | O
 
 % pattern terms
-P  ::=  <AtomNode> | <IntNode> | <FloatNode>
+P  ::=  <ValueNode>
      |  <RecordPattern> | <EquationPattern> | <PatternVariableOccurrence> | O
 
 % labels
@@ -136,10 +136,18 @@ S  ::=  <Statement>
 % [ localVars 'in' ] pattern 'then' statements
 <PatternClause>
      localVars:         V*
-     pattern:           P
+     pattern:           <SideCondition> | P
      statements:        S+
      globalVars:        V*   % those of statements and pattern
      patternGlobalVars: V*   % those of pattern only
+
+
+% pattern 'andthen' [ localVars 'in' ] statements arbiter
+<SideCondition>
+     pattern:    P
+     localVars:  V*
+     statements: S+
+     arbiter:    O
 
 
 % label '(' args [ '...' ] ')'

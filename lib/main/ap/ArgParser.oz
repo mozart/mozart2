@@ -39,12 +39,13 @@ local
    StringTokens  = String.tokens
 
    SystemGet     = System.get
-   GetEnv        = OS.getEnv
 
    %%
    %% Access to Serlvet parameters following CGI spec
    %%
-   local
+   fun {MakeGetServletArgs Open OS}
+      GetEnv        = OS.getEnv
+
       class StdIn from Open.file
          prop final
          meth init
@@ -70,7 +71,7 @@ local
          end
       end
    in
-      fun {GetServletArgs}
+      fun {$}
          {Map {StringTokens {CgiRawGet} &&}
           fun {$ S}
              S1 S2 in {StringToken S &= ?S1 ?S2} S1#S2
@@ -348,8 +349,10 @@ in
                    servlet: fun {$ ArgSpec}
                                PostProc = {GetPostProc plain ArgSpec}
                             in
-                               fun {$}
-                                  {PostProc {WebPreProc {GetServletArgs}} nil}
+                               fun {$ Open OS}
+                                  GetArgs = {MakeGetServletArgs Open OS}
+                               in
+                                  {PostProc {WebPreProc {GetArgs}} nil}
                                end
                             end)
 

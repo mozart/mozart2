@@ -643,12 +643,17 @@ local
    fun {RegistryMakeServletProc R CompSpec ArgSpec Functor}
       Loader  = {RegistryGetLoader R
                  {Adjoin c('OP': eager) CompSpec}}
-      ArgProc = {Parser.servlet ArgSpec}
+      MakeArgProc = {Parser.servlet ArgSpec}
    in
       proc {$}
          Exit = {`Builtin` shutdown 1}
       in
-         try {Exit {{Functor {Loader}} {ArgProc}}}
+         try
+            Loaded  = {Loader}
+            OP      = Loaded.'OP'
+            ArgProc = {MakeArgProc OP.'Open' OP.'OS'}
+         in
+            {Exit {{Functor Loaded} {ArgProc}}}
                % provide some error message
          catch E then
             {{{`Builtin` getDefaultExceptionHandler 1}} E}

@@ -28,7 +28,7 @@
 
 functor
 
-import System
+import
    OS(exec wait getEnv)
    Connection(offer)
    Property(get condGet put)

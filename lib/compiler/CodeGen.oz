@@ -851,7 +851,7 @@ define
             StateReg = none
          end
          case @toCopy of unit then
-            FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code VInter
+            FormalRegs AllRegs AllRegs2 BodyVInter BodyVInstr GRegs Code VInter
             Cont1 Cont2
          in
             {CS startDefinition()}
@@ -868,11 +868,13 @@ define
             case StateReg of none then
                BodyVInstr = BodyVInter
                VHd0 = VInter
+               AllRegs2 = AllRegs
             else
                BodyVInstr = vSetSelf(_ StateReg BodyVInter)
                VHd0 = vGetSelf(_ StateReg VInter)
+               AllRegs2 = StateReg|AllRegs
             end
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs2 ?GRegs ?Code
                               ?OuterNLiveRegs)}
             VInter = vDefinition(_ {V reg($)} PredId @predicateRef
                                  GRegs Code VTl0)

@@ -37,7 +37,8 @@ S  ::=  <Statement>
 
 % (never instantiated)
 <Statement>
-     next: S   % singly linked list terminated by self reference
+     coord: C
+     next:  S   % singly linked list terminated by self reference
 
 
 % res = ...   % typeof arg
@@ -50,26 +51,22 @@ S  ::=  <Statement>
 <StepPoint> from <Statement>
      kind:       atom
      statements: S+
-     coord:      C
 
 
 % 'local' localVars 'in' statements 'end'
 <Declaration> from <Statement>
      localVars:  V+
      statements: S+
-     coord:      C
 
 
 % 'skip' 'skip'
 <SkipNode> from <Statement>
-     coord: C
 
 
 % left '=' right
 <Equation> from <Statement>
      left:  O
      right: T
-     coord: C
 
 
 % label '(' args [ '...' ] ')'
@@ -79,20 +76,15 @@ S  ::=  <Statement>
      isOpen: bool
 
 
-% 'proc' '{' designator formalArgs '}' statements 'end'
+% 'proc' procFlags '{' designator formalArgs '}' statements 'end'
 <Definition> from <Statement>
      designator:    O
      formalArgs:    V*
      statements:    S+
-     isStateUsing:  B
-     coord:         C
+     isStateUsing:  bool
      procFlags:     [atom]
-     toplevelNames: [name] | unit
+     toCopy:        [(name|foreignPointer)] | unit
      globalVars:    V*   % those of "local formalArgs in statements end"
-
-
-% 'proc' '{' designator formalArgs '}' statements 'end'
-<FunctionDefinition> from <Definition>
 
 
 % 'proc' '{' designator formalArgs '}' statements 'end'
@@ -103,15 +95,13 @@ S  ::=  <Statement>
 <Application> from <Statement>
      designator: O
      actualArgs: O*
-     coord:      C
 
 
 % 'if' arbiter 'then' consequent alternative 'end'
 <IfNode> from <Statement>
      arbiter:     O
-     consequent:  <BoolClause>
+     consequent:  <IfClause>
      alternative: <ElseNode> | <NoElse>
-     coord:       C
      globalVars:  V*   % those of all clauses (not arbiter)
 
 
@@ -126,17 +116,15 @@ S  ::=  <Statement>
      arbiter:     O
      clauses:     <PatternClause>+
      alternative: <ElseNode> | <NoElse>
-     coord:       C
      globalVars:  V*   % those of all clauses (not arbiter)
 
 
 % [ localVars 'in' ] pattern 'then' statements
 <PatternClause>
-     localVars:         V*
-     pattern:           <SideCondition> | P
-     statements:        S+
-     globalVars:        V*   % those of statements and pattern
-     patternGlobalVars: V*   % those of pattern only
+     localVars:  V*
+     pattern:    <SideCondition> | P
+     statements: S+
+     globalVars: V*   % those of statements and pattern
 
 
 % pattern 'andthen' [ localVars 'in' ] statements arbiter
@@ -169,7 +157,7 @@ S  ::=  <Statement>
 
 % (empty)
 <NoElse>
-     coord:         C
+     coord: C
 
 
 % 'try' tryStatements 'catch' exception 'then' catchStatements 'end'
@@ -177,7 +165,6 @@ S  ::=  <Statement>
      tryStatements:   S+
      exception:       V
      catchStatements: S+
-     coord:           C
      globalVars:      V*   % those of tryStatements and catchStatements
 
 
@@ -185,7 +172,6 @@ S  ::=  <Statement>
 <LockNode> from <Statement>
      lockVar:    O
      statements: S+
-     coord:      C
 
 
 % 'class' designator [ 'from' parents ] [ 'prop' properties ]
@@ -196,8 +182,7 @@ S  ::=  <Statement>
      properties:        O*
      attributes:        I*
      features:          I*
-     methods:           ( <Method> | <MethodWithDesignator> )*
-     coord:             C
+     methods:           <Method>*
      isVirtualToplevel: bool
 
 % 'meth' label '(' formalArgs [ '...' ] ')' [ '=' messageDesignator ]
@@ -218,11 +203,11 @@ S  ::=  <Statement>
      arg:     V
 
 
-% feature ':' arg '<=' default
+% feature ':' arg '<=' '_'
 <MethFormalOptional> from <MethFormal>
 
 
-% feature ':' arg '<=' (arg in statements arg)
+% feature ':' arg '<=' default
 <MethFormalWithDefault> from <MethFormal>
      default: O | unit
 
@@ -230,7 +215,6 @@ S  ::=  <Statement>
 % 'lock' statements 'end'
 <ObjectLock> from <Statement>
      statements: S+
-     coord:      C
 
 
 % destination '=' 'self'
@@ -240,21 +224,18 @@ S  ::=  <Statement>
 
 % 'fail'
 <FailNode> from <Statement>
-     coord: C
 
 
 % 'cond' ( clause // '[]' ) alternative 'end'
 <CondNode> from <Statement>
      clauses:     <Clause>+
      alternative: <ElseNode> | <NoElse>
-     coord:       C
      globalVars:  V*
 
 
 % (never instantiated)
 <ChoicesAndDisjunctions> from <Statement>
      clauses:    <Clause>+
-     coord:      C
      globalVars: V*
 
 
@@ -299,9 +280,11 @@ S  ::=  <Statement>
      printName: atom
      use:       unused | wildcard | linear | multiple
 
+
 % printName
 <RestrictedVariable> from <UserVariable>
-     features: ( atom#C#bool | int#C#bool )+
+     features: ( (atom|int)#C#bool | (atom|int)#C#bool#V )+
+     % the boolean value indicates whether the feature has been used
 
 
 % (generated)

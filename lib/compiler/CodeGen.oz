@@ -49,7 +49,6 @@ export
    equation: CodeGenEquation
    construction: CodeGenConstruction
    definition: CodeGenDefinition
-   functionDefinition: CodeGenDefinition
    clauseBody: CodeGenClauseBody
    application: CodeGenApplication
    ifNode: CodeGenIfNode

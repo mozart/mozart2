@@ -49,8 +49,6 @@ export
    equation: AnnotateEquation
    construction: AnnotateConstruction
    definition: AnnotateDefinition
-   functionDefinition: AnnotateDefinition
-   clauseBody: AnnotateDefinition
    application: AnnotateApplication
    ifNode: AnnotateIfNode
    ifClause: AnnotateIfClause

@@ -63,7 +63,6 @@ export
    Equation
    Construction
    Definition
-   FunctionDefinition
    ClauseBody
    Application
    IfNode
@@ -428,13 +427,8 @@ define
          prop final
          from DefinitionBase Annotate.definition CodeGen.definition
       end
-      class FunctionDefinition
-         from DefinitionBase
-            Annotate.functionDefinition CodeGen.functionDefinition
-         prop final
-      end
       class ClauseBody
-         from DefinitionBase Annotate.clauseBody CodeGen.clauseBody
+         from DefinitionBase CodeGen.clauseBody
          prop final
          meth isClauseBody($)
             true

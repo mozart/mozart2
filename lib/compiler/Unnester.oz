@@ -714,7 +714,7 @@ define
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
-            GD = {New Core.functionDefinition
+            GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
             if {@state getSwitch(debuginfovarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}

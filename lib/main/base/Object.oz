@@ -28,15 +28,10 @@ declare
    BaseObject
    New
    %% Needed by compiler
-   `ooSetSelf`
    `@`
    `<-`
    `ooExch`
-   `send`
    `,`
-   `ooNoFastMethod`
-   `ooNoDefault`
-   `ooFreeFlag`          % Also needed by TkTools.oz
    `ooDefaultVar`
    `ooRequiredArg`
    `ooGetLock`
@@ -44,6 +39,7 @@ declare
    `extend`
    `ooPrivate`
    %% Needed by other modules
+   `ooFreeFlag`          % Module Class
    `ooParents`           % Module Class
    `ooPrintName`         % Module Class
    `ooMeth`              % Module Class
@@ -58,10 +54,8 @@ New           = {`Builtin` 'New'         3}
 `@`           = {`Builtin` '@'           2}
 `<-`          = {`Builtin` '<-'          2}
 `ooExch`      = {`Builtin` 'ooExch'      3}
-`send`        = {`Builtin` 'send'        3}
 `,`           = {`Builtin` ','           2}
 `ooGetLock`   = {`Builtin` 'ooGetLock'   1}
-`ooSetSelf`   = {`Builtin` 'setSelf'     1}
 
 
 local
@@ -71,8 +65,6 @@ in
    `ooLocking`        = {NewUniqueName 'ooLocking'}
    `ooNative`         = {NewUniqueName 'ooNative'}
    `ooParents`        = {NewUniqueName 'ooParents'}
-   `ooNoFastMethod`   = {NewUniqueName 'ooNoFastMethod'}
-   `ooNoDefault`      = {NewUniqueName 'ooNoDefault'}
    `ooFreeFlag`       = {NewUniqueName 'ooFreeFlag'}
    `ooDefaultVar`     = {NewUniqueName 'ooDefaultVar'}
    `ooRequiredArg`    = {NewUniqueName 'ooRequiredArg'}
@@ -118,10 +110,6 @@ local
          end
       end
 
-      proc {FbSend M C Self}
-         {`ooSetSelf` Self} {FbApply C M}
-      end
-
       local
          NewObject = {`Builtin` newObject 2}
       in
@@ -132,7 +120,6 @@ local
 
    in
       Fallback = fallback(new:   FbNew
-                          send:  FbSend
                           apply: FbApply)
    end
 
@@ -705,20 +692,19 @@ local
 in
 
    Object=object(
-                  %% Globally available
-                 is:             IsObject
+                 %% Globally available
+                 is:              IsObject
                  new:             New
                  base:            BaseObject
                  meta:            MetaObject
                  ',':             `,`
                  '@':             `@`
                  '<-':             `<-`
-                 'send':          `send`
                  'class':         `class`
 
                  %% only in module
-
-                 master :     MasterObject
-                 slave  :     SlaveObject
+                 send:            {`Builtin` 'send' 3}
+                 master:          MasterObject
+                 slave:           SlaveObject
                 )
 end

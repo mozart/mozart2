@@ -71,9 +71,12 @@ COMPONENTS = \
 
 ####################################################
 
+COMPRESSLEVEL   = @oz_picklecompression@
+COMPRESSFLAGS   = --compress=$(COMPRESSLEVEL)
+
 OZE =
 OZC = @OZC@
-OZFLAGS =
+OZFLAGS = $(COMPRESSFLAGS)
 
 OZEE = $(OZC) $(OZFLAGS)
 OZCC = $(OZEE) -c

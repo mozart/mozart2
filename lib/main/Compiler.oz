@@ -68,10 +68,19 @@ in
          end
       end
 
+      proc {GetOPICompiler ?CompilerObject}
+         try
+            {{`Builtin` 'getOPICompiler' 1} ?CompilerObject}
+         catch error(...) then
+            CompilerObject = false
+         end
+      end
+
       Compiler = compiler(start: StartCompiler
                           interface: interface(tk: CompilerInterfaceTk
                                                emacs: CompilerInterfaceEmacs
-                                               quiet: CompilerInterfaceQuiet))
+                                               quiet: CompilerInterfaceQuiet)
+                          getOPICompiler: GetOPICompiler)
    in
       \insert 'Compiler.env'
    end

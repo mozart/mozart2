@@ -69,58 +69,11 @@
 functor $ prop once
 
 export
-   %% Forward
-   '`Raise`':            `Raise`
-   '`RaiseError`':       `RaiseError`
-   '`record`':           `record`
-   %% Value
-   '`.`':                `.`
-   '`==`':               `==`
-   '`=`':                `=`
-   '`\\=`':              `\\=`
-   '`<`':                `<`
-   '`=<`':               `=<`
-   '`>=`':               `>=`
-   '`>`':                `>`
-   '`hasFeature`':       `hasFeature`
-   '`byNeed`':           `byNeed`
    %% Unit
    '`unit`':             `unit`
    %% Bool
    '`true`':             `true`
    '`false`':            `false`
-   %% Int
-   '`div`':              `div`
-   '`mod`':              `mod`
-   %% Float
-   '`/`':                `/`
-   %% Number
-   '`+`':                `+`
-   '`-`':                `-`
-   '`*`':                `*`
-   '`~`':                `~`
-   %% Tuple
-   '`tuple`':            `tuple`
-   %% Record
-   '`width`':            `width`
-   '`^`':                `^`
-   '`tellRecordSize`':   `tellRecordSize`
-   '`aritySublist`':     `aritySublist`
-   %% Object
-   '`ooFreeFlag`':       `ooFreeFlag`
-   '`ooDefaultVar`':     `ooDefaultVar`
-   '`ooRequiredArg`':    `ooRequiredArg`
-   '`ooPrivate`':        `ooPrivate`
-   '`@`':                `@`
-   '`<-`':               `<-`
-   '`ooExch`':           `ooExch`
-   '`,`':                `,`
-   '`ooGetLock`':        `ooGetLock`
-   %% Class
-   '`class`':            `class`
-   %% Exception
-   '`RaiseDebugCheck`':  `RaiseDebugCheck`
-   '`RaiseDebugExtend`': `RaiseDebugExtend`
 
    %% Value
    'Value':              Value
@@ -298,7 +251,6 @@ export
    'Raise':              Raise
    %% Functor
    'Functor':            Functor
-   '`NewFunctor`':       `NewFunctor`
    %% BitArray
    'BitArray':           BitArray
    'IsBitArray':         IsBitArray

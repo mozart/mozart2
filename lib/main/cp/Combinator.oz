@@ -36,6 +36,7 @@ import
 
 
    FDB(int:           FdInt
+       bool:          FdBool
        'reflect.dom': FdReflectDom)
    at 'x-oz://boot/FDB'
 
@@ -44,6 +45,8 @@ export
    Or
    Dis
    Cond
+   Not
+   Reify
 
 require
    CpSupport(expand:         Expand)
@@ -245,6 +248,34 @@ define
                I=T.{ChooseSpace {Width T}}
             end
          end
+      end
+   end
+
+   proc {Not P}
+      S={Space.new proc {$ X} X=unit {P} end}
+   in
+      thread
+         case {Deref {AskSpace S}}
+         of failed    then skip
+         [] entailed  then fail
+         [] suspended then {WUHFI}
+         end
+      end
+   end
+
+   proc {Reify P B}
+      S={Space.new proc {$ X} X=unit {P} end}
+   in
+      {FdBool B}
+      thread
+         case {Deref {AskSpace S}}
+         of failed    then B=0
+         [] entailed  then B=1
+         [] suspended then {WUHFI}
+         end
+      end
+      thread
+         if B==1 then {Space.merge S} end
       end
    end
 

@@ -806,7 +806,7 @@ local
       proc {HelpDist Dist Enum Tasks Start Dur Flag}
          Stream
          Converted = {ConvertAll Tasks}
-         TaskTuple = {MakeTaskTuple Tasks}
+         TaskTuple = {MakeTaskTuple Converted}
       in
          {Check Converted Start Dur}
          {Dist TaskTuple Start Dur Stream Flag}

@@ -91,7 +91,7 @@ in
                 %% a new error handler as a side effect
                 {Wait Error}
                 %% invoke this new error handler
-                {Property.get 'errors.handler' E}
+                {{Property.get 'errors.handler'} E}
                 %% this whole procedure is invoked at most once
                 %% since instantiatingError causes the handler
                 %% to be replaced with a better one.

@@ -18,16 +18,20 @@
 local MWManagerObject BrowserMessage in
    %%
    %% It has static extent;
-   create MWManagerObject
-      from Object.base
-      attr leaderWindow: !InitValue
+   MWManagerObject = {New class $
+                             from Object.base
+                             prop final
+                             attr leaderWindow: !InitValue
 
-      %%
-      meth setLeaderWindow(W)
-         leaderWindow <- W
-      end
-      meth getLeaderWindow($) @leaderWindow end
-   end
+                             %%
+                             meth setLeaderWindow(W)
+                                leaderWindow <- W
+                             end
+                             meth getLeaderWindow($)
+                                @leaderWindow
+                             end
+                          end
+                      noop}
 
    %%
    proc {BrowserMessagesFocus W}

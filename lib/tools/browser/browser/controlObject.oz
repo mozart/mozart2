@@ -1076,24 +1076,27 @@ in
    %%
    %% Generator of new reference names;
    %%
-   create NewRefNameGen from Object.base
-      %%
-      attr number: 1
+   NewRefNameGen = {New class $ from Object.base
+                           prop final
+                           %%
+                           attr number: 1
 
-      %%
-      %%
-      meth gen(?Number)
-         Number = @number
-         number <- @number + 1
-      end
+                           %%
+                           %%
+                           meth gen(?Number)
+                              Number = @number
+                              number <- @number + 1
+                           end
 
-      %%
-      %% Special method: get the length of the current reference;
-      %% We use it by the calculating of MetaSize;
-      meth getLen(?Len)
-         Len = {VirtualString.length @number}
-      end
-   end
+                           %%
+                           %% Special method: get the length of the current
+                           %% reference;
+                           %% We use it by the calculating of MetaSize;
+                           meth getLen($)
+                              {VirtualString.length @number}
+                           end
+                        end
+                    noop}
 
    %%
 end

@@ -26,20 +26,5 @@
 %%
 %% Module
 %%
-local
-   proc {ChunkSelectFeature C F ?X}
-      if {IsChunk C} then X=C.F
-      else {`RaiseError` kernel(type 'ChunkSelectFeature' [C F] 1 chunk '')}
-      end
-   end
-   proc {ChunkHasFeature C F ?X}
-      if {IsChunk C} then X={HasFeature C F}
-      else {`RaiseError` kernel(type 'ChunkHasFeature' [C F] 1 chunk '')}
-      end
-   end
-in
-   Chunk = chunk(is:            IsChunk
-                 new:           NewChunk
-                 hasFeature:    ChunkHasFeature
-                 selectFeature: ChunkSelectFeature)
-end
+Chunk = chunk(is:            IsChunk
+              new:           NewChunk)

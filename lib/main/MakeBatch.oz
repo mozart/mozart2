@@ -19,7 +19,7 @@
 %%% WARRANTIES.
 %%%
 
-{Application.exec
+{Application.syslet
  'ozbatch'
  c('SP':       eager
    'OP':       lazy

@@ -28,7 +28,7 @@ local
 
 in
 
-   {Application.exec
+   {Application.syslet
     'ozserver'
     c
 

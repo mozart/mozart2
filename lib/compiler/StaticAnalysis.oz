@@ -4519,19 +4519,27 @@ in
                case
                   {IsDet @value} andthen {IsDet RVal}
                then
-                  {ForAll {Arity @value}
-                   proc {$ F}
-                      VF = @value.F
-                      RF = RVal.F
-                   in
-                      case
-                         {RF isVariableOccurrence($)}
-                      then
-                         {RF unify(Ctrl VF)}
-                      else
-                         {VF unify(Ctrl RF)}
-                      end
-                   end}
+                  if {Arity @value} == {Arity RVal} then
+                     {ForAll {Arity @value}
+                      proc {$ F}
+                         VF = @value.F
+                         RF = RVal.F
+                      in
+                         case
+                            {RF isVariableOccurrence($)}
+                         then
+                            {RF unify(Ctrl VF)}
+                         else
+                            {VF unify(Ctrl RF)}
+                         end
+                      end}
+                  else
+                     {IssueUnificationFailure Ctrl unit
+                      [hint(l:'Incompatible arities'
+                            m:oz({Arity @value}) # ' and ' # oz({Arity RVal}))
+                       hint(l:'First value' m:oz(@value))
+                       hint(l:'Second value' m:oz(RVal))]}
+                  end
                else
                   LArity = {CurrentArity @value}
                   RArity = {CurrentArity RVal}

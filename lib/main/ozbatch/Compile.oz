@@ -92,6 +92,7 @@ prepare
                      showcompiletime(type: bool)
                      showcompilememory(type: bool)
                      watchdog(type: bool)
+                     recordhoist(type: bool)
                      warnredecl(type: bool)
                      warnunused(type: bool)
                      warnunusedformals(type: bool)

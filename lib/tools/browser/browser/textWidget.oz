@@ -74,36 +74,36 @@ in
    fun {CreateSpaces N}
       case N
       of 0  then ''
-      [] 1  then " "
-      [] 2  then "  "
-      [] 3  then "   "
-      [] 4  then "    "
-      [] 5  then "     "
-      [] 6  then "      "
-      [] 7  then "       "
-      [] 8  then "        "
-      [] 9  then "         "
-      [] 10 then "          "
-      [] 11 then "           "
-      [] 12 then "            "
-      [] 13 then "             "
-      [] 14 then "              "
-      [] 15 then "               "
-      [] 16 then "                "
-      [] 17 then "                 "
-      [] 18 then "                  "
-      [] 19 then "                   "
-      [] 20 then "                    "
-      [] 21 then "                     "
-      [] 22 then "                      "
-      [] 23 then "                       "
-      [] 24 then "                        "
-      [] 25 then "                         "
-      [] 26 then "                          "
-      [] 27 then "                           "
-      [] 28 then "                            "
-      [] 29 then "                             "
-      [] 30 then "                              "
+      [] 1  then ' '
+      [] 2  then '  '
+      [] 3  then '   '
+      [] 4  then '    '
+      [] 5  then '     '
+      [] 6  then '      '
+      [] 7  then '       '
+      [] 8  then '        '
+      [] 9  then '         '
+      [] 10 then '          '
+      [] 11 then '           '
+      [] 12 then '            '
+      [] 13 then '             '
+      [] 14 then '              '
+      [] 15 then '               '
+      [] 16 then '                '
+      [] 17 then '                 '
+      [] 18 then '                  '
+      [] 19 then '                   '
+      [] 20 then '                    '
+      [] 21 then '                     '
+      [] 22 then '                      '
+      [] 23 then '                       '
+      [] 24 then '                        '
+      [] 25 then '                         '
+      [] 26 then '                          '
+      [] 27 then '                           '
+      [] 28 then '                            '
+      [] 29 then '                             '
+      [] 30 then '                              '
       else
          local H V in
             H = {`div` N 2}
@@ -112,7 +112,7 @@ in
                V#V
             else
                V = {CreateSpaces H}
-               " "#V#V
+               ' '#V#V
             end
          end
       end
@@ -124,7 +124,7 @@ in
    %% (i.e. a VS containing blanks and a return character);
    %%
    fun {CreateGlue Offset}
-      "\n"#{CreateSpaces Offset}
+      '\n'#{CreateSpaces Offset}
    end
 
 
@@ -149,7 +149,7 @@ in
       %%
       meth putNL(?Mark)
          {self.widgetObj [genTkName(Mark)
-                          insertWithMark(insert "\n" Mark)]}
+                          insertWithMark(insert '\n' Mark)]}
 
          %% mark will be set in text widget *first*;
          mark <- Mark

@@ -58,10 +58,7 @@ local
                {Append ModuleString
                 &_|{Atom.toString AName}}}
        in
-          {FindFunction N case {IsProcedure D} then
-                             {ProcedureArity D}
-                          else D
-                          end Handle}
+          {FindFunction N D Handle}
           Module.AName = {`Builtin` N D}
        end}
       Module

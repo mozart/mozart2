@@ -71,7 +71,6 @@ fun {CoordinatesOf P}
    [] fThread(_ C) then C
    [] fTry(_ _ _ C) then C
    [] fRaise(_ C) then C
-   [] fRaiseWith(_ _ C) then C
    [] fSkip(C) then C
    [] fFdCompare(_ E _ _) then {CoordinatesOf E}
    [] fFdIn(_ E _ _) then {CoordinatesOf E}

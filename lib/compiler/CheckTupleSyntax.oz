@@ -91,7 +91,6 @@ local
       [] fThread(P C) then {Phrase P} {Coord C}
       [] fTry(P Ca F C) then {Phrase P} {Catch Ca} {Finally F} {Coord C}
       [] fRaise(P C) then {Phrase P} {Coord C}
-      [] fRaiseWith(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fSkip(C) then {Coord C}
       [] fFail(C) then {Coord C}
       [] fNot(P C) then {Phrase P} {Coord C}

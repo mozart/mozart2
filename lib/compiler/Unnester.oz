@@ -968,14 +968,6 @@ define
          [] fRaise(FE C) then
             Unnester, UnnestStatement(fOpApplyStatement('Exception.\'raise\''
                                                         [FE] C) $)
-         [] fRaiseWith(FE1 FE2 C) then GFrontEqs GVO FV CND FS in
-            Unnester, UnnestToVar(FE1 'Exception' ?GFrontEqs ?GVO)
-            FV = fOcc({GVO getVariable($)})
-            CND = {CoordNoDebug C}
-            FS = fBoolCase(fOpApply('RaiseDebugCheck' [FV] CND)
-                           fOpApplyStatement('RaiseDebugExtend' [FV FE2] C)
-                           fOpApplyStatement('Exception.\'raise\'' [FV] C) CND)
-            GFrontEqs|Unnester, UnnestStatement(FS $)
          [] fSkip(C) then
             {New Core.skipNode init(C)}
          [] fFail(C) then
@@ -1371,8 +1363,6 @@ define
                end
             end
          [] fRaise(_ _) then
-            Unnester, UnnestStatement(FE $)
-         [] fRaiseWith(_ _ _) then
             Unnester, UnnestStatement(FE $)
          [] fFail(C) then
             {New Core.failNode init(C)}
@@ -2437,7 +2427,6 @@ define
          [] fNoCatch then P
          [] fNoFinally then P
          [] fRaise(P C) then fRaise({TP P} {CS C})
-         [] fRaiseWith(P1 P2 C) then fRaiseWith({TP P1} {TP P2} {CS C})
          [] fSkip(C) then fSkip({CS C})
          [] fFail(C) then fFail({CS C})
          [] fNot(P C) then fNot({SP P} {CS C})
@@ -2525,7 +2514,6 @@ define
          [] fCatch(Cs C) then fCatch({Map Cs EP} C)
          [] fNoCatch then P
          [] fRaise(P C) then fRaise({TP P} {FS C})
-         [] fRaiseWith(P1 P2 C) then fRaiseWith({TP P1} {TP P2} {FS C})
          [] fSkip(C) then fSkip({FS C})
          [] fFail(C) then fFail({FS C})
          [] fNot(P C) then fNot({EP P} {FS C})

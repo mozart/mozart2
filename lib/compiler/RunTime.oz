@@ -32,11 +32,6 @@ export
    Procs
    ProcValues
 require
-   BootException(raiseDebugCheck: RaiseDebugCheck
-                 taskStackError:  ThreadTaskStack
-                 location:        ThreadLocation)
-   at 'x-oz://boot/Exception'
-
    BootRecord(tellRecordSize test testLabel testFeature aritySublist)
    at 'x-oz://boot/Record'
 
@@ -49,16 +44,6 @@ require
    BootThread(create)
    at 'x-oz://boot/Thread'
 prepare
-   proc {RaiseDebugExtend T1 T2}
-      L = {Label T1.debug}
-   in
-      {Raise {AdjoinAt T1 debug
-              {Adjoin T1.debug
-               L(stack: {ThreadTaskStack}
-                 loc:   {ThreadLocation}
-                 info:  T2)}}}
-   end
-
    ProcValues = env(%% Operators
                     '.': Value.'.'
                     '==': Value.'=='
@@ -115,9 +100,7 @@ prepare
                     'tellRecordSize': BootRecord.tellRecordSize
                     'ooGetLock': BootObject.ooGetLock
                     'aritySublist': BootRecord.aritySublist
-                    'Thread.create': BootThread.create
-                    'RaiseDebugCheck': RaiseDebugCheck
-                    'RaiseDebugExtend': RaiseDebugExtend)
+                    'Thread.create': BootThread.create)
 
    LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
                        'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}

@@ -393,8 +393,8 @@ local
                 VHd = vGetVariable(_ {VO reg($)} VTl)
              end CondVInstr GetsTl}
             VClauses =
-            {Map Clauses
-             fun {$ LocalVars#Subpatterns#Coord#Body}
+            {FoldL Clauses
+             fun {$ In LocalVars#Subpatterns#Coord#Body}
                 GuardVHd GuardVTl GuardVInstr Cont BodyVInstr
              in
                 {MakeGuard Subpatterns VOs GuardVHd GuardVTl}
@@ -413,8 +413,8 @@ local
                 else
                    {CodeGenList Body CS BodyVInstr nil}
                 end
-                _#GuardVInstr#BodyVInstr
-             end}
+                _#GuardVInstr#BodyVInstr|In
+             end nil}
             {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
             GetsTl = vCreateCond(_ VClauses AltVInstr nil @coord nil _)
          end

@@ -298,9 +298,13 @@ define
    proc {MakeException Literal Coord VOs CS VHd VTl} Reg VO VArgs VInter in
       {CS newReg(?Reg)}
       VO = {New PseudoVariableOccurrence init(Reg)}
-      VArgs =
-      literal(Literal)|number(case Coord of unit then ~1 else Coord.2 end)|
-      {Map VOs fun {$ VO} value({VO reg($)}) end}
+      VArgs = literal(Literal)|{Append
+                                case Coord of unit then
+                                   [literal('') literal(unit)]
+                                else
+                                   [literal(Coord.1) number(Coord.2)]
+                                end
+                                {Map VOs fun {$ VO} value({VO reg($)}) end}}
       VHd = vEquateRecord(_ 'kernel' {Length VArgs} Reg VArgs VInter)
       {MakeRunTimeProcApplication 'RaiseError' {CoordNoDebug Coord}
        [VO] CS VInter VTl}

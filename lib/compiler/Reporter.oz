@@ -33,16 +33,25 @@ local
 in
    class Reporter
       prop final
-      attr ErrorCount HeapUsed TimeUsed ThisPhaseLevel
+      attr ErrorCount HeapUsed TimeUsed ThisPhaseLevel Raised
       feat Compiler Wrapper
       meth init(CompilerObject WrapperObject)
          self.Compiler = CompilerObject
          self.Wrapper = WrapperObject
-         ErrorCount <- 0
+         Reporter, clearErrors()
          ThisPhaseLevel <- none
       end
       meth clearErrors()
          ErrorCount <- 0
+         Raised <- false
+      end
+      meth ToTop()
+         case @Raised then skip
+         else
+            {self.Wrapper notify(toTop())}
+            {self.Wrapper notify(unsuccessful())}
+            Raised <- true
+         end
       end
 
       meth ProfileStart(PhaseLevel)
@@ -156,11 +165,7 @@ in
                  kind: Kind <= unit
                  msg: Msg <= unit
                  body: Body <= nil) MaxNumberOfErrors in
-         case @ErrorCount == 0 then
-            {self.Wrapper notify(toTop())}
-         else skip
-         end
-         {self.Wrapper notify(unsuccessful())}
+         Reporter, ToTop()
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -181,7 +186,7 @@ in
                 kind: Kind <= unit
                 msg: Msg <= unit
                 body: Body <= nil)
-         {self.Wrapper notify(unsuccessful())}
+         Reporter, ToTop()
          {Error.msg
           proc {$ X}
              {self.Wrapper notify(info({Error.formatLine X} Coord))}
@@ -192,11 +197,7 @@ in
                      end)}
       end
       meth addErrors(N)
-         case @ErrorCount == 0 then
-            {self.Wrapper notify(toTop())}
-         else skip
-         end
-         {self.Wrapper notify(unsuccessful())}
+         Reporter, ToTop()
          ErrorCount <- @ErrorCount + N
       end
       meth hasSeenError($)

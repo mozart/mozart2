@@ -161,10 +161,12 @@ local
                  T.time == ThisPid.time andthen
                  {Dictionary.member KeyDict T.key}
               then Y={Dictionary.get KeyDict T.key} in
-                 yes(case T.single then {Dictionary.remove KeyDict T.key} Y
-                     else Z in {Port.send Y Z} Z
-                     end)
-              else no
+                 case T.single then {Dictionary.remove KeyDict T.key}
+                 else skip
+                 end
+                 yes(Y)
+              else
+                 no
               end
        end}
    end
@@ -181,20 +183,8 @@ local
       {String.toAtom {TicketToString T}}
    end
 
-   proc {Take V X}
-      T={VsToTicket V}
-   in
-      case T.single then
-         case {SendToPid T}
-         of no     then {`RaiseError` dp(connection(refusedTicket V))}
-         [] yes(Y) then X=Y
-         end
-      else {`RaiseError` dp(connection(illegalTicket V))}
-      end
-   end
-
    %%
-   %% One to many connections
+   %% Gates
    %%
    class Gate
       feat
@@ -203,11 +193,10 @@ local
       attr
          Stream
 
-      meth init(AT <= _)
+      meth init(X ?AT <= _)
          T={NewTicket false}
-         P={Port.new @Stream}
       in
-         {Dictionary.put KeyDict T.key P}
+         {Dictionary.put KeyDict T.key X}
          self.Ticket     = T
          self.TicketAtom = {String.toAtom {TicketToString T}}
          AT = self.TicketAtom
@@ -217,26 +206,15 @@ local
          self.TicketAtom
       end
 
-      meth receive(X)
-         NS S
-      in
-         S = (Stream <- NS)
-         case S of Y|R then NS=R X=Y end
-      end
-
       meth close
          Stream <- _
          {Dictionary.remove KeyDict self.Ticket.key}
       end
    end
 
-   proc {Send V X}
-      T = {VsToTicket V}
-   in
-      case T.single then
-         {`RaiseError` dp(connection(illegalTicket V))}
-      elsecase {SendToPid T}
-      of no then {`RaiseError` dp(connection(illegalTicket V))}
+   proc {Take V X}
+      case {SendToPid {VsToTicket V}}
+      of no     then {`RaiseError` dp(connection(refusedTicket V))}
       [] yes(Y) then X=Y
       end
    end
@@ -245,7 +223,6 @@ in
 
    Connection = connection(offer: Offer
                            take:  Take
-                           gate:  Gate
-                           send:  Send)
+                           gate:  Gate)
 
 end

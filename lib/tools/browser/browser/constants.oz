@@ -75,6 +75,9 @@ T_Cell          = {NewName}
 T_PrimChunk     = {NewName}
 T_PrimObject    = {NewName}
 T_PrimClass     = {NewName}
+%%
+T_ForeignPointer= {NewName}
+T_Promise       = {NewName}
 
 %%
 %% group #2: compound values;

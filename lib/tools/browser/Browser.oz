@@ -88,6 +88,7 @@ local
    ChunkWidth     % ... its width;
    AddrOf         %
    OnToplevel     %
+   ForeignPointerToInt %
 
    %% TMUELLER
    %% reflectives for finite sets
@@ -166,6 +167,8 @@ local
    IntTermObject
    FloatTermObject
    NameTermObject
+   ForeignPointerTermObject
+   PromiseTermObject
    ProcedureTermObject
    CellTermObject
    PrimChunkTermObject

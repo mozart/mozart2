@@ -149,11 +149,13 @@ in
 
       [] det(DT)    then
          case DT
-         of atom       then T_Atom
-         [] int        then T_Int
-         [] fset       then T_FSet
-         [] float      then T_Float
-         [] name       then T_Name
+         of atom            then T_Atom
+         [] int             then T_Int
+         [] fset            then T_FSet
+         [] float           then T_Float
+         [] name            then T_Name
+         [] foreign_pointer then T_ForeignPointer
+         [] promise         then T_Promise
 
          [] tuple      then
             %%
@@ -216,34 +218,36 @@ in
    fun {GetObjClass Type}
       %%
       case Type
-      of !T_Atom         then AtomTermObject
-      [] !T_Int          then IntTermObject
-      [] !T_Float        then FloatTermObject
-      [] !T_Name         then NameTermObject
-      [] !T_Procedure    then ProcedureTermObject
-      [] !T_Cell         then CellTermObject
-      [] !T_PrimChunk    then PrimChunkTermObject
-      [] !T_Dictionary   then DictionaryTermObject
-      [] !T_Array        then ArrayTermObject
-      [] !T_Port         then PortTermObject
-      [] !T_Lock         then LockTermObject
-      [] !T_Thread       then ThreadTermObject
-      [] !T_Space        then SpaceTermObject
-      [] !T_CompChunk    then CompChunkTermObject
-      [] !T_PrimObject   then PrimObjectTermObject
-      [] !T_CompObject   then CompObjectTermObject
-      [] !T_PrimClass    then PrimClassTermObject
-      [] !T_CompClass    then CompClassTermObject
-      [] !T_List         then ListTermObject
-      [] !T_FCons        then FConsTermObject
-      [] !T_Tuple        then TupleTermObject
-      [] !T_Record       then RecordTermObject
-      [] !T_HashTuple    then HashTupleTermObject
-      [] !T_Variable     then VariableTermObject
-      [] !T_FDVariable   then FDVariableTermObject
-      [] !T_FSet         then FSetTermObject
-      [] !T_MetaVariable then MetaVariableTermObject
-      [] !T_Unknown      then UnknownTermObject
+      of !T_Atom           then AtomTermObject
+      [] !T_Int            then IntTermObject
+      [] !T_Float          then FloatTermObject
+      [] !T_Name           then NameTermObject
+      [] !T_ForeignPointer then ForeignPointerTermObject
+      [] !T_Promise        then PromiseTermObject
+      [] !T_Procedure      then ProcedureTermObject
+      [] !T_Cell           then CellTermObject
+      [] !T_PrimChunk      then PrimChunkTermObject
+      [] !T_Dictionary     then DictionaryTermObject
+      [] !T_Array          then ArrayTermObject
+      [] !T_Port           then PortTermObject
+      [] !T_Lock           then LockTermObject
+      [] !T_Thread         then ThreadTermObject
+      [] !T_Space          then SpaceTermObject
+      [] !T_CompChunk      then CompChunkTermObject
+      [] !T_PrimObject     then PrimObjectTermObject
+      [] !T_CompObject     then CompObjectTermObject
+      [] !T_PrimClass      then PrimClassTermObject
+      [] !T_CompClass      then CompClassTermObject
+      [] !T_List           then ListTermObject
+      [] !T_FCons          then FConsTermObject
+      [] !T_Tuple          then TupleTermObject
+      [] !T_Record         then RecordTermObject
+      [] !T_HashTuple      then HashTupleTermObject
+      [] !T_Variable       then VariableTermObject
+      [] !T_FDVariable     then FDVariableTermObject
+      [] !T_FSet           then FSetTermObject
+      [] !T_MetaVariable   then MetaVariableTermObject
+      [] !T_Unknown        then UnknownTermObject
       else
          {BrowserError 'Unknown type in BrowserTerm.getObjClass: '}
          UnknownTermObject
@@ -258,34 +262,36 @@ in
    fun {CheckGraph STType}
       %%
       case STType
-      of !T_Atom         then false
-      [] !T_Int          then false
-      [] !T_Float        then false
-      [] !T_Name         then false
-      [] !T_Procedure    then false
-      [] !T_Cell         then false
-      [] !T_PrimChunk    then false
-      [] !T_Dictionary   then false
-      [] !T_Array        then false
-      [] !T_Lock         then false
-      [] !T_Thread       then false
-      [] !T_Space        then false
-      [] !T_CompChunk    then true
-      [] !T_PrimObject   then false
-      [] !T_CompObject   then true
-      [] !T_PrimClass    then false
-      [] !T_CompClass    then true
-      [] !T_List         then true
-      [] !T_FCons        then true
-         %% when changed, check the 'ListTermObject::GetElement';
-      [] !T_Tuple        then true
-      [] !T_Record       then true
-      [] !T_HashTuple    then true
-      [] !T_Variable     then false
-      [] !T_FDVariable   then false
-      [] !T_FSet         then false
-      [] !T_MetaVariable then false
-      [] !T_Unknown      then false
+      of !T_Atom           then false
+      [] !T_Int            then false
+      [] !T_Float          then false
+      [] !T_Name           then false
+      [] !T_ForeignPointer then false
+      [] !T_Promise        then false
+      [] !T_Procedure      then false
+      [] !T_Cell           then false
+      [] !T_PrimChunk      then false
+      [] !T_Dictionary     then false
+      [] !T_Array          then false
+      [] !T_Lock           then false
+      [] !T_Thread         then false
+      [] !T_Space          then false
+      [] !T_CompChunk      then true
+      [] !T_PrimObject     then false
+      [] !T_CompObject     then true
+      [] !T_PrimClass      then false
+      [] !T_CompClass      then true
+      [] !T_List           then true
+      [] !T_FCons          then true
+         %% when changed,   check the 'ListTermObject::GetElement';
+      [] !T_Tuple          then true
+      [] !T_Record         then true
+      [] !T_HashTuple      then true
+      [] !T_Variable       then false
+      [] !T_FDVariable     then false
+      [] !T_FSet           then false
+      [] !T_MetaVariable   then false
+      [] !T_Unknown        then false
       else
          {BrowserWarning
           'Unknown type in BrowserTerm.checkGraph' # STType}
@@ -300,34 +306,36 @@ in
    fun {CheckMinGraph STType}
       %%
       case STType
-      of !T_Atom         then false
-      [] !T_Int          then false
-      [] !T_Float        then false
-      [] !T_Name         then true
-      [] !T_Procedure    then true
-      [] !T_Cell         then true
-      [] !T_PrimChunk    then true
-      [] !T_Dictionary   then true
-      [] !T_Array        then true
-      [] !T_Lock         then true
-      [] !T_Thread       then true
-      [] !T_Space        then true
-      [] !T_CompChunk    then true
-      [] !T_PrimObject   then true
-      [] !T_CompObject   then true
-      [] !T_PrimClass    then true
-      [] !T_CompClass    then true
-      [] !T_List         then true
-      [] !T_FCons        then true
+      of !T_Atom           then false
+      [] !T_Int            then false
+      [] !T_Float          then false
+      [] !T_Name           then true
+      [] !T_ForeignPointer then true
+      [] !T_Promise        then true
+      [] !T_Procedure      then true
+      [] !T_Cell           then true
+      [] !T_PrimChunk      then true
+      [] !T_Dictionary     then true
+      [] !T_Array          then true
+      [] !T_Lock           then true
+      [] !T_Thread         then true
+      [] !T_Space          then true
+      [] !T_CompChunk      then true
+      [] !T_PrimObject     then true
+      [] !T_CompObject     then true
+      [] !T_PrimClass      then true
+      [] !T_CompClass      then true
+      [] !T_List           then true
+      [] !T_FCons          then true
          %% when changed, check the 'ListTermObject::GetElement';
-      [] !T_Tuple        then true
-      [] !T_Record       then true
-      [] !T_HashTuple    then true
-      [] !T_Variable     then true
-      [] !T_FDVariable   then true
-      [] !T_FSet         then true
-      [] !T_MetaVariable then true
-      [] !T_Unknown      then false
+      [] !T_Tuple          then true
+      [] !T_Record         then true
+      [] !T_HashTuple      then true
+      [] !T_Variable       then true
+      [] !T_FDVariable     then true
+      [] !T_FSet           then true
+      [] !T_MetaVariable   then true
+      [] !T_Unknown        then false
       else
          {BrowserWarning
           'Unknown type in BrowserTerm.checkMinGraph' # STType}

@@ -43,12 +43,12 @@ body
    \insert 'compiler/InsertAll.oz'
 in
    Compiler = compiler(engine: CompilerEngine
-                          %--** deprecated:
-                       compilerClass: CompilerEngine
+                       compilerClass: CompilerEngine   %--** deprecated
                        genericInterface: GenericInterface
                        quietInterface: QuietInterface
                        evalExpression: EvalExpression
-                       virtualStringToValue: VirtualStringToValue)
+                       virtualStringToValue: VirtualStringToValue
+                       assemble: DoAssemble)
 end
 
 \else
@@ -67,12 +67,12 @@ in
       \insert 'compiler/InsertAll.oz'
 
       Compiler = compiler(engine: CompilerEngine
-                          %--** deprecated:
-                          compilerClass: CompilerEngine
+                          compilerClass: CompilerEngine   %--** deprecated
                           genericInterface: GenericInterface
                           quietInterface: QuietInterface
                           evalExpression: EvalExpression
-                          virtualStringToValue: VirtualStringToValue)
+                          virtualStringToValue: VirtualStringToValue
+                          assemble: DoAssemble)
    in
       \insert 'Compiler.env'
    end

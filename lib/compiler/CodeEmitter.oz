@@ -45,8 +45,14 @@ local
 \endif
 
    local
+      %%
+      %% We must not hoist record containing copyable names since
+      %% procedure code instantiation would be unable to replace them.
+      %%
+
       fun {IsConstant VArg}
-         case VArg of constant(_) then true
+         case VArg of constant(C) then
+            {Not {CompilerSupport.isCopyableName C}}
          else false
          end
       end
@@ -56,7 +62,10 @@ local
       fun {HoistVArg VArg}
          case VArg of record(Atomname RecordArity VArgs) then NewVArgs in
             NewVArgs = {Map VArgs HoistVArg}
-            if {All NewVArgs IsConstant} then Args X in
+            if {All NewVArgs IsConstant} andthen
+               ({IsInt RecordArity} orelse
+                {Not {Some RecordArity CompilerSupport.isCopyableName}})
+            then Args X in
                Args = {Map NewVArgs GetConstant}
                X = if {IsInt RecordArity} then
                       {List.toTuple Atomname Args}

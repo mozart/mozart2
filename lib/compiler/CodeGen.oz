@@ -35,7 +35,8 @@
 functor
 import
    Debug(getRaiseOnBlock setRaiseOnBlock) at 'x-oz://boot/Debug'
-   CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(isBuiltin featureLess isCopyableName)
+   at 'x-oz://boot/CompilerSupport'
    Space(new waitStable ask merge)
    FD(decl distinct sumC reflect)
    System(printName)

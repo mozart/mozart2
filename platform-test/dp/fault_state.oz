@@ -305,45 +305,45 @@ define
           end
           keys:[fault])
 
+%        ERIK, this test has allso race konditions.
+%        fault_state_proxy_tokenLost_live_injector(
+%         proc {$}
+%            S1={New Remote.manager init(host:TestMisc.localHost)}
+%            S2={New Remote.manager init(host:TestMisc.localHost)}
+%            P2
+%            Sync
+%            DistCell
+%            Inj = proc{$ A B C} raise injector end end
+%         in
+%            {S1 ping}
+%            {S1 apply(url:'' functor
+%                             export MyCell
+%                             define
+%                                MyCell = {NewCell apa}
+%                             end $)}.myCell=DistCell
 
-       fault_state_proxy_tokenLost_live_injector(
-          proc {$}
-             S1={New Remote.manager init(host:TestMisc.localHost)}
-             S2={New Remote.manager init(host:TestMisc.localHost)}
-             P2
-             Sync
-             DistCell
-             Inj = proc{$ A B C} raise injector end end
-          in
-             {S1 ping}
-             {S1 apply(url:'' functor
-                              export MyCell
-                              define
-                                 MyCell = {NewCell apa}
-                              end $)}.myCell=DistCell
+%            {S2 ping}
+%            {S2 apply(url:'' functor
+%                             export
+%                                MyPort
+%                             import Property
+%                             define
+%                                MyPort = {NewPort _}
+%                                {Property.put  'close.time' 0}
+%                                {Assign DistCell unit}
+%                                !Sync = unit
+%                             end $)}.myPort=P2
 
-             {S2 ping}
-             {S2 apply(url:'' functor
-                              export
-                                 MyPort
-                              import Property
-                              define
-                                 MyPort = {NewPort _}
-                                 {Property.put  'close.time' 0}
-                                 {Assign DistCell unit}
-                                 !Sync = unit
-                              end $)}.myPort=P2
-
-             {Wait Sync}
-             {InjectorInstall DistCell Inj}
-             {S2 close}
-             {WaitPerm P2}
-             try
-                {TryCell DistCell}
-             catch abort then {System.showInfo 'dp_fault_state_proxy_tokenLost_live_injector may have a problem'} end
-             {S1 close}
-          end
-          keys:[fault])
+%            {Wait Sync}
+%            {InjectorInstall DistCell Inj}
+%            {S2 close}
+%            {WaitPerm P2}
+%            try
+%               {TryCell DistCell}
+%            catch abort then {System.showInfo 'dp_fault_state_proxy_tokenLost_live_injector may have a problem'} end
+%            {S1 close}
+%         end
+%         keys:[fault])
 
        %% kost@ : this test has a race condition;
 %        fault_state_proxy_tokenLost_dead_injector(

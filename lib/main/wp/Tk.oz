@@ -290,13 +290,16 @@ in
             Applet.rawArgs = {BrowserAppletGetArgs}
          end
       else
+         HOME   = {OS.getEnv 'OZHOME'}
+         {OS.putEnv 'TCL_LIBRARY' HOME#'/lib/wish/tcl'}
+         {OS.putEnv 'TK_LIBRARY'  HOME#'/lib/wish/tk'}
+         OSS#CPU = {System.get platform}
+         Cmd    = HOME # '/platform/'#OSS#'-'#CPU#'/oz.wish.bin'
+      in
          Stream = {New class $ from Open.pipe Open.text
                           prop final
                        end
-                   init(cmd:case {System.get platform}.1==win32
-                            then 'ozwish'
-                            else 'oz.wish'
-                            end)}
+                   init(cmd:Cmd)}
 
          case SGI.applet then
             thread

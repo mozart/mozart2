@@ -36,7 +36,7 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
       Connection(take)

@@ -24,12 +24,12 @@
 
 local
 
-   functor ErrorHandler prop once
+   functor ErrorHandler
 
    import
       Error Property
 
-   body
+   define
       {Property.put 'errors.handler'
        proc {$ E}
           %% cause Error to be instantiated, which installs
@@ -47,10 +47,10 @@ local
 
 in
 
-   functor prop once
+   functor
    import
-      Boot @ 'x-oz://boot/Boot'
-   body
+      Boot at 'x-oz://boot/Boot'
+   define
 
       %% The mechanism with which builtin modules can be accessed
       BootManager = Boot.manager

@@ -117,39 +117,39 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      OS.{open
-          fileDesc
-          close
-          write
-          read
-          lSeek
-          socket
-          bind
-          listen
-          connect
-          accept
-          shutDown
-          send
-          sendTo
-          receiveFrom
-          getSockName
-          acceptSelect
-          deSelect
-          system
-          pipe
-          wait
-         }
+      OS(open
+         fileDesc
+         close
+         write
+         read
+         lSeek
+         socket
+         bind
+         listen
+         connect
+         accept
+         shutDown
+         send
+         sendTo
+         receiveFrom
+         getSockName
+         acceptSelect
+         deSelect
+         system
+         pipe
+         wait
+        )
 
-      Error.{formatGeneric
-             format
-             dispatch}
+      Error(formatGeneric
+            format
+            dispatch)
 
-      ErrorRegistry.{put}
+      ErrorRegistry(put)
 
-      Resolve.{open}
+      Resolve(open)
 
    export
       file:   File
@@ -158,7 +158,7 @@ in
       pipe:   Pipe
       html:   Html
 
-   body
+   define
 
       %%
       %% Exception handling

@@ -108,18 +108,18 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      Property.{get put}
+      Property(get put)
 
-      System.{printName
-              printError
-              valueToVirtualString
-              onToplevel}
+      System(printName
+             printError
+             valueToVirtualString
+             onToplevel)
 
-      ErrorRegistry.{get
-                     exists}
+      ErrorRegistry(get
+                    exists)
 
    export
       formatGeneric: GenericFormatter
@@ -140,7 +140,7 @@ in
       msg:           ErrorMsg
       msgDebug:      ErrorMsgDebug
 
-   body
+   define
 
       %% current output: strings into emulator window
 

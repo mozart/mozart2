@@ -799,7 +799,7 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    export
       one:    OneModule
@@ -809,7 +809,7 @@ in
       best:   BestModule
       object: SearchObject
       base:   SearchBase
-   body
+   define
 
       skip
 

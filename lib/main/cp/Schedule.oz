@@ -100,15 +100,15 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      SCP from 'x-oz://boot/Schedule'
+      SCP at 'x-oz://boot/Schedule'
 
-      FD.{bool
-          is
-          sum
-          reflect}
+      FD(bool
+         is
+         sum
+         reflect)
 
    export
       serialized:            SchedCpIterate
@@ -126,7 +126,7 @@ in
       firstsDist:            NewDistF
       lastsDist:             NewDistL
 
-   body
+   define
 
       %% Hack, needed for dynamic linking of *.so
 

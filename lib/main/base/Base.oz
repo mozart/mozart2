@@ -66,7 +66,7 @@ local
    \insert 'BitString.oz'
    \insert 'ByteString.oz'
 in
-   functor $ prop once
+   functor
 
    export
       %% Unit

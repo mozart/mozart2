@@ -20,14 +20,14 @@
 %%% WARRANTIES.
 %%%
 
-functor $
+functor
 
 export
    newAgenda: NewAgenda
    newServer: NewServer
    server:    Server
 
-body
+define
 
    \insert 'misc/Server.oz'
    \insert 'misc/Agenda.oz'

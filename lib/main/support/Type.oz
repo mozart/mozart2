@@ -146,22 +146,20 @@ local
 
 in
 
-   functor prop once
+   functor
 
    import
-      FDB.is
-         from 'x-oz://boot/FDB'
+      FDB(is) at 'x-oz://boot/FDB'
 
-      FSB.{isValueB isVarB}
-         from 'x-oz://boot/FSB'
+      FSB(isValueB isVarB) at 'x-oz://boot/FSB'
 
-      System.{printName}
+      System(printName)
 
    export
       is:      Is
       ask:     Ask
 
-   body
+   define
 
       IsFDIntC  = FDB.is
       IsFSet    = FSB.isValueB

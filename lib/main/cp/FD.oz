@@ -215,23 +215,23 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      FDB from 'x-oz://boot/FDB'
+      FDB at 'x-oz://boot/FDB'
 
-      FDP from 'x-oz://boot/FDP'
+      FDP at 'x-oz://boot/FDP'
 
-      ErrorRegistry.{put}
+      ErrorRegistry(put)
 
-      Error.{formatGeneric
-             formatAppl
-             formatTypes
-             formatHint
-             format
-             dispatch}
+      Error(formatGeneric
+            formatAppl
+            formatTypes
+            formatHint
+            format
+            dispatch)
 
-      System.nbSusps
+      System(nbSusps)
 
    export
       %% Telling Domains
@@ -309,7 +309,7 @@ in
       sup:            FdSup
       is:             FdIs
 
-   body
+   define
 
       FdpPlus = FDP.plus
       FdpMinus = FDP.minus

@@ -660,7 +660,7 @@ local
    end
 
 in
-   functor prop once
+   functor
    export
       is                : URL_is
       make              : URL_make

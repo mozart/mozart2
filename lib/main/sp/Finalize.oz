@@ -23,17 +23,17 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
-   Finalize from 'x-oz://boot/Finalize'
+   Finalize at 'x-oz://boot/Finalize'
 
 export
    register:   Register
    setHandler: SetHandler
    everyGC:    EveryGC
 
-body
+define
 
    Register   = Finalize.register
    SetHandler = Finalize.setHandler

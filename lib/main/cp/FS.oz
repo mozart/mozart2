@@ -25,19 +25,19 @@
 %%% WARRANTIES.
 %%%
 
-functor $ prop once
+functor
 
 import
-   FSB from 'x-oz://boot/FSB'
+   FSB at 'x-oz://boot/FSB'
 
-   FSP from 'x-oz://boot/FSP'
+   FSP at 'x-oz://boot/FSP'
 
-   FD.{bool
-       decl
-       list
-       reflect
-       sum
-       watch}
+   FD(bool
+      decl
+      list
+      reflect
+      sum
+      watch)
 
 export
    include:      FSIsIncl
@@ -84,7 +84,7 @@ export
    distribute:  FSDistribute
 
 
-body
+define
    Head = fun {$ H|_} H end
    Tail = fun {$ _|T} T end
    Last = List.last

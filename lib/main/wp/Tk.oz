@@ -36,31 +36,31 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      WIF from 'x-oz://boot/Wif'
+      WIF at 'x-oz://boot/Wif'
 
-      Property.{get}
+      Property(get)
 
-      System.{apply
-              showError
-              valueToVirtualString}
+      System(apply
+             showError
+             valueToVirtualString)
 
-   Error.{formatGeneric
-          format
-          dispatch}
+      Error(formatGeneric
+            format
+            dispatch)
 
-   ErrorRegistry.{put}
+      ErrorRegistry(put)
 
-   Open.{pipe
-         text}
+      Open(pipe
+           text)
 
-   OS.{getEnv
-       putEnv
-       stat}
+      OS(getEnv
+         putEnv
+         stat)
 
-   Resolve.{makeResolver}
+      Resolve(makeResolver)
 
    export
       send:          TkSend
@@ -121,7 +121,7 @@ in
 
       optionsManager:  OptionsManager
 
-   body
+   define
 
       TkString = string(toInt:        TkStringToInt
                         toFloat:      TkStringToFloat

@@ -178,7 +178,7 @@ local
 
 in
 
-   functor NewModule prop once
+   functor NewModule
 
    import
       System OS Boot Property Resolve
@@ -188,7 +188,7 @@ in
       manager: Manager
       trace:   ApiTrace
 
-   body
+   define
 
       proc {TraceON X1 X2}
          {System.printError 'Module manager: '#X1#' '#{URL.toVs X2}#'\n'}

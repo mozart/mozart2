@@ -117,23 +117,21 @@ local
 
 in
 
-   functor $ prop once
+   functor
 
    import
-      Fault.{install deinstall}
+      Fault(install deinstall)
 
-      PID.{get received toPort}
-          from 'x-oz://boot/PID'
+      PID(get received toPort) at 'x-oz://boot/PID'
 
-      Distribution.{'export'}
-          from 'x-oz://boot/Distribution'
+      Distribution('export') at 'x-oz://boot/Distribution'
 
    export
       offer: Offer
       take:  Take
       gate:  Gate
 
-   body
+   define
       %%
       %% Base Process Identifier package
       %%

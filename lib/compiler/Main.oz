@@ -28,7 +28,7 @@ import
    Parser                        at 'x-oz://boot/Parser'
    CompilerSupport(nameVariable) at 'x-oz://boot/CompilerSupport'
    Property(get condGet)
-   Error(formatPos formatExc dispatch format formatGeneric)
+   Error(extendedVSToVS exceptionToMessage)
    ErrorRegistry(put)
    Type(ask)
    Narrator('class')

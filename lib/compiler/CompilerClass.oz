@@ -503,8 +503,8 @@ local
                if CompilerStateClass, getSwitch(compilerpasses $) then
                   NewCoord = {NormalizeCoord C}
                in
-                  case NewCoord of pos(F L C) then VS in
-                     VS = {Error.formatPos F L C unit}
+                  case NewCoord of pos(_ _ _) then VS in
+                     VS = {Error.extendedVSToVS NewCoord}
                      {@reporter tell(info('%%% processing query in '#
                                           VS#'\n' NewCoord))}
                   else
@@ -887,7 +887,8 @@ in
                                msg: ('execution of query raised an exception '#
                                      '-- description follows')
                                items: [hint(l: 'Query' m: oz(M))])}
-               Narrator.'class', tell(message({AdjoinAt {Error.formatExc E}
+               Narrator.'class', tell(message({AdjoinAt
+                                               {Error.exceptionToMessage E}
                                                footer false} unit))
                {Reporter endBatch(rejected)}
             end

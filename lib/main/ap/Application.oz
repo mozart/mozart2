@@ -624,7 +624,8 @@ local
    end
    %%
    fun {RegistryMakeServletProc R CompSpec ArgSpec Functor}
-      Loader  = {RegistryGetLoader R CompSpec}
+      Loader  = {RegistryGetLoader R
+                 {Adjoin c('OP': eager) CompSpec}}
       ArgProc = {Parser.servlet ArgSpec}
    in
       proc {$}

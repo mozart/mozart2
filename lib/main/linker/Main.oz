@@ -252,6 +252,7 @@ define
        [] nothingToLink then
           {System.showError
            'ERROR: Nothing to link; root functor has been excluded.'}
+          1
        [] inputFile then
           {System.showError
            'Illegal usage: No or multiple input file(s) given.\n'}

@@ -386,7 +386,8 @@ define
    end
 
    local
-      class DefinitionBase from Statement StaticAnalysis.definition
+      class DefinitionBase
+         from Statement Annotate.definition StaticAnalysis.definition
          attr
             designator: unit formalArgs: unit statements: unit
             isStateUsing: unit procFlags: unit printName: '' toCopy: unit
@@ -424,8 +425,8 @@ define
       end
    in
       class Definition
+         from DefinitionBase CodeGen.definition
          prop final
-         from DefinitionBase Annotate.definition CodeGen.definition
       end
       class ClauseBody
          from DefinitionBase CodeGen.clauseBody

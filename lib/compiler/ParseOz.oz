@@ -37,7 +37,6 @@ local
                   "`CHOICE'"#"`[]'"
                   "`LDOTS'"#"`...'"
                   "`OOASSIGN'"#"`<-'"
-                  "`ASSIGN'"#"`:='"
                   "`COMPARE'"#"comparison operator"
                   "`FDCOMPARE'"#"finite domain comparison operator"
                   "`FDIN'"#"finite domain inclusion operator"

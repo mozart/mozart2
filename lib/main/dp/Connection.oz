@@ -292,7 +292,7 @@ define
        of connection(illegalTicket V) then
           error(kind: T
                 msg: 'Illegal ticket for connection'
-                items: [hint(l:'Ticket' m:V)])
+                items: [hint(l:'Ticket' m:oz(V))])
        [] connection(refusedTicket V) then
           error(kind: T
                 msg: 'Ticket refused by offering site'

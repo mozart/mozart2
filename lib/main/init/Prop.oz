@@ -71,8 +71,8 @@ OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
 OZ_SEARCH_DLOAD = case {Getenv 'OZ_SEARCH_DLOAD'} of false then
                      case {Getenv 'OZ_DLOAD'} of false then
                         case {Getenv 'OZDLOAD'} of false then
-                           '.:~/.oz/platform/'#OS_NAME#'-'#OS_CPU#':'
-                           #OZ_HOME#'/platform/'#OS_NAME#'-'#OS_CPU
+                           '.:~/.oz/platform/'#OS_NAME#'-'#OS_CPU#'/cache:'
+                           #OZ_HOME#'/platform/'#OS_NAME#'-'#OS_CPU#'/cache'
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end

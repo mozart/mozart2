@@ -182,9 +182,13 @@ define
              {Dictionary.member KeyDict T.key}
           then Y={Dictionary.get KeyDict T.key} in
              if T.single then {Dictionary.remove KeyDict T.key} end
-             thread S = yes(Y) in A=S end
+             thread S = yes(Y) in
+                try A=S catch _ then skip end
+             end
           else
-             thread A=no end
+             thread
+                try A=no catch _ then skip end
+             end
           end
        end}
    end

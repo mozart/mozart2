@@ -85,7 +85,7 @@ in
           end
           fun {$ X} X==succeeded(suspended) end}
       else
-         {RawTest T fun {$ X} X end}
+         {RawTest fun {$} {T} true end fun {$ X} X end}
       end
    end
 

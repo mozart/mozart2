@@ -143,7 +143,8 @@ local
                            {Adjoin
                             {Adjoin o(script: S
                                       repeat: 1)
-                             {Debug.procedureCoord S.1}}
+                             {Debug.procedureCoord
+                              case {IsProcedure S} then S else S.1 end}}
                             T}
                         end}
 

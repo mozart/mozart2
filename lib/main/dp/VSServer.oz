@@ -23,19 +23,18 @@
 local
 
    %%
-   proc {Init Import ShmId}
+   proc {Init ShmId}
       BIVSInitServer = {`Builtin` 'VirtualSite.initServer' 1}
    in
       {BIVSInitServer ShmId}
    end
 
    %%
-   proc {Engine Import CloseProc ?TaskPort ?CtrlPort}
-      FullImport RunStr CtrlStr
+   %% Right now, there is no limitation/overloading of sub-modules
+   %% an imported functor can use. But this will change;
+   proc {Engine Linker CloseProc ?TaskPort ?CtrlPort}
+      RunStr CtrlStr
    in
-      %% Will change on the day when user requests will not be allowed
-      %% to perform e.g. local I/O;
-      FullImport = Import
       %%
       TaskPort = {Port.new RunStr}
       CtrlPort = {Port.new CtrlStr}
@@ -47,11 +46,11 @@ local
       %% catch all of them anyway (due to created threads);
       thread
          {ForAll RunStr
-          proc {$ P}
+          proc {$ T}
              thread
-                case {Procedure.arity P}
-                of 0 then {P}
-                [] 1 then {P Import}
+                case {Procedure.is T} then {T}
+                elsecase {Chunk.is T} andthen {HasFeature T apply} then
+                   {Linker '' T _}
                 end
              end
           end}
@@ -70,11 +69,8 @@ local
                 of ping(Ack) then Ack = unit
                 [] close     then {CloseProc}
                 end
-             [] gen(Proc) then
-                case {Procedure.arity Proc}
-                of 0 then {Proc}
-                [] 1 then {Proc FullImport}
-                end
+             [] gen(Func) then
+                {Linker '' Func _}
              end
           end}
       end

@@ -24,7 +24,19 @@
 %%%
 
 %%
-local
+functor $ prop once
+   %%
+import
+   System.{showInfo}
+   Open.{pipe}
+   Connection.{offer}
+   OS.{getEnv}
+
+export
+   server: VirtualSiteObject
+
+   %%
+body
    %%
    local BINewVSMailbox = {`Builtin` 'VirtualSite.newMailbox' 1} in
       fun {NewVSMailbox}
@@ -34,20 +46,11 @@ local
 
    %%
    %% 'P' is a pipe to be printed out;
-   proc {ShowPipe P}
+   proc {ShowPipe P Closed}
       S = {P read(list: $)}
    in
-      case S == nil then skip else
-         {System.showInfo S} {ShowPipe P}
-      end
-   end
-
-   %%
-   proc {StartVSServer Cmd}
-      try
-         P = {New Open.pipe init(cmd:'sh' args:[Cmd])}
-      in thread {ShowPipe P} end
-      catch _ then raise error end
+      case {IsDet Closed} orelse S == nil then skip else
+         {System.showInfo S} {ShowPipe P Closed}
       end
    end
 
@@ -57,25 +60,38 @@ local
          locking
       %%
       feat
+         PipeObj
+         ClosedFlag
+      %%
          VSMailbox
          TaskPort
          CtrlPort
 
       %%
-      meth init(H)
+      meth init
          Ticket = {Connection.offer vsserver(taskPort: self.TaskPort
                                              ctrlPort: self.CtrlPort)}
       in
          self.VSMailbox = {NewVSMailbox}
-         {StartVSServer {OS.getEnv 'OZHOME'}#'/bin/ozvsserver'#
-          ' --shmid='#self.VSMailbox#
-          ' --ticket='#Ticket}
+         %%
+         try
+            self.PipeObj =
+            {New Open.pipe
+             init(cmd:{OS.getEnv 'OZHOME'}#'/bin/ozvsserver'
+                  args:['--shmkey='#self.VSMailbox
+                        '--ticket='#Ticket])}
+            %% {System.show 'Virtual site: '#{String.toAtom self.VSMailbox}#Ticket}
+         in thread {ShowPipe self.PipeObj self.ClosedFlag} end
+         catch _ then raise error end
+         end
+
+         %%
          {Wait self.TaskPort}
          {Wait self.CtrlPort}
       end
 
       %%
-      meth inject(P)
+      meth run(P)
          {Port.send self.TaskPort P}
       end
 
@@ -90,10 +106,10 @@ local
       %% message;
       meth close
          {Port.send self.CtrlPort spec(close)}
+         self.ClosedFlag = unit
+         {self.PipeObj close}
       end
    end
 
    %%
-in
-   VirtualSite = vs(server: VirtualSiteObject)
 end

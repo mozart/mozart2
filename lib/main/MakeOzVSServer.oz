@@ -24,59 +24,58 @@ local
    %%
    %% Right now we load just everything, but that can be easily
    %% changed;
-\insert 'dp/MakeAllLoader.oz'
 \insert 'dp/VSServer.oz'
 
    %%
+   %% exit codes;
+   OKDone = 0
    ErrorInit = 1
    ErrorTicket = 2
 in
    {Application.syslet
+    %%
     'ozvsserver'
 
     %%
-    c                           % no environment in this form;
+    functor $ prop once
+    import
+       Syslet.{args exit}
+       Connection.{take}
+       Module.{link}
+       System.{showInfo}
 
-    %%
-    fun {$ _UnusedImports}
-       Import = {AllLoader}
+       %%
+    body
+       CloseProc = proc {$} {Syslet.exit OKDone} end
     in
-       proc {$ Argv ?Status}
-          CloseProc = proc {$} Status = 0 end
-       in
+       %%
+       try
           %%
-          try
-             %%
-             %% First initialize the virtual site, so that the
-             %% ticket-based connection following it would use the
-             %% virtual site communication mechanism;
-             {VSServer.init Import Argv.shmid}
-          catch _ then
-             Status = ErrorInit
-          end
-
-          %%
-          case {Value.status Status}
-          of free then
-             try
-                vsserver(taskPort:TaskPort ctrlPort:CtrlPort) =
-                {Import.'DP'.'Connection'.take Argv.ticket}
-             in
-                {VSServer.engine Import CloseProc TaskPort CtrlPort}
-             catch _ then
-                Status = ErrorTicket
-             end
-          else skip             % already failed;
-          end
-
-          %%
-          {Wait Status}
+          %% First initialize the virtual site, so that the
+          %% ticket-based connection following it would use the
+          %% virtual site communication mechanism;
+          {VSServer.init Syslet.args.shmkey}
+       catch _ then
+          {System.showInfo "VS: failed to initialize"}
+          {Syslet.exit ErrorInit}
        end
 
+       %%
+       try
+          vsserver(taskPort:TaskPort ctrlPort:CtrlPort) =
+          {Connection.take Syslet.args.ticket}
+       in
+          {VSServer.engine Module.link CloseProc TaskPort CtrlPort}
+       catch _ then
+          {System.showInfo "VS: engine failed"}
+          {Syslet.exit ErrorTicket}
+       end
+
+       %%
     end
 
     %%
-    single(shmid(type:atom)
+    single(shmkey(type:atom)
            ticket(type:atom))}
 
    %%

@@ -239,17 +239,6 @@ define
                 end
                 keys:[fixedBug 'thread' exception])
 
-
-         failure(
-                 proc {$}
-                    cond
-                       try or fail then skip [] fail then skip end
-                       catch failure(...) then skip end
-                    then skip
-                    end
-                 end
-                 keys:[fixedBug failure exception])
-
          stringIsFinite(
                 proc {$}
                    X=1|X

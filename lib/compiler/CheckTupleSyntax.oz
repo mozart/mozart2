@@ -82,9 +82,8 @@ local
       [] fLocal(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}
       [] fBoolCase(P1 P2 E C) then
          {Phrase P1} {Phrase P2} {OptElse E} {Coord C}
-      [] fCase(P Css E C) then
-         {Phrase P} {ForAll Css proc {$ Cs} {ForAll Cs CaseClause} end}
-         {Coord C}
+      [] fCase(P Cs E C) then
+         {Phrase P} {ForAll Cs CaseClause} {Coord C}
       [] fCaseNew(P Cs E C) then
          {Phrase P} {ForAll Cs CaseClause} {Coord C}
       [] fLockThen(P1 P2 C) then {Phrase P1} {Phrase P2} {Coord C}

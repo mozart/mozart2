@@ -935,7 +935,6 @@ in
             {Wait TWWidth} {Wait WWidth} {Wait WHeight}
             {self.store store(StoreXSize WWidth)}
             {self.store store(StoreYSize WHeight)}
-            {Show '!'#WWidth#WHeight}
 
             %%
             XRes = case Font.xRes == 0 then
@@ -982,7 +981,6 @@ in
                          read(StoreYSize Y)]}
 
             %%
-            {Show '!'#'!'#'!'#X#MinXSize#Y#MinYSize}
             case MinXSize =< X andthen MinYSize =< Y then
                %%
                {Tk.send wm(geometry self.Window X#'x'#Y)}
@@ -1106,7 +1104,6 @@ in
                {Tk.send wm(minsize self.Window XMinSize YMinSize)}
 
                %%
-               {Show '!'#'!'#XSize#XMinSize#YSize#YMinSize}
                case XMinSize =< XSize andthen YMinSize =< YSize then skip
                elsecase XSize < XMinSize andthen YMinSize =< YSize then
                   {Tk.send wm(geometry self.Window XMinSize#'x'#YSize)}

@@ -56,7 +56,8 @@ local
    fun {PosSmaller Pos1 Pos2}
       case Pos1 of I|Ir then
          case Pos2 of J|Jr then
-            I < J orelse I == J andthen {PosSmaller Ir Jr}
+            {CompilerSupport.featureLess I J} orelse
+            I == J andthen {PosSmaller Ir Jr}
          [] nil then false
          end
       [] nil then true

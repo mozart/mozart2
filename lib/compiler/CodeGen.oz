@@ -34,7 +34,7 @@
 
 functor
 import
-   CompilerSupport(isBuiltin) at 'x-oz://boot/CompilerSupport'
+   CompilerSupport(isBuiltin featureLess) at 'x-oz://boot/CompilerSupport'
    System(printName)
    Builtins(getInfo)
    Core
@@ -1067,7 +1067,7 @@ define
                             end
                          else
                             if {IsObject F2} then true
-                            else F1 < F2
+                            else {CompilerSupport.featureLess F1 F2}
                             end
                          end
                       end}

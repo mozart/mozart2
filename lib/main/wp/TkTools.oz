@@ -57,6 +57,7 @@ fun {NewTkTools Tk}
 
    Border     = 1
    BigBorder  = 2
+   Pad        = 2
    BigPad     = 4
    NoArg      = {NewName}
    EntryColor = case Tk.isColor then wheat else white end
@@ -186,7 +187,7 @@ fun {NewTkTools Tk}
                             wm(deiconify Toplevel) | @PackList
                          end)
             PackList <- (pack(b(TkButtons)
-                              padx:BigPad pady:BigPad side:left expand:1) |
+                              padx:BigPad pady:Pad side:left expand:1) |
                          pack(Bottom side:bottom fill:both) |
                          pack(Top side:top fill:both) |
                          pack(self side:top fill:both) | @PackList)

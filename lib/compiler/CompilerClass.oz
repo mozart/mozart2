@@ -557,11 +557,11 @@ local
                        FSs = {Map TopLevelGVs
                               fun {$ GV} {GV output(R2 $)} end}
                        'declare'#format(glue(" "))#
-                       format(list(FSs format(glue(" "))))#format(glue(" "))#
+                       list(FSs format(glue(" ")))#format(glue(" "))#
                        'in'#format(break)
                     end#
-                    format(list({Map GS fun {$ GS} {GS output(R1 $)} end}
-                                format(break)))
+                    list({Map GS fun {$ GS} {GS output(R1 $)} end}
+                         format(break))
                {@reporter displaySource('Oz Compiler: Core Output' '.ozi'
                                         {FormatStringToVirtualString FS}#'\n')}
             else skip
@@ -617,7 +617,8 @@ local
                              {List.foldLInd GPNs
                               fun {$ I In PrintName}
                                  In#'%%    g('#I - 1#') = '#
-                                 {PrintNameToVirtualString PrintName}#'\n'
+                                 {FormatStringToVirtualString pn(PrintName)}#
+                                 '\n'
                               end '%% Assignment of Global Registers:\n'}
                           end#{Assembler output($)}
                      {@reporter

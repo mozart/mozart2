@@ -48,7 +48,7 @@ local
    GL = format(glue(" "))
    NL = format(break)
    fun {LI Xs Sep R}
-      format(list({Map Xs fun {$ X} {X output(R $)} end} Sep))
+      list({Map Xs fun {$ X} {X output(R $)} end} Sep)
    end
    fun {LI2 Xs Sep R ?FS}
       case Xs of X1|Xr then FS01 FS02 FSs in
@@ -58,7 +58,7 @@ local
                       {X output2(R ?FS01 ?FS02)}
                       (FS01|FSs)#(FS#FS02)
                    end [FS01]#FS02}
-         format(list({Reverse FSs} Sep))
+         list({Reverse FSs} Sep)
       [] nil then
          FS = ""
          ""
@@ -260,7 +260,7 @@ in
                                 (FS01|FSs)#(FS#FS02)
                              end
                           end Start}
-               format(list({Reverse FSs} GL))
+               list({Reverse FSs} GL)
             else
                FS2 = ""
                ""
@@ -514,7 +514,7 @@ in
                                 (FS01|FSs)#(FS#FS02)
                              end
                           end Start}
-               Args = format(list({Reverse FSs} GL))
+               Args = list({Reverse FSs} GL)
             else
                FS2 = ""
                Args = ""
@@ -547,7 +547,7 @@ in
                                 (FS01|FSs)#(FS#FS02)
                              end
                           end Start}
-               Args = format(list({Reverse FSs} GL))
+               Args = list({Reverse FSs} GL)
             else
                FS2 = ""
                Args = ""
@@ -732,7 +732,7 @@ in
                           fun {$ FSs#FS I} FS0 in
                              ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                           end [FS1]#FS0}
-               PU#'attr'#GL#format(list({Reverse FSs} GL))#PO#FS4#
+               PU#'attr'#GL#list({Reverse FSs} GL)#PO#FS4#
                case @features \= nil orelse @methods \= nil then NL else "" end
             else ""
             end#
@@ -742,7 +742,7 @@ in
                           fun {$ FSs#FS I} FS0 in
                              ({OutputAttrFeat I R ?FS0}|FSs)#(FS#FS0)
                           end [FS1]#FS0}
-               PU#'feat'#GL#format(list({Reverse FSs} GL))#PO#FS5#
+               PU#'feat'#GL#list({Reverse FSs} GL)#PO#FS5#
                case @methods \= nil then NL else "" end
             else ""
             end#{LI @methods NL R}#EX#NL#'end'
@@ -1069,19 +1069,19 @@ in
             VO = {New VariableOccurrence init(self Coord)}
          end
          meth output(R $) P = @printName in
-            case {CheckOutput R realcore} then {PrintNameToVirtualString P}
+            case {CheckOutput R realcore} then pn(P)
             elsecase P of '`unit`' then 'unit'
             [] '`true`' then 'true'
             [] '`false`' then 'false'
-            else {PrintNameToVirtualString P}
+            else pn(P)
             end
          end
          meth outputEscaped(R $) P = @printName in
-            case {CheckOutput R realcore} then '!'#{PrintNameToVirtualString P}
+            case {CheckOutput R realcore} then '!'#pn(P)
             elsecase P of '`unit`' then 'unit'
             [] '`true`' then 'true'
             [] '`false`' then 'false'
-            else '!'#{PrintNameToVirtualString P}
+            else '!'#pn(P)
             end
          end
          meth outputPattern(R Vs $) PrintName = @printName in

@@ -27,6 +27,26 @@
 
 local
    local
+      proc {EscapeVariableChar Hd C|Cr Tl}
+         case Cr of nil then Hd = C|Tl   % terminating quote
+         elsecase C == &` orelse C == &\\ then Hd = &\\|C|Tl
+         elsecase C < 10 then Hd = &\\|&x|&0|(&0 + C)|Tl
+         elsecase C < 16 then Hd = &\\|&x|&0|(&A + C - 10)|Tl
+         elsecase C < 26 then Hd = &\\|&x|&1|(&0 + C - 16)|Tl
+         elsecase C < 32 then Hd = &\\|&x|&1|(&A + C - 26)|Tl
+         else Hd = C|Tl
+         end
+      end
+   in
+      fun {PrintNameToVirtualString PrintName}
+         case {Atom.toString PrintName} of &`|Sr then
+            &`|{FoldLTail Sr EscapeVariableChar $ nil}
+         else PrintName
+         end
+      end
+   end
+
+   local
       fun {IndentSub N VS}
          case N >= 8 then {IndentSub N - 8 VS#'\t'}
          elsecase N > 0 then {IndentSub N - 1 VS#' '}
@@ -76,7 +96,10 @@ local
          PrintWidth <- case PW of unit then {Property.get print}.width
                        else PW
                        end
-         @StackOpsHd = @StackOpsTl
+         local X in
+            StackOpsHd <- X
+            StackOpsTl <- X
+         end
       end
       meth append(FS)
          case FS of '#' then skip

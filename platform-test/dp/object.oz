@@ -63,7 +63,7 @@ define
             msg <- SiteNr#ThreadNr
             MsgHandler, updateDict(Old Dict Lock)
          end
-            if Nr == Times then
+         if Nr == Times then
             skip
          else
             MsgHandler, updater(Nr+1 SiteNr ThreadNr Dict Lock)
@@ -72,8 +72,10 @@ define
 
       meth computeStatistics(Statistics Dict Lock) Old in
          Statistics = {MakeList Threads*Sites}
-         Old = @msg
-         msg <- done
+         lock Lock then
+            Old = @msg
+            msg <- done
+         end
          if Old \= done then
             MsgHandler, updateDict(Old Dict Lock)
          else skip end

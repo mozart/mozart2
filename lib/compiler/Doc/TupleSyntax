@@ -102,8 +102,8 @@ EscapedFeature    = Atom
                   | Variable
                   | fInt(int Coordinates).
 CaseClause        = fCaseClause(Phrase Phrase).
-Catch             = fNoCatch
-                  | [CaseClause].
+Catch             = fCatch([CaseClause] Coordinates)
+                  | fNoCatch.
 Finally           = fNoFinally
                   | Phrase.
 Clause            = fClause(Phrase Phrase Phrase).

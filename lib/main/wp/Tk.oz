@@ -370,10 +370,12 @@ in
                WISH    = case OSS=='win32' then 'ozwish.exe'
                          else 'oz.wish.bin'
                          end
-               CMD     = HOME # '/platform/'#OSS#'-'#CPU#'/'#WISH
+               PLTFRM  = HOME # '/platform/'#OSS#'-'#CPU#'/'
+               CMD     = PLTFRM#WISH
+               LIBS    = PLTFRM#'wish/'
             in
-               {OS.putEnv 'TCL_LIBRARY' HOME#'/share/wish/tcl'}
-               {OS.putEnv 'TK_LIBRARY'  HOME#'/share/wish/tk'}
+               {OS.putEnv 'TCL_LIBRARY' LIBS#'tcl'}
+               {OS.putEnv 'TK_LIBRARY'  LIBS#'tk'}
 
                {New class $ from Open.pipe Open.text
                        prop final

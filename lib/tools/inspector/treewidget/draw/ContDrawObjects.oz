@@ -223,7 +223,6 @@ local
          NewDepth = (CurDepth + N - 1)
          NewNode
       in
-         {System.show 'running show more depth'#Node}
          {Node undraw}
          {Visual setDepth(NewDepth)}
          NewNode = {Visual treeCreate(Value self Index CurDepth $)}

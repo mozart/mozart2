@@ -201,9 +201,16 @@ define
             end
             local
                ArrayContents = {NewName}
+               ArrayStats    = {NewName}
             in
                fun {ShowArrayCont V W D}
                   {Array.toRecord ArrayContents V}
+               end
+               fun {ShowArrayStat V W D}
+                  L = {Array.low V}
+                  H = {Array.high V}
+               in
+                  ArrayStats(low: L high: H width: ((H - L) + 1))
                end
             end
             local
@@ -436,7 +443,9 @@ define
           fsetMenu               # menu(WidthList DepthList nil nil)
           genericMenu            # nil
 
-          arrayMenu              # menu(nil nil [auto('Show Contents'(ShowArrayCont))] nil)
+          arrayMenu              # menu(nil nil [auto('Show Contents'(ShowArrayCont))
+                                                 'Show Sizeinfo'(ShowArrayStat)
+                                                ] nil)
           dictionaryMenu         # menu(nil nil ['Show Keys'(ShowDictKeys)
                                                  'Show Items'(ShowDictItems)
                                                  auto('Show Entries'(ShowDictCont))] nil)

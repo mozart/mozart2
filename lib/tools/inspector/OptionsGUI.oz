@@ -382,7 +382,8 @@ local
                                        text:  'Type Defaults')}
                MappingInner  = MappingFrame.inner
                MapTypeName   = {Dictionary.condGet @namesDict MappingType MappingType}
-               AllFilter     = {Dictionary.get OpDict {VirtualString.toAtom MapTypeName#'Menu'}}
+               AllTypeMenu   = {Dictionary.get OpDict {VirtualString.toAtom MapTypeName#'Menu'}}
+               AllFilter     = case AllTypeMenu of nil then nil else AllTypeMenu.3 end
                AutoFilter    = DisplayNote, ExtractAuto(AllFilter $)
                VarValue      = case AutoFilter of nil then 'none' else 'auto' end
                MyVar         = {New Tk.variable
@@ -474,7 +475,6 @@ local
             OldKey    = {VirtualString.toAtom OTN#'Menu'}
             NewKey    = {VirtualString.toAtom NTN#'Menu'}
          in
-            {System.show 'running HandleNewFilter'}
             case {Dictionary.get OpDict OldKey}
             of menu(WL DL FL AL) then
                NewFL = DisplayNote, AdjustFilters(FL AutoLabel $)

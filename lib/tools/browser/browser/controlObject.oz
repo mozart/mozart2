@@ -181,16 +181,15 @@ in
           # self.term # self.type}
 \endif
          %%
-         local ShowGraph ShowMinGraph in
-            {self.store [read(StoreShowGraph ShowGraph)
-                         read(StoreShowMinGraph ShowMinGraph)]}
+         local RepMode in
+            RepMode = {self.store read(StoreRepMode $)}
 
             %%
-            (ShowGraph andthen
+            (RepMode == GraphRep andthen
              {BrowserTerm.checkGraph self.type} andthen
              {CheckCycleFun self.term self.ParentObj} \= InitValue)
             orelse
-            (ShowMinGraph andthen
+            (RepMode == MinGraphRep andthen
              {BrowserTerm.checkMinGraph self.type} andthen
              {self.TermsStore checkCorefs(self $)})
          end
@@ -470,11 +469,10 @@ in
           # self.term # N # ST}
 \endif
          %%
-         local Store ShowGraph ShowMinGraph ObjClass RefObj STDepth in
+         local Store RepMode ObjClass RefObj STDepth in
             %%
             Store = self.store
-            {Store [read(StoreShowGraph ShowGraph)
-                    read(StoreShowMinGraph ShowMinGraph)]}
+            RepMode = {Store read(StoreRepMode $)}
             STDepth = @TDepth - 1
 
             %%
@@ -489,10 +487,13 @@ in
 
                %%
                RefObj =
-               case ShowGraph andthen {BrowserTerm.checkGraph STType}
+               case
+                  RepMode == GraphRep andthen
+                  {BrowserTerm.checkGraph STType}
                then {CheckCycleFun ST self}
                elsecase
-                  ShowMinGraph andthen {BrowserTerm.checkMinGraph STType}
+                  RepMode == MinGraphRep andthen
+                  {BrowserTerm.checkMinGraph STType}
                then {self.TermsStore checkANDStore(self ST Obj $)}
                else InitValue
                end
@@ -519,7 +520,7 @@ in
             %%
             case ObjClass == ReferenceTermObject then StreamObj RefType in
                StreamObj = {Store read(StoreStreamObj $)}
-               RefType = case ShowGraph then 'C' else 'R' end
+               RefType = case RepMode == GraphRep then 'C' else 'R' end
 
                %%
                %% 'RefObj' can lie on the same path with 'Obj'. This

@@ -41,9 +41,11 @@ BrowserWidthInc              = browserWidthInc
 % BrowserSmoothScrolling       = smoothScrolling
 
 %%
+%% Representation mode - tree, graph or minGraph;
+BrowserRepMode               = browserRepMode
+
+%%
 %% Extensions - booleans;
-BrowserShowGraph             = browserShowGraph
-BrowserShowMinGraph          = browserMinGraph
 BrowserChunkFields           = browserChunkFields
 BrowserVirtualStrings        = browserVirtualStrings
 

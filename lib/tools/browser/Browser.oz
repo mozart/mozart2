@@ -76,6 +76,11 @@ local
    %%  'tcl-interface.oz';
    BrowserWindowClass
    MessageWindowClass
+   AboutDialogClass
+   BufferDialog
+   RepresentationDialog
+   DisplayDialog
+   LayoutDialog
 
    %%
    %%  'termsStore.oz';

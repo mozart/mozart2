@@ -262,7 +262,7 @@ in
    fun {GenChunkPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Ch>'
-      else '<' # {System.printName Term} # '>'
+      else '<Chunk: ' # {System.printName Term} # '>'
       end
    end
 
@@ -270,7 +270,7 @@ in
    fun {GenDictionaryPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Dict>'
-      else '<' # {System.printName Term} # '>'
+      else '<Dict: ' # {System.printName Term} # '>'
       end
    end
 
@@ -278,7 +278,7 @@ in
    fun {GenArrayPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Array>'
-      else '<' # {System.printName Term} # '>'
+      else '<Array: ' # {System.printName Term} # '>'
       end
    end
 
@@ -286,7 +286,7 @@ in
    fun {GenThreadPrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Thr>'
-      else '<' # {System.printName Term} # '>'
+      else '<Thread: ' # {System.printName Term} # '>'
       end
    end
 
@@ -294,7 +294,7 @@ in
    fun {GenSpacePrintName Term Store}
       %%
       case {Store read(StoreSmallNames $)} then '<Space>'
-      else '<' # {System.printName Term} # '>'
+      else '<Space: ' # {System.printName Term} # '>'
       end
    end
 
@@ -1485,7 +1485,7 @@ in
             case {IsVar TL} then skip
                %% no new subterms (but they are still expected);
             elsecase TL
-            of _|_ then
+            of _|_ then RepMode = {self.store read(StoreRepMode $)} in
                %%
                %% There are three interesting cases when searching
                %% for cycles is switched on:
@@ -1505,9 +1505,7 @@ in
                %%
                %% So, we have probably to check whether a tail list
                %% is cyclic
-               case
-                  {self.store read(StoreShowGraph $)} orelse
-                  {self.store read(StoreShowMinGraph $)}
+               case RepMode == GraphRep orelse RepMode == MinGraphRep
                then MW NNonCyclic in
                   MW = {self.store read(StoreWidth $)}
 

@@ -78,8 +78,8 @@ class BrowserClass
            store(StoreDepthInc IDepthInc)
            store(StoreWidthInc IWidthInc)
 %       store(StoreSmoothScrolling ISmoothScrolling)
-           store(StoreShowGraph IShowGraph)
-           store(StoreShowMinGraph IShowMinGraph)
+           store(StoreAreSeparators ISeparators)
+           store(StoreRepMode IRepMode)
            store(StoreTWFont ITWFontUnknown)     % first approximation;
            store(StoreBufferSize IBufferSize)
            store(StoreWithMenus case WithMenus == true
@@ -704,51 +704,32 @@ class BrowserClass
 %      [] !BrowserSmoothScrolling        then
 %        case ValueOf of true then
 %           {self.Store store(StoreSmoothScrolling true)}
-%           {self.BrowserStream enq(setVarValue(smoothScrolling true))}
 %        elseof false then
 %           {self.Store store(StoreSmoothScrolling false)}
-%           {self.BrowserStream enq(setVarValue(smoothScrolling false))}
 %        else
 %           {BrowserError
 %            'Illegal value of parameter BrowserSmoothScrolling'}
 %        end
 
-         [] !BrowserShowGraph              then
-            case ValueOf of true then
-               %%
-               {self.Store store(StoreShowGraph true)}
-               {self.BrowserStream enq(setVarValue(showGraph true))}
-            elseof false then
-               %%
-               {self.Store store(StoreShowGraph false)}
-               {self.BrowserStream enq(setVarValue(showGraph false))}
-            else
-               {BrowserError
-                'Illegal value of parameter BrowserCoreferences'}
-            end
-
-         [] !BrowserShowMinGraph           then
-            case ValueOf of true then
-               %%
-               {self.Store store(StoreShowMinGraph true)}
-               {self.BrowserStream enq(setVarValue(showMinGraph true))}
-            elseof false then
-               %%
-               {self.Store store(StoreShowMinGraph false)}
-               {self.BrowserStream enq(setVarValue(showMinGraph false))}
-            else
-               {BrowserError 'Illegal value of parameter BrowserCycles'}
-            end
+         [] !BrowserRepMode                then
+            {self.Store store(StoreRepMode
+                              case ValueOf
+                              of tree     then TreeRep
+                              [] grapth   then GraphRep
+                              [] minGraph then MinGraphRep
+                              else
+                                 {BrowserError
+                                  'Illegal value of parameter BrowserCoreferences'}
+                                 {self.Store read(StoreRepMode $)}
+                              end)}
 
          [] !BrowserChunkFields            then
             case ValueOf of true then
                %%
                {self.Store store(StoreArityType TrueArity)}
-               {self.BrowserStream enq(setVarValue(arityType TrueArity))}
             elseof false then
                %%
                {self.Store store(StoreArityType AtomicArity)}
-               {self.BrowserStream enq(setVarValue(arityType AtomicArity))}
             else
                {BrowserError
                 'Illegal value of parameter BrowserPrivateFields'}
@@ -758,11 +739,9 @@ class BrowserClass
             case ValueOf of true then
                %%
                {self.Store store(StoreAreVSs true)}
-               {self.BrowserStream enq(setVarValue(areVSs true))}
             elseof false then
                %%
                {self.Store store(StoreAreVSs false)}
-               {self.BrowserStream enq(setVarValue(areVSs false))}
             else
                {BrowserError
                 'Illegal value of parameter BrowserVirtualStrings'}
@@ -772,11 +751,9 @@ class BrowserClass
             case ValueOf of true then
                %%
                {self.Store store(StoreFillStyle Expanded)}
-               {self.BrowserStream enq(setVarValue(fillStyle Expanded))}
             elseof false then
                %%
                {self.Store store(StoreFillStyle Filled)}
-               {self.BrowserStream enq(setVarValue(fillStyle Filled))}
             else
                {BrowserError
                 'Illegal value of parameter BrowserRecordFieldsAligned'}
@@ -786,20 +763,17 @@ class BrowserClass
             case ValueOf of true then
                %%
                {self.Store store(StoreSmallNames true)}
-               {self.BrowserStream enq(setVarValue(smallNams true))}
             elseof false then
                %%
                {self.Store store(StoreSmallNames false)}
-               {self.BrowserStream enq(setVarValue(smallNames false))}
             else
                {BrowserError
                 'Illegal value of parameter BrowserNamesAndProcsShort'}
             end
 
          [] !BrowserFont                   then Fonts in
-            Fonts = {Filter
-                     {Append IKnownMiscFonts IKnownCourFonts}
-                     fun {$ F} F.name == ValueOf end}
+            Fonts = {Filter IKnownCourFonts
+                     fun {$ F} font(size:F.size wght:F.wght) == ValueOf end}
 
             %%
             case Fonts
@@ -808,8 +782,9 @@ class BrowserClass
                %%  must leave the object's state!
                thread
                   case {self.BrowserStream enq(setTWFont(Font $))}
-                  then {self.BrowserStream enq(setFont(Font))}
-                  else {BrowserError 'Illegal value of parameter BrowserFont'}
+                  then skip
+                  else {BrowserError
+                        'Illegal value of parameter BrowserFont'}
                   end
                end
             else {BrowserError 'Illegal value of parameter BrowserFont'}
@@ -853,10 +828,8 @@ class BrowserClass
             {self.Store read(StoreWidthInc $)}
 %      [] !BrowserSmoothScrolling        then
 %        {self.Store read(StoreSmoothScrolling $)}
-         [] !BrowserShowGraph              then
-            {self.Store read(StoreShowGraph $)}
-         [] !BrowserShowMinGraph           then
-            {self.Store read(StoreShowMinGraph $)}
+         [] !BrowserRepMode                then
+            {self.Store read(StoreRepMode $)}
          [] !BrowserChunkFields            then
             {self.Store read(StoreArityType $)} == TrueArity
          [] !BrowserVirtualStrings         then
@@ -866,7 +839,9 @@ class BrowserClass
          [] !BrowserNamesAndProcsShort     then
             {self.Store read(StoreSmallNames $)}
          [] !BrowserFont                   then
-            {self.Store read(StoreTWFont $)}.name
+            F = {self.Store read(StoreTWFont $)}
+         in
+            font(size:F.size wght:F.wght)
          [] !BrowserBufferSize             then
             {self.Store read(StoreBufferSize $)}
          else
@@ -1100,10 +1075,10 @@ class BrowserClass
       {Show 'BrowserClass::About is applied'}
 \endif
       %%
-      skip
+      {self.BrowserStream enq(makeAbout)}
       %%
 \ifdef DEBUG_BO
-         {Show 'BrowserClass::About is finished'}
+      {Show 'BrowserClass::About is finished'}
 \endif
    end
 

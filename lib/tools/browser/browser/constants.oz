@@ -111,8 +111,8 @@ StoreArityType       = {NewName}
 StoreWidthInc        = {NewName}
 StoreDepthInc        = {NewName}
 % StoreSmoothScrolling = {NewName}
-StoreShowGraph       = {NewName}
-StoreShowMinGraph    = {NewName}
+StoreAreSeparators   = {NewName}
+StoreRepMode         = {NewName}
 StoreSmallNames      = {NewName}
 StoreAreVSs          = {NewName}
 StoreTWFont          = {NewName}
@@ -132,6 +132,10 @@ StoreBreak           = {NewName}
 StoreSeqNum          = {NewName}
 
 %%
+%% Types of representation (tree, graph, minimal graph);
+TreeRep              = {NewName}
+GraphRep             = {NewName}
+MinGraphRep          = {NewName}
 %% Types of (record) filling:
 Expanded             = {NewName}
 Filled               = {NewName}
@@ -165,8 +169,13 @@ IMHeight    = 5
 
 %%
 ITitle      = 'Oz Browser'
-IVTitle     = IVTitle#': View'
-IMTitle     = IVTitle#': Messages'
+IVTitle     = ITitle#': View'
+IMTitle     = ITitle#': Messages'
+IATitle     = ITitle#': About'
+IBOTitle    = ITitle#': Buffer Options'
+IROTitle    = ITitle#': Representation Options'
+IDOTitle    = ITitle#': Display Options'
+ILOTitle    = ITitle#': Layout Options'
 
 %%
 IITitle     = ITitle
@@ -213,65 +222,53 @@ ISWidth       = 15
 
 %%
 %% default font for text widgets, 'x' and 'y' resolutions for it;
-ITWFontUnknown = font(name:'*startup*'
+ITWFontUnknown = font(size:14 wght:medium
                       font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
                       xRes:0 yRes:0)   % these are just some values!
 %%
-ITWFont1       = font(name:'8x13' font:'8x13' xRes:8 yRes:13)
-ITWFont2       = font(name:'14'
+ITWFont1       = font(size:14 wght:medium
                       font:'-*-courier-medium-r-*-*-14-*-*-*-*-*-*-*'
                       xRes:0 yRes:0)
-ITWFont3       = font(name:'*any*'
+ITWFont2       = font(size:14 wght:medium
+                      font:'-*-*-*-r-*-*-14-*-*-*-*-*-*-*'
+                      xRes:0 yRes:0)
+ITWFont3       = font(size:14 wght:medium
                       font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
                       xRes:0 yRes:0)   % these are just some values!
-IKnownMiscFonts = [font(name:'10x20' font:'10x20' xRes:10 yRes:20)
-                   font(name:'9x15' font:'9x15' xRes:9 yRes:15)
-                   font(name:'9x15bold' font:'9x15bold' xRes:9 yRes:15)
-                   font(name:'8x13' font:'8x13' xRes:8 yRes:13)
-                   font(name:'8x13bold' font:'8x13bold' xRes:8 yRes:13)
-                   font(name:'7x13' font:'7x13' xRes:7 yRes:13)
-                   font(name:'7x13bold' font:'7x13bold' xRes:7 yRes:13)
-                   font(name:'6x13' font:'6x13' xRes:6 yRes:13)
-                   font(name:'6x13bold' font:'6x13bold' xRes:6 yRes:13)
-                   font(name:'6x12' font:'6x12' xRes:6 yRes:12)
-                   font(name:'6x10' font:'6x10' xRes:6 yRes:10)
-                   font(name:'any'
-                        font:'-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
-                        xRes:0 yRes:0)]
 
 %%
 %% Note: actually, precise dimentions of the courier fonts are not
 %% known (and even more, they depend on many other factors!). So, we
 %% just left them unspecified (i.e. == 0).
 %%
-IKnownCourFonts = [font(name:'24'
+IKnownCourFonts = [font(size:24 wght:medium
                         font:'-*-courier-medium-r-*-*-24-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'24bold'
+                   font(size:24 wght:bold
                         font:'-*-courier-bold-r-*-*-24-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'18'
+                   font(size:18 wght:medium
                         font:'-*-courier-medium-r-*-*-18-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'18bold'
+                   font(size:18 wght:bold
                         font:'-*-courier-bold-r-*-*-18-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'14'
+                   font(size:14 wght:medium
                         font:'-*-courier-medium-r-*-*-14-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'14bold'
+                   font(size:14 wght:bold
                         font:'-*-courier-bold-r-*-*-14-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'12'
+                   font(size:12 wght:medium
                         font:'-*-courier-medium-r-*-*-12-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'12bold'
+                   font(size:12 wght:bold
                         font:'-*-courier-bold-r-*-*-12-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'10'
+                   font(size:10 wght:medium
                         font:'-*-courier-medium-r-*-*-10-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)
-                   font(name:'10bold'
+                   font(size:10 wght:bold
                         font:'-*-courier-bold-r-*-*-10-*-*-*-*-*-*-*'
                         xRes:0 yRes:0)]
 
@@ -280,14 +277,21 @@ IKnownCourFonts = [font(name:'24'
 IPad          = 1
 IButtonPad    = 1
 ITWPad        = 3
+IBigPad       = 4
+ISEntryWidth  = 8
 
 %% width of a button (in cm);
 IButtonWidth  = 10
 
 %%
 IBFont1       = '-*-lucida-bold-r-*-sans-12-*-*-*-*-*-*-*'
-IBFont2       = '-*-courier-bold-r-*-*-12-*-*-*-*-*-*-*'
+IBFont2       = '-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1'
 IBFont3       = '-*-*-*-r-*-*-12-*-*-*-*-*-*-1'
+
+%%
+IAFont1       = '-*-times-bold-r-*-*-24-*-*-*-*-*-*-*'
+IAFont2       = '-*-*-bold-r-*-*-24-*-*-*-*-*-*-1'
+IAFont3       = '-*-*-*-r-*-*-24-*-*-*-*-*-*-1'
 
 %%  "any" font: if the specified one is not found;
 IReservedFont = '-*-*-*-*-*-*-*-*-*-*-*-*-*-1'
@@ -312,12 +316,30 @@ IAreVSs           = false
 IDepthInc         = 1
 IWidthInc         = 1
 % ISmoothScrolling  = false
-IShowGraph        = false
-IShowMinGraph     = false
+ISeparators       = false
+IRepMode          = !TreeRep
 %% ... only one of the previous two should be toggled one;
 IBufferSize       = 15
 %% would the menus frame come at start?
 IWithMenus        = true
+
+%%
+%% template sizes;
+IBSSmall          = 5
+IBSMedium         = !IBufferSize
+IBSLarge          = 100
+IDSmall           = 5
+IWSmall           = 15
+IDMedium          = !IDepth
+IWMedium            = !IWidth
+IDLarge           = 50
+IWLarge           = 1000
+IDISmall          = !IDepthInc
+IWISmall          = !IWidthInc
+IDIMedium         = 3
+IWIMedium         = 15
+IDILarge          = 10
+IWILarge          = 200
 
 %%%
 %%%

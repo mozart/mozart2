@@ -23,6 +23,7 @@
 local
    %%
    MyToplevel
+   Window       = {NewName}     %
 
    %%
    ProcessEntries
@@ -37,6 +38,18 @@ local
    %%
    CanvasFeat   = {NewName}     %
    TagFeat      = {NewName}     %
+
+   %%
+   FoldL_Obj
+
+   %%
+   Oz2Tcl
+   Tcl2Oz
+   NumberS2I
+   NumberI2VS
+
+   %%
+   MakeDistFrame
 
    %%
 in
@@ -147,6 +160,70 @@ in
       %%
    end
 
+   %%
+   %% Loop over list ('FoldL' fashion) with method applications;
+   fun {FoldL_Obj Self Xs M Z}
+      case Xs
+      of X|Xr then {FoldL_Obj Self Xr M {Self M(Z X $)}}
+      [] nil  then Z
+      end
+   end
+
+   %%
+   %%  (Oz) Names cannot be passed around with tcl/tk;
+   fun {Oz2Tcl OzValue}
+      case OzValue
+      of true              then 'tcl_True'
+      [] false             then 'tcl_False'
+      [] !TreeRep          then 'tcl_treeRep'
+      [] !GraphRep         then 'tcl_graphRep'
+      [] !MinGraphRep      then 'tcl_minGraphRep'
+      [] !Expanded         then 'tcl_Expanded'
+      [] !Filled           then 'tcl_Filled'
+      [] !AtomicArity      then 'tcl_AtomicArity'
+      [] !TrueArity        then 'tcl_TrueArity'
+      else
+         {BrowserError 'Oz2Tcl: unknown value!'}
+         'tcl_False'
+      end
+   end
+   %%
+   fun {Tcl2Oz TclValue}
+      case TclValue
+      of 'tcl_True'        then true
+      [] 'tcl_False'       then false
+      [] 'tcl_treeRep'     then TreeRep
+      [] 'tcl_graphRep'    then GraphRep
+      [] 'tcl_minGraphRep' then MinGraphRep
+      [] 'tcl_Expanded'    then Expanded
+      [] 'tcl_Filled'      then Filled
+      [] 'tcl_AtomicArity' then AtomicArity
+      [] 'tcl_TrueArity'   then TrueArity
+      else
+         {BrowserError 'Tcl2Oz: unknown value!'}
+         false
+      end
+   end
+
+   %%
+   fun {NumberS2I S}
+      case {Map {Filter S Char.isGraph} Char.toLower}
+      of "infinity" then ~1
+      elseof S then {Tk.string.toInt S}
+      end
+   end
+   %%
+   fun {NumberI2VS I}
+      case I<1 then infinity
+      else I
+      end
+   end
+
+   %%
+   fun {MakeDistFrame P}
+      {New Tk.frame tkInit(parent:P width:30)}
+   end
+
 %%%
 %%%
 %%%  Prototype of browser's window;
@@ -168,7 +245,7 @@ in
       %%
       %% static, i.e. a 'BrowserWindowClass' cannot re-create
       %% it's widget;
-         Window
+         !Window                % that's a leader for dialogs;
          BrowseWidget
       %% We don't need the 'FrameHS' except for specifying the
       %% placement order in the 'exposeMenuBar';
@@ -350,8 +427,7 @@ in
 
             %%
             %% Select a font from ITWFont?, and store it;
-            {Wait
-             {self FoldL_Obj([ITWFont1 ITWFont2 ITWFont3] TryFont true $)}}
+            {Wait {FoldL_Obj self [ITWFont1 ITWFont2 ITWFont3] TryFont true}}
 
             %%
             %% scrollbars;
@@ -605,15 +681,6 @@ in
       end
 
       %%
-      %% Loop over list ('FoldL' fashion) with method applications;
-      meth FoldL_Obj(Xs P Z $)
-         case Xs
-         of X|Xr then {self  FoldL_Obj(Xr P {self P(Z X $)} $)}
-         [] nil  then Z
-         end
-      end
-
-      %%
       meth TryFont(Proceed IFont $)
          case Proceed then
             %%
@@ -623,7 +690,8 @@ in
                %% appropriate radio button;
                thread   % job
                   {self.browserObj
-                   setParameter(BrowserFont IFont.name)}
+                   setParameter(BrowserFont
+                                font(size:IFont.size wght:IFont.wght))}
                end
                %%
                false
@@ -1604,41 +1672,6 @@ in
       end
 
       %%
-      %% Create a tcl/tk variable - for check&radio buttons/menu entries;
-      %% UpdateProc is called every time when the cariable changes
-      %% its value, i.e. when user clicks a button that controls it;
-      %% UpdateProc is an unary procedure that gets the (actual) value
-      %% of the variable as the string;
-      %%
-      meth createTkVar(FValue UpdateProc ?TkVar)
-\ifdef DEBUG_TI
-         {Show 'BrowserWindowClass::createTkVar'#FValue}
-\endif
-         %%
-         local A in
-            TkVar = {New Tk.variable tkInit(FValue)}
-
-            %%
-            A = {New Tk.action tkInit(parent: self.Window
-                                      action: proc{$ _ _ _}
-                                                 %% is not interesting;
-                                                 local A in
-                                                    A = {TkVar tkReturn($)}
-                                                    {UpdateProc A}
-                                                 end
-                                              end)}
-
-            %%
-            {Tk.send trace(variable TkVar w A)}
-         end
-
-         %%
-\ifdef DEBUG_TI
-         {Show 'BrowserWindowClass::createTkVar is finished'}
-\endif
-      end
-
-      %%
       meth setTkVar(Var Value)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::setTkVar'}
@@ -1905,6 +1938,425 @@ in
       end
 
       %%
+   end
+
+   %%
+   %%
+   class AboutDialogClass
+      from MyClosableObject TkTools.dialog
+      feat TitleW
+
+      %%
+      meth init(windowObj: WO)
+         TkTools.dialog , tkInit(master:  WO.Window
+                                 title:   IATitle
+                                 buttons: ['Okay'#tkClose(self#close)]
+                                 focus:   1
+                                 pack:    false
+                                 default: 1)
+         Title = {New Tk.label tkInit(parent:     self
+                                      text:       'Oz Browser')}
+                                      % foreground: AboutColor)}
+         self.TitleW = Title
+         {Wait {FoldL_Obj self [IAFont1 IAFont2 IAFont3] SetTitleFont true}}
+
+         %%
+         Author = {New Tk.label tkInit(parent: self
+                                       text: ('Konstantin Popov\n' #
+                                              '(popov@ps.uni-sb.de)\n'))}
+      in
+         {Tk.send pack(Title Author side:top expand:1
+                       padx:IBigPad pady:IBigPad)}
+         AboutDialogClass , tkPack
+      end
+
+      %%
+      meth SetTitleFont(Proceed IFont $)
+         case Proceed then
+            %%
+            case {X11ResourceCache tryFont(IFont $)} then
+               {self.TitleW tk(conf font:IFont)}
+               %%
+               false
+            else true
+            end
+         else Proceed
+         end
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%
+   class BufferDialog
+      from MyClosableObject TkTools.dialog
+
+      %%
+      meth init(windowObj: WO)
+         proc {Okay}
+            S = {NumberS2I {Size tkReturn(get $)}}
+         in
+            case {IsInt S} then
+               {WO.browserObj SetBufferSize(S)}
+               {WO.store store(StoreAreSeparators
+                               {Tcl2Oz {SepVar tkReturnAtom($)}})}
+               {self tkClose}
+               {self close}
+            else skip
+            end
+         end
+
+         %%
+         proc {Enter S}
+            {Size tk(delete 0 'end')} {Size tk(insert 0 S)}
+         end
+
+         %%
+         TkTools.dialog , tkInit(master:  WO.Window
+                                 title:   IBOTitle
+                                 default: 1
+                                 pack:    false
+                                 buttons: ['Okay'#Okay
+                                           'Cancel'#tkClose(self#close)])
+         SizeFrame = {New TkTools.textframe tkInit(parent: self
+                                                   text:   'Size')}
+         Left = {New Tk.frame tkInit(parent: SizeFrame.inner)}
+         Size = {New Tk.entry tkInit(parent: Left
+                                     % back:   EntryColor
+                                     width:  ISEntryWidth)}
+         Right = {New Tk.frame tkInit(parent: SizeFrame.inner)}
+         SepFrame  = {New TkTools.textframe tkInit(parent: self
+                                                   text:   'Separator')}
+         SepVar = {New Tk.variable
+                   tkInit({Oz2Tcl {WO.store read(StoreAreSeparators $)}})}
+      in
+
+         %%
+         {Enter {NumberI2VS {WO.store read(StoreBufferSize $)}}}
+         {Tk.batch [grid({New Tk.label tkInit(parent:Left
+                                              text:  'Buffer Size:'
+                                              anchor:w)}
+                         row:0 column:0 sticky:we)
+                    grid(Size row:0 column:1 sticky:we)
+                    pack({New Tk.button tkInit(parent: Right
+                                               text:   'Small'
+                                               action: Enter # IBSSmall)}
+                         {New Tk.button tkInit(parent: Right
+                                               text:   'Medium'
+                                               action: Enter # IBSMedium)}
+                         {New Tk.button tkInit(parent: Right
+                                               text:   'Large'
+                                               action: Enter # IBSLarge)}
+                         fill:x)
+                    pack(Left  side:left anchor:n)
+                    pack(Right {MakeDistFrame SizeFrame.inner}
+                         side:right anchor:n)
+                    pack({New Tk.checkbutton
+                          tkInit(parent:SepFrame.inner var:SepVar
+                                 onvalue:{Oz2Tcl true}
+                                 offvalue:{Oz2Tcl false}
+                                 text:'Separate Buffer Entries')}
+                         side:left anchor:n)
+                    pack(SizeFrame SepFrame fill:x)]}
+         BufferDialog , tkPack
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%
+   class RepresentationDialog
+      from MyClosableObject TkTools.dialog
+
+      %%
+      meth init(windowObj: WO)
+         %%
+         proc {Okay}
+            {WO.store store(StoreRepMode
+                            {Tcl2Oz {ModeVar tkReturnAtom($)}})}
+            {WO.store store(StoreArityType
+                            {Tcl2Oz {ChunkVar tkReturnAtom($)}})}
+            {WO.store store(StoreSmallNames
+                            {Tcl2Oz {NameVar tkReturnAtom($)}})}
+            {WO.store store(StoreAreVSs
+                            {Tcl2Oz {VSsVar tkReturnAtom($)}})}
+            {self tkClose}
+            {self close}
+         end
+
+         %%
+         TkTools.dialog , tkInit(master:  WO.Window
+                                 title:   IROTitle
+                                 default: 1
+                                 pack:    false
+                                 buttons: ['Okay'#Okay
+                                           'Cancel'#tkClose(self#close)])
+         ModeFrame   = {New TkTools.textframe tkInit(parent: self
+                                                   text:   'Mode')}
+         ModeVar  = {New Tk.variable
+                     tkInit({Oz2Tcl {WO.store read(StoreRepMode $)}})}
+         DetailFrame = {New TkTools.textframe tkInit(parent: self
+                                                     text:   'Detail')}
+         ChunkVar = {New Tk.variable
+                     tkInit({Oz2Tcl {WO.store read(StoreArityType $)}})}
+         NameVar  = {New Tk.variable
+                     tkInit({Oz2Tcl {WO.store read(StoreSmallNames $)}})}
+         VSsFrame    = {New TkTools.textframe tkInit(parent: self
+                                                     text:   'Type')}
+         VSsVar   = {New Tk.variable
+                     tkInit({Oz2Tcl {WO.store read(StoreAreVSs $)}})}
+      in
+
+         %%
+         {Tk.batch [pack({New Tk.radiobutton tkInit(parent: ModeFrame.inner
+                                                    text:   'Tree'
+                                                    var: ModeVar
+                                                    val: {Oz2Tcl TreeRep}
+                                                    anchor: w)}
+                         {New Tk.radiobutton tkInit(parent: ModeFrame.inner
+                                                    text:   'Graph'
+                                                    var: ModeVar
+                                                    val: {Oz2Tcl GraphRep}
+                                                    anchor: w)}
+                         {New Tk.radiobutton tkInit(parent: ModeFrame.inner
+                                                    text:   'Minimal Graph'
+                                                    var: ModeVar
+                                                    val: {Oz2Tcl MinGraphRep}
+                                                    anchor: w)}
+                         fill:x)
+
+                    pack({New Tk.checkbutton
+                          tkInit(parent:DetailFrame.inner var:ChunkVar
+                                 text:'Private Chunk Fields'
+                                 onvalue:{Oz2Tcl TrueArity}
+                                 offvalue:{Oz2Tcl AtomicArity}
+                                 anchor:w)}
+                         {New Tk.checkbutton
+                          tkInit(parent:DetailFrame.inner var:NameVar
+                                 text: 'Detailed Names and Procedures'
+                                 onvalue:{Oz2Tcl false}
+                                 offvalue:{Oz2Tcl true}
+                                 anchor:w)}
+                         fill:x)
+                    pack(ModeFrame DetailFrame fill:x)
+                    pack({New Tk.checkbutton
+                          tkInit(parent:VSsFrame.inner var:VSsVar
+                                 text:'Virtual Strings'
+                                 onvalue:{Oz2Tcl true}
+                                 offvalue:{Oz2Tcl false}
+                                 anchor:w)}
+                         fill:x)
+                    pack(ModeFrame VSsFrame fill:x)]}
+         RepresentationDialog , tkPack
+      end
+
+      %%
+   end
+
+   %%
+   class DisplayDialog
+      from MyClosableObject TkTools.dialog
+
+      %%
+      meth init(windowObj: WO)
+         %%
+         proc {Okay}
+            D  = {NumberS2I {Depth tkReturn(get $)}}
+            W  = {NumberS2I {Width tkReturn(get $)}}
+            DI = {NumberS2I {DepthInc tkReturn(get $)}}
+            WI = {NumberS2I {WidthInc tkReturn(get $)}}
+         in
+            case {All [D W DI WI] IsInt} then
+               {WO.browserObj SetDepth(D)}
+               {WO.browserObj SetWidth(W)}
+               {WO.browserObj SetDInc(DI)}
+               {WO.browserObj SetWInc(WI)}
+               {self tkClose}
+               {self close}
+            else skip
+            end
+         end
+
+         %%
+         proc {EnterLimits D#W}
+            {Depth tk(delete 0 'end')} {Depth tk(insert 0 D)}
+            {Width tk(delete 0 'end')} {Width tk(insert 0 W)}
+         end
+         proc {EnterInc D#W}
+            {DepthInc tk(delete 0 'end')} {DepthInc tk(insert 0 D)}
+            {WidthInc tk(delete 0 'end')} {WidthInc tk(insert 0 W)}
+         end
+
+         %%
+         TkTools.dialog , tkInit(master:  WO.Window
+                                 title:   IDOTitle
+                                 default: 1
+                                 pack:    false
+                                 buttons: ['Okay'#Okay
+                                           'Cancel'#tkClose(self#close)])
+         LimitsFrame = {New TkTools.textframe
+                        tkInit(parent:self text:'Browse Limit')}
+         LimitsLeft  = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
+         Depth       = {New Tk.entry tkInit(parent: LimitsLeft
+                                            % back:   EntryColor
+                                            width:  ISEntryWidth)}
+         Width       = {New Tk.entry tkInit(parent: LimitsLeft
+                                            % back:   EntryColor
+                                            width:  ISEntryWidth)}
+         LimitsRight = {New Tk.frame tkInit(parent:LimitsFrame.inner)}
+
+         IncFrame = {New TkTools.textframe
+                     tkInit(parent:self text:'Expansion Increment')}
+         IncLeft  = {New Tk.frame tkInit(parent:IncFrame.inner)}
+         DepthInc = {New Tk.entry tkInit(parent: IncLeft
+                                         % back:   EntryColor
+                                         width:  ISEntryWidth)}
+         WidthInc = {New Tk.entry tkInit(parent: IncLeft
+                                         % back:   EntryColor
+                                         width:  ISEntryWidth)}
+         IncRight = {New Tk.frame tkInit(parent:IncFrame.inner)}
+      in
+         {EnterLimits
+          {NumberI2VS {WO.store read(StoreDepth $)}} #
+          {NumberI2VS {WO.store read(StoreWidth $)}}}
+         {EnterInc
+          {NumberI2VS {WO.store read(StoreDepthInc $)}} #
+          {NumberI2VS {WO.store read(StoreWidthInc $)}}}
+         {Tk.batch [grid({New Tk.label tkInit(parent: LimitsLeft
+                                              text:   'Depth:')}
+                         row:0 column:0 sticky:w)
+                    grid(Depth row:0 column:1)
+                    grid({New Tk.label tkInit(parent: LimitsLeft
+                                              text:   'Width:')}
+                         row:1 column:0 sticky:w)
+                    grid(Width row:1 column:1)
+                    pack({New Tk.button tkInit(parent:LimitsRight
+                                               text:  'Small'
+                                               action: EnterLimits #
+                                               (IDSmall # IWSmall))}
+                         {New Tk.button tkInit(parent:LimitsRight
+                                               text:  'Middle'
+                                               action: EnterLimits #
+                                               (IDMedium # IWMedium))}
+                         {New Tk.button tkInit(parent:LimitsRight
+                                               text:  'Large'
+                                               action: EnterLimits #
+                                               (IDLarge # IWLarge))}
+                         fill:x)
+                    pack(LimitsLeft  side:left anchor:n)
+                    pack(LimitsRight {MakeDistFrame LimitsFrame.inner}
+                         side:right anchor:n)
+                    grid({New Tk.label tkInit(parent: IncLeft
+                                              text:   'Depth:')}
+                         row:0 column:0 sticky:w)
+                    grid(DepthInc row:0 column:1)
+                    grid({New Tk.label tkInit(parent: IncLeft
+                                              text:   'Width:')}
+                         row:1 column:0 sticky:w)
+                    grid(WidthInc row:1 column:1)
+                    pack({New Tk.button tkInit(parent:IncRight
+                                               text:  'Small'
+                                               action: EnterInc #
+                                               (IDISmall # IWISmall))}
+                         {New Tk.button tkInit(parent:IncRight
+                                               text:  'Middle'
+                                               action: EnterInc #
+                                               (IDIMedium # IWIMedium))}
+                         {New Tk.button tkInit(parent:IncRight
+                                               text:  'Large'
+                                               action: EnterInc #
+                                               (IDILarge # IWILarge))}
+                         fill:x)
+                    pack(IncLeft  side:left anchor:n)
+                    pack(IncRight {MakeDistFrame IncFrame.inner}
+                         side:right anchor:n)
+
+                    pack(LimitsFrame IncFrame fill:x)]}
+         DisplayDialog , tkPack
+      end
+
+      %%
+   end
+
+   %%
+   %%
+   %%
+   class LayoutDialog
+      from MyClosableObject TkTools.dialog
+
+      %%
+      meth init(windowObj: WO)
+         %%
+         proc {Okay} IFN Size Wght StoredFN in
+            Size = {PointVar tkReturnInt($)}
+            Wght = {WghtVar tkReturnAtom($)}
+            StoredFN = {WO.store read(StoreTWFont $)}
+            %%
+            {ForAll IKnownCourFonts
+             proc {$ Font}
+                case
+                   Font.size == Size andthen
+                   Font.wght == Wght andthen
+                   Font \= StoredFN
+                then {WO setTWFont(Font _)}
+                else skip
+                end
+             end}
+
+            %%
+            {WO.store store(StoreFillStyle
+                            {Tcl2Oz {RecordVar tkReturnAtom($)}})}
+            {self tkClose}
+            {self close}
+         end
+
+         %%
+         TkTools.dialog , tkInit(master:  WO.Window
+                                 title:   ILOTitle
+                                 default: 1
+                                 pack:    false
+                                 buttons: ['Okay'#Okay
+                                           'Cancel'#tkClose(self#close)])
+         FontFrame = {New TkTools.textframe tkInit(parent: self
+                                                   text:   'Font')}
+         PointVar  = {New Tk.variable
+                      tkInit({WO.store read(StoreTWFont $)}.size)}
+         Point     = {New Tk.menubutton tkInit(parent:FontFrame.inner)}
+         {Tk.send destroy(Point)}
+         WghtVar   = {New Tk.variable
+                      tkInit({WO.store read(StoreTWFont $)}.wght)}
+         MiscFrame = {New TkTools.textframe tkInit(parent: self
+                                                   text:   'Alignment')}
+         RecordVar = {New Tk.variable
+                      tkInit({Oz2Tcl {WO.store read(StoreFillStyle $)}})}
+      in
+         {Tk.batch [tk_optionMenu(Point PointVar 10 12 14 18 24)
+                    grid({New Tk.label tkInit(parent:FontFrame.inner
+                                              text:'Font Size')}
+                         row:0 column:0)
+                    grid(Point row:0 column:1)
+                    grid({New Tk.checkbutton tkInit(parent:FontFrame.inner
+                                                    text:'Bold' anchor:w
+                                                    onvalue:bold
+                                                    offvalue:medium
+                                                    var:WghtVar)}
+                         row:1 column:0 columnspan:2 sticky:we)
+                    grid(columnconfigure FontFrame.inner 2 weight:1)
+                    pack({New Tk.checkbutton tkInit(parent:MiscFrame.inner
+                                                    text:'Align Record Fields'
+                                                    onvalue:{Oz2Tcl Expanded}
+                                                    offvalue:{Oz2Tcl Filled}
+                                                    var:RecordVar)}
+                         side:left fill:x)
+
+                    pack(FontFrame MiscFrame fill:x)]}
+         LayoutDialog , tkPack
+      end
+
    end
 
 %%

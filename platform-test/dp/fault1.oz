@@ -34,53 +34,6 @@ export
 define
    Return=
    dp([
-       fault_manager(
-          proc {$}
-             S={New Remote.manager init(host:{OS.uName}.nodename)}
-             Deads
-             CC = {NewCell false}
-          in
-             {S ping}
-             {S apply(url:'' functor
-                             export
-                                My
-                             define
-                                My=o({NewPort _} {NewCell a} {NewLock})
-                             end $)}.my = Deads
-             {S ping}
-             {S close}
-             {Delay 1000}
-             try
-                {Access Deads.2 _}
-                {Assign CC true}
-             catch _ then
-                skip
-             end
-
-             try
-
-                lock Deads.3 then
-                   skip
-                end
-                {Assign CC true}
-             catch _ then
-                skip
-             end
-
-             try
-                {Send Deads.1 apa}
-                {Assign CC true}
-             catch _ then
-                skip
-             end
-             if {Access CC} then
-                raise dp('fail' error) end
-             else
-                skip
-             end
-          end
-          keys:[fault])
-
        fault_proxy(
           proc {$}
              S={New Remote.manager init(host:{OS.uName}.nodename)}

@@ -37,6 +37,57 @@ define
                S={New Remote.manager init(host:{OS.uName}.nodename)}
                D
                Lim = 10000
+
+               proc{Locker Nr D S Lim}
+                  L = {NewLock} in
+                  if(Nr mod Lim == 0) then
+                     {System.print l}
+                     thread {Wait S} lock L then skip end
+                     end
+                  end
+                  {Send D store(L Nr)}
+               end
+
+               proc{Celler Nr D S Lim}
+                  L = {NewCell Nr} in
+                  if(Nr mod Lim == 0) then
+                     {System.print l}
+                     thread {Wait S} {Access L} = Nr end
+                  end
+                  {Send D store(L Nr)}
+               end
+
+
+               proc{Variabler Nr D S Lim}
+                  L in
+                  if(Nr mod Lim == 0) then
+                     {System.print l}
+                     thread {Wait S} L = Nr end
+                  end
+                  {Send D store(L Nr)}
+               end
+
+               proc{Porter Nr D S Lim}
+                  St P= {NewPort St}   in
+                  if(Nr mod Lim == 0) then
+                     {System.print l}
+                     thread {Wait S} {Send P Nr} St.1 = Nr end
+                  end
+                  {Send D store(P Nr)}
+               end
+
+               proc{Stuffer PP}
+                  S
+                  PPP = proc{$ Nr} {PP.1 Nr D S 100} end
+               in
+                  {For 1 PP.2 1 PPP}
+                  {Send D gc}
+                  {System.gcDo}
+                  {Send D gcR(S)}
+                  {Wait S}
+                  {System.gcDo}
+                  {System.gcDo}
+               end
             in
                {S ping}
                {S apply(url:'' functor
@@ -74,25 +125,20 @@ define
                                   PP = P
                                end $)}.pP = D
 
-               {For 1 Lim 1 proc{$ Nr}
-                               {Send D store({NewCell Nr} Nr)}
-                            end}
-               {Send D gc}
-               {System.gcDo}
-               local S in
-                  {Send D gcR(S)}
-                  {Wait S}
-               end
+               {ForAll [Celler#40#celler
+                        Locker#300#locker
+                        Celler#100#celler
+                        Porter#564#porter
+                        Locker#1003#locker
+                        Celler#267#celler
+                        Variabler#1200#variabler
+                        Celler#5000#celler
+                        Locker#45#locker
+                        Locker#10000#locker
+                        Celler#10000#celler
+                       ]
 
-               {For 1 Lim 1 proc{$ Nr}
-                               {Send D store({NewLock} Nr)}
-                            end}
-               {Send D gc}
-               {System.gcDo}
-               local S in
-                  {Send D gcR(S)}
-                  {Wait S}
-               end
+                Stuffer}
 
                {S close}
             end

@@ -7,15 +7,11 @@ File              = parseErrors(int)
 Query             = Phrase
                   | Directive
                   | fDeclare(Phrase Phrase Coordinates).
-Directive         = dirHelp
-                  | dirSwitch([Switch])
+Directive         = dirSwitch([Switch])
+                  | dirLocalSwitches
                   | dirShowSwitches
                   | dirPushSwitches
-                  | dirPopSwitches
-                  | dirFeed(Filename)
-                  | dirThreadedFeed(Filename)
-                  | dirCore(Filename)
-                  | dirMachine(Filename).
+                  | dirPopSwitches.
 Switch            = on(SwitchName Coordinates)
                   | off(SwitchName Coordinates).
 Filename          = atom.

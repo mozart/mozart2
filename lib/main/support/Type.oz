@@ -136,6 +136,14 @@ local
       {IsProcedure X} andthen {Procedure.arity X} > 6
    end
 
+   fun {IsNil X}
+      X == nil
+   end
+
+   fun {IsCons X}
+      case X of _|_ then true else false end
+   end
+
 in
 
    functor prop once
@@ -177,6 +185,7 @@ in
               chunk:               IsChunk
               'class':             IsClass
               comparable:          IsComparable
+              cons:                IsCons
               dictionary:          IsDictionary
               domainSpec:          IsDomainSpec
               int:                 IsInt
@@ -192,6 +201,7 @@ in
               'lock':              IsLock
               literal:             IsLiteral
               name:                IsName
+              nil:                 IsNil
               number:              IsNumber
               object:              IsObject
               ordered:             IsOrdered
@@ -246,6 +256,7 @@ in
                    chunk:             {GenericAsk IsChunk chunk}
                    'class':           {GenericAsk IsClass 'class'}
                    comparable:        {GenericAsk IsComparable comparable}
+                   cons:              {GenericAsk IsCons cons}
                    dictionary:        {GenericAsk IsDictionary dictionary}
                    domainSpec:        {GenericAsk IsDomainSpec domainSpec}
                    int:               {GenericAsk IsInt int}
@@ -262,6 +273,7 @@ in
                    literal:           {GenericAsk IsLiteral literal}
                    'lock':            {GenericAsk IsLock 'lock'}
                    name:              {GenericAsk IsName name}
+                   nil:               {GenericAsk IsNil nil}
                    number:            {GenericAsk IsNumber number}
                    object:            {GenericAsk IsObject object}
                    ordered:           {GenericAsk IsOrdered ordered}

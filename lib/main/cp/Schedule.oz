@@ -242,7 +242,7 @@ define
             {Exception.raiseError
              schedule('Check'
                       [Tasks Start Dur]
-                      vector(vector)
+                      'vector(vector)'
                       1
                       'Scheduling: records with features for start times and durations expected.')}
          end

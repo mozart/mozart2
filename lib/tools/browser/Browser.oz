@@ -351,20 +351,26 @@ in
       %%
       %%
       meth browse(Term)
-         local Browser HasCrashed in
+         local Browser HasCrashed CrashProc in
             %%
             DefaultBrowserClass , createBrowser
             Browser = @browserObj
+
+            %%
+            proc {CrashProc E}
+               {Show '*********************************************'}
+               {Show 'Exception occured in browser:'#E}
+               HasCrashed = unit
+            end
 
             %%
             try
                %%  Actually, this might block the thread
                %% (for instance, if the browser's buffer is full);
                {Browser browse(Term)}
-            catch E then
-               {Show '*********************************************'}
-               {Show 'Exception occured in browser:'#E}
-               HasCrashed = unit
+            catch E=failure(...) then {CrashProc E}
+            [] E=error(...) then {CrashProc E}
+            [] E=system(...) then {CrashProc E}
             end
 
             %%
@@ -380,7 +386,12 @@ in
                   {JobEnd proc {$}
                              {Browser close} % try to give up gracefully;
                           end}
-               catch _ then skip   % ignore faults in the current thread;
+
+                  %%
+                  %% ignore faults in the current thread;
+               catch failure(...) then skip
+               [] error(...) then skip
+               [] system(...) then skip
                end
 
                %%

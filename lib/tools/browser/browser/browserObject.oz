@@ -1030,16 +1030,15 @@ class BrowserClass from Object.base
          case ArityType == AtomicArity then
             SelectedTerm = @selected.term
             %%
-%           try
-               SelectedTerm = Term
-%           catch E then
-%              {Show '**************************************************'}
-%              {Show 'Exception occured while Browse.equate: '#E}
-%              {Show '... was trying to equate '#Term#' and '#SelectedTerm}
-%              {Show '**************************************************'}
-%           end
+            try SelectedTerm = Term
+            catch failure(...) then
+               {Show '**************************************************'}
+               {Show 'Failure occured while Browse.equate.'}
+               {Show '... was trying to equate '#Term#' and '#SelectedTerm}
+               {Show '**************************************************'}
+            end
          else
-            {BrowserWarning 'cannot equate: the private fields are shown'}
+            {BrowserWarning 'May not equate: the private fields are shown!'}
          end
       end
 

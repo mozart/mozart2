@@ -81,9 +81,7 @@ local
    proc {Engine CloseProc ?TaskPort ?CtrlPort}
       RunStr CtrlStr
 
-\ifdef NEWMODULE
       ModMan = {New Module.manager init}
-\endif
 
    in
       %%
@@ -101,11 +99,8 @@ local
              thread
                 case {Procedure.is T} then {T}
                 elsecase {Functor.is T} then
-\ifdef NEWMODULE
                    {ModMan apply(url:'' T)}
-\else
                    {Module.link '' T _}
-\endif
                 end
              end
           end}

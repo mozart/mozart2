@@ -363,22 +363,16 @@ in
       end
 
    Stream = local
-               HOME    = {Property.get 'oz.home'}
-               OSS#CPU = {Property.get platform}
-               WISH    = if OSS=='win32' then 'ozwish.exe'
-                         else 'oz.wish.bin'
-                         end
-               PLTFRM  = HOME # '/platform/'#OSS#'-'#CPU#'/'
-               CMD     = PLTFRM#WISH
-               LIBS    = PLTFRM#'wish/'
+               OSS#CPU={Property.get platform}
+               PLTFRM ={Property.get 'oz.home'} # '/platform/'#OSS#'-'#CPU#'/'
             in
-               {OS.putEnv 'TCL_LIBRARY' LIBS#'tcl'}
-               {OS.putEnv 'TK_LIBRARY'  LIBS#'tk'}
+               {OS.putEnv 'TCL_LIBRARY' PLTFRM#'wish/tcl'}
+               {OS.putEnv 'TK_LIBRARY'  PLTFRM#'wish/tk'}
 
                {New class $ from Open.pipe Open.text
                        prop final
                     end
-                init(cmd:CMD)}
+                init(cmd:PLTFRM#'wif.exe')}
             end
 
    ActionIdServer = {New Counter get(_)}

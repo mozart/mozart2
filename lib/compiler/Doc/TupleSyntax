@@ -27,6 +27,7 @@ Phrase            = fAnd(Phrase Phrase).
                   | fOrElse(Phrase Phrase Coordinates)
                   | fAndThen(Phrase Phrase Coordinates)
                   | fOpApply(atom [Phrase] Coordinates)
+                  | fOpApplyStatement(atom [Phrase] Coordinates)
                   | FDExpression
                   | fObjApply(Phrase Phrase Coordinates)
                   | fAt(Phrase Coordinates)

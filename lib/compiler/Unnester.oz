@@ -465,6 +465,9 @@ local
                       msg: 'attribute assignment used outside of method')}
             end
             Unnester, UnnestStatement(fApply(fVar('`<-`' C) [FE1 FE2] C) $)
+         [] fOpApplyStatement(Op FEs C) then PrintName in
+            PrintName = {VirtualString.toAtom '`'#Op#'`'}
+            Unnester, UnnestStatement(fApply(fVar(PrintName C) FEs C) $)
          [] fFdCompare(Op FE1 FE2 C) then
             GFrontEq1 NewFE1 GFrontEq2 NewFE2 FS in
             Unnester, UnnestFDExpression(FE1 ?GFrontEq1 ?NewFE1)
@@ -831,7 +834,7 @@ local
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: OpKind#' operator cannot take $ as argument')}
             end
-            PrintName = {String.toAtom {VirtualString.toString '`'#Op#'`'}}
+            PrintName = {VirtualString.toAtom '`'#Op#'`'}
             Unnester, UnnestStatement(fApply(fVar(PrintName C)
                                              {Append FEs [FV]} C) $)
          [] fFdCompare(Op FE1 FE2 C) then

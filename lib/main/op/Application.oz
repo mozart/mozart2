@@ -53,11 +53,16 @@
 %%%             url(URL)
 %%%             value(FUN)
 %%%             path(PATH)
+%%%             system(BASENAME)
 %%%
 %%%   value(FUN) is for the case when the functor is not in a component
 %%%   but is given explicitly as a procedure value. path(PATH) is for
 %%%   the case that the module is to be looked up in an argument to the
 %%%   functor: this facilitates creating entries for submodules.
+%%%   system(BASENAME) is used for system components in Oz/lib; these
+%%%   are not registered as url so as to permit local testing of
+%%%   components via the environment variable OZCOMPONENTS.  The url
+%%%   is then computed dynamically.
 %%%
 %%% * ARGS is a record of FEATURE:MODULE_NAME mappings.  It describes
 %%%   the shape of the functor's IMPORT record and indicates which
@@ -301,9 +306,10 @@ local
    in
       %% check arguments
       case SRC
-      of   url(_) then skip
-      [] value(_) then skip
-      []  path(_) then skip
+      of    url(_) then skip
+      []  value(_) then skip
+      []   path(_) then skip
+      [] system(_) then skip
       else {BadRegistration NAME Desc src} end
       case {Record.is ARGS} andthen {Record.all ARGS Atom.is}
       then skip else {BadRegistration NAME Desc args} end
@@ -324,6 +330,18 @@ local
    %% loaded from its url and when it is actually applied to its
    %% arguments.
    %%
+   fun {ComputeSystemURL BASENAME}
+      UseURL = case {OS.getEnv 'OZCOMPONENTS'} of false then
+                  'http://www.ps.uni-sb.de/ozhome/lib/'
+               elseof URL then
+                  case {List.last {VirtualString.toString URL}}==&/ then URL
+                  else URL#'/'
+                  end
+               end
+   in
+      UseURL#BASENAME#'.ozc'
+   end
+   %%
    %% MakeEagerLoader creates a loader that, when applied, retrieves
    %% the functor and immediately applies it to its arguments.
    %%
@@ -331,9 +349,11 @@ local
       case {RegistryGetSrc R Name}
       of url(URL) then
          fun {$ IMPORT} {{Load URL} IMPORT} end
-      elseof value(FUN) then FUN
-      elseof path(PATH) then
+      [] value(FUN) then FUN
+      [] path(PATH) then
          fun {$ IMPORT} {LookupPath IMPORT PATH} end
+      [] system(BASENAME) then
+         fun {$ IMPORT} {{Load {ComputeSystemURL BASENAME}} IMPORT} end
       end
    end
    %%
@@ -389,8 +409,11 @@ local
                {Wait R}
                EXPORT=
                case SRC of url(URL) then {{Load URL} IMPORT}
-               elseof    value(FUN) then {FUN IMPORT}
-               elseof    path(PATH) then {LookupPath IMPORT PATH} end
+               []        value(FUN) then {FUN IMPORT}
+               []        path(PATH) then {LookupPath IMPORT PATH}
+               []  system(BASENAME) then {{Load {ComputeSystemURL BASENAME}}
+                                          IMPORT}
+               end
             end
          end
       end
@@ -403,17 +426,21 @@ local
    %%
    fun {RegistryMakeLazyTopLoader R Name}
       case {RegistryGetSrc R Name}
-      of       url(URL) then
+      of url(URL) then
          fun {$ IMPORT}
             {Lazy.new fun {$} {{Load URL} IMPORT} end}
          end
-      elseof value(FUN) then
+      [] value(FUN) then
          fun {$ IMPORT}
             {Lazy.new fun {$} {FUN IMPORT} end}
          end
-      elseof path(PATH) then
+      [] path(PATH) then
          fun {$ IMPORT}
             {Lazy.new fun {$} {LookupPath IMPORT PATH} end}
+         end
+      [] system(BASENAME) then
+         fun {$ IMPORT}
+            {Lazy.new fun {$} {{Load {ComputeSystemURL BASENAME}} IMPORT} end}
          end
       end
    end
@@ -425,10 +452,11 @@ local
    %%
    fun {RegistryMakeIncludeLoader R Name}
       case {RegistryGetSrc R Name}
-      of       url(URL) then {Load URL}
-      elseof value(FUN) then FUN
-      elseof path(PATH) then
+      of url(URL) then {Load URL}
+      [] value(FUN) then FUN
+      [] path(PATH) then
          fun {$ IMPORT} {LookupPath IMPORT PATH} end
+      [] system(BASENAME) then {Load {ComputeSystemURL BASENAME}}
       end
    end
    %%
@@ -626,12 +654,12 @@ local
    %% Create a new registry and record in it all the standard modules
    %% and submodules
    %%
-   proc {StandardRegistry URL R}
+   proc {StandardRegistry R}
       {NewEmptyRegistry R}
       {Record.forAllInd StandardModules
        proc {$ Name Args}
           {RegistryRegister R Name
-           module(src:url(URL#'/'#Name#'.ozc')
+           module(src:system(Name)
                   args:{List.toRecord x
                         {Map Args fun {$ A} A#A end}}
                   type:StandardTypes.Name)}
@@ -646,7 +674,7 @@ local
        end}
    end
    fun {MakeDefaultRegistry}
-      {StandardRegistry 'http://www.ps.uni-sb.de/ozhome/lib'}
+      {StandardRegistry}
    end
    %%
    %% There is a default registry to make things easier and corresponding

@@ -103,7 +103,7 @@ S  ::=  <Statement>
      coord:         C
 
 
-% 'case' arbiter 'then' consequent alternative 'end'
+% 'if' arbiter 'then' consequent alternative 'end'
 <BoolCase> from <Statement>
      arbiter:       O
      consequent:    <BoolClause>
@@ -246,7 +246,7 @@ S  ::=  <Statement>
      coord: C
 
 
-% 'if' ( clause // '[]' ) alternative 'end'
+% 'cond' ( clause // '[]' ) alternative 'end'
 <IfNode> from <Statement>
      clauses:     <Clause>+
      alternative: <AbstractElse>

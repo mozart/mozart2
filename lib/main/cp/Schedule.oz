@@ -27,76 +27,15 @@
 local
 
    %%
-   %% Vector conversion
+   %% Shortcuts for CpSupport
    %%
 
-   fun {VectorToType V}
-      case {IsList V}       then list
-      elsecase {IsTuple V}  then tuple
-      elsecase {IsRecord V} then record
-      else
-         {Exception.raiseError
-          kernel(type VectorToType [V] vector 1
-                 'Vector as input argument expected.')} illegal
-      end
-   end
+   WaitStable     = CpSupport.waitStable
 
-   fun {VectorToList V}
-      case {VectorToType V}==list then V
-      else {Record.toList V}
-      end
-   end
+   VectorsToLists = CpSupport.vectorsToLists
+   VectorToTuple  = CpSupport.vectorToTuple
 
-   fun {VectorsToLists V}
-      {Map {VectorToList V} VectorToList}
-   end
-
-   local
-      proc {RecordToTuple As I R T}
-         case As of nil then skip
-         [] A|Ar then R.A=T.I {RecordToTuple Ar I+1 R T}
-         end
-      end
-   in
-      proc {VectorToTuple V ?T}
-         case {VectorToType V}
-         of list   then T={List.toTuple '#' V}
-         [] tuple  then T=V
-         [] record then
-            T={MakeTuple '#' {Width V}} {RecordToTuple {Arity V} 1 V T}
-         end
-      end
-   end
-
-   fun {CloneList Xs}
-      case Xs of nil then nil
-      [] _|Xr then _|{CloneList Xr}
-      end
-   end
-
-   local
-      fun {ExpandPair L U Xs}
-         case L=<U then L|{ExpandPair L+1 U Xs} else Xs end
-      end
-   in
-      fun {Expand Xs}
-         case Xs of nil then nil
-         [] X|Xr then
-            case X of L#R then {ExpandPair L R {Expand Xr}}
-            else X|{Expand Xr}
-            end
-         end
-      end
-   end
-
-
-   %%
-   %% General abstractions for distribution
-   %%
-
-   proc {WaitStable}
-      choice skip end
-   end
+   FormatOrigin   = CpSupport.formatOrigin
 
 in
 
@@ -109,6 +48,15 @@ in
          is
          sum
          reflect)
+
+      ErrorRegistry(put)
+
+      Error(formatTypes
+            formatGeneric
+            formatAppl
+            formatHint
+            format
+            dispatch)
 
    export
       serialized:            SchedCpIterate
@@ -158,7 +106,7 @@ in
 
       local
          proc {Check Tasks Start Dur}
-            case {IsList Tasks} andthen
+            if {IsList Tasks} andthen
                {All Tasks fun {$ Ts}
                              {IsList Ts} andthen
                              {All Ts fun {$ T}
@@ -168,40 +116,38 @@ in
                           end}
             then skip else
                {Exception.raiseError
-                fd(scheduling
-                   'Check'
-                   [Tasks Start Dur]
-                   vector(vector)
-                   1
-                   'Scheduling: records with features for start times and durations expected.')}
+                schedule('Check'
+                         [Tasks Start Dur]
+                         vector(vector)
+                         1
+                         'Scheduling: records with features for start times and durations expected.')}
             end
 
-            case {HasFeature Start pe} then skip else
+            if {HasFeature Start pe} then skip else
                {Exception.raiseError
-                fd(scheduling
-                   'Check'
-                   [Tasks Start Dur]
-                   record
-                   2
-                   'Scheduling: task \'pe\' extecped.') }
+                schedule('Check'
+                         [Tasks Start Dur]
+                         record
+                         2
+                         'Scheduling: task \'pe\' expected.') }
             end
 
-            case {Record.all Start FD.is} then skip else
+            if {Record.all Start FD.is} then skip else
                {Exception.raiseError
                 kernel(type
                        'Check'
                        [Tasks Start Dur]
-                       record(fd)
+                       'record(fd)'
                        2
                        'Scheduling: finite domains as start times expected.')}
             end
 
-            case {Record.all Dur IsInt} then skip else
+            if {Record.all Dur IsInt} then skip else
                {Exception.raiseError
                 kernel(type
                        'Check'
                        [Tasks Start Dur]
-                       record(int)
+                       'record(int)'
                        3
                        'Scheduling: integers as durations expected.')}
             end
@@ -217,7 +163,7 @@ in
             NewStream NewOut
          in
             Stream = dist(OldOut NewOut)|NewStream
-            case NewOut==~1 then
+            if NewOut==~1 then
                %% finished
                NewStream = nil
             else
@@ -245,8 +191,7 @@ in
                DurTask   = Dur.TaskId
             in
                {ForAll RT proc {$ T}
-                             case Task==T then skip
-                             else
+                             if Task\=T then
                                 {FD.sum StartTask#DurTask '=<:'
                                  Start.(Tasks.(1+T))}
                              end
@@ -257,8 +202,7 @@ in
                StartTask = Start.(Tasks.(Task+1))
             in
                {ForAll RT proc {$ T}
-                             case Task==T then skip
-                             else TaskId=Tasks.(1+T) in
+                             if Task\=T then TaskId=Tasks.(1+T) in
                                 {FD.sum Start.TaskId#Dur.TaskId '=<:'
                                  StartTask}
                              end
@@ -380,6 +324,33 @@ in
             {HelpDist SchedFirstsLasts EnumFL Tasks Start Dur 2}
          end
       end
+
+
+      %%
+      %% Register error formatter
+      %%
+
+      {ErrorRegistry.put
+       schedule
+       fun {$ Exc}
+          E = {Error.dispatch Exc}
+          T = 'error in scheduling'
+       in
+          case E
+          of schedule(A Xs T P S) then
+             %% expected Xs:list, T:atom, P:int S:virtualString
+             {Error.format
+              T unit
+              hint(l:'At argument' m:P)
+              | {Append
+                 {Error.formatTypes T}
+                 hint(l:'In statement' m:{Error.formatAppl A Xs})
+                 | {Append {FormatOrigin A} {Error.formatHint S}}}
+              Exc}
+          else
+             {Error.formatGeneric T Exc}
+          end
+       end}
 
    end
 

@@ -27,67 +27,20 @@
 local
 
    %%
-   %% Vector conversion
+   %% Shortcuts for CpSupport
    %%
 
-   fun {VectorToType V}
-      case {IsList V}       then list
-      elsecase {IsTuple V}  then tuple
-      elsecase {IsRecord V} then record
-      else
-         {Exception.raiseError
-          kernel(type VectorToType [V] vector 1
-                 'Vector as input argument expected.')} illegal
-      end
-   end
+   WaitStable     = CpSupport.waitStable
 
-   fun {VectorToList V}
-      case {VectorToType V}==list then V
-      else {Record.toList V}
-      end
-   end
+   VectorToList   = CpSupport.vectorToList
+   VectorsToLists = CpSupport.vectorsToLists
+   VectorToType   = CpSupport.vectorToType
+   VectorToTuple  = CpSupport.vectorToTuple
 
-   fun {VectorsToLists V}
-      {Map {VectorToList V} VectorToList}
-   end
+   Expand         = CpSupport.expand
+   CloneList      = CpSupport.cloneList
 
-   local
-      proc {RecordToTuple As I R T}
-         case As of nil then skip
-         [] A|Ar then R.A=T.I {RecordToTuple Ar I+1 R T}
-         end
-      end
-   in
-      proc {VectorToTuple V ?T}
-         case {VectorToType V}
-         of list   then T={List.toTuple '#' V}
-         [] tuple  then T=V
-         [] record then
-            T={MakeTuple '#' {Width V}} {RecordToTuple {Arity V} 1 V T}
-         end
-      end
-   end
 
-   fun {CloneList Xs}
-      case Xs of nil then nil
-      [] _|Xr then _|{CloneList Xr}
-      end
-   end
-
-   local
-      fun {ExpandPair L U Xs}
-         case L=<U then L|{ExpandPair L+1 U Xs} else Xs end
-      end
-   in
-      fun {Expand Xs}
-         case Xs of nil then nil
-         [] X|Xr then
-            case X of L#R then {ExpandPair L R {Expand Xr}}
-            else X|{Expand Xr}
-            end
-         end
-      end
-   end
 
 
    FwdRelTable = fwdRelTable('=:':   false
@@ -103,115 +56,6 @@ local
                              '>=:':  '<:'
                              '>:':   '=<:'
                              '\\=:': '=:')
-   %%
-   %% General abstractions for distribution
-   %%
-
-   proc {WaitStable}
-      choice skip end
-   end
-
-   %%
-   %% Error formatting
-   %%
-
-   local
-      ArithOps = ['=:' '\\=:' '<:' '=<:' '>:' '>=:']
-
-      BuiltinNames
-      = bi(twice:         [twice           ['FD.plus' 'FD.minus']]
-           square:        [square          ['FD.times']]
-           plus:          ['FD.plus'           ['FD.distance']]
-           plus_rel:      ['FD.plus'           ['FD.distance' '+']]
-           minus:         ['FD.minus'          nil]
-           times:         ['FD.times'          nil]
-           times_rel:     ['FD.plus'           ['FD.distance' '*']]
-           divD:          ['FD.divD'           nil]
-           divI:          ['FD.divI'           nil]
-           modD:          ['FD.modD'           nil]
-           modI:          ['FD.modI'           nil]
-           conj:          ['FD.conj'           nil]
-           disj:          ['FD.disj'           nil]
-           exor:          ['FD.exor'           nil]
-           impl:          ['FD.impl'           nil]
-           equi:          ['FD.equi'           nil]
-           nega:          ['FD.nega'           ['FD.exor' 'FD.impl' 'FD.equi']]
-           sumCR:         ['FD.reified.sumC'   ArithOps]
-           intR:          ['FD.refied.int'     ['FD.reified.dom']]
-           card:          ['FD.reified.card'   nil]
-           exactly:       ['FD.exactly'        nil]
-           atLeast:       ['FD.atLeast'        nil]
-           atMost:        ['FD.atMost'         nil]
-           element:       ['FD.element'        nil]
-           disjoint:      ['FD.disjoint'       nil]
-           disjointC:     ['FD.disjointC'      nil]
-           distance:      ['FD.distance'       nil]
-           notEqOff:      [notEqOff        ['FD.sumC' '\\=:']]
-           lessEqOff:     ['FD.lesseq'         ['FD.sumC' '=<:' '<:' '>=:'
-                                                    '>:' 'FD.min' 'FD.max'
-                                                    'FD.modD'
-                                                    'FD.modI' 'FD.disjoint'
-                                                    'FD.disjointC' 'FD.distance'
-                                                   ]]
-           minimum:        ['FD.min'                   nil]
-           maximum:        ['FD.max'                   nil]
-           inter:          ['FD.inter'                 nil]
-           union:          ['FD.union'                 nil]
-           distinct:       ['FD.distinct'              nil]
-           distinctOffset: ['FD.distinctOffset'        nil]
-           subset:         [subset         ['FD.union' 'FD.inter']]
-           sumC:           ['FD.sumC'          'FD.sumCN'|'FD.reified.sumC'|ArithOps]
-           sumCN:          ['FD.sumCN'         ArithOps]
-           sumAC:          ['FD.sumAC'         nil]
-
-           sched_disjoint_card:['FD.schedule.disjoint'             nil]
-           sched_cpIterate:    ['FD.schedule.serialized'           nil]
-           sched_disjunctive:  ['FD.schedule.serializedDisj'       nil]
-
-           fdGetMin:           ['FD.reflect.min'   nil]
-           fdGetMid:           ['FD.reflect.mid'   nil]
-           fdGetMax:           ['FD.reflect.max'   nil]
-           fdGetDom:           ['FD.reflect.dom'   ['FD.reflect.domList']]
-           fdGetCard:          ['FD.reflect.size'  nil]
-           fdGetNextSmaller:   ['FD.reflect.nextSmaller'   nil]
-           fdGetNextLarger:    ['FD.reflect.nextLarger'    nil]
-
-           fdWatchSize:        ['FD.watch.size'    nil]
-           fdWatchMin:         ['FD.watch.min'     nil]
-           fdWatchMax:         ['FD.watch.max'     nil]
-
-           fdConstrDisjSetUp:  [fdConstrDisjSetUp  ['condis ... end']]
-           fdConstrDisj:       [fdConstrDisj       ['condis ... end']]
-           sumCD:              [sumCD          ['condis ... end']]
-           sumCCD:             [sumCCD         ['condis ... end']]
-           sumCNCD:            [sumCNCD        ['condis ... end']]
-          )
-
-      fun {BIPrintName X}
-         case {IsAtom X}
-            andthen {HasFeature BuiltinNames X}
-         then BuiltinNames.X.1
-         else X end
-      end
-
-      fun {BIOrigin X}
-         BuiltinNames.X.2.1
-      end
-
-   in
-
-      fun {FormatOrigin A}
-         B = {BIPrintName A}
-      in
-         case {HasFeature BuiltinNames B}
-            andthen {BIOrigin B}\=nil
-         then
-            [unit
-             hint(l:'Possible origin of procedure' m:oz({BIPrintName B}))
-             line(oz({BIOrigin B}))]
-         else nil end
-      end
-   end
 
 in
 
@@ -226,7 +70,6 @@ in
 
       Error(formatGeneric
             formatAppl
-            formatTypes
             formatHint
             format
             dispatch)
@@ -417,7 +260,7 @@ in
          end
 
          fun {FdList N Dom}
-            case N>0 then {FdPutList $ Dom}|{FdList N-1 Dom}
+            if N>0 then {FdPutList $ Dom}|{FdList N-1 Dom}
             else nil
             end
          end
@@ -470,8 +313,7 @@ in
          end
 
          proc {TupleDomCD N T Dom C}
-            case N>0 then {FdPutListCD T.N Dom C} {TupleDomCD N-1 T Dom C}
-            else skip
+            if N>0 then {FdPutListCD T.N Dom C} {TupleDomCD N-1 T Dom C}
             end
          end
 
@@ -516,7 +358,7 @@ in
             Coeffs1 = {VectorToList IIs}
             Coeffs2 = {Map Coeffs1 Number.'~'}
          in
-            case FwdRelTable.Rel then
+            if FwdRelTable.Rel then
                {FdpSumCN Coeffs1 Ds Rel D}
                {FdpSumCN Coeffs2 Ds Rel D}
             else
@@ -558,7 +400,7 @@ in
 
          local
             proc {MapIntR N T TR Dom}
-               case N==0 then skip else
+               if N\=0 then
                   {FdIntR Dom T.N TR.N} {MapIntR N-1 T TR Dom}
                end
             end
@@ -578,8 +420,8 @@ in
          proc {Card Low Ds Up B}
             {FdBool B}
             thread
-               case {FdIs Low} andthen {FdIs Up} then
-                  case {IsLiteral Ds} then
+               if {FdIs Low} andthen {FdIs Up} then
+                  if {IsLiteral Ds} then
                      or B=1 Low=0
                      [] B=0 {FdInt 1#FdSup Low}
                      end
@@ -592,7 +434,7 @@ in
                           'FD.reified.card'
                           [Low Ds Up B]
                           fd
-                          case {FdIs Low} then 3 else 1 end
+                          if {FdIs Low} then 3 else 1 end
                           'Cardinality limits must be finite domain.')}
                end
             end
@@ -606,7 +448,7 @@ in
                DT     = {VectorToTuple DV}
             in
                {FdBool B}
-               case FwdRelTable.Rel then
+               if FwdRelTable.Rel then
                   or B=1
                      {FdpSumC IT  DT Rel D}
                      {FdpSumC NIT DT Rel D}
@@ -645,7 +487,7 @@ in
                Coeffs2 = {Map Coeffs1 Number.'~'}
             in
                {FdBool B}
-               case FwdRelTable.Rel then
+               if FwdRelTable.Rel then
                   or B=1
                      {FdpSumCN Coeffs1 Ds Rel D}
                      {FdpSumCN Coeffs2 Ds Rel D}
@@ -704,13 +546,13 @@ in
             ForceClone = {NewName}
          in
             proc {MakeDistrTuple V ?T}
-               T = case {VectorToType V}==tuple then
+               T = if {VectorToType V}==tuple then
                       {Adjoin V ForceClone}
                    else {VectorToTuple V}
                    end
-               case {Record.all T FdIs} then skip else
+               if {Record.all T FdIs} then skip else
                   {Exception.raiseError
-                   kernel(type 'MakeDistrTuple' [V T] list(fd) 1
+                   kernel(type MakeDistrTuple [V T] 'vector(fd)' 1
                           'Distribution vector must contain finite domains.')}
                end
             end
@@ -770,7 +612,7 @@ in
                                     end)
 
             fun {MapSelect Map AOP}
-               case {IsAtom AOP} then Map.AOP else AOP end
+               if {IsAtom AOP} then Map.AOP else AOP end
             end
 
          in
@@ -795,7 +637,7 @@ in
                           else false
                           end
             in
-               case IsOpt then
+               if IsOpt then
                   opt(order: OptSelVar.(FullSpec.order)
                       value: SelVal.(FullSpec.value))
                else
@@ -810,7 +652,7 @@ in
 
          fun {Choose Xs Y Order}
             case Xs of nil then Y
-            [] X|Xr then {Choose Xr case {Order X Y} then X else Y end Order}
+            [] X|Xr then {Choose Xr if {Order X Y} then X else Y end Order}
             end
          end
 
@@ -921,36 +763,19 @@ in
       %%
 
       {ErrorRegistry.put
-
        fd
-
        fun {$ Exc}
           E = {Error.dispatch Exc}
           T = 'error in finite domain system'
        in
           case E
-          of fd(scheduling A Xs T P S) then
-
-         % expected Xs:list, T:atom, P:int S:virtualString
-
-             {Error.format
-              T unit
-              hint(l:'At argument' m:P)
-              | {Append
-                 {Error.formatTypes T}
-                 hint(l:'In statement' m:{Error.formatAppl A Xs})
-                 | {Append {FormatOrigin A} {Error.formatHint S}}}
-              Exc}
-
-          elseof fd(noChoice A Xs P S) then
-
-         % expected Xs:list, P:int, S:virtualString
-
+          of fd(noChoice A Xs P S) then
+             %% expected Xs:list, P:int, S:virtualString
              {Error.format
               T unit
               hint(l:'At argument' m:P)
               | hint(l:'In statement' m:{Error.formatAppl A Xs})
-              | {Append {FormatOrigin A} {Error.formatHint S}}
+              | {Append {CpSupport.formatOrigin A} {Error.formatHint S}}
               Exc}
 
           else

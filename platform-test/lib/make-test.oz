@@ -64,7 +64,7 @@ local
          System
          Syslet.{Argv = args Exit = exit}
          Debug
-         LILO
+         Module
 
       body
          fun {X2V X}
@@ -135,7 +135,7 @@ local
             in
                fun {GetTest TD}
                   TL = {Label TD}
-                  T  = {LILO.loadEager TD.url}.return
+                  T  = {Module.load unit TD.url nil}.return
                in
                   case {Dictionary.member TestDict TL} then skip
                   else {Dictionary.put TestDict TL {FindTest TD.id T}}
@@ -327,8 +327,8 @@ in
        System
        Open
        Syslet.{Argv = args Exit = exit}
-       LILO
-       Component
+       Module
+       Pickle
 
     body
        fun {X2V X}
@@ -351,7 +351,7 @@ in
 
        Tests = {AppendAll
                 {Map Argv.2 fun {$ C}
-                               S = {LILO.loadEager C}.return
+                               S = {Module.load unit C nil}.return
                             in
                                {Map {GetAll S nil nil}
                                 fun {$ T#Id#K}
@@ -405,7 +405,7 @@ in
            Engine
            TestOptions}
 
-          {Component.save Engine './te.ozf'}
+          {Pickle.save Engine './te.ozf'}
        end
 
        {Exit 0}

@@ -4323,8 +4323,13 @@ define
       %% the original program node
 
       meth reachable(Vs $)
-         if @origin==unit then Vs
-         else {@origin reachable(Vs $)} end
+         %% record values, like variables, can become bound during
+         %% value propagation, therefore, they too need to be snapshot
+         %% and restored by GetGlobalEnv/InstallGlobalEnv
+         Vs2 = {Add self Vs}
+      in
+         if @origin==unit then Vs2
+         else {@origin reachable(Vs2 $)} end
       end
 
       %% Bind: _ x RecordConstr

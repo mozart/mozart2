@@ -25,7 +25,6 @@
 %%% oz.home             OZHOME  OZ_HOME
 %%% oz.search.path      OZPATH  OZ_PATH  OZ_SEARCH_PATH
 %%% oz.search.load      OZLOAD  OZ_LOAD  OZ_SEARCH_LOAD
-%%% oz.search.dload     OZDLOAD OZ_DLOAD OZ_SEARCH_DLOAD
 %%% os.name
 %%% os.cpu (os.arch)
 %%% path.separator      OZ_PATH_SEPARATOR
@@ -69,25 +68,6 @@ OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
                      elseof V then V end
                   elseof V then V end
 
-OZ_SEARCH_DLOAD = case {Getenv 'OZ_SEARCH_DLOAD'} of false then
-                     case {Getenv 'OZ_DLOAD'} of false then
-                        case {Getenv 'OZDLOAD'} of false then
-                           '.'#[PATH_SEPARATOR]#
-                           '~/.oz/platform/'#OS_NAME#'-'#OS_CPU#'/cache'#[PATH_SEPARATOR]
-                           #OZ_HOME#'/platform/'#OS_NAME#'-'#OS_CPU#'/cache'
-                           #[PATH_SEPARATOR]
-                           #'cache=~/.oz/cache'
-                           #[PATH_SEPARATOR]
-                           #'cache='#OZ_HOME#'/cache'
-%                          #[PATH_SEPARATOR]
-%                          #'pattern=http://?{x}='#OZ_HOME#'/cache/http/?{x}-'
-%                          #OS_NAME#'-'#OS_CPU
-%                          #[PATH_SEPARATOR]
-%                          #'pattern=?{x}=?{x}-'#OS_NAME#'-'#OS_CPU
-                        elseof V then V end
-                     elseof V then V end
-                  elseof V then V end
-
 USER_HOME       = case {Getenv 'HOME'} of false then {OS.getCWD}
                   elseof V then V end
 
@@ -99,7 +79,6 @@ OZ_TRACE_LOAD   = case {Getenv 'OZ_TRACE_LOAD'} of false then false
 {SET 'oz.home'          OZ_HOME         }
 {SET 'oz.search.path'   OZ_SEARCH_PATH  }
 {SET 'oz.search.load'   OZ_SEARCH_LOAD  }
-{SET 'oz.search.dload'  OZ_SEARCH_DLOAD }
 {SET 'user.home'        USER_HOME       }
 {SET 'platform'         OS_NAME#OS_CPU  }
 {SET 'oz.trace.load'    OZ_TRACE_LOAD   }

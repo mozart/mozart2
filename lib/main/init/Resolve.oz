@@ -414,7 +414,7 @@ local
    %% create a resolver for loading
 
    LoadResolver   = {MakeResolver load vs(OZ_SEARCH_LOAD)}
-   NativeResolver = {MakeResolver native vs(OZ_SEARCH_DLOAD)}
+   NativeResolver = {MakeResolver native vs(OZ_SEARCH_LOAD)}
 
 in
    Resolve = {Adjoin LoadResolver

@@ -711,11 +711,14 @@ local
       'Panel':          ['SP' 'OP' 'WP']
       'Browser':        ['SP' 'WP' 'CP']
       'Explorer':       ['SP' 'WP' 'Browser'#lazy]
-      'Compiler':       ['SP' 'CP']
+      'Compiler':       ['SP' 'CP' 'Gump'#lazy]
       'CompilerPanel':  ['SP' 'OP' 'WP' 'Compiler' 'Browser'#lazy]
       'Emacs':          ['OP' 'SP']
       'Ozcar':          ['SP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
-      'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy])
+      'Profiler':       ['SP' 'OP' 'WP' 'Browser'#lazy 'Compiler' 'Emacs'#lazy]
+      'Gump':           ['SP' 'OP']
+      'GumpScanner':    ['SP']
+      'GumpParser':     ['SP'])
    %%
    %% we also want to export a useful collection of submodules
    %%
@@ -736,7 +739,10 @@ local
       'CompilerPanel':  nil
       'Emacs':          nil
       'Ozcar':          nil
-      'Profiler':       nil)
+      'Profiler':       nil
+      'Gump':           nil
+      'GumpScanner':    nil
+      'GumpParser':     nil)
    %%
    %% Create a new registry and record in it all the standard modules
    %% and submodules

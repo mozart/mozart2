@@ -103,7 +103,7 @@ define
    end
 
    Return = knights(proc {$}
-                       {Search.base.all {Knights 12} _}
+                       {Search.base.one {Knights 12} _}
                     end
                     keys:[bench knights]
                     bench:1)

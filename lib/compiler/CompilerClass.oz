@@ -599,10 +599,15 @@ local
                      {Assembler output(?VS)}
                      {@reporter
                       displaySource('Oz Compiler: Assembler Output' '.ozm' VS)}
-                  else
+                  [] GPN|GPNr then
                      {@reporter error(kind: 'Ozma error'
                                       msg: ('No free variables allowed '#
-                                            'when compiling for Ozma'))}
+                                            'when compiling for Ozma')
+                                      items: [hint(l: 'Found'
+                                                   m: {FoldR GPNr
+                                                       fun {$ GPN In}
+                                                          pn(GPN)#' '#In
+                                                       end pn(GPN)})])}
                   end
                else
                   case CompilerStateClass, getSwitch(outputcode $) then VS in

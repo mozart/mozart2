@@ -177,13 +177,23 @@ in
          meth load(Url $)
             %% Takes a URL and returns a module
             %% check if URL is annotated as denoting a `native functor'
-            if {IsNative Url}
-               %% if yes, use the Foreign loader
-            then {self native(Url $)}
-            else {self Apply(Url {Resolve.pickle.load Url} $)} end
+            try
+               if {IsNative Url} then
+                  %% if yes, use the Foreign loader
+                  {self Native(Url $)}
+               else
+                  {self Apply(Url {Resolve.pickle.load Url} $)}
+               end
+            catch error(url(O _) ...) then
+               raise system(module(notFound O {UrlToAtom Url})) end
+            [] system(foreign(dlOpen _) ...) then
+               raise system(module(notFound native {UrlToAtom Url})) end
+            [] badUrl then
+               raise error(module(urlSyntax {UrlToAtom Url})) end
+            end
          end
 
-         meth native(Url $)
+         meth Native(Url $)
             {self trace('native module' Url)}
             %% note that this method will not attempt to
             %% localize. A derived class could redefine it
@@ -215,9 +225,11 @@ in
          meth systemApply(Auth Url $)
             U = {self systemResolve(Auth Url $)}
          in
-            if {IsNative U}
-            then {self native(U $)}
-            else {self Apply(Url {Resolve.pickle.load U} $)} end
+            if {IsNative U} then
+               {self Native(U $)}
+            else
+               {self Apply(Url {Resolve.pickle.load U} $)}
+            end
          end
 
          meth system(Url $)
@@ -239,11 +251,15 @@ in
                [] contrib then
                   {self trace('contrib module' Url)}
                   {self systemApply(contrib Url $)}
-               else raise badUrl end end
+               else
+                  raise badUrl end
+               end
             catch error(url(load _) ...) then
-               raise module(systemNotFound {UrlToAtom Url}) end
+               raise system(module(notFound system {UrlToAtom Url})) end
+            [] system(foreign(dlOpen _) ...) then
+               raise system(module(notFound system {UrlToAtom Url})) end
             [] badUrl then
-               raise module(urlSyntax {UrlToAtom Url}) end
+               raise error(module(urlSyntax {UrlToAtom Url})) end
             end
          end
 
@@ -253,6 +269,7 @@ in
 
       class Manager
          from RootManager
+         prop sited
 
          meth system(Url $)
             {RM Link(Url $)}

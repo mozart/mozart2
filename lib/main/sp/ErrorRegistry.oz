@@ -874,6 +874,39 @@ define
    end
 
    %%
+   %% module manager
+   %%
+
+   fun {ModuleFormatter Exc}
+      E = {Error.dispatch Exc}
+      T = 'Error: module manager'
+   in
+      case E
+      of module(alreadyInstalled Url) then
+         {Error.format T 'Module already installed'
+          [hint(l:'Module URL' m:Url)]
+          Exc}
+      [] module(notFound Kind Url) then
+         {Error.format T 'Could not link module'
+          [hint(l:case Kind
+                  of system then 'Unknown system module'
+                  [] native then 'Could not load native functor at URL'
+                  [] load   then 'Could not load functor at URL'
+                  end
+                m:Url)]
+          Exc}
+      [] module(urlSyntax Url) then
+         {Error.format T 'Illegal URL syntax'
+          [hint(l:'URL' m:Url)]
+          Exc}
+      else
+         {Error.formatGeneric T Exc}
+      end
+   end
+
+
+
+   %%
    %% Error registry proper
    %%
 
@@ -906,5 +939,6 @@ define
    {NewFormatter os      OSFormatter}
    {NewFormatter foreign ForeignFormatter}
    {NewFormatter url     URLFormatter}
+   {NewFormatter module  ModuleFormatter}
 
 end

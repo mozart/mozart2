@@ -25,10 +25,11 @@
 
 
 local
-   DlOpen         = {`Builtin` dlOpen       2}
-   DlClose        = {`Builtin` dlClose      1}
-   FindFunction   = {`Builtin` findFunction 3}
-   Unlink         = {`Builtin` 'OS.unlink'  1}
+   DlOpen         = {`Builtin` dlOpen        2}
+   DlClose        = {`Builtin` dlClose       1}
+   FindFunction   = {`Builtin` findFunction  3}
+   DlLoad         = {`Builtin` dlLoad        3}
+   Unlink         = {`Builtin` 'OS.unlink'   1}
    %%
    %% If the URL service is available, then use it to create a
    %% localizer parametrized by environment variable OZ_DL_LOAD,
@@ -93,11 +94,27 @@ local
       {Link File Spec Module Handle}
       proc {!CloseF} {DlClose Handle} end
    end
+   fun {ForeignLoadBI File}
+      Local = {Localize File} Handle Module
+   in
+      try {DlLoad File.1 Handle Module}
+      finally
+         case {Label Local}==old then skip else
+            {Unlink Local.1}
+         end
+      end
+      Handle#Module
+   end
+   fun {ForeignLoad File}
+      _#Module = {ForeignLoadBI File}
+   in Module end
 in
 
    Foreign = foreign(
                      dload   : DLoad
                      require : Require
                      resolver: Resolver
+                     load    : ForeignLoad
+                     loadBI  : ForeignLoadBI
                     )
 end

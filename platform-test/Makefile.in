@@ -103,9 +103,6 @@ OZCC = $(OZEE) -c
 
 all: dirs oztest ozbench $(SONATIVES)
 
-BUILDTOPA = $(shell cd $(BUILDTOP); pwd)
-CURDIRA   = $(BUILDTOPA)/share/test
-#OZPLATFORM= $(shell $(SRCTOP)/share/bin/ozplatform)
 PREFIX    = @prefix@
 export OZTESTOPTS = --verbose
 
@@ -127,7 +124,7 @@ dirs:
 
 TESTSRCS=make-test engine passed failed help-string compute-tests
 oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS) make-test
-        $(OZENGINE) ./make-test --verbose $(TESTCOMPONENTS:%=`pwd`/%)
+        $(OZENGINE) ./make-test --verbose $(TESTCOMPONENTS)
         chmod +x oztest
 
 make-test: lib/make-test.oz
@@ -136,7 +133,7 @@ make-test: lib/make-test.oz
 BENCHSRCS=make-bench engine compute-tests help-bench
 ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
         $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
-        $(OZENGINE) ./make-bench --verbose $(BENCHCOMPONENTS:%=`pwd`/%)
+        $(OZENGINE) ./make-bench --verbose $(BENCHCOMPONENTS)
         chmod +x ozbench
         -rm -f ./make-bench
 

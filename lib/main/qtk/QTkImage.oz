@@ -6,7 +6,7 @@
 %   (c) 2000 Université catholique de Louvain
 %
 % Last change:
-%   $Date$
+%   $Date$ by $Author$
 %   $Revision$
 %
 % This file is part of Mozart, an implementation

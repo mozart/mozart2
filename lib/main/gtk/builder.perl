@@ -23,14 +23,6 @@
 
 use Getopt::Long;
 
-# Regular Expressions (group only without backreferences!)
-#$rexp_type        = qr/\w[\w ]+[\*\[\]]*/;
-#$rexp_type        = qr/(?:const )?\w+(?:\s*\*+(?=[^\*]))?/;
-#$rexp_name        = qr/(?<=\W)\??\w+/;
-# We allow '?' as first character of an identifier to mark return values
-#$rexp_arg         = qr/\??${rexp_type}/;
-#$rexp_arg_list    = qr/${rexp_arg}(?:\s*,\s*${rexp_arg})*/;
-
 # Transform a Gtk class name into an Oz class name
 sub gtk2oz_class_name {
     my ($gtk_name) = @_;

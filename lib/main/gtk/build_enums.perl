@@ -32,8 +32,11 @@ sub remove_comments {
 sub c2oz($) {
   my ($name) = @_;
 
+  $name =~ s/^$value_prefix//s if $value_prefix; # remove prefix
   $name = lc $name;
-  $name =~ s/^[a-z]+_//s; # remove prefix
+
+#  $name =~ s/^[a-z]+_//s; # remove prefix
+
   my @substrings = split /_/, $name;
   foreach my $string (@substrings) {
     $string = ucfirst $string;
@@ -124,14 +127,18 @@ Generate constants definitions or declarations for the GTK+ binding for Oz
 
   --declarations    generate the constants declarations for the Oz functor
   --definitions     generate the constants definitions for the Oz functor
+  --enum_prefix     only consider enumerations with this prefix
+  --value_prefix    remove this prefix from all values
 EOF
 
     exit 0;
 }
 
-my ($opt_defs, $opt_decs);
-&GetOptions("declarations" => \$opt_decs,
-            "definitions"  => \$opt_defs);
+my ($opt_defs, $opt_decs, $prefix);
+&GetOptions("declarations"   => \$opt_decs,
+            "definitions"    => \$opt_defs,
+            "value_prefix:s" => \$value_prefix,
+            "enum_prefix:s"   => \$enum_prefix);
 
 @headers = @ARGV;
 
@@ -151,7 +158,14 @@ foreach $header (@headers) {
     while (<HEADER>) {
         &remove_comments;
         if (/(typedef(\s)+enum(\s)*\{)((\s*[^\n]*\n)+)\}([ \t\r\f]*)(\w*)/) { # select enums
-            $key_values = enum_to_hash($7, $4);
+            my ($name, $body) = ($7, $4);
+
+            if ($enum_prefix) {
+
+                next unless $name =~ m/^$enum_prefix/s
+            }
+
+            $key_values = enum_to_hash($name, $body);
             print definitions(%$key_values)  if $opt_defs;
             print declarations(%$key_values) if $opt_decs;
         }

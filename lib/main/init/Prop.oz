@@ -63,7 +63,7 @@ OZ_SEARCH_PATH  = case {Getenv 'OZ_SEARCH_PATH'} of false then
 OZ_SEARCH_LOAD  = case {Getenv 'OZ_SEARCH_LOAD'} of false then
                      case {Getenv 'OZ_LOAD'} of false then
                         case {Getenv 'OZLOAD'} of false then
-                           'cache='#OZ_HOME#'/cache'
+                           'cache=~/.oz/cache:cache='#OZ_HOME#'/cache'
                         elseof V then V end
                      elseof V then V end
                   elseof V then V end

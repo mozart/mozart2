@@ -19,21 +19,21 @@
 %%% WARRANTIES.
 %%%
 
-declare Functor `NewFunctor` in
+declare Functor in
 local
    local
       NewUniqueName = {`Builtin` 'NewUniqueName' 2}
    in
-      `functorID` = {NewUniqueName 'functorID'}
+      FunctorID = {NewUniqueName functorID}
    end
 
    fun {IsFunctor X}
-      {IsChunk X} andthen {HasFeature X `functorID`}
+      {IsChunk X} andthen {HasFeature X FunctorID}
    end
 
    fun {NewFunctor Import Export Apply}
       %--** assert that the arguments have the expected types
-      {NewChunk f(`functorID`: unit
+      {NewChunk f(FunctorID: unit
                   'import': Import
                   'export': Export
                   'apply': Apply)}
@@ -45,8 +45,6 @@ local
       end
    end
 in
-   `NewFunctor` = NewFunctor
-
    Functor = 'functor'(is:          IsFunctor
                        new:         NewFunctor
                        getFeatures: GetFeatures)

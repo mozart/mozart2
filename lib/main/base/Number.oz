@@ -25,17 +25,7 @@
 
 declare
    Number IsNumber Pow Abs
-   `+` `-` `*` `~`
 in
-
-
-%%
-%% Compiler Support
-%%
-`+`      = {`Builtin` '+'        3}
-`-`      = {`Builtin` '-'        3}
-`*`      = {`Builtin` '*'        3}
-`~`      = {`Builtin` '~'        2}
 
 
 %%
@@ -65,9 +55,9 @@ end
 %% Module
 %%
 Number = number(is:  IsNumber
-                '+': `+`
-                '-': `-`
-                '*': `*`
-                '~': `~`
+                '+': {`Builtin` '+' 3}
+                '-': {`Builtin` '-' 3}
+                '*': {`Builtin` '*' 3}
+                '~': {`Builtin` '~' 2}
                 pow: Pow
                 abs: Abs)

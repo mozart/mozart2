@@ -26,8 +26,6 @@
 declare
    Record IsRecord MakeRecord Label Width Adjoin Arity AdjoinList AdjoinAt
    IsRecordC WidthC TellRecord
-   `width` `^` `tellRecordSize` `aritySublist`
-   %% `record` already declared in Forward.oz
 in
 
 %%
@@ -52,32 +50,6 @@ local
 in
    fun {MakeRecord L As}
       {`record` L {MakeEmpty As}}
-   end
-end
-
-
-
-%%
-%% Compiler Support
-%%
-`width`          = Width
-`^`              = {`Builtin` '^'              3}
-`tellRecordSize` = {`Builtin` 'tellRecordSize' 3}
-local
-   proc {DescendArity Ls1 Ls2}
-      case Ls1 of nil then skip
-      [] L1|Lr1 then
-         case Ls2 of L2|Lr2 then
-            case L1==L2 then {DescendArity Lr1 Lr2}
-            else {DescendArity Ls1 Lr2}
-            end
-         else {`RaiseError` object(arityMismatchDefaultMethod L1)}
-         end
-      end
-   end
-in
-   proc {`aritySublist` R1 R2}
-      {DescendArity {Arity R1} {Arity R2}}
    end
 end
 
@@ -395,7 +367,7 @@ in
 
                    isC:          IsRecordC
                    tell:         TellRecord
-                   '^':          `^`
+                   '^':          {`Builtin` '^' 3}
                    widthC:       WidthC
                    monitorArity: MonitorArity
                    reflectArity: ReflectArity

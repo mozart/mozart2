@@ -26,14 +26,7 @@
 declare
    Float IsFloat Exp Log Sqrt Ceil Floor Round Sin Cos Tan Asin Acos Atan Atan2
    FloatToInt FloatToString
-   `/`
 in
-
-
-%%
-%% Compiler Expansion
-%%
-`/` = {`Builtin` '/' 3}
 
 
 %%
@@ -60,7 +53,7 @@ FloatToString = {`Builtin` 'FloatToString' 2}
 %% Module
 %%
 Float = float(is:       IsFloat
-              '/':      `/`
+              '/':      {`Builtin` '/' 3}
               exp:      Exp
               log:      Log
               sqrt:     Sqrt

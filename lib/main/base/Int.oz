@@ -25,15 +25,7 @@
 
 declare
    Int IsInt IsNat IsOdd IsEven IntToFloat IntToString
-   `div` `mod`
 in
-
-
-%%
-%% Compiler Expansions
-%%
-`div` = {`Builtin` 'div' 3}
-`mod` = {`Builtin` 'mod' 3}
 
 
 %%
@@ -54,7 +46,7 @@ Int = int(is:       IsInt
           isNat:    IsNat
           isOdd:    IsOdd
           isEven:   IsEven
-          'div':    `div`
-          'mod':    `mod`
+          'div':    {`Builtin` 'div' 3}
+          'mod':    {`Builtin` 'mod' 3}
           toFloat:  IntToFloat
           toString: IntToString)

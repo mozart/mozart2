@@ -22,18 +22,9 @@
 %%% WARRANTIES.
 %%%
 
-%% The following ensures that this file works with the `-g' command
-%% line option:  With debug information, an application of the unbound
-%% variable `=` would be generated; the thread would block.
-\ifndef OZM
-\pushSwitches
-\switch -debuginfocontrol
-\endif
-
 declare
    Value Wait WaitOr IsFree IsKinded IsDet Min Max CondSelect HasFeature
-   ByNeed `byNeed`
-   `.` `==` `=` `\\=` `<` `=<` `>=` `>` `hasFeature`
+   ByNeed
 in
 
 
@@ -53,38 +44,23 @@ ByNeed     = {`Builtin` 'ByNeed'     2}
 
 
 %%
-%% Compiler Support
-%%
-`.`          = {`Builtin` '.'   3}
-`==`         = {`Builtin` '=='  3}
-`=`          = {`Builtin` '='   2}
-`\\=`        = {`Builtin` '\\=' 3}
-`<`          = {`Builtin` '<'   3}
-`=<`         = {`Builtin` '=<'  3}
-`>=`         = {`Builtin` '>='  3}
-`>`          = {`Builtin` '>'   3}
-`hasFeature` = HasFeature
-`byNeed`     = ByNeed
-
-
-%%
 %% Module
 %%
 
 Value = value(wait:       Wait
               waitOr:     WaitOr
 
-              '=<':       `=<`
-              '<':        `<`
-              '>=':       `>=`
-              '>':        `>`
-              '==':       `==`
-              '=':        `=`
-              '\\=':      `\\=`
+              '=<':       {`Builtin` '=<'  3}
+              '<':        {`Builtin` '<'   3}
+              '>=':       {`Builtin` '>='  3}
+              '>':        {`Builtin` '>'   3}
+              '==':       {`Builtin` '=='  3}
+              '=':        {`Builtin` '='   2}
+              '\\=':      {`Builtin` '\\=' 3}
               max:        Max
               min:        Min
 
-              '.':        `.`
+              '.':        {`Builtin` '.'   3}
               hasFeature: HasFeature
               condSelect: CondSelect
 
@@ -95,7 +71,3 @@ Value = value(wait:       Wait
               type:       {`Builtin` 'Value.type'   2}
               byNeed:     ByNeed
              )
-
-\ifndef OZM
-\popSwitches
-\endif

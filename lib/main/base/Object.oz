@@ -27,18 +27,8 @@ declare
    IsObject
    BaseObject
    New
-   %% Needed by compiler
-   `@`
-   `<-`
-   `ooExch`
-   `,`
-   `ooDefaultVar`
-   `ooRequiredArg`
-   `ooGetLock`
-   `class`
-   `extend`
-   `ooPrivate`
    %% Needed by other modules
+   `extend`              % Module Class
    `ooFreeFlag`          % Module Class
    `ooParents`           % Module Class
    `ooPrintName`         % Module Class
@@ -52,12 +42,6 @@ in
 
 IsObject      = {`Builtin` 'IsObject'    2}
 New           = {`Builtin` 'New'         3}
-`ooPrivate`   = {`Builtin` 'NewName'     1}
-`@`           = {`Builtin` '@'           2}
-`<-`          = {`Builtin` '<-'          2}
-`ooExch`      = {`Builtin` 'ooExch'      3}
-`,`           = {`Builtin` ','           2}
-`ooGetLock`   = {`Builtin` 'ooGetLock'   1}
 
 
 local
@@ -69,8 +53,6 @@ in
    `ooNative`         = {NewUniqueName 'ooNative'}
    `ooParents`        = {NewUniqueName 'ooParents'}
    `ooFreeFlag`       = {NewUniqueName 'ooFreeFlag'}
-   `ooDefaultVar`     = {NewUniqueName 'ooDefaultVar'}
-   `ooRequiredArg`    = {NewUniqueName 'ooRequiredArg'}
    `ooPrintName`      = {NewUniqueName 'ooPrintName'}
    `ooUnFreeFeat`     = {NewUniqueName 'ooUnFreeFeat'}
    `ooFreeFeatR`      = {NewUniqueName 'ooFreeFeatR'}
@@ -438,7 +420,7 @@ local
    %% The real class creation
    %%
 
-   proc {!`class` Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
+   proc {`class` Parents NewMeth NewAttr NewFeat NewProp PrintName ?C}
       {CheckParents Parents PrintName}
       %% To be computed for methods
       Meth FastMeth Defaults
@@ -715,9 +697,9 @@ in
                  new:             New
                  base:            BaseObject
                  meta:            MetaObject
-                 ',':             `,`
-                 '@':             `@`
-                 '<-':             `<-`
+                 ',':             {`Builtin` ','           2}
+                 '@':             {`Builtin` '@'           2}
+                 '<-':            {`Builtin` '<-'          2}
                  'class':         `class`
 
                  %% only in module

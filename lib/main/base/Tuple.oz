@@ -25,7 +25,6 @@
 
 declare
    Tuple MakeTuple IsTuple
-   `tuple`
 in
 
 
@@ -69,19 +68,4 @@ in
                              {TupleToArray W T A}
                              A
                           end)
-end
-
-%%
-%% Compiler Expansions
-%%
-local
-   proc {Match Xs I T}
-      case Xs of nil then skip
-      [] X|Xr then T.I=X {Match Xr I+1 T}
-      end
-   end
-in
-   proc {`tuple` L Xs I T}
-      T={MakeTuple L I} {Match Xs 1 T}
-   end
 end

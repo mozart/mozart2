@@ -42,11 +42,11 @@ SCHEDLOCAL = \
 
 SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 
-FCORE = \
+FBASE = \
         conversion float record type exception guards future misc \
         link instruction compiler except dictionary ofs pickles
 
-CORE = $(FCORE:%=./core/%.ozf)
+BASE = $(FBASE:%=./base/%.ozf)
 
 FBENCH = \
         nrev tak fd compiler
@@ -65,11 +65,11 @@ FTOOLS = \
 
 TOOLS = $(FTOOLS:%=./tools/%.ozf)
 
-DIRS = core space fd fs scheduling dp tools bench
+DIRS = base space fd fs scheduling dp tools bench
 
 # All tests
 COMPONENTS = \
-        $(CORE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS) \
+        $(BASE) $(SPACEOZF) $(FDOZF) $(SCHEDOZF) $(FSOZF) $(DP) $(TOOLS) \
         $(BENCH)
 OTHERS= dp/TestMisc.ozf
 

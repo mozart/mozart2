@@ -188,7 +188,7 @@ local
       proc {Or C}
          case {Width C}
          of 0 then fail
-         [] 1 then {{Guardify C.1}}
+         [] 1 then {{{Guardify C.1}}}
          [] N then G A in
             {InitGuards N C G A}
             {Resolve G A N}
@@ -200,7 +200,25 @@ local
       skip
    in
       proc {Dis C}
-         skip
+         case {Width C}
+         of 0 then fail
+         [] 1 then {{{Guardify C.1}}}
+         [] 2 then
+            dis B in B={{Guardify C.1}} then {B}
+            []  B in B={{Guardify C.2}} then {B}
+            end
+         [] 3 then
+            dis B in B={{Guardify C.1}} then {B}
+            []  B in B={{Guardify C.2}} then {B}
+            []  B in B={{Guardify C.3}} then {B}
+            end
+         [] 4 then
+            dis B in B={{Guardify C.1}} then {B}
+            []  B in B={{Guardify C.2}} then {B}
+            []  B in B={{Guardify C.3}} then {B}
+            []  B in B={{Guardify C.4}} then {B}
+            end
+         end
       end
    end
 

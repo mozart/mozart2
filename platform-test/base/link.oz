@@ -80,9 +80,10 @@ in
                           in
                              {F write(vs:Code)}
                              {F close}
-                             0={OS.system ('sh -c \'gcc -Wno-conversion -c -I '#
+                             0={OS.system ('gcc -Wno-conversion -c -I '#
                                            {System.get home}#'/include '#
-                                           File#'.c -o '#File#'.o \' &> /dev/null')}
+                                           File#'.c -o '#File#'.o'#
+                                           ' 2>/dev/null')}
                              0={OS.system ('ozdynld -o '#File#'.so '#
                                            File#'.o -lc')}
                              Goodies = {Foreign.require

@@ -35,6 +35,8 @@ import
    Boot_Thread          @ 'x-oz://boot/Thread'
    Boot_Exception       @ 'x-oz://boot/Exception'
    Boot_Time            @ 'x-oz://boot/Time'
+   Boot_BitString       @ 'x-oz://boot/BitString'
+   Boot_ByteString      @ 'x-oz://boot/ByteString'
 export
    %%
    %% Value
@@ -262,6 +264,13 @@ export
    'Boot_Time'          : Boot_Time
    'Alarm'              : Alarm
    'Delay'              : Delay
+   %%%
+   %%% BitString ByteString
+   %%%
+   'Boot_BitString'     : Boot_BitString
+   'Boot_ByteString'    : Boot_ByteString
+   'IsBitString'        : IsBitString
+   'IsByteString'       : IsByteString
 define
    %%
    %% Value
@@ -461,4 +470,9 @@ define
    %%
    Alarm        = Boot_Time.alarm
    Delay        = Boot_Time.delay
+   %%
+   %% BitString ByteString
+   %%
+   IsBitString  = Boot_BitString.is
+   IsByteString = Boot_ByteString.is
 end

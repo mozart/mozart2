@@ -61,198 +61,205 @@ local
    \insert 'standard/Exception.oz'
    \insert 'standard/Time.oz'
    \insert 'standard/Functor.oz'
+   \insert 'standard/BitString.oz'
+   \insert 'standard/ByteString.oz'
 in
    functor $ prop once
 
    export
       %% Unit
-      '`unit`':             `unit`
+      '`unit`'          : `unit`
       %% Bool
-      '`true`':             `true`
-      '`false`':            `false`
+      '`true`'          : `true`
+      '`false`'         : `false`
 
       %% Value
-      'Value':              Value
-      'Wait':               Wait
-      'WaitOr':             WaitOr
-      'IsFree':             IsFree
-      'IsKinded':           IsKinded
-      'IsDet':              IsDet
-      'Min':                Min
-      'Max':                Max
-      'CondSelect':         CondSelect
-      'HasFeature':         HasFeature
-      'ByNeed':             ByNeed
+      'Value'           : Value
+      'Wait'            : Wait
+      'WaitOr'          : WaitOr
+      'IsFree'          : IsFree
+      'IsKinded'        : IsKinded
+      'IsDet'           : IsDet
+      'Min'             : Min
+      'Max'             : Max
+      'CondSelect'      : CondSelect
+      'HasFeature'      : HasFeature
+      'ByNeed'          : ByNeed
       %% Literal
-      'Literal':            Literal
-      'IsLiteral':          IsLiteral
+      'Literal'         : Literal
+      'IsLiteral'       : IsLiteral
       %% Unit
-      'Unit':               Unit
-      'IsUnit':             IsUnit
+      'Unit'            : Unit
+      'IsUnit'          : IsUnit
       %% Lock
-      'Lock':               Lock
-      'IsLock':             IsLock
-      'NewLock':            NewLock
+      'Lock'            : Lock
+      'IsLock'          : IsLock
+      'NewLock'         : NewLock
       %% Cell
-      'Cell':               Cell
-      'IsCell':             IsCell
-      'NewCell':            NewCell
-      'Exchange':           Exchange
-      'Assign':             Assign
-      'Access':             Access
+      'Cell'            : Cell
+      'IsCell'          : IsCell
+      'NewCell'         : NewCell
+      'Exchange'        : Exchange
+      'Assign'          : Assign
+      'Access'          : Access
       %% Port
-      'Port':               Port
-      'IsPort':             IsPort
-      'NewPort':            NewPort
-      'Send':               Send
+      'Port'            : Port
+      'IsPort'          : IsPort
+      'NewPort'         : NewPort
+      'Send'            : Send
       %% Atom
-      'Atom':               Atom
-      'IsAtom':             IsAtom
-      'AtomToString':       AtomToString
+      'Atom'            : Atom
+      'IsAtom'          : IsAtom
+      'AtomToString'    : AtomToString
       %% Name
-      'Name':               Name
-      'IsName':             IsName
-      'NewName':            NewName
+      'Name'            : Name
+      'IsName'          : IsName
+      'NewName'         : NewName
       %% Bool
-      'Bool':               Bool
-      'IsBool':             IsBool
-      'And':                And
-      'Or':                 Or
-      'Not':                Not
+      'Bool'            : Bool
+      'IsBool'          : IsBool
+      'And'             : And
+      'Or'              : Or
+      'Not'             : Not
       %% String
-      'String':             String
-      'IsString':           IsString
-      'StringToAtom':       StringToAtom
-      'StringToInt':        StringToInt
-      'StringToFloat':      StringToFloat
+      'String'          : String
+      'IsString'        : IsString
+      'StringToAtom'    : StringToAtom
+      'StringToInt'     : StringToInt
+      'StringToFloat'   : StringToFloat
       %% Char
-      'Char':               Char
-      'IsChar':             IsChar
+      'Char'            : Char
+      'IsChar'          : IsChar
       %% Int
-      'Int':                Int
-      'IsInt':              IsInt
-      'IsNat':              IsNat
-      'IsOdd':              IsOdd
-      'IsEven':             IsEven
-      'IntToFloat':         IntToFloat
-      'IntToString':        IntToString
+      'Int'             : Int
+      'IsInt'           : IsInt
+      'IsNat'           : IsNat
+      'IsOdd'           : IsOdd
+      'IsEven'          : IsEven
+      'IntToFloat'      : IntToFloat
+      'IntToString'     : IntToString
       %% Float
-      'Float':              Float
-      'IsFloat':            IsFloat
-      'Exp':                Exp
-      'Log':                Log
-      'Sqrt':               Sqrt
-      'Ceil':               Ceil
-      'Floor':              Floor
-      'Sin':                Sin
-      'Cos':                Cos
-      'Tan':                Tan
-      'Asin':               Asin
-      'Acos':               Acos
-      'Atan':               Atan
-      'Atan2':              Atan2
-      'Round':              Round
-      'FloatToInt':         FloatToInt
-      'FloatToString':      FloatToString
+      'Float'           : Float
+      'IsFloat'         : IsFloat
+      'Exp'             : Exp
+      'Log'             : Log
+      'Sqrt'            : Sqrt
+      'Ceil'            : Ceil
+      'Floor'           : Floor
+      'Sin'             : Sin
+      'Cos'             : Cos
+      'Tan'             : Tan
+      'Asin'            : Asin
+      'Acos'            : Acos
+      'Atan'            : Atan
+      'Atan2'           : Atan2
+      'Round'           : Round
+      'FloatToInt'      : FloatToInt
+      'FloatToString'   : FloatToString
       %% Number
-      'Number':             Number
-      'IsNumber':           IsNumber
-      'Pow':                Pow
-      'Abs':                Abs
+      'Number'          : Number
+      'IsNumber'        : IsNumber
+      'Pow'             : Pow
+      'Abs'             : Abs
       %% Tuple
-      'Tuple':              Tuple
-      'IsTuple':            IsTuple
-      'MakeTuple':          MakeTuple
+      'Tuple'           : Tuple
+      'IsTuple'         : IsTuple
+      'MakeTuple'       : MakeTuple
       %% List
-      'List':               List
-      'MakeList':           MakeList
-      'IsList':             IsList
-      'Append':             Append
-      'Member':             Member
-      'Length':             Length
-      'Nth':                Nth
-      'Reverse':            Reverse
-      'Map':                Map
-      'FoldL':              FoldL
-      'FoldR':              FoldR
-      'FoldLTail':          FoldLTail
-      'FoldRTail':          FoldRTail
-      'ForAll':             ForAll
-      'All':                All
-      'ForAllTail':         ForAllTail
-      'AllTail':            AllTail
-      'Some':               Some
-      'Filter':             Filter
-      'Sort':               Sort
-      'Merge':              Merge
-      'Flatten':            Flatten
+      'List'            : List
+      'MakeList'        : MakeList
+      'IsList'          : IsList
+      'Append'          : Append
+      'Member'          : Member
+      'Length'          : Length
+      'Nth'             : Nth
+      'Reverse'         : Reverse
+      'Map'             : Map
+      'FoldL'           : FoldL
+      'FoldR'           : FoldR
+      'FoldLTail'       : FoldLTail
+      'FoldRTail'       : FoldRTail
+      'ForAll'          : ForAll
+      'All'             : All
+      'ForAllTail'      : ForAllTail
+      'AllTail'         : AllTail
+      'Some'            : Some
+      'Filter'          : Filter
+      'Sort'            : Sort
+      'Merge'           : Merge
+      'Flatten'         : Flatten
       %% Procedure
-      'Procedure':          Procedure
-      'IsProcedure':        IsProcedure
-      'ProcedureArity':     ProcedureArity
+      'Procedure'       : Procedure
+      'IsProcedure'     : IsProcedure
+      'ProcedureArity'  : ProcedureArity
       %% Loop
-      'Loop':               Loop
-      'For':                For
-      'ForThread':          ForThread
+      'Loop'            : Loop
+      'For'             : For
+      'ForThread'       : ForThread
       %% Record
-      'Record':             Record
-      'IsRecord':           IsRecord
-      'Arity':              Arity
-      'Label':              Label
-      'Width':              Width
-      'Adjoin':             Adjoin
-      'AdjoinList':         AdjoinList
-      'AdjoinAt':           AdjoinAt
-      'IsRecordC':          IsRecordC
-      'WidthC':             WidthC
-      'TellRecord':         TellRecord
-      'MakeRecord':         MakeRecord
+      'Record'          : Record
+      'IsRecord'        : IsRecord
+      'Arity'           : Arity
+      'Label'           : Label
+      'Width'           : Width
+      'Adjoin'          : Adjoin
+      'AdjoinList'      : AdjoinList
+      'AdjoinAt'        : AdjoinAt
+      'IsRecordC'       : IsRecordC
+      'WidthC'          : WidthC
+      'TellRecord'      : TellRecord
+      'MakeRecord'      : MakeRecord
       %% Chunk
-      'Chunk':              Chunk
-      'IsChunk':            IsChunk
-      'NewChunk':           NewChunk
+      'Chunk'           : Chunk
+      'IsChunk'         : IsChunk
+      'NewChunk'        : NewChunk
       %% VirtualString
-      'VirtualString':      VirtualString
-      'IsVirtualString':    IsVirtualString
+      'VirtualString'   : VirtualString
+      'IsVirtualString' : IsVirtualString
       %% Dictionary
-      'Dictionary':         Dictionary
-      'IsDictionary':       IsDictionary
-      'NewDictionary':      NewDictionary
+      'Dictionary'      : Dictionary
+      'IsDictionary'    : IsDictionary
+      'NewDictionary'   : NewDictionary
       %% Array
-      'Array':              Array
-      'IsArray':            IsArray
-      'NewArray':           NewArray
-      'Put':                Put
-      'Get':                Get
+      'Array'           : Array
+      'IsArray'         : IsArray
+      'NewArray'        : NewArray
+      'Put'             : Put
+      'Get'             : Get
       %% Space
-      'Space':              Space
-      'IsSpace':            IsSpace
+      'Space'           : Space
+      'IsSpace'         : IsSpace
       %% Object
-      'Object':             Object
-      'IsObject':           IsObject
-      'BaseObject':         BaseObject
-      'New':                New
+      'Object'          : Object
+      'IsObject'        : IsObject
+      'BaseObject'      : BaseObject
+      'New'             : New
       %% Class
-      'Class':              Class
-      'IsClass':            IsClass
+      'Class'           : Class
+      'IsClass'         : IsClass
       %% Thread
-      'Thread':             Thread
-      'IsThread':           IsThread
+      'Thread'          : Thread
+      'IsThread'        : IsThread
       %% Time
-      'Time':               Time
-      'Alarm':              Alarm
-      'Delay':              Delay
+      'Time'            : Time
+      'Alarm'           : Alarm
+      'Delay'           : Delay
       %% Exception
-      'Exception':          Exception
-      'Raise':              Raise
+      'Exception'       : Exception
+      'Raise'           : Raise
       %% Functor
-      'Functor':            Functor
+      'Functor'         : Functor
       %% BitArray
-      'BitArray':           BitArray
-      'IsBitArray':         IsBitArray
+      'BitArray'        : BitArray
+      'IsBitArray'      : IsBitArray
       %% ForeignPointer
-      'ForeignPointer':     ForeignPointer
-      'IsForeignPointer':   IsForeignPointer
+      'ForeignPointer'  : ForeignPointer
+      'IsForeignPointer': IsForeignPointer
+      %% BitString
+      'BitString'       : BitString
+      'ByteString'      : ByteString
+      'IsBitString'     : IsBitString
+      'IsByteString'    : IsByteString
    define
       skip
    end

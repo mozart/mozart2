@@ -179,6 +179,8 @@ in
       Is = is(array:               IsArray
               atom:                IsAtom
               bitArray:            IsBitArray
+              bitString:           IsBitString
+              byteString:          IsByteString
               bool:                IsBool
               cell:                IsCell
               char:                IsChar
@@ -250,6 +252,8 @@ in
                    array:             {GenericAsk IsArray array}
                    atom:              {GenericAsk IsAtom atom}
                    bitArray:          {GenericAsk IsBitArray bitArray}
+                   bitString:         {GenericAsk IsBitString bitString}
+                   byteString:        {GenericAsk IsByteString byteString}
                    bool:              {GenericAsk IsBool bool}
                    cell:              {GenericAsk IsCell cell}
                    char:              {GenericAsk IsChar char}

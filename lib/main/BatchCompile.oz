@@ -294,6 +294,59 @@ local
       end
    end
 
+\ifdef LILO
+   local
+      fun {IsIDChar C}
+         {Char.isAlNum C} orelse C == &_
+      end
+
+      fun {IsQuotedVariable S}
+         case S of C1|Cr then
+            case C1 == &` andthen Cr == nil then true
+            elsecase C1 == 0 then false
+            else {IsQuotedVariable Cr}
+            end
+         [] nil then false
+         end
+      end
+
+      fun {IsPrintName X}
+         {IsAtom X} andthen
+         local
+            S = {Atom.toString X}
+         in
+            case S of C|Cr then
+               case C of &` then
+                  {IsQuotedVariable Cr}
+               else
+                  {Char.isUpper C} andthen {All Cr IsIDChar}
+               end
+            [] nil then false
+            end
+         end
+      end
+   in
+      proc {IncludeComponents S Compiler Load} Comp1 Rest Export in
+         {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
+         try
+            X = {String.toAtom Comp1}
+         in
+            Export = {Load 'http://www.ps.uni-sb.de/ozhome/lib/'#X#'.ozf'}
+         catch error(...) then
+            {Report error(kind: UsageError
+                          msg: 'unknown component `'#Comp1#'\' requested'
+                          items: [hint(l: 'Hint'
+                                       m: ('Use --help to obtain '#
+                                           'usage information'))])}
+         end
+         {Compiler enqueue(mergeEnv({Record.filterInd Export
+                                     fun {$ P _} {IsPrintName P} end}))}
+         case Rest of _|S2 then {IncludeComponents S2 Compiler Load}
+         [] nil then skip
+         end
+      end
+   end
+\else
    proc {IncludeComponents S Compiler} Comp1 Rest Loader in
       {List.takeDropWhile S fun {$ C} C \= &, end ?Comp1 ?Rest}
       try
@@ -312,6 +365,7 @@ local
       [] nil then skip
       end
    end
+\endif
 
    fun {ChangeExtension X OldExt NewExt}
       case X == OldExt then NewExt
@@ -364,7 +418,11 @@ in
              [] maxerrors then
                 {BatchCompiler enqueue(setMaxNumberOfErrors(X))}
              [] environment then
+\ifdef LILO
+                {IncludeComponents X BatchCompiler LILO.load}
+\else
                 {IncludeComponents X BatchCompiler}
+\endif
              [] incdir then
                 {Assign IncDir X|{Access IncDir}}
              [] include then

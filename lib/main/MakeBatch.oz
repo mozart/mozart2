@@ -19,6 +19,27 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+{Application.syslet
+ 'ozbatch'
+ functor
+ import
+    LILO.load
+    SP.{System='System' Error='Error'}
+    OP.{OS='OS' Open='Open' Component='Component'}
+    Compiler.{X='Compiler'}
+ export
+    BatchCompile
+ body
+    Compiler = X
+ in
+    \insert BatchCompile
+ end
+ plain}
+
+\else
+
 {Application.syslet
  'ozbatch'
  c('SP':       eager
@@ -38,3 +59,5 @@
     \insert BatchCompile
  end
  plain}
+
+\endif

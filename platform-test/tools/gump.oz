@@ -52,7 +52,6 @@ in
       fun {MakeParser}
          {Compiler.evalExpression
           '\\switch +gump\n'#
-          '\\insert gump/ProductionTemplates\n'#
           '\\switch +gumpparseroutputsimplified +gumpparserverbose\n'#
           '\\gumpparserexpect 0\n'#
           '\\insert '#ExamplesDirectory#'LambdaParser.ozg\n'#

@@ -28,7 +28,7 @@ fun {$ IMPORT}
          local From To in
             From = (Option-1)*NbSlots + 1
             To = (Option-1)*NbSlots + NbSlots - (S-1)
-            {Loop.for From To 1 proc{$ C} {`Lec` {SumUp Ops C C+S-1} R} end}
+            {Loop.for From To 1 proc{$ C} {SumUp Ops C C+S-1} =<: R end}
          end
       end
 
@@ -68,7 +68,7 @@ fun {$ IMPORT}
                      proc{$ K} local From To in
                                   From = (O-1)*NbSlots+1
                                   To = (O-1)*NbSlots+NbSlots-K*S
-                                  {`Gec` {SumUp Options From To} P-K*R}
+                                  {SumUp Options From To} >=: P-K*R
                                end
                      end}
                     {StateSurrogates Options NbSlots T2 T1 CarInfo}

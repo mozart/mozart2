@@ -3,7 +3,7 @@ fun {$ IMPORT}
 
    GetSize = FD.reflect.size
    GetMax = FD.reflect.max
-   Nec=!`Nec`
+
    fun {Choose Min MinSize Xs}
       case Xs
       of X|Xr then
@@ -28,7 +28,7 @@ fun {$ IMPORT}
             in
                thread
                   dis Next=M then {Enum L}
-                  [] {Nec Next M} then {Enum L}
+                  [] Next \=: M then {Enum L}
                   end
                end
             end

@@ -51,8 +51,8 @@ fun {$ IMPORT}
                   end
                else
                   local Mid = Min + (Diff div 2) in
-                     dis {`Lec` Y  Mid} then {EnumSplit Y|Yr}
-                     [] {`Gec` Y  Mid+1} then {EnumSplit Y|Yr}
+                     dis Y  =<: Mid then {EnumSplit Y|Yr}
+                     []  Y  >=: Mid+1 then {EnumSplit Y|Yr}
                      end
                   end
                end

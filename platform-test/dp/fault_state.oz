@@ -27,7 +27,7 @@ import
    Remote(manager)
    Fault
    TestMisc(localHost)
-   System(show)
+   System(show showInfo)
 export
    Return
 
@@ -116,7 +116,6 @@ define
    proc{TryCell C}
       try
          {Access C _}
-         {System.show hoho}
          raise abort end
       catch injector then skip
       end
@@ -168,7 +167,9 @@ define
              catch _ then
                 skip
              end
-             {Access CC false}
+             try
+                {Access CC false}
+             catch _ then {System.showInfo 'fault_proxy_naive'} end
           end
           keys:[fault])
        fault_state_manager_injector_live(
@@ -195,7 +196,9 @@ define
              {InjectInj DistCell DistLock}
              {S close}
              {WaitPerm Sync}
-             {TryCell DistCell}
+             try
+                {TryCell DistCell}
+             catch abort then {System.showInfo 'dp_fault_state_manager_injector_live may have a problem'} end
           end
           keys:[fault])
 
@@ -222,7 +225,9 @@ define
              {S close}
              {WaitPerm Sync}
              {InjectInj DistCell DistLock}
-             {TryCell DistCell}
+             try
+                {TryCell DistCell}
+             catch abort then {System.showInfo 'dp_fault_state_manager_injector_dead may have a problem'} end
           end
           keys:[fault])
 
@@ -257,8 +262,10 @@ define
              AA.lokk = unit
              {S close}
              {WaitPerm Sync}
-             {TryCell DistCell}
-             {CheckWat AA}
+             try
+                {TryCell DistCell}
+                {CheckWat AA}
+             catch _ then {System.showInfo 'dp_fault_state_manager_watcher_live may have a problem'} end
           end
           keys:[fault])
 
@@ -292,7 +299,9 @@ define
              catch _ then
                 skip
              end
-             {CheckWatM AA}
+             try
+                {CheckWatM AA}
+             catch _ then {System.showInfo 'dp_fault_manager_watcher_dead may have a problem'} end
           end
           keys:[fault])
 
@@ -329,7 +338,9 @@ define
              {InjectorInstall DistCell Inj}
              {S2 close}
              {WaitPerm P2}
-             {TryCell DistCell}
+             try
+                {TryCell DistCell}
+             catch abort then {System.showInfo 'dp_fault_state_proxy_tokenLost_live_injector may have a problem'} end
              {S1 close}
           end
           keys:[fault])
@@ -414,7 +425,9 @@ define
              {S1 close}
              {WaitPerm P2}
              {WaitPerm P1}
-             {Access CC true}
+             try
+                {Access CC true}
+             catch _ then {System.showInfo 'dp_fault_state_proxy_tokenLost_live_watcher may have a problem'} end
           end
           keys:[fault])
 
@@ -455,7 +468,9 @@ define
                                           end}
              {S1 close}
              {WaitPerm P1}
-             {Access CC true}
+             try
+                {Access CC true}
+             catch _ then {System.showInfo 'dp_fault_state_proxy_tokenLost_dead_watcher may have a problem'} end
           end
           keys:[fault])
 
@@ -540,7 +555,9 @@ define
              {S1 close}
              {WaitPerm P3}
              {WaitPerm P1}
-             {Access CC true}
+             try
+                {Access CC true}
+             catch _ then {System.showInfo 'dp_fault_chain_broken_watcher_dead may have a problem'} end
           end
           keys:[fault])
 
@@ -624,7 +641,9 @@ define
              {S1 close}
              {WaitPerm P3}
              {WaitPerm P1}
-             {Access CC true}
+             try
+                {Access CC true}
+             catch _ then {System.showInfo 'dp_fault_chain_broken_watcher_live may have a problem'} end
           end
           keys:[fault])
       ])

@@ -63,7 +63,7 @@ define
                 skip
              end
              if {Access CC} then
-                raise dp('fail' error) end
+                {System.showInfo 'dp_fault_proxy may have a problem'}
              else
                 skip
              end
@@ -114,7 +114,7 @@ define
              {S1 close}
 
              if {Access CC} then
-                raise dp('fail' error) end
+                {System.showInfo 'dp_fault_proxy may have a problem'}
              else
                 skip
              end

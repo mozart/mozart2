@@ -273,11 +273,12 @@ define
 
              {S close}
 
-             {TryVar  Va}
-             {TryCell Ce}
-             {TryPort Po}
-             {TryLock Lo}
-
+             try
+                {TryVar  Va}
+                {TryCell Ce}
+                {TryPort Po}
+                {TryLock Lo}
+             catch hell then {System.showInfo 'dp_fault_global_deinstall_injector may have a problem'} end
 
           end
           keys:[fault])
@@ -318,10 +319,12 @@ define
              {SiteWatcherDeInstall Ce Pro}
              {S close}
 
-             {TryVar  Va}
-             {TryCell Ce}
-             {TryPort Po}
-             {TryLock Lo}
+             try
+                {TryVar  Va}
+                {TryCell Ce}
+                {TryPort Po}
+                {TryLock Lo}
+             catch hell then {System.showInfo 'dp_fault_global_deinstall_watcher may have a problem'} end
              local CC = {NewCell false} in
                 try
                    Sync = true

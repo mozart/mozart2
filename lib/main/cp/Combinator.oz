@@ -157,7 +157,6 @@ define
       end
    end
 
-
    local
       proc {WaitFailed G A N}
          if N>0 then I={DictWaitOr A} in
@@ -191,11 +190,31 @@ define
             {CommitGuard G.I}
          end
       end
+      proc {BinaryOr C1 C2}
+         G1={NewGuard C1}
+         A1={Space.askVerbose G1}
+      in
+         if {IsDet A1} andthen A1==failed then
+            {{{Guardify C2}}}
+         else
+            G2={NewGuard C2}
+            A2={Space.askVerbose G2}
+         in
+            if {IsDet A2} andthen A2==failed then
+               {CommitGuard G1}
+            else A={Dictionary.new} in
+               {Dictionary.put A 1 A1}
+               {Dictionary.put A 2 A2}
+               {Resolve G1#G2 A 2}
+            end
+         end
+      end
    in
       proc {Or C}
          case {Width C}
          of 0 then fail
          [] 1 then {{{Guardify C.1}}}
+         [] 2 then {BinaryOr C.1 C.2}
          [] N then G A in
             {InitGuards N C G A}
             {Resolve G A N}

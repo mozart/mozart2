@@ -83,9 +83,11 @@ define
 
    Return=
    fs([golf([
-             one(equal(fun {$} {Search.base.one {Golf 9 8}} end GolfSol)
+             one(equal(fun {$} {Search.one.depth {Golf 9 8} 10 _}  end GolfSol)
                  keys: [fs])
-             one_entailed(entailed(proc {$} {Search.base.one {Golf 9 8} _} end)
+             one_entailed(entailed(proc {$}
+                                      {Search.one.depth {Golf 9 8} 10 _ _}
+                                   end)
                           keys: [fs entailed])
             ]
            )

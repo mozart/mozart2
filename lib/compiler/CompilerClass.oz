@@ -24,6 +24,15 @@ local
    %% Auxiliary classes
    %%
 
+   fun {EnumerateVersionNumbers S Prefix} S1 Rest S2 in
+      {List.takeDropWhile S fun {$ C} C \= &_ end ?S1 ?Rest}
+      S2 = {Append Prefix S1}
+      {String.toAtom S2}|
+      case Rest of _|R then {EnumerateVersionNumbers R {Append S2 "_"}}
+      [] nil then nil
+      end
+   end
+
    class CompilerStateClass
       attr
          defines: nil
@@ -95,6 +104,11 @@ local
       feat variables values
 
       meth init(Env)
+         defines <- {EnumerateVersionNumbers
+                     {Map {Atom.toString {System.get 'oz.version'}}
+                      fun {$ C}
+                         case C == &. then &_ else C end
+                      end} "Oz_"}
          self.variables = {NewDictionary}
          self.values = {NewDictionary}
          CompilerStateClass, putEnv(Env)

@@ -28,7 +28,7 @@
 
 functor
 
-import
+import System
    OS(exec wait getEnv)
    Connection(offer)
    Property(get condGet put)
@@ -74,6 +74,14 @@ define
       {Property.put 'oz.engine'
        case {OS.getEnv 'OZ_ENGINE'} of false then
           case {OS.getEnv 'OZENGINE'} of false then 'ozengine'
+          elseof X then X end
+       elseof X then X end}
+   else skip end
+
+   if {Property.condGet 'oz.remote.fork' unit}==unit then
+      {Property.put 'oz.remote.fork'
+       case {OS.getEnv 'OZ_REMOTE_FORK'} of false then
+          case {OS.getEnv 'OZREMOTEFORK'} of false then 'rsh'
           elseof X then X end
        elseof X then X end}
    else skip end
@@ -142,17 +150,20 @@ define
          Cancel
       in
          PID={ForkProcess
+              local OFork =
               case Fork
               of automatic then
                  if Host==localhost then
                     if HasVirtualSite then virtual
                     else sh
                     end
-                 else rsh
+                 else {Property.condGet 'oz.remote.fork' rsh}
                  end
               [] sh then sh
               else Fork
               end
+              in
+                 {System.showInfo Fork#' -> '#OFork} OFork end
               Host RunPort#CtrlPort Detach PORT IP FW}
 
          thread

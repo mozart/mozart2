@@ -78,11 +78,17 @@
 %%%
 %%%             LABEL#ARITY
 %%%             file(FILE)
+%%%             load(URL)       system(NAME)
 %%%             unit
 %%%
 %%%   LABEL#ARITY describes an export record.  file(FILE) indicates
 %%%   that FILE is a `*.env' kind of file from which LABEL#ARITY can
 %%%   be computed. unit indicates that no interface is available.
+%%%   load(URL) indicates that LABEL#ARITY can be obtained by loading
+%%%   the component available at URL.  system(NAME) is essentially
+%%%   equivalent to load(COMPS#NAME#'.tyc') where COMPS is either the
+%%%   value of environment variable OZCOMPONENTS or the default:
+%%%   'http://www.ps.uni-sb.de/ozhome/lib/'.
 %%% ------------------------------------------------------------------
 %%% {Application.registry.plan R SPEC ?PLAN}
 %%%
@@ -314,9 +320,11 @@ local
       case {Record.is ARGS} andthen {Record.all ARGS Atom.is}
       then skip else {BadRegistration NAME Desc args} end
       case TYPE
-      of unit    then skip
-      [] _#_     then skip
-      [] file(_) then skip
+      of unit      then skip
+      [] _#_       then skip
+      [] file(_)   then skip
+      [] load(_)   then skip
+      [] system(_) then skip
       else {BadRegistration NAME Desc type} end
       {Dictionary.put {RegistryGetMap R} NAME
        module(name:NAME src:SRC args:ARGS type:TYPE)}
@@ -331,15 +339,16 @@ local
    %% arguments.
    %%
    fun {ComputeSystemURL BASENAME}
-      UseURL = case {OS.getEnv 'OZCOMPONENTS'} of false then
-                  'http://www.ps.uni-sb.de/ozhome/lib/'
-               elseof URL then
-                  case {List.last {VirtualString.toString URL}}==&/ then URL
-                  else URL#'/'
-                  end
-               end
-   in
-      UseURL#BASENAME#'.ozc'
+      {SystemURL}#BASENAME#'.ozc'
+   end
+   fun {SystemURL}
+      case {OS.getEnv 'OZCOMPONENTS'} of false then
+         'http://www.ps.uni-sb.de/ozhome/lib/'
+      elseof URL then
+         case {List.last {VirtualString.toString URL}}==&/ then URL
+         else URL#'/'
+         end
+      end
    end
    %%
    %% MakeEagerLoader creates a loader that, when applied, retrieves
@@ -391,6 +400,9 @@ local
       else
          SRC = Entry.src
          LABEL#ARITY = case TYPE of file(FILE) then {GetType FILE}
+                       elseof       load(URL ) then {Load URL}
+                       elseof     system(NAME) then
+                          {Load {SystemURL}#NAME#'.tyc'}
                        else TYPE end
       in
          proc {$ IMPORT EXPORT}
@@ -615,21 +627,6 @@ local
       'Emacs':          ['OP' 'SP']
       'Ozcar':          ['SP' 'WP' 'Browser' 'Compiler' 'Emacs']
       'Profiler':       ['SP' 'OP' 'WP' 'Browser' 'Compiler' 'Emacs'])
-   StandardTypes =
-   type('SP'            :\insert SP.typ
-        'OP'            :\insert OP.typ
-        'CP'            :\insert CP.typ
-        'WP'            :\insert WP.typ
-        'DP'            :\insert DP.typ
-        'Panel'         :\insert Panel.typ
-        'Browser'       :\insert Browser.typ
-        'Explorer'      :\insert Explorer.typ
-        'Compiler'      :\insert Compiler.typ
-        'CompilerPanel' :\insert CompilerPanel.typ
-        'Emacs'         :\insert Emacs.typ
-        'Ozcar'         :\insert Ozcar.typ
-        'Profiler'      :\insert Profiler.typ
-       )
    %%
    %% we also want to export a useful collection of submodules
    %%
@@ -662,7 +659,7 @@ local
            module(src:system(Name)
                   args:{List.toRecord x
                         {Map Args fun {$ A} A#A end}}
-                  type:StandardTypes.Name)}
+                  type:system(Name))}
        end}
       {Record.forAllInd StandardSubModules
        proc {$ Mod SubMods}

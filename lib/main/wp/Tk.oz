@@ -22,7 +22,93 @@
 %%% WARRANTIES.
 %%%
 
-local
+functor
+
+import
+   TkBoot at 'x-oz://boot/Tk'
+
+   Property(get)
+
+   System(showError)
+
+   Error(formatGeneric
+         format
+         dispatch)
+
+   ErrorRegistry(put)
+
+   Open(pipe
+        text)
+
+   OS(getEnv
+      putEnv
+      stat)
+
+   Resolve(makeResolver)
+
+export
+   send:          TkSend
+   batch:         TkBatch
+
+   return:           TkReturnString
+   returnString:     TkReturnString
+   returnAtom:       TkReturnAtom
+   returnInt:        TkReturnInt
+   returnFloat:      TkReturnFloat
+   returnList:       TkReturnListString
+   returnListString: TkReturnListString
+   returnListAtom:   TkReturnListAtom
+   returnListInt:    TkReturnListInt
+   returnListFloat:  TkReturnListFloat
+
+   getPrefix:        TkGetPrefix
+   getId:            TkGetId
+   getTclName:       TkGetTclName
+
+   invoke:        InvokeAction
+
+   button:        TkButton
+   canvas:        TkCanvas
+   checkbutton:   TkCheckbutton
+   entry:         TkEntry
+   frame:         TkFrame
+   label:         TkLabel
+   listbox:       TkListbox
+   menu:          TkMenu
+   menubutton:    TkMenubutton
+   message:       TkMessage
+   radiobutton:   TkRadiobutton
+   scale:         TkScale
+   scrollbar:     TkScrollbar
+   text:          TkText
+   toplevel:      TkToplevel
+
+   menuentry:     TkMenuentries
+
+   image:         TkImage
+   font:          TkFont
+
+   textTag:       TkTextTag
+   textMark:      TkTextMark
+   canvasTag:     TkCanvasTag
+
+   action:        TkAction
+   variable:      TkVariable
+   string:        TkString
+
+   isColor:       IsColor
+
+   addYScrollbar:   AddYScrollbar
+   addXScrollbar:   AddXScrollbar
+
+   defineUserCmd:   DefineUserCmd
+   localize:        TkLocalize
+
+   optionsManager:  OptionsManager
+
+
+
+prepare
 
    VoidEntry = {NewName}
 
@@ -34,331 +120,257 @@ local
       end
    end
 
-in
+   Stok  = String.token
+   Stoks = String.tokens
+   S2F   = String.toFloat
+   S2I   = String.toInt
+   SIF   = String.isFloat
+   SII   = String.isInt
 
-   functor
+   V2S   = VirtualString.toString
 
-   import
-      TkBoot at 'x-oz://boot/Tk'
-
-      Property(get)
-
-      System(showError)
-
-      Error(formatGeneric
-            format
-            dispatch)
-
-      ErrorRegistry(put)
-
-      Open(pipe
-           text)
-
-      OS(getEnv
-         putEnv
-         stat)
-
-      Resolve(makeResolver)
-
-   export
-      send:          TkSend
-      batch:         TkBatch
-
-      return:           TkReturnString
-      returnString:     TkReturnString
-      returnAtom:       TkReturnAtom
-      returnInt:        TkReturnInt
-      returnFloat:      TkReturnFloat
-      returnList:       TkReturnListString
-      returnListString: TkReturnListString
-      returnListAtom:   TkReturnListAtom
-      returnListInt:    TkReturnListInt
-      returnListFloat:  TkReturnListFloat
-
-      getPrefix:        TkGetPrefix
-      getId:            TkGetId
-      getTclName:       TkGetTclName
-
-      invoke:        InvokeAction
-
-      button:        TkButton
-      canvas:        TkCanvas
-      checkbutton:   TkCheckbutton
-      entry:         TkEntry
-      frame:         TkFrame
-      label:         TkLabel
-      listbox:       TkListbox
-      menu:          TkMenu
-      menubutton:    TkMenubutton
-      message:       TkMessage
-      radiobutton:   TkRadiobutton
-      scale:         TkScale
-      scrollbar:     TkScrollbar
-      text:          TkText
-      toplevel:      TkToplevel
-
-      menuentry:     TkMenuentries
-
-      image:         TkImage
-
-      textTag:       TkTextTag
-      textMark:      TkTextMark
-      canvasTag:     TkCanvasTag
-
-      action:        TkAction
-      variable:      TkVariable
-      string:        TkString
-
-      isColor:       IsColor
-
-      addYScrollbar:   AddYScrollbar
-      addXScrollbar:   AddXScrollbar
-
-      defineUserCmd:   DefineUserCmd
-      localize:        TkLocalize
-
-      optionsManager:  OptionsManager
-
-   define
-
-      TkString = string(toInt:        TkStringToInt
-                        toFloat:      TkStringToFloat
-                        toListString: TkStringToListString
-                        toListAtom:   TkStringToListAtom
-                        toListInt:    TkStringToListInt
-                        toListFloat:  TkStringToListFloat)
-
-      %%
-      %% Sending tickles
-      %%
-      TkInit         = TkBoot.init
-      TkGetNames     = TkBoot.getNames
-
-      TkSend         = TkBoot.send
-      TkBatch        = TkBoot.batch
-      TkReturn       = TkBoot.return
-      TkReturnMess   = TkBoot.returnMess
-      TkSendTuple    = TkBoot.sendTuple
-      TkSendTagTuple = TkBoot.sendTagTuple
-      TkSendFilter   = TkBoot.sendFilter
-
-      TkClose        = TkBoot.close
-
-      %%
-      %% Generation of Identifiers
-      %%
-      GenTopName    = TkBoot.genTopName
-      GenWidgetName = TkBoot.genWidgetName
-      GenTagName    = TkBoot.genTagName
-      GenVarName    = TkBoot.genVarName
-      GenImageName  = TkBoot.genImageName
-
-
-      %%
-      %% Master slave mechanism for widgets
-      %%
-      AddSlave  = TkBoot.addGroup
-      DelSlave  = TkBoot.delGroup
-
-      %%
-      %% Printing error messages
-      %%
-      proc {TkError S Tcl}
-         P={Property.get errors}
-      in
-         {System.showError 'Tk Module: '#S#
-          if Tcl==unit then '' else '\n'#
-             {Value.toVirtualString Tcl P.depth P.width}
-          end}
-      end
-
-      %%
-      %% Some Character/String stuff
-      %%
-      local
-         fun {TkNum Is BI ?BO}
-            case Is of nil then BO=BI nil
-            [] I|Ir then
-               case I
-               of &- then &~|{TkNum Ir BI BO}
-               [] &. then &.|{TkNum Ir true BO}
-               [] &e then &e|{TkNum Ir true BO}
-               [] &E then &E|{TkNum Ir true BO}
-               else I|{TkNum Ir BI BO}
-               end
-            end
-         end
-      in
-         fun {TkStringToString S}
-            S
-         end
-
-         TkStringToAtom = StringToAtom
-
-         fun {TkStringToInt S}
-            %% Read a number and convert it to an integer
-            OS IsAFloat in OS={TkNum S false ?IsAFloat}
-            if IsAFloat andthen {String.isFloat OS} then
-               {FloatToInt {String.toFloat OS}}
-            elseif {Not IsAFloat} andthen {String.isInt OS} then
-               {String.toInt OS}
-            else false
-            end
-         end
-
-         fun {TkStringToFloat S}
-            %% Read a number and convert it to a float
-            OS IsAFloat in OS={TkNum S false ?IsAFloat}
-            if IsAFloat andthen {String.isFloat OS} then
-               {String.toFloat OS}
-            elseif {Not IsAFloat} andthen {String.isInt OS} then
-               {IntToFloat {String.toInt OS}}
-            else false
-            end
-         end
-
-         fun {TkStringToListString S}
-            {String.tokens S & }
-         end
-
-         fun {TkStringToListAtom S}
-            {Map {String.tokens S & } TkStringToAtom}
-         end
-
-         fun {TkStringToListInt S}
-            {Map {String.tokens S & } TkStringToInt}
-         end
-
-         fun {TkStringToListFloat S}
-            {Map {String.tokens S & } TkStringToFloat}
-         end
-      end
-
-
-      %% expand a quoted Tcl/Tk string
-      %%  \n     -> newline
-      %%  \<any> -> <any>
-      fun {Expand Is}
-         case Is of nil then nil
+   %%
+   %% Some Character/String stuff
+   %%
+   local
+      fun {TkNum Is BI ?BO}
+         case Is of nil then BO=BI nil
          [] I|Ir then
-            if I==&\\ then
-               case Ir of nil then nil
-               [] II|Irr then
-                  if II==&n then &\n else II end|{Expand Irr}
-               end
-            else I|{Expand Ir}
+            case I
+            of &- then &~|{TkNum Ir BI BO}
+            [] &. then &.|{TkNum Ir true BO}
+            [] &e then &e|{TkNum Ir true BO}
+            [] &E then &E|{TkNum Ir true BO}
+            else I|{TkNum Ir BI BO}
             end
          end
       end
+   in
+      fun {TkStringToString S}
+         S
+      end
 
-      local
-         proc {EnterMessageArgs As I T}
-            case As of nil then skip
-            [] A|Ar then T.I=A {EnterMessageArgs Ar I+1 T}
+      TkStringToAtom = StringToAtom
+
+      fun {TkStringToInt S}
+         %% Read a number and convert it to an integer
+         OS IsAFloat in OS={TkNum S false ?IsAFloat}
+         if IsAFloat andthen {SIF OS} then
+            {FloatToInt {S2F OS}}
+         elseif {Not IsAFloat} andthen {SII OS} then
+            {S2I OS}
+         else false
+         end
+      end
+
+      fun {TkStringToFloat S}
+         %% Read a number and convert it to a float
+         OS IsAFloat in OS={TkNum S false ?IsAFloat}
+         if IsAFloat andthen {SIF OS} then
+            {S2F OS}
+         elseif {Not IsAFloat} andthen {SII OS} then
+            {IntToFloat {S2I OS}}
+         else false
+         end
+      end
+
+      fun {TkStringToListString S}
+         {Stoks S & }
+      end
+
+      fun {TkStringToListAtom S}
+         {Map {Stoks S & } TkStringToAtom}
+      end
+
+      fun {TkStringToListInt S}
+         {Map {Stoks S & } TkStringToInt}
+      end
+
+      fun {TkStringToListFloat S}
+         {Map {Stoks S & } TkStringToFloat}
+      end
+   end
+
+
+   %% expand a quoted Tcl/Tk string
+   %%  \n     -> newline
+   %%  \<any> -> <any>
+   fun {Expand Is}
+      case Is of nil then nil
+      [] I|Ir then
+         if I==&\\ then
+            case Ir of nil then nil
+            [] II|Irr then
+               if II==&n then &\n else II end|{Expand Irr}
             end
+         else I|{Expand Ir}
          end
+      end
+   end
 
-         proc {EnterPrefixArgs I MP M}
-            if I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M} end
+   local
+      proc {EnterMessageArgs As I T}
+         case As of nil then skip
+         [] A|Ar then T.I=A {EnterMessageArgs Ar I+1 T}
          end
+      end
 
-         fun {MaxInt As M}
-            case As of nil then M
-            [] A|Ar then
-               {MaxInt Ar if {IsInt A} then {Max M A} else M end}
+      proc {EnterPrefixArgs I MP M}
+         if I>0 then  M.I=MP.I {EnterPrefixArgs I-1 MP M} end
+      end
+
+      fun {MaxInt As M}
+         case As of nil then M
+         [] A|Ar then
+            {MaxInt Ar if {IsInt A} then {Max M A} else M end}
+         end
+      end
+
+      fun {NumberArgs As I}
+         case As of nil then nil
+         [] A|Ar then J=I+1 in J#A|{NumberArgs Ar J}
+         end
+      end
+   in
+      proc {InvokeAction Action Args NoArgs Thread}
+         case Action
+         of OP # M then SM in
+            if NoArgs==0 then SM=M
+            elseif {IsTuple M} then W={Width M} in
+               SM = {MakeTuple {Label M} NoArgs + W}
+               {EnterPrefixArgs W M SM}
+               {EnterMessageArgs Args {Width M}+1 SM}
+            else
+               SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
             end
-         end
-
-         fun {NumberArgs As I}
-            case As of nil then nil
-            [] A|Ar then J=I+1 in J#A|{NumberArgs Ar J}
+            if {IsPort OP} then {Send OP SM}
+            elseif Thread then thread {OP SM} end
+            else {OP SM}
             end
-         end
-      in
-         proc {InvokeAction Action Args NoArgs Thread}
-            case Action
-            of OP # M then SM in
-               if NoArgs==0 then SM=M
-               elseif {IsTuple M} then W={Width M} in
-                  SM = {MakeTuple {Label M} NoArgs + W}
-                  {EnterPrefixArgs W M SM}
-                  {EnterMessageArgs Args {Width M}+1 SM}
-               else
-                  SM={AdjoinList M {NumberArgs Args {MaxInt {Arity M} 0}}}
-               end
-               if {IsPort OP} then {Send OP SM}
-               elseif Thread then thread {OP SM} end
-               else {OP SM}
+         else
+            if NoArgs==0 then
+               if Thread then
+                  thread {Action} end
+               else {Action}
                end
             else
-               if NoArgs==0 then
-                  if Thread then
-                     thread {Action} end
-                  else {Action}
-                  end
-               else
-                  if Thread then
-                     thread {Procedure.apply Action Args} end
-                  else {Procedure.apply Action Args}
-                  end
+               if Thread then
+                  thread {Procedure.apply Action Args} end
+               else {Procedure.apply Action Args}
                end
             end
          end
       end
+   end
 
-      fun {GetFields Ts}
-         case Ts of nil then ''
-         [] T|Tr then
-            ' %' # case T
-                   of list(T) then
-                      case T
-                      of atom(A)   then A
-                      [] int(I)    then I
-                      [] float(F)  then F
-                      [] string(S) then S
-                      else T
-                      end
-                   [] string(S) then S
-                   [] atom(A)   then A
+   fun {GetFields Ts}
+      case Ts of nil then ''
+      [] T|Tr then
+         ' %' # case T
+                of list(T) then
+                   case T
+                   of atom(A)   then A
                    [] int(I)    then I
                    [] float(F)  then F
+                   [] string(S) then S
                    else T
-                   end # {GetFields Tr}
-         end
+                   end
+                [] string(S) then S
+                [] atom(A)   then A
+                [] int(I)    then I
+                [] float(F)  then F
+                else T
+                end # {GetFields Tr}
       end
+   end
 
-      fun {GetCasts Ts}
-         case Ts of nil then nil
-         [] T|Tr then
-            case {Label T}
-            of list then
-               case {Label T.1}
-               of atom  then TkStringToListAtom
-               [] int   then TkStringToListInt
-               [] float then TkStringToListFloat
-               else          TkStringToString
-               end
-            [] atom  then TkStringToAtom
-            [] int   then TkStringToInt
-            [] float then TkStringToFloat
-            else TkStringToString
-            end | {GetCasts Tr}
-         end
+   fun {GetCasts Ts}
+      case Ts of nil then nil
+      [] T|Tr then
+         case {Label T}
+         of list then
+            case {Label T.1}
+            of atom  then TkStringToListAtom
+            [] int   then TkStringToListInt
+            [] float then TkStringToListFloat
+            else          TkStringToString
+            end
+         [] atom  then TkStringToAtom
+         [] int   then TkStringToInt
+         [] float then TkStringToFloat
+         else TkStringToString
+         end | {GetCasts Tr}
       end
+   end
 
-      IdCharacters = i(&a &b &c &d &e &f &g &h &i &j &k &l &m
-                       &n &o &p &q &r &s &t &u &v &w &x &y &z
-                       &A &B &C &D &E &F &G &H &I &J &K &L &M
-                       &N &O &P &Q &R &S &T &U &V &W &X &Y &Z)
+   IdCharacters = i(&a &b &c &d &e &f &g &h &i &j &k &l &m
+                    &n &o &p &q &r &s &t &u &v &w &x &y &z
+                    &A &B &C &D &E &F &G &H &I &J &K &L &M
+                    &N &O &P &Q &R &S &T &U &V &W &X &Y &Z)
 
-      IdNumber     = {Width IdCharacters}
+   IdNumber     = {Width IdCharacters}
 
-      fun {GenString N}
-         if N>=IdNumber then
-            IdCharacters.((N mod IdNumber) + 1)|{GenString N div IdNumber}
-         else [IdCharacters.N]
-         end
+   fun {GenString N}
+      if N>=IdNumber then
+         IdCharacters.((N mod IdNumber) + 1)|{GenString N div IdNumber}
+      else [IdCharacters.N]
       end
+   end
+
+define
+
+   TkString = string(toInt:        TkStringToInt
+                     toFloat:      TkStringToFloat
+                     toListString: TkStringToListString
+                     toListAtom:   TkStringToListAtom
+                     toListInt:    TkStringToListInt
+                     toListFloat:  TkStringToListFloat)
+
+   %%
+   %% Sending tickles
+   %%
+   TkInit         = TkBoot.init
+   TkGetNames     = TkBoot.getNames
+
+   TkSend         = TkBoot.send
+   TkBatch        = TkBoot.batch
+   TkReturn       = TkBoot.return
+   TkReturnMess   = TkBoot.returnMess
+   TkSendTuple    = TkBoot.sendTuple
+   TkSendTagTuple = TkBoot.sendTagTuple
+   TkSendFilter   = TkBoot.sendFilter
+
+   TkClose        = TkBoot.close
+
+   %%
+   %% Generation of Identifiers
+   %%
+   GenTopName    = TkBoot.genTopName
+   GenWidgetName = TkBoot.genWidgetName
+   GenTagName    = TkBoot.genTagName
+   GenVarName    = TkBoot.genVarName
+   GenImageName  = TkBoot.genImageName
+   GenFontName   = TkBoot.genFontName
+
+
+   %%
+   %% Master slave mechanism for widgets
+   %%
+   AddSlave  = TkBoot.addGroup
+   DelSlave  = TkBoot.delGroup
+
+   %%
+   %% Printing error messages
+   %%
+   proc {TkError S Tcl}
+      P={Property.get errors}
+   in
+      {System.showError 'Tk Module: '#S#
+       if Tcl==unit then '' else '\n'#
+          {Value.toVirtualString Tcl P.depth P.width}
+       end}
+   end
+
 
    Stream = local
                PLTFRM = ({Property.get 'oz.home'} #
@@ -437,8 +449,8 @@ in
                R={Cast {Expand Irr}} {TkReadLoop Rr}
             [] &p then
                Irr1
-               Id     = {String.toInt {String.token Irr  & $ ?Irr1}}
-               NoArgs = {String.toInt {String.token Irr1 & $ _}}
+               Id     = {S2I {Stok Irr  & $ ?Irr1}}
+               NoArgs = {S2I {Stok Irr1 & $ _}}
             in
                case {Dictionary.condGet TkDict Id VoidEntry}
                of O # M # Ps then
@@ -479,7 +491,7 @@ in
    end
 
    local
-      IdBase   = {String.toAtom {TkGetPrefix}}
+      IdBase   = {StringToAtom {TkGetPrefix}}
       IdServer = {New Counter get(_)}
    in
       fun {TkGetId}
@@ -488,7 +500,7 @@ in
    end
 
    fun {TkGetTclName W}
-      {VirtualString.toString W.TclName}
+      {V2S W.TclName}
    end
 
    TkReturnMethod = {NewName}
@@ -1312,6 +1324,31 @@ in
       end
    end
 
+   class TkFont
+      from ReturnClass
+      feat !TclName
+
+      meth tkInit(...) = Message
+         ThisTclName = self.TclName
+         if {IsDet ThisTclName} then
+            {Exception.raiseError tk(alreadyInitialized self Message)}
+         end
+         NewTkName   = {GenFontName}
+      in
+         {TkSendFilter v('font create') NewTkName Message nil unit}
+         ThisTclName = NewTkName
+      end
+      meth tk(...) = M
+         {TkSendTagTuple font self M}
+      end
+      meth !TkReturnMethod(M Cast)
+         {TkReturnMess font M self Cast}
+      end
+      meth tkClose
+         {TkSend o('font delete' self)}
+      end
+   end
+
    proc {AddYScrollbar T S}
       {TkBatch
        [o(T configure yscrollcommand: s(S set))
@@ -1354,57 +1391,35 @@ in
    %% Error formatter
    %%
 
-   {ErrorRegistry.put
-
-    tk
-
+   {ErrorRegistry.put tk
     fun {$ Exc}
        E = {Error.dispatch Exc}
        T = 'error in Tk module'
     in
-
        case E
        of tk(wrongParent O M) then
-
-         % expected O: object, M: record
-
           {Error.format T
            'Wrong Parent'
            [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
            Exc}
-
        elseof tk(alreadyInitialized O M) then
-
-         % expected O: object, M: record
-
           {Error.format T
            'Object already initialized'
            [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
            Exc}
-
        elseof tk(alreadyClosed O M) then
-
-         % expected O: object, M: record
-
           {Error.format T
            'Window already closed'
            [hint(l:'Object application' m:'{' # oz(O) # ' ' # oz(M) # '}')]
            Exc}
-
        elseof tk(alreadyClosed O) then
-
-         % expected O: object
-
           {Error.format T
            'Window already closed'
            [hint(l:'Object' m:oz(O))]
            Exc}
-
        else
           {Error.formatGeneric T Exc}
-      end
+       end
     end}
-
-end
 
 end

@@ -57,7 +57,7 @@ define
       try {Fail 3} false
       catch E then
          if Debug then
-            case E of failure(debug:d(info:_ loc:_ stack:_))
+            case E of failure(debug:d(info:_ stack:_))
             then true else false end
          else
             case E of failure(debug:unit)
@@ -69,7 +69,7 @@ define
    % DOT1       a(1).b==unit    (?debug ?toplevel)
    fun {DOT1 Debug TopLevel}
       try {Id a(1)}.b==unit catch F then
-         case F of error(_ debug:d(info:_ loc:_ stack:_))
+         case F of error(_ debug:d(info:_ stack:_))
          then true else false end
       end
    end
@@ -81,7 +81,7 @@ define
       catch F then
          if TopLevel then
             if Debug then
-               case F of system(_ debug:d(info:_ loc:_ stack:_))
+               case F of system(_ debug:d(info:_ stack:_))
                then true else false end
             else
                case F of system(_ debug:unit)
@@ -89,7 +89,7 @@ define
             end
          else
             case F of error(kernel(globalState io)
-                            debug:d(info:_ loc:_ stack:_))
+                            debug:d(info:_ stack:_))
             then true else false end
          end
       end

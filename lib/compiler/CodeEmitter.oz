@@ -297,7 +297,7 @@ in
                                             VArgs Cont $)
             then skip
             else
-               Emitter, CreateNonlinearRegs(VArgs nil _)
+               Emitter, CreateNonlinearRegs(VArgs [Reg] _)
                case Emitter, GetReg(Reg $) of none then
                   case Emitter, IsLast(Reg $) then skip
                   else R in

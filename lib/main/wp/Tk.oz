@@ -39,7 +39,7 @@ in
    functor
 
    import
-      WIF at 'x-oz://boot/Wif'
+      TkBoot at 'x-oz://boot/Tk'
 
       Property(get)
 
@@ -131,34 +131,34 @@ in
       %%
       %% Sending tickles
       %%
-      TkInit         = WIF.init
-      TkGetNames     = WIF.getNames
+      TkInit         = TkBoot.init
+      TkGetNames     = TkBoot.getNames
 
-      TkSend         = WIF.write
-      TkBatch        = WIF.writeBatch
-      TkReturn       = WIF.writeReturn
-      TkReturnMess   = WIF.writeReturnMess
-      TkSendTuple    = WIF.writeTuple
-      TkSendTagTuple = WIF.writeTagTuple
-      TkSendFilter   = WIF.writeFilter
+      TkSend         = TkBoot.send
+      TkBatch        = TkBoot.batch
+      TkReturn       = TkBoot.return
+      TkReturnMess   = TkBoot.returnMess
+      TkSendTuple    = TkBoot.sendTuple
+      TkSendTagTuple = TkBoot.sendTagTuple
+      TkSendFilter   = TkBoot.sendFilter
 
-      TkClose        = WIF.close
+      TkClose        = TkBoot.close
 
       %%
       %% Generation of Identifiers
       %%
-      GenTopName    = WIF.genTopName
-      GenWidgetName = WIF.genWidgetName
-      GenTagName    = WIF.genTagName
-      GenVarName    = WIF.genVarName
-      GenImageName  = WIF.genImageName
+      GenTopName    = TkBoot.genTopName
+      GenWidgetName = TkBoot.genWidgetName
+      GenTagName    = TkBoot.genTagName
+      GenVarName    = TkBoot.genVarName
+      GenImageName  = TkBoot.genImageName
 
 
       %%
       %% Master slave mechanism for widgets
       %%
-      AddSlave  = WIF.addFastGroup
-      DelSlave  = WIF.delFastGroup
+      AddSlave  = TkBoot.addGroup
+      DelSlave  = TkBoot.delGroup
 
       %%
       %% Printing error messages
@@ -370,7 +370,7 @@ in
                {New class $ from Open.pipe Open.text
                        prop final
                     end
-                init(cmd:PLTFRM#'wif.exe')}
+                init(cmd:PLTFRM#'tk.exe')}
             end
 
    ActionIdServer = {New Counter get(_)}

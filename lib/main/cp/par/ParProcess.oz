@@ -47,7 +47,7 @@ define
          (Remote.manager,apply(functor
                                import
                                   Module
-                                  Worker(plain) at 'x-oz://contrib/Worker.ozf'
+                                  Worker(plain) at 'x-oz://system/ParWorker.ozf'
                                export
                                   worker: W
                                define
@@ -72,7 +72,7 @@ define
          (Remote.manager,apply(functor
                                import
                                   Module
-                                  Worker(best) at 'x-oz://contrib/Worker.ozf'
+                                  Worker(best) at 'x-oz://system/ParWorker.ozf'
                                export
                                   worker: W
                                define

@@ -60,7 +60,14 @@ define
       end
    in
 
-      url({Map
+      url(
+         ascii(proc {$}
+                  if {URL.toString "föo"}=="f%f6o" then skip
+                  else raise url_ascii_failed end end
+               end
+               keys:[url])
+
+         |{Map
            [
             test(title:"fielding1"
                  base :"http://a/b/c/d;p?q"

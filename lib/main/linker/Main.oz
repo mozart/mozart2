@@ -26,9 +26,9 @@
 functor
 
 require
-   URL(make:         UrlMake
-       toVsExtended: UrlToVsExt
-       resolve:      UrlResolve)
+   URL(make:                    UrlMake
+       toVirtualStringExtended: UrlToVsExt
+       resolve:                 UrlResolve)
 
    DefaultURL(nameToUrl: ModNameToUrl)
 

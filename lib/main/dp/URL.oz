@@ -22,6 +22,7 @@
 %%% WARRANTIES.
 %%%
 
+
 %%% ==================================================================
 %%%                          URL LIBRARY
 %%% ==================================================================
@@ -138,8 +139,22 @@
 %%%
 %%% ==================================================================
 
-%declare
-local
+functor
+
+export
+   is:                      URL_is
+   make:                    URL_make
+   toVirtualString:         URL_toVS
+   toVirtualStringExtended: URL_VS
+   toString:                URL_toString
+   toAtom:                  URL_toAtom
+   resolve:                 URL_resolve
+   normalizePath:           NormalizePath
+   isAbsolute:              URL_isAbsolute
+   isRelative:              URL_isRelative
+   toBase:                  URL_toBase
+
+prepare
 
    CharToLower          = Char.toLower
 
@@ -659,21 +674,4 @@ local
       end
    end
 
-in
-   functor
-   export
-      is                : URL_is
-      make              : URL_make
-      toVs              : URL_toVS
-      toVsExtended      : URL_VS
-      toString          : URL_toString
-      toAtom            : URL_toAtom
-      resolve           : URL_resolve
-      normalizePath     : NormalizePath
-      isAbsolute        : URL_isAbsolute
-      isRelative        : URL_isRelative
-      toBase            : URL_toBase
-   define
-      skip
-   end
 end

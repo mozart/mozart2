@@ -26,16 +26,16 @@
 functor
 
 require
-   URL(make:          UrlMake
-       is:            UrlIs
-       normalizePath: UrlNormalizePath
-       resolve:       UrlResolve
-       toVs:          UrlToVs
-       toAtom:        UrlToAtom
-       toBase:        UrlToBase
-       toString:      UrlToString
-       isRelative:    UrlIsRelative
-       toVsExtended:  UrlToVsExtended)
+   URL(make:                    UrlMake
+       is:                      UrlIs
+       normalizePath:           UrlNormalizePath
+       resolve:                 UrlResolve
+       toVirtualString:         UrlToVs
+       toAtom:                  UrlToAtom
+       toBase:                  UrlToBase
+       toString:                UrlToString
+       isRelative:              UrlIsRelative
+       toVirtualStringExtended: UrlToVsExtended)
 
    DefaultURL(ozScheme
               functorExt:  FunctorExt

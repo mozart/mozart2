@@ -1,9 +1,11 @@
 %%%
 %%% Authors:
-%%%   Christian Schulte (schulte@dfki.de)
+%%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%   Christian Schulte <schulte@dfki.de>
 %%%
 %%% Copyright:
-%%%   Christian Schulte, 1997
+%%%   Denys Duchier, 1998
+%%%   Christian Schulte, 1997, 1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$

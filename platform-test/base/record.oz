@@ -25,7 +25,7 @@ functor
 export
    Return
 import
-   System
+   System RecordC(width: WidthC)
 
 define
    Return =

@@ -25,7 +25,7 @@
 functor
 
 import
-   FD
+   FD RecordC
 
 export
    Return
@@ -33,10 +33,12 @@ export
 define
 
    fun {DA R}
-      {Record.monitorArity R _}
+      {RecordC.monitorArity R _}
    end
 
-   MA = Record.monitorArity
+   MA         = RecordC.monitorArity
+   TellRecord = RecordC.tell
+   WidthC     = RecordC.width
 
    local
       proc {Do Xs Ys}

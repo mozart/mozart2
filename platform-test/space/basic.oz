@@ -31,6 +31,11 @@ export
    Return
 
 define
+
+   fun {DerefBlocked S}
+      case S of blocked(S) then {DerefBlocked S} else S end
+   end
+
    Return=
    space({Map
           [failure(equal(fun {$}
@@ -79,7 +84,7 @@ define
                                           end}
                                       end
                                in
-                                  case {Space.askVerbose S}
+                                  case {DerefBlocked {Space.askVerbose S}}
                                   of succeeded(suspended) then
                                      thread {Space.merge S 1} end
                                      %% Ho!
@@ -143,8 +148,10 @@ define
                                          dis X=Y [] Y=X end
                                       end}
                              in
-                                {Space.askVerbose S1}=succeeded(suspended)
-                                {Space.askVerbose S2}=alternatives(2)
+                                {DerefBlocked {Space.askVerbose S1}}=
+                                succeeded(suspended)
+                                {DerefBlocked {Space.askVerbose S2}}=
+                                alternatives(2)
                              end)
                     keys: [space 'dis'])
 
@@ -452,9 +459,6 @@ define
                               SAF={Space.new proc {$ X}
                                                 choice X=1 [] X=2 end
                                              end}
-                              SFS={Space.clone SFF} SFA={Space.clone SFF}
-                              SSS={Space.clone SSF} SSA={Space.clone SSF}
-                              SAS={Space.clone SAF} SAA={Space.clone SAF}
                            in
                               {Space.inject SFF proc {$ X} fail end}
                               {Space.inject SSF proc {$ X} fail end}
@@ -462,21 +466,6 @@ define
                               {Space.ask SFF failed}
                               {Space.ask SSF failed}
                               {Space.ask SAF failed}
-%                             {Space.inject SFS proc {$ X} X=1 end}
-%                             {Space.inject SSS proc {$ X} X=1 end}
-%                             {Space.inject SAS proc {$ X} X=1 end}
-%                             {Space.ask SFS failed}
-%                             {Space.ask SSS succeeded}
-%                             {Space.ask SAS succeeded}
-%                             {Space.inject SFA
-%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
-%                             {Space.inject SSA
-%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
-%                             {Space.inject SAA
-%                              proc {$ X} choice X=1 [] X=2 [] X=3 end end}
-%                             {Space.ask SFA failed}
-%                             {Space.ask SSA alternatives(3)}
-%                             {Space.ask SAA alternatives(3)}
                            end)
                   keys: ['choice' 'dis' inject space clone])
 

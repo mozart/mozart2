@@ -264,7 +264,6 @@ in
    functor
 
    import
-      Space
       System
       Application
       Module

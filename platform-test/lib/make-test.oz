@@ -241,7 +241,6 @@ in
       Application
       Module
       Pickle
-      Space
 
    define
 

@@ -78,11 +78,11 @@ define
                end
             [] punct then
                case I
-%              of &"  then &\\|&"|{QuoteStr Ir} %% &\"
-%              [] &\\ then &\\|&\\|{QuoteStr Ir}
-%              [] 91  then &\\|91|{QuoteStr Ir}  %% '['
-%              [] 93  then &\\|93|{QuoteStr Ir}  %% ']'
-               of 123 then &\\|123|{QuoteStr Ir} %% '{'
+               of &"  then &\\|&"|{QuoteStr Ir} %% &\"
+               [] &\\ then &\\|&\\|{QuoteStr Ir}
+               [] 91  then &\\|91|{QuoteStr Ir}  %% '['
+               [] 93  then &\\|93|{QuoteStr Ir}  %% ']'
+               [] 123 then &\\|123|{QuoteStr Ir} %% '{'
                [] 125 then &\\|125|{QuoteStr Ir} %% '}'
                else I|{QuoteStr Ir}
                end

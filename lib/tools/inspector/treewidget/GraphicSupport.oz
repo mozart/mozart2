@@ -522,7 +522,7 @@ define
             DrCol = {Dictionary.condGet @colDict ColorKey black}
          in
             {Tk.send v(@canvasPrint#(@fontX * X)#' '#((@fontY * Y) + @offY)#
-                       ' '#DrCol#' {'#String#'} '#Tag)} %% ""
+                       ' '#DrCol#' "'#String#'" '#Tag)} %% {}
          end
          meth paintXY(X Y Image Tag ColorKey)
             DrCol = {Dictionary.get @colDict ColorKey}

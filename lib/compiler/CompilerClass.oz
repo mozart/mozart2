@@ -887,7 +887,7 @@ in
             NewQs = Qs
          end
       end
-      meth wait(Id $)
+      meth getQueryState(Id $)
          lock self.QueueLock then
             Engine, FindId(@QueriesHd Id $)
          end

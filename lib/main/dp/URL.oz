@@ -550,12 +550,12 @@ local
       case Full then
          case Fragment of unit then nil else "#"#Fragment end    #
          case Info     of unit then nil else
-            '{'#{Map {Record.toListInd Info} InfoPropToVS}#'}'
+            '{'#{FoldR {Record.toListInd Info} InfoPropToVS nil}#'}'
          end
       else nil end
    end
 
-   fun {InfoPropToVS P#V} P#'='#V end
+   fun {InfoPropToVS P#V Rest} P#'='#V#Rest end
 
    fun {URL_toVS         U} {URL_VS U true } end
    fun {URL_toString     U} {VirtualString.toString {URL_VS U true }} end

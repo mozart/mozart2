@@ -42,16 +42,22 @@ prepare
    ExitErrorTicket = 2
    ExitErrorClient = 3
 
-   ArgSpec = record(ticket(single type:atom optional:false)
+   ArgSpec = record(ticket(single type:atom)
                     shmkey(single type:atom default:'NONE')
                     detached(single type:bool default:false)
-                    minimal(single type:bool))
+                    minimal(single type:bool)
+                    test(single type:bool default:false))
 
 
 define
 
    %% Get the arguments
    Args = {Application.getCmdArgs ArgSpec}
+
+   if Args.test then
+      {System.showError 'Remote: Test succeeded...'}
+      {Application.exit 0}
+   end
 
    %% Set the appropriate distribution model
    {Property.put 'perdio.minimal' Args.minimal}

@@ -34,6 +34,7 @@ import
 \endif
 export
    Init
+   GetSettings
 define
    {Wait DPB}
    ConnectState = {NewCell notStarted}
@@ -54,7 +55,7 @@ define
       end
    end
 
-   proc{StartDP Settings}
+   fun{StartDP Settings}
       %% Here an AccMod is needed to start distribution.
       %% For c level a connection functor is also needed and has to be
       %% added to settings if not specified.
@@ -82,21 +83,22 @@ define
       thread
          {ConnectAcceptModule.initConnection {DPMisc.getConnectWstream}}
       end
+      IntSettings
    end
 
-   proc{Init Settings} N in
-      case {Exchange ConnectState $ N} of
+   fun{Init Settings} O N in
+      {Exchange ConnectState O N}
+      case O of
          notStarted then
-         {StartDP Settings}
-         N =  started
-      elseof started then
-         if Settings == connection_settings then
-            skip
-         else
-            thread
-               raise 'Warning distribution already initialized - settings will have no effect' end
-            end
-         end
+         N={StartDP Settings}
+         true
+      else
+         N=O
+         false
       end
+   end
+
+   fun{GetSettings}
+      {Access ConnectState}
    end
 end

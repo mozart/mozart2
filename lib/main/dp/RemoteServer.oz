@@ -68,11 +68,11 @@ define
    local
       S1=if Args.port==0 then settings else settings(port:Args.port) end
       S2=if Args.ip==default then S1 else
-            {AtomToString {AdjoinAt S1 ip Args.ip}}
+            {AdjoinAt S1 ip {AtomToString Args.ip}}
          end
       Settings={AdjoinAt S2 firewall Args.firewall}
    in
-      {DPInit.init Settings}
+      {DPInit.init Settings}=true % =true asserts that this is the first init
    end
 
    %% Module manager needed for

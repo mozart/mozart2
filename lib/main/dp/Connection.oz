@@ -85,7 +85,8 @@ define
    %% Force linking of base library
    %%
    {Wait DPB}
-   {DPInit.init connection_settings}
+   {DPInit.init connection_settings _}
+
    %% ERIK
    %% Har skall varan connect starter kora!!!
    %%

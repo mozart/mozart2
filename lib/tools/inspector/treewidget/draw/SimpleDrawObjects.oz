@@ -40,10 +40,14 @@ local
       meth draw(X Y)
          if @dirty
          then
+            Visual = @visual
+         in
             dirty <- false
+            {Visual tagTreeDown(@contTag)}
             {@visual printXY(if {@entry hasRefs($)} then {@mode drawX(X Y $)}
                              else {@mode dirtyUndraw} X end Y
                              @string @tag @type)}
+            {Visual tagTreeUp}
          else {@visual place(if {@entry hasRefs($)}
                              then {@mode drawX(X Y $)} else {@mode dirtyUndraw} X end Y @tag)}
          end
@@ -87,6 +91,9 @@ local
       meth notify
          xDim <- _
          {@parent notify}
+      end
+      meth getTag($)
+         @contTag
       end
    end
 in

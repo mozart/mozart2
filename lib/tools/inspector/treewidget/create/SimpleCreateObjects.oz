@@ -28,8 +28,9 @@ local
 
    class GraphCreate
       attr
-         entry %% RelEntry Reference
-         mode  %% Mode Variable
+         entry   %% RelEntry Reference
+         mode    %% Mode Variable
+         contTag %% Container Tag
 
       meth handleMode(RefStr Visual)
          PrintStr = 'R'#RefStr
@@ -83,8 +84,9 @@ in
 
    class FreeGrCreateObject from FreeCreateObject GraphCreate
       meth gcr(Entry Value Parent Index Visual Depth)
-         @type  = free
-         @entry = Entry
+         @type    = free
+         @entry   = Entry
+         @contTag = {Visual newTag($)}
          {self handleMode({Entry getEqualStr($)} Visual)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)
@@ -104,6 +106,7 @@ in
       meth gcr(Entry Value Parent Index Visual Depth)
          @type  = future
          @entry = Entry
+         @contTag = {Visual newTag($)}
          {self handleMode({Entry getEqualStr($)} Visual)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)

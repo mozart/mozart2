@@ -26,12 +26,6 @@
 %%%
 
 
-%%% Development switch
-%%%
-%%%\define DEBUG_LOCAL_LIBRARIES
-%%%\undef  DEBUG_LOCAL_LIBRARIES
-%%%
-
 local
    Head = fun {$ H|_} H end
    Tail = fun {$ _|T} T end
@@ -46,69 +40,46 @@ local
 
 
    local
-      HasForeignFDP = {{`Builtin` foreignFDProps 1}}
-
-      fun {GetBiArity Spec}
-         _#BiArity = Spec in BiArity
-      end
-
-      fun {GetBi Spec}
-         BiName # BiArity = Spec in {`Builtin` BiName BiArity}
+      fun {LoadLibrary LibName Spec}
+         L = {Foreign.staticLoad LibName}
+      in
+         {Record.map Spec
+          fun {$ A#_}
+             L.A
+          end}
       end
    in
-      fun {LoadLibrary LibName LibSpec}
-         case HasForeignFDP then
-            OzHome      = {System.get home}
-            OS#CPU      = {System.get platform}
-\ifdef DEBUG_LOCAL_LIBRARIES
-            ObjectFile  = '/home/ps-home3/tmueller/Oz/Emulator/' # LibName
-            {Show {StringToAtom
-                   {VirtualString.toString '   Loading: ' # ObjectFile}}}
-\else
-            ObjectFile  = OzHome#'/platform/'#OS#'-'#CPU#'/'#LibName
-\endif
-         in
-            {Foreign.dload
-             ObjectFile
-             {Record.map LibSpec GetBiArity}
-             _
-            }
-         else
-            {Record.map LibSpec GetBi}
-         end
-      end
-   end
-
-   FSP = {LoadLibrary 'fsetlib.so'
-          fsp(init:              fsp_init              #1
-              isIn:              fsp_isIn              #3
-              isInR:             fsp_isInR             #3
-              include:           fsp_include           #2
-              exclude:           fsp_exclude           #2
-              card:              fsp_card              #2
-              union:             fsp_union             #3
-              intersection:      fsp_intersection      #3
-              subsume:           fsp_subsume           #2
-              disjoint:          fsp_disjoint          #2
-              distinct:          fsp_distinct          #2
-              monitorIn:         fsp_monitorIn         #2
-              diff:              fsp_diff              #3
-              includeR:          fsp_includeR          #3
-              match:             fsp_match             #2
-              minN:              fsp_minN              #2
-              maxN:              fsp_maxN              #2
-              seq:               fsp_seq               #1
-              min:               fsp_min               #2
-              max:               fsp_max               #2
-              convex:            fsp_convex            #1
-              bounds:            fsp_bounds            #5
-              boundsN:           fsp_boundsN           #5
-              disjointN:         fsp_disjointN         #1
-              unionN:            fsp_unionN            #2
-              partition:         fsp_partition         #2
-              partitionReified:  fsp_partitionReified  #3
+      FSP = {LoadLibrary 'libfset.so'
+             fsp(init:              fsp_init              #1
+                 isIn:              fsp_isIn              #3
+                 isInR:             fsp_isInR             #3
+                 include:           fsp_include           #2
+                 exclude:           fsp_exclude           #2
+                 card:              fsp_card              #2
+                 union:             fsp_union             #3
+                 intersection:      fsp_intersection      #3
+                 subsume:           fsp_subsume           #2
+                 disjoint:          fsp_disjoint          #2
+                 distinct:          fsp_distinct          #2
+                 monitorIn:         fsp_monitorIn         #2
+                 diff:              fsp_diff              #3
+                 includeR:          fsp_includeR          #3
+                 match:             fsp_match             #2
+                 minN:              fsp_minN              #2
+                 maxN:              fsp_maxN              #2
+                 seq:               fsp_seq               #1
+                 min:               fsp_min               #2
+                 max:               fsp_max               #2
+                 convex:            fsp_convex            #1
+                 bounds:            fsp_bounds            #5
+                 boundsN:           fsp_boundsN           #5
+                 disjointN:         fsp_disjointN         #1
+                 unionN:            fsp_unionN            #2
+                 partition:         fsp_partition         #2
+                 partitionReified:  fsp_partitionReified  #3
              ) % fsp
-         }
+            }
+   end
 
    FSIsIncl     = FSP.include
    FSIsExcl     = FSP.exclude

@@ -68,7 +68,7 @@ define
            cycle(proc {$}
                     A = {ByNeed fun {$} A end}
                  in
-                    {Wait A}
+                    skip
                  end
                  keys:[future byNeed cycle bug])
            space(proc {$}

@@ -3,7 +3,6 @@ functor $ prop once
 import
    Property
    Open
-   System
 
 export
    Return

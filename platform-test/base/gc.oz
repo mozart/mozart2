@@ -1,14 +1,15 @@
 functor
-import System(gcDo) Property(get)
+import System(gcDo)
+   SuspList(susplistLength:SusplistLength) at 'gcsusplist.so{native}'
 export
    Return
 define
-   {Wait System.gcDo}
-   {Wait Property.get}
    Return=
    gc([
        susplist(
           proc {$}
+             {Wait System.gcDo}
+             {Wait SusplistLength}
              proc {Waiter X GO}
                 try GO=unit {Wait X}
                 catch wakeup(NewGO) then {Waiter X NewGO} end
@@ -22,16 +23,12 @@ define
              end
              WaitingThread
              FirstGO
-             thread WaitingThread={Thread.this} {Waiter _ FirstGO} end
+             TrickyVariable
+             thread
+                WaitingThread={Thread.this}
+                {Waiter TrickyVariable FirstGO}
+             end
              {Wait FirstGO}
-             {System.gcDo}
-             {System.gcDo}
-             {System.gcDo}
-             {System.gcDo}
-             {System.gcDo}
-             {System.gcDo}
-             {System.gcDo}
-             MemoryBefore={Property.get 'gc.active'}
              {Waker FirstGO 100000}
              {System.gcDo}
              {System.gcDo}
@@ -40,9 +37,12 @@ define
              {System.gcDo}
              {System.gcDo}
              {System.gcDo}
-             MemoryAfter={Property.get 'gc.active'}
           in
-             MemoryAfter=MemoryBefore
+             if {IsDet TrickyVariable} orelse
+                {SusplistLength TrickyVariable}\=1
+             then
+                raise gc_susplist end
+             end
           end
           keys:[gc])
       ])

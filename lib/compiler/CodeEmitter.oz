@@ -1267,18 +1267,22 @@ in
                       case Emitter, GetPerm(Reg $) of none then
                          case X of none then
                             {BitArray.set @LastAliveRS Reg}
-                            if {Member Reg Regr} then
-                               % special handling for nonlinearities:
-                               if {Dictionary.member @UsedX I} then NewX J in
+                            if {Member Reg Regr} then NewX in
+                               % special handling for nonlinearities
+                               Emitter, Emit(createVariable(NewX))
+                               if Emitter, IsLast(Reg $) then skip
+                               else Y in
+                                  Emitter, AllocatePerm(Reg ?Y)
+                                  Emitter, Emit(move(NewX Y))
+                               end
+                               if {Dictionary.member @UsedX I} then J in
                                   Emitter, AllocateAnyTemp(Reg ?NewX)
-                                  Emitter, Emit(createVariable(NewX))
                                   NewX = x(J)
                                   {Dictionary.put @AdjDict J
                                    I|{Dictionary.condGet @AdjDict J nil}}
                                   move(NewX x(I))
-                               else NewX in
+                               else
                                   Emitter, AllocateThisTemp(I Reg ?NewX)
-                                  Emitter, Emit(createVariable(NewX))
                                   {Dictionary.put @AdjDict I
                                    I|{Dictionary.condGet @AdjDict I nil}}
                                   'skip'

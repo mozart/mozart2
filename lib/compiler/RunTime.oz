@@ -43,7 +43,7 @@ require
    BootObject(ooGetLock)
    at 'x-oz://boot/Object'
 
-   BootName(newUnique)
+   BootName(newUnique: NewUniqueName)
    at 'x-oz://boot/Name'
 
    BootThread(create)
@@ -138,13 +138,11 @@ prepare
                     'RaiseDebugCheck': RaiseDebugCheck
                     'RaiseDebugExtend': RaiseDebugExtend)
 
-   NewUniqueName = BootName.newUnique
-
-   LiteralValues = env('ooDefaultVar':  {NewUniqueName 'ooDefaultVar'}
-                       'ooFreeFlag':    {NewUniqueName 'ooFreeFlag'}
+   LiteralValues = env('ooDefaultVar': {NewUniqueName 'ooDefaultVar'}
+                       'ooFreeFlag': {NewUniqueName 'ooFreeFlag'}
                        'ooRequiredArg': {NewUniqueName 'ooRequiredArg'})
 
-   TokenValues = env('true':  true
+   TokenValues = env('true': true
                      'false': false)
 define
    fun {ApplyFunctor FileName F}

@@ -101,6 +101,7 @@ export
    GetGuiArgs
    GetArgs
    PostProcess
+   ProcessArgv
 prepare
    %%
    %% Closure avoidance access
@@ -738,10 +739,14 @@ define
    %%
 
    fun {GetCmdArgs Spec} Argv in
-      Argv = case {Property.condGet 'ozd.args' unit} of unit then
-                {Map {Property.get 'application.args'} AtomToString}
-             [] X then X
-             end
+      {ProcessArgv Spec
+       case {Property.condGet 'ozd.args' unit} of unit then
+          {Map {Property.get 'application.args'} AtomToString}
+       [] X then X
+       end}
+   end
+
+   fun {ProcessArgv Spec Argv}
       case {Label Spec} of plain then Argv
       [] list then
          {CmdParse Argv Spec}

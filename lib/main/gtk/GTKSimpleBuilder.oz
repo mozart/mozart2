@@ -322,7 +322,7 @@ define
                       features:
                          [[pattern ]#setPattern
                           [justify ]#setJustify
-                          [lineWrap]#setLineWrap]
+                          [lineWrap linewrap]#setLineWrap]
                       make    : MakeLabel)}
    end
 
@@ -387,18 +387,18 @@ define
       end
    in
       {Register htable(isa        : container
-                       features   : [[rowSpacings]#setRowSpacings
-                                     [colSpacings]#setColSpacings]
+                       features   : [[rowSpacings rowspacings]#setRowSpacings
+                                     [colSpacings colspacings]#setColSpacings]
                        make       : MakeHTable
                        makeRecurse: MakeHTableRecurse)}
    end
 
    ShadowType  = o(none:0   'in':1    out:2 etchedIn:3 etchedOut:4
                    flat:0 sunken:1 raised:2   groove:3     ridge:4)
+   proc {SetShadowType W X} {W setShadowType(ShadowType.X)} end
 
    %% frame
    local
-      proc {SetShadowType W X} {W setShadowType(ShadowType.X)} end
       proc {SetLabelAlign W X} {W setLabelAlign({ToAlign X} 0.0)} end
       fun {MakeFrame D} {New GTK.frame new(nil)} end
       proc {MakeFrameRecurse D W}
@@ -407,9 +407,10 @@ define
    in
       {Register frame(isa        : bin
                       features   : [[label text title ]#setLabel
-                                    [labelAlign textAlign
-                                     titleAlign align ]#SetLabelAlign
-                                    [shadowType relief]#SetShadowType]
+                                    [labelAlign labelalign
+                                     textAlign textalign
+                                     titleAlign titlealign align]#SetLabelAlign
+                                    [shadowType shadowtype relief]#SetShadowType]
                       make       : MakeFrame
                       makeRecurse: MakeFrameRecurse)}
    end
@@ -489,8 +490,17 @@ define
    end
 
    %% check button
-   local skip in
-      {Register checkbutton(isa:togglebutton)}
+   local
+      fun {MakeCheckButton D}
+         L = {CondSelectN D [text 1] unit}
+      in
+         if L==unit
+         then {New GTK.checkButton new}
+         else {New GTK.checkButton newWithLabel(L)} end
+      end
+   in
+      {Register checkbutton(isa:togglebutton
+                            make:MakeCheckButton)}
       {Register checkButton(isa:checkbutton)}
    end
 
@@ -597,19 +607,84 @@ define
    end
 
    %% scrolled window
-%   local
-%      fun {MakeScrolledWindow D}
-%        Hadj = {New GTK.adjustment new(
-%        {New GTK.scrolledWindow new({CondSelect
-%   in
-%      {Register
-%       scrolledwindow(
-%         isa:bin
-%
-%
-%         )}
-%      {Register
-%       scrolledWindow(isa:scrolledwindow)}
-%   end
+   local
+      fun {MakeScrolledWindow D}
+         {New GTK.scrolledWindow new(unit unit)}
+      end
+      CornerType = o(topLeft:0 bottomLeft:1 topRight:2 bottomRight:3)
+   in
+      {Register
+       scrolledwindow(
+          isa:bin
+          make:MakeScrolledWindow
+          features:[[cornertype cornerType]#setPlacement]
+          )}
+      {Register
+       scrolledWindow(isa:scrolledwindow)}
+   end
+
+   %% viewport
+   local
+      fun {MakeViewport D}
+         {New GTK.viewport new(unit unit)}
+      end
+   in
+      {Register viewport(
+                   isa:bin
+                   make:viewport
+                   features:[[shadowtype shadowType relief]#SetShadowType]
+                   )}
+   end
+
+   %% color selection
+   UpdateType = o(continuous:0 discontinuous:1 delayed:2)
+   proc {SetUpdatePolicy W X}
+      {W setUpdatePolicy(UpdateType.X)}
+   end
+
+   local
+      fun {MakeColorSelection D}
+         {New GTK.colorSelection new}
+      end
+      proc {SetUseOpacity W X}
+         {W setOpacity(if X then 1 else 0 end)}
+      end
+   in
+      {Register colorselection(
+                   isa:vbox
+                   signals:['color-changed']
+                   make:MakeColorSelection
+                   features:[[updatepolicy updatePolicy]#SetUpdatePolicy
+                             [useOpacity useopacity opacity]#SetUseOpacity
+                             [color]#setColor]
+                   makeRecurse:unit % block inheritance of make recurse
+                   )}
+      {Register colorSelection(isa:colorselection)}
+   end
+
+   %% color selection dialog
+   local
+      fun {MakeColorSelectionDialog D}
+         {New GTK.colorSelectionDialog new({CondSelectN D [title text 1] unit})}
+      end
+   in
+      {Register colorselectiondialog(
+                   isa:window
+                   make:MakeColorSelectionDialog
+                   makeRecurse:unit
+                   )}
+      {Register colorSelectionDialog(isa:colorselectiondialog)}
+   end
+
+   %% gnome canvas
+   local
+      fun {MakeCanvas D}
+         {New GTK.gnomeCanvas new}
+      end
+   in
+      {Register gnomecanvas(
+                   make:MakeCanvas)}
+            {Register gnomeCanvas(isa:gnomecanvas)}
+   end
 
 end

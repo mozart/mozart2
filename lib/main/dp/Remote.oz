@@ -134,14 +134,15 @@ define
          Cancel
       in
          PID={ForkProcess
-              if Host==localhost then
-                 if Fork==automatic then
+              case Fork
+              of automatic then
+                 if Host==localhost then
                     if HasVirtualSite then virtual
                     else sh
                     end
-                 else Fork
+                 else rsh
                  end
-              elseif Fork==automatic then rsh
+              [] sh then sh
               else Fork
               end
               Host RunPort#CtrlPort Detach}

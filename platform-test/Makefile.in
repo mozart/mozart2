@@ -67,7 +67,7 @@ SCHEDLOCAL = \
 SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 
 FBASE = \
-        conversion float int record type exception guards future misc \
+        conversion float int record type exception guards byneed future misc \
         instruction compiler except dictionary ofs pickles \
         thread unix weakdictionary weakdictionaryGC finalize gc \
         state

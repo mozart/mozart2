@@ -103,5 +103,18 @@ define
                         end
                      end
                      keys:[exception 'lock'])
+
+              failed(proc {$}   %% failed values
+                        X={Value.failed foo}
+                     in
+                        {Value.status X} = failed
+                        {IsFailed X} = true
+                        try
+                           {Wait X}   % must raise the exception
+                        catch E then
+                           E = foo    % check the exception term
+                        end
+                     end
+                     keys:[exception failed])
              ])
 end

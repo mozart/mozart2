@@ -66,7 +66,7 @@
       of u      then _
       [] simple then X Y U in
          thread {WaitOr X Y} U=unit end Y=unit {Wait U} X
-      [] future then {ByNeed proc {$ _} skip end}
+      [] future then {ByNeedFuture proc {$ _} skip end}
       [] ext    then
          if {System.onToplevel} then
             X in {Connection.offer X _} X

@@ -38,6 +38,10 @@ define
       {DerefSuspended {Space.askVerbose S}}
    end
 
+   %% raph: replacement for  fun lazy {$ X} X end
+   fun {LazyId X}
+      {ByNeedFuture fun {$} X end}
+   end
 
    Return=
    space([port(proc {$}
@@ -80,7 +84,7 @@ define
                           Z=a(a(a:Z) Z Z|Z Append Object.base) Z
                        end
                   G5 = local Z F in
-                          F={fun lazy {$ X} X end 1}
+                          F={LazyId 1}
                           Z=a(a(a:Z) Z Z|Z F Append Object.base) Z
                        end
 
@@ -101,12 +105,12 @@ define
                                   {Check G4 nil}
                                   {Check G5 nil}
                                   local Z F in
-                                     F={fun lazy {$ X} X end 1}
+                                     F={LazyId 1}
                                      Z=a(a(a:Z) Z Z|Z F P Append Object.base)
                                      {Check Z [P]}
                                   end
                                   local Z F in
-                                     F={fun lazy {$ X} X end 1}
+                                     F={LazyId 1}
                                      Z=a(a(a:Z) Z Z|Z F P Q X
                                          Append Object.base)
                                      {Check Z [P Q X]}
@@ -123,7 +127,9 @@ define
                       end}
                   end
 
-                  {AskVerbose S}=succeeded(entailed)
+                  % The space is stuck because some by-need computations
+                  % have not been triggered
+                  {AskVerbose S}=succeeded(stuck)
 
                end
                keys:[port space situatedness])])

@@ -67,7 +67,7 @@ define
    local
       proc {ReDo Is C}
          case Is of nil then skip
-         [] I|Ir then {ReDo Ir C} {Space.commit C I}
+         [] I|Ir then {ReDo Ir C} {Space.commit1 C I}
          end
       end
    in
@@ -95,9 +95,9 @@ define
          of failed then nil
          [] succeeded then S
          [] alternatives(N) then C={Space.clone S} in
-            {Space.commit S 1}
+            {Space.commit1 S 1}
             case {OneDepthNR KF S}
-            of nil then {Space.commit C 2#N} {OneDepthNR KF C}
+            of nil then {Space.commit2 C 2 N} {OneDepthNR KF C}
             elseof O then O
             end
          end
@@ -108,10 +108,10 @@ define
    local
       fun {AltCopy KF I M S MRD}
          if I==M then
-            {Space.commit S I}
+            {Space.commit1 S I}
             {OneDepthR KF S S nil MRD MRD}
          else C={Space.clone S} in
-            {Space.commit C I}
+            {Space.commit1 C I}
             case {OneDepthR KF C S [I] 1 MRD}
             of nil then {AltCopy KF I+1 M S MRD}
             elseof O then O
@@ -120,7 +120,7 @@ define
       end
 
       fun {Alt KF I M S C As RD MRD}
-         {Space.commit S I}
+         {Space.commit1 S I}
          if I==M then {OneDepthR KF S C I|As RD MRD}
          else
             case {OneDepthR KF S C I|As RD MRD}
@@ -158,11 +158,11 @@ define
       local
          fun {AltCopy KF I M S CD MRD CO}
             if I==M then
-               {Space.commit S I}
+               {Space.commit1 S I}
                {OneBoundR KF S S nil CD MRD MRD CO}
             else
                C={Space.clone S}
-               {Space.commit C I}
+               {Space.commit1 C I}
                O={OneBoundR KF C S [I] CD 1 MRD CO}
             in
                if {Space.is O} then O
@@ -172,7 +172,7 @@ define
          end
 
          fun {Alt KF I M S C As CD RD MRD CO}
-            {Space.commit S I}
+            {Space.commit1 S I}
             if I==M then {OneBoundR KF S C I|As CD RD MRD CO}
             else O={OneBoundR KF S C I|As CD RD MRD CO} in
                if {Space.is O} then O
@@ -230,10 +230,10 @@ define
                   raise succeeded(S) end
                [] alternatives(N) then
                   if D==0 then
-                     {Space.commit S 1} {Probe S 0 KF}
+                     {Space.commit1 S 1} {Probe S 0 KF}
                   else C={Space.clone S} in
-                     {Space.commit S 2#N} {Probe S D-1 KF}
-                     {Space.commit C 1}   {Probe C D KF}
+                     {Space.commit2 S 2 N} {Probe S D-1 KF}
+                     {Space.commit1 C 1}   {Probe C D KF}
                   end
                end
             end
@@ -345,7 +345,7 @@ define
             of failed then Os=Or
             [] succeeded then Os={W S}|Or
             [] alternatives(N) then C={Space.clone S} Ot in
-               {Space.commit S 1} {Space.commit C 2#N}
+               {Space.commit1 S 1} {Space.commit2 C 2 N}
                Os={AllNR KF S W Ot}
                Ot={AllNR KF C W Or}
             end
@@ -356,17 +356,17 @@ define
       local
          proc {AltCopy KF I M S MRD W Or Os}
             if I==M then
-               {Space.commit S I}
+               {Space.commit1 S I}
                {AllR KF S S nil MRD MRD W Or Os}
             else C={Space.clone S} Ot in
-               {Space.commit C I}
+               {Space.commit1 C I}
                Os={AllR KF C S [I] 1 MRD W Ot}
                Ot={AltCopy KF I+1 M S MRD W Or}
             end
          end
 
          proc {Alt KF I M S C As RD MRD W Or Os}
-            {Space.commit S I}
+            {Space.commit1 S I}
             if I==M then
                {AllR KF S C I|As RD MRD W Or Os}
             else Ot NewS={Recompute C As} in
@@ -429,7 +429,7 @@ define
                of failed then SS
                [] succeeded then S
                [] alternatives(N) then C={Space.clone S} NewSS in
-                  {Space.commit S 1} {Space.commit C 2#N}
+                  {Space.commit1 S 1} {Space.commit2 C 2 N}
                   NewSS={BABNR KF S O SS}
                   if SS==NewSS then {BABNR KF C O SS}
                   elseif NewSS==nil then nil
@@ -443,16 +443,16 @@ define
          local
             fun {AltCopy KF I M S MRD O SS}
                if I==M then
-                  {Space.commit S I}
+                  {Space.commit1 S I}
                   {BABR KF S S nil MRD MRD O SS}
                else C={Space.clone S} NewSS in
-                  {Space.commit C I}
+                  {Space.commit1 C I}
                   NewSS = {BABR KF C S [I] 1 MRD O SS}
                   if NewSS==SS then
                      {AltCopy KF I+1 M S MRD O SS}
                   elseif NewSS==nil then nil
                   else
-                     {Space.commit S I+1#M}
+                     {Space.commit2 S I+1 M}
                      {Better S O NewSS}
                      {BABR KF S S nil MRD MRD O NewSS}
                   end
@@ -460,7 +460,7 @@ define
             end
 
             fun {Alt KF I M S C As RD MRD O SS}
-               {Space.commit S I}
+               {Space.commit1 S I}
                if I==M then
                   {BABR KF S C I|As RD MRD O SS}
                else
@@ -470,7 +470,7 @@ define
                      {Alt KF I+1 M {Recompute C As} C As RD MRD O SS}
                   elseif NewSS==nil then nil
                   else NewS={Recompute C As} in
-                     {Space.commit NewS I+1#M}
+                     {Space.commit2 NewS I+1 M}
                      {Better NewS O NewSS}
                      {BABR KF NewS NewS nil MRD MRD O NewSS}
                   end
@@ -580,7 +580,7 @@ define
       local
          proc {Recompute S|Sr C}
             if {Space.is S} then C={Space.clone S}
-            else {Recompute Sr C} {Space.commit C S.1}
+            else {Recompute Sr C} {Space.commit1 C S.1}
             end
          end
 
@@ -644,7 +644,7 @@ define
                         ReClass,backtrack
                      else NextI=I+1 S2|Srr=Sr in
                         if M==NextI andthen {Space.is S2} then
-                           {Space.commit S2 M}
+                           {Space.commit1 S2 M}
                            stack <- Srr
                            rd    <- self.mrd
                            cur   <- S2
@@ -656,7 +656,7 @@ define
                            cur   <- {Recompute @stack}
                         else
                            cur   <- {Recompute Sr}
-                           {Space.commit @cur NextI#M}
+                           {Space.commit2 @cur NextI M}
                            {Better @cur self.order @sol}
                            rd    <- self.mrd
                            stack <- Sr
@@ -683,7 +683,7 @@ define
                   [] succeeded then
                      S=C backtrack <- true
                   [] alternatives(M) then
-                     All,push(M) {Space.commit C 1} All,explore(S)
+                     All,push(M) {Space.commit1 C 1} All,explore(S)
                   end
                end
             end
@@ -702,7 +702,7 @@ define
                   [] succeeded then
                      S=C sol<-C backtrack<-true
                   [] alternatives(M) then
-                     ReClass,push(M) {Space.commit C 1} Best,explore(S)
+                     ReClass,push(M) {Space.commit1 C 1} Best,explore(S)
                   end
                end
             end

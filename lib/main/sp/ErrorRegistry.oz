@@ -457,14 +457,15 @@ in
 
             none
 
-         elseof kernel(block T) then
+         elseof kernel(block X) then
 
-         % expected T: thread
+         % expected X: variable
 
             {Error.format
              'Error: Thread'
              'Purely sequential thread blocked'
-             [hint(l:'Thread' m:oz(T))]
+             [hint(l: 'Thread' m:oz({Thread.this}))
+              hint(l:'Variable' m:oz(X))]
              Exc}
 
          else

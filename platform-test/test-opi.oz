@@ -21,7 +21,7 @@
 %%%
 
 declare
-T={Module.load '' {OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf' nil}.run
+T={Module.load '' {OS.getEnv 'HOME'}#'/mozart/share/test/te.ozf'}.run
 
 {T argv(verbose:  true
         usage:    false

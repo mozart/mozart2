@@ -39,11 +39,19 @@ prepare
    SystemUrl  = {UrlMake OzScheme#'://system/'}
    BootUrl    = {UrlMake OzScheme#'://system/'}
 
-   proc {MakeUrlTable As ?R}
-      R={MakeRecord table As}
-      {ForAll As proc {$ A}
-                    R.A={UrlResolve SystemUrl {UrlMake A#FunctorExt}}
-                 end}
+   proc {MakeUrlTable Xs ?R}
+      R={MakeRecord table
+         {Map Xs fun {$ X}
+                    case X of A#_ then A else X end
+                 end}}
+      for X in Xs do
+         case X of A#SubNamespace then
+            R.A={UrlResolve {UrlMake OzScheme#'://system/'#SubNamespace#'/'}
+                 {UrlMake A#FunctorExt}}
+         else
+            R.X={UrlResolve SystemUrl {UrlMake X#FunctorExt}}
+         end
+      end
    end
 
    local
@@ -65,6 +73,7 @@ prepare
 \ifdef DENYS_EVENTS
                    'Timer' 'Perdio'
 \endif
+                   'GDK'#gtk 'GTK'#gtk 'GTKCANVAS'#gtk 'GBuilder'#gtk
                   ]
       NatLibs   = ['Space' 'OsTime']
       Volatiles = ['Module'

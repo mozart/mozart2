@@ -8,7 +8,14 @@ SPACEOZC = $(SPACELOCAL:%=./space/%.ozc)
 # Tests for finite domains
 FDLOCAL = \
         distribute \
-        alpha
+        alpha \
+        money \
+        misc1 \
+        misc2 \
+        watlasm \
+        dsum \
+        sumabs \
+        constrdisj
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

@@ -71,26 +71,28 @@ define
    end
 
    proc{TryCell C}
-      thread try {Access C _}
+       try {Access C _}
              catch X then if(X==hell) then raise hell end end end
-      end
+
    end
 
    proc{TryLock L}
-      thread  try lock L then skip end
+        try lock L then skip end
               catch X then if(X==hell) then raise hell end end end
-      end
+
    end
 
    proc{TryPort P}
-      thread  try {Send P apa}
+        try {Send P apa}
               catch X then if(X==hell) then raise hell end end end
-      end
+
    end
 
    proc{TryVar V}
-      thread try V = apa
-             catch X then if(X==hell) then raise hell end end end
+      try V = apa
+      catch hell  then
+         raise hell end
+      [] X then {System.show tv(X)}
       end
    end
 
@@ -302,13 +304,14 @@ define
              {TryCell Ce}
              {TryPort Po}
              {TryLock Lo}
-
-             try
-                Sync = true
-                raise hell end
-             catch hell then
-                raise hell end
-             [] _ then skip end
+             local CC = {NewCell false} in
+                try
+                   Sync = true
+                catch _ then
+                   {Assign CC true}
+                end
+                {Access CC false}
+             end
 
           end
           keys:[fault])
@@ -322,9 +325,9 @@ define
              Lo
              Pro1 = proc{$ A B} raise hell end end
              Sync
-             Pro2 = proc{$ A B}  Sync = false end
-
+             Pro2 = proc{$ A B} Sync = false end
              S
+             CC = {NewCell false}
           in
 
              {Fault.injector Po Pro1}
@@ -341,19 +344,28 @@ define
 
              {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
              {S close}
+             {Delay 1000}
              try
-             {TryVar  Va}
+                {TryVar  Va}
+                {Assign CC true}
              catch hell then skip end
 
              try
-             {TryCell Ce}
+                {TryCell Ce}
+                {Assign CC true}
              catch hell then skip end
+
              try
-             {TryPort Po}
+                {TryPort Po}
+                {Assign CC true}
              catch hell then skip end
+
              try
-             {TryLock Lo}
+                {TryLock Lo}
+                {Assign CC true}
              catch hell then skip end
+
+
              try
                 Sync = true
                 raise hell end
@@ -361,6 +373,7 @@ define
                 raise hell end
              [] _ then skip end
 
+             {Access CC false}
           end
           keys:[fault])
 

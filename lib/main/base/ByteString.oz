@@ -11,4 +11,5 @@ byteString(
    width        : Boot_ByteString.width
    length       : Boot_ByteString.width
    toString     : Boot_ByteString.toString
+   toStringWithTail: Boot_ByteString.toStringWithTail
    )

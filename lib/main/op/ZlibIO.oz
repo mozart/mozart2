@@ -11,7 +11,7 @@ import
       write          : ZWrite
       flush          : ZFlush
       )
-   at 'x-oz://boot/ZlibIO.so{native}'
+   at 'x-oz://boot/ZlibIO'
    Open(file:File)
 prepare
    NoArg = {NewName}

@@ -679,9 +679,8 @@ local
             {New Core.threadNode init(GS C)}
          [] fTry(_ FCatch _ _) then
             case {@switches getSwitch(catchall $)} then skip
-            elsecase FCatch of fNoCatch then skip
-            else
-               {ForAll FCatch
+            elsecase FCatch of fCatch(FCaseClauses _) then
+               {ForAll FCaseClauses
                 proc {$ fCaseClause(FE _)}
                    case {IsIllegalCatchPattern FE} then
                       {@reporter
@@ -690,6 +689,7 @@ local
                    else skip
                    end
                 end}
+            [] fNoCatch then skip
             end
             Unnester, UnnestTry(FS $)
          [] fRaise(FE C) then
@@ -1022,8 +1022,8 @@ local
             case FCatch of fNoCatch then
                Unnester, UnnestStatement(fTry(fEq(FV FE C)
                                               FCatch FFinally C) $)
-            else FVs PrintName NewFV FS NewFCatch in
-               {FoldL FCatch
+            [] fCatch(FCaseClauses C2) then FVs PrintName NewFV FS NewFCatch in
+               {FoldL FCaseClauses
                 fun {$ FVs fCaseClause(FE _)}
                    {GetPatternVariablesExpression FE FVs $}
                 end FVs nil}
@@ -1032,12 +1032,13 @@ local
                   Unnester, GenerateNewVar(PrintName FVs C ?GV)
                   NewFV = fVar({GV getPrintName($)} C)
                   FS = fAnd(fEq(FV NewFV C) fTry(fEq(NewFV FE C)
-                                                 NewFCatch FFinally C))
+                                                 fCatch(NewFCatch C2)
+                                                 FFinally C))
                else
                   NewFV = FV
-                  FS = fTry(fEq(FV FE C) NewFCatch FFinally C)
+                  FS = fTry(fEq(FV FE C) fCatch(NewFCatch C2) FFinally C)
                end
-               NewFCatch = {Map FCatch
+               NewFCatch = {Map FCaseClauses
                             fun {$ fCaseClause(FE1 FE2)}
                                fCaseClause(FE1 fEq(NewFV FE2 C))
                             end}
@@ -1699,17 +1700,18 @@ local
             FX = fVar({X getPrintName($)} C)
             FException = fRecord(fAtom('ex' C) [FX])
             NewFS1 = fTry(fAnd(FS fEq(FV fVar('`unit`' C) C))
-                          [fCaseClause(FX fEq(FV FException C))] fNoFinally C)
+                          fCatch([fCaseClause(FX fEq(FV FException C))] C)
+                          fNoFinally C)
             NewFS2 = fCase(FV [[fCaseClause(FException
                                             fApply(fVar('`Raise`'
                                                         {CoordNoDebug C})
-                                                   [FX] C))]]
-                           fSkip(C) C)
+                                                   [FX] {CoordNoDebug C}))]]
+                           fSkip(C) {CoordNoDebug C})
             Unnester, UnnestTry(NewFS1 $)|
             Unnester, UnnestStatement(FFinally $)|
             Unnester, UnnestStatement(NewFS2 $)
-         elseof fTry(FS FCatch fNoFinally C) then
-            GBody GS X FX FElse NewFS GCatchBody
+         elseof fTry(FS fCatch(FCaseClauses C2) fNoFinally C) then
+            GBody GS X FX FElse NewC NewFS GCatchBody
          in
             {@BA openScope()}
             Unnester, UnnestStatement(FS ?GBody)
@@ -1717,19 +1719,23 @@ local
             {@BA openScope()}
             {@BA generate('Exception' C ?X)}
             FX = fVar({X getPrintName($)} C)
-            case FCatch of [fCaseClause(fVar(_ _) _)] then
+            case FCaseClauses of [fCaseClause(fVar(_ _) _)] then
                FElse = fNoElse
             else
                FElse = fApply(fVar('`Raise`' {CoordNoDebug C}) [FX] C)
             end
-            NewFS = fCase(FX [FCatch] FElse C)
+            NewC = case C#C2 of pos(_ _ _ F2 L2 C2)#pos(F1 L1 C1) then
+                      pos(F1 L1 C1 F2 L2 C2)
+                   else C2
+                   end
+            NewFS = fCase(FX [FCaseClauses] FElse NewC)
             Unnester, UnnestStatement(NewFS ?GCatchBody)
             {@BA closeScope(_)}
             {New Core.tryNode init(GS X GCatchBody C)}
          elseof fTry(FS FCatch FFinally C) then
             Unnester,
-            UnnestTry(fTry(fTry(FS FCatch fNoFinally {CoordNoDebug C})
-                           fNoCatch FFinally C) $)
+            UnnestTry(fTry(fTry(FS FCatch fNoFinally C) fNoCatch FFinally
+                           {CoordNoDebug C}) $)
          end
       end
 

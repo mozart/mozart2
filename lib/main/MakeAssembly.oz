@@ -70,17 +70,17 @@ in
 end
 
 local
-   FunMisc      = \insert compiler/FunMisc
-   FunBuiltins  = \insert compiler/FunBuiltins
-   FunSA        = \insert compiler/FunSA
-   FunCodeGen   = \insert compiler/FunCodeGen
-   FunCore      = \insert compiler/FunCore
-   FunRunTime   = \insert compiler/FunRunTime
-   FunUnnest    = \insert compiler/FunUnnest
-   FunAssembler = \insert compiler/FunAssembler
-   FunCompiler  = \insert compiler/FunCompiler
+   FunPrintName      = \insert compiler/PrintName
+   FunBuiltins       = \insert compiler/Builtins
+   FunStaticAnalysis = \insert compiler/StaticAnalysis
+   FunCodeGen        = \insert compiler/CodeGen
+   FunCore           = \insert compiler/Core
+   FunRunTime        = \insert compiler/RunTime
+   FunUnnester       = \insert compiler/Unnester
+   FunAssembler      = \insert compiler/Assembler
+   FunMain           = \insert compiler/Main
 in
-   NewCompiler  = \insert compiler/FunMain
+   NewCompiler       = \insert compiler/FunMain
 end
 
 

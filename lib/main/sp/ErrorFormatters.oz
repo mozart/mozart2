@@ -367,6 +367,12 @@ define
                msg: 'No choices left'
                items: [hint(l:'Space' m:oz(S))])
 
+      elseof kernel(spaceSituatedness Cs) then
+         %% expected S: space
+         error(kind: 'Error: Space'
+               msg:  'Situatedness violation'
+               items: [hint(l:'Culprits' m:oz(Cs))])
+
       elseof kernel(portClosed P) then
          %% expected P: port
          error(kind: 'Error: Port'

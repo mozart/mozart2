@@ -38,7 +38,6 @@ import
    OS
 
 export
-   pointer:    ForeignPointer
    dload:      DLoad
    require:    Require
    resolver:   Resolver
@@ -129,7 +128,6 @@ body
    in Module
    end
 
-   ForeignPointer = foreignPointer(is: {`Builtin` 'isForeignPointer' 2})
 
    {ErrorRegistry.put
 

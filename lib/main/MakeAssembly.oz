@@ -22,7 +22,6 @@
 \insert Standard
 
 declare
-NewForeign
 NewErrorRegistry
 NewError
 NewFS
@@ -33,8 +32,6 @@ NewCompiler
 UrlDefaults
 OuterBoot
 in
-\insert 'sp/Foreign.oz'
-= NewForeign
 
 \insert 'sp/Error.oz'
 = NewError
@@ -94,7 +91,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'System':        System
 
              %% Plain functors
-             'Foreign':       Foreign
              'Error':         Error
              'ErrorRegistry': ErrorRegistry
              'FD':            FD
@@ -123,8 +119,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
 
     Compiler
 
-    {ForAll [Foreign       # NewForeign
-             ErrorRegistry # NewErrorRegistry
+    {ForAll [ErrorRegistry # NewErrorRegistry
              Error         # NewError
              FD            # NewFD
              FS            # NewFS
@@ -155,7 +150,6 @@ OuterBoot = {`Builtin` 'BootManager' 2}
      end}
 
     {ForAll ['System'#       System
-             'Foreign'#      Foreign
              'Property'#     Property
              'ErrorRegistry'#ErrorRegistry
              'Error'#        Error

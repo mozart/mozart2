@@ -462,7 +462,9 @@ in
                WriteDesc <- D
             end
 
-            meth server(port:P<=_ host:H<=_ ...) = M
+            meth server(port:OP<=_ host:H<=_ ...) = M
+               P
+            in
                Socket, init
                if {HasFeature M takePort} then
                   Socket, bind(port:P takePort:M.takePort)
@@ -470,6 +472,7 @@ in
                   Socket, bind(port:P)
                end
                Socket, listen(backLog:1)
+               P=OP
                Socket, accept(host:H)
             end
 

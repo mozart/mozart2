@@ -251,7 +251,7 @@ define
          if XV == X then
             unit % variable
          elseif {HasFeature XV ImAToken}
-            andthen XV.kind == 'class'
+            andthen {IsClass {XV getValue($)}}
          then
             XV
          elseif {HasFeature XV ImAVariableOccurrence}
@@ -279,7 +279,7 @@ define
          then
             unit % variable
          elseif {HasFeature XV ImAToken}
-            andthen XV.kind == 'object'
+            andthen {IsObject {XV getValue($)}}
          then
             {XV getClassNode($)}
          elseif {HasFeature XV ImAVariableOccurrence}
@@ -842,7 +842,7 @@ define
       [] 19 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       [] 20 then proc {$ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _} skip end
       else
-         _ % weaker analysis for procedures with arity > 20
+         unit   % weaker analysis for procedures with arity > 20
       end
    end
 
@@ -1441,25 +1441,24 @@ define
       feat
          isComplex:false
       meth saSimple(Ctrl)
-         DummyProc = {MakeDummyProcedure
-                      {Length @formalArgs}}
-         Value
-      in
-         %% prepare some feature values for the code generator:
-         if {self isClauseBody($)} then
-            Value = {New Core.clauseBodyToken init(DummyProc)}
-            Value.clauseBodyStatements = @statements
-         else
-            Value = {New Core.procedureToken init(DummyProc)}
-            if {Ctrl getTop($)} andthen {Not {Member 'dynamic' @procFlags}}
-            then PredicateRef in
-               {Ctrl declareToplevelProcedure(?PredicateRef)}
-               Value.predicateRef = PredicateRef
-               predicateRef <- PredicateRef
+         case {MakeDummyProcedure {Length @formalArgs}} of unit then skip
+         elseof DummyProc then Value in
+            %% prepare some feature values for the code generator:
+            if {self isClauseBody($)} then
+               Value = {New Core.clauseBodyToken init(DummyProc)}
+               Value.clauseBodyStatements = @statements
+            else
+               Value = {New Core.procedureToken init(DummyProc)}
+               if {Ctrl getTop($)} andthen {Not {Member 'dynamic' @procFlags}}
+               then PredicateRef in
+                  {Ctrl declareToplevelProcedure(?PredicateRef)}
+                  Value.predicateRef = PredicateRef
+                  predicateRef <- PredicateRef
+               end
             end
-         end
 
-         {@designator unifyVal(Ctrl Value)}
+            {@designator unifyVal(Ctrl Value)}
+         end
 
 \ifdef DEBUGSA
          {System.show lookedAhead({@designator getPrintName($)} Value)}
@@ -1812,21 +1811,21 @@ define
       end
 
       meth doNewLock(Ctrl)
-         Token = {New Core.lockToken init({NewLock})}
+         Token = {New Core.token init({NewLock})}
          BndVO = {Nth @actualArgs 1}
       in
          {BndVO unifyVal(Ctrl Token)}
       end
 
       meth doNewPort(Ctrl)
-         Token = {New Core.portToken init({NewPort _})}
+         Token = {New Core.token init({NewPort _})}
          BndVO = {Nth @actualArgs 2}
       in
          {BndVO unifyVal(Ctrl Token)}
       end
 
       meth doNewCell(Ctrl)
-         Token = {New Core.cellToken init({NewCell _})}
+         Token = {New Core.token init({NewCell _})}
          BndVO = {Nth @actualArgs 2}
       in
          {BndVO unifyVal(Ctrl Token)}
@@ -1835,14 +1834,14 @@ define
       meth doNewArray(Ctrl)
          Low  = {GetData {Nth @actualArgs 1}}
          High = {GetData {Nth @actualArgs 2}}
-         Token= {New Core.arrayToken init({Array.new Low High _})}
+         Token= {New Core.token init({Array.new Low High _})}
          BndVO= {Nth @actualArgs 4}
       in
          {BndVO unifyVal(Ctrl Token)}
       end
 
       meth doNewDictionary(Ctrl)
-         Token= {New Core.dictionaryToken init({Dictionary.new})}
+         Token= {New Core.token init({Dictionary.new})}
          BndVO= {Nth @actualArgs 1}
       in
          {BndVO unifyVal(Ctrl Token)}
@@ -1850,14 +1849,14 @@ define
 
       meth doNewChunk(Ctrl)
          Rec  = {GetData {Nth @actualArgs 1}}
-         Token= {New Core.chunkToken init({NewChunk Rec})}
+         Token= {New Core.token init({NewChunk Rec})}
          BndVO= {Nth @actualArgs 2}
       in
          {BndVO unifyVal(Ctrl Token)}
       end
 
       meth doNewSpace(Ctrl)
-         Token= {New Core.spaceToken init({Space.new proc {$ _} skip end})}
+         Token= {New Core.token init({Space.new proc {$ _} skip end})}
          BndVO= {Nth @actualArgs 2}
 \ifdef DEBUGSA
          Pred = {GetData {Nth @actualArgs 1}}
@@ -3468,49 +3467,57 @@ define
          end
       end
       meth outputDebugMeths($)
-         if @lastValue \= unit
-            andthen {HasFeature @lastValue kind}
-         then
-            case @lastValue.kind
-            of 'class' then
-               case {@lastValue getMethods($)}
-               of unit then unit
-               elseof Ms then {Arity Ms} end
-            [] 'object' then
+         if {IsToken @lastValue} then Value in
+            {@lastValue getValue(?Value)}
+            if {IsClass Value} then
+               case {@lastValue getMethods($)} of unit then unit
+               elseof Ms then {Arity Ms}
+               end
+            elseif {IsObject Value} then
                case {{@lastValue getClassNode($)} getMethods($)}
                of unit then unit
-               elseof Ms then {Arity Ms} end
-            else unit end
-         else unit end
+               elseof Ms then {Arity Ms}
+               end
+            else unit
+            end
+         else unit
+         end
       end
       meth outputDebugAttrs($)
-         if @lastValue \= unit
-            andthen {HasFeature @lastValue kind}
-         then
-            case @lastValue.kind
-            of 'class' then {@lastValue getAttributes($)}
-            [] 'object' then {{@lastValue getClassNode($)} getAttributes($)}
-            else unit end
-         else unit end
+         if {IsToken @lastValue} then Value in
+            {@lastValue getValue(?Value)}
+            if {IsClass Value} then
+               {@lastValue getAttributes($)}
+            elseif {IsObject Value} then
+               {{@lastValue getClassNode($)} getAttributes($)}
+            else unit
+            end
+         else unit
+         end
       end
       meth outputDebugFeats($)
-         if @lastValue \= unit
-            andthen {HasFeature @lastValue kind}
-         then
-            case @lastValue.kind
-            of 'class' then {@lastValue getFeatures($)}
-            [] 'object' then {{@lastValue getClassNode($)} getFeatures($)}
-            else unit end
-         else unit end
+         if {IsToken @lastValue} then Value in
+            {@lastValue getValue(?Value)}
+            if {IsClass Value} then
+               {@lastValue getFeatures($)}
+            elseif {IsObject Value} then
+               {{@lastValue getClassNode($)} getFeatures($)}
+            else unit
+            end
+         else unit
+         end
       end
       meth outputDebugProps($)
-         if @lastValue \= unit
-            andthen {HasFeature @lastValue kind}
-         then
-            case @lastValue.kind
-            of 'class' then {@lastValue getProperties($)}
-            else unit end
-         else unit end
+         if {IsToken @lastValue} then Value in
+            {@lastValue getValue(?Value)}
+            if {IsClass Value} then
+               {@lastValue getProperties($)}
+            elseif {IsObject Value} then
+               {{@lastValue getClassNode($)} getProperties($)}
+            else unit
+            end
+         else unit
+         end
       end
       meth getLastValue($)
          @lastValue
@@ -3589,13 +3596,13 @@ define
                      ProcToken
                   end
                [] cell then
-                  {New Core.cellToken init(Val)}
+                  {New Core.token init(Val)}
                [] array then
-                  {New Core.arrayToken init(Val)}
+                  {New Core.token init(Val)}
                [] dictionary then
-                  {New Core.dictionaryToken init(Val)}
+                  {New Core.token init(Val)}
                [] bitArray then
-                  {New Core.bitArrayToken init(Val)}
+                  {New Core.token init(Val)}
                [] 'class' then
                   Cls = {New Core.classToken init(Val)}
                   Meths = {Record.make m {Class.methodNames Val}}
@@ -3624,19 +3631,19 @@ define
                   {Cls setProperties(Props)}
                   {New Core.objectToken init(Val Cls)}
                [] 'lock' then
-                  {New Core.lockToken init(Val)}
+                  {New Core.token init(Val)}
                [] port then
-                  {New Core.portToken init(Val)}
+                  {New Core.token init(Val)}
                [] chunk then Rec RecRepr in
                   Rec = {List.toRecord void
                          {Map {CompilerSupport.chunkArity Val}
                           fun {$ F} F#Val.F end}}
                   SAVariable, RecordToSubst(Seen Depth Rec ?RecRepr)
-                  {New Core.chunkToken init({NewChunk {RecRepr getValue($)}})}
+                  {New Core.token init({NewChunk {RecRepr getValue($)}})}
                [] space then
-                  {New Core.spaceToken init(Val)}
+                  {New Core.token init(Val)}
                [] 'thread' then
-                  {New Core.threadToken init(Val)}
+                  {New Core.token init(Val)}
                [] byteString then
                   {New Core.byteStringNode init(Val unit)}
                [] bitString then
@@ -4080,20 +4087,14 @@ define
 \ifdef LOOP
          {System.show unifyT(@value {RHS getValue($)})}
 \endif
-         if
-            {UnifyTypesOf self RHS Ctrl unit}
-         then
-            RVal = {RHS getValue($)}
-         in
-            if
-               {IsToken RHS} andthen @value==RVal
-            then skip else
+         if {UnifyTypesOf self RHS Ctrl unit} then RVal in
+            {RHS getValue(?RVal)}
+            if {IsToken RHS} andthen @value == RVal then skip
+            else
                {IssueUnificationFailure Ctrl unit
                 [hint(l:'First value' m:oz(@value))
                  hint(l:'Second value' m:oz(RVal))]}
             end
-         else
-            skip % do not continue on type error
          end
       end
    end

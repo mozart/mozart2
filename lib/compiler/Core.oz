@@ -111,17 +111,8 @@ export
    ProcedureToken
    ClauseBodyToken
    BuiltinToken
-   CellToken
-   ChunkToken
-   ArrayToken
-   DictionaryToken
    ClassToken
    ObjectToken
-   LockToken
-   PortToken
-   ThreadToken
-   SpaceToken
-   BitArrayToken
 
 prepare
    \insert Annotate
@@ -1321,7 +1312,6 @@ define
    class NameToken from Token StaticAnalysis.nameToken CodeGen.nameToken
       prop final
       attr isToplevel: unit
-      feat kind: 'name'
       meth init(Value IsToplevel)
          isToplevel <- IsToplevel
          Token, init(Value)
@@ -1330,7 +1320,7 @@ define
 
    class ProcedureToken from Token CodeGen.procedureToken
       prop final
-      feat kind: 'procedure' predicateRef
+      feat predicateRef
    end
 
    class ClauseBodyToken from Token CodeGen.clauseBodyToken
@@ -1340,37 +1330,11 @@ define
 
    class BuiltinToken from Token CodeGen.builtinToken
       prop final
-      feat kind: 'builtin'
    end
 
-   class CellToken from Token
-      prop final
-      feat kind: 'cell'
-   end
-
-   class ChunkToken from Token
-      feat kind: 'chunk'
-   end
-
-   class ArrayToken from ChunkToken
-      prop final
-      feat kind: 'array'
-   end
-
-   class DictionaryToken from ChunkToken
-      prop final
-      feat kind: 'dictionary'
-   end
-
-   class BitArrayToken from ChunkToken
-      prop final
-      feat kind: 'bitArray'
-   end
-
-   class ClassToken from ChunkToken
+   class ClassToken from Token
       prop final
       attr props: unit attrs: unit feats: unit meths: unit
-      feat kind: 'class'
       meth setProperties(Props)
          props <- Props
       end
@@ -1397,10 +1361,9 @@ define
       end
    end
 
-   class ObjectToken from ChunkToken
+   class ObjectToken from Token
       prop final
       attr classNode: unit
-      feat kind: 'object'
       meth init(TheObject ClassNode)
          value <- TheObject
          StaticAnalysis.token, init()
@@ -1409,25 +1372,5 @@ define
       meth getClassNode($)
          @classNode
       end
-   end
-
-   class LockToken from ChunkToken
-      prop final
-      feat kind: 'lock'
-   end
-
-   class PortToken from ChunkToken
-      prop final
-      feat kind: 'port'
-   end
-
-   class ThreadToken from Token
-      prop final
-      feat kind: 'thread'
-   end
-
-   class SpaceToken from Token
-      prop final
-      feat kind: 'space'
    end
 end

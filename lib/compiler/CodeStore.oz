@@ -121,7 +121,7 @@ class CodeStore from Emitter
          {Dictionary.remove @regNames Reg}
       end
    end
-   meth endDefinition(StartAddr FormalRegs ?GRegs ?Code)
+   meth endDefinition(StartAddr FormalRegs AllRegs ?GRegs ?Code)
       Saved0 = @Saved
       OldMinReg|SavedRest = Saved0
    in
@@ -129,9 +129,9 @@ class CodeStore from Emitter
       CodeStore, ComputeOccs(StartAddr _)
       CodeStore, AddRegOccs(StartAddr @EmptyRS)
       {Dictionary.removeAll @sharedDone}
-      Emitter, doEmit(FormalRegs StartAddr ?Code ?GRegs)
+      Emitter, doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs)
       {Dictionary.removeAll @sharedDone}
-         % restore enclosing definition's state:
+      % restore enclosing definition's state:
       NextReg <- @minReg
       minReg <- OldMinReg
       Saved <- SavedRest

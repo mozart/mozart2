@@ -89,12 +89,12 @@ in
          AdjDict <- {NewDictionary}
          DoneDict <- {NewDictionary}
       end
-      meth doEmit(FormalRegs StartAddr ?Code ?GRegs) RS NewCodeTl in
+      meth doEmit(FormalRegs AllRegs StartAddr ?Code ?GRegs) RS NewCodeTl in
          Temporaries <- {NewDictionary}
          Permanents <- {NewDictionary}
          CodeStore, makeRegSet(?RS)
          LastAliveRS <- RS
-         {List.forAll FormalRegs
+         {ForAll FormalRegs
           proc {$ Reg} {RegSet.adjoin RS Reg} end}
          UsedX <- {NewDictionary}
          LowestFreeX <- 0
@@ -111,6 +111,8 @@ in
          contLabels <- nil
          {List.forAllInd FormalRegs
           proc {$ I Reg} Emitter, AllocateThisTemp(I - 1 Reg _) end}
+         {ForAll AllRegs
+          proc {$ Reg} Emitter, GetPerm(Reg _) end}
          Emitter, EmitAddr(StartAddr)
          GRegs = {ForThread @HighestUsedG 0 ~1
                   fun {$ In I} {Dictionary.get @GRegRef I}|In end nil}
@@ -130,7 +132,7 @@ in
                    PrintName = {Dictionary.get @LocalVarnames I}
                    localVarname(PrintName)|In
                 end
-                {Map GRegs
+                {Map AllRegs
                  fun {$ GReg} PrintName in
                     PrintName = {Dictionary.condGet @regNames GReg ''}
                     globalVarname(PrintName)

@@ -523,6 +523,10 @@ local
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing
                        {Map ProcFlags fun {$ fAtom(A _)} A end} C)}
+            case {@switches getSwitch(debuginfovarnames $)} then
+               {GD setAllVariables({@BA getAllVariables($)})}
+            else skip
+            end
             {SetExpansionOccs GD @BA}
             GFrontEq|GD   % Definition node must always be second element!
          [] fFun(FE1 FEs FE2 ProcFlags C) then
@@ -1400,6 +1404,10 @@ local
          else
             GMeth = {New Core.methodWithDesignator
                      init(GLabel GFormals IsOpen GVMsg GBody C)}
+         end
+         case {@switches getSwitch(debuginfovarnames $)} then
+            {GMeth setAllVariables({@BA getAllVariables($)})}
+         else skip
          end
          {SetExpansionOccs GMeth @BA}
       end

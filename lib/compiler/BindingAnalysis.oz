@@ -61,6 +61,16 @@ in
       meth getVars(?Vs) E = @env.1 in
          _#_#Vs#nil = E
       end
+      meth getAllVariables($)
+         {Record.foldR
+          {FoldR @env
+           fun {$ D#_#_#_ Vs0}
+              {Adjoin Vs0 {Dictionary.toRecord x D}}
+           end x}
+          fun {$ X In}
+             X|In
+          end nil}
+      end
       meth closeScope(?Vs) Dr Env = @env in
          (_#_#Vs#nil)|Dr = Env
          env <- Dr

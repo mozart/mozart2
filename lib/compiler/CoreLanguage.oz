@@ -254,6 +254,7 @@ in
          attr
             designator: unit formalArgs: unit body: unit isStateUsing: unit
             procFlags: unit printName: '' toplevelNames: unit
+            allVariables: nil
          feat expansionOccs abstractionTableID
          meth init(Designator FormalArgs Body IsStateUsing ProcFlags Coord)
             self.expansionOccs = expansionOccs('`ooSetSelf`': _)
@@ -263,6 +264,9 @@ in
             isStateUsing <- IsStateUsing
             procFlags <- ProcFlags
             coord <- Coord
+         end
+         meth setAllVariables(Vs)
+            allVariables <- Vs
          end
          meth setPrintName(PrintName FeatPrintName)
             printName <- {String.toAtom
@@ -723,7 +727,9 @@ in
 
       class Method
          from Annotate.method SA.method CodeGen.method
-         attr label: unit formalArgs: unit body: unit coord: unit
+         attr
+            label: unit formalArgs: unit body: unit coord: unit
+            allVariables: nil
          feat expansionOccs
          meth init(Label FormalArgs Body Coord)
             self.expansionOccs = expansionOccs('`ooRequiredArg`': _
@@ -742,6 +748,9 @@ in
             formalArgs <- FormalArgs
             body <- {FlattenSequence Body}
             coord <- Coord
+         end
+         meth setAllVariables(Vs)
+            allVariables <- Vs
          end
          meth getCoord($)
             @coord

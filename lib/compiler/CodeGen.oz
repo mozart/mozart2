@@ -828,7 +828,7 @@ local
          {ForAll NewVs proc {$ V} {V setFreshReg(CS)} end}
          {CS startDefinition()}
          {CodeGenList Nodes CS StartAddr nil}
-         {CS endDefinition(StartAddr nil ?GRegs ?BodyCode0)}
+         {CS endDefinition(StartAddr nil nil ?GRegs ?BodyCode0)}
          BodyCode0 = BodyCode1#BodyCode2
          case {Switches getSwitch(runwithdebugger $)} then
             BodyCode = callBuiltin('Debug.breakpoint' 0)|BodyCode1
@@ -937,7 +937,7 @@ local
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
          V FileName Line PrintName PredId PredicateRef
-         StateReg FormalRegs BodyVInter BodyVInstr GRegs Code VTl0
+         StateReg FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code VTl0
       in
          {@designator getVariable(?V)}
          case @coord of unit then FileName = 'nofile' Line = 1
@@ -979,15 +979,18 @@ local
             {CodeGenList @body CS BodyVInter nil}
          end
          body <- unit   % hand it to the garbage collector
+         AllRegs = case @allVariables of nil then nil
+                   else {Map @allVariables fun {$ V} {V reg($)} end}
+                   end
          case StateReg of none then
             BodyVInstr = BodyVInter
-            {CS endDefinition(BodyVInstr FormalRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             VHd
          else StateVO OOSetSelf VInter in
             StateVO = {New PseudoVariableOccurrence init(StateReg)}
             OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
             {MakeApplication OOSetSelf [StateVO] CS BodyVInstr BodyVInter}
-            {CS endDefinition(BodyVInstr FormalRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             VHd = vGetSelf(_ StateReg VInter)
             VInter
          end = vDefinition(_ {V reg($)} PredId PredicateRef GRegs Code VTl0)
@@ -1513,7 +1516,7 @@ local
          [] pos(F L _ _ _ _) then FileName = F Line = L
          [] posNoDebug(F L _) then FileName = F Line = L
          end
-         local PredId FormalRegs BodyVInstr GRegs Code in
+         local PredId FormalRegs AllRegs BodyVInstr GRegs Code in
             PredId = pid({String.toAtom
                           {VirtualString.toString
                            PrintName#','#{@label methPrintName($)}#'/fast'}}
@@ -1527,6 +1530,9 @@ local
                              {V setFreshReg(CS)}
                              {V reg($)}
                           end}
+            AllRegs = case @allVariables of nil then nil
+                      else {Map @allVariables fun {$ V} {V reg($)} end}
+                      end
             case CS.debugInfoVarnamesSwitch then
                StateReg Vs Regs Cont1 Cont2 Cont3 Cont4 Cont5
             in
@@ -1542,7 +1548,7 @@ local
                {CodeGenList @body CS BodyVInstr nil}
             end
             body <- unit   % hand it to the garbage collector
-            {CS endDefinition(BodyVInstr FormalRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?FastMeth)}
             VHd = vDefinition(_ FastMeth PredId AbstractionTableID GRegs Code
                               VInter1)
@@ -1581,7 +1587,7 @@ local
                      init({{Formal getVariable($)} reg($)})}
                  end} CS Cont3 nil}
             end
-            {CS endDefinition(BodyVInstr FormalRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs nil ?GRegs ?Code)}
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter2)
          end
@@ -1660,7 +1666,7 @@ local
          end
          local
             PredId MessageReg MessageVO BodyVInstr
-            FormalRegs GRegs Code Cont1 Cont2 Cont3 Cont4 Cont5
+            FormalRegs AllRegs GRegs Code Cont1 Cont2 Cont3 Cont4 Cont5
          in
             PredId = pid({String.toAtom
                           {VirtualString.toString
@@ -1679,6 +1685,9 @@ local
             {@messageDesignator reg(?MessageReg)}
             MessageVO = {New PseudoVariableOccurrence init(MessageReg)}
             FormalRegs = [MessageReg]
+            AllRegs = case @allVariables of nil then nil
+                      else {Map @allVariables fun {$ V} {V reg($)} end}
+                      end
             case @isOpen then
                Cont2 = Cont3
             else
@@ -1704,7 +1713,7 @@ local
                BodyVInstr = Cont2
                Cont5 = nil
             end
-            {CS endDefinition(BodyVInstr FormalRegs ?GRegs ?Code)}
+            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
             {CS newReg(?SlowMeth)}
             Cont1 = vDefinition(_ SlowMeth PredId 0 GRegs Code VInter1)
          end

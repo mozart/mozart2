@@ -29,9 +29,9 @@ T={{New Module.manager init}
 {T argv(verbose:  true
         usage:    false
         help:     false
-        keys:     "all"
-        ignores:  "none"
-        tests:    "all"
+        keys:     nil   % nil for `all' or a non-empty list of strings: ["fs"]
+        ignores:  nil   % nil for `none' or a non-empty list of strings
+        tests:    nil   % nil for `none' or a non-empty list of strings
         do:       true
         time:     ""
         gc:       0

@@ -75,7 +75,7 @@ in
           %% kost@ : to be replaced by 'Fault.install';
           {Fault.install
            WatchedEntity
-           watcher(cond:permHome once_only:yes variable:no)
+           watcher('cond':permHome once_only:yes variable:no)
            proc {$ E C}
               {System.showInfo "VS: master is gone?"}
               {CloseProc}

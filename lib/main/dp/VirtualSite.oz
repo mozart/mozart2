@@ -92,7 +92,7 @@ body
 
          {Fault.install
           self.TaskPort
-          watcher(cond:permHome once_only:yes variable:no)
+          watcher('cond':permHome once_only:yes variable:no)
           proc {$ E C}
              {System.showInfo "VS: slave exited."}
              {self close}

@@ -233,8 +233,8 @@ in
             {Exception.raiseError dp(connection(ticketToDeadSite V))}
          end
       in
-         {Fault.install P watcher(cond:permHome) Watch}
-         {Fault.install P handler(cond:perm)     Handle}
+         {Fault.install P watcher('cond':permHome) Watch}
+         {Fault.install P handler('cond':perm)     Handle}
          {Send P T#X}
          case X#Y
          of no#_ then
@@ -244,8 +244,8 @@ in
          [] yes(A)#_ then
             Entity=A
          end
-         {Fault.deinstall P watcher(cond:permHome) Watch}
-         {Fault.deinstall P handler(cond:perm)     Handle}
+         {Fault.deinstall P watcher('cond':permHome) Watch}
+         {Fault.deinstall P handler('cond':perm)     Handle}
       end
 
    end

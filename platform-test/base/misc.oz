@@ -280,5 +280,29 @@ in
                       case Y==true then skip end
                    end
                    keys:[fixedBug suspension builtin])
+
+         unnest(proc {$}
+                      fun {F1 X} X=1 1 end
+                      fun {F2 X} {Wait X} 2 end
+                      X
+                   in
+                      _=[ {F1 X} {F2 X} ]
+                   end
+                   keys:[fixedBug unnesting compiler])
+
+         object(proc {$}
+                   M C
+                in
+                   M = init()
+                   thread
+                      class C
+                         meth init()
+                            skip
+                         end
+                      end
+                   end
+                   {New C M _}
+                end
+                keys:[fixedBug object message])
         ])
 end

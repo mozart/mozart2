@@ -42,6 +42,7 @@ define
       {Fault.injector S.cell Inj}
       {Fault.injector S.lokk Inj}
       {Fault.injector S.var Inj}
+      {Fault.injector S.object Inj}
    end
 
    proc{TryCell C}
@@ -72,6 +73,50 @@ define
       catch injector then skip end
    end
 
+   proc{TryObjectCode O}
+      try
+         {O c}
+         raise abort end
+      catch injector then skip end
+   end
+
+   proc{TryObjectFeat O}
+      try
+         _ = O.b
+         raise abort end
+      catch injector then skip end
+   end
+
+   proc{TryObjectState O}
+      try
+         {O read(_)}
+         raise abort end
+      catch injector then skip end
+   end
+
+   proc{TryObjectLock O}
+      try
+         {O write(3)}
+         raise abort end
+      catch injector then skip end
+   end
+
+   proc{TryObjectTouchedState O}
+      try
+         _ = O.b
+         {O read(_)}
+         raise abort end
+      catch injector then skip end
+   end
+
+   proc{TryObjectTouchedLock O}
+      try
+         _ = O.b
+         {O write(3)}
+         raise abort end
+      catch injector then skip end
+   end
+
    proc{StartServer S E}
       S={New Remote.manager init(host:{OS.uName}.nodename)}
       {S ping}
@@ -85,6 +130,15 @@ define
                          My=o(port:{NewPort _}
                               cell:{NewCell a}
                               lokk:{NewLock}
+                              object:{New class $
+                                             prop locking
+                                             attr a:1
+                                             feat b:2
+                                             meth c skip end
+                                             meth read(A) A=@a end
+                                             meth write(A) lock a<-A end end
+                                          end
+                                      c}
                               var:_)
                       end $)}.my = E
       {S ping}
@@ -136,6 +190,72 @@ define
           end
           keys:[fault])
 
+       fault_inject_live_object_code(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectCode Deads.object}
+          end
+          keys:[fault])
+
+       fault_inject_live_object_feat(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectFeat Deads.object}
+          end
+          keys:[fault])
+
+       fault_inject_live_object_state(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectState Deads.object}
+          end
+          keys:[fault])
+
+       fault_inject_live_object_lokk(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectLock Deads.object}
+          end
+          keys:[fault])
+
+       fault_inject_live_object_touchedState(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectTouchedState Deads.object}
+          end
+          keys:[fault])
+
+       fault_inject_live_object_touchedLokk(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {InjectInj Deads}
+             {S close}
+             {Delay 1000}
+             {TryObjectTouchedLock Deads.object}
+          end
+          keys:[fault])
+
        fault_inject_live_all(
           proc {$}
              S Deads in
@@ -147,6 +267,12 @@ define
              {TryVar Deads.var}
              {TryCell Deads.cell}
              {TryLock Deads.lokk}
+             {TryObjectCode Deads.object}
+             {TryObjectFeat Deads.object}
+             {TryObjectState Deads.object}
+             {TryObjectLock Deads.object}
+             {TryObjectTouchedState Deads.object}
+             {TryObjectTouchedLock Deads.object}
           end
           keys:[fault])
 
@@ -193,6 +319,103 @@ define
           end
           keys:[fault])
 
+       fault_inject_dead_code(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+          end
+          keys:[fault])
+       fault_inject_dead_feat(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+          end
+          keys:[fault])
+       fault_inject_dead_state(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+          end
+          keys:[fault])
+       fault_inject_dead_lokk(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+          end
+          keys:[fault])
+       fault_inject_dead_object_code(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+             {TryObjectCode Deads.object}
+          end
+          keys:[fault])
+       fault_inject_dead_object_feat(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+          end
+          keys:[fault])
+       fault_inject_dead_object_state(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+             {TryObjectState Deads.object}
+             {TryObjectFeat Deads.object}
+          end
+          keys:[fault])
+       fault_inject_dead_object_lokk(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+             {TryObjectLock Deads.object}
+          end
+          keys:[fault])
+       fault_inject_dead_object_touchedState(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+             {TryObjectTouchedState Deads.object}
+          end
+          keys:[fault])
+       fault_inject_dead_object_touchedLokk(
+          proc {$}
+             S Deads in
+             {StartServer S Deads}
+             {S close}
+             {InjectInj Deads}
+             {Delay 1000}
+             {TryObjectTouchedLock Deads.object}
+          end
+          keys:[fault])
+
        fault_inject_dead_all(
           proc {$}
              S Deads in
@@ -204,6 +427,12 @@ define
              {TryVar Deads.var}
              {TryCell Deads.cell}
              {TryLock Deads.lokk}
+             {TryObjectCode Deads.object}
+             {TryObjectFeat Deads.object}
+             {TryObjectState Deads.object}
+             {TryObjectLock Deads.object}
+             {TryObjectTouchedState Deads.object}
+             {TryObjectTouchedLock Deads.object}
           end
           keys:[fault])
       ])

@@ -38,11 +38,12 @@ define
    proc{WatchWat S E}
       Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
    in
-      E = o(port:_ cell:_ lokk:_ var:_)
+      E = o(port:_ cell:_ lokk:_ var:_ object:_)
       {Fault.siteWatcher S.port {Inj E.port}}
       {Fault.siteWatcher S.cell {Inj E.cell}}
       {Fault.siteWatcher S.lokk {Inj E.lokk}}
       {Fault.siteWatcher S.var  {Inj E.var}}
+      {Fault.siteWatcher S.object {Inj E.object}}
    end
 
 
@@ -67,6 +68,10 @@ define
          E.lokk = port
          {Assign CC true}
       catch _ then skip end
+      try
+         E.object = port
+         {Assign CC true}
+      catch _ then skip end
       {Access CC false}
    end
 
@@ -85,6 +90,44 @@ define
       thread try V = apa catch _ then skip end end
    end
 
+   proc{TryObjectCode O}
+      try
+         {O c}
+      catch _ then skip end
+   end
+
+   proc{TryObjectFeat O}
+      try
+         _ = O.b
+      catch _ then skip end
+   end
+
+   proc{TryObjectState O}
+      try
+         {O read(_)}
+      catch _ then skip end
+   end
+
+   proc{TryObjectLock O}
+      try
+         {O write(3)}
+      catch _ then skip end
+   end
+
+   proc{TryObjectTouchedState O}
+      try
+         _ = O.b
+         {O read(_)}
+      catch _ then skip end
+   end
+
+   proc{TryObjectTouchedLock O}
+      try
+         _ = O.b
+         {O write(3)}
+      catch _ then skip end
+   end
+
    proc{StartServer S E}
       S={New Remote.manager init(host:{OS.uName}.nodename)}
       {S ping}
@@ -98,9 +141,40 @@ define
                          My=o(port:{NewPort _}
                               cell:{NewCell a}
                               lokk:{NewLock}
+                              object:{New class $
+                                             prop locking
+                                             attr a:1
+                                             feat b:2
+                                             meth c skip end
+                                             meth read(A) A=@a end
+                                             meth write(A) lock a<-A end end
+                                          end
+                                      c}
                               var:_)
                       end $)}.my = E
       {S ping}
+   end
+
+   proc {LiveTest Try Entity}
+      S Deads Ans in
+      {StartServer S Deads}
+      {WatchWat Deads Ans}
+      {S close}
+      {Delay 1000}
+      {Try Deads.Entity}
+      {Delay 1000}
+      {CheckWat Ans}
+   end
+
+   proc {DeadTest Try Entity}
+      S Deads Ans in
+      {StartServer S Deads}
+      {S close}
+      {WatchWat Deads Ans}
+      {Delay 1000}
+      {Try Deads.Entity}
+      {Delay 1000}
+      {CheckWat Ans}
    end
 
    Return=
@@ -154,6 +228,37 @@ define
              {TryPort Deads.port}
              {Delay 1000}
              {CheckWat Ans}
+          end
+          keys:[fault])
+
+       fault_watcher_object_code(
+          proc {$}
+             {LiveTest TryObjectCode object}
+          end
+          keys:[fault])
+       fault_watcher_object_feat(
+          proc {$}
+             {LiveTest TryObjectFeat object}
+          end
+          keys:[fault])
+       fault_watcher_object_state(
+          proc {$}
+             {LiveTest TryObjectState object}
+          end
+          keys:[fault])
+       fault_watcher_object_lokk(
+          proc {$}
+             {LiveTest TryObjectLock object}
+          end
+          keys:[fault])
+       fault_watcher_object_touchedState(
+          proc {$}
+             {LiveTest TryObjectTouchedState object}
+          end
+          keys:[fault])
+       fault_watcher_object_touchedLokk(
+          proc {$}
+             {LiveTest TryObjectTouchedLock object}
           end
           keys:[fault])
 

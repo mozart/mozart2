@@ -21,6 +21,23 @@
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
 %%%
+
+
+
+
+\ifdef LILO
+
+\insert AppLILO.oz
+
+\else
+
+
+
+
+
+
+
+
 %%% ==================================================================
 %%% This file generalizes Christian Schulte's `application builder'
 %%% idea which unfortunately was limited to system modules because all
@@ -860,3 +877,6 @@ in
                                                 applet:   RegistryMakeApplet)
                             )
 end
+
+
+\endif

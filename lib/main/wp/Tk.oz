@@ -46,12 +46,12 @@ export
    send:          TkSend
    batch:         TkBatch
 
-   return:           TkReturn
+   return:           TkReturnString
    returnString:     TkReturnString
    returnAtom:       TkReturnAtom
    returnInt:        TkReturnInt
    returnFloat:      TkReturnFloat
-   returnList:       TkReturnList
+   returnList:       TkReturnListString
    returnListString: TkReturnListString
    returnListAtom:   TkReturnListAtom
    returnListInt:    TkReturnListInt
@@ -100,63 +100,15 @@ export
 
 body
 
-   tk(send:          TkSend
-      batch:         TkBatch
-
-      return:           TkReturn
-      returnString:     TkReturnString
-      returnAtom:       TkReturnAtom
-      returnInt:        TkReturnInt
-      returnFloat:      TkReturnFloat
-      returnList:       TkReturnList
-      returnListString: TkReturnListString
-      returnListAtom:   TkReturnListAtom
-      returnListInt:    TkReturnListInt
-      returnListFloat:  TkReturnListFloat
-
-      getPrefix:        TkGetPrefix
-      getId:            TkGetId
-      getTclName:       TkGetTclName
-
-      invoke:        InvokeAction
-
-      button:        TkButton
-      canvas:        TkCanvas
-      checkbutton:   TkCheckbutton
-      entry:         TkEntry
-      frame:         TkFrame
-      label:         TkLabel
-      listbox:       TkListbox
-      menu:          TkMenu
-      menubutton:    TkMenubutton
-      message:       TkMessage
-      radiobutton:   TkRadiobutton
-      scale:         TkScale
-      scrollbar:     TkScrollbar
-      text:          TkText
-      toplevel:      TkToplevel
-
-      menuentry:     TkMenuentries
-
-      image:         TkImage
-
-      textTag:       TkTextTag
-      textMark:      TkTextMark
-      canvasTag:     TkCanvasTag
-
-      action:        TkAction
-      variable:      TkVariable
-      string:        TkString
-      isColor:       IsColor
-
-      addYScrollbar: AddYScrollbar
-      addXScrollbar: AddXScrollbar
-
-      defineUserCmd: DefineUserCmd)
-
-   =
-\endif
+   TkString = string(toInt:        TkStringToInt
+                     toFloat:      TkStringToFloat
+                     toListString: TkStringToListString
+                     toListAtom:   TkStringToListAtom
+                     toListInt:    TkStringToListInt
+                     toListFloat:  TkStringToListFloat)
+\else
 local
+\endif
 
 
    %%
@@ -1390,6 +1342,7 @@ local
       end
    end
 
+\ifndef LILO
 in
 
    tk(send:          TkSend
@@ -1451,8 +1404,6 @@ in
       addXScrollbar: AddXScrollbar
 
       defineUserCmd: DefineUserCmd)
+\end
 
 end
-\ifdef LILO
-end
-\endif

@@ -778,6 +778,45 @@ local
       end
    end
 
+\ifdef LILO
+
+   %%
+   %% Often used short cuts
+   %%
+   fun {SearchOne P}
+      {OneModule.depth P 1 _}
+   end
+
+   fun {SearchAll P}
+      {All P 1 _}
+   end
+
+   fun {SearchBest P O}
+      {BestModule.bab P O 1 _}
+   end
+
+in
+
+   functor
+
+   export
+      one:    OneModule
+      all:    All
+      allS:   AllS
+      allP:   AllP
+      best:   BestModule
+      object: SearchObject
+
+      'SearchOne':  SearchOne
+      'SearchAll':  SearchAll
+      'SearchBest': SearchBest
+   body
+      skip
+   end
+
+end
+\else
+
 in
 
    Search = search(one:    OneModule
@@ -805,3 +844,5 @@ end
 fun {SearchBest P O}
    {Search.best.bab P O 1 _}
 end
+
+\endif

@@ -2,6 +2,9 @@
 %%% Authors:
 %%%   Denys Duchier (duchier@ps.uni-sb.de)
 %%%
+%%% Contributor:
+%%%   Christian Schulte, 1998
+%%%
 %%% Copyright:
 %%%   Denys Duchier, 1997
 %%%
@@ -20,6 +23,33 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+functor $
+
+export
+   register:   Register
+   setHandler: SetHandler
+
+body
+
+   Register   = {`Builtin` 'Finalize.register'   2}
+   SetHandler = {`Builtin` 'Finalize.setHandler' 1}
+
+   local
+      proc {FinalizeEntry Value|Handler}
+         {Handler Value}
+      end
+      proc {FinalizeHandler L}
+         {ForAll L FinalizeEntry}
+      end
+   in
+      {SetHandler FinalizeHandler}
+   end
+end
+
+\else
+
 local
    Register   = {`Builtin` 'Finalize.register'   2}
    SetHandler = {`Builtin` 'Finalize.setHandler' 1}
@@ -29,3 +59,5 @@ in
    {SetHandler FinalizeHandler}
    Finalize = finalize(register:Register setHandler:SetHandler)
 end
+
+\endif

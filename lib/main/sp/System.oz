@@ -28,6 +28,93 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+functor
+
+export
+   get:                  SystemGet
+   set:                  SystemSet
+   printError:           PrintError
+   printInfo:            PrintInfo
+   showError:            ShowError
+   showInfo:             ShowInfo
+   print:                Print
+   show:                 Show
+   eq:                   SystemEq
+   nbSusps:              SystemNbSusps
+   printName:            PrintName
+   gcDo:                 GcDo
+   apply:                Apply
+   tellRecordSize:       TellRecordSize
+   valueToVirtualString: ValueToVirtualString
+   exit:                 Exit
+   property:             Property
+
+   %%
+   %% Only relevant for OPI, direct use is deprecated
+   %%
+
+   'Show':            Show
+   'Print':           Print
+   'Exit':            Exit
+   'GetProperty':     GetProperty
+   'PutProperty':     PutProperty
+   'CondGetProperty': CondGetProperty
+
+
+body
+
+   Show            = {`Builtin` 'Show'            1}
+   Print           = {`Builtin` 'Print'           1}
+   Exit            = {`Builtin` shutdown          1}
+   GetProperty     = {`Builtin` 'GetProperty'     2}
+   PutProperty     = {`Builtin` 'PutProperty'     2}
+   CondGetProperty = {`Builtin` 'CondGetProperty' 3}
+
+   %%
+   %% Printing
+   %%
+   PrintInfo  = {`Builtin` 'System.printInfo'  1}
+   proc {ShowInfo V}
+      {PrintInfo V # '\n'}
+   end
+   PrintError = {`Builtin` 'System.printError' 1}
+   proc {ShowError V}
+      {PrintError V # '\n'}
+   end
+
+   proc {SystemSet W}
+      {PutProperty {Label W} W}
+   end
+
+   fun {SystemGet C}
+      case C
+      of     standalone then {GetProperty 'oz.standalone'}
+      elseof home       then {GetProperty 'oz.home'      }
+      else                   {GetProperty C              }
+      end
+   end
+
+   Property = property(get:     GetProperty
+                       put:     PutProperty
+                       condGet: CondGetProperty)
+
+
+
+   SystemEq             = {`Builtin` 'System.eq' 3}
+   SystemNbSusps        = {`Builtin` 'System.nbSusps' 2}
+   PrintName            = {`Builtin` 'System.printName' 2}
+   GcDo                 = {`Builtin` 'System.gcDo' 0}
+   Apply                = {`Builtin` 'System.apply' 2}
+   TellRecordSize       = `tellRecordSize`
+   ValueToVirtualString = {`Builtin` 'System.valueToVirtualString' 4}
+
+end
+
+
+\else
+
 
 %%
 %% Global
@@ -100,3 +187,5 @@ in
                                condGet:CondGetProperty)
                   )
 end
+
+\endif

@@ -30,9 +30,9 @@ local
    ExitErrorTicket = 2
    ExitErrorClient = 3
 
-   ArgSpec = single(ticket(type: atom)
-                    shmkey(type:atom default:'NONE')
-                    detached(type:bool))
+   ArgSpec = record(ticket(single type: atom optional: false)
+                    shmkey(single type:atom default:'NONE')
+                    detached(rightmost type: bool default: false))
 
 in
 

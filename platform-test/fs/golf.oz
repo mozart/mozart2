@@ -15,7 +15,7 @@ define
 
       fun {Flatten Ls}
          {FoldL Ls fun {$ L R}
-                      case R==nil then L else {Append L R} end
+                      if R==nil then L else {Append L R} end
                    end nil}
       end
 
@@ -29,7 +29,7 @@ define
                   {DistrPlayers AllWeeks Player Rest}
                end
             else
-               case Player < NbOfPlayers then
+               if Player < NbOfPlayers then
                   {DistrPlayers AllWeeks Player+1 AllWeeks}
                else skip end
             end

@@ -42,7 +42,7 @@ define
       proc {Do Xs Ys}
          case Xs of nil then skip
          [] X|Xr then
-            case {Member X Ys} then {Do Xr {List.subtract Ys X}}
+            if {Member X Ys} then {Do Xr {List.subtract Ys X}}
             else fail
             end
          end

@@ -230,7 +230,7 @@ define
                        Board = {FD.list N*N 1#N*N} = {FD.distinct}
 
                        fun {Num I J}
-                          case I>=1 andthen I=<N andthen J>=1 andthen J=<N
+                          if I>=1 andthen I=<N andthen J>=1 andthen J=<N
                           then {Nth Board (I-1)*N + J} else OutOfBounds end
                        end
                     in

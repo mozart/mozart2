@@ -102,7 +102,7 @@ define
       [] L|Lr
       then local Min = {FoldL Lr fun{$ I X}
                                     local M ={FD.reflect.min X} in
-                                       case M < I then M else I end
+                                       if M < I then M else I end
                                     end
                                  end {FD.reflect.min L}}
               Rest

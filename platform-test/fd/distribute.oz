@@ -471,7 +471,7 @@ in
          Return=
          fd([distribute({Map Tests
                          fun {$ K#R}
-                            L = case {IsAtom K} then K
+                            L = if  {IsAtom K} then K
                                 else generic(order:O value:V)=K in
                                    {String.toAtom {Append
                                                    {Atom.toString O}

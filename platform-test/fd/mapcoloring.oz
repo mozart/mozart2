@@ -20,7 +20,7 @@ define
    Once =
    fun {$ L A}
       case L
-      of H|T then {Once T case {Member H A} then A else H|A end}
+      of H|T then {Once T if {Member H A} then A else H|A end}
       else A
       end
    end

@@ -34,14 +34,14 @@ define
                 fun {$} D in
                    {FD.decl D}
                    {FD.sumAC [1 ~1] [3 4] '=:' D}
-                   case D==1 then 1 else 0 end
+                   if D==1 then 1 else 0 end
                 end}
 
                {MiscTest 4
                 fun {$} D in
                    {FD.decl D}
                    {FD.sumAC [3 ~4] [1 1] '=:' D}
-                   case D==1 then 1 else 0 end
+                   if D==1 then 1 else 0 end
                 end}
 
                {MiscTest 5
@@ -58,14 +58,14 @@ define
                {MiscTest 7
                 fun {$} X D in [X D]:::0#10
                    {FD.sumAC [1 ~1] [X X] '=:' D}
-                   case D==0 then 1 else 0 end
+                   if D==0 then 1 else 0 end
                 end}
 
                {MiscTest 8
                 fun {$} X Y D in [X Y D]:::0#10
                    {FD.sumAC [1 ~1] [X Y] '=:' D}
                    X = Y
-                   case D==0 then 1 else 0 end
+                   if D==0 then 1 else 0 end
                 end}
 
                {MiscTest 9
@@ -81,7 +81,7 @@ define
                    {FD.decl X}
                    {FD.decl Y}
                    {FD.sumAC [3 1] [X Y] '=:' X}
-                   case X==0 andthen Y==0 then 1 else 0 end
+                   if X==0 andthen Y==0 then 1 else 0 end
                 end}
 
                {MiscTest 11
@@ -91,7 +91,7 @@ define
                    {FD.decl D}
                    {FD.sumAC [3 1] [X Y] '=:' D}
                    X = D
-                   case X==0 andthen Y==0 andthen D==0 then 1 else 0 end
+                   if X==0 andthen Y==0 andthen D==0 then 1 else 0 end
                 end}
 
                {MiscTest 12

@@ -18,7 +18,7 @@ define
    fun {MaxDueWithout Tasks Task Start Dur}
       {FoldL Tasks
        fun {$ IMax T}
-          case Task==T then
+          if Task==T then
              IMax
           else
              {Max IMax {FD.reflect.max Start.T}+Dur.T}
@@ -29,7 +29,7 @@ define
    fun {MinReleaseWithout Tasks Task Start Dur}
       {FoldL Tasks
        fun {$ IMin T}
-          case Task==T then
+          if Task==T then
              IMin
           else
              {Min IMin {FD.reflect.min Start.T}}
@@ -44,7 +44,7 @@ define
       {FoldL Tasks fun {$ FIn Task}
                       MaxDue = {MaxDueWithout Tasks Task Start Dur}
                    in
-                      case MaxDue-{FD.reflect.min Start.Task} >= SumDur
+                      if MaxDue-{FD.reflect.min Start.Task} >= SumDur
                       then Task|FIn else FIn
                       end
                    end nil}
@@ -57,7 +57,7 @@ define
       {FoldL Tasks fun {$ I Task}
                       MinRelease = {MinReleaseWithout Tasks Task Start Dur}
                    in
-                      case {FD.reflect.max Start.Task}+Dur.Task-MinRelease >= SumDur
+                      if {FD.reflect.max Start.Task}+Dur.Task-MinRelease >= SumDur
                       then Task|I else I
                       end
                    end nil}
@@ -119,7 +119,7 @@ define
       [] Task|Tr then
          NCost = {Slack Task Start Dur}
       in
-         case NCost < CostTMin then
+         if NCost < CostTMin then
             TMin|{FindMinAndRest Task NCost Tr Start Dur Min}
          else
             Task|{FindMinAndRest TMin CostTMin Tr Start Dur Min}
@@ -130,20 +130,20 @@ define
    proc {EnumResource Tasks Rest Start Dur}
 %        {Show enum}
       choice
-         case {Length Tasks}<2 then {SchedDistribute Rest Start Dur}
+         if {Length Tasks}<2 then {SchedDistribute Rest Start Dur}
          else
             Firsts#Lasts = {GetCandidates Tasks Start Dur}
          in
-            case Firsts == nil then fail
-            elsecase Lasts == nil then fail
+            if Firsts == nil then fail
+            elseif Lasts == nil then fail
             else LFirsts = {Length Firsts}
                LLasts = {Length Lasts}
             in
-               case LFirsts==1
+               if LFirsts==1
                then {TryFirstsLasts Firsts firsts Tasks Rest Start Dur}
-               elsecase LLasts==1
+               elseif LLasts==1
                then {TryFirstsLasts Lasts lasts Tasks Rest Start Dur}
-               elsecase LLasts<LFirsts
+               elseif LLasts<LFirsts
                then {TryFirstsLasts Lasts lasts Tasks Rest Start Dur}
                else {TryFirstsLasts Firsts firsts Tasks Rest Start Dur}
                end
@@ -181,7 +181,7 @@ define
 
    proc {Before Task Tasks Start Dur}
       {ForAll Tasks proc{$ T}
-                       case Task==T then skip
+                       if Task==T then skip
                        else Start.Task+Dur.Task =<: Start.T
                        end
                     end}
@@ -189,7 +189,7 @@ define
 
    proc {After Task Tasks Start Dur}
       {ForAll Tasks proc{$ T}
-                       case Task==T then skip
+                       if Task==T then skip
                        else Start.T+Dur.T =<: Start.Task
                        end
                     end}
@@ -298,7 +298,7 @@ define
       Resources =
       {FoldR TaskSpecs
        fun {$ _#_#_#Resource A}
-          case Resource==noResource orelse {Member Resource A}
+          if Resource==noResource orelse {Member Resource A}
           then A else Resource|A end
        end
        nil}
@@ -307,7 +307,7 @@ define
        fun {$ Resource}
           {FoldR TaskSpecs
            fun {$ Task#_#_#ThisResource A}
-              case Resource==ThisResource then Task|A else A end
+              if Resource==ThisResource then Task|A else A end
            end
            nil}
        end}

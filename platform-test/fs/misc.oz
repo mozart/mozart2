@@ -236,7 +236,7 @@ define
                  */
                  Sol = {Search.base.all {SetPart 3}}
                  SolLen = {Length Sol}
-                 case SolLen  == 64 then 1 else 0 end
+                 if SolLen  == 64 then 1 else 0 end
               end}
 
              {MiscTest 21
@@ -261,7 +261,7 @@ define
                  */
                  Sol = {Search.base.all {SetPart 5}}
                  SolLen = {Length Sol}
-                 case SolLen  == 120 then 1 else 0 end
+                 if SolLen  == 120 then 1 else 0 end
               end}
 
              {MiscTest 22
@@ -302,7 +302,7 @@ define
                  CZ = {FS.card Z}
                  R
               in
-                 R = case {FD.reflect.min CZ} ==
+                 R = if {FD.reflect.min CZ} ==
                         {Max {FD.reflect.min CX} {FD.reflect.min CY}}
                      then 1 else 0 end
                  {Wait R}
@@ -320,7 +320,7 @@ define
                  CZ = {FS.card Z}
                  R
               in
-                 R = case {FD.reflect.max CZ} ==
+                 R = if {FD.reflect.max CZ} ==
                         {FD.reflect.max CX}+{FD.reflect.max CY}
                      then 1 else 0 end
 
@@ -339,7 +339,7 @@ define
                  CZ = {FS.card Z}
                  R
               in
-                 R = case {FD.reflect.max CZ} ==
+                 R = if {FD.reflect.max CZ} ==
                         {Min {FD.reflect.max CX} {FD.reflect.max CY}}
                      then 1 else 0 end
                  {Wait R}
@@ -456,22 +456,22 @@ define
 
              {MiscTest 38
               fun {$}
-                 case {FS.int.min {FS.value.make [1 2 3]}} == 1 then 1 else 0 end
+                 if {FS.int.min {FS.value.make [1 2 3]}} == 1 then 1 else 0 end
               end}
 
              {MiscTest 39
               fun {$}
-                 case {FS.int.max {FS.value.make [1 2 3]}} == 3 then 1 else 0 end
+                 if {FS.int.max {FS.value.make [1 2 3]}} == 3 then 1 else 0 end
               end}
 
              {MiscTest 40
               fun {$}
-                 case {FS.int.min {FS.value.make [2]}} == 2 then 1 else 0 end
+                 if {FS.int.min {FS.value.make [2]}} == 2 then 1 else 0 end
               end}
 
              {MiscTest 41
               fun {$}
-                 case {FS.int.max {FS.value.make [2]}} == 2 then 1 else 0 end
+                 if {FS.int.max {FS.value.make [2]}} == 2 then 1 else 0 end
               end}
 
              {MiscTest 42

@@ -18,7 +18,7 @@ define
       of X|Xr then
          local XSize in
             XSize = {GetSize X}
-            case MinSize=<XSize then {Choose Min MinSize Xr}
+            if MinSize=<XSize then {Choose Min MinSize Xr}
             else {Choose X XSize Xr}
             end
          end
@@ -48,7 +48,7 @@ define
 % {Badness P#G} returns the number of items in G which are
 % constrained to 0.
    proc {Badness P R}
-      case {IsList P} then
+      if {IsList P} then
          {FoldL
           P
           proc {$ X Y Z}
@@ -107,8 +107,8 @@ define
 
             {Record.foldL O proc{$ In X Out} Out :: 0#FD.sup Out=:In+X end 0} =<: NumberOfGroups
             {ForAll Ls proc{$ L} thread
-                                    case {IsInt L}
-                                    then case L>0 then O.L=1 else skip end
+                                    if {IsInt L}
+                                    then if L>0 then O.L=1 else skip end
                                     end
                                  end
                        end}

@@ -40,7 +40,7 @@ fun {ComputeTests Argv}
       TestDict = {Dictionary.new}
 
       fun {GetIt T|Tr I}
-         case {Label T}==I then T else {GetIt Tr I} end
+         if {Label T}==I then T else {GetIt Tr I} end
       end
       fun {FindTest I|Is S}
          {Label S}=I
@@ -56,7 +56,7 @@ fun {ComputeTests Argv}
          TL = {Label TD}
          T  = {ModMan link(url:TD.url $)}.return
       in
-         case {Dictionary.member TestDict TL} then skip
+         if {Dictionary.member TestDict TL} then skip
          else {Dictionary.put TestDict TL {FindTest TD.id T}}
          end
          {Dictionary.get TestDict TL}
@@ -72,7 +72,7 @@ in
                   repeat: 1
                  )
          {Debug.procedureCoord
-          case {IsProcedure S} then S else S.1 end}}
+          if {IsProcedure S} then S else S.1 end}}
         T}
     end}
 end

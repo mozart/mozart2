@@ -63,20 +63,20 @@ local
          \insert 'compute-tests.oz'
 
          fun {Run Argv}
-            case Argv.help then
+            if Argv.help then
                {System.printInfo \insert 'help-string.oz'
                }
                0
             else
                ToRun={ComputeTests Argv}
                proc {PV V}
-                  case Argv.verbose then {System.printInfo V}
+                  if Argv.verbose then {System.printInfo V}
                   else skip end
                end
 
 
                proc {PT Ts}
-                  case Argv.verbose then
+                  if Argv.verbose then
                      {ForAll Ts
                       proc {$ T}
                          {System.printInfo
@@ -89,7 +89,7 @@ local
                         Ys Zs
                      in
                         {List.takeDrop Xs 3 ?Ys ?Zs}
-                        Ys|case Zs==nil then nil else {ChunkUp Zs} end
+                        Ys|if Zs==nil then nil else {ChunkUp Zs} end
                      end
                   in
                      {ForAll {ChunkUp Ts}
@@ -106,9 +106,9 @@ local
 
             in
 
-               case Argv.do then
+               if Argv.do then
                   %% Start garbage collection thread, if requested
-                  case Argv.gc > 0 then
+                  if Argv.gc > 0 then
                      proc {GcLoop}
                         {System.gcDo} {Delay Argv.gc} {GcLoop}
                      end
@@ -118,7 +118,7 @@ local
                   end
                   %% Go for it
 
-                  case Argv.time \= nil then
+                  if Argv.time \= nil then
                      {Property.put 'time.detailed' true}
                   else skip
                   end
@@ -135,7 +135,7 @@ local
                                            fun {$ B _}
                                               B1={DoTest T.script}
                                            in
-                                              {PV case B1 then '+' else '-' end}
+                                              {PV if B1 then '+' else '-' end}
                                               B1 andthen B
                                            end true}
                                        end
@@ -143,10 +143,10 @@ local
                                 B={FoldL Bs And true}
                              in
                                 {Wait B}
-                                case Argv.time \= nil then
+                                if Argv.time \= nil then
                                    T1={Property.get time}
                                    proc {PT C#F}
-                                      case {Member C Argv.time} then
+                                      if {Member C Argv.time} then
                                          {PV ' '#[C]#':'#T1.F-T0.F#' ms'}
                                       else skip
                                       end
@@ -168,10 +168,10 @@ local
                                            end}
                in
                   {Wait Goofed}
-                  case Argv.time \= nil then
+                  if Argv.time \= nil then
                      T1={Property.get time}
                      proc {PT C#F}
-                        case {Member C Argv.time} then
+                        if {Member C Argv.time} then
                            {PV ' '#[C]#':'#T1.F-StartTime.F#' ms'}
                         else skip
                         end
@@ -186,8 +186,8 @@ local
                   else skip
                   end
 
-                  case Goofed==nil then
-                     case Argv.verbose then
+                  if Goofed==nil then
+                     if Argv.verbose then
                         {System.showInfo \insert 'passed.oz'
                         }
                      else
@@ -195,7 +195,7 @@ local
                      end
                      0
                   else
-                     case Argv.verbose then
+                     if Argv.verbose then
                         {System.showInfo \insert 'failed.oz'
                         }
                      else
@@ -253,9 +253,9 @@ in
       fun {GetAll S Ids Ls}
          LL = {Label S}
          LS = {Atom.toString LL}
-         L  = case Ls==nil then LS else {Append Ls &_|LS} end
+         L  = if Ls==nil then LS else {Append Ls &_|LS} end
       in
-         case {Width S}==1 andthen {IsList S.1} then
+         if {Width S}==1 andthen {IsList S.1} then
             {AppendAll
              {Map S.1 fun {$ S}
                          {GetAll S {Append Ids [LL]} L}
@@ -282,7 +282,7 @@ in
                     fun {$ Ks T}
                        {FoldL T.keys
                         fun {$ Ks K}
-                           case {Member K Ks} then Ks else K|Ks end
+                           if {Member K Ks} then Ks else K|Ks end
                         end Ks}
                     end nil}
               Value.'<'}
@@ -291,11 +291,11 @@ in
          Ys Zs
       in
          {List.takeDrop Xs 6 ?Ys ?Zs}
-         Ys|case Zs==nil then nil else {ChunkUp Zs} end
+         Ys|if Zs==nil then nil else {ChunkUp Zs} end
       end
 
    in
-      case Argv.verbose then
+      if Argv.verbose then
          {System.showInfo 'TESTS FOUND:'}
          {ForAll Tests proc {$ T}
                           {System.showInfo

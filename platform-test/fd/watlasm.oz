@@ -309,7 +309,7 @@ define
                  fun {$} F = {FD.int [10#40 45 50#100]}
                     FS = {FD.reflect.size F} R in
                     thread
-                       case {FD.watch.size F FS}
+                       if {FD.watch.size F FS}
                        then F = 40 else {Show f200a} R=0 end
                     end
                     cond FS = {FD.reflect.size F}
@@ -326,7 +326,7 @@ define
                     F = {FD.int [10#40 45 50#100]}
                     FMin = {FD.reflect.min F} R in
                     thread
-                       case {FD.watch.min F FMin}
+                       if {FD.watch.min F FMin}
                        then F = 40 else {Show f201a} R=0 end
                     end
                     cond FMin = {FD.reflect.min F}
@@ -343,7 +343,7 @@ define
                     F = {FD.int [10#40 45 50#100]}
                     FMax = {FD.reflect.max F} R in
                     thread
-                       case {FD.watch.max F FMax}
+                       if {FD.watch.max F FMax}
                        then F = 40 else {Show f202a} R=0 end
                     end
                     cond FMax = {FD.reflect.max F}
@@ -358,7 +358,7 @@ define
                 {MiscTest 50
                  fun {$} F = {FD.int 0#10} R in
                     thread
-                       R = case {FD.watch.size F 0} then 0 else 1 end
+                       R = if {FD.watch.size F 0} then 0 else 1 end
                     end
                     R
                  end}
@@ -366,7 +366,7 @@ define
                 {MiscTest 51
                  fun {$} F = {FD.int 0#10} R in
                     thread
-                       R = case {FD.watch.size F 1} then 0 else 1 end
+                       R = if {FD.watch.size F 1} then 0 else 1 end
                     end
                     F=1
                     R
@@ -375,7 +375,7 @@ define
                 {MiscTest 52
                  fun {$} F = {FD.int 0#10} R in
                     thread
-                       R = case {FD.watch.min F ~1} then 0 else 1 end
+                       R = if {FD.watch.min F ~1} then 0 else 1 end
                     end
                     R
                  end}
@@ -383,7 +383,7 @@ define
                 {MiscTest 53
                  fun {$} F = {FD.int 0#10} R in
                     thread
-                       R = case {FD.watch.max F ~1} then 0 else 1 end
+                       R = if {FD.watch.max F ~1} then 0 else 1 end
                     end
                     R
                  end}
@@ -391,7 +391,7 @@ define
                 {MiscTest 54
                  fun {$} X = {FD.int 0#10} R in
                     thread
-                       R = case {FD.watch.min X 5} then 0 else 1 end
+                       R = if {FD.watch.min X 5} then 0 else 1 end
                     end
                     X <: 5
                     R

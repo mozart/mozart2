@@ -31,7 +31,7 @@ fun {$ N}
           A = X+U
           B = Y+V
        in
-          case A>=1 andthen A=<N andthen B>=1 andthen B=<N
+          if A>=1 andthen A=<N andthen B>=1 andthen B=<N
           then A + (B-1)*N | In else In end
        end
        nil}

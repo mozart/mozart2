@@ -44,7 +44,7 @@ define
                    price: Price = {FD.int RackPrice}
                   )
           thread
-             case Type==0 then Power=0  Price=0  NbSlots=0
+             if Type==0 then Power=0  Price=0  NbSlots=0
              else Spec = {Nth RackSpecs Type} in
                 Power=Spec.power  Price=Spec.price  NbSlots=Spec.slots
              end
@@ -58,7 +58,7 @@ define
               case Rs of A|B|_ then
                  A.type =<: B.type
                  thread
-                    case A.type == B.type then A.cards.1 >=: B.cards.1
+                    if A.type == B.type then A.cards.1 >=: B.cards.1
                     else skip end
                  end
               else skip end

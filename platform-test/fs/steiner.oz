@@ -22,7 +22,7 @@ define
       N1N1 = N1 * N1
    in
       proc {$ Root}
-         case N mod 6 == 1 orelse N mod 6 == 3 then
+         if N mod 6 == 1 orelse N mod 6 == 3 then
             Len = (N * (N-1)) div 6
          in
             Root = {MakeList Len}
@@ -49,7 +49,7 @@ define
             {FS.distribute naive Root}
          else
             Root = ['Problem not define for such N=' N]
-         end % case
+         end % if
       end % proc
    end % fun
 

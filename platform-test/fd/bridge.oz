@@ -105,7 +105,7 @@ define
       Resources =
       {FoldL TaskSpecs
        fun {$ In _#_#_#Resource}
-          case Resource==noResource orelse {Member Resource In}
+          if Resource==noResource orelse {Member Resource In}
           then In else Resource|In end
        end
        nil}
@@ -115,7 +115,7 @@ define
        fun {$ Resource Xs}
           {FoldR TaskSpecs
            fun {$ Task#_#_#ThisResource In}
-              case Resource==ThisResource then Task|In else In end
+              if Resource==ThisResource then Task|In else In end
            end
            nil} | Xs
        end
@@ -164,7 +164,7 @@ define
 
       % impose resource constraints
 
-         case Global then skip else
+         if Global then skip else
             {FoldR ExclusionPairs
              fun {$ A#B Cs}
                 {FD.disjointC Start.A Dur.A Start.B Dur.B} | Cs
@@ -176,7 +176,7 @@ define
 
       % enumerate exclusion choices
 
-         case Global then
+         if Global then
             {Schedule.serializedDisj SortedExclusiveTasks Start Dur}
             {Schedule.firstsLastsDist SortedExclusiveTasks Start Dur}
          else {FD.distribute naive Choices}

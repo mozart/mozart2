@@ -45,7 +45,7 @@ define
                  case Ys of A|B|_ then
                     A.type =<: B.type
                     thread
-                       case A.type == B.type then A.glass >=: B.glass
+                       if A.type == B.type then A.glass >=: B.glass
                        else skip end
                     end
                  else skip end
@@ -64,7 +64,7 @@ define
           NbComps = {Record.foldR Order Number.'+' 0}
           Div     = NbComps div MaxBinCapacity
           Mod     = NbComps mod MaxBinCapacity
-          Min     = case Mod==0 then Div else Div+1 end
+          Min     = if Mod==0 then Div else Div+1 end
           NbBins  = {FD.int Min#NbComps}
           Types
           Capacities

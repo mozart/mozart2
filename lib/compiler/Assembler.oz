@@ -617,9 +617,6 @@ define
             elseof move(Y1=y(_) X1=x(_))|move(X2=x(_) Y2=y(_))|Rest then
                {Assembler append(moveMoveYXXY(Y1 X1 X2 Y2))}
                {Peephole Rest Assembler}
-            elseof move(Other X)|callBI('funReturn' [X]#nil)|Rest then
-               {Assembler append(funReturn(Other))}
-               {EliminateDeadCode Rest Assembler}
             else
                {Assembler append(I1)}
                {Peephole Rest Assembler}
@@ -718,47 +715,33 @@ define
          [] return then
             {Assembler append(return)}
             {EliminateDeadCode Rest Assembler}
-         [] funReturn(_) then
-            {Assembler append(I1)}
-            {EliminateDeadCode Rest Assembler}
          [] callBI(Builtinname Args) then
             if Assembler.debugInfoControl then
                {Assembler append(I1)}
                {Peephole Rest Assembler}
-            else
-               case Builtinname of 'funReturn' then [X1]#nil = Args in
-                  case Rest of deAllocateL(N)|NewRest then
-                     {Peephole deAllocateL(N)|funReturn(X1)|NewRest Assembler}
-                  else
-                     {Peephole funReturn(X1)|Rest Assembler}
-                  end
-               else BIInfo in
-                  BIInfo = {Builtins.getInfo Builtinname}
-                  case Builtinname
-                  of 'Int.\'+1\'' then [X1]#[X2] = Args in
-                     {Assembler append(inlinePlus1(X1 X2))}
-                  [] 'Int.\'-1\'' then [X1]#[X2] = Args in
-                     {Assembler append(inlineMinus1(X1 X2))}
-                  [] 'Number.\'+\'' then [X1 X2]#[X3] = Args in
-                     {Assembler append(inlinePlus(X1 X2 X3))}
-                  [] 'Number.\'-\'' then [X1 X2]#[X3] = Args in
-                     {Assembler append(inlineMinus(X1 X2 X3))}
-                  [] 'Value.\'>\'' then [X1 X2]#Out = Args in
-                     {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
-                  [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
-                     {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
-                  [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
-                     {Assembler append(inlineUparrow(X1 X2 X3))}
-                  [] 'getReturn' then nil#[X1] = Args in
-                     {Assembler append(getReturn(X1))}
-                  else
-                     {Assembler append(I1)}
-                  end
-                  if {CondSelect BIInfo doesNotReturn false} then
-                     {EliminateDeadCode Rest Assembler}
-                  else
-                     {Peephole Rest Assembler}
-                  end
+            else BIInfo in
+               BIInfo = {Builtins.getInfo Builtinname}
+               case Builtinname of 'Int.\'+1\'' then [X1]#[X2] = Args in
+                  {Assembler append(inlinePlus1(X1 X2))}
+               [] 'Int.\'-1\'' then [X1]#[X2] = Args in
+                  {Assembler append(inlineMinus1(X1 X2))}
+               [] 'Number.\'+\'' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlinePlus(X1 X2 X3))}
+               [] 'Number.\'-\'' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlineMinus(X1 X2 X3))}
+               [] 'Value.\'>\'' then [X1 X2]#Out = Args in
+                  {Assembler append(callBI('Value.\'<\'' [X2 X1]#Out))}
+               [] 'Value.\'>=\'' then [X1 X2]#Out = Args in
+                  {Assembler append(callBI('Value.\'=<\'' [X2 X1]#Out))}
+               [] 'Record.\'^\'' then [X1 X2]#[X3] = Args in
+                  {Assembler append(inlineUparrow(X1 X2 X3))}
+               else
+                  {Assembler append(I1)}
+               end
+               if {CondSelect BIInfo doesNotReturn false} then
+                  {EliminateDeadCode Rest Assembler}
+               else
+                  {Peephole Rest Assembler}
                end
             end
          [] genCall(GCI Arity) then

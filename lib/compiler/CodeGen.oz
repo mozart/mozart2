@@ -252,6 +252,9 @@ local
       [] vEquateNumber(_ _ _ Cont) then {GuardIsShallow Cont}
       [] vEquateLiteral(_ _ _ Cont) then {GuardIsShallow Cont}
       [] vEquateRecord(_ _ _ _ _ Cont) then {GuardIsShallow Cont}
+      [] vGetVariable(_ _ Cont) then {GuardIsShallow Cont}
+      [] vGetNumber(_ _ Cont) then {GuardIsShallow Cont}
+      [] vGetLiteral(_ _ Cont) then {GuardIsShallow Cont}
       [] vUnify(_ _ _ Cont) then {GuardIsShallow Cont}
       else false
       end

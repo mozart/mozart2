@@ -186,6 +186,8 @@ define
             end
          [] free then
             {OTE value nil}
+         [] future then
+            {OTE value nil}
          end
       end
    end
@@ -1304,13 +1306,16 @@ define
          {@right sa(Ctrl)}                            % analyse right hand side
 
          {Ctrl setErrorMsg('equality constraint failed')}
-         {Ctrl setUnifier(@left {@right getValue($)})}
 
-            % constructions forward the unification task
-            % to their associated record value token
+         % constructions forward the unification task
+         % to their associated record value token
          if {@right isConstruction($)}
-         then {@left unify(Ctrl {@right getValue($)})}
-         else {@left unify(Ctrl @right)}              % l -> r
+         then
+            {Ctrl setUnifier(@left {@right getValue($)})}
+            {@left unify(Ctrl {@right getValue($)})}
+         else
+            {Ctrl setUnifier(@left @right)}
+            {@left unify(Ctrl @right)}              % l -> r
          end
 
          {Ctrl resetUnifier}
@@ -3593,205 +3598,132 @@ define
          end
       end
       meth valToSubst(Value)
-         {self ValToSubst(@printName nil AnalysisDepth Value)}
+         SAVariable, ValToSubst(@printName nil AnalysisDepth Value)
       end
-      meth ValToSubst(PrintNameBase Seen Depth Value)
-         if
-            Depth =< 0
-         then
+      meth ValToSubst(PrintNameBase Seen Depth Val) ValRepr in
+         ValRepr =
+         if Depth =< 0 then
 \ifdef DEBUGSA
-            {System.show valToSubstBreakDepth(Value)}
+            {System.show valToSubstBreakDepth(Val)}
 \endif
-            SAVariable, setLastValue(unit) % stop analysis here
-
-         elseif
-            {IsDet Value}
-         then
-
+            unit   % stop analysis here
+         else
+            case {Value.status Val} of det(Type) then
 \ifdef DEBUGSA
-            {System.show valToSubst(Value)}
+               {System.show valToSubst(Val)}
 \endif
-
-            if
-               {IsInt Value}
-            then
-               SAVariable, setLastValue({New Core.intNode init(Value unit)})
-
-            elseif
-               {IsFloat Value}
-            then
-               SAVariable, setLastValue({New Core.floatNode init(Value unit)})
-
-            elseif
-               {IsAtom Value}
-            then
-               SAVariable, setLastValue({New Core.atomNode init(Value unit)})
-
-            elseif
-               {IsName Value}
-            then
-               SAVariable,
-               setLastValue({New Core.nameToken init(Value true)})
-
-            elseif
-               {IsRecord Value}
-            then
-               RecArgs   = {Record.toListInd Value}
-               Lab       = {Label Value}
-               RecConstrValArgs RecConstr RecVal
-            in
-                  % reconstruct heap only up to limited width of records
-
-               {self recordValToArgs(RecArgs
-                                     (Value#self)|Seen
+               case Type of int then
+                  {New Core.intNode init(Val unit)}
+               [] float then
+                  {New Core.floatNode init(Val unit)}
+               [] atom then
+                  {New Core.atomNode init(Val unit)}
+               [] name then
+                  {New Core.nameToken init(Val true)}
+               [] tuple then
+                  SAVariable, RecordToSubst(PrintNameBase Seen Depth Val $)
+               [] record then
+                  SAVariable, RecordToSubst(PrintNameBase Seen Depth Val $)
+               [] procedure then
+                  if {CompilerSupport.isBuiltin Val} then
+                     {New Core.builtinToken init(Val)}
+                  else
+                     ProcToken = {New Core.procedureToken init(Val)}
+                  in
+                     ProcToken.predicateRef = Val
+                     ProcToken
+                  end
+               [] cell then
+                  {New Core.cellToken init(Val)}
+               [] array then
+                  {New Core.arrayToken init(Val)}
+               [] dictionary then
+                  {New Core.dictionaryToken init(Val)}
+               [] bitArray then
+                  {New Core.bitArrayToken init(Val)}
+               [] 'class' then
+                  Cls = {New Core.classToken init(Val)}
+                  Meths = {Record.make m {Class.methodNames Val}}
+                  Attrs = {Class.attrNames Val}
+                  Feats = {Class.featNames Val}
+                  Props = {Class.propNames Val}
+               in
+                  {Record.forAll Meths fun {$} nil#unit end}
+                  {Cls setMethods(Meths)}
+                  {Cls setAttributes(Attrs)}
+                  {Cls setFeatures(Feats)}
+                  {Cls setProperties(Props)}
+                  Cls
+               [] object then
+                  TheClass = {Class.get Val}
+                  Meths = {Record.make m {Class.methodNames TheClass}}
+                  Attrs = {Class.attrNames TheClass}
+                  Feats = {Class.featNames TheClass}
+                  Props = {Class.propNames TheClass}
+                  Cls   = {New Core.classToken init(TheClass)}
+               in
+                  {Record.forAll Meths fun {$} nil#unit end}
+                  {Cls setMethods(Meths)}
+                  {Cls setAttributes(Attrs)}
+                  {Cls setFeatures(Feats)}
+                  {Cls setProperties(Props)}
+                  {New Core.objectToken init(Val Cls)}
+               [] 'lock' then
+                  {New Core.lockToken init(Val)}
+               [] port then
+                  {New Core.portToken init(Val)}
+               [] chunk then
+                  {New Core.chunkToken init(Val)}
+               [] space then
+                  {New Core.spaceToken init(Val)}
+               [] 'thread' then
+                  {New Core.threadToken init(Val)}
+               [] byteString then
+                  {New Core.byteStringNode init(Val unit)}
+               [] bitString then
+                  {New Core.bitStringNode init(Val unit)}
+               else unit
+               end
+            else unit
+            end
+         end
+         SAVariable, setLastValue(ValRepr)
+         SAVariable, setType({OzValueToType Val})
+      end
+      meth RecordToSubst(PrintNameBase Seen Depth Val $)
+         RecArgs = {Record.toListInd Val}
+         Lab     = {Label Val}
+         RecConstrValArgs RecVal
+      in
+         %% reconstruct heap only up to limited width of records
+         SAVariable, RecordValToArgs(RecArgs
+                                     (Val#self)|Seen
                                      Depth
                                      AnalysisWidth.Depth
                                      PrintNameBase
-                                     ?RecConstrValArgs)}
-
-               if {Width Value} =< AnalysisWidth.Depth
-               then RecVal = {List.toRecord Lab RecConstrValArgs}
-               else
-                  RecVal = {TellRecord Lab}
-                  {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
-               end
-
-               RecConstr = {New RecordConstr init(RecVal unit)}
-               SAVariable, setLastValue( RecConstr )
-            elseif
-               {CompilerSupport.isBuiltin Value}
-            then
-               BI      = {New Core.builtinToken init(Value)}
-            in
-               SAVariable, setLastValue(BI)
-
-            elseif
-               {IsProcedure Value}
-            then
-               ProcToken = {New Core.procedureToken init(Value)}
-            in
-               ProcToken.predicateRef = Value
-               SAVariable, setLastValue(ProcToken)
-
-            elseif
-               {IsClass Value}
-            then
-               Cls = {New Core.classToken init(Value)}
-               Meths = {Record.make m {Class.methodNames Value}}
-               Attrs = {Class.attrNames Value}
-               Feats = {Class.featNames Value}
-               Props = {Class.propNames Value}
-            in
-               {Record.forAll Meths fun {$} nil#unit end}
-               {Cls setMethods(Meths)}
-               {Cls setAttributes(Attrs)}
-               {Cls setFeatures(Feats)}
-               {Cls setProperties(Props)}
-               SAVariable, setLastValue(Cls)
-
-            elseif
-               {IsObject Value}
-            then
-               TheClass = {Class.get Value}
-               Meths = {Record.make m {Class.methodNames TheClass}}
-               Attrs = {Class.attrNames TheClass}
-               Feats = {Class.featNames TheClass}
-               Props = {Class.propNames TheClass}
-               Cls   = {New Core.classToken init(TheClass)}
-            in
-               {Record.forAll Meths fun {$} nil#unit end}
-               {Cls setMethods(Meths)}
-               {Cls setAttributes(Attrs)}
-               {Cls setFeatures(Feats)}
-               {Cls setProperties(Props)}
-               SAVariable, setLastValue({New Core.objectToken init(Value Cls)})
-
-            elseif
-               {IsCell Value}
-            then
-               SAVariable, setLastValue({New Core.cellToken init(Value)})
-
-            elseif
-               {IsLock Value}
-            then
-               SAVariable, setLastValue({New Core.lockToken init(Value)})
-
-            elseif
-               {IsPort Value}
-            then
-               SAVariable, setLastValue({New Core.portToken init(Value)})
-
-            elseif
-               {IsArray Value}
-            then
-               DummyArray = {New Core.arrayToken init(Value)}
-            in
-               SAVariable, setLastValue(DummyArray)
-
-            elseif
-               {IsDictionary Value}
-            then
-               SAVariable, setLastValue({New Core.dictionaryToken init(Value)})
-
-            elseif
-               {IsSpace Value}
-            then
-               SAVariable, setLastValue({New Core.spaceToken init(Value)})
-
-            elseif
-               {IsThread Value}
-            then
-               SAVariable, setLastValue({New Core.threadToken init(Value)})
-
-            elseif
-               {BitArray.is Value}
-            then
-               SAVariable, setLastValue({New Core.bitArrayToken init(Value)})
-
-            elseif
-               {IsBitString Value}
-            then
-               SAVariable, setLastValue({New Core.bitStringNode init(Value unit)})
-
-            elseif
-               {IsByteString Value}
-            then
-               SAVariable, setLastValue({New Core.byteStringNode init(Value unit)})
-
-            elseif
-               {IsChunk Value}
-            then
-               SAVariable, setLastValue({New Core.chunkToken init(Value)})
-
-            else
-               SAVariable, setLastValue(unit)
-            end
-
+                                     ?RecConstrValArgs)
+         if {Width Val} =< AnalysisWidth.Depth then
+            RecVal = {List.toRecord Lab RecConstrValArgs}
          else
-            SAVariable, setLastValue(unit)
+            RecVal = {TellRecord Lab}
+            {ForAll RecConstrValArgs proc {$ F#A} RecVal^F = A end}
          end
+         {New RecordConstr init(RecVal unit)}
       end
-      meth recordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
-         if
-            Width>0
-         then
-            case RecArgs
-            of (F#X) | RAs
-            then
+      meth RecordValToArgs(RecArgs Seen Depth Width PrintNameBase ?ConstrValArgs)
+         if Width > 0 then
+            case RecArgs of (F#X)|RAs then
                Assoc = {PLDotEQ X Seen}
-               A = if {IsAtom F} then
-                      {New Core.atomNode init(F unit)}
-                   elseif {IsName F} then
-                      {New Core.nameToken init(F true)}
-                   else
-                      % if {IsInt F} then
+               A = case {Value.type F} of int then
                       {New Core.intNode init(F unit)}
+                   [] atom then
+                      {New Core.atomNode init(F unit)}
+                   [] name then
+                      {New Core.nameToken init(F true)}
                    end
                VO CVAr
             in
-               if
-                  Assoc == unit % not seen
-               then
+               if Assoc == unit then   % not seen
                   PrintName = {String.toAtom {VS2S PrintNameBase#'.'#F}}
                   V = {New Core.variable init(PrintName generated unit)}
                in
@@ -3802,13 +3734,10 @@ define
                   {Assoc occ(unit ?VO)}
                   {VO updateValue}
                end
-
-               ConstrValArgs = F#VO | CVAr
-
-               {self recordValToArgs(RAs Seen Depth Width-1 PrintNameBase CVAr)}
-            elseof
-               nil
-            then
+               ConstrValArgs = F#VO|CVAr
+               SAVariable, RecordValToArgs(RAs Seen Depth Width - 1
+                                           PrintNameBase CVAr)
+            elseof nil then
                ConstrValArgs = nil
             end
          else
@@ -3826,21 +3755,20 @@ define
             SAVariable, setType({OzTypes.encode Xs nil})
          [] record(Rec) then Lab RecArgs RecConstr in
             Lab = {Label Rec}
-            SAVariable, RecordToSubst({Arity Rec} Rec Depth _ ?RecArgs)
+            SAVariable, RecordTypeToSubst({Arity Rec} Rec Depth _ ?RecArgs)
             RecConstr = {New RecordConstr
                          init({List.toRecord Lab RecArgs} unit)}
-            SAVariable, setLastValue( RecConstr )
+            SAVariable, setLastValue(RecConstr)
          end
       end
-      meth RecordToSubst(Arity Rec Depth ?Args ?RecArgs)
+      meth RecordTypeToSubst(Arity Rec Depth ?Args ?RecArgs)
          case Arity of F|Fr then RecFeat V VO Argr RecArgr in
-            RecFeat = if {IsAtom F} then
-                         {New Core.atomNode init(F unit)}
-                      elseif {IsName F} then
-                         {New Core.nameToken init(F true)}
-                      else
-                         % if {IsInt F} then
+            RecFeat = case {Value.type F} of int then
                          {New Core.intNode init(F unit)}
+                      [] atom then
+                         {New Core.atomNode init(F unit)}
+                      [] name then
+                         {New Core.nameToken init(F true)}
                       end
             V = {New Core.variable init('' generated unit)}
             {V TypeToSubst(Rec.F Depth - 1)}
@@ -3848,7 +3776,7 @@ define
             {VO updateValue}
             Args = F#VO|Argr
             RecArgs = RecFeat#VO|RecArgr
-            SAVariable, RecordToSubst(Fr Rec Depth ?Argr ?RecArgr)
+            SAVariable, RecordTypeToSubst(Fr Rec Depth ?Argr ?RecArgr)
          [] nil then
             Args = nil
             RecArgs = nil

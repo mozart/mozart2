@@ -45,11 +45,10 @@ end
 
 {Application.exec
  'ozbatch'
- c('SP':       lazy
+ c('SP':       eager
    'OP':       lazy
    'AP':       lazy
    'Compiler': eager)
-
  proc instantiate {$ IMPORT ?BatchCompile}
     \insert 'SP.env'
     = IMPORT.'SP'
@@ -62,5 +61,4 @@ end
  in
     \insert BatchCompile
  end
-
  plain}

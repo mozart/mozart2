@@ -571,6 +571,11 @@ in
               hint(l:'Operation'   m:O)]
              Exc}
 
+         elseof object(nonLiteralMethod L) then
+            {Error.format T 'Method label is not a literal'
+             [hint(l:'Method' m:L)]
+             Exc}
+
          else
             {Error.formatGeneric T Exc}
          end

@@ -2239,7 +2239,7 @@ in
             Val  = {BVO1 getValue($)}
          in
             case
-               {Val isConstruction($)}
+               {Val isRecordConstr($)}
             then
                Lab = {Val getLabel($)}
             in

@@ -195,12 +195,17 @@ local
          end
       end
 
+      UrlOpen = {`Builtin` 'URL.open' 2}
+
+      NoArg = {NewName}
+
    in
 
       class File
          from DescClass
 
-         meth init(name:  Name
+         meth init(name:  Name  <= NoArg
+                   url:   Url   <= NoArg
                    flags: FlagS <= [read]
                    mode:  Mode  <= mode(owner:[write] all:[read])) = M
             DescClass, InitLocks(M)
@@ -212,18 +217,37 @@ local
                %% Handle access modes
                case {ModeToOS Mode}
                of false then {`Raise` {Exception.system
-                                     open(illegalMode self M)}}
+                                       open(illegalModes self M)}}
                elseof OSModeS then
                   %% Handle special filenames
-                  D = case Name
-                      of 'stdin'  then {OS.fileDesc 'STDIN_FILENO'}
-                      [] 'stdout' then {OS.fileDesc 'STDOUT_FILENO'}
-                      [] 'stderr' then {OS.fileDesc 'STDERR_FILENO'}
-                      else {OS.open Name OSFlagS OSModeS}
-                      end
-               in
-                  ReadDesc  <- D
-                  WriteDesc <- D
+                  case
+                     (Name==NoArg andthen Url==NoArg) orelse
+                     (Name\=NoArg andthen Url\=NoArg)
+                  then
+                     {`Raise` {Exception.system
+                               open(nameOrUrl self M)}}
+                  else
+                     D = case Name
+                         of 'stdin'  then {OS.fileDesc 'STDIN_FILENO'}
+                         [] 'stdout' then {OS.fileDesc 'STDOUT_FILENO'}
+                         [] 'stderr' then {OS.fileDesc 'STDERR_FILENO'}
+                         [] !NoArg then
+                            case
+                               {Member 'O_RDWR'   OSFlagS} orelse
+                               {Member 'O_WRONLY' OSFlagS}
+                            then
+                               {`Raise` {Exception.system
+                                         open(urlIsReadOnly self M)}}
+                               _
+                            else {UrlOpen Url}
+                            end
+                         else
+                            {OS.open Name OSFlagS OSModeS}
+                         end
+                  in
+                     ReadDesc  <- D
+                     WriteDesc <- D
+                  end
                end
             end
          end

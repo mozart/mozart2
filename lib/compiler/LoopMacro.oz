@@ -307,9 +307,11 @@ define
                <<',' case {Access Type}
                      of unit then SKIP
                      [] 'list' then H = {NewNamedVar 'H'} in
-                        fEq(ACCUMULATOR
-                            fOpApply('Cell.new' [<<'`' <<',' H>>#<<',' H>>>>] unit)
-                            unit)
+                        <<'`' local <<',' H>> in
+                                 <<',' fEq(ACCUMULATOR
+                                           fOpApply('Cell.new' [<<'`' <<',' H>>#<<',' H>>>>] unit)
+                                           unit) >>
+                              end >>
                      [] 'counter' then
                         fEq(ACCUMULATOR
                             fOpApply('Cell.new' [<<'`' 0>>] unit)

@@ -201,10 +201,13 @@ local
          end
       end
    in
-      fun {NormArgSpec ArgSpec}
+      fun {NormArgSpec DefSpec ArgSpec}
          D={Dictionary.new}
       in
          {Record.forAll ArgSpec proc {$ AS}
+                                   {Normalize AS D}
+                                end}
+         {Record.forAll DefSpec proc {$ AS}
                                    {Normalize AS D}
                                 end}
          {Dictionary.toRecord m D}
@@ -262,11 +265,14 @@ local
                       end}
       end
    in
-      fun {GetPostProc ArgSpec}
-         FAS  = {NormArgSpec ArgSpec}
+      fun {GetPostProc DefSpec ArgSpec}
+         FAS  = {NormArgSpec DefSpec ArgSpec}
          Args = {Record.foldL ArgSpec fun {$ As S}
                                          {LowerLabel S}|As
-                                      end nil}
+                                      end
+                 {Record.foldL DefSpec fun {$ As S}
+                                          {Label S}|As
+                                       end nil}}
       in
          case {Label ArgSpec}
          of list then
@@ -305,7 +311,7 @@ in
                                case ArgSpec==plain then
                                   GetCmdArgs
                                else
-                                  PostProc = {GetPostProc ArgSpec}
+                                  PostProc = {GetPostProc plain ArgSpec}
                                in
                                   fun {$}
                                      OVs Rs
@@ -316,7 +322,14 @@ in
                                end
                             end
                    applet:  fun {$ ArgSpec}
-                               PostProc = {GetPostProc ArgSpec}
+                               PostProc = {GetPostProc
+                                           plain(width(type:     int
+                                                       optional: false
+                                                       default:  600)
+                                                 height(type:     int
+                                                        optional: false
+                                                        default:  400))
+                                           ArgSpec}
                             in
                                fun {$ S}
                                   OVs Rs
@@ -330,7 +343,7 @@ in
                                end
                             end
                    servlet: fun {$ ArgSpec}
-                               PostProc = {GetPostProc ArgSpec}
+                               PostProc = {GetPostProc plain ArgSpec}
                             in
                                fun {$}
                                   {PostProc {WebPreProc {GetServletArgs}} nil}

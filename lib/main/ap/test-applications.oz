@@ -1,11 +1,9 @@
 {Application.servlet
  '/home/ps-home/schulte/public_html/test-servlet.cgi'
- c('SP':eager 'OP':eager)
+ c('SP':eager)
  fun {$ IMPORT}
     \insert 'SP.env'
     = IMPORT.'SP'
-    \insert 'OP.env'
-    = IMPORT.'OP'
  in
     fun {$ Args}
        {System.showInfo "Content-type: text/html\n\n"}
@@ -65,7 +63,5 @@
                   pack(M B1 B2 side:top fill:y)]}
     end
  end
- single(width(type:int default:400)
-        height(type:int default:400)
-        fg(type:string optional:false default:blue)
+ single(fg(type:string optional:false default:blue)
         bg(type:string default:yellow))}

@@ -404,7 +404,7 @@ define
 
    fun {DotPrintName PrintName FeatPrintName}
       {VirtualString.toAtom
-       PrintName#'.'#{Value.toVirtualString FeatPrintName 0 0}}
+       {System.printName PrintName}#'.'#{Value.toVirtualString FeatPrintName 0 0}}
    end
 
    proc {SetPrintName GBack0 PrintName FeatPrintName}

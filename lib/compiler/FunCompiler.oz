@@ -1,6 +1,6 @@
 functor prop once
 import
-   Property.{get}
+   Property.{get condGet}
    System   %--**.{gcDo printError}
    Error   %--**.{formatPos msg formatLine formatExc dispatch format formatGeneric}
    ErrorRegistry.put

@@ -638,7 +638,7 @@ local
                      end
                      CompilerInternal, ExecuteUninterruptible(Proc)
                      case CompilerStateClass, getSwitch(threadedqueries $) then
-                        OPI = {{`Builtin` getOPICompiler 1}}
+                        OPI = {Property.condGet 'opi.compiler' false}
                      in
                         {@reporter
                          logSubPhase('executing in an independent thread ...')}
@@ -692,7 +692,7 @@ local
             case IsCompilerThread
                andthen CompilerStateClass, getSwitch(watchdog $)
             then
-               %--** the following line is needed because sadly
+               %--** the following lines are needed because sadly
                %--** the raiseOnBlock feature also raises exceptions
                %--** when blocking on lazy variables or futures:
                {Wait System}
@@ -701,7 +701,7 @@ local
                {Thread.setRaiseOnBlock {Thread.this} true}
             else skip
             end
-            case {{`Builtin` getOPICompiler 1}} of false then skip
+            case {Property.condGet 'opi.compiler' false} of false then skip
             elseof OPI then
                case {OPI getCompiler($)} == @wrapper then
                   % this helps Ozcar detect queries from the OPI:

@@ -83,7 +83,8 @@ AliasedFeature    = FeatureNoVar
                   | NakedVariable#FeatureNoVar.
 OptFrom           = fFrom(Atom)
                   | fNoFrom.
-ExportDecl        = fExportItem(NakedVariable).
+ExportDecl        = fExportItem(NakedVariable)
+                  | fExportItem(fColon(FeatureNoVar NakedVariable)).
 FDExpression      = fFdCompare(atom Phrase Phrase Coordinates)
                   | fFdIn(atom Phrase Phrase Coordinates).
 ClassDescriptor   = fFrom([Phrase] Coordinates)

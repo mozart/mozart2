@@ -1796,7 +1796,9 @@ define
          BndVO = {Nth @actualArgs 1}
          {BndVO getVariable(?BndV)}
          {BndV getPrintName(?PrintName)}
-         if {Ctrl getTop($)} andthen {BndV getPrintName($)} \= unit then
+         if PrintName == unit then
+            TheName = {NewName}
+         elseif {Ctrl getTop($)} then
             {Ctrl declareToplevelName(PrintName ?TheName)}
          else
             TheName = {CompilerSupport.newNamedName PrintName}

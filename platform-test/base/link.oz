@@ -132,7 +132,7 @@ in
                           Goodies={M link(url:File#'.so{native}' $)}
                           _={Goodies.getenv 'SHELL'}
                           {OS.unlink File#'.c'}
-                          {OS.unlink File#'.c'}
+                          {OS.unlink File#'.o'}
                           {OS.unlink FileSO}
                           true
                        end

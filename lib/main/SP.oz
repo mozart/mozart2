@@ -34,9 +34,7 @@ fun instantiate {$ IMPORT}
 
    \insert 'sp/Error.oz'
 
-\ifndef NOFINALIZATION
    \insert 'sp/Finalize.oz'
-\endif
 
    Error   = {NewError}
 in

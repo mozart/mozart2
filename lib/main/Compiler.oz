@@ -24,8 +24,10 @@ fun instantiate {$ IMPORT}
    = IMPORT.'SP'
    \insert 'CP.env'
    = IMPORT.'CP'
-   \insert 'Gump.env'
+\ifndef OZM
+   \insert '../tools/Gump.env'
    = IMPORT.'Gump'
+\endif
 in
    local
       \insert 'compiler/InsertAll.oz'

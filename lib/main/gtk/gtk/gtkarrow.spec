@@ -27,14 +27,14 @@ $class =
 
        super => 'GtkMisc',
 
-       args  => { 'arrow_type'                     => 'GtkArrowType',
-                  'shadow_type'                    => 'GtkShadowType' },
+       args  => { 'arrow_type'                     => '%GtkArrowType',
+                  'shadow_type'                    => '%GtkShadowType' },
 
-       inits => { 'gtk_arrow_new'                  => { in  => ['GtkArrowType',
-                                                                'GthShadowType'],
+       inits => { 'gtk_arrow_new'                  => { in  => ['%GtkArrowType',
+                                                                '%GtkShadowType'],
                                                         out => 'GtkWidget*' }},
 
        meths => { 'gtk_arrow_set'                  => { in  => ['GtkArrow*',
-                                                                'GtkArrowType',
-                                                                'GtkShadowType'] } }}
+                                                                '%GtkArrowType',
+                                                                '%GtkShadowType'] } }}
      );

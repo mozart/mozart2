@@ -28,7 +28,7 @@ $class =
        super => 'GtkBin',
 
        args  => { 'label'                         => 'gchar*',
-                  'relief'                        => 'GtkReliefStyle' },
+                  'relief'                        => '%GtkReliefStyle' },
 
        inits => { 'gtk_button_new'                => { out => 'GtkWidget*' },
                   'gtk_button_new_with_label'     => { in  => ['const gchar*'],
@@ -41,7 +41,7 @@ $class =
                   'gtk_button_enter'              => { in  => ['GtkButton*'] },
                   'gtk_button_leave'              => { in  => ['GtkButton*'] },
                   'gtk_button_set_relief'         => { in  => ['GtkButton*',
-                                                              'GtkReliefStyle'] },
+                                                              '%GtkReliefStyle'] },
                   'gtk_button_get_relief'         => { in  => ['GtkButton*'],
-                                                       out => 'GtkReliefStyle' }}}
+                                                       out => '%GtkReliefStyle' }}}
      );

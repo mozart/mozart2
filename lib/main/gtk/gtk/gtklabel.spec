@@ -29,14 +29,14 @@ $class =
 
        args  => { 'label'                         => 'gchar*',
                   'pattern'                       => 'gchar*',
-                  'justify'                       => 'GtkJustification' },
+                  'justify'                       => '%GtkJustification' },
 
        inits => { 'gtk_label_new'                 => { in  => ['const gchar*'],
-                                                       out => 'GtkPaned*' } },
+                                                       out => 'GtkWidget*' } },
        meths => { 'gtk_label_set_pattern'         => { in  => ['GtkLabel*',
                                                                'const gchar*'] },
                   'gtk_label_set_justify'         => { in  => ['GtkLabel*',
-                                                               'GtkJustification'] },
+                                                               '%GtkJustification'] },
                   'gtk_label_get'                 => { in  => ['GtkLabel*',
                                                                'gchar**'] },
                   'gtk_label_parse_uline'         => { in  => ['GtkLabel*',

@@ -29,9 +29,9 @@ $class =
 
        args  => { 'hadjustment'                             => 'GtkAdjustment*',
                   'vadjustment'                             => 'GtkAdjustment*',
-                  'hscrollbar_policy'                       => 'GtkPolicyType',
-                  'vscrollbar_policy'                       => 'GtkPolicyType',
-                  'window_placement'                        => 'GtkCornerType' },
+                  'hscrollbar_policy'                       => '%GtkPolicyType',
+                  'vscrollbar_policy'                       => '%GtkPolicyType',
+                  'window_placement'                        => '%GtkCornerType' },
 
        inits => { 'gtk_scrolled_window_new'                 => { in  => ['!GtkAdjustment*',
                                                                          '!GtkAdjustment*'],
@@ -42,14 +42,14 @@ $class =
                   'gtk_scrolled_window_get_vadjustment'     => { in  => ['GtkScrolledWindow*'],
                                                                  out => 'GtkAdjustment*' },
                   'gtk_scrolled_window_set_policy'          => { in  => ['GtkScrolledWindow*',
-                                                                         'GtkPolicyType',
-                                                                         'GtkPolicyType'] },
+                                                                         '%GtkPolicyType',
+                                                                         '%GtkPolicyType'] },
                   'gtk_scrolled_window_add_with_viewport'   => { in  => ['GtkScrolledWindow*',
-                                                                         '!GtkWidget'] },
+                                                                         '!GtkWidget*'] },
                   'gtk_scrolled_window_set_hadjustment'     => { in  => ['GtkScrolledWindow*',
-                                                                         '!GtkAdjustment'] },
+                                                                         '!GtkAdjustment*'] },
                   'gtk_scrolled_window_set_vadjustment'     => { in  => ['GtkScrolledWindow*',
-                                                                         '!GtkAdjustment'] },
+                                                                         '!GtkAdjustment*'] },
                   'gtk_scrolled_window_set_placement'       => { in  => ['GtkScrolledWindow*',
-                                                                         'GtkCornerType'] } }}
+                                                                         '%GtkCornerType'] } }}
      );

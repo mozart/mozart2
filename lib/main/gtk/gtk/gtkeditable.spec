@@ -55,7 +55,7 @@ $class =
                   'gtk_editable_set_position'         => { in  => ['GtkEditable*',
                                                                    'gint'] },
                   'gtk_editable_get_position'         => { in  => ['GtkEditable*'],
-                                                           out => ['gint'] },
+                                                           out => 'gint' },
                   'gtk_editable_set_editable'         => { in  => ['GtkEditable*',
                                                                    'gboolean'] } }}
      );

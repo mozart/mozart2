@@ -39,5 +39,5 @@ $class =
                                                                '!GtkWidget*',
                                                                'gint'] },
                   'gtk_menu_bar_set_shadow_type'  => { in  => ['GtkMenuBar*',
-                                                               'GtkShadowType'] } }}
+                                                               '%GtkShadowType'] } }}
      );

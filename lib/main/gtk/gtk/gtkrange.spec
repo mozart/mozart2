@@ -27,12 +27,12 @@ $class =
 
        super => 'Gtkwidget',
 
-       args  => { 'update_policy'                      => 'GtkUpdateType' },
+       args  => { 'update_policy'                      => '%GtkUpdateType' },
 
        meths => { 'gtk_range_get_adjustment'           => { in  => ['GtkRange*'],
                                                             out => 'GtkAdjustment*' },
                   'gtk_range_set_update_policy'        => { in  => ['GtkRange*',
-                                                                    'GtkUpdateType'] },
+                                                                    '%GtkUpdateType'] },
                   'gtk_range_set_adjustment'           => { in  => ['GtkRange*',
                                                                     '!GtkAdjustment*'] },
                   'gtk_range_draw_background'          => { in  => ['GtkRange*'] },
@@ -45,7 +45,7 @@ $class =
                                                                     'gint',
                                                                     'gint',
                                                                     'gfloat*'],
-                                                            out => ['gint'] },
+                                                            out => 'gint' },
                   'gtk_range_default_hslider_update'   => { in  => ['GtkRange*'] },
                   'gtk_range_default_vslider_update'   => { in  => ['GtkRange*'] },
                   'gtk_range_default_htrough_click'    => { in  => ['GtkRange*',

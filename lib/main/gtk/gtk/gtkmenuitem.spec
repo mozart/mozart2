@@ -35,7 +35,7 @@ $class =
                                                                '!GtkWidget*'] },
                   'gtk_menu_item_remove_submenu'  => { in  => ['GtkMenuItem*'] },
                   'gtk_menu_item_set_placement'   => { in  => ['GtkMenuItem*',
-                                                               'GtkubmenuPlacement'] },
+                                                               '%GtkSubmenuPlacement'] },
                   'gtk_menu_item_configure'       => { in  => ['GtkMenuItem*',
                                                                'gint',
                                                                'gint'] },

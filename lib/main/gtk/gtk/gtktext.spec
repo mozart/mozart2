@@ -61,7 +61,7 @@ $class =
                                                                'gint'] },
                   'gtk_text_backward_delete'      => { in  => ['GtkText*',
                                                                'guint'] },
-                  'gtk_text_foreward_delete'      => { in  => ['GtkText*',
+                  'gtk_text_forward_delete'       => { in  => ['GtkText*',
                                                                'guint'] },
                   'GTK_TEXT_INDEX'                => { in  => ['GtkText*',
                                                                'guint'] } }}

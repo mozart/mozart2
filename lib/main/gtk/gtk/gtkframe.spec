@@ -30,7 +30,7 @@ $class =
        args  => { 'label'                                      => 'gchar *',
                   'label_xalign'                               => 'gfloat',
                   'label_yalign'                               => 'gfloat',
-                  'shadow'                                     => 'GtkShadowType' },
+                  'shadow'                                     => '%GtkShadowType' },
 
        inits => { 'gtk_frame_new'                              => { in  => ['const gchar*'],
                                                                     out => 'GtkWidget*' } },
@@ -41,5 +41,5 @@ $class =
                                                                             'gfloat',
                                                                             'gfloat'] },
                   'gtk_frame_set_shadow_type'                  => { in  => ['GtkFrame*',
-                                                                            'GtkShadowType'] } }}
+                                                                            '%GtkShadowType'] } }}
      );

@@ -30,11 +30,11 @@ $class =
        inits => { 'gtk_color_selection_new'                 => { out => 'GtkWidget*' } },
 
        meths => { 'gtk_color_selection_set_update_policy'   => { in  => ['GtkColorSelection*',
-                                                                         'GtkUpdateType'] },
+                                                                         '%GtkUpdateType'] },
                   'gtk_color_selection_set_opacity'         => { in  => ['GtkColorSelection*',
                                                                          'gint'] },
                   'gtk_color_selection_set_color'           => { in  => ['GtkColorSelection*',
-                                                                         'gdouble[4]'] },
+                                                                         'gdouble*'] },
                   'gtk_color_selection_get_color'           => { in  => ['GtkColorSelection*',
-                                                                         'gdouble[4]'] }}}
+                                                                         'gdouble*'] }}}
      );

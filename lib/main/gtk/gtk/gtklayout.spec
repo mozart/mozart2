@@ -29,7 +29,7 @@ $class =
 
        inits => { 'gtk_layout_new'                 => { in  => ['!GtkAdjustment*',
                                                                 '!GtkAdjustment*'],
-                                                        out => 'GtkWidget' } },
+                                                        out => 'GtkWidget*' } },
 
        meths => { 'gtk_layout_put'                 => { in  => ['GtkLayout*',
                                                                 '!GtkWidget*',
@@ -46,7 +46,7 @@ $class =
                   'gtk_layout_thaw'                => { in  => ['GtkLayout*'] },
                   'gtk_layout_get_hadjustment'     => { in  => ['GtkLayout*'],
                                                         out => 'GtkAdjustment*' },
-                  'gtk_layout_get_vdjustment'      => { in  => ['GtkLayout*'],
+                  'gtk_layout_get_vadjustment'     => { in  => ['GtkLayout*'],
                                                         out => 'GtkAdjustment*' },
                   'gtk_layout_set_hadjustment'     => { in  => ['GtkLayout*',
                                                                 '!GtkAdjustment*'] },

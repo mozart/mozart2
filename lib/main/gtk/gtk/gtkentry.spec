@@ -49,7 +49,7 @@ $class =
                                                                'gint'] },
                   'gtk_entry_set_visibility'      => { in  => ['GtkEntry*',
                                                                'gboolean'] },
-                  'gtk_entry_set_editabl'         => { in  => ['GtkEntry*',
+                  'gtk_entry_set_editable'        => { in  => ['GtkEntry*',
                                                                'gboolean'] },
                   'gtk_entry_set_max_length'      => { in  => ['GtkEntry*',
                                                                'guint16'] } }}

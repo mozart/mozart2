@@ -35,7 +35,7 @@ $class =
                                                                'gfloat'],
                                                        out => 'GtkObject*' }},
 
-       meths => { 'gtk_adjustment_value'          => { in  => ['GtkAdjustment*',
+       meths => { 'gtk_adjustment_set_value'      => { in  => ['GtkAdjustment*',
                                                                'gfloat'] },
                   'gtk_adjustment_clamp_page'     => { in  => ['GtkAdjustment*',
                                                                'gfloat',

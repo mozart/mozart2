@@ -44,5 +44,5 @@ $class =
                   'gtk_viewport_set_vadjustment'  => { in  => ['GtkViewport*',
                                                                '!GtkAdjustment*'] },
                   'gtk_viewport_set_shadow_type'  => { in  => ['GtkViewport*',
-                                                               'GtkShadowType'] } }}
+                                                               '%GtkShadowType'] } }}
      );

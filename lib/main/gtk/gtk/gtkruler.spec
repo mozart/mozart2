@@ -28,7 +28,7 @@ $class =
        super => 'GtkWidget',
 
        meth  => { 'gtk_ruler_set_metric'          => { in  => ['GtkRuler*',
-                                                               'GtkMetricType'] },
+                                                               '%GtkMetricType'] },
                   'gtk_ruler_set_range'           => { in  => ['GtkRuler*',
                                                                'gfloat',
                                                                'gfloat',

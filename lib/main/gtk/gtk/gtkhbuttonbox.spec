@@ -30,7 +30,7 @@ $class =
        inits => { 'gtk_hbutton_box_new'                        => { out => 'GtkWidget*' } },
 
        meths => { 'gtk_hbutton_box_get_spacing_default'        => { out => 'gint' },
-                  'gtk_hbutton_box_get_layout_default'         => { out => 'GtkButtonBoxStyle' },
+                  'gtk_hbutton_box_get_layout_default'         => { out => '%GtkButtonBoxStyle' },
                   'gtk_hbutton_box_set_spacing_default'        => { in  => ['gint'] },
-                  'gtk_hbutton_box_set_layout_default'         => { in  => ['GtkButtonBoxStyle'] } }}
+                  'gtk_hbutton_box_set_layout_default'         => { in  => ['%GtkButtonBoxStyle'] } }}
      );

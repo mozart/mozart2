@@ -60,11 +60,11 @@ $class =
                                                               'gboolean*',
                                                               'gboolean*',
                                                               'guint*',
-                                                              'GtkPackType*'] },
+                                                              '%GtkPackType*'] },
                   'gtk_box_set_child_packing'     => { in => ['GtkBox*',
                                                               '!GtkWidget*',
                                                               'gboolean',
                                                               'gboolean',
                                                               'guint',
-                                                              'GtkPackType'] }}}
+                                                              '%GtkPackType'] }}}
      );

@@ -53,7 +53,7 @@ $class =
                   'gtk_menu_popdown'              => { in  => ['GtkMenu*'] },
                   'gtk_menu_reposition'           => { in  => ['GtkMenu*'] },
                   'gtk_menu_get_active'           => { in  => ['GtkMenu*'],
-                                                       out => 'GtkWidget' },
+                                                       out => 'GtkWidget*' },
                   'gtk_menu_set_active'           => { in  => ['GtkMenu*',
                                                                'guint'] },
                   'gtk_menu_set_tearoff_state'    => { in  => ['GtkMenu*',

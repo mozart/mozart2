@@ -27,7 +27,7 @@ $class =
 
        super => 'BaseObject',
 
-       inits => { 'gdk_image_new'                  => { in  => ['GdkImageType',
+       inits => { 'gdk_image_new'                  => { in  => ['%GdkImageType',
                                                                 'GdkVisual*',
                                                                 'gint',
                                                                 'gint'],
@@ -52,5 +52,5 @@ $class =
                   'gdk_image_get_pixel'            => { in  => ['GdkImage*',
                                                                 'gint',
                                                                 'gint'],
-                                                        out => 'gint32' } }}
+                                                        out => 'guint32' } }}
      );

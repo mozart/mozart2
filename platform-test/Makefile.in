@@ -108,6 +108,9 @@ boot-check: boot-all
         OZINIT=$(BUILDTOP)/share/lib/Init.ozf \
         OZC="$(SRCTOP)/share/lib/oze.sh $(BUILDTOP)/share/lib/ozc" \
         OZE=$(SRCTOP)/share/lib/oze.sh \
+        OZTOOL="/bin/sh $(BUILDTOP)/platform/emulator/oztool.sh" \
+        OZTOOL_INCLUDES="-I$(SRCTOP)/platform/emulator -I$(SRCTOP)/platform/tools/gump" \
+        OZFLEX=$(BUILDTOP)/platform/tools/gump/ozflex/flex \
         OZTESTOPTS="$(OZTESTOPTS) --ignores=dp_mini"
 
 bootstrap:

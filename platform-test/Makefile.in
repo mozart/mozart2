@@ -15,7 +15,9 @@ FDLOCAL = \
         watlasm \
         dsum \
         sumabs \
-        constrdisj
+        constrdisj \
+        binpacking \
+        bridge
 
 FDOZC = $(FDLOCAL:%=./fd/%.ozc)
 

@@ -33,42 +33,39 @@
 %%%
 %%%
 
-functor $ prop once
+functor
 
 import
-   CTB.{isB getConstraintAsAtom getNameAsAtom}
-      from 'x-oz://boot/CTB'
+   CTB(isB getConstraintAsAtom getNameAsAtom) at 'x-oz://boot/CTB'
 
-   FDB.{isVarB}
-      from 'x-oz://boot/FDB'
+   FDB(isVarB) at 'x-oz://boot/FDB'
 
-   FSB.{getGlb
-        getLub
-        getCard
-        isVarB}
-      from 'x-oz://boot/FSB'
+   FSB(getGlb
+       getLub
+       getCard
+       isVarB)
+   at 'x-oz://boot/FSB'
 
-   BrowserSupport.{recordCIsVarB
-                   getTermSize
-                   getsBoundB
-                   deepFeed
-                   chunkArity
-                   chunkWidth
-                   addr}
-      from 'x-oz://boot/Browser'
+   BrowserSupport(recordCIsVarB
+                  getTermSize
+                  getsBoundB
+                  deepFeed
+                  chunkArity
+                  chunkWidth
+                  addr)
+   at 'x-oz://boot/Browser'
 
-   Debug
-      from 'x-oz://boot/Debug'
+   Debug at 'x-oz://boot/Debug'
 
-   FD.{reflect}
+   FD(reflect)
 
-   Search.{one}
+   Search(one)
 
-   System.{show
-           valueToVirtualString
-           printName
-           eq
-           onToplevel}
+   System(show
+          valueToVirtualString
+          printName
+          eq
+          onToplevel)
 
    Tk
 
@@ -81,7 +78,7 @@ export
    'browse': Browse
    'close':  CloseBrowser
 
-body
+define
 
    %%
    %%

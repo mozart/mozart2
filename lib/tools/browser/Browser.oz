@@ -30,6 +30,8 @@ fun
    {NewBrowser IMPORT}
    \insert 'Standard.env'
       = IMPORT.'Standard'
+   \insert 'SP.env'
+      = IMPORT.'SP'
    \insert 'CP.env'
       = IMPORT.'CP'
    \insert 'WP.env'

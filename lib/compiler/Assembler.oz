@@ -124,6 +124,7 @@ define
       end
 
       local
+         %--** can be discarded
          BIStoreApplMethInfo = CompilerSupport.storeApplMethInfo
       in
          proc {StoreApplMethInfo CodeBlock ami(Name RecordArity)}
@@ -693,16 +694,6 @@ define
          end
          {MakeDeAllocate I Assembler}
          {Assembler append(tailSendMsg(Literal NewR RecordArity Cache))}
-         {EliminateDeadCode Rest Assembler}
-      [] applMeth(AMI R)|deAllocateL(I)|return|Rest then NewR in
-         case R of y(_) then
-            NewR = x({RecordArityWidth AMI.2})
-            {Assembler append(move(R NewR))}
-         else
-            NewR = R
-         end
-         {MakeDeAllocate I Assembler}
-         {Assembler append(tailApplMeth(AMI NewR))}
          {EliminateDeadCode Rest Assembler}
       [] (testBI(Builtinname Args L1)=I1)|Rest then NewInstrs in
          case Rest of branch(L2)|NewRest then BIInfo in

@@ -755,22 +755,13 @@ in
             case Emitter, GetReg(Reg $) of g(_) then Instr R in
                Instr = genCall(gci(R IsMethod Literal false RecordArity) 0)
                Emitter, GenericEmitCall(any Reg Regs Instr R _ Coord nil)
-            else
-               if IsMethod then Instr R Which in
-                  Instr = applMeth(ami(Literal RecordArity) R)
-                  Which = case @continuations of nil then
-                             non_y   % tailApplMeth
-                          else any
-                          end
-                  Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
-               else Instr R Arity Which in
-                  Instr = call(R Arity)
-                  Which = case @continuations of nil then non_y   % tailCall
-                          else any
-                          end
-                  Emitter,
-                  GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
-               end
+            elsecase IsMethod of false then Instr R Arity Which in
+               Instr = call(R Arity)
+               Which = case @continuations of nil then non_y   % tailCall
+                       else any
+                       end
+               Emitter,
+               GenericEmitCall(Which Reg Regs Instr R Arity Coord nil)
             end
          [] vCall(_ Reg Regs Coord _) then Instr R Arity Which in
             Instr = call(R Arity)
@@ -785,13 +776,6 @@ in
                Instr = genFastCall(PredicateRef {Length Regs} * 2)
             end
             Emitter, GenericEmitCall(none ~1 Regs Instr _ _ Coord nil)
-         [] vApplMeth(_ Reg Literal RecordArity Regs Coord _) then
-            Instr R Which in
-            Instr = applMeth(ami(Literal RecordArity) R)
-            Which = case @continuations of nil then non_y   % tailApplMeth
-                    else any
-                    end
-            Emitter, GenericEmitCall(Which Reg Regs Instr R _ Coord nil)
          [] vInlineDot(_ Reg1 Feature Reg2 AlwaysSucceeds Coord _) then
             if AlwaysSucceeds then skip
             elseif Emitter, IsFirst(Reg1 $) then
@@ -2113,8 +2097,6 @@ in
          [] vCall(_ Reg0 Regs _ Cont) then
             Emitter, PredictRegForCall(Reg Reg0 Regs Cont ?R)
          [] vFastCall(_ _ Regs _ Cont) then
-            Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
-         [] vApplMeth(_ _ _ _ Regs _ Cont) then
             Emitter, PredictRegForCall(Reg ~1 Regs Cont ?R)
          [] vShared(_ _ _ _) then
             Emitter, AllocateAnyTemp(Reg ?R)

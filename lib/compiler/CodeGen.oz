@@ -300,81 +300,71 @@ define
                end
             else skip
             end
-         else
-            if CS.controlFlowInfoSwitch then skip
-            else
-               case Builtinname of 'Value.\'.\'' then
-                  [Arg1 Arg2 Arg3] = ActualArgs Feature in
-                  {Arg2 getCodeGenValue(?Feature)}
-                  if {IsDet Feature}
-                     andthen ({IsLiteral Feature} orelse {IsInt Feature})
-                  then Value1 AlwaysSucceeds in
-                     {Arg1 getCodeGenValue(?Value1)}
-                     AlwaysSucceeds = ({IsDet Value1}
-                                       andthen {IsRecord Value1}
-                                       andthen {HasFeature Value1 Feature})
-                     if AlwaysSucceeds
-                        andthen {IsObject Value1.Feature}
-                        andthen {HasFeature Value1.Feature
-                                 Core.imAVariableOccurrence}
-                        andthen {IsDet {Value1.Feature reg($)}}
-                     then
-                        %% Evaluate by issuing an equation.
-                        %% Note: {Value1.Feature reg($)} may be undetermined
-                        %% for nested records annotated by valToSubst.
-                        {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
-                     else
-                        %% Because the static analyzer may annotate some
-                        %% variable equality at Arg3, we cannot use the
-                        %% (dereferencing) {Arg3 reg($)} call but have to
-                        %% use the variable's original register:
-                        VHd = vInlineDot(_ {Arg1 reg($)} Feature
-                                         {{Arg3 getVariable($)} reg($)}
-                                         AlwaysSucceeds Coord VTl)
-                     end
-                  end
-               [] 'Object.\'@\'' then [Arg1 Arg2] = ActualArgs Feature in
-                  {Arg1 getCodeGenValue(?Feature)}
-                  if {IsDet Feature}
-                     andthen ({IsInt Feature} orelse {IsLiteral Feature})
-                  then
-                     VHd = vInlineAt(_ Feature {Arg2 reg($)} VTl)
-                  end
-               [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Feature in
-                  {Arg1 getCodeGenValue(?Feature)}
-                  if {IsDet Feature}
-                     andthen ({IsInt Feature} orelse {IsLiteral Feature})
-                  then
-                     VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
-                  end
-               [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
-                  {Arg2 getCodeGenValue(?Value)}
-                  if {IsDet Value} andthen {IsRecord Value}
-                     andthen {Record.all Value
-                              fun {$ Arg}
-                                 {HasFeature Arg Core.imAVariableOccurrence}
-                                 andthen {IsDet {Arg reg($)}}
-                              end}
-                  then
-                     RecordArity ActualArgs Regs Cont1 in
-                     RecordArity = if {IsTuple Value} then {Width Value}
-                                   else {Arity Value}
-                                   end
-                     ActualArgs = {Record.toList Value}
-                     {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
-                     if {{Arg1 getVariable($)} isToplevel($)} then
-                        Cont1 = vGenCall(_ {Arg1 reg($)} true
-                                         {Label Value} RecordArity Regs
-                                         Coord VTl)
-                     else
-                        Cont1 = vApplMeth(_ {Arg1 reg($)}
-                                          {Label Value} RecordArity Regs
-                                          Coord VTl)
-                     end
-                  end
-               else skip
+         elseif CS.controlFlowInfoSwitch then skip
+         elsecase Builtinname of 'Value.\'.\'' then
+            [Arg1 Arg2 Arg3] = ActualArgs Feature in
+            {Arg2 getCodeGenValue(?Feature)}
+            if {IsDet Feature}
+               andthen ({IsLiteral Feature} orelse {IsInt Feature})
+            then Value1 AlwaysSucceeds in
+               {Arg1 getCodeGenValue(?Value1)}
+               AlwaysSucceeds = ({IsDet Value1}
+                                 andthen {IsRecord Value1}
+                                 andthen {HasFeature Value1 Feature})
+               if AlwaysSucceeds
+                  andthen {IsObject Value1.Feature}
+                  andthen {HasFeature Value1.Feature
+                           Core.imAVariableOccurrence}
+                  andthen {IsDet {Value1.Feature reg($)}}
+               then
+                  %% Evaluate by issuing an equation.
+                  %% Note: {Value1.Feature reg($)} may be undetermined
+                  %% for nested records annotated by valToSubst.
+                  {Arg3 makeEquation(CS Value1.Feature VHd VTl)}
+               else
+                  %% Because the static analyzer may annotate some
+                  %% variable equality at Arg3, we cannot use the
+                  %% (dereferencing) {Arg3 reg($)} call but have to
+                  %% use the variable's original register:
+                  VHd = vInlineDot(_ {Arg1 reg($)} Feature
+                                   {{Arg3 getVariable($)} reg($)}
+                                   AlwaysSucceeds Coord VTl)
                end
             end
+         [] 'Object.\'@\'' then [Arg1 Arg2] = ActualArgs Feature in
+            {Arg1 getCodeGenValue(?Feature)}
+            if {IsDet Feature}
+               andthen ({IsInt Feature} orelse {IsLiteral Feature})
+            then
+               VHd = vInlineAt(_ Feature {Arg2 reg($)} VTl)
+            end
+         [] 'Object.\'<-\'' then [Arg1 Arg2] = ActualArgs Feature in
+            {Arg1 getCodeGenValue(?Feature)}
+            if {IsDet Feature}
+               andthen ({IsInt Feature} orelse {IsLiteral Feature})
+            then
+               VHd = vInlineAssign(_ Feature {Arg2 reg($)} VTl)
+            end
+         [] 'Object.\',\'' then [Arg1 Arg2] = ActualArgs Value in
+            {Arg2 getCodeGenValue(?Value)}
+            if {{Arg1 getVariable($)} isToplevel($)}
+               andthen {IsDet Value} andthen {IsRecord Value}
+               andthen {Record.all Value
+                        fun {$ Arg}
+                           {HasFeature Arg Core.imAVariableOccurrence}
+                           andthen {IsDet {Arg reg($)}}
+                        end}
+            then RecordArity ActualArgs Regs Cont1 in
+               RecordArity = if {IsTuple Value} then {Width Value}
+                             else {Arity Value}
+                             end
+               ActualArgs = {Record.toList Value}
+               {MakeMessageArgs ActualArgs CS ?Regs VHd Cont1}
+               Cont1 = vGenCall(_ {Arg1 reg($)}
+                                true {Label Value} RecordArity
+                                Regs Coord VTl)
+            end
+         else skip
          end
          if {IsDet VHd} then skip
          else

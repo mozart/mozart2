@@ -399,14 +399,6 @@ tailSendMsg         == sendMsg(Arg1 Arg2 Arg3 Arg4) return
    RecordArity      method arity % may be 0
    Cache            ignored
 
-applMeth
-   ApplMethInfo     method label and arity
-   Register         object
-
-tailApplMeth        == applMeth(Arg1 Arg2) return
-   ApplMethInfo     method label and arity
-   Register         object
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -585,13 +577,12 @@ Location = [x(RegisterIndex)]#[x(RegisterIndex)].
 RecordArity = int   % must be > 0 and a smallInt
             | [Feature].
 GenCallInfo = gci(g(RegisterIndex) % register index of class/predicate
-                  IsMethod        % whether it corresponds to call or applMeth
-                  Name            % '' for a call, else message name
-                  IsTail          % whether this is a tailCall/tailApplMeth
-                  RecordArity).   % 0 for a call, else message's arity
+                  IsMethod         % whether it corresponds to call or applMeth
+                  Name             % '' for a call, else message name
+                  IsTail           % whether this is a tailCall/tailApplMeth
+                  RecordArity).    % 0 for a call, else message's arity
 Builtinname = builtin.
 Cache = value.   % ignored
-ApplMethInfo = ami(Literal RecordArity). % RecordArity may be 0
 HashTableRef = ht(Label [HashTableEntry]).
 
 %%

@@ -31,7 +31,6 @@ Continuations = c(vDebugExit: 4
                   vGenCall: 8
                   vCall: 5
                   vFastCall: 5
-                  vApplMeth: 7
                   vInlineDot: 7
                   vInlineAt: 4
                   vInlineAssign: 4
@@ -253,9 +252,6 @@ class CodeStore from Emitter
             CodeStore, RegOccs(Regs RS)
          [] vFastCall(_ _ Regs _ _) then
             CodeStore, RegOccs(Regs RS)
-         [] vApplMeth(_ Reg _ _ Regs _ _) then
-            CodeStore, RegOcc(Reg RS)
-            CodeStore, RegOccs(Regs RS)
          [] vInlineDot(_ Reg1 _ Reg2 _ _ _) then
             CodeStore, RegOcc(Reg1 RS)
             CodeStore, RegOcc(Reg2 RS)
@@ -384,7 +380,6 @@ class CodeStore from Emitter
          [] vGenCall(_ _ _ _ _ _ _ _) then skip
          [] vCall(_ _ _ _ _) then skip
          [] vFastCall(_ _ _ _ _) then skip
-         [] vApplMeth(_ _ _ _ _ _ _) then skip
          [] vInlineDot(_ _ _ _ _ _ _) then skip
          [] vInlineAt(_ _ _ _) then skip
          [] vInlineAssign(_ _ _ _) then skip

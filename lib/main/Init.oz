@@ -49,7 +49,7 @@ in
 
    functor prop once
    import
-      Boot
+      Boot @ 'x-oz://boot/Boot'
    body
 
       %% The mechanism with which builtin modules can be accessed

@@ -61,7 +61,6 @@ local
             {Value.toVirtualString X 100 100}
          end
 
-
          \insert 'engine.oz'
          \insert 'compute-tests.oz'
 
@@ -76,7 +75,6 @@ local
                   if Argv.verbose then {System.printInfo V}
                   else skip end
                end
-
 
                proc {PT Ts}
                   if Argv.verbose then
@@ -107,8 +105,136 @@ local
                   end
                end
 
-            in
+               %%
+               ProcStat =
+               if Argv.memory \= nil then
+                  try
+                     Fn = "/proc/"#{Int.toString {OS.getPID}}#"/stat"
+                  in
+                     {New Open.file init(name:Fn flags:[read])}
+                  catch _ then
+                     unit
+                  end
+               else unit
+               end
 
+               %%
+               fun {InitProfData}
+                  Acc = {Cell.new nil}
+                  proc {PrintField FieldSet Units Then Now Factor C#F}
+                     if {Member C FieldSet} then
+                        {PV ' '#[C]#':'#((Now.F-Then.F) div Factor)#Units}
+                     else skip
+                     end
+                  end
+               in
+                  %% time;
+                  if Argv.time \= nil then
+                     C
+                     TimeStart = {Cell.new unit}
+                     TimeStop = {Cell.new unit}
+                     MeasureFun = fun {$} {Property.get time} end
+                     TimeRec =
+                     time(start: proc{$}
+                                    {Cell.assign TimeStart {MeasureFun}}
+                                 end
+                          stop:  proc{$}
+                                    {Cell.assign TimeStop {MeasureFun}}
+                                 end
+                          print: proc {$}
+                                    B = {Cell.access TimeStart}
+                                    E = {Cell.access TimeStop}
+                                    proc {PrintTimeField Arg}
+                                       {PrintField Argv.time ' ms' B E 1 Arg}
+                                    end
+                                 in
+                                    {PV ' ('}
+                                    {ForAll
+                                     [&r#run &g#gc &s#system &c#copy
+                                      &p#propagate &t#total]
+                                     PrintTimeField}
+                                    {PV ' )'}
+                                 end)
+                  in
+                     {Cell.exchange Acc C time#TimeRec|C}
+                     {Property.put 'time.detailed' true}
+                  else skip
+                  end
+
+                  %% memory;
+                  if Argv.memory \= nil then
+                     C
+                     MemoryStart = {Cell.new unit}
+                     MemoryStop = {Cell.new unit}
+                     MeasureFun = fun {$}
+                                     {For 1 {Property.get 'gc'}.codeCycles 1
+                                      proc {$ _} {System.gcDo} end}
+                                     %%
+                                     {List.foldL
+                                      [{Property.get 'gc'}
+                                       {Property.get 'memory'}
+                                       if ProcStat \= unit then
+                                          {ProcStat seek()}
+                                          PStat = {ProcStat read(list:$)}
+                                          VMem =
+                                          {String.toInt
+                                           {List.nth
+                                            {String.tokens PStat & } 23}}
+                                       in
+                                          vmem(vmem: VMem)
+                                       else
+                                          vmem
+                                       end]
+                                      fun {$ I E} {Record.adjoin E I} end
+                                      memory}
+                                  end
+                     MemoryRec =
+                     memory(start: proc {$}
+                                      {Cell.assign MemoryStart {MeasureFun}}
+                                   end
+                            stop:  proc {$}
+                                      {Cell.assign MemoryStop {MeasureFun}}
+                                   end
+                            print: proc {$}
+                                      B = {Cell.access MemoryStart}
+                                      E = {Cell.access MemoryStop}
+                                      proc {PrintMemoryField Arg}
+                                         {PrintField
+                                          Argv.memory ' kb' B E 1024 Arg}
+                                      end
+                                      VLetter =
+                                      if ProcStat \= unit then &v
+                                      else 0
+                                      end
+                                   in
+                                      {PV ' ('}
+                                      {ForAll
+                                       [VLetter#vmem &h#active &a#atoms
+                                        &c#code &f#freelist &n#names]
+                                       PrintMemoryField}
+                                      {PV ' )'}
+                                   end)
+                  in
+                     {Cell.exchange Acc C memory#MemoryRec|C}
+                  else skip
+                  end
+
+                  %%
+                  {Record.adjoinList profInfo {Cell.access Acc}}
+               end
+
+               proc {StartProfiling ProfData}
+                  {Record.forAll ProfData proc {$ E} {E.start} end}
+               end
+               proc {StopProfiling ProfData}
+                  {Record.forAll ProfData proc {$ E} {E.stop} end}
+               end
+
+               proc {PrintProfData ProfData}
+                  {Record.forAll ProfData proc {$ E} {E.print} end}
+               end
+
+            in
                if Argv.'do' then
                   %% Start garbage collection thread, if requested
                   StopGcThread
@@ -123,74 +249,21 @@ local
                   else skip
                   end
 
-                  if Argv.time \= nil then
-                     {Property.put 'time.detailed' true}
-                  else skip
-                  end
-
-                  ProcStat
-
                   %%
-                  StartTime StartVMem StartPropMEM StartPropGC
-                  if Argv.time \= nil then
-                     StartTime = {Property.get time}
-                  else skip
-                  end
+                  GlobalProfile = {InitProfData}
+                  {StartProfiling GlobalProfile}
                   %%
-                  if Argv.memory \= nil then
-                     try
-                        Fn = "/proc/"#{Int.toString {OS.getPID}}#"/stat"
-                     in
-                        ProcStat = {New Open.file init(name:Fn flags:[read])}
-                     catch _ then
-                        ProcStat = unit
-                     end
-                     {For 1 {Property.get 'gc'}.codeCycles 1
-                      proc {$ _} {System.gcDo} end}
-                     StartVMem =
-                     if ProcStat == unit then 0
-                     else PStat in
-                        {ProcStat seek()}
-                        PStat = {ProcStat read(list:$)}
-                        {String.toInt
-                         {List.nth
-                          {String.tokens PStat & } 23}}
-                     end
-                     StartPropMEM = {Property.get 'memory'}
-                     StartPropGC = {Property.get 'gc'}
-                  else skip
-                  end
+                  LocalProfile = {InitProfData}
 
                   %% go for it;
                   Results = {Map ToRun
                              fun {$ T}
-                                %% time & memory profiles;
-                                T0
-                                VMem0 PropMEM0 PropGC0
-                                VMem1 PropMEM1 PropGC1
                                 Bs Bs1 Bs2 B
                              in
-                                %%
-                                if Argv.time \= nil then
-                                   T0 = {Property.get time}
-                                else skip
-                                end
+                                {StartProfiling LocalProfile}
+
                                 %%
                                 if Argv.memory \= nil then
-                                   {For 1 {Property.get 'gc'}.codeCycles 1
-                                    proc {$ _} {System.gcDo} end}
-                                   VMem0 =
-                                   if ProcStat == unit then 0
-                                   else PStat in
-                                      {ProcStat seek()}
-                                      PStat = {ProcStat read(list:$)}
-                                      {String.toInt
-                                       {List.nth
-                                        {String.tokens PStat & } 23}}
-                                   end
-                                   PropMEM0 = {Property.get 'memory'}
-                                   PropGC0 = {Property.get 'gc'}
-
                                    %%
                                    {PV '>' # {Label T} # ': '}
                                    Bs1 =
@@ -200,36 +273,12 @@ local
                                        B1
                                     end]
                                    {Wait Bs1.1}
-
-                                   {For 1 PropGC0.codeCycles 1
-                                    proc {$ _} {System.gcDo} end}
-                                   VMem1 =
-                                   if ProcStat == unit then 0
-                                   else PStat in
-                                      {ProcStat seek()}
-                                      PStat = {ProcStat read(list:$)}
-                                      {String.toInt
-                                       {List.nth
-                                        {String.tokens PStat & } 23}}
-                                   end
-                                   PropMEM1 = {Property.get 'memory'}
-                                   PropGC1 = {Property.get 'gc'}
-                                   {PV ' ('}
-                                   {ForAll
-                                    [if ProcStat == unit then 0 else &v end
-                                     #(VMem1 - VMem0)
-                                     &h#(PropGC1.size - PropGC0.size)
-                                     &a#(PropMEM1.atoms - PropMEM0.atoms)
-                                     &c#(PropMEM1.code - PropMEM0.code)
-                                     &f#(PropMEM1.freelist - PropMEM0.freelist)
-                                     &n#(PropMEM1.names - PropMEM0.names)]
-                                    proc {$ C#V}
-                                       if {Member C Argv.memory} then
-                                          {PV ' '#[C]#':'#(V div 1024)#' kb'}
-                                       else skip
-                                       end
-                                    end}
-                                   {PV ' )\n:'}
+                                   %%
+                                   {StopProfiling LocalProfile}
+                                   {PrintProfData LocalProfile}
+                                   {PV '\n:'}
+                                   %%
+                                   {StartProfiling LocalProfile}
                                 else
                                    Bs1 = nil
                                 end
@@ -241,7 +290,7 @@ local
                                     thread
                                        {ForThread 1 Argv.repeat 1
                                         fun {$ B _}
-                                           if B then  B1 in
+                                           if B then B1 in
                                               B1 = {DoTest T.script}
                                               {PV if B1 then '+' else '-' end}
                                               {Time.delay Argv.delay}
@@ -258,60 +307,10 @@ local
                                 {Wait B}
 
                                 %%
-                                if Argv.time \= nil then
-                                   T1={Property.get time}
-                                   proc {PT C#F}
-                                      if {Member C Argv.time} then
-                                         {PV ' '#[C]#':'#T1.F-T0.F#' ms'}
-                                      else skip
-                                      end
-                                   end
-                                in
-                                   {PV ' ('}
-                                   {ForAll
-                                    [&r#run &g#gc &s#system &c#copy
-                                     &p#propagate &t#total]
-                                    PT}
-                                   {PV ' )'}
-                                else skip
-                                end
+                                {StopProfiling LocalProfile}
+                                {PrintProfData LocalProfile}
 
                                 %%
-                                if Argv.memory \= nil then
-                                   %% drop garbage first - have to
-                                   %% repeat the gc 'codeCycles' times;
-                                   {For 1 PropGC0.codeCycles 1
-                                    proc {$ _} {System.gcDo} end}
-                                   VMem2 =
-                                   if ProcStat == unit then 0
-                                   else PStat in
-                                      {ProcStat seek()}
-                                      PStat = {ProcStat read(list:$)}
-                                      {String.toInt
-                                       {List.nth
-                                        {String.tokens PStat & } 23}}
-                                   end
-                                   PropMEM2 = {Property.get 'memory'}
-                                   PropGC2 = {Property.get 'gc'}
-                                in
-                                   {PV ' ('}
-                                   {ForAll
-                                    [if ProcStat == unit then 0 else &v end
-                                     #(VMem2 - VMem1)
-                                     &h#(PropGC2.size - PropGC1.size)
-                                     &a#(PropMEM2.atoms - PropMEM1.atoms)
-                                     &c#(PropMEM2.code - PropMEM1.code)
-                                     &f#(PropMEM2.freelist - PropMEM1.freelist)
-                                     &n#(PropMEM2.names - PropMEM1.names)]
-                                    proc {$ C#V}
-                                       if {Member C Argv.memory} then
-                                          {PV ' '#[C]#':'#(V div 1024)#' kb'}
-                                       else skip
-                                       end
-                                    end}
-                                   {PV ' )'}
-                                end
-
                                 {PV '\n'}
                                 {AdjoinAt T result B}
                              end}
@@ -323,60 +322,12 @@ local
                   StopGcThread = unit
 
                   %%
-                  if Argv.time \= nil then
-                     T1={Property.get time}
-                     proc {PT C#F}
-                        if {Member C Argv.time} then
-                           {PV ' '#[C]#':'#T1.F-StartTime.F#' ms'}
-                        else skip
-                        end
-                     end
-                  in
-                     {PV 'Total time: '}
-                     {ForAll
-                      [&r#run &g#gc &s#system &c#copy
-                       &p#propagate &t#total]
-                      PT}
-                     {PV '\n'}
-                  else skip
-                  end
+                  {StopProfiling GlobalProfile}
+                  {PV 'Total: '}
+                  {PrintProfData GlobalProfile}
+                  {PV '\n'}
 
                   %%
-                  if Argv.memory \= nil then
-                     %% drop garbage first - have to
-                     %% repeat the gc 'codeCycles' times;
-                     {For 1 StartPropGC.codeCycles 1
-                      proc {$ _} {System.gcDo} end}
-                     VMem1 =
-                     if ProcStat == unit then 0
-                     else PStat in
-                        {ProcStat seek()}
-                        PStat = {ProcStat read(list:$)}
-                        {String.toInt
-                         {List.nth
-                          {String.tokens PStat & } 23}}
-                     end
-                     PropMEM1 = {Property.get 'memory'}
-                     PropGC1 = {Property.get 'gc'}
-                  in
-                     {PV 'Total memory: '}
-                     {ForAll
-                      [if ProcStat == unit then 0 else &v end
-                       #(VMem1 - StartVMem)
-                       &h#(PropGC1.size - StartPropGC.size)
-                       &a#(PropMEM1.atoms - StartPropMEM.atoms)
-                       &c#(PropMEM1.code - StartPropMEM.code)
-                       &f#(PropMEM1.freelist - StartPropMEM.freelist)
-                       &n#(PropMEM1.names - StartPropMEM.names)]
-                      proc {$ C#V}
-                         if {Member C Argv.memory} then
-                            {PV ' '#[C]#':'#(V div 1024)#' kb'}
-                         else skip
-                         end
-                      end}
-                     {PV '\n'}
-                  end
-
                   if Goofed==nil then
                      if Argv.verbose then
                         {System.showInfo \insert 'passed.oz'

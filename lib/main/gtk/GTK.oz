@@ -25,6 +25,7 @@ functor
 import
    Native at 'GTK.so{native}'
    System
+   GTKSimpleBuilder(make:Make)
 
 export
    Dispatcher
@@ -42,6 +43,7 @@ export
    Exit
    Main
    MainQuit
+   Make
 
    \insert 'gtkexports.oz'
 

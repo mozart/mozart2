@@ -88,12 +88,16 @@ define
    end
 
    proc {NoOverlap2 X1 Y1 S1 X2 Y2 S2}
-      thread
-         or X1+S1 =<: X2
-         [] X1 >=: X2+S2
-         [] Y1+S1 =<: Y2
-         [] Y1 >=: Y2+S2
+      thread C in
+         C :: 1#4
+         thread
+            or X1+S1 =<: X2 C=1
+            [] X1 >=: X2+S2 C=2
+            [] Y1+S1 =<: Y2 C=3
+            [] Y1 >=: Y2+S2 C=4
+            end
          end
+         {FD.distribute naive [C]}
       end
    end
 

@@ -425,7 +425,7 @@ define
          {GtkNative.calendarDisplayOptions @nativeObject Flags}
       end
       meth getDate(?Year ?Month ?Day)
-         {GtkNative.calendarDisplayOptions @nativeObject Year Month Day}
+         {GtkNative.calendarGetDate @nativeObject Year Month Day}
       end
       meth freeze
          {GtkNative.calendarFreeze @nativeObject}

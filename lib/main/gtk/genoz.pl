@@ -26,9 +26,9 @@ use Getopt::Long;
 # Regular Expressions (group only without backreferences!)
 #$rexp_type        = qr/\w[\w ]+[\*\[\]]*/;
 $rexp_type        = qr/(?:const )?\w+(?:\s*\*+(?=[^\*]))?/;
-# We allow '?' as first character of an identifier to mark return values
 $rexp_name        = qr/(?<=\W)\??\w+/;
-$rexp_arg         = qr/${rexp_type}\s*${rexp_name}/;
+# We allow '?' as first character of an identifier to mark return values
+$rexp_arg         = qr/\??${rexp_type}/;
 $rexp_arg_list    = qr/${rexp_arg}(?:\s*,\s*${rexp_arg})*/;
 
 sub gtk2oz_class_name {
@@ -75,7 +75,7 @@ sub get_class_name {
     if($class_string =~ m/class\s+(\w+)\s+/) {
         return $1;
     } else {
-        die "Can't find class name in class:\n$class_string";
+        die "Parse error: Can't find class name in class:\n$class_string";
     }
 }
 
@@ -113,20 +113,6 @@ sub get_fields_list {
     return @fields;
 }
 
-sub split_argument_string {
-    # gets an argument string, eg. 'GtkObject *object' and
-    # returns an hash with keys 'name' and 'type'.
-
-    my ($arg_string) = @_;
-    my %arg;
-
-    $arg_string =~ m/(${rexp_type})\s*(${rexp_name})/;
-    $arg{type} = $1;
-    $arg{name} = $2;
-
-    return \%arg;
-}
-
 sub get_method_list {
     my ($class_string) = @_;
     my @methods;
@@ -153,7 +139,7 @@ sub get_method_list {
         }
         my @dummy;
         foreach my $arg (@args) {
-            @dummy = (@dummy, split_argument_string($arg));
+            @dummy = (@dummy, $arg);
         }
         $method{args} = \@dummy;
 
@@ -211,12 +197,7 @@ EOF
    }
 }
 
-sub arg_is_return_value {
-    my ($arg) = @_;
-
-    return ($arg{name} =~ m/^\?/s);
-}
-
+# Check whether a method is a constructor
 sub meth_is_init_meth {
     my ($meth) = @_;
     return $$meth{name} =~ m/(_new$)|(_new_with_\w+)/;
@@ -243,14 +224,12 @@ sub write_oz_meth_wrappers {
         my @args = @{$$meth{args}};
         shift @args if ! meth_is_init_meth($meth); # first argument is implizit self
 
-        foreach my $arg (@args) {
-            print gtk2oz_name($$arg{name}) . ' ';
+        for (my $i=1; $i <= length(@args); $i++) {
+            print "Arg$i";
+            print ' ' unless $i == length(@args);
         }
 
-        print "?ReturnValue" if $$meth{return_type} && ! meth_is_init_meth($meth);
-        foreach my $ret_val (@args) {
-            print " $ret_val{name}" if arg_is_return_value($ret_val);
-        }
+        print "ReturnValue" if $$meth{return_type} && ! meth_is_init_meth($meth);
 
         print ")\n";
 
@@ -263,9 +242,9 @@ sub write_oz_meth_wrappers {
         print '{GtkNative.' . gtk2oz_meth_name($$meth{name});
         print ' @nativeObject'    if (! meth_is_init_meth($meth));
 
-        foreach my $arg (@args) {
+        for (my $i=1; $i <= length(@args); $i++) {
             # TODO: dereference Oz objects
-            print ' ' . gtk2oz_name($$arg{name});
+            print " Arg$i";
         }
 
         print "}\n";

@@ -347,12 +347,12 @@ local
                {CS makeRegSet(?AllocatesRS)}
                {CS enterVs([@Arbiter] AllocatesRS)}
                GetVariablesTl = vShallowGuard(_ GuardVHd BodyVInstr AltVInstr
-                                              @coord nil AllocatesRS _)
+                                              unit nil AllocatesRS _)
             else AltVInstr in
                GuardVTl = vAsk(_ nil)
                {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
                GetVariablesTl = vCreateCond(_ [_#GuardVHd#BodyVInstr]
-                                            AltVInstr nil @coord nil _)
+                                            AltVInstr nil unit nil _)
             end
          else
             proc {MakeGuard Patterns VOs VHd VTl}
@@ -395,7 +395,7 @@ local
                 _#GuardVInstr#BodyVInstr|In
              end nil}
             {@AltNode codeGenWithArbiterShared(CS @Arbiter AltVInstr nil)}
-            GetVariablesTl = vCreateCond(_ VClauses AltVInstr nil @coord nil _)
+            GetVariablesTl = vCreateCond(_ VClauses AltVInstr nil unit nil _)
          end
          case {IsTuple Rec} then
             VHashTableEntry = onRecord({Label Rec} {Width Rec} CondVInstr)

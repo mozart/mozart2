@@ -454,6 +454,7 @@ class CodeStore from Emitter
          [] vWaitTop(_ _) then skip
          [] vShallowGuard(_ Addr1 Addr2 Addr3 _ _ _ _) then AddRS3 in
             AddRS3 = {BitArray.clone AddRS2}
+            {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr1 $)}
             {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr2 $)}
             {BitArray.'or' AddRS3 CodeStore, GetOccs(Addr3 $)}
             CodeStore, AddRegOccs(Addr1 AddRS3)

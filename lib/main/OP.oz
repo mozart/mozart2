@@ -26,6 +26,34 @@ local
 
 in
 
+\ifdef LILO
+
+   functor $
+
+   import
+      SP.{System = 'System'}
+
+   export
+      %% OS
+      'OS':                 OS
+      %% URL
+      'URL':                URL
+      %% Open
+      'Open':               Open
+      %% Component
+      'Component':          Component
+      'Load':               Load
+      'Save':               Save
+
+   body
+      \insert 'op/OS.oz'
+      URL = {System.property.condGet url unit}
+      \insert 'op/Open.oz'
+      \insert 'op/Component.oz'
+   end
+
+\else
+
    fun instantiate {$ IMPORT}
       \insert 'SP.env'
       = IMPORT.'SP'
@@ -43,5 +71,7 @@ in
       \insert 'OP.env'
 
    end
+
+\endif
 
 end

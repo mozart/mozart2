@@ -20,6 +20,30 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+functor $
+
+import
+   OP.{Open    = 'Open'
+       URL     = 'URL'
+       OS      = 'OS'}
+   SP.{System  = 'System'
+       Foreign = 'Foreign'}
+
+export
+   'Tk':      Tk
+   'TkTools': TkTools
+
+body
+   Tk      = \insert 'wp/Tk.oz'
+   \insert 'wp/TkOptions.oz'
+   TkTools = \insert 'wp/TkTools.oz'
+
+end
+
+\else
+
 fun instantiate {$ IMPORT}
    \insert 'OP.env'
        = IMPORT.'OP'
@@ -35,3 +59,5 @@ fun instantiate {$ IMPORT}
 in
    \insert 'WP.env'
 end
+
+\endif

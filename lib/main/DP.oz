@@ -20,6 +20,27 @@
 %%% WARRANTIES.
 %%%
 
+\ifdef LILO
+
+functor $
+
+import
+   OP.{OS          = 'OS'
+       Open        = 'Open'}
+   SP.{System      = 'System'}
+
+export
+   'Connection': Connection
+   'Remote':     Remote
+
+body
+   \insert 'dp/Connection.oz'
+   \insert 'dp/Remote.oz'
+
+end
+
+\else
+
 fun instantiate {$ IMPORT}
    \insert 'OP.env'
    = IMPORT.'OP'
@@ -33,3 +54,5 @@ fun instantiate {$ IMPORT}
 in
    \insert 'DP.env'
 end
+
+\endif

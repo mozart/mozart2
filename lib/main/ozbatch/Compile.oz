@@ -414,7 +414,7 @@ in
          OutputFile = {NewCell unit}
          MakeDepend = {NewCell false}
          IncDir = {NewCell nil}
-         ExecHeaderPrefix = {NewCell unit}
+         ExecHeader = {NewCell unit}
          CompLevel = {NewCell 0}
          {ForAll Opts
           proc {$ Opt#X}
@@ -446,7 +446,7 @@ in
                 end
              [] execheader then
                 case {Access ExecHeader} of unit then
-                   {Assign SysletPrefix X}
+                   {Assign ExecHeader X}
                 else
                    {Report error(kind: UsageError
                                  msg: 'exec header may only be given once'

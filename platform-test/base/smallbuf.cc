@@ -1,6 +1,12 @@
 #include "mozart.h"
 #include <sys/types.h>
+#ifdef __MINGW32__
+extern "C" {
+#include <winsock.h>
+}
+#else
 #include <sys/socket.h>
+#endif
 
 OZ_BI_define(BI_smallbuf,2,0)
 {

@@ -12,7 +12,12 @@ INSTALL_DIR     = @INSTALL_DIR@
 CPPFLAGS        = @CPPFLAGS@
 LDFLAGS         = @LDFLAGS@
 
-export OZPATH = .:$(SRCDIR)
+OZLOADSEP       = @OZLOADSEP@
+CYG_SRCDIR      = $(shell $(SRCTOP)/share/lib/cygpath.sh "$(SRCDIR)")
+
+export OZPATH = .$(OZLOADSEP)$(CYG_SRCDIR)
+export SRCDIR
+export OZPLATFORM
 
 # Test for spaces
 SPACELOCAL = \
@@ -77,6 +82,8 @@ TOOLS = $(FTOOLS:%=./tools/%.ozf)
 FNATIVES = \
         base/smallbuf base/gcsusplist
 
+.PRECIOUS: $(FNATIVES:%=%.o)
+
 SONATIVES = $(FNATIVES:%=%.so-$(OZPLATFORM))
 
 DIRS = base space fd fs scheduling dp tools bench dp-bench
@@ -93,7 +100,7 @@ OTHERS= dp/TestMisc.ozf
 COMPRESSLEVEL   = @oz_picklecompression@
 COMPRESSFLAGS   = --compress=$(COMPRESSLEVEL)
 
-OZENGINE =
+OZENGINE = @OZENGINE@
 OZC = @OZC@
 OZFLAGS = $(COMPRESSFLAGS)
 OZTOOL = @OZTOOL@
@@ -115,7 +122,8 @@ bootstrap:
 
 install:
 
-check zcheck: oztest
+#oztest
+check zcheck:
         $(OZENGINE) ./oztest $(OZTESTOPTS)
 
 dirs:
@@ -128,17 +136,6 @@ TESTSRCS=make-test engine passed failed help-string compute-tests
 oztest: dirs $(TESTSRCS:%=./lib/%.oz) $(TESTCOMPONENTS) $(OTHERS) make-test
         $(OZENGINE) ./make-test --verbose $(TESTCOMPONENTS)
         chmod +x oztest
-
-make-test: lib/make-test.oz
-        $(OZC) $(OZFLAGS) -x $< -o $@
-
-BENCHSRCS=make-bench engine compute-tests help-bench
-ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
-        $(OZC) $(OZFLAGS) -x $(SRCDIR)/lib/make-bench.oz -o make-bench
-        $(OZENGINE) ./make-bench --verbose $(BENCHCOMPONENTS)
-        chmod +x ozbench
-        -rm -f ./make-bench
-
 
 clean:
         -rm -f *~ ./*/*~ ./*/*/*~
@@ -164,7 +161,17 @@ distclean: veryclean
 %.ozm: %.oz
         $(OZC) --expression -S $< -o $@
 
-include $(SRCTOP)/share/Makefile.boot
+include $(BUILDTOP)/share/Makefile.boot
+
+make-test: lib/make-test.oz
+        $(OZC) $(OZFLAGS) -x $(OZEXECFILE) $< -o $@
+
+BENCHSRCS=make-bench engine compute-tests help-bench
+ozbench: dirs $(BENCHSRCS:%=./lib/%.oz) $(BENCHCOMPONENTS) $(OTHERS)
+        $(OZC) $(OZFLAGS) -x $(OZEXECFILE) $(CYG_SRCDIR)/lib/make-bench.oz -o make-bench
+        $(OZENGINE) ./make-bench --verbose $(BENCHCOMPONENTS)
+        chmod +x ozbench
+        -rm -f ./make-bench
 
 Makefile: Makefile.in ../config.status
         cd .. && ./config.status
@@ -174,10 +181,8 @@ Makefile: Makefile.in ../config.status
 
 depend:
 
-tools/gump.ozf: gump-examples
-
-gump-examples:
-        ln -s $(SRCDIR)/../tools/gump/examples $@
+base/smallbuf.so-$(OZPLATFORM): base/smallbuf.o
+        $(OZTOOL) ld $(LDFLAGS) @OZWSOCKLIB@ $< -o $@
 
 %.so-$(OZPLATFORM): %.o
         $(OZTOOL) ld $(LDFLAGS) $< -o $@

@@ -15,15 +15,15 @@ all: $(TARGETS)
 
 bootstrap: boot-all
 
+include $(BUILDTOP)/share/Makefile.boot
+
 $(TARGETS): % : %.ozf run.ozf
-        $(OZL) -x $< -o $@
+        $(OZL) -x $(OZEXECFILE) $< -o $@
 
 %.ozf: %.oz
         $(OZC) -c $< -o $@
 
 install:
-
-include $(SRCTOP)/share/Makefile.boot
 
 Makefile: Makefile.in ../../config.status
         cd ../.. && ./config.status

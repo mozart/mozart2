@@ -25,26 +25,19 @@ FDLOCAL = \
         tiling srat students hubert pigeon permutation \
         kalotan knights houses warehouse bridge_noterm \
         queens mapcoloring magicsquare magicsequence \
-        photo
+        photo coins
 
 FDOZF = $(FDLOCAL:%=./fd/%.ozf)
 
 # Tests for finite sets
 FSLOCAL = \
-        golf \
-        crew \
-        hamming \
-        steiner \
-        knapsack \
-        misc
+        golf crew hamming steiner knapsack misc
 
 FSOZF = $(FSLOCAL:%=./fs/%.ozf)
 
 # Tests for scheduling
 SCHEDLOCAL = \
-        abz6 \
-        company \
-        product
+        abz6 company product
 
 SCHEDOZF = $(SCHEDLOCAL:%=./scheduling/%.ozf)
 

@@ -750,6 +750,10 @@ define
          error(kind: T
                msg: 'Illegal URL syntax'
                items: [hint(l:'URL' m:Url)])
+      [] module(typeMismatch Url _ _) then
+         error(kind: T
+               msg: 'Type mismatch'
+               items: [hint(l:'URL' m:Url)])
       else
          error(kind: T
                items: [line(oz(E))])

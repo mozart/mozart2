@@ -2,8 +2,9 @@
 %%% Author:
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%
-%%% Contributor:
+%%% Contributors:
 %%%   Denys Duchier <duchier@ps.uni-sb.de>
+%%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
 %%%   Denys Duchier, 1998
@@ -24,48 +25,79 @@
 %%% WARRANTIES.
 %%%
 
-local
+functor NewModule
+
+import
+   System OS Boot Property Resolve
+
+export
+   root:    RM
+   manager: Manager
+   trace:   ApiTrace
+
+prepare
 
    fun {IsNative Url}
       {HasFeature {CondSelect Url info info} 'native'}
    end
 
-   NONE  = {NewName}
-   LINK  = {NewName}
-   APPLY = {NewName}
-   ENTER = {NewName}
+   NONE   = {NewName}
+   LINK   = {NewName}
+   APPLY  = {NewName}
+   ENTER  = {NewName}
+   LOAD   = {NewName}
+   SYSTEM = {NewName}
+   NOTYPE = {NewName}
 
    proc {TraceOFF _ _}
       skip
    end
 
+   fun {DefaultTypeCheckProcedure _ _}
+      true
+   end
+
    class UnsitedBaseManager
       prop locking
-      feat ModuleMap
+      feat ModuleMap TypeCheckProc
 
-      meth init
+      meth init(TypeChecker <= DefaultTypeCheckProcedure)
          self.ModuleMap = {Dictionary.new}
+         self.TypeCheckProc = TypeChecker
       end
 
-      meth !LINK(Url ?Module)
+      meth !LINK(Url ExpectedType ?Entry ?Module)
          %% Return module from "Url"
          lock Key={UrlToAtom Url} ModMap=self.ModuleMap in
             if {Dictionary.member ModMap Key} then
                {self trace('link [found]' Url)}
-               {Dictionary.get ModMap Key Module}
             else
                {self trace('link [lazy]' Url)}
-               TryModule
-               = {ByNeed
-                  fun {$}
-                     if {CondSelect Url scheme unit}==OzScheme
-                     then {self system(Url $)}
-                     else {self load(  Url $)} end
-                  end}
-            in
-               {Dictionary.put ModMap Key TryModule}
-               Module = TryModule
+               {Dictionary.put ModMap Key
+                {ByNeed
+                 fun {$}
+                    if {CondSelect Url scheme unit}==OzScheme
+                    then {self SYSTEM(Url $)}
+                    else {self LOAD(  Url $)}
+                    end
+                 end}}
             end
+            Entry = {Dictionary.get ModMap Key}
+            Module = {ByNeed
+                      fun {$}
+                         case Entry of Module#ActualType then
+                            case ExpectedType of !NOTYPE then Module
+                            elsecase ActualType of !NOTYPE then Module
+                            elseif {self.TypeCheckProc ActualType ExpectedType}
+                            then Module
+                            else
+                               raise
+                                  system(module(typeMismatch Key
+                                                ActualType ExpectedType))
+                               end
+                            end
+                         end
+                      end}
          end
       end
 
@@ -80,233 +112,220 @@ local
                               {ModNameToUrl ModName}
                            end
              in
-                UnsitedBaseManager,LINK({UrlResolve Url EmbedUrl} $)
+                UnsitedBaseManager,LINK({UrlResolve Url EmbedUrl}
+                                        {CondSelect Info 'type' NOTYPE} _ $)
              end}
       in
          {Func.apply IM}
       end
 
-      meth !ENTER(Url Module)
+      meth !ENTER(Url Module ActualType)
          {self trace('enter' Url)}
          %% Stores "Module" under "Url"
          lock Key={UrlToAtom Url} in
             if {Dictionary.member self.ModuleMap Key} then
                raise system(module(alreadyInstalled Key)) end
             else
-               {Dictionary.put self.ModuleMap Key Module}
+               {Dictionary.put self.ModuleMap Key Module#ActualType}
             end
          end
       end
 
    end
 
-in
 
-   functor NewModule
+define
 
-   import
-      System OS Boot Property Resolve
+   fun {NameOrUrlToUrl ModName UrlV}
+      {Resolve.expand
+       if UrlV==NONE then {ModNameToUrl ModName}
+       else {UrlMake UrlV}
+       end}
+   end
 
-   export
-      root:    RM
-      manager: Manager
-      trace:   ApiTrace
+   class BaseManager from UnsitedBaseManager
 
-   define
-
-      fun {NameOrUrlToUrl ModName UrlV}
-         {Resolve.expand
-          if UrlV==NONE then {ModNameToUrl ModName}
-          else {UrlMake UrlV}
-          end}
+      meth link(name: ModName      <= NONE
+                url:  UrlV         <= NONE
+                type: ExpectedType <= NOTYPE
+                ?Module            <= _) = Message
+         Url = {NameOrUrlToUrl ModName UrlV}
+      in
+         Module = UnsitedBaseManager,LINK(Url ExpectedType _ $)
+         if {Not {HasFeature Message 1}} then
+            thread {Wait Module} end
+         end
       end
 
-      class BaseManager
-         from UnsitedBaseManager
-
-         meth link(name: ModName <= NONE
-                   url:  UrlV    <= NONE
-                   ?Module       <= _) = Message
-            Url = {NameOrUrlToUrl ModName UrlV}
-         in
-            Module = UnsitedBaseManager,LINK(Url $)
-            if {Not {HasFeature Message 1}} then
-               thread {Wait Module} end
-            end
-         end
-
-         meth enter(name: ModName <= NONE
-                    url:  UrlV    <= NONE
-                    Module)
-            Url = {NameOrUrlToUrl ModName UrlV}
-         in
-            UnsitedBaseManager,ENTER(Url Module)
-         end
-
-         meth apply(name: ModName <= NONE
-                    url:  UrlV    <= NONE
-                    Func
-                    ?Module       <= _) = Message
-            Url = if ModName==NONE andthen UrlV==NONE then
-                     {UrlMake {OS.getCWD}#'/'}
-                  else
-                     {NameOrUrlToUrl ModName UrlV}
-                  end
-         in
-            Module = UnsitedBaseManager,APPLY(Url Func $)
-            if {Not {HasFeature Message 2}} then
-               thread {Wait Module} end
-            end
-         end
-
+      meth enter(name: ModName    <= NONE
+                 url:  UrlV       <= NONE
+                 type: ActualType <= NOTYPE
+                 Module)
+         Url = {NameOrUrlToUrl ModName UrlV}
+      in
+         UnsitedBaseManager,ENTER(Url Module ActualType)
       end
 
-      proc {TraceON X1 X2}
-         {System.printError 'Module manager: '#X1#' '#{UrlToVs X2}#'\n'}
-      end
-
-      Trace = {NewCell
-               if {OS.getEnv 'OZ_TRACE_MODULE'}==false
-               then TraceOFF else TraceON end}
-      ApiTrace =
-      trace(set:proc {$ B}
-                   {Assign Trace if B then TraceON else TraceOFF end}
-                end
-            get:fun {$ B} {Access Trace}==TraceON end)
-
-      PLATFORM = {Property.get 'platform.name'}
-
-      class RootManager from BaseManager
-
-         meth trace(M1 M2)
-            {{Access Trace} M1 M2}
-         end
-
-         meth load(Url $)
-            %% Takes a URL and returns a module
-            %% check if URL is annotated as denoting a `native functor'
-            if {IsNative Url} then
-               %% if yes, use the Foreign loader
-               {self Native(Url $)}
-            else
-               {self Pickle(Url Url $)}
-            end
-         end
-
-         meth Native(Url $)
-            {self trace('native module' Url)}
-            %% note that this method will not attempt to
-            %% localize. A derived class could redefine it
-            %% to attempt localization.
-            try
-               {Resolve.native.native {UrlToVs Url}#'-'#PLATFORM}
-            catch system(foreign(dlOpen _) ...) then
-               raise system(module(notFound native {UrlToAtom Url})) end
-            [] error(url(_ _) ...) then
-               raise system(module(notFound native {UrlToAtom Url})) end
-            end
-         end
-
-         meth Pickle(Url ResUrl $)
-            Fun
-         in
-            try
-               Fun={Resolve.pickle.load ResUrl}
-            catch error(url(O _) ...) then
-               raise system(module(notFound O {UrlToAtom Url})) end
-            end
-            {self APPLY(Url Fun $)}
-         end
-
-         meth systemResolve(Auth Url $)
-            try
-               {UrlResolve
-                case Auth
-                of system  then SystemHomeUrl
-                [] contrib then ContribHomeUrl
-                else raise badUrl end end
-                case {CondSelect Url path nil}
-                of (_|_)=L then
-                   L1 = {Reverse L}
-                   L2 =
-                   case L1 of H|T then
-                      if {Member &. H} then L
-                      else {Reverse {VirtualString.toString
-                                     H#FunctorExt}|T} end
-                   else raise badUrl end end
-                in
-                   {Adjoin Url url(scheme    : unit
-                                   authority : unit
-                                   device    : unit
-                                   absolute  : false
-                                   path      : L2)}
-                else raise badUrl end end}
-            catch badUrl then
-               raise error(module(urlSyntax {UrlToAtom Url})) end
-            end
-         end
-
-         meth systemApply(Auth Url $)
-            U = {self systemResolve(Auth Url $)}
-         in
-            if {IsNative U} then
-               {self Native(U $)}
-            else
-               {self Pickle(Url U $)}
-            end
-         end
-
-         meth GetSystemName(Url $)
-            case {CondSelect Url path unit}
-            of [Name] then
-               %% drop the extension of any
-               {String.token Name &. $ _}
-            else
-               raise error(module(urlSyntax {UrlToAtom Url})) end
-            end
-         end
-
-         meth GetSystemBoot(Name $)
-            {self trace('boot module' Name)}
-            try
-               {Boot.obtain true Name}
-            catch system(foreign(dlOpen _) ...) then
-               raise system(module(notFound system {UrlToAtom Name})) end
-            end
-         end
-
-         meth system(Url $)
-            {self trace('system method' Url)}
-            case {StringToAtom {CondSelect Url authority ""}}
-            of boot then
-               {self GetSystemBoot({self GetSystemName(Url $)} $)}
-            [] system then Name={self GetSystemName(Url $)} in
-               {self trace('system module' Url)}
-               if {IsNatSystemName Name} then
-                  {self GetSystemBoot(Name $)}
+      meth apply(name: ModName <= NONE
+                 url:  UrlV    <= NONE
+                 Func
+                 ?Module       <= _) = Message
+         Url = if ModName==NONE andthen UrlV==NONE then
+                  {UrlMake {OS.getCWD}#'/'}
                else
-                  {self systemApply(system Url $)}
+                  {NameOrUrlToUrl ModName UrlV}
                end
-            [] contrib then
-               {self trace('contrib module' Url)}
-               {self systemApply(contrib Url $)}
-            else
-               raise error(module(urlSyntax {UrlToAtom Url})) end
-            end
+      in
+         Module = UnsitedBaseManager,APPLY(Url Func $)
+         if {Not {HasFeature Message 2}} then
+            thread {Wait Module} end
          end
-
       end
 
-      RM = {New RootManager init}
+   end
 
-      class Manager
-         from RootManager
-         prop sited
+   proc {TraceON X1 X2}
+      {System.printError 'Module manager: '#X1#' '#{UrlToVs X2}#'\n'}
+   end
 
-         meth system(Url $)
-            {RM LINK(Url $)}
+   Trace = {NewCell
+            if {OS.getEnv 'OZ_TRACE_MODULE'}==false
+            then TraceOFF else TraceON end}
+   ApiTrace =
+   trace(set:proc {$ B}
+                {Assign Trace if B then TraceON else TraceOFF end}
+             end
+         get:fun {$ B} {Access Trace}==TraceON end)
+
+   PLATFORM = {Property.get 'platform.name'}
+
+   class RootManager from BaseManager
+
+      meth trace(M1 M2)
+         {{Access Trace} M1 M2}
+      end
+
+      meth !LOAD(Url $)
+         %% Takes a URL and returns a module
+         %% check if URL is annotated as denoting a `native functor'
+         if {IsNative Url} then
+            %% if yes, use the Foreign loader
+            {self Native(Url $)}
+         else
+            {self Pickle(Url Url $)}
          end
+      end
 
+      meth Native(Url $)
+         {self trace('native module' Url)}
+         %% note that this method will not attempt to
+         %% localize. A derived class could redefine it
+         %% to attempt localization.
+         try
+            {Resolve.native.native {UrlToVs Url}#'-'#PLATFORM}#NOTYPE
+         catch system(foreign(dlOpen _) ...) then
+            raise system(module(notFound native {UrlToAtom Url})) end
+         [] error(url(_ _) ...) then
+            raise system(module(notFound native {UrlToAtom Url})) end
+         end
+      end
+
+      meth Pickle(Url ResUrl $) Func in
+         try
+            Func = {Resolve.pickle.load ResUrl}
+         catch error(url(O _) ...) then
+            raise system(module(notFound O {UrlToAtom Url})) end
+         end
+         {self APPLY(Url Func $)}#Func.'export'
+      end
+
+      meth SystemResolve(Auth Url $)
+         try
+            {UrlResolve
+             case Auth
+             of system  then SystemHomeUrl
+             [] contrib then ContribHomeUrl
+             else raise badUrl end end
+             case {CondSelect Url path nil}
+             of (_|_)=L then
+                L1 = {Reverse L}
+                L2 =
+                case L1 of H|T then
+                   if {Member &. H} then L
+                   else {Reverse {VirtualString.toString
+                                  H#FunctorExt}|T} end
+                else raise badUrl end end
+             in
+                {Adjoin Url url(scheme    : unit
+                                authority : unit
+                                device    : unit
+                                absolute  : false
+                                path      : L2)}
+             else raise badUrl end end}
+         catch badUrl then
+            raise error(module(urlSyntax {UrlToAtom Url})) end
+         end
+      end
+
+      meth SystemApply(Auth Url $)
+         U = {self SystemResolve(Auth Url $)}
+      in
+         if {IsNative U} then
+            {self Native(U $)}
+         else
+            {self Pickle(Url U $)}
+         end
+      end
+
+      meth GetSystemName(Url $)
+         case {CondSelect Url path unit}
+         of [Name] then
+            %% drop the extension of any
+            {String.token Name &. $ _}
+         else
+            raise error(module(urlSyntax {UrlToAtom Url})) end
+         end
+      end
+
+      meth GetSystemBoot(Name $)
+         {self trace('boot module' Name)}
+         try
+            {Boot.obtain true Name}#NOTYPE
+         catch system(foreign(dlOpen _) ...) then
+            raise system(module(notFound system {UrlToAtom Name})) end
+         end
+      end
+
+      meth !SYSTEM(Url $)
+         {self trace('system method' Url)}
+         case {StringToAtom {CondSelect Url authority ""}}
+         of boot then
+            {self GetSystemBoot({self GetSystemName(Url $)} $)}
+         [] system then Name={self GetSystemName(Url $)} in
+            {self trace('system module' Url)}
+            if {IsNatSystemName Name} then
+               {self GetSystemBoot(Name $)}
+            else
+               {self SystemApply(system Url $)}
+            end
+         [] contrib then
+            {self trace('contrib module' Url)}
+            {self SystemApply(contrib Url $)}
+         else
+            raise error(module(urlSyntax {UrlToAtom Url})) end
+         end
+      end
+
+   end
+
+   RM = {New RootManager init}
+
+   class Manager
+      from RootManager
+      prop sited
+
+      meth !SYSTEM(Url $)
+         {RM LINK(Url NOTYPE $ _)}
       end
 
    end

@@ -94,7 +94,8 @@ prepare
       Event(getStream) at 'x-oz://boot/Event'
       Error(registerFormatter)
       EventSIGCHLD(handler) at 'x-oz://system/EventSIGCHLD'
-      Timer(       handler) at 'x-oz://system/Timer'
+      Timer(timerHandler delayHandler)
+      OS(ioHandler) Perdio(handler)
    export
       put            : PutEventHandler
       get            : GetEventHandler
@@ -153,7 +154,10 @@ prepare
       %% register some handlers
 
       {PutEventHandler 'SIGCHLD' EventSIGCHLD.handler}
-      {PutEventHandler 'timer'   Timer       .handler}
+      {PutEventHandler 'timer'   Timer       .timerHandler}
+      {PutEventHandler 'delay'   Timer       .delayHandler}
+      {PutEventHandler 'io'      OS          .ioHandler}
+      {PutEventHandler 'dp.init' Perdio      .handler}
 
       %% start a high priority thread to process the event stream
 

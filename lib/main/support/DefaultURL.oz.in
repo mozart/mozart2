@@ -56,7 +56,7 @@ prepare
                    'Type' 'Narrator' 'Listener' 'ErrorListener'
                    'DefaultURL' 'ObjectSupport'
 \ifdef DENYS_EVENTS
-                   'Timer'
+                   'Timer' 'Perdio'
 \endif
                   ]
       Volatiles = ['Module'

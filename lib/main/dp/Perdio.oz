@@ -2,7 +2,7 @@ functor
 import
    DPB at 'x-oz://boot/DPB'
    Event(put)
-   Timer(alarm:Alarm delay:Delay)
+   Timer(alarm:Alarm)
 export
    handler : PerdioHandler
 define

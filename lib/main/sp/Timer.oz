@@ -2,13 +2,14 @@ functor
 import
    Timer(setTimer mTime) at 'x-oz://boot/Timer'
 export
-   alarm   : Alarm
-   delay   : Delay
-   handler : TimerHandler
+   Alarm Delay TimerHandler DelayHandler
 define
    TimerBox
    proc {TimerHandler _}
       {Send TimerBox tick}
+   end
+   proc {DelayHandler E}
+      case E of delay(T V) then {Alarm T V} end
    end
    fun {Alarm T}
       Synch

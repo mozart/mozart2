@@ -1,7 +1,7 @@
 functor
 import
    VS           at 'x-oz://boot/VirtualSite'
-   Timer(delay) at 'x-oz://system/Timer'
+   Timer(delay)
    Event(put)
 define
 

@@ -177,7 +177,7 @@ in
          end
       end
 
-      class DescClass from BaseObject
+      class DescClass
          prop
             native
          feat
@@ -216,22 +216,18 @@ in
          end
 
          meth !CloseDescs
-            RD=@ReadDesc WD=@WriteDesc
-         in
-            if {IsInt RD} then
-               {OS.deSelect RD} {OS.close RD}
-               if RD\=WD then
-                  {OS.deSelect WD} {OS.close WD}
-               end
-               ReadDesc  <- true
-               WriteDesc <- true
-            end
-         end
-
-         meth close
             lock self.ReadLock then
                lock self.WriteLock then
-                  DescClass, CloseDescs
+                  RD=@ReadDesc WD=@WriteDesc
+               in
+                  if {IsInt RD} then
+                     {OS.deSelect RD} {OS.close RD}
+                     if RD\=WD then
+                        {OS.deSelect WD} {OS.close WD}
+                     end
+                     ReadDesc  <- true
+                     WriteDesc <- true
+                  end
                end
             end
          end
@@ -363,6 +359,9 @@ in
                end
             end
 
+            meth close
+               DescClass, CloseDescs
+            end
          end
 
       end
@@ -587,6 +586,9 @@ in
                      end
                   end
                end
+            end
+            meth close
+               DescClass, CloseDescs
             end
          end
 

@@ -33,7 +33,7 @@ FDOZF = $(FDLOCAL:%=./fd/%.ozf)
 
 # Tests for finite sets
 FSLOCAL = \
-        golf crew hamming steiner knapsack misc
+        golf-reified crew hamming steiner knapsack misc
 
 FSOZF = $(FSLOCAL:%=./fs/%.ozf)
 

@@ -22,9 +22,9 @@
 
 local
 
-   \insert './DP/MakeAllLoader.oz'
+   \insert 'DP/MakeAllLoader.oz'
 
-   \insert './DP/RemoteServer.oz'
+   \insert 'DP/RemoteServer.oz'
 
 in
 

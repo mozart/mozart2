@@ -679,7 +679,9 @@ in
             if {@entry hasRefs($)} then {@mode getFirstItem($)} else {@label getFirstItem($)} end
          end
          meth makeDirty
-            {@entry sleep} {@mode makeDirty} LabelTupleDrawObject, makeDirty
+            {@entry sleep}
+            {@mode makeDirty}
+            LabelTupleDrawObject, makeDirty
          end
       end
    in

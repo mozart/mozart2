@@ -24,8 +24,8 @@ import
    FD(reflect)
    FS(reflect)
    RecordC(hasLabel monitorArity)
-   System(printName show)
-   Helper
+   System(eq printName show)
+   HelperComponent('nodes' : Helper) at 'Helper.ozf'
 export
    createObject                  : CreateObject
    intCreateObject               : IntCreateObject
@@ -52,22 +52,15 @@ export
    byteStringCreateObject        : ByteStringCreateObject
    freeCreateObject              : FreeCreateObject
    freeGrCreateObject            : FreeGrCreateObject
-   fDIntCreateObject             : FDIntCreateObject
-   fDIntGrCreateObject           : FDIntGrCreateObject
-   fSValCreateObject             : FSValCreateObject
-   fSValGrCreateObject           : FSValGrCreateObject
-   fSHelperCreateObject          : FSHelperCreateObject
-   fSVarCreateObject             : FSVarCreateObject
-   fSVarGrCreateObject           : FSVarGrCreateObject
+   fdIntCreateObject             : FDIntCreateObject
+   fdIntGrCreateObject           : FDIntGrCreateObject
+   fsValCreateObject             : FSValCreateObject
+   fsValGrCreateObject           : FSValGrCreateObject
+   fsHelperCreateObject          : FSHelperCreateObject
+   fsVarCreateObject             : FSVarCreateObject
+   fsVarGrCreateObject           : FSVarGrCreateObject
    genericCreateObject           : GenericCreateObject
    atomRefCreateObject           : AtomRefCreateObject
-   tupleSMLCreateObject          : TupleSMLCreateObject
-   vectorSMLCreateObject         : VectorSMLCreateObject
-   listSMLCreateObject           : ListSMLCreateObject
-   recordSMLCreateObject         : RecordSMLCreateObject
-   recordSMLIndCreateObject      : RecordSMLIndCreateObject
-   cellSMLCreateObject           : CellSMLCreateObject
-   wordSMLCreateObject           : WordSMLCreateObject
 define
    class CreateObject
       attr

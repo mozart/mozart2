@@ -25,7 +25,7 @@ import
    RecordC(hasLabel)
    System(eq show)
    Tk(send)
-   Helper
+   HelperComponent('nodes' : Helper) at 'Helper.ozf'
 export
    drawObject                  : DrawObject
    recordDrawObject            : RecordDrawObject
@@ -49,8 +49,8 @@ export
    futureGrDrawObject          : FutureGrDrawObject
    freeDrawObject              : FreeDrawObject
    freeGrDrawObject            : FreeGrDrawObject
-   fDIntDrawObject             : FDIntDrawObject
-   fDIntGrDrawObject           : FDIntGrDrawObject
+   fdIntDrawObject             : FDIntDrawObject
+   fdIntGrDrawObject           : FDIntGrDrawObject
    atomRefDrawObject           : AtomRefDrawObject
 define
    RecordCreateObject       = CreateObjects.recordCreateObject

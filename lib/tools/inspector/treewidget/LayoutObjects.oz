@@ -23,15 +23,13 @@ functor $
 import
    System(show printName)
    Word(toInt) at 'x-oz://boot/Word.ozf'
-   Helper
+   HelperComponent('nodes' : Helper) at 'Helper.ozf'
 export
    layoutObject                : LayoutObject
    intLayoutObject             : IntLayoutObject
    floatLayoutObject           : FloatLayoutObject
    atomLayoutObject            : AtomLayoutObject
-   atomSMLLayoutObject         : AtomSMLLayoutObject
    nameLayoutObject            : NameLayoutObject
-   nameSMLLayoutObject         : NameSMLLayoutObject
    procedureLayoutObject       : ProcedureLayoutObject
    recordLayoutObject          : RecordLayoutObject
    recordIndLayoutObject       : RecordIndLayoutObject
@@ -50,15 +48,12 @@ export
    byteStringLayoutObject      : ByteStringLayoutObject
    freeLayoutObject            : FreeLayoutObject
    freeGrLayoutObject          : FreeGrLayoutObject
-   fDIntLayoutObject           : FDIntLayoutObject
-   fDIntGrLayoutObject         : FDIntGrLayoutObject
-   fSVarLayoutObject           : FSVarLayoutObject
-   fSVarGrLayoutObject         : FSVarGrLayoutObject
+   fdIntLayoutObject           : FDIntLayoutObject
+   fdIntGrLayoutObject         : FDIntGrLayoutObject
+   fsVarLayoutObject           : FSVarLayoutObject
+   fsVarGrLayoutObject         : FSVarGrLayoutObject
    genericLayoutObject         : GenericLayoutObject
    atomRefLayoutObject         : AtomRefLayoutObject
-   tupleSMLLayoutObject        : TupleSMLLayoutObject
-   listSMLLayoutObject         : ListSMLLayoutObject
-   wordSMLLayoutObject         : WordSMLLayoutObject
 define
    class LayoutObject
       attr

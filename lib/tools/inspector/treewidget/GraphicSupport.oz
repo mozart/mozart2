@@ -43,6 +43,7 @@ define
             color      %% FG Color
             mapEntries %% Entries in Mapstate
             menuData   %% MenuData List
+            menuTitle  %% Menu Title
          meth create(Visual Type MenuData)
             @type       = Type
             @widPort    = {Visual getServer($)}
@@ -54,6 +55,7 @@ define
                                   tearoff: false)}
             @mapEntries = false|_|_
             @menuData   = MenuData
+            @menuTitle  = {Visual get(widgetContextMenuTitle $)}
             MenuClass, BuildEntries(@menu MenuClass, Transform(Type MenuData $))
          end
          meth updateMenu(MenuData)
@@ -138,7 +140,7 @@ define
                FilterSkel = MenuClass, CreateFilterEntries(Fs $)
                ActionSkel = MenuClass, CreateActionEntries(As $)
             in
-               [title({VirtualString.toAtom Type#' Menu'})
+               [title({@menuTitle Type})
                 cascade([title('Exlore Tree')
                          cascade(title('Width')|WidthSkel)
                          cascade(title('Depth')|DepthSkel)])

@@ -23,136 +23,36 @@ functor $
 import
    System(show printName)
 export
-   quoteString  : QuoteStr
-   convert      : ConvertAtomExternal
-   convertSML   : ConvertAtomSML
-   atom         : AtomNode
-   atomSML      : AtomSMLNode
-   label        : LabelNode
-   labelSML     : LabelSMLNode
-   separator    : SeparatorNode
-   separatorSML : SeparatorSMLNode
-   feature      : FeatureNode
-   featureInd   : FeatureIndNode
-   bitmap       : BitmapNode
-   proxy        : ProxyNode
-   embraced     : EmbracedNode
-   box          : BoxedNode
-   empty        : EmptyNode
-   tupleSML     : TupleSMLNode
-   recordSML    : RecordSMLNode
-   recordSMLInd : RecordSMLIndNode
+   Nodes
 define
-   QuoteStr
-   local
-%       fun {OctStr I Ir}
-%        ((I div 64) mod 8 + &0)|((I div 8)  mod 8 + &0)|(I mod 8 + &0)|Ir
-%       end
-%       fun {SkipQuoting As}
-%        case As
-%        of A|Ar then
-%           {Char.type A} == lower andthen {IsAlphaNum Ar}
-%        else true
-%        end
-%       end
-      fun {IsAlphaNum As}
-         case As
-         of nil  then true
-         [] A|Ar then
-            T = {Char.type A}
-         in
-            ((T == upper) orelse (T == lower) orelse (T == digit) orelse (A == 95)) andthen {IsAlphaNum Ar}
-         end
-      end
-   in
-      fun {QuoteStr Is}
-         case Is
-         of nil  then nil
-         [] I|Ir then
-            case {Char.type I}
-%           of space then
-%              case I
-%              of &\n then &\\|&n|{QuoteStr Ir}
-%              [] &\f then &\\|&f|{QuoteStr Ir}
-%              [] &\r then &\\|&r|{QuoteStr Ir}
-%              [] &\t then &\\|&t|{QuoteStr Ir}
-%              [] &\v then &\\|&v|{QuoteStr Ir}
-%              else I|{QuoteStr Ir}
-%              end
-%           [] other then
-%              case I
-%              of &\a then &\\|&a|{QuoteStr Ir}
-%              [] &\b then &\\|&b|{QuoteStr Ir}
-%              else &\\|{OctStr I {QuoteStr Ir}}
-%              end
-            of punct then
-               case I
-               of 34  then 92|34|{QuoteStr Ir}  %% '"'
-               [] 36  then 92|36|{QuoteStr Ir}  %% '$'
-               [] 39  then 92|39|{QuoteStr Ir}  %% '''
-               [] 92  then 92|92|{QuoteStr Ir}  %% '\'
-               [] 91  then 92|91|{QuoteStr Ir}  %% '['
-               [] 93  then 92|93|{QuoteStr Ir}  %% ']'
-               [] 123 then 92|123|{QuoteStr Ir} %% '{'
-               [] 125 then 92|125|{QuoteStr Ir} %% '}'
-               else I|{QuoteStr Ir}
-               end
-            else I|{QuoteStr Ir}
+   %% -- This should be placed within GraphicSupport.oz
+   %% This functions handles some special Tcl Characters
+   fun {TkQuoteStr Is}
+      case Is
+      of nil  then nil
+      [] I|Ir then
+         case {Char.type I}
+         of punct then
+            case I
+            of 34  then 92|34|{TkQuoteStr Ir}  %% '"'
+            [] 36  then 92|36|{TkQuoteStr Ir}  %% '$'
+            [] 39  then 92|39|{TkQuoteStr Ir}  %% '''
+            [] 92  then 92|92|{TkQuoteStr Ir}  %% '\'
+            [] 91  then 92|91|{TkQuoteStr Ir}  %% '['
+            [] 93  then 92|93|{TkQuoteStr Ir}  %% ']'
+            [] 123 then 92|123|{TkQuoteStr Ir} %% '{'
+            [] 125 then 92|125|{TkQuoteStr Ir} %% '}'
+            else I|{TkQuoteStr Ir}
             end
+         else I|{TkQuoteStr Ir}
          end
       end
-      fun {QuoteStrSML Is}
-         case Is
-         of nil  then nil
-         [] I|Ir then
-            case {Char.type I}
-            of punct then
-               case I
-               of 34  then 92|34|{QuoteStrSML Ir}  %% '"'
-               [] 36  then 92|36|{QuoteStrSML Ir}  %% '$'
-               [] 39  then 92|39|{QuoteStrSML Ir}  %% '''
-               [] 92  then 92|92|{QuoteStrSML Ir}  %% '\'
-               [] 91  then 92|91|{QuoteStrSML Ir}  %% '['
-               [] 93  then 92|93|{QuoteStrSML Ir}  %% ']'
-               [] 123 then 92|123|{QuoteStrSML Ir} %% '{'
-               [] 125 then 92|125|{QuoteStrSML Ir} %% '}'
-               else I|{QuoteStrSML Ir}
-               end
-            else I|{QuoteStrSML Ir}
-            end
-         end
-      end
-      proc {ConvertAtomExternal V PrintStr LenStr}
-         LenStr   = {Value.toVirtualString V 0 0}
-         PrintStr = {QuoteStr LenStr}
-      end
-      local
-         fun {RemoveQuotes Vs}
-            case Vs
-            of 39|nil then nil
-            [] V|Vr   then V|{RemoveQuotes Vr}
-            [] V      then V
-            end
-         end
-         fun {RemoveBackQuotes Vs}
-            case Vs
-            of 92|39|Vr then 39|{RemoveBackQuotes Vr}
-            [] V|Vr     then V|{RemoveBackQuotes Vr}
-            [] V        then V
-            end
-         end
-      in
-         proc {ConvertAtomSML V PrintStr LenStr}
-            LenStr   = case {RemoveBackQuotes {Value.toVirtualString V 0 0}}
-                       of 39|Vr then {RemoveQuotes Vr}
-                       [] Vs    then Vs
-                       end
-            PrintStr = {QuoteStrSML LenStr}
-         end
-      end
-%      fun {ConvertAtom V}
-%        {QuoteStr {Value.toVirtualString V 0 0}}
-%      end
+   end
+   %% -- End of GraphicSupport.oz region
+
+   proc {ConvertAtom V PrintStr LenStr}
+      LenStr   = {Value.toVirtualString V ~1 ~1}
+      PrintStr = {TkQuoteStr LenStr}
    end
 
    local
@@ -255,12 +155,12 @@ define
             type   %% Internal Atom Type
             parent %% Parent Node
          meth create(Value Parent Index Visual Type)
-            StrVal = {VirtualString.toString Value}
+            ValStr = {VirtualString.toString Value}
          in
             @visual = Visual
             @tag    = {Visual newTag($)}
-            @string = {QuoteStr StrVal}
-            @xDim   = {VirtualString.length StrVal}
+            @string = {TkQuoteStr ValStr}
+            @xDim   = {VirtualString.length ValStr}
             @index  = Index
             @type   = Type
             @parent = Parent
@@ -310,17 +210,6 @@ define
          end
       end
 
-      class AtomSMLNode from AtomNode
-         meth create(Value Parent Index Visual Type)
-            @visual = Visual
-            @tag    = {Visual newTag($)}
-            @xDim   = ({VirtualString.length {ConvertAtomSML Value @string}} + 1)
-            @index  = Index
-            @type   = Type
-            @parent = Parent
-         end
-      end
-
       class LabelNode from SharedValues SecondTags SharedProcs
          attr
             value  %% Store Reference
@@ -350,7 +239,7 @@ define
             then
                PrintStr = @string
             in
-               XDim = ({VirtualString.length {ConvertAtomExternal @value PrintStr}} + 1)
+               XDim = ({VirtualString.length {ConvertAtom @value PrintStr}} + 1)
             end
             XDim
          end
@@ -384,19 +273,6 @@ define
          end
       end
 
-      class LabelSMLNode from LabelNode
-         prop
-            final
-         meth layoutX($)
-            XDim = @xDim
-         in
-            if {IsFree XDim}
-            then XDim = ({VirtualString.length {ConvertAtomSML @value @string}} + 1)
-            end
-            XDim
-         end
-      end
-
       class FeatureNode from CombinedValues SecondTags GetType
          attr
             sDim %% String Length
@@ -405,13 +281,16 @@ define
          in
             CombinedValues, create(Node Visual)
             @secTag = {Visual newTag($)}
-            String  = if {IsAtom FeaVal}
-                      then {ConvertAtomExternal FeaVal _}
-                      elseif {IsName FeaVal}
-                      then '<N:'#{System.printName FeaVal}#'>'
-                      else FeaVal
-                      end
-            @sDim   = {VirtualString.length String}
+            if {IsAtom FeaVal}
+            then
+              @sDim = {VirtualString.length {ConvertAtom FeaVal String}}
+            else
+               String  = if {IsName FeaVal}
+                         then '<N:'#{System.printName FeaVal}#'>'
+                         else FeaVal
+                         end
+               @sDim   = {VirtualString.length String}
+            end
          end
          meth isInfix($)
             {@node isInfix($)}
@@ -625,244 +504,6 @@ define
          end
          meth getSelectionNode($)
             {@node getParent($)}
-         end
-      end
-
-      class SeparatorSMLNode from SeparatorNode
-         meth layout
-            Node = @node
-         in
-            case {Node layoutY($)}
-            of XDim|YDim then
-               LXDim = ({Node getLastXDim($)} + {VirtualString.length @string})
-            in
-               xDim     <- {Max XDim LXDim}
-               yDim     <- YDim
-               lastXDim <- LXDim
-            end
-         end
-         meth layoutX($)
-            SeparatorSMLNode, layout @xDim
-         end
-         meth layoutY($)
-            SeparatorSMLNode, layout @xDim|@yDim
-         end
-         meth draw(X Y)
-            Visual = @visual
-            Node   = @node
-            NewY   = ({Node drawY(X Y $)} - 1)
-            String = @string
-            NewX   = (X + @lastXDim - {VirtualString.length String})
-         in
-            if @dirty
-            then dirty <- false {Visual printXY(NewX NewY String @tag separator)}
-            else {Visual place(NewX NewY @tag)}
-            end
-         end
-         meth drawX(X Y $)
-            SeparatorSMLNode, draw(X Y) (X + @xDim)
-         end
-         meth drawY(X Y $)
-            SeparatorSMLNode, draw(X Y) (Y + @yDim)
-         end
-         meth searchNode(XA YA X Y $)
-            Node   = @node
-            XSep   = (XA + @lastXDim)
-            SepDim = {VirtualString.length @string}
-         in
-            if ((SepDim == 2 andthen (X == (XSep - 1) orelse X == (XSep - 2)))
-                orelse (SepDim == 1 andthen X == (XSep - 1)))
-               andthen Y == (YA + @yDim - 1)
-            then self
-            elsecase {Node getXYDim($)}
-            of XDim|YDim then
-               YM = (YA + YDim)
-            in
-               if Y >= YA andthen Y < YM andthen X >= XA andthen X < (XA + XDim)
-               then {Node searchNode(XA YA X Y $)}
-               else nil
-               end
-            end
-         end
-         meth changeSep(SepVal)
-            if @dirty then skip else dirty <- true {@visual delete(@tag)} end string <- SepVal
-         end
-      end
-
-      class TupleSMLNode from SeparatorNode
-         meth create(FeaVal Visual Node)
-            @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
-            CombinedValues, create(Node Visual)
-         end
-         meth layout
-            Node = @node
-         in
-            case {Node layoutY($)}
-            of XDim|YDim then
-               DeltaX = {VirtualString.length @string}
-               LXDim  = ({Node getLastXDim($)} + DeltaX)
-            in
-               xDim     <- {Max XDim LXDim}
-               yDim     <- YDim
-               lastXDim <- LXDim
-            end
-         end
-         meth layoutX($)
-            TupleSMLNode, layout @xDim
-         end
-         meth layoutY($)
-            TupleSMLNode, layout @xDim|@yDim
-         end
-         meth draw(X Y)
-            Visual = @visual
-            Node   = @node
-            NewY   = ({Node drawY(X Y $)} - 1)
-            NewX   = (X + @lastXDim - 1)
-            String = @string
-         in
-            case String
-            of '' then skip
-            elseif @dirty
-            then dirty <- false {Visual printXY(NewX NewY String @tag internal)}
-            else {Visual place(NewX NewY @tag)}
-            end
-         end
-         meth drawX(X Y $)
-            TupleSMLNode, draw(X Y) (X + @xDim)
-         end
-         meth drawY(X Y $)
-            TupleSMLNode, draw(X Y) (Y + @yDim)
-         end
-         meth undraw
-            if @dirty
-            then skip
-            else
-               dirty <- true
-               case @string of '' then skip else {@visual delete(@tag)} end
-            end
-            {@node undraw}
-         end
-         meth searchNode(XA YA X Y $)
-            Node = @node
-         in
-            if {VirtualString.length @string} == 1 andthen
-               X == (XA + @lastXDim - 1) andthen Y == (YA + @yDim - 1)
-            then self
-            elsecase {Node getXYDim($)}
-            of XDim|YDim then
-               YM = (YA + YDim)
-            in
-               if Y >= YA andthen Y < YM andthen X >= XA andthen X < (XA + XDim)
-               then {Node searchNode(XA YA X Y $)}
-               else nil
-               end
-            end
-         end
-         meth remove($)
-            if @dirty orelse @string == '' then skip else {@visual delete(@tag)} end
-            @node
-         end
-      end
-
-
-      local
-         class FeatureSMLNode from FeatureNode
-            meth create(FeaVal Visual Node)
-               String = @string
-            in
-               CombinedValues, create(Node Visual)
-               @secTag = {Visual newTag($)}
-               String  = if {IsAtom FeaVal}
-                         then {ConvertAtomSML FeaVal _}
-                         elseif {IsName FeaVal}
-                         then '<N:'#{System.printName FeaVal}#'>'
-                         else FeaVal
-                         end
-               @sDim   = {VirtualString.length String}
-            end
-            meth draw(X Y)
-               Visual = @visual
-               SDim   = @sDim
-            in
-               if @dirty
-               then
-                  dirty <- false
-                  {Visual printXY(X Y @string @tag feature)}
-                  {Visual printXY((X + SDim) Y '=' @secTag colon)}
-               else {Visual doublePlace(X Y SDim @tag @secTag)}
-               end
-               {@node draw((X + SDim + 1) Y)}
-            end
-            meth drawX(X Y $)
-               FeatureSMLNode, draw(X Y) (X + @xDim)
-            end
-            meth drawY(X Y $)
-               FeatureSMLNode, draw(X Y) (Y + @yDim)
-            end
-            meth getParent($)
-               {@node getParent($)}
-            end
-         end
-         class FeatureSMLIndNode from FeatureIndNode
-            meth create(FeaVal Visual Node)
-               String = @string
-            in
-               CombinedValues, create(Node Visual)
-               @secTag = {Visual newTag($)}
-               String  = if {IsAtom FeaVal}
-                         then {ConvertAtomSML FeaVal _}
-                         elseif {IsName FeaVal}
-                         then '<N:'#{System.printName FeaVal}#'>'
-                         else FeaVal
-                         end
-               @sDim   = {VirtualString.length String}
-            end
-            meth draw(X Y)
-               Visual = @visual
-               SDim   = @sDim
-               Node   = @node
-            in
-               if @dirty
-               then
-                  dirty <- false
-                  {Visual printXY(X Y @string @tag feature)}
-                  {Visual printXY((X + SDim) Y '=' @secTag colon)}
-               else {Visual doublePlace(X Y SDim @tag @secTag)}
-               end
-               if {{Node getParent($)} getHorzMode($)}
-               then {Node draw((X + SDim + 1) Y)}
-               else {Node draw((X + 3) (Y + 1))}
-               end
-            end
-            meth drawX(X Y $)
-               FeatureSMLIndNode, draw(X Y) (X + @xDim)
-            end
-            meth drawY(X Y $)
-               FeatureSMLIndNode, draw(X Y) (Y + @yDim)
-            end
-            meth getParent($)
-               {@node getParent($)}
-            end
-         end
-      in
-         class RecordSMLNode from TupleSMLNode
-            meth create(FeaVal Visual Node)
-               NewNode = {New FeatureSMLNode create(FeaVal Visual Node)}
-            in
-               @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
-               CombinedValues, create(NewNode Visual)
-            end
-            meth change(Node)
-               {@node change(Node)}
-            end
-         end
-         class RecordSMLIndNode from RecordSMLNode
-            meth create(FeaVal Visual Node)
-               NewNode = {New FeatureSMLIndNode create(FeaVal Visual Node)}
-            in
-               @string = if {{Node getParent($)} isLast(Node $)} then '' else ',' end
-               CombinedValues, create(NewNode Visual)
-            end
          end
       end
 
@@ -1434,4 +1075,18 @@ define
          skip
       end
    end
+
+   %% Create The Export Record
+   Nodes = 'nodes'(tkQuoteStr   : TkQuoteStr
+                   convert      : ConvertAtom
+                   atom         : AtomNode
+                   label        : LabelNode
+                   separator    : SeparatorNode
+                   feature      : FeatureNode
+                   featureInd   : FeatureIndNode
+                   bitmap       : BitmapNode
+                   proxy        : ProxyNode
+                   embraced     : EmbracedNode
+                   box          : BoxedNode
+                   empty        : EmptyNode)
 end

@@ -604,7 +604,6 @@ local
             visualGreen
             visualBlue
             visualRecAlign
-            visualSMLMode
          meth create
             MyBook   = @book
             MyNote   = {New TkTools.note
@@ -738,30 +737,6 @@ local
                                       height:             0
                                       borderwidth:        0
                                       highlightthickness: 0)}
-               SMLFrame     = {New TkTools.textframe
-                               tkInit(parent: MyFrame
-                                      text:   'Node Syntax')}
-               SMLInner     = SMLFrame.inner
-               SMLVar       = local
-                                 Val    = {Dictionary.get OpDict widgetUseNodeSet}
-                                 NewVal = if Val == 3 then 1 else 0 end
-                              in
-                                 {New Tk.variable tkInit(NewVal)}
-                              end
-               SMLButton    = {New Tk.checkbutton
-                               tkInit(parent:   SMLInner
-                                      text:     'Use SML Syntax'
-                                      onvalue:  1
-                                      offvalue: 0
-                                      font:      MediumFont
-                                      variable: SMLVar
-                                      anchor:   w)}
-               SMLFillC     = {New Tk.canvas
-                               tkInit(parent:             SMLInner
-                                      width:              251
-                                      height:             0
-                                      borderwidth:        0
-                                      highlightthickness: 0)}
             in
                @visualCurType = SelColor
                @visualCanvas  = ColorCanvas
@@ -772,25 +747,23 @@ local
                @visualFontBold = BoldVar
                @visualFontSize = InitFSize
                @visualRecAlign = RecordVar
-               @visualSMLMode  = SMLVar
                {self handle(selCol(VisualNote, MatchColor(1 GetColor $)))}
-               {Tk.batch [grid(row: 0 column: 0 TypeLabel padx: 4 pady: 4 sticky: w)
+               {Tk.batch [grid(row: 0 column: 0 SizeLabel padx: 4 pady: 4 sticky: w)
+                          grid(row: 0 column: 1 SizeSelector padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 2 BoldFillCanv padx: 0 pady: 0 sticky: nw)
+                          grid(row: 0 column: 3 BoldButton padx: 4 pady: 4 sticky: w)
+                          grid(row: 0 column: 0 FontFrame padx: 4 pady: 4 sticky: nw)
+
+                          grid(row: 0 column: 0 RecordButton padx: 4 pady: 4 sticky: nw)
+                          grid(row: 0 column: 1 RecordFillC padx:0 pady:0 sticky: nw)
+                          grid(row: 1 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)
+
+                          grid(row: 0 column: 0 TypeLabel padx: 4 pady: 4 sticky: w)
                           grid(row: 0 column: 1 TypeSelector padx: 4 pady: 4 sticky: nw)
                           grid(row: 0 column: 2 FillCanvas   padx: 0 pady: 0 sticky: nw)
                           grid(row: 0 column: 0 TypeFrame padx: 4 pady: 4 sticky:nw)
                           grid(row: 1 column: 0 ColorCanvas padx: 50 pady: 4 sticky: nw)
-                          grid(row: 0 column: 0 ColorFrame padx: 4 pady: 4 sticky: nw)
-                          grid(row: 0 column: 0 SizeLabel padx: 4 pady: 4 sticky: w)
-                          grid(row: 0 column: 1 SizeSelector padx: 4 pady: 4 sticky: nw)
-                          grid(row: 0 column: 2 BoldFillCanv padx: 0 pady: 0 sticky: nw)
-                          grid(row: 0 column: 3 BoldButton padx: 4 pady: 4 sticky: w)
-                          grid(row: 1 column: 0 FontFrame padx: 4 pady: 4 sticky: nw)
-                          grid(row: 0 column: 0 RecordButton padx: 4 pady: 4 sticky: nw)
-                          grid(row: 0 column: 1 RecordFillC padx:0 pady:0 sticky: nw)
-                          grid(row: 2 column: 0 RecordFrame padx: 4 pady:4 sticky: nw)
-                          grid(row: 0 column: 0 SMLButton padx: 4 pady: 4 sticky: nw)
-                          grid(row: 0 column: 1 SMLFillC padx: 0 pady:0 sticky: nw)
-                          grid(row: 3 column: 0 SMLFrame padx: 4 pady: 4 sticky: nw)]}
+                          grid(row: 2 column: 0 ColorFrame padx: 4 pady: 4 sticky: nw)]}
             end
             {Tk.send pack(MyCanvas anchor: nw padx: 0 pady: 0)}
          end
@@ -958,11 +931,7 @@ local
              widgetTreeFont font(family: 'courier'
                                  size:   @visualFontSize
                                  weight: {@visualFontBold tkReturnAtom($)})}
-            {Dictionary.put OpDict widgetUseNodeSet
-             if {@visualSMLMode tkReturnInt($)} == 1
-             then 3
-             else {@visualRecAlign tkReturnInt($)}
-             end}
+            {Dictionary.put OpDict widgetUseNodeSet {@visualRecAlign tkReturnInt($)}}
          end
       end
    end

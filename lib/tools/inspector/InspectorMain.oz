@@ -21,8 +21,8 @@
 
 functor $
 import
+   TreeWidgetComponent('class' : TreeWidget 'nodes' : TreeNodes) at 'TreeWidget.ozf'
    InspectorOptions
-   TreeWidget
    Tk
    TkTools
    System(eq show)
@@ -33,6 +33,7 @@ export
    'inspectN'  : InspectN
    'configure' : Configure
    'close'     : Close
+   'nodes'     : TreeNodes
 define
    local
       InspPort
@@ -46,7 +47,6 @@ define
          end
          P
       end
-      TreeWidgetClass = TreeWidget.'class'
       local
          Items      = {NewName}
          NumItems   = {NewName}
@@ -131,16 +131,9 @@ define
             meth create(Options)
                Width  = {Dictionary.get Options inspectorWidth}
                Height = {Dictionary.get Options inspectorHeight}
-               Frame ManagerFrame Prefix
+               Frame ManagerFrame
             in
-               case {Dictionary.get Options inspectorLanguage}
-               of 'Alice' then
-                  Prefix = 'Alice'
-                  {Dictionary.put Options widgetUseNodeSet 3}
-               [] 'Oz'    then
-                  Prefix = 'Oz'
-               end
-               Tk.toplevel, tkInit(title:    Prefix#' Inspector'
+               Tk.toplevel, tkInit(title: {Dictionary.get Options inspectorLanguage}#' Inspector'
                                    delete:   proc {$} {Port.send InspPort close} end
                                    width:    Width
                                    height:   Height
@@ -301,14 +294,7 @@ define
             meth configureEntry(Key Value)
                Options = @options
             in
-               if Key == 'inspectorLanguage'
-               then
-                  {Tk.send wm(title self Value#' Inspector')}
-                  if Value == 'Alice'
-                  then
-                     {Dictionary.put Options widgetUseNodeSet 3}
-                  end
-               end
+               if Key == 'inspectorLanguage' then {Tk.send wm(title self Value#' Inspector')} end
                {Dictionary.put Options Key Value}
                InspectorClass, setOptions(Options)
             end

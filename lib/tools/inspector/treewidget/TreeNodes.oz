@@ -25,454 +25,99 @@ import
    LayoutObjects
    DrawObjects
 export
-   int               : Int
-   float             : Float
-   atom              : Atom
-   atomSML           : AtomSML
-   name              : Name
-   nameSML           : NameSML
-   procedure         : Procedure
-   record            : Record
-   recordInd         : RecordInd
-   recordGr          : RecordGr
-   recordGrInd       : RecordGrInd
-   kindedrecord      : KindedRecord
-   kindedrecordInd   : KindedRecordInd
-   kindedrecordGr    : KindedRecordGr
-   kindedrecordGrInd : KindedRecordGrInd
-   hashtuple         : HashTuple
-   hashtupleGr       : HashTupleGr
-   pipetuple         : PipeTuple
-   pipetupleGrS      : PipeTupleGrS
-   pipetupleGrM      : PipeTupleGrM
-   labeltuple        : LabelTuple
-   labeltupleInd     : LabelTupleInd
-   labeltupleGr      : LabelTupleGr
-   labeltupleGrInd   : LabelTupleGrInd
-   future            : Future
-   futureGr          : FutureGr
-   bytestring        : ByteString
-   free              : Free
-   freeGr            : FreeGr
-   fdint             : FDInt
-   fdintGr           : FDIntGr
-   fsval             : FSVal
-   fsvalGr           : FSValGr
-   fshelper          : FSHelper
-   fsvar             : FSVar
-   fsvarGr           : FSVarGr
-   tupleSML          : TupleSML
-   vectorSML         : VectorSML
-   listSML           : ListSML
-   recordSML         : RecordSML
-   recordSMLInd      : RecordSMLInd
-   cellSML           : CellSML
-   wordSML           : WordSML
-   generic           : Generic
-   atomRef           : AtomRef
+   Nodes
 define
-   class Int
-      from
-         CreateObjects.intCreateObject
-         LayoutObjects.intLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
+   %% Specify Nodes to be exported
+   NodeSpecs = [
+                %% Export All Nodes (raw)
+                all # nodes('create' : CreateObjects
+                            'layout' : LayoutObjects
+                            'draw'   : DrawObjects
+                            'tree'   : Nodes)
+
+                %% Generic Node
+                generic # [generic generic base]
+
+                %% Atomic Nodes
+                int        # [int int base]
+                float      # [float float base]
+                atom       # [atom atom base]
+                name       # [name name base]
+                procedure  # [procedure procedure base]
+                byteString # [byteString byteString base]
+
+                %% Container Nodes
+                %% Record Variants
+                record          # [record record record]
+                recordInd       # [recordInd recordInd recordInd]
+                kindedRecord    # [kindedRecord record kindedRecord]
+                kindedRecordInd # [kindedRecordInd recordInd kindedRecordInd]
+                %% Tuple Variants
+                hashTuple     # [hashTuple hashTuple hashTuple]
+                pipeTuple     # [pipeTuple pipeTuple pipeTuple]
+                labelTuple    # [labelTuple labelTuple labelTuple]
+                labelTupleInd # [labelTuple labelTupleInd labelTupleInd]
+
+                %% Logic-, Future- and Constraint-Variables
+                free     # [free free free]
+                future   # [future future future]
+                fdInt    # [fdInt fdInt fdInt]
+                fsVal    # [fsVal fdInt fdInt]
+                fsHelper # [fsHelper fdInt fdInt]
+                fsVar    # [fsVar fsVar fdInt]
+
+                %% Relation Mode Helper
+                atomRef # [atomRef atomRef atomRef]
+
+                %% Container Nodes (Relation Mode)
+                %% Record Variants
+                recordGr          # [recordGr recordGr recordGr]
+                recordGrInd       # [recordGrInd recordGrInd recordGrInd]
+                kindedRecordGr    # [kindedRecordGr recordGr kindedRecordGr]
+                kindedRecordGrInd # [kindedRecordGr recordGr kindedRecordGrInd]
+                %% Tuple Variants
+                hashTupleGr     # [hashTupleGr hashTupleGr hashTupleGr]
+                pipeTupleGrS    # [pipeTupleGr pipeTupleGr pipeTupleGrS]
+                pipeTupleGrM    # [pipeTupleGr pipeTupleGr pipeTupleGrM]
+                labelTupleGr    # [labelTupleGr labelTupleGr labelTupleGr]
+                labelTupleGrInd # [labelTupleGr labelTupleGrInd labelTupleGrInd]
+
+                %% Logic-, Future- and Constraint-Variants (Relation Mode)
+                freeGr   # [freeGr freeGr freeGr]
+                futureGr # [futureGr futureGr futureGr]
+                fdIntGr  # [fdIntGr fdIntGr fdIntGr]
+                fsValGr  # [fsValGr fdIntGr fdIntGr]
+                fsVarGr  # [fsVarGr fsVarGr fdIntGr]
+               ]
+   %% Node Builder
+   local
+      fun {GetCreate Key}
+         CK = if Key == base then createObject else {VirtualString.toAtom Key#'CreateObject'} end
+      in
+         CreateObjects.CK
+      end
+      fun {GetLayout Key}
+         CK = if Key == base then layoutObject else {VirtualString.toAtom Key#'LayoutObject'} end
+      in
+         LayoutObjects.CK
+      end
+      fun {GetDraw Key}
+         CK = if Key == base then drawObject else {VirtualString.toAtom Key#'DrawObject'} end
+      in
+         DrawObjects.CK
+      end
+   in
+      fun {MakeNode [C L D]}
+         {Class.new [{GetCreate C} {GetLayout L} {GetDraw D}] 'attr' 'feat' [final]}
+      end
    end
 
-   class Float
-      from
-         CreateObjects.floatCreateObject
-         LayoutObjects.floatLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Atom
-      from
-         CreateObjects.atomCreateObject
-         LayoutObjects.atomLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class AtomSML
-      from
-         CreateObjects.atomCreateObject
-         LayoutObjects.atomSMLLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Name
-      from
-         CreateObjects.nameCreateObject
-         LayoutObjects.nameLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class NameSML
-      from
-         CreateObjects.nameCreateObject
-         LayoutObjects.nameSMLLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Procedure
-      from
-         CreateObjects.procedureCreateObject
-         LayoutObjects.procedureLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Record
-      from
-         CreateObjects.recordCreateObject
-         LayoutObjects.recordLayoutObject
-         DrawObjects.recordDrawObject
-      prop
-         final
-   end
-
-   class RecordInd
-      from
-         CreateObjects.recordIndCreateObject
-         LayoutObjects.recordIndLayoutObject
-         DrawObjects.recordIndDrawObject
-      prop
-         final
-   end
-
-   class RecordGr
-      from
-         CreateObjects.recordGrCreateObject
-         LayoutObjects.recordGrLayoutObject
-         DrawObjects.recordGrDrawObject
-      prop
-         final
-   end
-
-   class RecordGrInd
-      from
-         CreateObjects.recordGrIndCreateObject
-         LayoutObjects.recordGrIndLayoutObject
-         DrawObjects.recordGrIndDrawObject
-      prop
-         final
-   end
-
-   class KindedRecord
-      from
-         CreateObjects.kindedRecordCreateObject
-         LayoutObjects.recordLayoutObject
-         DrawObjects.kindedRecordDrawObject
-      prop
-         final
-   end
-
-   class KindedRecordInd
-      from
-         CreateObjects.kindedRecordIndCreateObject
-         LayoutObjects.recordIndLayoutObject
-         DrawObjects.kindedRecordIndDrawObject
-      prop
-         final
-   end
-
-   class KindedRecordGr
-      from
-         CreateObjects.kindedRecordGrCreateObject
-         LayoutObjects.recordGrLayoutObject
-         DrawObjects.kindedRecordGrDrawObject
-      prop
-         final
-   end
-
-   class KindedRecordGrInd
-      from
-         CreateObjects.kindedRecordGrCreateObject
-         LayoutObjects.recordGrLayoutObject
-         DrawObjects.kindedRecordGrIndDrawObject
-      prop
-         final
-   end
-
-   class HashTuple
-      from
-         CreateObjects.hashTupleCreateObject
-         LayoutObjects.hashTupleLayoutObject
-         DrawObjects.hashTupleDrawObject
-      prop
-         final
-   end
-
-   class HashTupleGr
-      from
-         CreateObjects.hashTupleGrCreateObject
-         LayoutObjects.hashTupleGrLayoutObject
-         DrawObjects.hashTupleGrDrawObject
-      prop
-         final
-   end
-
-   class PipeTuple
-      from
-         CreateObjects.pipeTupleCreateObject
-         LayoutObjects.pipeTupleLayoutObject
-         DrawObjects.pipeTupleDrawObject
-      prop
-         final
-   end
-
-   class PipeTupleGrS
-      from
-         CreateObjects.pipeTupleGrCreateObject
-         LayoutObjects.pipeTupleGrLayoutObject
-         DrawObjects.pipeTupleGrSDrawObject
-      prop
-         final
-   end
-
-   class PipeTupleGrM
-      from
-         CreateObjects.pipeTupleGrCreateObject
-         LayoutObjects.pipeTupleGrLayoutObject
-         DrawObjects.pipeTupleGrMDrawObject
-      prop
-         final
-   end
-
-   class LabelTuple
-      from
-         CreateObjects.labelTupleCreateObject
-         LayoutObjects.labelTupleLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class LabelTupleInd
-      from
-         CreateObjects.labelTupleCreateObject
-         LayoutObjects.labelTupleIndLayoutObject
-         DrawObjects.labelTupleIndDrawObject
-      prop
-         final
-   end
-
-   class LabelTupleGr
-      from
-         CreateObjects.labelTupleGrCreateObject
-         LayoutObjects.labelTupleGrLayoutObject
-         DrawObjects.labelTupleGrDrawObject
-      prop
-         final
-   end
-
-   class LabelTupleGrInd
-      from
-         CreateObjects.labelTupleGrCreateObject
-         LayoutObjects.labelTupleGrIndLayoutObject
-         DrawObjects.labelTupleGrIndDrawObject
-      prop
-         final
-   end
-
-   class Future
-      from
-         CreateObjects.futureCreateObject
-         LayoutObjects.futureLayoutObject
-         DrawObjects.futureDrawObject
-      prop
-         final
-   end
-
-   class FutureGr
-      from
-         CreateObjects.futureGrCreateObject
-         LayoutObjects.futureGrLayoutObject
-         DrawObjects.futureGrDrawObject
-      prop
-         final
-   end
-
-   class ByteString
-      from
-         CreateObjects.byteStringCreateObject
-         LayoutObjects.byteStringLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Free
-      from
-         CreateObjects.freeCreateObject
-         LayoutObjects.freeLayoutObject
-         DrawObjects.freeDrawObject
-      prop
-         final
-   end
-
-   class FreeGr
-      from
-         CreateObjects.freeGrCreateObject
-         LayoutObjects.freeGrLayoutObject
-         DrawObjects.freeGrDrawObject
-      prop
-         final
-   end
-
-   class FDInt
-      from
-         CreateObjects.fDIntCreateObject
-         LayoutObjects.fDIntLayoutObject
-         DrawObjects.fDIntDrawObject
-      prop
-         final
-   end
-
-   class FDIntGr
-      from
-         CreateObjects.fDIntGrCreateObject
-         LayoutObjects.fDIntGrLayoutObject
-         DrawObjects.fDIntGrDrawObject
-      prop
-         final
-   end
-
-   class FSVal
-      from
-         CreateObjects.fSValCreateObject
-         LayoutObjects.fDIntLayoutObject
-         DrawObjects.fDIntDrawObject
-      prop
-         final
-   end
-
-   class FSValGr
-      from
-         CreateObjects.fSValGrCreateObject
-         LayoutObjects.fDIntGrLayoutObject
-         DrawObjects.fDIntGrDrawObject
-      prop
-         final
-   end
-
-   class FSHelper
-      from
-         CreateObjects.fSHelperCreateObject
-         LayoutObjects.fDIntLayoutObject
-         DrawObjects.fDIntDrawObject
-      prop
-         final
-   end
-
-   class FSVar
-      from
-         CreateObjects.fSVarCreateObject
-         LayoutObjects.fSVarLayoutObject
-         DrawObjects.fDIntDrawObject
-      prop
-         final
-   end
-
-   class FSVarGr
-      from
-         CreateObjects.fSVarGrCreateObject
-         LayoutObjects.fSVarGrLayoutObject
-         DrawObjects.fDIntGrDrawObject
-      prop
-         final
-   end
-
-   class TupleSML
-      from
-         CreateObjects.tupleSMLCreateObject
-         LayoutObjects.tupleSMLLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class VectorSML
-      from
-         CreateObjects.vectorSMLCreateObject
-         LayoutObjects.tupleSMLLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class ListSML
-      from
-         CreateObjects.listSMLCreateObject
-         LayoutObjects.listSMLLayoutObject
-         DrawObjects.pipeTupleDrawObject
-      prop
-         final
-   end
-
-   class RecordSML
-      from
-         CreateObjects.recordSMLCreateObject
-         LayoutObjects.tupleSMLLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class RecordSMLInd
-      from
-         CreateObjects.recordSMLIndCreateObject
-         LayoutObjects.tupleSMLLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class CellSML
-      from
-         CreateObjects.cellSMLCreateObject
-         LayoutObjects.labelTupleLayoutObject
-         DrawObjects.labelTupleDrawObject
-      prop
-         final
-   end
-
-   class WordSML
-      from
-         CreateObjects.wordSMLCreateObject
-         LayoutObjects.wordSMLLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class Generic
-      from
-         CreateObjects.genericCreateObject
-         LayoutObjects.genericLayoutObject
-         DrawObjects.drawObject
-      prop
-         final
-   end
-
-   class AtomRef
-      from
-         CreateObjects.atomRefCreateObject
-         LayoutObjects.atomRefLayoutObject
-         DrawObjects.atomRefDrawObject
-      prop
-         final
+   %% Create the Export Record
+   Nodes = {Record.make nodes {Map NodeSpecs fun {$ F#_} F end}}
+   %% Assign Classes to Export Record
+   case NodeSpecs
+   of (Feat#Desc)|NodeSpecR then
+      Nodes.Feat = Desc %% Assign all without mapping
+      {List.forAll NodeSpecR proc {$ Feat#Desc} Nodes.Feat = {MakeNode Desc} end}
    end
 end

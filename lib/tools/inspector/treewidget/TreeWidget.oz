@@ -22,17 +22,21 @@
 functor $
 import
    FS(value)
-   Helper(bitmap box proxy)
-   TreeNodes
-   StoreListener
-   RelationManager('class')
-   GraphicSupport('class')
    System(eq show)
    Tk(return)
    Property(get)
+   HelperComponent('nodes' : Helper) at 'Helper.ozf'
+   TreeNodesComponent('nodes' : TreeNodes) at 'TreeNodes.ozf'
+   StoreListenerComponent('class' : StoreListener) at 'StoreListener.ozf'
+   RelationManagerComponent('class' : RelationManager) at 'RelationManager.ozf'
+   GraphicSupportComponent('class' : GraphicSupport) at 'GraphicSupport.ozf'
 export
    'class' : TreeWidget
+   'nodes' : AllNodes
 define
+   %% Create All Nodes Export Record
+   AllNodes = {Record.adjoinAt TreeNodes.all 'helper' Helper}
+
    fun {ValueToKey V}
       case {Value.status V}
       of kinded(Type) then
@@ -55,13 +59,6 @@ define
       end
    end
 
-   proc {FillDict D Es}
-      case Es
-      of (Key#Value)|Er then {Dictionary.put D Key Value} {FillDict D Er}
-      else skip
-      end
-   end
-
    fun {HasSub Ss Sub}
       case Ss of _|Sr then Ss == Sub orelse {HasSub Sr Sub} else false end
    end
@@ -78,7 +75,7 @@ define
       {Value.isFree V} orelse {Value.isFuture V}
    end
 
-   class TreeWidget from StoreListener.'class' GraphicSupport.'class'
+   class TreeWidget from StoreListener GraphicSupport
       attr
          widPort       %% TreeWidget Port
          dMode         %% Display Mode (True: GraphMode / False TreeMode)
@@ -91,17 +88,18 @@ define
          relManDict    %% Relation Manager Dictionary
          curRelMan     %% Current Relation Manager
          curDefRel     %% Current Default Relation
-         stopPVar      %% Privtate Stop Variable (shields stop reactions from beeing interrupted.)
+         stopPVar      %% Private Stop Variable (shields stop reactions from beeing interrupted.)
          stopOVar      %% Open Stop Variable
          opDict        %% Option Dictionary
          colDict       %% Color Dictionary
          mapDict       %% Automap Function Dictionary
          lines         %% Separator Dictionary
+         treeNodes     %% TreeWidget Node Container (used to fill (norm|rel)NodesDict)
          normNodesDict %% Normal Mode Nodes
          relNodesDict  %% Relation Mode Nodes
       meth create(Options Parent DspWidth DspHeight)
-         StoreListener.'class', create
-         GraphicSupport.'class', create(Parent DspWidth DspHeight)
+         StoreListener, create
+         GraphicSupport, create(Parent DspWidth DspHeight)
          @curY       = 0
          @maxX       = 0
          @maxPtr     = 0
@@ -109,7 +107,7 @@ define
          @relManDict = {Dictionary.new}
          @lines      = {Dictionary.new}
          TreeWidget, setOptions(Options)
-         GraphicSupport.'class', initButtonHandler
+         GraphicSupport, initButtonHandler
       end
       meth setOptions(Options)
          ColDict    = {Dictionary.new}
@@ -121,11 +119,17 @@ define
       in
          case {Dictionary.get Options widgetNodeSets}.{Dictionary.get Options widgetUseNodeSet}
          of NSet|RSet then
-            NDict = {Dictionary.new}
-            RDict = {Dictionary.new}
+            Nodes = case {Dictionary.get Options widgetNodesContainer}
+                    of default   then TreeNodes
+                    [] TreeNodes then TreeNodes
+                    end
+            fun {Fill D Key#Value}
+               {Dictionary.put D Key Nodes.Value} D
+            end
          in
-            normNodesDict <- NDict {FillDict NDict NSet}
-            relNodesDict  <- RDict {FillDict RDict RSet}
+            treeNodes     <- Nodes
+            normNodesDict <- {FoldL NSet Fill {Dictionary.new}}
+            relNodesDict  <- {FoldL RSet Fill {Dictionary.new}}
          end
          opDict  <- Options
          colDict <- ColDict
@@ -186,7 +190,7 @@ define
          dDepth    <- {Dictionary.get OpDict widgetTreeDepth}
          dMode     <- {Not {Dictionary.get OpDict widgetTreeDisplayMode}}
          curDefRel <- TreeWidget, searchDefRel({Dictionary.get OpDict widgetRelationList} $)
-         GraphicSupport.'class', queryDB
+         GraphicSupport, queryDB
       end
       meth searchDefRel(Rels $)
          case Rels
@@ -228,7 +232,7 @@ define
             RelMan     = {Dictionary.condGet RelManDict I nil}
          in
             curRelMan <- case RelMan of nil then
-                            NewRM = {New RelationManager.'class' create(@curDefRel)}
+                            NewRM = {New RelationManager create(@curDefRel)}
                          in
                             {Dictionary.put RelManDict I NewRM} NewRM
                          else RelMan
@@ -272,10 +276,10 @@ define
          CurY   = @curY
          StopVar Node
       in
-         GraphicSupport.'class', enableStop
+         GraphicSupport, enableStop
          if @dMode
          then
-            RelMan = {New RelationManager.'class' create(@curDefRel)}
+            RelMan = {New RelationManager create(@curDefRel)}
          in
             curRelMan <- RelMan
             {Dictionary.put @relManDict MaxPtr RelMan}
@@ -286,7 +290,7 @@ define
          Node = TreeWidget, treeCreate(Value self MaxPtr 0 $)
          {Dictionary.put Nodes MaxPtr Node}
          {Node layout}
-         GraphicSupport.'class', resetTags(MaxPtr)
+         GraphicSupport, resetTags(MaxPtr)
          {Node draw(0 CurY)}
          case {Node getXYDim($)}
          of XDim|YDim then
@@ -300,16 +304,16 @@ define
                Tag
             in
                {Dictionary.put @lines MaxPtr Tag}
-               GraphicSupport.'class', createLine(Tag NewY)
+               GraphicSupport, createLine(Tag NewY)
             end
-            GraphicSupport.'class', moveCanvasView
+            GraphicSupport, moveCanvasView
          end
       end
       meth call(Obj Mesg)
          RI = {if Obj == self then @object else Obj end getSimpleRootIndex(0 $)}
          StopVar
       in
-         GraphicSupport.'class', enableStop
+         GraphicSupport, enableStop
          stopPVar <- StopVar
          stopOVar <- StopVar
          {Obj Mesg}
@@ -320,7 +324,7 @@ define
          Index = {Node getIndex($)}
          StopVar
       in
-         GraphicSupport.'class', enableStop
+         GraphicSupport, enableStop
          stopPVar <- StopVar
          stopOVar <- StopVar
          case Mesg
@@ -343,9 +347,8 @@ define
                if @dMode
                then TreeWidget, graphCreate(Val Parent Index Depth $)
                else
-                  NodeKey = {Dictionary.condGet @normNodesDict ValKey generic}
-               in
-                  {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
+                  {New {Dictionary.condGet @normNodesDict ValKey @treeNodes.generic}
+                   create(Val Parent Index self Depth)}
                end
             elseof F then
                MaxW = @dWidth
@@ -354,9 +357,9 @@ define
                Node = if @dMode
                       then TreeWidget, graphCreate(NVal Parent Index Depth $)
                       else
-                         NodeKey = {Dictionary.condGet @normNodesDict {ValueToKey NVal} generic}
-                      in
-                         {New TreeNodes.NodeKey create(NVal Parent Index self Depth)}
+                         {New {Dictionary.condGet @normNodesDict
+                               {ValueToKey NVal} @treeNodes.generic}
+                          create(NVal Parent Index self Depth)}
                       end
             in
                if {System.eq NVal Val}
@@ -379,18 +382,16 @@ define
       in
          if Atomic
          then
-            NodeKey = {Dictionary.condGet @relNodesDict {ValueToKey Val} generic}
-         in
-            {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
+            {New {Dictionary.condGet @relNodesDict {ValueToKey Val} @treeNodes.generic}
+             create(Val Parent Index self Depth)}
          else
             Entry = {@curRelMan query(Val $)}
          in
             if {Entry isActive($)}
-            then {New TreeNodes.atomRef create(Entry Parent Index self Depth)}
+            then {New @treeNodes.atomRef create(Entry Parent Index self Depth)}
             else
-               NodeKey = {Dictionary.condGet @relNodesDict {ValueToKey Val} generic}
-            in
-               {New TreeNodes.NodeKey gcr(Entry Val Parent Index self Depth)}
+               {New {Dictionary.condGet @relNodesDict {ValueToKey Val} @treeNodes.generic}
+                gcr(Entry Val Parent Index self Depth)}
             end
          end
       end
@@ -404,8 +405,8 @@ define
             Entry = {@curRelMan query(Val $)}
          in
             if {Entry isActive($)}
-            then {New TreeNodes.atomRef create(Entry Parent Index self (Depth + 1))}
-            else {New TreeNodes.pipetupleGrS
+            then {New @treeNodes.atomRef create(Entry Parent Index self (Depth + 1))}
+            else {New @treeNodes.pipetupleGrS
                   create(Entry Val Parent Index RIndex self Depth Width Stop)}
             end
          else TreeWidget, treeCreate(Val Parent Index (Depth + 1) $)
@@ -415,19 +416,18 @@ define
          if Depth > @dDepth
          then {New Helper.bitmap treeCreate(dpeth Parent Index self Val)}
          else
-            NodeKey = {Dictionary.condGet @normNodesDict {ValueToKey Val} generic}
-         in
-            {New TreeNodes.NodeKey create(Val Parent Index self Depth)}
+            {New {Dictionary.condGet @normNodesDict {ValueToKey Val} @treeNodes.generic}
+             create(Val Parent Index self Depth)}
          end
       end
       meth getRefNode($)
-         TreeNodes.atomRef
+         @treeNodes.atomRef
       end
       meth listNode($)
-         TreeNodes.pipetupleGr
+         @treeNodes.pipetupleGr
       end
       meth getFSVHelperNode($)
-         TreeNodes.fshelper
+         @treeNodes.fshelper
       end
       meth setRelManager(RelMan)
          relMan <- RelMan
@@ -553,7 +553,7 @@ define
       meth performUpdate(I X Y MaxX)
          Node = {Dictionary.get @nodes I}
       in
-         GraphicSupport.'class', resetTags(I)
+         GraphicSupport, resetTags(I)
          {Node draw(X Y)} %% Draw may change XY Dim
          case {Node getXYDim($)}
          of XDim|YDim then
@@ -562,15 +562,15 @@ define
          in
 %           if true
 %           then
-            GraphicSupport.'class', moveLine({Dictionary.get @lines I} NewY)
+            GraphicSupport, moveLine({Dictionary.get @lines I} NewY)
 %           end
             if I < @maxPtr
             then TreeWidget, performUpdate((I + 1) X NewY NewX)
             else
                maxX <- NewX
                curY <- NewY
-               GraphicSupport.'class', adjustSelection
-               GraphicSupport.'class', adjustCanvasView
+               GraphicSupport, adjustSelection
+               GraphicSupport, adjustCanvasView
 %              {Wait {Tk.return update(idletasks)}}
             end
          end
@@ -599,9 +599,9 @@ define
          maxX   <- 0
          curY   <- 0
          case @selObject
-         of nil  then GraphicSupport.'class',adjustCanvasView
+         of nil  then GraphicSupport,adjustCanvasView
          [] Node then
-            GraphicSupport.'class', clearSelection
+            GraphicSupport, clearSelection
             TreeWidget, display({Node getValue($)})
          end
          F = unit
@@ -614,7 +614,7 @@ define
             T     = {Dictionary.get Lines I}
          in
             {{Dictionary.get Items I} undraw}
-            GraphicSupport.'class', delete(T)
+            GraphicSupport, delete(T)
             {Dictionary.remove Items I}
             {Dictionary.remove Lines I}
             TreeWidget, performClearAll((I + 1))

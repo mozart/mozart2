@@ -229,7 +229,7 @@ in
             CWidth   = (XDim - DeltaVal)
             CHeight  = (YDim - DeltaVal)
             @focDim  = 2
-            Canvas   = {New TreeWidgetClass create({Parent getOptions($)} Frame CWidth CHeight)}
+            Canvas   = {New TreeWidget create({Parent getOptions($)} Frame CWidth CHeight)}
             WidPort  = {NewServer Canvas}
             {Canvas setServer(WidPort)}
             {Canvas tkBind(event:  '<KeyPress-Tab>'

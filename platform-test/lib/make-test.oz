@@ -232,7 +232,7 @@ local
           threads(type:int optional:false default:1))
 
 in
-   functor $
+   functor
 
    import
       System
@@ -240,7 +240,7 @@ in
       Module
       Pickle
 
-   body
+   define
 
       Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
 
@@ -316,7 +316,7 @@ in
          Engine = {MakeTestEngine Keys Tests}
       in
          {Pickle.saveWithHeader
-          functor $ prop once
+          functor
           import Module Application
           define
 

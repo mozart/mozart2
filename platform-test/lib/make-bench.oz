@@ -259,7 +259,7 @@ local
       )
 
 in
-   functor $
+   functor
 
    import
       System
@@ -267,7 +267,7 @@ in
       Module
       Pickle
 
-   body
+   define
 
       Argv = {Application.getCmdArgs single(verbose(type:bool default:false))}
 

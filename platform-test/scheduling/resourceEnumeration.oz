@@ -24,7 +24,7 @@ local
           end
       SQRT BSPIJ BSPJI
    in
-      case S==0.0 then FloatFDSup-1.0
+      if S==0.0 then FloatFDSup-1.0
       else
          SQRT = {Float.sqrt {Abs S}}
          BSPIJ = {Int.toFloat SlackIJ}/SQRT
@@ -68,11 +68,11 @@ local
       fun {FindMin CTaskPair CCost Start Dur TPs Acc Rest}
          case TPs of nil then Rest=Acc CTaskPair
          [] TP|TPr then
-            case {IsKinded TP.3}
+            if {IsKinded TP.3}
             then
                TCost = {TaskPairCost TP Start Dur}
             in
-            case TCost < CCost
+            if TCost < CCost
 %              case TCost =< CCost
                then
                   case CTaskPair of empty then
@@ -108,13 +108,13 @@ local
                       end
                   SQRT BSPIJ BSPJI
                in
-                  case S==0.0 then BSPIJ=2 BSPJI=1
+                  if S==0.0 then BSPIJ=2 BSPJI=1
                   else
                      SQRT = {Float.sqrt {Abs S}}
                      BSPIJ = {Int.toFloat SlackIJ}/SQRT
                      BSPJI = {Int.toFloat SlackJI}/SQRT
                   end
-                  case BSPIJ>BSPJI then
+                  if BSPIJ>BSPJI then
                      dis StartI+DurI=<:StartJ
                      then Co=0 {TaskPairEnum All Rest Start Dur}
                      [] StartJ+DurJ=<:StartI

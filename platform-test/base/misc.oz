@@ -203,7 +203,7 @@ define
                                          end
                                          {Wait {GB X}}
                                          {System.show a}
-                                         case {IsFree X} then
+                                         if {IsFree X} then
                                             {P X}
                                          else skip
                                          end
@@ -287,7 +287,7 @@ define
                    in
                       thread X=true end
                       Y={FoldL [X] And true}
-                      case Y==true then skip end
+                      if Y==true then skip end
                    end
                    keys:[fixedBug suspension builtin])
 

@@ -100,7 +100,7 @@ in
          Tasks = @tasks
          Resources = @resources
       in
-         case {CObject get($)} == stopped
+         if {CObject get($)} == stopped
          then
             finalSol <- LastSol
          else
@@ -136,7 +136,7 @@ in
             RepairSol
          in
             %% termination?
-            case {FD.reflect.min {FixedUBSol.1}.start.pe}==LB
+            if {FD.reflect.min {FixedUBSol.1}.start.pe}==LB
             then  finalSol <- FixedUBSol
             else
                {Trace swaps#Swaps}
@@ -144,7 +144,7 @@ in
                                         PertProblem ResSuccs SortedRes
                                         Tasks UB ?RepairSol)}
             in
-               case RepairResult
+               if RepairResult
                   andthen {FD.reflect.min {RepairSol.1}.start.pe} < UB
                then
                   {Trace repairSucceeded#{FD.reflect.min {RepairSol.1}.start.pe}}
@@ -153,13 +153,13 @@ in
                   {self move}
                else
                   {Trace repairNotSucceeded}
-                  case {CObject get($)} == stopped
+                  if {CObject get($)} == stopped
                   then
                      finalSol <- LastSol
                   else
                      ShuffleSol NewFailureLimit NewLeap
                   in
-                     case {ShuffleLoop o(IterationNb FixedUBSol UB LB Leap
+                     if {ShuffleLoop o(IterationNb FixedUBSol UB LB Leap
                                          Criticals.1 PertProblem
                                          ResSuccs SortedRes Tasks
                                          Spec FailureLimit Start
@@ -191,7 +191,7 @@ in
                        end 1 _}
       in
          {@label tk(conf(text: {GetPE GreedyProb}))}
-         case {@cObject get($)} == stopped
+         if {@cObject get($)} == stopped
          then
             FinalSol = GreedyProb
          else
@@ -261,7 +261,7 @@ in
             resources <- Resources
             machines <- Machines
             jobs <- Jobs
-            case {CObject get($)} == stopped
+            if {CObject get($)} == stopped
             then FinalSol = GreedyProb
                finalSol <- GreedyProb
             else

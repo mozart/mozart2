@@ -83,7 +83,7 @@ define
                                      thread {Space.merge S 1} end
                                      %% Ho!
                                      {Thread.setThisPriority low}
-                                     case U==1 then skip end
+                                     if U==1 then skip end
                                      %% and back;
                                      {Thread.setThisPriority medium}
                                   end
@@ -93,11 +93,11 @@ define
            unstable(entailed(proc {$}
                                 Z
                                 S1 = {Space.new proc {$ X}
-                                                   case Z==1 then X=1
+                                                   if Z==1 then X=1
                                                    else X=2 end
                                                 end}
                                 S2 = {Space.new proc {$ X}
-                                                   case Z==1 then X=1
+                                                   if Z==1 then X=1
                                                    else X=2 end
                                                 end}
                                 A2 = thread {Space.askVerbose S2} end
@@ -495,11 +495,11 @@ define
 
                   sibling(entailed(proc {$}
                                       proc {Loop X}
-                                         case {IsDet X} then skip
+                                         if {IsDet X} then skip
                                          else {Loop X} end
                                       end
                                       proc {Waste N}
-                                         case N>0 then {Waste N-1}
+                                         if N>0 then {Waste N-1}
                                          else skip end
                                       end
                                       S1 = {Space.new Loop}
@@ -532,11 +532,11 @@ define
 
                   parent(entailed(proc {$}
                                      proc {Loop X}
-                                        case {IsDet X} then skip
+                                        if {IsDet X} then skip
                                         else {Loop X} end
                                      end
                                      proc {Waste N}
-                                        case N>0 then {Waste N-1}
+                                        if N>0 then {Waste N-1}
                                         else skip end
                                      end
                                      S = {Space.new
@@ -691,7 +691,7 @@ define
 
            'unit'(entailed(proc {$}
                               proc {AssumeDet X}
-                                 case {IsDet X} then skip else fail end
+                                 if {IsDet X} then skip else fail end
                               end
                               S1={Space.new proc {$ X}
                                                A#B#C#D = X
@@ -729,7 +729,7 @@ define
                               A  = {Space.ask S1}
                               S2 = {Space.clone S1}
                            in
-                              case {IsDet A} then
+                              if {IsDet A} then
                                  A=alternatives(2)
                                  {Space.commit S1 1}
                                  {Space.commit S2 2}
@@ -763,7 +763,7 @@ define
                                    end}
                            in
                               {Space.askVerbose S}=succeeded(entailed)
-                              case {IsDet {Space.merge S}} then skip
+                              if {IsDet {Space.merge S}} then skip
                               else fail end
                            end)
                   keys: ['lock' space])

@@ -32,7 +32,7 @@ define
    Return=
    space([queens(equal(fun {$}
                           fun {Iterate Board N X Y DX DY}
-                             case 1=<X andthen X=<N andthen 1=<Y andthen Y=<N then
+                             if 1=<X andthen X=<N andthen 1=<Y andthen Y=<N then
                                 Board.Y.X | {Iterate Board N X+DX Y+DY DX DY}
                              else nil
                              end
@@ -40,8 +40,8 @@ define
                           fun {MidLine Board N X Y}
                              D=N-X
                           in
-                             case D<0 then nil
-                             elsecase D==0 then [Board.Y.X]
+                             if D<0 then nil
+                             elseif D==0 then [Board.Y.X]
                              else
                                 Board.Y.X|Board.Y.N|{MidLine Board N-1 X+1 Y}
                              end
@@ -91,7 +91,7 @@ define
                                  {ExactOne {MidLine Board N 1 I} 1 _ 0 1}
                                  {ExactOne {MidLine Board N 1 N-I+1} 1 _ 0 1}
                               end}
-                             case {IsOdd N} then
+                             if {IsOdd N} then
                                 {ExactOne {MidLine Board N 1 (N div 2 + 1)} 1 _ 0 1}
                              else skip
                              end

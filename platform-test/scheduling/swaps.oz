@@ -15,17 +15,17 @@ local
    in
       %% ResS = pe means that Task is last on that resource. Nevertheless,
       %% Task needs not to be last in the graph!
-      case JobS==pe andthen ResS==pe then
+      if JobS==pe andthen ResS==pe then
          {Store Path UB Dur OccCrit#Paths}
       else
          Tmp
       in
-         case JobS\=pe andthen OccCrit.JobS.crit then
+         if JobS\=pe andthen OccCrit.JobS.crit then
             Tmp = {FindPaths o(JobS UB Dur ResSuccs JobSuccs
                                JobS|Path OccCrit#Paths)}
          else Tmp = OccCrit#Paths
          end
-         case  ResS\=pe andthen OccCrit.ResS.crit then
+         if  ResS\=pe andthen OccCrit.ResS.crit then
             {FindPaths o(ResS UB Dur ResSuccs JobSuccs ResS|Path Tmp)}
          else
             Tmp
@@ -34,7 +34,7 @@ local
    end
 
    fun {Store Path UB Dur OccCrit#Paths}
-      case UB=={FoldL Path fun{$ I T} Dur.T+I end 0}
+      if UB=={FoldL Path fun{$ I T} Dur.T+I end 0}
       then
          NewOcc = {FoldL Path fun{$ I Task}
                                  Entry = I.Task
@@ -65,11 +65,11 @@ local
                                    else
                                       T2=Ts.1
                                    in
-                                      case T1==Task then
+                                      if T1==Task then
                                          Start.Succ+Dur.Succ =<: Start.Task
-                                      elsecase T1==Succ then
+                                      elseif T1==Succ then
                                          Start.Task+Dur.Task =<: Start.T2
-                                      elsecase T2==Task then
+                                      elseif T2==Task then
                                          Start.T1+Dur.T1 =<: Start.Succ
                                       else
                                          Start.T1+Dur.T1 =<: Start.T2
@@ -105,7 +105,7 @@ in
       {Record.foldL Sorted fun{$ In Resource}
                               First = Resource.1
                            in
-                              case OccCrit.First.crit
+                              if OccCrit.First.crit
                                  andthen JobPreds.First==[pa]
                               then
                                  {FindPaths o(First UB Dur ResSuccs
@@ -119,11 +119,11 @@ in
                        JobPreds Tasks Start Dur)}
       {FoldL Tasks
        fun{$ I Task}
-          case Task==pe orelse Task==pa then I
+          if Task==pe orelse Task==pa then I
           else
              U = ResSuccs.Task.1
           in
-             case U\=pe andthen (Occ.Task.crit andthen Occ.U.crit)
+             if U\=pe andthen (Occ.Task.crit andthen Occ.U.crit)
              then
                 S = ResPreds.Task.1
                 V = ResSuccs.U.1
@@ -140,15 +140,15 @@ in
                 Occ1 Occ2
              in
                 {Trace Task#U#Gain}
-                case TUp-ULow >= Dur.Task+Dur.U andthen Gain > 0
+                if TUp-ULow >= Dur.Task+Dur.U andthen Gain > 0
                 then
-                   case Occ.UPP.crit then Occ1 = {Max Occ0 Occ.UPP.occ}
+                   if Occ.UPP.crit then Occ1 = {Max Occ0 Occ.UPP.occ}
                    else Occ1=Occ0
                    end
-                   case Occ.TP.crit then Occ2 = {Max Occ1 Occ.TP.occ}
+                   if Occ.TP.crit then Occ2 = {Max Occ1 Occ.TP.occ}
                    else Occ2=Occ1
                    end
-                   case Occ2 > 0
+                   if Occ2 > 0
                    then (Task#Occ2#Gain)|I
                    else I
                    end
@@ -164,7 +164,7 @@ in
                  Tasks UB ?NewSol)}
       NumberOfCrits = {Length Paths}
       BestSwap = {FoldL Swaps fun{$ I Task#O#Gain}
-                                 case O==NumberOfCrits andthen
+                                 if O==NumberOfCrits andthen
                                     %% the better is Gain > I.2 end noTask#0}
                                     Gain > I.2
                                  then Task#Gain

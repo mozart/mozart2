@@ -12,7 +12,7 @@ local
        fun {$ Resource Xs}
           {FoldR TaskSpecs
            fun {$ Task#_#_#ThisResource In}
-              case Resource==ThisResource then Task|In else In end
+              if Resource==ThisResource then Task|In else In end
            end
            nil} | Xs
        end
@@ -38,7 +38,7 @@ in
       Resources =
       {FoldR TaskSpecs
        fun {$ _#_#_#Resource In}
-          case Resource==noResource orelse {Member Resource In}
+          if Resource==noResource orelse {Member Resource In}
           then In else Resource|In end
        end
        nil}
@@ -77,13 +77,13 @@ in
          %% Resource Distribution
          thread
             choice
-               case ResourceDistribution == NoRE then skip
+               if ResourceDistribution == NoRE then skip
                else
                   %% enumerate exclusion choices
                   {ResourceDistribution Start Dur ExclusiveTasks}
                end
                %% fix all start points to minimum after Distribution
-               case TaskDistribution == NoTE then skip
+               if TaskDistribution == NoTE then skip
                else
                   choice
                      {TaskDistribution Start Dur ExclusiveTasks}

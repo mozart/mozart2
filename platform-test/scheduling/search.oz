@@ -19,9 +19,9 @@ local
    fun {OneDepthNR KF S Limit}
       CFails = {Exchange C $ CFails}
    in
-      case CFails == Limit then nil
+      if CFails == Limit then nil
       else
-         case {IsFree KF} then
+         if {IsFree KF} then
             case {Space.ask S}
             of failed then
                CFails = {Exchange C $ CFails}
@@ -68,7 +68,7 @@ end
 
 
 fun {WrapSearch S}
-   case S == nil orelse S == stopped then S
+   if S == nil orelse S == stopped then S
    else S.1
    end
 end
@@ -84,10 +84,10 @@ class SearchBAB from Search.object
       Last = @last
    in
       thread
-         case Solution == nil
+         if Solution == nil
          then
             Sol = Last
-         elsecase Solution == stopped then
+         elseif Solution == stopped then
             Sol = Last
          else
             {self goOn(Solution Sol)}

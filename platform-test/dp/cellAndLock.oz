@@ -51,7 +51,7 @@ define
             {Loop Managers Ctr Lock Procs}
             {TestMisc.barrierSync Procs}
             {Exchange Ctr Old done}
-            case Old \= Threads * Times * Sites then
+            if Old \= Threads * Times * Sites then
                raise dp_cellAndLock_test_failed end
             else skip end
          end
@@ -104,7 +104,7 @@ define
                                      {Exchange Ctr Old New}
                                      New = Old+1
                                   end
-                                  case LastSeenNr > New then
+                                  if LastSeenNr > New then
                                      raise dp_cellAndLock_test_failed end
                                   else skip end
                                   {CtrUpDater Ctr TimesLeft-1 New Lock}

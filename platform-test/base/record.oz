@@ -32,9 +32,9 @@ define
 
    records(proc {$}
               fun {Id X} X end
-              proc {FF B} case B then {System.show B} fail else skip end end
-              proc {Eq X Y} case X==Y then skip else {System.show eq(X Y)} fail end end
-              proc {Neq X Y} case X==Y then {System.show neq(X Y)} fail else skip end end
+              proc {FF B} if B then {System.show B} fail else skip end end
+              proc {Eq X Y} if X==Y then skip else {System.show eq(X Y)} fail end end
+              proc {Neq X Y} if X==Y then {System.show neq(X Y)} fail else skip end end
            in
 
 

@@ -28,7 +28,7 @@ export
 define
 
    fun {Tak X Y Z}
-      case X=<Y then Z
+      if X=<Y then Z
       else {TakHelp X Y Z}
       end
    end
@@ -41,7 +41,7 @@ define
    fun {TakB N} {Tak 3*N 2*N N} end
 
    fun {TakF X Y Z}
-      case X=<Y then Z
+      if X=<Y then Z
       else {TakFHelp X Y Z}
       end
    end

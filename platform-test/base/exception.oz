@@ -37,7 +37,7 @@ define
                                  locking
                               attr a:b
                               meth tkInit
-                                 case @a==b then a<-c end
+                                 if @a==b then a<-c end
                               end
                               meth c
                                  lock

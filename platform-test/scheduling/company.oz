@@ -126,7 +126,7 @@ define
    end
 
 
-   fun {Tr X} case X < 0 then 0 else X end end
+   fun {Tr X} if X < 0 then 0 else X end end
 
    proc {PersonalConstraints AllSteps Workers}
       proc{SumUp Ind AllSteps Bs Ps}

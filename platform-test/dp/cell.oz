@@ -90,7 +90,7 @@ define
    in
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
-                         case Sum \= Times then
+                         if Sum \= Times then
                             raise dp_cell_test_failed end
                          else
                             skip
@@ -170,7 +170,7 @@ define
                                      ThreadNr Dict Lock} Old in
                                   {Exchange Cell Old SiteNr#ThreadNr}
                                   {UpdateDict Old Dict Lock}
-                                  case Nr == Times then
+                                  if Nr == Times then
                                      skip
                                   else
                                      {CellUpDater Cell Nr+1 SiteNr

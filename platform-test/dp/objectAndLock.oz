@@ -36,7 +36,7 @@ define
       meth init ctr <- 0 end
 
       meth checkMissedUpdates
-         case @ctr \= Threads * Times * Sites then
+         if @ctr \= Threads * Times * Sites then
             raise dp_objectAndLock_test_failed end
          else skip end
       end
@@ -49,7 +49,7 @@ define
                New = @ctr+1
                ctr <- New
             end
-            case LastSeenNr > New then
+            if LastSeenNr > New then
                raise dp_objectAndLock_test_failed end
             else skip end
             Counter, updater(TimesLeft-1 New Lock)

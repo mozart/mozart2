@@ -13,7 +13,7 @@ local
    in
       {ForAll Unscheduled.(Machines.Next)
        proc {$ Task}
-          case Task \= Next then Raise =<: Start.Task
+          if Task \= Next then Raise =<: Start.Task
           else skip
           end
        end}
@@ -25,7 +25,7 @@ local
                           in
                              {Max I2 {FoldL Tasks
                                       fun{$ I T}
-                                         case {FD.reflect.min Start.T}>=MinTask
+                                         if {FD.reflect.min Start.T}>=MinTask
                                          then I+Dur.T
                                          else I
                                          end
@@ -85,8 +85,8 @@ in
              TLB = {S.1}.lb
              TMax = {FD.reflect.max {Problem.1}.start.Cand}
           in
-             case TLB < CLB then Cand#TLB#TMax
-             elsecase TLB==CLB andthen
+             if TLB < CLB then Cand#TLB#TMax
+             elseif TLB==CLB andthen
                 TMax<CMax then
                 Cand#TLB#TMax
              else CMin#CLB#CMax

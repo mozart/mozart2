@@ -13,7 +13,7 @@ local
    fun {Convert Ss}
       case Ss of nil then nil
       [] S|Sr then
-         case S >= 48 andthen S =< 57
+         if S >= 48 andthen S =< 57
          then {Convert Sr}
          else S|Sr
          end
@@ -110,7 +110,7 @@ in
       TaskSpecs = Specification.taskSpec
       Resources = {FoldL TaskSpecs
                    fun {$ In _#_#_#Resource}
-                      case Resource==noResource orelse {Member Resource In}
+                      if Resource==noResource orelse {Member Resource In}
                       then In else Resource|In end
                    end
                    nil}
@@ -122,7 +122,7 @@ in
                      fun {$ In Task#_#_#_}
                         TTJ = {TaskToJob Task}
                      in
-                        case Task==pe orelse Task==pa orelse
+                        if Task==pe orelse Task==pa orelse
                            {Member TTJ In}
                         then In else TTJ|In end
                      end
@@ -132,7 +132,7 @@ in
       {ForAll {Reverse TaskSpecs}
        proc{$ T#_#_#_}
           First = {TaskToJob T} in
-          case T==pe orelse T==pa then skip
+          if T==pe orelse T==pa then skip
           else Old = {Dictionary.get JobsD First} in
              {Dictionary.put JobsD First T|Old}
           end

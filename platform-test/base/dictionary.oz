@@ -107,7 +107,7 @@ in
                               fun {Remove Is J}
                                  case Is of nil then nil
                                  [] I|Ir then
-                                    case I==J then Ir
+                                    if I==J then Ir
                                     else I|{Remove Ir J}
                                     end
                                  end
@@ -122,7 +122,7 @@ in
                               end
 
                               fun {Check Ts Is}
-                                 case {TestEntries Is D} then
+                                 if {TestEntries Is D} then
                                     case Ts
                                     of nil then true
                                     [] T|Tr then

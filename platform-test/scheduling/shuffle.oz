@@ -16,7 +16,7 @@ local
    in
       LowB = {FD.reflect.min Start.Left}
       UpB = {FD.reflect.max Start.Right}+Dur.Right
-      Set#DurSet = case LowB > {FD.reflect.min Start.Right} orelse
+      Set#DurSet = if LowB > {FD.reflect.min Start.Right} orelse
                       {FD.reflect.max Start.Left}+Dur.Left > UpB
                    then
                       nil#0
@@ -25,7 +25,7 @@ local
                                       StartT = Start.Task
                                       DurT = Dur.Task
                                    in
-                                      case LowB =< {FD.reflect.min StartT}
+                                      if LowB =< {FD.reflect.min StartT}
                                          andthen
                                          {FD.reflect.max StartT}+DurT =< UpB
                                       then
@@ -48,7 +48,7 @@ local
                    LowB UpB Set DurSet
                    in
                    {InitSets Entry Tasks Start Dur LowB UpB Set DurSet}
-                   case {Length Set} > 1 then
+                   if {Length Set} > 1 then
                       {Min I UpB-LowB-DurSet}
                    else I
                    end
@@ -75,13 +75,13 @@ local
       [] Resource|ResourceR then
          Sol
       in
-         case {BasicShuffle o(Resource UB-Leap FailureLimit Spec
+         if {BasicShuffle o(Resource UB-Leap FailureLimit Spec
                               SortedRes PertProblem Enum ?Sol)}
          then
             JumpSol = Sol
             true
          else
-            case {CObject get($)} == stopped
+            if {CObject get($)} == stopped
             then
                false
             else
@@ -130,7 +130,7 @@ local
    %% t2 is a critical task.
    fun {JumpCrit o(EasyResources Occ UB Leap FailureLimit Spec
                    SortedRes PertProblem Start Dur ?CritSol Enum CObject)}
-      case {Length EasyResources} < 2 then false
+      if {Length EasyResources} < 2 then false
       else Resource1|ResourcesR = !EasyResources
       in
          {JumpCritLoop o(Resource1 ResourcesR Occ UB
@@ -146,14 +146,14 @@ local
       [] Resource2|ResourcesR then
          Sol
       in
-         case {CritShuffle o(Resource1 Resource2 Occ UB-Leap
+         if {CritShuffle o(Resource1 Resource2 Occ UB-Leap
                              FailureLimit Spec SortedRes PertProblem
                              ?Sol Enum)}
          then
             CritSol = Sol
             true
          else
-            case {CObject get($)} == stopped
+            if {CObject get($)} == stopped
             then
                false
             else
@@ -188,7 +188,7 @@ local
                         else
                            T2=Ts.1
                         in
-                           case Occ.T2.crit then
+                           if Occ.T2.crit then
                               Start.T1+Dur.T1 =<: Start.T2
                            else skip
                            end
@@ -211,7 +211,7 @@ in
        fun {$ Resource Xs}
           {FoldR TaskSpecs
            fun {$ Task#_#_#ThisResource In}
-              case Resource==ThisResource then Task|In else In end
+              if Resource==ThisResource then Task|In else In end
            end
            nil} | Xs
        end
@@ -221,12 +221,12 @@ in
    fun {ShuffleLoop o(N PrevSol UB LB Leap Occ PertProblem ResSuccs
                       SortedRes Tasks Spec FailureLimit Start Dur
                       Enum CObject ?NewFailureLimit ?NewLeap ?ShuffleSol)}
-      case {CObject get($)} == stopped
+      if {CObject get($)} == stopped
       then
          false
       else
-         case UB-Leap < LB
-         then case Leap > 1
+         if UB-Leap < LB
+         then if Leap > 1
               then NewLeap = Leap div 3
                  NewFailureLimit = FailureLimit
                  ShuffleSol = PrevSol
@@ -243,7 +243,7 @@ in
             JumpSol CritSol
             EasyResources = {EasiestResources SortedRes Start Dur}
          in
-            case {JumpBasic o(EasyResources SortedRes UB Leap FailureLimit Spec
+            if {JumpBasic o(EasyResources SortedRes UB Leap FailureLimit Spec
                               SortedRes PertProblem Start Dur
                               Enum CObject ?JumpSol)}
             then
@@ -254,12 +254,12 @@ in
                JumpSol = ShuffleSol
                true
             else
-               case {CObject get($)} == stopped
+               if {CObject get($)} == stopped
                then
                   false
                else
                   {Trace 'Basic shuffle not succeeded'}
-                  case {JumpCrit o(EasyResources Occ UB Leap FailureLimit
+                  if {JumpCrit o(EasyResources Occ UB Leap FailureLimit
                                    Spec SortedRes PertProblem Start Dur
                                    ?CritSol Enum CObject)}
                   then
@@ -271,9 +271,9 @@ in
                      true
                   else
                      {Trace 'Critical shuffle not succeeded'}
-                     case Leap > 1
+                     if Leap > 1
                      then
-                        case FailureLimit >= MaxBacktracks then false
+                        if FailureLimit >= MaxBacktracks then false
                         else
                            {ShuffleLoop o(N PrevSol UB LB (Leap div 3)
                                           Occ PertProblem ResSuccs
@@ -282,9 +282,9 @@ in
                                           NewFailureLimit NewLeap ShuffleSol)}
                         end
                      else
-                        case N > 0
+                        if N > 0
                         then
-                           case FailureLimit >= MaxBacktracks then false
+                           if FailureLimit >= MaxBacktracks then false
                            else
                               {ShuffleLoop o(N-1 PrevSol UB LB Leap Occ
                                              PertProblem ResSuccs SortedRes

@@ -116,12 +116,12 @@ define
       case L
       of msg(Id MsgNr) then
          {Dictionary.condGet History Id 0 Old}
-         case Old > MsgNr then
+         if Old > MsgNr then
             raise dp_port_test_failed end
          else skip end
          {Receiver Lr History AckCtr}
       [] ack then
-         case AckCtr == 1 then
+         if AckCtr == 1 then
             skip
          else
             {Receiver Lr History AckCtr-1}

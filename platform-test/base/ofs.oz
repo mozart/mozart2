@@ -1064,6 +1064,23 @@ define
                         {Wait {HasFeature X 33333}}
                      end)
             keys: [ofs record])
+
+        %% test whether '==' on local ofs vars does not change them
+        %% (used to fail test#13 occasionally);
+        t56(entailed(proc {$}
+                        Xs Ys Sync in
+                        Xs^a = ok
+                        Ys^b = ok
+                        thread
+                           Sync = unit
+                           _ = Xs == Ys
+                        end
+                        {Wait Sync}
+                        Xs = a(a: ok b: ko)
+                        Ys = a(b: ok a: ko)
+                     end)
+            keys: [ofs record])
+
        ])
 
 end

@@ -838,7 +838,9 @@ local
       try
          {Script write(vs:'#!/bin/sh\n')}
          {Script write(vs:': ${OZHOME='#{System.get home}#'}\n')}
-         {Script write(vs:('exec $OZHOME/bin/ozengine $0 "$@"\n'))}
+         {Script write(vs:'PATH=$OZHOME/bin:$PATH\n')}
+         {Script write(vs:'export PATH\n')}
+         {Script write(vs:'exec ozengine $0 "$@"\n')}
          {Script close}
          {Save ExecProc TmpFile o(components: unit
                                   include:    unit

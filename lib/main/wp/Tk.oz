@@ -34,10 +34,13 @@ import
    Error(registerFormatter)
 
    Open(pipe
-        text)
+        text
+        socket)
 
    OS(getEnv
       putEnv
+      close
+      pipe
       stat)
 
    Resolve(makeResolver)
@@ -444,16 +447,36 @@ define
 
 
    Stream = local
+               Platform = {Property.get 'platform.name'}
                PLTFRM = ({Property.get 'oz.home'} #
-                         '/platform/'#{Property.get 'platform.name'}#'/')
+                         '/platform/'#Platform#'/')
             in
                {OS.putEnv 'TCL_LIBRARY' PLTFRM#'wish/tcl'}
                {OS.putEnv 'TK_LIBRARY'  PLTFRM#'wish/tk'}
 
-               {New class $ from Open.pipe Open.text
-                       prop final
-                    end
-                init(cmd:PLTFRM#'tk.exe')}
+               % RS: on MS Windows we use a socket: before we used
+               % pipes, but on NT this made problems when certain background
+               % tasks where running: Tk could get stuck here
+               if Platform == 'win32-i486'
+               then Stream Port In Out in
+                  thread
+                     Stream = {New class $ from Open.socket Open.text
+                                      prop final
+                                   end
+                               server(port: ?Port)}
+                  end
+                  {Wait Port}
+                  In#Out = {OS.pipe PLTFRM#'tk.exe' [Port] _}
+                  {OS.close In}
+                  if In \= Out then {OS.close Out} end
+                  {Wait Stream}
+                  Stream
+               else
+                  {New class $ from Open.pipe Open.text
+                          prop final
+                       end
+                   init(cmd:PLTFRM#'tk.exe')}
+               end
             end
 
    ActionIdServer = {New Counter get(_)}

@@ -599,7 +599,10 @@ local
          % has constant type
          case {IsConstType T}
          then env(var:V last:L)
-         else {Show weird(L T)}
+         else
+\ifdef DEBUGSA
+            {Show weird(L T)}
+\endif
             % copy non-constant types
             {V setType({TypeClone T})}
             env(var:V last:L type:T)

@@ -119,6 +119,11 @@ local
       end
    end
 
+   fun {CloneList Xs}
+      case Xs of nil then nil
+      [] _|Xr then _|{CloneList Xr}
+      end
+   end
 
    %%
    %% Telling Domains
@@ -303,20 +308,11 @@ local
             {FdpSumCN Coeffs2 Ds Rel D}
          else
             D1 D2 B1 B2
-            LDs      = {Length Ds}
-            TVars1   = {MakeList LDs}
-            TVars2   = {MakeList LDs}
-            {List.forAllInd TVars1
-             fun{$ I}
-                {MakeList {Length {Nth Ds I}}}
-             end}
-            {List.forAllInd TVars2
-             fun{$ I}
-                {MakeList {Length {Nth Ds I}}}
-             end}
-            TVars1_D = {VectorToTuple D1|{FoldR TVars1 Append nil}}
-            TVars2_D = {VectorToTuple D2|{FoldR TVars2 Append nil}}
-            TVars    = {VectorToTuple D|{FoldR Ds Append nil}}
+            TVars1   = {Map Ds CloneList}
+            TVars2   = {Map Ds CloneList}
+            TVars1_D = {VectorToTuple D1|{FoldL TVars1 Append nil}}
+            TVars2_D = {VectorToTuple D2|{FoldL TVars2 Append nil}}
+            TVars    = {VectorToTuple D|{FoldL Ds Append nil}}
          in
             {FdCD.header 1#1 B1#B2 TVars TVars1_D#TVars2_D}
             {FdCD.sumCN  Coeffs1 TVars1 Rel D1 B1}
@@ -458,20 +454,11 @@ local
                else
                   or
                      D1 D2 B1 B2
-                     LDs      = {Length Ds}
-                     TVars1   = {MakeList LDs}
-                     TVars2   = {MakeList LDs}
-                     {List.forAllInd TVars1
-                      fun{$ I}
-                         {MakeList {Length {Nth Ds I}}}
-                      end}
-                     {List.forAllInd TVars2
-                      fun{$ I}
-                         {MakeList {Length {Nth Ds I}}}
-                      end}
-                     TVars1_D = {VectorToTuple D1|{FoldR TVars1 Append nil}}
-                     TVars2_D = {VectorToTuple D2|{FoldR TVars2 Append nil}}
-                     TVars    = {VectorToTuple D|{FoldR Ds Append nil}}
+                     TVars1   = {Map Ds CloneList}
+                     TVars2   = {Map Ds CloneList}
+                     TVars1_D = {VectorToTuple D1|{FoldL TVars1 Append nil}}
+                     TVars2_D = {VectorToTuple D2|{FoldL TVars2 Append nil}}
+                     TVars    = {VectorToTuple D|{FoldL Ds Append nil}}
                   in
                      B=1
                      {FdCD.header 1#1 B1#B2 TVars TVars1_D#TVars2_D}
@@ -639,7 +626,6 @@ local
                              else
                                 {FdpSum StartTask#DurTask '=<:'
                                  Start.(Tasks.(1+T))}
-%                               StartTask+DurTask =<: Start.(Tasks.(1+T))
                              end
                           end}
             end
@@ -652,7 +638,6 @@ local
                              else TaskId=Tasks.(1+T) in
                                 {FdpSum Start.TaskId#Dur.TaskId '=<:'
                                  StartTask}
-%                               Start.TaskId + Dur.TaskId =<: StartTask
                              end
                           end}
             end

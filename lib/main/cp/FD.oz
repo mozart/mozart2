@@ -356,7 +356,7 @@ in
               fdd_selVarNaive:    FddSelVarNaive
               fdd_selVarNbSusps:  FddSelVarNbSusps
               ...)
-      = {Foreign.staticLoad 'libfd.so'}
+      = {Foreign.staticLoad 'libFDP.so'}
 
       %%
       %% Telling Domains

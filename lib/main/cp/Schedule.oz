@@ -143,7 +143,7 @@ in
               sched_taskIntervalsProof: SchedTaskIntervalsProof
               sched_firstsLasts:        SchedFirstsLasts
               ...)
-      = {Foreign.staticLoad 'libschedule.so'}
+      = {Foreign.staticLoad 'libSchedule.so'}
 
 
       %% Propagators

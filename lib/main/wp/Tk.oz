@@ -119,7 +119,7 @@ body
    %%
 
    local
-      WIF = {Foreign.staticLoad 'libwif.so'}
+      WIF = {Foreign.staticLoad 'libWif.so'}
    in
       %%
       %% Sending tickles

@@ -104,7 +104,7 @@ body
           end}
       end
    in
-      FSP = {LoadLibrary 'libfset.so'
+      FSP = {LoadLibrary 'libFSP.so'
              fsp(init:              fsp_init              #1
                  isIn:              fsp_isIn              #3
                  isInR:             fsp_isInR             #3

@@ -52,7 +52,7 @@ prepare
                    'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize' 'Service'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'
-                   'DPStatistics' 'DPInit'
+                   'DPStatistics' 'DPInit' 'DPControl'
                    'Discovery'
                    'Open'
                    'Tk' 'TkTools' 'Tix'

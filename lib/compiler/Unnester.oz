@@ -775,8 +775,9 @@ define
                                                        fAtom(nil unit))
                                          From = fColon(fAtom('from' unit)
                                                        fAtom(F unit))
-                                         fColon(X fRecord(fAtom(info unit)
-                                                          [Type From]))|In
+                                         fColon(fAtom(X unit)
+                                                fRecord(fAtom(info unit)
+                                                        [Type From]))|In
                                       end FImportArgs})
                AdditionalImports <- OldAdditionalImports
                CurrentImportFV <- OldImportFV

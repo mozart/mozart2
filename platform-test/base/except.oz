@@ -25,18 +25,21 @@ define
    local
       proc {DebugGet B} {Property.get 'errors.debug' B} end
       proc {DebugSet B} {Property.put 'errors.debug' B} end
+      LOCK = {NewLock}
       % perform the test in the appropriate context
       fun {Test Fun Debug TopLevel}
          D = {DebugGet}
       in
-         try
-            {DebugSet Debug}
-            if TopLevel then {Fun Debug true}
-            elsecase {AskVerbose
-                      {Space.new fun {$} {Fun Debug false} end}}
-            of succeeded(entailed) then true else false end
-         finally
-            {DebugSet D}
+         lock LOCK then
+            try
+               {DebugSet Debug}
+               if TopLevel then {Fun Debug true}
+               elsecase {AskVerbose
+                         {Space.new fun {$} {Fun Debug false} end}}
+               of succeeded(entailed) then true else false end
+            finally
+               {DebugSet D}
+            end
          end
       end
    in

@@ -1779,8 +1779,7 @@ define
             {Ctrl.rep error(coord: @coord
                             kind:  SAGenError
                             msg:   'illegal arity in application'
-                            items: [hint(l:'Builtin' m:pn(N))
-                                    hint(l:'Arity found' m:NumArgs)
+                            items: [hint(l:'Arity found' m:NumArgs)
                                     hint(l:'Expected' m:ProcArity)
                                     hint(l:'Argument names'
                                          m:{ApplToVS pn(N)|PNs})
@@ -2453,6 +2452,7 @@ define
             if
                GotA \= ExpA
             then
+               Val = {GetPrintData @designator}
                PNs = {Map @actualArgs fun {$ A} pn({A getPrintName($)}) end}
                Vals= {Map @actualArgs fun {$ A} oz({GetPrintData A}) end}
             in
@@ -2460,13 +2460,12 @@ define
                 error(coord: @coord
                       kind:  SAGenError
                       msg:   'illegal arity in application'
-                      items: [hint(l:'Procedure' m:pn(PN))
-                              hint(l:'Arity found' m:GotA)
+                      items: [hint(l:'Arity found' m:GotA)
                               hint(l:'Expected' m:ExpA)
                               hint(l:'Application (names)'
                                    m:{ApplToVS pn(PN)|PNs})
                               hint(l:'Application (values)'
-                                   m:{ApplToVS pn(PN)|Vals})])}
+                                   m:{ApplToVS Val|Vals})])}
             end
 
          elseif

@@ -124,7 +124,7 @@ define
       {OS.signal 'SIGHUP'  ignore}
       {OS.signal 'SIGTERM' ignore}
    else
-      {Fault.installWatcher RunRet [permFail]
+      {Fault.installWatcher {Access RunRet} [permFail]
        proc {$ E C}
           {System.showError 'RemoteServer: client crashed.'}
           {Application.exit ExitErrorClient}

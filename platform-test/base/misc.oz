@@ -25,6 +25,8 @@ functor $
 import
    Search.{SearchAll = 'SearchAll'}
    System.{show apply}
+   Browser.{getsBoundB}
+   from 'x-oz://boot/Browser'
 
 export
    Return
@@ -194,7 +196,7 @@ body
          getsBound(proc {$}
                       %% the getsBound bug: UVAR->SVAR invariant
                       _={Space.new proc {$ _}
-                                      GB={`Builtin` getsBoundB 2}
+                                      GB=Browser.getsBoundB
                                       proc {P X}
                                          thread Y in
                                             thread {Wait Y} end

@@ -50,10 +50,31 @@ local
    BURL_localize        = BURL.localize
    BURL_open            = BURL.open
    BURL_load            = BURL.load
-   Native_load          = fun {$ FN}
-                             {ObtainNative false FN}
-                          end
+
    \insert UrlExpand.oz
+
+   %% here we assume that the url has already been expanded if it
+   %% was relative
+
+   fun {Meth_localize U} {BURL_localize {UrlToVs U}} end
+   fun {Meth_open     U} {BURL_open     {UrlToVs U}} end
+   fun {Meth_load     U} {BURL_load     {UrlToVs U}} end
+   fun {Meth_native_usual U} {ObtainNative false {UrlToVs U}} end
+   fun {Meth_native_win32 U}
+      %% on windows we also try the non-encoded version since
+      %% some filenames may contain spaces.  we really need
+      %% something more principled, but this will do for the
+      %% time being.  The general solution should not involve
+      %% possible manipulations on the C++ side.  In fact there
+      %% should be no C++ side.  It should all be done in Oz.
+      try {ObtainNative {UrlToVs U}}
+      catch system(...) then
+         {ObtainNative {UrlToVsExtended U o(raw:true)}}
+      end
+   end
+   Meth_native = if PLATFORM_OS==win32
+                 then Meth_native_win32
+                 else Meth_native_usual end
 
    %% the default way of applying a method to a parsed URL: all system
    %% exceptions are considered to indicate that the data was not
@@ -62,10 +83,9 @@ local
    %% found(V) is raised.
 
    proc {Do_Method M U} V OK in
-      try {M {UrlToString
-              if {UrlIsRelative U} then
-                 {URL_expand {UrlResolve DotUrl U}}
-              else U end} V} OK=true
+      try {M if {UrlIsRelative U} then
+                {URL_expand {UrlResolve DotUrl U}}
+             else U end V} OK=true
       catch system(...) then     OK=false
       [] error(dp(generic 'URLhandler' _ _) ...)
       then                       OK=false
@@ -73,10 +93,10 @@ local
       if OK then raise found(V) end else skip end
    end
 
-   Methods = m(localize : proc {$ U} {Do_Method BURL_localize U} end
-               open     : proc {$ U} {Do_Method BURL_open     U} end
-               load     : proc {$ U} {Do_Method BURL_load     U} end
-               native   : proc {$ U} {Do_Method Native_load   U} end)
+   Methods = m(localize : proc {$ U} {Do_Method Meth_localize U} end
+               open     : proc {$ U} {Do_Method Meth_open     U} end
+               load     : proc {$ U} {Do_Method Meth_load     U} end
+               native   : proc {$ U} {Do_Method Meth_native   U} end)
 
    %% ----------------------------------------------------------------
    %% Tracing

@@ -36,7 +36,7 @@
 %%%
 %%% The first implementation of such a library was written by
 %%% Christian Schulte for his `Module Manager' facility.  It has been
-%%% entorely rewritten by Denys Duchier to add various extensions such
+%%% entirely rewritten by Denys Duchier to add various extensions such
 %%% as support for Windows-style filenames.  The new implementation
 %%% also improves the theoretical complexity, although not necessarily
 %%% the performance.
@@ -82,13 +82,13 @@
 %%% {URL.is X}
 %%%     returns true iff X is a non-empty record labeled with 'url'.
 %%%
-%%% {URL.toVs X}
+%%% {URL.toVirtualString X}
 %%%     X may be a url record or vstring.  The corresponding normalized
 %%% vstring representation is returned. #FRAGMENT and {INFO} segments
 %%% are not included (see below).  This is appropriate for retrieval
 %%% since fragment and info sections are meant for client-side usage.
 %%%
-%%% {URL.toVsExtended X HOW}
+%%% {URL.toVirtualStringExtended X HOW}
 %%%     Similar to the above, but HOW is a record with optional boolean
 %%% features `full' and `cache'.  `full:true' indicates that #FRAGMENT
 %%% and {INFO} sections should be included if present. `cache:true'
@@ -528,6 +528,12 @@ prepare
       else raise urlbug end end
    end
 
+   fun {CompToVSRaw Seg Rest}
+      case Seg of Comp#Slash then
+         Comp # if Slash then '/' else nil end # Rest
+      else raise urlbug end end
+   end
+
    %% URL_VS converts a url to a virtual string.  The second
    %% argument is a record with optional boolean features `full' and
    %% `cache'.  `full:true' indicates that a string with full
@@ -539,11 +545,15 @@ prepare
    %% appropriate for cache look up is desired: the `:' after the
    %% scheme and the `//' before the authority are both replaced by
    %% single `/'.
+   %%
+   %% new optional feature `raw'.  `raw:true' indicates that special
+   %% characters should not be escaped.
 
    fun {URL_VS Url How}
       U         = {URL_make Url}
       Full      = {CondSelect How full  false}
       Cache     = {CondSelect How cache false}
+      ToVS      = if {CondSelect How raw false} then CompToVSRaw else CompToVS end
       ScheSep   = if Cache then '/' else ':'  end
       AuthSep   = if Cache then nil else '//' end
       Scheme    = {CondSelect U scheme    unit}
@@ -559,7 +569,7 @@ prepare
       case Authority of unit then nil else AuthSep#Authority end #
       case Path      of unit then nil else
          case {Label Path} of abs then '/' else nil end          #
-         {List.foldR Path.1 CompToVS nil}
+         {List.foldR Path.1 ToVS nil}
       end                                                        #
       case Query     of unit then nil else '?'#Query      end    #
       if Full then

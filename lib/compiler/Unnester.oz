@@ -1727,8 +1727,9 @@ define
             C = {CoordinatesOf FE}
             if {IsPattern FE} then skip
             else
-               {@reporter error(coord: C kind: SyntaxError
-                                msg: 'only patterns in proc/fun head allowed')}
+               {@reporter
+                error(coord: C kind: SyntaxError
+                      msg: 'only patterns in `proc\'/`fun\' head allowed')}
             end
             {@BA generate('Formal' C ?GV)}
             NewOccs = Occs
@@ -2138,11 +2139,10 @@ define
             else
                {@reporter
                 error(coord: {CoordinatesOf FPattern} kind: SyntaxError
-                      msg: ('only simple patterns in `case\' conditional '#
-                            'allowed')
+                      msg: ('only patterns in `case\' conditional allowed')
                       items: [hint(l: 'Hint'
                                    m: ('to create a deep guard, use the '#
-                                       '`cond\' conditional)'))])}
+                                       '`cond\' conditional'))])}
                GCs = GCr
             end
             Unnester, UnnestCaseClauses(FCr ?GCr)

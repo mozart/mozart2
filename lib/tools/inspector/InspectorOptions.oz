@@ -27,6 +27,8 @@ import
    BS(chunkArity) at 'x-oz://boot/Browser'
    BO(getClass send) at 'x-oz://boot/Object'
    BN(newUnique) at 'x-oz://boot/Name'
+   DefaultURL(homeUrl)
+   URL(make resolve toAtom)
 export
    options : Options
 define
@@ -93,8 +95,13 @@ define
                {DoUnify (X#Y)|nil nil}
             end
          end
-         fun {Root X}
-            {Property.get 'oz.home'}#'/share/images/inspector/'#X
+         local
+            BitmapUrl = {URL.toAtom {URL.resolve DefaultURL.homeUrl
+                                     {URL.make 'images/inspector/'}}}
+         in
+            fun {Root X}
+               {Tk.localize BitmapUrl#X}
+            end
          end
          Color1    = '#a020f0'
          Color2    = '#bc8f8f'

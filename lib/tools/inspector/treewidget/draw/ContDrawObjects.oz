@@ -97,7 +97,7 @@ local
          in
             if {Node isFresh($)}
             then
-               NewNode = {New Aux.bitmap create(depth self I @visual)}
+               NewNode = {New Helper.bitmap create(depth self I @visual)}
             in
                {NewNode setRescueValue({Node getValue($)})}
                {Dictionary.put Items I NewNode}
@@ -256,7 +256,7 @@ local
          NewNode = case Call
                    of replaceNormal then {@visual treeCreate(Value self I @depth $)}
                    [] replaceDepth  then
-                      Node = {New Aux.bitmap create(depth self I @visual)}
+                      Node = {New Helper.bitmap create(depth self I @visual)}
                    in
                       {self notify}
                       {Node setRescueValue({OldNode getValue($)})} Node
@@ -275,7 +275,7 @@ local
       in
          {OldNode undraw}
          NewNode = {Visual treeCreate(Value self I @depth $)}
-         Proxy   = {New Aux.proxy create(InnerNode NewNode I Visual 0)}
+         Proxy   = {New Helper.proxy create(InnerNode NewNode I Visual 0)}
          if {OldNode isSep($)}
          then {OldNode change(Proxy)}
          else {Dictionary.put Items I Proxy}
@@ -431,7 +431,7 @@ in
                case Call
                of replaceNormal then {self adjustWidth(@maxWidth I)}
                else
-                  NewNode = {New Aux.bitmap create(depth self I @visual)}
+                  NewNode = {New Helper.bitmap create(depth self I @visual)}
                in
                   {NewNode setRescueValue({Node getValue($)})}
                   {Dictionary.put Items I NewNode}
@@ -544,13 +544,13 @@ in
                Node  = {Dictionary.get Items Width}
             in
                {Node undraw}
-               {Dictionary.put Items Width {New Aux.bitmap create(width self Width @visual)}}
+               {Dictionary.put Items Width {New Helper.bitmap create(width self Width @visual)}}
                {self doNotify}
             elseif {self isMaster($)}
             then
                {self undraw}
                width <- 1
-               {Dictionary.put @items 1 {New Aux.bitmap create(width self 1 @visual)}}
+               {Dictionary.put @items 1 {New Helper.bitmap create(width self 1 @visual)}}
                {self doNotify}
             else {@parent goUp(NewWidth)}
             end
@@ -576,7 +576,7 @@ in
                      NewNode = {Visual listCreate(Value self I (@rIndex + 1)
                                                   (@depth - 1) Width Stop $)}
                   else
-                     NewNode = {New Aux.bitmap create(depth self I @visual)}
+                     NewNode = {New Helper.bitmap create(depth self I @visual)}
                   in
                      {NewNode setRescueValue({Node getValue($)})}
                      {Dictionary.put Items I NewNode}
@@ -794,7 +794,7 @@ in
                then
                   {@label undraw}
                   hasLabel <- true
-                  label    <- {New Aux.label create({Label MyValue} '(' self @visual)}
+                  label    <- {New Helper.label create({Label MyValue} '(' self @visual)}
                end
                xDim <- _
                {@parent getRootIndex(@index $)}

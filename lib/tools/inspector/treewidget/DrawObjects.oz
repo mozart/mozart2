@@ -25,7 +25,7 @@ import
    RecordC(hasLabel)
    System(eq show)
    Tk(send)
-   Aux
+   Helper
 export
    drawObject                  : DrawObject
    recordDrawObject            : RecordDrawObject

@@ -134,8 +134,8 @@ local
          then
             if {Node mustChange($)}
             then {Node
-                  change({New Aux.embraced create({Node getNode($)} self I @visual round)})}
-            else {Dictionary.put Items I {New Aux.embraced create(Node self I @visual round)}}
+                  change({New Helper.embraced create({Node getNode($)} self I @visual round)})}
+            else {Dictionary.put Items I {New Helper.embraced create(Node self I @visual round)}}
             end
          end
          if I < @width
@@ -263,10 +263,10 @@ in
             if {Node isInfix($)} andthen {Node notEmbraced($)}
             then
                if {Node mustChange($)}
-               then {Node change({New Aux.embraced create({Node getNode($)}
+               then {Node change({New Helper.embraced create({Node getNode($)}
                                                           self I @visual round)})}
                else {Dictionary.put Items I
-                     {New Aux.embraced create(Node self I @visual round)}}
+                     {New Helper.embraced create(Node self I @visual round)}}
                end
             end
             if I < @width

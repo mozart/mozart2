@@ -25,7 +25,7 @@ import
    FS(reflect)
    RecordC(hasLabel monitorArity)
    System(printName show)
-   Aux
+   Helper
 export
    createObject                  : CreateObject
    intCreateObject               : IntCreateObject

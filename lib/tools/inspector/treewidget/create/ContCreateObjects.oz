@@ -67,15 +67,15 @@ local
 
    class LabelModeShare
       meth handleMode(RefStr Visual)
-         @mode = {New Aux.atom create(RefStr self 0 Visual ref)}
+         @mode = {New Helper.atom create(RefStr self 0 Visual ref)}
       end
    end
 
    class InfixModeShare
       meth handleMode(RefStr Visual)
-         @mode = {New Aux.atom create(RefStr self 0 Visual ref)}|
-         {New Aux.atom create('(' self 0 Visual internal)}|
-         {New Aux.atom create(')' self 0 Visual internal)}
+         @mode = {New Helper.atom create(RefStr self 0 Visual ref)}|
+         {New Helper.atom create('(' self 0 Visual internal)}|
+         {New Helper.atom create(')' self 0 Visual internal)}
       end
    end
 in
@@ -94,7 +94,7 @@ in
          if I > Width orelse {IsDet Stop}
          then
             width <- I
-            {Dictionary.put Items I {New Aux.bitmap create(width self I Visual)}}
+            {Dictionary.put Items I {New Helper.bitmap create(width self I Visual)}}
          else
             Node = {Visual treeCreate(Value.I self I Depth $)}
          in
@@ -105,14 +105,14 @@ in
                   NI = (I + 1)
                in
                   width <- NI
-                  {Dictionary.put Items I {New Aux.separator create('#' Visual Node)}}
-                  {Dictionary.put Items NI {New Aux.bitmap create(width self NI Visual)}}
+                  {Dictionary.put Items I {New Helper.separator create('#' Visual Node)}}
+                  {Dictionary.put Items NI {New Helper.bitmap create(width self NI Visual)}}
                else
                   width <- I
                   {Dictionary.put Items I Node}
                end
             else
-               {Dictionary.put Items I {New Aux.separator create('#' Visual Node)}}
+               {Dictionary.put Items I {New Helper.separator create('#' Visual Node)}}
                HashTupleCreateObject, performInsertion((I + 1) Value Stop)
             end
          end
@@ -158,22 +158,22 @@ in
             Depth  = @depth
          in
             if I > @width orelse {IsDet Stop}
-            then PipeShare, finalInsert(I {New Aux.bitmap create(width self I Visual)})
+            then PipeShare, finalInsert(I {New Helper.bitmap create(width self I Visual)})
             elseif {IsUnbound Vs}
             then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
             elsecase Vs
             of V|Vr then
                Node = {Visual treeCreate(V self I Depth $)}
             in
-               {Dictionary.put @items I {New Aux.separator create('|' Visual Node)}}
+               {Dictionary.put @items I {New Helper.separator create('|' Visual Node)}}
                PipeTupleCreateObject, performInsertion((I + 1) Vr Stop)
             [] nil  then
                width <- (I - 1)
                case @type
                of pipetuple then
                   type  <- list
-                  label <- {New Aux.atom create('[' self 0 Visual internal)}
-                  brace <- {New Aux.atom create(']' self 0 Visual internal)}
+                  label <- {New Helper.atom create('[' self 0 Visual internal)}
+                  brace <- {New Helper.atom create(']' self 0 Visual internal)}
                   PipeTupleCreateObject, removeSeparators(1)
                else skip
                end
@@ -200,7 +200,7 @@ in
                if {Node isSep($)}
                then skip
                else
-                  {Dictionary.put Items I {New Aux.separator create('|' @visual Node)}}
+                  {Dictionary.put Items I {New Helper.separator create('|' @visual Node)}}
                   PipeTupleCreateObject, addSeparators((I + 1) Width)
                end
             end
@@ -213,22 +213,22 @@ in
             Depth  = @depth
          in
             if I > @width orelse {IsDet Stop}
-            then PipeShare, finalInsert(I {New Aux.bitmap create(width self I Visual)})
+            then PipeShare, finalInsert(I {New Helper.bitmap create(width self I Visual)})
             elseif {IsUnbound Vs}
             then PipeShare, finalInsert(I {Visual treeCreate(Vs self I Depth $)})
             elsecase Vs
             of V|Vr then
                Node = {Visual treeCreate(V self I Depth $)}
             in
-               {Dictionary.put @items I {New Aux.separatorSML create('::' Visual Node)}}
+               {Dictionary.put @items I {New Helper.separatorSML create('::' Visual Node)}}
                ListSMLCreateObject, performInsertion((I + 1) Vr Stop)
             [] nil  then
                width <- (I - 1)
                case @type
                of pipetuple then
                   type  <- list
-                  label <- {New Aux.atom create('[' self 0 Visual internal)}
-                  brace <- {New Aux.atom create(']' self 0 Visual internal)}
+                  label <- {New Helper.atom create('[' self 0 Visual internal)}
+                  brace <- {New Helper.atom create(']' self 0 Visual internal)}
                   ListSMLCreateObject, removeSeparators(1)
                else skip
                end
@@ -256,7 +256,7 @@ in
                if {Node isSep($)}
                then {Node changeSep('::')}
                else
-                  {Dictionary.put Items I {New Aux.separatorSML create('::' @visual Node)}}
+                  {Dictionary.put Items I {New Helper.separatorSML create('::' @visual Node)}}
                end
                ListSMLCreateObject, addSeparators((I + 1) Width)
             end
@@ -291,7 +291,7 @@ in
             Depth  = @depth
          in
             if RI > Width orelse {IsDet Stop}
-            then PipeShare, finalInsert(I {New Aux.bitmap create(width self I Visual)})
+            then PipeShare, finalInsert(I {New Helper.bitmap create(width self I Visual)})
             elsecase Vs
             of V|Vr then
                NewI  = (I + 1)
@@ -300,7 +300,7 @@ in
             in
                PipeShare, finalInsert(NewI NewNode) %% Order is significant (!)
                Node = {Visual treeCreate(V self I Depth $)}
-               {Dictionary.put @items I {New Aux.separator create('|' Visual Node)}}
+               {Dictionary.put @items I {New Helper.separator create('|' Visual Node)}}
                NewNode = {Visual listCreate(Vr self NewI NewRI (Depth - 1) Width Stop $)}
             end
          end
@@ -317,8 +317,8 @@ in
       in
          @maxWidth = {Width Value}
          @type     = labeltuple
-         @label    = {New Aux.label create({Label Value} '(' self Visual)}
-         @brace    = {New Aux.atom create(')' self 0 Visual internal)}
+         @label    = {New Helper.label create({Label Value} '(' self Visual)}
+         @brace    = {New Helper.atom create(')' self 0 Visual internal)}
          ContainerCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
       meth performInsertion(I Value Stop)
@@ -335,11 +335,11 @@ in
             elseif Width < @maxWidth
             then
                width <- I
-               {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+               {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
             end
          else
             width <- I
-            {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+            {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
          end
       end
    end
@@ -353,8 +353,8 @@ in
       in
          @maxWidth   = 1
          @type       = cell
-         @label      = {New Aux.label create('ref' '(' self Visual)}
-         @brace      = {New Aux.atom create(')' self 0 Visual internal)}
+         @label      = {New Helper.label create('ref' '(' self Visual)}
+         @brace      = {New Helper.atom create(')' self 0 Visual internal)}
          @savedValue = Value
          value <- ref({Access Value})
          ContainerCreateObject, adjustWidth({Visual getWidth($)} 1)
@@ -366,7 +366,7 @@ in
    class RecordCreateObject from LabelContainerCreateObject
       attr
          arity                 %% Record Arity
-         auxfeat : Aux.feature %% Aux Separator Class
+         auxfeat : Helper.feature %% Aux Separator Class
       meth createContainer
          Visual = @visual
          Value  = @value
@@ -374,8 +374,8 @@ in
          @type     = record
          @maxWidth = {Width Value}
          @arity    = {Record.arity Value}
-         @label    = {New Aux.label create({Label Value} '(' self Visual)}
-         @brace    = {New Aux.atom create(')' self 0 Visual internal)}
+         @label    = {New Helper.label create({Label Value} '(' self Visual)}
+         @brace    = {New Helper.atom create(')' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
       meth adjustWidth(CurWidth I)
@@ -403,11 +403,11 @@ in
             elseif Width < @maxWidth
             then
                width <- I
-               {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+               {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
             end
          else
             width <- I
-            {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+            {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
          end
       end
       meth isLast(Node $)
@@ -417,12 +417,12 @@ in
 
    class RecordIndCreateObject from RecordCreateObject
       attr
-         auxfeat : Aux.featureInd
+         auxfeat : Helper.featureInd
    end
 
    class TupleSMLCreateObject from RecordCreateObject
       attr
-         auxfeat : Aux.tupleSML %% Aux Separator Class
+         auxfeat : Helper.tupleSML %% Aux Separator Class
       meth createContainer
          Visual = @visual
          Value  = @value
@@ -430,15 +430,15 @@ in
          @type     = labeltuple
          @maxWidth = {Width Value}
          @arity    = {Record.arity Value}
-         @label    = {New Aux.atom create('(' self 0 Visual internal)}
-         @brace    = {New Aux.atom create(')' self 0 Visual internal)}
+         @label    = {New Helper.atom create('(' self 0 Visual internal)}
+         @brace    = {New Helper.atom create(')' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
    end
 
    class VectorSMLCreateObject from RecordCreateObject
       attr
-         auxfeat : Aux.tupleSML %% Aux Separator Class
+         auxfeat : Helper.tupleSML %% Aux Separator Class
       meth createContainer
          Visual = @visual
          Value  = @value
@@ -446,15 +446,15 @@ in
          @type     = vector
          @maxWidth = {Width Value}
          @arity    = {Record.arity Value}
-         @label    = {New Aux.atom create('#[' self 0 Visual internal)}
-         @brace    = {New Aux.atom create(']' self 0 Visual internal)}
+         @label    = {New Helper.atom create('#[' self 0 Visual internal)}
+         @brace    = {New Helper.atom create(']' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
    end
 
    class RecordSMLCreateObject from RecordCreateObject
       attr
-         auxfeat : Aux.recordSML %% Aux Separator Class
+         auxfeat : Helper.recordSML %% Aux Separator Class
       meth createContainer
          Visual = @visual
          Value  = @value
@@ -462,8 +462,8 @@ in
          @type     = record
          @maxWidth = {Width Value}
          @arity    = {Record.arity Value}
-         @label    = {New Aux.atom create('{' self 0 Visual internal)}
-         @brace    = {New Aux.atom create('}' self 0 Visual internal)}
+         @label    = {New Helper.atom create('{' self 0 Visual internal)}
+         @brace    = {New Helper.atom create('}' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
    end
@@ -484,10 +484,10 @@ in
          @type    = kindedrecord
          HasLabel = {RecordC.hasLabel Value}
          @label   = if HasLabel
-                    then {New Aux.label create({Label Value} '(' self Visual)}
-                    else {New Aux.label create('_' '(' self Visual)}
+                    then {New Helper.label create({Label Value} '(' self Visual)}
+                    else {New Helper.label create('_' '(' self Visual)}
                     end
-         @brace   = {New Aux.atom create(')' self 0 Visual internal)}
+         @brace   = {New Helper.atom create(')' self 0 Visual internal)}
          {RecordC.monitorArity Value _ Arity}
          KindedRecordCreateObject, computeArityLength(Arity 1)
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
@@ -513,11 +513,11 @@ in
                then
                   monitorValue <- As
                   width        <- I
-                  {Dictionary.put @items I {New Aux.atom create('...' self I Visual internal)}}
+                  {Dictionary.put @items I {New Helper.atom create('...' self I Visual internal)}}
                elsecase As
                of A|Ar then
                   {Dictionary.put @items I
-                   {New Aux.feature
+                   {New Helper.feature
                     create(A Visual {Visual treeCreate(@value.A self I Depth $)})}}
                   KindedRecordCreateObject, performInsertion((I + 1) Ar Stop)
                [] nil then
@@ -528,18 +528,18 @@ in
             elseif Width < @maxWidth
             then
                width <- I
-               {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+               {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
             end
          else
             width <- I
-            {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+            {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
          end
       end
    end
 
    class KindedRecordIndCreateObject from KindedRecordCreateObject
       attr
-         auxfeat : Aux.featureInd
+         auxfeat : Helper.featureInd
    end
 
    class KindedRecordGrCreateObject from KindedRecordCreateObject GraphCreate LabelModeShare end
@@ -556,8 +556,8 @@ in
          Arity     = {FD.reflect.dom Value}
          @type     = fdint
          @maxWidth = {Length Arity}
-         @label    = {New Aux.label create({System.printName Value} '{' self Visual)}
-         @brace    = {New Aux.atom create('}' self 0 Visual internal)}
+         @label    = {New Helper.label create({System.printName Value} '{' self Visual)}
+         @brace    = {New Helper.atom create('}' self 0 Visual internal)}
          {Visual logVar(self Value false)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
@@ -578,15 +578,15 @@ in
             elseif Width < @maxWidth
             then
                width <- I
-               {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+               {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
             elseif Width == 0
             then
                width <- 1
-               {Dictionary.put @items 1 {New Aux.empty create(self)}}
+               {Dictionary.put @items 1 {New Helper.empty create(self)}}
             end
          else
             width <- I
-            {Dictionary.put @items I {New Aux.bitmap create(width self I Visual)}}
+            {Dictionary.put @items I {New Helper.bitmap create(width self I Visual)}}
          end
       end
    end
@@ -603,8 +603,8 @@ in
          Arity     = {FS.reflect.lowerBound Value}
          @type     = fsval
          @maxWidth = {Length Arity}
-         @label    = {New Aux.atom create('{' self 0 Visual internal)}
-         @brace    = {New Aux.atom create('}'#"#"#{FS.reflect.card Value} self 0 Visual internal)}
+         @label    = {New Helper.atom create('{' self 0 Visual internal)}
+         @brace    = {New Helper.atom create('}'#"#"#{FS.reflect.card Value} self 0 Visual internal)}
          {Visual logVar(self Value false)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
@@ -621,8 +621,8 @@ in
          Arity     = @value
          @type     = fshelp
          @maxWidth = {Length Arity}
-         @label    = {New Aux.atom create('{' self 0 Visual internal)}
-         @brace    = {New Aux.atom create('}' self 0 Visual internal)}
+         @label    = {New Helper.atom create('{' self 0 Visual internal)}
+         @brace    = {New Helper.atom create('}' self 0 Visual internal)}
          RecordCreateObject, adjustWidth({Visual getWidth($)} 1)
       end
    end
@@ -642,11 +642,11 @@ in
          depth <- Depth
          @type     = fsvar
          @maxWidth = 3
-         @label    = {New Aux.label create({System.printName Value} '{' self Visual)}
-         @brace    = {New Aux.atom create(CardVal self 0 Visual internal)}
+         @label    = {New Helper.label create({System.printName Value} '{' self Visual)}
+         @brace    = {New Helper.atom create(CardVal self 0 Visual internal)}
          width <- 3
          {Dictionary.put Items 1 {New HVArC create(Ls self 1 Visual Depth)}}
-         {Dictionary.put Items 2 {New Aux.atom create('..' self 0 Visual internal)}}
+         {Dictionary.put Items 2 {New Helper.atom create('..' self 0 Visual internal)}}
          {Dictionary.put Items 3 {New HVArC create(Us self 3 Visual Depth)}}
          {@visual logVar(self Value false)}
       end

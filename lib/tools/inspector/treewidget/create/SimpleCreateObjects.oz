@@ -86,7 +86,7 @@ in
       meth gcr(Entry Value Parent Index Visual Depth)
          @type  = free
          @entry = Entry
-         @mode  = {New Aux.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
+         @mode  = {New Helper.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)
          {Visual logVar(self Value false)}
@@ -105,7 +105,7 @@ in
       meth gcr(Entry Value Parent Index Visual Depth)
          @type  = future
          @entry = Entry
-         @mode  = {New Aux.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
+         @mode  = {New Helper.atom create({Entry getEqualStr($)} self 0 Visual Depth)}
          {Entry awake(self)}
          CreateObject, create(Value Parent Index Visual Depth)
          {Visual logVar(self Value true)}

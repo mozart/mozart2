@@ -70,7 +70,7 @@ in
 
    class AtomLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
-         PrintStr  = {Aux.convert @value}
+         PrintStr  = {Helper.convert @value}
          LengthStr = PrintStr
       end
    end
@@ -169,7 +169,7 @@ in
    class ByteStringLayoutObject from SimpleLayoutObject
       meth createRep(PrintStr LengthStr)
          LengthStr = {ByteString.toString @value}
-         PrintStr  = {Aux.quoteString LengthStr}
+         PrintStr  = {Helper.quoteString LengthStr}
       end
    end
 

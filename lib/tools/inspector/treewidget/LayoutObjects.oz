@@ -23,7 +23,7 @@ functor $
 import
    System(show printName)
    Word(toInt) at 'x-oz://boot/Word.ozf'
-   Aux
+   Helper
 export
    layoutObject                : LayoutObject
    intLayoutObject             : IntLayoutObject

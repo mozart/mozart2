@@ -22,7 +22,7 @@
 functor $
 import
    FS(value)
-   Aux(bitmap box proxy)
+   Helper(bitmap box proxy)
    TreeNodes
    StoreListener
    RelationManager('class')
@@ -334,7 +334,7 @@ define
          MaxDepth = @dDepth
       in
          if Depth > MaxDepth
-         then {New Aux.bitmap treeCreate(depth Parent Index self Val)}
+         then {New Helper.bitmap treeCreate(depth Parent Index self Val)}
          else
             ValKey = {ValueToKey Val}
          in
@@ -361,7 +361,7 @@ define
             in
                if {System.eq NVal Val}
                then Node
-               else {New Aux.proxy create({New Aux.box create(Val)} Node Index self Depth)}
+               else {New Helper.proxy create({New Helper.box create(Val)} Node Index self Depth)}
                end
             end
          end
@@ -396,7 +396,7 @@ define
       end
       meth listCreate(Val Parent Index RIndex Depth Width Stop $)
          if RIndex > Width orelse {IsDet Stop}
-         then {New Aux.bitmap create(width Parent Index self)}
+         then {New Helper.bitmap create(width Parent Index self)}
          elseif {IsUnbound Val}
          then TreeWidget, treeCreate(Val Parent Index (Depth + 1) $)
          elsecase Val
@@ -413,7 +413,7 @@ define
       end
       meth coreCreate(Val Parent Index Depth $)
          if Depth > @dDepth
-         then {New Aux.bitmap treeCreate(dpeth Parent Index self Val)}
+         then {New Helper.bitmap treeCreate(dpeth Parent Index self Val)}
          else
             NodeKey = {Dictionary.condGet @normNodesDict {ValueToKey Val} generic}
          in
@@ -442,7 +442,7 @@ define
                 of replaceNormal then
                    TreeWidget, treeCreate(Value self I 0 $)
                 [] replaceDepth then
-                   {New Aux.bitmap treeCreate(depth self I self {OldNode getValue($)})}
+                   {New Helper.bitmap treeCreate(depth self I self {OldNode getValue($)})}
                 end
          if {OldNode mustChange($)}
          then {OldNode change(Node)}
@@ -463,7 +463,7 @@ define
             dDepth <- N
             Node = TreeWidget, treeCreate(Value self I 0 $)
             dDepth <- DDepth
-         else Node = {New Aux.bitmap treeCreate(depth self I self Value)}
+         else Node = {New Helper.bitmap treeCreate(depth self I self Value)}
          end
          if {OldNode mustChange($)}
          then {OldNode change(Node)}
@@ -477,7 +477,7 @@ define
       in
          {OldNode undraw}
          Node  = TreeWidget, treeCreate(Value self I 0 $)
-         Proxy = {New Aux.proxy create(OldNode Node I self 0)}
+         Proxy = {New Helper.proxy create(OldNode Node I self 0)}
          {Dictionary.put Items I Proxy}
       end
       meth unlink(I)
@@ -516,7 +516,7 @@ define
          Node     = {Dictionary.get Nodes I}
          WorkNode = if {Node isFresh($)}
                     then
-                       NewNode = {New Aux.bitmap create(depth self I self)}
+                       NewNode = {New Helper.bitmap create(depth self I self)}
                     in
                        {NewNode setRescueValue({Node getValue($)})}
                        if {Node mustChange($)}

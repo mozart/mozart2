@@ -69,16 +69,20 @@ define
       FontLock = {Lock.new}
    in
       fun {GetFontHeight F}
-         lock FontLock then
-            AF = if {IsAtom F} then F else
-                    {String.toAtom {VirtualString.toString F}}
-                 end
-         in
-            if {Dictionary.member FontDict AF} then skip else
-               {Dictionary.put FontDict AF
-                {Tk.returnInt font(metrics AF linespace:unit)}}
+         if {IsObject F} then
+            {F tkReturnInt(metrics linespace:unit $)}
+         else
+            lock FontLock then
+               AF = if {IsAtom F} then F else
+                       {String.toAtom {VirtualString.toString F}}
+                    end
+            in
+               if {Dictionary.member FontDict AF} then skip else
+                  {Dictionary.put FontDict AF
+                   {Tk.returnInt font(metrics AF linespace:unit)}}
+               end
+               {Dictionary.get FontDict AF}
             end
-            {Dictionary.get FontDict AF}
          end
       end
    end

@@ -10,7 +10,11 @@
 %%%
 
 declare
-fun {NewSP IMPORT}
+fun
+\ifdef NEWCOMPILER
+   instantiate
+\endif
+   {NewSP IMPORT}
    \insert 'Standard.env'
    = IMPORT.'Standard'
 

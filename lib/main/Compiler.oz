@@ -24,9 +24,15 @@ fun
    = IMPORT.'Browser'
 in
    local
+      CiTkReq
+
       \insert 'compiler/InsertAll.oz'
 
-      CompilerInterfaceTk = {NewCompilerInterfaceTk Tk TkTools Open Browse}
+      CompilerInterfaceTk =
+      thread
+         {Wait CiTkReq}
+         {NewCompilerInterfaceTk Tk TkTools Open Browse}
+      end
       CompilerInterfaceEmacs = {NewCompilerInterfaceEmacs Open OS}
       CompilerInterfaceQuiet = {NewCompilerInterfaceQuiet}
 
@@ -82,6 +88,7 @@ in
 
       Compiler = compiler(start: StartCompiler
                           interface: interface(tk: CompilerInterfaceTk
+                                               tkRequest: CiTkReq
                                                emacs: CompilerInterfaceEmacs
                                                quiet: CompilerInterfaceQuiet)
                           getOPICompiler: GetOPICompiler)

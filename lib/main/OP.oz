@@ -12,7 +12,11 @@
 \insert 'OS.oz'
 
 declare
-fun {NewOP IMPORT}
+fun
+\ifdef NEWCOMPILER
+   instantiate
+\endif
+   {NewOP IMPORT}
    \insert 'Standard.env'
    = IMPORT.'Standard'
    \insert 'SP.env'

@@ -7,7 +7,11 @@
 
 declare
 
-fun {NewDP IMPORT}
+fun
+\ifdef NEWCOMPILER
+   instantiate
+\endif
+   {NewDP IMPORT}
    \insert 'Standard.env'
        = IMPORT.'Standard'
    \insert 'SP.env'

@@ -7,7 +7,11 @@
 
 declare
 
-fun {NewWP IMPORT}
+fun
+\ifdef NEWCOMPILER
+   instantiate
+\endif
+   {NewWP IMPORT}
    \insert 'Standard.env'
        = IMPORT.'Standard'
    \insert 'OP.env'

@@ -287,13 +287,13 @@ local
 
    fun {GetVerbose Args}
       case Args of verbose#B|Argr then
-         case {GetVerbose Argr} of unspecified then B
+         case {GetVerbose Argr} of auto then B
          elseof NewB then NewB
          end
       elseof _|Argr then
          {GetVerbose Argr}
       [] nil then
-         unspecified
+         auto
       end
    end
 
@@ -339,9 +339,7 @@ in
                                       m: ('Use --help to obtain '#
                                           'usage information'))])}
          end
-         Verbose = case {GetVerbose Opts} of unspecified then false
-                   elseof B then B
-                   end
+         Verbose = {GetVerbose Opts}
          BatchCompiler = {New Compiler.compilerClass init()}
          UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
          {BatchCompiler enqueue(mergeEnv(Env))}

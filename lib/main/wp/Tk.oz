@@ -1114,155 +1114,108 @@ define
    end
 
 
-   class TkTextMark from ReturnClass
-      feat
-         !TkWidget
-         !TclSlaves
-         !TclSlaveEntry
-         !TclName
+   %%
+   %% Tags and Marks
+   %%
 
-      meth tkInit(parent:Parent)
-         ThisTclName  = self.TclName
-         ParentSlaves = {CondSelect Parent TclSlaves unit}
-      in
-         if ParentSlaves==unit then
-            {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
-         end
-         if {IsDet ThisTclName} then
-            {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
-         end
-         self.TclSlaves     = [nil]
-         self.TclSlaveEntry = {AddSlave ParentSlaves self}
-         self.TkWidget      = Parent
-         ThisTclName        = {GenTagName}
-      end
+   local
+      TkQualify = {NewName}
 
-      meth tk(...) = M
-         {TkSendTagTuple o(self.TkWidget mark) self M}
-      end
+      class TkTagAndMark from ReturnClass
+         feat
+            !TkWidget
+            !TclSlaves
+            !TclSlaveEntry
+            !TclName
 
-      meth !TkReturnMethod(M Cast)
-         {TkReturnMess o(self.TkWidget mark) M self Cast}
-      end
-
-      meth tkClose
-         {TkClose o(self.TkWidget mark delete self) self}
-      end
-
-   end
-
-
-   class TkCanvasTag from ReturnClass
-      feat
-         !TkWidget
-         !TclSlaves
-         !TclSlaveEntry
-         !TclName
-
-      meth tkInit(parent:Parent)
-         ThisTclName  = self.TclName
-         ParentSlaves = {CondSelect Parent TclSlaves unit}
-      in
-         if ParentSlaves==unit then
-            {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
-         end
-         if {IsDet ThisTclName} then
-            {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
-         end
-         self.TclSlaves     = [nil]
-         self.TclSlaveEntry = {AddSlave ParentSlaves self}
-         self.TkWidget      = Parent
-         ThisTclName        = {GenTagName}
-      end
-
-      meth tkBind(event:  Event
-                  action: Action  <= _
-                  args:   Args    <= nil
-                  append: AddIt   <= false
-                  break:  BreakIt <= false) = Message
-         if {HasFeature Message action} then
-            ActionId Command
+         meth tkInit(parent:Parent)
+            ThisTclName  = self.TclName
+            ParentSlaves = {CondSelect Parent TclSlaves unit}
          in
-            {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
-            {AddSlave self.TclSlaves ActionId _}
-            {TkSend o(self.TkWidget bind self Event v(Command))}
-         else
-            {TkSend o(self.TkWidget bind self Event '')}
+            if ParentSlaves==unit then
+               {Exception.raiseError tk(wrongParent self tkInit(parent:Parent))}
+            end
+            if {IsDet ThisTclName} then
+               {Exception.raiseError tk(alreadyInitialized self tkInit(parent:Parent))}
+            end
+            self.TclSlaves     = [nil]
+            self.TclSlaveEntry = {AddSlave ParentSlaves self}
+            self.TkWidget      = Parent
+            ThisTclName        = {GenTagName}
+         end
+
+         meth tk(...) = M
+            {TkSendTagTuple o(self.TkWidget self.TkQualify) self M}
+         end
+
+         meth !TkReturnMethod(M Cast)
+            {TkReturnMess o(self.TkWidget self.TkQualify) M self Cast}
+         end
+
+         meth tkClose
+            {TkClose o(self.TkWidget self.TkQualify delete self) self}
          end
       end
 
-      meth tk(...) = M
-         {TkSendTagTuple self.TkWidget self M}
-      end
-
-      meth !TkReturnMethod(M Cast)
-         {TkReturnMess self.TkWidget M self Cast}
-      end
-
-      meth tkClose
-         {TkClose o(self.TkWidget delete self) self}
-      end
-
-   end
-
-
-   class TkTextTag from ReturnClass
-      feat
-         !TkWidget
-         !TclSlaves
-         !TclSlaveEntry
-         !TclName
-
-      meth tkInit(parent:Parent ...) = M
-         ParentSlaves = {CondSelect Parent TclSlaves unit}
-         ThisTclName  = {GenTagName}
-      in
-         if ParentSlaves==unit then
-            {Exception.raiseError tk(wrongParent self M)}
+      class TkTag from TkTagAndMark
+         meth tkBind(event:  Event
+                     action: Action  <= _
+                     args:   Args    <= nil
+                     append: AddIt   <= false
+                     break:  BreakIt <= false) = Message
+            if {HasFeature Message action} then
+               ActionId Command
+            in
+               {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
+               {AddSlave self.TclSlaves ActionId _}
+               {TkSend o(self.TkWidget self.TkQualify bind self Event
+                         v(Command))}
+            else
+               {TkSend o(self.TkWidget self.TkQualify bind self Event '')}
+            end
          end
-         if {IsDet self.TclName} then
-            {Exception.raiseError tk(alreadyInitialized self M)}
-         end
-         self.TclSlaves     = [nil]
-         self.TclSlaveEntry = {AddSlave ParentSlaves self}
-         self.TkWidget      = Parent
-         if {Width M}>1 then
-            {TkSendFilter
-             o(Parent tag configure) ThisTclName M [parent]
-             unit}
-         end
-         self.TclName       = ThisTclName
       end
 
-      meth tkBind(event:  Event
-                  action: Action  <= _
-                  args:   Args    <= nil
-                  append: AddIt   <= false
-                  break:  BreakIt <= false) = Message
-         if {HasFeature Message action} then
-            ActionId Command
+   in
+
+      class TkTextMark from TkTagAndMark
+         feat !TkQualify: mark
+      end
+
+
+      class TkCanvasTag from TkTag
+         feat !TkQualify: unit
+      end
+
+      class TkTextTag from TkTag
+         feat !TkQualify: tag
+
+         meth tkInit(parent:Parent ...) = M
+            ParentSlaves = {CondSelect Parent TclSlaves unit}
+            ThisTclName  = {GenTagName}
          in
-            {DefineEvent Action Args AddIt BreakIt ?ActionId ?Command}
-            {AddSlave self.TclSlaves ActionId _}
-            {TkSend o(self.TkWidget tag bind self Event v(Command))}
-         else
-            {TkSend o(self.TkWidget tag bind self Event '')}
+            if ParentSlaves==unit then
+               {Exception.raiseError tk(wrongParent self M)}
+            end
+            if {IsDet self.TclName} then
+               {Exception.raiseError tk(alreadyInitialized self M)}
+            end
+            self.TclSlaves     = [nil]
+            self.TclSlaveEntry = {AddSlave ParentSlaves self}
+            self.TkWidget      = Parent
+            if {Width M}>1 then
+               {TkSendFilter
+                o(Parent tag configure) ThisTclName M [parent]
+                unit}
+            end
+            self.TclName       = ThisTclName
          end
       end
-
-      meth tk(...) = M
-         {TkSendTagTuple o(self.TkWidget tag) self M}
-      end
-
-      meth !TkReturnMethod(M Cast)
-         {TkReturnMess o(self.TkWidget tag) M self Cast}
-      end
-
-      meth tkClose
-         {TkClose o(self.TkWidget tag delete self) self}
-      end
-
    end
+
+   %%
+   %% Images
+   %%
 
    local
       local
@@ -1369,6 +1322,10 @@ define
          end
       end
    end
+
+   %%
+   %% Fonts
+   %%
 
    class TkFont
       from ReturnClass

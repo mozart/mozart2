@@ -204,9 +204,9 @@ ILOTitle    = ITitle#': Layout Options'
 IITitle     = ITitle
 
 %%
-IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
+IIBitmap    = !OzHome # '/lib/images/browserIcon.xbm'
 %%
-IStopBitmap = '@' # !OzHome # '/lib/bitmaps/stop.xbm'
+IStopBitmap = '@' # !OzHome # '/lib/images/stop.xbm'
 IStopWidth  = 20
 IStopFG     = firebrick3
 IStopAFG    = firebrick2

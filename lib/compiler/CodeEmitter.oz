@@ -492,25 +492,13 @@ in
             end
             if NewCont2 \= ~1 then
                continuations <- NewCont2|@continuations.2
-            else
-               case Builtinname of 'getReturn' then [Reg] = Regs in
-                  %--** does this still exist?
-                  case Emitter, GetReg(Reg $) of none then R in
-                     Emitter, PredictReg(Reg ?R)
-                     Emitter, Emit(getReturn(R))
-                  elseof R then X in
-                     Emitter, AllocateShortLivedTemp(?X)
-                     Emitter, Emit(getReturn(X))
-                     Emitter, Emit(unify(R X))
-                  end
-               else XsIn XsOut Unifies in
-                  Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
-                                               ?XsOut ?Unifies)
-                  Emitter, DebugEntry(Coord 'call')
-                  Emitter, Emit(callBI(Builtinname XsIn#XsOut))
-                  Emitter, EmitUnifies(Unifies)
-                  Emitter, DebugExit(Coord 'call')
-               end
+            else XsIn XsOut Unifies in
+               Emitter, AllocateBuiltinArgs(Regs BIInfo.imods ?XsIn
+                                            ?XsOut ?Unifies)
+               Emitter, DebugEntry(Coord 'call')
+               Emitter, Emit(callBI(Builtinname XsIn#XsOut))
+               Emitter, EmitUnifies(Unifies)
+               Emitter, DebugExit(Coord 'call')
             end
          [] vGenCall(_ Reg IsMethod Literal RecordArity Regs Coord _) then
             case Emitter, GetReg(Reg $) of g(_) then Instr R in

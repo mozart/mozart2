@@ -3,17 +3,17 @@
 %%%   Leif Kornstaedt <kornstae@ps.uni-sb.de>
 %%%
 %%% Copyright:
-%%%   Leif Kornstaedt, 1996, 1997
+%%%   Leif Kornstaedt, 1996-1998
 %%%
 %%% Last change:
 %%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
 %%% This file is part of Mozart, an implementation of Oz 3:
-%%%    $MOZARTURL$
+%%%   $MOZARTURL$
 %%%
 %%% See the file "LICENSE" or
-%%%    $LICENSEURL$
+%%%   $LICENSEURL$
 %%% for information on usage and redistribution
 %%% of this file, and for a DISCLAIMER OF ALL
 %%% WARRANTIES.
@@ -41,23 +41,28 @@ local
 
    class Formatter
       prop final
-      feat MaxWidth TabSize
-      % `MaxWidth' contains the width of the screen (maximum number of
-      % characters per line); `TabSize' is the number of characters to add
-      % to indentation when a tab is encountered.
+      attr
+         MaxWidth: unit     % width of the screen (characters per line)
+         TabSize: unit      % number of characters to use in format(indent)
+         Stack: unit        % stack of indentations; the topmost element
+                            % is used when outputting a newline
+         Line: unit         % preliminary output
+         Len: unit          % length of virtual string in @Line
+         VS: unit           % finished output
+         Col: unit          % column number arrived to at the end of @VS
+         GlueItem: unit     % what to insert between @VS and @Line if it
+                            % fits on the same line as the end of @VS
+         GlueIndent: unit   % how much to indent @Line if it does not fit
+                            % on the same line as the end of @VS
+         PrintDepth: unit   % used by oz(...)
+         PrintWidth: unit   % used by oz(...)
+         StackOpsHd: unit   % difference list of pending stack operations
+         StackOpsTl: unit
 
-      attr Stack Line Len VS Col GlueIndent GlueItem StackOpsHd StackOpsTl
-      % `Stack' is the stack of indentations.  The topmost element
-      % is the current indentation to use when a newline is output.
-      % Output is first written to `Line', completely formatted output
-      % to `VS'.  `Len' counts the number of characters in `Line' and
-      % `Col' stores the column number of the next character appended to `VS'.
-      % When a glue is encountered, it is checked whether `Line' would still
-      % fit on the current line; if it doesn't, a newline is inserted.
-
-      meth init(width: W <= 80 tabsize: T <= 3 indent: N <= 0)
-         self.MaxWidth = W
-         self.TabSize = T
+      meth init(width: W <= 80 tabsize: T <= 3 indent: N <= 0
+                printDepth: PD <= unit printWidth: PW <= unit)
+         MaxWidth <- W
+         TabSize <- T
          Stack <- [N]
          Line <- ""
          Len <- 0
@@ -65,6 +70,12 @@ local
          Col <- N
          GlueIndent <- N
          GlueItem <- ""
+         PrintDepth <- case PD of unit then {Property.get print}.depth
+                       else PD
+                       end
+         PrintWidth <- case PW of unit then {Property.get print}.width
+                       else PW
+                       end
          @StackOpsHd = @StackOpsTl
       end
       meth append(FS)
@@ -73,18 +84,19 @@ local
          [] _|_ then
             Len <- @Len + {VirtualString.length FS}
             Line <- @Line#FS
-         elsecase {IsAtom FS} then
-            Len <- @Len + {VirtualString.length FS}
-            Line <- @Line#FS
-         elsecase {IsInt FS} then
-            Len <- @Len + {VirtualString.length FS}
-            Line <- @Line#FS
-         elsecase {IsFloat FS} then
+         elsecase {IsAtom FS} orelse {IsNumber FS} then
             Len <- @Len + {VirtualString.length FS}
             Line <- @Line#FS
          elsecase {IsTuple FS} andthen {Label FS} == '#' then
             Formatter, AppendTuple(FS 1 {Width FS})
-         elsecase FS of format(X) then
+         elsecase FS of pn(PrintName) then
+            Formatter, append({PrintNameToVirtualString PrintName})
+         [] oz(X) then
+            Formatter, append({System.valueToVirtualString X
+                               @PrintDepth @PrintWidth})
+         [] list(Elems Sep) then
+            Formatter, AppendSeparated(Elems Sep)
+         [] format(X) then
             case X of break then I in
                Formatter, FormatLine()
                I = @Stack.1
@@ -105,15 +117,13 @@ local
             [] pop then Tl in
                @StackOpsTl = pop|Tl
                StackOpsTl <- Tl
-            [] list(Elems Sep) then
-               Formatter, AppendSeparated(Elems Sep)
             end
          end
       end
-      meth get($)
+      meth get(ResVS)
          % this implicitly appends a `format(glue(""))' to the end of the input
          Formatter, FormatLine()
-         @VS
+         ResVS = (VS <- "")
       end
       meth AppendTuple(T I N)
          case I =< N then
@@ -135,7 +145,7 @@ local
       end
       meth FormatLine() N X in
          N = {Length @GlueItem}
-         case @Col + N + @Len =< self.MaxWidth orelse @Col =< @GlueIndent then
+         case @Col + N + @Len =< @MaxWidth orelse @Col =< @GlueIndent then
             VS <- @VS#@GlueItem#@Line
             Col <- @Col + N
          else
@@ -159,9 +169,9 @@ local
                        [] push(Len) then
                           (@Col + Len)|TheStack
                        [] indent then
-                          (TheStack.1 + self.TabSize)|TheStack.2
+                          (TheStack.1 + @TabSize)|TheStack.2
                        [] exdent then
-                          (TheStack.1 - self.TabSize)|TheStack.2
+                          (TheStack.1 - @TabSize)|TheStack.2
                        end
             Formatter, ExecStackOps(Sr NewStack $)
          [] nil then TheStack
@@ -170,7 +180,8 @@ local
    end
 in
    fun {FormatStringToVirtualString FS} O in
-      O = {New Formatter init(width: 79)}   % to avoid `\'-line break in emacs
+      % we use a width of 79 to avoid `\'-line breaks in Emacs
+      O = {New Formatter init(width: 79)}
       {O append(FS)}
       {O get($)}
    end

@@ -1061,6 +1061,7 @@ local
          case @toCopy == unit then
             toCopy <- nil
          else
+            %--** this should be allowed
             {self.rep
              error(coord: Coord
                    kind:  SAGenError

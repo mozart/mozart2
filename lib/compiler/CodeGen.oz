@@ -916,9 +916,7 @@ local
 
    class CodeGenDefinition
       meth codeGen(CS VHd VTl)
-         V FileName Line PrintName PredId PredicateRef
-         StateReg FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code
-         VInter1 VInter2
+         V FileName Line PrintName PredId PredicateRef StateReg
       in
          {@designator getVariable(?V)}
          case @coord of unit then FileName = 'nofile' Line = 1
@@ -948,64 +946,112 @@ local
          else
             StateReg = none
          end
-         {CS startDefinition()}
-         FormalRegs = {Map @formalArgs
-                       fun {$ V}
-                          {V setReg(CS)}
-                          {V reg($)}
-                       end}
-         case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
-            {MakePermanent @formalArgs ?Regs BodyVInter Cont1}
-            {CodeGenList @statements CS Cont1 Cont2}
-            {Clear Regs Cont2 nil}
-         else
-            {CodeGenList @statements CS BodyVInter nil}
-         end
-         statements <- unit   % hand it to the garbage collector
-         AllRegs = case @allVariables of nil then nil
-                   else {Map @allVariables fun {$ V} {V reg($)} end}
-                   end
-         case StateReg of none then
-            BodyVInstr = BodyVInter
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-            VInter1 = VInter2
-         else StateVO OOSetSelf in
-            StateVO = {New PseudoVariableOccurrence init(StateReg)}
-            OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
-            {MakeApplication OOSetSelf [StateVO] CS BodyVInstr BodyVInter}
-            {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
-            VInter1 = vGetSelf(_ StateReg VInter2)
-         end
          case @toCopy of unit then
-            VHd = VInter1
-            VInter2 = vDefinition(_ {V reg($)} PredId PredicateRef
-                                  GRegs Code VTl)
-         elseof nil then Reg in
-            {CS newReg(?Reg)}
-            VHd = vEquateLiteral(_ nil Reg VInter1)
-            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
-                                      GRegs Code VTl)
-         elseof Xs then
-            fun {MakeCopyList Xs VHd VTl}
-               case Xs of X|Xr then ArgIn VInter1 ConsReg ConsArg1 in
-                  ArgIn = {MakeCopyList Xr VHd VInter1}
-                  {CS newReg(?ConsReg)}
-                  ConsArg1 = case {Foreign.pointer.is X} then predicateRef(X)
-                             elsecase {IsName X} then literal(X)
-                             end
-                  VInter1 = vEquateRecord(_ '|' 2 ConsReg [ConsArg1 ArgIn] VTl)
-                  value(ConsReg)
-               [] nil then
-                  VHd = VTl
-                  literal(nil)
-               end
-            end
-            Reg
+            FormalRegs AllRegs BodyVInter BodyVInstr GRegs Code VInter
          in
-            value(Reg) = {MakeCopyList Xs VHd VInter1}
-            VInter2 = vDefinitionCopy(_ Reg {V reg($)} PredId PredicateRef
-                                      GRegs Code VTl)
+            {CS startDefinition()}
+            FormalRegs = {Map @formalArgs
+                          fun {$ V}
+                             {V setReg(CS)}
+                             {V reg($)}
+                          end}
+            case CS.debugInfoVarnamesSwitch then Regs Cont1 Cont2 in
+               {MakePermanent @formalArgs ?Regs BodyVInter Cont1}
+               {CodeGenList @statements CS Cont1 Cont2}
+               {Clear Regs Cont2 nil}
+            else
+               {CodeGenList @statements CS BodyVInter nil}
+            end
+            AllRegs = case @allVariables of nil then nil
+                      else {Map @allVariables fun {$ V} {V reg($)} end}
+                      end
+            case StateReg of none then
+               BodyVInstr = BodyVInter
+               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+               VHd = VInter
+            else StateVO OOSetSelf in
+               StateVO = {New PseudoVariableOccurrence init(StateReg)}
+               OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
+               {MakeApplication OOSetSelf [StateVO] CS BodyVInstr BodyVInter}
+               {CS endDefinition(BodyVInstr FormalRegs AllRegs ?GRegs ?Code)}
+               VHd = vGetSelf(_ StateReg VInter)
+            end
+            VInter = vDefinition(_ {V reg($)} PredId PredicateRef
+                                 GRegs Code VTl)
+         else
+            VInter FormalRegs AllRegs
+            InnerBodyVInter InnerBodyVInstr InnerGRegs InnerCode
+            InnerDefinitionReg InnerPredId
+            OuterBodyVInstr OuterBodyVInter2 OuterGRegs OuterCode
+         in
+            {CS startDefinition()}
+            FormalRegs = {Map @formalArgs
+                          fun {$ V}
+                             {V setReg(CS)}
+                             {V reg($)}
+                          end}
+            {CS startDefinition()}
+            {CodeGenList @statements CS InnerBodyVInter nil}
+            AllRegs = case @allVariables of nil then nil
+                      else {Map @allVariables fun {$ V} {V reg($)} end}
+                      end
+            case StateReg of none then
+               InnerBodyVInstr = InnerBodyVInter
+               {CS endDefinition(InnerBodyVInstr nil AllRegs
+                                 ?InnerGRegs ?InnerCode)}
+               VHd = VInter
+            else StateVO OOSetSelf in
+               StateVO = {New PseudoVariableOccurrence init(StateReg)}
+               OOSetSelf = {GetExpansionOcc '`ooSetSelf`' self @coord CS}
+               {MakeApplication OOSetSelf [StateVO] CS
+                InnerBodyVInstr InnerBodyVInter}
+               {CS endDefinition(InnerBodyVInstr nil AllRegs
+                                 ?InnerGRegs ?InnerCode)}
+               VHd = vGetSelf(_ StateReg VInter)
+            end
+            {CS newReg(?InnerDefinitionReg)}
+            InnerPredId = {Adjoin PredId
+                           pid({VirtualString.toAtom PrintName#'/body'} 0)}
+            case @toCopy of nil then Reg OuterBodyVInter1 in
+               {CS newReg(?Reg)}
+               OuterBodyVInstr = vEquateLiteral(_ nil Reg OuterBodyVInter1)
+               OuterBodyVInter1 = vDefinitionCopy(_ Reg InnerDefinitionReg
+                                                  InnerPredId unit
+                                                  InnerGRegs InnerCode
+                                                  OuterBodyVInter2)
+            elseof Xs then
+               fun {MakeCopyList Xs VHd VTl}
+                  case Xs of X|Xr then ArgIn VInter1 ConsReg ConsArg1 in
+                     ArgIn = {MakeCopyList Xr VHd VInter1}
+                     {CS newReg(?ConsReg)}
+                     ConsArg1 = case {Foreign.pointer.is X} then
+                                   predicateRef(X)
+                                elsecase {IsName X} then
+                                   literal(X)
+                                end
+                     VInter1 = vEquateRecord(_ '|' 2 ConsReg [ConsArg1 ArgIn]
+                                             VTl)
+                     value(ConsReg)
+                  [] nil then
+                     VHd = VTl
+                     literal(nil)
+                  end
+               end
+               Reg OuterBodyVInter1
+            in
+               value(Reg) = {MakeCopyList Xs OuterBodyVInstr OuterBodyVInter1}
+               OuterBodyVInter1 = vDefinitionCopy(_ Reg InnerDefinitionReg
+                                                  InnerPredId unit
+                                                  InnerGRegs InnerCode
+                                                  OuterBodyVInter2)
+            end
+            OuterBodyVInter2 = vCall(_ InnerDefinitionReg nil unit nil)
+            {CS endDefinition(OuterBodyVInstr FormalRegs AllRegs
+                              ?OuterGRegs ?OuterCode)}
+            VInter = vDefinition(_ {V reg($)} PredId PredicateRef
+                                 OuterGRegs OuterCode VTl)
          end
+         statements <- unit   % hand them to the garbage collector
       end
    end
    class CodeGenFunctionDefinition

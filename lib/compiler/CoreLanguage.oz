@@ -133,7 +133,7 @@ in
       class Statement
          from Annotate.statement SA.statement CodeGen.statement
          attr next: unit coord: unit
-         meth setPrintName(_ _)
+         meth setPrintName(_)
             skip
          end
          meth isRedundant($)
@@ -269,9 +269,8 @@ in
          meth setAllVariables(Vs)
             allVariables <- Vs
          end
-         meth setPrintName(PrintName FeatPrintName)
-            printName <- {String.toAtom
-                          {VirtualString.toString PrintName#'.'#FeatPrintName}}
+         meth setPrintName(PrintName)
+            printName <- PrintName
          end
          meth output(R $) FS1 in
             {FoldL @procFlags
@@ -671,9 +670,8 @@ in
             methods <- Meths
             coord <- Coord
          end
-         meth setPrintName(PrintName FeatPrintName)
-            printName <- {String.toAtom
-                          {VirtualString.toString PrintName#'.'#FeatPrintName}}
+         meth setPrintName(PrintName)
+            printName <- PrintName
          end
          meth output(R $) FS1 in
             'class '#{@designator output2(R $ ?FS1)}#IN#FS1#

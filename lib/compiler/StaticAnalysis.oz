@@ -1695,7 +1695,7 @@ local
       meth saDescend(Ctrl)
          Env = {GetGlobalEnv @globalVars}
       in
-         case {Member 'copy' @procFlags} then Top in
+         case {Member 'instantiate' @procFlags} then Top in
             {Ctrl beginVirtualToplevel(@coord)}
             {Ctrl getTop(?Top)}
             {Ctrl setTop(true)}

@@ -570,8 +570,7 @@ local
                 error(coord: {DollarCoord FEs} kind: SyntaxError
                       msg: 'at most one $ in procedure head allowed')}
             end
-            Unnester, UnnestProc(FEs FS IsLazy
-                                 {Member 'instantiate' ProcFlagAtoms} C ?GS)
+            Unnester, UnnestProc(FEs FS IsLazy C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
@@ -599,8 +598,7 @@ local
                                 msg: 'no $ in function head allowed')}
                NewFEs = FEs
             end
-            Unnester, UnnestProc(NewFEs FE2 IsLazy
-                                 {Member 'instantiate' ProcFlagAtoms} C ?GS)
+            Unnester, UnnestProc(NewFEs FE2 IsLazy C ?GS)
             {@BA closeScope(?GFormals)}
             IsStateUsing = @StateUsed
             StateUsed <- IsStateUsing orelse OldStateUsed
@@ -614,7 +612,8 @@ local
             GFrontEq|GD   % Definition node must always be second element!
          [] fFunctor(FE FDescriptors FBody C) then
             GFrontEq GVO FV FImport FExport FProp ImportGV ImportFV
-            FImportArgs ImportFS ExportFS FColons FBody2 FFun FImportType GS
+            FImportArgs ImportFS ExportFS FColons FBody2 FFun FImportType
+            FRecord GS
          in
             Unnester, UnnestToVar(FE 'Functor' ?GFrontEq ?GVO)
             FV = fVar({{GVO getVariable($)} getPrintName($)}
@@ -632,13 +631,13 @@ local
             FFun = fFun(fDollar(unit) [ImportFV] FBody2
                         fAtom('instantiate' C)|FProp C)
             FImportType = fRecord(fAtom('import' unit) FImportArgs)
+            FRecord = fRecord(fAtom(f unit)
+                              [fColon(fAtom(apply unit) FFun)
+                               fColon(fAtom('import' unit) FImportType)])
             Unnester,
             UnnestStatement(fApply(fVar('`NewChunk`' unit)
-                                   [fRecord(fAtom(f unit)
-                                            [fColon(fAtom(apply unit) FFun)
-                                             fColon(fAtom('import' unit)
-                                                    FImportType)])
-                                    FV] unit) ?GS)
+                                   [fLocal(fEq(FV FRecord C) FV C) FV] C)
+                            ?GS)
             GFrontEq|GS
          [] fDoImport(_ GV ImportFV) then
             fVar(PrintName C) = ImportFV DotGVO ImportGVO
@@ -1391,7 +1390,8 @@ local
                 case PrintName == '' then skip
                 elsecase {GetLast GBack0} of nil then skip
                 elseof GS then
-                   {GS setPrintName(PrintName FeatPrintName)}
+                   {GS setPrintName({VirtualString.toAtom
+                                     PrintName#'.'#FeatPrintName})}
                 end
                 NewGArgs#GFront#(GBack0|GBack)
              end
@@ -1400,24 +1400,13 @@ local
          {SetExpansionOccs GRecord @BA}
       end
 
-      meth UnnestProc(FEs FS IsLazy IsInstantiate C ?GS)
-         FGuards FResultVars NewFS0 NewFS FBody0 FBody GBody
+      meth UnnestProc(FEs FS IsLazy C ?GS)
+         FGuards FResultVars NewFS FBody0 FBody GBody
       in
          % each formal argument in FEs must be a basic constraint;
          % all unnested formal arguments must be pairwise distinct variables
          Unnester, UnnestProcFormals(FEs nil ?FGuards nil ?FResultVars nil)
-         NewFS0 = {FoldL FResultVars fun {$ FS FV} fEq(FV FS FV.2) end FS}
-         case IsInstantiate then MakeGV MakeFV in
-            {@BA openScope()}
-            {@BA generate('FunctorBody' C ?MakeGV)}
-            MakeFV = fVar({MakeGV getPrintName($)} C)
-            NewFS = fLocal(MakeFV
-                           fAnd(fProc(MakeFV nil NewFS0 [fAtom('copy' C)] C)
-                                fApply(MakeFV nil unit)) C)
-            {@BA closeScope(_)}
-         else
-            NewFS = NewFS0
-         end
+         NewFS = {FoldL FResultVars fun {$ FS FV} fEq(FV FS FV.2) end FS}
          case FGuards of FG1|FGr then FGuard FVs in
             FGuard = {FoldL FGr fun {$ FGuard FS} fAnd(FGuard FS) end FG1}
             % the local variables of the guard are all pattern variables

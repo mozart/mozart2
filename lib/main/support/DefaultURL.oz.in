@@ -61,7 +61,7 @@ prepare
                    'Timer' 'Perdio'
 \endif
 \ifdef GTK_ENABLED
-                   'GTK' 'GTKSimpleBuilder'
+                   'GDK' 'GTK' 'GnomeCanvas' 'GTKSimpleBuilder'
 \endif
                   ]
       NatLibs   = ['Space' 'OsTime']

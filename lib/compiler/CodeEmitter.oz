@@ -127,11 +127,11 @@ in
                   fun {$ In I} {Dictionary.get @GRegRef I}|In end nil}
          @LocalEnvSize = @HighestEverY + 1
          @CodeTl = nil
-         if self.debugInfoVarnamesSwitch then
+         if self.staticVarnamesSwitch then
             if @HighestEverY == ~1 andthen GRegs == nil then
                %% Emitting at least one `...Varname' instruction
                %% flags this procedure as having been compiled with
-               %% the switch +debuginfovarnames:
+               %% the switch +staticvarnames:
                Code = @CodeHd#[localVarname('')]
             else
                Code =
@@ -359,7 +359,7 @@ in
             Emitter, Emit(failure)
          [] vEquateConstant(_ Constant Reg Cont) then
             case Emitter, GetReg(Reg $) of none then
-               if self.debugInfoControlSwitch then R in
+               if self.controlFlowInfoSwitch then R in
                   %% This is needed for 'name generation' step points:
                   Emitter, PredictReg(Reg ?R)
                   Emitter, Emit(putConstant(Constant R))
@@ -427,7 +427,7 @@ in
                Reg = {Nth Regs NInputs + 1}
                case Cont
                of vTestBool(_ !Reg Addr1 Addr2 _ Coord NewCont InitsRS) then
-                  if {Not self.debugInfoControlSwitch}
+                  if {Not self.controlFlowInfoSwitch}
                      andthen Emitter, IsFirst(Reg $)
                      andthen Emitter, DoesNotOccurIn(Reg Addr1 $)
                      andthen Emitter, DoesNotOccurIn(Reg Addr2 $)
@@ -912,7 +912,7 @@ in
             Emitter, Emit(lockThread(Dest X))
          [] vLockEnd(_ Coord Cont Dest) then ContLabel Dest0 in
             Emitter, Dereference(Cont ?ContLabel ?Dest0)
-            Dest = if self.debugInfoControlSwitch then ContLabel
+            Dest = if self.controlFlowInfoSwitch then ContLabel
                    else Dest0
                    end
             Emitter, DoInits(nil Cont)
@@ -969,7 +969,7 @@ in
                  else {Length RecordArity}
                  end
       in
-         if self.debugInfoControlSwitch then false
+         if self.controlFlowInfoSwitch then false
          elseif Arity >= {Property.get 'limits.bytecode.xregisters'} then
             false
          elseif Emitter, IsFirst(Reg $) then
@@ -1199,7 +1199,7 @@ in
          %% emit the call instruction.
          %%
          Emitter, SetArguments(Arity ArgInits Regs)
-         if self.debugInfoControlSwitch then
+         if self.controlFlowInfoSwitch then
             case R0 of x(I) then
                %% this test is needed to ensure correctness, since
                %% the emulator does not save X registers with
@@ -1624,7 +1624,7 @@ in
       end
       meth PushContLabel(Cont ?OldContLabels)
          OldContLabels = @contLabels
-         if Cont \= nil orelse self.debugInfoControlSwitch then
+         if Cont \= nil orelse self.controlFlowInfoSwitch then
             contLabels <- Emitter, newLabel($)|OldContLabels
          end
       end
@@ -1664,7 +1664,7 @@ in
       end
       meth MayAllocateEnvLocally(Cont B $)
          if @LocalEnvsInhibited then false
-         elseif self.debugInfoControlSwitch then false
+         elseif self.controlFlowInfoSwitch then false
          elseif B andthen Cont == nil andthen @contLabels == nil
             andthen @HighestEverY == ~1
          then
@@ -1899,7 +1899,7 @@ in
       end
       meth AllocatePerm(Reg ?Y)
          case Emitter, GetPerm(Reg $) of none then I in
-            if self.debugInfoVarnamesSwitch then
+            if self.staticVarnamesSwitch then
                case {Dictionary.condGet @regNames Reg ''} of '' then
                   I = {NextFreeIndexWithEmptyPrintName @UsedY @LocalVarnames
                        @LowestFreeY}

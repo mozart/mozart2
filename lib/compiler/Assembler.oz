@@ -237,15 +237,15 @@ define
       class AssemblerClass
          prop final
          attr InstrsHd InstrsTl LabelDict Size
-         feat Profile debugInfoControl
-         meth init(ProfileSwitch DebugInfoControlSwitch)
+         feat Profile controlFlowInfo
+         meth init(ProfileSwitch ControlFlowInfoSwitch)
             InstrsHd <- 'skip'|@InstrsTl
             LabelDict <- {NewDictionary}
             Size <- InstructionSizes.'skip'
             %% Code must not start at address 0, since this is interpreted as
             %% NOCODE by the emulator - thus the dummy instruction 'skip'.
             self.Profile = ProfileSwitch
-            self.debugInfoControl = DebugInfoControlSwitch
+            self.controlFlowInfo = ControlFlowInfoSwitch
          end
          meth newLabel(?L)
             L = {NewName}
@@ -640,7 +640,7 @@ define
          {Assembler append(return)}
          {EliminateDeadCode Rest Assembler}
       [] (callBI(Builtinname Args)=I1)|Rest
-         andthen {Not Assembler.debugInfoControl}
+         andthen {Not Assembler.controlFlowInfo}
       then
 %--**    BIInfo = {Builtins.getInfo Builtinname}
 %--**      in
@@ -785,12 +785,12 @@ define
 
    proc {InternalAssemble Code Switches ?Assembler}
       ProfileSwitch = {CondSelect Switches profile false}
-      DebugInfoControlSwitch = {CondSelect Switches debuginfocontrol false}
+      ControlFlowInfoSwitch = {CondSelect Switches controlflowinfo false}
       Verify = {CondSelect Switches verify true}
       DoPeephole = {CondSelect Switches peephole true}
    in
       Assembler = {New AssemblerClass
-                   init(ProfileSwitch DebugInfoControlSwitch)}
+                   init(ProfileSwitch ControlFlowInfoSwitch)}
       if DoPeephole then
          {Peephole Code Assembler}
       else

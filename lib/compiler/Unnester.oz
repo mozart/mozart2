@@ -529,7 +529,7 @@ define
       meth UnnestStatement(FS $)
          case FS of fStepPoint(FS Kind C) then GS in
             Unnester, UnnestStatement(FS ?GS)
-            if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@state getSwitch(controlflowinfo $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -645,7 +645,7 @@ define
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            if {@state getSwitch(debuginfovarnames $)} then
+            if {@state getSwitch(staticvarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
@@ -672,7 +672,7 @@ define
             StateUsed <- IsStateUsing orelse OldStateUsed
             GD = {New Core.definition
                   init(GVO GFormals GS IsStateUsing RestFlags C)}
-            if {@state getSwitch(debuginfovarnames $)} then
+            if {@state getSwitch(staticvarnames $)} then
                {GD setAllVariables({@BA getAllVariables($)})}
             end
             GFrontEq|GD   % Definition node must always be second element!
@@ -728,7 +728,7 @@ define
                Unnester, UnnestStatement(FS ?GNewFunctor)
                GS = GFun|GNewFunctor
                GFrontEq|
-               if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
+               if {@state getSwitch(controlflowinfo $)} andthen {IsStep C}
                then {New Core.stepPoint init(GS 'definition' C)}
                else GS
                end
@@ -884,8 +884,8 @@ define
                   Unnester, UnnestStatement(FS2 $))
             {MakeDeclaration {@BA closeScope($)} GS C}
          [] fBoolCase(FE FS1 FS2 C) then Lbl = {Label FE} in
-            if {Not {@state getSwitch(debuginfovarnames $)}}
-               andthen {Not {@state getSwitch(debuginfocontrol $)}}
+            if {Not {@state getSwitch(staticvarnames $)}}
+               andthen {Not {@state getSwitch(controlflowinfo $)}}
                andthen ({@state getSwitch(staticanalysis $)}
                         orelse {Not {@state getSwitch(codegen $)}})
                %% Note:
@@ -1044,7 +1044,7 @@ define
             {New Core.typeOf init(GV GVO)}
          [] fStepPoint(FE Kind C) then GS in
             Unnester, UnnestExpression(FE ToGV ?GS)
-            if {@state getSwitch(debuginfocontrol $)} andthen {IsStep C}
+            if {@state getSwitch(controlflowinfo $)} andthen {IsStep C}
             then {New Core.stepPoint init(GS Kind C)}
             else GS
             end
@@ -1857,7 +1857,7 @@ define
             Unnester, UnnestMethBody(GVMsg GFormals0 GS1 ?GFormals ?GS2)
             GBody = {MakeDeclaration {@BA closeScope($)} GS2 C}
          end
-         if {@state getSwitch(debuginfocontrol $)} andthen {IsFree GVMsg}
+         if {@state getSwitch(controlflowinfo $)} andthen {IsFree GVMsg}
          then
             {@BA generate('Message' C ?GVMsg)}
          end
@@ -1866,7 +1866,7 @@ define
             GVMsg = unit
          end
          GMeth = {New Core.method init(GLabel GFormals IsOpen GVMsg GBody C)}
-         if {@state getSwitch(debuginfovarnames $)} then
+         if {@state getSwitch(staticvarnames $)} then
             {GMeth setAllVariables({@BA getAllVariables($)})}
          end
       end
@@ -2548,7 +2548,7 @@ define
    in
       proc {UnnestQuery TopLevel Reporter State Query ?GVs ?GS ?FreeGVs}
          O = {New Unnester init(TopLevel Reporter State)}
-         Query0 = if {State getSwitch(debuginfocontrol $)} then {SP Query}
+         Query0 = if {State getSwitch(controlflowinfo $)} then {SP Query}
                   else Query
                   end
       in

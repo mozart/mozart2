@@ -122,7 +122,7 @@ define
    end
 
    proc {MakePermanent Vs VHd Cont1 Cont2 VTl CS}
-      if CS.debugInfoVarnamesSwitch then Regs in
+      if CS.staticVarnamesSwitch then Regs in
          Regs = {FoldR Vs
                  fun {$ V In} Reg in
                     {V reg(?Reg)}
@@ -294,7 +294,7 @@ define
             else skip
             end
          else
-            if CS.debugInfoControlSwitch then skip
+            if CS.controlFlowInfoSwitch then skip
             else
                case Builtinname of 'Value.\'.\'' then
                   [Arg1 Arg2 Arg3] = ActualArgs Feature in
@@ -394,7 +394,7 @@ define
             then
                {Def codeGenApply(Designator Coord NewActualArgs CS VInter VTl)}
             elseif {{Designator getVariable($)} isToplevel($)}
-               andthen {Not CS.debugInfoControlSwitch}
+               andthen {Not CS.controlFlowInfoSwitch}
             then
                VInter = vGenCall(_ {Designator reg($)}
                                  false '' {Length NewActualArgs}
@@ -838,7 +838,7 @@ define
          {System.show PredId}
 \endif
          if @isStateUsing then
-            if CS.debugInfoVarnamesSwitch then
+            if CS.staticVarnamesSwitch then
                {CS newSelfReg(?StateReg)}
             else
                {CS newReg(?StateReg)}
@@ -1508,7 +1508,7 @@ define
                case @messageDesignator of unit then nil
                elseof V then [V]
                end}
-         if CS.debugInfoVarnamesSwitch then StateReg Cont1 Cont2 Cont3 in
+         if CS.staticVarnamesSwitch then StateReg Cont1 Cont2 Cont3 in
             {CS newSelfReg(?StateReg)}
             {MakePermanent {New PseudoVariableOccurrence init(StateReg)}|Vs
              VHd Cont1 Cont3 VTl CS}

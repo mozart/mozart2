@@ -94,11 +94,11 @@ local
                               threadedqueries: true
                               profile: false
 
-                              %% debugger support:
+                              %% debugging support:
                               %%
                               runwithdebugger: false
-                              debuginfocontrol: false
-                              debuginfovarnames: false)
+                              controlflowinfo: false
+                              staticvarnames: false)
 
    DefaultOptions = options(maxNumberOfErrors: 17
                             baseURL: unit)
@@ -177,11 +177,11 @@ local
             {@narrator tell(switch(showinsert B))}
          [] debuginfo then
             switches <- {Adjoin @switches switches(runwithdebugger: B
-                                                   debuginfocontrol: B
-                                                   debuginfovarnames: B)}
+                                                   controlflowinfo: B
+                                                   staticvarnames: B)}
             {@narrator tell(switch(runwithdebugger B))}
-            {@narrator tell(switch(debuginfocontrol B))}
-            {@narrator tell(switch(debuginfovarnames B))}
+            {@narrator tell(switch(controlflowinfo B))}
+            {@narrator tell(switch(staticvarnames B))}
          else
             if {HasFeature @switches SwitchName} then
                switches <- {AdjoinAt @switches SwitchName B}
@@ -582,9 +582,9 @@ local
                               switches(profile:
                                           (CompilerStateClass,
                                            getSwitch(profile $))
-                                       debuginfocontrol:
+                                       controlflowinfo:
                                           (CompilerStateClass,
-                                           getSwitch(debuginfocontrol $))
+                                           getSwitch(controlflowinfo $))
                                        verify: false
                                        peephole: true)}
                if CompilerStateClass, getSwitch(outputcode $) then VS in

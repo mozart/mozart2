@@ -135,7 +135,7 @@ class WindowManagerClass from UrObject
                          store: self.store)}
 
          %%
-         {@window [setMinSize expose]}
+         {@window [setMinSize expose setWaitCursor]}
 
          %%
          {BrowserMessagesInit @window}
@@ -160,7 +160,7 @@ class WindowManagerClass from UrObject
 \endif
       %%
       case @varDict == InitValue then
-         Store VarDict BO Window Menus Buttons
+         Store VarDict BO Window Menus
 %        SmoothScrollingVar
          ShowGraphVar ShowMinGraphVar ArityTypeVar AreVSsVar
          FillStyleVar SmallNamesVar FontVar TclTrue TclFalse
@@ -363,7 +363,7 @@ class WindowManagerClass from UrObject
                                              action: BO#SetBufferSize(25))
                                      command(label:  ' 50 '
                                              action: BO#SetBufferSize(50))
-                                     command(label:  ' infinite '
+                                     command(label:  ' unbounded '
                                              action:
                                                 BO#SetBufferSize(DInfinite))
                                      command(label:  ' +1 '
@@ -497,7 +497,7 @@ class WindowManagerClass from UrObject
                                              action: BO#SetDepth(10))
                                      command(label:  ' 25 '
                                              action: BO#SetDepth(25))
-                                     command(label:  ' infinite '
+                                     command(label:  ' unbounded '
                                              action:
                                                 BO#SetDepth(DInfinite))
                                      command(label:  ' +1 '
@@ -526,7 +526,7 @@ class WindowManagerClass from UrObject
                                              action: BO#SetWidth(25))
                                      command(label:  ' 50 '
                                              action: BO#SetWidth(50))
-                                     command(label:  ' infinite '
+                                     command(label:  ' unbounded '
                                              action:
                                                 BO#SetWidth(DInfinite))
                                      command(label:  ' +1 '
@@ -625,21 +625,13 @@ class WindowManagerClass from UrObject
          ]
 
          %%
-         Buttons =
-         [
-           %%
-           button(text:    'Break'
-                  action:  BO#break
-                  feature: break)
-           button(text:    'Unselect'
-                  action:  BO#UnsetSelected
-                  feature: unselect)
-           %%
-         ]
-
-         %%
          %%  create & pack it;
-         {Window [createMenuBar(Menus Buttons) exposeMenuBar]}
+         {Window [createMenuBar(Menus)
+                  pushButton(break(text:   'Break'
+                                   action: BO#break))
+                  pushButton(unselect(text:   'Unselect'
+                                      action: BO#UnsetSelected))
+                  exposeMenuBar]}
 
          %%
          %%  everything else is done asynchronously;
@@ -683,7 +675,7 @@ class WindowManagerClass from UrObject
                                    %%
                                    {MP 'Size'
                                     case BS == DInfinite
-                                    then 'Size (infinite) '
+                                    then 'Size (unbounded) '
                                     else 'Size (' # BS # ') '
                                     end}
                                 end
@@ -699,14 +691,14 @@ class WindowManagerClass from UrObject
                                    %%
                                    {MP 'Depth'
                                     case Depth == DInfinite
-                                    then 'Depth (infinite)'
+                                    then 'Depth (unbounded)'
                                     else 'Depth (' # Depth # ')'
                                     end}
 
                                    %%
                                    {MP 'Width'
                                     case Width == DInfinite
-                                    then 'Width (infinite)'
+                                    then 'Width (unbounded)'
                                     else 'Width (' # Width # ')'
                                     end}
 
@@ -872,6 +864,12 @@ class WindowManagerClass from UrObject
          WindowManagerClass
          , WrapMenuBar(commandEntriesEnable(MEs))
          , WrapMenuBar(buttonsEnable(Bs))
+
+         %%
+         case Arg of [break] then
+            WindowManagerClass , WrapWindow(setWaitCursor)
+         else true
+         end
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::entriesEnable is finished'}
@@ -891,6 +889,12 @@ class WindowManagerClass from UrObject
          WindowManagerClass
          , WrapMenuBar(commandEntriesDisable(MEs))
          , WrapMenuBar(buttonsDisable(Bs))
+
+         %%
+         case Arg of [break] then
+            WindowManagerClass , WrapWindow(setDefaultCursor)
+         else true
+         end
       end
 \ifdef DEBUG_WM
       {Show 'WindowManagerClass::entriesDisable is finished'}

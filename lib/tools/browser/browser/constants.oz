@@ -177,7 +177,8 @@ IIBitmap    = !OzHome # '/lib/bitmaps/browserIcon.xbm'
 IMIBitmap   = !OzHome # '/lib/bitmaps/browserMIcon.xbm'
 
 %% curosr name (see include file X11/cursorfont.h);
-ICursorName = 'hand2'
+ICursorName    = 'hand2'
+ICursorClock   = 'watch'
 
 %%
 %% he following two are in pixels (no subwindows are gridded);

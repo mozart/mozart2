@@ -166,6 +166,15 @@ in
       end
 
       %%
+      meth pick(Obj Where How)
+\ifdef DEBUG_MO
+         {Show 'BrowserManagerClass::pick is applied'}
+\endif
+         %% 'Obj' is a root term object;
+         {Obj pickPlace(Where How)}
+      end
+
+      %%
       meth checkTerm(Obj)
 \ifdef DEBUG_MO
          {Show 'BrowserManagerClass::checkTerm is applied'}
@@ -381,12 +390,7 @@ in
           # Obj # Handler # Arg}
 \endif
          %%
-         case Obj == InitValue then true
-\ifdef DEBUG_MO
-            {BrowserWarning 'BrowserManagerClass::processEvent: no handler?'}
-\endif
-         else {Obj Handler(Arg)}
-         end
+         {Obj Handler(Arg)}
 
          %%
 \ifdef DEBUG_MO

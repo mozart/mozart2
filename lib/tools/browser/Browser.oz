@@ -268,7 +268,7 @@ in
       [Reset SetBufferSize ChangeBufferSize SetSelected UnsetSelected
        SelExpand SelShrink SelShow SelZoom SelDeref Help SetDepth
        SetWidth ChangeWidth SetDInc ChangeDInc SetWInc ChangeWInc
-       UpdateSizes SetTWWidth] = {ForAll $ NewName}
+       UpdateSizes SetTWWidth ScrollTo] = {ForAll $ NewName}
 
       %%
    in

@@ -34,6 +34,8 @@ class BrowserClass from Object.base
       Store                     %  parameters store;
       BrowserBuffer             %  currently browsed terms (queue);
       BrowserStream             %  draw requests (queue);
+   %%
+      GetTermObjs               %  a function;
 
    %%
    attr
@@ -96,12 +98,12 @@ class BrowserClass from Object.base
       %%
       %% 'ManagerObject' is not directly accessible - but it can be
       %% closed by means of queuing of 'close' message;
-      local GetTermObjs Stream ManagerObject in
+      local Stream ManagerObject in
          %%
          %% only 'getContent' functionality is delegated to the
          %% manager object. A list of term objects is necessary in
          %% order to perform 'check layout' step when idle;
-         GetTermObjs = fun {$} {self.BrowserBuffer getContent($)} end
+         self.GetTermObjs = fun {$} {self.BrowserBuffer getContent($)} end
 
          %%
          Stream = self.BrowserStream = {New BrowserStreamClass init}
@@ -109,7 +111,7 @@ class BrowserClass from Object.base
          %%
          ManagerObject =
          {New BrowserManagerClass init(store:          self.Store
-                                       getTermObjsFun: GetTermObjs)}
+                                       getTermObjsFun: self.GetTermObjs)}
       end
 
       %%
@@ -295,6 +297,36 @@ class BrowserClass from Object.base
       {Show 'BrowserClass::focusIn is finished'}
 \endif
       touch
+   end
+
+   %%
+   meth !ScrollTo(Obj Kind)
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::ScrollTo is applied'}
+\endif
+      %%
+      local RootTermObj NN in
+         RootTermObj = {GetRootTermObject Obj}
+         NN =
+         RootTermObj.seqNumber + case Kind of 'forward' then 1 else ~1 end
+
+         %%
+         case {Filter {self.GetTermObjs} fun {$ TO} TO.seqNumber == NN end}
+         of [NewRootTO] then
+            %%
+            {self.BrowserStream enq(pick(NewRootTO 'begin' 'top'))}
+         else
+            %% there is none - move to the top/bottom;
+            {self.BrowserStream
+             enq(pick(RootTermObj
+                      case Kind of 'forward' then 'end'
+                      else 'begin'
+                      end 'any'))}
+         end
+      end
+\ifdef DEBUG_BO
+      {Show 'BrowserClass::ScrollTo is finished'}
+\endif
    end
 
    %%

@@ -48,6 +48,8 @@ in
          FontsCache
       %%  ... between X11 fonts and their resolution (i.e. pairs "x#y");
          FontResCache
+      %% curosr shapes;
+         CursorsCache
 
       %%
       attr
@@ -59,6 +61,7 @@ in
          %% various caches;
          self.FontsCache = {Dictionary.new}
          self.FontResCache = {Dictionary.new}
+         self.CursorsCache = {Dictionary.new}
          smallestFont <- InitValue
 
          %%
@@ -164,6 +167,29 @@ in
             %%
             Font = '-*-*-*-*-*-*-' # PixSize # '-*-*-*-*-*-*-*'
             smallestFont <- font(font:Font pixSize:PixSize)
+         end
+      end
+
+      %%
+      meth tryCursor(CName $)
+         case {Dictionary.condGet self.CursorsCache CName InitValue}
+         of !True        then True
+         [] !False       then False
+         [] !InitValue   then R in
+            R =
+            {Tk.returnInt 'catch'(q(self.TestTW conf(cursor: CName)))} == 0
+
+            %%
+            {Dictionary.put self.CursorsCache CName R}
+            touch
+
+            %%
+            R
+         else
+            {Show '*******************************************************'}
+            {Show 'X11ResourceCacheClass::tryCursor: error!'}
+            {Show '*******************************************************'}
+            False
          end
       end
 

@@ -187,6 +187,7 @@ in
       attr
       %% these widgets can be triggered;
          menuBar:      InitValue
+         buttons:      buttons          % record with buttons;
       %% Cursor's column #.
          cursorCol:    InitValue
       %%
@@ -199,6 +200,9 @@ in
       %% optimized 'unsetMark': first, collect some of them into
       %% 'o'-tuple, and, after that - unset them in one shot:
          UnsetMarks
+      %%
+         ScrollingOn:  True             % a boolean saying either
+                                        % scrolling is enabled or not;
 
 %%%
 %%%
@@ -306,10 +310,15 @@ in
             %%
             ButtonClickAction
             DButtonClickAction
+
+            %%
+            MyHandler
+            SelfBWO
          in
             %%
             W = self.Window
 
+            %%
             %%
             FHS = {New Tk.frame tkInit(parent: W
                                        bd: 0
@@ -333,17 +342,10 @@ in
                                      padx: ITWPad
                                      pady: ITWPad
                                      wrap: none
-                                     insertontime: 0
+                                     % insertontime: 0
                                      background: IBackGround
                                      foreground: IForeGround
                                      highlightthickness: 0)}
-
-            %%
-            %%  ... let's try to change the cursor shape
-            %% (asynchronously);
-            thread
-               {Tk.return 'catch'(q(BW conf(cursor: ICursorName))) _}
-            end
 
             %%
             self.BrowseWidget = BW
@@ -356,12 +358,77 @@ in
 
             %%
             %% scrollbars;
+            SelfBWO = self
+            create MyHandler from UrObject
+               meth m(...) = Mess
+                  case Mess
+                  of m("moveto" F) then
+                      %% "moveto Fraction" - just feed it further;
+                      {BW tk(yview 'moveto' F)}
+                  [] m("scroll" N "pages") then
+                     Last FT FB Current Kind NewMark Pairs
+                  in
+                     %% "scroll N Type" - filter the 'pages' case;
+                     %%
+                     Kind =
+                     case N of &-|_ then 'backward' else 'forward' end
+
+                     %%
+                     thread
+                        Last = {Tk.returnInt o(BW index 'end')}
+                     end
+                     thread
+                        [FT FB] =
+                        {Map
+                         {GetStrs {Tk.return o(BW yview)} CharSpace nil}
+                         fun {$ E}
+                            case E
+                            of "0" then 0.
+                            [] "1" then 1.
+                            else {String.toFloat E}
+                            end
+                         end}
+                     end
+
+                     %%
+                     %% that's the line just before the top one in
+                     %% the view;
+                     Current =
+                     {Float.toInt
+                      {Float.floor
+                       case Kind of 'forward' then FB else FT end
+                       * {Int.toFloat Last}}}
+
+                     %%
+                     NewMark = {Tk.server tkGet($)}
+                     {BW tk(m s NewMark p(Current 0))}
+                     Pairs = {SelfBWO mapMark(NewMark $)}
+
+                     %%
+                     case {GetTargetObj Pairs}
+                     of !InitValue then true
+                     [] TO then {SelfBWO.browserObj ScrollTo(TO Kind)}
+                     end
+                  [] m("scroll" N "units") then
+                     %% basically, there is only 'units' type left;
+                     {BW tk(yview 'scroll' N 'units')}
+                  else {BrowserError 'Unknown type of scrollbar operation!'}
+                  end
+               end
+            end
+
+            %%
             VS = {New Tk.scrollbar tkInit(parent: W
                                           relief: IFrameRelief
                                           bd: IBigBorder
                                           width: ISWidth
-                                          highlightthickness: 0)}
-            {Tk.addYScrollbar BW VS}
+                                          highlightthickness: 0
+                                          action: MyHandler # m)}
+            %%
+            %% The following will not work because we 'addYScrollbar'
+            %% redefines 'command' for the scrollbar;
+            %% {Tk.addYScrollbar BW VS}
+            {BW tk(conf yscrollcommand: s(VS set))}
             {Tk.addXScrollbar BW FHS_HS}
 
             %%
@@ -435,7 +502,7 @@ in
                StreamObj = {self.store read(StoreStreamObj $)}
                %%
                proc {Act Handler Arg X Y}
-                  local NewMark Pairs TargetObj in
+                  local NewMark Pairs in
                      NewMark = {Tk.server tkGet($)}
                      %% the default gravity is right...
                      {BW tk(m s NewMark '@'#X#','#Y)}
@@ -449,15 +516,23 @@ in
                      %% should be atomic (therefore, it's implemented
                      %% as a method);
                      Pairs = {self mapMark(NewMark $)}
-                     TargetObj = {GetTargetObj Pairs}
 
                      %%
-                     {StreamObj enq(processEvent(TargetObj Handler Arg))}
+                     case {GetTargetObj Pairs}
+                     of !InitValue then true
+                     [] TO then
+                        {StreamObj enq(processEvent(TO Handler Arg))}
+                     end
                   end
                end
 
                %%
                proc {ButtonClickAction B X Y}
+                  %%
+                  case B of '1' then thread {self setScrolling(X Y)} end
+                  else true
+                  end
+
                   %% middle button is still free;
                   case B of '3' then {self.browserObj UnsetSelected}
                   else {Act ButtonsHandler B X Y}
@@ -709,11 +784,11 @@ in
 
       %%
       %% create a menubar (i.e. a frame with menu buttons etc.)
-      meth createMenuBar(EL ER)
+      meth createMenuBar(EL)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::createMenuBar'}
 \endif
-         menuBar <- {TkTools.menubar self.Window self.BrowseWidget EL ER}
+         menuBar <- {TkTools.menubar self.Window self.BrowseWidget EL nil}
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::createMenuBar is finished'}
 \endif
@@ -1273,18 +1348,53 @@ in
       end
 
       %%
-      %% Scroll a line the mark given + 'x' scroll to a first char;
-      meth pickMark(Mark)
+      meth setScrolling(X Y)
 \ifdef DEBUG_TI
-         {Show 'BrowserWindowClass::pickMark' # Mark}
+         {Show 'BrowserWindowClass::setScrolling' # X # Y}
 \endif
          %%
-         local M in
-            M = self.TclBase#Mark
+         local V in
+            ScrollingOn <- V
 
             %%
-            {self.BrowseWidget tk(see M)}
-                             % tk(yview scroll ~1 units)
+            %% either we stay at the end of the text;
+            thread
+            {self.BrowseWidget tk(m s insert '@'#X#','#Y)}
+            V = {Tk.returnInt
+                 o(self.BrowseWidget comp 'insert+1li' '==' 'end')} == 1
+            end
+         end
+      end
+
+      %%
+      %% Scroll to a the containing 'Mark';
+      meth pickMark(Mark How)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::pickMark' # Mark # How}
+\endif
+         %%
+         {self.BrowseWidget
+          case How of 'top' then tk(yview self.TclBase#Mark)
+          else tk(yview '-pickplace' self.TclBase#Mark)
+          end}
+      end
+
+      %%
+      %% ... but only if scrolling is enabled;
+      meth scrollToMark(Mark)
+\ifdef DEBUG_TI
+         {Show 'BrowserWindowClass::scrollToMark' # Mark}
+\endif
+         %%
+         local V in
+            V = @ScrollingOn
+
+            %%
+            thread
+               case V then {self pickMark(Mark 'any')}
+               else true
+               end
+            end
          end
       end
 
@@ -1661,12 +1771,49 @@ in
       end
 
       %%
+      %% Put a new button on the buttons frame;
+      %% 'ButtonProc' is an binary procedure, that can perform certain
+      %% action on this button;
+      meth pushButton(BD)
+\ifdef DEBUG_TI
+         {Show 'tcl/tk: pushButton:' # BD}
+\endif
+         %%
+         case @menuBar == InitValue then true
+         else Button in
+            Button = {New Tk.button {Adjoin BD tkInit(parent: @menuBar)}}
+
+            %%
+            {Tk.send pack(Button o(side:right))}
+
+            %%
+            buttons <- {AdjoinAt @buttons {Label BD} Button}
+         end
+      end
+
+      %%
+      meth setWaitCursor
+         case {X11ResourceCache tryCursor(ICursorClock $)}
+         then {self.BrowseWidget tk(conf cursor: ICursorClock)}
+         else true
+         end
+      end
+
+      %%
+      meth setDefaultCursor
+         case {X11ResourceCache tryCursor(ICursorName $)}
+         then {self.BrowseWidget tk(conf cursor: ICursorName)}
+         else true
+         end
+      end
+
+      %%
       meth buttonsEnable(Arg)
 \ifdef DEBUG_TI
          {Show 'BrowserWindowClass::buttonsEnable'}
 \endif
          case @menuBar == InitValue then true
-         else {ProcessEntries @menuBar Arg tk(conf state:normal)}
+         else {ProcessEntries @buttons Arg tk(conf state:normal)}
          end
 
          %%
@@ -1682,7 +1829,7 @@ in
          {Show 'BrowserWindowClass::buttonsDisable'}
 \endif
          case @menuBar == InitValue then true
-         else {ProcessEntries @menuBar Arg tk(conf state:disabled)}
+         else {ProcessEntries @buttons Arg tk(conf state:disabled)}
          end
 
          %%

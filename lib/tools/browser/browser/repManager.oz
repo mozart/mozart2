@@ -662,12 +662,16 @@ in
 
       %%
       %% jump(view) to a first character of a representation;
-      meth pickPlace
-         {self.WidgetObj pickMark(self.HeadMark)}
+      meth pickPlace(Where How)
+         {self.WidgetObj
+          pickMark(case Where of 'begin' then self.HeadMark
+                   else self.TailMark
+                   end
+                   How)}
       end
       %%
-      meth pickTail
-         {self.WidgetObj pickMark(self.TailMark)}
+      meth scrollTo
+         {self.WidgetObj scrollToMark(self.TailMark)}
       end
 
       %%

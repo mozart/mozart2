@@ -763,7 +763,7 @@ in
          self.underline = {WidgetObjIn [insertNL makeUnderline($)]}
 
          %%
-         {@termObj pickTail}
+         {@termObj scrollTo}
       end
 
       %%
@@ -912,6 +912,11 @@ in
       meth !DButtonsHandler(_) true end
 
       %%
+      meth pickPlace(Where How)
+         {@termObj pickPlace(Where How)}
+      end
+
+      %%
       meth otherwise(Message)
          ControlObject , processOtherwise('RootTermObject::' Message)
       end
@@ -964,7 +969,7 @@ in
             %%
             case Master == InitValue then true
                %% i.e. cannot yet deref - simply ignore it;
-            else {Master [pickPlace SetSelected]}
+            else {Master [pickPlace('begin' 'any') SetSelected]}
             end
          end
       end

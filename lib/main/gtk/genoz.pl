@@ -23,12 +23,13 @@
 
 use Getopt::Long;
 
-# Regular Expressions
-$rexp_type        = qr/\w[\w ]+[\*\[\]]*/;
-# We allow '?' as first character of a name to mark return values
+# Regular Expressions (group only without backreferences!)
+#$rexp_type        = qr/\w[\w ]+[\*\[\]]*/;
+$rexp_type        = qr/(?:const )?\w+(?:\s*\*+(?=[^\*]))?/;
+# We allow '?' as first character of an identifier to mark return values
 $rexp_name        = qr/(?<=\W)\??\w+/;
 $rexp_arg         = qr/${rexp_type}\s*${rexp_name}/;
-$rexp_arg_list    = qr/${rexp_arg}(\s*,\s*${rexp_arg})*/;
+$rexp_arg_list    = qr/${rexp_arg}(?:\s*,\s*${rexp_arg})*/;
 
 sub gtk2oz_class_name {
     my ($gtk_name) = @_;
@@ -43,7 +44,7 @@ sub gtk2oz_name {
     my $string;
 
     $gtk_name =~ s/^gtk_//is;
-    @substrings = split /_/, $gtk_name;
+    @substrings = split /(\?)|_/, $gtk_name; # We allow '?' in names, ignore them
     foreach $string (@substrings) {
         $string = ucfirst $string;
     }
@@ -157,7 +158,7 @@ sub get_method_list {
         $method{args} = \@dummy;
 
         # method return type
-        if ( $meth =~ m/meth\s+${rexp_name}\(${rexp_arg_list}\)\s*:\s*(${rexp_type})/ ) {
+        if ( $meth =~ m/meth\s+${rexp_name}(\(\s*${rexp_arg_list}\s*\))?\s*:\s*(${rexp_type})/ ) {
             $method{return_type} = $+;
         }
 
@@ -170,7 +171,7 @@ sub get_method_list {
 sub write_oz_class_header {
     my ($class_name, $super_class_name) = @_;
 
-    print "class"  . gtk2oz_class_name($class_name);
+    print "class " . gtk2oz_class_name($class_name);
     print " from " . gtk2oz_class_name($super_class_name) if $super_class_name;
     print "\n";
 }
@@ -210,10 +211,15 @@ EOF
    }
 }
 
-sub is_return_value {
+sub arg_is_return_value {
     my ($arg) = @_;
 
     return ($arg{name} =~ m/^\?/s);
+}
+
+sub meth_is_init_meth {
+    my ($meth) = @_;
+    return $$meth{name} =~ m/(_new$)|(_new_with_\w+)/;
 }
 
 sub write_oz_meth_wrappers {
@@ -221,26 +227,49 @@ sub write_oz_meth_wrappers {
 
     print "   % Wrappers for Gtk class methods\n";
 
+    # TODO: init method
+
     foreach my $meth (@meths) {
-        print "   meth " . gtk2oz_meth_name($$meth{name}) . "(";
+        print '   meth ';
+        if (meth_is_init_meth($meth)) {
+            $$meth{name} =~ m/new(_with_\w+)$/;
+            print gtk2oz_meth_name('init' . $+);
+        } else {
+            print gtk2oz_meth_name($$meth{name});
+        }
+        print '(';
 
         # Arguments
-        my @arg = @$meth{args};
+        my @args = @{$$meth{args}};
+        shift @args if ! meth_is_init_meth($meth); # first argument is implizit self
 
-        foreach $i (@arg) { print "::: $i{name}\n"; }
+        foreach my $arg (@args) {
+            print gtk2oz_name($$arg{name}) . ' ';
+        }
 
-        print " ?ReturnValue" if $$meth{return_type};
-        foreach my $ret_val (@arg) {
-            print " $ret_val{name}" if is_return_value($ret_val);
+        print "?ReturnValue" if $$meth{return_type} && ! meth_is_init_meth($meth);
+        foreach my $ret_val (@args) {
+            print " $ret_val{name}" if arg_is_return_value($ret_val);
         }
 
         print ")\n";
 
         # Method invocation
-        print "      ";
-        print "ReturnValue = " if $$meth{return_type};
-        print "{GtkNative." . gtk2oz_meth_name($$meth{name}) . "\n";
+        print '      ';
 
+        print '@nativeObject <- ' if meth_is_init_meth($meth);
+        print 'ReturnValue = '    if $$meth{return_type} && ! meth_is_init_meth($meth);
+
+        print '{GtkNative.' . gtk2oz_meth_name($$meth{name});
+        print ' @nativeObject'    if (! meth_is_init_meth($meth));
+
+        foreach my $arg (@args) {
+            # TODO: dereference Oz objects
+            print ' ' . gtk2oz_name($$arg{name});
+        }
+
+        print "}\n";
+        print "      Object, registerObject\n" if meth_is_init_meth($meth);
         print "   end\n";
     }
 }

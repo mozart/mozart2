@@ -27,8 +27,7 @@ import
    ConnectionFunctor
    AcceptFunctor
    DPMisc at 'x-oz://boot/DPMisc'
-%   Pickle
-%   Module
+   DPStatistics
 \ifdef DBG
    System
 \endif
@@ -83,7 +82,7 @@ define
       thread
          {ConnectAcceptModule.initConnection {DPMisc.getConnectWstream}}
       end
-      IntSettings
+      Settings
    end
 
    fun{Init Settings} O N in
@@ -99,6 +98,19 @@ define
    end
 
    fun{GetSettings}
-      {Access ConnectState}
+      S={Access ConnectState}
+   in
+      case S of notStarted then
+         S
+      else
+         MySite={Filter {DPStatistics.siteStatistics}
+                 fun{$ X} X.state==mine end}.1
+      in
+         init(ip:MySite.ip
+              port:MySite.port
+              firewall:{CondSelect S firewall false}
+              connectProc:{CondSelect S connectProc default}
+              acceptProc:{CondSelect S acceptProc default})
+      end
    end
 end

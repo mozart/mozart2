@@ -54,7 +54,7 @@ FBASE = \
 BASE = $(FBASE:%=./base/%.ozf)
 
 FBENCH = \
-        nrev tak fd compiler diff knights bridge port
+        nrev tak fd compiler diff knights bridge port rec
 
 BENCH = $(FBENCH:%=./bench/%.ozf)
 

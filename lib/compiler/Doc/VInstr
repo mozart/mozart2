@@ -65,7 +65,6 @@ VInstr = vStepPoint(OccsRS Addr Coord atom Cont)
        | vTestNumber(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
        | vTestLiteral(OccsRS Reg Integer Addr Addr Coord Cont InitsRS)
        | vMatch(OccsRS Reg Addr [VHashTableEntry] Coord Cont InitsRS)
-       | vThread(OccsRS Addr Coord Cont InitsRS)
        | vLockThread(OccsRS Reg Coord Cont SharedData)
        | vLockEnd(OccsRS Coord Cont SharedData).
 

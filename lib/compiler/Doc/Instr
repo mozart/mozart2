@@ -242,9 +242,6 @@ unify
 %%  to the size given in the corresponding allocateL instruction.
 %%  An allocateL instruction may only be executed if for the procedure
 %%  application no environment is active.
-%%  Threads created using the `thread' instruction inherit a copy of
-%%  the local environment, which must thus be explicitly deallocated
-%%  as well.
 %%
 
 allocateL
@@ -415,15 +412,6 @@ branch
    Label            address to jump to
 
 return
-
-%%
-%%  Thread Creation
-%%
-%%  Threads are terminated when they execute a return instruction.
-%%
-
-thread
-   Label            address to jump to after thread creation
 
 %%
 %%  Exception Handling

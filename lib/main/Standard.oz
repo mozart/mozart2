@@ -137,6 +137,7 @@ export
    'Max':                Max
    'CondSelect':         CondSelect
    'HasFeature':         HasFeature
+   'ByNeed':             ByNeed
    %% Literal
    'Literal':            Literal
    'IsLiteral':          IsLiteral

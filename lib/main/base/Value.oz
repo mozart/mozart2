@@ -32,6 +32,7 @@
 
 declare
    Value Wait WaitOr IsFree IsKinded IsDet Min Max CondSelect HasFeature
+   ByNeed
    `.` `==` `=` `\\=` `<` `=<` `>=` `>` `hasFeature`
 in
 
@@ -48,6 +49,7 @@ Max        = {`Builtin` 'Max'        3}
 Min        = {`Builtin` 'Min'        3}
 CondSelect = {`Builtin` 'CondSelect' 4}
 HasFeature = {`Builtin` 'HasFeature' 3}
+ByNeed     = {`Builtin` 'ByNeed' 2}
 
 
 %%
@@ -88,7 +90,9 @@ Value = value(wait:       Wait
               isFree:     IsFree
               isKinded:   IsKinded
               isDet:      IsDet
-              status:     {`Builtin` 'Value.status' 2})
+              status:     {`Builtin` 'Value.status' 2}
+              byNeed:     ByNeed
+             )
 
 \ifndef OZM
 \popSwitches

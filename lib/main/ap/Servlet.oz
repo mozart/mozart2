@@ -11,5 +11,5 @@ export
 body
    Spec
    Exit = {`Builtin` shutdown 1}
-   Args = {Lazy.new fun {$} {GetArgs.servlet Spec} end}
+   Args = {ByNeed fun {$} {GetArgs.servlet Spec} end}
 end

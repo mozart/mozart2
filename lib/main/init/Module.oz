@@ -158,9 +158,9 @@ in
             {Trace '[Module] Get:  '#UrlKey#'\n'}
          else
             {Trace '[Module] Sync: '#UrlKey#'\n'}
-            Mod={Lazy.new fun {$}
-                              Mod={LinkFunctor Url {LoadFromUrl UrlKey}}
-                          end}
+            Mod={ByNeed fun {$}
+                           {LinkFunctor Url {LoadFromUrl UrlKey}}
+                        end}
          end
       end
 

@@ -168,14 +168,14 @@ define
    end
 
    ProcValues = {Adjoin ProcValues0
-                 env(%% Operators
+                 env(%% RecordC
                      'RecordC.\'^\'': `RecordC.'^'`
                      'RecordC.tellSize': RecordCTellSize
 
                      %% Functor
                      'ApplyFunctor': ApplyFunctor
 
-                     %% Combinators
+                     %% Combinator
                      'Combinator.\'not\'': CombinatorNot
                      'Combinator.\'cond\'': CombinatorCond
                      'Combinator.\'or\'': CombinatorOr

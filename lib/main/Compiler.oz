@@ -32,7 +32,9 @@ in
    local
       \insert 'compiler/InsertAll.oz'
 
-      Compiler = compiler(compilerClass: CompilerClass
+      Compiler = compiler(engine: CompilerEngine
+                          %--** deprecated:
+                          compilerClass: CompilerEngine
                           genericInterface: GenericInterface
                           quietInterface: QuietInterface
                           evalExpression: EvalExpression

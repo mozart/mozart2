@@ -341,7 +341,7 @@ in
                                            'usage information'))])}
          end
          Verbose = {GetVerbose Opts}
-         BatchCompiler = {New Compiler.compilerClass init()}
+         BatchCompiler = {New Compiler.engine init()}
          UI = {New Compiler.quietInterface init(BatchCompiler Verbose)}
          {BatchCompiler enqueue(setSwitch(showdeclares false))}
          {BatchCompiler enqueue(setSwitch(warnunused true))}

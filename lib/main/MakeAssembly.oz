@@ -32,6 +32,7 @@ NewFD
 NewSearch
 Search
 NewOpen
+NewType
 NewCompiler
 UrlDefaults
 OuterBoot
@@ -58,11 +59,14 @@ Search = {NewSearch.apply 'import'}
 \insert 'op/Open.oz'
 = NewOpen
 
+\insert 'support/Type.oz'
+= NewType
+
 local
    URL = {\insert dp/URL.oz
-       .apply 'import'}
+          .apply 'import'}
 in
-\insert 'init/Module.oz'
+   \insert 'init/Module.oz'
 end
 
 local
@@ -115,7 +119,8 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              'FD':            FD
              'Open':          Open
              'Resolve':       'export'(open:unit)
-             'FS':            FS)
+             'FS':            FS
+             'Type':          Type)
     =IMPORT
 
     BootManager = {`Builtin` 'BootManager'  2}
@@ -142,6 +147,7 @@ OuterBoot = {`Builtin` 'BootManager' 2}
              FD            # NewFD
              FS            # NewFS
              Open          # NewOpen
+             Type          # NewType
              Compiler      # NewCompiler]
      proc {$ V#F}
         thread {F.apply IMPORT}=V end

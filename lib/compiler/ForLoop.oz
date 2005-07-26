@@ -89,6 +89,7 @@ define
       %%
       NeedBreak
       BreakExc
+      LazyFlag
       {ForAll DECLS
        proc {$ DECL}
           case DECL
@@ -172,6 +173,10 @@ define
              {Push 'args' X}
              {Push 'inits' GApp}
              {Push 'nexts' GApp}
+          [] forFlag(fAtom(A C)) then
+             case A
+             of 'lazy' then LazyFlag=unit
+             else {RaiseError 'for'(unknownFlag(A C))} end
           end
        end}
       %%
@@ -197,8 +202,8 @@ define
       else
          VarAccu={MakeVar 'ForAccu'}
          VarD.'accu' := VarAccu
-         case AccuType
-         of 'yield' then
+         if AccuType=='yield' orelse (AccuType=='list' andthen {IsDet LazyFlag})
+         then
             %% delay the creation and initialization of the yield accu
             %% until we wrap the thread around the main stuff
             VarYieldStream={MakeVar 'YieldStream'}
@@ -251,7 +256,23 @@ define
              {Push 'outers' fProc(
                                E [X]
                                fOpApplyStatement(
-                                  {VirtualString.toAtom 'For.'#F}
+                                  case F
+                                  of 'collect' then
+                                     if {IsDet LazyFlag}
+                                     then 'For.yield'
+                                     else 'For.collect' end
+                                  [] 'append' then
+                                     if {IsDet LazyFlag}
+                                     then 'For.yieldAppend'
+                                     else 'For.append' end
+                                  [] 'prepend' then
+                                     if {IsDet LazyFlag}
+                                     then
+                                        {RaiseError 'for'(notSupportedWithLazy('prepend'))} unit
+                                     else 'For.prepend' end
+                                  else
+                                     {VirtualString.toAtom 'For.'#F}
+                                  end
                                   [VarAccu X] unit)
                                nil unit)}
           end
@@ -323,7 +344,11 @@ define
                             COORDS_NODEBUG)
                       end)
               [] 'list' then
-                 fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS_NODEBUG))
+                 if {IsDet LazyFlag} then
+                    fAnd(Main2 fOpApplyStatement('For.retyield' [VarAccu] COORDS_NODEBUG))
+                 else
+                    fAnd(Main2 fOpApply('For.retlist' [VarAccu] COORDS_NODEBUG))
+                 end
               [] 'yield' then
                  fAnd(Main2 fOpApplyStatement('For.retyield' [VarAccu] COORDS_NODEBUG))
               elseif {HasFeature D2 'default'} then

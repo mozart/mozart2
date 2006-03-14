@@ -132,7 +132,9 @@ prepare
    %% Port
    %%
    IsPort       = Boot_Port.is
-   NewPort      = Boot_Port.new
+   NewPort      = proc {$ Str Prt}   % fixes bug #1521
+                     S in {Boot_Port.new S Prt} Str=S
+                  end
    Send         = Boot_Port.send
    SendRecv     = Boot_Port.sendRecv
 

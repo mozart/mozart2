@@ -51,6 +51,7 @@ local
                               %% warnings:
                               %%
                               warnredecl: false
+                              warnshadow: false
                               warnunused: true
                               warnunusedformals: false
                               warnforward: false

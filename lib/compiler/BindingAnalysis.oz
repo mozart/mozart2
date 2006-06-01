@@ -26,13 +26,14 @@ in
    class BindingAnalysis
       prop final
       attr env: nil freeVariablesOfQuery: unit
-      feat MyTopLevel MyReporter WarnRedecl
+      feat MyTopLevel MyReporter WarnRedecl WarnShadowedVars
       meth init(TopLevel Reporter State)
          env <- nil
          freeVariablesOfQuery <- {NewDictionary}
          self.MyTopLevel = TopLevel
          self.MyReporter = Reporter
          self.WarnRedecl = {State getSwitch(warnredecl $)}
+         self.WarnShadowedVars = {State getSwitch(warnshadow $)}
       end
       meth openScope() X in
          env <- {NewDictionary}#X#X|@env
@@ -55,7 +56,19 @@ in
          env <- Dr
       end
       meth bind(PrintName Coord ?V) X Env = @env D#Hd#Tl|Dr = Env in
-         if self.WarnRedecl then TopV in
+         if self.WarnShadowedVars then
+            if {Some
+                %% Check for Variable in outer scopes
+                case @env of _|TailEnv then TailEnv else nil end
+                fun {$ D#_#_} {Dictionary.member D PrintName} end}
+            then
+               {self.MyReporter warn(coord: Coord
+                                     kind: BindingAnalysisWarning
+                                     msg: ('shadowing variable `'#
+                                           pn(PrintName)#'\''))}
+            end
+         end
+         if self.WarnRedecl orelse self.WarnShadowedVars then TopV in
             {self.MyTopLevel lookupVariableInEnv(PrintName ?TopV)}
             case TopV of undeclared then skip
             else

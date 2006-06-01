@@ -47,6 +47,7 @@
 functor
 import
    CompilerSupport(concatenateAtomAndInt) at 'x-oz://boot/CompilerSupport'
+   BootName(newNamed:NewNamedName)        at 'x-oz://boot/Name'
 \ifndef NO_GUMP
    Gump(transformParser transformScanner)
 \endif
@@ -69,6 +70,12 @@ define
    \insert TupleSyntax
    \insert BindingAnalysis
    \insert UnnestFD
+
+   %% keving:  Stolen from forLoop.oz, allows to create fresh variable names that
+   %% are unique
+   fun {MakeVar Name C}
+      fVar({NewNamedName Name} C)
+   end
 
    SyntaxError = 'syntax error'
    ExpansionError = 'expansion error'
@@ -2415,7 +2422,7 @@ define
             CND = {CoordNoDebug C}
             {@BA generate('ReRaise' C ?V)}
             FV = fOcc(V)
-            FX = fVar('X' C)
+            FX = {MakeVar 'X' C}
             FException = fRecord(fAtom('ex' C) [FX])
             NewFS1 = fTry(fAnd(FS fEq(FV fAtom(unit CND) CND))
                           fCatch([fCaseClause(FX fEq(FV FException C))] CND)

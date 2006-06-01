@@ -94,6 +94,7 @@ prepare
                      showdeclares(type: bool)
                      watchdog(type: bool)
                      warnredecl(type: bool)
+                     warnshadow(type: bool)
                      warnunused(type: bool)
                      warnunusedformals(type: bool)
                      warnforward(type: bool)
@@ -179,6 +180,7 @@ prepare
    %% Note that the remaining options are not documented here on purpose.
    '--(no)compilerpasses          Show compiler passes.\n'#
    '--(no)warnredecl              Warn about top-level redeclarations.\n'#
+   '--(no)warnshadow              Warn about all redeclarations.\n'#
    '--(no)warnunused              Warn about unused variables.\n'#
    '--(no)warnunusedformals       Warn about unused variables and formals.\n'#
    '--(no)warnforward             Warn about oo forward declarations.\n'#

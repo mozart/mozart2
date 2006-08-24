@@ -211,7 +211,7 @@ define
    FdpSumCN = FDP.sumCN
    FdpSumR = FDP.'reified.sum'
    FdpSumCR = FDP.'reified.sumC'
-   FdpSumCNR = FDP.'reified.sumCN'
+   % FdpSumCNR = FDP.'reified.sumCN' not used in this functor
 
    %%
    %% Telling Domains

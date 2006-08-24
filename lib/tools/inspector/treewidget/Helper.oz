@@ -1139,7 +1139,7 @@ define
          nil
       end
       meth isMapped(Index $)
-         {@parent isMapped(@index $)}
+         {@parent isMapped(Index $)}
       end
       meth makeDirty
          skip

@@ -681,6 +681,17 @@ define
             ProcFlagAtoms = {Map ProcFlags fun {$ fAtom(A _)} A end}
             {List.partition ProcFlagAtoms fun {$ A} A == 'lazy' end
              ?LazyFlags ?RestFlags}
+            {List.forAll RestFlags proc{$ A}
+                                      case A
+                                      of instantiate then skip
+                                      [] dynamic then skip
+                                      [] sited then skip
+                                      else
+                                         {@reporter
+                                          warn(coord: C kind: 'flag check warning'
+                                               msg: 'unrecognized flag '#A#' was ignored')}
+                                      end
+                                   end}
             {@BA openScope()}
             N = {DollarsInScope FEs 0}
             if LazyFlags \= nil then
@@ -708,6 +719,17 @@ define
          [] fFun(FE1 FEs FE2 ProcFlags C) then LazyFlags RestFlags in
             {List.partition ProcFlags fun {$ fAtom(A _)} A == 'lazy' end
              ?LazyFlags ?RestFlags}
+            {List.forAll RestFlags proc{$ fAtom(A _)}
+                                      case A
+                                      of instantiate then skip
+                                      [] dynamic then skip
+                                      [] sited then skip
+                                      else
+                                         {@reporter
+                                          error(coord: C kind: 'flag check warning'
+                                               msg: 'unrecognized flag '#A#' was ignored')}
+                                      end
+                                   end}
             if {DollarsInScope FEs 0} > 0 then
                {@reporter error(coord: {DollarCoord FEs} kind: SyntaxError
                                 msg: 'no $ in function head allowed')}

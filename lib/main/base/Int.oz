@@ -28,7 +28,7 @@
 %%
 
 fun {IsNat X}  0=<X         end
-fun {IsOdd X}  X mod 2 == 1 end
+fun {IsOdd X} X mod 2 \= 0 end
 fun {IsEven X} X mod 2 == 0 end
 
 %%

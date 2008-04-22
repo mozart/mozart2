@@ -208,7 +208,7 @@ define
    Platform = {Property.get 'platform.os'}
 
    fun {MakeExecHeader Path}
-      '#!/bin/sh\nexec '#Path#' $0 "$@"\n'
+      '#!/bin/sh\nexec '#Path#' "$0" "$@"\n'
    end
    fun {MakeExecFile File}
       {Property.get 'oz.home'}#'/bin/'#File

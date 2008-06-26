@@ -60,7 +60,7 @@ prepare
                    'RecordC'
                    'Error' 'ErrorRegistry' 'Finalize' 'Service'
                    'Fault' 'Connection' 'Remote' 'VirtualSite' 'URL'
-                   'DPStatistics' 'DPInit' 'DPControl'
+                   'DPStatistics' 'DP' 'Site'
                    'Discovery'
                    'Open'
                    'Tk' 'TkTools' 'Tix'

@@ -1,8 +1,6 @@
 functor
 import
-   DPB at 'x-oz://boot/DPB'
-   C_DPStatistics at 'x-oz://boot/DPStatistics'
-   C_DPMisc at 'x-oz://boot/DPMisc'
+   Glue at 'x-oz://boot/Glue'
 export
    SiteStatistics
    GetTablesInfo
@@ -14,13 +12,13 @@ define
    %%
    %% Force linking of base library
    %%
-   {Wait DPB}
+   {Wait Glue}
 
-   SiteStatistics=C_DPStatistics.siteStatistics
-   GetTablesInfo=C_DPStatistics.getTablesInfo
-   GetNetInfo=C_DPStatistics.getNetInfo
-   PerdioStatistics=C_DPStatistics.perdioStatistics
+   SiteStatistics=Glue.siteStatistics
+   GetTablesInfo=Glue.getTablesInfo
+   GetNetInfo=Glue.getNetInfo
+   PerdioStatistics=Glue.perdioStatistics
 
-   CreateLogFile = C_DPMisc.createLogFile
-   MessageCounter = C_DPMisc.getMsgCntr
+   CreateLogFile = Glue.createLogFile
+   MessageCounter = Glue.getMsgCntr
 end

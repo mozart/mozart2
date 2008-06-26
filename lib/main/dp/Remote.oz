@@ -3,8 +3,9 @@
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%   Konstantin Popov <kost@sics.se>
 %%%
-%%% Contributor:
+%%% Contributors:
 %%%   Andreas Franke <afranke@ags.uni-sb.de>
+%%%   Raphael Collet (raphael.collet@uclouvain.be)
 %%%
 %%% Copyright:
 %%%   Kostantin Popov, 1998
@@ -34,7 +35,8 @@ import
    Property(get condGet put)
    Module(link)
    Error(registerFormatter)
-   Fault
+   DP(getFaultStream)
+
 export
    manager: ManagerProxy
 
@@ -121,6 +123,10 @@ define
       end
    end
 
+   %% returns X whenever entity P is permFail, _ otherwise
+   fun {WhenFailed P X}
+      if {Member permFail {DP.getFaultStream P}} then X else _ end
+   end
 
    class ManagerProxy
       prop locking
@@ -181,10 +187,9 @@ define
                Ctrl       <- CtrlRet.2
                self.Run    = RunRet.1
                self.Ctrl   = CtrlRet.1
-               {Fault.installWatcher self.Run [permFail]
-                proc{$ _ _ } self.ProxyFailed = failed end _}
-               {Fault.installWatcher self.Ctrl [permFail]
-                proc{$ _ _ } self.ProxyFailed = failed end _}
+               %% bind self.ProxyFailed whenever self.Run or self.Ctrl fails
+               thread self.ProxyFailed={WhenFailed self.Run failed} end
+               thread self.ProxyFailed={WhenFailed self.Ctrl failed} end
             else
                {Exception.raiseError remote(cannotCreate self Host)}
             end

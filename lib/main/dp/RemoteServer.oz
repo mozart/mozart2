@@ -3,8 +3,9 @@
 %%%   Christian Schulte <schulte@ps.uni-sb.de>
 %%%   Konstantin Popov <kost@sics.se>
 %%%
-%%% Contributor:
+%%% Contributors:
 %%%   Andreas Franke <afranke@ags.uni-sb.de>
+%%%   Raphael Collet (raphael.collet@uclouvain.be)
 %%%
 %%% Copyright:
 %%%   Kostantin Popov, 1998
@@ -30,13 +31,11 @@ functor
 
 import
    Connection % Do not request!
-   DPInit
-
    Application(exit getCmdArgs)
    Module(manager)
    System(showError gcDo)
-   Fault
-   Property(put)
+   DP(initWith getFaultStream)
+   Property(get put)
    OS(signal)
    Error(printException)
 
@@ -66,13 +65,12 @@ define
 
    %% Initialize distribution with desired settings before Connection.take
    local
-      S1=if Args.port==0 then settings else settings(port:Args.port) end
-      S2=if Args.ip==default then S1 else
-            {AdjoinAt S1 ip {AtomToString Args.ip}}
-         end
-      Settings={AdjoinAt S2 firewall Args.firewall}
+      S1 = if Args.ip\=default then [ip#exact(Args.ip)] else nil end
+      S2 = if Args.port\=0 then [port#exact(Args.port)] else nil end
+      S3 = [firewall#Args.firewall]
+      Settings = {AdjoinList settings {Flatten [S1 S2 S3]}}
    in
-      {DPInit.init Settings}=true % =true asserts that this is the first init
+      {DP.initWith Settings}
    end
 
    %% Module manager needed for
@@ -124,12 +122,12 @@ define
       {OS.signal 'SIGHUP'  ignore}
       {OS.signal 'SIGTERM' ignore}
    else
-      {Fault.installWatcher {Access RunRet} [permFail]
-       proc {$ E C}
-          {System.showError 'RemoteServer: client crashed.'}
-          {Application.exit ExitErrorClient}
+      thread
+         if {Member permFail {DP.getFaultStream {Access RunRet}}} then
+            {System.showError 'RemoteServer: client crashed.'}
+            {Application.exit ExitErrorClient}
+         end
        end
-       true}
    end
 
    %% The module manager server

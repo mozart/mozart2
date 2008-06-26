@@ -22,8 +22,7 @@
 
 functor
 import
-   DPB at 'x-oz://boot/DPB'
-   DPMisc(sockoptBroadcast getBroadcastAddresses) at 'x-oz://boot/DPMisc'
+   Glue at 'x-oz://boot/Glue'
    Open(socket)
    Error(registerFormatter)
    Property(get)
@@ -87,9 +86,9 @@ define
       meth init(port:ServerPort <= DefaultServerPort) BAs in
          self.Socket = {New Open.socket init(type:datagram protocol:"udp")}
          Closed <- false
-         {Wait DPB}
-         {DPMisc.sockoptBroadcast {self.Socket getDesc(_ $)}}
-         BAs = {DPMisc.getBroadcastAddresses}
+         {Wait Glue}
+         {Glue.sockoptBroadcast {self.Socket getDesc(_ $)}}
+         BAs = {Glue.getBroadcastAddresses}
          {List.forAll BAs proc {$ H}
                              {self.Socket send(vs:get port:ServerPort host:H)}
                           end}

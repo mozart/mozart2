@@ -3,6 +3,9 @@
 %%%   Per Brand (perbrand@sics.se)
 %%%   Erik Klintskog (erik@sics.se)
 %%%
+%%% Contributor:
+%%%   Raphael Collet (raphael.collet@uclouvain.be)
+%%%
 %%% Copyright:
 %%%   Per Brand, 1998
 %%%
@@ -21,15 +24,11 @@
 %%% WARRANTIES.
 %%%
 
-
 functor
 
 import
-   DPB at 'x-oz://boot/DPB'
-   Fault at 'x-oz://boot/Fault'
-
-require
-   InterFault at 'x-oz://boot/InterFault'
+   System(showError: ShowError)
+   DP
 
 export
    getEntityCond:     GetEntityCond
@@ -43,130 +42,56 @@ export
    defaultDisable:    DefaultDisable
 
 define
-   local
-      proc{WrongFormat}
-         {Exception.raiseError
-          type(dp('incorrect fault format'))}
-      end
+   proc {Defunct S}
+      {ShowError '*** Warning: '#S#' disabled; check new module DP ***'}
+   end
 
-      proc{NotImplemented}
-         {Exception.raiseError
-          dp('not implemented')}
-      end
+   proc {GetEntityCond _ _}
+      {Defunct 'Fault.getEntityCond'}
+   end
 
-      proc{Except Entity Cond Op}
-         {Exception.'raise'
-          system(dp(entity:Entity conditions:Cond op:Op))}
-      end
+   fun {Enable _ _ _}
+      {Defunct 'Fault.enable'} true
+   end
+   fun {Disable _ _}
+      {Defunct 'Fault.disable'} true
+   end
 
-      fun{DConvertToInj Cond}
-         injector(entityType:all 'thread':all 'cond':Cond)
-      end
+   fun {Install _ _ _ _}
+      {Defunct 'Fault.install'} true
+   end
+   fun {DeInstall _ _}
+      {Defunct 'Fault.deInstall'} true
+   end
 
-      fun{SConvertToInj Entity Cond}
-         injector(entityType:single entity:Entity 'thread':all 'cond':Cond)
-      end
-
-      fun{TConvertToInj Entity Cond Thread}
-         safeInjector(entityType:single entity:Entity
-                      'thread':Thread 'cond':Cond)
-      end
-
-      fun{GConvertToInj Entity Cond}
-         {NotImplemented}
+   fun {InstallWatcher Entity FStates WatcherProc}
+      if {List.all FStates
+          fun {$ S} {Member S [tempFail permFail]} end}
+      then
+         proc {Loop FS}
+            case FS of F|Fr then
+               if {Member F FStates} then
+                  thread {WatcherProc Entity F(info:state)} end
+               else
+                  {Loop Fr}
+               end
+            else skip end
+         end
+      in
+         {DP.getFaultStream Entity thread {Loop} end}
+         true
+      else
          false
       end
+   end
+   fun {DeInstallWatcher _ _ _}
+      {Defunct 'Fault.deInstallWatcher'} true
+   end
 
-      fun{I_Impl Level Entity Cond Proc}
-         case Level of global then
-            {Fault.distHandlerInstall {GConvertToInj Entity Cond} Proc}
-         elseof site then
-            {Fault.distHandlerInstall {SConvertToInj Entity Cond} Proc}
-         elseof 'thread'(Th) then
-            {InterFault.interDistHandlerInstall
-             {TConvertToInj Entity Cond Th} Proc}
-         else
-            {WrongFormat}
-            false
-         end
-      end
-
-      fun{D_Impl Level Entity Cond Proc}
-         case Level of global then
-            {Fault.distHandlerDeInstall {GConvertToInj Entity any} Proc}
-         elseof site then
-            {Fault.distHandlerDeInstall {SConvertToInj Entity any} Proc}
-         elseof 'thread'(Th) then
-            {InterFault.interDistHandlerDeInstall
-             {TConvertToInj Entity any Th} Proc}
-         else
-            {WrongFormat}
-            false
-         end
-      end
-
-      fun{DefaultEnableImpl Cond}
-         {Fault.distHandlerInstall {DConvertToInj Cond} Except}
-      end
-
-      fun{DefaultDisableImpl}
-         {Fault.distHandlerDeInstall {DConvertToInj any} any}
-      end
-
-      fun{EnableImpl Entity Level Cond}
-         {I_Impl Level Entity Cond Except}
-      end
-
-      fun{InstallImpl Entity Level Cond Proc}
-         {I_Impl Level Entity Cond Proc}
-      end
-
-      fun{DisableImpl Entity Level}
-         {D_Impl Level Entity any any}
-      end
-
-      fun{DeInstallImpl Entity Level}
-         {D_Impl Level Entity any any}
-      end
-
-      fun{InstallWImpl Entity Cond Proc}
-         {InterFault.interDistHandlerInstall
-          watcher(entity:Entity 'cond':Cond) Proc}
-      end
-
-      fun{DeInstallWImpl Entity Proc}
-         {InterFault.interDistHandlerDeInstall
-          watcher(entity:Entity 'cond':any) Proc}
-      end
-
-   in
-      {Wait DPB}
-
-      GetEntityCond  = Fault.getEntityCond
-
-      Enable        = fun{$ Entity Level Cond}
-                         {EnableImpl Entity Level Cond}
-                      end
-      Disable       = fun{$ Entity Level}
-                         {DisableImpl Entity Level}
-                      end
-      Install      = fun{$ Entity Level Cond Proc}
-                         {InstallImpl Entity Level Cond Proc}
-                      end
-      DeInstall    = fun{$ Entity Level}
-                         {DeInstallImpl Entity Level}
-                      end
-      DefaultEnable = fun{$ Cond}
-                         {DefaultEnableImpl Cond}
-                      end
-      DefaultDisable= fun{$}
-                         {DefaultDisableImpl}
-                      end
-      InstallWatcher= fun{$ Entity Cond Proc}
-                         {InstallWImpl Entity Cond Proc}
-                      end
-      DeInstallWatcher=fun{$ Entity Proc}
-                         {DeInstallWImpl Entity Proc}
-                       end
-    end
+   fun {DefaultEnable _}
+      {Defunct 'Fault.defaultEnable'} true
+   end
+   fun {DefaultDisable}
+      {Defunct 'Fault.defaultDisable'} true
+   end
 end

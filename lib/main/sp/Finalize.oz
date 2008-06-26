@@ -25,12 +25,17 @@
 
 functor
 
+import
+   System(postmortem)
+
 export
    register:   Register
    everyGC:    EveryGC
    guardian:   Guardian
+   postmortem: Postmortem
 
 define
+   Postmortem = System.postmortem
 
    proc {Guardian Finalizer ?Register}
       Table

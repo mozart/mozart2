@@ -1,15 +1,14 @@
 %%%
 %%% Authors:
-%%%   Michael Mehl (mehl@dfki.de)
-%%%   Christian Schulte <schulte@ps.uni-sb.de>
+%%%   Yves Jaradin (yves.jaradin@uclouvain.be)
+%%%   Raphael Collet (raphael.collet@uclouvain.be)
 %%%
 %%% Copyright:
-%%%   Michael Mehl, 1998
-%%%   Christian Schulte, 1998
+%%%   Yves Jaradin, 2008
 %%%
 %%% Last change:
-%%%   $Date$ by $Author$
-%%%   $Revision$
+%%%   $Date: 2008-03-06 15:46:11 +0100 $ by $Author: yjaradin $
+%%%   $Revision: 16863 $
 %%%
 %%% This file is part of Mozart, an implementation
 %%% of Oz 3
@@ -22,305 +21,131 @@
 %%% WARRANTIES.
 %%%
 
-
 functor
-
 import
-   DPB                             at 'x-oz://boot/DPB'
-   PID(get getCRC received toPort) at 'x-oz://boot/PID'
+   DP
+   Site
+   DPService
+   Error
 
-   Error(registerFormatter)
-   Fault(install installWatcher deInstall deInstallWatcher)
-   Property(get)
-   DPInit
 export
-   Offer OfferUnlimited Take Gate TakeWithTimer
-
-prepare
-
-   %%
-   %% Mapping between integers and characters
-   %%
-   local
-      %% int -> char
-      IntMap  = {List.toTuple '#'
-                 {ForThread 1 127 1 fun {$ S I}
-                                       if {Char.isAlNum I} then I|S
-                                       else S
-                                       end
-                                    end nil}}
-      Base = {Width IntMap}
-      %% char -> int
-      CharMap = {MakeTuple '#' 255}
-
-      fun {ToInt Is J}
-         case Is of nil then J
-         [] I|Ir then {ToInt Ir J*Base + CharMap.I - 1}
-         end
-      end
-   in
-      {For 1 Base 1 proc {$ I}
-                       CharMap.(IntMap.I) = I
-                    end}
-      {For 1 255 1  proc {$ I}
-                       C=CharMap.I
-                    in
-                       if {IsDet C} then skip else C=0 end
-                    end}
-
-      fun {IntToKey I}
-         if I<Base then [IntMap.(I+1)]
-         else IntMap.((I mod Base) + 1)|{IntToKey I div Base}
-         end
-      end
-
-      fun {KeyToInt Is}
-         {ToInt {Reverse Is} 0}
-      end
-   end
+   offer:          OfferOnce
+   offerUnlimited: OfferMany
+   OfferOnce
+   OfferMany
+   Retract
+   Take
+   Gate
 
 define
-
-   %%
-   %% Force linking of base library
-   %%
-   {Wait DPB}
-   {DPInit.init connection_settings _}
-
-   %% ERIK
-   %% Har skall varan connect starter kora!!!
-   %%
-
-   %%
-   %% Base Process Identifier package
-   %%
-   ThisPid   = {PID.get}
-   fun {ToPort T}
-      {PID.toPort T.host T.port T.time.1 T.time.2}
-   end
-
-   local
-      KeyCtr = {New class $
-                       prop final locking
-                       attr n:0
-                       meth get(N)
-                          lock N=@n n<-N+1 end
-                       end
-                    end get(_)}
-   in
-      fun {NewTicket IsSingle}
-         Major#Minor = {Property.get 'dp.version'}
-      in
-         {Adjoin ThisPid ticket(single:  IsSingle
-                                key:     {KeyCtr get($)}
-                                minor:   Minor
-                                major:   Major)}
-      end
-   end
-
-
-   %%
-   %% Creating and parsing ticket strings
-   %%
-   local
-      fun {App Xss Ys}
-         case Xss of nil then Ys
-         [] Xs|Xsr then {Append Xs {App Xsr Ys}}
-         end
-      end
-   in
-
-      fun {TicketToString T}
-         Stamp#Pid = T.time
-         S = {App ["x-ozticket://"
-                   T.host
-                   &:|{Int.toString T.port}
-                   &:|{IntToKey Stamp}
-                   &:|{IntToKey Pid}
-                   &/|{IntToKey T.key}
-                   &:|{IntToKey T.major}
-                   &:|{IntToKey T.minor}
-                   [&: if T.single  then &s else &m end]] nil}
-      in
-         {Append S &:|{IntToKey {PID.getCRC S}}}
-      end
-
-      fun {VsToTicket V}
-         try
-            %% Raises an exception if has wrong checksum or if
-            %% syntactically illegal
-            S={VirtualString.toString V}
-            [_ nil ProcPart KeyPart] = {String.tokens S &/}
-            [HostS PortS Stamp Pid]  = {String.tokens ProcPart &:}
-            [KeyS MajorS MinorS
-             SingS _]       = {String.tokens KeyPart  &:}
-            Ticket = ticket(host:    HostS
-                            port:    {String.toInt PortS}
-                            time:    {KeyToInt Stamp}#{KeyToInt Pid}
-                            key:     {KeyToInt KeyS}
-                            major:   {KeyToInt MajorS}
-                            minor:   {KeyToInt MinorS}
-                            single:  SingS=="s")
-         in
-            S={TicketToString Ticket}
-            Ticket
-         catch _ then
-            {Exception.raiseError connection(illegalTicket V)} _
-         end
-      end
-   end
-
-
-   %% Mapping of Keys to values
-   KeyDict   = {Dictionary.new}
-
-   thread
-      {ForAll {PID.received}
-       proc {$ T#A}
-          if
-             T.time == ThisPid.time andthen
-             {Dictionary.member KeyDict T.key}
-          then Y={Dictionary.get KeyDict T.key} in
-             if T.single then {Dictionary.remove KeyDict T.key} end
-             thread S = yes(Y) in
-                try A=S catch _ then skip end
+   %% initialize the ticket service
+   {DP.init}
+   Tickets={NewDictionary}
+   {DPService.register {Site.this} 'oz:ticket'
+    proc {$ 'oz:ticket' S M}
+       case M
+       of take(Id ?X) then
+          case {Dictionary.condGet Tickets Id unit}
+          of unit then
+             X=bad
+          [] ticket(Y Opts) then
+             if{Value.condSelect Opts once false}then
+                {Dictionary.remove Tickets Id}
              end
-          else
-             thread
-                try A=no catch _ then skip end
-             end
+             X=ok(Y)
           end
-       end}
-   end
-
-
-   %%
-   %% Single connections
-   %%
-   fun {Offer X}
-      T={NewTicket true}
-   in
-      {Dictionary.put KeyDict T.key X}
-      {String.toAtom {TicketToString T}}
-   end
-
-   %%
-   %% Gates
-   %%
-   class Gate
-      feat
-         Ticket
-         TicketAtom
-
-      meth init(X ?AT <= _)
-         T={NewTicket false}
-      in
-         {Dictionary.put KeyDict T.key X}
-         self.Ticket     = T
-         self.TicketAtom = {String.toAtom {TicketToString T}}
-         AT = self.TicketAtom
-      end
-
-      meth getTicket($)
-         self.TicketAtom
-      end
-
-      meth close
-         {Dictionary.remove KeyDict self.Ticket.key}
-      end
-   end
-
-   fun {OfferUnlimited X}
-      {{New Gate init(X)} getTicket($)}
-   end
-
-   proc {TakeWithTimer V Time Entity}
-      T = {VsToTicket V}
-      P = {ToPort T}
-      X Alarm
-      thread
-         {Delay Time}
-         Alarm=_#time
-      end
-      proc {Watch _ _}
-         Alarm=watch#_
-      end
-      proc {Handle _ _ _}
-         {Fault.deInstallWatcher P Watch _}
-         {Fault.deInstall P 'thread'(this) _}
-         {Exception.raiseError connection(ticketToDeadSite V)}
-      end
-   in
-      if T.major#T.minor \= {Property.get 'dp.version'} then
-         {Exception.raiseError connection(differentDssVersion V)}
-      end
-
-      {Fault.installWatcher P [permFail] Watch true}
-      {Fault.install P 'thread'(this) [permFail] Handle true}
-      {Send P T#X}
-
-      case {Record.waitOr X#Alarm}
-      of 1 then
-         case X of no then
-            {Fault.deInstall P 'thread'(this) _}
-            {Fault.deInstallWatcher P Watch _}
-            {Exception.raiseError connection(refusedTicket V)}
-         [] yes(A) then
-            {Fault.deInstall P 'thread'(this) _}
-            {Fault.deInstallWatcher P Watch _}
-            Entity=A
-         end
-      [] 2 then
-         case{Record.waitOr Alarm} of 1 then
-            {Fault.deInstall P 'thread'(this) _}
-            {Fault.deInstallWatcher P Watch _}
-            {Exception.raiseError connection(ticketToDeadSite V)}
-         [] 2 then
-            {Fault.deInstall P 'thread'(this) _}
-            {Fault.deInstallWatcher P Watch _}
-            {Exception.raiseError connection(ticketTakeTimeOut V)}
-         end
-      end
-   end
-
-   proc {Take V Entity}
-      {TakeWithTimer V {Property.get 'dp.probeTimeout'} Entity}
-   end
-
-
-   %%
-   %% Register error formatter
-   %%
-
-   {Error.registerFormatter connection
-    fun {$ E}
-       T = 'Error: connections'
-    in
-       case E
-       of connection(illegalTicket V) then
-          error(kind: T
-                msg: 'Illegal ticket for connection'
-                items: [hint(l:'Ticket' m:oz(V))])
-       [] connection(refusedTicket V) then
-          error(kind: T
-                msg: 'Ticket refused by offering site'
-                items: [hint(l:'Ticket' m:V)])
-       [] connection(ticketToDeadSite V) then
-          error(kind: T
-                msg: 'Ticket refused: refers to dead site'
-                items: [hint(l:'Ticket' m:V)])
-       [] connection(wrongModel V) then
-          error(kind: T
-                msg: 'Ticket presupposes wrong distribution model'
-                items: [hint(l:'Ticket' m:V)])
-       [] connection(differentDssVersion V) then
-          error(kind: T
-                msg: 'Ticket refused: different distribution subsystem version'
-                items: [hint(l:'Ticket' m:V)])
+       [] retract(Id) then
+          if S=={Site.this} then
+             {Dictionary.remove Tickets Id}
+          else
+             {Error.printException
+              {Exception.error dp(service localOnly 'oz:ticket' M)}}
+          end
        else
-          error(kind: T
-                items: [line(oz(E))])
+          {Error.printException
+           {Exception.error dp(service unknownMessage 'oz:ticket' M)}}
        end
     end}
 
+   %% obtain the value corresponding to a given ticket
+   fun {Take Ticket}
+      SiteURI#TicketId={ParseTicket Ticket} in
+      case {DPService.send {Site.resolve SiteURI} 'oz:ticket' take(TicketId $)}
+      of ok(X) then
+         X
+      else
+         {Exception.raiseError dp(ticket bad Ticket)}
+         unit
+      end
+   end
+
+   %% retract a ticket
+   proc{Retract Ticket}
+      SiteURI#TicketId={ParseTicket Ticket}
+   in
+      {DPService.send {Site.resolve SiteURI} 'oz:ticket' retract(TicketId)}
+   end
+
+   %% offer a value
+   fun {OfferOnce X}
+      {DoOffer X opts(once:true)}
+   end
+   fun {OfferMany X}
+      {DoOffer X opts()}
+   end
+
+   fun {DoOffer X Opts}
+      T={NewTicketId}
+   in
+      Tickets.T:=ticket(X Opts)
+      {MakeTicket T}
+   end
+   local C={NewCell 0} in
+      fun {NewTicketId}
+         I J in I=C:=J  J=I+1  I
+      end
+   end
+
+   %% utils: create and parse tickets
+   fun {MakeTicket Key}
+      URIs={Site.allURIs {Site.this}}
+   in
+      try
+         for U in URIs  return:Return do
+            if {List.isPrefix "oz-site://" U} then
+               {Return {VirtualString.toAtom
+                        'oz-ticket'#{List.drop U {Length "oz-site"}}#"#"#Key}}
+            end
+         end
+      catch _ then
+         {Exception.raiseError dp(ticket make URIs)}
+         unit
+      end
+   end
+   fun {ParseTicket VS}
+      T={VirtualString.toString VS}
+   in
+      if {List.isPrefix "oz-ticket://" T} then URI Key in
+         %% assumption: the character '#' is not used in the URI
+         {String.token {List.drop T {Length "oz-ticket://"}} &# URI Key}
+         ('oz-site://'#URI)#{String.toInt Key}
+      else
+         {Exception.raiseError dp(ticket parse T)}
+         unit
+      end
+   end
+
+   %% Gates: an alternative class for managing tickets
+   class Gate
+      feat Ticket
+      meth init(X ?AT<=_)
+         AT = (self.Ticket = {OfferMany X})
+      end
+      meth getTicket($)
+         self.Ticket
+      end
+      meth close
+         {Retract self.Ticket}
+      end
+   end
 end

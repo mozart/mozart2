@@ -3684,19 +3684,24 @@ define
                   {Cls setProperties(Props)}
                   Cls
                [] object then
-                  TheClass = {OoExtensions.getClass Val}
-                  Meths = {Record.make m {OoExtensions.getMethNames TheClass}}
-                  Attrs = {OoExtensions.getAttrNames TheClass}
-                  Feats = {OoExtensions.getFeatNames TheClass}
-                  Props = {OoExtensions.getProps TheClass}
-                  Cls   = {New Core.classToken init(TheClass)}
-               in
-                  {Record.forAll Meths fun {$} nil#unit end}
-                  {Cls setMethods(Meths)}
-                  {Cls setAttributes(Attrs)}
-                  {Cls setFeatures(Feats)}
-                  {Cls setProperties(Props)}
-                  {New Core.objectToken init(Val Cls)}
+                  try
+                     TheClass = {OoExtensions.getClass Val}
+                     Meths = {Record.make m
+                              {OoExtensions.getMethNames TheClass}}
+                     Attrs = {OoExtensions.getAttrNames TheClass}
+                     Feats = {OoExtensions.getFeatNames TheClass}
+                     Props = {OoExtensions.getProps TheClass}
+                     Cls   = {New Core.classToken init(TheClass)}
+                  in
+                     {Record.forAll Meths fun {$} nil#unit end}
+                     {Cls setMethods(Meths)}
+                     {Cls setAttributes(Attrs)}
+                     {Cls setFeatures(Feats)}
+                     {Cls setProperties(Props)}
+                     {New Core.objectToken init(Val Cls)}
+                  catch system(...) then
+                     unit     % no class available because of distribution
+                  end
                [] 'lock' then
                   {New Core.valueNode init(Val unit)}
                [] port then

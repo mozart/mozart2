@@ -22,8 +22,8 @@
 
 functor
 import
-%   Fault(install)
    TestMisc
+   DP
 export
    Return
 define
@@ -31,44 +31,46 @@ define
    ForkingSpeed = 3
    Sites = 3
 
-   proc {StartController}
-      Managers
-%      Watched
-   in
-      try
-         local
-            proc {Loop Ms L R}
-               case Ms
-               of M|Mr then LR in
-                  thread {StartSite M L LR} end
-                  {Loop Mr LR R}
-               [] nil then
-                  L = R
+   fun {Start EntityProtocol}
+      proc {$}
+         Managers
+      in
+         try
+            local
+               proc {Loop Ms L R}
+                  case Ms
+                  of M|Mr then LR in
+                     {DP.annotate LR EntityProtocol}
+                     thread {StartSite EntityProtocol M L LR} end
+                     {Loop Mr LR R}
+                  [] nil then
+                     L = R
+                  end
+               end
+               L R Hosts ControllerThread
+               {DP.annotate L EntityProtocol}
+            in
+               {TestMisc.getHostNames Hosts}
+               {TestMisc.getRemoteManagers Sites Hosts Managers}
+               thread {Loop Managers L R} end
+               thread
+                  {Thread.this ControllerThread}
+                  {Controller L R 1}
+               end
+               if L == R then
+                  %% Controller mission completed
+                  {Thread.terminate ControllerThread}
+               else
+                  raise dp_variable_test_failed end
                end
             end
-            L R Hosts ControllerThread
-         in
-            {TestMisc.getHostNames Hosts}
-            {TestMisc.getRemoteManagers Sites Hosts Managers}
-            thread {Loop Managers L R} end
-            thread
-               {Thread.this ControllerThread}
-               {Controller L R 1}
-            end
-            if L == R then
-               % Controller mission completed
-               {Thread.terminate ControllerThread}
-            else
-               raise dp_variable_test_failed end
-            end
+         catch X then
+            {TestMisc.gcAll Managers}
+            raise X end
          end
-      catch X then
          {TestMisc.gcAll Managers}
-         raise X end
+         {TestMisc.listApply Managers close}
       end
-      {TestMisc.gcAll Managers}
-%      {TestMisc.deinstallWatchers Watched}
-      {TestMisc.listApply Managers close}
    end
 
    proc {Controller L R PhaseNr}
@@ -88,10 +90,11 @@ define
       end
    end
 
-   proc {StartSite RMan L R} Error in
+   proc {StartSite EntityProtocol RMan L R} Error in
       {RMan apply(url:'' functor
                          import
                             Property(put)
+                            DP
                          define
                             {Property.put 'close.time' 1000}
 
@@ -125,6 +128,7 @@ define
 
                             proc {Fork L R PhaseNr NrLeftToFork
                                   NrOfPhases ForkingSpeed} LR in
+                               {DP.annotate LR EntityProtocol}
                                thread
                                   {Process L LR PhaseNr NrLeftToFork-1
                                    NrOfPhases ForkingSpeed}
@@ -138,7 +142,6 @@ define
                             proc {Start L R Cell ForkingSpeed NrOfPhases
                                   Error}
                                MemCell = {NewCell ok} in
-%                              Watch = Id
                                try
                                   {Process L R 1 ForkingSpeed
                                    NrOfPhases ForkingSpeed}
@@ -153,5 +156,8 @@ define
       {TestMisc.raiseError Error}
    end
 
-   Return = dp([variable(StartController keys:[remote])])
+   Return = dp([variable({Map [variable reply]
+                          fun {$ Prot}
+                             Prot({Start Prot} keys:[remote Prot])
+                          end})])
 end

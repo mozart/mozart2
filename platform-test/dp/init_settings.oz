@@ -1,9 +1,14 @@
+%%
+%% This test was testing the module DPInit.  This module has been
+%% removed, and integrated in the module DP of Mozart/DSS.  The test
+%% has been adapted, but is less relevant than before...
+%%
+
 functor
 import
    Remote
    Connection
    Pickle
-   System(show:Show)
    OS(tmpnam unlink)
 export
    Return
@@ -22,18 +27,18 @@ define
    {CreateTest init
     functor
     import
-       DPInit
+       Property
     define
-       {DPInit.getSettings}.firewall=false
+       {CondSelect {Property.get 'dp.listenerParams'} firewall false}=false
     end}
 
    FireWall =
    {CreateTest init(firewall:true)
     functor
     import
-       DPInit
+       Property
     define
-       {DPInit.getSettings}.firewall=true
+       {CondSelect {Property.get 'dp.listenerParams'} firewall false}=true
     end}
 
    Port =
@@ -55,12 +60,12 @@ define
                {{CreateTest init(port:PortNum)
                  functor
                  import
-                    DPInit
+                    Property
                     Connection
                     Pickle
                     OS
                  define
-                    {DPInit.getSettings}.port=PortNum
+                    {Property.get 'dp.listenerParams'}.port=exact(PortNum)
                     local N={OS.getPID} in
                        {Pickle.save {Connection.offer N} TempFile}
                        !Pid=N

@@ -23,6 +23,7 @@
 functor
 import
    TestMisc
+   DP
 export
    Return
 define
@@ -30,34 +31,38 @@ define
    Times = 50
    Sites = 3
 
-   proc {Start} Managers in
-      try
-         local
-            proc {Loop Ms I Ss Cell Ps}
-               case Ms
-               of M|Mr then S Sr Pr in
-                  Ss = S|Sr
-                  Ps = proc {$} {StartSite M Cell I S} end | Pr
-                  {Loop Mr I+1 Sr Cell Pr}
-               [] nil then
-                  Ss = Ps = nil
+   fun {Start EntityProtocol}
+      proc {$}
+         Managers in
+         try
+            local
+               proc {Loop Ms I Ss Cell Ps}
+                  case Ms
+                  of M|Mr then S Sr Pr in
+                     Ss = S|Sr
+                     Ps = proc {$} {StartSite M Cell I S} end | Pr
+                     {Loop Mr I+1 Sr Cell Pr}
+                  [] nil then
+                     Ss = Ps = nil
+                  end
                end
+               Cell = {NewCell initial}
+               {DP.annotate Cell EntityProtocol}
+               Stats Hosts Procs
+            in
+               {TestMisc.getHostNames Hosts}
+               {TestMisc.getRemoteManagers Sites Hosts Managers}
+               {Loop Managers 1 Stats Cell Procs}
+               {TestMisc.barrierSync Procs}
+               {CheckStatistics Stats}
             end
-            Cell = {NewCell initial}
-            Stats Hosts Procs
-         in
-            {TestMisc.getHostNames Hosts}
-            {TestMisc.getRemoteManagers Sites Hosts Managers}
-            {Loop Managers 1 Stats Cell Procs}
-            {TestMisc.barrierSync Procs}
-            {CheckStatistics Stats}
+         catch X then
+            {TestMisc.gcAll Managers}
+            raise X end
          end
-      catch X then
          {TestMisc.gcAll Managers}
-         raise X end
+         {TestMisc.listApply Managers close}
       end
-      {TestMisc.gcAll Managers}
-      {TestMisc.listApply Managers close}
    end
 
 
@@ -90,12 +95,12 @@ define
    in
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
-                         if Sum \= Times then
-                            raise dp_cell_test_failed end
-                         else
-                            skip
-                         end
-                      end}
+                              if Sum \= Times then
+                                 raise dp_cell_test_failed end
+                              else
+                                 skip
+                              end
+                           end}
    end
 
    proc {StartSite Manager Cell SiteNr Statistics} Error in
@@ -173,6 +178,7 @@ define
                                proc {CellUpDater Cell Nr SiteNr
                                      ThreadNr Dict Lock} Old in
                                   {Exchange Cell Old SiteNr#ThreadNr}
+                                  {Wait Old}
                                   {UpdateDict Old Dict Lock}
                                   if Nr == Times then
                                      skip
@@ -197,5 +203,8 @@ define
       {TestMisc.raiseError Error}
    end
 
-   Return = dp([cell(Start keys:[remote])])
+   Return = dp([cell({Map [stationary migratory pilgrim replicated]
+                      fun {$ Prot}
+                         Prot({Start Prot} keys:[remote Prot])
+                      end})])
 end

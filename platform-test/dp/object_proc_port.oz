@@ -18,7 +18,7 @@ define
    proc {Start}
       Managers
       InP InS={NewPort $ InP}
-      OutS OutP={NewPort OutS}
+      OutS % OutP={NewPort OutS}
    in
       try Hosts In in
          {TestMisc.getHostNames Hosts}

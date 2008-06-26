@@ -99,7 +99,7 @@ define
          {WeakDictionary.put WD gc V}
          {Send OutP {Connection.offer V}}
          {Delay 10}
-         V=loc1
+         V=42          % small integers are never considered 'marked' by the GC
          {Delay 10}
       end
       {DoGC Managers}

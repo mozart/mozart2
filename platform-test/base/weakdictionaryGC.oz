@@ -32,7 +32,7 @@ define
       thread {RunGC StopGC} end
       D.Key:=proc{$} skip end
       WD.Key:={NewName}
-      case S of (K#V)|SM then skip end
+      case S of (_#_)|_ then skip end
       StopGC=unit
    end
 

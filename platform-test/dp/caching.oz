@@ -1,5 +1,11 @@
-% This test sets the number of availabel tcptransobjs to 2 (2*2 temporarily)
-% and runs 10 sites simultaneously.
+%%
+%% This test sets the number of available tcptransobjs to 2 (2*2
+%% temporarily) and runs 10 sites simultaneously.
+%%
+%% raph: This test is no longer relevant, since the caching of
+%% connections is no longer available in Mozart/DSS.  However, we keep
+%% it to test a "large" (not so large, in fact) set of connections.
+%%
 
 %\define DBG
 functor
@@ -7,11 +13,10 @@ import
    Remote(manager)
    Property
    System
-   Fault
 export
    Return
 define
-   Sites=5
+   Sites=50
    Weak=2    % Use these per thread
    Hard=4
    SeenList={MakeList Sites}
@@ -31,8 +36,6 @@ define
             if @n==0 then
                hard <- {Property.get 'dp.tcpHardLimit'}
                weak <- {Property.get 'dp.tcpWeakLimit'}
-               {Fault.defaultDisable _}
-               {Fault.defaultEnable [permFail] _}
             end
             {Property.put 'dp.tcpWeakLimit' Weak*(@n+1)}
             {Property.put 'dp.tcpHardLimit' Hard*(@n+1)}
@@ -44,10 +47,6 @@ define
             if @n==1 then
                {Property.put 'dp.tcpHardLimit' @hard}
                {Property.put 'dp.tcpWeakLimit' @weak}
-               % Assumes that the system had these settings to begin with.
-               % If there was a way to check, this could have been done
-               % in enter...
-               {Fault.defaultEnable [tempFail permFail] _}
             else
                {Property.put 'dp.tcpWeakLimit' Weak*(@n-1)}
                {Property.put 'dp.tcpHardLimit' Hard*(@n-1)}
@@ -81,9 +80,6 @@ define
             {Wait StartNext}
             {Show starting(Left)}
             {Site.man apply(url:'' functor
-                                   import
-                                      Fault
-%                                     System
                                    define
                                       proc{Run}
                                          {Send CentralPort hi(Left)}
@@ -91,9 +87,6 @@ define
                                          {Run}
                                       end
                                    in
-                                      {Fault.defaultDisable _}
-                                      {Fault.defaultEnable [permFail] _}
-%                                     {System.show starting_client}
                                       thread {Run} end
                                    end)}
             {Show started(Left)}
@@ -133,9 +126,5 @@ define
       end
    end
 
-\ifdef DBG
-   Return=dp([caching(proc{$} try {Start} catch X then raise X end end end keys:[cache])])
-\else
    Return=dp([caching(Start keys:[cache])])
-\endif
 end

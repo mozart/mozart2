@@ -88,35 +88,37 @@ define
       end
    end
 
-   proc {Start} Managers in
-      try
-         local
-            proc {Loop Ms I Ss Object Lock Ps}
-               case Ms
-               of M|Mr then S Sr Pr in
-                  Ss = S|Sr
-                  Ps = proc {$} {StartSite M Object I S Lock} end | Pr
-                  {Loop Mr I+1 Sr Object Lock Pr}
-               [] nil then
-                  Ss = Ps = nil
+   fun {Start EntityProtocol}
+      proc {$} Managers in
+         try
+            local
+               proc {Loop Ms I Ss Object Lock Ps}
+                  case Ms
+                  of M|Mr then S Sr Pr in
+                     Ss = S|Sr
+                     Ps = proc {$} {StartSite M Object I S Lock} end | Pr
+                     {Loop Mr I+1 Sr Object Lock Pr}
+                  [] nil then
+                     Ss = Ps = nil
+                  end
                end
+               Lock = {NewLock}
+               Object = {New MsgHandler init}
+               Stats Hosts Procs
+            in
+               {TestMisc.getHostNames Hosts}
+               {TestMisc.getRemoteManagers Sites Hosts Managers}
+               {Loop Managers 1 Stats Object Lock Procs}
+               {TestMisc.barrierSync Procs}
+               {CheckStatistics Stats}
             end
-            Lock = {NewLock}
-            Object = {New MsgHandler init}
-            Stats Hosts Procs
-         in
-            {TestMisc.getHostNames Hosts}
-            {TestMisc.getRemoteManagers Sites Hosts Managers}
-            {Loop Managers 1 Stats Object Lock Procs}
-            {TestMisc.barrierSync Procs}
-            {CheckStatistics Stats}
+         catch X then
+            {TestMisc.gcAll Managers}
+            raise X end
          end
-      catch X then
          {TestMisc.gcAll Managers}
-         raise X end
+         {TestMisc.listApply Managers close}
       end
-      {TestMisc.gcAll Managers}
-      {TestMisc.listApply Managers close}
    end
 
    proc {CheckStatistics Lists}
@@ -148,13 +150,13 @@ define
    in
       {SumLists Lists SumList}
       {List.forAll SumList proc {$ Sum}
-                         if Sum > Times + 1 orelse Sum < Times - 1  then
-                            {System.show obj(Sum Times)}
-                            raise dp_object_test_failed(Sum Times) end
-                         else
-                            skip
-                         end
-                      end}
+                              if Sum > Times + 1 orelse Sum < Times - 1  then
+                                 {System.show obj(Sum Times)}
+                                 raise dp_object_test_failed(Sum Times) end
+                              else
+                                 skip
+                              end
+                           end}
    end
 
    proc {StartSite RMan Object SiteNr Statistics Lock}
@@ -213,5 +215,8 @@ define
       {TestMisc.raiseError Error}
    end
 
-   Return = dp([object(Start keys:[remote])])
+   Return = dp([object({Map [stationary eager lazy]
+                        fun {$ Prot}
+                           Prot({Start Prot} keys:[remote Prot])
+                        end})])
 end

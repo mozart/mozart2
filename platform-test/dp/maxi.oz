@@ -35,29 +35,23 @@ functor
    %% take any of the tickets.
    %%
 import
+   DP
    Remote(manager)
    Connection
    TestMisc(localHost)
-   System
 export
    Return
 
 define
    proc{WaitPerm P}
-      try
-         {Send P hi}
-         {Delay 10}
-         {WaitPerm P}
-      catch _ then
-         skip
-      end
+      {Wait P}
+      {List.member permFail {DP.getFaultStream P}}=true
    end
 
    Return=
    dp([
        maxi(
           proc{$}
-             Ans
              ClientPort Ticket1 Ticket2
              S CC = {NewCell false}
              LocalHost = TestMisc.localHost in
@@ -69,36 +63,42 @@ define
                                 Remote
                                 System
                                 Connection
+                                DP
                              export
                                 My
                              define
                                 {Property.put 'close.time' 0}
-                                   local
-                                      S A ClientPort
-                                      P = {NewPort _}
-                                   in
-                                      S={New Remote.manager init(host:LocalHost)}
-                                      {S ping}
-                                      try
-                                         {S apply(url:'' functor
-                                                         import
-                                                            Connection
-                                                            Property
-                                                         export
-                                                            MyExp
-                                                         define
-                                                            {Property.put 'close.time' 0}
-                                                            MyExp = {NewPort _}#{Connection.offer _}
-                                                         end $)}.myExp = ClientPort#A
+                                proc{WaitPerm P}
+                                   {Wait P}
+                                   {List.member permFail
+                                    {DP.getFaultStream P}}=true
+                                end
+                                local
+                                   S A ClientPort
+                                   P = {NewPort _}
+                                in
+                                   S={New Remote.manager init(host:LocalHost)}
+                                   {S ping}
+                                   try
+                                      {S apply(url:'' functor
+                                                      import
+                                                         Connection
+                                                         Property
+                                                      export
+                                                         MyExp
+                                                      define
+                                                         {Property.put 'close.time' 0}
+                                                         MyExp = {NewPort _}#{Connection.offer _}
+                                                      end $)}.myExp = ClientPort#A
 
-                                      catch XX then
-                                         {System.show s1(XX)}
-                                      end
-                                      {S close}
-                                      {WaitPerm ClientPort}
-                                      My = P#A#{Connection.offer _}
-
+                                   catch XX then
+                                      {System.show s1(XX)}
                                    end
+                                   {S close}
+                                   {WaitPerm ClientPort}
+                                   My = P#A#{Connection.offer _}
+
+                                end
                              end $)}.my = ClientPort#Ticket2#Ticket1
              {S ping}
              try

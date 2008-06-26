@@ -470,7 +470,6 @@ in
              Module(manager)
              Application(getCmdArgs exit)
              OS(getEnv putEnv)
-             System
           define
              ModMan = {New Module.manager init}
              Args = {Application.getCmdArgs TestOptions}

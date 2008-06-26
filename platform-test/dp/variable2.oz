@@ -48,11 +48,10 @@ in
                    import
                       Property
                    define
-                      V in
                       {Property.put  'close.time' 0}
                       {Wait DistCell}
                       {Access DistCell} = unit
-                      {Assign DistCell V}
+                      {Assign DistCell _}
                    end)}
    {S ping}
    {Wait Sync}

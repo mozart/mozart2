@@ -23,6 +23,7 @@
 functor
 import
    TestMisc
+   DP
 export
    Return
 define
@@ -30,37 +31,40 @@ define
    Times = 50
    Sites = 3
 
-   proc {Start} Managers in
-      try
-         local
-            proc {Loop Ms Ctr Lock Ps}
-               case Ms
-               of M|Mr then Pr in
-                  Ps = proc {$} {StartSite M Ctr Lock} end | Pr
-                  {Loop Mr Ctr Lock Pr}
-               [] nil then
-                  Ps = nil
+   fun {Start EntityProtocol}
+      proc {$} Managers in
+         try
+            local
+               proc {Loop Ms Ctr Lock Ps}
+                  case Ms
+                  of M|Mr then Pr in
+                     Ps = proc {$} {StartSite M Ctr Lock} end | Pr
+                     {Loop Mr Ctr Lock Pr}
+                  [] nil then
+                     Ps = nil
+                  end
                end
+               Ctr = {NewCell 0}
+               Lock = {NewLock}
+               {DP.annotate Lock EntityProtocol}
+               Old Hosts Procs
+            in
+               {TestMisc.getHostNames Hosts}
+               {TestMisc.getRemoteManagers Sites Hosts Managers}
+               {Loop Managers Ctr Lock Procs}
+               {TestMisc.barrierSync Procs}
+               {Exchange Ctr Old done}
+               if Old \= Threads * Times * Sites then
+                  raise dp_cellAndLock_test_failed end
+               else skip end
             end
-            Ctr = {NewCell 0}
-            Lock = {NewLock}
-            Old Hosts Procs
-         in
-            {TestMisc.getHostNames Hosts}
-            {TestMisc.getRemoteManagers Sites Hosts Managers}
-            {Loop Managers Ctr Lock Procs}
-            {TestMisc.barrierSync Procs}
-            {Exchange Ctr Old done}
-            if Old \= Threads * Times * Sites then
-               raise dp_cellAndLock_test_failed end
-            else skip end
+         catch X then
+            {TestMisc.gcAll Managers}
+            raise X end
          end
-     catch X then
          {TestMisc.gcAll Managers}
-         raise X end
+         {TestMisc.listApply Managers close}
       end
-      {TestMisc.gcAll Managers}
-      {TestMisc.listApply Managers close}
    end
 
    proc {StartSite RMan Ctr Lock} Error in
@@ -130,5 +134,8 @@ define
       {TestMisc.raiseError Error}
    end
 
-   Return = dp([cell(['lock'(Start keys:[remote])])])
+   Return = dp([cell(['lock'({Map [stationary migratory pilgrim replicated]
+                              fun {$ Prot}
+                                 Prot({Start Prot} keys:[remote Prot])
+                              end})])])
 end

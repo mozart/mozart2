@@ -1,14 +1,12 @@
 %%%
 %%% Authors:
-%%%  Erik Klintskog (erik@sics.se)
-%%%
+%%%   Raphael Collet (raphael.collet@uclouvain.be)
 %%%
 %%% Copyright:
-%%%  Erik Klintskog, 1998
-%%%
+%%%   Raphael Collet, 2008
 %%%
 %%% Last change:
-%%%   $ $ by $Author$
+%%%   $Date$ by $Author$
 %%%   $Revision$
 %%%
 %%% This file is part of Mozart, an implementation
@@ -22,488 +20,178 @@
 %%% WARRANTIES.
 %%%
 
-%\define DBG
+%% WARNING: these test might not work on all systems.  We make use of
+%% the program 'kill' to suspend and resume system processes.  The
+%% test should work on all Unix-like systems (Linux, Solaris, MacOSX).
+%% It might not work on Win32...
+
 functor
 
 import
+   DP
    Remote(manager)
-   Fault
-   System
+   OS System
    TestMisc(localHost)
 export
    Return
 
 define
-\ifdef DBG
-   PrintPort
-   thread {ForAll {NewPort $ PrintPort} System.show} end
-   proc {Show X}
-      {Send PrintPort X}
-   end
-\else
-   proc {Show _} skip end
-\endif
-   proc{SiteWatcherInstall Entity Proc}
-      {Fault.installWatcher Entity [permFail] Proc true}
-   end
-   proc{SiteWatcherDeInstall Entity Proc}
-      {Fault.deInstallWatcher Entity Proc true}
-   end
-   proc{InjectorInstall Entity Proc}
-      {Fault.install Entity 'thread'(this) [permFail] Proc true}
-   end
-   proc{InjectorDeInstall Entity Proc}
-      {Fault.deInstall Entity 'thread'(this) true}
-   end
-/*
-   proc{WatchWat S E}
-      Inj = proc{$ A B} B = proc{$ _ _} A = unit end end
-   in
-      E = o(port:_ cell:_ lokk:_ var:_)
-      {SiteWatcherInstall S.port {Inj E.port}}
-      {SiteWatcherInstall S.cell {Inj E.cell}}
-      {SiteWatcherInstall S.lokk {Inj E.lokk}}
-      {SiteWatcherInstall S.var  {Inj E.var}}
-   end
-
-   proc{CheckWat E}
-      CC = {NewCell false}
-   in
-      try
-         E.port = port
-         {Assign CC true}
-      catch _ then
-         skip
+   %% create a remote process that exports a port, a cell, and its process id
+   proc {StartServer ?S ?E}
+      functor F
+      import Property OS DP
+      export port:P cell:C pid:Pid
+      define
+         {Property.put 'close.time' 0}
+         P={NewPort _}
+         C1={NewCell 0} {DP.annotate C1 [stationary]}
+         C=C1
+         Pid={OS.getPID}
       end
-      try
-         E.cell = port
-         {Assign CC true}
-      catch _ then skip end
-      try
-         E.var = port
-         {Assign CC true}
-      catch _ then skip end
-      try
-         E.lokk = port
-         {Assign CC true}
-      catch _ then skip end
-      {Access CC false}
-   end
-*/
-
-   proc{TryCell C}
-       try {Access C _}
-             catch X then if(X==hell) then raise hell end end end
-
-   end
-
-   proc{TryLock L}
-        try lock L then skip end
-              catch X then if(X==hell) then raise hell end end end
-
-   end
-
-   proc{TryPort P}
-        try {Send P apa}
-              catch X then if(X==hell) then raise hell end end end
-
-   end
-
-   proc{TryVar V}
-      try V = apa
-      catch hell  then
-         raise hell end
-      [] _ then
-         skip
-      end
-   end
-
-
-
-   proc{DeinstallInj Po Pro}
-      CC = {NewCell true}
    in
-      try
-         {InjectorDeInstall Po Pro}
-         {Assign CC false}
-      catch _ then skip end
-
-      {InjectorInstall Po Pro}
-      {InjectorDeInstall Po Pro}
-
-      try
-         {InjectorDeInstall Po Pro}
-         {Assign CC false}
-      catch _ then skip end
-      {Access CC} = true
-   end
-
-
-   proc{DeinstallWat Po Pro}
-      CC = {NewCell true}
-   in
-      try
-         {SiteWatcherDeInstall Po Pro}
-         {Assign CC false}
-      catch _ then skip end
-
-      {SiteWatcherInstall Po Pro}
-      {SiteWatcherDeInstall Po Pro}
-
-      try
-         {SiteWatcherDeInstall Po Pro}
-         {Assign CC false}
-      catch _ then skip end
-      {Access CC} = true
-   end
-
-
-   proc{StartServer S E}
       S={New Remote.manager init(host:TestMisc.localHost)}
       {S ping}
-      {S apply(url:'' functor
-                      import
-                         Property
-                      export
-                         My
-                      define
-                         {Property.put 'close.time' 0}
-                         My=o(port:{NewPort _}
-                              cell:{NewCell a}
-                              lokk:{NewLock}
-                              var:_)
-                      end $)}.my = E
+      {S apply(F E)}
       {S ping}
+   end
+
+   %% put the site with the given process id in the given state
+   proc {MakeSite PID State}
+      if {OS.system 'kill -'#Signal.State#' '#PID} \= 0 then
+         raise remote('failed to make site in state '#State pid:PID) end
+      end
+   end
+   Signal=map(ok:'CONT' tempFail:'STOP' permFail:'KILL')
+
+   %% check whether the entity reaches the given fault state (within 30 sec)
+   proc {CheckEntity E State}
+      B = thread {List.member State {DP.getFaultStream E}} end
+   in
+      if {Record.waitOr B#{Time.alarm 30000}}==1 andthen B then skip else
+         raise 'expected entity state'(E State) end
+      end
+   end
+
+   %% spawn a new thread
+   TID={WeakDictionary.new _}
+   {WeakDictionary.close TID}
+   fun {Spawn P}
+      N={NewName} T F in
+      {WeakDictionary.put TID N T}
+      thread {Thread.this T} {P} F=terminated end
+      spawned(id:N final:F)
+   end
+   %% check the state of thread T
+   fun {GetState T}
+      {System.gcDo} {System.gcDo} {System.gcDo}
+      try
+         {Thread.state {WeakDictionary.get TID T.id}}
+      catch _ then
+         %% T is no longer in TID, therefore the thread is gone
+         if {IsFree T.final} then T.final=blockedForever end
+         T.final
+      end
+   end
+   proc {CheckThread T D S}
+      {Delay D} {GetState T}=S
+   end
+
+
+
+   %% tempFail with synchronous operation
+   proc {TempFailCell} S E T in
+      {StartServer S E}
+      {MakeSite E.pid tempFail}
+      {CheckEntity E.cell tempFail}
+      T={Spawn proc {$} {Assign E.cell foo} end}
+      {CheckThread T 300 blocked}
+      {MakeSite E.pid ok}
+      {CheckEntity E.cell ok}
+      {CheckThread T 300 terminated}
+      {S close}
+   end
+
+   %% localFail with synchronous operation
+   proc {BreakCell} S E T in
+      {StartServer S E}
+      {DP.break E.cell}
+      {CheckEntity E.cell localFail}
+      T={Spawn proc {$} {Assign E.cell foo} end}
+      {CheckThread T 300 blockedForever}
+      {S close}
+   end
+
+   %% permFail (with Kill) with synchronous operation
+   proc {KillCell} S E T in
+      {StartServer S E}
+      {DP.kill E.cell}
+      {CheckEntity E.cell permFail}
+      T={Spawn proc {$} {Assign E.cell foo} end}
+      {CheckThread T 300 blockedForever}
+      {S close}
+   end
+
+   %% permFail with synchronous operation
+   proc {PermFailCell} E T in
+      {StartServer _ E}
+      {MakeSite E.pid permFail}
+      {CheckEntity E.cell permFail}
+      T={Spawn proc {$} {Assign E.cell foo} end}
+      {CheckThread T 300 blockedForever}
+   end
+
+   %% tempFail with asynchronous operation
+   proc {TempFailPort} S E T1 T2 in
+      {StartServer S E}
+      {MakeSite E.pid tempFail}
+      {CheckEntity E.port tempFail}
+      T1={Spawn proc {$} {Send E.port foo} end}
+      {CheckThread T1 300 terminated}
+      {MakeSite E.pid ok}
+      {CheckEntity E.port ok}
+      T2={Spawn proc {$} {Send E.port foo} end}
+      {CheckThread T2 300 terminated}
+      {S close}
+   end
+
+   %% localFail with asynchronous operation
+   proc {BreakPort} S E T in
+      {StartServer S E}
+      {DP.break E.port}
+      {CheckEntity E.port localFail}
+      T={Spawn proc {$} {Send E.port foo} end}
+      {CheckThread T 300 terminated}
+      {S close}
+   end
+
+   %% permFail (with Kill) with asynchronous operation
+   proc {KillPort} S E T in
+      {StartServer S E}
+      {DP.kill E.port}
+      {CheckEntity E.port permFail}
+      T={Spawn proc {$} {Send E.port foo} end}
+      {CheckThread T 300 terminated}
+      {S close}
+   end
+
+   %% permFail with asynchronous operation
+   proc {PermFailPort} E T in
+      {StartServer _ E}
+      {MakeSite E.pid permFail}
+      {CheckEntity E.port permFail}
+      T={Spawn proc {$} {Send E.port foo} end}
+      {CheckThread T 300 terminated}
    end
 
    Return=
-   dp([
-       fault_local_install_deinstall_injector(
-          proc {$}
-             Va
-             Po = {NewPort _}
-             Ce = {NewCell apa}
-             Lo = {NewLock}
-             Pro = proc{$ A B C} raise hell end end
-          in
-             {InjectorInstall Po Pro}
-             {InjectorDeInstall Po Pro}
-             {InjectorInstall Va Pro}
-             {InjectorDeInstall Va Pro}
-             {InjectorInstall Ce Pro}
-             {InjectorDeInstall Ce Pro}
-             {InjectorInstall Lo Pro}
-             {InjectorDeInstall Lo Pro}
-             {InjectorInstall Po Pro}
-             {InjectorInstall Va Pro}
-             {InjectorInstall Ce Pro}
-             {InjectorInstall Lo Pro}
-             {System.gcDo}
-             {InjectorDeInstall Lo Pro}
-             {InjectorDeInstall Po Pro}
-             {InjectorDeInstall Va Pro}
-             {InjectorDeInstall Ce Pro}
-          end
-          keys:[fault])
-
-
-       fault_local_install_deinstall_watcher(
-          proc {$}
-             Va
-             Po = {NewPort _}
-             Ce = {NewCell apa}
-             Lo = {NewLock}
-             Pro = proc{$ A B} raise hell end end
-          in
-             {SiteWatcherInstall Po Pro}
-             {SiteWatcherDeInstall Po Pro}
-
-             {SiteWatcherInstall Va Pro}
-             {SiteWatcherDeInstall Va Pro}
-
-             {SiteWatcherInstall Ce Pro}
-             {SiteWatcherDeInstall Ce Pro}
-
-             {SiteWatcherInstall Lo Pro}
-             {SiteWatcherDeInstall Lo Pro}
-
-             {SiteWatcherInstall Po Pro}
-             {SiteWatcherInstall Va Pro}
-             {SiteWatcherInstall Ce Pro}
-             {SiteWatcherInstall Lo Pro}
-             {System.gcDo}
-             {SiteWatcherDeInstall Lo Pro}
-             {SiteWatcherDeInstall Po Pro}
-             {SiteWatcherDeInstall Va Pro}
-             {SiteWatcherDeInstall Ce Pro}
-          end
-          keys:[fault])
-       fault_global_install_deinstall_injector(
-          proc {$}
-             Va
-             Po
-             Ce
-             Lo
-             Pro = proc{$ A B C} raise hell end end
-             S
-          in
-             {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
-
-             {InjectorInstall Po Pro}
-             {InjectorDeInstall Po Pro}
-
-             {InjectorInstall Va Pro}
-             {InjectorDeInstall Va Pro}
-
-             {InjectorInstall Ce Pro}
-             {InjectorDeInstall Ce Pro}
-
-             {InjectorInstall Lo Pro}
-             {InjectorDeInstall Lo Pro}
-
-             {InjectorInstall Po Pro}
-             {InjectorInstall Va Pro}
-             {InjectorInstall Ce Pro}
-             {InjectorInstall Lo Pro}
-             {System.gcDo}
-             {InjectorDeInstall Lo Pro}
-             {InjectorDeInstall Po Pro}
-             {InjectorDeInstall Va Pro}
-             {InjectorDeInstall Ce Pro}
-
-             {S close}
-
-             try
-                {TryVar  Va}
-                {TryCell Ce}
-                {TryPort Po}
-                {TryLock Lo}
-             catch hell then {System.showInfo 'dp_fault_global_deinstall_injector may have a problem'} end
-
-          end
-          keys:[fault])
-
-
-       fault_global_install_deinstall_watcher(
-          proc {$}
-             Va
-             Po
-             Ce
-             Lo
-             Sync
-             Pro = proc{$ A B}  Sync = false end
-             S
-          in
-             {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
-
-             {SiteWatcherInstall Po Pro}
-             {SiteWatcherDeInstall Po Pro}
-
-             {SiteWatcherInstall Va Pro}
-             {SiteWatcherDeInstall Va Pro}
-
-             {SiteWatcherInstall Ce Pro}
-             {SiteWatcherDeInstall Ce Pro}
-
-             {SiteWatcherInstall Lo Pro}
-             {SiteWatcherDeInstall Lo Pro}
-
-             {SiteWatcherInstall Po Pro}
-             {SiteWatcherInstall Va Pro}
-             {SiteWatcherInstall Ce Pro}
-             {SiteWatcherInstall Lo Pro}
-             {System.gcDo}
-             {SiteWatcherDeInstall Lo Pro}
-             {SiteWatcherDeInstall Po Pro}
-             {SiteWatcherDeInstall Va Pro}
-             {SiteWatcherDeInstall Ce Pro}
-             {S close}
-
-             try
-                {TryVar  Va}
-                {TryCell Ce}
-                {TryPort Po}
-                {TryLock Lo}
-             catch hell then {System.showInfo 'dp_fault_global_deinstall_watcher may have a problem'} end
-             local CC = {NewCell false} in
-                try
-                   Sync = true
-                catch _ then
-                   {Assign CC true}
-                end
-                {Access CC false}
-             end
-
-          end
-          keys:[fault])
-
-
-       fault_handover_watcher_injector(
-          proc {$}
-             Po
-             Ce
-             Lo
-             Pro1 = proc{$ A B C} raise hell end end
-             Sync
-             Pro2 = proc{$ A B} Sync = false end
-             S
-             CC = {NewCell false}
-          in
-
-             {InjectorInstall Po Pro1}
-             {InjectorInstall Ce Pro1}
-             {InjectorInstall Lo Pro1}
-
-             {SiteWatcherInstall Po Pro2}
-             {SiteWatcherInstall Ce Pro2}
-             {SiteWatcherInstall Lo Pro2}
-
-             {StartServer S o(port:Po cell:Ce lokk:Lo var:_)}
-             {S close}
-             {Delay 1000}
-             try
-                {TryCell Ce}
-                {Assign CC true}
-             catch hell then skip end
-
-             try
-                {TryPort Po}
-                {Assign CC true}
-             catch hell then skip end
-
-             try
-                {TryLock Lo}
-                {Assign CC true}
-             catch hell then skip end
-
-
-             try
-                Sync = true
-                raise hell end
-             catch hell then
-                raise hell end
-             [] _ then skip end
-
-             {Access CC false}
-          end
-          keys:[fault])
-
-       fault_global_deinstall_watcher_handler(
-          proc {$}
-             Pol = {NewPort _}
-             Cel = {NewCell apa}
-             Lol = {NewLock}
-             Val
-
-             Po
-             Ce
-             Lo
-             Va
-
-             Sync
-             Pro = proc{$ A B C}  Sync = false end
-             ProW = proc{$ A B}  Sync = false end
-             S
-          in
-             {StartServer S o(port:Po cell:Ce lokk:Lo var:Va)}
-
-
-             {DeinstallInj Po Pro}
-             {DeinstallInj Va Pro}
-             {DeinstallInj Ce Pro}
-             {DeinstallInj Lo Pro}
-
-             {DeinstallWat Po ProW}
-             {DeinstallWat Va ProW}
-             {DeinstallWat Ce ProW}
-             {DeinstallWat Lo ProW}
-
-             {DeinstallInj Pol Pro}
-             {DeinstallInj Val Pro}
-             {DeinstallInj Cel Pro}
-             {DeinstallInj Lol Pro}
-
-             {DeinstallWat Pol ProW}
-             {DeinstallWat Val ProW}
-             {DeinstallWat Cel ProW}
-             {DeinstallWat Lol ProW}
-
-             {S close}
-
-          end
-          keys:[fault])
-
-       fault_detecting_managerLost_at_importing(
-          proc {$}
-             Po
-             Va
-             S1
-             S2={New Remote.manager init(host:TestMisc.localHost)}
-             Ans
-          in
-             {StartServer S1 o(port:Po cell:_ lokk:_ var:Va)}
-             {S1 close}
-             {Delay 1000}
-
-             try
-                {Send Po apa}
-                raise stop end
-             catch _ then
-                skip
-             end
-             {S2 ping}
-
-             thread
-                % A helper that will stop this test if
-                % the proxy suspends.
-                % If you run the test repeatedly the delay has to be
-                % this high!
-                {Delay 100000}
-                try Ans = crash {Show timeout} catch _ then skip end
-             end
-
-             {S2 apply(url:'' functor
-                              define
-                                 T in
-                                 try
-                                    {Show sending}
-                                    {Send Po apa}
-                                    {Show sent}
-                                       % if the send succeds => crash
-% This is no longer true, a send may succeed if we don't yet know the other
-% site was lost. AN!
-%                                   Ans = crash
-                                 catch _ then
-                                    {Show did_not_send}
-                                 end
-
-                                 thread
-                                    try
-                                       {Show binding}
-                                       Va = unit
-                                       {Show bound}
-                                    catch _ then
-                                       {Show did_not_bind}
-                                       T  = done
-                                    end
-                                 end
-                                 {Delay 500}
-                                 % if the binding suspends => crash
-                                 if{IsDet T} then
-                                    Ans = ok
-                                 else
-                                    Ans = crash
-                                 end
-                              end)}
-
-             {Show evaluating(Ans)}
-             if Ans == crash then
-                raise stop end
-             end
-             {Show evaluated(Ans)}
-             {S2 close}
-             {Show done}
-          end
-             keys:[fault])
+   dp([fault([tempFail([synchronous(TempFailCell keys:[fault])
+                        asynchronous(TempFailPort keys:[fault])])
+              permFail([synchronous(PermFailCell keys:[fault])
+                        asynchronous(PermFailPort keys:[fault])])
+              break([synchronous(BreakCell keys:[fault])
+                     asynchronous(BreakPort keys:[fault])])
+              kill([synchronous(KillCell keys:[fault])
+                    asynchronous(KillPort keys:[fault])])
+             ])
       ])
 end

@@ -26,7 +26,7 @@ import
    Remote(manager)
    System
    TestMisc(localHost)
-   %Fault(install deinstall)
+   DP
 export
    Return
 define
@@ -74,14 +74,17 @@ define
          {GCdo}
       end
 
-/*      proc{Watch A B}
-         {Send PP.1 siteFault(siteDown)}
+      proc{Watch X}
+         thread
+            if {List.member permFail {DP.getFaultStream X}} then
+               {Send PP.1 siteFault(siteDown)}
+            end
+         end
       end
-*/
+
       thread
          try
             {ForAll MyStream
-
              proc{$ X}
                 case X of entity(R L) then
                    {Access CC}.1 = R
@@ -146,8 +149,7 @@ define
                          )}
              {RM.Nr ping}
              {Wait PP.Nr}
-/*           {Fault.install PP.Nr watcher('cond':permHome)
-              Watch}*/
+             {Watch PP.Nr}
           end}
       end
    in

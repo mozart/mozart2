@@ -84,7 +84,7 @@ define
                            define
                               Until
                               [M] = {Module.apply [RemoteFUNCTOR]}
-                              DO  = M.do
+                              DO  = M.'do'
                               {StartActivities Until}
                               !Ready = unit
                               {Wait GlobalStart}

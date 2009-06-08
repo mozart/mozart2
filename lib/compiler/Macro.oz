@@ -10,7 +10,6 @@ export
    ListToSequence
 import
    BootName(newNamed:NewNamedName) at 'x-oz://boot/Name'
-   LoopMacro(loopExpander:LoopExpander)
    BackquoteMacro(backquoteExpander:BackquoteExpander)
 define
 
@@ -27,14 +26,10 @@ define
 
    fun {MacroExpand1 Form Env}
       case Form
-      of fLoop(_ _) then
-         {MacroExpandInternal 'loop' Form Env}
-      [] fMacro(L _) then
+        of fMacro(L _) then
          case L of fAtom(Macro _)|_ then
             {MacroExpandInternal Macro Form Env}
          else raise illFormedMacro(Form) end end
-      [] fMacrolet(Env2 E) then
-         {MacroExpand E {AugmentMacroEnv Env Env2}}
       else Form end
    end
 
@@ -55,7 +50,6 @@ define
       {Dictionary.put GlobalEnvironment Macro Expander}
    end
 
-   {Defmacro 'loop' LoopExpander}
    {Defmacro '`' BackquoteExpander}
 
    fun {AugmentMacroEnv D R}
@@ -220,11 +214,11 @@ define
       [] fInheritedModes(L) then {Some L ContainsMacro}
       [] fLexicalAbbreviation(S _) then {ContainsMacro S}
       [] fLexicalRule(_ P) then {ContainsMacro P}
-      [] fLoop(_ _) then true
       [] fMacro(_ _) then true
-      [] fMacrolet(_ _) then true
       [] fDotAssign(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
       [] fColonEquals(L R _) then {ContainsMacro L} orelse {ContainsMacro R}
+      %TODO [] fFOR(_ _ _) then ...
+      %TODO [] fWhile(_ _ _) then ...
       end
    end
 
@@ -426,17 +420,7 @@ define
       [] fLexicalRule(RE P) then
          fLexicalRule(
             RE {FullMacroExpand P Env})
-      [] fLoop(_ _) then
-         E2 = {MacroExpand1 E Env}
-      in
-         if {ContainsMacro E2}
-         then {FullMacroExpand E2 Env} else E2 end
       [] fMacro(_ _) then
-         E2 = {MacroExpand1 E Env}
-      in
-         if {ContainsMacro E2}
-         then {FullMacroExpand E2 Env} else E2 end
-      [] fMacrolet(_ _) then
          E2 = {MacroExpand1 E Env}
       in
          if {ContainsMacro E2}
@@ -447,6 +431,8 @@ define
       [] fColonEquals(L R C) then
          fColonEquals({FullMacroExpand L Env}
                       {FullMacroExpand R Env} C)
+      %TODO [] fFOR(_ _ _) then ...
+      %TODO [] fWhile(_ _ _) then ...
       end
    end
 end

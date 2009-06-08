@@ -6,23 +6,23 @@ export
 prepare
    RaiseError=Exception.raiseError
    FEATURES =
-   ["break"   #break
-    "continue"#continue
-    "return"  #return
-    "default" #default
-    "minimize"#minimize
-    "maximize"#maximize
-    "count"   #count
-    "add"     #sum
-    "sum"     #sum
-    "multiply"#multiply
-    "collect" #collect
-    "append"  #append
-    "prepend" #prepend
-    "while"   #while
-    "until"   #until
-    "yield"   #yield
-    "yieldAppend"#yieldAppend
+   ["break"   #'break'
+    "continue"#'continue'
+    "return"  #'return'
+    "default" #'default'
+    "minimize"#'minimize'
+    "maximize"#'maximize'
+    "count"   #'count'
+    "add"     #'sum'
+    "sum"     #'sum'
+    "multiply"#'multiply'
+    "collect" #'collect'
+    "append"  #'append'
+    "prepend" #'prepend'
+    "while"   #'while'
+    "until"   #'until'
+    "yield"   #'yield'
+    "yieldAppend"#'yieldAppend'
    ]
    ACCU_TYPE =
    ['return'    # ['return' 'default']

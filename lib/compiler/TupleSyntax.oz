@@ -84,12 +84,11 @@ fun {CoordinatesOf P}
    [] fParser(_ _ _ _ _ _ C) then C
    [] fOcc(_) then unit
    [] fTypeOf(_) then unit
-   [] fLoop(_ C) then C
    [] fMacro(_ C) then C
-   [] fMacrolet(_ E) then {CoordinatesOf E}
    [] fDotAssign(_ _ C) then C
    [] fColonEquals(_ _ C) then C
    [] fFOR(_ _ C) then C
+   [] fWhile(_ _ C) then C
    end
 end
 

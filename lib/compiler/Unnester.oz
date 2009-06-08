@@ -57,6 +57,7 @@ import
    RunTime(procs makeVar)
    Macro(macroExpand:MacroExpand)
    ForLoop(compile)
+   WhileLoop(compile)
 export
    MakeExpressionQuery
    UnnestQuery
@@ -1164,14 +1165,12 @@ define
                                      fNoElse(C) CND)
                                'combinator' C)
             Unnester, UnnestStatement(NewFS $)
-         [] fLoop(_ _) then
-            Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fMacro(_ _) then
-            Unnester, UnnestStatement({MacroExpand FS unit} $)
-         [] fMacrolet(_ _) then
             Unnester, UnnestStatement({MacroExpand FS unit} $)
          [] fFOR(_ _ _) then
             Unnester, UnnestStatement({ForLoop.compile FS} $)
+         [] fWhile(_ _ _) then
+            Unnester, UnnestStatement({WhileLoop.compile FS} $)
          [] fDotAssign(Left Right C) then %% DotAssign is _._ := _
             case Left
             of fOpApply('.' [Table Key] _) then
@@ -1605,11 +1604,7 @@ define
             NewFV = fOcc(ToGV)
             FS = fChoice({Map FEs fun {$ FE} fEq(NewFV FE C) end} C)
             Unnester, UnnestStatement(FS $)
-         [] fLoop(_ _) then
-            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fMacro(_ _) then
-            Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
-         [] fMacrolet(_ _) then
             Unnester, UnnestExpression({MacroExpand FE unit} ToGV $)
          [] fFOR(_ _ _) then
             Unnester, UnnestExpression({ForLoop.compile FE} ToGV $)
@@ -2723,11 +2718,11 @@ define
          [] fSynAssignment(V E) then fSynAssignment(V {SP E})
          [] fSynTemplateInstantiation(K Es C) then
             fSynTemplateInstantiation(K {Map Es SP} C)
-         [] fLoop(S C) then fLoop({SP S} {CS C})
          [] fMacro(Ss C) then fMacro({Map Ss SP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {CS C})
          [] fColonEquals(L R C) then fColonEquals({EP L} {EP R} {CS C})
          [] fFOR(Ds B C) then fFOR({Map Ds FP} {SP B} {CS C})
+         [] fWhile(E B C) then fWhile({TP E} {SP B} {CS C})
          end
       end
 
@@ -2799,7 +2794,6 @@ define
             fScanner({TP P1} {Map Ds EP} {Map Ms SP} {Map Rs SP} X {FS C})
          [] fParser(P1 Ds Ms T Ps X C) then
             fParser({TP P1} {Map Ds EP} {Map Ms SP} T {Map Ps SP} X {FS C})
-         [] fLoop(S C) then fLoop({EP S} {FS C})
          [] fMacro(Ss C) then fMacro({Map Ss EP} {CS C})
          [] fDotAssign(L R C) then fDotAssign({EP L} {EP R} {FS C})
          [] fColonEquals(L R C) then fColonEquals({EP L} {EP R} {FS C})

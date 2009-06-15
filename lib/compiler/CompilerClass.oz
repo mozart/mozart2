@@ -62,6 +62,7 @@ local
                               unnest: true
                               expression: false
                               allowdeprecated: true
+                              allowwhileloop: false
 
                               %% gump:
                               gump: false

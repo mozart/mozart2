@@ -22,27 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __EMULATE_H
+#define __EMULATE_H
 
-#include <string>
+#include "arrays.hh"
+#include "opcodes.hh"
+#include "memword.hh"
+#include "store.hh"
+#include "ozlimits.hh"
+#include "codearea.hh"
 
-using namespace std;
-
-class Type {
+class Thread {
 public:
-  typedef void* (*GetInterfaceProc)(void*);
+  Thread(CodeArea *area, StaticArray<StableNode> &Gs,
+    StaticArray<StableNode> &Ks);
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
-
-  const string& getName() const { return _name; }
-
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
+  void run();
 private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
+  void advancePC(int argCount) { PC += argCount + 1; } // 1 for opcode
+
+  UnstableNode &XPC(int offset) { return xregs[PC[offset]]; }
+  UnstableNode &YPC(int offset) { return (*yregs)[PC[offset]]; }
+  StableNode &GPC(int offset) { return (*gregs)[PC[offset]]; }
+  StableNode &KPC(int offset) { return (*kregs)[PC[offset]]; }
+
+  EnlargeableArray<UnstableNode> xregs;
+  StaticArray<UnstableNode> *yregs;
+  StaticArray<StableNode> *gregs;
+  StaticArray<StableNode> *kregs;
+
+  ProgramCounter PC;
 };
 
-#endif // __TYPE_H
+#endif // __EMULATE_H

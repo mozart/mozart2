@@ -22,27 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __VM_H
+#define __VM_H
 
-#include <string>
+#include "memword.hh"
+#include "store.hh"
 
-using namespace std;
-
-class Type {
+class VirtualMachine {
 public:
-  typedef void* (*GetInterfaceProc)(void*);
-
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
-
-  const string& getName() const { return _name; }
-
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
+  UnstableNode* newVariable();
 };
 
-#endif // __TYPE_H
+#endif // __VM_H

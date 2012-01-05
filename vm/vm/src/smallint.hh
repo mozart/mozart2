@@ -22,27 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __SMALLINT_H
+#define __SMALLINT_H
 
-#include <string>
+#include "type.hh"
 
-using namespace std;
-
-class Type {
+class SmallInt {
 public:
-  typedef void* (*GetInterfaceProc)(void*);
-
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
-
-  const string& getName() const { return _name; }
-
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
+  static Type type;
 };
 
-#endif // __TYPE_H
+#endif // __SMALLINT_H

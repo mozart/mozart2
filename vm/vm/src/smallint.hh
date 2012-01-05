@@ -26,10 +26,15 @@
 #define __SMALLINT_H
 
 #include "type.hh"
+#include "emulate.hh"
 
 class SmallInt {
 public:
-  static Type type;
+  static const Type* const type;
+
+  static BuiltinResult add(VM vm, Node& self, Node& b, UnstableNode& result);
+private:
+  static const Type rawType;
 };
 
 #endif // __SMALLINT_H

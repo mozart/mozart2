@@ -24,4 +24,16 @@
 
 #include "smallint.hh"
 
-Type SmallInt::type("SmallInt", nullptr);
+const Type SmallInt::rawType("SmallInt", nullptr);
+const Type* const SmallInt::type = &SmallInt::rawType;
+
+BuiltinResult SmallInt::add(VM vm, Node& self, Node& b, UnstableNode& result) {
+  if (b.type == type) {
+    int r = self.value.get<int>() + b.value.get<int>();
+    result.make<int>(vm, type, r);
+    return BuiltinResultContinue;
+  } else {
+    // TODO SmallInt + non-SmallInt
+    return BuiltinResultContinue;
+  }
+}

@@ -77,7 +77,7 @@ public:
   void init(UnstableNode& from);
 private:
   friend class UnstableNode;
-
+public: // TODO make it private once the development has been bootstrapped
   Node node;
 };
 

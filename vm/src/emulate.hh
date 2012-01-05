@@ -32,9 +32,25 @@
 #include "ozlimits.hh"
 #include "codearea.hh"
 
+/**
+ * Result of the call to a builtin.
+ * It always represents a node that must be waited upon. The value 'nullptr' is
+ * valid, and denotes that no value must be waited upon, i.e., the execution can
+ * continue.
+ * Throwing an exception is achieved by pointing to a failed value.
+ */
+typedef StableNode* BuiltinResult;
+
+const BuiltinResult BuiltinResultContinue = nullptr;
+
+/**
+ * Lightweight thread.
+ * The Thread class contains the information about the execution of a
+ * lightweight thread. It contains the main emulator loop.
+ */
 class Thread {
 public:
-  Thread(CodeArea *area, StaticArray<StableNode> &Gs,
+  Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs,
     StaticArray<StableNode> &Ks);
 
   void run();
@@ -46,6 +62,9 @@ private:
   StableNode &GPC(int offset) { return (*gregs)[PC[offset]]; }
   StableNode &KPC(int offset) { return (*kregs)[PC[offset]]; }
 
+  void waitFor(Node& node);
+
+  VM vm;
   EnlargeableArray<UnstableNode> xregs;
   StaticArray<UnstableNode> *yregs;
   StaticArray<StableNode> *gregs;

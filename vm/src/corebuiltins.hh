@@ -22,33 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __OPCODES_H
-#define __OPCODES_H
+#ifndef __COREBUILTINS_H
+#define __COREBUILTINS_H
 
-typedef short unsigned int uint16_t;
+#include "store.hh"
+#include "emulate.hh"
 
-typedef uint16_t ByteCode;
-typedef ByteCode OpCode;
+namespace builtins {
 
-typedef ByteCode* ProgramCounter;
+BuiltinResult add(VM vm, Node& a, Node& b, UnstableNode& result);
 
-const OpCode OpSkip = 0x00;
+}
 
-const OpCode OpMoveXX = 0x01;
-const OpCode OpMoveXY = 0x02;
-const OpCode OpMoveYX = 0x03;
-const OpCode OpMoveYY = 0x04;
-const OpCode OpMoveGX = 0x05;
-const OpCode OpMoveGY = 0x06;
-const OpCode OpMoveKX = 0x07;
-const OpCode OpMoveKY = 0x08;
-
-const OpCode OpStop = 0x10;
-
-// Hard-coded stuff for bootstrapping the development
-const OpCode OpPrintInt = 0x11;
-
-// Core builtins, also during bootstrapping of the development
-const OpCode OpBuiltinAdd = 0x20;
-
-#endif // __OPCODES_H
+#endif // __COREBUILTINS_H

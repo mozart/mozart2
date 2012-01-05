@@ -24,13 +24,15 @@
 
 #include "emulate.hh"
 #include <iostream>
+
 #include "smallint.hh"
+#include "corebuiltins.hh"
 
 using namespace std;
 
-Thread::Thread(CodeArea *area, StaticArray<StableNode> &Gs,
+Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs,
   StaticArray<StableNode> &Ks) :
-  xregs(InitXRegisters), yregs(nullptr), gregs(&Gs), kregs(&Ks),
+  vm(vm), xregs(InitXRegisters), yregs(nullptr), gregs(&Gs), kregs(&Ks),
   PC(area->getStart()) {
 }
 
@@ -85,9 +87,9 @@ void Thread::run() {
 
       // Hard-coded stuff
 
-      case OpPrintInt:
+      case OpPrintInt: {
         UnstableNode& arg = XPC(1);
-        if (arg.node.type == &SmallInt::type) {
+        if (arg.node.type == SmallInt::type) {
           int value = arg.node.value.get<int>();
           printf("%d\n", value);
         } else {
@@ -95,6 +97,22 @@ void Thread::run() {
           printf("SmallInt expected but %s found\n", typeName.c_str());
         }
         advancePC(1); break;
+      }
+
+      // Builtins
+
+      case OpBuiltinAdd: {
+        BuiltinResult result = builtins::add(
+          vm, XPC(1).node, XPC(2).node, XPC(3));
+        if (result == BuiltinResultContinue)
+          advancePC(3);
+        else
+          waitFor(result->node);
+      }
     }
   }
+}
+
+void Thread::waitFor(Node& node) {
+  // TODO
 }

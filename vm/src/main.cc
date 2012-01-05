@@ -35,6 +35,9 @@ int main(int argc, char **argv) {
     OpMoveKX, 0, 0,
     OpMoveXX, 0, 1,
     OpPrintInt, 1,
+    OpMoveKX, 1, 0,
+    OpBuiltinAdd, 0, 1, 2,
+    OpPrintInt, 2,
     OpStop
   };
 
@@ -43,12 +46,15 @@ int main(int argc, char **argv) {
   UnstableNode temp;
 
   StaticArray<StableNode> Gs(0);
-  StaticArray<StableNode> Ks(1);
+  StaticArray<StableNode> Ks(2);
 
-  temp.make<int>(vm, &SmallInt::type, 5);
+  temp.make<int>(vm, SmallInt::type, 5);
   Ks[0].init(temp);
 
-  Thread thread(&codeArea, Gs, Ks);
+  temp.make<int>(vm, SmallInt::type, 2);
+  Ks[1].init(temp);
+
+  Thread thread(vm, &codeArea, Gs, Ks);
 
   std::cout << "Initialized" << std::endl;
 

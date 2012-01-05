@@ -36,6 +36,9 @@
 // char*
 
 
+#ifndef __MEMWORD_H
+#define __MEMWORD_H
+
 // We need the VM class to allocate memory for "big" types.
 class VirtualMachine;
 typedef VirtualMachine& VM;
@@ -44,10 +47,12 @@ typedef VirtualMachine& VM;
 // smaller or equal to char* if i==0
 template<class T, int i>
 struct MWTest{
+public:
   typedef T Type;
 };
 template<class T>
 class MWTest<T,0>{
+public:
   typedef char Type;
 };
 
@@ -60,6 +65,7 @@ union MWUnion;
 // we recurse in the rest.
 template<class U, class T, class R>
 class MWUAccessor{
+public:
   static T& get(U *u){return (u->next).template get<T>();}
   static void set(VM vm, U *u, T v){u->next.template set<T>(vm,v);}
 };
@@ -78,6 +84,7 @@ union MWUnion<>{
 // The easy case of accessing what we have in the first member of the union.
 template<class U, class T>
 class MWUAccessor<U,T,T>{
+public:
   static T& get(U *u){return u->it;}
   static void set(VM vm, U *u, T v){u->it=v;}
 };
@@ -86,6 +93,7 @@ class MWUAccessor<U,T,T>{
 // with a cast.
 template<class T>
 class MWUAccessor<MWUnion<>,T*,T*>{
+public:
   static T*& get(MWUnion<>* u){return static_cast<T*>(u->it);}
   static void set(VM vm, MWUnion<> *u, T *v){u->it=static_cast<char*>(v);}
 };
@@ -93,6 +101,7 @@ class MWUAccessor<MWUnion<>,T*,T*>{
 // memory on setting too.
 template<class T>
 class MWUAccessor<MWUnion<>,T,T>{
+public:
   static T& get(MWUnion<>* u){return *static_cast<T*>(u->it);}
   static void set(VM vm, MWUnion<> *u, T *v){
     u->it=static_cast<char*>(new(vm)T(v));
@@ -114,3 +123,8 @@ union MWUnion<T,args...>{
 // Finally, here comes the list of potentially small types that we want to
 // optimize in a memory word.
 typedef MWUnion<int,float> MemWord;
+
+static_assert(sizeof(MemWord) == sizeof(char *),
+  "MemWord has not the size of a word");
+
+#endif // __MEMWORD_H

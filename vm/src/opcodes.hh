@@ -22,27 +22,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __OPCODES_H
+#define __OPCODES_H
 
-#include <string>
+typedef short unsigned int uint16_t;
 
-using namespace std;
+typedef uint16_t ByteCode;
+typedef ByteCode OpCode;
 
-class Type {
-public:
-  typedef void* (*GetInterfaceProc)(void*);
+typedef ByteCode* ProgramCounter;
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
+const OpCode OpSkip = 0x00;
 
-  const string& getName() const { return _name; }
+const OpCode OpMoveXX = 0x01;
+const OpCode OpMoveXY = 0x02;
+const OpCode OpMoveYX = 0x03;
+const OpCode OpMoveYY = 0x04;
+const OpCode OpMoveGX = 0x05;
+const OpCode OpMoveGY = 0x06;
+const OpCode OpMoveKX = 0x07;
+const OpCode OpMoveKY = 0x08;
 
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
-};
+const OpCode OpStop = 0x10;
 
-#endif // __TYPE_H
+// Hard-coded stuff for bootstrapping the development
+const OpCode OpPrintInt = 0x11;
+
+#endif // __OPCODES_H

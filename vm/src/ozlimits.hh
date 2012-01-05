@@ -22,27 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __OZLIMITS_H
+#define __OZLIMITS_H
 
-#include <string>
+constexpr int InitXRegisters = 64;
 
-using namespace std;
-
-class Type {
-public:
-  typedef void* (*GetInterfaceProc)(void*);
-
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
-
-  const string& getName() const { return _name; }
-
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
-};
-
-#endif // __TYPE_H
+#endif // __OZLIMITS_H

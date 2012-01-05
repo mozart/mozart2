@@ -22,27 +22,71 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __ARRAYS_H
+#define __ARRAYS_H
 
-#include <string>
+#include <stdlib.h>
 
-using namespace std;
-
-class Type {
+/**
+ * Abstract base class for simple arrays
+ * @param <T> Type of the elements in the array
+ */
+template <class T>
+class Array {
+protected:
+  int _size;
+  T *_array;
 public:
-  typedef void* (*GetInterfaceProc)(void*);
+  /** Create an array with s elements */
+  Array(int s) : _size(s), _array((T *) malloc(s * sizeof(T))) {}
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
+  ~Array() { free(_array); }
+
+  /** Number of elements in the array */
+  inline
+  int size() {
+    return _size;
   }
 
-  const string& getName() const { return _name; }
+  /** Zero-based access to elements (read-write) */
+  inline
+  T &operator [](int i) {
+    //Assert(0 <= i && i < _size);
+    return _array[i];
+  }
 
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
+  /** Convert to a raw array */
+  inline
+  operator T*() {
+    return _array;
+  }
 };
 
-#endif // __TYPE_H
+/**
+ * A simple static array, whose size cannot change
+ */
+template <class T>
+class StaticArray : public Array<T> {
+public:
+  StaticArray(int s) : Array<T>(s) {}
+};
+
+/**
+ * A simple array with a dynamic capacity
+ */
+template <class T>
+class EnlargeableArray : public Array<T> {
+public:
+  EnlargeableArray(int s) : Array<T>(s) {}
+
+  /** Ensure that the array has a given capacity */
+  inline
+  void ensureSize(int s, int m = 100) { // margin of 100
+    if (s >= this->_size) {
+      this->_size = s + m;
+      this->_array = (T *) realloc(this->_array, this->_size * sizeof(T));
+    }
+  }
+};
+
+#endif // __ARRAYS_H

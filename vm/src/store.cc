@@ -22,27 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#include "store.hh"
 
-#include <string>
+void Node::reset(VM vm) {
+  type = nullptr;
+  value.set<char*>(vm, nullptr);
+}
 
-using namespace std;
+void StableNode::init(UnstableNode& from) {
+  node = from.node;
+}
 
-class Type {
-public:
-  typedef void* (*GetInterfaceProc)(void*);
+void UnstableNode::copy(StableNode& from) {
+  node = from.node;
+}
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
+void UnstableNode::copy(UnstableNode& from) {
+  node = from.node;
+}
 
-  const string& getName() const { return _name; }
+void UnstableNode::reset(VM vm) {
+  node.reset(vm);
+}
 
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
-};
-
-#endif // __TYPE_H
+void UnstableNode::swap(UnstableNode& from) {
+  Node temp = node;
+  node = from.node;
+  from.node = temp;
+}

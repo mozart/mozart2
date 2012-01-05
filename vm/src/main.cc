@@ -22,27 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#include <iostream>
 
-#include <string>
+#include "emulate.hh"
+#include "vm.hh"
+#include "smallint.hh"
 
-using namespace std;
+int main(int argc, char **argv) {
+  VirtualMachine vm;
 
-class Type {
-public:
-  typedef void* (*GetInterfaceProc)(void*);
+  ByteCode codeBlock[] = {
+    OpMoveKX, 0, 0,
+    OpMoveXX, 0, 1,
+    OpPrintInt, 1,
+    OpStop
+  };
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
+  CodeArea codeArea(codeBlock, sizeof(codeBlock));
 
-  const string& getName() const { return _name; }
+  UnstableNode temp;
 
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
-private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
-};
+  StaticArray<StableNode> Gs(0);
+  StaticArray<StableNode> Ks(1);
 
-#endif // __TYPE_H
+  temp.make<int>(vm, &SmallInt::type, 5);
+  Ks[0].init(temp);
+
+  Thread thread(&codeArea, Gs, Ks);
+
+  std::cout << "Initialized" << std::endl;
+
+  thread.run();
+
+  std::cout << "Finished" << std::endl;
+
+  return 0;
+}

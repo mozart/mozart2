@@ -22,27 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TYPE_H
-#define __TYPE_H
+#ifndef __CODEAREA_H
+#define __CODEAREA_H
 
-#include <string>
+#include "opcodes.hh"
 
-using namespace std;
-
-class Type {
-public:
-  typedef void* (*GetInterfaceProc)(void*);
-
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
-  }
-
-  const string& getName() const { return _name; }
-
-  void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
+class CodeArea {
 private:
-  const string _name;
-  const GetInterfaceProc _getInterface;
+  ByteCode *codeBlock; // actual byte-code in this code area
+  int size;            // size of the codeBlock
+public:
+  CodeArea(ByteCode *codeBlock, int size);
+
+  ProgramCounter getStart() {
+    return codeBlock;
+  }
 };
 
-#endif // __TYPE_H
+#endif // __CODEAREA_H

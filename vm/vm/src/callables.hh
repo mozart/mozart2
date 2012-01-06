@@ -22,22 +22,72 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_H
-#define __SMALLINT_H
+#ifndef __CALLABLES_H
+#define __CALLABLES_H
 
 #include "type.hh"
 #include "emulate.hh"
+#include "smallint.hh"
 
-class SmallInt {
+/**
+ * Type of a builtin function
+ */
+typedef BuiltinResult (*OzBuiltin)(VM vm, UnstableNode* args[]);
+
+/**
+ * A value that represents an Oz builtin
+ */
+class BuiltinProcedureValue {
 public:
-  typedef int Repr;
+  BuiltinProcedureValue(int arity, OzBuiltin builtin) :
+    _arity(arity), _builtin(builtin) {}
+
+  /**
+   * Arity of this builtin
+   */
+  int getArity() const { return _arity; }
+
+  /**
+   * Call the builtin
+   * @param vm     Contextual VM
+   * @param argc   Actual number of parameters
+   * @param args   Actual parameters
+   */
+  BuiltinResult call(VM vm, int argc, UnstableNode* args[]) {
+    if (argc == _arity)
+      return _builtin(vm, args);
+    else
+      return raiseIllegalArity(argc);
+  }
+
+  /**
+   * Get the arity of the builtin in a node
+   */
+  BuiltinResult arity(VM vm, UnstableNode& result) {
+    result.make(vm, SmallInt::type, _arity);
+    return BuiltinResultContinue;
+  }
+private:
+  BuiltinResult raiseIllegalArity(int argc);
+
+  const int _arity;
+  const OzBuiltin _builtin;
+};
+
+/**
+ * Type of a builtin procedure
+ */
+class BuiltinProcedure {
+public:
+  typedef BuiltinProcedureValue Value;
+  typedef Value* Repr;
 
   static const Type* const type;
 
-  static BuiltinResult add(VM vm, UnstableNode& self,
-    UnstableNode& b, UnstableNode& result);
+  static BuiltinResult call(VM vm, UnstableNode& self,
+    int argc, UnstableNode* args[]);
 private:
   static const Type rawType;
 };
 
-#endif // __SMALLINT_H
+#endif // __CALLABLES_H

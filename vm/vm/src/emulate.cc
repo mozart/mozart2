@@ -85,6 +85,20 @@ void Thread::run() {
       case OpStop:
         return;
 
+      case OpCall: {
+        UnstableNode& callable = XPC(1);
+        int argc = PC[2];
+        UnstableNode* args[argc];
+        for (int i = 0; i < argc; i++)
+          args[i] = &XPC(3 + i);
+
+        BuiltinResult result = builtins::call(vm, callable, argc, args);
+        if (result == BuiltinResultContinue)
+          advancePC(2 + argc);
+        else
+          waitFor(result->node);
+      }
+
       // Hard-coded stuff
 
       case OpPrintInt: {
@@ -97,17 +111,6 @@ void Thread::run() {
           printf("SmallInt expected but %s found\n", typeName.c_str());
         }
         advancePC(1); break;
-      }
-
-      // Builtins
-
-      case OpBuiltinAdd: {
-        BuiltinResult result = builtins::add(
-          vm, XPC(1).node, XPC(2).node, XPC(3));
-        if (result == BuiltinResultContinue)
-          advancePC(3);
-        else
-          waitFor(result->node);
       }
     }
   }

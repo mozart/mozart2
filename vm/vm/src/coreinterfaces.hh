@@ -28,12 +28,28 @@
 #include "store.hh"
 #include "smallint.hh"
 #include "emulate.hh"
+#include "callables.hh"
+
+struct Callable {
+  Callable(UnstableNode& self) : self(self) {};
+
+  BuiltinResult call(VM vm, int argc, UnstableNode* args[]) {
+    if (self.node.type == BuiltinProcedure::type) {
+      return BuiltinProcedure::call(vm, self, argc, args);
+    } else {
+      // TODO call non-builtin
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  UnstableNode& self;
+};
 
 struct Addable {
-  Addable(Node& self) : self(self) {};
+  Addable(UnstableNode& self) : self(self) {};
 
-  BuiltinResult add(VM vm, Node& b, UnstableNode& result) {
-    if (self.type == SmallInt::type) {
+  BuiltinResult add(VM vm, UnstableNode& b, UnstableNode& result) {
+    if (self.node.type == SmallInt::type) {
       return SmallInt::add(vm, self, b, result);
     } else {
       // TODO add non-SmallInt
@@ -41,7 +57,7 @@ struct Addable {
     }
   }
 private:
-  Node& self;
+  UnstableNode& self;
 };
 
 #endif // __COREINTERFACES_H

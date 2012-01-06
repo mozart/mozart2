@@ -27,10 +27,11 @@
 const Type SmallInt::rawType("SmallInt", nullptr);
 const Type* const SmallInt::type = &SmallInt::rawType;
 
-BuiltinResult SmallInt::add(VM vm, Node& self, Node& b, UnstableNode& result) {
-  if (b.type == type) {
-    int r = self.value.get<int>() + b.value.get<int>();
-    result.make<int>(vm, type, r);
+BuiltinResult SmallInt::add(VM vm, UnstableNode& self,
+  UnstableNode& b, UnstableNode& result) {
+  if (b.node.type == type) {
+    int r = self.node.value.get<int>() + b.node.value.get<int>();
+    result.make(vm, type, r);
     return BuiltinResultContinue;
   } else {
     // TODO SmallInt + non-SmallInt

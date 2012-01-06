@@ -44,11 +44,9 @@ const OpCode OpMoveKX = 0x07;
 const OpCode OpMoveKY = 0x08;
 
 const OpCode OpStop = 0x10;
+const OpCode OpCall = 0x11;
 
 // Hard-coded stuff for bootstrapping the development
-const OpCode OpPrintInt = 0x11;
-
-// Core builtins, also during bootstrapping of the development
-const OpCode OpBuiltinAdd = 0x20;
+const OpCode OpPrintInt = 0x18;
 
 #endif // __OPCODES_H

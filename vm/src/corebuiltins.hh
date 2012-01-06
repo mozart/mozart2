@@ -30,7 +30,10 @@
 
 namespace builtins {
 
-BuiltinResult add(VM vm, Node& a, Node& b, UnstableNode& result);
+BuiltinResult call(VM vm, UnstableNode& callable,
+  int argc, UnstableNode* args[]);
+
+BuiltinResult add(VM vm, UnstableNode* args[]);
 
 }
 

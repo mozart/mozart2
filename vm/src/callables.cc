@@ -22,22 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __SMALLINT_H
-#define __SMALLINT_H
+#include "callables.hh"
 
-#include "type.hh"
-#include "emulate.hh"
+const Type BuiltinProcedure::rawType("BuiltinProcedure", nullptr);
+const Type* const BuiltinProcedure::type = &BuiltinProcedure::rawType;
 
-class SmallInt {
-public:
-  typedef int Repr;
+BuiltinResult BuiltinProcedure::call(VM vm, UnstableNode& self,
+  int argc, UnstableNode* args[]) {
+  Value* value = self.node.value.get<Value*>();
+  return value->call(vm, argc, args);
+}
 
-  static const Type* const type;
-
-  static BuiltinResult add(VM vm, UnstableNode& self,
-    UnstableNode& b, UnstableNode& result);
-private:
-  static const Type rawType;
-};
-
-#endif // __SMALLINT_H
+BuiltinResult BuiltinProcedureValue::raiseIllegalArity(int argc) {
+  // TODO raiseIllegalArity
+  return BuiltinResultContinue;
+}

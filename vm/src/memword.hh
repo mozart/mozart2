@@ -94,17 +94,17 @@ public:
 template<class T>
 class MWUAccessor<MWUnion<>,T*,T*>{
 public:
-  static T*& get(MWUnion<>* u){return static_cast<T*>(u->it);}
-  static void set(VM vm, MWUnion<> *u, T *v){u->it=static_cast<char*>(v);}
+  static T*& get(MWUnion<>* u){return reinterpret_cast<T*&>(u->it);}
+  static void set(VM vm, MWUnion<> *u, T *v){u->it=reinterpret_cast<char*>(v);}
 };
 // It isn't there and isn't a pointer so we store a pointer to it. We need new
 // memory on setting too.
 template<class T>
 class MWUAccessor<MWUnion<>,T,T>{
 public:
-  static T& get(MWUnion<>* u){return *static_cast<T*>(u->it);}
+  static T& get(MWUnion<>* u){return *reinterpret_cast<T*>(u->it);}
   static void set(VM vm, MWUnion<> *u, T *v){
-    u->it=static_cast<char*>(new(vm)T(v));
+    u->it=reinterpret_cast<char*>(new(vm)T(v));
   }
 };
 // The union itself, recursive on the parameter pack. If the first type is too

@@ -27,9 +27,15 @@
 
 namespace builtins {
 
-BuiltinResult add(VM vm, Node& a, Node& b, UnstableNode& result) {
-  Addable x = a;
-  return x.add(vm, b, result);
+BuiltinResult call(VM vm, UnstableNode& callable,
+  int argc, UnstableNode* args[]) {
+  Callable x = callable;
+  return x.call(vm, argc, args);
+}
+
+BuiltinResult add(VM vm, UnstableNode* args[]) {
+  Addable x = *args[0];
+  return x.add(vm, *args[1], *args[2]);
 }
 
 }

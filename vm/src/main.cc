@@ -47,23 +47,20 @@ int main(int argc, char **argv) {
     OpStop
   };
 
-  CodeArea codeArea(codeBlock, sizeof(codeBlock));
+  UnstableNode five, two;
+  five.make<nativeint>(vm, SmallInt::type, 5);
+  two.make<nativeint>(vm, SmallInt::type, 2);
+
+  UnstableNode* Ks[] = { &five, &two };
+  CodeArea codeArea(codeBlock, sizeof(codeBlock), 4, 2, Ks);
 
   UnstableNode temp;
+  temp.make(vm, BuiltinProcedure::type, &builtinAdd);
 
   StaticArray<StableNode> Gs(1);
-  StaticArray<StableNode> Ks(2);
-
-  temp.make(vm, BuiltinProcedure::type, &builtinAdd);
   Gs[0].init(temp);
 
-  temp.make<nativeint>(vm, SmallInt::type, 5);
-  Ks[0].init(temp);
-
-  temp.make<nativeint>(vm, SmallInt::type, 2);
-  Ks[1].init(temp);
-
-  Thread thread(vm, &codeArea, Gs, Ks);
+  Thread thread(vm, &codeArea, Gs);
 
   std::cout << "Initialized" << std::endl;
 

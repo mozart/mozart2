@@ -24,6 +24,10 @@
 
 #include "codearea.hh"
 
-CodeArea::CodeArea(ByteCode* codeBlock, int size) :
-  codeBlock(codeBlock), size(size) {
+CodeArea::CodeArea(ByteCode* codeBlock, int size, int Xcount,
+  int Kc, UnstableNode* Ks[]) :
+  _codeBlock(codeBlock), _size(size), _Xcount(Xcount), _Ks(Kc) {
+
+  for (int i = 0; i < Kc; i++)
+    _Ks[i].init(*Ks[i]);
 }

@@ -50,8 +50,7 @@ const BuiltinResult BuiltinResultContinue = nullptr;
  */
 class Thread {
 public:
-  Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs,
-    StaticArray<StableNode> &Ks);
+  Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs);
 
   void run();
 private:

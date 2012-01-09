@@ -26,17 +26,27 @@
 #define __CODEAREA_H
 
 #include "opcodes.hh"
+#include "arrays.hh"
+#include "store.hh"
 
 class CodeArea {
-private:
-  ByteCode *codeBlock; // actual byte-code in this code area
-  int size;            // size of the codeBlock
 public:
-  CodeArea(ByteCode *codeBlock, int size);
+  CodeArea(ByteCode* codeBlock, int size, int Xcount,
+    int Kc, UnstableNode* Ks[]);
 
   ProgramCounter getStart() {
-    return codeBlock;
+    return _codeBlock;
   }
+
+  int getXCount() { return _Xcount; }
+
+  StaticArray<StableNode>& getKs() { return _Ks; }
+private:
+  ByteCode* _codeBlock; // actual byte-code in this code area
+  int _size;            // size of the codeBlock
+
+  int _Xcount;                 // number of X registers used in this area
+  StaticArray<StableNode> _Ks; // K registers
 };
 
 #endif // __CODEAREA_H

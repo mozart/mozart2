@@ -30,10 +30,11 @@
 
 using namespace std;
 
-Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs,
-  StaticArray<StableNode> &Ks) :
-  vm(vm), xregs(InitXRegisters), yregs(nullptr), gregs(&Gs), kregs(&Ks),
-  PC(area->getStart()) {
+Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs) :
+  vm(vm), xregs(InitXRegisters), yregs(nullptr), gregs(&Gs),
+  kregs(&area->getKs()), PC(area->getStart()) {
+
+  xregs.ensureSize(area->getXCount());
 }
 
 void Thread::run() {

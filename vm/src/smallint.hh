@@ -30,7 +30,7 @@
 
 class SmallInt {
 public:
-  typedef int Repr;
+  typedef nativeint Repr;
 
   static const Type* const type;
 

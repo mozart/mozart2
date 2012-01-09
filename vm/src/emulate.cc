@@ -104,8 +104,8 @@ void Thread::run() {
       case OpPrintInt: {
         UnstableNode& arg = XPC(1);
         if (arg.node.type == SmallInt::type) {
-          int value = arg.node.value.get<int>();
-          printf("%d\n", value);
+          nativeint value = arg.node.value.get<nativeint>();
+          printf("%ld\n", value);
         } else {
           const string& typeName = arg.node.type->getName();
           printf("SmallInt expected but %s found\n", typeName.c_str());

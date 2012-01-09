@@ -29,6 +29,7 @@
 #include "smallint.hh"
 #include "callables.hh"
 #include "corebuiltins.hh"
+#include "stdint.h"
 
 int main(int argc, char **argv) {
   VirtualMachine vm;
@@ -56,10 +57,10 @@ int main(int argc, char **argv) {
   temp.make(vm, BuiltinProcedure::type, &builtinAdd);
   Gs[0].init(temp);
 
-  temp.make(vm, SmallInt::type, 5);
+  temp.make<nativeint>(vm, SmallInt::type, 5);
   Ks[0].init(temp);
 
-  temp.make(vm, SmallInt::type, 2);
+  temp.make<nativeint>(vm, SmallInt::type, 2);
   Ks[1].init(temp);
 
   Thread thread(vm, &codeArea, Gs, Ks);

@@ -64,7 +64,7 @@ public:
    * Get the arity of the builtin in a node
    */
   BuiltinResult arity(VM vm, UnstableNode& result) {
-    result.make(vm, SmallInt::type, _arity);
+    result.make<nativeint>(vm, SmallInt::type, _arity);
     return BuiltinResultContinue;
   }
 private:

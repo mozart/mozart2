@@ -39,6 +39,10 @@
 #ifndef __MEMWORD_H
 #define __MEMWORD_H
 
+#include "stdint.h"
+
+typedef intptr_t nativeint;
+
 // We need the VM class to allocate memory for "big" types.
 class VirtualMachine;
 typedef VirtualMachine& VM;
@@ -122,7 +126,7 @@ union MWUnion<T,args...>{
 
 // Finally, here comes the list of potentially small types that we want to
 // optimize in a memory word.
-typedef MWUnion<int,float> MemWord;
+typedef MWUnion<nativeint, float> MemWord;
 
 static_assert(sizeof(MemWord) == sizeof(char *),
   "MemWord has not the size of a word");

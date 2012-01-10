@@ -24,17 +24,23 @@
 
 #include "emulate.hh"
 #include <iostream>
+#include <assert.h>
 
 #include "smallint.hh"
 #include "corebuiltins.hh"
 
 using namespace std;
 
+const ProgramCounter NullPC = nullptr;
+
 Thread::Thread(VM vm, CodeArea *area, StaticArray<StableNode> &Gs) :
-  vm(vm), xregs(InitXRegisters), yregs(nullptr), gregs(&Gs),
+  vm(vm), area(area), xregs(InitXRegisters), yregs(nullptr), gregs(&Gs),
   kregs(&area->getKs()), PC(area->getStart()) {
 
   xregs.ensureSize(area->getXCount());
+
+  StackEntry stopEntry(nullptr, NullPC, nullptr, nullptr);
+  stack.push(stopEntry);
 }
 
 void Thread::run() {
@@ -81,23 +87,85 @@ void Thread::run() {
         YPC(2).copy(KPC(1));
         advancePC(2); break;
 
+      // Y allocations
+
+      case OpAllocateY: {
+        int count = IntPC(1);
+        assert(count > 0);
+        assert(yregs == nullptr); // Duplicate AllocateY
+        yregs = new StaticArray<UnstableNode>(count);
+        advancePC(1); break;
+      }
+
+      case OpDeallocateY: {
+        assert(yregs != nullptr); // Duplicate DeallocateY
+        delete yregs;
+        yregs = nullptr;
+        advancePC(0); break;
+      }
+
       // Control
 
       case OpStop:
         return;
 
-      case OpCall: {
+      case OpCallBuiltin: {
         UnstableNode& callable = XPC(1);
         int argc = PC[2];
         UnstableNode* args[argc];
         for (int i = 0; i < argc; i++)
           args[i] = &XPC(3 + i);
 
-        BuiltinResult result = builtins::call(vm, callable, argc, args);
+        BuiltinResult result = builtins::callBuiltin(vm, callable, argc, args);
         if (result == BuiltinResultContinue)
           advancePC(2 + argc);
         else
           waitFor(result->node);
+
+        break;
+      }
+
+      case OpCall:
+      case OpTailCall: {
+        UnstableNode& callable = XPC(1);
+        int actualArity = IntPC(2);
+
+        int formalArity;
+        CodeArea* body;
+        StaticArray<StableNode>* Gs;
+
+        BuiltinResult result = builtins::getCallInfo(vm, callable,
+          formalArity, body, Gs);
+
+        if (result == BuiltinResultContinue) {
+          if (actualArity != formalArity) {
+            // TODO Raise illegal arity exception
+          }
+
+          advancePC(2);
+
+          if (op != OpTailCall)
+            pushFrame();
+
+          area = body;
+          PC = body->getStart();
+          xregs.ensureSize(body->getXCount());
+          yregs = nullptr;
+          kregs = &body->getKs();
+          gregs = Gs;
+        } else {
+          waitFor(result->node);
+        }
+
+        break;
+      }
+
+      case OpReturn: {
+        popFrame();
+        if (PC == NullPC)
+          return;
+
+        break;
       }
 
       // Hard-coded stuff

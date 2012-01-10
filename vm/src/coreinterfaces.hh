@@ -30,14 +30,30 @@
 #include "emulate.hh"
 #include "callables.hh"
 
+struct BuiltinCallable {
+  BuiltinCallable(UnstableNode& self) : self(self) {};
+
+  BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
+    if (self.node.type == BuiltinProcedure::type) {
+      return BuiltinProcedure::callBuiltin(vm, self, argc, args);
+    } else {
+      // TODO call non-builtin
+      return BuiltinResultContinue;
+    }
+  }
+private:
+  UnstableNode& self;
+};
+
 struct Callable {
   Callable(UnstableNode& self) : self(self) {};
 
-  BuiltinResult call(VM vm, int argc, UnstableNode* args[]) {
-    if (self.node.type == BuiltinProcedure::type) {
-      return BuiltinProcedure::call(vm, self, argc, args);
+  BuiltinResult getCallInfo(VM vm, int& arity, CodeArea*& body,
+    StaticArray<StableNode>*& Gs) {
+    if (self.node.type == Abstraction::type) {
+      return Abstraction::getCallInfo(vm, self, arity, body, Gs);
     } else {
-      // TODO call non-builtin
+      // TODO call non-abstraction
       return BuiltinResultContinue;
     }
   }

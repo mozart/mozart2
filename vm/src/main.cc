@@ -33,34 +33,58 @@
 
 int main(int argc, char **argv) {
   VirtualMachine vm;
+  UnstableNode temp;
+
+  // Define the Add builtin
 
   BuiltinProcedureValue builtinAdd(3, &builtins::add);
 
-  ByteCode codeBlock[] = {
+  // Define PrintAdd procedure
+
+  ByteCode printAddCodeBlock[] = {
+    OpMoveGX, 0, 3,
+    OpCallBuiltin, 3, 3, 0, 1, 2,
+    OpPrintInt, 2,
+    OpReturn
+  };
+
+  CodeArea printAddCodeArea(printAddCodeBlock, sizeof(printAddCodeBlock),
+    4, 0, nullptr);
+
+  temp.make(vm, BuiltinProcedure::type, &builtinAdd);
+  UnstableNode* printAddGs[1] = { &temp };
+
+  AbstractionValue printAdd(2, &printAddCodeArea, 1, printAddGs);
+
+  // Define Main procedure
+
+  ByteCode mainCodeBlock[] = {
     OpMoveKX, 0, 0,
     OpMoveXX, 0, 1,
     OpPrintInt, 1,
+    OpAllocateY, 1,
+    OpMoveXY, 1, 0,
     OpMoveKX, 1, 0,
     OpMoveGX, 0, 3,
-    OpCall, 3, 3, 0, 1, 2,
-    OpPrintInt, 2,
-    OpStop
+    OpCall, 3, 2,
+    OpMoveYX, 0, 0,
+    OpPrintInt, 0,
+    OpDeallocateY,
+    OpReturn
   };
 
   UnstableNode five, two;
   five.make<nativeint>(vm, SmallInt::type, 5);
   two.make<nativeint>(vm, SmallInt::type, 2);
 
-  UnstableNode* Ks[] = { &five, &two };
-  CodeArea codeArea(codeBlock, sizeof(codeBlock), 4, 2, Ks);
+  UnstableNode* mainKs[] = { &five, &two };
+  CodeArea mainCodeArea(mainCodeBlock, sizeof(mainCodeBlock), 4, 2, mainKs);
 
-  UnstableNode temp;
-  temp.make(vm, BuiltinProcedure::type, &builtinAdd);
+  StaticArray<StableNode> mainGs(1);
+  temp.make<Abstraction::Repr>(vm, Abstraction::type, &printAdd);
+  mainGs[0].init(temp);
 
-  StaticArray<StableNode> Gs(1);
-  Gs[0].init(temp);
-
-  Thread thread(vm, &codeArea, Gs);
+  Thread thread(vm, &mainCodeArea, mainGs);
 
   std::cout << "Initialized" << std::endl;
 

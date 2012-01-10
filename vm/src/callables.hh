@@ -53,7 +53,7 @@ public:
    * @param argc   Actual number of parameters
    * @param args   Actual parameters
    */
-  BuiltinResult call(VM vm, int argc, UnstableNode* args[]) {
+  BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
     if (argc == _arity)
       return _builtin(vm, args);
     else
@@ -84,8 +84,61 @@ public:
 
   static const Type* const type;
 
-  static BuiltinResult call(VM vm, UnstableNode& self,
+  static BuiltinResult callBuiltin(VM vm, UnstableNode& self,
     int argc, UnstableNode* args[]);
+private:
+  static const Type rawType;
+};
+
+/**
+ * Abstraction value, i.e., user-defined procedure
+ */
+class AbstractionValue {
+public:
+  AbstractionValue(int arity, CodeArea* body, int Gc, UnstableNode* Gs[]);
+
+  int getArity() { return _arity; }
+
+  /**
+   * Get the arity of the abstraction in a node
+   */
+  BuiltinResult arity(VM vm, UnstableNode& result) {
+    result.make<nativeint>(vm, SmallInt::type, _arity);
+    return BuiltinResultContinue;
+  }
+
+  /**
+   * Get the information needed to call this abstraction
+   * @param vm      Contextual VM
+   * @param arity   Output: arity of this abstraction
+   * @param body    Output: code area which is the body
+   * @param Gs      Output: G registers
+   */
+  BuiltinResult getCallInfo(VM vm, int& arity, CodeArea*& body,
+    StaticArray<StableNode>*& Gs) {
+    arity = _arity;
+    body = _body;
+    Gs = &_Gs;
+    return BuiltinResultContinue;
+  }
+private:
+  int _arity;
+  CodeArea* _body;
+  StaticArray<StableNode> _Gs;
+};
+
+/**
+ * Type of an abstraction
+ */
+class Abstraction {
+public:
+  typedef AbstractionValue Value;
+  typedef Value* Repr;
+
+  static const Type* const type;
+
+  static BuiltinResult getCallInfo(VM vm, UnstableNode& self,
+    int& arity, CodeArea*& body, StaticArray<StableNode>*& Gs);
 private:
   static const Type rawType;
 };

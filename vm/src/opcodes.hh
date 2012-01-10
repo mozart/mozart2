@@ -43,8 +43,14 @@ const OpCode OpMoveGY = 0x06;
 const OpCode OpMoveKX = 0x07;
 const OpCode OpMoveKY = 0x08;
 
+const OpCode OpAllocateY = 0x0A;
+const OpCode OpDeallocateY = 0x0B;
+
 const OpCode OpStop = 0x10;
-const OpCode OpCall = 0x11;
+const OpCode OpCallBuiltin = 0x11;
+const OpCode OpCall = 0x12;
+const OpCode OpTailCall = 0x13;
+const OpCode OpReturn = 0x14;
 
 // Hard-coded stuff for bootstrapping the development
 const OpCode OpPrintInt = 0x18;

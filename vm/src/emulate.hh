@@ -25,6 +25,9 @@
 #ifndef __EMULATE_H
 #define __EMULATE_H
 
+#include <stack>
+#include <assert.h>
+
 #include "arrays.hh"
 #include "opcodes.hh"
 #include "memword.hh"
@@ -44,6 +47,23 @@ typedef StableNode* BuiltinResult;
 const BuiltinResult BuiltinResultContinue = nullptr;
 
 /**
+ * Entry of a thread stack
+ */
+struct StackEntry {
+  StackEntry(CodeArea* area, ProgramCounter PC,
+    StaticArray<UnstableNode>* yregs, StaticArray<StableNode>* gregs) :
+    area(area), PC(PC), yregs(yregs), gregs(gregs) {}
+
+  CodeArea* area;
+  ProgramCounter PC;
+  StaticArray<UnstableNode>* yregs;
+  StaticArray<StableNode>* gregs;
+};
+
+/** Thread stack */
+typedef stack<StackEntry> ThreadStack;
+
+/**
  * Lightweight thread.
  * The Thread class contains the information about the execution of a
  * lightweight thread. It contains the main emulator loop.
@@ -56,6 +76,7 @@ public:
 private:
   void advancePC(int argCount) { PC += argCount + 1; } // 1 for opcode
 
+  ByteCode IntPC(int offset) { return PC[offset]; }
   UnstableNode &XPC(int offset) { return xregs[PC[offset]]; }
   UnstableNode &YPC(int offset) { return (*yregs)[PC[offset]]; }
   StableNode &GPC(int offset) { return (*gregs)[PC[offset]]; }
@@ -63,13 +84,32 @@ private:
 
   void waitFor(Node& node);
 
+  void pushFrame() {
+    StackEntry entry(area, PC, yregs, gregs);
+    stack.push(entry);
+  }
+
+  void popFrame() {
+    assert(!stack.empty());
+    StackEntry& entry = stack.top();
+    area = entry.area;
+    PC = entry.PC;
+    yregs = entry.yregs;
+    gregs = entry.gregs;
+    stack.pop();
+  }
+
   VM vm;
+  CodeArea* area;
+
   EnlargeableArray<UnstableNode> xregs;
   StaticArray<UnstableNode> *yregs;
   StaticArray<StableNode> *gregs;
   StaticArray<StableNode> *kregs;
 
   ProgramCounter PC;
+
+  ThreadStack stack;
 };
 
 #endif // __EMULATE_H

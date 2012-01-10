@@ -24,16 +24,42 @@
 
 #include "callables.hh"
 
+// BuiltinProcedure
+
 const Type BuiltinProcedure::rawType("BuiltinProcedure", nullptr);
 const Type* const BuiltinProcedure::type = &BuiltinProcedure::rawType;
 
-BuiltinResult BuiltinProcedure::call(VM vm, UnstableNode& self,
+BuiltinResult BuiltinProcedure::callBuiltin(VM vm, UnstableNode& self,
   int argc, UnstableNode* args[]) {
   Value* value = self.node.value.get<Value*>();
-  return value->call(vm, argc, args);
+  return value->callBuiltin(vm, argc, args);
 }
 
 BuiltinResult BuiltinProcedureValue::raiseIllegalArity(int argc) {
   // TODO raiseIllegalArity
   return BuiltinResultContinue;
+}
+
+
+// AbstractionValue
+
+AbstractionValue::AbstractionValue(int arity, CodeArea* body,
+  int Gc, UnstableNode* Gs[]) :
+  _arity(arity), _body(body), _Gs(Gc) {
+
+  for (int i = 0; i < Gc; i++)
+    _Gs[i].init(*Gs[i]);
+}
+
+
+// Abstraction
+
+const Type Abstraction::rawType("Abstraction", nullptr);
+const Type* const Abstraction::type = &Abstraction::rawType;
+
+BuiltinResult Abstraction::getCallInfo(VM vm, UnstableNode& self, int& arity,
+  CodeArea*& body, StaticArray<StableNode>*& Gs) {
+
+  Value* value = self.node.value.get<Value*>();
+  return value->getCallInfo(vm, arity, body, Gs);
 }

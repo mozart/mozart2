@@ -33,16 +33,19 @@ class Type {
 public:
   typedef void* (*GetInterfaceProc)(void*);
 
-  Type(string name, GetInterfaceProc getInterface) :
-    _name(name), _getInterface(getInterface) {
+  Type(string name, GetInterfaceProc getInterface, bool copiable = false) :
+    _name(name), _getInterface(getInterface), _copiable(copiable) {
   }
 
   const string& getName() const { return _name; }
 
   void* getInterface(void* intfID) { return (*_getInterface)(intfID); }
+
+  bool isCopiable() const { return _copiable; }
 private:
   const string _name;
   const GetInterfaceProc _getInterface;
+  const bool _copiable;
 };
 
 #endif // __TYPE_H

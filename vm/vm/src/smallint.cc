@@ -24,7 +24,7 @@
 
 #include "smallint.hh"
 
-const Type SmallInt::rawType("SmallInt", nullptr);
+const Type SmallInt::rawType("SmallInt", nullptr, true);
 const Type* const SmallInt::type = &SmallInt::rawType;
 
 BuiltinResult SmallInt::add(VM vm, UnstableNode& self,

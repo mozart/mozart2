@@ -29,9 +29,9 @@
 const Type BuiltinProcedure::rawType("BuiltinProcedure", nullptr);
 const Type* const BuiltinProcedure::type = &BuiltinProcedure::rawType;
 
-BuiltinResult BuiltinProcedure::callBuiltin(VM vm, UnstableNode& self,
+BuiltinResult BuiltinProcedure::callBuiltin(VM vm, Node& self,
   int argc, UnstableNode* args[]) {
-  Value* value = self.node.value.get<Value*>();
+  Value* value = self.value.get<Value*>();
   return value->callBuiltin(vm, argc, args);
 }
 
@@ -57,9 +57,9 @@ AbstractionValue::AbstractionValue(int arity, CodeArea* body,
 const Type Abstraction::rawType("Abstraction", nullptr);
 const Type* const Abstraction::type = &Abstraction::rawType;
 
-BuiltinResult Abstraction::getCallInfo(VM vm, UnstableNode& self, int& arity,
+BuiltinResult Abstraction::getCallInfo(VM vm, Node& self, int& arity,
   CodeArea*& body, StaticArray<StableNode>*& Gs) {
 
-  Value* value = self.node.value.get<Value*>();
+  Value* value = self.value.get<Value*>();
   return value->getCallInfo(vm, arity, body, Gs);
 }

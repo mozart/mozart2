@@ -34,17 +34,7 @@
 #include "store.hh"
 #include "ozlimits.hh"
 #include "codearea.hh"
-
-/**
- * Result of the call to a builtin.
- * It always represents a node that must be waited upon. The value 'nullptr' is
- * valid, and denotes that no value must be waited upon, i.e., the execution can
- * continue.
- * Throwing an exception is achieved by pointing to a failed value.
- */
-typedef StableNode* BuiltinResult;
-
-const BuiltinResult BuiltinResultContinue = nullptr;
+#include "variables.hh"
 
 /**
  * Entry of a thread stack
@@ -97,6 +87,20 @@ private:
     yregs = entry.yregs;
     gregs = entry.gregs;
     stack.pop();
+  }
+
+  // To be inlined in run()
+  void unify(Node& l, Node& r) {
+    Node& left = Reference::dereference(l);
+    Node& right = Reference::dereference(r);
+
+    if (left.type == Unbound::type)
+      Unbound::bind(vm, left, right);
+    else if (right.type == Unbound::type)
+      Unbound::bind(vm, right, left);
+    else {
+      // TODO Non-trivial unify
+    }
   }
 
   VM vm;

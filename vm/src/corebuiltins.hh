@@ -26,7 +26,7 @@
 #define __COREBUILTINS_H
 
 #include "store.hh"
-#include "emulate.hh"
+#include "codearea.hh"
 
 namespace builtins {
 

@@ -29,19 +29,19 @@ namespace builtins {
 
 BuiltinResult callBuiltin(VM vm, UnstableNode& callable,
   int argc, UnstableNode* args[]) {
-  BuiltinCallable x = callable;
+  BuiltinCallable x = callable.node;
   return x.callBuiltin(vm, argc, args);
 }
 
 BuiltinResult getCallInfo(VM vm, UnstableNode& callable,
   int& arity, CodeArea*& body, StaticArray<StableNode>*& Gs) {
 
-  Callable x = callable;
+  Callable x = callable.node;
   return x.getCallInfo(vm, arity, body, Gs);
 }
 
 BuiltinResult add(VM vm, UnstableNode* args[]) {
-  Addable x = *args[0];
+  Addable x = args[0]->node;
   return x.add(vm, *args[1], *args[2]);
 }
 

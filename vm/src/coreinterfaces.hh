@@ -29,12 +29,13 @@
 #include "smallint.hh"
 #include "emulate.hh"
 #include "callables.hh"
+#include "variables.hh"
 
 struct BuiltinCallable {
-  BuiltinCallable(UnstableNode& self) : self(self) {};
+  BuiltinCallable(Node& self) : self(Reference::dereference(self)) {};
 
   BuiltinResult callBuiltin(VM vm, int argc, UnstableNode* args[]) {
-    if (self.node.type == BuiltinProcedure::type) {
+    if (self.type == BuiltinProcedure::type) {
       return BuiltinProcedure::callBuiltin(vm, self, argc, args);
     } else {
       // TODO call non-builtin
@@ -42,15 +43,15 @@ struct BuiltinCallable {
     }
   }
 private:
-  UnstableNode& self;
+  Node& self;
 };
 
 struct Callable {
-  Callable(UnstableNode& self) : self(self) {};
+  Callable(Node& self) : self(Reference::dereference(self)) {};
 
   BuiltinResult getCallInfo(VM vm, int& arity, CodeArea*& body,
     StaticArray<StableNode>*& Gs) {
-    if (self.node.type == Abstraction::type) {
+    if (self.type == Abstraction::type) {
       return Abstraction::getCallInfo(vm, self, arity, body, Gs);
     } else {
       // TODO call non-abstraction
@@ -58,14 +59,14 @@ struct Callable {
     }
   }
 private:
-  UnstableNode& self;
+  Node& self;
 };
 
 struct Addable {
-  Addable(UnstableNode& self) : self(self) {};
+  Addable(Node& self) : self(Reference::dereference(self)) {};
 
   BuiltinResult add(VM vm, UnstableNode& b, UnstableNode& result) {
-    if (self.node.type == SmallInt::type) {
+    if (self.type == SmallInt::type) {
       return SmallInt::add(vm, self, b, result);
     } else {
       // TODO add non-SmallInt
@@ -73,7 +74,7 @@ struct Addable {
     }
   }
 private:
-  UnstableNode& self;
+  Node& self;
 };
 
 #endif // __COREINTERFACES_H
